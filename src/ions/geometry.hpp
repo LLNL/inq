@@ -1,5 +1,5 @@
-#ifndef ST_GEOMETRY
-#define ST_GEOMETRY
+#ifndef IONS_GEOMETRY
+#define IONS_GEOMETRY
 
 #include "position.hpp"
 #include <pseudo/element.hpp>

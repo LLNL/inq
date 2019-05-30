@@ -1,5 +1,5 @@
-#ifndef ST_POSITION
-#define ST_POSITION
+#ifndef IONS_POSITION
+#define IONS_POSITION
 
 #include <iostream>
 
