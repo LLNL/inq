@@ -15,4 +15,6 @@ int main(const int argc, const char ** argv){
 
    ions::geometry geo(xyz_file_name);
 
+   std::cout << "Number of atoms = " << geo.number_of_atoms() << std::endl;
+
 }
