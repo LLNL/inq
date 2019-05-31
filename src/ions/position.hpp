@@ -92,8 +92,6 @@ namespace ions {
     double phi() const {
       return std::atan2(y(), x());
     }
-    
-  private:
 
     const double & x() const {
       return coords[0];
@@ -106,7 +104,9 @@ namespace ions {
     const double & z() const {
       return coords[2];
     }
-    
+
+  private:
+
     std::array<double, 3> coords;
     
   };
