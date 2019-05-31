@@ -29,9 +29,9 @@
 #include "base.hpp"
 #include "element.hpp"
 
-namespace pseudopotential {
+namespace pseudo {
 
-  class psp8 : public pseudopotential::base {
+  class psp8 : public pseudo::base {
 
   public:
 
@@ -46,7 +46,7 @@ namespace pseudopotential {
 
       std::istringstream file(buffer);
       
-      type_ = pseudopotential::type::KLEINMAN_BYLANDER;
+      type_ = pseudo::type::KLEINMAN_BYLANDER;
       
       // file size
       file.seekg( 0, std::ios::beg);
@@ -178,7 +178,7 @@ namespace pseudopotential {
       
     }
 
-    pseudopotential::format format() const { return pseudopotential::format::PSP8; }
+    pseudo::format format() const { return pseudo::format::PSP8; }
     
     int size() const {
       return file_size_;
@@ -189,7 +189,7 @@ namespace pseudopotential {
     }
     
     std::string symbol() const {
-      pseudopotential::element el(atomic_number_);
+      pseudo::element el(atomic_number_);
       return el.symbol();
     }
 
@@ -198,7 +198,7 @@ namespace pseudopotential {
     }
 
     double mass() const {
-      pseudopotential::element el(atomic_number_);
+      pseudo::element el(atomic_number_);
       return el.mass();
     }
     
@@ -206,32 +206,32 @@ namespace pseudopotential {
       return valence_charge_;
     }
 
-    pseudopotential::exchange exchange() const {
+    pseudo::exchange exchange() const {
       if(ixc_ > 0){
-	if(ixc_ == 1) return pseudopotential::exchange::NONE;
-	if(ixc_ >= 2 && ixc_ <= 9) return pseudopotential::exchange::LDA;
-	if(ixc_ == 11 || ixc_ == 12) return pseudopotential::exchange::PBE;
+	if(ixc_ == 1) return pseudo::exchange::NONE;
+	if(ixc_ >= 2 && ixc_ <= 9) return pseudo::exchange::LDA;
+	if(ixc_ == 11 || ixc_ == 12) return pseudo::exchange::PBE;
       }	else {
-	return pseudopotential::exchange((-ixc_ +ixc_%1000)/1000);
+	return pseudo::exchange((-ixc_ +ixc_%1000)/1000);
       }
       
-      return pseudopotential::exchange::UNKNOWN;
+      return pseudo::exchange::UNKNOWN;
     
     }
 
-    pseudopotential::correlation correlation() const {
+    pseudo::correlation correlation() const {
       if(ixc_ > 0){
-	if(ixc_ == 1) return pseudopotential::correlation::LDA_XC_TETER93;
-	if(ixc_ == 2) return pseudopotential::correlation::LDA_PZ;
-	if(ixc_ == 7) return pseudopotential::correlation::LDA_PW;
-	if(ixc_ == 7 || ixc_ == 8) return pseudopotential::correlation::NONE;
-	if(ixc_ == 11) return pseudopotential::correlation::PBE;
-	if(ixc_ == 12) return pseudopotential::correlation::NONE;
+	if(ixc_ == 1) return pseudo::correlation::LDA_XC_TETER93;
+	if(ixc_ == 2) return pseudo::correlation::LDA_PZ;
+	if(ixc_ == 7) return pseudo::correlation::LDA_PW;
+	if(ixc_ == 7 || ixc_ == 8) return pseudo::correlation::NONE;
+	if(ixc_ == 11) return pseudo::correlation::PBE;
+	if(ixc_ == 12) return pseudo::correlation::NONE;
       }	else {
-	return pseudopotential::correlation(-ixc_%1000);
+	return pseudo::correlation(-ixc_%1000);
       }
       
-      return pseudopotential::correlation::UNKNOWN;
+      return pseudo::correlation::UNKNOWN;
 
     }
 

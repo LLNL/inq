@@ -31,14 +31,14 @@
 #include "element.hpp"
 #include <rapidxml.hpp>
 
-namespace pseudopotential {
+namespace pseudo {
 
-  class psml : public pseudopotential::anygrid {
+  class psml : public pseudo::anygrid {
 
   public:
 
     psml(const std::string & filename, bool uniform_grid = false):
-      pseudopotential::anygrid(uniform_grid),
+      pseudo::anygrid(uniform_grid),
       file_(filename.c_str()),
       buffer_((std::istreambuf_iterator<char>(file_)), std::istreambuf_iterator<char>()){
 
@@ -60,9 +60,9 @@ namespace pseudopotential {
       bool has_semilocal_potentials = root_node_->first_node("semilocal-potentials");
       bool has_pseudo_wavefunctions = root_node_->first_node("pseudo-wave-functions");
       if(has_nl_projectors && has_local_potential) {
-	type_ = pseudopotential::type::KLEINMAN_BYLANDER;
+	type_ = pseudo::type::KLEINMAN_BYLANDER;
       } else if(has_semilocal_potentials && has_pseudo_wavefunctions) {
-	type_ = pseudopotential::type::SEMILOCAL;
+	type_ = pseudo::type::SEMILOCAL;
       } else {
 	throw status::UNSUPPORTED_TYPE;
       }
@@ -70,10 +70,10 @@ namespace pseudopotential {
       {
 	//read lmax
 	std::string tag1, tag2;
-	if(type_ == pseudopotential::type::KLEINMAN_BYLANDER){
+	if(type_ == pseudo::type::KLEINMAN_BYLANDER){
 	  tag1 = "nonlocal-projectors";
 	  tag2 = "proj";
-	} else if(type_ == pseudopotential::type::SEMILOCAL){
+	} else if(type_ == pseudo::type::SEMILOCAL){
 	  tag1 = "semilocal-potentials";
 	  tag2 = "slps";
 	} else {
@@ -122,7 +122,7 @@ namespace pseudopotential {
       
     }
 
-    pseudopotential::format format() const { return pseudopotential::format::PSML; }
+    pseudo::format format() const { return pseudo::format::PSML; }
     
     int size() const { return buffer_.size(); };
 
@@ -151,32 +151,32 @@ namespace pseudopotential {
       return -1;
     }
 
-    pseudopotential::exchange exchange() const {
+    pseudo::exchange exchange() const {
       // PSML uses libxc ids, so we just need to read the value
       rapidxml::xml_node<> * node = spec_node_->first_node("exchange-correlation")->first_node("libxc-info")->first_node("functional");
       while(node){
 	if(value<std::string>(node->first_attribute("type")) == "exchange") {
-	  return pseudopotential::exchange(value<int>(node->first_attribute("id")));
+	  return pseudo::exchange(value<int>(node->first_attribute("id")));
 	}
 	node = node->next_sibling("functional");
       }
-      return pseudopotential::exchange::UNKNOWN;
+      return pseudo::exchange::UNKNOWN;
     }
 
-    pseudopotential::correlation correlation() const {
+    pseudo::correlation correlation() const {
       // PSML uses libxc ids, so we just need to read the value
       rapidxml::xml_node<> * node = spec_node_->first_node("exchange-correlation")->first_node("libxc-info")->first_node("functional");
       while(node){
 	if(value<std::string>(node->first_attribute("type")) == "correlation") {
-	  return pseudopotential::correlation(value<int>(node->first_attribute("id")));
+	  return pseudo::correlation(value<int>(node->first_attribute("id")));
 	}
 	node = node->next_sibling("functional");
       }
-      return pseudopotential::correlation::UNKNOWN;
+      return pseudo::correlation::UNKNOWN;
     }
     
     int nchannels() const {
-      if(type_ == pseudopotential::type::SEMILOCAL) return 1;
+      if(type_ == pseudo::type::SEMILOCAL) return 1;
       int nc = 0;
       rapidxml::xml_node<> * node = root_node_->first_node("nonlocal-projectors");
       assert(node);

@@ -30,7 +30,7 @@
 
 #include "share_directory.hpp"
 
-namespace pseudopotential {
+namespace pseudo {
   
   class element {
 
@@ -101,7 +101,7 @@ namespace pseudopotential {
       static map_type map;
       if(map.empty()){
 
-	std::string filename = pseudopotential::share_directory::get() + "/pseudopotentials/elements.dat";
+	std::string filename = pseudo::share_directory::get() + "/pseudopotentials/elements.dat";
 	
 	std::ifstream file(filename.c_str());
 

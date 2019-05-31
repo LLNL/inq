@@ -32,14 +32,14 @@
 
 #include "element.hpp"
 
-namespace pseudopotential {
+namespace pseudo {
 
-  class upf2 : public pseudopotential::upf {
+  class upf2 : public pseudo::upf {
 
   public:
     
     upf2(const std::string & filename, bool uniform_grid = false):
-      pseudopotential::upf(uniform_grid),
+      pseudo::upf(uniform_grid),
       file_(filename.c_str()),
       buffer_((std::istreambuf_iterator<char>(file_)), std::istreambuf_iterator<char>()){
 
@@ -57,7 +57,7 @@ namespace pseudopotential {
       std::string pseudo_type = root_node_->first_node("PP_HEADER")->first_attribute("pseudo_type")->value();
       
       if(pseudo_type == "NC" || pseudo_type == "SL"){
-	type_ = pseudopotential::type::KLEINMAN_BYLANDER;
+	type_ = pseudo::type::KLEINMAN_BYLANDER;
       } else if(pseudo_type == "USPP"){
 	throw status::UNSUPPORTED_TYPE_ULTRASOFT;
       } else if(pseudo_type == "PAW") {
@@ -172,7 +172,7 @@ namespace pseudopotential {
 
     }
 
-    pseudopotential::format format() const { return pseudopotential::format::UPF2; }
+    pseudo::format format() const { return pseudo::format::UPF2; }
     
     int size() const { return buffer_.size(); };
 
@@ -198,22 +198,22 @@ namespace pseudopotential {
       return value<double>(root_node_->first_node("PP_HEADER")->first_attribute("z_valence"));
     }
 
-    pseudopotential::exchange exchange() const {
+    pseudo::exchange exchange() const {
       std::string functional = root_node_->first_node("PP_HEADER")->first_attribute("functional")->value();
-      if(functional == "PBE") return pseudopotential::exchange::PBE;
-      if(functional == "PBESOL") return pseudopotential::exchange::PBE_SOL;
-      if(functional == "SLA  PW   NOGX NOGC") return pseudopotential::exchange::LDA;
-      if(functional == "BLYP") return pseudopotential::exchange::B88;
-      return pseudopotential::exchange::UNKNOWN;
+      if(functional == "PBE") return pseudo::exchange::PBE;
+      if(functional == "PBESOL") return pseudo::exchange::PBE_SOL;
+      if(functional == "SLA  PW   NOGX NOGC") return pseudo::exchange::LDA;
+      if(functional == "BLYP") return pseudo::exchange::B88;
+      return pseudo::exchange::UNKNOWN;
     }
 
-    pseudopotential::correlation correlation() const {
+    pseudo::correlation correlation() const {
       std::string functional = root_node_->first_node("PP_HEADER")->first_attribute("functional")->value();
-      if(functional == "PBE") return pseudopotential::correlation::PBE;
-      if(functional == "PBESOL") return pseudopotential::correlation::PBE_SOL;
-      if(functional == "SLA  PW   NOGX NOGC") return pseudopotential::correlation::LDA_PW;
-      if(functional == "BLYP") return pseudopotential::correlation::LYP;
-      return pseudopotential::correlation::UNKNOWN;
+      if(functional == "PBE") return pseudo::correlation::PBE;
+      if(functional == "PBESOL") return pseudo::correlation::PBE_SOL;
+      if(functional == "SLA  PW   NOGX NOGC") return pseudo::correlation::LDA_PW;
+      if(functional == "BLYP") return pseudo::correlation::LYP;
+      return pseudo::correlation::UNKNOWN;
     }
 
     void local_potential(std::vector<double> & potential) const {

@@ -24,9 +24,9 @@
 #include "base.hpp"
 #include "spline.h"
 
-namespace pseudopotential {
+namespace pseudo {
 
-  class anygrid : public pseudopotential::base {
+  class anygrid : public pseudo::base {
 
   public:
 
@@ -48,7 +48,7 @@ namespace pseudopotential {
     
     virtual void grid(std::vector<double> & val) const {
       if(uniform_grid_){
-	pseudopotential::base::grid(val);
+	pseudo::base::grid(val);
       } else {
 	val = grid_;
       }
@@ -56,7 +56,7 @@ namespace pseudopotential {
 
     virtual void grid_weights(std::vector<double> & val) const {
       if(uniform_grid_){
-	pseudopotential::base::grid(val);
+	pseudo::base::grid(val);
       } else {
 	val = grid_weights_;
       }

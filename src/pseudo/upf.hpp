@@ -28,14 +28,14 @@
 
 #include "anygrid.hpp"
 
-namespace pseudopotential {
+namespace pseudo {
 
-  class upf : public pseudopotential::anygrid {
+  class upf : public pseudo::anygrid {
 
   public:
 
     upf(bool uniform_grid):
-      pseudopotential::anygrid(uniform_grid){
+      pseudo::anygrid(uniform_grid){
     }
     
     double d_ij(int l, int i, int j) const {

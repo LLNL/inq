@@ -30,9 +30,9 @@
 
 #include <rapidxml.hpp>
 
-namespace pseudopotential {
+namespace pseudo {
 
-  class qso : public pseudopotential::base {
+  class qso : public pseudo::base {
 
   public:
 
@@ -48,16 +48,16 @@ namespace pseudopotential {
       root_node_ = doc_.first_node("fpmd:species");
 
       pseudo_node_ = root_node_->first_node("ultrasoft_pseudopotential");
-      if(pseudo_node_) type_ = pseudopotential::type::ULTRASOFT;
+      if(pseudo_node_) type_ = pseudo::type::ULTRASOFT;
 
       if(!pseudo_node_){
 	pseudo_node_ = root_node_->first_node("norm_conserving_semilocal_pseudopotential");
-	if(pseudo_node_) type_ = pseudopotential::type::KLEINMAN_BYLANDER;
+	if(pseudo_node_) type_ = pseudo::type::KLEINMAN_BYLANDER;
       }
 
       if(!pseudo_node_){
 	pseudo_node_ = root_node_->first_node("norm_conserving_pseudopotential");
-	if(pseudo_node_) type_ = pseudopotential::type::SEMILOCAL;
+	if(pseudo_node_) type_ = pseudo::type::SEMILOCAL;
       }
 
       assert(pseudo_node_);
@@ -79,7 +79,7 @@ namespace pseudopotential {
       
     }
 
-    pseudopotential::format format() const { return pseudopotential::format::QSO; }
+    pseudo::format format() const { return pseudo::format::QSO; }
     
     int size() const { return buffer_.size(); };
 
@@ -112,13 +112,13 @@ namespace pseudopotential {
     }
 
     int nchannels() const {
-      if(type_ == pseudopotential::type::ULTRASOFT){
+      if(type_ == pseudo::type::ULTRASOFT){
 	int np = nbeta();
 	int nl = lmax() + 1;
 	assert(np%nl == 0);
 	return np/nl;
       }
-      if(type_ == pseudopotential::type::KLEINMAN_BYLANDER) return 2;
+      if(type_ == pseudo::type::KLEINMAN_BYLANDER) return 2;
       return 1;
     }
     
@@ -159,9 +159,9 @@ namespace pseudopotential {
 
     int nprojectors() const {
       switch(type_){
-      case pseudopotential::type::ULTRASOFT:
+      case pseudo::type::ULTRASOFT:
 	return nbeta();
-      case pseudopotential::type::KLEINMAN_BYLANDER: {
+      case pseudo::type::KLEINMAN_BYLANDER: {
 	int count = 0;
 	rapidxml::xml_node<> * node = pseudo_node_->first_node("projector");
 	while(node) {
@@ -170,7 +170,7 @@ namespace pseudopotential {
 	}
 	return count;
       }
-      case pseudopotential::type::SEMILOCAL:
+      case pseudo::type::SEMILOCAL:
 	return 0;
       }
       return 0;

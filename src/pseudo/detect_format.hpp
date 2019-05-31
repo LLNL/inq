@@ -27,19 +27,19 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace pseudopotential {
+namespace pseudo {
 
-  static pseudopotential::format detect_format(const std::string & filename){
+  static pseudo::format detect_format(const std::string & filename){
 
     // check that the file is not a directory
     struct stat file_stat;
-    if(stat(filename.c_str(), &file_stat) == -1) return pseudopotential::format::FILE_NOT_FOUND;
-    if(S_ISDIR(file_stat.st_mode)) return pseudopotential::format::FILE_NOT_FOUND;
+    if(stat(filename.c_str(), &file_stat) == -1) return pseudo::format::FILE_NOT_FOUND;
+    if(S_ISDIR(file_stat.st_mode)) return pseudo::format::FILE_NOT_FOUND;
 
     //now open the file
     std::ifstream file(filename.c_str());
 
-    if(!file) return pseudopotential::format::FILE_NOT_FOUND;
+    if(!file) return pseudo::format::FILE_NOT_FOUND;
     
     std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     buffer.push_back('\0');
@@ -54,24 +54,24 @@ namespace pseudopotential {
       }
       
       if(is_xml){
-	if(doc.first_node("fpmd:species")) return pseudopotential::format::QSO;
-	if(doc.first_node("PP_INFO")) return pseudopotential::format::UPF1;
-	if(doc.first_node("UPF")) return pseudopotential::format::UPF2;
-	if(doc.first_node("psml")) return pseudopotential::format::PSML;
+	if(doc.first_node("fpmd:species")) return pseudo::format::QSO;
+	if(doc.first_node("PP_INFO")) return pseudo::format::UPF1;
+	if(doc.first_node("UPF")) return pseudo::format::UPF2;
+	if(doc.first_node("psml")) return pseudo::format::PSML;
       }
     }
 
     std::string extension = filename.substr(filename.find_last_of(".") + 1);
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
-    if(extension == "psp8") return pseudopotential::format::PSP8;
-    if(extension == "drh")  return pseudopotential::format::PSP8;
-    if(extension == "psf")  return pseudopotential::format::PSF;
-    if(extension == "cpi")  return pseudopotential::format::CPI;
-    if(extension == "fhi")  return pseudopotential::format::FHI;
-    if(extension == "hgh")  return pseudopotential::format::HGH;
+    if(extension == "psp8") return pseudo::format::PSP8;
+    if(extension == "drh")  return pseudo::format::PSP8;
+    if(extension == "psf")  return pseudo::format::PSF;
+    if(extension == "cpi")  return pseudo::format::CPI;
+    if(extension == "fhi")  return pseudo::format::FHI;
+    if(extension == "hgh")  return pseudo::format::HGH;
     
-    return pseudopotential::format::UNKNOWN;
+    return pseudo::format::UNKNOWN;
   }
   
 }

@@ -34,7 +34,7 @@ namespace ions {
       
       for(int iatom = 0; iatom < num_atoms; iatom++){
       xyz_file >> atom_name >> atom_position;
-      add_atom(pseudopotential::element(atom_name), atom_position*1.8897261);
+      add_atom(pseudo::element(atom_name), atom_position*1.8897261);
       }
       
       xyz_file.close();
@@ -45,9 +45,9 @@ namespace ions {
     
     int number_of_atoms() const { return coordinates.size(); }
 
-    void add_atom(const pseudopotential::element & element, const Position & position){
+    void add_atom(const pseudo::element & element, const Position & position){
 
-      auto element_location = element_list.insert(std::pair<int, pseudopotential::element>(element.atomic_number(), element));
+      auto element_location = element_list.insert(std::pair<int, pseudo::element>(element.atomic_number(), element));
       elements.push_back(element_location.first);
       coordinates.push_back(position);
 
@@ -57,7 +57,7 @@ namespace ions {
 
     public:
 
-      const pseudopotential::element & element() const {
+      const pseudo::element & element() const {
 	return geo->elements[index]->second;
       }
       
@@ -92,7 +92,7 @@ namespace ions {
     
   private:
 
-    typedef std::map<int, pseudopotential::element> ElementsContainer;
+    typedef std::map<int, pseudo::element> ElementsContainer;
     
     ElementsContainer element_list;
     std::vector<ElementsContainer::const_iterator> elements;

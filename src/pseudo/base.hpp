@@ -27,7 +27,7 @@
 #define MAX_L 10
 #define INVALID_L 333
 
-namespace pseudopotential {
+namespace pseudo {
 
   enum class type {
     ULTRASOFT         = 30,
@@ -88,11 +88,11 @@ namespace pseudopotential {
   public:
 
     virtual ~base(){}
-    virtual pseudopotential::type type() const { return type_; }
+    virtual pseudo::type type() const { return type_; }
     virtual int lmax() const { return lmax_; }
 
     //Pure virtual functions
-    virtual pseudopotential::format format() const = 0;
+    virtual pseudo::format format() const = 0;
     virtual int size() const = 0;
     virtual std::string description() const = 0;
     virtual std::string symbol() const = 0;
@@ -138,8 +138,8 @@ namespace pseudopotential {
     virtual void density(std::vector<double> & val) const { val.clear(); }
     virtual int nwavefunctions() const { return 0; }
     virtual void wavefunction(int index, int & n, int & l, double & occ, std::vector<double> & val) const { val.clear(); }
-    virtual pseudopotential::exchange exchange() const { return pseudopotential::exchange::UNKNOWN; }
-    virtual pseudopotential::correlation correlation() const { return pseudopotential::correlation::UNKNOWN; }
+    virtual pseudo::exchange exchange() const { return pseudo::exchange::UNKNOWN; }
+    virtual pseudo::correlation correlation() const { return pseudo::correlation::UNKNOWN; }
 
     virtual bool has_total_angular_momentum() const { return false; }
     virtual int projector_2j(int l, int ic) const { return 0; } // returns j multiplied by 2
@@ -158,7 +158,7 @@ namespace pseudopotential {
       return value;
     }
     
-    pseudopotential::type type_;
+    pseudo::type type_;
     int lmax_;
     
   };

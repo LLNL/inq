@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace pseudopotential {
+namespace pseudo {
 
   class share_directory {
 

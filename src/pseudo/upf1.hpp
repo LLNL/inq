@@ -32,14 +32,14 @@
 
 #include "element.hpp"
 
-namespace pseudopotential {
+namespace pseudo {
 
-  class upf1 : public pseudopotential::upf {
+  class upf1 : public pseudo::upf {
 
   public:
     
     upf1(const std::string & filename, bool uniform_grid = false):
-      pseudopotential::upf(uniform_grid),
+      pseudo::upf(uniform_grid),
       file_(filename.c_str()),
       buffer_((std::istreambuf_iterator<char>(file_)), std::istreambuf_iterator<char>()){
 
@@ -92,7 +92,7 @@ namespace pseudopotential {
       std::transform(pseudo_type.begin(), pseudo_type.end(), pseudo_type.begin(), ::tolower);
 
       if(pseudo_type == "nc" || pseudo_type == "sl"){
-	type_ = pseudopotential::type::KLEINMAN_BYLANDER;
+	type_ = pseudo::type::KLEINMAN_BYLANDER;
       } else if(pseudo_type == "uspp"){
 	throw status::UNSUPPORTED_TYPE_ULTRASOFT;
       } else if(pseudo_type == "paw") {
@@ -218,7 +218,7 @@ namespace pseudopotential {
 
     }
 
-    pseudopotential::format format() const { return pseudopotential::format::UPF2; }
+    pseudo::format format() const { return pseudo::format::UPF2; }
     
     int size() const { return buffer_.size(); };
 
@@ -244,20 +244,20 @@ namespace pseudopotential {
       return zval_;
     }
 
-    pseudopotential::exchange exchange() const {
-      if(xc_functional_ == "PBE") return pseudopotential::exchange::PBE;
-      if(xc_functional_ == "PBESOL") return pseudopotential::exchange::PBE_SOL;
-      if(xc_functional_ == "SLA  PW   NOGX NOGC") return pseudopotential::exchange::LDA;
-      if(xc_functional_ == "BLYP") return pseudopotential::exchange::B88;
-      return pseudopotential::exchange::UNKNOWN;
+    pseudo::exchange exchange() const {
+      if(xc_functional_ == "PBE") return pseudo::exchange::PBE;
+      if(xc_functional_ == "PBESOL") return pseudo::exchange::PBE_SOL;
+      if(xc_functional_ == "SLA  PW   NOGX NOGC") return pseudo::exchange::LDA;
+      if(xc_functional_ == "BLYP") return pseudo::exchange::B88;
+      return pseudo::exchange::UNKNOWN;
     }
 
-    pseudopotential::correlation correlation() const {
-      if(xc_functional_ == "PBE") return pseudopotential::correlation::PBE;
-      if(xc_functional_ == "PBESOL") return pseudopotential::correlation::PBE_SOL;
-      if(xc_functional_ == "SLA  PW   NOGX NOGC") return pseudopotential::correlation::LDA_PW;
-      if(xc_functional_ == "BLYP") return pseudopotential::correlation::LYP;
-      return pseudopotential::correlation::UNKNOWN;
+    pseudo::correlation correlation() const {
+      if(xc_functional_ == "PBE") return pseudo::correlation::PBE;
+      if(xc_functional_ == "PBESOL") return pseudo::correlation::PBE_SOL;
+      if(xc_functional_ == "SLA  PW   NOGX NOGC") return pseudo::correlation::LDA_PW;
+      if(xc_functional_ == "BLYP") return pseudo::correlation::LYP;
+      return pseudo::correlation::UNKNOWN;
     }
 
     void local_potential(std::vector<double> & potential) const {

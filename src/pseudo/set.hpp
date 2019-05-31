@@ -34,7 +34,7 @@
 #include "upf2.hpp"
 #include "psp8.hpp"
 
-namespace pseudopotential {
+namespace pseudo {
 
   class set{
 
@@ -68,30 +68,30 @@ namespace pseudopotential {
 
 	if(filename == "." || filename == "..") continue;
 
-	pseudopotential::format format = detect_format(fullname);
+	pseudo::format format = detect_format(fullname);
 	
-	if(format == pseudopotential::format::FILE_NOT_FOUND || format == pseudopotential::format::UNKNOWN) continue;
+	if(format == pseudo::format::FILE_NOT_FOUND || format == pseudo::format::UNKNOWN) continue;
 
 	// we open the pseudo just to get the species symbol, this could be done in a better way
-	pseudopotential::base * pseudo = NULL;
+	pseudo::base * pseudo = NULL;
 
 	std::string symbol;
    
 	switch(format){
-	case pseudopotential::format::QSO:
-	  pseudo = new pseudopotential::qso(fullname);
+	case pseudo::format::QSO:
+	  pseudo = new pseudo::qso(fullname);
 	  break;
-	case pseudopotential::format::UPF1:
-	  pseudo = new pseudopotential::upf1(fullname, /*uniform_grid = */ true);
+	case pseudo::format::UPF1:
+	  pseudo = new pseudo::upf1(fullname, /*uniform_grid = */ true);
 	  break;
-	case pseudopotential::format::UPF2:
-	  pseudo = new pseudopotential::upf2(fullname, /*uniform_grid = */ true);
+	case pseudo::format::UPF2:
+	  pseudo = new pseudo::upf2(fullname, /*uniform_grid = */ true);
 	  break;
-	case pseudopotential::format::PSML:
-	  pseudo = new pseudopotential::psml(fullname, /*uniform_grid = */ true);
+	case pseudo::format::PSML:
+	  pseudo = new pseudo::psml(fullname, /*uniform_grid = */ true);
 	  break;
-	case pseudopotential::format::PSP8:
-	  pseudo = new pseudopotential::psp8(fullname);
+	case pseudo::format::PSP8:
+	  pseudo = new pseudo::psp8(fullname);
 	  break;
 	default:
 	  //get the symbol from the name
