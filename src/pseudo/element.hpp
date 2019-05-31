@@ -160,6 +160,50 @@ namespace pseudo {
 
 }
 
+#ifdef UNIT_TEST
+#include <catch2/catch.hpp>
+
+TEST_CASE("Element class", "[element]") {
+
+  using Catch::Matchers::WithinULP;
+
+  SECTION("Define element by atomic number"){
+    pseudo::element el(27);
+
+    REQUIRE(el.valid());
+    REQUIRE(el.atomic_number() == 27);
+    REQUIRE(el.symbol() == "Co");
+    REQUIRE_THAT(el.charge(), WithinULP(-27.0, 1));
+    REQUIRE_THAT(el.mass(), WithinULP(58.9331944, 1));
+    REQUIRE_THAT(el.vdw_radius(), WithinULP(4.535342, 1));
+  }
+  
+  SECTION("Define element by symbol"){
+    pseudo::element el("I");
+
+    REQUIRE(el.valid());
+    REQUIRE(el.atomic_number() == 53);
+    REQUIRE(el.symbol() == "I");
+    REQUIRE_THAT(el.charge(), WithinULP(-53.0, 1));
+    REQUIRE_THAT(el.mass(), WithinULP(126.904473, 1));
+    REQUIRE_THAT(el.vdw_radius(), WithinULP(3.855041, 1));
+  }
+  
+  SECTION("Invalid element by atomic number"){
+    pseudo::element el(200);
+
+    REQUIRE(!el.valid());
+  }
+
+  SECTION("Invalid element by symbol"){
+    pseudo::element el("X");
+
+    REQUIRE(!el.valid());
+  }
+  
+}
+#endif
+
 #endif
 
 // Local Variables:
