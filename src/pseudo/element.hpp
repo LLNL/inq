@@ -163,7 +163,7 @@ namespace pseudo {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("Element class", "[element]") {
+TEST_CASE("Class pseudo::element", "[element]") {
 
   using Catch::Matchers::WithinULP;
 

@@ -13,13 +13,21 @@ namespace ions {
   class geometry {
 
   public:
-
+    
+    enum class error {
+      FILE_NOT_FOUND
+    };
+      
     geometry(){
     }
 
     // Generates a geometry from an xyz file
     geometry(const std::string & xyz_file_name){
       std::ifstream xyz_file(xyz_file_name.c_str());
+
+      if(!xyz_file.is_open()){
+	throw error::FILE_NOT_FOUND;
+      }
       
       int num_atoms;
       std::string comment_line;
@@ -100,6 +108,24 @@ namespace ions {
     
   };
   
+#ifdef UNIT_TEST
+#include <catch2/catch.hpp>
+
+TEST_CASE("Class ions::geometry", "[geometry]") {
+
+  using Catch::Matchers::WithinULP;
+
+  SECTION("Try to read a non-existent file"){
+    REQUIRE_THROWS(ions::geometry("/this_file_should_not_exist,_i_hope_it_doesnt"));
+  }
+  
+  SECTION("Read an xyz file"){
+    ions::geometry geo(SHARE_DIR + std::string("unit_test_data/benzene.xyz"));
+  }
+  
+}
+#endif
+
 }
 
 #endif
