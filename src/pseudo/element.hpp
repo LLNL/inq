@@ -87,6 +87,10 @@ namespace pseudo {
     double vdw_radius() const{
       return map().at(symbol_).vdw_radius_;
     }
+
+    bool operator==(const element & el) const {
+      return atomic_number() == el.atomic_number();
+    }
    
   private:
 
@@ -170,6 +174,7 @@ TEST_CASE("Class pseudo::element", "[element]") {
   SECTION("Define element by atomic number"){
     pseudo::element el(27);
 
+    REQUIRE(el == pseudo::element("Co"));
     REQUIRE(el.valid());
     REQUIRE(el.atomic_number() == 27);
     REQUIRE(el.symbol() == "Co");
@@ -181,6 +186,7 @@ TEST_CASE("Class pseudo::element", "[element]") {
   SECTION("Define element by symbol"){
     pseudo::element el("I");
 
+    REQUIRE(el == pseudo::element(53));
     REQUIRE(el.valid());
     REQUIRE(el.atomic_number() == 53);
     REQUIRE(el.symbol() == "I");
