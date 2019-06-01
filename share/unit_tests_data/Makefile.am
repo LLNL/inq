@@ -18,7 +18,7 @@
 ## 02110-1301, USA.
 ##
 
-utddir = $(pkgdatadir)/pseudopotentials
+utddir = $(pkgdatadir)/unit_tests_data
 
 dist_utd_DATA =                            \
 	benzene.xyz
