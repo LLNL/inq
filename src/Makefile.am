@@ -12,7 +12,6 @@ noinst_HEADERS =                                   \
 	pseudo/qso.hpp                             \
 	pseudo/set.hpp                             \
 	pseudo/share_directory.hpp                 \
-	pseudo/spline.h                            \
 	pseudo/upf.hpp                             \
 	pseudo/upf1.hpp                            \
 	pseudo/upf2.hpp                            \
@@ -20,6 +19,6 @@ noinst_HEADERS =                                   \
 	ions/geometry.hpp
 
 bin_PROGRAMS  =                                    \
-	@package_name@_unit_tests
+	@PACKAGE_NAME@_unit_tests
 
-@package_name@_unit_tests = main/unit_tests.cpp
+@PACKAGE_NAME@_unit_tests_SOURCES = main/unit_tests.cpp

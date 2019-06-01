@@ -109,7 +109,7 @@ namespace ions {
   };
   
 #ifdef UNIT_TEST
-#include <catch2/catch.hpp>
+#include <catch.hpp>
 
 TEST_CASE("Class ions::geometry", "[geometry]") {
 

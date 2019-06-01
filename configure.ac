@@ -3,8 +3,8 @@
 
 AC_PREREQ([2.63])
 AC_INIT(inq, alpha, xavier@llnl.gov)
-AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([src/ions/element.hpp])
+AM_INIT_AUTOMAKE([subdir-objects])
+AC_CONFIG_SRCDIR([src/pseudo/element.hpp])
 AC_CONFIG_HEADERS([config.h])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -42,30 +42,6 @@ dnl We need to check for fortran, to link with blas and other libraries
 AC_PROG_FC(mpif90)
 AC_FC_LIBRARY_LDFLAGS
 AC_FC_WRAPPERS
-
-AC_MSG_NOTICE([
-================================================================================
-  CHECKING FOR OPENMP
-================================================================================])
-
-# Checks for OpenMP
-AC_LANG_PUSH(C)
-AX_OPENMP
-CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
-AC_LANG_POP(C)
-
-# Checks for OpenMP
-AC_LANG_PUSH(C++)
-AX_OPENMP
-CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
-AC_LANG_POP(C++)
-
-# Checks for OpenMP
-AC_LANG_PUSH(Fortran)
-AX_OPENMP
-CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
-AC_LANG_POP(Fortran)
-
 
 AC_MSG_NOTICE([
 ================================================================================
