@@ -62,7 +62,7 @@ namespace math {
       spline_create(x, y, n, yp1, ypn, &y2_[0]);
     }
     
-    double value(int n, const double & x) const {
+    double value(const double & x) const {
       double y;
       splint(&x_[0], &y_[0], &y2_[0], x_.size(), x, &y);
       return y;
@@ -81,7 +81,40 @@ namespace math {
   };
   
 }
+
+#ifdef UNIT_TEST
+#include <catch.hpp>
+#include <vector>
+
+TEST_CASE("Class math::spline", "[spline]") {
+
+  using namespace Catch::literals;
+
+  const int nn = 20;
+  const double dx = 0.5;
+  std::vector<double> xx(nn);
+  std::vector<double> ff(nn);
+
+  for(int ii = 0; ii < nn; ii++){
+    xx[ii] = dx*ii;
+    ff[ii] = cos(xx[ii]);
+  }
+
+  math::spline spl;
+
+  spl.fit(xx.data(), ff.data(), nn, SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
+
+  SECTION("Check single value interpolation"){
+  
+    REQUIRE(spl.value(0.4) == 0.9209862343_a);
+
+  }
+  
+}
 #endif
+
+#endif
+
 
 // Local Variables:
 // mode: c++
