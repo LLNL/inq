@@ -98,7 +98,7 @@ namespace math {
 
 #ifdef UNIT_TEST
 #include <catch.hpp>
-#include <vector>
+#include <cmath>
 
 TEST_CASE("Class math::spline", "[spline]") {
 
@@ -164,7 +164,81 @@ TEST_CASE("Class math::spline", "[spline]") {
     REQUIRE_THROWS(spl.derivative(1000.0, f1, df1));
 
   }
+  
+    const int nn2 = 16;
+    const double dx2 = 0.32;
+    std::vector<double> xx2(nn2);
+    std::vector<double> ff2(nn2);
+    std::vector<double> dff2(nn2);
 
+    //initialize the array of x values
+    for(int ii = 0; ii < nn2; ii++){
+      xx2[ii] = dx2*ii;
+    }
+
+  SECTION("Check multiple values interpolation"){
+
+    // evaluate, this should be really done by a class method
+    for(int ii = 0; ii < nn2; ii++){
+      ff2[ii] = spl.value(xx2[ii]);
+    }
+
+    REQUIRE(ff2[13] == -0.5246734968_a);
+
+    double diff = 0.0;
+    for(int ii = 0; ii < nn2; ii++){
+      diff += fabs(ff2[ii] - cos(ii*dx2));
+    }
+    diff /= nn2;
+
+    REQUIRE(diff == 0.0000555057_a);
+  }
+
+  SECTION("Check multiple values derivative"){
+    
+    // evaluate, this should be really done by a class method
+    for(int ii = 0; ii < nn2; ii++){
+      dff2[ii] = spl.derivative(xx2[ii]);
+    }
+    
+    REQUIRE(dff2[13] == 0.8517363378_a);
+
+    double diff = 0.0;
+    for(int ii = 0; ii < nn2; ii++){
+      diff += fabs(dff2[ii] - (-sin(ii*dx2)));
+    }
+    diff /= nn2;
+
+    REQUIRE(diff == 0.0004178684_a);
+    
+  }
+
+  SECTION("Check multiple values interpolation and derivative"){
+    
+    // evaluate, this should be really done by a class method
+    for(int ii = 0; ii < nn2; ii++){
+      spl.derivative(xx2[ii], ff2[ii], dff2[ii]);
+    }
+
+    REQUIRE(ff2[13] == -0.5246734968_a);
+    REQUIRE(dff2[13] == 0.8517363378_a);
+
+    double diff = 0.0;
+    double ddiff = 0.0;
+    for(int ii = 0; ii < nn2; ii++){
+      diff += fabs(ff2[ii] - cos(ii*dx2));
+      ddiff += fabs(dff2[ii] - (-sin(ii*dx2)));
+    }
+    diff /= nn2;
+    ddiff /= nn2;
+
+    REQUIRE(diff == 0.0000555057_a);
+    REQUIRE(ddiff == 0.0004178684_a);
+
+  }
+
+
+  
 }
 #endif
 
