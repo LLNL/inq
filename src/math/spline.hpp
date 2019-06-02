@@ -74,8 +74,8 @@ namespace math {
       return y;
     }
 
-    template <class vector_type>
-    void value(const int size, const vector_type & xx, vector_type & yy) const {
+    template <class array_type>
+    void value(const int size, const array_type & xx, array_type & yy) const {
 
       for(int ii = 0; ii < size; ii++) yy[ii] = value(xx[ii]);
     }    
@@ -86,8 +86,8 @@ namespace math {
       splintd(&x_[0], &y_[0], &y2_[0], x_.size(), x, &y, &dy);
     }
 
-    template <class vector_type>
-    void derivative(const int size, const vector_type & xx, vector_type & yy, vector_type & dyy) const {
+    template <class array_type>
+    void derivative(const int size, const array_type & xx, array_type & yy, array_type & dyy) const {
 
       for(int ii = 0; ii < size; ii++) derivative(xx[ii], yy[ii], dyy[ii]);
     }
@@ -98,8 +98,8 @@ namespace math {
       return dy;
     }
 
-    template <class vector_type>
-    void derivative(int size, const vector_type & xx, vector_type & dyy) const {
+    template <class array_type>
+    void derivative(int size, const array_type & xx, array_type & dyy) const {
       
       for(int ii = 0; ii < size; ii++){
 	double y;
@@ -185,17 +185,17 @@ TEST_CASE("Class math::spline", "[spline]") {
 
   }
   
-    const int nn2 = 16;
-    const double dx2 = 0.32;
-    std::vector<double> xx2(nn2);
-    std::vector<double> ff2(nn2);
-    std::vector<double> dff2(nn2);
-
-    //initialize the array of x values
-    for(int ii = 0; ii < nn2; ii++){
-      xx2[ii] = dx2*ii;
-    }
-
+  const int nn2 = 16;
+  const double dx2 = 0.32;
+  std::vector<double> xx2(nn2);
+  std::vector<double> ff2(nn2);
+  std::vector<double> dff2(nn2);
+  
+  //initialize the array of x values
+  for(int ii = 0; ii < nn2; ii++){
+    xx2[ii] = dx2*ii;
+  }
+  
   SECTION("Check multiple values interpolation"){
 
     spl.value(nn2, xx2, ff2);
@@ -247,8 +247,6 @@ TEST_CASE("Class math::spline", "[spline]") {
     REQUIRE(ddiff == 0.0004178684_a);
 
   }
-
-
   
 }
 #endif
