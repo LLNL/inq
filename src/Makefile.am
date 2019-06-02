@@ -5,6 +5,7 @@ AM_CXXFLAGS =                                   \
 	-DSHARE_DIR='"$(pkgdatadir)"'
 
 noinst_HEADERS =                                   \
+	math/spline.hpp
 	pseudo/anygrid.hpp                         \
 	pseudo/base.hpp                            \
 	pseudo/element.hpp                         \
@@ -18,10 +19,15 @@ noinst_HEADERS =                                   \
 	ions/position.hpp                          \
 	ions/geometry.hpp
 
+all_srcs =                                         \
+	math/spline.cpp
+
+
 bin_PROGRAMS  =                                    \
 	inq                                        \
 	@PACKAGE_NAME@_unit_tests
 
-inq_SOURCES = main/main.cpp
+inq_SOURCES = main/main.cpp $(all_srcs)
 
-@PACKAGE_NAME@_unit_tests_SOURCES = main/unit_tests.cpp
+@PACKAGE_NAME@_unit_tests_SOURCES = main/unit_tests.cpp $(all_srcs)
+
