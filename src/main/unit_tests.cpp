@@ -5,4 +5,5 @@
 #include <math/spline.hpp>
 #include <pseudo/element.hpp>
 #include <ions/geometry.hpp>
+#include <ions/unitcell.hpp>
 

@@ -20,7 +20,8 @@ noinst_HEADERS =                                   \
 	ions/geometry.hpp
 
 all_srcs =                                         \
-	math/spline.cpp
+	math/spline.cpp                            \
+	ions/unitcell.cpp
 
 
 bin_PROGRAMS  =                                    \
