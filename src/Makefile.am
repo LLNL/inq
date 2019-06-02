@@ -31,3 +31,5 @@ inq_SOURCES = main/main.cpp $(all_srcs)
 
 @PACKAGE_NAME@_unit_tests_SOURCES = main/unit_tests.cpp main/unit_tests_main.cpp $(all_srcs)
 
+check: $(@PACKAGE_NAME@_unit_tests) install
+	@PACKAGE_NAME@_unit_tests -s
