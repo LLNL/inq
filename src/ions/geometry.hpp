@@ -116,7 +116,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   using namespace Catch::literals;
 
   SECTION("Read an xyz file"){
-    ions::geometry geo(SHARE_DIR + std::string("unit_tests_data/benzene.xyz"));
+    ions::geometry geo(SHARE_DIR + std::string("/unit_tests_data/benzene.xyz"));
 
     REQUIRE(geo.number_of_atoms() == 12);
     REQUIRE_THROWS(geo.atom(12));
