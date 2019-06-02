@@ -242,7 +242,7 @@ namespace ions {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  double UnitCell::min_wsdist(void) const {
+  double UnitCell::min_wsdist() const {
 
     double min = sqrt(2.*an2h_[0]);
     for (int i=1; i<13; i++) 

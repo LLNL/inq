@@ -60,16 +60,16 @@ namespace ions{
     const math::d3vector& a(int i) const { return a_[i]; }
     const math::d3vector& b(int i) const { return b_[i]; }
   
-    UnitCell(void) { set(math::d3vector(0,0,0),math::d3vector(0,0,0),math::d3vector(0,0,0)); }  
+    UnitCell() { set(math::d3vector(0,0,0),math::d3vector(0,0,0),math::d3vector(0,0,0)); }  
     explicit UnitCell(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2)
     { set(a0,a1,a2); }
   
     void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2);
-    double volume(void) const { return volume_; }
+    double volume() const { return volume_; }
   
-    const double* amat(void) const { return &amat_[0]; }
-    const double* bmat(void) const { return &bmat_[0]; }
-    const double* amat_inv(void) const { return &amat_inv_[0]; }
+    const double* amat() const { return &amat_[0]; }
+    const double* bmat() const { return &bmat_[0]; }
+    const double* amat_inv() const { return &amat_inv_[0]; }
     double amat(int ij) const { return amat_[ij]; }
     double bmat(int ij) const { return bmat_[ij]; }
     double amat_inv(int ij) const { return amat_inv_[ij]; }
@@ -95,7 +95,7 @@ namespace ions{
     void crystal_to_cart(const double* scryst, double* scart) const;
     math::d3vector crystal_to_cart(const math::d3vector& v) const;
     bool in_ws(const math::d3vector& v) const;
-    double min_wsdist(void) const;
+    double min_wsdist() const;
     void fold_in_ws(math::d3vector& v) const;
     bool in_bz(const math::d3vector& k) const;
     void fold_in_bz(math::d3vector& k) const;
