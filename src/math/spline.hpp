@@ -46,6 +46,10 @@ namespace math {
   class spline {
     
   public:
+
+    enum class error {
+      OUT_OF_RANGE
+    };
     
     spline(){
     }
@@ -63,15 +67,25 @@ namespace math {
     }
     
     double value(const double & x) const {
+      if(x < x_[0] || x > x_[x_.size() - 1]) throw error::OUT_OF_RANGE;
+      
       double y;
       splint(&x_[0], &y_[0], &y2_[0], x_.size(), x, &y);
       return y;
     }
     
     void derivative(const double & x, double & y, double & dy) const {
+      if(x < x_[0] || x > x_[x_.size() - 1]) throw error::OUT_OF_RANGE;
+      
       splintd(&x_[0], &y_[0], &y2_[0], x_.size(), x, &y, &dy);
     }
-    
+
+    double derivative(const double & x) const {
+      double y, dy;
+      derivative(x, y, dy);
+      return dy;
+    }
+
   private :
     
     std::vector<double> x_;
@@ -105,11 +119,52 @@ TEST_CASE("Class math::spline", "[spline]") {
   spl.fit(xx.data(), ff.data(), nn, SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
 
   SECTION("Check single value interpolation"){
-  
+
+    REQUIRE(spl.value(0.0) == 1.0_a);
     REQUIRE(spl.value(0.4) == 0.9209862343_a);
+    REQUIRE(spl.value(M_PI/2.0) == 0.0000212848_a);
+    REQUIRE(spl.value(M_PI) == -0.9998862784_a);
+
+  }
+
+  SECTION("Check single value derivatives"){
+
+    REQUIRE(spl.derivative(0.0) == Approx(0.0).margin(1e-8));
+    REQUIRE(spl.derivative(0.4) == -0.3884027755_a);
+    REQUIRE(spl.derivative(M_PI/2.0) == -0.9997597149_a);
+    REQUIRE(spl.derivative(M_PI) == 0.0009543059_a);
 
   }
   
+
+  SECTION("Check single value and derivative"){
+
+    double f1, df1;
+
+    spl.derivative(3.0/4.0*M_PI, f1, df1);
+    
+    REQUIRE(f1 == -0.7070426574_a);
+    REQUIRE(df1 == -0.7077576301_a);
+
+    spl.derivative(8.3, f1, df1);
+    
+    REQUIRE(f1 == -0.4304260777_a);
+    REQUIRE(df1 == -0.9021271854_a);
+
+  }
+
+  SECTION("Out of range"){
+    double f1, df1;
+    
+    REQUIRE_THROWS(spl.value(-666.6));
+    REQUIRE_THROWS(spl.value(10.3));
+    REQUIRE_THROWS(spl.derivative(-0.01));
+    REQUIRE_THROWS(spl.derivative(1.0e10));
+    REQUIRE_THROWS(spl.derivative(-0.01, f1, df1));
+    REQUIRE_THROWS(spl.derivative(1000.0, f1, df1));
+
+  }
+
 }
 #endif
 
