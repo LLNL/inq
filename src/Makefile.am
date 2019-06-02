@@ -5,7 +5,8 @@ AM_CXXFLAGS =                                   \
 	-DSHARE_DIR='"$(pkgdatadir)"'
 
 noinst_HEADERS =                                   \
-	math/spline.hpp
+	math/d3vector.hpp                          \
+	math/spline.hpp                            \
 	pseudo/anygrid.hpp                         \
 	pseudo/base.hpp                            \
 	pseudo/element.hpp                         \
