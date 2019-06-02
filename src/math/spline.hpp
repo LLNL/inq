@@ -73,6 +73,12 @@ namespace math {
       splint(&x_[0], &y_[0], &y2_[0], x_.size(), x, &y);
       return y;
     }
+
+    template <class vector_type>
+    void value(const int size, const vector_type & xx, vector_type & yy) const {
+
+      for(int ii = 0; ii < size; ii++) yy[ii] = value(xx[ii]);
+    }    
     
     void derivative(const double & x, double & y, double & dy) const {
       if(x < x_[0] || x > x_[x_.size() - 1]) throw error::OUT_OF_RANGE;
@@ -80,12 +86,27 @@ namespace math {
       splintd(&x_[0], &y_[0], &y2_[0], x_.size(), x, &y, &dy);
     }
 
+    template <class vector_type>
+    void derivative(const int size, const vector_type & xx, vector_type & yy, vector_type & dyy) const {
+
+      for(int ii = 0; ii < size; ii++) derivative(xx[ii], yy[ii], dyy[ii]);
+    }
+    
     double derivative(const double & x) const {
       double y, dy;
       derivative(x, y, dy);
       return dy;
     }
 
+    template <class vector_type>
+    void derivative(int size, const vector_type & xx, vector_type & dyy) const {
+      
+      for(int ii = 0; ii < size; ii++){
+	double y;
+	derivative(xx[ii], y, dyy[ii]);
+      }
+    }
+    
   private :
     
     std::vector<double> x_;
@@ -136,7 +157,6 @@ TEST_CASE("Class math::spline", "[spline]") {
 
   }
   
-
   SECTION("Check single value and derivative"){
 
     double f1, df1;
@@ -178,10 +198,7 @@ TEST_CASE("Class math::spline", "[spline]") {
 
   SECTION("Check multiple values interpolation"){
 
-    // evaluate, this should be really done by a class method
-    for(int ii = 0; ii < nn2; ii++){
-      ff2[ii] = spl.value(xx2[ii]);
-    }
+    spl.value(nn2, xx2, ff2);
 
     REQUIRE(ff2[13] == -0.5246734968_a);
 
@@ -196,10 +213,7 @@ TEST_CASE("Class math::spline", "[spline]") {
 
   SECTION("Check multiple values derivative"){
     
-    // evaluate, this should be really done by a class method
-    for(int ii = 0; ii < nn2; ii++){
-      dff2[ii] = spl.derivative(xx2[ii]);
-    }
+    spl.derivative(nn2, xx2, dff2);
     
     REQUIRE(dff2[13] == 0.8517363378_a);
 
@@ -215,10 +229,7 @@ TEST_CASE("Class math::spline", "[spline]") {
 
   SECTION("Check multiple values interpolation and derivative"){
     
-    // evaluate, this should be really done by a class method
-    for(int ii = 0; ii < nn2; ii++){
-      spl.derivative(xx2[ii], ff2[ii], dff2[ii]);
-    }
+    spl.derivative(nn2, xx2, ff2, dff2);
 
     REQUIRE(ff2[13] == -0.5246734968_a);
     REQUIRE(dff2[13] == 0.8517363378_a);
