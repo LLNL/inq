@@ -17,7 +17,6 @@ noinst_HEADERS =                                   \
 	pseudo/upf.hpp                             \
 	pseudo/upf1.hpp                            \
 	pseudo/upf2.hpp                            \
-	ions/position.hpp                          \
 	ions/geometry.hpp
 
 all_srcs =                                         \

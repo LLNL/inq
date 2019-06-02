@@ -1,7 +1,7 @@
 #ifndef IONS_GEOMETRY
 #define IONS_GEOMETRY
 
-#include "position.hpp"
+#include <math/d3vector.hpp>
 #include <pseudo/element.hpp>
 
 #include <map>
@@ -37,7 +37,7 @@ namespace ions {
       std::getline(xyz_file, comment_line);
       
       std::string atom_name;
-      Position atom_position;
+      math::d3vector atom_position;
       
       for(int iatom = 0; iatom < num_atoms; iatom++){
       xyz_file >> atom_name >> atom_position;
@@ -52,7 +52,7 @@ namespace ions {
     
     int number_of_atoms() const { return coordinates.size(); }
 
-    void add_atom(const pseudo::element & element, const Position & position){
+    void add_atom(const pseudo::element & element, const math::d3vector & position){
 
       auto element_location = element_list.insert(std::pair<int, pseudo::element>(element.atomic_number(), element));
       elements.push_back(element_location.first);
@@ -76,7 +76,7 @@ namespace ions {
 	return geo->elements[index]->second.mass();
       }
 
-      const Position & position() const {
+      const math::d3vector & position() const {
 	return geo->coordinates[index];
       }
       
@@ -104,7 +104,7 @@ namespace ions {
     
     ElementsContainer element_list;
     std::vector<ElementsContainer::const_iterator> elements;
-    std::vector<Position> coordinates;
+    std::vector<math::d3vector> coordinates;
     
   };
   
@@ -125,27 +125,27 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     REQUIRE(geo.atom(2).element() == pseudo::element("C"));
     REQUIRE(geo.atom(2).charge() == -6.0_a);
     REQUIRE(geo.atom(2).mass() == 12.0096_a);
-    REQUIRE(geo.atom(2).position().x() == 2.2846788549_a);
-    REQUIRE(geo.atom(2).position().y() == -1.3190288178_a);
-    REQUIRE(geo.atom(2).position().z() == 0.0_a);
+    REQUIRE(geo.atom(2).position()[0] == 2.2846788549_a);
+    REQUIRE(geo.atom(2).position()[1] == -1.3190288178_a);
+    REQUIRE(geo.atom(2).position()[2] == 0.0_a);
 
     REQUIRE(geo.atom(11).element() == pseudo::element("H"));
     REQUIRE(geo.atom(11).charge() == -1.0_a);
     REQUIRE(geo.atom(11).mass() == 1.00784_a);
-    REQUIRE(geo.atom(11).position().x() == -4.0572419367_a);
-    REQUIRE(geo.atom(11).position().y() == 2.343260364_a);
-    REQUIRE(geo.atom(11).position().z() == 0.0_a);
+    REQUIRE(geo.atom(11).position()[0] == -4.0572419367_a);
+    REQUIRE(geo.atom(11).position()[1] == 2.343260364_a);
+    REQUIRE(geo.atom(11).position()[2] == 0.0_a);
 
-    geo.add_atom(pseudo::element("Cl"), ions::Position(-3.0, 4.0, 5.0));
+    geo.add_atom(pseudo::element("Cl"), math::d3vector(-3.0, 4.0, 5.0));
 
     REQUIRE(geo.number_of_atoms() == 13);
     REQUIRE(geo.atom(12).element().atomic_number() == 17);
     REQUIRE(geo.atom(12).element() == pseudo::element(17));
     REQUIRE(geo.atom(12).charge() == -17.0_a);
     REQUIRE(geo.atom(12).mass() == 35.446_a);
-    REQUIRE(geo.atom(12).position().x() == -3.0_a);
-    REQUIRE(geo.atom(12).position().y() == 4.0_a);
-    REQUIRE(geo.atom(12).position().z() == 5.0_a);
+    REQUIRE(geo.atom(12).position()[0] == -3.0_a);
+    REQUIRE(geo.atom(12).position()[1] == 4.0_a);
+    REQUIRE(geo.atom(12).position()[2] == 5.0_a);
     
   }
 
