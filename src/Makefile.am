@@ -18,6 +18,7 @@ noinst_HEADERS =                                   \
 	pseudo/upf1.hpp                            \
 	pseudo/upf2.hpp                            \
 	ions/geometry.hpp                          \
+	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp
 
 all_srcs =                                         \

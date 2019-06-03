@@ -7,3 +7,4 @@
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/interaction.hpp>
+#include <ions/periodic_replicas.hpp>
