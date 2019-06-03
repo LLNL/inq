@@ -79,11 +79,11 @@ namespace ions {
 	  d3vector gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
 	  double gg2 = norm(gg);
 
-	  double gx = -0.25*gg2/(alpha*alpha);
+	  double exparg = -0.25*gg2/(alpha*alpha);
 
-	  if(gx < -36.0) continue;
+	  if(exparg < -36.0) continue;
 
-	  double factor = 2.0*M_PI/cell.volume()*exp(gx)/gg2;
+	  double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
 
 	  std::complex<double> sumatoms = 0.0;
 	  for(int iatom = 0; iatom < natoms; iatom++){
