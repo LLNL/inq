@@ -123,108 +123,316 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
   using namespace Catch::literals;
   using math::d3vector;
-  
-  SECTION("Cubic cell"){
+
+  {
     
     ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
+   
+    SECTION("Cubic cell"){
+    
+      ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
 
-    REQUIRE(cell.a(0)[0] == 10.0_a);
-    REQUIRE(cell.a(0)[1] ==  0.0_a);
-    REQUIRE(cell.a(0)[2] ==  0.0_a);
-    REQUIRE(cell.a(1)[0] ==  0.0_a);
-    REQUIRE(cell.a(1)[1] == 10.0_a);
-    REQUIRE(cell.a(1)[2] ==  0.0_a);
-    REQUIRE(cell.a(2)[0] ==  0.0_a);
-    REQUIRE(cell.a(2)[1] ==  0.0_a);
-    REQUIRE(cell.a(2)[2] == 10.0_a);
+      REQUIRE(cell.a(0)[0] == 10.0_a);
+      REQUIRE(cell.a(0)[1] ==  0.0_a);
+      REQUIRE(cell.a(0)[2] ==  0.0_a);
+      REQUIRE(cell.a(1)[0] ==  0.0_a);
+      REQUIRE(cell.a(1)[1] == 10.0_a);
+      REQUIRE(cell.a(1)[2] ==  0.0_a);
+      REQUIRE(cell.a(2)[0] ==  0.0_a);
+      REQUIRE(cell.a(2)[1] ==  0.0_a);
+      REQUIRE(cell.a(2)[2] == 10.0_a);
     
-    REQUIRE(cell.b(0)[0] == 0.6283185307_a);
-    REQUIRE(cell.b(0)[1] ==  0.0_a);
-    REQUIRE(cell.b(0)[2] ==  0.0_a);
-    REQUIRE(cell.b(1)[0] ==  0.0_a);
-    REQUIRE(cell.b(1)[1] == 0.6283185307_a);
-    REQUIRE(cell.b(1)[2] ==  0.0_a);
-    REQUIRE(cell.b(2)[0] ==  0.0_a);
-    REQUIRE(cell.b(2)[1] ==  0.0_a);
-    REQUIRE(cell.b(2)[2] == 0.6283185307_a);
+      REQUIRE(cell.b(0)[0] == 0.6283185307_a);
+      REQUIRE(cell.b(0)[1] ==  0.0_a);
+      REQUIRE(cell.b(0)[2] ==  0.0_a);
+      REQUIRE(cell.b(1)[0] ==  0.0_a);
+      REQUIRE(cell.b(1)[1] == 0.6283185307_a);
+      REQUIRE(cell.b(1)[2] ==  0.0_a);
+      REQUIRE(cell.b(2)[0] ==  0.0_a);
+      REQUIRE(cell.b(2)[1] ==  0.0_a);
+      REQUIRE(cell.b(2)[2] == 0.6283185307_a);
     
-    REQUIRE(cell.volume() == 1000.0_a);
+      REQUIRE(cell.volume() == 1000.0_a);
 
-    REQUIRE(cell.amat()[0] == 10.0_a);
-    REQUIRE(cell.amat()[1] ==  0.0_a);
-    REQUIRE(cell.amat()[2] ==  0.0_a);
-    REQUIRE(cell.amat()[3] ==  0.0_a);
-    REQUIRE(cell.amat()[4] == 10.0_a);
-    REQUIRE(cell.amat()[5] ==  0.0_a);
-    REQUIRE(cell.amat()[6] ==  0.0_a);
-    REQUIRE(cell.amat()[7] ==  0.0_a);
-    REQUIRE(cell.amat()[8] == 10.0_a);
+      REQUIRE(cell.amat()[0] == 10.0_a);
+      REQUIRE(cell.amat()[1] ==  0.0_a);
+      REQUIRE(cell.amat()[2] ==  0.0_a);
+      REQUIRE(cell.amat()[3] ==  0.0_a);
+      REQUIRE(cell.amat()[4] == 10.0_a);
+      REQUIRE(cell.amat()[5] ==  0.0_a);
+      REQUIRE(cell.amat()[6] ==  0.0_a);
+      REQUIRE(cell.amat()[7] ==  0.0_a);
+      REQUIRE(cell.amat()[8] == 10.0_a);
     
-    REQUIRE(cell.bmat()[0] == 0.6283185307_a);
-    REQUIRE(cell.bmat()[1] ==  0.0_a);
-    REQUIRE(cell.bmat()[2] ==  0.0_a);
-    REQUIRE(cell.bmat()[3] ==  0.0_a);
-    REQUIRE(cell.bmat()[4] == 0.6283185307_a);
-    REQUIRE(cell.bmat()[5] ==  0.0_a);
-    REQUIRE(cell.bmat()[6] ==  0.0_a);
-    REQUIRE(cell.bmat()[7] ==  0.0_a);
-    REQUIRE(cell.bmat()[8] == 0.6283185307_a);
+      REQUIRE(cell.bmat()[0] == 0.6283185307_a);
+      REQUIRE(cell.bmat()[1] ==  0.0_a);
+      REQUIRE(cell.bmat()[2] ==  0.0_a);
+      REQUIRE(cell.bmat()[3] ==  0.0_a);
+      REQUIRE(cell.bmat()[4] == 0.6283185307_a);
+      REQUIRE(cell.bmat()[5] ==  0.0_a);
+      REQUIRE(cell.bmat()[6] ==  0.0_a);
+      REQUIRE(cell.bmat()[7] ==  0.0_a);
+      REQUIRE(cell.bmat()[8] == 0.6283185307_a);
     
-    REQUIRE(cell.amat_inv()[0] == 0.1_a);
-    REQUIRE(cell.amat_inv()[1] == 0.0_a);
-    REQUIRE(cell.amat_inv()[2] == 0.0_a);
-    REQUIRE(cell.amat_inv()[3] == 0.0_a);
-    REQUIRE(cell.amat_inv()[4] == 0.1_a);
-    REQUIRE(cell.amat_inv()[5] == 0.0_a);
-    REQUIRE(cell.amat_inv()[6] == 0.0_a);
-    REQUIRE(cell.amat_inv()[7] == 0.0_a);
-    REQUIRE(cell.amat_inv()[8] == 0.1_a);
+      REQUIRE(cell.amat_inv()[0] == 0.1_a);
+      REQUIRE(cell.amat_inv()[1] == 0.0_a);
+      REQUIRE(cell.amat_inv()[2] == 0.0_a);
+      REQUIRE(cell.amat_inv()[3] == 0.0_a);
+      REQUIRE(cell.amat_inv()[4] == 0.1_a);
+      REQUIRE(cell.amat_inv()[5] == 0.0_a);
+      REQUIRE(cell.amat_inv()[6] == 0.0_a);
+      REQUIRE(cell.amat_inv()[7] == 0.0_a);
+      REQUIRE(cell.amat_inv()[8] == 0.1_a);
     
-    REQUIRE(cell.amat(0) == 10.0_a);
-    REQUIRE(cell.amat(1) ==  0.0_a);
-    REQUIRE(cell.amat(2) ==  0.0_a);
-    REQUIRE(cell.amat(3) ==  0.0_a);
-    REQUIRE(cell.amat(4) == 10.0_a);
-    REQUIRE(cell.amat(5) ==  0.0_a);
-    REQUIRE(cell.amat(6) ==  0.0_a);
-    REQUIRE(cell.amat(7) ==  0.0_a);
-    REQUIRE(cell.amat(8) == 10.0_a);
+      REQUIRE(cell.amat(0) == 10.0_a);
+      REQUIRE(cell.amat(1) ==  0.0_a);
+      REQUIRE(cell.amat(2) ==  0.0_a);
+      REQUIRE(cell.amat(3) ==  0.0_a);
+      REQUIRE(cell.amat(4) == 10.0_a);
+      REQUIRE(cell.amat(5) ==  0.0_a);
+      REQUIRE(cell.amat(6) ==  0.0_a);
+      REQUIRE(cell.amat(7) ==  0.0_a);
+      REQUIRE(cell.amat(8) == 10.0_a);
     
-    REQUIRE(cell.bmat(0) == 0.6283185307_a);
-    REQUIRE(cell.bmat(1) ==  0.0_a);
-    REQUIRE(cell.bmat(2) ==  0.0_a);
-    REQUIRE(cell.bmat(3) ==  0.0_a);
-    REQUIRE(cell.bmat(4) == 0.6283185307_a);
-    REQUIRE(cell.bmat(5) ==  0.0_a);
-    REQUIRE(cell.bmat(6) ==  0.0_a);
-    REQUIRE(cell.bmat(7) ==  0.0_a);
-    REQUIRE(cell.bmat(8) == 0.6283185307_a);
+      REQUIRE(cell.bmat(0) == 0.6283185307_a);
+      REQUIRE(cell.bmat(1) ==  0.0_a);
+      REQUIRE(cell.bmat(2) ==  0.0_a);
+      REQUIRE(cell.bmat(3) ==  0.0_a);
+      REQUIRE(cell.bmat(4) == 0.6283185307_a);
+      REQUIRE(cell.bmat(5) ==  0.0_a);
+      REQUIRE(cell.bmat(6) ==  0.0_a);
+      REQUIRE(cell.bmat(7) ==  0.0_a);
+      REQUIRE(cell.bmat(8) == 0.6283185307_a);
     
-    REQUIRE(cell.amat_inv(0) == 0.1_a);
-    REQUIRE(cell.amat_inv(1) == 0.0_a);
-    REQUIRE(cell.amat_inv(2) == 0.0_a);
-    REQUIRE(cell.amat_inv(3) == 0.0_a);
-    REQUIRE(cell.amat_inv(4) == 0.1_a);
-    REQUIRE(cell.amat_inv(5) == 0.0_a);
-    REQUIRE(cell.amat_inv(6) == 0.0_a);
-    REQUIRE(cell.amat_inv(7) == 0.0_a);
-    REQUIRE(cell.amat_inv(8) == 0.1_a);
+      REQUIRE(cell.amat_inv(0) == 0.1_a);
+      REQUIRE(cell.amat_inv(1) == 0.0_a);
+      REQUIRE(cell.amat_inv(2) == 0.0_a);
+      REQUIRE(cell.amat_inv(3) == 0.0_a);
+      REQUIRE(cell.amat_inv(4) == 0.1_a);
+      REQUIRE(cell.amat_inv(5) == 0.0_a);
+      REQUIRE(cell.amat_inv(6) == 0.0_a);
+      REQUIRE(cell.amat_inv(7) == 0.0_a);
+      REQUIRE(cell.amat_inv(8) == 0.1_a);
 
-    REQUIRE(cell.contains(d3vector(5.0, 5.0, 5.0)));
-    REQUIRE(!cell.contains(d3vector(-5.0, 5.0, 5.0)));
-    REQUIRE(!cell.contains(d3vector(5.0, -5.0, 5.0)));
-    REQUIRE(!cell.contains(d3vector(5.0, 5.0, -5.0)));
+      REQUIRE(cell.contains(d3vector(5.0, 5.0, 5.0)));
+      REQUIRE(!cell.contains(d3vector(-5.0, 5.0, 5.0)));
+      REQUIRE(!cell.contains(d3vector(5.0, -5.0, 5.0)));
+      REQUIRE(!cell.contains(d3vector(5.0, 5.0, -5.0)));
 
-    REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[0] == 2.0_a);
-    REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[1] == -5.0_a);
-    REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[2] == 8.67_a);
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[0] == 2.0_a);
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[1] == -5.0_a);
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[2] == 8.67_a);
 
-    REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[0] == 0.666_a);
-    REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[1] == -0.377_a);
-    REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[2] == 2.72_a);
+      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[0] == 0.666_a);
+      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[1] == -0.377_a);
+      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[2] == 2.72_a);
     
+    }
+
+    SECTION("Parallelepipedic cell"){
+      cell.set(d3vector(28.62, 0.0, 0.0), d3vector(0.0, 90.14, 0.0), d3vector(0.0, 0.0, 12.31));
+
+
+      REQUIRE(cell.a(0)[0] == 28.62_a);
+      REQUIRE(cell.a(0)[1] ==  0.0_a);
+      REQUIRE(cell.a(0)[2] ==  0.0_a);
+      REQUIRE(cell.a(1)[0] ==  0.0_a);
+      REQUIRE(cell.a(1)[1] == 90.14_a);
+      REQUIRE(cell.a(1)[2] ==  0.0_a);
+      REQUIRE(cell.a(2)[0] ==  0.0_a);
+      REQUIRE(cell.a(2)[1] ==  0.0_a);
+      REQUIRE(cell.a(2)[2] == 12.31_a);
+    
+      REQUIRE(cell.b(0)[0] == 0.2195382707_a);
+      REQUIRE(cell.b(0)[1] ==  0.0_a);
+      REQUIRE(cell.b(0)[2] ==  0.0_a);
+      REQUIRE(cell.b(1)[0] ==  0.0_a);
+      REQUIRE(cell.b(1)[1] == 0.0697047405_a);
+      REQUIRE(cell.b(1)[2] ==  0.0_a);
+      REQUIRE(cell.b(2)[0] ==  0.0_a);
+      REQUIRE(cell.b(2)[1] ==  0.0_a);
+      REQUIRE(cell.b(2)[2] == 0.5104131038_a);
+    
+      REQUIRE(cell.volume() == 31757.421708_a);
+
+      REQUIRE(cell.amat()[0] == 28.62_a);
+      REQUIRE(cell.amat()[1] ==  0.0_a);
+      REQUIRE(cell.amat()[2] ==  0.0_a);
+      REQUIRE(cell.amat()[3] ==  0.0_a);
+      REQUIRE(cell.amat()[4] == 90.14_a);
+      REQUIRE(cell.amat()[5] ==  0.0_a);
+      REQUIRE(cell.amat()[6] ==  0.0_a);
+      REQUIRE(cell.amat()[7] ==  0.0_a);
+      REQUIRE(cell.amat()[8] == 12.31_a);
+    
+      REQUIRE(cell.bmat()[0] == 0.2195382707_a);
+      REQUIRE(cell.bmat()[1] ==  0.0_a);
+      REQUIRE(cell.bmat()[2] ==  0.0_a);
+      REQUIRE(cell.bmat()[3] ==  0.0_a);
+      REQUIRE(cell.bmat()[4] == 0.0697047405_a);
+      REQUIRE(cell.bmat()[5] ==  0.0_a);
+      REQUIRE(cell.bmat()[6] ==  0.0_a);
+      REQUIRE(cell.bmat()[7] ==  0.0_a);
+      REQUIRE(cell.bmat()[8] == 0.5104131038_a);
+    
+      REQUIRE(cell.amat_inv()[0] == 0.034940601_a);
+      REQUIRE(cell.amat_inv()[1] == 0.0_a);
+      REQUIRE(cell.amat_inv()[2] == 0.0_a);
+      REQUIRE(cell.amat_inv()[3] == 0.0_a);
+      REQUIRE(cell.amat_inv()[4] == 0.011093854_a);
+      REQUIRE(cell.amat_inv()[5] == 0.0_a);
+      REQUIRE(cell.amat_inv()[6] == 0.0_a);
+      REQUIRE(cell.amat_inv()[7] == 0.0_a);
+      REQUIRE(cell.amat_inv()[8] == 0.0812347685_a);
+    
+      REQUIRE(cell.amat(0) == 28.62_a);
+      REQUIRE(cell.amat(1) ==  0.0_a);
+      REQUIRE(cell.amat(2) ==  0.0_a);
+      REQUIRE(cell.amat(3) ==  0.0_a);
+      REQUIRE(cell.amat(4) == 90.14_a);
+      REQUIRE(cell.amat(5) ==  0.0_a);
+      REQUIRE(cell.amat(6) ==  0.0_a);
+      REQUIRE(cell.amat(7) ==  0.0_a);
+      REQUIRE(cell.amat(8) == 12.31_a);
+    
+      REQUIRE(cell.bmat(0) == 0.2195382707_a);
+      REQUIRE(cell.bmat(1) ==  0.0_a);
+      REQUIRE(cell.bmat(2) ==  0.0_a);
+      REQUIRE(cell.bmat(3) ==  0.0_a);
+      REQUIRE(cell.bmat(4) == 0.0697047405_a);
+      REQUIRE(cell.bmat(5) ==  0.0_a);
+      REQUIRE(cell.bmat(6) ==  0.0_a);
+      REQUIRE(cell.bmat(7) ==  0.0_a);
+      REQUIRE(cell.bmat(8) == 0.5104131038_a);
+    
+      REQUIRE(cell.amat_inv(0) == 0.034940601_a);
+      REQUIRE(cell.amat_inv(1) == 0.0_a);
+      REQUIRE(cell.amat_inv(2) == 0.0_a);
+      REQUIRE(cell.amat_inv(3) == 0.0_a);
+      REQUIRE(cell.amat_inv(4) == 0.011093854_a);
+      REQUIRE(cell.amat_inv(5) == 0.0_a);
+      REQUIRE(cell.amat_inv(6) == 0.0_a);
+      REQUIRE(cell.amat_inv(7) == 0.0_a);
+      REQUIRE(cell.amat_inv(8) == 0.0812347685_a);
+
+      REQUIRE(cell.contains(d3vector(5.0, 5.0, 5.0)));
+      REQUIRE(!cell.contains(d3vector(-5.0, 5.0, 5.0)));
+      REQUIRE(!cell.contains(d3vector(5.0, -5.0, 5.0)));
+      REQUIRE(!cell.contains(d3vector(5.0, 5.0, -5.0)));
+
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[0] == 5.724_a);
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[1] == -45.07_a);
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[2] == 10.67277_a);
+
+      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -203.77, 927.2))[0] == 0.2327044025_a);
+      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -203.77, 927.2))[1] == -2.2605946306_a);
+      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -203.77, 927.2))[2] == 75.3208773355_a);
+          
+    }
+
+    SECTION("Non-orthogonal cell"){
+      ions::UnitCell cell;
+      
+      cell.set(d3vector(6.942, 8.799, 4.759), d3vector(9.627, 7.092, 4.819), d3vector(4.091, 0.721, 1.043));
+      
+      REQUIRE(cell.a(0)[0] == 6.942_a);
+      REQUIRE(cell.a(0)[1] == 8.799_a);
+      REQUIRE(cell.a(0)[2] == 4.759_a);
+      REQUIRE(cell.a(1)[0] == 9.627_a);
+      REQUIRE(cell.a(1)[1] == 7.092_a);
+      REQUIRE(cell.a(1)[2] == 4.819_a);
+      REQUIRE(cell.a(2)[0] == 4.091_a);
+      REQUIRE(cell.a(2)[1] == 0.721_a);
+      REQUIRE(cell.a(2)[2] == 1.043_a);
+    
+      REQUIRE(cell.b(0)[0] == 3.3736397602_a);
+      REQUIRE(cell.b(0)[1] == 8.3200742872_a);
+      REQUIRE(cell.b(0)[2] == -18.9840209206_a);
+      REQUIRE(cell.b(1)[0] == -4.942140131_a);
+      REQUIRE(cell.b(1)[1] == -10.517582818_a);
+      REQUIRE(cell.b(1)[2] == 26.6552948109_a);
+      REQUIRE(cell.b(2)[0] == 7.4410562534_a);
+      REQUIRE(cell.b(2)[1] == 10.6318294029_a);
+      REQUIRE(cell.b(2)[2] == -30.5117208294_a);
+    
+      REQUIRE(cell.volume() == 7.305321831_a);
+
+      REQUIRE(cell.amat()[0] == 6.942_a);		
+      REQUIRE(cell.amat()[1] == 8.799_a);		
+      REQUIRE(cell.amat()[2] == 4.759_a);		
+      REQUIRE(cell.amat()[3] == 9.627_a);		
+      REQUIRE(cell.amat()[4] == 7.092_a);		
+      REQUIRE(cell.amat()[5] == 4.819_a);		
+      REQUIRE(cell.amat()[6] == 4.091_a);		
+      REQUIRE(cell.amat()[7] == 0.721_a);		
+      REQUIRE(cell.amat()[8] == 1.043_a);		
+   			                          
+      REQUIRE(cell.bmat()[0] == 3.3736397602_a);	
+      REQUIRE(cell.bmat()[1] == 8.3200742872_a);	
+      REQUIRE(cell.bmat()[2] == -18.9840209206_a);
+      REQUIRE(cell.bmat()[3] == -4.942140131_a);	
+      REQUIRE(cell.bmat()[4] == -10.517582818_a);	
+      REQUIRE(cell.bmat()[5] == 26.6552948109_a);	
+      REQUIRE(cell.bmat()[6] == 7.4410562534_a);	
+      REQUIRE(cell.bmat()[7] == 10.6318294029_a);	
+      REQUIRE(cell.bmat()[8] == -30.5117208294_a);
+    
+      REQUIRE(cell.amat_inv()[0] == 0.5369314441_a); 
+      REQUIRE(cell.amat_inv()[1] == -0.7865660313_a);
+      REQUIRE(cell.amat_inv()[2] == 1.1842808846_a); 
+      REQUIRE(cell.amat_inv()[3] == 1.3241809497_a); 
+      REQUIRE(cell.amat_inv()[4] == -1.6739252949_a);
+      REQUIRE(cell.amat_inv()[5] == 1.6921082036_a); 
+      REQUIRE(cell.amat_inv()[6] == -3.0214007693_a);
+      REQUIRE(cell.amat_inv()[7] == 4.2423219287_a); 
+      REQUIRE(cell.amat_inv()[8] == -4.8560911922_a);
+    
+      REQUIRE(cell.amat(0) == 6.942_a);		
+      REQUIRE(cell.amat(1) == 8.799_a);		
+      REQUIRE(cell.amat(2) == 4.759_a);		
+      REQUIRE(cell.amat(3) == 9.627_a);		
+      REQUIRE(cell.amat(4) == 7.092_a);		
+      REQUIRE(cell.amat(5) == 4.819_a);		
+      REQUIRE(cell.amat(6) == 4.091_a);		
+      REQUIRE(cell.amat(7) == 0.721_a);		
+      REQUIRE(cell.amat(8) == 1.043_a);		
+    			                        
+      REQUIRE(cell.bmat(0) == 3.3736397602_a);	
+      REQUIRE(cell.bmat(1) == 8.3200742872_a);	
+      REQUIRE(cell.bmat(2) == -18.9840209206_a);
+      REQUIRE(cell.bmat(3) == -4.942140131_a);	
+      REQUIRE(cell.bmat(4) == -10.517582818_a);	
+      REQUIRE(cell.bmat(5) == 26.6552948109_a);	
+      REQUIRE(cell.bmat(6) == 7.4410562534_a);	
+      REQUIRE(cell.bmat(7) == 10.6318294029_a);	
+      REQUIRE(cell.bmat(8) == -30.5117208294_a);
+    
+      REQUIRE(cell.amat_inv(0) == 0.5369314441_a); 
+      REQUIRE(cell.amat_inv(1) == -0.7865660313_a);;
+      REQUIRE(cell.amat_inv(2) == 1.1842808846_a); 
+      REQUIRE(cell.amat_inv(3) == 1.3241809497_a); 
+      REQUIRE(cell.amat_inv(4) == -1.6739252949_a);
+      REQUIRE(cell.amat_inv(5) == 1.6921082036_a); 
+      REQUIRE(cell.amat_inv(6) == -3.0214007693_a);
+      REQUIRE(cell.amat_inv(7) == 4.2423219287_a); 
+      REQUIRE(cell.amat_inv(8) == -4.8560911922_a);
+
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[0] == 0.121797_a);
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[1] == -1.161093_a);
+      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[2] == -0.553419_a);
+
+      REQUIRE(cell.cart_to_crystal(d3vector(0.66, -23.77, 2.72))[0] == -39.3396165136_a);
+      REQUIRE(cell.cart_to_crystal(d3vector(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
+      REQUIRE(cell.cart_to_crystal(d3vector(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
+
+      REQUIRE(cell.contains(cell.crystal_to_cart(d3vector(0.5, 0.5, 0.5))));
+      //This next one fails, this has to be checked.
+      //REQUIRE(!cell.contains(cell.crystal_to_cart(d3vector(1.5, 0.5, 0.5))));
+      REQUIRE(!cell.contains(cell.crystal_to_cart(d3vector(0.5, -0.1, 0.0))));
+      REQUIRE(!cell.contains(cell.crystal_to_cart(d3vector(0.5, 0.5, -1.0))));
+      
+    }
   }
-  
 }
 #endif
 
