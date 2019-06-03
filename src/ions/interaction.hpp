@@ -139,7 +139,7 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
 
   ions::interaction_energy(4, 0.21, cell, charge, positions, energy, forces);
 
-  REQUIRE(energy == -9.99517178_a);
+  REQUIRE(energy == -10.78368187_a); //this number comes from Octopus
   
 }
 #endif
