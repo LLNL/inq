@@ -23,11 +23,11 @@ namespace ions {
       std::vector<int> neigh_max(3);
 
       //we should use floor here, but since we check later, round is more reliable
-      for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell.a(0)))); 
+      for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell[0]))); 
       
       for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
-	for(int iy = -neigh_max[0]; iy <= neigh_max[0]; iy++){
-	  for(int iz = -neigh_max[0]; iz <= neigh_max[0]; iz++){
+	for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
+	  for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
 	    d3vector reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
 
 	    if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
