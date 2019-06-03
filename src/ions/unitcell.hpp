@@ -115,6 +115,119 @@ namespace ions{
 
 #endif
 
+
+#ifdef UNIT_TEST
+#include <catch.hpp>
+
+TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
+
+  using namespace Catch::literals;
+  using math::d3vector;
+  
+  SECTION("Cubic cell"){
+    
+    ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
+
+    REQUIRE(cell.a(0)[0] == 10.0_a);
+    REQUIRE(cell.a(0)[1] ==  0.0_a);
+    REQUIRE(cell.a(0)[2] ==  0.0_a);
+    REQUIRE(cell.a(1)[0] ==  0.0_a);
+    REQUIRE(cell.a(1)[1] == 10.0_a);
+    REQUIRE(cell.a(1)[2] ==  0.0_a);
+    REQUIRE(cell.a(2)[0] ==  0.0_a);
+    REQUIRE(cell.a(2)[1] ==  0.0_a);
+    REQUIRE(cell.a(2)[2] == 10.0_a);
+    
+    REQUIRE(cell.b(0)[0] == 0.6283185307_a);
+    REQUIRE(cell.b(0)[1] ==  0.0_a);
+    REQUIRE(cell.b(0)[2] ==  0.0_a);
+    REQUIRE(cell.b(1)[0] ==  0.0_a);
+    REQUIRE(cell.b(1)[1] == 0.6283185307_a);
+    REQUIRE(cell.b(1)[2] ==  0.0_a);
+    REQUIRE(cell.b(2)[0] ==  0.0_a);
+    REQUIRE(cell.b(2)[1] ==  0.0_a);
+    REQUIRE(cell.b(2)[2] == 0.6283185307_a);
+    
+    REQUIRE(cell.volume() == 1000.0_a);
+
+    REQUIRE(cell.amat()[0] == 10.0_a);
+    REQUIRE(cell.amat()[1] ==  0.0_a);
+    REQUIRE(cell.amat()[2] ==  0.0_a);
+    REQUIRE(cell.amat()[3] ==  0.0_a);
+    REQUIRE(cell.amat()[4] == 10.0_a);
+    REQUIRE(cell.amat()[5] ==  0.0_a);
+    REQUIRE(cell.amat()[6] ==  0.0_a);
+    REQUIRE(cell.amat()[7] ==  0.0_a);
+    REQUIRE(cell.amat()[8] == 10.0_a);
+    
+    REQUIRE(cell.bmat()[0] == 0.6283185307_a);
+    REQUIRE(cell.bmat()[1] ==  0.0_a);
+    REQUIRE(cell.bmat()[2] ==  0.0_a);
+    REQUIRE(cell.bmat()[3] ==  0.0_a);
+    REQUIRE(cell.bmat()[4] == 0.6283185307_a);
+    REQUIRE(cell.bmat()[5] ==  0.0_a);
+    REQUIRE(cell.bmat()[6] ==  0.0_a);
+    REQUIRE(cell.bmat()[7] ==  0.0_a);
+    REQUIRE(cell.bmat()[8] == 0.6283185307_a);
+    
+    REQUIRE(cell.amat_inv()[0] == 0.1_a);
+    REQUIRE(cell.amat_inv()[1] == 0.0_a);
+    REQUIRE(cell.amat_inv()[2] == 0.0_a);
+    REQUIRE(cell.amat_inv()[3] == 0.0_a);
+    REQUIRE(cell.amat_inv()[4] == 0.1_a);
+    REQUIRE(cell.amat_inv()[5] == 0.0_a);
+    REQUIRE(cell.amat_inv()[6] == 0.0_a);
+    REQUIRE(cell.amat_inv()[7] == 0.0_a);
+    REQUIRE(cell.amat_inv()[8] == 0.1_a);
+    
+    REQUIRE(cell.amat(0) == 10.0_a);
+    REQUIRE(cell.amat(1) ==  0.0_a);
+    REQUIRE(cell.amat(2) ==  0.0_a);
+    REQUIRE(cell.amat(3) ==  0.0_a);
+    REQUIRE(cell.amat(4) == 10.0_a);
+    REQUIRE(cell.amat(5) ==  0.0_a);
+    REQUIRE(cell.amat(6) ==  0.0_a);
+    REQUIRE(cell.amat(7) ==  0.0_a);
+    REQUIRE(cell.amat(8) == 10.0_a);
+    
+    REQUIRE(cell.bmat(0) == 0.6283185307_a);
+    REQUIRE(cell.bmat(1) ==  0.0_a);
+    REQUIRE(cell.bmat(2) ==  0.0_a);
+    REQUIRE(cell.bmat(3) ==  0.0_a);
+    REQUIRE(cell.bmat(4) == 0.6283185307_a);
+    REQUIRE(cell.bmat(5) ==  0.0_a);
+    REQUIRE(cell.bmat(6) ==  0.0_a);
+    REQUIRE(cell.bmat(7) ==  0.0_a);
+    REQUIRE(cell.bmat(8) == 0.6283185307_a);
+    
+    REQUIRE(cell.amat_inv(0) == 0.1_a);
+    REQUIRE(cell.amat_inv(1) == 0.0_a);
+    REQUIRE(cell.amat_inv(2) == 0.0_a);
+    REQUIRE(cell.amat_inv(3) == 0.0_a);
+    REQUIRE(cell.amat_inv(4) == 0.1_a);
+    REQUIRE(cell.amat_inv(5) == 0.0_a);
+    REQUIRE(cell.amat_inv(6) == 0.0_a);
+    REQUIRE(cell.amat_inv(7) == 0.0_a);
+    REQUIRE(cell.amat_inv(8) == 0.1_a);
+
+    REQUIRE(cell.contains(d3vector(5.0, 5.0, 5.0)));
+    REQUIRE(!cell.contains(d3vector(-5.0, 5.0, 5.0)));
+    REQUIRE(!cell.contains(d3vector(5.0, -5.0, 5.0)));
+    REQUIRE(!cell.contains(d3vector(5.0, 5.0, -5.0)));
+
+    REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[0] == 2.0_a);
+    REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[1] == -5.0_a);
+    REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[2] == 8.67_a);
+
+    REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[0] == 0.666_a);
+    REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[1] == -0.377_a);
+    REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[2] == 2.72_a);
+    
+  }
+  
+}
+#endif
+
 // Local Variables:
 // mode: c++
 // End:
