@@ -57,6 +57,8 @@ namespace ions{
   
   public:
 
+    const math::d3vector& operator[](int i) const { return a_[i]; }
+    
     const math::d3vector& a(int i) const { return a_[i]; }
     const math::d3vector& b(int i) const { return b_[i]; }
   
@@ -113,9 +115,6 @@ namespace ions{
 
 }
 
-#endif
-
-
 #ifdef UNIT_TEST
 #include <catch.hpp>
 
@@ -132,6 +131,16 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
     
       ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
 
+      REQUIRE(cell[0][0] == 10.0_a);
+      REQUIRE(cell[0][1] ==  0.0_a);
+      REQUIRE(cell[0][2] ==  0.0_a);
+      REQUIRE(cell[1][0] ==  0.0_a);
+      REQUIRE(cell[1][1] == 10.0_a);
+      REQUIRE(cell[1][2] ==  0.0_a);
+      REQUIRE(cell[2][0] ==  0.0_a);
+      REQUIRE(cell[2][1] ==  0.0_a);
+      REQUIRE(cell[2][2] == 10.0_a);
+      
       REQUIRE(cell.a(0)[0] == 10.0_a);
       REQUIRE(cell.a(0)[1] ==  0.0_a);
       REQUIRE(cell.a(0)[2] ==  0.0_a);
@@ -434,6 +443,7 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
     }
   }
 }
+#endif
 #endif
 
 // Local Variables:
