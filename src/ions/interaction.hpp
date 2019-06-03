@@ -121,26 +121,70 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
   using namespace Catch::literals;
   using math::d3vector;
 
-  double aa = 7.653;
-
-  ions::UnitCell cell(d3vector(aa, 0.0, 0.0), d3vector(0.0, aa, 0.0), d3vector(0.0, 0.0, aa));
-
-  std::valarray<double> charge(4);
-  charge = 3.0;
-
-  std::vector<d3vector> positions(4);
-  positions[0] = d3vector(0.0,    0.0,    0.0);
-  positions[1] = d3vector(aa/2.0, aa/2.0, 0.0);
-  positions[2] = d3vector(aa/2.0, 0.0,    aa/2.0);
-  positions[3] = d3vector(0.0,    aa/2.0, aa/2.0);
-
-  double energy;
-  std::vector<d3vector> forces(4);
-
-  ions::interaction_energy(4, 0.21, cell, charge, positions, energy, forces);
-
-  REQUIRE(energy == -10.78368187_a); //this number comes from Octopus
+  SECTION("Aluminum cubic cell"){
   
+    double aa = 7.653;
+    
+    ions::UnitCell cell(d3vector(aa, 0.0, 0.0), d3vector(0.0, aa, 0.0), d3vector(0.0, 0.0, aa));
+    
+    std::valarray<double> charge(4);
+    charge = 3.0;
+    
+    std::vector<d3vector> positions(4);
+    positions[0] = d3vector(0.0,    0.0,    0.0);
+    positions[1] = d3vector(aa/2.0, aa/2.0, 0.0);
+    positions[2] = d3vector(aa/2.0, 0.0,    aa/2.0);
+    positions[3] = d3vector(0.0,    aa/2.0, aa/2.0);
+    
+    double energy;
+    std::vector<d3vector> forces(4);
+    
+    ions::interaction_energy(4, 0.21, cell, charge, positions, energy, forces);
+    
+    REQUIRE(energy == -10.78368187_a); //this number comes from Octopus
+    
+  }
+
+  SECTION("Diamond"){
+
+    double aa = 6.74065308785213;
+    
+    ions::UnitCell cell(d3vector(0.0, aa/2.0, aa/2.0), d3vector(aa/2.0, 0.0, aa/2.0), d3vector(aa/2.0, aa/2.0, 0.0));
+
+    const double charge[2] = {4.0, 4.0};
+    
+    std::vector<d3vector> positions(2);
+    positions[0] = cell.crystal_to_cart(d3vector(0.0,  0.0,  0.0 ));
+    positions[1] = cell.crystal_to_cart(d3vector(0.25, 0.25, 0.25));
+    
+    double energy;
+    std::vector<d3vector> forces(2);
+
+    ions::interaction_energy(2, 0.21, cell, charge, positions, energy, forces);
+
+    REQUIRE(energy == -12.78641217_a); //this number comes from Octopus
+
+  }
+
+  SECTION("Iron"){
+    
+    double aa = 5.3970578;
+    
+    ions::UnitCell cell(d3vector(-aa/2.0, aa/2.0, aa/2.0), d3vector(aa/2.0, -aa/2.0, aa/2.0), d3vector(aa/2.0, aa/2.0, -aa/2.0));
+
+    const double charge = 16.0;
+    
+    const d3vector position(0.0, 0.0, 0.0);
+    
+    double energy;
+    std::vector<d3vector> forces(1);
+
+    ions::interaction_energy(1, 0.21, cell, &charge, &position, energy, forces);
+
+    REQUIRE(energy == -86.31033718_a); //this number comes from Octopus
+    
+  }
+    
 }
 #endif
 
