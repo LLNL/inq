@@ -118,6 +118,11 @@ namespace ions {
 
 TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
 
+  //Note: here we use Octopus' results for validation. However,
+  //normally Octopus add a pseudopotential energy term to the ion-ion
+  //energy that we include elsewhere, and that was removed for this
+  //comparison.
+  
   using namespace Catch::literals;
   using math::d3vector;
 
