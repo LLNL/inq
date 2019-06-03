@@ -17,12 +17,12 @@ noinst_HEADERS =                                   \
 	pseudo/upf.hpp                             \
 	pseudo/upf1.hpp                            \
 	pseudo/upf2.hpp                            \
-	ions/geometry.hpp
+	ions/geometry.hpp                          \
+	ions/interaction.hpp
 
 all_srcs =                                         \
 	math/spline.cpp                            \
 	ions/unitcell.cpp
-
 
 bin_PROGRAMS  =                                    \
 	inq                                        \
