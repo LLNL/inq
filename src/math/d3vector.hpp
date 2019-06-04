@@ -45,7 +45,9 @@ namespace math {
     // explicit constructor to avoid implicit conversion from double to d3vector
     explicit d3vector(const double& xv, const double& yv, const double& zv) :
       x(xv), y(yv), z(zv) {}
-    explicit d3vector(void) : x(0.0), y(0.0), z(0.0) {}
+    explicit d3vector() : x(0.0), y(0.0), z(0.0) {}
+
+    explicit d3vector(const double & vv) : x(vv), y(vv), z(vv) {}    
 
     explicit d3vector(const double* r) : x(r[0]), y(r[1]), z(r[2]) {}
 
