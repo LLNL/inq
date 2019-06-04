@@ -9,7 +9,7 @@ namespace basis {
 
   public:
 
-    basis(ions::UnitCell & cell, const double & ecut):nr_(3), ng_(3) {
+    basis(ions::UnitCell & cell, const double & ecut) {
       ecut_ = ecut;
       rspacing_ = math::d3vector(M_PI*sqrt(0.5/ecut));
 
@@ -32,11 +32,11 @@ namespace basis {
       return ecut_;
     }
     
-    const std::vector<int> & rsize() const{
+    const std::array<int, 3> & rsize() const{
       return nr_;
     }
 
-    const std::vector<int> & gsize() const{
+    const std::array<int, 3> & gsize() const{
       return ng_;
     }
 
@@ -66,8 +66,8 @@ namespace basis {
     
   private:
     double ecut_;
-    std::vector<int> nr_;
-    std::vector<int> ng_;
+    std::array<int, 3> nr_;
+    std::array<int, 3> ng_;
 
     math::d3vector rspacing_;
     math::d3vector gspacing_;
