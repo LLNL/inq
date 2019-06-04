@@ -8,3 +8,4 @@
 #include <ions/unitcell.hpp>
 #include <ions/interaction.hpp>
 #include <ions/periodic_replicas.hpp>
+#include <basis/basis.hpp>

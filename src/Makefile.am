@@ -19,7 +19,8 @@ noinst_HEADERS =                                   \
 	pseudo/upf2.hpp                            \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
-	ions/interaction.hpp
+	ions/interaction.hpp                       \
+	basis/basis.hpp
 
 all_srcs =                                         \
 	math/spline.cpp                            \
