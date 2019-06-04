@@ -1,15 +1,15 @@
-#ifndef BASIS_HPP
-#define BASIS_HPP
+#ifndef PLANE_WAVE_HPP
+#define PLANE_WAVE_HPP
 
 #include <math/d3vector.hpp>
 #include <cassert>
 
 namespace basis {
-  class basis {
+  class plane_wave {
 
   public:
 
-    basis(ions::UnitCell & cell, const double & ecut) {
+    plane_wave(ions::UnitCell & cell, const double & ecut) {
       ecut_ = ecut;
       rspacing_ = math::d3vector(M_PI*sqrt(0.5/ecut));
 
@@ -83,7 +83,7 @@ namespace basis {
 #include <catch.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("class basis::basis", "[basis]") {
+TEST_CASE("class basis::plane_wave", "[basis]") {
   
   using namespace Catch::literals;
   using math::d3vector;
@@ -96,28 +96,28 @@ TEST_CASE("class basis::basis", "[basis]") {
 
       double ecut = 20.0;
       
-      basis::basis bas(cell, ecut);
+      basis::plane_wave pw(cell, ecut);
 
-      REQUIRE(bas.ecut() == Approx(ecut));
+      REQUIRE(pw.ecut() == Approx(ecut));
 
-      REQUIRE(bas.rtotalsize() == 8000);
-      REQUIRE(bas.gtotalsize() == 8000);
+      REQUIRE(pw.rtotalsize() == 8000);
+      REQUIRE(pw.gtotalsize() == 8000);
       
-      REQUIRE(bas.rspacing()[0] == 0.5_a);
-      REQUIRE(bas.rspacing()[1] == 0.5_a);
-      REQUIRE(bas.rspacing()[2] == 0.5_a);
+      REQUIRE(pw.rspacing()[0] == 0.5_a);
+      REQUIRE(pw.rspacing()[1] == 0.5_a);
+      REQUIRE(pw.rspacing()[2] == 0.5_a);
       
-      REQUIRE(bas.gspacing()[0] == 0.3141592654_a);
-      REQUIRE(bas.gspacing()[1] == 0.3141592654_a);
-      REQUIRE(bas.gspacing()[2] == 0.3141592654_a);
+      REQUIRE(pw.gspacing()[0] == 0.3141592654_a);
+      REQUIRE(pw.gspacing()[1] == 0.3141592654_a);
+      REQUIRE(pw.gspacing()[2] == 0.3141592654_a);
       
-      REQUIRE(bas.rsize()[0] == 20);
-      REQUIRE(bas.rsize()[1] == 20);
-      REQUIRE(bas.rsize()[2] == 20);
+      REQUIRE(pw.rsize()[0] == 20);
+      REQUIRE(pw.rsize()[1] == 20);
+      REQUIRE(pw.rsize()[2] == 20);
 
-      REQUIRE(bas.gsize()[0] == 20);
-      REQUIRE(bas.gsize()[1] == 20);
-      REQUIRE(bas.gsize()[2] == 20);
+      REQUIRE(pw.gsize()[0] == 20);
+      REQUIRE(pw.gsize()[1] == 20);
+      REQUIRE(pw.gsize()[2] == 20);
 
     }
 
@@ -127,28 +127,28 @@ TEST_CASE("class basis::basis", "[basis]") {
 
       double ecut = 37.9423091;
       
-      basis::basis bas(cell, ecut);
+      basis::plane_wave pw(cell, ecut);
 
-      REQUIRE(bas.ecut() == Approx(ecut));
+      REQUIRE(pw.ecut() == Approx(ecut));
 
-      REQUIRE(bas.rtotalsize() == 536640);
-      REQUIRE(bas.gtotalsize() == 536640);
+      REQUIRE(pw.rtotalsize() == 536640);
+      REQUIRE(pw.gtotalsize() == 536640);
 	    
-      REQUIRE(bas.rspacing()[0] == 0.3613953488_a);
-      REQUIRE(bas.rspacing()[1] == 0.3625641026_a);
-      REQUIRE(bas.rspacing()[2] == 0.36328125_a);
+      REQUIRE(pw.rspacing()[0] == 0.3613953488_a);
+      REQUIRE(pw.rspacing()[1] == 0.3625641026_a);
+      REQUIRE(pw.rspacing()[2] == 0.36328125_a);
       
-      REQUIRE(bas.gspacing()[0] == 0.0404323379_a);
-      REQUIRE(bas.gspacing()[1] == 0.2221776983_a);
-      REQUIRE(bas.gspacing()[2] == 0.1351222647_a);
+      REQUIRE(pw.gspacing()[0] == 0.0404323379_a);
+      REQUIRE(pw.gspacing()[1] == 0.2221776983_a);
+      REQUIRE(pw.gspacing()[2] == 0.1351222647_a);
       
-      REQUIRE(bas.rsize()[0] == 215);
-      REQUIRE(bas.rsize()[1] == 39);
-      REQUIRE(bas.rsize()[2] == 64);
+      REQUIRE(pw.rsize()[0] == 215);
+      REQUIRE(pw.rsize()[1] == 39);
+      REQUIRE(pw.rsize()[2] == 64);
 
-      REQUIRE(bas.gsize()[0] == 215);
-      REQUIRE(bas.gsize()[1] == 39);
-      REQUIRE(bas.gsize()[2] == 64);
+      REQUIRE(pw.gsize()[0] == 215);
+      REQUIRE(pw.gsize()[1] == 39);
+      REQUIRE(pw.gsize()[2] == 64);
 
     }
 

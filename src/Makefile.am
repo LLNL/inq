@@ -21,7 +21,7 @@ noinst_HEADERS =                                   \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
-	basis/basis.hpp
+	basis/plane_wave.hpp
 
 all_srcs =                                         \
 	math/spline.cpp                            \
