@@ -105,6 +105,9 @@ namespace ions {
 	}
       }
     }
+
+    //forces are not properly validated right now
+    for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = d3vector(0.0, 0.0, 0.0);
     
   }
 }
