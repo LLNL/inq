@@ -25,6 +25,7 @@
 #include <pseudo/upf2.hpp>
 #include <pseudo/psp8.hpp>
 #include <pseudo/detect_format.hpp>
+#include <math/spline.hpp>
 
 namespace pseudo {
 
@@ -35,11 +36,14 @@ namespace pseudo {
     enum class error {
       FILE_NOT_FOUND,
       UNKNOWN_FORMAT,
-      UNSUPPORTED_FORMAT
+      UNSUPPORTED_FORMAT,
+      UNSUPPORTED_TYPE
     };
     
     pseudopotential(const std::string & filename){
 
+      //PARSE THE FILE
+      
       pseudo::format format = pseudo::detect_format(filename);
       
       if(format == pseudo::format::FILE_NOT_FOUND) throw error::FILE_NOT_FOUND;
@@ -51,6 +55,10 @@ namespace pseudo {
       case pseudo::format::QSO:
 	std::cout << "  <!--   format: QSO -->" << std::endl;
 	pseudo_ = new pseudo::qso(filename);
+	if(pseudo_->type() != pseudo::type::KLEINMAN_BYLANDER) {
+	  delete pseudo_;
+	  throw error::UNSUPPORTED_TYPE;
+	}
 	break;
       case pseudo::format::UPF1:
 	std::cout << "  <!--   format: UPF1 -->" << std::endl;
@@ -69,20 +77,55 @@ namespace pseudo {
 	pseudo_ = new pseudo::psp8(filename);
 	break;
       default:
+	delete pseudo_;
 	throw error::UNSUPPORTED_FORMAT;
       }
       
       std::cout << "  <!--   size:   " << pseudo_->size() << " -->" << std::endl;
+
+      std::vector<double> grid, local_potential;
+
+      pseudo_->grid(grid);
+
+      valence_charge_ = pseudo_->valence_charge();
+
+      //SEPARATE THE LOCAL PART
+      
+      sigma_erf_ = 0.625; // the constant to separate the pseudo
+      
+      pseudo_->local_potential(local_potential);
+
+      for(unsigned ii = 0; ii < local_potential.size(); ii++){
+	local_potential[ii] -= long_range_potential(grid[ii]);
+      }
+
+      short_range_.fit(grid.data(), local_potential.data(), local_potential.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
       
     }
 
+    const double & valence_charge() const {
+      return valence_charge_;
+    }
+
+    double long_range_potential(double rr) const {
+      if(rr < 1e-8) return -valence_charge_*2.0/(sqrt(2.0*M_PI)*sigma_erf_);
+      return -valence_charge_*erf(rr/(sigma_erf_*sqrt(2.0)))/rr;
+    }
+    
+    const math::spline & short_range_potential() const {
+      return short_range_;
+    }
+    
     ~pseudopotential(){
       delete pseudo_;
     }
     
   private:
-    
+
+    double sigma_erf_;
     base * pseudo_;    
+    math::spline short_range_;
+    double valence_charge_;
     
   };
   
@@ -103,8 +146,8 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE_THROWS(pseudo::pseudopotential(SHARE_DIR + std::string("/unit_tests_data/benzene.xyz")));
   }
 
-  SECTION("Qbox pseudopotential file"){
-    pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/I_HSCV_LDA-1.0.xml"));
+  SECTION("Non-supported format pseudopotential file"){
+    REQUIRE_THROWS(pseudo::pseudopotential(SHARE_DIR + std::string("/unit_tests_data/I_HSCV_LDA-1.0.xml")));
   }
 
   SECTION("UPF2 pseudopotential file"){
