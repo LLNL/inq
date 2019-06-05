@@ -49,7 +49,7 @@ namespace pseudo {
       bool is_xml = true;
       try {
 	doc.parse<0>(&buffer[0]);
-      } catch(rapidxml::parse_error xml_error){
+      } catch(rapidxml::parse_error & xml_error){
 	is_xml = false;
       }
       

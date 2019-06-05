@@ -254,7 +254,7 @@ namespace pseudo {
     
     void local_potential(std::vector<double> & potential) const {
       potential.resize(mesh_size_);
-      assert(mesh_size_ == local_potential_.size());
+      assert(mesh_size_ == int(local_potential_.size()));
       for(int ip = 0; ip < mesh_size_; ip++) potential[ip] = local_potential_[ip];
     }
 
@@ -269,7 +269,7 @@ namespace pseudo {
       if(i >= nprojl_[l]) return;
 
       proj.resize(mesh_size_);
-      assert(mesh_size_ == projectors_[l][i].size());
+      assert(mesh_size_ == int(projectors_[l][i].size()));
 
       for(int ip = 1; ip < mesh_size_; ip++) proj[ip] = projectors_[l][i][ip]/(mesh_spacing()*ip);
 
@@ -301,7 +301,7 @@ namespace pseudo {
 
     void nlcc_density(std::vector<double> & density) const {
       density.resize(mesh_size_);
-      assert(mesh_size_ == nlcc_density_.size());
+      assert(mesh_size_ == int(nlcc_density_.size()));
       for(int ip = 0; ip < mesh_size_; ip++) density[ip] = nlcc_density_[ip]/(4.0*M_PI);
     }
     
@@ -311,7 +311,7 @@ namespace pseudo {
 
     void density(std::vector<double> & density) const {
       density.resize(mesh_size_);
-      assert(mesh_size_ == density_.size());
+      assert(mesh_size_ == int(density_.size()));
       for(int ip = 0; ip < mesh_size_; ip++) density[ip] = density_[ip]/(4.0*M_PI);
     }
     
