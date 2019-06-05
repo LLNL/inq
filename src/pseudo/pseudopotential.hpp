@@ -70,4 +70,38 @@ namespace pseudo {
   
 }
 
+#ifdef UNIT_TEST
+#include <catch.hpp>
+
+TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
+  
+  using namespace Catch::literals;
+
+  SECTION("Non-existing file"){
+    REQUIRE_THROWS(pseudo::pseudopotential("/this_file_doesnt_exists"));
+  }
+
+  SECTION("Non-pseudopotential file"){
+    REQUIRE_THROWS(pseudo::pseudopotential(SHARE_DIR + std::string("/unit_tests_data/benzene.xyz")));
+  }
+
+  SECTION("Qbox pseudopotential file"){
+    pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/I_HSCV_LDA-1.0.xml"));
+  }
+
+  SECTION("UPF2 pseudopotential file"){
+    pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/W_ONCV_PBE-1.0.upf"));
+  }
+
+  SECTION("UPF1 pseudopotential file"){
+    pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/F.UPF"));
+  }
+
+  SECTION("UPF2 pseudopotential file"){
+    pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/78_Pt_r.oncvpsp.psp8"));
+  }
+
+}
+#endif
+ 
 #endif
