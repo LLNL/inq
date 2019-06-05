@@ -188,12 +188,51 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/78_Pt_r.oncvpsp.psp8"));
 
     REQUIRE(ps.valence_charge() == 18.0_a);
+
+        //values validated with Octopus
+    REQUIRE(ps.long_range_potential(0.00000000E+00) == -2.29790754E+01_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-04) == -2.29790753E+01_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-02) == -2.29780949E+01_a);
+    REQUIRE(ps.long_range_potential(5.00000000E-02) == -2.29545879E+01_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-01) == -2.28814066E+01_a);
+    REQUIRE(ps.long_range_potential(5.00000000E-01) == -2.07464113E+01_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-00) == -1.60272255E+01_a);
+    REQUIRE(ps.long_range_potential(4.99000000E+00) == -3.60721443E+00_a);
+
+    REQUIRE(ps.short_range_potential().value(0.00000000E+00) == 5.77774525E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-02) == 5.77700949E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-02) == 4.18518028E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-01) == 5.70458232E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-01) == 4.18518028E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-00) == 1.52278621E+00_a);
+    REQUIRE(ps.short_range_potential().value(4.99000000E+00) == 8.23104510E-07_a);
   }
 
   SECTION("UPF2 pseudopotential file"){
     pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/C_ONCV_PBE-1.2.xml"));
 
     REQUIRE(ps.valence_charge() == 4.0_a);
+    
+    //values validated with Octopus
+    REQUIRE(ps.long_range_potential(0.00000000E+00) == -5.10646119E+00_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-04) == -5.10646116E+00_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-02) == -5.10624332E+00_a);
+    REQUIRE(ps.long_range_potential(5.00000000E-02) == -5.10101952E+00_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-01) == -5.08475703E+00_a);
+    REQUIRE(ps.long_range_potential(5.00000000E-01) == -4.61031362E+00_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-00) == -3.56160567E+00_a);
+    REQUIRE(ps.long_range_potential(5.00000000E-00) == -8.00000000E-01_a);
+    REQUIRE(ps.long_range_potential(6.01000000E-00) == -6.65557404E-01_a);
+
+    REQUIRE(ps.short_range_potential().value(0.00000000E+00) == -5.42158341E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-02) == -5.41538787E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-02) == -5.27845780E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-01) == -4.99611728E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-01) == -2.56127957E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-00) == -4.36986709E-01_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-00) == -9.28740001E-07_a);
+    REQUIRE(ps.short_range_potential().value(6.01000000E-00) == -7.59993877E-07_a);
+
   }
 
 }
