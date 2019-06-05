@@ -152,6 +152,27 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
   SECTION("UPF2 pseudopotential file"){
     pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/W_ONCV_PBE-1.0.upf"));
+
+    //values validated with Octopus
+    REQUIRE(ps.long_range_potential(0.00000000E+00) == -3.57452283E+01_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-04) == -3.57452282E+01_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-02) == -3.57437033E+01_a);
+    REQUIRE(ps.long_range_potential(5.00000000E-02) == -3.57071367E+01_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-01) == -3.55932992E+01_a);
+    REQUIRE(ps.long_range_potential(5.00000000E-01) == -3.22721954E+01_a);
+    REQUIRE(ps.long_range_potential(1.00000000E-00) == -2.49312397E+01_a);
+    REQUIRE(ps.long_range_potential(5.00000000E-00) == -5.60000000E+00_a);
+    REQUIRE(ps.long_range_potential(6.01000000E-00) == -4.65890183E+00_a);
+
+    REQUIRE(ps.short_range_potential().value(0.00000000E+00) == 4.99765777E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-02) == 4.99014665E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-02) == 4.84335957E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-01) == 4.68743986E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-01) == 3.30185087E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-00) == 7.75571234E-01_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-00) == -2.17300001E-06_a);
+    REQUIRE(ps.short_range_potential().value(6.01000000E-00) == -1.05361714E-06_a);
+
   }
 
   SECTION("UPF1 pseudopotential file"){
