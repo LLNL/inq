@@ -21,8 +21,8 @@
 
 #include <vector>
 #include <string>
+#include <math/spline.hpp>
 #include "base.hpp"
-#include "spline.h"
 
 namespace pseudo {
 
@@ -71,7 +71,7 @@ namespace pseudo {
       
       assert(function.size() == grid_.size());
       
-      Spline function_spline;
+      math::spline function_spline;
       function_spline.fit(grid_.data(), function_in_grid.data(), function_in_grid.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
       
       function.clear();

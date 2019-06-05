@@ -172,6 +172,8 @@ namespace pseudo {
       }
       case pseudo::type::SEMILOCAL:
 	return 0;
+      default:
+	return 0;
       }
       return 0;
     }
