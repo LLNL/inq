@@ -55,10 +55,6 @@ namespace pseudo {
       case pseudo::format::QSO:
 	std::cout << "  <!--   format: QSO -->" << std::endl;
 	pseudo_ = new pseudo::qso(filename);
-	if(pseudo_->type() != pseudo::type::KLEINMAN_BYLANDER) {
-	  delete pseudo_;
-	  throw error::UNSUPPORTED_TYPE;
-	}
 	break;
       case pseudo::format::UPF1:
 	std::cout << "  <!--   format: UPF1 -->" << std::endl;
@@ -79,6 +75,11 @@ namespace pseudo {
       default:
 	delete pseudo_;
 	throw error::UNSUPPORTED_FORMAT;
+      }
+
+      if(pseudo_->type() != pseudo::type::KLEINMAN_BYLANDER) {
+	delete pseudo_;
+	throw error::UNSUPPORTED_TYPE;
       }
       
       std::cout << "  <!--   size:   " << pseudo_->size() << " -->" << std::endl;
@@ -184,7 +185,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
   }
 
-  SECTION("UPF2 pseudopotential file"){
+  SECTION("PSP8 pseudopotential file"){
     pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/78_Pt_r.oncvpsp.psp8"));
 
     REQUIRE(ps.valence_charge() == 18.0_a);
@@ -201,11 +202,12 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE(ps.short_range_potential().value(0.00000000E+00) == 5.77774525E+00_a);
     REQUIRE(ps.short_range_potential().value(1.00000000E-02) == 5.77700949E+00_a);
-    REQUIRE(ps.short_range_potential().value(5.00000000E-02) == 4.18518028E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-02) == 5.75937414E+00_a);
     REQUIRE(ps.short_range_potential().value(1.00000000E-01) == 5.70458232E+00_a);
     REQUIRE(ps.short_range_potential().value(5.00000000E-01) == 4.18518028E+00_a);
     REQUIRE(ps.short_range_potential().value(1.00000000E-00) == 1.52278621E+00_a);
     REQUIRE(ps.short_range_potential().value(4.99000000E+00) == 8.23104510E-07_a);
+    
   }
 
   SECTION("UPF2 pseudopotential file"){
