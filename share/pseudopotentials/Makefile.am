@@ -18,6 +18,10 @@
 ## 02110-1301, USA.
 ##
 
+SUBDIRS =                                 \
+	pseudo-dojo.org                   \
+	quantum-simulation.org
+
 ppdir = $(pkgdatadir)/pseudopotentials
 
 dist_pp_DATA =                            \
