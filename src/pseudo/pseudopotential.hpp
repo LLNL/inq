@@ -146,13 +146,15 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE_THROWS(pseudo::pseudopotential(SHARE_DIR + std::string("/unit_tests_data/benzene.xyz")));
   }
 
-  SECTION("Non-supported format pseudopotential file"){
+  SECTION("Non-supported format QSO pseudopotential file"){
     REQUIRE_THROWS(pseudo::pseudopotential(SHARE_DIR + std::string("/unit_tests_data/I_HSCV_LDA-1.0.xml")));
   }
 
   SECTION("UPF2 pseudopotential file"){
     pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/W_ONCV_PBE-1.0.upf"));
 
+    REQUIRE(ps.valence_charge() == 28.0_a);
+    
     //values validated with Octopus
     REQUIRE(ps.long_range_potential(0.00000000E+00) == -3.57452283E+01_a);
     REQUIRE(ps.long_range_potential(1.00000000E-04) == -3.57452282E+01_a);
@@ -177,10 +179,21 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
   SECTION("UPF1 pseudopotential file"){
     pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/F.UPF"));
+
+    REQUIRE(ps.valence_charge() == 7.0_a);
+
   }
 
   SECTION("UPF2 pseudopotential file"){
     pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/78_Pt_r.oncvpsp.psp8"));
+
+    REQUIRE(ps.valence_charge() == 18.0_a);
+  }
+
+  SECTION("UPF2 pseudopotential file"){
+    pseudo::pseudopotential ps(SHARE_DIR + std::string("/unit_tests_data/C_ONCV_PBE-1.2.xml"));
+
+    REQUIRE(ps.valence_charge() == 4.0_a);
   }
 
 }
