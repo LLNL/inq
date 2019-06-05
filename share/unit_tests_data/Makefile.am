@@ -21,5 +21,8 @@
 utddir = $(pkgdatadir)/unit_tests_data
 
 dist_utd_DATA =                            \
-	benzene.xyz
-
+	benzene.xyz                        \
+	I_HSCV_LDA-1.0.xml                 \
+	W_ONCV_PBE-1.0.upf                 \
+	78_Pt_r.oncvpsp.psp8               \
+	F.UPF
