@@ -74,6 +74,8 @@ namespace math {
       return y;
     }
 
+    //OPTIMIZATION: the vectorial versions of the functions should not do the function call
+    
     template <class array_type>
     void value(const int size, const array_type & xx, array_type & yy) const {
 
