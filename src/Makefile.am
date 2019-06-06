@@ -19,6 +19,7 @@ noinst_HEADERS =                                   \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
 	basis/plane_wave.hpp                       \
+	states/ks_states.hpp                       \
 	hamiltonian/atomic_potential.hpp
 
 all_srcs =                                         \

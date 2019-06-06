@@ -29,5 +29,6 @@
 #include <ions/interaction.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/plane_wave.hpp>
+#include <states/ks_states.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 
