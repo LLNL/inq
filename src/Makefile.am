@@ -20,7 +20,8 @@ noinst_HEADERS =                                   \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
-	basis/plane_wave.hpp
+	basis/plane_wave.hpp                       \
+	hamiltonian/atomic_potential.hpp
 
 all_srcs =                                         \
 	math/spline.cpp                            \

@@ -91,7 +91,14 @@ namespace pseudo {
     bool operator==(const element & el) const {
       return atomic_number() == el.atomic_number();
     }
-   
+
+    struct hash {
+      auto operator()(const element & el){
+	std::hash<std::string> str_hash;
+	return str_hash(el.symbol());
+      }
+    };
+    
   private:
 
     struct properties {
@@ -163,6 +170,7 @@ namespace pseudo {
   };
 
 }
+
 
 #ifdef UNIT_TEST
 #include <catch.hpp>
