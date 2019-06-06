@@ -104,6 +104,17 @@ namespace pseudo {
       if(rr < 1e-8) return -valence_charge_*2.0/(sqrt(2.0*M_PI)*sigma_erf_);
       return -valence_charge_*erf(rr/(sigma_erf_*sqrt(2.0)))/rr;
     }
+
+    //outside this, the long_range_density is zero
+    double long_range_density_radius() const {
+      const double tol = 1e-15;
+      return sqrt(-2.0*log(tol))*sigma_erf_;
+    }    
+    
+    double long_range_density(double rr) const {
+      const double exp_arg = -0.5*pow(rr/sigma_erf_, 2);
+      return -valence_charge_*exp(exp_arg)/pow(sigma_erf_*sqrt(2.0*M_PI), 3);
+    }
     
     const math::spline & short_range_potential() const {
       return short_range_;
@@ -142,6 +153,8 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     pseudo::pseudopotential ps(config::path::unit_tests_data() + "W_ONCV_PBE-1.0.upf");
 
     REQUIRE(ps.valence_charge() == 28.0_a);
+
+    REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
     
     //values validated with Octopus
     REQUIRE(ps.long_range_potential(0.00000000E+00) == -3.57452283E+01_a);
@@ -154,6 +167,16 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.long_range_potential(5.00000000E-00) == -5.60000000E+00_a);
     REQUIRE(ps.long_range_potential(6.01000000E-00) == -4.65890183E+00_a);
 
+    REQUIRE(ps.long_range_density(0.00000000E+00) == -7.28195812E+00_a);
+    REQUIRE(ps.long_range_density(1.00000000E-04) == -7.28195802E+00_a);
+    REQUIRE(ps.long_range_density(1.00000000E-02) == -7.28102609E+00_a);
+    REQUIRE(ps.long_range_density(5.00000000E-02) == -7.25869310E+00_a);
+    REQUIRE(ps.long_range_density(1.00000000E-01) == -7.18934306E+00_a);
+    REQUIRE(ps.long_range_density(5.00000000E-01) == -5.28778688E+00_a);
+    REQUIRE(ps.long_range_density(1.00000000E-00) == -2.02465598E+00_a);
+    REQUIRE(ps.long_range_density(5.00000000E-00) == -9.22199231E-14_a);
+    REQUIRE(ps.long_range_density(6.01000000E-00) == -6.07009137E-20_a);
+    
     REQUIRE(ps.short_range_potential().value(0.00000000E+00) == 4.99765777E+00_a);
     REQUIRE(ps.short_range_potential().value(1.00000000E-02) == 4.99014665E+00_a);
     REQUIRE(ps.short_range_potential().value(5.00000000E-02) == 4.84335957E+00_a);
@@ -170,6 +193,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE(ps.valence_charge() == 7.0_a);
 
+    REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
   }
 
   SECTION("PSP8 pseudopotential file"){
@@ -177,7 +201,9 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE(ps.valence_charge() == 18.0_a);
 
-        //values validated with Octopus
+    REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
+    
+    //values validated with Octopus
     REQUIRE(ps.long_range_potential(0.00000000E+00) == -2.29790754E+01_a);
     REQUIRE(ps.long_range_potential(1.00000000E-04) == -2.29790753E+01_a);
     REQUIRE(ps.long_range_potential(1.00000000E-02) == -2.29780949E+01_a);
@@ -201,6 +227,8 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     pseudo::pseudopotential ps(config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml");
 
     REQUIRE(ps.valence_charge() == 4.0_a);
+
+    REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
     
     //values validated with Octopus
     REQUIRE(ps.long_range_potential(0.00000000E+00) == -5.10646119E+00_a);
