@@ -54,6 +54,7 @@ namespace hamiltonian {
 
 #ifdef UNIT_TEST
 #include <catch.hpp>
+#include <ions/geometry.hpp>
 
 TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
 
@@ -92,6 +93,16 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
 
     REQUIRE(pot.number_of_species() == 4);
     REQUIRE(pot.number_of_electrons() == 16.0_a);
+  }
+
+  SECTION("Construct from a geometry"){
+    
+    ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
+
+    hamiltonian::atomic_potential pot(geo.number_of_atoms(), geo.atoms());
+
+    REQUIRE(pot.number_of_species() == 2);
+    REQUIRE(pot.number_of_electrons() == 30.0_a);
   }
   
 }
