@@ -20,6 +20,7 @@
 
 #include <catch.hpp>
 
+#include <config/path.hpp>
 #include <math/spline.hpp>
 #include <pseudo/element.hpp>
 #include <pseudo/pseudopotential.hpp>
