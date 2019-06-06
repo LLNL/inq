@@ -36,6 +36,26 @@ AC_CHECK_FUNCS([gettimeofday memset mkdir pow sqrt strspn uname])
 
 AC_MSG_NOTICE([
 ================================================================================
+  CHECKING FOR FFT LIBRARIES
+================================================================================])
+
+found_fft=no
+
+#FFTW3
+if test x$found_fft != xyes ; then
+  ACX_FFTW3
+fi
+
+if test x$acx_fftw3_ok == xyes ; then
+  found_fft=yes
+  fft_lib=fftw3
+  CFLAGS="$CFLAGS $CFLAGS_FFTW3"
+  CXXFLAGS="$CXXFLAGS $CFLAGS_FFTW3"
+  LIBS="$LIBS $LIBS_FFTW3"
+fi
+
+AC_MSG_NOTICE([
+================================================================================
   CHECKING FOR FORTRAN LIBRARIES
 ================================================================================])
 dnl We need to check for fortran, to link with blas and other libraries
