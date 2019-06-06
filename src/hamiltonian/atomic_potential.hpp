@@ -16,14 +16,20 @@ namespace hamiltonian {
       PSEUDOPOTENTIAL_NOT_FOUND
     };
 
-    template <class species_list_it>
-    atomic_potential(const species_list_it species_begin, const species_list_it species_end):
+    template <class atom_list_it>
+    atomic_potential(const atom_list_it atom_begin, const atom_list_it atom_end):
       pseudo_set_(config::path::share() + "pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"){
 
-      for(auto it = species_begin; it != species_end; it++){
+      nelectrons_ = 0.0;
+      for(auto it = atom_begin; it != atom_end; it++){
 	if(!pseudo_set_.has(*it)) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
 
-	pseudopotential_list_.emplace(it->symbol(), pseudo::pseudopotential(pseudo_set_.file_path(*it)));
+	auto insert = pseudopotential_list_.emplace(it->symbol(), pseudo::pseudopotential(pseudo_set_.file_path(*it)));
+
+	auto & pseudo = insert.first->second;
+	
+	nelectrons_ += pseudo.valence_charge();
+	
       }
       
     }
@@ -31,9 +37,14 @@ namespace hamiltonian {
     int number_of_species() const {
       return pseudopotential_list_.size();
     }
+
+    const double & number_of_electrons() const {
+      return nelectrons_;
+    }
     
   private:
 
+    double nelectrons_;
     pseudo::set pseudo_set_;
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
         
@@ -61,6 +72,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
     hamiltonian::atomic_potential pot(el_list.begin(), el_list.end());
 
     REQUIRE(pot.number_of_species() == 1);
+    REQUIRE(pot.number_of_electrons() == 10.0_a);
     
   }
 
@@ -70,6 +82,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
     hamiltonian::atomic_potential pot(el_list.begin(), el_list.end());
 
     REQUIRE(pot.number_of_species() == 0);
+    REQUIRE(pot.number_of_electrons() == 0.0_a);
   }
 
   SECTION("CNOH"){
@@ -78,6 +91,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
     hamiltonian::atomic_potential pot(el_list.begin(), el_list.end());
 
     REQUIRE(pot.number_of_species() == 4);
+    REQUIRE(pot.number_of_electrons() == 16.0_a);
   }
   
 }
