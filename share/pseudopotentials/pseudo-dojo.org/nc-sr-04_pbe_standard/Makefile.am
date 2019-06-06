@@ -23,42 +23,31 @@ pdpbestddir = $(pkgdatadir)/pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standa
 dist_pdpbestd_DATA =                \
 	Ag.upf                      \
 	Al.upf                      \
-	Al.upf.spacing              \
 	Ar.upf                      \
-	Ar.upf.spacing              \
 	As.upf                      \
 	Au.upf                      \
 	Ba.upf                      \
 	Be.upf                      \
-	Be.upf.spacing              \
 	Bi.upf                      \
 	Br.upf                      \
 	B.upf                       \
-	B.upf.spacing               \
 	Ca.upf                      \
 	Cd.upf                      \
 	Cl.upf                      \
-	Cl.upf.spacing              \
 	Co.upf                      \
 	Cr.upf                      \
 	Cs.upf                      \
 	C.upf                       \
-	C.upf.spacing               \
 	Cu.upf                      \
 	D.upf                       \
-	D.upf.spacing               \
 	Fe.upf                      \
 	F.upf                       \
-	F.upf.spacing               \
 	Ga.upf                      \
-	Ga.upf.spacing              \
 	Ge.upf                      \
 	He.upf                      \
-	He.upf.spacing              \
 	Hf.upf                      \
 	Hg.upf                      \
 	H.upf                       \
-	H.upf.spacing               \
 	In.upf                      \
 	Ir.upf                      \
 	I.upf                       \
@@ -66,22 +55,17 @@ dist_pdpbestd_DATA =                \
 	K.upf                       \
 	La.upf                      \
 	Li.upf                      \
-	Li.upf.spacing              \
 	Lu.upf                      \
 	Mg.upf                      \
 	Mn.upf                      \
 	Mo.upf                      \
 	Na.upf                      \
-	Na.upf.spacing              \
 	Nb.upf                      \
 	Ne.upf                      \
-	Ne.upf.spacing              \
 	Ni.upf                      \
 	N.upf                       \
-	N.upf.spacing               \
 	Os.upf                      \
 	O.upf                       \
-	O.upf.spacing               \
 	Pb.upf                      \
 	Pd.upf                      \
 	Po.upf                      \
@@ -96,13 +80,10 @@ dist_pdpbestd_DATA =                \
 	Sc.upf                      \
 	Se.upf                      \
 	Si.upf                      \
-	Si.upf.spacing              \
 	Sn.upf                      \
 	Sr.upf                      \
 	S.upf                       \
-	S.upf.spacing               \
 	T.upf                       \
-	T.upf.spacing               \
 	Ta.upf                      \
 	Tc.upf                      \
 	Te.upf                      \

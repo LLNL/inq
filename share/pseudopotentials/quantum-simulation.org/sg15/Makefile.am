@@ -35,7 +35,6 @@ dist_sg15_DATA =                      \
 	Cd_ONCV_PBE-1.0.upf           \
 	Cl_ONCV_PBE-1.1.upf           \
 	C_ONCV_PBE-1.0.upf            \
-	C_ONCV_PBE-1.0.upf.spacing    \
 	Co_ONCV_PBE-1.0.upf           \
 	Cr_ONCV_PBE-1.0.upf           \
 	Cs_ONCV_PBE-1.1.upf           \
@@ -49,7 +48,6 @@ dist_sg15_DATA =                      \
 	Hf_ONCV_PBE-1.0.upf           \
 	Hg_ONCV_PBE-1.0.upf           \
 	H_ONCV_PBE-1.0.upf            \
-	H_ONCV_PBE-1.0.upf.spacing    \
 	In_ONCV_PBE-1.1.upf           \
 	I_ONCV_PBE-1.1.upf            \
 	Ir_ONCV_PBE-1.0.upf           \
@@ -65,7 +63,6 @@ dist_sg15_DATA =                      \
 	Ne_ONCV_PBE-1.0.upf           \
 	Ni_ONCV_PBE-1.0.upf           \
 	N_ONCV_PBE-1.0.upf            \
-	N_ONCV_PBE-1.0.upf.spacing    \
 	O_ONCV_PBE-1.0.upf            \
 	Os_ONCV_PBE-1.0.upf           \
 	Pb_ONCV_PBE-1.0.upf           \
