@@ -19,6 +19,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <config/path.hpp>
 #include <math/d3vector.hpp>
 #include <pseudo/element.hpp>
 
@@ -134,7 +135,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   using namespace Catch::literals;
 
   SECTION("Read an xyz file"){
-    ions::geometry geo(SHARE_DIR + std::string("/unit_tests_data/benzene.xyz"));
+    ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
 
     REQUIRE(geo.number_of_atoms() == 12);
     REQUIRE_THROWS(geo.atom(12));
