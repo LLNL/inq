@@ -12,7 +12,7 @@ namespace config {
 }
 
 #ifdef UNIT_TEST
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 TEST_CASE("class config::path", "[path]") {
   SECTION("Share path"){

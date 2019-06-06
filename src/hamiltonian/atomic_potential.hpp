@@ -53,7 +53,7 @@ namespace hamiltonian {
 }
 
 #ifdef UNIT_TEST
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <ions/geometry.hpp>
 
 TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {

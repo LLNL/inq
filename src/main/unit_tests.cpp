@@ -18,7 +18,7 @@
 
 #define UNIT_TEST
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include <config/path.hpp>
 #include <math/spline.hpp>

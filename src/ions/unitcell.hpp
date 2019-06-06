@@ -116,7 +116,7 @@ namespace ions{
 }
 
 #ifdef UNIT_TEST
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 

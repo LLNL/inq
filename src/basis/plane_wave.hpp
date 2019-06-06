@@ -98,7 +98,7 @@ namespace basis {
 }
 
 #ifdef UNIT_TEST
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
 TEST_CASE("class basis::plane_wave", "[basis]") {

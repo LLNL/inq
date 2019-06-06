@@ -4,7 +4,7 @@
 #include <ions/geometry.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 
-#include <array.hpp>
+#include <multi/array.hpp>
 
 #include <complex>
 

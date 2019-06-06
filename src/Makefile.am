@@ -1,8 +1,6 @@
 AM_CXXFLAGS =                                   \
 	-I$(top_srcdir)/src/                    \
-	-I$(top_srcdir)/external_libs/catch2    \
-	-I$(top_srcdir)/external_libs/rapidxml  \
-	-I$(top_srcdir)/external_libs/multi     \
+	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'
 
 noinst_HEADERS =                                   \

@@ -21,7 +21,7 @@
 
 #include <vector>
 #include <string>
-#include <rapidxml.hpp>
+#include <rapidxml/rapidxml.hpp>
 #include <sstream>
 
 #define MAX_L 10
