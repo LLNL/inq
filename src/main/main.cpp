@@ -1,6 +1,9 @@
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
 #include <basis/plane_wave.hpp>
+#include <ions/geometry.hpp>
+#include <hamiltonian/atomic_potential.hpp>
+
 #include <array.hpp>
 
 #include <complex>
@@ -11,6 +14,9 @@ int main(){
   
   double ecut = 30.0;
   double ll = 10.0;
+    
+  ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
+  hamiltonian::atomic_potential pot(geo.number_of_atoms(), geo.atoms());
 
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
   basis::plane_wave pw(cell, ecut);
