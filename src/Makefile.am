@@ -14,7 +14,6 @@ noinst_HEADERS =                                   \
 	pseudo/psml.hpp                            \
 	pseudo/qso.hpp                             \
 	pseudo/set.hpp                             \
-	pseudo/share_directory.hpp                 \
 	pseudo/upf.hpp                             \
 	pseudo/upf1.hpp                            \
 	pseudo/upf2.hpp                            \

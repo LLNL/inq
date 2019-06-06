@@ -28,7 +28,7 @@
 #include <map>
 #include <cstdlib>
 
-#include "share_directory.hpp"
+#include <config/path.hpp>
 
 namespace pseudo {
   
@@ -105,7 +105,7 @@ namespace pseudo {
       static map_type map;
       if(map.empty()){
 
-	std::string filename = pseudo::share_directory::get() + "/pseudopotentials/elements.dat";
+	std::string filename = config::path::share() + "/pseudopotentials/elements.dat";
 	
 	std::ifstream file(filename.c_str());
 
