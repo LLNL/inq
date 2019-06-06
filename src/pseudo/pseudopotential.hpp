@@ -43,7 +43,7 @@ namespace pseudo {
     pseudopotential(const std::string & filename){
 
       //PARSE THE FILE
-      
+      base * pseudo;    
       pseudo::format format = pseudo::detect_format(filename);
       
       if(format == pseudo::format::FILE_NOT_FOUND) throw error::FILE_NOT_FOUND;
@@ -51,48 +51,49 @@ namespace pseudo {
       
       switch(format){
       case pseudo::format::QSO:
-	pseudo_ = new pseudo::qso(filename);
+	pseudo = new pseudo::qso(filename);
 	break;
       case pseudo::format::UPF1:
-	pseudo_ = new pseudo::upf1(filename, /*uniform_grid = */ true);
+	pseudo = new pseudo::upf1(filename, /*uniform_grid = */ true);
 	break;
       case pseudo::format::UPF2:
-	pseudo_ = new pseudo::upf2(filename, /*uniform_grid = */ true);
+	pseudo = new pseudo::upf2(filename, /*uniform_grid = */ true);
 	break;
       case pseudo::format::PSML:
-	pseudo_ = new pseudo::psml(filename, /*uniform_grid = */ true);
+	pseudo = new pseudo::psml(filename, /*uniform_grid = */ true);
 	break;
       case pseudo::format::PSP8:
-	pseudo_ = new pseudo::psp8(filename);
+	pseudo = new pseudo::psp8(filename);
 	break;
       default:
-	delete pseudo_;
+	delete pseudo;
 	throw error::UNSUPPORTED_FORMAT;
       }
 
-      if(pseudo_->type() != pseudo::type::KLEINMAN_BYLANDER) {
-	delete pseudo_;
+      if(pseudo->type() != pseudo::type::KLEINMAN_BYLANDER) {
+	delete pseudo;
 	throw error::UNSUPPORTED_TYPE;
       }
       
       std::vector<double> grid, local_potential;
 
-      pseudo_->grid(grid);
+      pseudo->grid(grid);
 
-      valence_charge_ = pseudo_->valence_charge();
+      valence_charge_ = pseudo->valence_charge();
 
       //SEPARATE THE LOCAL PART
       
       sigma_erf_ = 0.625; // the constant to separate the pseudo
       
-      pseudo_->local_potential(local_potential);
+      pseudo->local_potential(local_potential);
 
       for(unsigned ii = 0; ii < local_potential.size(); ii++){
 	local_potential[ii] -= long_range_potential(grid[ii]);
       }
 
       short_range_.fit(grid.data(), local_potential.data(), local_potential.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
-      
+
+      delete pseudo;
     }
 
     const double & valence_charge() const {
@@ -108,14 +109,9 @@ namespace pseudo {
       return short_range_;
     }
     
-    ~pseudopotential(){
-      delete pseudo_;
-    }
-    
   private:
 
     double sigma_erf_;
-    base * pseudo_;    
     math::spline short_range_;
     double valence_charge_;
     
