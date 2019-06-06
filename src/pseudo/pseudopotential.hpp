@@ -145,7 +145,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE_THROWS(pseudo::pseudopotential(config::path::unit_tests_data() + "benzene.xyz"));
   }
 
-  SECTION("Non-supported format QSO pseudopotential file"){
+  SECTION("Non-supported format QSO/Qbox pseudopotential file"){
     REQUIRE_THROWS(pseudo::pseudopotential(config::path::unit_tests_data() + "I_HSCV_LDA-1.0.xml"));
   }
 
@@ -223,7 +223,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     
   }
 
-  SECTION("UPF2 pseudopotential file"){
+  SECTION("QSO/Qbox pseudopotential file"){
     pseudo::pseudopotential ps(config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml");
 
     REQUIRE(ps.valence_charge() == 4.0_a);
@@ -241,6 +241,15 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.long_range_potential(5.00000000E-00) == -8.00000000E-01_a);
     REQUIRE(ps.long_range_potential(6.01000000E-00) == -6.65557404E-01_a);
 
+    REQUIRE(ps.long_range_density(0.00000000E+00) == -1.04027973E+00_a);
+    REQUIRE(ps.long_range_density(1.00000000E-02) == -1.04014658E+00_a);
+    REQUIRE(ps.long_range_density(5.00000000E-02) == -1.03695616E+00_a);
+    REQUIRE(ps.long_range_density(1.00000000E-01) == -1.02704901E+00_a);
+    REQUIRE(ps.long_range_density(5.00000000E-01) == -7.55398125E-01_a);
+    REQUIRE(ps.long_range_density(1.00000000E-00) == -2.89236568E-01_a);
+    REQUIRE(ps.long_range_density(5.00000000E-00) == -1.31742747E-14_a);
+    REQUIRE(ps.long_range_density(6.01000000E-00) == -8.67155910E-21_a);
+    
     REQUIRE(ps.short_range_potential().value(0.00000000E+00) == -5.42158341E+00_a);
     REQUIRE(ps.short_range_potential().value(1.00000000E-02) == -5.41538787E+00_a);
     REQUIRE(ps.short_range_potential().value(5.00000000E-02) == -5.27845780E+00_a);
