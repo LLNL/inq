@@ -33,8 +33,7 @@ namespace ions {
   public:
     
     enum class error {
-      FILE_NOT_FOUND,
-      INDEX_OUT_OF_RANGE
+      FILE_NOT_FOUND
     };
       
     geometry(){
@@ -75,44 +74,17 @@ namespace ions {
       coordinates_.push_back(position);
     }
 
-    class Atom {
+    auto & atoms() const {
+      return atoms_;
+    }
 
-    public:
-
-      const pseudo::element & element() const {
-	return geo->atoms_[index];
-      }
-      
-      double charge() const {
-	return geo->atoms_[index].charge();
-      }
-
-      double mass() const {
-	return geo->atoms_[index].mass();
-      }
-
-      const math::d3vector & position() const {
-	return geo->coordinates_[index];
-      }
-      
-    private:
-     
-      Atom(const int atom_index, const geometry * atom_geo)
-	:index(atom_index), geo(atom_geo){
-      }
- 
-      const int index;
-      const geometry * geo;
-      
-      friend class geometry;
-    };
-    
-
-    Atom atom(const int atom_index) const {
-      if(atom_index >= number_of_atoms()) throw error::INDEX_OUT_OF_RANGE;
-      return Atom(atom_index, this);
+    auto & coordinates() const {
+      return coordinates_;
     }
     
+    auto & coordinates() {
+      return coordinates_;
+    }
   private:
 
     std::vector<pseudo::element> atoms_;
@@ -127,37 +99,56 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
 
   using namespace Catch::literals;
 
+  SECTION("Create empty and add an atom"){
+    ions::geometry geo;
+
+    REQUIRE(geo.number_of_atoms() == 0);
+
+    geo.add_atom(pseudo::element("Xe"), math::d3vector(1000.0, -200.0, 6.0));
+
+    REQUIRE(geo.number_of_atoms() == 1);
+    REQUIRE(geo.atoms()[0].atomic_number() == 54);
+    REQUIRE(geo.atoms()[0] == pseudo::element(54));
+    REQUIRE(geo.atoms()[0].charge() == -54.0_a);
+    REQUIRE(geo.atoms()[0].mass() == 131.2936_a);
+    REQUIRE(geo.coordinates()[0][0] == 1000.0_a);
+    REQUIRE(geo.coordinates()[0][1] == -200.0_a);
+    REQUIRE(geo.coordinates()[0][2] == 6.0_a);
+
+    geo.coordinates()[0][0] += 8;  
+    
+    REQUIRE(geo.coordinates()[0][0] == 1008.0_a);
+  }    
+ 
   SECTION("Read an xyz file"){
     ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
 
     REQUIRE(geo.number_of_atoms() == 12);
-    REQUIRE_THROWS(geo.atom(12));
-    REQUIRE_THROWS(geo.atom(425));
     
-    REQUIRE(geo.atom(2).element() == pseudo::element("C"));
-    REQUIRE(geo.atom(2).charge() == -6.0_a);
-    REQUIRE(geo.atom(2).mass() == 12.0096_a);
-    REQUIRE(geo.atom(2).position()[0] == 2.2846788549_a);
-    REQUIRE(geo.atom(2).position()[1] == -1.3190288178_a);
-    REQUIRE(geo.atom(2).position()[2] == 0.0_a);
+    REQUIRE(geo.atoms()[2] == pseudo::element("C"));
+    REQUIRE(geo.atoms()[2].charge() == -6.0_a);
+    REQUIRE(geo.atoms()[2].mass() == 12.0096_a);
+    REQUIRE(geo.coordinates()[2][0] == 2.2846788549_a);
+    REQUIRE(geo.coordinates()[2][1] == -1.3190288178_a);
+    REQUIRE(geo.coordinates()[2][2] == 0.0_a);
 
-    REQUIRE(geo.atom(11).element() == pseudo::element("H"));
-    REQUIRE(geo.atom(11).charge() == -1.0_a);
-    REQUIRE(geo.atom(11).mass() == 1.00784_a);
-    REQUIRE(geo.atom(11).position()[0] == -4.0572419367_a);
-    REQUIRE(geo.atom(11).position()[1] == 2.343260364_a);
-    REQUIRE(geo.atom(11).position()[2] == 0.0_a);
+    REQUIRE(geo.atoms()[11] == pseudo::element("H"));
+    REQUIRE(geo.atoms()[11].charge() == -1.0_a);
+    REQUIRE(geo.atoms()[11].mass() == 1.00784_a);
+    REQUIRE(geo.coordinates()[11][0] == -4.0572419367_a);
+    REQUIRE(geo.coordinates()[11][1] == 2.343260364_a);
+    REQUIRE(geo.coordinates()[11][2] == 0.0_a);
 
     geo.add_atom(pseudo::element("Cl"), math::d3vector(-3.0, 4.0, 5.0));
 
     REQUIRE(geo.number_of_atoms() == 13);
-    REQUIRE(geo.atom(12).element().atomic_number() == 17);
-    REQUIRE(geo.atom(12).element() == pseudo::element(17));
-    REQUIRE(geo.atom(12).charge() == -17.0_a);
-    REQUIRE(geo.atom(12).mass() == 35.446_a);
-    REQUIRE(geo.atom(12).position()[0] == -3.0_a);
-    REQUIRE(geo.atom(12).position()[1] == 4.0_a);
-    REQUIRE(geo.atom(12).position()[2] == 5.0_a);
+    REQUIRE(geo.atoms()[12].atomic_number() == 17);
+    REQUIRE(geo.atoms()[12] == pseudo::element(17));
+    REQUIRE(geo.atoms()[12].charge() == -17.0_a);
+    REQUIRE(geo.atoms()[12].mass() == 35.446_a);
+    REQUIRE(geo.coordinates()[12][0] == -3.0_a);
+    REQUIRE(geo.coordinates()[12][1] == 4.0_a);
+    REQUIRE(geo.coordinates()[12][2] == 5.0_a);
     
   }
 
