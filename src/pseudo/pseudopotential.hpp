@@ -54,13 +54,13 @@ namespace pseudo {
 	pseudo = new pseudo::qso(filename);
 	break;
       case pseudo::format::UPF1:
-	pseudo = new pseudo::upf1(filename, /*uniform_grid = */ true);
+	pseudo = new pseudo::upf1(filename);
 	break;
       case pseudo::format::UPF2:
-	pseudo = new pseudo::upf2(filename, /*uniform_grid = */ true);
+	pseudo = new pseudo::upf2(filename);
 	break;
       case pseudo::format::PSML:
-	pseudo = new pseudo::psml(filename, /*uniform_grid = */ true);
+	pseudo = new pseudo::psml(filename);
 	break;
       case pseudo::format::PSP8:
 	pseudo = new pseudo::psp8(filename);
