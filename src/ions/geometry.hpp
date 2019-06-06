@@ -23,7 +23,6 @@
 #include <math/d3vector.hpp>
 #include <pseudo/element.hpp>
 
-#include <map>
 #include <vector>
 #include <cassert>
 
@@ -69,14 +68,11 @@ namespace ions {
       
     }
     
-    int number_of_atoms() const { return coordinates.size(); }
+    int number_of_atoms() const { return coordinates_.size(); }
 
     void add_atom(const pseudo::element & element, const math::d3vector & position){
-
-      auto element_location = element_list.insert(std::pair<int, pseudo::element>(element.atomic_number(), element));
-      elements.push_back(element_location.first);
-      coordinates.push_back(position);
-
+      atoms_.push_back(element);
+      coordinates_.push_back(position);
     }
 
     class Atom {
@@ -84,19 +80,19 @@ namespace ions {
     public:
 
       const pseudo::element & element() const {
-	return geo->elements[index]->second;
+	return geo->atoms_[index];
       }
       
       double charge() const {
-	return geo->elements[index]->second.charge();
+	return geo->atoms_[index].charge();
       }
 
       double mass() const {
-	return geo->elements[index]->second.mass();
+	return geo->atoms_[index].mass();
       }
 
       const math::d3vector & position() const {
-	return geo->coordinates[index];
+	return geo->coordinates_[index];
       }
       
     private:
@@ -119,11 +115,8 @@ namespace ions {
     
   private:
 
-    typedef std::map<int, pseudo::element> ElementsContainer;
-    
-    ElementsContainer element_list;
-    std::vector<ElementsContainer::const_iterator> elements;
-    std::vector<math::d3vector> coordinates;
+    std::vector<pseudo::element> atoms_;
+    std::vector<math::d3vector> coordinates_;
     
   };
   
