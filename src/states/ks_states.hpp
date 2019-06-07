@@ -1,5 +1,5 @@
-#ifndef IONS_INTERACTION
-#define IONS_INTERACTION
+#ifndef KS_STATES
+#define KS_STATES
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -19,35 +19,49 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include 
-
 namespace states {
   template <class basis_type>
   class ks_states {
 
+  public:
+    
     enum class spin_config {
       UNPOLARIZED,
       POLARIZED,
-      NON_COLLINEAR
+      NON_COLINEAR
     };
-    
-    
-    ks_states(const sping_config spin, const double nelectrons, const basis_type & basis):
+        
+    ks_states(const spin_config spin, const double nelectrons, const basis_type & basis):
       basis_(basis){
 
-      if(spin == sping_config::NON_COLLINEAR){
+      if(spin == spin_config::NON_COLINEAR){
+	nspinor_ = 2;
 	nstates_ = ceil(nelectrons);
       } else {
+	nspinor_ = 1;
 	nstates_ = ceil(0.5*nelectrons);
       }
 
       nquantumnumbers_ = 1;
-      if(spin == sping_config::POLARIZED) nquantumnumbers_ = 2;
+      if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
       
+    }
+
+    int num_states() const {
+      return nstates_;
+    }
+    
+    int num_spinors() const {
+      return nspinor_;
+    }
+
+    int num_quantum_numbers() const {
+      return nquantumnumbers_;
     }
     
   private:
 
+    int nspinor_;
     int nstates_;
     int nquantumnumbers_;
     basis_type basis_;    
@@ -57,19 +71,49 @@ namespace states {
 }
 
 #ifdef UNIT_TEST
+
+#include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
-#include <basis/planewave.hpp>
+#include <basis/plane_wave.hpp>
 
-TEST_CASE("Function states::ks_states", "[ks_states]") {
+TEST_CASE("Class states::ks_states", "[ks_states]"){
 
+  using math::d3vector;
+  
   double ecut = 30.0;
   double ll = 10.0;
-    
+  
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
   basis::plane_wave pw(cell, ecut);
-
-  states::ks_states<basis::plane_wave> st(states::ks_states::spin_config::UNPOLARIZED, 10.0, pw);
+  
+  SECTION("Spin unpolarized"){
     
+    states::ks_states<basis::plane_wave> st(states::ks_states<basis::plane_wave>::spin_config::UNPOLARIZED, 11.0, pw);
+    
+    REQUIRE(st.num_spinors() == 1);
+    REQUIRE(st.num_states() == 6);
+    REQUIRE(st.num_quantum_numbers() == 1);
+  }
+
+  SECTION("Spin polarized"){
+    
+    states::ks_states<basis::plane_wave> st(states::ks_states<basis::plane_wave>::spin_config::POLARIZED, 11.0, pw);
+    
+    REQUIRE(st.num_spinors() == 1);
+    REQUIRE(st.num_states() == 6);
+    REQUIRE(st.num_quantum_numbers() == 2);
+  }
+
+  SECTION("Non-colinear spin"){
+    
+    states::ks_states<basis::plane_wave> st(states::ks_states<basis::plane_wave>::spin_config::NON_COLINEAR, 11.0, pw);
+    
+    REQUIRE(st.num_spinors() == 2);
+    REQUIRE(st.num_states() == 11);
+    REQUIRE(st.num_quantum_numbers() == 1);
+  }
+
+  
 }
 
 #endif
