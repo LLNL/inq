@@ -60,10 +60,11 @@ namespace ions{
 	vector_type const& b(int i) const { return b_[i]; }
   
     UnitCell() = default; 
-    UnitCell(math::d3vector const& a0, math::d3vector const& a1, math::d3vector const& a2) : a_{a0, a1, a2}{}
-//    { set(a0,a1,a2); }
+    UnitCell(math::d3vector const& a0, math::d3vector const& a1, math::d3vector const& a2){
+      set(a0,a1,a2);
+    }
   
-//    void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2);
+    void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2);
     double volume() const { return volume_; }
   
     const double* amat() const { return &amat_[0]; }
