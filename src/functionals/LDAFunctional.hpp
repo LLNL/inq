@@ -26,10 +26,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <config.h>
-
-#ifndef LDAFUNCTIONAL_H
-#define LDAFUNCTIONAL_H
+#ifndef LDAFUNCTIONAL_HPP
+#define LDAFUNCTIONAL_HPP
 
 #include <vector>
 #include <cassert>
@@ -37,14 +35,17 @@
 #include "XCFunctional.hpp"
 
 class LDAFunctional : public XCFunctional {
-  void xc_unpolarized(const double rh, double &ee, double &vv);
-  void xc_polarized(const double rh, double &ee, double &vv);    
+
   std::vector<double> _exc;
   std::vector<std::vector<double> > _vxc;
   
   LDAFunctional();
   
   public:
+
+  void xc_unpolarized(const double rh, double &ee, double &vv);
+
+  void xc_polarized(const double rh, double &ee, double &vv);
   
   LDAFunctional(const std::vector<std::vector<double> > &rhoe) {
     _nspin = rhoe.size();
@@ -75,6 +76,23 @@ class LDAFunctional : public XCFunctional {
   std::string name() { return "LDA"; };
   void setxc();
 };
+
+#ifdef UNIT_TEST
+#include <catch2/catch.hpp>
+#include <ions/geometry.hpp>
+
+TEST_CASE("Class functionals::LDAFunctional", "[LDAFunctional]") {
+  
+  SECTION("spin unpolarized"){
+
+    
+    
+  }
+  
+}
+
+#endif
+
 #endif
 
 // Local Variables:
