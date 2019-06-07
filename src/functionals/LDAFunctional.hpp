@@ -63,12 +63,11 @@ namespace functionals {
       const double C = -A - D - G * ( (b1/2.0 + b2) / ((1.0+b1+b2)*(1.0+b1+b2)));
 
       for(int ii = 0; ii < size; ii++){
-	double rh = nn[ii];
-	double ee = 0.0;
-	double vv = 0.0;
+	exc[ii] = 0.0;
+	vxc[ii] = 0.0;
 
-	if(rh > 0.0) {
-	  double ro13 = cbrt(rh);
+	if(nn[ii] > 0.0) {
+	  double ro13 = cbrt(nn[ii]);
 	  double rs = c1 / ro13;
 	
 	  double ex = 0.0, vx = 0.0, ec = 0.0, vc = 0.0;
@@ -91,12 +90,10 @@ namespace functionals {
 	    vc = ec * ( 1.0 + (7.0/6.0) * b1 * sqrtrs +
 			(4.0/3.0) * b2 * rs ) / den;
 	  }
-	  ee = ex + ec;
-	  vv = vx + vc;
+	  exc[ii] = ex + ec;
+	  vxc[ii] = vx + vc;
 	}
 
-	exc[ii] = ee;
-	vxc[ii] = vv;
       }
     }
 
@@ -128,12 +125,11 @@ namespace functionals {
       const double C = -A - D - G * ( (b1/2.0 + b2) / ((1.0+b1+b2)*(1.0+b1+b2)));
 
       for(int ii = 0; ii < size; ii++){
-	double rh = nn[ii];
-	double ee = 0.0;
-	double vv = 0.0;
-	
-	if ( rh > 0.0 ) {
-	  double ro13 = cbrt(rh);
+	exc[ii] = 0.0;
+	vxc[ii] = 0.0;
+
+	if ( nn[ii] > 0.0 ) {
+	  double ro13 = cbrt(nn[ii]);
 	  double rs = c1 / ro13;
 
 	  double ex=0.0,vx=0.0,ec=0.0,vc=0.0;
@@ -156,12 +152,9 @@ namespace functionals {
 	    vc = ec * ( 1.0 + (7.0/6.0) * b1 * sqrtrs +
 			(4.0/3.0) * b2 * rs ) / den;
 	  }
-	  ee = ex + ec;
-	  vv = vx + vc;
-	
+	  exc[ii] = ex + ec;
+	  vxc[ii] = vx + vc;
 	}
-	exc[ii] = ee;
-	vxc[ii] = vv;	
       }
     }
   };
