@@ -28,7 +28,7 @@
 
 #include "anygrid.hpp"
 #include "base.hpp"
-#include <rapidxml.h>
+#include <rapidxml/rapidxml.hpp>
 
 #include "element.hpp"
 
