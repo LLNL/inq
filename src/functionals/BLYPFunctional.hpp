@@ -57,7 +57,7 @@ class BLYPFunctional : public XCFunctional {
   
   bool isGGA() { return true; };
   std::string name() { return "BLYP"; };
-  void setxc(void); 
+  void setxc(); 
 };
 #endif
 

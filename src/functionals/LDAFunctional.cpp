@@ -36,7 +36,7 @@
 #include <cassert>
 #include <vector>
 
-void LDAFunctional::setxc(void) 
+void LDAFunctional::setxc() 
 {
   if ( _np == 0 ) return;
   if ( _nspin == 1 )

@@ -63,7 +63,7 @@ BLYPFunctional::BLYPFunctional(const vector<vector<double> > &rhoe) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void BLYPFunctional::setxc(void) 
+void BLYPFunctional::setxc() 
 {
   if ( _np == 0 ) return;
   if ( _nspin == 1 )

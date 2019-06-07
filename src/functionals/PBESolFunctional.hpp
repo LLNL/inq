@@ -61,7 +61,7 @@ class PBESolFunctional : public XCFunctional {
   
   bool isGGA() { return true; };
   std::string name() { return "PBE"; };
-  void setxc(void); 
+  void setxc(); 
 };
 #endif
 

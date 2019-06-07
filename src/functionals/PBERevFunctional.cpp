@@ -90,7 +90,7 @@ PBERevFunctional::PBERevFunctional(const vector<vector<double> > &rhoe) {
   }
 }
 
-void PBERevFunctional::setxc(void) {
+void PBERevFunctional::setxc() {
   if ( _np == 0 ) return;
   if ( _nspin == 1 )
   {

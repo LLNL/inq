@@ -81,10 +81,10 @@ class XCFunctional {
   double *vxc1, *vxc1_up, *vxc1_dn;
   double *vxc2, *vxc2_upup, *vxc2_dndn, *vxc2_updn, *vxc2_dnup;
 
-  virtual bool isGGA(void) = 0;
-  virtual std::string name(void) = 0;
-  int np(void) { return _np; };
-  int nspin(void) { return _nspin; };
+  virtual bool isGGA() = 0;
+  virtual std::string name() = 0;
+  int np() { return _np; };
+  int nspin() { return _nspin; };
   
   XCFunctional() {
     rho = rho_up = rho_dn = 0;
@@ -99,7 +99,7 @@ class XCFunctional {
   // virtual destructor needed to ensure proper deallocation
   virtual ~XCFunctional() {}
   
-  virtual void setxc(void) = 0; 
+  virtual void setxc() = 0; 
 };
 #endif
 

@@ -90,7 +90,7 @@ PBEFunctional::PBEFunctional(const vector<vector<double> > &rhoe) {
   }
 }
 
-void PBEFunctional::setxc(void) {
+void PBEFunctional::setxc() {
   if ( _np == 0 ) return;
   if ( _nspin == 1 )
   {
