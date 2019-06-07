@@ -36,7 +36,7 @@ namespace solvers {
 			
 			potential = fftw::dft(density, fftw::forward);
 
-			const double scal = 1.0/basis.rtotalsize();
+			const double scal = (-4.0*M_PI)/basis.rtotalsize();
 			
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){
@@ -112,11 +112,10 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		}
 	}
 	
-	std::cout << sumimag << std::endl;
-	REQUIRE(sumreal == 19.0272453844_a);
-	REQUIRE(sumimag == 1.2153e-13_a);
+	REQUIRE(sumreal == 239.1034172704_a);
+	REQUIRE(sumimag == 1.54933e-12_a);
 
-	REQUIRE(real(potential[0][0][0]) == 0.0076848468_a);
+	REQUIRE(real(potential[0][0][0]) == -0.0965706326_a);
 }
 
 
