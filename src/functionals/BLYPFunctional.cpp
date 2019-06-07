@@ -127,7 +127,8 @@ void BLYPFunctional::excblyp(double rho, double grad,
   const double fourthirds = 4.0 / 3.0;
   const double fivethirds = 5.0 / 3.0;
   const double beta=0.0042;
-  const double ax = -0.7385587663820224058; /* -0.75*pow(3.0/pi,third) */
+  // somehow this value is not used, it should be checked
+  //  const double ax = -0.7385587663820224058; /* -0.75*pow(3.0/pi,third) */
   const double axa = -0.9305257363490999; /* -1.5*pow(3.0/(4*pi),third) */
 
   /* LYP constants */
