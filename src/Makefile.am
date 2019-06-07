@@ -34,7 +34,6 @@ all_srcs =                                         \
 	functionals/PBEFunctional.cpp              \
 	functionals/PBERevFunctional.cpp           \
 	functionals/BLYPFunctional.cpp             \
-	functionals/LDAFunctional.cpp              \
 	functionals/PBESolFunctional.cpp
 
 bin_PROGRAMS  =                                    \
