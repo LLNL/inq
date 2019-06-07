@@ -32,36 +32,36 @@ using std::cout;
 
 int main(){
 
-  using math::d3vector;
-  
-  double ecut = 30.0;
+	using math::d3vector;
+
+	double ecut = 30.0;
   double ll = 10.0;
-    
+  
  // ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
  // hamiltonian::atomic_potential pot(geo.number_of_atoms(), geo.atoms());
 
   ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll});
   basis::plane_wave pw(cell, {100, 100, 100} );
 
-	namespace multi = boost::multi;
-	using complex = std::complex<double>;
-
-	multi::array<complex, 3> density(pw.rsize()); 
-	assert( density[1][2][3] == 0. );
-
-	density[0][0][ 0] = -1.0;
-	density[0][0][30] = +1.0;
-
-	namespace fftw = multi::fftw;
-
-	multi::array<complex, 3> potential = fftw::dft(density, fftw::forward);
-//	cout << "000 " << potential[0][0][0] << " " << << '\n';
-
-//	for(int ix = 0; ix != pw.rsize()[0]; ++ix)
-//		cout<< potential[ix][2][2] <<'\n';
-
+  namespace multi = boost::multi;
+  using complex = std::complex<double>;
+  
+  multi::array<complex, 3> density(pw.rsize());
+  assert( density[1][2][3] == 0. );
+  
+  density[0][0][ 0] = -1.0;
+  density[0][0][30] = +1.0;
+  
+  namespace fftw = multi::fftw;
+  
+  multi::array<complex, 3> potential = fftw::dft(density, fftw::forward);
+  //	cout << "000 " << potential[0][0][0] << " " << << '\n';
+  
+  //	for(int ix = 0; ix != pw.rsize()[0]; ++ix)
+  //		cout<< potential[ix][2][2] <<'\n';
+  
 #if 1
-	for(int ix = 0; ix < pw.rsize()[0]; ix++){
+  for(int ix = 0; ix < pw.rsize()[0]; ix++){
 		for(int iy = 0; iy < pw.rsize()[1]; iy++){
 			for(int iz = 0; iz < pw.rsize()[2]; iz++){
 				d3vector g{ix*pw.gspacing()[0], iy*pw.gspacing()[1], iz*pw.gspacing()[2]};
@@ -100,3 +100,6 @@ int main(){
 
 }
 
+// Local variables:
+// eval:(setq indent-tabs-mode t)
+// End:
