@@ -33,16 +33,15 @@
 
 #include "XCFunctional.hpp"
 #include <vector>
-using namespace std;
 
 class PBEFunctional : public XCFunctional
 {
   PBEFunctional();
   
-  vector<double> _exc, _exc_up, _exc_dn;
-  vector<double> _vxc1, _vxc1_up, _vxc1_dn, 
+  std::vector<double> _exc, _exc_up, _exc_dn;
+  std::vector<double> _vxc1, _vxc1_up, _vxc1_dn, 
                  _vxc2, _vxc2_upup, _vxc2_updn, _vxc2_dnup, _vxc2_dndn;
-  vector<double> _grad_rho[3], _grad_rho_up[3], _grad_rho_dn[3];
+  std::vector<double> _grad_rho[3], _grad_rho_up[3], _grad_rho_dn[3];
   
   void gcor2(double a, double a1, 
     double b1, double b2, double b3,
@@ -59,10 +58,10 @@ class PBEFunctional : public XCFunctional
 
   public:
   
-  PBEFunctional(const vector<vector<double> > &rhoe);
+  PBEFunctional(const std::vector<std::vector<double> > &rhoe);
   
   bool isGGA() { return true; };
-  string name() { return "PBE"; };
+  std::string name() { return "PBE"; };
   void setxc(void); 
 };
 #endif

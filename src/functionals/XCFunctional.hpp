@@ -66,7 +66,6 @@
 #define XCFUNCTIONAL_H
 
 #include <string>
-using namespace std;
 
 class XCFunctional {
 
@@ -83,7 +82,7 @@ class XCFunctional {
   double *vxc2, *vxc2_upup, *vxc2_dndn, *vxc2_updn, *vxc2_dnup;
 
   virtual bool isGGA(void) = 0;
-  virtual string name(void) = 0;
+  virtual std::string name(void) = 0;
   int np(void) { return _np; };
   int nspin(void) { return _nspin; };
   

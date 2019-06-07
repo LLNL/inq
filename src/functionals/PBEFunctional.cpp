@@ -33,6 +33,7 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
 PBEFunctional::PBEFunctional(const vector<vector<double> > &rhoe) {
