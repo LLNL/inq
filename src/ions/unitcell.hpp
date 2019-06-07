@@ -26,24 +26,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <config.h>
+//#include <config.h>
 
 #ifndef UNITCELL_H
 #define UNITCELL_H
 
-#include <math/d3vector.hpp>
+#include "../math/d3vector.hpp"
 #include <valarray>
 
 namespace ions{
 
-  class UnitCell {
+  class UnitCell{
+	using vector_type = math::d3vector;
   private:
-
-    math::d3vector a_[3];
-    math::d3vector b_[3];
+    vector_type a_[3];
+    vector_type b_[3];
     double volume_;
-    math::d3vector an_[13];
-    math::d3vector bn_[13];
+    vector_type an_[13];
+    vector_type bn_[13];
     double an2h_[13];
     double bn2h_[13];
   
@@ -56,17 +56,16 @@ namespace ions{
     double amat_inv_t_[9];
   
   public:
-
-    const math::d3vector& operator[](int i) const { return a_[i]; }
+	vector_type const& operator[](int i) const {return a_[i];}
     
-    const math::d3vector& a(int i) const { return a_[i]; }
-    const math::d3vector& b(int i) const { return b_[i]; }
+    vector_type const& a(int i) const { return a_[i]; }
+	vector_type const& b(int i) const { return b_[i]; }
   
-    UnitCell() { set(math::d3vector(0,0,0),math::d3vector(0,0,0),math::d3vector(0,0,0)); }  
-    explicit UnitCell(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2)
-    { set(a0,a1,a2); }
+    UnitCell() = default; 
+    UnitCell(math::d3vector const& a0, math::d3vector const& a1, math::d3vector const& a2) : a_{a0, a1, a2}{}
+//    { set(a0,a1,a2); }
   
-    void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2);
+//    void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2);
     double volume() const { return volume_; }
   
     const double* amat() const { return &amat_[0]; }

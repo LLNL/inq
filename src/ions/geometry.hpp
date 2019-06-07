@@ -19,9 +19,9 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <config/path.hpp>
-#include <math/d3vector.hpp>
-#include <pseudo/element.hpp>
+//#include "../config/path.hpp"
+#include "../math/d3vector.hpp"
+#include "../pseudo/element.hpp"
 
 #include <vector>
 #include <cassert>

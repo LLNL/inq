@@ -28,7 +28,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <config.h>
+//#include <config.h>
 
 #ifndef D3VECTOR_H
 #define D3VECTOR_H
@@ -43,27 +43,29 @@ namespace math {
     double x, y, z;
     
     // explicit constructor to avoid implicit conversion from double to d3vector
-    explicit d3vector(const double& xv, const double& yv, const double& zv) :
-      x(xv), y(yv), z(zv) {}
+    d3vector(double xv, double yv, double zv) : x{xv}, y{yv}, z{zv}{}
     explicit d3vector() : x(0.0), y(0.0), z(0.0) {}
 
     explicit d3vector(const double & vv) : x(vv), y(vv), z(vv) {}    
 
     explicit d3vector(const double* r) : x(r[0]), y(r[1]), z(r[2]) {}
 
-    double& operator[](const int &i)
-    {
-      assert(i>=0 && i <3);
-      if ( i == 0 ) return x;
-      else if ( i == 1 ) return y;
-      else return z;
+    double& operator[](int i){
+		static_assert( sizeof(*this) == sizeof(double)*3 );
+		return reinterpret_cast<double*>(this)[i];
+//      assert(i>=0 && i <3);
+//      if ( i == 0 ) return x;
+//      else if ( i == 1 ) return y;
+//      else return z;
     }
 
-    const double & operator[] (const int &i) const {
-      assert(i>=0 && i <3);
-      if ( i == 0 ) return x;
-      else if ( i == 1 ) return y;
-      else return z;
+	double const& operator[](int i) const{
+		static_assert( sizeof(*this) == sizeof(double)*3 );
+		return reinterpret_cast<double const*>(this)[i];
+//     assert(i>=0 && i <3);
+//     if ( i == 0 ) return x;
+//      else if ( i == 1 ) return y;
+//      else return z;
     }
 
     bool operator==(const d3vector &rhs) const

@@ -19,13 +19,14 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <pseudo/psml.hpp>
-#include <pseudo/qso.hpp>
-#include <pseudo/upf1.hpp>
-#include <pseudo/upf2.hpp>
-#include <pseudo/psp8.hpp>
-#include <pseudo/detect_format.hpp>
-#include <math/spline.hpp>
+#include "../pseudo/psml.hpp"
+#include "../pseudo/qso.hpp"
+#include "../pseudo/upf1.hpp"
+#include "../pseudo/upf2.hpp"
+#include "../pseudo/psp8.hpp"
+#include "../pseudo/detect_format.hpp"
+
+#include "../math/spline.hpp"
 
 namespace pseudo {
 

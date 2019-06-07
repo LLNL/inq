@@ -21,7 +21,7 @@
 
 #include <vector>
 #include <string>
-#include <math/spline.hpp>
+#include "../math/spline.hpp"
 #include "base.hpp"
 
 namespace pseudo {

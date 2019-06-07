@@ -28,7 +28,7 @@
 #include <map>
 #include <cstdlib>
 
-#include <config/path.hpp>
+//#include <config/path.hpp>
 
 namespace pseudo {
   

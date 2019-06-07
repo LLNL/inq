@@ -22,7 +22,7 @@
 // root directory of this distribution or <http://www.gnu.org/licenses/>.
 //
 
-#include <config.h>
+//#include <config.h>
 /*******************************************************************************
  *
  * spline.h

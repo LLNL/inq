@@ -21,7 +21,7 @@
 
 #include <vector>
 #include <string>
-#include <rapidxml/rapidxml.hpp>
+#include <rapidxml.h>
 #include "base.hpp"
 #include <sys/types.h>
 #include <sys/stat.h>

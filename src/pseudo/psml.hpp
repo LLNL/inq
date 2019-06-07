@@ -29,7 +29,7 @@
 #include "anygrid.hpp"
 #include "base.hpp"
 #include "element.hpp"
-#include <rapidxml/rapidxml.hpp>
+#include <rapidxml.h>
 
 namespace pseudo {
 

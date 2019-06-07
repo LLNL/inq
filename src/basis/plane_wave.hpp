@@ -19,14 +19,25 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <math/d3vector.hpp>
+#include "../math/d3vector.hpp"
 #include <cassert>
+#include <array>
 
 namespace basis {
+
   class plane_wave {
 
   public:
 
+	plane_wave(ions::UnitCell& cell, std::array<int, 3> nr) : nr_{nr}{
+		for(int idir = 0; idir < 3; idir++){
+			rlength_[idir] = length(cell[idir]);
+			ng_[idir] = nr_[idir];
+			rspacing_[idir] = rlength_[idir]/nr_[idir];
+			glength_[idir] = M_PI/rspacing_[idir];
+			gspacing_[idir] = glength_[idir]/ng_[idir];
+		}
+	}
     plane_wave(ions::UnitCell & cell, const double & ecut) {
       ecut_ = ecut;
       rspacing_ = math::d3vector(M_PI*sqrt(0.5/ecut));

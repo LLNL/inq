@@ -28,7 +28,7 @@
 #include "element.hpp"
 #include "base.hpp"
 
-#include <rapidxml/rapidxml.hpp>
+#include <rapidxml.h>
 
 namespace pseudo {
 
