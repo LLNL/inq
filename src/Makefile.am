@@ -20,6 +20,17 @@ noinst_HEADERS =                                   \
 	ions/interaction.hpp                       \
 	basis/plane_wave.hpp                       \
 	states/ks_states.hpp                       \
+	functionals/PBEFunctional.cpp              \
+	functionals/PBERevFunctional.cpp           \
+	functionals/BLYPFunctional.cpp             \
+	functionals/LDAFunctional.cpp              \
+	functionals/PBESolFunctional.cpp           \
+	functionals/LDAFunctional.hpp              \
+	functionals/PBESolFunctional.hpp           \
+	functionals/BLYPFunctional.hpp             \
+	functionals/PBERevFunctional.hpp           \
+	functionals/XCFunctional.hpp               \
+	functionals/PBEFunctional.hpp              \
 	hamiltonian/atomic_potential.hpp
 
 all_srcs =                                         \
