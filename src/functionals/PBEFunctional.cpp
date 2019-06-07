@@ -28,7 +28,7 @@
 
 #include <config.h>
 
-#include "PBEFunctional.h"
+#include "PBEFunctional.hpp"
 #include <cmath>
 #include <cassert>
 #include <iostream>

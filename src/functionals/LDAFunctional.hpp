@@ -34,7 +34,7 @@
 #include <vector>
 #include <cassert>
 using namespace std;
-#include "XCFunctional.h"
+#include "XCFunctional.hpp"
 
 class LDAFunctional : public XCFunctional {
   void xc_unpolarized(const double rh, double &ee, double &vv);

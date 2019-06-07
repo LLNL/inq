@@ -31,7 +31,7 @@
 
 #include <config.h>
 
-#include "LDAFunctional.h"
+#include "LDAFunctional.hpp"
 #include <cmath>
 #include <cassert>
 #include <vector>

@@ -20,11 +20,6 @@ noinst_HEADERS =                                   \
 	ions/interaction.hpp                       \
 	basis/plane_wave.hpp                       \
 	states/ks_states.hpp                       \
-	functionals/PBEFunctional.cpp              \
-	functionals/PBERevFunctional.cpp           \
-	functionals/BLYPFunctional.cpp             \
-	functionals/LDAFunctional.cpp              \
-	functionals/PBESolFunctional.cpp           \
 	functionals/LDAFunctional.hpp              \
 	functionals/PBESolFunctional.hpp           \
 	functionals/BLYPFunctional.hpp             \
@@ -35,7 +30,12 @@ noinst_HEADERS =                                   \
 
 all_srcs =                                         \
 	math/spline.cpp                            \
-	ions/unitcell.cpp
+	ions/unitcell.cpp                          \
+	functionals/PBEFunctional.cpp              \
+	functionals/PBERevFunctional.cpp           \
+	functionals/BLYPFunctional.cpp             \
+	functionals/LDAFunctional.cpp              \
+	functionals/PBESolFunctional.cpp
 
 bin_PROGRAMS  =                                    \
 	inq                                        \

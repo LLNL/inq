@@ -30,7 +30,7 @@
 
 #include <cmath>
 #include <cassert>
-#include "BLYPFunctional.h"
+#include "BLYPFunctional.hpp"
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////

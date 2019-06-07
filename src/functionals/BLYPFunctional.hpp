@@ -31,7 +31,7 @@
 #ifndef BLYPFUNCTIONAL_H
 #define BLYPFUNCTIONAL_H
 
-#include "XCFunctional.h"
+#include "XCFunctional.hpp"
 #include <vector>
 using namespace std;
 

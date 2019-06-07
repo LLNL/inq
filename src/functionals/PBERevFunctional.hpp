@@ -31,7 +31,7 @@
 #ifndef PBEREVFUNCTIONAL_H
 #define PBEREVFUNCTIONAL_H
 
-#include "XCFunctional.h"
+#include "XCFunctional.hpp"
 #include <vector>
 using namespace std;
 

@@ -28,7 +28,7 @@
 
 #include <config.h>
 
-#include "PBESolFunctional.h"
+#include "PBESolFunctional.hpp"
 #include <cmath>
 #include <cassert>
 #include <iostream>

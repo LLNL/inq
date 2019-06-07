@@ -28,7 +28,7 @@
 
 #include <config.h>
 
-#include "PBERevFunctional.h"
+#include "PBERevFunctional.hpp"
 #include <cmath>
 #include <cassert>
 #include <iostream>
