@@ -32,63 +32,101 @@
 #include <vector>
 #include <cassert>
 
-#include "XCFunctional.hpp"
+namespace functionals {
+  class LDAFunctional {
 
-class LDAFunctional : public XCFunctional {
-
-  std::vector<double> _exc;
-  std::vector<std::vector<double> > _vxc;
-  
-  LDAFunctional();
-  
   public:
-
-  void xc_unpolarized(const double rh, double &ee, double &vv);
-
-  void xc_polarized(const double rh, double &ee, double &vv);
-  
-  LDAFunctional(const std::vector<std::vector<double> > &rhoe) {
-    _nspin = rhoe.size();
-    if ( _nspin > 1 ) assert(rhoe[0].size() == rhoe[1].size());
-    _np = rhoe[0].size();
-    _exc.resize(_np);
-    _vxc.resize(_nspin);
-    for ( int i = 0; i < _nspin; i++ )
-    {
-      _vxc[i].resize(_np);
-    }
-    
-    if ( _nspin == 1 ) {
-      rho = &rhoe[0][0];
-      exc = &_exc[0];
-      vxc1 = &_vxc[0][0];
-    }
-    else {
-      rho_up = &rhoe[0][0];
-      rho_dn = &rhoe[1][0];
-      exc = &_exc[0];
-      vxc1_up = &_vxc[0][0];
-      vxc1_dn = &_vxc[1][0];
-    }
+    static void xc_unpolarized(const double rh, double &ee, double &vv);
+    static void xc_polarized(const double rh, double &ee, double &vv);
   };
-  
-  bool isGGA() { return false; };
-  std::string name() { return "LDA"; };
-  void setxc();
-};
+}
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
-#include <ions/geometry.hpp>
 
 TEST_CASE("Class functionals::LDAFunctional", "[LDAFunctional]") {
-  
-  SECTION("spin unpolarized"){
 
+  using namespace Catch::literals;
+
+    std::vector<double> nn({1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e-0, 1e1, 1e2, 1e3});
+    std::vector<double> ex(nn.size()), vx(nn.size());
+
+    //these values are from the same routine, to avoid changes in the
+    //results. But they haven't been validated to other source yet.
     
+    SECTION("spin unpolarized"){
+      
+      for(unsigned ii = 0; ii < nn.size(); ii++){
+	functionals::LDAFunctional::xc_unpolarized(nn[ii], ex[ii], vx[ii]);
+      }
+      
+      REQUIRE(ex[0] == -0.0121328183_a);
+      REQUIRE(vx[0] == -0.0159054085_a);
+      
+      REQUIRE(ex[1] == -0.0246687773_a);
+      REQUIRE(vx[1] == -0.0322046187_a);
+      
+      REQUIRE(ex[2] == -0.0495735123_a);
+      REQUIRE(vx[2] == -0.0644958518_a);
+      
+      REQUIRE(ex[3] == -0.0988616346_a);
+      REQUIRE(vx[3] == -0.1284302277_a);
+      
+      REQUIRE(ex[4] == -0.1970983191_a);
+      REQUIRE(vx[4] == -0.2564000609_a);
+      
+      REQUIRE(ex[5] == -0.3962482024_a);
+      REQUIRE(vx[5] == -0.5175699500_a);
+      
+      REQUIRE(ex[6] == -0.8092221329_a);
+      REQUIRE(vx[6] == -1.0635879059_a);
+      
+      REQUIRE(ex[7] == -1.6819692861_a);
+      REQUIRE(vx[7] == -2.2215642308_a);
+      
+      REQUIRE(ex[8] == -3.5407734574_a);
+      REQUIRE(vx[8] == -4.6932262077_a);
+      
+      REQUIRE(ex[9] == -7.5211172181_a);
+      REQUIRE(vx[9] == -9.9930315852_a);
+    }
     
-  }
-  
+    SECTION("spin polarized"){
+      for(unsigned ii = 0; ii < nn.size(); ii++){
+	functionals::LDAFunctional::xc_polarized(nn[ii], ex[ii], vx[ii]);
+      }
+
+      REQUIRE(ex[0] == -0.0122936534_a);
+      REQUIRE(vx[0] == -0.0161617994_a);
+      
+      REQUIRE(ex[1] == -0.0253096199_a);
+      REQUIRE(vx[1] == -0.0332259764_a);
+      
+      REQUIRE(ex[2] == -0.0519716782_a);
+      REQUIRE(vx[2] == -0.0682116367_a);
+      
+      REQUIRE(ex[3] == -0.1068678070_a);
+      REQUIRE(vx[3] == -0.1404217239_a);
+      
+      REQUIRE(ex[4] == -0.2209158888_a);
+      REQUIRE(vx[4] == -0.2909428124_a);
+      
+      REQUIRE(ex[5] == -0.4603409307_a);
+      REQUIRE(vx[5] == -0.6080094243_a);
+      
+      REQUIRE(ex[6] == -0.968035_a);
+      REQUIRE(vx[6] == -1.28248_a);
+      
+      REQUIRE(ex[7] == -2.05265_a);
+      REQUIRE(vx[7] == -2.72561_a);
+      
+      REQUIRE(ex[8] == -4.37814_a);
+      REQUIRE(vx[8] == -5.82279_a);
+      
+      REQUIRE(ex[9] == -9.37581_a);
+      REQUIRE(vx[9] == -12.4826_a);
+    }
+
 }
 
 #endif

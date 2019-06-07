@@ -30,5 +30,6 @@
 #include <ions/periodic_replicas.hpp>
 #include <basis/plane_wave.hpp>
 #include <states/ks_states.hpp>
+#include <functionals/LDAFunctional.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 
