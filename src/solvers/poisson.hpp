@@ -38,9 +38,9 @@ namespace solvers {
 
 			const double scal = (-4.0*M_PI)/basis.rtotalsize();
 			
-			for(int ix = 0; ix < basis.rsize()[0]; ix++){
-				for(int iy = 0; iy < basis.rsize()[1]; iy++){
-					for(int iz = 0; iz < basis.rsize()[2]; iz++){
+			for(int ix = 0; ix < basis.gsize()[0]; ix++){
+				for(int iy = 0; iy < basis.gsize()[1]; iy++){
+					for(int iz = 0; iz < basis.gsize()[2]; iz++){
 
 						if(basis.g_is_zero(ix, iy, iz)){
 							potential[0][0][0] = 0;
