@@ -26,9 +26,10 @@ noinst_HEADERS =                                   \
 	functionals/PBERevFunctional.hpp           \
 	functionals/XCFunctional.hpp               \
 	functionals/PBEFunctional.hpp              \
-	hamiltonian/atomic_potential.hpp
+	hamiltonian/atomic_potential.hpp           \
+	hamiltonian/ks_hamiltonian.hpp
 
-all_srcs =                                         \
+all_srcs =                                   \
 	math/spline.cpp                            \
 	ions/unitcell.cpp                          \
 	functionals/PBEFunctional.cpp              \
