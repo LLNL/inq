@@ -21,9 +21,9 @@
 
 #include <math/complex.hpp>
 #include <multi/array.hpp>
+#include <basis/plane_wave.hpp>
 
 namespace states {
-  template <class basis_type>
   class ks_states {
 
   public:
@@ -34,7 +34,7 @@ namespace states {
       NON_COLLINEAR
     };
         
-    ks_states(const spin_config spin, const double nelectrons, const basis_type & basis){
+    ks_states(const spin_config spin, const double nelectrons){
 
       if(spin == spin_config::NON_COLLINEAR){
 				nspinor_ = 2;
@@ -46,9 +46,6 @@ namespace states {
 
       nquantumnumbers_ = 1;
       if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
-
-			coeff.reextent({nquantumnumbers_, basis.rsize()[0], basis.rsize()[1], basis.rsize()[2], nstates_, nspinor_});
-			
     }
 
     int num_states() const {
@@ -63,8 +60,13 @@ namespace states {
       return nquantumnumbers_;
     }
 
-		boost::multi::array<complex, 6> coeff;		
+		typedef boost::multi::array<complex, 6> coeff;
 		
+		template <class array_type>
+		std::array<long int, 6> coeff_dimensions(const array_type & basis_dims) const {
+			return {nquantumnumbers_, basis_dims[0], basis_dims[1], basis_dims[2], nstates_, nspinor_};
+		}
+				
   private:
 
     int nspinor_;
@@ -79,7 +81,6 @@ namespace states {
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
-#include <basis/plane_wave.hpp>
 
 TEST_CASE("Class states::ks_states", "[ks_states]"){
 
@@ -93,47 +94,50 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
   
   SECTION("Spin unpolarized"){
     
-    states::ks_states<basis::plane_wave> st(states::ks_states<basis::plane_wave>::spin_config::UNPOLARIZED, 11.0, pw);
+    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
     
     REQUIRE(st.num_spinors() == 1);
     REQUIRE(st.num_states() == 6);
     REQUIRE(st.num_quantum_numbers() == 1);
-		REQUIRE(std::get<0>(extensions(st.coeff)) == st.num_quantum_numbers());
-		REQUIRE(std::get<1>(extensions(st.coeff)) == pw.rsize()[0]);
-		REQUIRE(std::get<2>(extensions(st.coeff)) == pw.rsize()[1]);
-		REQUIRE(std::get<3>(extensions(st.coeff)) == pw.rsize()[2]);
-		REQUIRE(std::get<4>(extensions(st.coeff)) == st.num_states());
-		REQUIRE(std::get<5>(extensions(st.coeff)) == st.num_spinors());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[5] == st.num_spinors());
+
+		states::ks_states::coeff(st.coeff_dimensions(pw.rsize()));
+		
   }
 
   SECTION("Spin polarized"){
     
-    states::ks_states<basis::plane_wave> st(states::ks_states<basis::plane_wave>::spin_config::POLARIZED, 11.0, pw);
+    states::ks_states st(states::ks_states::spin_config::POLARIZED, 11.0);
     
     REQUIRE(st.num_spinors() == 1);
     REQUIRE(st.num_states() == 6);
     REQUIRE(st.num_quantum_numbers() == 2);
-		REQUIRE(std::get<0>(extensions(st.coeff)) == st.num_quantum_numbers());
-		REQUIRE(std::get<1>(extensions(st.coeff)) == pw.rsize()[0]);
-		REQUIRE(std::get<2>(extensions(st.coeff)) == pw.rsize()[1]);
-		REQUIRE(std::get<3>(extensions(st.coeff)) == pw.rsize()[2]);
-		REQUIRE(std::get<4>(extensions(st.coeff)) == st.num_states());
-		REQUIRE(std::get<5>(extensions(st.coeff)) == st.num_spinors());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[5] == st.num_spinors());
   }
 
   SECTION("Non-collinear spin"){
     
-    states::ks_states<basis::plane_wave> st(states::ks_states<basis::plane_wave>::spin_config::NON_COLLINEAR, 11.0, pw);
+    states::ks_states st(states::ks_states::spin_config::NON_COLLINEAR, 11.0);
     
     REQUIRE(st.num_spinors() == 2);
     REQUIRE(st.num_states() == 11);
     REQUIRE(st.num_quantum_numbers() == 1);
-		REQUIRE(std::get<0>(extensions(st.coeff)) == st.num_quantum_numbers());
-		REQUIRE(std::get<1>(extensions(st.coeff)) == pw.rsize()[0]);
-		REQUIRE(std::get<2>(extensions(st.coeff)) == pw.rsize()[1]);
-		REQUIRE(std::get<3>(extensions(st.coeff)) == pw.rsize()[2]);
-		REQUIRE(std::get<4>(extensions(st.coeff)) == st.num_states());
-		REQUIRE(std::get<5>(extensions(st.coeff)) == st.num_spinors());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
+		REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
+		REQUIRE(st.coeff_dimensions(pw.rsize())[5] == st.num_spinors());
   }
 
   
