@@ -31,8 +31,13 @@ namespace hamiltonian {
     ks_hamiltonian(const basis_type & basis):
 			scalar_potential(basis.rsize()){
 
-			//	for(auto it = scalar_potential.begin(); it != scalar_potential.end(); ++it) *it = 0.0;
-			
+			for(int ix = 0; ix < basis.rsize()[0]; ix++){
+				for(int iy = 0; iy < basis.rsize()[1]; iy++){
+					for(int iz = 0; iz < basis.rsize()[2]; iz++){
+						scalar_potential[ix][iy][iz] = 0.0;
+					}
+				}
+			}
     }
 
 		boost::multi::array<double, 3> scalar_potential;
@@ -45,10 +50,12 @@ namespace hamiltonian {
 			
 			multi::array<complex, 3> fftgrid(basis.rsize());
 
-			//the Laplacian
+			//the Laplacian in Fourier space
 			for(int ist = 0; ist < st.num_states(); ist++){
 				for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++){
 
+					// for the moment we have to copy to single grid, since the
+					// fft interfaces assumes the transform is over the last indices					
 					for(int ix = 0; ix < basis.rsize()[0]; ix++){
 						for(int iy = 0; iy < basis.rsize()[1]; iy++){
 							for(int iz = 0; iz < basis.rsize()[2]; iz++){
@@ -63,7 +70,7 @@ namespace hamiltonian {
 					for(int ix = 0; ix < basis.gsize()[0]; ix++){
 						for(int iy = 0; iy < basis.gsize()[1]; iy++){
 							for(int iz = 0; iz < basis.gsize()[2]; iz++){
-								fftgrid[ix][iy][iz] *= -scal/basis.g2(ix, iy, iz);
+								fftgrid[ix][iy][iz] *= -scal*basis.g2(ix, iy, iz);
 							}
 						}
 					}
@@ -81,7 +88,7 @@ namespace hamiltonian {
 				}
 			}
 
-			//the scalar local potential
+			//the scalar local potential in real space
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){
 					for(int iz = 0; iz < basis.rsize()[2]; iz++){
@@ -90,7 +97,7 @@ namespace hamiltonian {
 						
 						for(int ist = 0; ist < st.num_states(); ist++){
 							for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-								hphi[ix][iy][iz][ist][ispinor] *= vv;
+								hphi[ix][iy][iz][ist][ispinor] += vv*phi[ix][iy][iz][ist][ispinor];
 							}
 						}
 						
@@ -114,6 +121,7 @@ namespace hamiltonian {
 
 TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 
+  using namespace Catch::literals;
   using math::d3vector;
   
   double ecut = 20.0;
@@ -126,12 +134,81 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 	states::ks_states::coeff phi(st.coeff_dimensions(pw.rsize()));
 	states::ks_states::coeff hphi(st.coeff_dimensions(pw.rsize()));
 
-	//	for(auto it = phi.begin(); it != phi.end(); ++it)	*it = 0.0;
-
 	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw);
 
-	ham.apply(pw, st, phi[0], hphi[0]);
+
+	SECTION("Constant function"){
+		
+		
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					for(int ist = 0; ist < st.num_states(); ist++){
+						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
+							phi[0][ix][iy][iz][ist][ispinor] = 1.0;
+						}
+					}
+				}
+			}
+		}
+		
+		ham.apply(pw, st, phi[0], hphi[0]);
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					for(int ist = 0; ist < st.num_states(); ist++){
+						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
+							diff += fabs(hphi[0][ix][iy][iz][ist][ispinor] - 0.0);
+						}
+					}
+				}
+			}
+		}
+
+		diff /= hphi.num_elements();
+		
+		REQUIRE(diff == 0.0_a);
+		
+	}
 	
+	SECTION("Plane wave"){
+		
+		double kk = 2.0*M_PI/pw.rsize()[0];
+		
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					for(int ist = 0; ist < st.num_states(); ist++){
+						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
+							phi[0][ix][iy][iz][ist][ispinor] = complex(cos(ist*kk*ix), sin(ist*kk*ix));
+						}
+					}
+				}
+			}
+		}
+		
+		ham.apply(pw, st, phi[0], hphi[0]);
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					for(int ist = 0; ist < st.num_states(); ist++){
+						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
+							diff += fabs(hphi[0][ix][iy][iz][ist][ispinor] - 0.5*ist*kk*ist*kk*phi[0][ix][iy][iz][ist][ispinor]);
+						}
+					}
+				}
+			}
+		}
+
+		diff /= hphi.num_elements();
+		
+		REQUIRE(diff == 5.18263e-16_a);
+		
+	}
 }
 
 #endif

@@ -93,6 +93,10 @@ namespace basis {
       return ng_[0]*ng_[1]*ng_[2];
     }
 
+		math::d3vector rvector(const int ix, const int iy, const int iz) const {
+			return math::d3vector(ix*rspacing_[0], iy*rspacing_[1], iz*rspacing_[2]) - 0.5*rlength();
+		}
+		
 		math::d3vector gvector(const int ix, const int iy, const int iz) const {
 			math::d3vector g{ix*gspacing()[0], iy*gspacing()[1], iz*gspacing()[2]};
 			for(int idir = 0; idir < 3; idir++) {
