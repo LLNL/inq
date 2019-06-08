@@ -42,16 +42,12 @@ namespace solvers {
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){
 					for(int iz = 0; iz < basis.rsize()[2]; iz++){
 
-						math::d3vector g{ix*basis.gspacing()[0], iy*basis.gspacing()[1], iz*basis.gspacing()[2]};
-
-						for(int idx = 0; idx != 3; ++idx) if(g[idx] > basis.glength()[idx]/2) g[idx] -= basis.glength()[idx];
-					
-						if(ix == 0 and iy == 0 and iz == 0){
+						if(basis.g_is_zero(ix, iy, iz)){
 							potential[0][0][0] = 0;
 							continue;
 						}
 						
-						potential[ix][iy][iz] *= -scal/norm(g);
+						potential[ix][iy][iz] *= -scal/basis.g2(ix, iy, iz);
 					}
 				}
 			}

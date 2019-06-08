@@ -28,33 +28,33 @@ namespace basis {
   class plane_wave {
 
   public:
-
-	plane_wave(ions::UnitCell& cell, std::array<int, 3> nr) : nr_{nr}{
-		for(int idir = 0; idir < 3; idir++){
-			rlength_[idir] = length(cell[idir]);
-			ng_[idir] = nr_[idir];
-			rspacing_[idir] = rlength_[idir]/nr_[idir];
-			glength_[idir] = M_PI/rspacing_[idir];
-			gspacing_[idir] = glength_[idir]/ng_[idir];
+		
+		plane_wave(ions::UnitCell& cell, std::array<int, 3> nr) : nr_{nr}{
+			for(int idir = 0; idir < 3; idir++){
+				rlength_[idir] = length(cell[idir]);
+				ng_[idir] = nr_[idir];
+				rspacing_[idir] = rlength_[idir]/nr_[idir];
+				glength_[idir] = M_PI/rspacing_[idir];
+				gspacing_[idir] = glength_[idir]/ng_[idir];
+			}
 		}
-	}
+
     plane_wave(ions::UnitCell & cell, const double & ecut) {
       ecut_ = ecut;
       rspacing_ = math::d3vector(M_PI*sqrt(0.5/ecut));
-
+			
       // make the spacing conmensurate with the grid
       // OPTIMIZATION: we can select a good size here for the FFT
       for(int idir = 0; idir < 3; idir++){
-	rlength_[idir] = length(cell[idir]);
-	
-	nr_[idir] = round(rlength_[idir]/rspacing_[idir]);
-	ng_[idir] = nr_[idir];
-
-	rspacing_[idir] = rlength_[idir]/nr_[idir];
-	glength_[idir] = M_PI/rspacing_[idir];
-	gspacing_[idir] = glength_[idir]/ng_[idir];
+				rlength_[idir] = length(cell[idir]);
+				
+				nr_[idir] = round(rlength_[idir]/rspacing_[idir]);
+				ng_[idir] = nr_[idir];
+				
+				rspacing_[idir] = rlength_[idir]/nr_[idir];
+				glength_[idir] = M_PI/rspacing_[idir];
+				gspacing_[idir] = glength_[idir]/ng_[idir];
       }
-
     }
 
     const double & ecut() const {
@@ -92,8 +92,24 @@ namespace basis {
     int gtotalsize() const {
       return ng_[0]*ng_[1]*ng_[2];
     }
-    
-  private:
+
+		math::d3vector gvector(const int ix, const int iy, const int iz) const {
+			math::d3vector g{ix*gspacing()[0], iy*gspacing()[1], iz*gspacing()[2]};
+			for(int idir = 0; idir < 3; idir++) {
+				if(g[idir] > 0.5*glength()[idir]) g[idir] -= glength()[idir];
+			}
+			return g;
+		}
+
+		bool g_is_zero(const int ix, const int iy, const int iz) const {
+			return (ix == 0 and iy == 0 and iz == 0);
+		}
+
+		double g2(const int ix, const int iy, const int iz) const {
+			return norm(gvector(ix, iy, iz));
+		}
+
+	private:
     double ecut_;
     std::array<int, 3> nr_;
     std::array<int, 3> ng_;
