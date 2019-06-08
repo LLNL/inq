@@ -31,24 +31,23 @@ namespace hamiltonian {
     ks_hamiltonian(const basis_type & basis):
 			scalar_potential(basis.rsize()){
 
-			for(auto it = scalar_potential.begin(); scalar_potential.end(); ++it)	*it = 0.0;
+			//	for(auto it = scalar_potential.begin(); it != scalar_potential.end(); ++it) *it = 0.0;
 			
     }
 
-		boost::multi::array<complex, 3> scalar_potential;
+		boost::multi::array<double, 3> scalar_potential;
 
-		void apply(const basis_type & basis, const states::ks_states<basis::plane_wave> st,
-							 const boost::multi::array<complex, 5> & phi, boost::multi::array<complex, 5> & hphi){
+		template <class array_dim5>
+		void apply(const basis_type & basis, const states::ks_states st, const array_dim5 && phi, array_dim5 && hphi){
 
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
 			
 			multi::array<complex, 3> fftgrid(basis.rsize());
 
-
 			//the Laplacian
 			for(int ist = 0; ist < st.num_states(); ist++){
-				for(int ispinor = 0; ist < st.num_spinors(); ispinor++){
+				for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++){
 
 					for(int ix = 0; ix < basis.rsize()[0]; ix++){
 						for(int iy = 0; iy < basis.rsize()[1]; iy++){
@@ -60,7 +59,15 @@ namespace hamiltonian {
 
 					fftw::dft_inplace(fftgrid, fftw::forward);
 
-
+					double scal = -0.5/basis.rtotalsize();
+					for(int ix = 0; ix < basis.gsize()[0]; ix++){
+						for(int iy = 0; iy < basis.gsize()[1]; iy++){
+							for(int iz = 0; iz < basis.gsize()[2]; iz++){
+								fftgrid[ix][iy][iz] *= -scal/basis.g2(ix, iy, iz);
+							}
+						}
+					}
+					
 					fftw::dft_inplace(fftgrid, fftw::backward);
 					
 					for(int ix = 0; ix < basis.rsize()[0]; ix++){
@@ -74,7 +81,6 @@ namespace hamiltonian {
 				}
 			}
 
-
 			//the scalar local potential
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){
@@ -83,7 +89,7 @@ namespace hamiltonian {
 						double vv  = scalar_potential[ix][iy][iz];
 						
 						for(int ist = 0; ist < st.num_states(); ist++){
-							for(int ispinor = 0; ist < st.num_spinors(); ispinor++){
+							for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
 								hphi[ix][iy][iz][ist][ispinor] *= vv;
 							}
 						}
@@ -110,13 +116,22 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 
   using math::d3vector;
   
-  double ecut = 30.0;
+  double ecut = 20.0;
   double ll = 10.0;
   
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
   basis::plane_wave pw(cell, ecut);
-	states::ks_states<basis::plane_wave> st(states::ks_states<basis::plane_wave>::spin_config::UNPOLARIZED, 11.0, pw);  
+	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);  
 
+	states::ks_states::coeff phi(st.coeff_dimensions(pw.rsize()));
+	states::ks_states::coeff hphi(st.coeff_dimensions(pw.rsize()));
+
+	//	for(auto it = phi.begin(); it != phi.end(); ++it)	*it = 0.0;
+
+	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw);
+
+	ham.apply(pw, st, phi[0], hphi[0]);
+	
 }
 
 #endif
