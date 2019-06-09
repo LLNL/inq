@@ -101,5 +101,5 @@ int main(){
 }
 
 // Local variables:
-// eval:(setq indent-tabs-mode t)
+// eval:(setq indent-tabs-mode t tab-width 2)
 // End:
