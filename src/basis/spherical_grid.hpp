@@ -30,19 +30,16 @@ namespace basis {
   public:
     template <class basis>
     spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::d3vector & center_point, const double radius){
-      ions::periodic_replicas rep(cell, center_point, radius);
 
+      ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
       
       for(int ix = 0; ix < parent_grid.rsize()[0]; ix++){
 	for(int iy = 0; iy < parent_grid.rsize()[1]; iy++){
 	  for(int iz = 0; iz < parent_grid.rsize()[2]; iz++){
 	    auto rpoint = parent_grid.rvector(ix, iy, iz);
 
-	    for(int irep = 0; rep.size(); irep++){
-	      if(norm(rpoint - rep[irep]) <= radius*radius){ 
-		points_.push_back({ix, iy, iz});
-		break;
-	      }
+	    for(int irep = 0; irep < rep.size(); irep++){
+	      if(norm(rpoint - rep[irep]) <= radius*radius) points_.push_back({ix, iy, iz});
 	    }
 	    
 	  }
@@ -55,6 +52,20 @@ namespace basis {
       return points_.size();
     }
     
+    template <class basis, class array_3d, class array_1d>
+    void copy_to(const basis & parent_grid, const array_3d & grid, array_1d && subgrid) const {
+      for(int ipoint = 0; ipoint < size(); ipoint++){
+	subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
+      }
+    }
+
+    template <class basis, class array_1d, class array_3d>
+    void copy_from(const basis & parent_grid, const array_1d & subgrid, array_3d && grid) const{
+      for(int ipoint = 0; ipoint < size(); ipoint++){
+	grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
+      }
+    }
+    
   private:
     
     std::vector<std::array<int, 3> > points_;
@@ -65,39 +76,122 @@ namespace basis {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
+#include <multi/array.hpp>
+#include <math/complex.hpp>
 
 TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
   
   using namespace Catch::literals;
   using math::d3vector;
+
+  double ll = 10.0;
   
-  {
+  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+  
+  double ecut = 20.0;
+  
+  basis::plane_wave pw(cell, ecut);
+  
+  SECTION("Point 0 0 0"){
     
-    SECTION("Cubic cell"){
+    basis::spherical_grid sphere(pw, cell, {0.0, 0.0, 0.0}, 2.0);
+						       
+    REQUIRE(sphere.size() == 257);
 
-      ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
+    boost::multi::array<complex, 3> grid(pw.rsize());
+    std::vector<complex> subgrid(sphere.size());
 
-      double ecut = 20.0;
-      
-      basis::plane_wave pw(cell, ecut);
+    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;
+    
+    sphere.copy_to(pw, grid, subgrid);
 
-      basis::spherical_grid sphere(pw, cell, {0.0, 0.0, 0.0}, 5.0);
-      
+    for(unsigned ii = 0; ii < subgrid.size(); ii++) subgrid[ii] = 1.0; 
+    
+    sphere.copy_from(pw, subgrid, grid);
 
-    }
+    double sum = 0.0;
+    for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
 
-    SECTION("Parallelepipedic cell"){
-
-      ions::UnitCell cell(d3vector(77.7, 0.0, 0.0), d3vector(0.0, 14.14, 0.0), d3vector(0.0, 0.0, 23.25));
-
-      double ecut = 37.9423091;
-      
-      basis::plane_wave pw(cell, ecut);
-
-
-    }
-
+    REQUIRE(sum == 257.0_a);
+    
   }
+
+  SECTION("Point -l/2 0 0"){
+    
+    basis::spherical_grid sphere(pw, cell, {-ll/2.0, 0.0, 0.0}, 2.0);
+    
+    REQUIRE(sphere.size() == 257);
+    
+    boost::multi::array<complex, 4> grid({pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 20}, 0.0);
+    boost::multi::array<complex, 2> subgrid({sphere.size(), 20}, 0.0);
+
+    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 1.0;
+    
+    sphere.copy_to(pw, grid, subgrid);
+
+    double sum = 0.0;
+    for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data()[ii]);
+
+    REQUIRE(sum == Approx(20.0*257.0));
+    
+    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 0.0;
+    
+    sphere.copy_from(pw, subgrid, grid);
+
+    sum = 0.0;
+    for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
+
+    REQUIRE(sum == Approx(20.0*(pw.size() - sphere.size())));
+    
+  }
+
+  SECTION("Point l/2 0 0"){
+    
+    basis::spherical_grid sphere(pw, cell, {ll/2.0, 0.0, 0.0}, 2.0);
+    
+    REQUIRE(sphere.size() == 257);
+
+    boost::multi::array<complex, 6> grid({1, pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 2, 20}, 0.0);
+    boost::multi::array<complex, 3> subgrid({sphere.size(), 2, 20}, 0.0);
+
+    sphere.copy_to(pw, grid[0], subgrid);
+
+    sphere.copy_from(pw, subgrid, grid[0]);
+    
+  }
+
+  SECTION("Point -l/2 -l/2 -l/2"){
+    
+    basis::spherical_grid sphere(pw, cell, {-ll/2.0, -ll/2.0, -ll/2.0}, 2.0);
+    
+    REQUIRE(sphere.size() == 257);
+    
+  }
+
+  SECTION("Point l/2 l/2 l/2"){
+    
+    basis::spherical_grid sphere(pw, cell, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
+    
+    REQUIRE(sphere.size() == 257);
+    
+  }
+
+  SECTION("Point l/2 l/2 l/2"){
+    
+    basis::spherical_grid sphere(pw, cell, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
+    
+    REQUIRE(sphere.size() == 257);
+    
+  }
+
+  SECTION("Point l/4 l/4 l/4"){
+    
+    basis::spherical_grid sphere(pw, cell, {ll/4.0, ll/4.0, ll/4.0}, 2.0);
+    
+    REQUIRE(sphere.size() == 257);
+    
+  }
+  
 }
 #endif
 
