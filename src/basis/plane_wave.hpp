@@ -85,16 +85,16 @@ namespace basis {
       return glength_;
     }
 
-    int size() const {
-      return nr_[0]*nr_[1]*nr_[2];
+    long size() const {
+      return nr_[0]*long(nr_[1])*nr_[2];
     }
 		
-    int rtotalsize() const {
-      return nr_[0]*nr_[1]*nr_[2];
+    long rtotalsize() const {
+      return nr_[0]*long(nr_[1])*nr_[2];
     }
 
-    int gtotalsize() const {
-      return ng_[0]*ng_[1]*ng_[2];
+    long gtotalsize() const {
+      return ng_[0]*long(ng_[1])*ng_[2];
     }
 
 		math::d3vector rvector(const int ix, const int iy, const int iz) const {
