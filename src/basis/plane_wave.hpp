@@ -85,6 +85,10 @@ namespace basis {
       return glength_;
     }
 
+    int size() const {
+      return nr_[0]*nr_[1]*nr_[2];
+    }
+		
     int rtotalsize() const {
       return nr_[0]*nr_[1]*nr_[2];
     }
@@ -208,3 +212,6 @@ TEST_CASE("class basis::plane_wave", "[basis]") {
     
 #endif
 
+// Local variables:
+// eval:(setq indent-tabs-mode t tab-width 2)
+// End:
