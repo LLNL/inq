@@ -76,7 +76,11 @@ namespace basis {
     const math::d3vector & gspacing() const{
       return gspacing_;
     }
-    
+
+		double diagonal_length() const {
+			return length(rlength_);
+		}
+		
     const math::d3vector & rlength() const{
       return rlength_;
     }
