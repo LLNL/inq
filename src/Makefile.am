@@ -19,6 +19,7 @@ noinst_HEADERS =                                   \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
 	basis/plane_wave.hpp                       \
+	basis/spherical_grid.hpp                   \
 	states/ks_states.hpp                       \
 	functionals/LDAFunctional.hpp              \
 	functionals/PBESolFunctional.hpp           \
