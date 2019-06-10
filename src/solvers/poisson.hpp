@@ -78,40 +78,76 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
   basis::plane_wave pw(cell, {100, 100, 100} );
 
 	multi::array<complex, 3> density(pw.rsize());
-
-	for(int ix = 0; ix < pw.rsize()[0]; ix++){
-		for(int iy = 0; iy < pw.rsize()[1]; iy++){
-			for(int iz = 0; iz < pw.rsize()[2]; iz++){
-				density[ix][iy][iz] = 0.0;
-			}
-		}
-	}
-	
-  density[0][0][0] = -1.0;
-  
-  namespace fftw = multi::fftw;
-  
   multi::array<complex, 3> potential(extensions(density));
-
 	solvers::poisson psolver;
 
-	psolver.solve(pw, density, potential);
-
-	double sumreal = 0.0;
-	double sumimag = 0.0;
-	for(int ix = 0; ix < pw.rsize()[0]; ix++){
-		for(int iy = 0; iy < pw.rsize()[1]; iy++){
-			for(int iz = 0; iz < pw.rsize()[2]; iz++){
-				sumreal += fabs(real(potential[ix][iy][iz]));
-				sumimag += fabs(imag(potential[ix][iy][iz]));
+	SECTION("Point charge"){
+		
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					density[ix][iy][iz] = 0.0;
+				}
 			}
 		}
+
+		density[0][0][0] = -1.0;
+		
+		psolver.solve(pw, density, potential);
+		
+		double sumreal = 0.0;
+		double sumimag = 0.0;
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					sumreal += fabs(real(potential[ix][iy][iz]));
+					sumimag += fabs(imag(potential[ix][iy][iz]));
+				}
+			}
+		}
+
+		// These values haven't been validated against anything, they are just for consistency
+
+		std::cout << sumimag << std::endl;
+		
+		REQUIRE(sumreal == 59.7758543176_a);
+		REQUIRE(sumimag == 3.87333e-13_a);
+		
+		REQUIRE(real(potential[0][0][0]) == -0.0241426581_a);
+	}
+
+	SECTION("Plane wave"){
+
+		double kk = 2.0*M_PI/pw.rlength()[0];
+		
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					double xx = pw.rvector(ix, iy, iz)[0];
+					density[ix][iy][iz] = complex(cos(kk*xx), sin(kk*xx));
+					
+				}
+			}
+		}
+
+		psolver.solve(pw, density, potential);
+
+		double diff = 0.0;
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					diff += fabs(potential[ix][iy][iz] - 4*M_PI/kk/kk*density[ix][iy][iz]);
+				}
+			}
+		}
+
+		diff /= pw.size();
+		
+		REQUIRE(diff == 7.33009e-15_a);
+	
 	}
 	
-	REQUIRE(sumreal == 239.1034172704_a);
-	REQUIRE(sumimag == 1.54933e-12_a);
 
-	REQUIRE(real(potential[0][0][0]) == -0.0965706326_a);
 }
 
 
@@ -120,6 +156,6 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 #endif
 
-// Local Variables:
-// mode: c++
+// Local variables:
+// eval:(setq indent-tabs-mode t tab-width 2)
 // End:
