@@ -103,8 +103,13 @@ namespace basis {
 
 		math::d3vector rvector(const int ix, const int iy, const int iz) const {
 
-			// the 0 0 0 point is at the center of the grid
+			// shift so that the 0 0 0 point is at the center of the grid
 			return math::d3vector(ix*rspacing_[0], iy*rspacing_[1], iz*rspacing_[2]) - 0.5*rlength();
+		}
+
+		template <class int_array>
+		math::d3vector rvector(const int_array & indices) const {
+			return rvector(indices[0], indices[1], indices[2]);
 		}
 
 		double r2(const int ix, const int iy, const int iz) const {
