@@ -52,15 +52,15 @@ namespace basis {
       return points_.size();
     }
     
-    template <class basis, class array_3d, class array_1d>
-    void copy_to(const basis & parent_grid, const array_3d & grid, array_1d && subgrid) const {
+    template <class array_3d, class array_1d>
+    void copy_to(const array_3d & grid, array_1d && subgrid) const {
       for(int ipoint = 0; ipoint < size(); ipoint++){
 	subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
       }
     }
 
-    template <class basis, class array_1d, class array_3d>
-    void copy_from(const basis & parent_grid, const array_1d & subgrid, array_3d && grid) const{
+    template <class array_1d, class array_3d>
+    void copy_from(const array_1d & subgrid, array_3d && grid) const{
       for(int ipoint = 0; ipoint < size(); ipoint++){
 	grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }
@@ -107,11 +107,11 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;
     
-    sphere.copy_to(pw, grid, subgrid);
+    sphere.copy_to(grid, subgrid);
 
     for(unsigned ii = 0; ii < subgrid.size(); ii++) subgrid[ii] = 1.0; 
     
-    sphere.copy_from(pw, subgrid, grid);
+    sphere.copy_from(subgrid, grid);
 
     double sum = 0.0;
     for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
@@ -131,7 +131,7 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 1.0;
     
-    sphere.copy_to(pw, grid, subgrid);
+    sphere.copy_to(grid, subgrid);
 
     double sum = 0.0;
     for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data()[ii]);
@@ -140,7 +140,7 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
     
     for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 0.0;
     
-    sphere.copy_from(pw, subgrid, grid);
+    sphere.copy_from(subgrid, grid);
 
     sum = 0.0;
     for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
@@ -158,9 +158,9 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
     boost::multi::array<complex, 6> grid({1, pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 2, 20}, 0.0);
     boost::multi::array<complex, 3> subgrid({sphere.size(), 2, 20}, 0.0);
 
-    sphere.copy_to(pw, grid[0], subgrid);
+    sphere.copy_to(grid[0], subgrid);
 
-    sphere.copy_from(pw, subgrid, grid[0]);
+    sphere.copy_from(subgrid, grid[0]);
     
   }
 
