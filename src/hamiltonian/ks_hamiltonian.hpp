@@ -210,6 +210,51 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 		REQUIRE(diff == 8.54868e-16_a);
 		
 	}
+
+
+	SECTION("Harmonic oscillator"){
+
+		double ww = 2.0;
+
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					double r2 = pw.r2(ix, iy, iz);
+					ham.scalar_potential[ix][iy][iz] = ww*r2;
+
+					for(int ist = 0; ist < st.num_states(); ist++){
+						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
+							phi[0][ix][iy][iz][ist][ispinor] = exp(-0.5*ww*r2);
+						}
+					}
+					
+				}
+			}
+		}
+		
+		ham.apply(pw, st, phi[0], hphi[0]);
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					for(int ist = 0; ist < st.num_states(); ist++){
+						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
+							diff += fabs(hphi[0][ix][iy][iz][ist][ispinor] - ww*phi[0][ix][iy][iz][ist][ispinor]);
+						}
+					}
+				}
+			}
+		}
+
+		diff /= hphi.num_elements();
+
+		REQUIRE(diff == 0.0055687279_a);
+		
+	}
+
+	
+	
 }
 
 #endif

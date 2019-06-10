@@ -106,6 +106,10 @@ namespace basis {
 			// the 0 0 0 point is at the center of the grid
 			return math::d3vector(ix*rspacing_[0], iy*rspacing_[1], iz*rspacing_[2]) - 0.5*rlength();
 		}
+
+		double r2(const int ix, const int iy, const int iz) const {
+			return norm(rvector(ix, iy, iz));
+		}
 		
 		math::d3vector gvector(const int ix, const int iy, const int iz) const {
 
