@@ -76,9 +76,9 @@ namespace pseudo {
 	throw error::UNSUPPORTED_TYPE;
       }
       
-      std::vector<double> grid, local_potential;
+      std::vector<double> local_potential;
 
-      pseudo->grid(grid);
+      pseudo->grid(grid_);
 
       valence_charge_ = pseudo->valence_charge();
 
@@ -89,11 +89,29 @@ namespace pseudo {
       pseudo->local_potential(local_potential);
 
       for(unsigned ii = 0; ii < local_potential.size(); ii++){
-	local_potential[ii] -= long_range_potential(grid[ii]);
+	local_potential[ii] -= long_range_potential(grid_[ii]);
       }
 
-      short_range_.fit(grid.data(), local_potential.data(), local_potential.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
+      short_range_.fit(grid_.data(), local_potential.data(), local_potential.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
 
+      //THE PROJECTORS
+
+      std::vector<double> proj;
+      
+      for(int ll = 0; ll < pseudo->lmax(); ll++){
+	for(int ichan = 0; ichan < pseudo->nchannels(); ichan++){
+	  if(ll == pseudo->llocal()) continue;
+
+	  pseudo->projector(ll, ichan, proj);
+
+	  if(proj.size() == 0) continue;
+
+	  assert(proj.size() <= grid_.size());
+
+	  projectors_.push_back(math::spline(grid_.data(), proj.data(), proj.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC));
+	}
+      }
+      
       delete pseudo;
     }
 
@@ -120,12 +138,27 @@ namespace pseudo {
     const math::spline & short_range_potential() const {
       return short_range_;
     }
+
+    double projector_radius() const {
+      //for the moment the side of the grid, this can probably be made smaller
+      return grid_[grid_.size() - 1];
+    }
+
+    int num_projectors() const {
+      return projectors_.size();
+    }
+
+    const math::spline & projector(int iproj) const {
+      return projectors_[iproj];
+    }
     
   private:
-
+    
+    std::vector<double> grid_;
     double sigma_erf_;
     math::spline short_range_;
     double valence_charge_;
+    std::vector<math::spline> projectors_;
     
   };
   

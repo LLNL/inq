@@ -51,6 +51,10 @@ namespace math {
     spline(){
     }
     
+    spline(const double *x, double *y, int n, double yp1, double ypn){
+      fit(x, y, n, yp1, ypn);
+    }
+    
     void fit(const double *x, double *y, int n, double yp1, double ypn){
       x_.resize(n);
       y_.resize(n);
@@ -73,8 +77,8 @@ namespace math {
 
     //OPTIMIZATION: the vectorial versions of the functions should not do the function call
     
-    template <class array_type>
-    void value(const int size, const array_type & xx, array_type & yy) const {
+    template <class array_type1, class array_type2>
+    void value(const int size, const array_type1 & xx, array_type2 && yy) const {
 
       for(int ii = 0; ii < size; ii++) yy[ii] = value(xx[ii]);
     }    

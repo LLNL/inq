@@ -32,6 +32,7 @@
 #include <basis/spherical_grid.hpp>
 #include <states/ks_states.hpp>
 #include <functionals/LDAFunctional.hpp>
+#include <hamiltonian/projector.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <solvers/poisson.hpp>
