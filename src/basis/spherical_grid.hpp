@@ -65,6 +65,10 @@ namespace basis {
 	grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }
     }
+
+    auto points() const {
+      return points_;
+    }      
     
   private:
     
