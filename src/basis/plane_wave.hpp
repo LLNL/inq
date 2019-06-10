@@ -34,7 +34,7 @@ namespace basis {
 				rlength_[idir] = length(cell[idir]);
 				ng_[idir] = nr_[idir];
 				rspacing_[idir] = rlength_[idir]/nr_[idir];
-				glength_[idir] = M_PI/rspacing_[idir];
+				glength_[idir] = 2.0*M_PI/rspacing_[idir];
 				gspacing_[idir] = glength_[idir]/ng_[idir];
 			}
 		}
@@ -52,7 +52,7 @@ namespace basis {
 				ng_[idir] = nr_[idir];
 				
 				rspacing_[idir] = rlength_[idir]/nr_[idir];
-				glength_[idir] = M_PI/rspacing_[idir];
+				glength_[idir] = 2.0*M_PI/rspacing_[idir];
 				gspacing_[idir] = glength_[idir]/ng_[idir];
       }
     }
@@ -102,13 +102,19 @@ namespace basis {
     }
 
 		math::d3vector rvector(const int ix, const int iy, const int iz) const {
+
+			// the 0 0 0 point is at the center of the grid
 			return math::d3vector(ix*rspacing_[0], iy*rspacing_[1], iz*rspacing_[2]) - 0.5*rlength();
 		}
 		
 		math::d3vector gvector(const int ix, const int iy, const int iz) const {
+
+			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
+			//grid from -pi/h to pi/h
+			
 			math::d3vector g{ix*gspacing()[0], iy*gspacing()[1], iz*gspacing()[2]};
 			for(int idir = 0; idir < 3; idir++) {
-				if(g[idir] > 0.5*glength()[idir]) g[idir] -= glength()[idir];
+				if(g[idir] >= 0.5*glength()[idir]) g[idir] -= glength()[idir];
 			}
 			return g;
 		}
@@ -164,9 +170,9 @@ TEST_CASE("class basis::plane_wave", "[basis]") {
       REQUIRE(pw.rspacing()[1] == 0.5_a);
       REQUIRE(pw.rspacing()[2] == 0.5_a);
       
-      REQUIRE(pw.gspacing()[0] == 0.3141592654_a);
-      REQUIRE(pw.gspacing()[1] == 0.3141592654_a);
-      REQUIRE(pw.gspacing()[2] == 0.3141592654_a);
+      REQUIRE(pw.gspacing()[0] == 0.6283185307_a);
+      REQUIRE(pw.gspacing()[1] == 0.6283185307_a);
+      REQUIRE(pw.gspacing()[2] == 0.6283185307_a);
       
       REQUIRE(pw.rsize()[0] == 20);
       REQUIRE(pw.rsize()[1] == 20);
@@ -195,9 +201,9 @@ TEST_CASE("class basis::plane_wave", "[basis]") {
       REQUIRE(pw.rspacing()[1] == 0.3625641026_a);
       REQUIRE(pw.rspacing()[2] == 0.36328125_a);
       
-      REQUIRE(pw.gspacing()[0] == 0.0404323379_a);
-      REQUIRE(pw.gspacing()[1] == 0.2221776983_a);
-      REQUIRE(pw.gspacing()[2] == 0.1351222647_a);
+      REQUIRE(pw.gspacing()[0] == 0.0808646758_a);
+      REQUIRE(pw.gspacing()[1] == 0.4443553965_a);
+      REQUIRE(pw.gspacing()[2] == 0.2702445293_a);
       
       REQUIRE(pw.rsize()[0] == 215);
       REQUIRE(pw.rsize()[1] == 39);
