@@ -203,8 +203,6 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			}
 		}
 
-		std::cout << diff << std::endl;
-		
 		diff /= pw.size();
 		
 		REQUIRE(diff < 1e-8);
