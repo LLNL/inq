@@ -28,6 +28,34 @@ namespace solvers {
   class poisson {
 
 	public:
+
+		template <class basis_type>
+		void solve(const basis_type & basis, const boost::multi::array<double, 3> & density, boost::multi::array<double, 3> & potential){
+
+			//For the moment we copy to a complex array.
+			
+			boost::multi::array<complex, 3> complex_density(extensions(density));
+			boost::multi::array<complex, 3> complex_potential(extensions(density));
+
+			for(int ix = 0; ix < basis.rsize()[0]; ix++){
+				for(int iy = 0; iy < basis.rsize()[1]; iy++){
+					for(int iz = 0; iz < basis.rsize()[2]; iz++){
+						complex_density[ix][iy][iz] = density[ix][iy][iz];
+					}
+				}
+			}
+
+			solve(basis, complex_density, complex_potential);
+			
+			for(int ix = 0; ix < basis.rsize()[0]; ix++){
+				for(int iy = 0; iy < basis.rsize()[1]; iy++){
+					for(int iz = 0; iz < basis.rsize()[2]; iz++){
+						potential[ix][iy][iz] = complex_potential[ix][iy][iz];
+					}
+				}
+			}
+			
+		}
 		
 		template <class basis_type>
 		void solve(const basis_type & basis, const boost::multi::array<complex, 3> & density, boost::multi::array<complex, 3> & potential){
@@ -106,9 +134,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			}
 		}
 
-		// These values haven't been validated against anything, they are just for consistency
-
-		std::cout << sumimag << std::endl;
+		// These values haven't been validated against anything, they are
+		// just for consistency. Of course the imaginary part has to be
+		// zero, since the density is real.
 		
 		REQUIRE(sumreal == 59.7758543176_a);
 		REQUIRE(sumimag == 3.87333e-13_a);
@@ -145,6 +173,42 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		
 		REQUIRE(diff == 7.33009e-15_a);
 	
+	}
+
+
+	SECTION("Real plane wave"){
+
+		multi::array<complex, 3> rdensity(pw.rsize());
+		multi::array<complex, 3> rpotential(extensions(density));
+
+		double kk = 8.0*M_PI/pw.rlength()[1];
+		
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					double yy = pw.rvector(ix, iy, iz)[1];
+					rdensity[ix][iy][iz] = cos(kk*yy);
+				}
+			}
+		}
+
+		psolver.solve(pw, rdensity, rpotential);
+
+		double diff = 0.0;
+		for(int ix = 0; ix < pw.rsize()[0]; ix++){
+			for(int iy = 0; iy < pw.rsize()[1]; iy++){
+				for(int iz = 0; iz < pw.rsize()[2]; iz++){
+					diff += fabs(rpotential[ix][iy][iz] - 4*M_PI/kk/kk*rdensity[ix][iy][iz]);
+				}
+			}
+		}
+
+		std::cout << diff << std::endl;
+		
+		diff /= pw.size();
+		
+		REQUIRE(diff < 1e-8);
+
 	}
 	
 
