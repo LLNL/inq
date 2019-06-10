@@ -175,14 +175,15 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 	
 	SECTION("Plane wave"){
 		
-		double kk = 2.0*M_PI/pw.rsize()[0];
+		double kk = 2.0*M_PI/pw.rlength()[0];
 		
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
 						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-							phi[0][ix][iy][iz][ist][ispinor] = complex(cos(ist*kk*ix), sin(ist*kk*ix));
+							double xx = pw.rvector(ix, iy, iz)[0];
+							phi[0][ix][iy][iz][ist][ispinor] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
 						}
 					}
 				}
@@ -205,8 +206,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 		}
 
 		diff /= hphi.num_elements();
-		
-		REQUIRE(diff == 5.18263e-16_a);
+
+		REQUIRE(diff == 8.54868e-16_a);
 		
 	}
 }
@@ -214,3 +215,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 #endif
 
 #endif
+
+// Local variables:
+// eval:(setq indent-tabs-mode t tab-width 2)
+// End:
