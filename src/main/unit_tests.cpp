@@ -21,7 +21,9 @@
 #include <catch2/catch.hpp>
 
 #include <config/path.hpp>
+#include <math/d3vector.hpp>
 #include <math/spline.hpp>
+#include <math/spherical_harmonic.hpp>
 #include <pseudo/element.hpp>
 #include <pseudo/pseudopotential.hpp>
 #include <ions/geometry.hpp>

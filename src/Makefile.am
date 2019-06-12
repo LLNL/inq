@@ -6,6 +6,7 @@ AM_CXXFLAGS =                                   \
 noinst_HEADERS =                                   \
 	math/d3vector.hpp                          \
 	math/spline.hpp                            \
+	math/spherical_harmonic.hpp                \
 	pseudo/anygrid.hpp                         \
 	pseudo/base.hpp                            \
 	pseudo/element.hpp                         \
