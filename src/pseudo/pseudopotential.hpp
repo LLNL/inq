@@ -112,6 +112,7 @@ namespace pseudo {
 
 	  projectors_.push_back(math::spline(grid_.data(), proj.data(), proj.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC));
 	  projectors_l_.push_back(ll);
+	  kb_coeff_.push_back(pseudo->d_ij(ll, ichan, ichan));
 	  nproj_lm_ += 2*ll + 1;
 	}
       }
@@ -165,6 +166,10 @@ namespace pseudo {
     int projector_l(int iproj) const {
       return projectors_l_[iproj];
     }
+
+    double kb_coeff(int iproj){
+      return kb_coeff_[iproj];
+    }
     
   private:
     
@@ -174,6 +179,7 @@ namespace pseudo {
     double valence_charge_;
     std::vector<math::spline> projectors_;
     std::vector<int> projectors_l_;
+    std::vector<int> kb_coeff_;
     int nproj_lm_;
     
   };

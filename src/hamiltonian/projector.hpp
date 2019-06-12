@@ -34,6 +34,8 @@ namespace hamiltonian {
 	    auto point = basis.rvector(sphere_.points()[ipoint]) - atom_position;
 	    matrix_[iproj][ipoint] = proj[ipoint]*math::spherical_harmonic(l, m, point);
 	  }
+
+	  kb_coeff_.push_back(ps.kb_coeff(iproj));
 	}
 	
       }
@@ -51,6 +53,7 @@ namespace hamiltonian {
     basis::spherical_grid sphere_;
     int nproj_;
     boost::multi::array<double, 2> matrix_;
+    std::vector<double> kb_coeff_;
     
   };
   
