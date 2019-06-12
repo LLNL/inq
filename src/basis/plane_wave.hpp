@@ -136,6 +136,10 @@ namespace basis {
 			return norm(gvector(ix, iy, iz));
 		}
 
+		double volume_element() const {
+			return rspacing_[0]*rspacing_[1]*rspacing_[2];
+		}
+		
 	private:
     double ecut_;
     std::array<int, 3> nr_;
