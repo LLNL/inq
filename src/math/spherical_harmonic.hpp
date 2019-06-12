@@ -70,9 +70,6 @@ namespace math {
       else if (m == -3) f = s3532pi*gyi*(3.*gxi2-gyi2);
     }
     else if (l == 4) {
-      double gxi3 = gxi2*gxi;
-      double gyi3 = gyi2*gyi;
-      double gzi3 = gzi2*gzi;
       const double s14pi = sqrt(1.0/fpi);
       const double s52pi = sqrt(10.0/fpi);
       const double s54pi = sqrt(5.0/fpi);
