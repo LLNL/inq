@@ -74,7 +74,7 @@ namespace hamiltonian {
 	}
       }
       
-      sphere_.scatter(sphere_phi, vnlphi);
+      sphere_.scatter_add(sphere_phi, vnlphi);
      
     }
     

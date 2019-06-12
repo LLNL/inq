@@ -59,6 +59,17 @@ namespace basis {
       }
     }
 
+    template <class array_3d, class array_5d>
+    void scatter_add(const array_3d & subgrid, array_5d && grid) const{
+      for(int ipoint = 0; ipoint < size(); ipoint++){
+	for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
+	  for(int i2 = 0; i2 < std::get<2>(sizes(subgrid)); i2++){
+	    grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][i1][i2] += subgrid[ipoint][i1][i2];
+	  }
+	}
+      }
+    }
+    
     template <class array_1d, class array_3d>
     void scatter(const array_1d & subgrid, array_3d && grid) const{
       for(int ipoint = 0; ipoint < size(); ipoint++){
