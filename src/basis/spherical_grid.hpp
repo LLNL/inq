@@ -53,14 +53,14 @@ namespace basis {
     }
     
     template <class array_3d, class array_1d>
-    void copy_to(const array_3d & grid, array_1d && subgrid) const {
+    void gather(const array_3d & grid, array_1d && subgrid) const {
       for(int ipoint = 0; ipoint < size(); ipoint++){
 	subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
       }
     }
 
     template <class array_1d, class array_3d>
-    void copy_from(const array_1d & subgrid, array_3d && grid) const{
+    void scatter(const array_1d & subgrid, array_3d && grid) const{
       for(int ipoint = 0; ipoint < size(); ipoint++){
 	grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }
@@ -107,11 +107,11 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;
     
-    sphere.copy_to(grid, subgrid);
+    sphere.gather(grid, subgrid);
 
-    for(unsigned ii = 0; ii < subgrid.size(); ii++) subgrid[ii] = 1.0; 
+    for(unsigned ii = 0; ii < subgrid.size(); ii++) subgrid[ii] = 0.0; 
     
-    sphere.copy_from(subgrid, grid);
+    sphere.scatter(subgrid, grid);
 
     double sum = 0.0;
     for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
@@ -131,16 +131,16 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 1.0;
     
-    sphere.copy_to(grid, subgrid);
+    sphere.gather(grid, subgrid);
 
     double sum = 0.0;
     for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data()[ii]);
 
     REQUIRE(sum == Approx(20.0*257.0));
     
-    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 0.0;
+    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 1.0;
     
-    sphere.copy_from(subgrid, grid);
+    sphere.scatter(subgrid, grid);
 
     sum = 0.0;
     for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
@@ -158,9 +158,9 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
     boost::multi::array<complex, 6> grid({1, pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 2, 20}, 0.0);
     boost::multi::array<complex, 3> subgrid({sphere.size(), 2, 20}, 0.0);
 
-    sphere.copy_to(grid[0], subgrid);
+    sphere.gather(grid[0], subgrid);
 
-    sphere.copy_from(subgrid, grid[0]);
+    sphere.scatter(subgrid, grid[0]);
     
   }
 
