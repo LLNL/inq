@@ -139,6 +139,12 @@ namespace math {
     return f;
   }
 
+  template <class array_type>
+  double spherical_harmonic(int l, int m, const array_type & position){
+    return spherical_harmonic(l, m, position[0], position[1], position[2]);
+  }
+
+
 }
 
 #ifdef UNIT_TEST

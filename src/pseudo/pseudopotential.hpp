@@ -97,7 +97,9 @@ namespace pseudo {
       //THE PROJECTORS
 
       std::vector<double> proj;
+
       
+      nproj_lm_ = 0;
       for(int ll = 0; ll < pseudo->lmax(); ll++){
 	for(int ichan = 0; ichan < pseudo->nchannels(); ichan++){
 	  if(ll == pseudo->llocal()) continue;
@@ -109,6 +111,8 @@ namespace pseudo {
 	  assert(proj.size() <= grid_.size());
 
 	  projectors_.push_back(math::spline(grid_.data(), proj.data(), proj.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC));
+	  projectors_l_.push_back(ll);
+	  nproj_lm_ += 2*ll + 1;
 	}
       }
       
@@ -144,12 +148,22 @@ namespace pseudo {
       return grid_[grid_.size() - 1];
     }
 
-    int num_projectors() const {
+    // the number of projectors with different l
+    int num_projectors_l() const {
       return projectors_.size();
+    }
+
+    //the number of projectors with different l and m
+    int num_projectors_lm() const {
+      return nproj_lm_;
     }
 
     const math::spline & projector(int iproj) const {
       return projectors_[iproj];
+    }
+
+    int projector_l(int iproj) const {
+      return projectors_l_[iproj];
     }
     
   private:
@@ -159,6 +173,8 @@ namespace pseudo {
     math::spline short_range_;
     double valence_charge_;
     std::vector<math::spline> projectors_;
+    std::vector<int> projectors_l_;
+    int nproj_lm_;
     
   };
   
