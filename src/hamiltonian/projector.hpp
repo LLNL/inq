@@ -15,7 +15,10 @@ namespace hamiltonian {
 
   public:
     projector(const basis::plane_wave & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps, math::d3vector atom_position):
-      sphere_(basis, cell, atom_position, ps.projector_radius()), nproj_(ps.num_projectors_lm()), matrix_({nproj_, sphere_.size()}) {
+      sphere_(basis, cell, atom_position, ps.projector_radius()),
+      nproj_(ps.num_projectors_lm()),
+      matrix_({nproj_, sphere_.size()}),
+      volume_element_(basis.volume_element()){
 
       std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 
@@ -40,16 +43,40 @@ namespace hamiltonian {
 	
       }
 
-      
     }
 
     void apply(const states::ks_states & st, const boost::multi::array<complex, 5> & phi, boost::multi::array<complex, 5> & vnlphi) const {
+      
       boost::multi::array<complex, 3> sphere_phi({sphere_.size(), st.num_spinors(), st.num_states()});
 
       sphere_.gather(phi, sphere_phi);
 
+      boost::multi::array<complex, 3> projections({nproj_, st.num_spinors(), st.num_states()});
+
+      //OPTIMIZATION: these two operations should be done by dgemm
+      for(int iproj = 0; iproj < nproj_; iproj++){
+	for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++){
+	  for(int ist = 0; ist < st.num_states(); ist++){
+	    complex aa = 0.0;
+	    for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) aa += matrix_[iproj][ipoint]*sphere_phi[ipoint][ispinor][ist];
+	    projections[iproj][ispinor][ist] = aa*kb_coeff_[iproj]*volume_element_;
+	  }
+	}
+      }
+
+      for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
+	for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++){
+	  for(int ist = 0; ist < st.num_states(); ist++){
+	    complex aa = 0.0;
+	    for(int iproj = 0; iproj < nproj_; iproj++) aa += matrix_[iproj][ipoint]*projections[iproj][ispinor][ist];
+	    sphere_phi[ipoint][ispinor][ist] = aa;
+	  }
+	}
+      }
+      
+      sphere_.scatter(sphere_phi, vnlphi);
+     
     }
-    
     
   private:
 
@@ -57,6 +84,7 @@ namespace hamiltonian {
     int nproj_;
     boost::multi::array<double, 2> matrix_;
     std::vector<double> kb_coeff_;
+    double volume_element_;
     
   };
   
