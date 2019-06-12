@@ -120,7 +120,7 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
     
     sphere.gather(grid, subgrid);
 
-    for(unsigned ii = 0; ii < subgrid.size(); ii++) subgrid[ii] = 0.0; 
+    for(unsigned ii = 0; ii < subgrid.size(); ii++) subgrid[ii] = 1.0; 
     
     sphere.scatter(subgrid, grid);
 
@@ -149,7 +149,7 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
 
     REQUIRE(sum == Approx(20.0*257.0));
     
-    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 1.0;
+    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 0.0;
     
     sphere.scatter(subgrid, grid);
 
