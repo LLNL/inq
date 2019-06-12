@@ -1,3 +1,6 @@
+#ifndef MATH_SPHERICAL_HARMONIC
+#define MATH_SPHERICAL_HARMONIC
+
 ////////////////////////////////////////////////////////////////////////////////  
 // Copyright (c) 2013, Lawrence Livermore National Security, LLC. 
 //
@@ -35,7 +38,9 @@ namespace math {
     double gxi2 = gxi*gxi;
     double gyi2 = gyi*gyi;
     double gzi2 = gzi*gzi;
-  
+
+    f = 0;
+    
     // compute real spherical harmonics 
     if (l == 0) {
       const double s14pi = sqrt(1.0/fpi);
@@ -130,8 +135,49 @@ namespace math {
       else if (m == -5) f = -0.1875*s10012pi*(5.*gxi2*gxi2*gyi-10.*gxi2*gyi3+gyi3*gyi2)*gzi;
       else if (m == 6) f = 0.03125*s30032pi*(gxi3*gxi3-15.*gxi2*gxi2*gyi2+15.*gxi2*gyi2*gyi2-gyi3*gyi3);
       else if (m == -6) f = 0.03125*s30032pi*(6.*gxi3*gxi2*gyi-20.*gxi3*gyi3+6.*gxi*gyi3*gyi2);
-    }
+    } 
     return f;
   }
 
 }
+
+#ifdef UNIT_TEST
+#include <catch2/catch.hpp>
+#include <cmath>
+
+TEST_CASE("Function math::spherical_harmonic", "[spherical_harmonic]") {
+
+  using namespace Catch::literals;
+
+  SECTION("l=0"){
+    REQUIRE(math::spherical_harmonic(0, 0, 0.0, 0.0, 0.0) == 0.2820947918_a);
+
+    REQUIRE(math::spherical_harmonic(0, 0, 2.0, 0.0, 0.0) == 0.2820947918_a);
+    REQUIRE(math::spherical_harmonic(0, 0, 0.0, 2.0, 0.0) == 0.2820947918_a);
+    REQUIRE(math::spherical_harmonic(0, 0, 0.0, 0.0, 2.0) == 0.2820947918_a);
+  }
+
+  SECTION("l=1"){
+    REQUIRE(math::spherical_harmonic(1, -1, 0.0, 0.0, 0.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1, -1, 2.0, 0.0, 0.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1, -1, 0.0, 2.0, 0.0) == 0.4886025119_a);
+    REQUIRE(math::spherical_harmonic(1, -1, 0.0, 0.0, 2.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1, -1, 0.5, 1.5, 2.5) == 0.2477666951_a);
+    
+    REQUIRE(math::spherical_harmonic(1,  0, 0.0, 0.0, 0.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1,  0, 2.0, 0.0, 0.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1,  0, 0.0, 2.0, 0.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1,  0, 0.0, 0.0, 2.0) == 0.4886025119_a);
+    REQUIRE(math::spherical_harmonic(1,  0, 0.5, 1.5, 2.5) == 0.4129444918_a);
+    
+    REQUIRE(math::spherical_harmonic(1,  1, 0.0, 0.0, 0.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1,  1, 2.0, 0.0, 0.0) == 0.4886025119_a);
+    REQUIRE(math::spherical_harmonic(1,  1, 0.0, 2.0, 0.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1,  1, 0.0, 0.0, 2.0) == 0.0_a);
+    REQUIRE(math::spherical_harmonic(1,  1, 0.5, 1.5, 2.5) == 0.0825888984_a);
+  }
+
+}
+
+#endif
+#endif
