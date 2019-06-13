@@ -109,6 +109,13 @@ namespace math {
 	derivative(xx[ii], y, dyy[ii]);
       }
     }
+
+    double cutoff_radius(double threshold) const {
+      for(int ip = y_.size(); ip >= 0; ip--){
+	if(y_[ip] >= threshold) return x_[ip];
+      }
+      return 0.0;
+    }
     
   private :
     
@@ -250,7 +257,7 @@ TEST_CASE("Class math::spline", "[spline]") {
     REQUIRE(ddiff == 0.0004178684_a);
 
   }
-  
+
 }
 #endif
 

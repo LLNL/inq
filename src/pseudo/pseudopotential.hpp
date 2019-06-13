@@ -145,8 +145,12 @@ namespace pseudo {
     }
 
     double projector_radius() const {
-      //for the moment the side of the grid, this can probably be made smaller
-      return grid_[grid_.size() - 1];
+      const double threshold = 0.001;
+      double radius = 0.0;
+      for(unsigned iproj = 0; iproj < projectors_.size(); iproj++){
+	radius = std::max(radius, projectors_[iproj].cutoff_radius(threshold));
+      }
+      return radius;
     }
 
     // the number of projectors with different l
