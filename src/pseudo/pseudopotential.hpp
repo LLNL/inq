@@ -242,6 +242,8 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.short_range_potential().value(5.00000000E-00) == -2.17300001E-06_a);
     REQUIRE(ps.short_range_potential().value(6.01000000E-00) == -1.05361714E-06_a);
 
+    REQUIRE(ps.projector_radius() == 6.01000000E-00_a);
+    
   }
 
   SECTION("UPF1 pseudopotential file"){
@@ -250,6 +252,8 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.valence_charge() == 7.0_a);
 
     REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
+
+    REQUIRE(ps.projector_radius() == 90.0_a);
   }
 
   SECTION("PSP8 pseudopotential file"){
@@ -276,7 +280,8 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.short_range_potential().value(5.00000000E-01) == 4.18518028E+00_a);
     REQUIRE(ps.short_range_potential().value(1.00000000E-00) == 1.52278621E+00_a);
     REQUIRE(ps.short_range_potential().value(4.99000000E+00) == 8.23104510E-07_a);
-    
+
+    REQUIRE(ps.projector_radius() == 4.99_a);
   }
 
   SECTION("QSO/Qbox pseudopotential file"){
@@ -314,6 +319,8 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.short_range_potential().value(1.00000000E-00) == -4.36986709E-01_a);
     REQUIRE(ps.short_range_potential().value(5.00000000E-00) == -9.28740001E-07_a);
     REQUIRE(ps.short_range_potential().value(6.01000000E-00) == -7.59993877E-07_a);
+
+    REQUIRE(ps.projector_radius() == 6.01000000E-00_a);
 
   }
 
