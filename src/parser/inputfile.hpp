@@ -13,12 +13,17 @@ namespace parser {
     
   public:
 
+    enum class error {
+      FILE_NOT_FOUND
+    };
+    
     input_file(const std::string & file_name){
       int dont_write = 0;
       int set_used = 1;      
       parse_init("parser.log", &dont_write);
-      parse_input(file_name.c_str(), set_used);
-      
+      if(parse_input(file_name.c_str(), set_used)){
+	throw error::FILE_NOT_FOUND;
+      }
     }
 
     ~input_file(){
