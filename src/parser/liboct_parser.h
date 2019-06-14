@@ -33,7 +33,7 @@ int         parse_isdef  (const char *name);
 int64_t     parse_int    (const char *name, int64_t def);
 double      parse_double (const char *name, double def);
 gsl_complex parse_complex(const char *name, gsl_complex def);
-char       *parse_string (const char *name, char *def);
+char       *parse_string (const char *name, const char *def);
 
 /* Now comes stuff for the blocks */
 typedef struct sym_block_line{

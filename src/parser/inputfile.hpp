@@ -15,9 +15,9 @@ namespace parser {
 
     input_file(const std::string & file_name){
       int dont_write = 0;
-      
+      int set_used = 1;      
       parse_init("parser.log", &dont_write);
-      parse_input(file_name.c_str());
+      parse_input(file_name.c_str(), set_used);
       
     }
 
@@ -26,7 +26,7 @@ namespace parser {
     }
 
     bool defines(const std::string & variable_name) const {
-      return parse_isdef(variable_name.c_str()) == 1;
+      return parse_isdef(variable_name.c_str());
     }
     
     int parse(const std::string & variable_name, const int & default_value) const {
@@ -45,10 +45,12 @@ namespace parser {
       // call the integer version of parse
       return parse(variable_name, (default_value?1:0)) == 1;
     }
-    
-    template <class T>
-    T parse(const std::string & variable_name) const {
-      T dummy_default;
+
+
+    // this version doest not receive a default, but fails when the variable is not found
+    template <class type>
+    type parse(const std::string & variable_name) const {
+      type dummy_default;
       if(defines(variable_name)){
 	return parse(variable_name, dummy_default);
       } else {
@@ -56,7 +58,7 @@ namespace parser {
 	exit(1);
       }
     }
-    
+
   private:
     
   };

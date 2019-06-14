@@ -348,7 +348,7 @@ gsl_complex parse_complex(const char *name, gsl_complex def)
   return ret;
 }
 
-char *parse_string(const char *name, char *def)
+char *parse_string(const char *name, const char *def)
 {
   symrec *ptr;
   char *ret;
