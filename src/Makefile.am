@@ -43,7 +43,6 @@ all_srcs =                                         \
 	parser/symbols.c                           \
 	parser/parse.c                             \
 	parser/parse_exp.c                         \
-	parser/parser_f.c                          \
 	parser/gsl_userdef.c                       \
 	math/spline.cpp                            \
 	ions/unitcell.cpp                          \
