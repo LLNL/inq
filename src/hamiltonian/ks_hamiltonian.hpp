@@ -133,15 +133,19 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
   
   double ecut = 20.0;
   double ll = 10.0;
-  
+
+	ions::geometry geo;
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
   basis::plane_wave pw(cell, ecut);
+
+	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
+	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);  
 
 	states::ks_states::coeff phi(st.coeff_dimensions(pw.rsize()));
 	states::ks_states::coeff hphi(st.coeff_dimensions(pw.rsize()));
 
-	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw);
+	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
 
 
 	SECTION("Constant function"){
