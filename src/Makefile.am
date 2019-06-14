@@ -8,7 +8,7 @@ LIBS += @GSL_LIBS@
 
 noinst_HEADERS =                                   \
 	parser/gsl_userdef.h                       \
-	parser/inputfile.hpp                       \
+	parser/input_file.hpp                       \
 	parser/liboct_parser.h                     \
 	parser/string_f.h                          \
 	parser/symbols.h                           \

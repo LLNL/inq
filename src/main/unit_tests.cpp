@@ -20,7 +20,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <parser/inputfile.hpp>
+#include <parser/input_file.hpp>
 #include <config/path.hpp>
 #include <math/d3vector.hpp>
 #include <math/spline.hpp>
