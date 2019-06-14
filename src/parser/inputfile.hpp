@@ -58,12 +58,29 @@ namespace parser {
 	exit(1);
       }
     }
-
+    
   private:
     
   };
 
 }
+
+#ifdef UNIT_TEST
+#include <catch2/catch.hpp>
+#include <cmath>
+#include <config/path.hpp>
+
+TEST_CASE("Class parser::input_file", "[input_file]") {
+
+  using namespace Catch::literals;
+
+  SECTION("Non-existing file"){
+    REQUIRE_THROWS(parser::input_file("/a_file_that_doesnt_exists"));
+  }
+  
+}
+  
+#endif
 
 #endif
 

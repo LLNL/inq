@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2002 M. Marques, A. Castro, A. Rubio, G. Bertsch
+ Copyright (C) 2019 M. Marques, A. Castro, A. Rubio, G. Bertsch, X. Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@
 
 #ifndef _LIB_OCT_H
 #define _LIB_OCT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <gsl/gsl_complex.h>
 #include <stdint.h>
@@ -72,5 +76,10 @@ int parse_exp(char *exp, parse_result *t);
 void parse_putsym_int(const char *s, int i);
 void parse_putsym_double(const char *s, double d);
 void parse_putsym_complex(const char *s, gsl_complex c);
+  
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif
