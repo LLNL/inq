@@ -59,6 +59,11 @@ namespace hamiltonian {
     const double & number_of_electrons() const {
       return nelectrons_;
     }
+
+    const pseudo::pseudopotential & pseudo_for_element(const pseudo::element & el) const {
+      return pseudopotential_list_.at(el.symbol());
+    }
+
     
   private:
 
@@ -117,7 +122,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
     
     ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
 
-    hamiltonian::atomic_potential pot(geo.number_of_atoms(), geo.atoms());
+    hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 
     REQUIRE(pot.number_of_species() == 2);
     REQUIRE(pot.number_of_electrons() == 30.0_a);

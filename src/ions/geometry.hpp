@@ -45,10 +45,10 @@ namespace ions {
 
       if(!xyz_file.is_open()) throw error::FILE_NOT_FOUND;
 
-      int num_atoms;
+      int natoms;
       std::string comment_line;
       
-      xyz_file >> num_atoms;
+      xyz_file >> natoms;
       
       std::getline(xyz_file, comment_line);
       std::getline(xyz_file, comment_line);
@@ -56,18 +56,18 @@ namespace ions {
       std::string atom_name;
       math::d3vector atom_position;
       
-      for(int iatom = 0; iatom < num_atoms; iatom++){
+      for(int iatom = 0; iatom < natoms; iatom++){
       xyz_file >> atom_name >> atom_position;
       add_atom(pseudo::element(atom_name), atom_position*1.8897261);
       }
       
       xyz_file.close();
       
-      assert(num_atoms == number_of_atoms());
+      assert(natoms == num_atoms());
       
     }
     
-    int number_of_atoms() const { return coordinates_.size(); }
+    int num_atoms() const { return coordinates_.size(); }
 
     void add_atom(const pseudo::element & element, const math::d3vector & position){
       atoms_.push_back(element);
@@ -102,11 +102,11 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   SECTION("Create empty and add an atom"){
     ions::geometry geo;
 
-    REQUIRE(geo.number_of_atoms() == 0);
+    REQUIRE(geo.num_atoms() == 0);
 
     geo.add_atom(pseudo::element("Xe"), math::d3vector(1000.0, -200.0, 6.0));
 
-    REQUIRE(geo.number_of_atoms() == 1);
+    REQUIRE(geo.num_atoms() == 1);
     REQUIRE(geo.atoms()[0].atomic_number() == 54);
     REQUIRE(geo.atoms()[0] == pseudo::element(54));
     REQUIRE(geo.atoms()[0].charge() == -54.0_a);
@@ -123,7 +123,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   SECTION("Read an xyz file"){
     ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
 
-    REQUIRE(geo.number_of_atoms() == 12);
+    REQUIRE(geo.num_atoms() == 12);
     
     REQUIRE(geo.atoms()[2] == pseudo::element("C"));
     REQUIRE(geo.atoms()[2].charge() == -6.0_a);
@@ -141,7 +141,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
 
     geo.add_atom(pseudo::element("Cl"), math::d3vector(-3.0, 4.0, 5.0));
 
-    REQUIRE(geo.number_of_atoms() == 13);
+    REQUIRE(geo.num_atoms() == 13);
     REQUIRE(geo.atoms()[12].atomic_number() == 17);
     REQUIRE(geo.atoms()[12] == pseudo::element(17));
     REQUIRE(geo.atoms()[12].charge() == -17.0_a);

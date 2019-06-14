@@ -28,7 +28,7 @@ namespace hamiltonian {
 		
   public:
 
-    ks_hamiltonian(const basis_type & basis):
+    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo):
 			scalar_potential(basis.rsize()){
 
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
@@ -38,6 +38,11 @@ namespace hamiltonian {
 					}
 				}
 			}
+
+			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+				proj_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
+			}
+			
     }
 
 		boost::multi::array<double, 3> scalar_potential;
@@ -108,6 +113,8 @@ namespace hamiltonian {
 		}
 		
   private:
+
+		std::vector<projector> proj_;
 
   };
 
