@@ -14,7 +14,8 @@ namespace parser {
   public:
 
     enum class error {
-      FILE_NOT_FOUND
+      FILE_NOT_FOUND,
+      VARIABLE_NOT_FOUND
     };
     
     input_file(const std::string & file_name){
@@ -55,12 +56,10 @@ namespace parser {
     // this version doest not receive a default, but fails when the variable is not found
     template <class type>
     type parse(const std::string & variable_name) const {
-      type dummy_default;
       if(defines(variable_name)){
-	return parse(variable_name, dummy_default);
+	return parse(variable_name, type());
       } else {
-	std::cerr << "Error: required variable " << variable_name << " is not defined in the input file" << std::endl;
-	exit(1);
+	throw error::VARIABLE_NOT_FOUND;
       }
     }
     
@@ -82,6 +81,25 @@ TEST_CASE("Class parser::input_file", "[input_file]") {
   SECTION("Non-existing file"){
     REQUIRE_THROWS(parser::input_file("/a_file_that_doesnt_exists"));
   }
+
+  SECTION("Parse file"){
+    parser::input_file input(config::path::unit_tests_data() + "input_file");
+
+    // read with default value, this value is returned if the variable doesn't exist
+    REQUIRE(input.parse("thisvariabledoesntexist", 10) == 10);
+
+    REQUIRE(input.parse("doublevar", -1.0) == 199.33_a);
+
+    REQUIRE(input.parse<std::string>("stringvar") == "hola");
+
+    REQUIRE_THROWS(input.parse<float>("anothetvariablethatdoesntexist"));
+
+    REQUIRE(input.defines("intvar"));
+
+    REQUIRE(input.parse<int>("intvar") == 100774);
+ 
+  }
+
   
 }
   
