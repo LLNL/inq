@@ -4,6 +4,11 @@ AM_CXXFLAGS =                                   \
 	-DSHARE_DIR='"$(pkgdatadir)"'
 
 noinst_HEADERS =                                   \
+	parser/gsl_userdef.h                       \
+	parser/inputfile.hpp                       \
+	parser/liboct_parser.h                     \
+	parser/string_f.h                          \
+	parser/symbols.h                           \
 	math/d3vector.hpp                          \
 	math/spline.hpp                            \
 	math/spherical_harmonic.hpp                \
@@ -31,7 +36,12 @@ noinst_HEADERS =                                   \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp
 
-all_srcs =                                   \
+all_srcs =                                         \
+	parser/symbols.c                           \
+	parser/parse.c                             \
+	parser/parse_exp.c                         \
+	parser/parser_f.c                          \
+	parser/gsl_userdef.c                       \
 	math/spline.cpp                            \
 	ions/unitcell.cpp                          \
 	functionals/PBEFunctional.cpp              \
