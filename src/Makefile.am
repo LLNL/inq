@@ -1,7 +1,10 @@
 AM_CXXFLAGS =                                   \
 	-I$(top_srcdir)/src/                    \
 	-I$(top_srcdir)/external_libs/          \
-	-DSHARE_DIR='"$(pkgdatadir)"'
+	-DSHARE_DIR='"$(pkgdatadir)"'           \
+	$(GSL_CFLAGS)
+
+LIBS += @GSL_LIBS@
 
 noinst_HEADERS =                                   \
 	parser/gsl_userdef.h                       \

@@ -34,6 +34,9 @@ AC_FUNC_FSEEKO
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([gettimeofday memset mkdir pow sqrt strspn uname])
 
+#Check for GSL, this is temporary until we modify the parser
+AX_PATH_GSL
+
 AC_MSG_NOTICE([
 ================================================================================
   CHECKING FOR FFT LIBRARIES
