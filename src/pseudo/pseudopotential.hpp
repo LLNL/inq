@@ -38,7 +38,8 @@ namespace pseudo {
       FILE_NOT_FOUND,
       UNKNOWN_FORMAT,
       UNSUPPORTED_FORMAT,
-      UNSUPPORTED_TYPE
+      UNSUPPORTED_TYPE,
+      PROJECTOR_INDEX_OUT_OF_RANGE
     };
     
     pseudopotential(const std::string & filename){
@@ -100,7 +101,7 @@ namespace pseudo {
 
       
       nproj_lm_ = 0;
-      for(int ll = 0; ll < pseudo->lmax(); ll++){
+      for(int ll = 0; ll <= pseudo->lmax(); ll++){
 	for(int ichan = 0; ichan < pseudo->nchannels(); ichan++){
 	  if(ll == pseudo->llocal()) continue;
 
@@ -164,14 +165,17 @@ namespace pseudo {
     }
 
     const math::spline & projector(int iproj) const {
+      if(iproj < 0 or unsigned(iproj) >= projectors_.size()) throw error::PROJECTOR_INDEX_OUT_OF_RANGE;
       return projectors_[iproj];
     }
 
     int projector_l(int iproj) const {
+      if(iproj < 0 or unsigned(iproj) >= projectors_l_.size()) throw error::PROJECTOR_INDEX_OUT_OF_RANGE;
       return projectors_l_[iproj];
     }
 
     double kb_coeff(int iproj){
+      if(iproj < 0 or unsigned(iproj) >= kb_coeff_.size()) throw error::PROJECTOR_INDEX_OUT_OF_RANGE;
       return kb_coeff_[iproj];
     }
     
@@ -246,7 +250,35 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.short_range_potential().value(5.00000000E-00) == -2.17300001E-06_a);
     REQUIRE(ps.short_range_potential().value(6.01000000E-00) == -1.05361714E-06_a);
 
-    REQUIRE(ps.projector_radius() == 6.01000000E-00_a);
+    REQUIRE(ps.num_projectors_l() == 8);
+    REQUIRE(ps.num_projectors_lm() == 32);
+    
+    REQUIRE(ps.projector_l(0) == 0);
+
+    REQUIRE(ps.projector(0).value(0.00000000E+00) == -6.16416761E+00_a);
+    REQUIRE(ps.projector(0).value(1.00000000E-02) == -6.16245244E+00_a);
+    REQUIRE(ps.projector(0).value(5.00000000E-02) == -6.12149052E+00_a);
+    REQUIRE(ps.projector(0).value(1.00000000E-01) == -5.99451036E+00_a);
+    REQUIRE(ps.projector(0).value(5.00000000E-01) == -2.72974026E+00_a);
+    REQUIRE(ps.projector(0).value(1.00000000E-00) ==  4.73465778E-01_a);
+    REQUIRE(ps.projector(0).value(5.00000000E-00) ==  0.00000000E+00_a);
+    REQUIRE(ps.projector(0).value(6.01000000E-00) ==  0.00000000E+00_a);
+
+    REQUIRE_THROWS(ps.projector(-1));
+    REQUIRE_THROWS(ps.projector(8));
+    
+    REQUIRE(ps.projector_l(1) == 0);
+    REQUIRE(ps.projector_l(2) == 1);
+    REQUIRE(ps.projector_l(3) == 1);
+    REQUIRE(ps.projector_l(4) == 2);
+    REQUIRE(ps.projector_l(5) == 2);
+    REQUIRE(ps.projector_l(6) == 3);
+    REQUIRE(ps.projector_l(7) == 3);    
+
+    REQUIRE_THROWS(ps.projector_l(-100));    
+    REQUIRE_THROWS(ps.projector_l(8));    
+    
+    REQUIRE(ps.projector_radius() == 2.88_a);
     
   }
 
@@ -257,7 +289,10 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
 
-    REQUIRE(ps.projector_radius() == 90.0_a);
+    REQUIRE(ps.num_projectors_l() == 1);
+    REQUIRE(ps.num_projectors_lm() == 1);
+    
+    REQUIRE(ps.projector_radius() == 0.5888046501_a);
   }
 
   SECTION("PSP8 pseudopotential file"){
@@ -285,7 +320,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.short_range_potential().value(1.00000000E-00) == 1.52278621E+00_a);
     REQUIRE(ps.short_range_potential().value(4.99000000E+00) == 8.23104510E-07_a);
 
-    REQUIRE(ps.projector_radius() == 4.99_a);
+    REQUIRE(ps.projector_radius() == 3.03_a);
   }
 
   SECTION("QSO/Qbox pseudopotential file"){
@@ -324,7 +359,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.short_range_potential().value(5.00000000E-00) == -9.28740001E-07_a);
     REQUIRE(ps.short_range_potential().value(6.01000000E-00) == -7.59993877E-07_a);
 
-    REQUIRE(ps.projector_radius() == 6.01000000E-00_a);
+    REQUIRE(ps.projector_radius() == 1.33_a);
 
   }
 
