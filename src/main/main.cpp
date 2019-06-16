@@ -51,7 +51,9 @@ int main(int argc, char ** argv){
 	
 	auto ecut = input.parse<double>("CutoffEnergy");
 
-	
+	basis::plane_wave pw(cell, ecut);
+
+	pw.info(std::cout);
 	
 	
 }

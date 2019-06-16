@@ -70,10 +70,11 @@ namespace ions{
     template <class output_stream>
     void info(output_stream & out) const {
       out << "UNIT CELL:" << std::endl;
-      out << "  Lattice vectors = " << a_[0] << std::endl;
-      out << "                    " << a_[1] << std::endl;
-      out << "                    " << a_[2] << std::endl;
-      out << "  Volume          = " << volume_ << std::endl;
+      out << "  Lattice vectors [b] = " << a_[0] << std::endl;
+      out << "                        " << a_[1] << std::endl;
+      out << "                        " << a_[2] << std::endl;
+      out << "  Volume [b^3]        = " << volume_ << std::endl;
+      out << std::endl;
     }
     
     const double* amat() const { return &amat_[0]; }

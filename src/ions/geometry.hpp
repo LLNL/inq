@@ -90,6 +90,7 @@ namespace ions {
     void info(output_stream & out) const {
       out << "GEOMETRY:" << std::endl;
       out << "  Number of atoms = " << num_atoms() << std::endl;
+      out << std::endl;
     }
     
   private:
