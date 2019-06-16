@@ -32,7 +32,10 @@
 using std::cout;
 
 int main(int argc, char ** argv){
-	
+
+	parser::input_file input(argv[1]);
+
+	double ecut = input.parse<double>("CutoffEnergy");
 	
 	
 }
