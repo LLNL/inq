@@ -20,6 +20,8 @@
 */
 
 #include <math/d3vector.hpp>
+#include <ions/unitcell.hpp>
+#include <ions/periodic_replicas.hpp>
 #include <cassert>
 #include <array>
 
