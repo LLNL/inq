@@ -32,13 +32,7 @@ namespace hamiltonian {
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo):
 			scalar_potential(basis.rsize()){
 
-			for(int ix = 0; ix < basis.rsize()[0]; ix++){
-				for(int iy = 0; iy < basis.rsize()[1]; iy++){
-					for(int iz = 0; iz < basis.rsize()[2]; iz++){
-						scalar_potential[ix][iy][iz] = 0.0;
-					}
-				}
-			}
+			pot.local_potential(basis, cell, geo, scalar_potential);
 
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				proj_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
