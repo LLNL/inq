@@ -70,6 +70,9 @@ int main(int argc, char ** argv){
 	ham.info(std::cout);
 
 	states::ks_states::coeff phi(st.coeff_dimensions(pw.rsize()));
+	states::ks_states::coeff hphi(st.coeff_dimensions(pw.rsize()));
+
+	ham.apply(pw, st, phi[0], hphi[0]);
 	
 }
 
