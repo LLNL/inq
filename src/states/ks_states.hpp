@@ -60,13 +60,20 @@ namespace states {
       return nquantumnumbers_;
     }
 
-		typedef boost::multi::array<complex, 6> coeff;
-		
-		template <class array_type>
-		std::array<long int, 6> coeff_dimensions(const array_type & basis_dims) const {
-			return {nquantumnumbers_, basis_dims[0], basis_dims[1], basis_dims[2], nstates_, nspinor_};
-		}
-				
+    typedef boost::multi::array<complex, 6> coeff;
+    
+    template <class array_type>
+    std::array<long int, 6> coeff_dimensions(const array_type & basis_dims) const {
+      return {nquantumnumbers_, basis_dims[0], basis_dims[1], basis_dims[2], nstates_, nspinor_};
+    }
+
+    template <class output_stream>
+    void info(output_stream & out) const {
+      out << "KOHN-SHAM STATES:" << std::endl;
+      out << "  Number of states = " << num_states() << std::endl;
+      out << std::endl;
+    }
+    
   private:
 
     int nspinor_;

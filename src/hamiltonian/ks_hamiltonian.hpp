@@ -21,6 +21,7 @@
 
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
+#include <hamiltonian/projector.hpp>
 
 namespace hamiltonian {
   template <class basis_type>
@@ -42,7 +43,7 @@ namespace hamiltonian {
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				proj_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
 			}
-			
+
     }
 
 		boost::multi::array<double, 3> scalar_potential;
@@ -109,8 +110,23 @@ namespace hamiltonian {
 					}
 				}
 			}
-			
+
 		}
+
+		int num_projectors() const {
+			int nn = 0;
+			for(unsigned iproj = 0; iproj < proj_.size(); iproj++){
+				nn += proj_[iproj].num_projectors();
+			}
+			return nn;			
+		}
+
+    template <class output_stream>
+    void info(output_stream & out) const {
+      out << "HAMILTONIAN:" << std::endl;
+      out << "  Total number of projectors = " << num_projectors() << std::endl;
+      out << std::endl;
+    }	
 		
   private:
 
@@ -140,7 +156,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
-	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);  
+	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
 	states::ks_states::coeff phi(st.coeff_dimensions(pw.rsize()));
 	states::ks_states::coeff hphi(st.coeff_dimensions(pw.rsize()));

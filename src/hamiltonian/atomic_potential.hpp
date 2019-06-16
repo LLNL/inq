@@ -56,7 +56,7 @@ namespace hamiltonian {
       return pseudopotential_list_.size();
     }
 
-    const double & number_of_electrons() const {
+    const double & num_electrons() const {
       return nelectrons_;
     }
 
@@ -64,6 +64,13 @@ namespace hamiltonian {
       return pseudopotential_list_.at(el.symbol());
     }
 
+    template <class output_stream>
+    void info(output_stream & out) const {
+      out << "ATOMIC POTENTIAL:" << std::endl;
+      out << "  Number of species   = " << pseudopotential_list_.size() << std::endl;
+      out << "  Number of electrons = " << num_electrons() << std::endl;
+      out << std::endl;
+    }    
     
   private:
 
@@ -96,7 +103,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
     hamiltonian::atomic_potential pot(el_list.size(), el_list.begin());
 
     REQUIRE(pot.number_of_species() == 1);
-    REQUIRE(pot.number_of_electrons() == 10.0_a);
+    REQUIRE(pot.num_electrons() == 10.0_a);
     
   }
 
@@ -106,7 +113,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
     hamiltonian::atomic_potential pot(el_list.size(), el_list);
 
     REQUIRE(pot.number_of_species() == 0);
-    REQUIRE(pot.number_of_electrons() == 0.0_a);
+    REQUIRE(pot.num_electrons() == 0.0_a);
   }
 
   SECTION("CNOH"){
@@ -115,7 +122,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
     hamiltonian::atomic_potential pot(4, el_list);
 
     REQUIRE(pot.number_of_species() == 4);
-    REQUIRE(pot.number_of_electrons() == 16.0_a);
+    REQUIRE(pot.num_electrons() == 16.0_a);
   }
 
   SECTION("Construct from a geometry"){
@@ -125,7 +132,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
     hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 
     REQUIRE(pot.number_of_species() == 2);
-    REQUIRE(pot.number_of_electrons() == 30.0_a);
+    REQUIRE(pot.num_electrons() == 30.0_a);
   }
   
 }

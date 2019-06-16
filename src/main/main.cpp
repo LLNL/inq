@@ -25,6 +25,8 @@
 #include <multi/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
+#include <states/ks_states.hpp>
+#include <hamiltonian/ks_hamiltonian.hpp>
 
 #include <complex>
 #include <iostream>
@@ -54,7 +56,18 @@ int main(int argc, char ** argv){
 	basis::plane_wave pw(cell, ecut);
 
 	pw.info(std::cout);
-	
+
+	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
+
+	pot.info(std::cout);
+
+	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, pot.num_electrons());
+
+	st.info(std::cout);
+
+	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
+
+	ham.info(std::cout);
 	
 }
 
