@@ -35,7 +35,15 @@ int main(int argc, char ** argv){
 
 	parser::input_file input(argv[1]);
 
-	double ecut = input.parse<double>("CutoffEnergy");
+	auto coordinates_file = input.parse<std::string>("Coordinates");
+
+	ions::geometry geo(coordinates_file);
+
+	geo.info(std::cout);
+
+	auto ecut = input.parse<double>("CutoffEnergy");
+
+	
 	
 	
 }

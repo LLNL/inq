@@ -85,6 +85,13 @@ namespace ions {
     auto & coordinates() {
       return coordinates_;
     }
+
+    template <class output_stream>
+    void info(output_stream & out) const {
+      out << "GEOMETRY:" << std::endl;
+      out << "  Number of atoms = " << num_atoms() << std::endl;
+    }
+    
   private:
 
     std::vector<pseudo::element> atoms_;
