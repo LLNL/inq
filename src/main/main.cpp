@@ -68,6 +68,8 @@ int main(int argc, char ** argv){
 	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
 
 	ham.info(std::cout);
+
+	states::ks_states::coeff phi(st.coeff_dimensions(pw.rsize()));
 	
 }
 
