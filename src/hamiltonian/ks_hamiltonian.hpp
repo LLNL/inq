@@ -94,6 +94,9 @@ namespace hamiltonian {
 				}
 			}
 
+			//the non local potential in real space
+			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi, hphi);
+
 			//the scalar local potential in real space
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){

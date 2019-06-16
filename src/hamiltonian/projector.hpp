@@ -47,7 +47,8 @@ namespace hamiltonian {
 
     }
 
-    void apply(const states::ks_states & st, const boost::multi::array<complex, 5> & phi, boost::multi::array<complex, 5> & vnlphi) const {
+    template <class array_dim5>
+    void apply(const states::ks_states & st, const array_dim5 & phi, const array_dim5 & vnlphi) const {
       
       boost::multi::array<complex, 3> sphere_phi({sphere_.size(), st.num_spinors(), st.num_states()});
 
