@@ -41,6 +41,14 @@ int main(int argc, char ** argv){
 
 	geo.info(std::cout);
 
+	auto lx = input.parse<double>("Lx");	
+	auto ly = input.parse<double>("Ly");
+	auto lz = input.parse<double>("Lz");
+
+	ions::UnitCell cell({lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz});
+
+	cell.info(std::cout);
+	
 	auto ecut = input.parse<double>("CutoffEnergy");
 
 	

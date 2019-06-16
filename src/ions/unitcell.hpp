@@ -54,7 +54,7 @@ namespace ions{
     double amat_inv_t_[9];
   
   public:
-	vector_type const& operator[](int i) const {return a_[i];}
+    vector_type const& operator[](int i) const {return a_[i];}
     
     vector_type const& a(int i) const { return a_[i]; }
 	vector_type const& b(int i) const { return b_[i]; }
@@ -66,7 +66,16 @@ namespace ions{
   
     void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2);
     double volume() const { return volume_; }
-  
+
+    template <class output_stream>
+    void info(output_stream & out) const {
+      out << "UNIT CELL:" << std::endl;
+      out << "  Lattice vectors = " << a_[0] << std::endl;
+      out << "                    " << a_[1] << std::endl;
+      out << "                    " << a_[2] << std::endl;
+      out << "  Volume          = " << volume_ << std::endl;
+    }
+    
     const double* amat() const { return &amat_[0]; }
     const double* bmat() const { return &bmat_[0]; }
     const double* amat_inv() const { return &amat_inv_[0]; }
