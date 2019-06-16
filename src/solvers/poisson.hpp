@@ -50,7 +50,7 @@ namespace solvers {
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){
 					for(int iz = 0; iz < basis.rsize()[2]; iz++){
-						potential[ix][iy][iz] = complex_potential[ix][iy][iz];
+						potential[ix][iy][iz] = real(complex_potential[ix][iy][iz]);
 					}
 				}
 			}
