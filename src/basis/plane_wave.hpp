@@ -243,6 +243,8 @@ TEST_CASE("class basis::plane_wave", "[basis]") {
     
 #endif
 
-// Local variables:
+// Local Variables:
 // eval:(setq indent-tabs-mode t tab-width 2)
+// mode: c++
+// coding: utf-8
 // End:

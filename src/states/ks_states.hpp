@@ -153,3 +153,9 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 #endif
 
 #endif
+
+// Local Variables:
+// eval:(setq indent-tabs-mode t tab-width 2)
+// mode: c++
+// coding: utf-8
+// End:

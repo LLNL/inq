@@ -41,3 +41,10 @@ TEST_CASE("class config::path", "[path]") {
 #endif
 
 #endif
+
+
+// Local Variables:
+// eval:(setq indent-tabs-mode t tab-width 2)
+// mode: c++
+// coding: utf-8
+// End:

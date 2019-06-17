@@ -154,3 +154,10 @@ void splintd (const double *xa, const double *ya, const double *y2a,
         h * ( ( (1.0/6.0) - 0.5 * a * a ) * y2a[klo] +
               ( 0.5 * b * b - (1.0/6.0) ) * y2a[khi] );
 }
+
+
+// Local Variables:
+// eval:(setq indent-tabs-mode t tab-width 2)
+// mode: c++
+// coding: utf-8
+// End:

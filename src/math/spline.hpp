@@ -263,7 +263,8 @@ TEST_CASE("Class math::spline", "[spline]") {
 
 #endif
 
-
 // Local Variables:
+// eval:(setq indent-tabs-mode t tab-width 2)
 // mode: c++
+// coding: utf-8
 // End:
