@@ -43,7 +43,7 @@ namespace hamiltonian {
 		boost::multi::array<double, 3> scalar_potential;
 
 		template <class array_dim5>
-		void apply(const basis_type & basis, const states::ks_states st, const array_dim5 && phi, array_dim5 && hphi){
+		void apply(const basis_type & basis, const states::ks_states & st, const array_dim5 && phi, array_dim5 && hphi){
 
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
