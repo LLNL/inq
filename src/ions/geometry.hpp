@@ -164,8 +164,6 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     REQUIRE_THROWS(ions::geometry("/this_file_should_not_exist,_i_hope_it_doesnt"));
   }
   
-
-  
 }
 #endif
 

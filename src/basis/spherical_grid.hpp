@@ -36,18 +36,18 @@ namespace basis {
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
       
       for(int ix = 0; ix < parent_grid.rsize()[0]; ix++){
-	for(int iy = 0; iy < parent_grid.rsize()[1]; iy++){
-	  for(int iz = 0; iz < parent_grid.rsize()[2]; iz++){
-	    auto rpoint = parent_grid.rvector(ix, iy, iz);
-
-	    for(int irep = 0; irep < rep.size(); irep++){
-	      if(norm(rpoint - rep[irep]) <= radius*radius) points_.push_back({ix, iy, iz});
-	    }
-	    
-	  }
-	}
+				for(int iy = 0; iy < parent_grid.rsize()[1]; iy++){
+					for(int iz = 0; iz < parent_grid.rsize()[2]; iz++){
+						auto rpoint = parent_grid.rvector(ix, iy, iz);
+						
+						for(int irep = 0; irep < rep.size(); irep++){
+							if(norm(rpoint - rep[irep]) <= radius*radius) points_.push_back({ix, iy, iz});
+						}
+						
+					}
+				}
       }
-
+			
     }
 
     long size() const {
@@ -57,31 +57,31 @@ namespace basis {
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
       for(int ipoint = 0; ipoint < size(); ipoint++){
-	subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
+				subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
       }
     }
 
     template <class array_3d, class array_5d>
     void scatter_add(const array_3d & subgrid, array_5d && grid) const{
       for(int ipoint = 0; ipoint < size(); ipoint++){
-	for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
-	  for(int i2 = 0; i2 < std::get<2>(sizes(subgrid)); i2++){
-	    grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][i1][i2] += subgrid[ipoint][i1][i2];
-	  }
-	}
+				for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
+					for(int i2 = 0; i2 < std::get<2>(sizes(subgrid)); i2++){
+						grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][i1][i2] += subgrid[ipoint][i1][i2];
+					}
+				}
       }
     }
     
     template <class array_1d, class array_3d>
     void scatter(const array_1d & subgrid, array_3d && grid) const{
       for(int ipoint = 0; ipoint < size(); ipoint++){
-	grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
+				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }
     }
 
     auto points() const {
       return points_;
-    }      
+    }
     
   private:
     
