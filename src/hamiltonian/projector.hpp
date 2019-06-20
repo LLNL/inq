@@ -47,33 +47,29 @@ namespace hamiltonian {
 
     }
 
-    template <class array_dim5>
-    void apply(const states::ks_states & st, const array_dim5 & phi, const array_dim5 & vnlphi) const {
+    template <class array_dim4>
+    void apply(const states::ks_states & st, const array_dim4 & phi, const array_dim4 & vnlphi) const {
       
-      boost::multi::array<complex, 3> sphere_phi({sphere_.size(), st.num_spinors(), st.num_states()});
+      boost::multi::array<states::ks_states::coeff_type, 2> sphere_phi({sphere_.size(), st.num_states()});
 
       sphere_.gather(phi, sphere_phi);
 
-      boost::multi::array<complex, 3> projections({nproj_, st.num_spinors(), st.num_states()});
+      boost::multi::array<states::ks_states::coeff_type, 2> projections({nproj_, st.num_states()});
 
       //OPTIMIZATION: these two operations should be done by dgemm
       for(int iproj = 0; iproj < nproj_; iproj++){
-	for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++){
-	  for(int ist = 0; ist < st.num_states(); ist++){
-	    complex aa = 0.0;
-	    for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) aa += matrix_[iproj][ipoint]*sphere_phi[ipoint][ispinor][ist];
-	    projections[iproj][ispinor][ist] = aa*kb_coeff_[iproj]*volume_element_;
-	  }
+	for(int ist = 0; ist < st.num_states(); ist++){
+	  complex aa = 0.0;
+	  for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) aa += matrix_[iproj][ipoint]*sphere_phi[ipoint][ist];
+	  projections[iproj][ist] = aa*kb_coeff_[iproj]*volume_element_;
 	}
       }
 
       for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-	for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++){
-	  for(int ist = 0; ist < st.num_states(); ist++){
-	    complex aa = 0.0;
-	    for(int iproj = 0; iproj < nproj_; iproj++) aa += matrix_[iproj][ipoint]*projections[iproj][ispinor][ist];
-	    sphere_phi[ipoint][ispinor][ist] = aa;
-	  }
+	for(int ist = 0; ist < st.num_states(); ist++){
+	  complex aa = 0.0;
+	  for(int iproj = 0; iproj < nproj_; iproj++) aa += matrix_[iproj][ipoint]*projections[iproj][ist];
+	  sphere_phi[ipoint][ist] = aa;
 	}
       }
       

@@ -27,6 +27,9 @@ namespace states {
   class ks_states {
 
   public:
+
+    typedef complex coeff_type;
+    typedef boost::multi::array<complex, 5> coeff;
     
     enum class spin_config {
       UNPOLARIZED,
@@ -37,10 +40,8 @@ namespace states {
     ks_states(const spin_config spin, const double nelectrons){
 
       if(spin == spin_config::NON_COLLINEAR){
-				nspinor_ = 2;
 				nstates_ = ceil(nelectrons);
       } else {
-				nspinor_ = 1;
 				nstates_ = ceil(0.5*nelectrons);
       }
 
@@ -51,20 +52,14 @@ namespace states {
     int num_states() const {
       return nstates_;
     }
-    
-    int num_spinors() const {
-      return nspinor_;
-    }
 
     int num_quantum_numbers() const {
       return nquantumnumbers_;
     }
 
-    typedef boost::multi::array<complex, 6> coeff;
-    
     template <class array_type>
-    std::array<long int, 6> coeff_dimensions(const array_type & basis_dims) const {
-      return {nquantumnumbers_, basis_dims[0], basis_dims[1], basis_dims[2], nstates_, nspinor_};
+    std::array<long int, 5> coeff_dimensions(const array_type & basis_dims) const {
+      return {nquantumnumbers_, basis_dims[0], basis_dims[1], basis_dims[2], nstates_};
     }
 
     template <class output_stream>
@@ -103,7 +98,6 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
     
-    REQUIRE(st.num_spinors() == 1);
     REQUIRE(st.num_states() == 6);
     REQUIRE(st.num_quantum_numbers() == 1);
 		REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
@@ -111,7 +105,6 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
 		REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
 		REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
-		REQUIRE(st.coeff_dimensions(pw.rsize())[5] == st.num_spinors());
 
 		states::ks_states::coeff(st.coeff_dimensions(pw.rsize()));
 		
@@ -121,30 +114,26 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     states::ks_states st(states::ks_states::spin_config::POLARIZED, 11.0);
     
-    REQUIRE(st.num_spinors() == 1);
     REQUIRE(st.num_states() == 6);
     REQUIRE(st.num_quantum_numbers() == 2);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
-		REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
-		REQUIRE(st.coeff_dimensions(pw.rsize())[5] == st.num_spinors());
+    REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
+    REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
+    REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
+    REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
+    REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
   }
 
   SECTION("Non-collinear spin"){
     
     states::ks_states st(states::ks_states::spin_config::NON_COLLINEAR, 11.0);
     
-    REQUIRE(st.num_spinors() == 2);
     REQUIRE(st.num_states() == 11);
     REQUIRE(st.num_quantum_numbers() == 1);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
-		REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
-		REQUIRE(st.coeff_dimensions(pw.rsize())[5] == st.num_spinors());
+    REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
+    REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
+    REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
+    REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
+    REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
   }
 
   
@@ -154,8 +143,6 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 #endif
 
-// Local Variables:
-// eval:(setq indent-tabs-mode t tab-width 2)
-// mode: c++
-// coding: utf-8
+// Local variables:
+// eval: (setq indent-tabs-mode t tab-width 2)
 // End:

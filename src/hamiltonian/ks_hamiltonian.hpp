@@ -42,8 +42,8 @@ namespace hamiltonian {
 
 		boost::multi::array<double, 3> scalar_potential;
 
-		template <class array_dim5>
-		void apply(const basis_type & basis, const states::ks_states & st, const array_dim5 && phi, array_dim5 && hphi){
+		template <class array_dim4>
+		void apply(const basis_type & basis, const states::ks_states & st, const array_dim4 && phi, array_dim4 && hphi){
 
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
@@ -52,40 +52,38 @@ namespace hamiltonian {
 
 			//the Laplacian in Fourier space
 			for(int ist = 0; ist < st.num_states(); ist++){
-				for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++){
-
-					// for the moment we have to copy to single grid, since the
-					// fft interfaces assumes the transform is over the last indices					
-					for(int ix = 0; ix < basis.rsize()[0]; ix++){
-						for(int iy = 0; iy < basis.rsize()[1]; iy++){
-							for(int iz = 0; iz < basis.rsize()[2]; iz++){
-								fftgrid[ix][iy][iz] = phi[ix][iy][iz][ist][ispinor];
-							}
+				
+				// for the moment we have to copy to single grid, since the
+				// fft interfaces assumes the transform is over the last indices					
+				for(int ix = 0; ix < basis.rsize()[0]; ix++){
+					for(int iy = 0; iy < basis.rsize()[1]; iy++){
+						for(int iz = 0; iz < basis.rsize()[2]; iz++){
+							fftgrid[ix][iy][iz] = phi[ix][iy][iz][ist];
 						}
 					}
-
-					fftw::dft_inplace(fftgrid, fftw::forward);
-
-					double scal = -0.5/basis.rtotalsize();
-					for(int ix = 0; ix < basis.gsize()[0]; ix++){
-						for(int iy = 0; iy < basis.gsize()[1]; iy++){
-							for(int iz = 0; iz < basis.gsize()[2]; iz++){
-								fftgrid[ix][iy][iz] *= -scal*basis.g2(ix, iy, iz);
-							}
-						}
-					}
-					
-					fftw::dft_inplace(fftgrid, fftw::backward);
-					
-					for(int ix = 0; ix < basis.rsize()[0]; ix++){
-						for(int iy = 0; iy < basis.rsize()[1]; iy++){
-							for(int iz = 0; iz < basis.rsize()[2]; iz++){
-								hphi[ix][iy][iz][ist][ispinor] = fftgrid[ix][iy][iz];
-							}
-						}
-					}
-					
 				}
+
+				fftw::dft_inplace(fftgrid, fftw::forward);
+				
+				double scal = -0.5/basis.rtotalsize();
+				for(int ix = 0; ix < basis.gsize()[0]; ix++){
+					for(int iy = 0; iy < basis.gsize()[1]; iy++){
+						for(int iz = 0; iz < basis.gsize()[2]; iz++){
+							fftgrid[ix][iy][iz] *= -scal*basis.g2(ix, iy, iz);
+						}
+					}
+				}
+				
+				fftw::dft_inplace(fftgrid, fftw::backward);
+				
+				for(int ix = 0; ix < basis.rsize()[0]; ix++){
+					for(int iy = 0; iy < basis.rsize()[1]; iy++){
+						for(int iz = 0; iz < basis.rsize()[2]; iz++){
+							hphi[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
+						}
+					}
+				}
+					
 			}
 
 			//the non local potential in real space
@@ -99,9 +97,7 @@ namespace hamiltonian {
 						double vv  = scalar_potential[ix][iy][iz];
 						
 						for(int ist = 0; ist < st.num_states(); ist++){
-							for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-								hphi[ix][iy][iz][ist][ispinor] += vv*phi[ix][iy][iz][ist][ispinor];
-							}
+							hphi[ix][iy][iz][ist] += vv*phi[ix][iy][iz][ist];
 						}
 						
 					}
@@ -168,9 +164,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-							phi[0][ix][iy][iz][ist][ispinor] = 1.0;
-						}
+						phi[0][ix][iy][iz][ist] = 1.0;
 					}
 				}
 			}
@@ -183,9 +177,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-							diff += fabs(hphi[0][ix][iy][iz][ist][ispinor] - 0.0);
-						}
+						diff += fabs(hphi[0][ix][iy][iz][ist] - 0.0);
 					}
 				}
 			}
@@ -205,10 +197,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-							double xx = pw.rvector(ix, iy, iz)[0];
-							phi[0][ix][iy][iz][ist][ispinor] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
-						}
+						double xx = pw.rvector(ix, iy, iz)[0];
+						phi[0][ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
 					}
 				}
 			}
@@ -221,9 +211,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-							diff += fabs(hphi[0][ix][iy][iz][ist][ispinor] - 0.5*ist*kk*ist*kk*phi[0][ix][iy][iz][ist][ispinor]);
-						}
+							diff += fabs(hphi[0][ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi[0][ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -247,9 +235,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 					ham.scalar_potential[ix][iy][iz] = ww*r2;
 
 					for(int ist = 0; ist < st.num_states(); ist++){
-						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-							phi[0][ix][iy][iz][ist][ispinor] = exp(-0.5*ww*r2);
-						}
+						phi[0][ix][iy][iz][ist] = exp(-0.5*ww*r2);
 					}
 					
 				}
@@ -263,9 +249,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						for(int ispinor = 0; ispinor < st.num_spinors(); ispinor++) {
-							diff += fabs(hphi[0][ix][iy][iz][ist][ispinor] - ww*phi[0][ix][iy][iz][ist][ispinor]);
-						}
+						diff += fabs(hphi[0][ix][iy][iz][ist] - ww*phi[0][ix][iy][iz][ist]);
 					}
 				}
 			}
