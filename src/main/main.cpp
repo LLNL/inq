@@ -30,6 +30,7 @@
 #include <states/ks_states.hpp>
 #include <states/coefficients.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
+#include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
 
 #include <complex>
@@ -75,6 +76,8 @@ int main(int argc, char ** argv){
 
   states::coefficients phi(st, pw);
 	states::coefficients hphi(st, pw);
+
+	operations::randomize(st, pw, phi);
 	
   ham.apply(pw, st, phi.cubic, hphi.cubic);
 
