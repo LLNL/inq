@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef PLANE_WAVE_HPP
 #define PLANE_WAVE_HPP
 
@@ -55,6 +57,8 @@ namespace basis {
 				glength_[idir] = 2.0*M_PI/rspacing_[idir];
 				gspacing_[idir] = glength_[idir]/ng_[idir];
       }
+
+			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
     }
 
     const double & ecut() const {
@@ -92,6 +96,10 @@ namespace basis {
     long size() const {
       return nr_[0]*long(nr_[1])*nr_[2];
     }
+
+		long num_points() const {
+			return npoints_;
+		}
 		
     long rtotalsize() const {
       return nr_[0]*long(nr_[1])*nr_[2];
@@ -158,7 +166,8 @@ namespace basis {
     
     math::d3vector rlength_;
     math::d3vector glength_;
-    
+
+		long npoints_;
     
   };
 }
@@ -242,9 +251,3 @@ TEST_CASE("class basis::plane_wave", "[basis]") {
 
     
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:

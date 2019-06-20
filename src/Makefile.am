@@ -38,7 +38,9 @@ noinst_HEADERS =                                   \
 	functionals/XCFunctional.hpp               \
 	functionals/PBEFunctional.hpp              \
 	hamiltonian/atomic_potential.hpp           \
-	hamiltonian/ks_hamiltonian.hpp
+	hamiltonian/ks_hamiltonian.hpp             \
+	operations/overlap.hpp                     \
+	solvers/poisson.hpp
 
 all_srcs =                                         \
 	parser/symbols.c                           \

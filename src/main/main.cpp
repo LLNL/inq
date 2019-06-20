@@ -30,6 +30,7 @@
 #include <states/ks_states.hpp>
 #include <states/coefficients.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
+#include <operations/overlap.hpp>
 
 #include <complex>
 #include <iostream>
@@ -76,5 +77,7 @@ int main(int argc, char ** argv){
 	states::coefficients hphi(st, pw);
 	
   ham.apply(pw, st, phi.cubic, hphi.cubic);
+
+	auto overlap = operations::overlap(st, pw, phi, hphi);
 	
 }
