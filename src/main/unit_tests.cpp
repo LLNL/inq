@@ -34,6 +34,7 @@
 #include <basis/plane_wave.hpp>
 #include <basis/spherical_grid.hpp>
 #include <states/ks_states.hpp>
+#include <states/coefficients.hpp>
 #include <functionals/LDAFunctional.hpp>
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/atomic_potential.hpp>

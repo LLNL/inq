@@ -26,6 +26,7 @@
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
 #include <states/ks_states.hpp>
+#include <states/coefficients.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 
 #include <complex>
@@ -35,49 +36,49 @@ using std::cout;
 
 int main(int argc, char ** argv){
 
-	parser::input_file input(argv[1]);
+  parser::input_file input(argv[1]);
+  
+  auto coordinates_file = input.parse<std::string>("Coordinates");
+  
+  ions::geometry geo(coordinates_file);
+  
+  geo.info(std::cout);
+  
+  auto lx = input.parse<double>("Lx");	
+  auto ly = input.parse<double>("Ly");
+  auto lz = input.parse<double>("Lz");
+  
+  ions::UnitCell cell({lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz});
+  
+  cell.info(std::cout);
+  
+  auto ecut = input.parse<double>("CutoffEnergy");
+  
+  basis::plane_wave pw(cell, ecut);
+  
+  pw.info(std::cout);
+  
+  hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
+  
+  pot.info(std::cout);
+  
+  states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, pot.num_electrons());
+  
+  st.info(std::cout);
+  
+  hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
+  
+  ham.info(std::cout);
 
-	auto coordinates_file = input.parse<std::string>("Coordinates");
-
-	ions::geometry geo(coordinates_file);
-
-	geo.info(std::cout);
-
-	auto lx = input.parse<double>("Lx");	
-	auto ly = input.parse<double>("Ly");
-	auto lz = input.parse<double>("Lz");
-
-	ions::UnitCell cell({lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz});
-
-	cell.info(std::cout);
+  states::coefficients phi(st, pw);
+	states::coefficients hphi(st, pw);
 	
-	auto ecut = input.parse<double>("CutoffEnergy");
-
-	basis::plane_wave pw(cell, ecut);
-
-	pw.info(std::cout);
-
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
-
-	pot.info(std::cout);
-
-	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, pot.num_electrons());
-
-	st.info(std::cout);
-
-	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
-
-	ham.info(std::cout);
-
-	states::ks_states::coeff phi(st.coeff_dimensions(pw.rsize()));
-	states::ks_states::coeff hphi(st.coeff_dimensions(pw.rsize()));
-
-	ham.apply(pw, st, phi[0], hphi[0]);
+  ham.apply(pw, st, phi.cubic[0], hphi.cubic[0]);
 	
 }
 
 // Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
+// eval:(setq indent-tabs-mode t tab-width 2)
 // mode: c++
 // coding: utf-8
 // End:

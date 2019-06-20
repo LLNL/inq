@@ -58,10 +58,15 @@ namespace states {
     }
 
     template <class array_type>
-    std::array<long int, 5> coeff_dimensions(const array_type & basis_dims) const {
+    std::array<long int, 5> cubic_dims(const array_type & basis_dims) const {
       return {nquantumnumbers_, basis_dims[0], basis_dims[1], basis_dims[2], nstates_};
     }
 
+    template <class array_type>
+    std::array<long int, 3> linear_dims(const array_type & basis_dims) const {
+      return {nquantumnumbers_, basis_dims[0]*basis_dims[1]*basis_dims[2], nstates_};
+    }
+    
     template <class output_stream>
     void info(output_stream & out) const {
       out << "KOHN-SHAM STATES:" << std::endl;
@@ -100,13 +105,13 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     REQUIRE(st.num_states() == 6);
     REQUIRE(st.num_quantum_numbers() == 1);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
-		REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
-		REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
+		REQUIRE(st.cubic_dims(pw.rsize())[0] == st.num_quantum_numbers());
+		REQUIRE(st.cubic_dims(pw.rsize())[1] == pw.rsize()[0]);
+		REQUIRE(st.cubic_dims(pw.rsize())[2] == pw.rsize()[1]);
+		REQUIRE(st.cubic_dims(pw.rsize())[3] == pw.rsize()[2]);
+		REQUIRE(st.cubic_dims(pw.rsize())[4] == st.num_states());
 
-		states::ks_states::coeff(st.coeff_dimensions(pw.rsize()));
+		states::ks_states::coeff(st.cubic_dims(pw.rsize()));
 		
   }
 
@@ -116,11 +121,11 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     REQUIRE(st.num_states() == 6);
     REQUIRE(st.num_quantum_numbers() == 2);
-    REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
-    REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
-    REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
-    REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
-    REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
+    REQUIRE(st.cubic_dims(pw.rsize())[0] == st.num_quantum_numbers());
+    REQUIRE(st.cubic_dims(pw.rsize())[1] == pw.rsize()[0]);
+    REQUIRE(st.cubic_dims(pw.rsize())[2] == pw.rsize()[1]);
+    REQUIRE(st.cubic_dims(pw.rsize())[3] == pw.rsize()[2]);
+    REQUIRE(st.cubic_dims(pw.rsize())[4] == st.num_states());
   }
 
   SECTION("Non-collinear spin"){
@@ -129,11 +134,11 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     REQUIRE(st.num_states() == 11);
     REQUIRE(st.num_quantum_numbers() == 1);
-    REQUIRE(st.coeff_dimensions(pw.rsize())[0] == st.num_quantum_numbers());
-    REQUIRE(st.coeff_dimensions(pw.rsize())[1] == pw.rsize()[0]);
-    REQUIRE(st.coeff_dimensions(pw.rsize())[2] == pw.rsize()[1]);
-    REQUIRE(st.coeff_dimensions(pw.rsize())[3] == pw.rsize()[2]);
-    REQUIRE(st.coeff_dimensions(pw.rsize())[4] == st.num_states());
+    REQUIRE(st.cubic_dims(pw.rsize())[0] == st.num_quantum_numbers());
+    REQUIRE(st.cubic_dims(pw.rsize())[1] == pw.rsize()[0]);
+    REQUIRE(st.cubic_dims(pw.rsize())[2] == pw.rsize()[1]);
+    REQUIRE(st.cubic_dims(pw.rsize())[3] == pw.rsize()[2]);
+    REQUIRE(st.cubic_dims(pw.rsize())[4] == st.num_states());
   }
 
   

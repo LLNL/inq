@@ -151,8 +151,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-	states::ks_states::coeff phi(st.coeff_dimensions(pw.rsize()));
-	states::ks_states::coeff hphi(st.coeff_dimensions(pw.rsize()));
+	states::ks_states::coeff phi(st.cubic_dims(pw.rsize()));
+	states::ks_states::coeff hphi(st.cubic_dims(pw.rsize()));
 
 	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
 
