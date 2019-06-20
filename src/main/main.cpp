@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
 
@@ -76,9 +78,3 @@ int main(int argc, char ** argv){
   ham.apply(pw, st, phi.cubic, hphi.cubic);
 	
 }
-
-// Local Variables:
-// eval:(setq indent-tabs-mode t tab-width 2)
-// mode: c++
-// coding: utf-8
-// End:

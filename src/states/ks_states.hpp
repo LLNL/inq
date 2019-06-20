@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef KS_STATES
 #define KS_STATES
 

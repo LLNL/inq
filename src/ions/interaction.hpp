@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef IONS_INTERACTION
 #define IONS_INTERACTION
 

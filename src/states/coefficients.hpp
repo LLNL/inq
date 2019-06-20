@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef STATES_COEFFICIENTS
 #define STATES_COEFFICIENTS
 
@@ -56,7 +58,3 @@ TEST_CASE("Class states::coefficients", "[coefficients]"){
 #endif
 
 #endif
-
-// Local Variables:
-// eval: (setq indent-tabs-mode: t tab-width: 2)
-// End:

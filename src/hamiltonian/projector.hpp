@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef HAMILTONIAN_PROJECTOR
 #define HAMILTONIAN_PROJECTOR
 

@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef HAMILTONIAN_KS_HAMILTONIAN
 #define HAMILTONIAN_KS_HAMILTONIAN
 
@@ -268,7 +270,3 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 #endif
 
 #endif
-
-// Local variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// End:

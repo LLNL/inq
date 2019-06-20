@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 ////////////////////////////////////////////////////////////////////////////////  
 // Copyright (c) 2013, Lawrence Livermore National Security, LLC. 
 //

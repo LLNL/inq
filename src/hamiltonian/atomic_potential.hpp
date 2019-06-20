@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef ATOMIC_POTENTIAL_HPP
 #define ATOMIC_POTENTIAL_HPP
 
@@ -168,8 +170,3 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
 #endif
   
 #endif
-
-
-// Local variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// End:
