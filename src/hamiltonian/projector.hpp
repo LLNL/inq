@@ -96,5 +96,5 @@ namespace hamiltonian {
 #endif
 
 // Local variables:
-// eval:(setq indent-tabs-mode t tab-width 2)
+// eval:(setq indent-tabs-mode: t tab-width: 2)
 // End:

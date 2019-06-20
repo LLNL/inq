@@ -108,7 +108,7 @@ TEST_CASE("Class parser::input_file", "[input_file]") {
 #endif
 
 // Local Variables:
-// eval:(setq indent-tabs-mode t tab-width 2)
+// eval:(setq indent-tabs-mode: t tab-width: 2)
 // mode: c++
 // coding: utf-8
 // End:

@@ -171,5 +171,5 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
 
 
 // Local variables:
-// eval:(setq indent-tabs-mode t tab-width 2)
+// eval:(setq indent-tabs-mode: t tab-width: 2)
 // End:
