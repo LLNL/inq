@@ -38,7 +38,7 @@ namespace operations {
       for(int jj = 0; jj < st.num_states(); jj++){
 
 				states::ks_states::coeff_type aa = 0.0;
-				for(int kk = 0; kk < basis.num_points(); kk++) aa += phi1.linear[ii][kk]*phi2.linear[jj][kk];
+				for(int kk = 0; kk < basis.num_points(); kk++) aa += std::conj(phi1.linear[ii][kk])*phi2.linear[jj][kk];
 				overlap_matrix[ii][jj] = aa*basis.volume_element();
 
       }
@@ -64,7 +64,7 @@ namespace operations {
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < st.num_states(); ii++){
 			states::ks_states::coeff_type aa = 0.0;
-			for(int kk = 0; kk < basis.num_points(); kk++) aa += phi1.linear[ii][kk]*phi2.linear[ii][kk];
+			for(int kk = 0; kk < basis.num_points(); kk++) aa += std::conj(phi1.linear[ii][kk])*phi2.linear[ii][kk];
 			overlap_vector[ii] = aa*basis.volume_element();
     }
 		
