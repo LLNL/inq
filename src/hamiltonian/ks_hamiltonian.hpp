@@ -40,11 +40,11 @@ namespace hamiltonian {
 
     }
 
-		boost::multi::array<double, 3> scalar_potential;
-
-		template <class array_dim4>
-		void apply(const basis_type & basis, const states::ks_states & st, const array_dim4 && phi, array_dim4 && hphi){
-
+    boost::multi::array<double, 3> scalar_potential;
+    
+    template <class array_dim4_1, class array_dim4_2>
+    void apply(const basis_type & basis, const states::ks_states & st, const array_dim4_1 & phi, array_dim4_2 && hphi){
+      
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
 			
@@ -164,20 +164,20 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						phi[0][ix][iy][iz][ist] = 1.0;
+						phi[ix][iy][iz][ist] = 1.0;
 					}
 				}
 			}
 		}
 		
-		ham.apply(pw, st, phi[0], hphi[0]);
+		ham.apply(pw, st, phi, hphi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						diff += fabs(hphi[0][ix][iy][iz][ist] - 0.0);
+						diff += fabs(hphi[ix][iy][iz][ist] - 0.0);
 					}
 				}
 			}
@@ -198,20 +198,20 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
 						double xx = pw.rvector(ix, iy, iz)[0];
-						phi[0][ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
+						phi[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
 					}
 				}
 			}
 		}
 		
-		ham.apply(pw, st, phi[0], hphi[0]);
+		ham.apply(pw, st, phi, hphi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-							diff += fabs(hphi[0][ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi[0][ix][iy][iz][ist]);
+							diff += fabs(hphi[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -235,21 +235,21 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 					ham.scalar_potential[ix][iy][iz] = ww*r2;
 
 					for(int ist = 0; ist < st.num_states(); ist++){
-						phi[0][ix][iy][iz][ist] = exp(-0.5*ww*r2);
+						phi[ix][iy][iz][ist] = exp(-0.5*ww*r2);
 					}
 					
 				}
 			}
 		}
 		
-		ham.apply(pw, st, phi[0], hphi[0]);
+		ham.apply(pw, st, phi, hphi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						diff += fabs(hphi[0][ix][iy][iz][ist] - ww*phi[0][ix][iy][iz][ist]);
+						diff += fabs(hphi[ix][iy][iz][ist] - ww*phi[ix][iy][iz][ist]);
 					}
 				}
 			}

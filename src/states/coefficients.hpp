@@ -37,8 +37,8 @@ namespace states {
 
     }
     
-    boost::multi::array<ks_states::coeff_type, 5> cubic;
-    boost::multi::array_ref<ks_states::coeff_type, 3>  linear;
+    boost::multi::array<ks_states::coeff_type, 4> cubic;
+    boost::multi::array_ref<ks_states::coeff_type, 2>  linear;
     
   };
 

@@ -73,7 +73,7 @@ int main(int argc, char ** argv){
   states::coefficients phi(st, pw);
 	states::coefficients hphi(st, pw);
 	
-  ham.apply(pw, st, phi.cubic[0], hphi.cubic[0]);
+  ham.apply(pw, st, phi.cubic, hphi.cubic);
 	
 }
 
