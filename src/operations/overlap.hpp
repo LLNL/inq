@@ -25,6 +25,7 @@
 #include <states/coefficients.hpp>
 
 namespace operations {
+	
   auto overlap(const states::ks_states st, const basis::plane_wave & basis,
 							 const states::coefficients & phi1, const states::coefficients & phi2) {
 
@@ -52,5 +53,18 @@ namespace operations {
 	}
 
 }
+
+
+#ifdef UNIT_TEST
+#include <catch2/catch.hpp>
+#include <basis/plane_wave.hpp>
+#include <ions/unitcell.hpp>
+
+TEST_CASE("function operations::overlap", "[overlap]") {
+
+	using namespace Catch::literals;
+
+}
+
 
 #endif
