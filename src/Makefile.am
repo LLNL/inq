@@ -30,6 +30,7 @@ noinst_HEADERS =                                   \
 	basis/plane_wave.hpp                       \
 	basis/spherical_grid.hpp                   \
 	states/ks_states.hpp                       \
+	states/coefficients.hpp                    \
 	functionals/LDAFunctional.hpp              \
 	functionals/PBESolFunctional.hpp           \
 	functionals/BLYPFunctional.hpp             \
