@@ -32,6 +32,7 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
+#include <operations/scal.hpp>
 
 #include <complex>
 #include <iostream>
@@ -79,7 +80,12 @@ int main(int argc, char ** argv){
 
 	operations::randomize(st, pw, phi);
 
-	operations::overlap_diagonal(st, pw, phi);
+	std::cout << operations::overlap_diagonal(st, pw, phi)[0] << std::endl;
+
+	//normalize
+	operations::scal_invsqrt(st, pw, operations::overlap_diagonal(st, pw, phi), phi);
+
+	std::cout << operations::overlap_diagonal(st, pw, phi)[0] << std::endl;
 	
   ham.apply(pw, st, phi.cubic, hphi.cubic);
 

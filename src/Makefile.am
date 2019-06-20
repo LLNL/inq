@@ -40,6 +40,8 @@ noinst_HEADERS =                                   \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
 	operations/overlap.hpp                     \
+	operations/randomize.hpp                   \
+	operations/scal.hpp                        \
 	solvers/poisson.hpp
 
 all_srcs =                                         \
