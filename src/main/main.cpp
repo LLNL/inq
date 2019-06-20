@@ -78,6 +78,8 @@ int main(int argc, char ** argv){
 	states::coefficients hphi(st, pw);
 
 	operations::randomize(st, pw, phi);
+
+	operations::overlap_diagonal(st, pw, phi);
 	
   ham.apply(pw, st, phi.cubic, hphi.cubic);
 

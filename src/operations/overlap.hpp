@@ -23,6 +23,7 @@
 
 #include <multi/array.hpp>
 #include <states/coefficients.hpp>
+#include <cassert>
 
 namespace operations {
 	
@@ -52,6 +53,32 @@ namespace operations {
 		return overlap(st, basis, phi, phi);
 	}
 
+	
+  auto overlap_diagonal(const states::ks_states st, const basis::plane_wave & basis,
+												const states::coefficients & phi1, const states::coefficients & phi2) {
+
+		boost::multi::array<states::ks_states::coeff_type, 1>  overlap_vector(st.num_states());
+
+		assert(size(overlap_vector) == st.num_states());
+		
+		//OPTIMIZATION: this can be done more efficiently
+    for(int ii = 0; ii < st.num_states(); ii++){
+			states::ks_states::coeff_type aa = 0.0;
+			for(int kk = 0; kk < basis.num_points(); kk++) aa += phi1.linear[ii][kk]*phi2.linear[ii][kk];
+			overlap_vector[ii] = aa*basis.volume_element();
+    }
+		
+		return overlap_vector;		
+  }
+
+
+	auto overlap_diagonal(const states::ks_states st, const basis::plane_wave & basis, const states::coefficients & phi){
+
+		//OPTIMIZATION: this can be done with syrk/herk
+		return overlap_diagonal(st, basis, phi, phi);
+	}
+	
+	
 }
 
 
