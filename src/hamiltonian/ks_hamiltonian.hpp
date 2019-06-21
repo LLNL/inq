@@ -24,6 +24,7 @@
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <hamiltonian/projector.hpp>
+#include <operations/space.hpp>
 
 namespace hamiltonian {
   template <class basis_type>

@@ -37,11 +37,12 @@ noinst_HEADERS =                                   \
 	functionals/PBERevFunctional.hpp           \
 	functionals/XCFunctional.hpp               \
 	functionals/PBEFunctional.hpp              \
-	hamiltonian/atomic_potential.hpp           \
-	hamiltonian/ks_hamiltonian.hpp             \
 	operations/overlap.hpp                     \
 	operations/randomize.hpp                   \
 	operations/scal.hpp                        \
+	operations/space.hpp                       \
+	hamiltonian/atomic_potential.hpp           \
+	hamiltonian/ks_hamiltonian.hpp             \
 	solvers/poisson.hpp
 
 all_srcs =                                         \
