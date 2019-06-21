@@ -27,7 +27,7 @@
 
 namespace operations {
 
-  void to_fourier_space(const states::ks_states st, const basis::plane_wave & basis, states::coefficients & phi){
+  void to_fourier_space(const states::ks_states st, const basis::plane_wave & basis, const states::coefficients & phir, states::coefficients & phif){
 
     namespace multi = boost::multi;
     namespace fftw = boost::multi::fftw;
@@ -43,7 +43,7 @@ namespace operations {
       for(int ix = 0; ix < basis.rsize()[0]; ix++){
 	for(int iy = 0; iy < basis.rsize()[1]; iy++){
 	  for(int iz = 0; iz < basis.rsize()[2]; iz++){
-	    fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist];
+	    fftgrid[ix][iy][iz] = phir.cubic[ix][iy][iz][ist];
 	  }
 	}
       }
@@ -53,7 +53,7 @@ namespace operations {
       for(int ix = 0; ix < basis.gsize()[0]; ix++){
 	for(int iy = 0; iy < basis.gsize()[1]; iy++){
 	  for(int iz = 0; iz < basis.gsize()[2]; iz++){
-	    phi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
+	    phif.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
 	  }
 	}
       }
@@ -62,7 +62,11 @@ namespace operations {
 
   }
 
-  void to_real_space(const states::ks_states st, const basis::plane_wave & basis, states::coefficients & phi){
+  void to_fourier_space(const states::ks_states st, const basis::plane_wave & basis, states::coefficients & phi){
+    to_fourier_space(st, basis, phi, phi);
+  }
+
+  void to_real_space(const states::ks_states st, const basis::plane_wave & basis, const states::coefficients & phif, states::coefficients & phir){
 
     namespace multi = boost::multi;
     namespace fftw = boost::multi::fftw;
@@ -78,7 +82,7 @@ namespace operations {
       for(int ix = 0; ix < basis.gsize()[0]; ix++){
 	for(int iy = 0; iy < basis.gsize()[1]; iy++){
 	  for(int iz = 0; iz < basis.gsize()[2]; iz++){
-	    fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist];
+	    fftgrid[ix][iy][iz] = phif.cubic[ix][iy][iz][ist];
 	  }
 	}
       }
@@ -90,13 +94,17 @@ namespace operations {
       for(int ix = 0; ix < basis.gsize()[0]; ix++){
 	for(int iy = 0; iy < basis.gsize()[1]; iy++){
 	  for(int iz = 0; iz < basis.gsize()[2]; iz++){
-	    fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist]/norm_factor;
+	    phir.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz]/norm_factor;
 	  }
 	}
       }
       
     }
     
+  }
+
+  void to_real_space(const states::ks_states st, const basis::plane_wave & basis, states::coefficients & phi){
+    to_real_space(st, basis, phi, phi);
   }
   
 }
