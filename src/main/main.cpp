@@ -29,10 +29,11 @@
 #include <parser/input_file.hpp>
 #include <states/ks_states.hpp>
 #include <states/coefficients.hpp>
-#include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
 #include <operations/scal.hpp>
+#include <operations/orthogonalization.hpp>
+#include <hamiltonian/ks_hamiltonian.hpp>
 
 #include <complex>
 #include <iostream>
@@ -90,5 +91,7 @@ int main(int argc, char ** argv){
   hphi = ham.apply(pw, st, phi);
 
 	auto overlap = operations::overlap(st, pw, phi, hphi);
+
+	operations::orthogonalization(st, pw, phi);
 	
 }

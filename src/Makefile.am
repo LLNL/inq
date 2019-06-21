@@ -4,7 +4,7 @@ AM_CXXFLAGS =                                   \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
 	$(GSL_CFLAGS)
 
-LIBS += @GSL_LIBS@
+LIBS += @GSL_LIBS@ @LIBS_LAPACK@ @LIBS_BLAS@
 
 noinst_HEADERS =                                   \
 	parser/gsl_userdef.h                       \

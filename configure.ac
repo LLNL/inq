@@ -65,6 +65,16 @@ dnl We need to check for fortran, to link with blas and other libraries
 AC_PROG_FC(mpif90)
 AC_FC_LIBRARY_LDFLAGS
 AC_FC_WRAPPERS
+		
+AC_MSG_NOTICE([
+================================================================================
+  CHECKING FOR REQUIRED LINEAR ALGEBRA LIBRARIES (BLAS AND LAPACK)
+================================================================================])
+dnl check for BLAS
+ACX_BLAS([], AC_MSG_ERROR([could not find required BLAS library]))
+
+dnl check for LAPACK
+ACX_LAPACK([], AC_MSG_ERROR([could not find required LAPACK library]))
 
 AC_MSG_NOTICE([
 ================================================================================
@@ -99,6 +109,10 @@ AC_MSG_NOTICE([
 C compiler       :  $CC $CFLAGS
 C++ compiler     :  $CXX $CXXFLAGS
 Fortran compiler :  $FC $FCFLAGS
+FFT library      :  $fft_lib
+BLAS             :  $LIBS_BLAS
+LAPACK           :  $LIBS_LAPACK
+
 ])
 
 
