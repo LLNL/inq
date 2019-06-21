@@ -37,18 +37,26 @@ extern "C" void ztrsm(const char * side, const char * uplo, const char * transa,
 namespace operations {
 		
   void orthogonalization(const states::ks_states st, const basis::plane_wave & basis, states::coefficients & phi){
+
 		auto olap = overlap(st, basis, phi);
-
-
+		
+		std::cout << olap[0][0] << '\t' << olap[0][1] << std::endl;
+		std::cout << olap[1][0] << '\t' << olap[1][1] << std::endl;
+		
 		//DATAOPERATIONS
 		int info;
 		const int nst = st.num_states();
 		zpotrf("U", &nst, olap.data(), &nst, &info);
 
+		std::cout << "INFO " << info << std::endl;
+
+		std::cout << olap[0][0] << '\t' << olap[0][1] << std::endl;
+		std::cout << olap[1][0] << '\t' << olap[1][1] << std::endl;
+		
 		//DATAOPERATIONS
 		const int np = basis.num_points();
 		const complex alpha = 1.0;
-		ztrsm("L", "U", "N", "N", &nst, &np, &alpha, olap.data(), &nst, phi.linear.data(), &nst);
+		ztrsm("L", "U", "T", "N", &nst, &np, &alpha, olap.data(), &nst, phi.linear.data(), &nst);
 		
   }
 
@@ -83,6 +91,8 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 
 	auto olap = operations::overlap(st, pw, phi);
 
+	std::cout << "------" << std::endl;
+	
 	std::cout << olap[0][0] << '\t' << olap[0][1] << std::endl;
 	std::cout << olap[1][0] << '\t' << olap[1][1] << std::endl;
 	
