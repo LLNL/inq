@@ -87,7 +87,7 @@ int main(int argc, char ** argv){
 
 	std::cout << operations::overlap_diagonal(st, pw, phi)[0] << std::endl;
 	
-  ham.apply(pw, st, phi.cubic, hphi.cubic);
+  ham.apply(pw, st, phi, hphi);
 
 	auto overlap = operations::overlap(st, pw, phi, hphi);
 	

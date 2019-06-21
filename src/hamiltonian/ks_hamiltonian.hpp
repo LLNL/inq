@@ -44,9 +44,8 @@ namespace hamiltonian {
     }
 
     boost::multi::array<double, 3> scalar_potential;
-    
-    template <class array_dim4_1, class array_dim4_2>
-    void apply(const basis_type & basis, const states::ks_states & st, const array_dim4_1 & phi, array_dim4_2 && hphi){
+
+    void apply(const basis_type & basis, const states::ks_states & st, const states::coefficients & phi, states::coefficients & hphi){
       
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
@@ -61,7 +60,7 @@ namespace hamiltonian {
 				for(int ix = 0; ix < basis.rsize()[0]; ix++){
 					for(int iy = 0; iy < basis.rsize()[1]; iy++){
 						for(int iz = 0; iz < basis.rsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = phi[ix][iy][iz][ist];
+							fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist];
 						}
 					}
 				}
@@ -82,7 +81,7 @@ namespace hamiltonian {
 				for(int ix = 0; ix < basis.rsize()[0]; ix++){
 					for(int iy = 0; iy < basis.rsize()[1]; iy++){
 						for(int iz = 0; iz < basis.rsize()[2]; iz++){
-							hphi[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
+							hphi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
 						}
 					}
 				}
@@ -90,7 +89,7 @@ namespace hamiltonian {
 			}
 
 			//the non local potential in real space
-			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi, hphi);
+			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi.cubic, hphi.cubic);
 
 			//the scalar local potential in real space
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
@@ -100,7 +99,7 @@ namespace hamiltonian {
 						double vv  = scalar_potential[ix][iy][iz];
 						
 						for(int ist = 0; ist < st.num_states(); ist++){
-							hphi[ix][iy][iz][ist] += vv*phi[ix][iy][iz][ist];
+							hphi.cubic[ix][iy][iz][ist] += vv*phi.cubic[ix][iy][iz][ist];
 						}
 						
 					}
@@ -154,9 +153,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-	states::ks_states::coeff phi(st.cubic_dims(pw.rsize()));
-	states::ks_states::coeff hphi(st.cubic_dims(pw.rsize()));
-
+  states::coefficients phi(st, pw);
+	states::coefficients hphi(st, pw);
+	
 	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
 
 
@@ -167,7 +166,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						phi[ix][iy][iz][ist] = 1.0;
+						phi.cubic[ix][iy][iz][ist] = 1.0;
 					}
 				}
 			}
@@ -180,13 +179,13 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						diff += fabs(hphi[ix][iy][iz][ist] - 0.0);
+						diff += fabs(hphi.cubic[ix][iy][iz][ist] - 0.0);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.num_elements();
+		diff /= hphi.cubic.num_elements();
 		
 		REQUIRE(diff == 0.0_a);
 		
@@ -201,7 +200,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
 						double xx = pw.rvector(ix, iy, iz)[0];
-						phi[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
+						phi.cubic[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
 					}
 				}
 			}
@@ -214,13 +213,13 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-							diff += fabs(hphi[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi[ix][iy][iz][ist]);
+							diff += fabs(hphi.cubic[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.num_elements();
+		diff /= hphi.cubic.num_elements();
 
 		REQUIRE(diff == 8.54868e-16_a);
 		
@@ -238,7 +237,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 					ham.scalar_potential[ix][iy][iz] = ww*r2;
 
 					for(int ist = 0; ist < st.num_states(); ist++){
-						phi[ix][iy][iz][ist] = exp(-0.5*ww*r2);
+						phi.cubic[ix][iy][iz][ist] = exp(-0.5*ww*r2);
 					}
 					
 				}
@@ -252,13 +251,13 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < st.num_states(); ist++){
-						diff += fabs(hphi[ix][iy][iz][ist] - ww*phi[ix][iy][iz][ist]);
+						diff += fabs(hphi.cubic[ix][iy][iz][ist] - ww*phi.cubic[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.num_elements();
+		diff /= hphi.cubic.num_elements();
 
 		REQUIRE(diff == 0.0055687279_a);
 		
