@@ -50,68 +50,21 @@ namespace hamiltonian {
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
 
-			states::coefficients hphi(st, basis);
 			
 			multi::array<complex, 3> fftgrid(basis.rsize());
 
-			//the Laplacian in Fourier space
-			for(int ist = 0; ist < st.num_states(); ist++){
-				
-				// for the moment we have to copy to single grid, since the
-				// fft interfaces assumes the transform is over the last indices					
-				for(int ix = 0; ix < basis.rsize()[0]; ix++){
-					for(int iy = 0; iy < basis.rsize()[1]; iy++){
-						for(int iz = 0; iz < basis.rsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist];
-						}
-					}
-				}
+			auto hphi = operations::space::to_fourier(st, basis, phi);
 
-				fftw::dft_inplace(fftgrid, fftw::forward);
-
-				for(int ix = 0; ix < basis.gsize()[0]; ix++){
-					for(int iy = 0; iy < basis.gsize()[1]; iy++){
-						for(int iz = 0; iz < basis.gsize()[2]; iz++){
-							hphi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
-						}
-					}
-				}
-				
-			}
-
-
-			for(int ist = 0; ist < st.num_states(); ist++){				
-				double scal = -0.5/basis.rtotalsize();
-				for(int ix = 0; ix < basis.gsize()[0]; ix++){
-					for(int iy = 0; iy < basis.gsize()[1]; iy++){
-						for(int iz = 0; iz < basis.gsize()[2]; iz++){
-							hphi.cubic[ix][iy][iz][ist] *= -scal*basis.g2(ix, iy, iz);
-						}
+			for(int ix = 0; ix < basis.gsize()[0]; ix++){
+				for(int iy = 0; iy < basis.gsize()[1]; iy++){
+					for(int iz = 0; iz < basis.gsize()[2]; iz++){
+						double lapl = -0.5*(-basis.g2(ix, iy, iz));
+						for(int ist = 0; ist < st.num_states(); ist++) hphi.cubic[ix][iy][iz][ist] *= lapl;
 					}
 				}
 			}
-			
-			for(int ist = 0; ist < st.num_states(); ist++){	
-				
-				for(int ix = 0; ix < basis.gsize()[0]; ix++){
-					for(int iy = 0; iy < basis.gsize()[1]; iy++){
-						for(int iz = 0; iz < basis.gsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = hphi.cubic[ix][iy][iz][ist];
-						}
-					}
-				}
-				
-				fftw::dft_inplace(fftgrid, fftw::backward);
-				
-				for(int ix = 0; ix < basis.rsize()[0]; ix++){
-					for(int iy = 0; iy < basis.rsize()[1]; iy++){
-						for(int iz = 0; iz < basis.rsize()[2]; iz++){
-							hphi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
-						}
-					}
-				}
-					
-			}
+
+			operations::space::to_real_inplace(st, basis, hphi);
 
 			//the non local potential in real space
 			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi.cubic, hphi.cubic);
@@ -248,7 +201,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 
 		diff /= hphi.cubic.num_elements();
 
-		REQUIRE(diff == 8.54868e-16_a);
+		REQUIRE(diff < 1e-15);
 		
 	}
 
