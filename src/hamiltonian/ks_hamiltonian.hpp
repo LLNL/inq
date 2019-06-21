@@ -68,12 +68,35 @@ namespace hamiltonian {
 				}
 
 				fftw::dft_inplace(fftgrid, fftw::forward);
+
+				for(int ix = 0; ix < basis.gsize()[0]; ix++){
+					for(int iy = 0; iy < basis.gsize()[1]; iy++){
+						for(int iz = 0; iz < basis.gsize()[2]; iz++){
+							hphi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
+						}
+					}
+				}
 				
+			}
+
+
+			for(int ist = 0; ist < st.num_states(); ist++){				
 				double scal = -0.5/basis.rtotalsize();
 				for(int ix = 0; ix < basis.gsize()[0]; ix++){
 					for(int iy = 0; iy < basis.gsize()[1]; iy++){
 						for(int iz = 0; iz < basis.gsize()[2]; iz++){
-							fftgrid[ix][iy][iz] *= -scal*basis.g2(ix, iy, iz);
+							hphi.cubic[ix][iy][iz][ist] *= -scal*basis.g2(ix, iy, iz);
+						}
+					}
+				}
+			}
+			
+			for(int ist = 0; ist < st.num_states(); ist++){	
+				
+				for(int ix = 0; ix < basis.gsize()[0]; ix++){
+					for(int iy = 0; iy < basis.gsize()[1]; iy++){
+						for(int iz = 0; iz < basis.gsize()[2]; iz++){
+							fftgrid[ix][iy][iz] = hphi.cubic[ix][iy][iz][ist];
 						}
 					}
 				}
