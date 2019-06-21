@@ -42,4 +42,5 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/overlap.hpp>
+#include <operations/orthogonalization.hpp>
 #include <solvers/poisson.hpp>
