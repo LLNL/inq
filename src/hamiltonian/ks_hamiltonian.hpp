@@ -45,10 +45,12 @@ namespace hamiltonian {
 
     boost::multi::array<double, 3> scalar_potential;
 
-    void apply(const basis_type & basis, const states::ks_states & st, const states::coefficients & phi, states::coefficients & hphi){
+    auto apply(const basis_type & basis, const states::ks_states & st, const states::coefficients & phi) const{
       
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
+
+			states::coefficients hphi(st, basis);
 			
 			multi::array<complex, 3> fftgrid(basis.rsize());
 
@@ -106,6 +108,8 @@ namespace hamiltonian {
 				}
 			}
 
+			return hphi;
+			
 		}
 
 		int num_projectors() const {
@@ -172,7 +176,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 		
-		ham.apply(pw, st, phi, hphi);
+		hphi = ham.apply(pw, st, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
@@ -205,8 +209,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 				}
 			}
 		}
-		
-		ham.apply(pw, st, phi, hphi);
+
+		hphi = ham.apply(pw, st, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
@@ -243,8 +247,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 				}
 			}
 		}
-		
-		ham.apply(pw, st, phi, hphi);
+
+		hphi = ham.apply(pw, st, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
