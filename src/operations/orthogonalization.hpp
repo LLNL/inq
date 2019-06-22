@@ -40,8 +40,9 @@ namespace operations {
 
 		auto olap = overlap(st, basis, phi);
 		
-		std::cout << olap[0][0] << '\t' << olap[0][1] << std::endl;
-		std::cout << olap[1][0] << '\t' << olap[1][1] << std::endl;
+		std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
+		std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
+		std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
 		
 		//DATAOPERATIONS
 		int info;
@@ -50,8 +51,9 @@ namespace operations {
 
 		std::cout << "INFO " << info << std::endl;
 
-		std::cout << olap[0][0] << '\t' << olap[0][1] << std::endl;
-		std::cout << olap[1][0] << '\t' << olap[1][1] << std::endl;
+		std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
+		std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
+		std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
 		
 		//DATAOPERATIONS
 		const int np = basis.num_points();
@@ -81,7 +83,7 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
-	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 4.0);
+	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 6.0);
 
   states::coefficients phi(st, pw);
 
@@ -93,8 +95,9 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 
 	std::cout << "------" << std::endl;
 	
-	std::cout << olap[0][0] << '\t' << olap[0][1] << std::endl;
-	std::cout << olap[1][0] << '\t' << olap[1][1] << std::endl;
+	std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
+	std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
+	std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
 	
 	/*	REQUIRE(real(olap[0][0]) == 1.0_a);
 	REQUIRE(imag(olap[0][0]) == 0.0_a);
