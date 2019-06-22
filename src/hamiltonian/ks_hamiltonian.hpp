@@ -45,7 +45,7 @@ namespace hamiltonian {
 
     boost::multi::array<double, 3> scalar_potential;
 
-    auto apply(const basis_type & basis, const states::ks_states & st, const states::coefficients & phi) const{
+    auto apply(const states::ks_states & st, const basis_type & basis, const states::coefficients & phi) const{
       
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
@@ -152,7 +152,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 		
-		hphi = ham.apply(pw, st, phi);
+		hphi = ham.apply(st, pw, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
@@ -186,7 +186,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham.apply(pw, st, phi);
+		hphi = ham.apply(st, pw, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
@@ -224,7 +224,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham.apply(pw, st, phi);
+		hphi = ham.apply(st, pw, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){

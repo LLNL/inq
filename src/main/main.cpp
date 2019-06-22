@@ -34,6 +34,7 @@
 #include <operations/scal.hpp>
 #include <operations/orthogonalization.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
+#include <solvers/steepest_descent.hpp>
 
 #include <complex>
 #include <iostream>
@@ -88,10 +89,10 @@ int main(int argc, char ** argv){
 
 	std::cout << operations::overlap_diagonal(st, pw, phi)[0] << std::endl;
 	
-  hphi = ham.apply(pw, st, phi);
+  hphi = ham.apply(st, pw, phi);
 
 	auto overlap = operations::overlap(st, pw, phi, hphi);
 
-	operations::orthogonalization(st, pw, phi);
+	solvers::steepest_descent(st, pw, ham, phi);
 	
 }

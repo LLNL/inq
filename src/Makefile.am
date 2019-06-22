@@ -42,10 +42,12 @@ noinst_HEADERS =                                   \
 	operations/scal.hpp                        \
 	operations/space.hpp                       \
 	operations/orthogonalization.hpp           \
+	operations/shift.hpp                       \
 	operations/diagonalize.hpp                 \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
-	solvers/poisson.hpp
+	solvers/poisson.hpp                        \
+	solvers/steepest_descent.hpp
 
 all_srcs =                                         \
 	parser/symbols.c                           \
