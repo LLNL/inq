@@ -82,17 +82,18 @@ int main(int argc, char ** argv){
 
 	operations::randomize(st, pw, phi);
 
-	std::cout << operations::overlap_diagonal(st, pw, phi)[0] << std::endl;
+	for(int ii = 0; ii < 2000; ii++){
+		
+		operations::scal_invsqrt(st, pw, operations::overlap_diagonal(st, pw, phi), phi);
+		
+		hphi = ham.apply(st, pw, phi);
+		
+		auto overlap = operations::overlap_diagonal(st, pw, hphi, phi);
 
-	//normalize
-	operations::scal_invsqrt(st, pw, operations::overlap_diagonal(st, pw, phi), phi);
+		std::cout << ii << '\t' << overlap[0] << std::endl;
+		
+		solvers::steepest_descent(st, pw, ham, phi);
 
-	std::cout << operations::overlap_diagonal(st, pw, phi)[0] << std::endl;
-	
-  hphi = ham.apply(st, pw, phi);
-
-	auto overlap = operations::overlap(st, pw, phi, hphi);
-
-	solvers::steepest_descent(st, pw, ham, phi);
+	}
 	
 }
