@@ -43,4 +43,5 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/overlap.hpp>
 #include <operations/orthogonalization.hpp>
+#include <operations/diagonalize.hpp>
 #include <solvers/poisson.hpp>

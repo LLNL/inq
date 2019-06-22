@@ -42,6 +42,7 @@ noinst_HEADERS =                                   \
 	operations/scal.hpp                        \
 	operations/space.hpp                       \
 	operations/orthogonalization.hpp           \
+	operations/diagonalize.hpp                 \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
 	solvers/poisson.hpp
