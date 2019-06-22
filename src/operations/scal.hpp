@@ -30,6 +30,8 @@ namespace operations {
   void scal_invsqrt(const states::ks_states st, const basis::plane_wave & basis, const array_1d & factor, states::coefficients & phi){
     
     assert(size(factor) == st.num_states());
+
+    //DATAOPERATIONS
     
     for(int kk = 0; kk < basis.num_points(); kk++) {
       for(int ii = 0; ii < st.num_states(); ii++) phi.linear[ii][kk] /= sqrt(factor[ii]);

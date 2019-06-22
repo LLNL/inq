@@ -32,6 +32,7 @@ namespace operations {
 
 		boost::multi::array<states::ks_states::coeff_type, 2>  overlap_matrix({st.num_states(), st.num_states()});
 
+		//DATAOPERATIONS
 
 		//OPTIMIZATION: this is a slow placeholder for a gemm call
     for(int ii = 0; ii < st.num_states(); ii++){
@@ -60,6 +61,8 @@ namespace operations {
 		boost::multi::array<states::ks_states::coeff_type, 1>  overlap_vector(st.num_states());
 
 		assert(size(overlap_vector) == st.num_states());
+
+		//DATAOPERATIONS
 		
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < st.num_states(); ii++){

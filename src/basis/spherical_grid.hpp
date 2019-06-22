@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef SPHERICAL_GRID_HPP
 #define SPHERICAL_GRID_HPP
 
@@ -56,6 +58,9 @@ namespace basis {
     
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
+
+			//DATAOPERATIONS
+			
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
       }
@@ -63,6 +68,9 @@ namespace basis {
 
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
+
+			//DATAOPERATIONS
+			
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
 					grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][i1] += subgrid[ipoint][i1];
@@ -72,6 +80,9 @@ namespace basis {
     
     template <class array_1d, class array_3d>
     void scatter(const array_1d & subgrid, array_3d && grid) const{
+
+			//DATAOPERATIONS
+			
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }
@@ -211,10 +222,4 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
 #endif
 
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:
 

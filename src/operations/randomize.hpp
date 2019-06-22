@@ -29,6 +29,8 @@ namespace operations {
   void randomize(const states::ks_states st, const basis::plane_wave & basis, states::coefficients & phi){
 		srand48(0);
 
+		//DATAOPERATIONS
+		
 		for(int kk = 0; kk < basis.num_points(); kk++) {
 			for(int ii = 0; ii < st.num_states(); ii++)	phi.linear[ii][kk] = complex(drand48(), drand48());
     }
