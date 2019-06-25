@@ -42,21 +42,21 @@ namespace hamiltonian {
     template <class atom_array>
     atomic_potential(const int natoms, const atom_array & atom_list):
       pseudo_set_(config::path::share() + "pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"){
-
+			
       nelectrons_ = 0.0;
       for(int iatom = 0; iatom < natoms; iatom++){
-	if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
-
-	auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(pseudo_set_.file_path(atom_list[iatom])));
-
-	auto & pseudo = insert.first->second;
-	
-	nelectrons_ += pseudo.valence_charge();
-	
+				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
+				
+				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(pseudo_set_.file_path(atom_list[iatom])));
+				
+				auto & pseudo = insert.first->second;
+				
+				nelectrons_ += pseudo.valence_charge();
+				
       }
       
     }
-
+		
     int num_species() const {
       return pseudopotential_list_.size();
     }
@@ -73,23 +73,23 @@ namespace hamiltonian {
     void local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo, array_dim3 & potential) const {
 
       array_dim3 density(extensions(potential), 0.0);
-
+			
       for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
-
-	auto atom_position = geo.coordinates()[iatom];
-	
-	auto & ps = pseudo_for_element(geo.atoms()[iatom]);
-	basis::spherical_grid sphere(basis, cell, atom_position, ps.long_range_density_radius());
-
-	for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-	  double rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
-	  density[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += ps.long_range_density(rr);
-	}
-
+				
+				auto atom_position = geo.coordinates()[iatom];
+				
+				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				basis::spherical_grid sphere(basis, cell, atom_position, ps.long_range_density_radius());
+				
+				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
+					double rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
+					density[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += ps.long_range_density(rr);
+				}
+				
       }
-
+			
       solvers::poisson psolver;
-
+			
       psolver.solve(basis, density, potential);
       
     }
