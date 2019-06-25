@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef PSEUDOPOTENTIAL_HPP
 #define PSEUDOPOTENTIAL_HPP
 
@@ -53,28 +55,28 @@ namespace pseudo {
       
       switch(format){
       case pseudo::format::QSO:
-	pseudo = new pseudo::qso(filename);
-	break;
+				pseudo = new pseudo::qso(filename);
+				break;
       case pseudo::format::UPF1:
-	pseudo = new pseudo::upf1(filename);
-	break;
+				pseudo = new pseudo::upf1(filename);
+				break;
       case pseudo::format::UPF2:
-	pseudo = new pseudo::upf2(filename);
-	break;
+				pseudo = new pseudo::upf2(filename);
+				break;
       case pseudo::format::PSML:
-	pseudo = new pseudo::psml(filename);
-	break;
+				pseudo = new pseudo::psml(filename);
+				break;
       case pseudo::format::PSP8:
-	pseudo = new pseudo::psp8(filename);
-	break;
+				pseudo = new pseudo::psp8(filename);
+				break;
       default:
-	delete pseudo;
-	throw error::UNSUPPORTED_FORMAT;
+				delete pseudo;
+				throw error::UNSUPPORTED_FORMAT;
       }
 
       if(pseudo->type() != pseudo::type::KLEINMAN_BYLANDER) {
-	delete pseudo;
-	throw error::UNSUPPORTED_TYPE;
+				delete pseudo;
+				throw error::UNSUPPORTED_TYPE;
       }
       
       std::vector<double> local_potential;
@@ -90,7 +92,7 @@ namespace pseudo {
       pseudo->local_potential(local_potential);
 
       for(unsigned ii = 0; ii < local_potential.size(); ii++){
-	local_potential[ii] -= long_range_potential(grid_[ii]);
+				local_potential[ii] -= long_range_potential(grid_[ii]);
       }
 
       short_range_.fit(grid_.data(), local_potential.data(), local_potential.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
@@ -102,25 +104,25 @@ namespace pseudo {
       
       nproj_lm_ = 0;
       for(int ll = 0; ll <= pseudo->lmax(); ll++){
-	for(int ichan = 0; ichan < pseudo->nchannels(); ichan++){
-	  if(ll == pseudo->llocal()) continue;
-
-	  pseudo->projector(ll, ichan, proj);
-
-	  if(proj.size() == 0) continue;
-
-	  assert(proj.size() <= grid_.size());
-
-	  projectors_.push_back(math::spline(grid_.data(), proj.data(), proj.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC));
-	  projectors_l_.push_back(ll);
-	  kb_coeff_.push_back(pseudo->d_ij(ll, ichan, ichan));
-	  nproj_lm_ += 2*ll + 1;
-	}
+				for(int ichan = 0; ichan < pseudo->nchannels(); ichan++){
+					if(ll == pseudo->llocal()) continue;
+					
+					pseudo->projector(ll, ichan, proj);
+					
+					if(proj.size() == 0) continue;
+					
+					assert(proj.size() <= grid_.size());
+					
+					projectors_.push_back(math::spline(grid_.data(), proj.data(), proj.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC));
+					projectors_l_.push_back(ll);
+					kb_coeff_.push_back(pseudo->d_ij(ll, ichan, ichan));
+					nproj_lm_ += 2*ll + 1;
+				}
       }
       
       delete pseudo;
     }
-
+		
     const double & valence_charge() const {
       return valence_charge_;
     }
@@ -149,7 +151,7 @@ namespace pseudo {
       const double threshold = 0.001;
       double radius = 0.0;
       for(unsigned iproj = 0; iproj < projectors_.size(); iproj++){
-	radius = std::max(radius, projectors_[iproj].cutoff_radius(threshold));
+				radius = std::max(radius, projectors_[iproj].cutoff_radius(threshold));
       }
       return radius;
     }
@@ -367,9 +369,3 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 #endif
  
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:
