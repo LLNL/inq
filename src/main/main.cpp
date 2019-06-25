@@ -90,7 +90,7 @@ int main(int argc, char ** argv){
 		
 		auto overlap = operations::overlap_diagonal(st, pw, hphi, phi);
 
-		std::cout << ii << '\t' << overlap[0] << std::endl;
+		std::cout << ii << '\t' << std::scientific << real(overlap[0]) << std::endl;
 		
 		solvers::steepest_descent(st, pw, ham, phi);
 
