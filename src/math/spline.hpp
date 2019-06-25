@@ -31,6 +31,7 @@
 #define SPLINE_H
 
 #include <vector>
+#include <cmath>
 
 #define SPLINE_FLAT_BC 0.0       /* Flat boundary condition (y'=0) */
 #define SPLINE_NATURAL_BC 1.e31  /* Natural boundary condition (Y"=0) */
@@ -114,7 +115,7 @@ namespace math {
 
     double cutoff_radius(double threshold) const {
       for(int ip = y_.size(); ip >= 0; ip--){
-				if(y_[ip] >= threshold) return x_[ip];
+				if(fabs(y_[ip]) >= threshold) return x_[ip];
       }
       return 0.0;
     }
