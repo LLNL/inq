@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 ////////////////////////////////////////////////////////////////////////////////  
 // Copyright (c) 2013, Lawrence Livermore National Security, LLC. 
 //
@@ -45,7 +47,7 @@ namespace math {
   public:
 
     enum class error {
-      OUT_OF_RANGE
+											OUT_OF_RANGE
     };
     
     spline(){
@@ -61,8 +63,8 @@ namespace math {
       y2_.resize(n);
       
       for(int ii = 0; ii < n; ii++){
-	x_[ii] = x[ii];
-	y_[ii] = y[ii];
+				x_[ii] = x[ii];
+				y_[ii] = y[ii];
       }
       spline_create(x, y, n, yp1, ypn, &y2_[0]);
     }
@@ -105,14 +107,14 @@ namespace math {
     void derivative(int size, const array_type & xx, array_type & dyy) const {
       
       for(int ii = 0; ii < size; ii++){
-	double y;
-	derivative(xx[ii], y, dyy[ii]);
+				double y;
+				derivative(xx[ii], y, dyy[ii]);
       }
     }
 
     double cutoff_radius(double threshold) const {
       for(int ip = y_.size(); ip >= 0; ip--){
-	if(y_[ip] >= threshold) return x_[ip];
+				if(y_[ip] >= threshold) return x_[ip];
       }
       return 0.0;
     }
@@ -262,9 +264,3 @@ TEST_CASE("Class math::spline", "[spline]") {
 #endif
 
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:
