@@ -147,6 +147,11 @@ namespace pseudo {
       return short_range_;
     }
 
+		double short_range_potential_radius() const {
+			const double threshold = 0.001;
+      return short_range_.cutoff_radius(threshold);
+    }
+		
     double projector_radius() const {
       const double threshold = 0.001;
       double radius = 0.0;
@@ -242,7 +247,9 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.long_range_density(1.00000000E-00) == -2.02465598E+00_a);
     REQUIRE(ps.long_range_density(5.00000000E-00) == -9.22199231E-14_a);
     REQUIRE(ps.long_range_density(6.01000000E-00) == -6.07009137E-20_a);
-    
+
+    REQUIRE(ps.short_range_potential_radius() == 2.68_a);
+		
     REQUIRE(ps.short_range_potential().value(0.00000000E+00) == 4.99765777E+00_a);
     REQUIRE(ps.short_range_potential().value(1.00000000E-02) == 4.99014665E+00_a);
     REQUIRE(ps.short_range_potential().value(5.00000000E-02) == 4.84335957E+00_a);
@@ -294,7 +301,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.num_projectors_l() == 1);
     REQUIRE(ps.num_projectors_lm() == 1);
     
-    REQUIRE(ps.projector_radius() == 0.5888046501_a);
+    REQUIRE(ps.projector_radius() == 0.8138477088_a);
   }
 
   SECTION("PSP8 pseudopotential file"){
@@ -303,7 +310,9 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.valence_charge() == 18.0_a);
 
     REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
-    
+
+    REQUIRE(ps.short_range_potential_radius() == 2.4_a);
+		
     //values validated with Octopus
     REQUIRE(ps.long_range_potential(0.00000000E+00) == -2.29790754E+01_a);
     REQUIRE(ps.long_range_potential(1.00000000E-04) == -2.29790753E+01_a);
@@ -331,7 +340,9 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.valence_charge() == 4.0_a);
 
     REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
-    
+
+    REQUIRE(ps.short_range_potential_radius() == 2.16_a);
+		
     //values validated with Octopus
     REQUIRE(ps.long_range_potential(0.00000000E+00) == -5.10646119E+00_a);
     REQUIRE(ps.long_range_potential(1.00000000E-04) == -5.10646116E+00_a);
