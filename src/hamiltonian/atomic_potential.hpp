@@ -90,7 +90,7 @@ namespace hamiltonian {
 			
       solvers::poisson psolver;
 			
-      psolver.solve(basis, density, potential);
+      potential = psolver.solve(basis, density);
       
     }
     

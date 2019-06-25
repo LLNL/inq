@@ -138,7 +138,6 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 	
 	hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
 
-
 	SECTION("Constant function"){
 		
 		

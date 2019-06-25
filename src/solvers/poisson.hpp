@@ -27,17 +27,17 @@
 #include <multi/adaptors/fftw.hpp>
 
 namespace solvers {
+
   class poisson {
 
 	public:
 
 		template <class basis_type>
-		void solve(const basis_type & basis, const boost::multi::array<double, 3> & density, boost::multi::array<double, 3> & potential){
+		auto solve(const basis_type & basis, const boost::multi::array<double, 3> & density){
 
 			//For the moment we copy to a complex array.
 			
 			boost::multi::array<complex, 3> complex_density(extensions(density));
-			boost::multi::array<complex, 3> complex_potential(extensions(density));
 
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){
@@ -47,7 +47,8 @@ namespace solvers {
 				}
 			}
 
-			solve(basis, complex_density, complex_potential);
+			auto complex_potential = solve(basis, complex_density);
+			boost::multi::array<double, 3> potential(extensions(density));
 			
 			for(int ix = 0; ix < basis.rsize()[0]; ix++){
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){
@@ -56,15 +57,15 @@ namespace solvers {
 					}
 				}
 			}
-			
+
+			return potential;			
 		}
 		
 		template <class basis_type>
-		void solve(const basis_type & basis, const boost::multi::array<complex, 3> & density, boost::multi::array<complex, 3> & potential){
-
+		auto solve(const basis_type & basis, const boost::multi::array<complex, 3> & density){
 			namespace fftw = boost::multi::fftw;
-			
-			potential = fftw::dft(density, fftw::forward);
+
+			auto potential = fftw::dft(density, fftw::forward);
 
 			const double scal = (-4.0*M_PI)/basis.rtotalsize();
 			
@@ -76,17 +77,18 @@ namespace solvers {
 							potential[0][0][0] = 0;
 							continue;
 						}
-						
 						potential[ix][iy][iz] *= -scal/basis.g2(ix, iy, iz);
 					}
 				}
 			}
 			
 			fftw::dft_inplace(potential, fftw::backward);
+
+			return potential;
 		}
 		
-  public:
-
+	private:
+		
   };    
 	
 }
@@ -108,7 +110,6 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
   basis::plane_wave pw(cell, {100, 100, 100} );
 
 	multi::array<complex, 3> density(pw.rsize());
-  multi::array<complex, 3> potential(extensions(density));
 	solvers::poisson psolver;
 
 	SECTION("Point charge"){
@@ -123,7 +124,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 		density[0][0][0] = -1.0;
 		
-		psolver.solve(pw, density, potential);
+		auto potential = psolver.solve(pw, density);
 		
 		double sumreal = 0.0;
 		double sumimag = 0.0;
@@ -160,7 +161,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			}
 		}
 
-		psolver.solve(pw, density, potential);
+		auto potential = psolver.solve(pw, density);
 
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
@@ -181,7 +182,6 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 	SECTION("Real plane wave"){
 
 		multi::array<complex, 3> rdensity(pw.rsize());
-		multi::array<complex, 3> rpotential(extensions(density));
 
 		double kk = 8.0*M_PI/pw.rlength()[1];
 		
@@ -194,7 +194,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			}
 		}
 
-		psolver.solve(pw, rdensity, rpotential);
+		auto rpotential = psolver.solve(pw, rdensity);
 
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
