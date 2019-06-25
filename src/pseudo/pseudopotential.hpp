@@ -148,7 +148,19 @@ namespace pseudo {
     }
 
 		double short_range_potential_radius() const {
-			const double threshold = 0.001;
+			/*
+				Precision in energy seems to be 1 to 2 orders of magnitude
+				lower than the threshold. This value gives around 1e-7 error
+				in the energy.
+
+				Since this value does not affect the cost of the application
+				of the hamiltonian we can use a small threshold.
+				
+				It makes the calculation of the local potential more expensive, so we
+				should tweak if that becomes a bottleneck.
+
+			*/
+			const double threshold = 1e-5;
       return short_range_.cutoff_radius(threshold);
     }
 		
