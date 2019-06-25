@@ -91,7 +91,23 @@ namespace hamiltonian {
       solvers::poisson psolver;
 			
       potential = psolver.solve(basis, density);
-      
+
+      for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+				
+				auto atom_position = geo.coordinates()[iatom];
+				
+				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
+				
+				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
+					auto rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
+					auto sr_potential = ps.short_range_potential().value(rr);
+					potential[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
+				}
+				
+      }
+			
+			
     }
     
     template <class output_stream>
