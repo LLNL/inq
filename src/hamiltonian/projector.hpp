@@ -10,7 +10,7 @@
 #include <pseudo/pseudopotential.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
-#include <basis/grid.hpp>
+#include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
 
 namespace hamiltonian {
@@ -18,7 +18,7 @@ namespace hamiltonian {
   class projector {
 
   public:
-    projector(const basis::grid & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps, math::d3vector atom_position):
+    projector(const basis::real_space & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps, math::d3vector atom_position):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),

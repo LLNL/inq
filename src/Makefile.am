@@ -27,7 +27,8 @@ noinst_HEADERS =                                   \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
-	basis/plane_wave.hpp                       \
+	basis/grid.hpp                             \
+	basis/real_space.hpp                       \
 	basis/spherical_grid.hpp                   \
 	states/ks_states.hpp                       \
 	states/coefficients.hpp                    \

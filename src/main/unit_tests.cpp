@@ -33,7 +33,7 @@
 #include <ions/unitcell.hpp>
 #include <ions/interaction.hpp>
 #include <ions/periodic_replicas.hpp>
-#include <basis/grid.hpp>
+#include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
 #include <basis/real_space.hpp>
 #include <states/ks_states.hpp>

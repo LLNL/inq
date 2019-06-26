@@ -115,7 +115,7 @@ namespace hamiltonian {
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
-#include <basis/grid.hpp>
+#include <basis/real_space.hpp>
 
 TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 
@@ -127,7 +127,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 
 	ions::geometry geo;
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
-  basis::grid pw(cell, ecut);
+  basis::real_space pw(cell, ecut);
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
@@ -136,7 +136,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
   states::coefficients phi(st, pw);
 	states::coefficients hphi(st, pw);
 	
-	hamiltonian::ks_hamiltonian<basis::grid> ham(pw, cell, pot, geo);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(pw, cell, pot, geo);
 
 	SECTION("Constant function"){
 		

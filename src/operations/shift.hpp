@@ -27,7 +27,7 @@
 namespace operations {
 
   template <class array_1d>
-  void shift(const states::ks_states st, const basis::grid & basis, const array_1d & factor, const states::coefficients & shift, states::coefficients & phi){
+  void shift(const states::ks_states st, const basis::real_space & basis, const array_1d & factor, const states::coefficients & shift, states::coefficients & phi){
     
     assert(size(factor) == st.num_states());
 

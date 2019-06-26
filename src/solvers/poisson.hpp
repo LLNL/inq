@@ -96,7 +96,7 @@ namespace solvers {
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
-#include <basis/grid.hpp>
+#include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
 TEST_CASE("class solvers::poisson", "[poisson]") {
@@ -107,7 +107,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
   double ll = 10.0;
 
   ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll});
-  basis::grid pw(cell, {100, 100, 100} );
+  basis::real_space pw(cell, {100, 100, 100} );
 
 	multi::array<complex, 3> density(pw.rsize());
 	solvers::poisson psolver;

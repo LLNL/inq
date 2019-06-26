@@ -116,7 +116,7 @@ TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
   
   double ecut = 20.0;
   
-  basis::grid pw(cell, ecut);
+  basis::real_space pw(cell, ecut);
   
   SECTION("Point 0 0 0"){
     

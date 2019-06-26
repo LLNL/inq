@@ -26,7 +26,7 @@
 
 namespace operations {
 	
-  void randomize(const states::ks_states st, const basis::grid & basis, states::coefficients & phi){
+  void randomize(const states::ks_states st, const basis::real_space & basis, states::coefficients & phi){
 		srand48(0);
 
 		//DATAOPERATIONS

@@ -36,7 +36,7 @@ extern "C" void ztrsm(const char * side, const char * uplo, const char * transa,
 
 namespace operations {
 		
-  void orthogonalization(const states::ks_states st, const basis::grid & basis, states::coefficients & phi){
+  void orthogonalization(const states::ks_states st, const basis::real_space & basis, states::coefficients & phi){
 
 		auto olap = overlap(st, basis, phi);
 		
@@ -79,7 +79,7 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 
 	ions::geometry geo;
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
-  basis::grid pw(cell, ecut);
+  basis::real_space pw(cell, ecut);
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	

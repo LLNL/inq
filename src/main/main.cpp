@@ -61,7 +61,7 @@ int main(int argc, char ** argv){
   
   auto ecut = input.parse<double>("CutoffEnergy");
   
-  basis::grid pw(cell, ecut);
+  basis::real_space pw(cell, ecut);
   
   pw.info(std::cout);
   
@@ -73,7 +73,7 @@ int main(int argc, char ** argv){
   
   st.info(std::cout);
   
-  hamiltonian::ks_hamiltonian<basis::grid> ham(pw, cell, pot, geo);
+  hamiltonian::ks_hamiltonian<basis::real_space> ham(pw, cell, pot, geo);
   
   ham.info(std::cout);
 
