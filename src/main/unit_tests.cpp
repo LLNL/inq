@@ -35,6 +35,7 @@
 #include <ions/periodic_replicas.hpp>
 #include <basis/grid.hpp>
 #include <basis/spherical_grid.hpp>
+#include <basis/real_space.hpp>
 #include <states/ks_states.hpp>
 #include <states/coefficients.hpp>
 #include <functionals/LDAFunctional.hpp>

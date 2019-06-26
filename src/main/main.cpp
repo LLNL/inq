@@ -21,7 +21,7 @@
 
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
-#include <basis/grid.hpp>
+#include <basis/real_space.hpp>
 #include <ions/geometry.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <multi/array.hpp>
