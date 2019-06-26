@@ -137,7 +137,7 @@ int parse_input(const char *file_in, int set_used)
     if(*s){
       if(strncmp("include ", s, 8) == 0 ){ /* include another file */
 	/* wipe out leading 'include' with blanks */
-	strncpy(s, "       ", 7);
+	strncpy(s, "       ", 8);
 	str_trim(s);
 	if(!disable_write)
 	  fprintf(fout, "# including file '%s'\n", s);
