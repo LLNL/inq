@@ -27,7 +27,7 @@
 namespace operations {
 
   template <class array_1d>
-  void scal_invsqrt(const states::ks_states st, const basis::plane_wave & basis, const array_1d & factor, states::coefficients & phi){
+  void scal_invsqrt(const states::ks_states st, const basis::grid & basis, const array_1d & factor, states::coefficients & phi){
     
     assert(size(factor) == st.num_states());
 

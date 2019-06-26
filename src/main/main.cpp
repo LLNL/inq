@@ -21,7 +21,7 @@
 
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
-#include <basis/plane_wave.hpp>
+#include <basis/grid.hpp>
 #include <ions/geometry.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <multi/array.hpp>
@@ -61,7 +61,7 @@ int main(int argc, char ** argv){
   
   auto ecut = input.parse<double>("CutoffEnergy");
   
-  basis::plane_wave pw(cell, ecut);
+  basis::grid pw(cell, ecut);
   
   pw.info(std::cout);
   
@@ -73,7 +73,7 @@ int main(int argc, char ** argv){
   
   st.info(std::cout);
   
-  hamiltonian::ks_hamiltonian<basis::plane_wave> ham(pw, cell, pot, geo);
+  hamiltonian::ks_hamiltonian<basis::grid> ham(pw, cell, pot, geo);
   
   ham.info(std::cout);
 

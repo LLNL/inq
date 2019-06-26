@@ -30,7 +30,7 @@
 namespace solvers {
 
 	template <class operator_type>
-	void steepest_descent(const states::ks_states st, const basis::plane_wave & basis, const operator_type & ham, states::coefficients & phi){
+	void steepest_descent(const states::ks_states st, const basis::grid & basis, const operator_type & ham, states::coefficients & phi){
 
 		//calculate the residual
 		
@@ -76,7 +76,7 @@ namespace solvers {
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
-#include <basis/plane_wave.hpp>
+#include <basis/grid.hpp>
 #include <ions/unitcell.hpp>
 
 TEST_CASE("solvers::steepest_descent", "[steepest_descent]") {

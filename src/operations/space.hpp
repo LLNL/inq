@@ -29,7 +29,7 @@ namespace operations {
 
   namespace space {
   
-    auto to_fourier(const states::ks_states st, const basis::plane_wave & basis, const states::coefficients & phi) {
+    auto to_fourier(const states::ks_states st, const basis::grid & basis, const states::coefficients & phi) {
       
       namespace multi = boost::multi;
       namespace fftw = boost::multi::fftw;
@@ -67,7 +67,7 @@ namespace operations {
       return fphi;    
     }
     
-    void to_real_inplace(const states::ks_states st, const basis::plane_wave & basis, states::coefficients & phi){
+    void to_real_inplace(const states::ks_states st, const basis::grid & basis, states::coefficients & phi){
       
       namespace multi = boost::multi;
       namespace fftw = boost::multi::fftw;

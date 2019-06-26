@@ -27,11 +27,11 @@
 
 namespace basis {
 
-  class plane_wave {
+  class grid {
 
   public:
 		
-		plane_wave(ions::UnitCell& cell, std::array<int, 3> nr) : nr_{nr}{
+		grid(ions::UnitCell& cell, std::array<int, 3> nr) : nr_{nr}{
 			for(int idir = 0; idir < 3; idir++){
 				rlength_[idir] = length(cell[idir]);
 				ng_[idir] = nr_[idir];
@@ -41,7 +41,7 @@ namespace basis {
 			}
 		}
 
-    plane_wave(ions::UnitCell & cell, const double & ecut) {
+    grid(ions::UnitCell & cell, const double & ecut) {
       ecut_ = ecut;
       rspacing_ = math::d3vector(M_PI*sqrt(0.5/ecut));
 			
@@ -176,7 +176,7 @@ namespace basis {
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("class basis::plane_wave", "[basis]") {
+TEST_CASE("class basis::grid", "[basis]") {
   
   using namespace Catch::literals;
   using math::d3vector;
@@ -189,7 +189,7 @@ TEST_CASE("class basis::plane_wave", "[basis]") {
 
       double ecut = 20.0;
       
-      basis::plane_wave pw(cell, ecut);
+      basis::grid pw(cell, ecut);
 
       REQUIRE(pw.ecut() == Approx(ecut));
 
@@ -220,7 +220,7 @@ TEST_CASE("class basis::plane_wave", "[basis]") {
 
       double ecut = 37.9423091;
       
-      basis::plane_wave pw(cell, ecut);
+      basis::grid pw(cell, ecut);
 
       REQUIRE(pw.ecut() == Approx(ecut));
 

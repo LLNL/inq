@@ -27,7 +27,7 @@
 
 namespace operations {
 	
-  auto overlap(const states::ks_states st, const basis::plane_wave & basis,
+  auto overlap(const states::ks_states st, const basis::grid & basis,
 							 const states::coefficients & phi1, const states::coefficients & phi2) {
 
 		boost::multi::array<states::ks_states::coeff_type, 2>  overlap_matrix({st.num_states(), st.num_states()});
@@ -48,14 +48,14 @@ namespace operations {
 		return overlap_matrix;		
   }
 
-	auto overlap(const states::ks_states st, const basis::plane_wave & basis, const states::coefficients & phi){
+	auto overlap(const states::ks_states st, const basis::grid & basis, const states::coefficients & phi){
 
 		//OPTIMIZATION: this can be done with syrk/herk
 		return overlap(st, basis, phi, phi);
 	}
 
 	
-  auto overlap_diagonal(const states::ks_states st, const basis::plane_wave & basis,
+  auto overlap_diagonal(const states::ks_states st, const basis::grid & basis,
 												const states::coefficients & phi1, const states::coefficients & phi2) {
 
 		boost::multi::array<states::ks_states::coeff_type, 1>  overlap_vector(st.num_states());
@@ -75,7 +75,7 @@ namespace operations {
   }
 
 
-	auto overlap_diagonal(const states::ks_states st, const basis::plane_wave & basis, const states::coefficients & phi){
+	auto overlap_diagonal(const states::ks_states st, const basis::grid & basis, const states::coefficients & phi){
 
 		//OPTIMIZATION: this can be done with syrk/herk
 		return overlap_diagonal(st, basis, phi, phi);
@@ -87,7 +87,7 @@ namespace operations {
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
-#include <basis/plane_wave.hpp>
+#include <basis/grid.hpp>
 #include <ions/unitcell.hpp>
 
 TEST_CASE("function operations::overlap", "[overlap]") {

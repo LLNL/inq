@@ -23,7 +23,7 @@
 
 #include <math/complex.hpp>
 #include <multi/array.hpp>
-#include <basis/plane_wave.hpp>
+#include <basis/grid.hpp>
 #include <states/ks_states.hpp>
 
 namespace states {
@@ -33,7 +33,7 @@ namespace states {
 
     typedef ks_states::coeff_type type;
 
-    coefficients(const ks_states & st, const basis::plane_wave & basis):
+    coefficients(const ks_states & st, const basis::grid & basis):
       cubic(st.cubic_dims(basis.rsize())),
       linear(cubic.data(), st.linear_dims(basis.rsize())){
 

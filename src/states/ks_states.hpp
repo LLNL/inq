@@ -23,7 +23,7 @@
 
 #include <math/complex.hpp>
 #include <multi/array.hpp>
-#include <basis/plane_wave.hpp>
+#include <basis/grid.hpp>
 
 namespace states {
   class ks_states {
@@ -99,7 +99,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
   double ll = 10.0;
   
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
-  basis::plane_wave pw(cell, ecut);
+  basis::grid pw(cell, ecut);
   
   SECTION("Spin unpolarized"){
     
