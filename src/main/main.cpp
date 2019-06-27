@@ -61,9 +61,9 @@ int main(int argc, char ** argv){
   
   auto ecut = input.parse<double>("CutoffEnergy");
   
-  basis::real_space pw(cell, ecut);
+  basis::real_space rs(cell, ecut);
   
-  pw.info(std::cout);
+  rs.info(std::cout);
   
   hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
   
@@ -73,26 +73,26 @@ int main(int argc, char ** argv){
   
   st.info(std::cout);
   
-  hamiltonian::ks_hamiltonian<basis::real_space> ham(pw, cell, pot, geo);
+  hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo);
   
   ham.info(std::cout);
 
-  states::coefficients phi(st, pw);
-	states::coefficients hphi(st, pw);
+  states::coefficients phi(st, rs);
+	states::coefficients hphi(st, rs);
 
-	operations::randomize(st, pw, phi);
+	operations::randomize(st, rs, phi);
 
 	for(int ii = 0; ii < 2000; ii++){
 		
-		operations::scal_invsqrt(st, pw, operations::overlap_diagonal(st, pw, phi), phi);
+		operations::scal_invsqrt(st, rs, operations::overlap_diagonal(st, rs, phi), phi);
 		
-		hphi = ham.apply(st, pw, phi);
+		hphi = ham.apply(st, rs, phi);
 		
-		auto overlap = operations::overlap_diagonal(st, pw, hphi, phi);
+		auto overlap = operations::overlap_diagonal(st, rs, hphi, phi);
 
 		std::cout << ii << '\t' << std::scientific << real(overlap[0]) << std::endl;
 		
-		solvers::steepest_descent(st, pw, ham, phi);
+		solvers::steepest_descent(st, rs, ham, phi);
 
 	}
 	
