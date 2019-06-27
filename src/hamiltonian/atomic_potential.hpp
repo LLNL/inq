@@ -72,7 +72,7 @@ namespace hamiltonian {
     template <class basis_type, class cell_type, class geo_type, class array_dim3>
     void local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo, array_dim3 & potential) const {
 
-      array_dim3 density(extensions(potential), 0.0);
+      array_dim3 density(potential.basis());
 			
       for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				
@@ -84,13 +84,13 @@ namespace hamiltonian {
 				//DATAOPERATIONS
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					double rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
-					density[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += ps.long_range_density(rr);
+					density.cubic[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += ps.long_range_density(rr);
 				}
       }
 			
-      solvers::poisson psolver;
+      solvers::poisson<basis::real_space> poisson_solver;
 			
-      potential = psolver.solve(basis, density);
+      potential = poisson_solver(density);
 
       for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				
@@ -103,7 +103,7 @@ namespace hamiltonian {
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					auto rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
 					auto sr_potential = ps.short_range_potential().value(rr);
-					potential[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
+					potential.cubic[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
 				}
 				
       }
