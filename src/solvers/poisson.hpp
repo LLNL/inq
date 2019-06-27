@@ -107,8 +107,13 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
   double ll = 10.0;
 
   ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll});
-  basis::real_space pw(cell, {100, 100, 100} );
+  basis::real_space pw(cell, 493.48);
 
+	REQUIRE(pw.rsize()[0] == 100);
+	REQUIRE(pw.rsize()[1] == 100);
+	REQUIRE(pw.rsize()[2] == 100);
+	
+	
 	multi::array<complex, 3> density(pw.rsize());
 	solvers::poisson psolver;
 
