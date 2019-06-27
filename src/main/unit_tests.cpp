@@ -33,9 +33,10 @@
 #include <ions/unitcell.hpp>
 #include <ions/interaction.hpp>
 #include <ions/periodic_replicas.hpp>
-#include <basis/real_space.hpp>
+#include <basis/grid.hpp>
 #include <basis/spherical_grid.hpp>
 #include <basis/real_space.hpp>
+#include <basis/coefficients.hpp>
 #include <states/ks_states.hpp>
 #include <states/coefficients.hpp>
 #include <functionals/LDAFunctional.hpp>
