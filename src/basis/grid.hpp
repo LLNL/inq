@@ -30,41 +30,21 @@ namespace basis {
   class grid {
 
   public:
-		
-		grid(ions::UnitCell& cell, std::array<int, 3> nr) : nr_{nr}{
+
+		template<class lattice_vectors_type>
+		grid(const lattice_vectors_type & lattice_vectors, std::array<int, 3> nr) : nr_{nr}{
 			for(int idir = 0; idir < 3; idir++){
-				rlength_[idir] = length(cell[idir]);
+				rlength_[idir] = length(lattice_vectors[idir]);
 				ng_[idir] = nr_[idir];
 				rspacing_[idir] = rlength_[idir]/nr_[idir];
 				glength_[idir] = 2.0*M_PI/rspacing_[idir];
 				gspacing_[idir] = glength_[idir]/ng_[idir];
 			}
-		}
-
-    grid(ions::UnitCell & cell, const double & ecut) {
-      ecut_ = ecut;
-      rspacing_ = math::d3vector(M_PI*sqrt(0.5/ecut));
-			
-      // make the spacing conmensurate with the grid
-      // OPTIMIZATION: we can select a good size here for the FFT
-      for(int idir = 0; idir < 3; idir++){
-				rlength_[idir] = length(cell[idir]);
-				
-				nr_[idir] = round(rlength_[idir]/rspacing_[idir]);
-				ng_[idir] = nr_[idir];
-				
-				rspacing_[idir] = rlength_[idir]/nr_[idir];
-				glength_[idir] = 2.0*M_PI/rspacing_[idir];
-				gspacing_[idir] = glength_[idir]/ng_[idir];
-      }
 
 			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
-    }
+			
+		}
 
-    const double & ecut() const {
-      return ecut_;
-    }
-    
     const std::array<int, 3> & rsize() const{
       return nr_;
     }
@@ -157,7 +137,7 @@ namespace basis {
     }
 		
 	private:
-    double ecut_;
+		
     std::array<int, 3> nr_;
     std::array<int, 3> ng_;
 
@@ -176,76 +156,11 @@ namespace basis {
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("class basis::grid", "[basis]") {
+TEST_CASE("class basis::grid", "[grid]") {
   
   using namespace Catch::literals;
   using math::d3vector;
   
-  {
-    
-    SECTION("Cubic cell"){
-
-      ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
-
-      double ecut = 20.0;
-      
-      basis::grid pw(cell, ecut);
-
-      REQUIRE(pw.ecut() == Approx(ecut));
-
-      REQUIRE(pw.rtotalsize() == 8000);
-      REQUIRE(pw.gtotalsize() == 8000);
-      
-      REQUIRE(pw.rspacing()[0] == 0.5_a);
-      REQUIRE(pw.rspacing()[1] == 0.5_a);
-      REQUIRE(pw.rspacing()[2] == 0.5_a);
-      
-      REQUIRE(pw.gspacing()[0] == 0.6283185307_a);
-      REQUIRE(pw.gspacing()[1] == 0.6283185307_a);
-      REQUIRE(pw.gspacing()[2] == 0.6283185307_a);
-      
-      REQUIRE(pw.rsize()[0] == 20);
-      REQUIRE(pw.rsize()[1] == 20);
-      REQUIRE(pw.rsize()[2] == 20);
-
-      REQUIRE(pw.gsize()[0] == 20);
-      REQUIRE(pw.gsize()[1] == 20);
-      REQUIRE(pw.gsize()[2] == 20);
-
-    }
-
-    SECTION("Parallelepipedic cell"){
-
-      ions::UnitCell cell(d3vector(77.7, 0.0, 0.0), d3vector(0.0, 14.14, 0.0), d3vector(0.0, 0.0, 23.25));
-
-      double ecut = 37.9423091;
-      
-      basis::grid pw(cell, ecut);
-
-      REQUIRE(pw.ecut() == Approx(ecut));
-
-      REQUIRE(pw.rtotalsize() == 536640);
-      REQUIRE(pw.gtotalsize() == 536640);
-	    
-      REQUIRE(pw.rspacing()[0] == 0.3613953488_a);
-      REQUIRE(pw.rspacing()[1] == 0.3625641026_a);
-      REQUIRE(pw.rspacing()[2] == 0.36328125_a);
-      
-      REQUIRE(pw.gspacing()[0] == 0.0808646758_a);
-      REQUIRE(pw.gspacing()[1] == 0.4443553965_a);
-      REQUIRE(pw.gspacing()[2] == 0.2702445293_a);
-      
-      REQUIRE(pw.rsize()[0] == 215);
-      REQUIRE(pw.rsize()[1] == 39);
-      REQUIRE(pw.rsize()[2] == 64);
-
-      REQUIRE(pw.gsize()[0] == 215);
-      REQUIRE(pw.gsize()[1] == 39);
-      REQUIRE(pw.gsize()[2] == 64);
-
-    }
-
-  }
 }
 #endif
 

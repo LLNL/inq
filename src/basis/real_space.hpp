@@ -38,9 +38,25 @@ namespace basis {
 		}
 		
     real_space(ions::UnitCell & cell, const double & ecut):
-			grid(cell, ecut){
+			grid(cell, calculate_dimensions(cell, ecut)){
     }
-    
+		
+	private:
+
+		static std::array<int, 3> calculate_dimensions(ions::UnitCell & cell, const double & ecut){
+			std::array<int, 3> nr;
+			double spacing = M_PI*sqrt(0.5/ecut);
+			
+			// make the spacing conmensurate with the grid
+			// OPTIMIZATION: we can select a good size here for the FFT
+			for(int idir = 0; idir < 3; idir++){
+				double rlength = length(cell[idir]);
+				nr[idir] = round(rlength/spacing);
+			}
+			
+			return nr;
+		}
+		
   };
 }
 
@@ -61,9 +77,7 @@ TEST_CASE("class basis::real_space", "[real_space]") {
 
       double ecut = 20.0;
       
-      basis::grid pw(cell, ecut);
-
-      REQUIRE(pw.ecut() == Approx(ecut));
+      basis::real_space pw(cell, ecut);
 
       REQUIRE(pw.rtotalsize() == 8000);
       REQUIRE(pw.gtotalsize() == 8000);
@@ -92,9 +106,7 @@ TEST_CASE("class basis::real_space", "[real_space]") {
 
       double ecut = 37.9423091;
       
-      basis::grid pw(cell, ecut);
-
-      REQUIRE(pw.ecut() == Approx(ecut));
+      basis::real_space pw(cell, ecut);
 
       REQUIRE(pw.rtotalsize() == 536640);
       REQUIRE(pw.gtotalsize() == 536640);
