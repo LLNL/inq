@@ -129,6 +129,12 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
   basis::real_space pw(cell, ecut);
 
+	REQUIRE(pw.size() == 8000);
+	REQUIRE(pw.rspacing()[0] == 0.5_a);
+	REQUIRE(pw.rspacing()[1] == 0.5_a);	
+	REQUIRE(pw.rspacing()[2] == 0.5_a);
+	REQUIRE(pw.volume_element() == 0.125_a);
+	
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
