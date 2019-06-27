@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <basis/coefficients.hpp>
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <hamiltonian/projector.hpp>
@@ -33,9 +34,9 @@ namespace hamiltonian {
   public:
 
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo):
-			scalar_potential(basis.rsize()){
+			scalar_potential(basis){
 
-			pot.local_potential(basis, cell, geo, scalar_potential);
+			pot.local_potential(basis, cell, geo, scalar_potential.cubic);
 
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				proj_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
@@ -43,7 +44,7 @@ namespace hamiltonian {
 
     }
 
-    boost::multi::array<double, 3> scalar_potential;
+		basis::coefficients<basis::real_space, double> scalar_potential;
 
     auto apply(const states::ks_states & st, const basis_type & basis, const states::coefficients & phi) const{
       
@@ -74,7 +75,7 @@ namespace hamiltonian {
 				for(int iy = 0; iy < basis.rsize()[1]; iy++){
 					for(int iz = 0; iz < basis.rsize()[2]; iz++){
 
-						double vv  = scalar_potential[ix][iy][iz];
+						double vv  = scalar_potential.cubic[ix][iy][iz];
 						
 						for(int ist = 0; ist < st.num_states(); ist++){
 							hphi.cubic[ix][iy][iz][ist] += vv*phi.cubic[ix][iy][iz][ist];
@@ -219,7 +220,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					double r2 = pw.r2(ix, iy, iz);
-					ham.scalar_potential[ix][iy][iz] = ww*r2;
+					ham.scalar_potential.cubic[ix][iy][iz] = ww*r2;
 
 					for(int ist = 0; ist < st.num_states(); ist++){
 						phi.cubic[ix][iy][iz][ist] = exp(-0.5*ww*r2);

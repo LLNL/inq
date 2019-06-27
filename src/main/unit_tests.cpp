@@ -37,6 +37,7 @@
 #include <basis/spherical_grid.hpp>
 #include <basis/real_space.hpp>
 #include <basis/coefficients.hpp>
+#include <basis/coefficients_set.hpp>
 #include <states/ks_states.hpp>
 #include <states/coefficients.hpp>
 #include <functionals/LDAFunctional.hpp>

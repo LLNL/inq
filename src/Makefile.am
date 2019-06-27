@@ -30,6 +30,7 @@ noinst_HEADERS =                                   \
 	basis/grid.hpp                             \
 	basis/real_space.hpp                       \
 	basis/coefficients.hpp                     \
+	basis/coefficients_set.hpp                 \
 	basis/spherical_grid.hpp                   \
 	states/ks_states.hpp                       \
 	states/coefficients.hpp                    \

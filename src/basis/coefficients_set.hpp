@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t; tab-width: 2 -*- */
 
-#ifndef BASIS_COEFFICIENTS
-#define BASIS_COEFFICIENTS
+#ifndef BASIS_COEFFICIENTS_SET
+#define BASIS_COEFFICIENTS_SET
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -26,19 +26,21 @@
 namespace basis {
 
 	template<class basis_type, class type>
-  class coefficients {
+  class coefficients_set {
 
   public:
 
-    coefficients(const basis_type & basis):
+    coefficients_set(const basis_type & basis, const int num_vectors):
+			num_vectors_(num_vectors),
 			basis_(basis),
-      cubic(basis.rsize()),
-      linear(cubic.data(), {basis.size()}){
+      cubic({basis.rsize()[0], basis.rsize()[1], basis.rsize()[2], num_vectors_}),
+      linear(cubic.data(), {basis.size(), num_vectors_}){
     }
 
+		int num_vectors_;
 		const basis_type & basis_;
-    boost::multi::array<type, 3> cubic;
-    boost::multi::array_ref<type, 1>  linear;
+    boost::multi::array<type, 4> cubic;
+    boost::multi::array_ref<type, 2>  linear;
 
   };
 
@@ -49,7 +51,7 @@ namespace basis {
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
 
-TEST_CASE("Class basis::coefficients", "[coefficients]"){
+TEST_CASE("Class basis::coefficients_set", "[coefficients_set]"){
   
 }
 
