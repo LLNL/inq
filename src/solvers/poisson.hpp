@@ -26,6 +26,7 @@
 #include <multi/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <basis/coefficients.hpp>
+#include <basis/fourier_space.hpp>
 
 namespace solvers {
 
@@ -36,8 +37,10 @@ namespace solvers {
 
 		auto operator()(const basis::coefficients<basis_type, complex> & density){
 			namespace fftw = boost::multi::fftw;
+			
+			basis::fourier_space fourier_basis(density.basis());
 
-			basis::coefficients<basis_type, complex> potential(density.basis());
+			basis::coefficients<basis::fourier_space, complex> potential(fourier_basis);
 			
 			potential.cubic = fftw::dft(density.cubic, fftw::forward);
 
@@ -46,7 +49,7 @@ namespace solvers {
 			for(int ix = 0; ix < potential.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < potential.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < potential.basis().gsize()[2]; iz++){
-
+						
 						if(potential.basis().g_is_zero(ix, iy, iz)){
 							potential.cubic[0][0][0] = 0;
 							continue;
@@ -56,9 +59,11 @@ namespace solvers {
 				}
 			}
 			
-			fftw::dft_inplace(potential.cubic, fftw::backward);
+			basis::coefficients<basis_type, complex> potential_rs(density.basis());
 
-			return potential;
+			potential_rs.cubic = fftw::dft(potential.cubic, fftw::backward);
+
+			return potential_rs;
 		}
 		
 		auto operator()(const basis::coefficients<basis_type, double> & density){
