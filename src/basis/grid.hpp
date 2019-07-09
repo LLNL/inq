@@ -89,26 +89,6 @@ namespace basis {
       return ng_[0]*long(ng_[1])*ng_[2];
     }
 
-		math::d3vector gvector(const int ix, const int iy, const int iz) const {
-
-			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
-			//grid from -pi/h to pi/h
-			
-			math::d3vector g{ix*gspacing()[0], iy*gspacing()[1], iz*gspacing()[2]};
-			for(int idir = 0; idir < 3; idir++) {
-				if(g[idir] >= 0.5*glength()[idir]) g[idir] -= glength()[idir];
-			}
-			return g;
-		}
-
-		bool g_is_zero(const int ix, const int iy, const int iz) const {
-			return (ix == 0 and iy == 0 and iz == 0);
-		}
-
-		double g2(const int ix, const int iy, const int iz) const {
-			return norm(gvector(ix, iy, iz));
-		}
-
 		double volume_element() const {
 			return rspacing_[0]*rspacing_[1]*rspacing_[2];
 		}
