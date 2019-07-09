@@ -40,28 +40,28 @@ namespace solvers {
 			
 			basis::fourier_space fourier_basis(density.basis());
 
-			basis::coefficients<basis::fourier_space, complex> potential(fourier_basis);
+			basis::coefficients<basis::fourier_space, complex> potential_fs(fourier_basis);
 			
-			potential.cubic = fftw::dft(density.cubic, fftw::forward);
+			potential_fs.cubic = fftw::dft(density.cubic, fftw::forward);
 
-			const double scal = (-4.0*M_PI)/potential.basis().size();
+			const double scal = (-4.0*M_PI)/potential_fs.basis().size();
 			
-			for(int ix = 0; ix < potential.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < potential.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < potential.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < potential_fs.basis().gsize()[0]; ix++){
+				for(int iy = 0; iy < potential_fs.basis().gsize()[1]; iy++){
+					for(int iz = 0; iz < potential_fs.basis().gsize()[2]; iz++){
 						
-						if(potential.basis().g_is_zero(ix, iy, iz)){
-							potential.cubic[0][0][0] = 0;
+						if(potential_fs.basis().g_is_zero(ix, iy, iz)){
+							potential_fs.cubic[0][0][0] = 0;
 							continue;
 						}
-						potential.cubic[ix][iy][iz] *= -scal/potential.basis().g2(ix, iy, iz);
+						potential_fs.cubic[ix][iy][iz] *= -scal/potential_fs.basis().g2(ix, iy, iz);
 					}
 				}
 			}
 			
 			basis::coefficients<basis_type, complex> potential_rs(density.basis());
 
-			potential_rs.cubic = fftw::dft(potential.cubic, fftw::backward);
+			potential_rs.cubic = fftw::dft(potential_fs.cubic, fftw::backward);
 
 			return potential_rs;
 		}
