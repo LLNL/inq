@@ -56,10 +56,12 @@ namespace hamiltonian {
 
 			auto hphi = operations::space::to_fourier(st, basis, phi);
 
-			for(int ix = 0; ix < basis.gsize()[0]; ix++){
-				for(int iy = 0; iy < basis.gsize()[1]; iy++){
-					for(int iz = 0; iz < basis.gsize()[2]; iz++){
-						double lapl = -0.5*(-basis.g2(ix, iy, iz));
+			basis::fourier_space fourier_basis(basis);
+			
+			for(int ix = 0; ix < fourier_basis.gsize()[0]; ix++){
+				for(int iy = 0; iy < fourier_basis.gsize()[1]; iy++){
+					for(int iz = 0; iz < fourier_basis.gsize()[2]; iz++){
+						double lapl = -0.5*(-fourier_basis.g2(ix, iy, iz));
 						for(int ist = 0; ist < st.num_states(); ist++) hphi.cubic[ix][iy][iz][ist] *= lapl;
 					}
 				}
