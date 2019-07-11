@@ -178,7 +178,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 		diff /= rs.size();
 		
-		REQUIRE(diff == 7.33009e-15_a);
+		REQUIRE(diff < 1.0e-14);
 	
 	}
 
