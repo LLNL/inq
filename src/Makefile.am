@@ -33,7 +33,6 @@ noinst_HEADERS =                                   \
 	basis/coefficients_set.hpp                 \
 	basis/spherical_grid.hpp                   \
 	states/ks_states.hpp                       \
-	states/coefficients.hpp                    \
 	functionals/LDAFunctional.hpp              \
 	functionals/PBESolFunctional.hpp           \
 	functionals/BLYPFunctional.hpp             \

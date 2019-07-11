@@ -22,7 +22,7 @@
 */
 
 #include <multi/array.hpp>
-#include <states/coefficients.hpp>
+#include <basis/coefficients_set.hpp>
 #include <cassert>
 
 namespace operations {

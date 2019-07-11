@@ -23,7 +23,7 @@
 
 #include <config.h>
 
-#include <states/coefficients.hpp>
+#include <basis/coefficients_set.hpp>
 #include <cstdlib>
 
 #define zpotrf FC_FUNC(zpotrf, ZPOTRF) 

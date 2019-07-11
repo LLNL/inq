@@ -28,7 +28,7 @@
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
 #include <states/ks_states.hpp>
-#include <states/coefficients.hpp>
+#include <basis/coefficients_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
 #include <operations/scal.hpp>
