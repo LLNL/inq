@@ -77,13 +77,14 @@ int main(int argc, char ** argv){
   
   ham.info(std::cout);
 
-  states::coefficients phi(st, rs);
-	states::coefficients hphi(st, rs);
+  basis::coefficients_set<basis::real_space, complex> phi(rs, st.num_states());
+	basis::coefficients_set<basis::real_space, complex> hphi(rs, st.num_states());
 
-	operations::randomize(st, rs, phi);
+	operations::randomize(phi);
 
 	for(int ii = 0; ii < 2000; ii++){
-		
+
+#if 0
 		operations::scal_invsqrt(st, rs, operations::overlap_diagonal(st, rs, phi), phi);
 		
 		hphi = ham.apply(st, rs, phi);
@@ -93,7 +94,8 @@ int main(int argc, char ** argv){
 		std::cout << ii << '\t' << std::scientific << real(overlap[0]) << std::endl;
 		
 		solvers::steepest_descent(st, rs, ham, phi);
-
+#endif
+		
 	}
 	
 }

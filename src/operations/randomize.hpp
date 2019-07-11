@@ -21,18 +21,19 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <states/coefficients.hpp>
+#include <basis/coefficients_set.hpp>
 #include <cstdlib>
 
 namespace operations {
-	
-  void randomize(const states::ks_states st, const basis::real_space & basis, states::coefficients & phi){
+
+	template <class coefficients_set_type>
+  void randomize(coefficients_set_type & phi){
 		srand48(0);
 
 		//DATAOPERATIONS
 		
-		for(int kk = 0; kk < basis.num_points(); kk++) {
-			for(int ii = 0; ii < st.num_states(); ii++)	phi.linear[ii][kk] = complex(drand48(), drand48());
+		for(int kk = 0; kk < phi.basis().size(); kk++) {
+			for(int ii = 0; ii < phi.set_size(); ii++)	phi.linear[ii][kk] = complex(drand48(), drand48());
     }
 
   }

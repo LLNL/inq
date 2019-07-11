@@ -26,21 +26,21 @@
 #include <cassert>
 
 namespace operations {
-	
-  auto overlap(const states::ks_states st, const basis::real_space & basis,
-							 const states::coefficients & phi1, const states::coefficients & phi2) {
 
-		boost::multi::array<states::ks_states::coeff_type, 2>  overlap_matrix({st.num_states(), st.num_states()});
+	template <class coefficients_set_type>
+  auto overlap(coefficients_set_type & phi1, coefficients_set_type & phi2){
+
+		boost::multi::array<typename coefficients_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
 
 		//DATAOPERATIONS
 
 		//OPTIMIZATION: this is a slow placeholder for a gemm call
-    for(int ii = 0; ii < st.num_states(); ii++){
-      for(int jj = 0; jj < st.num_states(); jj++){
+    for(int ii = 0; ii < phi1.set_size(); ii++){
+      for(int jj = 0; jj < phi1.set_size(); jj++){
 
 				states::ks_states::coeff_type aa = 0.0;
-				for(int kk = 0; kk < basis.num_points(); kk++) aa += std::conj(phi1.linear[ii][kk])*phi2.linear[jj][kk];
-				overlap_matrix[ii][jj] = aa*basis.volume_element();
+				for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += std::conj(phi1.linear[ii][kk])*phi2.linear[jj][kk];
+				overlap_matrix[ii][jj] = aa*phi1.basis().volume_element();
 
       }
     }
@@ -48,10 +48,11 @@ namespace operations {
 		return overlap_matrix;		
   }
 
-	auto overlap(const states::ks_states st, const basis::real_space & basis, const states::coefficients & phi){
+	template <class coefficients_set_type>
+	auto overlap(coefficients_set_type & phi){
 
 		//OPTIMIZATION: this can be done with syrk/herk
-		return overlap(st, basis, phi, phi);
+		return overlap(phi, phi);
 	}
 
 	

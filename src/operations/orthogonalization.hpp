@@ -35,10 +35,11 @@ extern "C" void ztrsm(const char * side, const char * uplo, const char * transa,
 
 
 namespace operations {
-		
-  void orthogonalization(const states::ks_states st, const basis::real_space & basis, states::coefficients & phi){
 
-		auto olap = overlap(st, basis, phi);
+	template <class coefficients_set_type>
+  void orthogonalization(coefficients_set_type phi){
+
+		auto olap = overlap(phi);
 		
 		std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
 		std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
@@ -46,7 +47,7 @@ namespace operations {
 		
 		//DATAOPERATIONS
 		int info;
-		const int nst = st.num_states();
+		const int nst = phi.set_size();
 		zpotrf("U", &nst, olap.data(), &nst, &info);
 
 		std::cout << "INFO " << info << std::endl;
@@ -56,7 +57,7 @@ namespace operations {
 		std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
 		
 		//DATAOPERATIONS
-		const int np = basis.num_points();
+		const int np = phi.basis().num_points();
 		const complex alpha = 1.0;
 		ztrsm("L", "U", "T", "N", &nst, &np, &alpha, olap.data(), &nst, phi.linear.data(), &nst);
 		
@@ -85,13 +86,13 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 6.0);
 
-  states::coefficients phi(st, pw);
+  basis::coefficients_set<basis::real_space, complex> phi(pw, 3);
 
-	operations::randomize(st, pw, phi);
+	operations::randomize(phi);
 
-	operations::orthogonalization(st, pw, phi);
+	operations::orthogonalization(phi);
 
-	auto olap = operations::overlap(st, pw, phi);
+	auto olap = operations::overlap(phi);
 
 	std::cout << "------" << std::endl;
 	

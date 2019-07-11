@@ -30,6 +30,8 @@ namespace basis {
 
   public:
 
+		typedef type value_type;
+		
     coefficients_set(const basis_type & basis, const int num_vectors):
 			num_vectors_(num_vectors),
 			basis_(&basis),
