@@ -33,14 +33,14 @@ namespace basis {
 		typedef type value_type;
 		
     coefficients_set(const basis_type & basis, const int num_vectors):
+			cubic({basis.rsize()[0], basis.rsize()[1], basis.rsize()[2], num_vectors}),
+      linear(cubic.data(), {basis.size(), num_vectors}),
 			num_vectors_(num_vectors),
-			basis_(&basis),
-      cubic({basis.rsize()[0], basis.rsize()[1], basis.rsize()[2], num_vectors_}),
-      linear(cubic.data(), {basis.size(), num_vectors_}){
+			basis_(basis){
     }
 
 		const basis_type & basis() const {
-			return *basis_;
+			return basis_;
 		}
 
 		const int & set_size() const {
@@ -51,9 +51,9 @@ namespace basis {
     boost::multi::array_ref<type, 2>  linear;
 
 	private:
-		
-		const basis_type * basis_;
+
 		int num_vectors_;
+		basis_type basis_;
 
   };
 

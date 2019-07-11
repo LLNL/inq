@@ -33,11 +33,11 @@ namespace basis {
     coefficients(const basis_type & basis):
       cubic(basis.rsize()),
       linear(cubic.data(), {basis.size()}),
-			basis_(&basis){
+			basis_(basis){
     }
 
 		const basis_type & basis() const {
-			return *basis_;
+			return basis_;
 		}
 				
     boost::multi::array<type, 3>      cubic;
@@ -45,7 +45,7 @@ namespace basis {
 
 	private:
 		
-		const basis_type * basis_;
+		basis_type basis_;
 
   };
 
