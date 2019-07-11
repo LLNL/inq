@@ -47,4 +47,5 @@
 #include <operations/overlap.hpp>
 #include <operations/orthogonalization.hpp>
 #include <operations/diagonalize.hpp>
+#include <operations/shift.hpp>
 #include <solvers/poisson.hpp>

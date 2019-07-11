@@ -29,33 +29,33 @@
 
 namespace solvers {
 
-	template <class operator_type>
-	void steepest_descent(const states::ks_states st, const basis::real_space & basis, const operator_type & ham, states::coefficients & phi){
+	template <class operator_type, class coefficients_set_type>
+	void steepest_descent(const states::ks_states st, const operator_type & ham, coefficients_set_type & phi){
 
 		//calculate the residual
 		
-		auto residual = ham.apply(st, basis, phi);
+		auto residual = ham(st, phi);
 
-		auto eigenvalues = operations::overlap_diagonal(st, basis, residual, phi);
-		auto norm = operations::overlap_diagonal(st, basis, phi);
+		auto eigenvalues = operations::overlap_diagonal(residual, phi);
+		auto norm = operations::overlap_diagonal(phi);
 
 		auto lambda(eigenvalues);
 		
 		//DATAOPERATIONS
 		for(int ist = 0; ist < st.num_states(); ist++) lambda[ist] /= -norm[ist];
 
-		operations::shift(st, basis, lambda, phi, residual);
+		operations::shift(lambda, phi, residual);
 
 		//OPTIMIZATIONS: precondition the residual here
 
 
 		//now calculate the step size
-		auto hresidual = ham.apply(st, basis, residual);
+		auto hresidual = ham(st, residual);
 
-		auto m1 = operations::overlap_diagonal(st, basis, residual, residual);
-		auto m2 = operations::overlap_diagonal(st, basis, phi, residual);
-		auto m3 = operations::overlap_diagonal(st, basis, residual, hresidual);
-		auto m4 = operations::overlap_diagonal(st, basis, phi, hresidual);
+		auto m1 = operations::overlap_diagonal(residual, residual);
+		auto m2 = operations::overlap_diagonal(phi, residual);
+		auto m3 = operations::overlap_diagonal(residual, hresidual);
+		auto m4 = operations::overlap_diagonal(phi, hresidual);
 
 
 		//DATAOPERATIONS
@@ -67,7 +67,7 @@ namespace solvers {
 			lambda[ist] = 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
 		}
 
-		operations::shift(st, basis, lambda, residual, phi);		
+		operations::shift(lambda, residual, phi);		
 		
 	}
 

@@ -26,15 +26,15 @@
 
 namespace operations {
 
-  template <class array_1d>
-  void shift(const states::ks_states st, const basis::real_space & basis, const array_1d & factor, const states::coefficients & shift, states::coefficients & phi){
+	template <class array_1d, class coefficients_set_type>
+  void shift(const array_1d & factor, const coefficients_set_type & shift, coefficients_set_type & phi){
     
-    assert(size(factor) == st.num_states());
+    assert(size(factor) == phi.set_size());
 
     //DATAOPERATIONS
     
-    for(int ipoint = 0; ipoint < basis.num_points(); ipoint++) {
-      for(int ist = 0; ist < st.num_states(); ist++) phi.linear[ist][ipoint] += factor[ist]*shift.linear[ist][ipoint];
+    for(int ipoint = 0; ipoint < phi.basis().num_points(); ipoint++) {
+      for(int ist = 0; ist < phi.set_size(); ist++) phi.linear[ipoint][ist] += factor[ist]*shift.linear[ipoint][ist];
     }
     
   }
