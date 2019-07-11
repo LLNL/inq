@@ -78,7 +78,6 @@ int main(int argc, char ** argv){
   ham.info(std::cout);
 
   basis::coefficients_set<basis::real_space, complex> phi(rs, st.num_states());
-	basis::coefficients_set<basis::real_space, complex> hphi(rs, st.num_states());
 
 	operations::randomize(phi);
 
@@ -86,9 +85,9 @@ int main(int argc, char ** argv){
 
 		operations::scal_invsqrt(operations::overlap_diagonal(phi), phi);
 
+		auto hphi = ham(st, phi);
+
 #if 0
-		hphi = ham.apply(st, rs, phi);
-		
 		auto overlap = operations::overlap_diagonal(st, rs, hphi, phi);
 
 		std::cout << ii << '\t' << std::scientific << real(overlap[0]) << std::endl;

@@ -45,41 +45,36 @@ namespace hamiltonian {
     }
 
 		basis::coefficients<basis::real_space, double> scalar_potential;
-
-    auto apply(const states::ks_states & st, const basis_type & basis, const states::coefficients & phi) const{
+		
+    auto operator()(const states::ks_states & st, const basis::coefficients_set<basis::real_space, complex> & phi) const{
       
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
 
-			
-			multi::array<complex, 3> fftgrid(basis.rsize());
+			auto hphi_fs = operations::space::to_fourier(phi);
 
-			auto hphi = operations::space::to_fourier(st, basis, phi);
-
-			basis::fourier_space fourier_basis(basis);
-			
-			for(int ix = 0; ix < fourier_basis.gsize()[0]; ix++){
-				for(int iy = 0; iy < fourier_basis.gsize()[1]; iy++){
-					for(int iz = 0; iz < fourier_basis.gsize()[2]; iz++){
-						double lapl = -0.5*(-fourier_basis.g2(ix, iy, iz));
-						for(int ist = 0; ist < st.num_states(); ist++) hphi.cubic[ix][iy][iz][ist] *= lapl;
+			for(int ix = 0; ix < hphi_fs.basis().gsize()[0]; ix++){
+				for(int iy = 0; iy < hphi_fs.basis().gsize()[1]; iy++){
+					for(int iz = 0; iz < hphi_fs.basis().gsize()[2]; iz++){
+						double lapl = -0.5*(-hphi_fs.basis().g2(ix, iy, iz));
+						for(int ist = 0; ist < phi.set_size(); ist++) hphi_fs.cubic[ix][iy][iz][ist] *= lapl;
 					}
 				}
 			}
 
-			operations::space::to_real_inplace(st, basis, hphi);
+			auto hphi = operations::space::to_real(hphi_fs);
 
 			//the non local potential in real space
 			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi.cubic, hphi.cubic);
 
 			//the scalar local potential in real space
-			for(int ix = 0; ix < basis.rsize()[0]; ix++){
-				for(int iy = 0; iy < basis.rsize()[1]; iy++){
-					for(int iz = 0; iz < basis.rsize()[2]; iz++){
+			for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
+				for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
+					for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
 
 						double vv  = scalar_potential.cubic[ix][iy][iz];
 						
-						for(int ist = 0; ist < st.num_states(); ist++){
+						for(int ist = 0; ist < phi.set_size(); ist++){
 							hphi.cubic[ix][iy][iz][ist] += vv*phi.cubic[ix][iy][iz][ist];
 						}
 						
@@ -142,8 +137,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-  states::coefficients phi(st, pw);
-	states::coefficients hphi(st, pw);
+  basis::coefficients_set<basis::real_space, complex> phi(pw, st.num_states());
+	basis::coefficients_set<basis::real_space, complex> hphi(pw, st.num_states());
 	
 	hamiltonian::ks_hamiltonian<basis::real_space> ham(pw, cell, pot, geo);
 
@@ -153,20 +148,20 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
-					for(int ist = 0; ist < st.num_states(); ist++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
 						phi.cubic[ix][iy][iz][ist] = 1.0;
 					}
 				}
 			}
 		}
 		
-		hphi = ham.apply(st, pw, phi);
+		hphi = ham(st, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
-					for(int ist = 0; ist < st.num_states(); ist++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
 						diff += fabs(hphi.cubic[ix][iy][iz][ist] - 0.0);
 					}
 				}
@@ -186,7 +181,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
-					for(int ist = 0; ist < st.num_states(); ist++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
 						double xx = pw.rvector(ix, iy, iz)[0];
 						phi.cubic[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
 					}
@@ -194,13 +189,13 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham.apply(st, pw, phi);
+		hphi = ham(st, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
-					for(int ist = 0; ist < st.num_states(); ist++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
 							diff += fabs(hphi.cubic[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic[ix][iy][iz][ist]);
 					}
 				}
@@ -224,7 +219,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 					double r2 = pw.r2(ix, iy, iz);
 					ham.scalar_potential.cubic[ix][iy][iz] = ww*r2;
 
-					for(int ist = 0; ist < st.num_states(); ist++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
 						phi.cubic[ix][iy][iz][ist] = exp(-0.5*ww*r2);
 					}
 					
@@ -232,13 +227,13 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham.apply(st, pw, phi);
+		hphi = ham(st, phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
-					for(int ist = 0; ist < st.num_states(); ist++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
 						diff += fabs(hphi.cubic[ix][iy][iz][ist] - ww*phi.cubic[ix][iy][iz][ist]);
 					}
 				}
@@ -250,8 +245,6 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 		REQUIRE(diff == 0.0055687279_a);
 		
 	}
-
-	
 	
 }
 

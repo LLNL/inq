@@ -37,6 +37,10 @@ namespace basis {
 			grid(cell, calculate_dimensions(cell, ecut)){
     }
 
+		real_space(const grid & grid_basis):
+			grid(grid_basis){
+    }
+
 		math::d3vector rvector(const int ix, const int iy, const int iz) const {
 			// shift so that the 0 0 0 point is at the center of the grid
 			return math::d3vector(ix*rspacing()[0], iy*rspacing()[1], iz*rspacing()[2]) - 0.5*rlength();

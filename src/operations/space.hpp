@@ -28,25 +28,25 @@
 namespace operations {
 
   namespace space {
-  
-    auto to_fourier(const states::ks_states st, const basis::real_space & basis, const states::coefficients & phi) {
+
+    auto to_fourier(const basis::coefficients_set<basis::real_space, complex> & phi){
       
       namespace multi = boost::multi;
       namespace fftw = boost::multi::fftw;
-      
-      states::coefficients fphi(st, basis);
+	
+			basis::coefficients_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
 			
       //DATAOPERATIONS
       
-      multi::array<complex, 3> fftgrid(basis.rsize());
+      multi::array<complex, 3> fftgrid(phi.basis().rsize());
       
-      for(int ist = 0; ist < st.num_states(); ist++){
+      for(int ist = 0; ist < phi.set_size(); ist++){
 				
 				// for the moment we have to copy to single grid, since the
 				// fft interfaces assumes the transform is over the last indices					
-				for(int ix = 0; ix < basis.rsize()[0]; ix++){
-					for(int iy = 0; iy < basis.rsize()[1]; iy++){
-						for(int iz = 0; iz < basis.rsize()[2]; iz++){
+				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
+					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
+						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
 							fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist];
 						}
 					}
@@ -54,9 +54,9 @@ namespace operations {
 				
 				fftw::dft_inplace(fftgrid, fftw::forward);
 				
-				for(int ix = 0; ix < basis.gsize()[0]; ix++){
-					for(int iy = 0; iy < basis.gsize()[1]; iy++){
-						for(int iz = 0; iz < basis.gsize()[2]; iz++){
+				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
+					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
+						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
 							fphi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
 						}
 					}
@@ -67,22 +67,24 @@ namespace operations {
       return fphi;    
     }
     
-    void to_real_inplace(const states::ks_states st, const basis::real_space & basis, states::coefficients & phi){
+    auto to_real(const basis::coefficients_set<basis::fourier_space, complex> & fphi){
       
       namespace multi = boost::multi;
       namespace fftw = boost::multi::fftw;
-      
+
+			basis::coefficients_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
+
       //DATAOPERATIONS
 			
-      multi::array<complex, 3> fftgrid(basis.rsize());
+      multi::array<complex, 3> fftgrid(fphi.basis().rsize());
       
-      for(int ist = 0; ist < st.num_states(); ist++){
+      for(int ist = 0; ist < fphi.set_size(); ist++){
 				
 				// for the moment we have to copy to single grid, since the
 				// fft interfaces assumes the transform is over the last indices					
-				for(int ix = 0; ix < basis.gsize()[0]; ix++){
-					for(int iy = 0; iy < basis.gsize()[1]; iy++){
-						for(int iz = 0; iz < basis.gsize()[2]; iz++){
+				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
+					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
+						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
 							fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist];
 						}
 					}
@@ -90,21 +92,22 @@ namespace operations {
 	
 				fftw::dft_inplace(fftgrid, fftw::backward);
 
-				double norm_factor = basis.num_points();
+				double norm_factor = phi.basis().num_points();
 	
-				for(int ix = 0; ix < basis.rsize()[0]; ix++){
-					for(int iy = 0; iy < basis.rsize()[1]; iy++){
-						for(int iz = 0; iz < basis.rsize()[2]; iz++){
+				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
+					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
+						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
 							phi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz]/norm_factor;
 						}
 					}
 				}
 				
       }
-      
+
+			return phi;
     }
-		
-  }
+
+	}
   
 }
 

@@ -26,7 +26,6 @@
 #include "grid.hpp"
 #include <cassert>
 #include <array>
-#include <basis/real_space.hpp>
 
 namespace basis {
 
@@ -34,8 +33,8 @@ namespace basis {
 
   public:
 		
-    fourier_space(const real_space & rs_basis):
-			grid(rs_basis){
+    fourier_space(const grid & grid_basis):
+			grid(grid_basis){
     }
 
 		math::d3vector gvector(const int ix, const int iy, const int iz) const {
