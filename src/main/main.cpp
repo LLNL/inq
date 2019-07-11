@@ -34,7 +34,7 @@
 #include <operations/scal.hpp>
 #include <operations/orthogonalization.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
-#include <solvers/steepest_descent.hpp>
+//#include <solvers/steepest_descent.hpp>
 
 #include <complex>
 #include <iostream>
@@ -84,9 +84,9 @@ int main(int argc, char ** argv){
 
 	for(int ii = 0; ii < 2000; ii++){
 
+		operations::scal_invsqrt(operations::overlap_diagonal(phi), phi);
+
 #if 0
-		operations::scal_invsqrt(st, rs, operations::overlap_diagonal(st, rs, phi), phi);
-		
 		hphi = ham.apply(st, rs, phi);
 		
 		auto overlap = operations::overlap_diagonal(st, rs, hphi, phi);

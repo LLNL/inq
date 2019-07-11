@@ -26,15 +26,15 @@
 
 namespace operations {
 
-  template <class array_1d>
-  void scal_invsqrt(const states::ks_states st, const basis::real_space & basis, const array_1d & factor, states::coefficients & phi){
+  template <class array_1d, class coefficients_set_type>
+  void scal_invsqrt(const array_1d & factor, coefficients_set_type & phi){
     
-    assert(size(factor) == st.num_states());
+    assert(size(factor) == phi.set_size());
 
     //DATAOPERATIONS
     
-    for(int kk = 0; kk < basis.num_points(); kk++) {
-      for(int ii = 0; ii < st.num_states(); ii++) phi.linear[ii][kk] /= sqrt(factor[ii]);
+    for(int kk = 0; kk < phi.basis().num_points(); kk++) {
+      for(int ii = 0; ii < phi.set_size(); ii++) phi.linear[ii][kk] /= sqrt(factor[ii]);
     }
     
   }
