@@ -85,7 +85,7 @@ namespace operations {
 				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
 					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
 						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist];
+							fftgrid[ix][iy][iz] = fphi.cubic[ix][iy][iz][ist];
 						}
 					}
 				}
@@ -180,7 +180,6 @@ TEST_CASE("function operations::space", "[space]") {
 					double r2 = rs.r2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						sigma = 1.0;
 						phi.cubic[ix][iy][iz][ist] = exp(-sigma*r2);
 					}
 				}
@@ -196,8 +195,7 @@ TEST_CASE("function operations::space", "[space]") {
 					double g2 = fphi.basis().g2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						sigma = 1.0;
-						diff += fabs(fphi.cubic[ix][iy][iz][ist] - sqrt(M_PI/sigma)*exp(-0.25*g2/sigma));
+						diff += fabs(fphi.cubic[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)*exp(-0.25*g2/sigma));
 					}
 				}
 			}
@@ -205,7 +203,8 @@ TEST_CASE("function operations::space", "[space]") {
 		
 		diff /= fphi.cubic.num_elements();
 
-		std::cout << diff << std::endl;
+		//not sure what is wrong here
+		std::cout << "DIFF1 " << diff << std::endl;
 
 		auto phi2 = operations::space::to_real(fphi);
 
@@ -221,9 +220,8 @@ TEST_CASE("function operations::space", "[space]") {
 		}
 
 		diff /= phi2.cubic.num_elements();
-
-		REQUIRE(diff < 1e-15);
 		
+		REQUIRE(diff < 1e-15);
 		
 	}
 	
