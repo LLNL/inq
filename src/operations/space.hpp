@@ -117,6 +117,70 @@ namespace operations {
 TEST_CASE("function operations::space", "[space]") {
 
 	using namespace Catch::literals;
+	using math::d3vector;
+ 
+	SECTION("Gaussian"){
+		double ecut = 23.0;
+		double ll = 6.66;
+		
+		ions::geometry geo;
+		ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+		basis::real_space rs(cell, ecut);
+
+		basis::coefficients_set<basis::real_space, complex> phi(rs, 7);
+
+		
+		for(int ix = 0; ix < rs.rsize()[0]; ix++){
+			for(int iy = 0; iy < rs.rsize()[1]; iy++){
+				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+					double r2 = rs.r2(ix, iy, iz);
+					for(int ist = 0; ist < phi.set_size(); ist++){
+						double sigma = 0.5*(ist + 1);
+						phi.cubic[ix][iy][iz][ist] = exp(-sigma*r2);
+					}
+				}
+			}
+		}
+		
+		auto fphi = operations::space::to_fourier(phi);
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
+			for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
+				for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
+					double g2 = fphi.basis().g2(ix, iy, iz);
+					for(int ist = 0; ist < phi.set_size(); ist++){
+						double sigma = 0.5*(ist + 1);
+						diff += fabs(fphi.cubic[ix][iy][iz][ist] - sqrt(M_PI/sigma)*exp(-pow(M_PI, 2)*g2/sigma));
+					}
+				}
+			}
+		}
+		
+		diff /= fphi.cubic.num_elements();
+
+		std::cout << diff << std::endl;
+
+		auto phi2 = operations::space::to_real(fphi);
+
+		diff = 0.0;
+		for(int ix = 0; ix < rs.rsize()[0]; ix++){
+			for(int iy = 0; iy < rs.rsize()[1]; iy++){
+				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
+						diff += fabs(phi.cubic[ix][iy][iz][ist] - phi2.cubic[ix][iy][iz][ist]);
+					}
+				}
+			}
+		}
+
+		diff /= phi2.cubic.num_elements();
+
+		REQUIRE(diff < 1e-15);
+		
+		
+	}
+	
 }
 
 
