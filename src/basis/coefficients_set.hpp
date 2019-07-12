@@ -31,10 +31,12 @@ namespace basis {
   public:
 
 		typedef type value_type;
+		typedef boost::multi::array<type, 4> cubic_type;
+    typedef boost::multi::array_ref<type, 2>  linear_type;
 		
     coefficients_set(const basis_type & basis, const int num_vectors):
 			cubic({basis.rsize()[0], basis.rsize()[1], basis.rsize()[2], num_vectors}),
-      linear(cubic.data(), {basis.size(), num_vectors}),
+      linear_(cubic.data(), {basis.size(), num_vectors}),
 			num_vectors_(num_vectors),
 			basis_(basis){
     }
@@ -47,11 +49,21 @@ namespace basis {
 			return num_vectors_;
 		}
 		
-    boost::multi::array<type, 4> cubic;
-    boost::multi::array_ref<type, 2>  linear;
+		const auto & linear() const {
+			assert(linear_.data() == cubic.data());
+			return linear_;
+		}
 
+		auto & linear() {
+			assert(linear_.data() == cubic.data());
+			return linear_;
+		}
+		
+    cubic_type cubic;
+		
 	private:
 
+    linear_type linear_;
 		int num_vectors_;
 		basis_type basis_;
 

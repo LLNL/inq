@@ -39,7 +39,7 @@ namespace operations {
       for(int jj = 0; jj < phi1.set_size(); jj++){
 
 				typename coefficients_set_type::value_type  aa = 0.0;
-				for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += conj(phi1.linear[ii][kk])*phi2.linear[jj][kk];
+				for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += conj(phi1.linear()[ii][kk])*phi2.linear()[jj][kk];
 				overlap_matrix[ii][jj] = aa*phi1.basis().volume_element();
 
       }
@@ -67,7 +67,7 @@ namespace operations {
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
 			typename coefficients_set_type::value_type aa = 0.0;
-			for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += conj(phi1.linear[ii][kk])*phi2.linear[ii][kk];
+			for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += conj(phi1.linear()[ii][kk])*phi2.linear()[ii][kk];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
 		

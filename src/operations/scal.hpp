@@ -34,7 +34,7 @@ namespace operations {
     //DATAOPERATIONS
     
     for(int kk = 0; kk < phi.basis().num_points(); kk++) {
-      for(int ii = 0; ii < phi.set_size(); ii++) phi.linear[ii][kk] /= sqrt(factor[ii]);
+      for(int ii = 0; ii < phi.set_size(); ii++) phi.linear()[ii][kk] /= sqrt(factor[ii]);
     }
     
   }
