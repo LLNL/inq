@@ -168,7 +168,6 @@ namespace pseudo {
       const double threshold = 0.001;
       double radius = 0.0;
       for(unsigned iproj = 0; iproj < projectors_.size(); iproj++){
-				std::cout << iproj << '\t' << projectors_[iproj].cutoff_radius(threshold) << std::endl;
 				radius = std::max(radius, projectors_[iproj].cutoff_radius(threshold));
       }
       return radius;
