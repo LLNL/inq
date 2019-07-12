@@ -73,14 +73,14 @@ namespace solvers {
 			basis::coefficients<basis_type, complex> complex_density(density.basis());
 
 			//DATAOPERATIONS
-			for(long ic = 0; ic < density.basis().size(); ic++) complex_density.linear[ic] = density.linear[ic];
+			for(long ic = 0; ic < density.basis().size(); ic++) complex_density.linear()[ic] = density.linear()[ic];
 
 			auto complex_potential = operator()(complex_density);
 
 			basis::coefficients<basis_type, double> potential(density.basis());
 
 			//DATAOPERATIONS
-			for(long ic = 0; ic < potential.basis().size(); ic++) potential.linear[ic] = std::real(complex_potential.linear[ic]);
+			for(long ic = 0; ic < potential.basis().size(); ic++) potential.linear()[ic] = std::real(complex_potential.linear()[ic]);
 
 			return potential;
 		}

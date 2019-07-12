@@ -34,18 +34,27 @@ namespace basis {
 		
     coefficients(const basis_type & basis):
       cubic(basis.rsize()),
-      linear(cubic.data(), {basis.size()}),
+      linear_(cubic.data(), {basis.size()}),
 			basis_(basis){
     }
 
 		const basis_type & basis() const {
 			return basis_;
 		}
-				
-    boost::multi::array<type, 3>      cubic;
-    boost::multi::array_ref<type, 1>  linear;
 
+		const auto & linear() const {
+			return linear_;
+		}
+
+		auto & linear() {
+			return linear_;
+		}
+		
+    boost::multi::array<type, 3>      cubic;
+		
 	private:
+		
+    boost::multi::array_ref<type, 1>  linear_;
 		
 		basis_type basis_;
 

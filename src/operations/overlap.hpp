@@ -87,10 +87,10 @@ namespace operations {
 		//DATAOPERATIONS
 		//OPTIMIZATION: this can be done more efficiently
 		typename coefficients_type::value_type overlap = 0.0;
-		for(int kk = 0; kk < phi1.basis().num_points(); kk++) overlap += conj(phi1.linear[kk])*phi2.linear[kk];
+		for(int kk = 0; kk < phi1.basis().num_points(); kk++) overlap += conj(phi1.linear()[kk])*phi2.linear()[kk];
 		return overlap*phi1.basis().volume_element();
 	}
-
+	
 	template <class coefficients_type>
 	auto overlap_single(coefficients_type & phi){
 		return overlap_single(phi, phi);
