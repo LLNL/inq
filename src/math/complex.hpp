@@ -6,5 +6,13 @@
 
 using complex = std::complex<double>;
 
+inline double conj(const double & x){
+	return x;
+}
+
+inline complex conj(const complex & z){
+	return std::conj(z);
+}
+
 #endif
 
