@@ -31,6 +31,8 @@ namespace basis {
   public:
 
 		typedef type value_type;
+		typedef boost::multi::array<type, 3> cubic_type;
+		typedef boost::multi::array_ref<type, 1> linear_type;
 		
     coefficients(const basis_type & basis):
       cubic_(basis.rsize()),
@@ -51,17 +53,19 @@ namespace basis {
 		}
 		
 		const auto & linear() const {
+			assert(linear_.data() == cubic_.data());
 			return linear_;
 		}
 
 		auto & linear() {
+			assert(linear_.data() == cubic_.data());
 			return linear_;
 		}
 		
 	private:
 		
-    boost::multi::array<type, 3>      cubic_;
-		boost::multi::array_ref<type, 1>  linear_;
+    cubic_type cubic_;
+		linear_type linear_;
 		basis_type basis_;
 
   };
