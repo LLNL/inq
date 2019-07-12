@@ -38,8 +38,8 @@ namespace operations {
     for(int ii = 0; ii < phi1.set_size(); ii++){
       for(int jj = 0; jj < phi1.set_size(); jj++){
 
-				states::ks_states::coeff_type aa = 0.0;
-				for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += std::conj(phi1.linear[ii][kk])*phi2.linear[jj][kk];
+				typename coefficients_set_type::value_type  aa = 0.0;
+				for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += conj(phi1.linear[ii][kk])*phi2.linear[jj][kk];
 				overlap_matrix[ii][jj] = aa*phi1.basis().volume_element();
 
       }
@@ -58,7 +58,7 @@ namespace operations {
 	template <class coefficients_set_type>
   auto overlap_diagonal(coefficients_set_type & phi1, coefficients_set_type & phi2){
 
-		boost::multi::array<states::ks_states::coeff_type, 1>  overlap_vector(phi1.set_size());
+		boost::multi::array<typename coefficients_set_type::value_type, 1>  overlap_vector(phi1.set_size());
 
 		assert(size(overlap_vector) == phi1.set_size());
 
@@ -66,8 +66,8 @@ namespace operations {
 		
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
-			states::ks_states::coeff_type aa = 0.0;
-			for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += std::conj(phi1.linear[ii][kk])*phi2.linear[ii][kk];
+			typename coefficients_set_type::value_type aa = 0.0;
+			for(int kk = 0; kk < phi1.basis().num_points(); kk++) aa += conj(phi1.linear[ii][kk])*phi2.linear[ii][kk];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
 		
@@ -86,9 +86,9 @@ namespace operations {
 
 		//DATAOPERATIONS
 		//OPTIMIZATION: this can be done more efficiently
-		typename coefficients_type::type overlap = 0.0;
-		for(int kk = 0; kk < phi1.basis().num_points(); kk++) overlap += std::conj(phi1.linear[kk])*phi2.linear[kk];
-		return overlap*phi1.basis.volume_element();
+		typename coefficients_type::value_type overlap = 0.0;
+		for(int kk = 0; kk < phi1.basis().num_points(); kk++) overlap += conj(phi1.linear[kk])*phi2.linear[kk];
+		return overlap*phi1.basis().volume_element();
 	}
 
 	template <class coefficients_type>
