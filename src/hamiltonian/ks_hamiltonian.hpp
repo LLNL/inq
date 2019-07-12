@@ -57,7 +57,7 @@ namespace hamiltonian {
 				for(int iy = 0; iy < hphi_fs.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < hphi_fs.basis().gsize()[2]; iz++){
 						double lapl = -0.5*(-hphi_fs.basis().g2(ix, iy, iz));
-						for(int ist = 0; ist < phi.set_size(); ist++) hphi_fs.cubic[ix][iy][iz][ist] *= lapl;
+						for(int ist = 0; ist < phi.set_size(); ist++) hphi_fs.cubic()[ix][iy][iz][ist] *= lapl;
 					}
 				}
 			}
@@ -65,7 +65,7 @@ namespace hamiltonian {
 			auto hphi = operations::space::to_real(hphi_fs);
 
 			//the non local potential in real space
-			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi.cubic, hphi.cubic);
+			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi.cubic(), hphi.cubic());
 
 			//the scalar local potential in real space
 			for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
@@ -75,7 +75,7 @@ namespace hamiltonian {
 						double vv  = scalar_potential.cubic()[ix][iy][iz];
 						
 						for(int ist = 0; ist < phi.set_size(); ist++){
-							hphi.cubic[ix][iy][iz][ist] += vv*phi.cubic[ix][iy][iz][ist];
+							hphi.cubic()[ix][iy][iz][ist] += vv*phi.cubic()[ix][iy][iz][ist];
 						}
 						
 					}
@@ -149,7 +149,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
-						phi.cubic[ix][iy][iz][ist] = 1.0;
+						phi.cubic()[ix][iy][iz][ist] = 1.0;
 					}
 				}
 			}
@@ -162,13 +162,13 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
-						diff += fabs(hphi.cubic[ix][iy][iz][ist] - 0.0);
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.0);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.cubic.num_elements();
+		diff /= hphi.cubic().num_elements();
 		
 		REQUIRE(diff == 0.0_a);
 		
@@ -183,7 +183,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double xx = pw.rvector(ix, iy, iz)[0];
-						phi.cubic[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
 					}
 				}
 			}
@@ -196,13 +196,13 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
-							diff += fabs(hphi.cubic[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic[ix][iy][iz][ist]);
+							diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.cubic.num_elements();
+		diff /= hphi.cubic().num_elements();
 
 		REQUIRE(diff < 1e-15);
 		
@@ -220,7 +220,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
 
 					for(int ist = 0; ist < phi.set_size(); ist++){
-						phi.cubic[ix][iy][iz][ist] = exp(-0.5*ww*r2);
+						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
 					}
 					
 				}
@@ -234,13 +234,13 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
-						diff += fabs(hphi.cubic[ix][iy][iz][ist] - ww*phi.cubic[ix][iy][iz][ist]);
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.cubic.num_elements();
+		diff /= hphi.cubic().num_elements();
 
 		REQUIRE(diff == 0.0055687279_a);
 		

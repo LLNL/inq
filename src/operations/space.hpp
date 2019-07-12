@@ -47,7 +47,7 @@ namespace operations {
 				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
 					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
 						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = phi.cubic[ix][iy][iz][ist];
+							fftgrid[ix][iy][iz] = phi.cubic()[ix][iy][iz][ist];
 						}
 					}
 				}
@@ -57,7 +57,7 @@ namespace operations {
 				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
 					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
 						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
-							fphi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
+							fphi.cubic()[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
 						}
 					}
 				}
@@ -85,7 +85,7 @@ namespace operations {
 				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
 					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
 						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = fphi.cubic[ix][iy][iz][ist];
+							fftgrid[ix][iy][iz] = fphi.cubic()[ix][iy][iz][ist];
 						}
 					}
 				}
@@ -97,7 +97,7 @@ namespace operations {
 				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
 					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
 						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
-							phi.cubic[ix][iy][iz][ist] = fftgrid[ix][iy][iz]/norm_factor;
+							phi.cubic()[ix][iy][iz][ist] = fftgrid[ix][iy][iz]/norm_factor;
 						}
 					}
 				}
@@ -133,7 +133,7 @@ TEST_CASE("function operations::space", "[space]") {
 		for(int ix = 0; ix < rs.rsize()[0]; ix++){
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic[ix][iy][iz][ist] = 0.0;
+					for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] = 0.0;
 				}
 			}
 		}
@@ -145,13 +145,13 @@ TEST_CASE("function operations::space", "[space]") {
 			for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
 				for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
-						diff += fabs(fphi.cubic[ix][iy][iz][ist]);
+						diff += fabs(fphi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 		
-		diff /= fphi.cubic.num_elements();
+		diff /= fphi.cubic().num_elements();
 
 		REQUIRE(diff < 1e-15);
 		
@@ -161,12 +161,12 @@ TEST_CASE("function operations::space", "[space]") {
 		for(int ix = 0; ix < rs.rsize()[0]; ix++){
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++)	diff += fabs(phi.cubic[ix][iy][iz][ist]);
+					for(int ist = 0; ist < phi.set_size(); ist++)	diff += fabs(phi.cubic()[ix][iy][iz][ist]);
 				}
 			}
 		}
 
-		diff /= phi2.cubic.num_elements();
+		diff /= phi2.cubic().num_elements();
 
 		REQUIRE(diff < 1e-15);
 		
@@ -180,7 +180,7 @@ TEST_CASE("function operations::space", "[space]") {
 					double r2 = rs.r2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						phi.cubic[ix][iy][iz][ist] = exp(-sigma*r2);
+						phi.cubic()[ix][iy][iz][ist] = exp(-sigma*r2);
 					}
 				}
 			}
@@ -195,13 +195,13 @@ TEST_CASE("function operations::space", "[space]") {
 					double g2 = fphi.basis().g2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						diff += fabs(fphi.cubic[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)*exp(-0.25*g2/sigma));
+						diff += fabs(fphi.cubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)*exp(-0.25*g2/sigma));
 					}
 				}
 			}
 		}
 		
-		diff /= fphi.cubic.num_elements();
+		diff /= fphi.cubic().num_elements();
 
 		//not sure what is wrong here
 		std::cout << "DIFF1 " << diff << std::endl;
@@ -213,13 +213,13 @@ TEST_CASE("function operations::space", "[space]") {
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
-						diff += fabs(phi.cubic[ix][iy][iz][ist] - phi2.cubic[ix][iy][iz][ist]);
+						diff += fabs(phi.cubic()[ix][iy][iz][ist] - phi2.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= phi2.cubic.num_elements();
+		diff /= phi2.cubic().num_elements();
 		
 		REQUIRE(diff < 1e-15);
 		
