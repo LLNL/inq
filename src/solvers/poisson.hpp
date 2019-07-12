@@ -42,7 +42,7 @@ namespace solvers {
 
 			basis::coefficients<basis::fourier_space, complex> potential_fs(fourier_basis);
 			
-			potential_fs.cubic = fftw::dft(density.cubic, fftw::forward);
+			potential_fs.cubic() = fftw::dft(density.cubic(), fftw::forward);
 
 			const double scal = (-4.0*M_PI)/potential_fs.basis().size();
 			
@@ -51,17 +51,17 @@ namespace solvers {
 					for(int iz = 0; iz < potential_fs.basis().gsize()[2]; iz++){
 						
 						if(potential_fs.basis().g_is_zero(ix, iy, iz)){
-							potential_fs.cubic[0][0][0] = 0;
+							potential_fs.cubic()[0][0][0] = 0;
 							continue;
 						}
-						potential_fs.cubic[ix][iy][iz] *= -scal/potential_fs.basis().g2(ix, iy, iz);
+						potential_fs.cubic()[ix][iy][iz] *= -scal/potential_fs.basis().g2(ix, iy, iz);
 					}
 				}
 			}
 			
 			basis::coefficients<basis_type, complex> potential_rs(density.basis());
 
-			potential_rs.cubic = fftw::dft(potential_fs.cubic, fftw::backward);
+			potential_rs.cubic() = fftw::dft(potential_fs.cubic(), fftw::backward);
 
 			return potential_rs;
 		}
@@ -121,12 +121,12 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		for(int ix = 0; ix < rs.rsize()[0]; ix++){
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
-					density.cubic[ix][iy][iz] = 0.0;
+					density.cubic()[ix][iy][iz] = 0.0;
 				}
 			}
 		}
 
-		density.cubic[0][0][0] = -1.0;
+		density.cubic()[0][0][0] = -1.0;
 		
 		auto potential = psolver(density);
 		
@@ -135,8 +135,8 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		for(int ix = 0; ix < rs.rsize()[0]; ix++){
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
-					sumreal += fabs(real(potential.cubic[ix][iy][iz]));
-					sumimag += fabs(imag(potential.cubic[ix][iy][iz]));
+					sumreal += fabs(real(potential.cubic()[ix][iy][iz]));
+					sumimag += fabs(imag(potential.cubic()[ix][iy][iz]));
 				}
 			}
 		}
@@ -148,7 +148,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		REQUIRE(sumreal == 59.7758543176_a);
 		REQUIRE(sumimag == 3.87333e-13_a);
 		
-		REQUIRE(real(potential.cubic[0][0][0]) == -0.0241426581_a);
+		REQUIRE(real(potential.cubic()[0][0][0]) == -0.0241426581_a);
 	}
 
 	SECTION("Plane wave"){
@@ -159,7 +159,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
 					double xx = rs.rvector(ix, iy, iz)[0];
-					density.cubic[ix][iy][iz] = complex(cos(kk*xx), sin(kk*xx));
+					density.cubic()[ix][iy][iz] = complex(cos(kk*xx), sin(kk*xx));
 					
 				}
 			}
@@ -171,7 +171,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		for(int ix = 0; ix < rs.rsize()[0]; ix++){
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
-					diff += fabs(potential.cubic[ix][iy][iz] - 4*M_PI/kk/kk*density.cubic[ix][iy][iz]);
+					diff += fabs(potential.cubic()[ix][iy][iz] - 4*M_PI/kk/kk*density.cubic()[ix][iy][iz]);
 				}
 			}
 		}
@@ -193,7 +193,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
 					double yy = rs.rvector(ix, iy, iz)[1];
-					rdensity.cubic[ix][iy][iz] = cos(kk*yy);
+					rdensity.cubic()[ix][iy][iz] = cos(kk*yy);
 				}
 			}
 		}
@@ -204,7 +204,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		for(int ix = 0; ix < rs.rsize()[0]; ix++){
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
 				for(int iz = 0; iz < rs.rsize()[2]; iz++){
-					diff += fabs(rpotential.cubic[ix][iy][iz] - 4*M_PI/kk/kk*rdensity.cubic[ix][iy][iz]);
+					diff += fabs(rpotential.cubic()[ix][iy][iz] - 4*M_PI/kk/kk*rdensity.cubic()[ix][iy][iz]);
 				}
 			}
 		}

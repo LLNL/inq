@@ -72,7 +72,7 @@ namespace hamiltonian {
 				for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
 					for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
 
-						double vv  = scalar_potential.cubic[ix][iy][iz];
+						double vv  = scalar_potential.cubic()[ix][iy][iz];
 						
 						for(int ist = 0; ist < phi.set_size(); ist++){
 							hphi.cubic[ix][iy][iz][ist] += vv*phi.cubic[ix][iy][iz][ist];
@@ -217,7 +217,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			for(int iy = 0; iy < pw.rsize()[1]; iy++){
 				for(int iz = 0; iz < pw.rsize()[2]; iz++){
 					double r2 = pw.r2(ix, iy, iz);
-					ham.scalar_potential.cubic[ix][iy][iz] = ww*r2;
+					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
 
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						phi.cubic[ix][iy][iz][ist] = exp(-0.5*ww*r2);
