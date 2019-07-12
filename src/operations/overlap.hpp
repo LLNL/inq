@@ -81,6 +81,21 @@ namespace operations {
 		return overlap_diagonal(phi, phi);
 	}
 	
+	template <class coefficients_type>
+	auto overlap_single(coefficients_type & phi1, coefficients_type & phi2){
+
+		//DATAOPERATIONS
+		//OPTIMIZATION: this can be done more efficiently
+		typename coefficients_type::type overlap = 0.0;
+		for(int kk = 0; kk < phi1.basis().num_points(); kk++) overlap += std::conj(phi1.linear[kk])*phi2.linear[kk];
+		return overlap*phi1.basis.volume_element();
+	}
+
+	template <class coefficients_type>
+	auto overlap_single(coefficients_type & phi){
+		return overlap_single(phi, phi);
+	}
+	
 }
 
 
