@@ -30,6 +30,8 @@ namespace basis {
 
   public:
 
+		typedef type value_type;
+		
     coefficients(const basis_type & basis):
       cubic(basis.rsize()),
       linear(cubic.data(), {basis.size()}),
