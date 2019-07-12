@@ -114,7 +114,7 @@ namespace math {
     }
 
     double cutoff_radius(double threshold) const {
-      for(int ip = y_.size(); ip >= 0; ip--){
+      for(int ip = y_.size() - 1; ip >= 0; ip--){
 				if(fabs(y_[ip]) >= threshold) return x_[ip];
       }
       return 0.0;
