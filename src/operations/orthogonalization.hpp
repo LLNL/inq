@@ -59,7 +59,7 @@ namespace operations {
 		//DATAOPERATIONS
 		const int np = phi.basis().num_points();
 		const complex alpha = 1.0;
-		ztrsm("L", "U", "T", "N", &nst, &np, &alpha, olap.data(), &nst, phi.linear().data(), &nst);
+		ztrsm("L", "U", "T", "N", &nst, &np, &alpha, olap.data(), &nst, phi.data(), &nst);
 		
   }
 
