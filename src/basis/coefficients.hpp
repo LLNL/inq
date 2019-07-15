@@ -55,14 +55,22 @@ namespace basis {
 			return cubic_;
 		}
 
-		auto linear() const {
+		const auto & operator[](const long index) const {
+			return cubic_.data()[index];
+		}
+
+		auto & operator[](const long index) {
+			return cubic_.data()[index];
+		}
+
+		auto data() const {
 			return cubic_.data();
 		}
 
-		auto linear() {
+		auto data() {
 			return cubic_.data();
 		}
-
+		
 	private:
 		
     cubic_type cubic_;
