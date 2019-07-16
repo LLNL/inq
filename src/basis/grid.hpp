@@ -102,6 +102,10 @@ namespace basis {
 			out << "  Spacing [b] = " << rspacing() << std::endl;
 			out << std::endl;
     }
+
+		friend auto sizes(const grid & gr){
+			return gr.nr_;
+		}
 		
 	private:
 		
