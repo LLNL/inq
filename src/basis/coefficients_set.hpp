@@ -25,16 +25,24 @@
 
 namespace basis {
 
+	template <class type1, unsigned long dim, class type2>
+	static auto array_append(const std::array<type1, dim> & array, type2 element){
+    std::array<type1, dim + 1> result;
+    std::copy(array.cbegin(), array.cend(), result.begin());
+		result[dim] = element;
+    return result;
+	}
+	
 	template<class basis_type, class type>
   class coefficients_set {
 
   public:
 
 		typedef type value_type;
-		typedef boost::multi::array<type, 4> cubic_type;
+		typedef boost::multi::array<type, basis_type::dimension + 1> cubic_type;
 		
     coefficients_set(const basis_type & basis, const int num_vectors):
-			cubic_({basis.rsize()[0], basis.rsize()[1], basis.rsize()[2], num_vectors}),
+			cubic_(array_append(sizes(basis), num_vectors)),
 			num_vectors_(num_vectors),
 			basis_(basis){
     }
