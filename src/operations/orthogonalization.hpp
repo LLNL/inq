@@ -22,7 +22,7 @@
 */
 
 #include <config.h>
-
+#include <math/complex.hpp>
 #include <basis/coefficients_set.hpp>
 #include <cstdlib>
 
@@ -37,29 +37,20 @@ extern "C" void ztrsm(const char * side, const char * uplo, const char * transa,
 namespace operations {
 
 	template <class coefficients_set_type>
-  void orthogonalization(coefficients_set_type phi){
+  void orthogonalization(coefficients_set_type & phi){
 
-		auto olap = overlap(phi);
+		const int np = phi.basis().num_points();
 		
-		std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
-		std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
-		std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
+		auto olap = overlap(phi);
 		
 		//DATAOPERATIONS
 		int info;
 		const int nst = phi.set_size();
 		zpotrf("U", &nst, olap.data(), &nst, &info);
-
-		std::cout << "INFO " << info << std::endl;
-
-		std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
-		std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
-		std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
 		
 		//DATAOPERATIONS
-		const int np = phi.basis().num_points();
 		const complex alpha = 1.0;
-		ztrsm("L", "U", "T", "N", &nst, &np, &alpha, olap.data(), &nst, phi.data(), &nst);
+		ztrsm("L", "U", "C", "N", &nst, &np, &alpha, olap.data(), &nst, phi.data(), &nst);
 		
   }
 
@@ -84,26 +75,80 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
-	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 6.0);
+	SECTION("Dimension 3"){
+		basis::coefficients_set<basis::real_space, complex> phi(pw, 3);
+		
+		operations::randomize(phi);
+		
+		operations::orthogonalization(phi);
+		
+		auto olap = operations::overlap(phi);
+		
+		std::cout << "------" << std::endl;
+		
+		std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
+		std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
+		std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
+		
+		
+		for(int ii = 0; ii < phi.set_size(); ii++){
+			for(int jj = 0; jj < phi.set_size(); jj++){
+				if(ii == jj) {
+					REQUIRE(real(olap[ii][ii]) == 1.0_a);
+					REQUIRE(fabs(imag(olap[ii][ii]) < 1e-14));
+			} else {
+					REQUIRE(fabs(olap[ii][jj]) < 1e-14);
+				}
+			}
+		}
 
-  basis::coefficients_set<basis::real_space, complex> phi(pw, 3);
+	}
 
-	operations::randomize(phi);
+	SECTION("Dimension 100"){
+		basis::coefficients_set<basis::real_space, complex> phi(pw, 100);
+		
+		operations::randomize(phi);
+		
+		operations::orthogonalization(phi);
+		
+		auto olap = operations::overlap(phi);
+		
+		for(int ii = 0; ii < phi.set_size(); ii++){
+			for(int jj = 0; jj < phi.set_size(); jj++){
+				if(ii == jj) {
+					REQUIRE(real(olap[ii][ii]) == 1.0_a);
+					REQUIRE(fabs(imag(olap[ii][ii]) < 1e-14));
+				} else {
+					REQUIRE(fabs(olap[ii][jj]) < 3e-14);
+				}
+			}
+		}
+	}
 
-	operations::orthogonalization(phi);
 
-	auto olap = operations::overlap(phi);
+	SECTION("Dimension 37 - double orthogonalization"){
+		basis::coefficients_set<basis::real_space, complex> phi(pw, 37);
+		
+		operations::randomize(phi);
+		
+		operations::orthogonalization(phi);
+		operations::orthogonalization(phi);
+		
+		auto olap = operations::overlap(phi);
+		
+		for(int ii = 0; ii < phi.set_size(); ii++){
+			for(int jj = 0; jj < phi.set_size(); jj++){
+				if(ii == jj) {
+					REQUIRE(real(olap[ii][ii]) == 1.0_a);
+					REQUIRE(fabs(imag(olap[ii][ii]) < 1e-16));
+				} else {
+					REQUIRE(fabs(olap[ii][jj]) < 1e-16);
+				}
+			}
+		}
+	}
 
-	std::cout << "------" << std::endl;
 	
-	std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
-	std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
-	std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
-	
-	/*	REQUIRE(real(olap[0][0]) == 1.0_a);
-	REQUIRE(imag(olap[0][0]) == 0.0_a);
-	REQUIRE(real(olap[1][0]) == 0.0_a);
-	REQUIRE(imag(olap[1][0]) == 0.0_a);*/
 	
 }
 
