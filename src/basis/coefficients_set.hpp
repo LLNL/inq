@@ -39,6 +39,11 @@ namespace basis {
 			basis_(basis){
     }
 
+		coefficients_set(const coefficients_set & coeff) = delete;
+		coefficients_set(coefficients_set && coeff) = default;
+		coefficients_set & operator=(const coefficients_set & coeff) = delete;
+		coefficients_set & operator=(coefficients_set && coeff) = default;
+		
 		const basis_type & basis() const {
 			return basis_;
 		}
