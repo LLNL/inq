@@ -31,6 +31,8 @@ namespace basis {
 
   public:
 
+		const static int dimension = 3;
+		
 		template<class lattice_vectors_type>
 		grid(const lattice_vectors_type & lattice_vectors, std::array<int, 3> nr) : nr_{nr}{
 			for(int idir = 0; idir < 3; idir++){

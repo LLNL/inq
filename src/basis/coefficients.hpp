@@ -31,7 +31,7 @@ namespace basis {
   public:
 
 		typedef type value_type;
-		typedef boost::multi::array<type, 3> cubic_type;
+		typedef boost::multi::array<type, basis_type::dimension> cubic_type;
 		
     coefficients(const basis_type & basis):
       cubic_(basis.rsize()),
