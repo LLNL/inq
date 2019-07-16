@@ -65,7 +65,7 @@ namespace hamiltonian {
 			auto hphi = operations::space::to_real(hphi_fs);
 
 			//the non local potential in real space
-			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi.cubic(), hphi.cubic());
+			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi, hphi);
 
 			//the scalar local potential in real space
 			for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){

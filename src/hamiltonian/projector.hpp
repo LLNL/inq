@@ -49,14 +49,14 @@ namespace hamiltonian {
 			
     }
 
-    template <class array_dim4>
-    void apply(const states::ks_states & st, const array_dim4 & phi, array_dim4 & vnlphi) const {
+    template <class coefficients_set_type>
+    void apply(const states::ks_states & st, const coefficients_set_type & phi, coefficients_set_type & vnlphi) const {
 
 			//DATAOPERATIONS
 			
       boost::multi::array<states::ks_states::coeff_type, 2> sphere_phi({sphere_.size(), st.num_states()});
 
-      sphere_.gather(phi, sphere_phi);
+      sphere_.gather(phi.cubic(), sphere_phi);
 
       boost::multi::array<states::ks_states::coeff_type, 2> projections({nproj_, st.num_states()});
 
@@ -77,7 +77,7 @@ namespace hamiltonian {
 				}
       }
       
-      sphere_.scatter_add(sphere_phi, vnlphi);
+      sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			
     }
 
