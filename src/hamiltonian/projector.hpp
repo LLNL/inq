@@ -26,6 +26,7 @@ namespace hamiltonian {
       std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 			
       // calculate the distance to the atom for each point
+			//FIXME: this is wrong for periodic systems
       for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) grid[ipoint] = length(basis.rvector(sphere_.points()[ipoint]) - atom_position);
       
       for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
