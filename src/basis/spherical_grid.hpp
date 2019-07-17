@@ -99,6 +99,10 @@ namespace basis {
 		const double & volume_element() const {
 			return volume_element_;
 		}
+
+		friend auto sizes(const spherical_grid & sphere){
+			return std::array<long, dimension>{sphere.size()};
+		}
 		
   private:
     
