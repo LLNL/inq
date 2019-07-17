@@ -95,11 +95,16 @@ namespace basis {
     auto points() const {
       return points_;
     }
-    
+
+		const double & volume_element() const {
+			return volume_element_;
+		}
+		
   private:
     
     std::vector<std::array<int, 3> > points_;
-    
+		double volume_element_;
+		
   };
 }
 

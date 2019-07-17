@@ -21,11 +21,10 @@ namespace hamiltonian {
     projector(const basis::real_space & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps, math::d3vector atom_position):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
-      matrix_({nproj_, sphere_.size()}),
-      volume_element_(basis.volume_element()){
-
+      matrix_({nproj_, sphere_.size()}){
+			
       std::vector<double> grid(sphere_.size()), proj(sphere_.size());
-
+			
       // calculate the distance to the atom for each point
       for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) grid[ipoint] = length(basis.rvector(sphere_.points()[ipoint]) - atom_position);
       
@@ -65,7 +64,7 @@ namespace hamiltonian {
 				for(int ist = 0; ist < st.num_states(); ist++){
 					complex aa = 0.0;
 					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) aa += matrix_[iproj][ipoint]*sphere_phi[ipoint][ist];
-					projections[iproj][ist] = aa*kb_coeff_[iproj]*volume_element_;
+					projections[iproj][ist] = aa*kb_coeff_[iproj]*sphere_.volume_element();
 				}
       }
 
@@ -91,7 +90,6 @@ namespace hamiltonian {
     int nproj_;
     boost::multi::array<double, 2> matrix_;
     std::vector<double> kb_coeff_;
-    double volume_element_;
     
   };
   
