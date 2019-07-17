@@ -116,7 +116,7 @@ namespace basis {
   private:
     
     std::vector<std::array<int, 3> > points_;
-		std::vector<float> distance_;
+		std::vector<float> distance_; //I don't think we need additional precision for this. XA
 		double volume_element_;
 		
   };
