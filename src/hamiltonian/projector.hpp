@@ -50,9 +50,8 @@ namespace hamiltonian {
     }
 
     template <class coefficients_set_type>
-    void apply(const states::ks_states & st, const coefficients_set_type & phi, coefficients_set_type & vnlphi) const {
+    void operator()(const states::ks_states & st, const coefficients_set_type & phi, coefficients_set_type & vnlphi) const {
 
-			//DATAOPERATIONS
 			
       boost::multi::array<states::ks_states::coeff_type, 2> sphere_phi({sphere_.size(), st.num_states()});
 
@@ -60,6 +59,7 @@ namespace hamiltonian {
 
       boost::multi::array<states::ks_states::coeff_type, 2> projections({nproj_, st.num_states()});
 
+			//DATAOPERATIONS
       //OPTIMIZATION: these two operations should be done by dgemm
       for(int iproj = 0; iproj < nproj_; iproj++){
 				for(int ist = 0; ist < st.num_states(); ist++){

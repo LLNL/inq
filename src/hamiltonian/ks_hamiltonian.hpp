@@ -39,7 +39,7 @@ namespace hamiltonian {
 			pot.local_potential(basis, cell, geo, scalar_potential);
 
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
-				proj_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
+				projectors_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
 			}
 
     }
@@ -65,7 +65,7 @@ namespace hamiltonian {
 			auto hphi = operations::space::to_real(hphi_fs);
 
 			//the non local potential in real space
-			for(unsigned iproj = 0; iproj < proj_.size(); iproj++) proj_[iproj].apply(st, phi, hphi);
+			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](st, phi, hphi);
 
 			//the scalar local potential in real space
 			for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
@@ -88,8 +88,8 @@ namespace hamiltonian {
 
 		int num_projectors() const {
 			int nn = 0;
-			for(unsigned iproj = 0; iproj < proj_.size(); iproj++){
-				nn += proj_[iproj].num_projectors();
+			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++){
+				nn += projectors_[iproj].num_projectors();
 			}
 			return nn;			
 		}
@@ -103,7 +103,7 @@ namespace hamiltonian {
 		
   private:
 
-		std::vector<projector> proj_;
+		std::vector<projector> projectors_;
 
   };
 
