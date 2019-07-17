@@ -22,16 +22,12 @@ namespace hamiltonian {
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}){
-			
-      std::vector<double> grid(sphere_.size()), proj(sphere_.size());
-			
-      // calculate the distance to the atom for each point
-			//FIXME: this is wrong for periodic systems
-      for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) grid[ipoint] = length(basis.rvector(sphere_.points()[ipoint]) - atom_position);
-      
+
+			std::vector<double> grid(sphere_.size()), proj(sphere_.size());
+
       for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
 				// interpolate the value of the radial part of the projectors to the sphere points
-				ps.projector(iproj).value(sphere_.size(), grid, proj);
+				ps.projector(iproj).value(sphere_.size(), sphere_.distance(), proj);
 				
 				int l = ps.projector_l(iproj);
 				

@@ -47,7 +47,12 @@ namespace basis {
 						auto rpoint = parent_grid.rvector(ix, iy, iz);
 						
 						for(int irep = 0; irep < rep.size(); irep++){
-							if(norm(rpoint - rep[irep]) <= radius*radius) points_.push_back({ix, iy, iz});
+							auto n2 = norm(rpoint - rep[irep]);
+							if(n2 <= radius*radius) {
+								points_.push_back({ix, iy, iz});
+								distance_.push_back(sqrt(n2));
+							}
+							
 						}
 						
 					}
@@ -100,13 +105,18 @@ namespace basis {
 			return volume_element_;
 		}
 
+		const auto & distance() const {
+			return distance_;
+		}
+		
 		friend auto sizes(const spherical_grid & sphere){
 			return std::array<long, dimension>{sphere.size()};
 		}
-		
+
   private:
     
     std::vector<std::array<int, 3> > points_;
+		std::vector<float> distance_;
 		double volume_element_;
 		
   };
