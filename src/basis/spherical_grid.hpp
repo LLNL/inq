@@ -37,7 +37,8 @@ namespace basis {
 		const static int dimension = 1;
 		
 		template <class basis>
-    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::d3vector & center_point, const double radius){
+    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::d3vector & center_point, const double radius):
+			volume_element_(parent_grid.volume_element()){
 
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
       
