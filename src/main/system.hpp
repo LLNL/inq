@@ -57,6 +57,22 @@ namespace inq {
 	
       }
     }
+
+    auto calculate_energy() {
+      
+      operations::scal_invsqrt(operations::overlap_diagonal(phi_), phi_);
+      
+      auto hphi = ham_(states_, phi_);
+      
+      auto overlap = operations::overlap_diagonal(hphi, phi_);
+
+      //DATAOPERATIONS
+      double energy = 0.0;
+      for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
+      return energy;
+    }
+
+
     
   private:
     

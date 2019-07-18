@@ -46,4 +46,7 @@ int main(int argc, char ** argv){
 	inq::system sys(geo, cell, ecut);
 
 	sys.calculate_ground_state();
+
+	std::cout << "Total energy = " << sys.calculate_energy() << std::endl;
+	
 }
