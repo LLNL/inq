@@ -33,7 +33,7 @@ namespace basis {
 
   public:
 		
-    real_space(ions::UnitCell & cell, const double & ecut):
+    real_space(const ions::UnitCell & cell, const double & ecut):
 			grid(cell, calculate_dimensions(cell, ecut)){
     }
 
@@ -57,7 +57,7 @@ namespace basis {
 		
 	private:
 
-		static std::array<int, 3> calculate_dimensions(ions::UnitCell & cell, const double & ecut){
+		static std::array<int, 3> calculate_dimensions(const ions::UnitCell & cell, const double & ecut){
 			std::array<int, 3> nr;
 			double spacing = M_PI*sqrt(0.5/ecut);
 			
