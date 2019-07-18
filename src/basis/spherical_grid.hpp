@@ -52,6 +52,7 @@ namespace basis {
 							if(n2 <= radius*radius) {
 								points_.push_back({ix, iy, iz});
 								distance_.push_back(sqrt(n2));
+								relative_pos_.push_back(rpoint - rep[irep]);
 							}
 							
 						}
@@ -109,6 +110,10 @@ namespace basis {
 		const auto & distance() const {
 			return distance_;
 		}
+
+		const auto & point_pos() const {
+			return relative_pos_;
+		}		
 		
 		friend auto sizes(const spherical_grid & sphere){
 			return std::array<long, dimension>{sphere.size()};
@@ -118,6 +123,7 @@ namespace basis {
     
     std::vector<std::array<int, 3> > points_;
 		std::vector<float> distance_; //I don't think we need additional precision for this. XA
+		std::vector<math::d3vector> relative_pos_;
 		double volume_element_;
 		
   };
