@@ -40,9 +40,13 @@ int main(int argc, char ** argv){
   auto ly = input.parse<double>("Ly");
   auto lz = input.parse<double>("Lz");
   
-  ions::UnitCell cell({lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz});
+	//  ions::UnitCell cell({lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz});
 
-	systems::ions ions(geo, cell);
+	double cell[3][3] = {{lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz}};
+
+	std::cout << cell[0][0] << std::endl;
+	
+	systems::ions ions(cell, geo);
 	
   auto ecut = input.parse<double>("CutoffEnergy");
   

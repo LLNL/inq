@@ -31,8 +31,9 @@
 #ifndef UNITCELL_H
 #define UNITCELL_H
 
-#include "../math/d3vector.hpp"
+#include <math/d3vector.hpp>
 #include <valarray>
+#include <array>
 
 namespace ions{
 
@@ -56,12 +57,25 @@ namespace ions{
     double amat_inv_t_[9];
   
   public:
-    vector_type const& operator[](int i) const {return a_[i];}
+
+		enum class error { WRONG_LATTICE };
+
+		vector_type const& operator[](int i) const {return a_[i];}
     
     vector_type const& a(int i) const { return a_[i]; }
-	vector_type const& b(int i) const { return b_[i]; }
+		vector_type const& b(int i) const { return b_[i]; }
   
-    UnitCell() = default; 
+    UnitCell() = default;
+
+		template<class lattice_vectors_type>
+		UnitCell(const lattice_vectors_type & lattice_vectors){
+			std::array<math::d3vector, 3> lvectors;
+			for(int ii = 0; ii < 3; ii++){
+				for(int jj = 0; jj < 3; jj++) lvectors[ii][jj] = lattice_vectors[ii][jj];
+			}
+			set(lvectors[0], lvectors[1], lvectors[2]);
+		}
+		
     UnitCell(math::d3vector const& a0, math::d3vector const& a1, math::d3vector const& a2){
       set(a0,a1,a2);
     }
@@ -135,8 +149,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
   {
     
-    ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
-   
     SECTION("Cubic cell"){
     
       ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
@@ -249,6 +261,9 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
     }
 
     SECTION("Parallelepipedic cell"){
+
+			ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
+   
       cell.set(d3vector(28.62, 0.0, 0.0), d3vector(0.0, 90.14, 0.0), d3vector(0.0, 0.0, 12.31));
 
 
@@ -350,9 +365,9 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
     }
 
     SECTION("Non-orthogonal cell"){
-      ions::UnitCell cell;
-      
-      cell.set(d3vector(6.942, 8.799, 4.759), d3vector(9.627, 7.092, 4.819), d3vector(4.091, 0.721, 1.043));
+
+			double lv[3][3] = {{6.942, 8.799, 4.759}, {9.627, 7.092, 4.819}, {4.091, 0.721, 1.043}};
+      ions::UnitCell cell(lv);
       
       REQUIRE(cell.a(0)[0] == 6.942_a);
       REQUIRE(cell.a(0)[1] == 8.799_a);
@@ -455,9 +470,3 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 }
 #endif
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:

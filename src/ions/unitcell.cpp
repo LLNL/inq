@@ -55,63 +55,61 @@ namespace ions {
   
     // volume = det(A)
     volume_ = a0 * ( a1 ^ a2 );
-    if ( volume_ > 0.0 )
-      {
-	// Compute rows of A-1 (columns of A^-T)
-	double fac = 1.0 / volume_;
-	d3vector amt0 = fac * a1 ^ a2;
-	d3vector amt1 = fac * a2 ^ a0;
-	d3vector amt2 = fac * a0 ^ a1;
-    
-	amat_inv_[0] = amt0.x;
-	amat_inv_[1] = amt1.x;
-	amat_inv_[2] = amt2.x;
-	amat_inv_[3] = amt0.y;
-	amat_inv_[4] = amt1.y;
-	amat_inv_[5] = amt2.y;
-	amat_inv_[6] = amt0.z;
-	amat_inv_[7] = amt1.z;
-	amat_inv_[8] = amt2.z;
-    
-	amat_inv_t_[0] = amt0.x;
-	amat_inv_t_[1] = amt0.y;
-	amat_inv_t_[2] = amt0.z;
-	amat_inv_t_[3] = amt1.x;
-	amat_inv_t_[4] = amt1.y;
-	amat_inv_t_[5] = amt1.z;
-	amat_inv_t_[6] = amt2.x;
-	amat_inv_t_[7] = amt2.y;
-	amat_inv_t_[8] = amt2.z;
-    
-	// B = 2 pi A^-T
-	b_[0] = 2.0 * M_PI * amt0;
-	b_[1] = 2.0 * M_PI * amt1;
-	b_[2] = 2.0 * M_PI * amt2;
 
-	bmat_[0] = b_[0].x;
-	bmat_[1] = b_[0].y;
-	bmat_[2] = b_[0].z;
-	bmat_[3] = b_[1].x;
-	bmat_[4] = b_[1].y;
-	bmat_[5] = b_[1].z;
-	bmat_[6] = b_[2].x;
-	bmat_[7] = b_[2].y;
-	bmat_[8] = b_[2].z;
-      }
-    else
-      {
-	b_[0] = b_[1] = b_[2] = d3vector(0.0,0.0,0.0);
-	amat_inv_[0] =  amat_inv_[1] =  amat_inv_[2] = 
-	  amat_inv_[3] =  amat_inv_[4] =  amat_inv_[5] = 
-	  amat_inv_[6] =  amat_inv_[7] =  amat_inv_[8] = 0.0;
-	bmat_[0] =  bmat_[1] =  bmat_[2] = 
-	  bmat_[3] =  bmat_[4] =  bmat_[5] = 
-	  bmat_[6] =  bmat_[7] =  bmat_[8] = 0.0;
-      }
-  
-  
-  
-    an_[0]  = a_[0];
+		if(fabs(volume_) < 1e-10) throw error::WRONG_LATTICE;
+		
+    if ( volume_ > 0.0 ){
+			// Compute rows of A-1 (columns of A^-T)
+			double fac = 1.0 / volume_;
+			d3vector amt0 = fac * a1 ^ a2;
+			d3vector amt1 = fac * a2 ^ a0;
+			d3vector amt2 = fac * a0 ^ a1;
+			
+			amat_inv_[0] = amt0.x;
+			amat_inv_[1] = amt1.x;
+			amat_inv_[2] = amt2.x;
+			amat_inv_[3] = amt0.y;
+			amat_inv_[4] = amt1.y;
+			amat_inv_[5] = amt2.y;
+			amat_inv_[6] = amt0.z;
+			amat_inv_[7] = amt1.z;
+			amat_inv_[8] = amt2.z;
+			
+			amat_inv_t_[0] = amt0.x;
+			amat_inv_t_[1] = amt0.y;
+			amat_inv_t_[2] = amt0.z;
+			amat_inv_t_[3] = amt1.x;
+			amat_inv_t_[4] = amt1.y;
+			amat_inv_t_[5] = amt1.z;
+			amat_inv_t_[6] = amt2.x;
+			amat_inv_t_[7] = amt2.y;
+			amat_inv_t_[8] = amt2.z;
+			
+			// B = 2 pi A^-T
+			b_[0] = 2.0 * M_PI * amt0;
+			b_[1] = 2.0 * M_PI * amt1;
+			b_[2] = 2.0 * M_PI * amt2;
+			
+			bmat_[0] = b_[0].x;
+			bmat_[1] = b_[0].y;
+			bmat_[2] = b_[0].z;
+			bmat_[3] = b_[1].x;
+			bmat_[4] = b_[1].y;
+			bmat_[5] = b_[1].z;
+			bmat_[6] = b_[2].x;
+			bmat_[7] = b_[2].y;
+			bmat_[8] = b_[2].z;
+		} else  {
+			b_[0] = b_[1] = b_[2] = d3vector(0.0,0.0,0.0);
+			amat_inv_[0] =  amat_inv_[1] =  amat_inv_[2] = 
+				amat_inv_[3] =  amat_inv_[4] =  amat_inv_[5] = 
+				amat_inv_[6] =  amat_inv_[7] =  amat_inv_[8] = 0.0;
+			bmat_[0] =  bmat_[1] =  bmat_[2] = 
+				bmat_[3] =  bmat_[4] =  bmat_[5] = 
+				bmat_[6] =  bmat_[7] =  bmat_[8] = 0.0;
+		}
+		
+		an_[0]  = a_[0];
     an_[1]  = a_[1];
     an_[2]  = a_[2];
     an_[3]  = a_[0] + a_[1];
@@ -139,11 +137,10 @@ namespace ions {
     bn_[11] = b_[0] + b_[1] - b_[2];
     bn_[12] = b_[0] - b_[1] + b_[2];
  
-    for ( int i = 0; i < 13; i++ )
-      {
-	an2h_[i] = 0.5 * norm(an_[i]);
-	bn2h_[i] = 0.5 * norm(bn_[i]);
-      }
+    for(int i = 0; i < 13; i++ ){
+			an2h_[i] = 0.5 * norm(an_[i]);
+			bn2h_[i] = 0.5 * norm(bn_[i]);
+		}
   }
  
   ////////////////////////////////////////////////////////////////////////////////

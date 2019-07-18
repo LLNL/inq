@@ -32,8 +32,6 @@ namespace systems {
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
       phi_(rs_, states_.num_states()){
 
-      ions_.geo().info(std::cout);
-      ions_.cell().info(std::cout);
       rs_.info(std::cout);  
       states_.info(std::cout);
       ham_.info(std::cout);
@@ -72,7 +70,7 @@ namespace systems {
       
       operations::scal_invsqrt(operations::overlap_diagonal(phi_), phi_);
       
-      auto hphi = ham_(states_, phi_, true);
+      auto hphi = ham_(states_, phi_);
       
       auto overlap = operations::overlap_diagonal(hphi, phi_);
 

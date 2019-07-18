@@ -13,10 +13,15 @@ namespace systems {
   class ions {
 
   public:
-    
-    ions(const ::ions::geometry & geo_arg, const ::ions::UnitCell & arg_cell):
-      geo_(geo_arg),
-      cell_(arg_cell){
+
+    template<class lattice_vectors_type>
+    ions(const lattice_vectors_type & arg_lattice_vectors, const ::ions::geometry & geo_arg):
+      cell_(arg_lattice_vectors),
+      geo_(geo_arg){
+      
+      geo_.info(std::cout);
+      cell_.info(std::cout);
+
     }
 
     auto & geo() const {
@@ -29,8 +34,8 @@ namespace systems {
     
   private:
     
-    ::ions::geometry geo_;
     ::ions::UnitCell cell_;
+    ::ions::geometry geo_;
 
   };  
   
