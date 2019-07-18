@@ -18,25 +18,11 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
-#include <ions/geometry.hpp>
-#include <ions/unitcell.hpp>
-#include <basis/real_space.hpp>
-#include <ions/geometry.hpp>
-#include <hamiltonian/atomic_potential.hpp>
+#include <main/system.hpp>
 #include <multi/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
-#include <states/ks_states.hpp>
-#include <basis/coefficients_set.hpp>
-#include <operations/randomize.hpp>
-#include <operations/overlap.hpp>
-#include <operations/scal.hpp>
-#include <operations/orthogonalization.hpp>
-#include <hamiltonian/ks_hamiltonian.hpp>
-#include <solvers/steepest_descent.hpp>
 
-#include <complex>
 #include <iostream>
 
 using std::cout;
@@ -49,50 +35,15 @@ int main(int argc, char ** argv){
   
   ions::geometry geo(coordinates_file);
   
-  geo.info(std::cout);
-  
   auto lx = input.parse<double>("Lx");	
   auto ly = input.parse<double>("Ly");
   auto lz = input.parse<double>("Lz");
   
   ions::UnitCell cell({lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz});
   
-  cell.info(std::cout);
-  
   auto ecut = input.parse<double>("CutoffEnergy");
   
-  basis::real_space rs(cell, ecut);
-  
-  rs.info(std::cout);
-  
-  hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
-  
-  pot.info(std::cout);
-  
-  states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, pot.num_electrons());
-  
-  st.info(std::cout);
-  
-  hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo);
-  
-  ham.info(std::cout);
+	inq::system sys(geo, cell, ecut);
 
-  basis::coefficients_set<basis::real_space, complex> phi(rs, st.num_states());
-
-	operations::randomize(phi);
-
-	for(int ii = 0; ii < 2000; ii++){
-
-		operations::scal_invsqrt(operations::overlap_diagonal(phi), phi);
-
-		auto hphi = ham(st, phi);
-
-		auto overlap = operations::overlap_diagonal(hphi, phi);
-
-		std::cout << ii << '\t' << std::scientific << real(overlap[0]) << std::endl;
-		
-		solvers::steepest_descent(st, ham, phi);
-		
-	}
-	
+	sys.calculate_ground_state();
 }

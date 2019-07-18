@@ -49,7 +49,8 @@ noinst_HEADERS =                                   \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
 	solvers/poisson.hpp                        \
-	solvers/steepest_descent.hpp
+	solvers/steepest_descent.hpp               \
+	main/system.hpp
 
 all_srcs =                                         \
 	parser/symbols.c                           \
