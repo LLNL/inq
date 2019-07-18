@@ -206,7 +206,7 @@ namespace pseudo {
     double valence_charge_;
     std::vector<math::spline> projectors_;
     std::vector<int> projectors_l_;
-    std::vector<int> kb_coeff_;
+    std::vector<double> kb_coeff_;
     int nproj_lm_;
     
   };
@@ -274,8 +274,6 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.num_projectors_l() == 8);
     REQUIRE(ps.num_projectors_lm() == 32);
     
-    REQUIRE(ps.projector_l(0) == 0);
-
     REQUIRE(ps.projector(0).value(0.00000000E+00) == -6.16416761E+00_a);
     REQUIRE(ps.projector(0).value(1.00000000E-02) == -6.16245244E+00_a);
     REQUIRE(ps.projector(0).value(5.00000000E-02) == -6.12149052E+00_a);
@@ -287,14 +285,24 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE_THROWS(ps.projector(-1));
     REQUIRE_THROWS(ps.projector(8));
-    
+
+    REQUIRE(ps.projector_l(0) == 0);
     REQUIRE(ps.projector_l(1) == 0);
     REQUIRE(ps.projector_l(2) == 1);
     REQUIRE(ps.projector_l(3) == 1);
     REQUIRE(ps.projector_l(4) == 2);
     REQUIRE(ps.projector_l(5) == 2);
     REQUIRE(ps.projector_l(6) == 3);
-    REQUIRE(ps.projector_l(7) == 3);    
+    REQUIRE(ps.projector_l(7) == 3);
+
+		REQUIRE(ps.kb_coeff(0) == 8.243498986_a);
+    REQUIRE(ps.kb_coeff(1) == 0.9729808132_a);
+    REQUIRE(ps.kb_coeff(2) == 3.8116529178_a);
+    REQUIRE(ps.kb_coeff(3) == 0.4990369016_a);
+    REQUIRE(ps.kb_coeff(4) == 1.4609009471_a);
+    REQUIRE(ps.kb_coeff(5) == 0.2713485048_a);
+    REQUIRE(ps.kb_coeff(6) == -5.0048898015_a);
+		REQUIRE(ps.kb_coeff(7) == -2.9667606006_a);
 
     REQUIRE_THROWS(ps.projector_l(-100));    
     REQUIRE_THROWS(ps.projector_l(8));    
