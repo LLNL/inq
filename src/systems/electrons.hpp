@@ -5,8 +5,7 @@
 
 #include <cfloat>
 
-#include <ions/geometry.hpp>
-#include <ions/unitcell.hpp>
+#include <systems/ions.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
@@ -25,17 +24,16 @@ namespace systems {
 
   public:
     
-    electrons(const ions::geometry & geo_arg, const ions::UnitCell & arg_cell, const double & ecut):
-      geo_(geo_arg),
-      cell_(arg_cell),
-      rs_(cell_, ecut),
-      atomic_pot_(geo_.num_atoms(), geo_.atoms()),
+    electrons(const systems::ions & ions_arg, const double & ecut):
+      ions_(ions_arg),
+      rs_(ions_.cell(), ecut),
+      atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons()),
-      ham_(rs_, cell_, atomic_pot_, geo_),
+      ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
       phi_(rs_, states_.num_states()){
 
-      geo_.info(std::cout);
-      cell_.info(std::cout);
+      ions_.geo().info(std::cout);
+      ions_.cell().info(std::cout);
       rs_.info(std::cout);  
       states_.info(std::cout);
       ham_.info(std::cout);
@@ -87,9 +85,8 @@ namespace systems {
 
     
   private:
-    
-    ions::geometry geo_;
-    ions::UnitCell cell_;
+
+		systems::ions ions_;
     basis::real_space rs_;
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;

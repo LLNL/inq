@@ -50,6 +50,7 @@ noinst_HEADERS =                                   \
 	hamiltonian/ks_hamiltonian.hpp             \
 	solvers/poisson.hpp                        \
 	solvers/steepest_descent.hpp               \
+	systems/ions.hpp                           \
 	systems/electrons.hpp
 
 all_srcs =                                         \

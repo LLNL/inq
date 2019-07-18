@@ -19,6 +19,7 @@
 */
 
 #include <systems/electrons.hpp>
+#include <systems/ions.hpp>
 #include <multi/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
@@ -40,13 +41,15 @@ int main(int argc, char ** argv){
   auto lz = input.parse<double>("Lz");
   
   ions::UnitCell cell({lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz});
-  
+
+	systems::ions ions(geo, cell);
+	
   auto ecut = input.parse<double>("CutoffEnergy");
   
-	systems::electrons elec(geo, cell, ecut);
+	systems::electrons electrons(ions, ecut);
 
-	elec.calculate_ground_state();
+	electrons.calculate_ground_state();
 
-	std::cout << "Total energy = " << elec.calculate_energy() << std::endl;
+	std::cout << "Total energy = " << electrons.calculate_energy() << std::endl;
 	
 }
