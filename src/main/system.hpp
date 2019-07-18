@@ -3,6 +3,8 @@
 #ifndef INQ__SYSTEM
 #define INQ__SYSTEM
 
+#include <cfloat>
+
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
 #include <basis/real_space.hpp>
@@ -42,6 +44,8 @@ namespace inq {
     }
 
     void calculate_ground_state() {
+
+      double old_energy = DBL_MAX;
       
       for(int ii = 0; ii < 2000; ii++){
 	
@@ -51,7 +55,15 @@ namespace inq {
 	
 	auto overlap = operations::overlap_diagonal(hphi, phi_);
 	
-	std::cout << ii << '\t' << std::scientific << real(overlap[0]) << std::endl;
+	//DATAOPERATIONS
+	double energy = 0.0;
+	for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
+	
+	std::cout << ii << '\t' << std::scientific << energy << std::endl;
+
+	if(fabs(energy - old_energy) < 1e-7) break;
+
+	old_energy = energy;
 	
 	solvers::steepest_descent(states_, ham_, phi_);
 	
