@@ -33,7 +33,7 @@ namespace operations {
 		//DATAOPERATIONS
 		
 		for(int kk = 0; kk < phi.basis().size(); kk++) {
-			for(int ii = 0; ii < phi.set_size(); ii++)	phi[ii][kk] = complex(drand48(), drand48());
+			for(int ii = 0; ii < phi.set_size(); ii++)	phi[ii][kk] = complex(drand48(), 0.0);
     }
 
   }
