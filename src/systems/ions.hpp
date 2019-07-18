@@ -19,11 +19,11 @@ namespace systems {
       cell_(arg_cell){
     }
 
-    auto geo(){
+    auto & geo() const {
       return geo_;
     }
 
-    auto cell(){
+    auto & cell() const {
       return cell_;
     }
     

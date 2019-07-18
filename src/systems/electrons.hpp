@@ -72,7 +72,7 @@ namespace systems {
       
       operations::scal_invsqrt(operations::overlap_diagonal(phi_), phi_);
       
-      auto hphi = ham_(states_, phi_);
+      auto hphi = ham_(states_, phi_, true);
       
       auto overlap = operations::overlap_diagonal(hphi, phi_);
 
@@ -86,7 +86,7 @@ namespace systems {
     
   private:
 
-		systems::ions ions_;
+		const systems::ions & ions_;
     basis::real_space rs_;
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;
