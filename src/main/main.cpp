@@ -18,7 +18,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <main/electrons.hpp>
+#include <systems/electrons.hpp>
 #include <multi/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
   
   auto ecut = input.parse<double>("CutoffEnergy");
   
-	inq::electrons elec(geo, cell, ecut);
+	systems::electrons elec(geo, cell, ecut);
 
 	elec.calculate_ground_state();
 

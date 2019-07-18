@@ -19,7 +19,7 @@
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 
-namespace inq {
+namespace systems {
 
   class electrons {
 
