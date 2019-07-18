@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t; tab-width: 2 -*- */
 
-#ifndef INQ__ELECTRONS
-#define INQ__ELECTRONS
+#ifndef SYSTEMS__ELECTRONS
+#define SYSTEMS__ELECTRONS
 
 #include <cfloat>
 
@@ -48,25 +48,25 @@ namespace systems {
       double old_energy = DBL_MAX;
       
       for(int ii = 0; ii < 2000; ii++){
-	
-	operations::scal_invsqrt(operations::overlap_diagonal(phi_), phi_);
-	
-	auto hphi = ham_(states_, phi_);
-	
-	auto overlap = operations::overlap_diagonal(hphi, phi_);
-	
-	//DATAOPERATIONS
-	double energy = 0.0;
-	for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
-	
-	std::cout << ii << '\t' << std::scientific << energy << std::endl;
-
-	if(fabs(energy - old_energy) < 1e-7) break;
-
-	old_energy = energy;
-	
-	solvers::steepest_descent(states_, ham_, phi_);
-	
+				
+				operations::scal_invsqrt(operations::overlap_diagonal(phi_), phi_);
+				
+				auto hphi = ham_(states_, phi_);
+				
+				auto overlap = operations::overlap_diagonal(hphi, phi_);
+				
+				//DATAOPERATIONS
+				double energy = 0.0;
+				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
+				
+				std::cout << ii << '\t' << std::scientific << energy << std::endl;
+				
+				if(fabs(energy - old_energy) < 1e-7) break;
+				
+				old_energy = energy;
+				
+				solvers::steepest_descent(states_, ham_, phi_);
+				
       }
     }
 
