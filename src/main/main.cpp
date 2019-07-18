@@ -18,7 +18,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <main/system.hpp>
+#include <main/electrons.hpp>
 #include <multi/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
@@ -43,10 +43,10 @@ int main(int argc, char ** argv){
   
   auto ecut = input.parse<double>("CutoffEnergy");
   
-	inq::system sys(geo, cell, ecut);
+	inq::electrons elec(geo, cell, ecut);
 
-	sys.calculate_ground_state();
+	elec.calculate_ground_state();
 
-	std::cout << "Total energy = " << sys.calculate_energy() << std::endl;
+	std::cout << "Total energy = " << elec.calculate_energy() << std::endl;
 	
 }

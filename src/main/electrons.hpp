@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t; tab-width: 2 -*- */
 
-#ifndef INQ__SYSTEM
-#define INQ__SYSTEM
+#ifndef INQ__ELECTRONS
+#define INQ__ELECTRONS
 
 #include <cfloat>
 
@@ -21,11 +21,11 @@
 
 namespace inq {
 
-  class system {
+  class electrons {
 
   public:
     
-    system(const ions::geometry & geo_arg, const ions::UnitCell & arg_cell, const double & ecut):
+    electrons(const ions::geometry & geo_arg, const ions::UnitCell & arg_cell, const double & ecut):
       geo_(geo_arg),
       cell_(arg_cell),
       rs_(cell_, ecut),
