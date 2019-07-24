@@ -7,6 +7,7 @@
 
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
+#include <input/cell.hpp>
 
 namespace systems {
 
@@ -14,9 +15,8 @@ namespace systems {
 
   public:
 
-    template<class lattice_vectors_type>
-    ions(const lattice_vectors_type & arg_lattice_vectors, const ::ions::geometry & geo_arg):
-      cell_(arg_lattice_vectors),
+    ions(const input::cell & arg_cell_input, const ::ions::geometry & geo_arg):
+      cell_(arg_cell_input),
       geo_(geo_arg){
       
       geo_.info(std::cout);

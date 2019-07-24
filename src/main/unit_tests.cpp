@@ -22,6 +22,8 @@
 
 #include <catch2/catch.hpp>
 
+#include <input/basis.hpp>
+#include <input/cell.hpp>
 #include <parser/input_file.hpp>
 #include <config/path.hpp>
 #include <math/d3vector.hpp>

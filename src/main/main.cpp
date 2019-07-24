@@ -39,10 +39,8 @@ int main(int argc, char ** argv){
   auto lx = input.parse<double>("Lx");	
   auto ly = input.parse<double>("Ly");
   auto lz = input.parse<double>("Lz");
-  
-	double cell[3][3] = {{lx, 0.0, 0.0}, {0.0, ly, 0.0}, {0.0, 0.0, lz}};
 
-	systems::ions ions(cell, geo);
+	systems::ions ions(input::cell::cubic(lx, ly, lz), geo);
 	
   auto ecut = input.parse<double>("CutoffEnergy");
   

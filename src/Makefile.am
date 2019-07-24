@@ -13,6 +13,7 @@ noinst_HEADERS =                                   \
 	parser/string_f.h                          \
 	parser/symbols.h                           \
 	input/basis.hpp                            \
+	input/cell.hpp                            \
 	math/d3vector.hpp                          \
 	math/spline.hpp                            \
 	math/spherical_harmonic.hpp                \
