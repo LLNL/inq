@@ -125,7 +125,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 
 	ions::geometry geo;
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
-  basis::real_space pw(cell, ecut);
+  basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
 	REQUIRE(pw.size() == 8000);
 	REQUIRE(pw.rspacing()[0] == 0.5_a);

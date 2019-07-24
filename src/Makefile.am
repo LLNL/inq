@@ -12,6 +12,7 @@ noinst_HEADERS =                                   \
 	parser/liboct_parser.h                     \
 	parser/string_f.h                          \
 	parser/symbols.h                           \
+	input/basis.hpp                            \
 	math/d3vector.hpp                          \
 	math/spline.hpp                            \
 	math/spherical_harmonic.hpp                \

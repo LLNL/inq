@@ -71,7 +71,7 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 
 	ions::geometry geo;
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
-  basis::real_space pw(cell, ecut);
+  basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	

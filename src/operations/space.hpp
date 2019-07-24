@@ -124,7 +124,7 @@ TEST_CASE("function operations::space", "[space]") {
 	
 	ions::geometry geo;
 	ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
-	basis::real_space rs(cell, ecut);
+	basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 	
 	basis::coefficients_set<basis::real_space, complex> phi(rs, 7);
 	

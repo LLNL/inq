@@ -46,7 +46,7 @@ int main(int argc, char ** argv){
 	
   auto ecut = input.parse<double>("CutoffEnergy");
   
-	systems::electrons electrons(ions, ecut);
+	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut));
 
 	electrons.calculate_ground_state();
 

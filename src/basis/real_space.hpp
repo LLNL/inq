@@ -26,6 +26,7 @@
 #include "grid.hpp"
 #include <cassert>
 #include <array>
+#include <input/basis.hpp>
 
 namespace basis {
 
@@ -33,8 +34,8 @@ namespace basis {
 
   public:
 		
-    real_space(const ions::UnitCell & cell, const double & ecut):
-			grid(cell, calculate_dimensions(cell, ecut)){
+    real_space(const ions::UnitCell & cell, const input::basis & basis_input):
+			grid(cell, calculate_dimensions(cell, basis_input)){
     }
 
 		real_space(const grid & grid_basis):
@@ -57,9 +58,9 @@ namespace basis {
 		
 	private:
 
-		static std::array<int, 3> calculate_dimensions(const ions::UnitCell & cell, const double & ecut){
+		static std::array<int, 3> calculate_dimensions(const ions::UnitCell & cell, const input::basis & basis_input){
 			std::array<int, 3> nr;
-			double spacing = M_PI*sqrt(0.5/ecut);
+			double spacing = basis_input.get_spacing();
 			
 			// make the spacing conmensurate with the grid
 			// OPTIMIZATION: we can select a good size here for the FFT
@@ -91,7 +92,7 @@ TEST_CASE("class basis::real_space", "[real_space]") {
 
       double ecut = 20.0;
       
-      basis::real_space pw(cell, ecut);
+      basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
       REQUIRE(pw.rtotalsize() == 8000);
       REQUIRE(pw.gtotalsize() == 8000);
@@ -120,7 +121,7 @@ TEST_CASE("class basis::real_space", "[real_space]") {
 
       double ecut = 37.9423091;
       
-      basis::real_space pw(cell, ecut);
+      basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
       REQUIRE(pw.rtotalsize() == 536640);
       REQUIRE(pw.gtotalsize() == 536640);

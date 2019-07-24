@@ -17,6 +17,7 @@
 #include <operations/orthogonalization.hpp>
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
+#include <input/basis.hpp>
 
 namespace systems {
 
@@ -24,9 +25,9 @@ namespace systems {
 
   public:
     
-    electrons(const systems::ions & ions_arg, const double & ecut):
+    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input):
       ions_(ions_arg),
-      rs_(ions_.cell(), ecut),
+      rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons()),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),

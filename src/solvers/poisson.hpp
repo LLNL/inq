@@ -106,7 +106,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
   double ll = 10.0;
 
   ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll});
-  basis::real_space rs(cell, 493.48);
+  basis::real_space rs(cell, input::basis::spacing(0.1));
 
 	REQUIRE(rs.rsize()[0] == 100);
 	REQUIRE(rs.rsize()[1] == 100);

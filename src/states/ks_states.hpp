@@ -99,7 +99,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
   double ll = 10.0;
   
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
-  basis::real_space pw(cell, ecut);
+  basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
   
   SECTION("Spin unpolarized"){
     
