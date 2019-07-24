@@ -25,22 +25,25 @@ namespace hamiltonian {
 
 			std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 
-      for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
+			int iproj_lm = 0;
+      for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
 				// interpolate the value of the radial part of the projectors to the sphere points
-				ps.projector(iproj).value(sphere_.size(), sphere_.distance(), proj);
+				ps.projector(iproj_l).value(sphere_.size(), sphere_.distance(), proj);
 				
-				int l = ps.projector_l(iproj);
+				int l = ps.projector_l(iproj_l);
 				
 				// now construct the projector with the spherical harmonics
 				for(int m = -l; m <= l; m++){
 					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-						matrix_[iproj][ipoint] = proj[ipoint]*math::spherical_harmonic(l, m, sphere_.point_pos()[ipoint]);
+						matrix_[iproj_l][ipoint] = proj[ipoint]*math::spherical_harmonic(l, m, sphere_.point_pos()[ipoint]);
 					}
-					
-					kb_coeff_.push_back(ps.kb_coeff(iproj));
+					iproj_lm++;
+					kb_coeff_.push_back(ps.kb_coeff(iproj_l));
 				}
 				
       }
+
+			assert(iproj_lm == ps.num_projectors_lm());
 			
     }
 
