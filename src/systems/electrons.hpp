@@ -16,9 +16,11 @@
 #include <operations/scal.hpp>
 #include <operations/orthogonalization.hpp>
 #include <operations/preconditioner.hpp>
+#include <operations/calculate_density.hpp>
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
+
 
 namespace systems {
 
@@ -45,7 +47,9 @@ namespace systems {
     void calculate_ground_state() {
 
       double old_energy = DBL_MAX;
-      
+
+			auto density = operations::calculate_density(phi_);
+			
       for(int ii = 0; ii < 2000; ii++){
 
 				auto hphi = ham_(phi_);
@@ -63,6 +67,8 @@ namespace systems {
 				old_energy = energy;
 				
 				solvers::steepest_descent(states_, ham_, prec_, phi_);
+
+				density = operations::calculate_density(phi_);
 				
       }
     }
