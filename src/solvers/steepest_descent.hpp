@@ -32,42 +32,50 @@ namespace solvers {
 	template <class operator_type, class coefficients_set_type>
 	void steepest_descent(const states::ks_states st, const operator_type & ham, coefficients_set_type & phi){
 
-		//calculate the residual
-		
-		auto residual = ham(st, phi);
+		const int num_steps = 5;
 
-		auto eigenvalues = operations::overlap_diagonal(residual, phi);
-		auto norm = operations::overlap_diagonal(phi);
+		for(int istep = 0; istep < num_steps; istep++){
+			
+			//calculate the residual
+			
+			auto residual = ham(st, phi);
+			
+			auto eigenvalues = operations::overlap_diagonal(residual, phi);
+			auto norm = operations::overlap_diagonal(phi);
+			
+			auto lambda(eigenvalues);
+			
+			//DATAOPERATIONS
+			for(int ist = 0; ist < st.num_states(); ist++) lambda[ist] /= -norm[ist];
+			
+			operations::shift(lambda, phi, residual);
+			
+			//OPTIMIZATIONS: precondition the residual here
+			
+			
+			//now calculate the step size
+			auto hresidual = ham(st, residual);
+			
+			auto m1 = operations::overlap_diagonal(residual, residual);
+			auto m2 = operations::overlap_diagonal(phi, residual);
+			auto m3 = operations::overlap_diagonal(residual, hresidual);
+			auto m4 = operations::overlap_diagonal(phi, hresidual);
+			
+			
+			//DATAOPERATIONS
+			for(int ist = 0; ist < st.num_states(); ist++){
+				double ca = real(m1[ist])*real(m4[ist]) - real(m3[ist])*real(m2[ist]);
+				double cb = real(norm[ist])*real(m3[ist]) - real(eigenvalues[ist])*real(m1[ist]);
+				double cc = real(eigenvalues[ist])*real(m2[ist]) - real(m4[ist])*real(norm[ist]);
+				
+				lambda[ist] = 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
+			}
+			
+			operations::shift(lambda, residual, phi);		
 
-		auto lambda(eigenvalues);
-		
-		//DATAOPERATIONS
-		for(int ist = 0; ist < st.num_states(); ist++) lambda[ist] /= -norm[ist];
-
-		operations::shift(lambda, phi, residual);
-
-		//OPTIMIZATIONS: precondition the residual here
-
-
-		//now calculate the step size
-		auto hresidual = ham(st, residual);
-
-		auto m1 = operations::overlap_diagonal(residual, residual);
-		auto m2 = operations::overlap_diagonal(phi, residual);
-		auto m3 = operations::overlap_diagonal(residual, hresidual);
-		auto m4 = operations::overlap_diagonal(phi, hresidual);
-
-
-		//DATAOPERATIONS
-		for(int ist = 0; ist < st.num_states(); ist++){
-			double ca = real(m1[ist])*real(m4[ist]) - real(m3[ist])*real(m2[ist]);
-			double cb = real(norm[ist])*real(m3[ist]) - real(eigenvalues[ist])*real(m1[ist]);
-			double cc = real(eigenvalues[ist])*real(m2[ist]) - real(m4[ist])*real(norm[ist]);
-
-			lambda[ist] = 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
 		}
 
-		operations::shift(lambda, residual, phi);		
+		operations::orthogonalization(phi);
 		
 	}
 

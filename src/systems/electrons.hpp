@@ -56,7 +56,7 @@ namespace systems {
 				double energy = 0.0;
 				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
 				
-				std::cout << ii << '\t' << std::scientific << energy << std::endl;
+				std::cout << ii << '\t' << std::scientific << energy << '\t' << fabs(energy - old_energy) << std::endl;
 				
 				if(fabs(energy - old_energy) < 1e-7) break;
 				
