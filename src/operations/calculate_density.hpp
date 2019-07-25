@@ -28,12 +28,14 @@
 
 namespace operations {
 
-  auto calculate_density(const basis::coefficients_set<basis::real_space, complex> & phi){
+  template<class occupations_array_type>
+  auto calculate_density(const occupations_array_type & occupations, const basis::coefficients_set<basis::real_space, complex> & phi){
     basis::coefficients<basis::real_space, double> density(phi.basis());
 
     //TODO: occupations
+    //DATAOPERATIONS
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
-      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += 2.0*real(conj(phi[ipoint][ist])*phi[ipoint][ist]);
+      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*real(conj(phi[ipoint][ist])*phi[ipoint][ist]);
     }
 
     return density;

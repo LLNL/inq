@@ -49,7 +49,7 @@ namespace systems {
 
       double old_energy = DBL_MAX;
 
-			auto density = operations::calculate_density(phi_);
+			auto density = operations::calculate_density(states_.occupations(), phi_);
 			
       for(int ii = 0; ii < 2000; ii++){
 
@@ -69,7 +69,7 @@ namespace systems {
 				
 				solvers::steepest_descent(states_, ham_, prec_, phi_);
 
-				density = operations::calculate_density(phi_);
+				density = operations::calculate_density(states_.occupations(), phi_);
 
       }
     }
