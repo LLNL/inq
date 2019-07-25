@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t; tab-width: 2 -*- */
 
-#ifndef OPERATIONS__PRECONDITION
-#define OPERATIONS__PRECONDITION
+#ifndef OPERATIONS__PRECONDITIONER
+#define OPERATIONS__PRECONDITIONER
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
