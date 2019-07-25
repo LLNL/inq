@@ -46,7 +46,7 @@ namespace hamiltonian {
 
 		basis::coefficients<basis::real_space, double> scalar_potential;
 		
-    auto operator()(const states::ks_states & st, const basis::coefficients_set<basis::real_space, complex> & phi) const{
+    auto operator()(const basis::coefficients_set<basis::real_space, complex> & phi) const{
       
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
@@ -65,7 +65,7 @@ namespace hamiltonian {
 			auto hphi = operations::space::to_real(hphi_fs);
 
 			//the non local potential in real space
-			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](st, phi, hphi);
+			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](phi, hphi);
 
 			//the scalar local potential in real space
 			for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
@@ -155,7 +155,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 		
-		hphi = ham(st, phi);
+		hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
@@ -189,7 +189,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham(st, phi);
+		hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){
@@ -227,7 +227,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham(st, phi);
+		hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < pw.rsize()[0]; ix++){

@@ -38,7 +38,7 @@ namespace solvers {
 			
 			//calculate the residual
 			
-			auto residual = ham(st, phi);
+			auto residual = ham(phi);
 			
 			auto eigenvalues = operations::overlap_diagonal(residual, phi);
 			auto norm = operations::overlap_diagonal(phi);
@@ -54,7 +54,7 @@ namespace solvers {
 			prec(residual);
 			
 			//now calculate the step size
-			auto hresidual = ham(st, residual);
+			auto hresidual = ham(residual);
 			
 			auto m1 = operations::overlap_diagonal(residual, residual);
 			auto m2 = operations::overlap_diagonal(phi, residual);

@@ -48,19 +48,18 @@ namespace hamiltonian {
     }
 
     template <class coefficients_set_type>
-    void operator()(const states::ks_states & st, const coefficients_set_type & phi, coefficients_set_type & vnlphi) const {
-
+    void operator()(const coefficients_set_type & phi, coefficients_set_type & vnlphi) const {
 			
-      boost::multi::array<states::ks_states::coeff_type, 2> sphere_phi({sphere_.size(), st.num_states()});
+      boost::multi::array<states::ks_states::coeff_type, 2> sphere_phi({sphere_.size(), phi.set_size()});
 
       sphere_.gather(phi.cubic(), sphere_phi);
 
-      boost::multi::array<states::ks_states::coeff_type, 2> projections({nproj_, st.num_states()});
+      boost::multi::array<states::ks_states::coeff_type, 2> projections({nproj_, phi.set_size()});
 
 			//DATAOPERATIONS
       //OPTIMIZATION: these two operations should be done by dgemm
       for(int iproj = 0; iproj < nproj_; iproj++){
-				for(int ist = 0; ist < st.num_states(); ist++){
+				for(int ist = 0; ist < phi.set_size(); ist++){
 					complex aa = 0.0;
 					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) aa += matrix_[iproj][ipoint]*sphere_phi[ipoint][ist];
 					projections[iproj][ist] = aa*kb_coeff_[iproj]*sphere_.volume_element();
@@ -68,7 +67,7 @@ namespace hamiltonian {
       }
 
       for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-				for(int ist = 0; ist < st.num_states(); ist++){
+				for(int ist = 0; ist < phi.set_size(); ist++){
 					complex aa = 0.0;
 					for(int iproj = 0; iproj < nproj_; iproj++) aa += matrix_[iproj][ipoint]*projections[iproj][ist];
 					sphere_phi[ipoint][ist] = aa;

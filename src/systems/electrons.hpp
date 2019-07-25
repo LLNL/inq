@@ -48,7 +48,7 @@ namespace systems {
       
       for(int ii = 0; ii < 2000; ii++){
 
-				auto hphi = ham_(states_, phi_);
+				auto hphi = ham_(phi_);
 				
 				auto overlap = operations::overlap_diagonal(hphi, phi_);
 				
@@ -71,7 +71,7 @@ namespace systems {
       
       operations::scal_invsqrt(operations::overlap_diagonal(phi_), phi_);
       
-      auto hphi = ham_(states_, phi_);
+      auto hphi = ham_(phi_);
       
       auto overlap = operations::overlap_diagonal(hphi, phi_);
 
