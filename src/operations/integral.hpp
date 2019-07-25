@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t; tab-width: 2 -*- */
 
-#ifndef OPERATIONS__CALCULATE_DENSITY
-#define OPERATIONS__CALCULATE_DENSITY
+#ifndef OPERATIONS__INTEGRAL
+#define OPERATIONS__INTEGRAL
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -21,30 +21,28 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <basis/coefficients.hpp>
+#include <multi/array.hpp>
 #include <basis/coefficients_set.hpp>
-#include <math/complex.hpp>
-#include <cstdlib>
+#include <cassert>
 
 namespace operations {
 
-  auto calculate_density(const basis::coefficients_set<basis::real_space, complex> & phi){
-    basis::coefficients<basis::real_space, double> density(phi.basis());
-
-    //TODO: occupations
-    for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
-      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += 2.0*real(conj(phi[ipoint][ist])*phi[ipoint][ist]);
-    }
-
-    return density;
-  }
-  
+  template <class coefficients_type>
+  auto integral(coefficients_type & phi){
+		typename coefficients_type::value_type inte = 0.0; 
+		for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++) inte += phi[ipoint];
+		return inte*phi.basis().volume_element();
+	}
+	
 }
+
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
+#include <basis/real_space.hpp>
+#include <ions/unitcell.hpp>
 
-TEST_CASE("function operations::randomize", "[randomize]") {
+TEST_CASE("function operations::integral", "[integral]") {
 
 	using namespace Catch::literals;
 
@@ -52,5 +50,4 @@ TEST_CASE("function operations::randomize", "[randomize]") {
 
 
 #endif
-
 #endif

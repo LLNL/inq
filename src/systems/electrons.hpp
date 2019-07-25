@@ -17,6 +17,7 @@
 #include <operations/orthogonalization.hpp>
 #include <operations/preconditioner.hpp>
 #include <operations/calculate_density.hpp>
+#include <operations/integral.hpp>
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
@@ -69,7 +70,7 @@ namespace systems {
 				solvers::steepest_descent(states_, ham_, prec_, phi_);
 
 				density = operations::calculate_density(phi_);
-				
+
       }
     }
 

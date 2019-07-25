@@ -50,6 +50,7 @@ noinst_HEADERS =                                   \
 	operations/preconditioner.hpp              \
 	operations/diagonalize.hpp                 \
 	operations/calculate_density.hpp           \
+	operations/integral.hpp                    \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
 	solvers/poisson.hpp                        \
