@@ -31,7 +31,6 @@ namespace states {
   public:
 
     typedef complex coeff_type;
-    typedef boost::multi::array<complex, 4> coeff;
     
     enum class spin_config {
       UNPOLARIZED,
@@ -49,6 +48,15 @@ namespace states {
 
       nquantumnumbers_ = 1;
       if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
+
+			occs_.resize(nstates_);
+
+			auto rem_electrons = nelectrons;
+			for(int ist = 0; ist < nstates_; ist++){
+				occs_[ist] = std::min(2.0, rem_electrons);
+				rem_electrons -= occs_[ist];
+			}
+			
     }
 
     int num_states() const {
@@ -75,12 +83,17 @@ namespace states {
       out << "  Number of states = " << num_states() << std::endl;
       out << std::endl;
     }
-    
+
+		auto & occupations() const {
+			return occs_;
+		}
+		
   private:
 
     int nspinor_;
     int nstates_;
     int nquantumnumbers_;
+		std::vector<double> occs_;
 
   };
 
@@ -112,7 +125,12 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		REQUIRE(st.cubic_dims(pw.rsize())[2] == pw.rsize()[2]);
 		REQUIRE(st.cubic_dims(pw.rsize())[3] == st.num_states());
 
-		states::ks_states::coeff(st.cubic_dims(pw.rsize()));
+		REQUIRE(st.occupations()[0] == 2.0);
+		REQUIRE(st.occupations()[1] == 2.0);
+		REQUIRE(st.occupations()[2] == 2.0);
+		REQUIRE(st.occupations()[3] == 2.0);
+		REQUIRE(st.occupations()[4] == 2.0);
+		REQUIRE(st.occupations()[5] == 1.0);
 		
   }
 
