@@ -47,6 +47,7 @@ noinst_HEADERS =                                   \
 	operations/space.hpp                       \
 	operations/orthogonalization.hpp           \
 	operations/shift.hpp                       \
+	operations/preconditioner.hpp              \
 	operations/diagonalize.hpp                 \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \

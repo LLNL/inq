@@ -15,6 +15,7 @@
 #include <operations/overlap.hpp>
 #include <operations/scal.hpp>
 #include <operations/orthogonalization.hpp>
+#include <operations/preconditioner.hpp>
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
@@ -31,7 +32,8 @@ namespace systems {
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons()),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
-      phi_(rs_, states_.num_states()){
+      phi_(rs_, states_.num_states()),
+			prec_(3){
 
       rs_.info(std::cout);  
       states_.info(std::cout);
@@ -60,7 +62,7 @@ namespace systems {
 				
 				old_energy = energy;
 				
-				solvers::steepest_descent(states_, ham_, phi_);
+				solvers::steepest_descent(states_, ham_, prec_, phi_);
 				
       }
     }
@@ -89,7 +91,7 @@ namespace systems {
     states::ks_states states_;
     hamiltonian::ks_hamiltonian<basis::real_space> ham_;      
     basis::coefficients_set<basis::real_space, complex> phi_;
-  
+		operations::preconditioner prec_;
 
   };  
   

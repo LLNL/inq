@@ -29,8 +29,8 @@
 
 namespace solvers {
 
-	template <class operator_type, class coefficients_set_type>
-	void steepest_descent(const states::ks_states st, const operator_type & ham, coefficients_set_type & phi){
+	template <class operator_type, class preconditioner_type, class coefficients_set_type>
+	void steepest_descent(const states::ks_states st, const operator_type & ham, const preconditioner_type & prec, coefficients_set_type & phi){
 
 		const int num_steps = 5;
 
@@ -51,7 +51,7 @@ namespace solvers {
 			operations::shift(lambda, phi, residual);
 			
 			//OPTIMIZATIONS: precondition the residual here
-			
+			prec(residual);
 			
 			//now calculate the step size
 			auto hresidual = ham(st, residual);
