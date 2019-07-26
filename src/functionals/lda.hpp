@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// LDAFunctional.h
+// lda.h
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +33,7 @@
 #include <cassert>
 
 namespace functionals {
-  class LDAFunctional {
+  class lda {
 
   public:
     
@@ -163,7 +163,7 @@ namespace functionals {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("Class functionals::LDAFunctional", "[LDAFunctional]") {
+TEST_CASE("Class functionals::lda", "[lda]") {
 
   using namespace Catch::literals;
 
@@ -175,7 +175,7 @@ TEST_CASE("Class functionals::LDAFunctional", "[LDAFunctional]") {
     
 	SECTION("spin unpolarized"){
 
-		functionals::LDAFunctional::xc_unpolarized(nn.size(), nn, exc, vxc);
+		functionals::lda::xc_unpolarized(nn.size(), nn, exc, vxc);
       
 		REQUIRE(exc[0] == -0.0121328183_a);
 		REQUIRE(vxc[0] == -0.0159054085_a);
@@ -210,7 +210,7 @@ TEST_CASE("Class functionals::LDAFunctional", "[LDAFunctional]") {
     
 	SECTION("spin polarized"){
 
-		functionals::LDAFunctional::xc_polarized(nn.size(), nn, exc, vxc);
+		functionals::lda::xc_polarized(nn.size(), nn, exc, vxc);
 
 		REQUIRE(exc[0] == -0.0122936534_a);
 		REQUIRE(vxc[0] == -0.0161617994_a);

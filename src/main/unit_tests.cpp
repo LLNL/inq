@@ -42,7 +42,7 @@
 #include <basis/field_set.hpp>
 #include <states/ks_states.hpp>
 #include <basis/field_set.hpp>
-#include <functionals/LDAFunctional.hpp>
+#include <functionals/lda.hpp>
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>

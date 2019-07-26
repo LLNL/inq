@@ -1,4 +1,4 @@
-AM_CXXFLAGS =                                   \
+AM_CXXFLAGS =                             \
 	-I$(top_srcdir)/src/                    \
 	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
@@ -6,14 +6,14 @@ AM_CXXFLAGS =                                   \
 
 LIBS += @GSL_LIBS@ @LIBS_LAPACK@ @LIBS_BLAS@
 
-noinst_HEADERS =                                   \
+noinst_HEADERS =                             \
 	parser/gsl_userdef.h                       \
-	parser/input_file.hpp                       \
+	parser/input_file.hpp                      \
 	parser/liboct_parser.h                     \
 	parser/string_f.h                          \
 	parser/symbols.h                           \
 	input/basis.hpp                            \
-	input/cell.hpp                            \
+	input/cell.hpp                             \
 	math/d3vector.hpp                          \
 	math/spline.hpp                            \
 	math/spherical_harmonic.hpp                \
@@ -35,7 +35,7 @@ noinst_HEADERS =                                   \
 	basis/field_set.hpp                        \
 	basis/spherical_grid.hpp                   \
 	states/ks_states.hpp                       \
-	functionals/LDAFunctional.hpp              \
+	functionals/lda.hpp                        \
 	functionals/PBESolFunctional.hpp           \
 	functionals/BLYPFunctional.hpp             \
 	functionals/PBERevFunctional.hpp           \
@@ -58,7 +58,7 @@ noinst_HEADERS =                                   \
 	systems/ions.hpp                           \
 	systems/electrons.hpp
 
-all_srcs =                                         \
+all_srcs =                                   \
 	parser/symbols.c                           \
 	parser/parse.c                             \
 	parser/parse_exp.c                         \
@@ -70,7 +70,7 @@ all_srcs =                                         \
 	functionals/BLYPFunctional.cpp             \
 	functionals/PBESolFunctional.cpp
 
-bin_PROGRAMS  =                                    \
+bin_PROGRAMS  =                              \
 	inq                                        \
 	@PACKAGE_NAME@_unit_tests
 
