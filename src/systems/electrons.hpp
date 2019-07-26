@@ -62,26 +62,27 @@ namespace systems {
 			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density);
 			
       for(int ii = 0; ii < 1000; ii++){
-				
-				auto hphi = ham_(phi_);
-				
-				auto overlap = operations::overlap_diagonal(hphi, phi_);
-				
-				//DATAOPERATIONS
-				double energy = 0.0;
-				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
-				
-				std::cout << ii << '\t' << std::scientific << energy << '\t' << energy - old_energy << std::endl;
-				
-				if(fabs(energy - old_energy) < 1e-7) break;
-				
-				old_energy = energy;
-				
+
 				solvers::steepest_descent(states_, ham_, prec, phi_);
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
 				auto vks = hamiltonian::ks_potential(vexternal, density);
+				
+				auto hphi = ham_(phi_);
+				auto overlap = operations::overlap_diagonal(hphi, phi_);
+
+				auto potdiff = operations::diff(vks, ham_.scalar_potential);
+				
+				//DATAOPERATIONS
+				double energy = 0.0;
+				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
+				
+				std::cout << ii << '\t' << std::scientific << energy << '\t' << energy - old_energy << '\t' << potdiff << std::endl;
+				
+				if(fabs(energy - old_energy) < 1e-7) break;
+				
+				old_energy = energy;
 
 				//DATAOPERATIONS
 				for(long ii = 0; ii < rs_.size(); ii++){

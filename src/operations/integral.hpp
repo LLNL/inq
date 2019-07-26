@@ -21,18 +21,28 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <multi/array.hpp>
-#include <basis/field_set.hpp>
 #include <cassert>
 
 namespace operations {
 
   template <class field_type>
-  auto integral(field_type & phi){
+  auto integral(const field_type & phi){
+		//DATAOPERATIONS
 		typename field_type::value_type inte = 0.0; 
-		for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++) inte += phi[ipoint];
+		for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) inte += phi[ipoint];
 		return inte*phi.basis().volume_element();
 	}
+
+  template <class field_type>
+  auto diff(const field_type & phi1, const field_type & phi2){
+		assert(phi1.basis() == phi2.basis());
+		
+		//DATAOPERATIONS
+		typename field_type::value_type diff = 0.0; 
+		for(long ipoint = 0; ipoint < phi1.basis().size(); ipoint++) diff += fabs(phi1[ipoint] - phi2[ipoint]);
+		return diff*phi1.basis().volume_element();
+	}
+	
 	
 }
 
