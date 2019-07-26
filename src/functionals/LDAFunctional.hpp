@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 ////////////////////////////////////////////////////////////////////////////////  
 // Copyright (c) 2013, Lawrence Livermore National Security, LLC. 
 //
@@ -61,36 +63,36 @@ namespace functionals {
       const double C = -A - D - G * ( (b1/2.0 + b2) / ((1.0+b1+b2)*(1.0+b1+b2)));
 
       for(int ii = 0; ii < size; ii++){
-	exc[ii] = 0.0;
-	vxc[ii] = 0.0;
+				exc[ii] = 0.0;
+				vxc[ii] = 0.0;
 
-	if(nn[ii] > 0.0) {
-	  double ro13 = cbrt(nn[ii]);
-	  double rs = c1 / ro13;
+				if(nn[ii] > 0.0) {
+					double ro13 = cbrt(nn[ii]);
+					double rs = c1 / ro13;
 	
-	  double ex = 0.0, vx = 0.0, ec = 0.0, vc = 0.0;
+					double ex = 0.0, vx = 0.0, ec = 0.0, vc = 0.0;
 	
-	  // Next line : exchange part in Hartree units
-	  vx = c3 / rs;
-	  ex = 0.75 * vx;
+					// Next line : exchange part in Hartree units
+					vx = c3 / rs;
+					ex = 0.75 * vx;
 	
-	  // Next lines : Ceperley & Alder correlation (Zunger & Perdew)
-	  if ( rs < 1.0 ) {
-	    double logrs = log(rs);
-	    ec = A * logrs + B + C * rs * logrs + D * rs;
-	    vc = A * logrs + ( B - A / 3.0 ) +
-	      (2.0/3.0) * C * rs * logrs +
-	      ( ( 2.0 * D - C ) / 3.0 ) * rs;
-	  } else {
-	    double sqrtrs = sqrt(rs);
-	    double den = 1.0 + b1 * sqrtrs + b2 * rs;
-	    ec = G / den;
-	    vc = ec * ( 1.0 + (7.0/6.0) * b1 * sqrtrs +
-			(4.0/3.0) * b2 * rs ) / den;
-	  }
-	  exc[ii] = ex + ec;
-	  vxc[ii] = vx + vc;
-	}
+					// Next lines : Ceperley & Alder correlation (Zunger & Perdew)
+					if ( rs < 1.0 ) {
+						double logrs = log(rs);
+						ec = A * logrs + B + C * rs * logrs + D * rs;
+						vc = A * logrs + ( B - A / 3.0 ) +
+							(2.0/3.0) * C * rs * logrs +
+							( ( 2.0 * D - C ) / 3.0 ) * rs;
+					} else {
+						double sqrtrs = sqrt(rs);
+						double den = 1.0 + b1 * sqrtrs + b2 * rs;
+						ec = G / den;
+						vc = ec * ( 1.0 + (7.0/6.0) * b1 * sqrtrs +
+												(4.0/3.0) * b2 * rs ) / den;
+					}
+					exc[ii] = ex + ec;
+					vxc[ii] = vx + vc;
+				}
 
       }
     }
@@ -123,36 +125,36 @@ namespace functionals {
       const double C = -A - D - G * ( (b1/2.0 + b2) / ((1.0+b1+b2)*(1.0+b1+b2)));
 
       for(int ii = 0; ii < size; ii++){
-	exc[ii] = 0.0;
-	vxc[ii] = 0.0;
+				exc[ii] = 0.0;
+				vxc[ii] = 0.0;
 
-	if ( nn[ii] > 0.0 ) {
-	  double ro13 = cbrt(nn[ii]);
-	  double rs = c1 / ro13;
+				if ( nn[ii] > 0.0 ) {
+					double ro13 = cbrt(nn[ii]);
+					double rs = c1 / ro13;
 
-	  double ex=0.0,vx=0.0,ec=0.0,vc=0.0;
+					double ex=0.0,vx=0.0,ec=0.0,vc=0.0;
 
-	  // Next line : exchange part in Hartree units
-	  vx = c4 / rs;
-	  ex = 0.75 * vx;
+					// Next line : exchange part in Hartree units
+					vx = c4 / rs;
+					ex = 0.75 * vx;
  
-	  // Next lines : Ceperley & Alder correlation (Zunger & Perdew)
-	  if ( rs < 1.0 ) {
-	    double logrs = log(rs);
-	    ec = A * logrs + B + C * rs * logrs + D * rs;
-	    vc = A * logrs + ( B - A / 3.0 ) +
-	      (2.0/3.0) * C * rs * logrs +
-	      ( ( 2.0 * D - C ) / 3.0 ) * rs;
-	  } else {
-	    double sqrtrs = sqrt(rs);
-	    double den = 1.0 + b1 * sqrtrs + b2 * rs;
-	    ec = G / den;
-	    vc = ec * ( 1.0 + (7.0/6.0) * b1 * sqrtrs +
-			(4.0/3.0) * b2 * rs ) / den;
-	  }
-	  exc[ii] = ex + ec;
-	  vxc[ii] = vx + vc;
-	}
+					// Next lines : Ceperley & Alder correlation (Zunger & Perdew)
+					if ( rs < 1.0 ) {
+						double logrs = log(rs);
+						ec = A * logrs + B + C * rs * logrs + D * rs;
+						vc = A * logrs + ( B - A / 3.0 ) +
+							(2.0/3.0) * C * rs * logrs +
+							( ( 2.0 * D - C ) / 3.0 ) * rs;
+					} else {
+						double sqrtrs = sqrt(rs);
+						double den = 1.0 + b1 * sqrtrs + b2 * rs;
+						ec = G / den;
+						vc = ec * ( 1.0 + (7.0/6.0) * b1 * sqrtrs +
+												(4.0/3.0) * b2 * rs ) / den;
+					}
+					exc[ii] = ex + ec;
+					vxc[ii] = vx + vc;
+				}
       }
     }
   };
@@ -165,90 +167,84 @@ TEST_CASE("Class functionals::LDAFunctional", "[LDAFunctional]") {
 
   using namespace Catch::literals;
 
-    std::vector<double> nn({1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e-0, 1e1, 1e2, 1e3});
-    std::vector<double> exc(nn.size()), vxc(nn.size());
+	std::vector<double> nn({1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e-0, 1e1, 1e2, 1e3});
+	std::vector<double> exc(nn.size()), vxc(nn.size());
 
-    //these values are from the same routine, to avoid changes in the
-    //results. But they haven't been validated to other source yet.
+	//these values are from the same routine, to avoid changes in the
+	//results. But they haven't been validated to other source yet.
     
-    SECTION("spin unpolarized"){
+	SECTION("spin unpolarized"){
 
-      functionals::LDAFunctional::xc_unpolarized(nn.size(), nn, exc, vxc);
+		functionals::LDAFunctional::xc_unpolarized(nn.size(), nn, exc, vxc);
       
-      REQUIRE(exc[0] == -0.0121328183_a);
-      REQUIRE(vxc[0] == -0.0159054085_a);
+		REQUIRE(exc[0] == -0.0121328183_a);
+		REQUIRE(vxc[0] == -0.0159054085_a);
       
-      REQUIRE(exc[1] == -0.0246687773_a);
-      REQUIRE(vxc[1] == -0.0322046187_a);
+		REQUIRE(exc[1] == -0.0246687773_a);
+		REQUIRE(vxc[1] == -0.0322046187_a);
       
-      REQUIRE(exc[2] == -0.0495735123_a);
-      REQUIRE(vxc[2] == -0.0644958518_a);
+		REQUIRE(exc[2] == -0.0495735123_a);
+		REQUIRE(vxc[2] == -0.0644958518_a);
       
-      REQUIRE(exc[3] == -0.0988616346_a);
-      REQUIRE(vxc[3] == -0.1284302277_a);
+		REQUIRE(exc[3] == -0.0988616346_a);
+		REQUIRE(vxc[3] == -0.1284302277_a);
       
-      REQUIRE(exc[4] == -0.1970983191_a);
-      REQUIRE(vxc[4] == -0.2564000609_a);
+		REQUIRE(exc[4] == -0.1970983191_a);
+		REQUIRE(vxc[4] == -0.2564000609_a);
       
-      REQUIRE(exc[5] == -0.3962482024_a);
-      REQUIRE(vxc[5] == -0.5175699500_a);
+		REQUIRE(exc[5] == -0.3962482024_a);
+		REQUIRE(vxc[5] == -0.5175699500_a);
       
-      REQUIRE(exc[6] == -0.8092221329_a);
-      REQUIRE(vxc[6] == -1.0635879059_a);
+		REQUIRE(exc[6] == -0.8092221329_a);
+		REQUIRE(vxc[6] == -1.0635879059_a);
       
-      REQUIRE(exc[7] == -1.6819692861_a);
-      REQUIRE(vxc[7] == -2.2215642308_a);
+		REQUIRE(exc[7] == -1.6819692861_a);
+		REQUIRE(vxc[7] == -2.2215642308_a);
       
-      REQUIRE(exc[8] == -3.5407734574_a);
-      REQUIRE(vxc[8] == -4.6932262077_a);
+		REQUIRE(exc[8] == -3.5407734574_a);
+		REQUIRE(vxc[8] == -4.6932262077_a);
       
-      REQUIRE(exc[9] == -7.5211172181_a);
-      REQUIRE(vxc[9] == -9.9930315852_a);
-    }
+		REQUIRE(exc[9] == -7.5211172181_a);
+		REQUIRE(vxc[9] == -9.9930315852_a);
+	}
     
-    SECTION("spin polarized"){
+	SECTION("spin polarized"){
 
-      functionals::LDAFunctional::xc_polarized(nn.size(), nn, exc, vxc);
+		functionals::LDAFunctional::xc_polarized(nn.size(), nn, exc, vxc);
 
-      REQUIRE(exc[0] == -0.0122936534_a);
-      REQUIRE(vxc[0] == -0.0161617994_a);
+		REQUIRE(exc[0] == -0.0122936534_a);
+		REQUIRE(vxc[0] == -0.0161617994_a);
       
-      REQUIRE(exc[1] == -0.0253096199_a);
-      REQUIRE(vxc[1] == -0.0332259764_a);
+		REQUIRE(exc[1] == -0.0253096199_a);
+		REQUIRE(vxc[1] == -0.0332259764_a);
       
-      REQUIRE(exc[2] == -0.0519716782_a);
-      REQUIRE(vxc[2] == -0.0682116367_a);
+		REQUIRE(exc[2] == -0.0519716782_a);
+		REQUIRE(vxc[2] == -0.0682116367_a);
       
-      REQUIRE(exc[3] == -0.1068678070_a);
-      REQUIRE(vxc[3] == -0.1404217239_a);
+		REQUIRE(exc[3] == -0.1068678070_a);
+		REQUIRE(vxc[3] == -0.1404217239_a);
       
-      REQUIRE(exc[4] == -0.2209158888_a);
-      REQUIRE(vxc[4] == -0.2909428124_a);
+		REQUIRE(exc[4] == -0.2209158888_a);
+		REQUIRE(vxc[4] == -0.2909428124_a);
       
-      REQUIRE(exc[5] == -0.4603409307_a);
-      REQUIRE(vxc[5] == -0.6080094243_a);
+		REQUIRE(exc[5] == -0.4603409307_a);
+		REQUIRE(vxc[5] == -0.6080094243_a);
       
-      REQUIRE(exc[6] == -0.968035_a);
-      REQUIRE(vxc[6] == -1.28248_a);
+		REQUIRE(exc[6] == -0.968035_a);
+		REQUIRE(vxc[6] == -1.28248_a);
       
-      REQUIRE(exc[7] == -2.05265_a);
-      REQUIRE(vxc[7] == -2.72561_a);
+		REQUIRE(exc[7] == -2.05265_a);
+		REQUIRE(vxc[7] == -2.72561_a);
       
-      REQUIRE(exc[8] == -4.37814_a);
-      REQUIRE(vxc[8] == -5.82279_a);
+		REQUIRE(exc[8] == -4.37814_a);
+		REQUIRE(vxc[8] == -5.82279_a);
       
-      REQUIRE(exc[9] == -9.37581_a);
-      REQUIRE(vxc[9] == -12.4826_a);
-    }
+		REQUIRE(exc[9] == -9.37581_a);
+		REQUIRE(vxc[9] == -12.4826_a);
+	}
 
 }
 
 #endif
 
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:
