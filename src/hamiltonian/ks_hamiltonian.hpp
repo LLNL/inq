@@ -36,7 +36,7 @@ namespace hamiltonian {
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo):
 			scalar_potential(basis){
 
-			pot.local_potential(basis, cell, geo, scalar_potential);
+			scalar_potential = pot.local_potential(basis, cell, geo);
 
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				projectors_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));

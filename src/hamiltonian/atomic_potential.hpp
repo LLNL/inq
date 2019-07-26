@@ -69,10 +69,12 @@ namespace hamiltonian {
       return pseudopotential_list_.at(el.symbol());
     }
 
-    template <class basis_type, class cell_type, class geo_type, class array_dim3>
-    void local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo, array_dim3 & potential) const {
+    template <class basis_type, class cell_type, class geo_type>
+    auto local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
-      array_dim3 density(potential.basis());
+
+			//First get the long range part that is calculated from a density distribution
+      basis::field<basis_type, double> density(basis);
 			
       for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				
@@ -90,8 +92,9 @@ namespace hamiltonian {
 			
       solvers::poisson<basis::real_space> poisson_solver;
 			
-      potential = poisson_solver(density);
+      auto potential = poisson_solver(density);
 
+			//and now add the short range part
       for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
@@ -107,8 +110,8 @@ namespace hamiltonian {
 				}
 				
       }
-			
-			
+
+			return potential;			
     }
     
     template <class output_stream>
