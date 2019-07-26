@@ -51,6 +51,7 @@ noinst_HEADERS =                             \
 	operations/diagonalize.hpp                 \
 	operations/calculate_density.hpp           \
 	operations/integral.hpp                    \
+	operations/sum.hpp                         \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
 	solvers/poisson.hpp                        \
