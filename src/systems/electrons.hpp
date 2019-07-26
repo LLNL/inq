@@ -47,6 +47,8 @@ namespace systems {
 
     void calculate_ground_state() {
 
+			solvers::poisson<basis::real_space> poisson_solver;
+			
       double old_energy = DBL_MAX;
 
 			auto density = operations::calculate_density(states_.occupations(), phi_);
@@ -70,6 +72,9 @@ namespace systems {
 				solvers::steepest_descent(states_, ham_, prec_, phi_);
 
 				density = operations::calculate_density(states_.occupations(), phi_);
+
+				auto vhartree = poisson_solver(density);
+
 				
       }
     }
