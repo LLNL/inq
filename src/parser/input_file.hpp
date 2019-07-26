@@ -46,7 +46,10 @@ namespace parser {
     }
 
     std::string parse(const std::string & variable_name, const std::string & default_value) const {
-      return parse_string(variable_name.c_str(), default_value.c_str());
+			auto parsed_string_c = parse_string(variable_name.c_str(), default_value.c_str());
+			std::string parsed_string(parsed_string_c);
+			free(parsed_string_c);
+			return parsed_string;
     }
 
     bool parse(const std::string & variable_name, const bool & default_value) const {
