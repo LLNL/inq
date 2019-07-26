@@ -36,7 +36,7 @@ namespace systems {
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons()),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
       phi_(rs_, states_.num_states()),
-			prec_(3){
+			prec_(4){
 
       rs_.info(std::cout);  
       states_.info(std::cout);
@@ -51,7 +51,7 @@ namespace systems {
 
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 			
-      for(int ii = 0; ii < 2000; ii++){
+      for(int ii = 0; ii < 1000; ii++){
 
 				auto hphi = ham_(phi_);
 				
@@ -61,7 +61,7 @@ namespace systems {
 				double energy = 0.0;
 				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
 				
-				std::cout << ii << '\t' << std::scientific << energy << '\t' << fabs(energy - old_energy) << std::endl;
+				std::cout << ii << '\t' << std::scientific << energy << '\t' << energy - old_energy << std::endl;
 				
 				if(fabs(energy - old_energy) < 1e-7) break;
 				
@@ -70,7 +70,7 @@ namespace systems {
 				solvers::steepest_descent(states_, ham_, prec_, phi_);
 
 				density = operations::calculate_density(states_.occupations(), phi_);
-
+				
       }
     }
 
