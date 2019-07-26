@@ -49,7 +49,8 @@ namespace systems {
 
 			//for the moment I am putting here some parameters that should be configurable. XA
 			const double ecutprec = 4.0;			
-
+			const double mixing = 0.1;
+			
 			operations::preconditioner prec(ecutprec);
 			
       double old_energy = DBL_MAX;
@@ -57,9 +58,11 @@ namespace systems {
 			auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
 			
 			auto density = operations::calculate_density(states_.occupations(), phi_);
-				
-      for(int ii = 0; ii < 1000; ii++){
 
+			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density);
+			
+      for(int ii = 0; ii < 1000; ii++){
+				
 				auto hphi = ham_(phi_);
 				
 				auto overlap = operations::overlap_diagonal(hphi, phi_);
@@ -79,6 +82,11 @@ namespace systems {
 				density = operations::calculate_density(states_.occupations(), phi_);
 
 				auto vks = hamiltonian::ks_potential(vexternal, density);
+
+				//DATAOPERATIONS
+				for(long ii = 0; ii < rs_.size(); ii++){
+					ham_.scalar_potential[ii] = mixing*vks[ii] + (1.0 - mixing)*ham_.scalar_potential[ii];
+				}
 				
       }
     }
