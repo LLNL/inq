@@ -47,7 +47,10 @@ namespace systems {
 
     void calculate_ground_state() {
 
-			operations::preconditioner prec(4);
+			//for the moment I am putting here some parameters that should be configurable. XA
+			const double ecutprec = 4.0;			
+
+			operations::preconditioner prec(ecutprec);
 			
 			solvers::poisson<basis::real_space> poisson_solver;
 			
