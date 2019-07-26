@@ -10,6 +10,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
+#include <hamiltonian/ks_potential.hpp>
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
@@ -18,7 +19,6 @@
 #include <operations/preconditioner.hpp>
 #include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
-#include <operations/sum.hpp>
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
@@ -52,12 +52,12 @@ namespace systems {
 
 			operations::preconditioner prec(ecutprec);
 			
-			solvers::poisson<basis::real_space> poisson_solver;
-			
       double old_energy = DBL_MAX;
 
-			auto density = operations::calculate_density(states_.occupations(), phi_);
+			auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
 			
+			auto density = operations::calculate_density(states_.occupations(), phi_);
+				
       for(int ii = 0; ii < 1000; ii++){
 
 				auto hphi = ham_(phi_);
@@ -78,17 +78,8 @@ namespace systems {
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
-				auto vhartree = poisson_solver(density);
-
-				basis::field<basis::real_space, double> exc(rs_);
-				basis::field<basis::real_space, double> vxc(rs_);
-
-				functionals::lda::xc_unpolarized(density.basis().size(), density, exc, vxc);
-
-				auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
-				
 				//DATAOPERATIONS
-				auto vks = operations::sum(vexternal, vhartree, vxc);
+				auto vks = hamiltonian::ks_potential(vexternal, density);
 				
       }
     }

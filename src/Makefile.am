@@ -54,6 +54,7 @@ noinst_HEADERS =                             \
 	operations/sum.hpp                         \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
+	hamiltonian/ks_potential.hpp               \
 	solvers/poisson.hpp                        \
 	solvers/steepest_descent.hpp               \
 	systems/ions.hpp                           \
