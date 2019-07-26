@@ -22,19 +22,19 @@
 */
 
 #include <multi/adaptors/fftw.hpp>
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <cassert>
 
 namespace operations {
 
   namespace space {
 
-    auto to_fourier(const basis::coefficients_set<basis::real_space, complex> & phi){
+    auto to_fourier(const basis::field_set<basis::real_space, complex> & phi){
       
       namespace multi = boost::multi;
       namespace fftw = boost::multi::fftw;
 	
-			basis::coefficients_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
+			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
 			
       //DATAOPERATIONS
       
@@ -67,12 +67,12 @@ namespace operations {
       return fphi;    
     }
     
-    auto to_real(const basis::coefficients_set<basis::fourier_space, complex> & fphi){
+    auto to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
       
       namespace multi = boost::multi;
       namespace fftw = boost::multi::fftw;
 
-			basis::coefficients_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
+			basis::field_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
 
       //DATAOPERATIONS
 			
@@ -126,7 +126,7 @@ TEST_CASE("function operations::space", "[space]") {
 	ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
 	basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 	
-	basis::coefficients_set<basis::real_space, complex> phi(rs, 7);
+	basis::field_set<basis::real_space, complex> phi(rs, 7);
 	
 	SECTION("Zero"){
 		

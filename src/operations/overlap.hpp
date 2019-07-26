@@ -22,15 +22,15 @@
 */
 
 #include <multi/array.hpp>
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <cassert>
 
 namespace operations {
 
-	template <class coefficients_set_type>
-  auto overlap(coefficients_set_type & phi1, coefficients_set_type & phi2){
+	template <class field_set_type>
+  auto overlap(field_set_type & phi1, field_set_type & phi2){
 
-		boost::multi::array<typename coefficients_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
+		boost::multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
 
 		//DATAOPERATIONS
 
@@ -38,7 +38,7 @@ namespace operations {
     for(int ii = 0; ii < phi1.set_size(); ii++){
       for(int jj = 0; jj < phi1.set_size(); jj++){
 
-				typename coefficients_set_type::value_type  aa = 0.0;
+				typename field_set_type::value_type  aa = 0.0;
 				for(int ip = 0; ip < phi1.basis().num_points(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][jj];
 				overlap_matrix[ii][jj] = aa*phi1.basis().volume_element();
 
@@ -48,17 +48,17 @@ namespace operations {
 		return overlap_matrix;		
   }
 
-	template <class coefficients_set_type>
-	auto overlap(coefficients_set_type & phi){
+	template <class field_set_type>
+	auto overlap(field_set_type & phi){
 
 		//OPTIMIZATION: this can be done with syrk/herk
 		return overlap(phi, phi);
 	}
 
-	template <class coefficients_set_type>
-  auto overlap_diagonal(coefficients_set_type & phi1, coefficients_set_type & phi2){
+	template <class field_set_type>
+  auto overlap_diagonal(field_set_type & phi1, field_set_type & phi2){
 
-		boost::multi::array<typename coefficients_set_type::value_type, 1>  overlap_vector(phi1.set_size());
+		boost::multi::array<typename field_set_type::value_type, 1>  overlap_vector(phi1.set_size());
 
 		assert(size(overlap_vector) == phi1.set_size());
 
@@ -66,7 +66,7 @@ namespace operations {
 		
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
-			typename coefficients_set_type::value_type aa = 0.0;
+			typename field_set_type::value_type aa = 0.0;
 			for(int ip = 0; ip < phi1.basis().num_points(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][ii];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
@@ -74,25 +74,25 @@ namespace operations {
 		return overlap_vector;		
   }
 
-	template <class coefficients_set_type>
-	auto overlap_diagonal(coefficients_set_type & phi){
+	template <class field_set_type>
+	auto overlap_diagonal(field_set_type & phi){
 		
 		//OPTIMIZATION: this can be done with syrk/herk
 		return overlap_diagonal(phi, phi);
 	}
 	
-	template <class coefficients_type>
-	auto overlap_single(coefficients_type & phi1, coefficients_type & phi2){
+	template <class field_type>
+	auto overlap_single(field_type & phi1, field_type & phi2){
 
 		//DATAOPERATIONS
 		//OPTIMIZATION: this can be done more efficiently
-		typename coefficients_type::value_type overlap = 0.0;
+		typename field_type::value_type overlap = 0.0;
 		for(int ip = 0; ip < phi1.basis().num_points(); ip++) overlap += conj(phi1[ip])*phi2[ip];
 		return overlap*phi1.basis().volume_element();
 	}
 	
-	template <class coefficients_type>
-	auto overlap_single(coefficients_type & phi){
+	template <class field_type>
+	auto overlap_single(field_type & phi){
 		return overlap_single(phi, phi);
 	}
 	

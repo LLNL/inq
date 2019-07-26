@@ -22,14 +22,14 @@
 */
 
 #include <multi/array.hpp>
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <cassert>
 
 namespace operations {
 
-  template <class coefficients_type>
-  auto integral(coefficients_type & phi){
-		typename coefficients_type::value_type inte = 0.0; 
+  template <class field_type>
+  auto integral(field_type & phi){
+		typename field_type::value_type inte = 0.0; 
 		for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++) inte += phi[ipoint];
 		return inte*phi.basis().volume_element();
 	}

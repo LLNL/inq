@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <cstdlib>
 
 namespace operations {
@@ -35,7 +35,7 @@ namespace operations {
 		}
 		
 		template <class type>
-		void operator()(basis::coefficients_set<basis::fourier_space, type> & phi) const {
+		void operator()(basis::field_set<basis::fourier_space, type> & phi) const {
 
 			//DATAOPERATIONS
 			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
@@ -57,7 +57,7 @@ namespace operations {
 		}
 		
 		template <class type>
-		void operator()(basis::coefficients_set<basis::real_space, type> & phi) const {
+		void operator()(basis::field_set<basis::real_space, type> & phi) const {
 			
 			auto fphi = operations::space::to_fourier(phi);
 			operator()(fphi);

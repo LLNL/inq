@@ -25,7 +25,7 @@
 #include <math/d3vector.hpp>
 #include <multi/array.hpp>
 #include <multi/adaptors/fftw.hpp>
-#include <basis/coefficients.hpp>
+#include <basis/field.hpp>
 #include <basis/fourier_space.hpp>
 
 namespace solvers {
@@ -35,12 +35,12 @@ namespace solvers {
 
 	public:
 
-		auto operator()(const basis::coefficients<basis_type, complex> & density){
+		auto operator()(const basis::field<basis_type, complex> & density){
 			namespace fftw = boost::multi::fftw;
 			
 			basis::fourier_space fourier_basis(density.basis());
 
-			basis::coefficients<basis::fourier_space, complex> potential_fs(fourier_basis);
+			basis::field<basis::fourier_space, complex> potential_fs(fourier_basis);
 			
 			potential_fs.cubic() = fftw::dft(density.cubic(), fftw::forward);
 
@@ -59,25 +59,25 @@ namespace solvers {
 				}
 			}
 			
-			basis::coefficients<basis_type, complex> potential_rs(density.basis());
+			basis::field<basis_type, complex> potential_rs(density.basis());
 
 			potential_rs.cubic() = fftw::dft(potential_fs.cubic(), fftw::backward);
 
 			return potential_rs;
 		}
 		
-		auto operator()(const basis::coefficients<basis_type, double> & density){
+		auto operator()(const basis::field<basis_type, double> & density){
 
 			//For the moment we copy to a complex array.
 			
-			basis::coefficients<basis_type, complex> complex_density(density.basis());
+			basis::field<basis_type, complex> complex_density(density.basis());
 
 			//DATAOPERATIONS
 			for(long ic = 0; ic < density.basis().size(); ic++) complex_density[ic] = density[ic];
 
 			auto complex_potential = operator()(complex_density);
 
-			basis::coefficients<basis_type, double> potential(density.basis());
+			basis::field<basis_type, double> potential(density.basis());
 
 			//DATAOPERATIONS
 			for(long ic = 0; ic < potential.basis().size(); ic++) potential[ic] = std::real(complex_potential[ic]);
@@ -113,7 +113,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 	REQUIRE(rs.rsize()[2] == 100);
 	
 	
-	coefficients<real_space, complex> density(rs);
+	field<real_space, complex> density(rs);
 	solvers::poisson<basis::real_space> psolver;
 
 	SECTION("Point charge"){
@@ -185,7 +185,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 	SECTION("Real plane wave"){
 
-		coefficients<real_space, double> rdensity(rs);
+		field<real_space, double> rdensity(rs);
 
 		double kk = 8.0*M_PI/rs.rlength()[1];
 		

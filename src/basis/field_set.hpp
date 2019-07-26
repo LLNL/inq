@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t; tab-width: 2 -*- */
 
-#ifndef BASIS_COEFFICIENTS_SET
-#define BASIS_COEFFICIENTS_SET
+#ifndef BASIS_FIELD_SET
+#define BASIS_FIELD_SET
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -34,23 +34,23 @@ namespace basis {
 	}
 	
 	template<class basis_type, class type>
-  class coefficients_set {
+  class field_set {
 
   public:
 
 		typedef type value_type;
 		typedef boost::multi::array<type, basis_type::dimension + 1> cubic_type;
 		
-    coefficients_set(const basis_type & basis, const int num_vectors):
+    field_set(const basis_type & basis, const int num_vectors):
 			cubic_(array_append(sizes(basis), num_vectors)),
 			num_vectors_(num_vectors),
 			basis_(basis){
     }
 
-		coefficients_set(const coefficients_set & coeff) = delete;
-		coefficients_set(coefficients_set && coeff) = default;
-		coefficients_set & operator=(const coefficients_set & coeff) = delete;
-		coefficients_set & operator=(coefficients_set && coeff) = default;
+		field_set(const field_set & coeff) = delete;
+		field_set(field_set && coeff) = default;
+		field_set & operator=(const field_set & coeff) = delete;
+		field_set & operator=(field_set && coeff) = default;
 		
 		const basis_type & basis() const {
 			return basis_;
@@ -99,7 +99,7 @@ namespace basis {
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
 
-TEST_CASE("Class basis::coefficients_set", "[coefficients_set]"){
+TEST_CASE("Class basis::field_set", "[field_set]"){
   
 }
 

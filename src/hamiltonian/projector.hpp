@@ -47,8 +47,8 @@ namespace hamiltonian {
 			
     }
 
-    template <class coefficients_set_type>
-    void operator()(const coefficients_set_type & phi, coefficients_set_type & vnlphi) const {
+    template <class field_set_type>
+    void operator()(const field_set_type & phi, field_set_type & vnlphi) const {
 			
       boost::multi::array<states::ks_states::coeff_type, 2> sphere_phi({sphere_.size(), phi.set_size()});
 

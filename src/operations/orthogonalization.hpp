@@ -23,7 +23,7 @@
 
 #include <config.h>
 #include <math/complex.hpp>
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <cstdlib>
 
 #define zpotrf FC_FUNC(zpotrf, ZPOTRF) 
@@ -36,8 +36,8 @@ extern "C" void ztrsm(const char * side, const char * uplo, const char * transa,
 
 namespace operations {
 
-	template <class coefficients_set_type>
-  void orthogonalization(coefficients_set_type & phi){
+	template <class field_set_type>
+  void orthogonalization(field_set_type & phi){
 
 		const int np = phi.basis().num_points();
 		
@@ -76,7 +76,7 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
 	SECTION("Dimension 3"){
-		basis::coefficients_set<basis::real_space, complex> phi(pw, 3);
+		basis::field_set<basis::real_space, complex> phi(pw, 3);
 		
 		operations::randomize(phi);
 		
@@ -105,7 +105,7 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 	}
 
 	SECTION("Dimension 100"){
-		basis::coefficients_set<basis::real_space, complex> phi(pw, 100);
+		basis::field_set<basis::real_space, complex> phi(pw, 100);
 		
 		operations::randomize(phi);
 		
@@ -127,7 +127,7 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 
 
 	SECTION("Dimension 37 - double orthogonalization"){
-		basis::coefficients_set<basis::real_space, complex> phi(pw, 37);
+		basis::field_set<basis::real_space, complex> phi(pw, 37);
 		
 		operations::randomize(phi);
 		

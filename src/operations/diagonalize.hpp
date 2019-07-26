@@ -23,7 +23,7 @@
 
 #include <config.h>
 
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <cstdlib>
 
 #define zheev FC_FUNC(zheev, ZHEEV) 

@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <basis/coefficients.hpp>
+#include <basis/field.hpp>
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <hamiltonian/projector.hpp>
@@ -44,9 +44,9 @@ namespace hamiltonian {
 
     }
 
-		basis::coefficients<basis::real_space, double> scalar_potential;
+		basis::field<basis::real_space, double> scalar_potential;
 		
-    auto operator()(const basis::coefficients_set<basis::real_space, complex> & phi) const{
+    auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
       
 			namespace multi = boost::multi;
 			namespace fftw = boost::multi::fftw;
@@ -137,8 +137,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-  basis::coefficients_set<basis::real_space, complex> phi(pw, st.num_states());
-	basis::coefficients_set<basis::real_space, complex> hphi(pw, st.num_states());
+  basis::field_set<basis::real_space, complex> phi(pw, st.num_states());
+	basis::field_set<basis::real_space, complex> hphi(pw, st.num_states());
 	
 	hamiltonian::ks_hamiltonian<basis::real_space> ham(pw, cell, pot, geo);
 

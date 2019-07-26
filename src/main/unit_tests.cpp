@@ -38,10 +38,10 @@
 #include <basis/grid.hpp>
 #include <basis/spherical_grid.hpp>
 #include <basis/real_space.hpp>
-#include <basis/coefficients.hpp>
-#include <basis/coefficients_set.hpp>
+#include <basis/field.hpp>
+#include <basis/field_set.hpp>
 #include <states/ks_states.hpp>
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <functionals/LDAFunctional.hpp>
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/atomic_potential.hpp>

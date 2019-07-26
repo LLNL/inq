@@ -21,16 +21,16 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <basis/coefficients.hpp>
-#include <basis/coefficients_set.hpp>
+#include <basis/field.hpp>
+#include <basis/field_set.hpp>
 #include <math/complex.hpp>
 #include <cstdlib>
 
 namespace operations {
 
   template<class occupations_array_type>
-  auto calculate_density(const occupations_array_type & occupations, const basis::coefficients_set<basis::real_space, complex> & phi){
-    basis::coefficients<basis::real_space, double> density(phi.basis());
+  auto calculate_density(const occupations_array_type & occupations, const basis::field_set<basis::real_space, complex> & phi){
+    basis::field<basis::real_space, double> density(phi.basis());
 
     //TODO: occupations
     //DATAOPERATIONS

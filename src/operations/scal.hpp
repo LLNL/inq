@@ -21,13 +21,13 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <cassert>
 
 namespace operations {
 
-  template <class array_1d, class coefficients_set_type>
-  void scal_invsqrt(const array_1d & factor, coefficients_set_type & phi){
+  template <class array_1d, class field_set_type>
+  void scal_invsqrt(const array_1d & factor, field_set_type & phi){
     
     assert(size(factor) == phi.set_size());
 

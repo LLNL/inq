@@ -10,7 +10,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
 #include <operations/scal.hpp>
@@ -97,7 +97,7 @@ namespace systems {
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;
     hamiltonian::ks_hamiltonian<basis::real_space> ham_;      
-    basis::coefficients_set<basis::real_space, complex> phi_;
+    basis::field_set<basis::real_space, complex> phi_;
 		operations::preconditioner prec_;
 
   };  

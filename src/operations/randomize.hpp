@@ -21,13 +21,13 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <basis/coefficients_set.hpp>
+#include <basis/field_set.hpp>
 #include <cstdlib>
 
 namespace operations {
 
-	template <class coefficients_set_type>
-  void randomize(coefficients_set_type & phi){
+	template <class field_set_type>
+  void randomize(field_set_type & phi){
 		srand48(0);
 
 		//DATAOPERATIONS

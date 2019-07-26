@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t; tab-width: 2 -*- */
 
-#ifndef BASIS_COEFFICIENTS
-#define BASIS_COEFFICIENTS
+#ifndef BASIS_FIELD
+#define BASIS_FIELD
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -26,22 +26,22 @@
 namespace basis {
 
 	template<class basis_type, class type>
-  class coefficients {
+  class field {
 
   public:
 
 		typedef type value_type;
 		typedef boost::multi::array<type, basis_type::dimension> cubic_type;
 		
-    coefficients(const basis_type & basis):
+    field(const basis_type & basis):
       cubic_(sizes(basis)),
 			basis_(basis){
     }
 
-		coefficients(const coefficients & coeff) = delete;
-		coefficients(coefficients && coeff) = default;
-		coefficients & operator=(const coefficients & coeff) = delete;
-		coefficients & operator=(coefficients && coeff) = default;
+		field(const field & coeff) = delete;
+		field(field && coeff) = default;
+		field & operator=(const field & coeff) = delete;
+		field & operator=(field && coeff) = default;
 		
 		const basis_type & basis() const {
 			return basis_;
@@ -85,7 +85,7 @@ namespace basis {
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
 
-TEST_CASE("Class basis::coefficients", "[coefficients]"){
+TEST_CASE("Class basis::field", "[field]"){
   
 }
 
