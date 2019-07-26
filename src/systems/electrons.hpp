@@ -78,7 +78,6 @@ namespace systems {
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
-				//DATAOPERATIONS
 				auto vks = hamiltonian::ks_potential(vexternal, density);
 				
       }
