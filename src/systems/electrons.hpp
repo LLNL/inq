@@ -21,7 +21,7 @@
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
-
+#include <functionals/lda.hpp>
 
 namespace systems {
 
@@ -75,6 +75,10 @@ namespace systems {
 
 				auto vhartree = poisson_solver(density);
 
+				basis::field<basis::real_space, double> exc(vhartree.basis());
+				basis::field<basis::real_space, double> vxc(vhartree.basis());
+
+				functionals::lda::xc_unpolarized(density.basis().size(), density, exc, vxc);
 				
       }
     }
