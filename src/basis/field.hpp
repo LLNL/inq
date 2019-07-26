@@ -70,7 +70,7 @@ namespace basis {
 		auto data() {
 			return cubic_.data();
 		}
-		
+				
 	private:
 		
     cubic_type cubic_;

@@ -18,6 +18,7 @@
 #include <operations/preconditioner.hpp>
 #include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
+#include <operations/sum.hpp>
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
@@ -35,8 +36,7 @@ namespace systems {
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons()),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
-      phi_(rs_, states_.num_states()),
-			prec_(4){
+      phi_(rs_, states_.num_states()){
 
       rs_.info(std::cout);  
       states_.info(std::cout);
@@ -47,6 +47,8 @@ namespace systems {
 
     void calculate_ground_state() {
 
+			operations::preconditioner prec(4);
+			
 			solvers::poisson<basis::real_space> poisson_solver;
 			
       double old_energy = DBL_MAX;
@@ -69,16 +71,21 @@ namespace systems {
 				
 				old_energy = energy;
 				
-				solvers::steepest_descent(states_, ham_, prec_, phi_);
+				solvers::steepest_descent(states_, ham_, prec, phi_);
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
 				auto vhartree = poisson_solver(density);
 
-				basis::field<basis::real_space, double> exc(vhartree.basis());
-				basis::field<basis::real_space, double> vxc(vhartree.basis());
+				basis::field<basis::real_space, double> exc(rs_);
+				basis::field<basis::real_space, double> vxc(rs_);
 
 				functionals::lda::xc_unpolarized(density.basis().size(), density, exc, vxc);
+
+				auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
+				
+				//DATAOPERATIONS
+				auto vks = operations::sum(vexternal, vhartree, vxc);
 				
       }
     }
@@ -107,7 +114,6 @@ namespace systems {
     states::ks_states states_;
     hamiltonian::ks_hamiltonian<basis::real_space> ham_;      
     basis::field_set<basis::real_space, complex> phi_;
-		operations::preconditioner prec_;
 
   };  
   
