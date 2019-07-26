@@ -1,5 +1,7 @@
-#ifndef PARSER_INPUTFILE
-#define PARSER_INPUTFILE
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
+#ifndef PARSER__INPUTFILE
+#define PARSER__INPUTFILE
 
 #include <string>
 #include <iostream>
@@ -106,9 +108,3 @@ TEST_CASE("Class parser::input_file", "[input_file]") {
 #endif
 
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:
