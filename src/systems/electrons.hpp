@@ -77,14 +77,19 @@ namespace systems {
 				
 				auto eigenvalues = operations::overlap_diagonal(ham_(phi_), phi_);
 
-				auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential);
+				auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/abs(operations::integral(vks));
 				
 				//DATAOPERATIONS
 				double energy = 0.0;
 				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(eigenvalues[ii]);
 				energy += eexternal + ehartree + exc - intvxc;
 				
-				std::cout << ii << '\t' << std::scientific << energy << '\t' << energy - old_energy << '\t' << potdiff << std::endl;
+				std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy << "  de = " << energy - old_energy << "  dvks = " << potdiff << std::endl;
+
+				for(int ii = 0; ii < states_.num_states(); ii++){
+					std::cout << " state " << ii << ":  occ = " << states_.occupations()[ii] << "  evalue = " << real(eigenvalues[ii]) << std::endl;
+				}
+				std::cout << std::endl;
 				
 				if(fabs(energy - old_energy) < 1e-7) break;
 				
