@@ -72,8 +72,7 @@ namespace systems {
 
 				auto vks = hamiltonian::ks_potential(vexternal, density);
 				
-				auto hphi = ham_(phi_);
-				auto overlap = operations::overlap_diagonal(hphi, phi_);
+				auto overlap = operations::overlap_diagonal(ham_(phi_), phi_);
 
 				auto potdiff = operations::diff(vks, ham_.scalar_potential);
 				
