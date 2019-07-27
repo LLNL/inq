@@ -19,6 +19,7 @@
 #include <operations/preconditioner.hpp>
 #include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
+#include <operations/subspace_diagonalization.hpp>
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
@@ -62,6 +63,8 @@ namespace systems {
 			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density);
 			
       for(int ii = 0; ii < 1000; ii++){
+
+				operations::subspace_diagonalization(ham_, phi_);
 
 				solvers::steepest_descent(states_, ham_, prec, phi_);
 
