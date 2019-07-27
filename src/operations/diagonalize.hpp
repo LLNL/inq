@@ -63,6 +63,8 @@ namespace operations {
 
 }
 
+///////////////////////////////////////////////////////////////////
+
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
@@ -71,32 +73,82 @@ namespace operations {
 
 TEST_CASE("function operations::diagonalize", "[diagonalize]") {
 
-  using namespace Catch::literals;
+	SECTION("Diagonal 2x2"){
+	
+		using namespace Catch::literals;
+		
+		boost::multi::array<complex, 2> matrix({2, 2});
+		
+		matrix[0][0] = 4.0;
+		matrix[0][1] = 0.0;
+		matrix[1][0] = 0.0;
+		matrix[1][1] = 2.0;
+		
+		auto evalues = operations::diagonalize(matrix);
+		
+		REQUIRE(real(matrix[0][0]) == 0.0_a);
+		REQUIRE(imag(matrix[0][0]) == 0.0_a);
+		
+		REQUIRE(real(matrix[0][1]) == 1.0_a);
+		REQUIRE(imag(matrix[0][1]) == 0.0_a);
+		
+		REQUIRE(real(matrix[1][0]) == 1.0_a);
+		REQUIRE(imag(matrix[1][0]) == 0.0_a);
+		
+		REQUIRE(real(matrix[0][0]) == 0.0_a);
+		REQUIRE(imag(matrix[0][0]) == 0.0_a);
+		
+		REQUIRE(evalues[0] == 2.0_a);
+		REQUIRE(evalues[1] == 4.0_a);
 
-  boost::multi::array<complex, 2> matrix({2, 2});
+	}
 
-  matrix[0][0] = 4.0;
-  matrix[0][1] = 0.0;
-  matrix[1][0] = 0.0;
-  matrix[1][1] = 2.0;
-  
-  auto evalues = operations::diagonalize(matrix);
+	SECTION("Real 3x3"){
+	
+		using namespace Catch::literals;
+		
+		boost::multi::array<complex, 2> matrix({3, 3});
+		
+		matrix[0][0] = 0.088958;
+		matrix[0][1] = 1.183407;
+		matrix[0][2] = 1.191946;
+		matrix[1][0] = 1.183407;
+		matrix[1][1] = 1.371884;
+		matrix[1][2] = 0.705297;
+		matrix[2][0] = 1.191946;
+		matrix[2][1] = 0.705297;
+		matrix[2][2] = 0.392459;
+		
+		auto evalues = operations::diagonalize(matrix);
+		
+		REQUIRE(evalues[0] == -1.0626903983_a);
+		REQUIRE(evalues[1] == 0.1733844724_a);
+		REQUIRE(evalues[2] == 2.7426069258_a);
+	}
 
-  REQUIRE(real(matrix[0][0]) == 0.0_a);
-  REQUIRE(imag(matrix[0][0]) == 0.0_a);
+	SECTION("Complex 3x3"){
+	
+		using namespace Catch::literals;
+		
+		boost::multi::array<complex, 2> matrix({3, 3});
+		
+		matrix[0][0] = complex(0.088958,  0.00000);
+		matrix[0][1] = complex(1.183407,  0.08285);
+		matrix[0][2] = complex(1.191946,  0.09413);
+		matrix[1][0] = complex(1.183407, -0.08285);
+		matrix[1][1] = complex(1.371884,  0.00000);
+		matrix[1][2] = complex(0.705297,  0.12840);
+		matrix[2][0] = complex(1.191946, -0.09413);
+		matrix[2][1] = complex(0.705297, -0.12840);
+		matrix[2][2] = complex(0.392459,  0.00000);
+		
+		auto evalues = operations::diagonalize(matrix);
+		
+		REQUIRE(evalues[0] == -1.0703967402_a);
+		REQUIRE(evalues[1] ==  0.1722879629_a);
+		REQUIRE(evalues[2] == 2.7426069258_a);
 
-  REQUIRE(real(matrix[0][1]) == 1.0_a);
-  REQUIRE(imag(matrix[0][1]) == 0.0_a);
-
-  REQUIRE(real(matrix[1][0]) == 1.0_a);
-  REQUIRE(imag(matrix[1][0]) == 0.0_a);
-
-  REQUIRE(real(matrix[0][0]) == 0.0_a);
-  REQUIRE(imag(matrix[0][0]) == 0.0_a);
-  
-  REQUIRE(evalues[0] == 2.0_a);
-  REQUIRE(evalues[1] == 4.0_a);
-  
+	}
 }
 
 
