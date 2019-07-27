@@ -34,6 +34,16 @@ namespace operations {
 	}
 
   template <class field_type>
+  auto integral_product(const field_type & phi1, const field_type & phi2){
+		assert(phi1.basis() == phi2.basis());
+
+		//DATAOPERATIONS
+		typename field_type::value_type inte = 0.0; 
+		for(long ipoint = 0; ipoint < phi1.basis().size(); ipoint++) inte += phi1[ipoint]*phi2[ipoint];
+		return inte*phi1.basis().volume_element();
+	}
+	
+  template <class field_type>
   auto diff(const field_type & phi1, const field_type & phi2){
 		assert(phi1.basis() == phi2.basis());
 		

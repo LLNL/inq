@@ -25,6 +25,7 @@
 #include <functionals/lda.hpp>
 #include <solvers/poisson.hpp>
 #include <operations/sum.hpp>
+#include <operations/integral.hpp>
 
 namespace hamiltonian {
 	template <class vexternal_type, class density_type>
@@ -43,6 +44,10 @@ namespace hamiltonian {
 
 		auto vks = operations::sum(vexternal, vhartree, vxc);
 
+		ehartree = 0.5*operations::integral_product(density, vhartree);
+		exc = operations::integral_product(density, edxc);
+		intnxc = operations::integral_product(density, vxc);
+		
 		return vks;
 	}
 	
