@@ -38,7 +38,7 @@ namespace states {
       NON_COLLINEAR
     };
         
-    ks_states(const spin_config spin, const double nelectrons){
+    ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0){
 
       if(spin == spin_config::NON_COLLINEAR){
 				nstates_ = ceil(nelectrons);
@@ -46,6 +46,8 @@ namespace states {
 				nstates_ = ceil(0.5*nelectrons);
       }
 
+			nstates_ += extra_states;
+			
       nquantumnumbers_ = 1;
       if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
 
@@ -164,7 +166,3 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 #endif
 
 #endif
-
-// Local variables:
-// eval: (setq indent-tabs-mode: t tab-width: 2)
-// End:
