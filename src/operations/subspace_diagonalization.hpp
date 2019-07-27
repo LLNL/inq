@@ -32,7 +32,6 @@ namespace operations {
   auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
 
 		auto subspace_hamiltonian = overlap(phi, ham(phi));
-
 		auto eigenvalues = diagonalize(subspace_hamiltonian);
 
 		//this should be done by multi + blas
@@ -43,11 +42,13 @@ namespace operations {
 		for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
 			for(int ii = 0; ii < nst; ii++){
 				typename field_set_type::value_type aa = 0.0;
-				for(int jj = 0; jj < nst; jj++) aa += subspace_hamiltonian[ii][jj]*phi[ipoint][jj];
+				for(int jj = 0; jj < nst; jj++) aa += conj(subspace_hamiltonian[ii][jj])*phi[ipoint][jj];
 				tmp[ii] = aa;
 			}
 			for(int ii = 0; ii < nst; ii++) phi[ipoint][ii] = tmp[ii];
 		}
+
+		subspace_hamiltonian = overlap(phi, ham(phi));
 
 		return eigenvalues;
   }
