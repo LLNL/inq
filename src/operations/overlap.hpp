@@ -28,7 +28,7 @@
 namespace operations {
 
 	template <class field_set_type>
-  auto overlap(field_set_type & phi1, field_set_type & phi2){
+  auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 
 		boost::multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
 
@@ -49,14 +49,14 @@ namespace operations {
   }
 
 	template <class field_set_type>
-	auto overlap(field_set_type & phi){
+	auto overlap(const field_set_type & phi){
 
 		//OPTIMIZATION: this can be done with syrk/herk
 		return overlap(phi, phi);
 	}
 
 	template <class field_set_type>
-  auto overlap_diagonal(field_set_type & phi1, field_set_type & phi2){
+  auto overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
 
 		boost::multi::array<typename field_set_type::value_type, 1>  overlap_vector(phi1.set_size());
 
@@ -75,14 +75,14 @@ namespace operations {
   }
 
 	template <class field_set_type>
-	auto overlap_diagonal(field_set_type & phi){
+	auto overlap_diagonal(const field_set_type & phi){
 		
 		//OPTIMIZATION: this can be done with syrk/herk
 		return overlap_diagonal(phi, phi);
 	}
 	
 	template <class field_type>
-	auto overlap_single(field_type & phi1, field_type & phi2){
+	auto overlap_single(const field_type & phi1, const field_type & phi2){
 
 		//DATAOPERATIONS
 		//OPTIMIZATION: this can be done more efficiently
