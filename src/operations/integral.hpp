@@ -44,7 +44,7 @@ namespace operations {
 	}
 	
   template <class field_type>
-  auto diff(const field_type & phi1, const field_type & phi2){
+  auto integral_absdiff(const field_type & phi1, const field_type & phi2){
 		assert(phi1.basis() == phi2.basis());
 		
 		//DATAOPERATIONS

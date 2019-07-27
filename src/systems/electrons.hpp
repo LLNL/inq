@@ -77,7 +77,7 @@ namespace systems {
 				
 				auto eigenvalues = operations::overlap_diagonal(ham_(phi_), phi_);
 
-				auto potdiff = operations::diff(vks, ham_.scalar_potential);
+				auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential);
 				
 				//DATAOPERATIONS
 				double energy = 0.0;
