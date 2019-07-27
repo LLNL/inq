@@ -53,35 +53,36 @@ namespace systems {
 			const double mixing = 0.1;
 			//
 
-			double ehartree, exc, intvxc;
+			double eexternal, ehartree, exc, intvxc;
 			
 			operations::preconditioner prec(ecutprec);
 			
       double old_energy = DBL_MAX;
 
 			auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
-			
+
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
-			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density, ehartree, exc, intvxc);
+			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density, eexternal, ehartree, exc, intvxc);
 			
       for(int ii = 0; ii < 1000; ii++){
 
 				operations::subspace_diagonalization(ham_, phi_);
-
+				
 				solvers::steepest_descent(states_, ham_, prec, phi_);
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
-				auto vks = hamiltonian::ks_potential(vexternal, density, ehartree, exc, intvxc);
+				auto vks = hamiltonian::ks_potential(vexternal, density, eexternal, ehartree, exc, intvxc);
 				
-				auto overlap = operations::overlap_diagonal(ham_(phi_), phi_);
+				auto eigenvalues = operations::overlap_diagonal(ham_(phi_), phi_);
 
 				auto potdiff = operations::diff(vks, ham_.scalar_potential);
 				
 				//DATAOPERATIONS
 				double energy = 0.0;
-				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
+				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(eigenvalues[ii]);
+				energy += eexternal + ehartree + exc - intvxc;
 				
 				std::cout << ii << '\t' << std::scientific << energy << '\t' << energy - old_energy << '\t' << potdiff << std::endl;
 				

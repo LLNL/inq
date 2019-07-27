@@ -29,7 +29,8 @@
 
 namespace hamiltonian {
 	template <class vexternal_type, class density_type>
-	auto ks_potential(const vexternal_type & vexternal, const density_type & density, double & ehartree, double & exc, double & intnxc){
+	auto ks_potential(const vexternal_type & vexternal, const density_type & density,
+										double & eexternal, double & ehartree, double & exc, double & intnxc){
 
 		solvers::poisson<basis::real_space> poisson_solver;
 		
@@ -44,6 +45,7 @@ namespace hamiltonian {
 
 		auto vks = operations::sum(vexternal, vhartree, vxc);
 
+		eexternal = operations::integral_product(density, vexternal);
 		ehartree = 0.5*operations::integral_product(density, vhartree);
 		exc = operations::integral_product(density, edxc);
 		intnxc = operations::integral_product(density, vxc);
