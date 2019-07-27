@@ -31,11 +31,11 @@ namespace systems {
 
   public:
     
-    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input):
+    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const int extra_states = 0):
       ions_(ions_arg),
       rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
-      states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons()),
+      states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons(), extra_states),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
       phi_(rs_, states_.num_states()){
 

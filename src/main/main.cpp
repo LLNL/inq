@@ -43,8 +43,10 @@ int main(int argc, char ** argv){
 	systems::ions ions(input::cell::cubic(lx, ly, lz), geo);
 	
   auto ecut = input.parse<double>("CutoffEnergy");
-  
-	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut));
+
+	auto extra_states = input.parse("ExtraStates", 0);
+	
+	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut), extra_states);
 
 	electrons.calculate_ground_state();
 
