@@ -51,6 +51,9 @@ namespace systems {
 			//for the moment I am putting here some parameters that should be configurable. XA
 			const double ecutprec = 4.0;			
 			const double mixing = 0.1;
+			//
+
+			double ehartree, exc, intvxc;
 			
 			operations::preconditioner prec(ecutprec);
 			
@@ -60,7 +63,7 @@ namespace systems {
 			
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
-			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density);
+			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density, ehartree, exc, intvxc);
 			
       for(int ii = 0; ii < 1000; ii++){
 
@@ -70,7 +73,7 @@ namespace systems {
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
-				auto vks = hamiltonian::ks_potential(vexternal, density);
+				auto vks = hamiltonian::ks_potential(vexternal, density, ehartree, exc, intvxc);
 				
 				auto overlap = operations::overlap_diagonal(ham_(phi_), phi_);
 

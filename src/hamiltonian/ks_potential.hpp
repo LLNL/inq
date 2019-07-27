@@ -28,7 +28,7 @@
 
 namespace hamiltonian {
 	template <class vexternal_type, class density_type>
-	auto ks_potential(const vexternal_type & vexternal, const density_type & density) {
+	auto ks_potential(const vexternal_type & vexternal, const density_type & density, double & ehartree, double & exc, double & intnxc){
 
 		solvers::poisson<basis::real_space> poisson_solver;
 		
@@ -36,10 +36,10 @@ namespace hamiltonian {
 		
 		auto vhartree = poisson_solver(density);
 
-		vexternal_type exc(vexternal.basis());
+		vexternal_type edxc(vexternal.basis());
 		vexternal_type vxc(vexternal.basis());
 		
-		functionals::lda::xc_unpolarized(density.basis().size(), density, exc, vxc);
+		functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
 
 		auto vks = operations::sum(vexternal, vhartree, vxc);
 
