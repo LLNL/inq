@@ -26,6 +26,18 @@
 namespace operations {
 
 	template <class field_type>
+	auto sum(const field_type & t1, const field_type & t2){
+		assert(t1.basis() == t2.basis());
+		
+		field_type tsum(t1.basis());
+		
+		//DATAOPERATIONS
+		for(long ii = 0; ii < t1.basis().size(); ii++) tsum[ii] = t1[ii] + t2[ii];
+		
+		return tsum;
+	}
+
+	template <class field_type>
 	auto sum(const field_type & t1, const field_type & t2, const field_type & t3){
 		assert(t1.basis() == t2.basis());
 		assert(t1.basis() == t3.basis());
