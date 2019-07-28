@@ -40,7 +40,7 @@ namespace basis {
 		
 		field(const field & coeff) = delete;
 		field(field && coeff) = default;
-		field & operator=(const field & coeff) = delete;
+		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
 		
 		const basis_type & basis() const {

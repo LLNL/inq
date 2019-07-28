@@ -41,28 +41,50 @@ namespace hamiltonian {
 		
 		template <class vexternal_type, class density_type, class energy_type>
 		auto ks_potential(const vexternal_type & vexternal, const density_type & density, energy_type & energy){
-			
-			solvers::poisson<basis::real_space> poisson_solver;
-		
-			assert(vexternal.basis() == density.basis()); //for the moment they must be equal
-			
-			auto vhartree = poisson_solver(density);
-			
-			vexternal_type edxc(vexternal.basis());
-			vexternal_type vxc(vexternal.basis());
-			
-			functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
-			
-			auto vks = operations::sum(vexternal, vhartree, vxc);
-			
-			energy.external = operations::integral_product(density, vexternal);
-			energy.hartree = 0.5*operations::integral_product(density, vhartree);
-			energy.xc = operations::integral_product(density, edxc);
-			energy.nvxc = operations::integral_product(density, vxc);
-			
-			return vks;
-		}
 
+			assert(vexternal.basis() == density.basis()); //for the moment they must be equal
+
+			energy.external = operations::integral_product(density, vexternal);
+
+			vexternal_type vks(vexternal.basis());
+				
+			switch(theory_){
+				
+			case input::electronic_theory::DENSITY_FUNCTIONAL:
+				{
+				
+					solvers::poisson<basis::real_space> poisson_solver;
+					
+					auto vhartree = poisson_solver(density);
+					
+					vexternal_type edxc(vexternal.basis());
+					vexternal_type vxc(vexternal.basis());
+					
+					functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
+					
+					energy.hartree = 0.5*operations::integral_product(density, vhartree);
+					energy.xc = operations::integral_product(density, edxc);
+					energy.nvxc = operations::integral_product(density, vxc);
+					
+					vks = operations::sum(vexternal, vhartree, vxc);
+
+					break;
+				}
+
+			case input::electronic_theory::NON_INTERACTING:
+				{
+					energy.hartree = 0.0;
+					energy.xc = 0.0;
+					energy.nvxc = 0.0;
+					vks = vexternal;
+
+					break;
+				}
+				
+			}
+			
+			return vks;			
+		}
 
 	private:
 
