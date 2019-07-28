@@ -11,6 +11,7 @@
 #include <states/ks_states.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/ks_potential.hpp>
+#include <hamiltonian/energy.hpp>
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
@@ -60,8 +61,8 @@ namespace systems {
 			const double mixing = 0.1;
 			//
 
-			double energy, eeigenvalues, eexternal, ehartree, exc, intvxc;
-			
+			hamiltonian::energy energy;
+
 			operations::preconditioner prec(ecutprec);
 			
       double old_energy = DBL_MAX;
@@ -69,7 +70,7 @@ namespace systems {
 			auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
-			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density, eexternal, ehartree, exc, intvxc);
+			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density, energy.external, energy.hartree, energy.xc, energy.intnvxc);
 			
       for(int ii = 0; ii < 1000; ii++){
 
@@ -79,27 +80,27 @@ namespace systems {
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
-				auto vks = hamiltonian::ks_potential(vexternal, density, eexternal, ehartree, exc, intvxc);
+				auto vks = hamiltonian::ks_potential(vexternal, density, energy.external, energy.hartree, energy.xc, energy.intnvxc);
 				
 				auto eigenvalues = operations::overlap_diagonal(ham_(phi_), phi_);
 
 				auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/abs(operations::integral(vks));
 				
 				//DATAOPERATIONS
-				eeigenvalues = 0.0;
-				for(int ii = 0; ii < states_.num_states(); ii++) eeigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
-				energy = eeigenvalues + eexternal + ehartree + exc - intvxc;
-				
-				std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy << "  de = " << energy - old_energy << "  dvks = " << potdiff << std::endl;
+				energy.eigenvalues = 0.0;
+				for(int ii = 0; ii < states_.num_states(); ii++) energy.eigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
+
+				std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy.total()
+									<< "  de = " << energy.total() - old_energy << "  dvks = " << potdiff << std::endl;
 
 				for(int ii = 0; ii < states_.num_states(); ii++){
 					std::cout << " state " << ii << ":  occ = " << states_.occupations()[ii] << "  evalue = " << real(eigenvalues[ii]) << std::endl;
 				}
 				std::cout << std::endl;
 				
-				if(fabs(energy - old_energy) < 1e-5) break;
+				if(fabs(energy.total() - old_energy) < 1e-5) break;
 				
-				old_energy = energy;
+				old_energy = energy.total();
 
 				//DATAOPERATIONS
 				for(long ii = 0; ii < rs_.size(); ii++){
@@ -108,15 +109,8 @@ namespace systems {
 				
       }
 
-			std::cout << std::endl;
-			std::cout << "  total       = " << energy       << std::endl;
-			std::cout << "  eigenvalues = " << eeigenvalues << std::endl;
-			std::cout << "  external    = " << eexternal    << std::endl;
-			std::cout << "  hartree     = " << ehartree     << std::endl;
-			std::cout << "  xc          = " << exc          << std::endl;
-			std::cout << "  intnvxc     = " << intvxc       << std::endl;
-			std::cout << std::endl;
-			
+			energy.print(std::cout);
+
     }
     
   private:

@@ -43,8 +43,10 @@ namespace hamiltonian {
 		
 		functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
 
-		auto vks = operations::sum(vexternal, vhartree, vxc);
-
+		//		auto vks = operations::sum(vexternal, vhartree, vxc);
+		auto vks = vexternal;
+		//auto vks = operations::sum(vexternal, vhartree);
+		
 		eexternal = operations::integral_product(density, vexternal);
 		ehartree = 0.5*operations::integral_product(density, vhartree);
 		exc = operations::integral_product(density, edxc);
