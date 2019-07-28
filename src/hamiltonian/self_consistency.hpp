@@ -26,32 +26,49 @@
 #include <solvers/poisson.hpp>
 #include <operations/sum.hpp>
 #include <operations/integral.hpp>
+#include <input/electronic_theory.hpp>
 
 namespace hamiltonian {
-	template <class vexternal_type, class density_type, class energy_type>
-	auto ks_potential(const vexternal_type & vexternal, const density_type & density, energy_type & energy){
 
-		solvers::poisson<basis::real_space> poisson_solver;
-		
-		assert(vexternal.basis() == density.basis()); //for the moment they must be equal
-		
-		auto vhartree = poisson_solver(density);
+	class self_consistency {
 
-		vexternal_type edxc(vexternal.basis());
-		vexternal_type vxc(vexternal.basis());
-		
-		functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
+	public:
 
-		auto vks = operations::sum(vexternal, vhartree, vxc);
+		self_consistency(input::electronic_theory arg_theory):
+			theory_(arg_theory)	{
+
+		}
 		
-		energy.external = operations::integral_product(density, vexternal);
-		energy.hartree = 0.5*operations::integral_product(density, vhartree);
-		energy.xc = operations::integral_product(density, edxc);
-		energy.nvxc = operations::integral_product(density, vxc);
+		template <class vexternal_type, class density_type, class energy_type>
+		auto ks_potential(const vexternal_type & vexternal, const density_type & density, energy_type & energy){
+			
+			solvers::poisson<basis::real_space> poisson_solver;
 		
-		return vks;
-	}
-	
+			assert(vexternal.basis() == density.basis()); //for the moment they must be equal
+			
+			auto vhartree = poisson_solver(density);
+			
+			vexternal_type edxc(vexternal.basis());
+			vexternal_type vxc(vexternal.basis());
+			
+			functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
+			
+			auto vks = operations::sum(vexternal, vhartree, vxc);
+			
+			energy.external = operations::integral_product(density, vexternal);
+			energy.hartree = 0.5*operations::integral_product(density, vhartree);
+			energy.xc = operations::integral_product(density, edxc);
+			energy.nvxc = operations::integral_product(density, vxc);
+			
+			return vks;
+		}
+
+
+	private:
+
+		input::electronic_theory theory_;
+
+	};
 }
 
 #ifdef UNIT_TEST
@@ -60,7 +77,7 @@ namespace hamiltonian {
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 
-TEST_CASE("Class hamiltonian::ks_potential", "[ks_potential]"){
+TEST_CASE("Class hamiltonian::self_consistency", "[self_consistency]"){
 
   using namespace Catch::literals;
 	

@@ -57,7 +57,7 @@ noinst_HEADERS =                             \
 	operations/subspace_diagonalization.hpp    \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
-	hamiltonian/ks_potential.hpp               \
+	hamiltonian/self_consistency.hpp           \
 	hamiltonian/energy.hpp                     \
 	solvers/poisson.hpp                        \
 	solvers/steepest_descent.hpp               \

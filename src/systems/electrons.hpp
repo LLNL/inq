@@ -10,7 +10,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
-#include <hamiltonian/ks_potential.hpp>
+#include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/energy.hpp>
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
@@ -41,7 +41,8 @@ namespace systems {
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
-      phi_(rs_, states_.num_states()){
+      phi_(rs_, states_.num_states()),
+			sc_(conf.theory){
 
       rs_.info(std::cout);  
       states_.info(std::cout);
@@ -69,7 +70,7 @@ namespace systems {
 			auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
-			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density, energy);
+			ham_.scalar_potential = sc_.ks_potential(vexternal, density, energy);
 			
       for(int ii = 0; ii < 1000; ii++){
 
@@ -79,7 +80,7 @@ namespace systems {
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
-				auto vks = hamiltonian::ks_potential(vexternal, density, energy);
+				auto vks = sc_.ks_potential(vexternal, density, energy);
 				
 				auto eigenvalues = operations::overlap_diagonal(ham_(phi_), phi_);
 
@@ -121,6 +122,7 @@ namespace systems {
     states::ks_states states_;
     hamiltonian::ks_hamiltonian<basis::real_space> ham_;      
     basis::field_set<basis::real_space, complex> phi_;
+		hamiltonian::self_consistency sc_;
 
   };  
   
