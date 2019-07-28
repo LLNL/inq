@@ -31,10 +31,13 @@ using std::cout;
 int main(int argc, char ** argv){
 
   parser::input_file input(argv[1]);
-  
-  auto coordinates_file = input.parse<std::string>("Coordinates");
-  
-  ions::geometry geo(coordinates_file);
+
+  ions::geometry geo;
+
+	if(input.defines("Coordinates")){
+		auto coordinates_file = input.parse<std::string>("Coordinates");
+		geo = ions::geometry(coordinates_file);
+	}
   
   auto lx = input.parse<double>("Lx");	
   auto ly = input.parse<double>("Ly");
@@ -43,10 +46,10 @@ int main(int argc, char ** argv){
 	systems::ions ions(input::cell::cubic(lx, ly, lz), geo);
 	
   auto ecut = input.parse<double>("CutoffEnergy");
-
 	auto extra_states = input.parse("ExtraStates", 0);
+	auto excess_charge = input.parse("ExcessCharge", 0.0);
 	
-	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut), extra_states);
+	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut), extra_states, excess_charge);
 
 	electrons.calculate_ground_state();
 
