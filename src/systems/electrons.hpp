@@ -35,21 +35,19 @@ namespace systems {
 
 		enum class error { NO_ELECTRONS };
 		
-    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::config & st):
+    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::config & conf):
       ions_(ions_arg),
       rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
-      states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + st.excess_charge, st.extra_states),
+      states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
       phi_(rs_, states_.num_states()){
 
       rs_.info(std::cout);  
       states_.info(std::cout);
 
-			if(atomic_pot_.num_electrons() + st.excess_charge == 0){
-				throw error::NO_ELECTRONS;
-			}
-
+			if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
+ 
 			ham_.info(std::cout);
 
       operations::randomize(phi_);
