@@ -53,14 +53,13 @@ namespace systems {
 			const double mixing = 0.1;
 			//
 
-			double eexternal, ehartree, exc, intvxc;
+			double energy, eeigenvalues, eexternal, ehartree, exc, intvxc;
 			
 			operations::preconditioner prec(ecutprec);
 			
       double old_energy = DBL_MAX;
 
 			auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
-
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
 			ham_.scalar_potential = hamiltonian::ks_potential(vexternal, density, eexternal, ehartree, exc, intvxc);
@@ -80,9 +79,9 @@ namespace systems {
 				auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/abs(operations::integral(vks));
 				
 				//DATAOPERATIONS
-				double energy = 0.0;
-				for(int ii = 0; ii < states_.num_states(); ii++) energy += real(eigenvalues[ii]);
-				energy += eexternal + ehartree + exc - intvxc;
+				eeigenvalues = 0.0;
+				for(int ii = 0; ii < states_.num_states(); ii++) eeigenvalues += real(eigenvalues[ii]);
+				energy = eeigenvalues + eexternal + ehartree + exc - intvxc;
 				
 				std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy << "  de = " << energy - old_energy << "  dvks = " << potdiff << std::endl;
 
@@ -101,6 +100,16 @@ namespace systems {
 				}
 				
       }
+
+			std::cout << std::endl;
+			std::cout << "  total       = " << energy       << std::endl;
+			std::cout << "  eigenvalues = " << eeigenvalues << std::endl;
+			std::cout << "  external    = " << eexternal    << std::endl;
+			std::cout << "  hartree     = " << ehartree     << std::endl;
+			std::cout << "  xc          = " << exc          << std::endl;
+			std::cout << "  intnvxc     = " << intvxc       << std::endl;
+			std::cout << std::endl;
+			
     }
 
     auto calculate_energy() {
