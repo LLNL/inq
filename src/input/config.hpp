@@ -21,9 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "../math/d3vector.hpp"
+#include <input/electronic_theory.hpp>
 #include <cassert>
-#include <array>
 
 namespace input {
 
@@ -31,11 +30,13 @@ namespace input {
 
 		config(){
 			extra_states = 0;
-			excess_charge = 0.0;			
+			excess_charge = 0.0;
+			theory = electronic_theory::DENSITY_FUNCTIONAL;
 		}
 
 		int extra_states;
 		double excess_charge;
+		electronic_theory theory;
 		
   };
 }

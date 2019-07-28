@@ -12,6 +12,7 @@ noinst_HEADERS =                             \
 	parser/liboct_parser.h                     \
 	parser/string_f.h                          \
 	parser/symbols.h                           \
+	input/electronic_theory.hpp                \
 	input/basis.hpp                            \
 	input/cell.hpp                             \
 	input/config.hpp                           \
