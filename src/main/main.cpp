@@ -23,6 +23,7 @@
 #include <multi/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
+#include <input/config.hpp>
 
 #include <iostream>
 
@@ -46,10 +47,12 @@ int main(int argc, char ** argv){
 	systems::ions ions(input::cell::cubic(lx, ly, lz), geo);
 	
   auto ecut = input.parse<double>("CutoffEnergy");
-	auto extra_states = input.parse("ExtraStates", 0);
-	auto excess_charge = input.parse("ExcessCharge", 0.0);
+
+	input::config conf;
+	conf.extra_states = input.parse("ExtraStates", 0);
+	conf.excess_charge = input.parse("ExcessCharge", 0.0);
 	
-	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut), extra_states, excess_charge);
+	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut), conf);
 
 	electrons.calculate_ground_state();
 	

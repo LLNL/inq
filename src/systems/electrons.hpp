@@ -24,6 +24,7 @@
 #include <solvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
+#include <input/config.hpp>
 #include <functionals/lda.hpp>
 
 namespace systems {
@@ -34,18 +35,18 @@ namespace systems {
 
 		enum class error { NO_ELECTRONS };
 		
-    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const int extra_states = 0, const double excess_charge = 0.0):
+    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::config & st):
       ions_(ions_arg),
       rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
-      states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + excess_charge, extra_states),
+      states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + st.excess_charge, st.extra_states),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
       phi_(rs_, states_.num_states()){
 
       rs_.info(std::cout);  
       states_.info(std::cout);
 
-			if(atomic_pot_.num_electrons()  + excess_charge == 0){
+			if(atomic_pot_.num_electrons() + st.excess_charge == 0){
 				throw error::NO_ELECTRONS;
 			}
 
