@@ -97,7 +97,7 @@ namespace systems {
 				}
 				std::cout << std::endl;
 				
-				if(fabs(energy - old_energy) < 1e-7) break;
+				if(fabs(energy - old_energy) < 1e-5) break;
 				
 				old_energy = energy;
 
