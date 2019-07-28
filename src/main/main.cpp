@@ -52,7 +52,5 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut), extra_states, excess_charge);
 
 	electrons.calculate_ground_state();
-
-	std::cout << "Total energy = " << electrons.calculate_energy() << std::endl;
 	
 }

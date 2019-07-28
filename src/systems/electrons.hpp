@@ -87,7 +87,7 @@ namespace systems {
 				
 				//DATAOPERATIONS
 				eeigenvalues = 0.0;
-				for(int ii = 0; ii < states_.num_states(); ii++) eeigenvalues += real(eigenvalues[ii]);
+				for(int ii = 0; ii < states_.num_states(); ii++) eeigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
 				energy = eeigenvalues + eexternal + ehartree + exc - intvxc;
 				
 				std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy << "  de = " << energy - old_energy << "  dvks = " << potdiff << std::endl;
@@ -118,22 +118,6 @@ namespace systems {
 			std::cout << std::endl;
 			
     }
-
-    auto calculate_energy() {
-      
-      operations::scal_invsqrt(operations::overlap_diagonal(phi_), phi_);
-      
-      auto hphi = ham_(phi_);
-      
-      auto overlap = operations::overlap_diagonal(hphi, phi_);
-
-      //DATAOPERATIONS
-      double energy = 0.0;
-      for(int ii = 0; ii < states_.num_states(); ii++) energy += real(overlap[ii]);
-      return energy;
-    }
-
-
     
   private:
 
