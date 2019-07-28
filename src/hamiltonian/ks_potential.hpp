@@ -28,9 +28,8 @@
 #include <operations/integral.hpp>
 
 namespace hamiltonian {
-	template <class vexternal_type, class density_type>
-	auto ks_potential(const vexternal_type & vexternal, const density_type & density,
-										double & eexternal, double & ehartree, double & exc, double & intnxc){
+	template <class vexternal_type, class density_type, class energy_type>
+	auto ks_potential(const vexternal_type & vexternal, const density_type & density, energy_type & energy){
 
 		solvers::poisson<basis::real_space> poisson_solver;
 		
@@ -43,14 +42,12 @@ namespace hamiltonian {
 		
 		functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
 
-		//		auto vks = operations::sum(vexternal, vhartree, vxc);
-		auto vks = vexternal;
-		//auto vks = operations::sum(vexternal, vhartree);
+		auto vks = operations::sum(vexternal, vhartree, vxc);
 		
-		eexternal = operations::integral_product(density, vexternal);
-		ehartree = 0.5*operations::integral_product(density, vhartree);
-		exc = operations::integral_product(density, edxc);
-		intnxc = operations::integral_product(density, vxc);
+		energy.external = operations::integral_product(density, vexternal);
+		energy.hartree = 0.5*operations::integral_product(density, vhartree);
+		energy.xc = operations::integral_product(density, edxc);
+		energy.nvxc = operations::integral_product(density, vxc);
 		
 		return vks;
 	}
