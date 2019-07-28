@@ -32,12 +32,13 @@
 namespace ions {
 
   template <class cell_type, class array_charge, class array_positions, class array_forces>
-  void interaction_energy(const int natoms, const double alpha,
-			  const cell_type & cell, const array_charge & charge, const array_positions & positions, 
-			  double & energy, array_forces & forces){
+  void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, 
+													double & energy, array_forces & forces){
 
     using math::d3vector;
 
+		const double alpha = 0.21;
+		
     energy = 0.0;
     for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = d3vector(0.0, 0.0, 0.0);
 
@@ -49,21 +50,21 @@ namespace ions {
       periodic_replicas rep(cell, positions[iatom], rcut);
 
       for(int irep = 0; irep < rep.size(); irep++){
-	d3vector xi = rep[irep];
-	
-	for(int jatom = 0; jatom < natoms; jatom++){
-	  double zj = charge[jatom];
-	  
-	  d3vector rij = xi - positions[jatom];
-	  double rr = sqrt(norm(rij));
-	  
-	  if(rr < 1.0e-5) continue;
-	  
-	  double eor = erfc(alpha*rr)/rr;
-	  
-	  energy += 0.5*zi*zj*eor;
-	  forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*rr, 2))/(rr*rr));
-	}
+				d3vector xi = rep[irep];
+				
+				for(int jatom = 0; jatom < natoms; jatom++){
+					double zj = charge[jatom];
+					
+					d3vector rij = xi - positions[jatom];
+					double rr = sqrt(norm(rij));
+					
+					if(rr < 1.0e-5) continue;
+					
+					double eor = erfc(alpha*rr)/rr;
+					
+					energy += 0.5*zi*zj*eor;
+					forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*rr, 2))/(rr*rr));
+				}
       }
       
     }
@@ -90,39 +91,39 @@ namespace ions {
     
     for(int ix = -isph; ix <= isph; ix++){
       for(int iy = -isph; iy <= isph; iy++){
-	for(int iz = -isph; iz <= isph; iz++){
-	  
-	  const int ss = ix*ix + iy*iy + iz*iz;
-
-	  if(ss == 0 || ss > isph*isph) continue;
-
-	  d3vector gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
-	  double gg2 = norm(gg);
-
-	  double exparg = -0.25*gg2/(alpha*alpha);
-
-	  if(exparg < -36.0) continue;
-
-	  double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
-
-	  std::complex<double> sumatoms = 0.0;
-	  for(int iatom = 0; iatom < natoms; iatom++){
-	    double gx = gg*positions[iatom];
-	    auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
-	    phase[iatom] = aa;
-	    sumatoms += aa;
-	  }
-
-	  energy += factor*std::real(sumatoms*std::conj(sumatoms));
-	  
-	  for(int iatom = 0; iatom < natoms; iatom++){
-	    for(int idir = 0; idir < 3; idir++){
-	      std::complex<double> tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
-	      forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
-	    }
-	  }
-	  
-	}
+				for(int iz = -isph; iz <= isph; iz++){
+					
+					const int ss = ix*ix + iy*iy + iz*iz;
+					
+					if(ss == 0 || ss > isph*isph) continue;
+					
+					d3vector gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
+					double gg2 = norm(gg);
+					
+					double exparg = -0.25*gg2/(alpha*alpha);
+					
+					if(exparg < -36.0) continue;
+					
+					double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
+					
+					std::complex<double> sumatoms = 0.0;
+					for(int iatom = 0; iatom < natoms; iatom++){
+						double gx = gg*positions[iatom];
+						auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
+						phase[iatom] = aa;
+						sumatoms += aa;
+					}
+					
+					energy += factor*std::real(sumatoms*std::conj(sumatoms));
+					
+					for(int iatom = 0; iatom < natoms; iatom++){
+						for(int idir = 0; idir < 3; idir++){
+							std::complex<double> tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
+							forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
+						}
+					}
+					
+				}
       }
     }
 
@@ -167,7 +168,7 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(4);
     
-    ions::interaction_energy(4, 0.21, cell, charge, positions, energy, forces);
+    ions::interaction_energy(4, cell, charge, positions, energy, forces);
     
     REQUIRE(energy == -10.78368187_a); //this number comes from Octopus
     
@@ -188,7 +189,7 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(2);
 
-    ions::interaction_energy(2, 0.21, cell, charge, positions, energy, forces);
+    ions::interaction_energy(2, cell, charge, positions, energy, forces);
 
     REQUIRE(energy == -12.78641217_a); //this number comes from Octopus
 
@@ -207,7 +208,7 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(1);
 
-    ions::interaction_energy(1, 0.21, cell, &charge, &position, energy, forces);
+    ions::interaction_energy(1, cell, &charge, &position, energy, forces);
 
     REQUIRE(energy == -86.31033718_a); //this number comes from Octopus
     
@@ -217,9 +218,3 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
 #endif
 
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:
