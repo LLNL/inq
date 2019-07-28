@@ -54,7 +54,7 @@ namespace systems {
       operations::randomize(phi_);
     }
 
-    void calculate_ground_state() {
+    auto calculate_ground_state() {
 
 			//for the moment I am putting here some parameters that should be configurable. XA
 			const double ecutprec = 4.0;			
@@ -111,6 +111,7 @@ namespace systems {
 
 			energy.print(std::cout);
 
+			return energy;			
     }
     
   private:
