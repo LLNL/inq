@@ -15,7 +15,7 @@ namespace systems {
 
   public:
 
-    ions(const input::cell & arg_cell_input, const ::ions::geometry & geo_arg):
+    ions(const input::cell & arg_cell_input, const ::ions::geometry & geo_arg = ::ions::geometry()):
       cell_(arg_cell_input),
       geo_(geo_arg){
       
