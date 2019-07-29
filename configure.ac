@@ -12,6 +12,8 @@ AC_CONFIG_MACRO_DIR([m4])
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_CXX(mpic++)
+AX_CXX_COMPILE_STDCXX([17], [], [])
+
 AC_PROG_CC(mpicc)
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
