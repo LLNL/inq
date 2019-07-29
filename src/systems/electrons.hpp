@@ -55,10 +55,9 @@ namespace systems {
 			operations::orthogonalization(phi_);
     }
 
-    auto calculate_ground_state() {
+    auto calculate_ground_state(const double ecutprec = 4.0) {
 
 			//for the moment I am putting here some parameters that should be configurable. XA
-			const double ecutprec = 4.0;			
 			const double mixing = 0.1;
 			//
 

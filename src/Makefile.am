@@ -86,9 +86,12 @@ inq_SOURCES = main/main.cpp $(all_srcs)
 
 #TEST PROGRAMS
 
-non_interacting_electron_gas_SOURCES = tests/non_interacting_electron_gas.cpp main/unit_tests_main.cpp $(all_srcs)
+@PACKAGE_NAME@_electron_gas_non_interacting_SOURCES = tests/electron_gas_non_interacting.cpp main/unit_tests_main.cpp $(all_srcs)
+@PACKAGE_NAME@_electron_gas_lda_pz_SOURCES = tests/electron_gas_lda_pz.cpp main/unit_tests_main.cpp $(all_srcs)
 
-test_programs = non_interacting_electron_gas
+test_programs =                                       \
+	@PACKAGE_NAME@_electron_gas_non_interacting	        \
+	@PACKAGE_NAME@_electron_gas_lda_pz
 
 bin_PROGRAMS += $(test_programs) 
 
