@@ -84,5 +84,13 @@ inq_SOURCES = main/main.cpp $(all_srcs)
 
 @PACKAGE_NAME@_unit_tests_SOURCES = main/unit_tests.cpp main/unit_tests_main.cpp $(all_srcs)
 
+#TEST PROGRAMS
+
+non_interacting_electron_gas_SOURCES = tests/non_interacting_electron_gas.cpp main/unit_tests_main.cpp $(all_srcs)
+
+test_programs = non_interacting_electron_gas
+
+bin_PROGRAMS += $(test_programs) 
+
 check: $(@PACKAGE_NAME@_unit_tests) install
 	@PACKAGE_NAME@_unit_tests -s
