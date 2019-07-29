@@ -15,18 +15,15 @@ namespace parser {
     
   public:
 
-    enum class error {
-      FILE_NOT_FOUND,
-      VARIABLE_NOT_FOUND
+    enum class error { FILE_NOT_FOUND,
+											 VARIABLE_NOT_FOUND
     };
     
     input_file(const std::string & file_name){
       int dont_write = 0;
       int set_used = 1;      
       parse_init("parser.log", &dont_write);
-      if(parse_input(file_name.c_str(), set_used)){
-	throw error::FILE_NOT_FOUND;
-      }
+      if(parse_input(file_name.c_str(), set_used)) throw error::FILE_NOT_FOUND;
     }
 
     ~input_file(){
@@ -57,14 +54,13 @@ namespace parser {
       return parse(variable_name, (default_value?1:0)) == 1;
     }
 
-
     // this version doest not receive a default, but fails when the variable is not found
     template <class type>
     type parse(const std::string & variable_name) const {
       if(defines(variable_name)){
-	return parse(variable_name, type());
+				return parse(variable_name, type());
       } else {
-	throw error::VARIABLE_NOT_FOUND;
+				throw error::VARIABLE_NOT_FOUND;
       }
     }
     
