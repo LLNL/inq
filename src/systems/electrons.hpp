@@ -52,6 +52,7 @@ namespace systems {
 			ham_.info(std::cout);
 
       operations::randomize(phi_);
+			operations::orthogonalization(phi_);
     }
 
     auto calculate_ground_state() {
@@ -68,6 +69,7 @@ namespace systems {
       double old_energy = DBL_MAX;
 
 			auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
+			
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, energy);
