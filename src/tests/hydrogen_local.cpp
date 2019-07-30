@@ -90,7 +90,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		auto energy = electrons.calculate_ground_state();
 		
 		/*
-			OCTOPUS RESULTS: (Spacing 0.2)
+			OCTOPUS RESULTS: (Spacing 0.286)
 
 			1   --    -0.233333       1.000000
 
