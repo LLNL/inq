@@ -71,7 +71,7 @@ namespace ions {
     
     int num_atoms() const { return coordinates_.size(); }
 
-    void add_atom(const pseudo::element & element, const math::d3vector & position){
+    void add_atom(const input::species & element, const math::d3vector & position){
       atoms_.push_back(element);
       coordinates_.push_back(position);
     }
