@@ -21,9 +21,9 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-//#include "../config/path.hpp"
-#include "../math/d3vector.hpp"
-#include "../pseudo/element.hpp"
+#include <math/d3vector.hpp>
+#include <pseudo/element.hpp>
+#include <input/species.hpp>
 
 #include <vector>
 #include <cassert>
@@ -97,7 +97,7 @@ namespace ions {
     
   private:
 
-    std::vector<pseudo::element> atoms_;
+    std::vector<input::species> atoms_;
     std::vector<math::d3vector> coordinates_;
     
   };
