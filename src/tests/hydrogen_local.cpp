@@ -36,34 +36,32 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0), geo);
 
 	input::config conf;
-	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
+	systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
 
 	auto energy = electrons.calculate_ground_state();
 
 	/*
-	  #k =   1, k = (  0.000000,  0.000000,  0.000000)
-	  1   --    -0.232923       1.000000
-	  
-	  Direct gap at ik=   -1 of ******* H
-	  Indirect gap between ik=   -1 and ik=   -1 of     Inf H
-	  
-	  Energy [H]:
-	  Total       =        -0.44568137
-	  Free        =        -0.44568137
-	  -----------
-	  Ion-ion     =        -0.07062564
-	  Eigenvalues =        -0.23292318
-	  Hartree     =         0.21258407
-	  Int[n*v_xc] =        -0.30285389
-	  Exchange    =        -0.19278303
-	  Correlation =        -0.03961935
-	  vanderWaals =         0.00000000
-	  Delta XC    =         0.00000000
-	  Entropy     =         1.38629436
-	  -TS         =        -0.00000000
-	  Kinetic     =         0.41712467
-	  External    =        -0.77236145
-	  Non-local   =        -0.05816341
+		OCTOPUS RESULTS: (Spacing 0.2)
+
+		   1   --    -0.233162       1.000000
+
+      Total       =        -0.44571487
+      Free        =        -0.44571487
+      -----------
+      Ion-ion     =        -0.07062564
+      Eigenvalues =        -0.23316161
+      Hartree     =         0.21232102
+      Int[n*v_xc] =        -0.30260939
+      Exchange    =        -0.19261046
+      Correlation =        -0.03960552
+      vanderWaals =         0.00000000
+      Delta XC    =         0.00000000
+      Entropy     =         1.38629436
+      -TS         =        -0.00000000
+      Kinetic     =         0.41763608
+      External    =        -0.77281999
+      Non-local   =         0.00000000
+
 	*/
 	
 	REQUIRE(energy.total()       == -0.6848531681_a);
