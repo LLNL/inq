@@ -34,6 +34,14 @@ namespace input {
 			pseudo::element(arg_el),
 			pseudo_file_(arg_pseudo_file){
 		}
+
+		auto has_file() const {
+			return pseudo_file_ != "";
+		}
+
+		auto const & file_path() const {
+			return pseudo_file_;
+		}
 		
 	private:
 
