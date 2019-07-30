@@ -27,4 +27,5 @@ dist_utd_DATA =                            \
 	78_Pt_r.oncvpsp.psp8               \
 	F.UPF                              \
 	C_ONCV_PBE-1.2.xml                 \
-	input_file
+	input_file                         \
+	H.blyp-vbc.UPF

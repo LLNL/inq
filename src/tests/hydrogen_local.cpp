@@ -21,11 +21,14 @@
 #include <catch2/catch.hpp>
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
+#include <config/path.hpp>
 
 TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_gas]") {
 
 	using namespace Catch::literals;
 
+	input::species local_h(pseudo::element("H"), config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	
 	ions::geometry geo;
 
 	geo.add_atom(pseudo::element("H"), math::d3vector(0.0, 0.0, 0.0));
