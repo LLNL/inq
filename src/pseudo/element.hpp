@@ -90,8 +90,9 @@ namespace pseudo {
       return map().at(symbol_).vdw_radius_;
     }
 
-    bool operator==(const element & el) const {
-      return atomic_number() == el.atomic_number();
+		template <class element_type>
+    bool operator==(const element_type & el) const {
+      return symbol() == el.symbol();
     }
 
     struct hash {
