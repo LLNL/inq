@@ -70,40 +70,50 @@ namespace pseudo {
 
       // Read the grid
       {
-	rapidxml::xml_base<> * xmin = root_node_->first_node("PP_MESH")->first_attribute("xmin");
+				rapidxml::xml_base<> * xmin = root_node_->first_node("PP_MESH")->first_attribute("xmin");
 
-	start_point_ = 0;
-	if(xmin && fabs(value<double>(xmin)) > 1.0e-10) start_point_ = 1;
+				start_point_ = 0;
+				if(xmin && fabs(value<double>(xmin)) > 1.0e-10) start_point_ = 1;
 	
-	rapidxml::xml_node<> * node = root_node_->first_node("PP_MESH")->first_node("PP_R");
+				rapidxml::xml_node<> * node = root_node_->first_node("PP_MESH")->first_node("PP_R");
 	
-	assert(node);
+				assert(node);
 	
-	int size = value<int>(node->first_attribute("size"));
-	grid_.resize(size + start_point_);
-	std::istringstream stst(node->value());
-	grid_[0] = 0.0;
-	for(int ii = 0; ii < size; ii++) stst >> grid_[start_point_ + ii];
+				rapidxml::xml_attribute<> * size_attr = node->first_attribute("size");
 	
-	assert(fabs(grid_[0]) <= 1e-10);
+				//some files seems to have this information elsewhere
+				if(size_attr == NULL) size_attr = root_node_->first_node("PP_MESH")->first_attribute("mesh");
+	
+				if(size_attr == NULL) throw status::FORMAT_NOT_SUPPORTED;
+	
+				int size = value<int>(size_attr);
+
+				grid_.resize(size + start_point_);
+				std::istringstream stst(node->value());
+				grid_[0] = 0.0;
+				for(int ii = 0; ii < size; ii++) stst >> grid_[start_point_ + ii];
+	
+				assert(fabs(grid_[0]) <= 1e-10);
       }
 
       {
-	rapidxml::xml_node<> * node = root_node_->first_node("PP_MESH")->first_node("PP_RAB");
+				rapidxml::xml_node<> * node = root_node_->first_node("PP_MESH")->first_node("PP_RAB");
 	
-	assert(node);
+				assert(node);
 	
-	int size = value<int>(node->first_attribute("size"));
-	grid_weights_.resize(size + start_point_);
-	std::istringstream stst(node->value());
-	grid_weights_[0] = 0.5*(grid_[1] - grid_[0]);
-	for(int ii = 0; ii < size; ii++) stst >> grid_weights_[start_point_ + ii];
+				int size = get_size(node);
+
 	
-	mesh_size_ = 0;
-	for(double rr = 0.0; rr <= grid_[grid_.size() - 1]; rr += mesh_spacing()) mesh_size_++;
+				grid_weights_.resize(size + start_point_);
+				std::istringstream stst(node->value());
+				grid_weights_[0] = 0.5*(grid_[1] - grid_[0]);
+				for(int ii = 0; ii < size; ii++) stst >> grid_weights_[start_point_ + ii];
+	
+				mesh_size_ = 0;
+				for(double rr = 0.0; rr <= grid_[grid_.size() - 1]; rr += mesh_spacing()) mesh_size_++;
 	
       }
-
+      
       //calculate lmax (we can't trust the one given by the file :-/)
 
       std::vector<bool> has_l(MAX_L, false);
@@ -135,7 +145,7 @@ namespace pseudo {
 	nchannels_ = std::max(nchannels_, proj_c[iproj] + 1);
 
       }
-
+      
       assert(lmax_ >= 0);
       
       llocal_ = -1;
@@ -221,8 +231,8 @@ namespace pseudo {
 
       assert(node);
 
-      int size = value<int>(node->first_attribute("size"));
-
+      int size = get_size(node);
+      
       potential.resize(size + start_point_);
       std::istringstream stst(node->value());
       for(int ii = 0; ii < size; ii++) {
@@ -256,7 +266,8 @@ namespace pseudo {
 
       assert(node);
 
-      int size = value<int>(node->first_attribute("size"));
+      int size = get_size(node);
+      
       proj.resize(size + start_point_);
       std::istringstream stst(node->value());
       for(int ii = 0; ii < size; ii++) stst >> proj[ii + start_point_];
@@ -288,8 +299,9 @@ namespace pseudo {
       rapidxml::xml_node<> * node = root_node_->first_node("PP_NLCC");
       assert(node);
       
-      int size = value<int>(node->first_attribute("size"));
-      density.resize(size);
+      int size = get_size(node);
+            
+      density.resize(size + start_point_);
 
       std::istringstream stst(node->value());
       for(int ii = 0; ii < size; ii++) stst >> density[start_point_ + ii];
@@ -310,7 +322,8 @@ namespace pseudo {
 	
       l = value<int>(node->first_attribute("angular_momentum"));
 
-      int size = value<int>(node->first_attribute("size"));
+      int size = get_size(node);
+      
       proj.resize(size + start_point_);
       std::istringstream stst(node->value());
       for(int ii = 0; ii < size; ii++) stst >> proj[ii + start_point_];
@@ -339,8 +352,9 @@ namespace pseudo {
     void density(std::vector<double> & val) const {
       rapidxml::xml_node<> * node = root_node_->first_node("PP_RHOATOM");
       assert(node);
-      
-      int size = value<int>(node->first_attribute("size"));
+
+      int size = get_size(node);
+            
       val.resize(size + start_point_);
       
       std::istringstream stst(node->value());
@@ -377,8 +391,9 @@ namespace pseudo {
       l = value<int>(node->first_attribute("l"));
 
       occ = value<double>(node->first_attribute("occupation"));
+
+      int size = get_size(node);
       
-      int size = value<int>(node->first_attribute("size"));
       proj.resize(size + start_point_);
       std::istringstream stst(node->value());
       for(int ii = 0; ii < size; ii++) stst >> proj[ii + start_point_];
@@ -391,6 +406,16 @@ namespace pseudo {
     }
     
   private:
+
+    int get_size(const rapidxml::xml_node<> * node) const {
+      int size = grid_.size() - start_point_;
+
+      rapidxml::xml_attribute<> * size_attr = node->first_attribute("size");
+
+      if(size_attr != NULL) size = value<int>(size_attr);
+
+      return size;
+    }
     
     std::ifstream file_;
     std::vector<char> buffer_;
