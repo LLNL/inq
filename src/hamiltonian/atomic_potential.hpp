@@ -64,8 +64,9 @@ namespace hamiltonian {
     const double & num_electrons() const {
       return nelectrons_;
     }
-
-    const pseudo::pseudopotential & pseudo_for_element(const pseudo::element & el) const {
+		
+		template <class element_type>
+    const pseudo::pseudopotential & pseudo_for_element(const element_type & el) const {
       return pseudopotential_list_.at(el.symbol());
     }
 
