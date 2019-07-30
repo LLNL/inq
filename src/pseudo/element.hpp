@@ -1,22 +1,24 @@
+/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+
 #ifndef PSEUDO_ELEMENT_HPP
 #define PSEUDO_ELEMENT_HPP
 
 /*
- Copyright (C) 2018 Xavier Andrade
+	Copyright (C) 2018 Xavier Andrade
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 3 of the License, or
- (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation; either version 3 of the License, or
+	(at your option) any later version.
   
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
   
- You should have received a copy of the GNU Lesser General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <string>
@@ -52,15 +54,15 @@ namespace pseudo {
 
       //special case: avoid ambiguity between isotopes
       if(atomic_number == 1){
-	symbol_ = 'H';
-	return;
+				symbol_ = 'H';
+				return;
       }
       
       for(map_type::iterator it = map().begin(); it != map().end(); ++it){
-	if(it->second.z_ == atomic_number) {
-	  symbol_ = trim(it->first);
-	  break;
-	}
+				if(it->second.z_ == atomic_number) {
+					symbol_ = trim(it->first);
+					break;
+				}
       }
     }
     
@@ -94,8 +96,8 @@ namespace pseudo {
 
     struct hash {
       auto operator()(const element & el){
-	std::hash<std::string> str_hash;
-	return str_hash(el.symbol());
+				std::hash<std::string> str_hash;
+				return str_hash(el.symbol());
       }
     };
     
@@ -112,36 +114,36 @@ namespace pseudo {
       static map_type map;
       if(map.empty()){
 
-	std::string filename = config::path::share() + "/pseudopotentials/elements.dat";
+				std::string filename = config::path::share() + "/pseudopotentials/elements.dat";
 	
-	std::ifstream file(filename.c_str());
+				std::ifstream file(filename.c_str());
 
-	if(!file){
-	  std::cerr << "Internal error: cannot open file '" << filename << "'." << std::endl;
-	  exit(EXIT_FAILURE);
-	}
+				if(!file){
+					std::cerr << "Internal error: cannot open file '" << filename << "'." << std::endl;
+					exit(EXIT_FAILURE);
+				}
 	
-	while(true){
-	  std::string symbol;
+				while(true){
+					std::string symbol;
 	  
-	  file >> symbol;
+					file >> symbol;
 
-	  if(file.eof()) break;
+					if(file.eof()) break;
 	  
-	  if(symbol[0] == '#'){
-	    getline(file, symbol);
-	    continue;
-	  }
+					if(symbol[0] == '#'){
+						getline(file, symbol);
+						continue;
+					}
 	  
-	  properties prop;
+					properties prop;
 	  
-	  file >> prop.z_ >> prop.mass_ >> prop.vdw_radius_;
+					file >> prop.z_ >> prop.mass_ >> prop.vdw_radius_;
 
-	  if(file.eof()) break;
+					if(file.eof()) break;
 	  
-	  map[symbol] = prop;
+					map[symbol] = prop;
 	  
-	}
+				}
       }
 
       return map;
@@ -219,9 +221,3 @@ TEST_CASE("Class pseudo::element", "[element]") {
 #endif
 
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:
