@@ -43,11 +43,11 @@ namespace hamiltonian {
 		}
 
 		auto kinetic() const {
-			return eigenvalues - 2.0*hartree - nvxc;
+			return eigenvalues - 2.0*hartree - nvxc - external;
 		}
 		
 		auto total() const {
-			return ion + eigenvalues + external - hartree + xc - nvxc;
+			return ion + kinetic() + external + hartree + xc;
 		}
 
 		template <class out_type>
