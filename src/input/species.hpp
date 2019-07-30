@@ -26,21 +26,20 @@
 #include <cmath>
 
 namespace input {
-  class species{
+  class species : public pseudo::element {
 
   public:
 		
 		species(const pseudo::element & arg_el, std::string arg_pseudo_file = ""):
-			el_(arg_el),
+			pseudo::element(arg_el),
 			pseudo_file_(arg_pseudo_file){
 		}
 		
 	private:
 
-		pseudo::element el_;
 		std::string pseudo_file_;		
 		
-  };   
+  };
   
 }
 
@@ -52,6 +51,10 @@ TEST_CASE("class ions::species", "[species]") {
   
   using namespace Catch::literals;
 
+	input::species s(pseudo::element("Xe"));
+
+	REQUIRE(s.atomic_number() == 54);
+	
 }
 
 
