@@ -35,40 +35,91 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0), geo);
 
-	input::config conf;
-	systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
+	//NON INTERACTING
+	{
+		
+		input::config conf;
+		
+		conf.theory = input::electronic_theory::NON_INTERACTING;
+		
+		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
+		
+		auto energy = electrons.calculate_ground_state();
+		
+		/*
+			OCTOPUS RESULTS: (Spacing 0.286)
 
-	auto energy = electrons.calculate_ground_state();
+			   1   --    -0.359408       1.000000
+				 
+				 Total       =        -0.43003364
+				 Free        =        -0.43003364
+				 -----------
+				 Ion-ion     =        -0.07062564
+				 Eigenvalues =        -0.35940800
+				 Hartree     =         0.00000000
+				 Int[n*v_xc] =         0.00000000
+				 Exchange    =         0.00000000
+				 Correlation =         0.00000000
+				 vanderWaals =         0.00000000
+				 Delta XC    =         0.00000000
+				 Entropy     =         1.38629436
+				 -TS         =        -0.00000000
+				 Kinetic     =         0.49139567
+				 External    =        -0.85080367
+				 Non-local   =         0.00000000
 
-	/*
-		OCTOPUS RESULTS: (Spacing 0.2)
+		*/
+		
+		REQUIRE(energy.total()       == -0.3591216767_a);
+		REQUIRE(energy.kinetic()     ==  4.868395e-01_a);
+		REQUIRE(energy.eigenvalues   == -0.3591216767_a);
+		REQUIRE(energy.external      == -8.459612e-01_a);
+		REQUIRE(fabs(energy.hartree) <=  1e-10);
+		REQUIRE(fabs(energy.xc)      <=  1e-10);
+		REQUIRE(fabs(energy.nvxc)    <=  1e-10);
 
-		   1   --    -0.233162       1.000000
+	}
 
-      Total       =        -0.44571487
-      Free        =        -0.44571487
+	//LDA
+	{
+		
+		input::config conf;
+	
+		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
+		
+		auto energy = electrons.calculate_ground_state();
+		
+		/*
+			OCTOPUS RESULTS: (Spacing 0.2)
+
+			1   --    -0.233333       1.000000
+
+      Total       =        -0.44607691
+      Free        =        -0.44607691
       -----------
       Ion-ion     =        -0.07062564
-      Eigenvalues =        -0.23316161
-      Hartree     =         0.21232102
-      Int[n*v_xc] =        -0.30260939
-      Exchange    =        -0.19261046
-      Correlation =        -0.03960552
+      Eigenvalues =        -0.23333336
+      Hartree     =         0.21257486
+      Int[n*v_xc] =        -0.30287671
+      Exchange    =        -0.19279832
+      Correlation =        -0.03962144
       vanderWaals =         0.00000000
       Delta XC    =         0.00000000
       Entropy     =         1.38629436
       -TS         =        -0.00000000
-      Kinetic     =         0.41763608
-      External    =        -0.77281999
+      Kinetic     =         0.41896742
+      External    =        -0.77457392
       Non-local   =         0.00000000
+			
+		*/
+		
+		REQUIRE(energy.total()       == -0.3756001974_a);
+		REQUIRE(energy.kinetic()     ==  4.166462e-01_a);
+		REQUIRE(energy.eigenvalues   == -2.342972e-01_a);
+		REQUIRE(energy.external      == -7.721030e-01_a);
+		REQUIRE(energy.hartree       ==  2.115318e-01_a);
+		REQUIRE(energy.xc            == -2.316752e-01_a);
+		REQUIRE(energy.nvxc          == -3.019039e-01_a);
 
-	*/
-	
-	REQUIRE(energy.total()       == -0.6848531681_a);
-	REQUIRE(energy.kinetic()     == 2.368793_a);
-	REQUIRE(energy.eigenvalues   == -1.6053918367_a);
-	REQUIRE(fabs(energy.hartree) <=  1e-10);
-	REQUIRE(energy.xc            == -3.0536456687_a);
-	REQUIRE(energy.nvxc          == -3.9741843374_a);
-	
+	}
 }
