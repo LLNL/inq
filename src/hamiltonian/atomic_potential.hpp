@@ -46,8 +46,11 @@ namespace hamiltonian {
       nelectrons_ = 0.0;
       for(int iatom = 0; iatom < natoms; iatom++){
 				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
-				
-				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(pseudo_set_.file_path(atom_list[iatom])));
+
+				auto file_path = pseudo_set_.file_path(atom_list[iatom]);
+				if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
+
+				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path));
 				
 				auto & pseudo = insert.first->second;
 				
@@ -140,16 +143,17 @@ namespace hamiltonian {
 TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
 
   using namespace Catch::literals;
-  using pseudo::element;
+	using pseudo::element;
+  using input::species;
 
   SECTION("Non-existing element"){
-    std::vector<element> el_list({element("P"), element("X")});
+    std::vector<species> el_list({element("P"), element("X")});
 
     REQUIRE_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list));
   }
   
   SECTION("Duplicated element"){
-    std::vector<element> el_list({element("N"), element("N")});
+    std::vector<species> el_list({element("N"), element("N")});
 
     hamiltonian::atomic_potential pot(el_list.size(), el_list.begin());
 
@@ -159,7 +163,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
   }
 
   SECTION("Empty list"){
-    std::vector<element> el_list;
+    std::vector<species> el_list;
     
     hamiltonian::atomic_potential pot(el_list.size(), el_list);
 
@@ -168,7 +172,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
   }
 
   SECTION("CNOH"){
-    element el_list[] = {element("C"), element("N"), element("O"), element("H")};
+    species el_list[] = {element("C"), element("N"), element("O"), element("H")};
 
     hamiltonian::atomic_potential pot(4, el_list);
 

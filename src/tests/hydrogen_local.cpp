@@ -31,9 +31,9 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 	
 	ions::geometry geo;
 
-	geo.add_atom(pseudo::element("H"), math::d3vector(0.0, 0.0, 0.0));
+	geo.add_atom(local_h, math::d3vector(0.0, 0.0, 0.0));
     
-	systems::ions ions(input::cell::cubic(10.0, 10.0, 10.0), geo);
+	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0), geo);
 
 	input::config conf;
 	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
