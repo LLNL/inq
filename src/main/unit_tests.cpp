@@ -24,6 +24,7 @@
 
 #include <input/basis.hpp>
 #include <input/cell.hpp>
+#include <input/species.hpp>
 #include <parser/input_file.hpp>
 #include <config/path.hpp>
 #include <math/d3vector.hpp>
