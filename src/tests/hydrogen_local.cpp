@@ -110,7 +110,24 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
       Kinetic     =         0.41896742
       External    =        -0.77457392
       Non-local   =         0.00000000
+
 			
+			QBALL RESULTS
+
+			<eigenvalue_sum> -0.23303692 </eigenvalue_sum>
+
+			<ekin>        0.41725484 </ekin>
+			<econf>       0.00000000 </econf>
+			<eps>        -0.10437132 </eps>
+			<enl>         0.00000000 </enl>
+			<ecoul>      -0.52645873 </ecoul>
+			<exc>        -0.23212287 </exc>
+			<evdw>        0.00000000 </evdw>
+			<esr>         0.00000000 </esr>
+			<eself>       0.79788456 </eself>
+			<ets>         0.00000000 </ets>
+			<etotal>     -0.44569809 </etotal>
+
 		*/
 		
 		REQUIRE(energy.total()       == -0.3756001974_a);
