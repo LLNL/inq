@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t; tab-width: 2 -*- */
 
-#ifndef IONS_INTERACTION
-#define IONS_INTERACTION
+#ifndef IONS__INTERACTION
+#define IONS__INTERACTION
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -22,16 +22,30 @@
 */
 
 #include <config.h>
-
 #include <math/d3vector.hpp>
 #include <cmath>
 #include <ions/periodic_replicas.hpp>
+#include <multi/array.hpp>
 #include <limits>
 #include <complex>
 
 namespace ions {
 
-  template <class cell_type, class array_charge, class array_positions, class array_forces>
+
+	template <class cell_type, class geometry_type>
+	auto interaction_energy(const cell_type & cell, const geometry_type & geo){
+		double energy;
+		boost::multi::array<math::d3vector, 1> forces(geo.num_atoms());
+		boost::multi::array<double, 1> charges(geo.num_atoms());
+
+		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = geo.atoms()[ii].charge();
+
+		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), energy, forces);
+
+		return energy;
+	}
+
+	template <class cell_type, class array_charge, class array_positions, class array_forces>
   void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, 
 													double & energy, array_forces & forces){
 

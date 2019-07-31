@@ -26,6 +26,7 @@
 #include <input/basis.hpp>
 #include <input/config.hpp>
 #include <functionals/lda.hpp>
+#include <ions/interaction.hpp>
 
 namespace systems {
 
@@ -72,7 +73,8 @@ namespace systems {
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, energy);
-			
+			energy.ion = ::ions::interaction_energy(ions_.cell(), ions_.geo());
+																		 
       for(int ii = 0; ii < 1000; ii++){
 
 				operations::subspace_diagonalization(ham_, phi_);
