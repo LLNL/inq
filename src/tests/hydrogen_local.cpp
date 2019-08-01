@@ -70,14 +70,14 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 
 		*/
 		
-		REQUIRE(energy.total()       == -0.3591216767_a);
-		REQUIRE(energy.kinetic()     ==  4.868395e-01_a);
+		REQUIRE(energy.total()       == -0.4547670333_a);
+		REQUIRE(energy.kinetic()     ==  0.4868395171_a);
 		REQUIRE(energy.eigenvalues   == -0.3591216767_a);
-		REQUIRE(energy.external      == -8.459612e-01_a);
+		REQUIRE(energy.external      == -0.8459611938_a);
 		REQUIRE(fabs(energy.hartree) <=  1e-10);
 		REQUIRE(fabs(energy.xc)      <=  1e-10);
 		REQUIRE(fabs(energy.nvxc)    <=  1e-10);
-
+		REQUIRE(energy.ion           == -0.0956453566_a);
 	}
 
 	//LDA
@@ -130,13 +130,14 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 
 		*/
 		
-		REQUIRE(energy.total()       == -0.3756001974_a);
+		REQUIRE(energy.total()       == -0.4712455539_a);
 		REQUIRE(energy.kinetic()     ==  4.166462e-01_a);
 		REQUIRE(energy.eigenvalues   == -2.342972e-01_a);
 		REQUIRE(energy.external      == -7.721030e-01_a);
 		REQUIRE(energy.hartree       ==  2.115318e-01_a);
 		REQUIRE(energy.xc            == -2.316752e-01_a);
 		REQUIRE(energy.nvxc          == -3.019039e-01_a);
+		REQUIRE(energy.ion           == -0.0956453566_a);
 
 	}
 }

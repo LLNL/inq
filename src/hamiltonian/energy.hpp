@@ -61,6 +61,7 @@ namespace hamiltonian {
 			out << "  hartree     = " << hartree     << std::endl;
 			out << "  xc          = " << xc          << std::endl;
 			out << "  intnvxc     = " << nvxc        << std::endl;
+			out << "  ion-ion     = " << ion         << std::endl;
 			out << std::endl;
 
 		}
