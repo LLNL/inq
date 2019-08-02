@@ -53,9 +53,14 @@ namespace basis {
       return glength_;
     }
 
-		double radius() const {
+		auto radius() const {
 			return 0.5*std::min(glength_[0], std::min(glength_[1], glength_[2]));
 		}
+
+		auto outside_sphere(const double g2) const {
+			if(not spherical_g_grid_) return false;
+			return g2 > radius()*radius();
+		}		
 
     const math::d3vector & gspacing() const{
       return gspacing_;
