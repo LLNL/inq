@@ -63,7 +63,7 @@ namespace basis {
 
 		static std::array<int, 3> calculate_dimensions(const ions::UnitCell & cell, const input::basis & basis_input){
 			std::array<int, 3> nr;
-			double spacing = basis_input.get_spacing();
+			double spacing = basis_input.spacing();
 			
 			// make the spacing conmensurate with the grid
 			// OPTIMIZATION: we can select a good size here for the FFT

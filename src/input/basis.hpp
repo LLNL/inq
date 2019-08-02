@@ -21,7 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "../math/d3vector.hpp"
+#include <math/d3vector.hpp>
+#include <utils/merge_optional.hpp>
 #include <cassert>
 #include <array>
 
@@ -32,26 +33,49 @@ namespace input {
   public:
 
 		static auto spacing(double arg_spacing){
-			return basis(arg_spacing);
+			basis bs;
+			bs.spacing_ = arg_spacing; 
+			return bs;
 		}
 
 		static auto cutoff_energy(double arg_ecut){
-			return basis(M_PI*sqrt(0.5/arg_ecut));
+			basis bs;
+			bs.spacing_ = M_PI*sqrt(0.5/arg_ecut);
+			return bs;
 		}
 
-		double get_spacing() const {
-			return spacing_;
+		static auto spherical_grid(bool arg_sph_grid){
+			basis bs;
+			bs.spherical_grid_ = arg_sph_grid;
+			return bs;
 		}
-		
+
+		auto spacing() const {
+			return spacing_.value();
+		}
+
+		auto spherical_grid() const {
+			return spherical_grid_.value_or(false);
+		}
+
+		friend basis operator|(const basis & opt1, const basis & opt2){
+			using utils::merge_optional;
+
+			basis ropt;
+			ropt.spacing_ = merge_optional(opt1.spacing_, opt2.spacing_);
+			ropt.spherical_grid_ = merge_optional(opt1.spherical_grid_, opt2.spherical_grid_);
+			return ropt;
+		}
+
 	private:
-
-		basis(double arg_spacing):
-			spacing_(arg_spacing){
+	
+		basis(){
 		}
 		
-		double spacing_;
-    
-  };
+		std::optional<double> spacing_;
+		std::optional<bool> spherical_grid_;
+		
+	};
 }
 
 #ifdef UNIT_TEST
@@ -66,7 +90,9 @@ TEST_CASE("class input::basis", "[basis]") {
 
 		auto bi = input::basis::spacing(0.123);
 
-		REQUIRE(bi.get_spacing() == 0.123_a);
+		REQUIRE(bi.spacing() == 0.123_a);
+		REQUIRE(not bi.spherical_grid());
+				
 	}
 					
 	
@@ -74,10 +100,19 @@ TEST_CASE("class input::basis", "[basis]") {
 
 		auto bi = input::basis::cutoff_energy(493.48);
 
-		REQUIRE(bi.get_spacing() == 0.1_a);
+		REQUIRE(bi.spacing() == 0.1_a);
+		
 	}
 			
-  
+	SECTION("Spherical grid"){
+
+		auto bi = input::basis::cutoff_energy(493.48) | input::basis::spherical_grid(true);
+
+		REQUIRE(bi.spacing() == 0.1_a);
+		REQUIRE(bi.spherical_grid());
+		
+	}
+			
 }
 #endif
 
