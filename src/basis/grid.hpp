@@ -51,10 +51,6 @@ namespace basis {
       return nr_;
     }
 
-    const std::array<int, 3> & gsize() const{
-      return ng_;
-    }
-
     const math::d3vector & rspacing() const{
       return rspacing_;
     }
@@ -68,16 +64,12 @@ namespace basis {
     }
 
     long size() const {
-      return nr_[0]*long(nr_[1])*nr_[2];
+      return npoints_;
     }
 
 		long num_points() const {
 			return npoints_;
 		}
-		
-    long rtotalsize() const {
-      return nr_[0]*long(nr_[1])*nr_[2];
-    }
 
 		double volume_element() const {
 			return rspacing_[0]*rspacing_[1]*rspacing_[2];

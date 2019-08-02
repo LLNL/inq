@@ -61,6 +61,10 @@ namespace basis {
       return gspacing_;
     }
 
+    const std::array<int, 3> & gsize() const{
+      return ng_;
+    }
+		
 		bool g_is_zero(const int ix, const int iy, const int iz) const {
 			return (ix == 0 and iy == 0 and iz == 0);
 		}
