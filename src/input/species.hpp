@@ -26,26 +26,85 @@
 #include <cmath>
 
 namespace input {
-  class species : public pseudo::element {
 
+	class species : public pseudo::element {
+
+		class options;
+		
   public:
 		
-		species(const pseudo::element & arg_el, std::string arg_pseudo_file = ""):
+		species(const pseudo::element & arg_el, const options & arg_options = {}):
 			pseudo::element(arg_el),
-			pseudo_file_(arg_pseudo_file){
+			opts(arg_options){
+		}
+
+		friend species operator|(const species & spec, const options & opts){
+			auto rspec = spec;
+			rspec.opts = rspec.opts | opts;
+			return rspec;
+		}
+
+		static auto name(const std::string & arg_name){
+			options ropt;
+			ropt.name_ = arg_name;
+			return ropt;
+		}
+		
+		static auto pseudo(const std::string & pseudo_file){
+			options ropt;
+			ropt.pseudo_file_ = pseudo_file;
+			return ropt;
 		}
 
 		auto has_file() const {
-			return pseudo_file_ != "";
+			return opts.pseudo_file_.has_value();
 		}
 
 		auto const & file_path() const {
-			return pseudo_file_;
+			return opts.pseudo_file_.value();
+		}
+
+		auto symbol() const {
+			return opts.name_.value_or(pseudo::element::symbol());
 		}
 		
 	private:
 
-		std::string pseudo_file_;		
+		struct options {
+		private:
+			
+			std::optional<std::string> name_;
+			std::optional<std::string> pseudo_file_;		
+			std::optional<double> mass_;
+			
+			options(){
+			}
+			
+			template <class opt_type>
+			static opt_type merge_option(const opt_type & option1, const opt_type & option2){
+				if(option2) return option2;
+				if(option1) return option1;
+				return opt_type{};
+			}
+			
+		public:
+
+			friend options operator|(const options & opt1, const options & opt2){
+				options ropt;
+				
+				ropt.name_ = merge_option(opt1.name_, opt2.name_);
+				ropt.pseudo_file_ = merge_option(opt1.pseudo_file_, opt2.pseudo_file_);
+				ropt.mass_ = merge_option(opt1.mass_, opt2.mass_);
+				
+				return ropt;
+			}
+
+
+			friend class species;
+			
+		};
+
+		options opts;
 		
   };
   

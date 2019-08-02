@@ -27,7 +27,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 
 	using namespace Catch::literals;
 
-	input::species local_h(pseudo::element("H"), config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	input::species local_h = pseudo::element("H") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF") | input::species::name("Hloc");
 	
 	ions::geometry geo;
 
