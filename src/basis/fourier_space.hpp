@@ -49,6 +49,18 @@ namespace basis {
 			return g;
 		}
 
+    const math::d3vector & glength() const{
+      return glength_;
+    }
+
+		double radius() const {
+			return 0.5*std::min(glength_[0], std::min(glength_[1], glength_[2]));
+		}
+
+    const math::d3vector & gspacing() const{
+      return gspacing_;
+    }
+
 		bool g_is_zero(const int ix, const int iy, const int iz) const {
 			return (ix == 0 and iy == 0 and iz == 0);
 		}

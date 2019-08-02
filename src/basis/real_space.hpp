@@ -98,23 +98,14 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
       REQUIRE(pw.rtotalsize() == 8000);
-      REQUIRE(pw.gtotalsize() == 8000);
       
       REQUIRE(pw.rspacing()[0] == 0.5_a);
       REQUIRE(pw.rspacing()[1] == 0.5_a);
       REQUIRE(pw.rspacing()[2] == 0.5_a);
       
-      REQUIRE(pw.gspacing()[0] == 0.6283185307_a);
-      REQUIRE(pw.gspacing()[1] == 0.6283185307_a);
-      REQUIRE(pw.gspacing()[2] == 0.6283185307_a);
-      
       REQUIRE(pw.rsize()[0] == 20);
       REQUIRE(pw.rsize()[1] == 20);
       REQUIRE(pw.rsize()[2] == 20);
-
-      REQUIRE(pw.gsize()[0] == 20);
-      REQUIRE(pw.gsize()[1] == 20);
-      REQUIRE(pw.gsize()[2] == 20);
 
     }
 
@@ -127,23 +118,14 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
       REQUIRE(pw.rtotalsize() == 536640);
-      REQUIRE(pw.gtotalsize() == 536640);
 	    
       REQUIRE(pw.rspacing()[0] == 0.3613953488_a);
       REQUIRE(pw.rspacing()[1] == 0.3625641026_a);
       REQUIRE(pw.rspacing()[2] == 0.36328125_a);
       
-      REQUIRE(pw.gspacing()[0] == 0.0808646758_a);
-      REQUIRE(pw.gspacing()[1] == 0.4443553965_a);
-      REQUIRE(pw.gspacing()[2] == 0.2702445293_a);
-      
       REQUIRE(pw.rsize()[0] == 215);
       REQUIRE(pw.rsize()[1] == 39);
       REQUIRE(pw.rsize()[2] == 64);
-
-      REQUIRE(pw.gsize()[0] == 215);
-      REQUIRE(pw.gsize()[1] == 39);
-      REQUIRE(pw.gsize()[2] == 64);
 
     }
 

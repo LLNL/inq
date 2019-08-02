@@ -59,20 +59,12 @@ namespace basis {
       return rspacing_;
     }
 
-    const math::d3vector & gspacing() const{
-      return gspacing_;
-    }
-
 		double diagonal_length() const {
 			return length(rlength_);
 		}
 		
     const math::d3vector & rlength() const{
       return rlength_;
-    }
-
-    const math::d3vector & glength() const{
-      return glength_;
     }
 
     long size() const {
@@ -85,10 +77,6 @@ namespace basis {
 		
     long rtotalsize() const {
       return nr_[0]*long(nr_[1])*nr_[2];
-    }
-
-    long gtotalsize() const {
-      return ng_[0]*long(ng_[1])*ng_[2];
     }
 
 		double volume_element() const {
@@ -107,7 +95,7 @@ namespace basis {
 			return gr.nr_;
 		}
 		
-	private:
+	protected:
 		
     std::array<int, 3> nr_;
     std::array<int, 3> ng_;
