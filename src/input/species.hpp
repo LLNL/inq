@@ -44,15 +44,21 @@ namespace input {
 			return rspec;
 		}
 
-		static auto name(const std::string & arg_name){
+		static auto symbol(const std::string & arg_symbol){
 			options ropt;
-			ropt.name_ = arg_name;
+			ropt.symbol_ = arg_symbol;
 			return ropt;
 		}
 		
 		static auto pseudo(const std::string & pseudo_file){
 			options ropt;
 			ropt.pseudo_file_ = pseudo_file;
+			return ropt;
+		}
+
+		static auto mass(const double arg_mass){
+			options ropt;
+			ropt.mass_ = arg_mass;
 			return ropt;
 		}
 
@@ -65,7 +71,11 @@ namespace input {
 		}
 
 		auto symbol() const {
-			return opts.name_.value_or(pseudo::element::symbol());
+			return opts.symbol_.value_or(pseudo::element::symbol());
+		}
+
+		auto mass() const {
+			return opts.mass_.value_or(pseudo::element::mass());
 		}
 		
 	private:
@@ -73,7 +83,7 @@ namespace input {
 		struct options {
 		private:
 			
-			std::optional<std::string> name_;
+			std::optional<std::string> symbol_;
 			std::optional<std::string> pseudo_file_;		
 			std::optional<double> mass_;
 			
@@ -92,7 +102,7 @@ namespace input {
 			friend options operator|(const options & opt1, const options & opt2){
 				options ropt;
 				
-				ropt.name_ = merge_option(opt1.name_, opt2.name_);
+				ropt.symbol_ = merge_option(opt1.symbol_, opt2.symbol_);
 				ropt.pseudo_file_ = merge_option(opt1.pseudo_file_, opt2.pseudo_file_);
 				ropt.mass_ = merge_option(opt1.mass_, opt2.mass_);
 				

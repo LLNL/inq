@@ -22,16 +22,17 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
+#include <input/atom.hpp>
 
 TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_gas]") {
 
 	using namespace Catch::literals;
 
-	input::species local_h = pseudo::element("H") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF") | input::species::name("Hloc");
+	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF"); 
 	
-	ions::geometry geo;
-
-	geo.add_atom(local_h, math::d3vector(0.0, 0.0, 0.0));
+	std::vector<input::atom> geo;
+	
+	geo.push_back(input::atom(local_h, math::d3vector(0.0, 0.0, 0.0)));
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0), geo);
 

@@ -24,6 +24,7 @@
 #include <math/d3vector.hpp>
 #include <pseudo/element.hpp>
 #include <input/species.hpp>
+#include <input/atom.hpp>
 
 #include <vector>
 #include <cassert>
@@ -41,6 +42,10 @@ namespace ions {
     geometry(){
     }
 
+		geometry(const char * xyz_file_name){
+			geometry(std::string(xyz_file_name));
+		}
+		
     // Generates a geometry from an xyz file
     geometry(const std::string & xyz_file_name){
       std::ifstream xyz_file(xyz_file_name.c_str());
@@ -67,6 +72,19 @@ namespace ions {
       
       assert(natoms == num_atoms());
       
+    }
+
+		template <class container_type>
+		geometry(const container_type & atom_container){
+
+			atoms_.reserve(atom_container.size());
+			coordinates_.reserve(atom_container.size());
+			
+			for(auto it = atom_container.begin(); it != atom_container.end(); it++){
+				atoms_.push_back(it->species());
+				coordinates_.push_back(it->position());
+			}
+			
     }
     
     int num_atoms() const { return coordinates_.size(); }

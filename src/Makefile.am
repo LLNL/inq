@@ -17,6 +17,7 @@ noinst_HEADERS =                             \
 	input/cell.hpp                             \
 	input/config.hpp                           \
 	input/species.hpp                          \
+	input/atom.hpp                             \
 	math/d3vector.hpp                          \
 	math/spline.hpp                            \
 	math/spherical_harmonic.hpp                \
