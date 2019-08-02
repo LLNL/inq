@@ -78,7 +78,7 @@ namespace basis {
 			return norm(gvector(ix, iy, iz));
 		}
 
-		bool spherical() {
+		bool spherical() const {
 			return spherical_g_grid_;
 		}
 		

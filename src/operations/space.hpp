@@ -63,6 +63,20 @@ namespace operations {
 				}
 				
       }
+
+			if(fphi.basis().spherical()){
+				
+				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
+					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
+						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
+							if(fphi.basis().outside_sphere(fphi.basis().g2(ix, iy, iz))){
+								for(int ist = 0; ist < phi.set_size(); ist++) fphi.cubic()[ix][iy][iz][ist] = 0.0;
+							}
+						}
+					}
+				}
+
+			}
       
       return fphi;    
     }
