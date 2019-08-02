@@ -44,6 +44,12 @@ namespace input {
 			return rspec;
 		}
 
+		friend species operator|(const std::string & arg_symbol, const options & opts){
+			auto rspec = species(arg_symbol);
+			rspec.opts = rspec.opts | opts;
+			return rspec;
+		}
+		
 		static auto symbol(const std::string & arg_symbol){
 			options ropt;
 			ropt.symbol_ = arg_symbol;
@@ -109,7 +115,6 @@ namespace input {
 				return ropt;
 			}
 
-
 			friend class species;
 			
 		};
@@ -124,13 +129,47 @@ namespace input {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("class ions::species", "[species]") {
+TEST_CASE("class input::species", "[input::species]") {
   
   using namespace Catch::literals;
 
-	input::species s(pseudo::element("Xe"));
+	SECTION("Constructor"){
+		
+		input::species s(pseudo::element("Xe"));
+		
+		REQUIRE(s.atomic_number() == 54);
+		REQUIRE(not s.has_file());
+		
+	}
 
-	REQUIRE(s.atomic_number() == 54);
+	SECTION("Option mass"){
+		
+		input::species s = pseudo::element("U") | input::species::mass(235);
+		
+		REQUIRE(s.symbol() == "U");
+		REQUIRE(s.mass() == 235.0_a);
+		
+	}
+	
+	SECTION("Option symbol"){
+		
+		input::species s = "U" | input::species::symbol("U235") | input::species::mass(235);
+		
+		REQUIRE(s.symbol() == "U235");
+		REQUIRE(s.mass() == 235.0_a);
+		
+	}
+
+	SECTION("Option pseudopotential"){
+		
+		input::species s = "He" | input::species::pseudo("hola");
+		
+		REQUIRE(s.symbol() == "He");
+		REQUIRE(s.has_file());
+		REQUIRE(s.file_path() == "hola");
+		
+	}
+	
 	
 }
 
