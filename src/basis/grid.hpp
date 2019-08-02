@@ -34,7 +34,10 @@ namespace basis {
 		const static int dimension = 3;
 		
 		template<class lattice_vectors_type>
-		grid(const lattice_vectors_type & lattice_vectors, std::array<int, 3> nr) : nr_{nr}{
+		grid(const lattice_vectors_type & lattice_vectors, std::array<int, 3> nr, bool spherical_grid) :
+			nr_(nr),
+			spherical_g_grid_(spherical_grid) {
+				
 			for(int idir = 0; idir < 3; idir++){
 				rlength_[idir] = length(lattice_vectors[idir]);
 				ng_[idir] = nr_[idir];
@@ -99,6 +102,8 @@ namespace basis {
     math::d3vector glength_;
 
 		long npoints_;
+
+		bool spherical_g_grid_;
     
   };
 }

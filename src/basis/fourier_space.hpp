@@ -72,6 +72,10 @@ namespace basis {
 		double g2(const int ix, const int iy, const int iz) const {
 			return norm(gvector(ix, iy, iz));
 		}
+
+		bool spherical() {
+			return spherical_g_grid_;
+		}
 		
 	private:
 		
