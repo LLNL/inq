@@ -32,12 +32,17 @@ namespace input {
 		class options;
 		
   public:
-		
+
 		species(const pseudo::element & arg_el, const options & arg_options = {}):
 			pseudo::element(arg_el),
 			opts(arg_options){
 		}
 
+		species(const species &) = default;	
+		species(species &&) = default;
+		species & operator=(const species &) = delete;	
+		species & operator=(species &&) = delete;
+		
 		friend species operator|(const species & spec, const options & opts){
 			auto rspec = spec;
 			rspec.opts = rspec.opts | opts;
@@ -83,7 +88,7 @@ namespace input {
 		auto mass() const {
 			return opts.mass_.value_or(pseudo::element::mass());
 		}
-		
+
 	private:
 
 		struct options {
@@ -139,6 +144,16 @@ TEST_CASE("class input::species", "[input::species]") {
 		
 		REQUIRE(s.atomic_number() == 54);
 		REQUIRE(not s.has_file());
+
+	}
+
+	SECTION("Constructor with options"){
+		
+		input::species s(pseudo::element("Xe"), input::species::mass(20));
+		
+		REQUIRE(s.atomic_number() == 54);
+		REQUIRE(not s.has_file());
+		REQUIRE(s.mass() == 20.0_a);
 		
 	}
 
