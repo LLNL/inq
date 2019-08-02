@@ -30,7 +30,7 @@
 namespace solvers {
 
 	template <class operator_type, class preconditioner_type, class field_set_type>
-	void steepest_descent(const states::ks_states st, const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
+	void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
 
 		const int num_steps = 5;
 
@@ -46,7 +46,7 @@ namespace solvers {
 			auto lambda(eigenvalues);
 			
 			//DATAOPERATIONS
-			for(int ist = 0; ist < st.num_states(); ist++) lambda[ist] /= -norm[ist];
+			for(int ist = 0; ist < phi.set_size(); ist++) lambda[ist] /= -norm[ist];
 			
 			operations::shift(lambda, phi, residual);
 			
@@ -63,7 +63,7 @@ namespace solvers {
 			
 			
 			//DATAOPERATIONS
-			for(int ist = 0; ist < st.num_states(); ist++){
+			for(int ist = 0; ist < phi.set_size(); ist++){
 				double ca = real(m1[ist])*real(m4[ist]) - real(m3[ist])*real(m2[ist]);
 				double cb = real(norm[ist])*real(m3[ist]) - real(eigenvalues[ist])*real(m1[ist]);
 				double cc = real(eigenvalues[ist])*real(m2[ist]) - real(m4[ist])*real(norm[ist]);

@@ -79,7 +79,7 @@ namespace systems {
 
 				operations::subspace_diagonalization(ham_, phi_);
 				
-				solvers::steepest_descent(states_, ham_, prec, phi_);
+				solvers::steepest_descent(ham_, prec, phi_);
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
