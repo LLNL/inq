@@ -22,6 +22,7 @@
 */
 
 #include <pseudo/element.hpp>
+#include <utils/merge_optional.hpp>
 #include <vector>
 #include <cmath>
 
@@ -100,22 +101,17 @@ namespace input {
 			
 			options(){
 			}
-			
-			template <class opt_type>
-			static opt_type merge_option(const opt_type & option1, const opt_type & option2){
-				if(option2) return option2;
-				if(option1) return option1;
-				return opt_type{};
-			}
-			
+
 		public:
 
 			friend options operator|(const options & opt1, const options & opt2){
 				options ropt;
+
+				using utils::merge_optional;
 				
-				ropt.symbol_ = merge_option(opt1.symbol_, opt2.symbol_);
-				ropt.pseudo_file_ = merge_option(opt1.pseudo_file_, opt2.pseudo_file_);
-				ropt.mass_ = merge_option(opt1.mass_, opt2.mass_);
+				ropt.symbol_ = merge_optional(opt1.symbol_, opt2.symbol_);
+				ropt.pseudo_file_ = merge_optional(opt1.pseudo_file_, opt2.pseudo_file_);
+				ropt.mass_ = merge_optional(opt1.mass_, opt2.mass_);
 				
 				return ropt;
 			}
