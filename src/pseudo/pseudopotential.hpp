@@ -21,14 +21,14 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "../pseudo/psml.hpp"
-#include "../pseudo/qso.hpp"
-#include "../pseudo/upf1.hpp"
-#include "../pseudo/upf2.hpp"
-#include "../pseudo/psp8.hpp"
-#include "../pseudo/detect_format.hpp"
-
-#include "../math/spline.hpp"
+#include <pseudo/psml.hpp>
+#include <pseudo/qso.hpp>
+#include <pseudo/upf1.hpp>
+#include <pseudo/upf2.hpp>
+#include <pseudo/psp8.hpp>
+#include <pseudo/detect_format.hpp>
+#include <math/spline.hpp>
+#include <math/erf_range_separation.hpp>
 
 namespace pseudo {
 
@@ -44,7 +44,7 @@ namespace pseudo {
       PROJECTOR_INDEX_OUT_OF_RANGE
     };
     
-    pseudopotential(const std::string & filename){
+    pseudopotential(const std::string & filename, const math::erf_range_separation & sep){
 
       //PARSE THE FILE
       base * pseudo;    
@@ -92,7 +92,7 @@ namespace pseudo {
       pseudo->local_potential(local_potential);
 
       for(unsigned ii = 0; ii < local_potential.size(); ii++){
-				local_potential[ii] -= long_range_potential(grid_[ii]);
+				local_potential[ii] -= -valence_charge_*sep.long_range_potential(grid_[ii]);
       }
 
       short_range_.fit(grid_.data(), local_potential.data(), local_potential.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC);
@@ -220,20 +220,22 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
   
   using namespace Catch::literals;
 
+	const math::erf_range_separation sep(0.625);
+	
   SECTION("Non-existing file"){
-    REQUIRE_THROWS(pseudo::pseudopotential("/this_file_doesnt_exists"));
+    REQUIRE_THROWS(pseudo::pseudopotential("/this_file_doesnt_exists", sep));
   }
 
   SECTION("Non-pseudopotential file"){
-    REQUIRE_THROWS(pseudo::pseudopotential(config::path::unit_tests_data() + "benzene.xyz"));
+    REQUIRE_THROWS(pseudo::pseudopotential(config::path::unit_tests_data() + "benzene.xyz", sep));
   }
 
   SECTION("Non-supported format QSO/Qbox pseudopotential file"){
-    REQUIRE_THROWS(pseudo::pseudopotential(config::path::unit_tests_data() + "I_HSCV_LDA-1.0.xml"));
+    REQUIRE_THROWS(pseudo::pseudopotential(config::path::unit_tests_data() + "I_HSCV_LDA-1.0.xml", sep));
   }
 
   SECTION("UPF2 pseudopotential file"){
-    pseudo::pseudopotential ps(config::path::unit_tests_data() + "W_ONCV_PBE-1.0.upf");
+    pseudo::pseudopotential ps(config::path::unit_tests_data() + "W_ONCV_PBE-1.0.upf", sep);
 
     REQUIRE(ps.valence_charge() == 28.0_a);
 
@@ -312,7 +314,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
   }
 
   SECTION("UPF1 pseudopotential file"){
-    pseudo::pseudopotential ps(config::path::unit_tests_data() + "F.UPF");
+    pseudo::pseudopotential ps(config::path::unit_tests_data() + "F.UPF", sep);
 
     REQUIRE(ps.valence_charge() == 7.0_a);
 
@@ -327,7 +329,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
   }
 
   SECTION("PSP8 pseudopotential file"){
-    pseudo::pseudopotential ps(config::path::unit_tests_data() + "78_Pt_r.oncvpsp.psp8");
+    pseudo::pseudopotential ps(config::path::unit_tests_data() + "78_Pt_r.oncvpsp.psp8", sep);
 
     REQUIRE(ps.valence_charge() == 18.0_a);
 
@@ -357,7 +359,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
   }
 
   SECTION("QSO/Qbox pseudopotential file"){
-    pseudo::pseudopotential ps(config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml");
+    pseudo::pseudopotential ps(config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml", sep);
 
     REQUIRE(ps.valence_charge() == 4.0_a);
 

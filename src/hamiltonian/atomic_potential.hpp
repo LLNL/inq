@@ -41,7 +41,10 @@ namespace hamiltonian {
 
     template <class atom_array>
     atomic_potential(const int natoms, const atom_array & atom_list):
+			
       pseudo_set_(config::path::share() + "pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"){
+
+			const math::erf_range_separation sep(0.625);
 			
       nelectrons_ = 0.0;
       for(int iatom = 0; iatom < natoms; iatom++){
@@ -50,7 +53,7 @@ namespace hamiltonian {
 				auto file_path = pseudo_set_.file_path(atom_list[iatom]);
 				if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
 
-				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path));
+				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep));
 				
 				auto & pseudo = insert.first->second;
 				
