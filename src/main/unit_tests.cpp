@@ -30,6 +30,7 @@
 #include <math/d3vector.hpp>
 #include <math/spline.hpp>
 #include <math/spherical_harmonic.hpp>
+#include <math/erf_range_separation.hpp>
 #include <pseudo/element.hpp>
 #include <pseudo/pseudopotential.hpp>
 #include <ions/geometry.hpp>
