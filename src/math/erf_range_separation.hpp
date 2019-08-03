@@ -39,7 +39,23 @@ namespace math {
     auto short_range_potential(double rr) const {
       return 1.0/rr - long_range_potential(rr);
     }
-   
+
+		[[gnu::pure]] auto short_range_potential_radius(double tol = 1e-15) const {
+
+			// find the inverse of the function by Newton-Raphson
+			double x = 1.0;
+			double xold = 0.0;
+			for(int ii = 0; ii < 100; ii++){
+				double f = erf(x/(sigma_*sqrt(2.0))) + tol*x - 1.0;
+				double df = sqrt(2.0/M_PI)*exp(-0.5*square(x/sigma_))/sigma_ + tol;
+				xold = x;
+				x = x - f/df;
+				if(fabs(xold - x) < 1e-5) break;
+			}
+
+			return x;
+    }
+		
     auto long_range_density(double rr) const {
       const double exp_arg = -0.5*square(rr/sigma_);
       return exp(exp_arg)/cube(sigma_*sqrt(2.0*M_PI));
@@ -80,6 +96,9 @@ TEST_CASE("class math::erf_range_separation", "[math::erf_range_separation]") {
 
 	SECTION("Potential"){
 
+		REQUIRE(sep.short_range_potential(0.4) + sep.long_range_potential(0.4) == Approx(1.0/0.4));
+		REQUIRE(sep.short_range_potential(3.3) + sep.long_range_potential(3.3) == Approx(1.0/3.3));
+
 		REQUIRE(sep.long_range_potential(0.0) == Approx(3.989422804));
 		REQUIRE(sep.long_range_potential(1.0e-7) == Approx(3.989422804));
 		REQUIRE(sep.long_range_potential(1.0e-3) == Approx(3.9894061815));
@@ -96,9 +115,41 @@ TEST_CASE("class math::erf_range_separation", "[math::erf_range_separation]") {
 		REQUIRE(sep.long_range_potential(9.0) == Approx(0.1111111111));
 		REQUIRE(sep.long_range_potential(10.0) == Approx(0.1));
 
-		REQUIRE(sep.short_range_potential(0.4) + sep.long_range_potential(0.4) == Approx(1.0/0.4));
-		REQUIRE(sep.short_range_potential(3.3) + sep.long_range_potential(3.3) == Approx(1.0/3.3));
+		REQUIRE(sep.short_range_potential(1.0e-7) == Approx(9999996.0105771963));
+		REQUIRE(sep.short_range_potential(1.0e-3) == Approx(996.0105938185));
+		REQUIRE(sep.short_range_potential(1.0e-1) == Approx(6.1707507745));
+		REQUIRE(sep.short_range_potential(2.5e-1) == Approx(0.8451981893));
+		REQUIRE(sep.short_range_potential(5.0e-1) == Approx(0.0248386613));
+		REQUIRE(sep.short_range_potential(7.5e-1) == Approx(0.0002357794));
+		REQUIRE(sep.short_range_potential(1.0) == Approx(0.0000005733));
+		REQUIRE(sep.short_range_potential(1.25) == Approx(3.283621e-10));
+		REQUIRE(sep.short_range_potential(1.5) == Approx(4.255855e-14));
+		REQUIRE(fabs(sep.short_range_potential(1.75)) <= 1e-15);
+		REQUIRE(fabs(sep.short_range_potential(2.0)) <= 1e-15);
+		REQUIRE(fabs(sep.short_range_potential(2.5)) <= 1e-15);
+		REQUIRE(fabs(sep.short_range_potential(3.0)) <= 1e-15);
+		REQUIRE(fabs(sep.short_range_potential(3.5)) <= 1e-15);
+		REQUIRE(fabs(sep.short_range_potential(4.0)) <= 1e-15);
+	}
 
+	SECTION("Short range potential radius"){
+
+		auto radius = sep.short_range_potential_radius();
+		REQUIRE(radius == 1.593078562_a);
+		REQUIRE(sep.short_range_potential(radius) == 9.992007e-16_a);
+
+		radius = sep.short_range_potential_radius(0.1);
+		REQUIRE(radius == 4.089239e-01_a);
+		REQUIRE(sep.short_range_potential(radius) == 0.1_a);
+		
+		radius = sep.short_range_potential_radius(1.0);
+		REQUIRE(radius == 0.2366701558_a);
+		REQUIRE(sep.short_range_potential(radius) == 1.0_a);
+				
+		radius = sep.short_range_potential_radius(3.0);
+		REQUIRE(radius == 0.1505417002_a);
+		REQUIRE(sep.short_range_potential(radius) == 3.0_a);
+		
 	}
 
 	SECTION("Real space density"){
@@ -121,7 +172,7 @@ TEST_CASE("class math::erf_range_separation", "[math::erf_range_separation]") {
 		// the G = 0 component must be 1.0
 		REQUIRE(sep.long_range_density_fourier(0.0) == 1.0_a);
 		
-		// the integral must be 1.0
+		// the integral must be zero component of the real space density
 		double dg = 0.1;
 		double integral = 0.0;
 		for(double g = dg; g < sep.long_range_density_fourier_radius(); g += dg){
