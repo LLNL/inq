@@ -41,11 +41,9 @@ namespace hamiltonian {
 
     template <class atom_array>
     atomic_potential(const int natoms, const atom_array & atom_list):
-			
+			sep_(0.625),
       pseudo_set_(config::path::share() + "pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"){
 
-			const math::erf_range_separation sep(0.625);
-			
       nelectrons_ = 0.0;
       for(int iatom = 0; iatom < natoms; iatom++){
 				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
@@ -53,7 +51,7 @@ namespace hamiltonian {
 				auto file_path = pseudo_set_.file_path(atom_list[iatom]);
 				if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
 
-				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep));
+				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep_));
 				
 				auto & pseudo = insert.first->second;
 				
@@ -88,7 +86,7 @@ namespace hamiltonian {
 				auto atom_position = geo.coordinates()[iatom];
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
-				basis::spherical_grid sphere(basis, cell, atom_position, ps.long_range_density_radius());
+				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
 
 				//DATAOPERATIONS
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
@@ -131,6 +129,7 @@ namespace hamiltonian {
     
   private:
 
+		const math::erf_range_separation sep_;
     double nelectrons_;
     pseudo::set pseudo_set_;
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;

@@ -100,7 +100,6 @@ namespace pseudo {
       //THE PROJECTORS
 
       std::vector<double> proj;
-
       
       nproj_lm_ = 0;
       for(int ll = 0; ll <= pseudo->lmax(); ll++){
@@ -126,13 +125,7 @@ namespace pseudo {
     const double & valence_charge() const {
       return valence_charge_;
     }
-
-    //outside this, the long_range_density is zero
-    double long_range_density_radius() const {
-      const double tol = 1e-15;
-      return sqrt(-2.0*log(tol))*sigma_erf_;
-    }    
-    
+  
     double long_range_density(double rr) const {
       const double exp_arg = -0.5*pow(rr/sigma_erf_, 2);
       return -valence_charge_*exp(exp_arg)/pow(sigma_erf_*sqrt(2.0*M_PI), 3);
@@ -234,7 +227,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE(ps.valence_charge() == 28.0_a);
 
-    REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
+    REQUIRE(sep.long_range_density_radius() == 5.0922713869_a);
     
     //values validated with Octopus
     REQUIRE(ps.valence_charge()*sep.long_range_potential(0.00000000E+00) == -3.57452283E+01_a);
@@ -313,7 +306,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE(ps.valence_charge() == 7.0_a);
 
-    REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
+    REQUIRE(sep.long_range_density_radius() == 5.1945566758_a);
 
     REQUIRE(ps.short_range_potential_radius() == 2.8262095048_a);
 		
@@ -328,7 +321,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE(ps.valence_charge() == 18.0_a);
 
-    REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
+    REQUIRE(sep.long_range_density_radius() == 5.0922713869_a);
 
     REQUIRE(ps.short_range_potential_radius() == 3.09_a);
 		
@@ -358,7 +351,7 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 
     REQUIRE(ps.valence_charge() == 4.0_a);
 
-    REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
+    REQUIRE(sep.long_range_density_radius() == 5.0922713869_a);
 
     REQUIRE(ps.short_range_potential_radius() == 2.86_a);
 		
