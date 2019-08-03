@@ -91,7 +91,8 @@ namespace hamiltonian {
 				//DATAOPERATIONS
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					double rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
-					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += ps.long_range_density(rr);
+					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]]
+						+= ps.valence_charge()*sep_.long_range_density(rr);
 				}
       }
 			
