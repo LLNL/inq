@@ -92,7 +92,7 @@ namespace pseudo {
       pseudo->local_potential(local_potential);
 
       for(unsigned ii = 0; ii < local_potential.size(); ii++){
-				local_potential[ii] -= -valence_charge_*sep.long_range_potential(grid_[ii]);
+				local_potential[ii] -= valence_charge_*sep.long_range_potential(grid_[ii]);
       }
 
       short_range_.fit(grid_.data(), local_potential.data(), local_potential.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC);

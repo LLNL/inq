@@ -32,12 +32,12 @@ namespace math {
     }
 
     auto long_range_potential(double rr) const {
-      if(rr < 1e-8) return 2.0/(sqrt(2.0*M_PI)*sigma_);
-      return erf(rr/(sigma_*sqrt(2.0)))/rr;
+      if(rr < 1e-8) return -2.0/(sqrt(2.0*M_PI)*sigma_);
+      return -erf(rr/(sigma_*sqrt(2.0)))/rr;
     }
 
     auto short_range_potential(double rr) const {
-      return 1.0/rr - long_range_potential(rr);
+      return - 1.0/rr - long_range_potential(rr);
     }
 
 		[[gnu::pure]] auto short_range_potential_radius(double tol = 1e-15) const {
@@ -58,11 +58,11 @@ namespace math {
 		
     auto long_range_density(double rr) const {
       const double exp_arg = -0.5*square(rr/sigma_);
-      return exp(exp_arg)/cube(sigma_*sqrt(2.0*M_PI));
+      return -exp(exp_arg)/cube(sigma_*sqrt(2.0*M_PI));
     }
     
     auto long_range_density_fourier(double gg) const {
-      return exp(-0.5*square(gg*sigma_));
+      return -exp(-0.5*square(gg*sigma_));
     }
 
     auto long_range_density_fourier_radius(double tol = 1e-15) const {
@@ -96,34 +96,34 @@ TEST_CASE("class math::erf_range_separation", "[math::erf_range_separation]") {
 
 	SECTION("Potential"){
 
-		REQUIRE(sep.short_range_potential(0.4) + sep.long_range_potential(0.4) == Approx(1.0/0.4));
-		REQUIRE(sep.short_range_potential(3.3) + sep.long_range_potential(3.3) == Approx(1.0/3.3));
+		REQUIRE(sep.short_range_potential(0.4) + sep.long_range_potential(0.4) == Approx(-1.0/0.4));
+		REQUIRE(sep.short_range_potential(3.3) + sep.long_range_potential(3.3) == Approx(-1.0/3.3));
 
-		REQUIRE(sep.long_range_potential(0.0) == Approx(3.989422804));
-		REQUIRE(sep.long_range_potential(1.0e-7) == Approx(3.989422804));
-		REQUIRE(sep.long_range_potential(1.0e-3) == Approx(3.9894061815));
-		REQUIRE(sep.long_range_potential(1.0e-1) == Approx(3.8292492255));
-		REQUIRE(sep.long_range_potential(5.0e-1) == Approx(1.9751613387));
-		REQUIRE(sep.long_range_potential(1.0) == Approx(0.9999994267));
-		REQUIRE(sep.long_range_potential(2.0) == Approx(0.5));
-		REQUIRE(sep.long_range_potential(3.0) == Approx(0.3333333333));
-		REQUIRE(sep.long_range_potential(4.0) == Approx(0.25));
-		REQUIRE(sep.long_range_potential(5.0) == Approx(0.2));
-		REQUIRE(sep.long_range_potential(6.0) == Approx(0.16666667));
-		REQUIRE(sep.long_range_potential(7.0) == Approx(0.14285714));
-		REQUIRE(sep.long_range_potential(8.0) == Approx(0.125));
-		REQUIRE(sep.long_range_potential(9.0) == Approx(0.1111111111));
-		REQUIRE(sep.long_range_potential(10.0) == Approx(0.1));
+		REQUIRE(sep.long_range_potential(0.0) == Approx(-3.989422804));
+		REQUIRE(sep.long_range_potential(1.0e-7) == Approx(-3.989422804));
+		REQUIRE(sep.long_range_potential(1.0e-3) == Approx(-3.9894061815));
+		REQUIRE(sep.long_range_potential(1.0e-1) == Approx(-3.8292492255));
+		REQUIRE(sep.long_range_potential(5.0e-1) == Approx(-1.9751613387));
+		REQUIRE(sep.long_range_potential(1.0) == Approx(-0.9999994267));
+		REQUIRE(sep.long_range_potential(2.0) == Approx(-0.5));
+		REQUIRE(sep.long_range_potential(3.0) == Approx(-0.3333333333));
+		REQUIRE(sep.long_range_potential(4.0) == Approx(-0.25));
+		REQUIRE(sep.long_range_potential(5.0) == Approx(-0.2));
+		REQUIRE(sep.long_range_potential(6.0) == Approx(-0.16666667));
+		REQUIRE(sep.long_range_potential(7.0) == Approx(-0.14285714));
+		REQUIRE(sep.long_range_potential(8.0) == Approx(-0.125));
+		REQUIRE(sep.long_range_potential(9.0) == Approx(-0.1111111111));
+		REQUIRE(sep.long_range_potential(10.0) == Approx(-0.1));
 
-		REQUIRE(sep.short_range_potential(1.0e-7) == Approx(9999996.0105771963));
-		REQUIRE(sep.short_range_potential(1.0e-3) == Approx(996.0105938185));
-		REQUIRE(sep.short_range_potential(1.0e-1) == Approx(6.1707507745));
-		REQUIRE(sep.short_range_potential(2.5e-1) == Approx(0.8451981893));
-		REQUIRE(sep.short_range_potential(5.0e-1) == Approx(0.0248386613));
-		REQUIRE(sep.short_range_potential(7.5e-1) == Approx(0.0002357794));
-		REQUIRE(sep.short_range_potential(1.0) == Approx(0.0000005733));
-		REQUIRE(sep.short_range_potential(1.25) == Approx(3.283621e-10));
-		REQUIRE(sep.short_range_potential(1.5) == Approx(4.255855e-14));
+		REQUIRE(sep.short_range_potential(1.0e-7) == Approx(-9999996.0105771963));
+		REQUIRE(sep.short_range_potential(1.0e-3) == Approx(-996.0105938185));
+		REQUIRE(sep.short_range_potential(1.0e-1) == Approx(-6.1707507745));
+		REQUIRE(sep.short_range_potential(2.5e-1) == Approx(-0.8451981893));
+		REQUIRE(sep.short_range_potential(5.0e-1) == Approx(-0.0248386613));
+		REQUIRE(sep.short_range_potential(7.5e-1) == Approx(-0.0002357794));
+		REQUIRE(sep.short_range_potential(1.0) == Approx(-0.0000005733));
+		REQUIRE(sep.short_range_potential(1.25) == Approx(-3.283621e-10));
+		REQUIRE(sep.short_range_potential(1.5) == Approx(-4.252154e-14));
 		REQUIRE(fabs(sep.short_range_potential(1.75)) <= 1e-15);
 		REQUIRE(fabs(sep.short_range_potential(2.0)) <= 1e-15);
 		REQUIRE(fabs(sep.short_range_potential(2.5)) <= 1e-15);
@@ -136,41 +136,41 @@ TEST_CASE("class math::erf_range_separation", "[math::erf_range_separation]") {
 
 		auto radius = sep.short_range_potential_radius();
 		REQUIRE(radius == 1.593078562_a);
-		REQUIRE(sep.short_range_potential(radius) == 9.992007e-16_a);
+		REQUIRE(sep.short_range_potential(radius) == -9.992007e-16_a);
 
 		radius = sep.short_range_potential_radius(0.1);
 		REQUIRE(radius == 4.089239e-01_a);
-		REQUIRE(sep.short_range_potential(radius) == 0.1_a);
+		REQUIRE(sep.short_range_potential(radius) == -0.1_a);
 		
 		radius = sep.short_range_potential_radius(1.0);
 		REQUIRE(radius == 0.2366701558_a);
-		REQUIRE(sep.short_range_potential(radius) == 1.0_a);
+		REQUIRE(sep.short_range_potential(radius) == -1.0_a);
 				
 		radius = sep.short_range_potential_radius(3.0);
 		REQUIRE(radius == 0.1505417002_a);
-		REQUIRE(sep.short_range_potential(radius) == 3.0_a);
+		REQUIRE(sep.short_range_potential(radius) == -3.0_a);
 		
 	}
 
 	SECTION("Real space density"){
 
-		// the integral must be 1.0
+		// the integral must be -1.0
 		double dx = 0.1;
 		double integral = 0.0;
 		for(double x = dx; x < 100.0; x += dx) integral += dx*4.0*M_PI*x*x*sep.long_range_density(x);
 
-		REQUIRE(sep.long_range_density(0.0) == 7.9367044918_a);
-		REQUIRE(integral == 1.0_a);
+		REQUIRE(sep.long_range_density(0.0) == -7.9367044918_a);
+		REQUIRE(integral == -1.0_a);
 
 	}
 
 	SECTION("Fourier space density"){
 
 		REQUIRE(sep.long_range_density_fourier_radius() == 41.5564534067_a);
-		REQUIRE(sep.long_range_density_fourier(sep.long_range_density_fourier_radius()) == 1e-15_a);
+		REQUIRE(sep.long_range_density_fourier(sep.long_range_density_fourier_radius()) == -1e-15_a);
 
-		// the G = 0 component must be 1.0
-		REQUIRE(sep.long_range_density_fourier(0.0) == 1.0_a);
+		// the G = 0 component must be -1.0
+		REQUIRE(sep.long_range_density_fourier(0.0) == -1.0_a);
 		
 		// the integral must be zero component of the real space density
 		double dg = 0.1;
