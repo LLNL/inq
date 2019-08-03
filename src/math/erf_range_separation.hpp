@@ -60,7 +60,11 @@ namespace math {
       const double exp_arg = -0.5*square(rr/sigma_);
       return -exp(exp_arg)/cube(sigma_*sqrt(2.0*M_PI));
     }
-    
+
+		auto long_range_density_radius(double tol = 1e-15) const {
+			return sqrt(-2.0*log(cube(sigma_*sqrt(2.0*M_PI))*tol))*sigma_;
+		}
+		
     auto long_range_density_fourier(double gg) const {
       return -exp(-0.5*square(gg*sigma_));
     }
@@ -154,6 +158,8 @@ TEST_CASE("class math::erf_range_separation", "[math::erf_range_separation]") {
 
 	SECTION("Real space density"){
 
+		REQUIRE(sep.long_range_density_radius() == 1.7113801339_a);
+		
 		// the integral must be -1.0
 		double dx = 0.1;
 		double integral = 0.0;
