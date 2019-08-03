@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef SOLVERS_STEEPEST_DESCENT
 #define SOLVERS_STEEPEST_DESCENT

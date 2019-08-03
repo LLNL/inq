@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef INPUT__ELECTRONIC_THEORY
 #define INPUT__ELECTRONIC_THEORY

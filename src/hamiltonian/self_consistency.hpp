@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef HAMILTONIAN__KS_POTENTIAL
 #define HAMILTONIAN__KS_POTENTIAL

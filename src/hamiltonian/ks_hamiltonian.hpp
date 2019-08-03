@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef HAMILTONIAN_KS_HAMILTONIAN
 #define HAMILTONIAN_KS_HAMILTONIAN

@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef MATH_SPHERICAL_HARMONIC
 #define MATH_SPHERICAL_HARMONIC

@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef BASIS_FOURIER_SPACE
 #define BASIS_FOURIER_SPACE

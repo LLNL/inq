@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef OPERATIONS__SUBSPACE_DIAGONALIZATION
 #define OPERATIONS__SUBSPACE_DIAGONALIZATION

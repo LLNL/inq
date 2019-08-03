@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef SPHERICAL_GRID_HPP
 #define SPHERICAL_GRID_HPP

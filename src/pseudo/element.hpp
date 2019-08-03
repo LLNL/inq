@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef PSEUDO_ELEMENT_HPP
 #define PSEUDO_ELEMENT_HPP

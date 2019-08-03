@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef IONS_PERIODIC_REPLICAS
 #define IONS_PERIODIC_REPLICAS

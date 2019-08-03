@@ -1,4 +1,4 @@
-/* -*- indent-tabs-mode: t; tab-width: 2 -*- */
+/* -*- indent-tabs-mode: t -*- */
 
 #ifndef UTILS__MERGE_OPTIONAL
 #define UTILS__MERGE_OPTIONAL
