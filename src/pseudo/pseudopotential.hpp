@@ -127,11 +127,6 @@ namespace pseudo {
       return valence_charge_;
     }
 
-    double long_range_potential(double rr) const {
-      if(rr < 1e-8) return -valence_charge_*2.0/(sqrt(2.0*M_PI)*sigma_erf_);
-      return -valence_charge_*erf(rr/(sigma_erf_*sqrt(2.0)))/rr;
-    }
-
     //outside this, the long_range_density is zero
     double long_range_density_radius() const {
       const double tol = 1e-15;
@@ -242,15 +237,15 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.long_range_density_radius() == 5.1945566758_a);
     
     //values validated with Octopus
-    REQUIRE(ps.long_range_potential(0.00000000E+00) == -3.57452283E+01_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-04) == -3.57452282E+01_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-02) == -3.57437033E+01_a);
-    REQUIRE(ps.long_range_potential(5.00000000E-02) == -3.57071367E+01_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-01) == -3.55932992E+01_a);
-    REQUIRE(ps.long_range_potential(5.00000000E-01) == -3.22721954E+01_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-00) == -2.49312397E+01_a);
-    REQUIRE(ps.long_range_potential(5.00000000E-00) == -5.60000000E+00_a);
-    REQUIRE(ps.long_range_potential(6.01000000E-00) == -4.65890183E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(0.00000000E+00) == -3.57452283E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-04) == -3.57452282E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-02) == -3.57437033E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(5.00000000E-02) == -3.57071367E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-01) == -3.55932992E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(5.00000000E-01) == -3.22721954E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-00) == -2.49312397E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(5.00000000E-00) == -5.60000000E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(6.01000000E-00) == -4.65890183E+00_a);
 
     REQUIRE(ps.long_range_density(0.00000000E+00) == -7.28195812E+00_a);
     REQUIRE(ps.long_range_density(1.00000000E-04) == -7.28195802E+00_a);
@@ -338,14 +333,14 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.short_range_potential_radius() == 3.09_a);
 		
     //values validated with Octopus
-    REQUIRE(ps.long_range_potential(0.00000000E+00) == -2.29790754E+01_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-04) == -2.29790753E+01_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-02) == -2.29780949E+01_a);
-    REQUIRE(ps.long_range_potential(5.00000000E-02) == -2.29545879E+01_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-01) == -2.28814066E+01_a);
-    REQUIRE(ps.long_range_potential(5.00000000E-01) == -2.07464113E+01_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-00) == -1.60272255E+01_a);
-    REQUIRE(ps.long_range_potential(4.99000000E+00) == -3.60721443E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(0.00000000E+00) == -2.29790754E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-04) == -2.29790753E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-02) == -2.29780949E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(5.00000000E-02) == -2.29545879E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-01) == -2.28814066E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(5.00000000E-01) == -2.07464113E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-00) == -1.60272255E+01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(4.99000000E+00) == -3.60721443E+00_a);
 
     REQUIRE(ps.short_range_potential().value(0.00000000E+00) == 5.77774525E+00_a);
     REQUIRE(ps.short_range_potential().value(1.00000000E-02) == 5.77700949E+00_a);
@@ -368,15 +363,15 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.short_range_potential_radius() == 2.86_a);
 		
     //values validated with Octopus
-    REQUIRE(ps.long_range_potential(0.00000000E+00) == -5.10646119E+00_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-04) == -5.10646116E+00_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-02) == -5.10624332E+00_a);
-    REQUIRE(ps.long_range_potential(5.00000000E-02) == -5.10101952E+00_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-01) == -5.08475703E+00_a);
-    REQUIRE(ps.long_range_potential(5.00000000E-01) == -4.61031362E+00_a);
-    REQUIRE(ps.long_range_potential(1.00000000E-00) == -3.56160567E+00_a);
-    REQUIRE(ps.long_range_potential(5.00000000E-00) == -8.00000000E-01_a);
-    REQUIRE(ps.long_range_potential(6.01000000E-00) == -6.65557404E-01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(0.00000000E+00) == -5.10646119E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-04) == -5.10646116E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-02) == -5.10624332E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(5.00000000E-02) == -5.10101952E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-01) == -5.08475703E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(5.00000000E-01) == -4.61031362E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(1.00000000E-00) == -3.56160567E+00_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(5.00000000E-00) == -8.00000000E-01_a);
+    REQUIRE(ps.valence_charge()*sep.long_range_potential(6.01000000E-00) == -6.65557404E-01_a);
 
     REQUIRE(ps.long_range_density(0.00000000E+00) == -1.04027973E+00_a);
     REQUIRE(ps.long_range_density(1.00000000E-02) == -1.04014658E+00_a);
