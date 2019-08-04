@@ -40,11 +40,12 @@ namespace hamiltonian {
 		}
 		
 		template <class vexternal_type, class density_type, class energy_type>
-		auto ks_potential(const vexternal_type & vexternal, const density_type & density, const density_type & ionic_density, energy_type & energy){
+		auto ks_potential(const vexternal_type & vexternal, const density_type & electronic_density, const density_type & ionic_density, energy_type & energy){
 
-			assert(vexternal.basis() == density.basis()); //for the moment they must be equal
+			assert(vexternal.basis() == electronic_density.basis()); //for the moment they must be equal
 
-			//energy.external = operations::integral_product(density, vexternal);
+			energy.external = operations::integral_product(electronic_density, vexternal);
+			energy.ion = operations::integral_product(ionic_density, vexternal);
 
 			vexternal_type vks(vexternal.basis());
 
@@ -54,19 +55,18 @@ namespace hamiltonian {
 				
 			case input::electronic_theory::DENSITY_FUNCTIONAL:
 				{
-				
 
-					auto total_density = operations::sum(density, ionic_density);					
+					auto total_density = operations::sum(electronic_density, ionic_density);
 					auto vcoulomb = poisson_solver(total_density);
+					energy.coulomb = 0.5*operations::integral_product(total_density, vcoulomb);
 					
 					vexternal_type edxc(vexternal.basis());
 					vexternal_type vxc(vexternal.basis());
 					
-					functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
+					functionals::lda::xc_unpolarized(electronic_density.basis().size(), electronic_density, edxc, vxc);
 					
-					energy.coulomb = 0.5*operations::integral_product(total_density, vcoulomb);
-					energy.xc = operations::integral_product(density, edxc);
-					energy.nvxc = operations::integral_product(density, vxc);
+					energy.xc = operations::integral_product(electronic_density, edxc);
+					energy.nvxc = operations::integral_product(electronic_density, vxc);
 					
 					vks = operations::sum(vexternal, vcoulomb, vxc);
 
@@ -80,6 +80,7 @@ namespace hamiltonian {
 					energy.nvxc = 0.0;
 
 					auto vion = poisson_solver(ionic_density);
+					energy.coulomb = 0.5*operations::integral_product(ionic_density, vion);
 					vks = operations::sum(vexternal, vion);
 
 					break;

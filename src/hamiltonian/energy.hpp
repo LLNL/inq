@@ -55,11 +55,11 @@ namespace hamiltonian {
 		
 			out << std::endl;
 			out << "  total       = " << total()     << std::endl;
-			out << "  kinetic     = " << kinetic()   << std::endl;
 			out << "  eigenvalues = " << eigenvalues << std::endl;
 			out << "  coulomb     = " << coulomb     << std::endl;
 			out << "  xc          = " << xc          << std::endl;
 			out << "  intnvxc     = " << nvxc        << std::endl;
+			out << "  ion         = " << ion         << std::endl;
 			out << std::endl;
 
 		}
