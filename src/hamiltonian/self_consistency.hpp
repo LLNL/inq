@@ -45,7 +45,7 @@ namespace hamiltonian {
 			assert(vexternal.basis() == electronic_density.basis()); //for the moment they must be equal
 
 			energy.external = operations::integral_product(electronic_density, vexternal);
-			energy.ion = operations::integral_product(ionic_density, vexternal);
+			energy.ion_sr_lr = operations::integral_product(ionic_density, vexternal);
 
 			vexternal_type vks(vexternal.basis());
 

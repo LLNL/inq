@@ -27,6 +27,7 @@ namespace hamiltonian {
 	struct energy {
 		
 		double ion;
+		double ion_sr_lr;
 		double eigenvalues;
 		double external;
 		double coulomb;
@@ -35,6 +36,7 @@ namespace hamiltonian {
 
 		energy(){
 			ion = 0.0;
+			ion_sr_lr = 0.0;
 			eigenvalues = 0.0;
 			external = 0.0;
 			coulomb = 0.0;
@@ -47,7 +49,7 @@ namespace hamiltonian {
 		}
 		
 		auto total() const {
-			return ion + eigenvalues - 2.0*coulomb - nvxc + coulomb + xc;
+			return ion + ion_sr_lr + eigenvalues - 2.0*coulomb - nvxc + coulomb + xc;
 		}
 
 		template <class out_type>
@@ -60,6 +62,7 @@ namespace hamiltonian {
 			out << "  xc          = " << xc          << std::endl;
 			out << "  intnvxc     = " << nvxc        << std::endl;
 			out << "  ion         = " << ion         << std::endl;
+			out << "  ion sr lr   = " << ion_sr_lr   << std::endl;
 			out << std::endl;
 
 		}
