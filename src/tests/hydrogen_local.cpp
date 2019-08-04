@@ -36,8 +36,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0), geo);
 
-	//NON INTERACTING
-	{
+	SECTION("Non interacting"){
 		
 		input::config conf;
 		
@@ -81,8 +80,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		REQUIRE(energy.ion           == -0.0956453566_a);
 	}
 
-	//LDA
-	{
+	SECTION("LDA"){
 		
 		input::config conf;
 	
