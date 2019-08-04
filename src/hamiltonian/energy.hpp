@@ -47,7 +47,7 @@ namespace hamiltonian {
 		}
 		
 		auto total() const {
-			return ion + kinetic() + external + coulomb + xc;
+			return ion + eigenvalues - 2.0*coulomb - nvxc + coulomb + xc;
 		}
 
 		template <class out_type>
