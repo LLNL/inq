@@ -52,21 +52,22 @@ namespace ions {
 
     energy = 0.0;
 
+		// the short range interaction
     double rcut = sep.short_range_potential_radius();
 
     for(int iatom = 0; iatom < natoms; iatom++){
-      double zi = charge[iatom];
+      auto zi = charge[iatom];
       
       periodic_replicas rep(cell, positions[iatom], rcut);
 
       for(int irep = 0; irep < rep.size(); irep++){
-				d3vector xi = rep[irep];
+				auto xi = rep[irep];
 				
 				for(int jatom = 0; jatom < natoms; jatom++){
-					double zj = charge[jatom];
+					auto zj = charge[jatom];
 					
-					d3vector rij = xi - positions[jatom];
-					double rr = length(rij);
+					auto rij = xi - positions[jatom];
+					auto rr = length(rij);
 					
 					if(rr < 1.0e-5) continue;
 					
@@ -75,6 +76,14 @@ namespace ions {
       }
       
     }
+
+		//the self-interaction correction of the long range part
+    for(int iatom = 0; iatom < natoms; iatom++){
+      auto zi = charge[iatom];
+
+			energy -= zi*zi*sep.long_range_potential(0.0);
+		}
+			
 	}
 }
 
