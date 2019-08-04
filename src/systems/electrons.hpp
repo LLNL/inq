@@ -72,7 +72,7 @@ namespace systems {
 			
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
-			ham_.scalar_potential = sc_.ks_potential(vexternal, density, energy);
+			ham_.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 			energy.ion = ::ions::interaction_energy(ions_.cell(), ions_.geo());
 																		 
       for(int ii = 0; ii < 1000; ii++){
@@ -83,7 +83,7 @@ namespace systems {
 
 				density = operations::calculate_density(states_.occupations(), phi_);
 
-				auto vks = sc_.ks_potential(vexternal, density, energy);
+				auto vks = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 				
 				auto eigenvalues = operations::overlap_diagonal(ham_(phi_), phi_);
 

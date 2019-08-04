@@ -40,43 +40,47 @@ namespace hamiltonian {
 		}
 		
 		template <class vexternal_type, class density_type, class energy_type>
-		auto ks_potential(const vexternal_type & vexternal, const density_type & density, energy_type & energy){
+		auto ks_potential(const vexternal_type & vexternal, const density_type & density, const density_type & ionic_density, energy_type & energy){
 
 			assert(vexternal.basis() == density.basis()); //for the moment they must be equal
 
-			energy.external = operations::integral_product(density, vexternal);
+			//energy.external = operations::integral_product(density, vexternal);
 
 			vexternal_type vks(vexternal.basis());
-				
+
+			solvers::poisson<basis::real_space> poisson_solver;
+
 			switch(theory_){
 				
 			case input::electronic_theory::DENSITY_FUNCTIONAL:
 				{
 				
-					solvers::poisson<basis::real_space> poisson_solver;
-					
-					auto vhartree = poisson_solver(density);
+
+					auto total_density = operations::sum(density, ionic_density);					
+					auto vcoulomb = poisson_solver(total_density);
 					
 					vexternal_type edxc(vexternal.basis());
 					vexternal_type vxc(vexternal.basis());
 					
 					functionals::lda::xc_unpolarized(density.basis().size(), density, edxc, vxc);
 					
-					energy.hartree = 0.5*operations::integral_product(density, vhartree);
+					energy.coulomb = 0.5*operations::integral_product(total_density, vcoulomb);
 					energy.xc = operations::integral_product(density, edxc);
 					energy.nvxc = operations::integral_product(density, vxc);
 					
-					vks = operations::sum(vexternal, vhartree, vxc);
+					vks = operations::sum(vexternal, vcoulomb, vxc);
 
 					break;
 				}
 
 			case input::electronic_theory::NON_INTERACTING:
 				{
-					energy.hartree = 0.0;
+					energy.coulomb = 0.0;
 					energy.xc = 0.0;
 					energy.nvxc = 0.0;
-					vks = vexternal;
+
+					auto vion = poisson_solver(ionic_density);
+					vks = operations::sum(vexternal, vion);
 
 					break;
 				}

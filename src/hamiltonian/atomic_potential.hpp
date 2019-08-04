@@ -77,6 +77,32 @@ namespace hamiltonian {
     template <class basis_type, class cell_type, class geo_type>
     auto local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+      basis::field<basis_type, double> potential(basis);
+
+			for(long ii = 0; ii < potential.basis().size(); ii++) potential[ii] = 0.0;
+			
+      for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+				
+				auto atom_position = geo.coordinates()[iatom];
+				
+				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
+				
+				//DATAOPERATIONS
+				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
+					auto rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
+					auto sr_potential = ps.short_range_potential().value(rr);
+					potential.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
+				}
+				
+      }
+
+			return potential;			
+    }
+
+		
+    template <class basis_type, class cell_type, class geo_type>
+    auto ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			//First get the long range part that is calculated from a density distribution
       basis::field<basis_type, double> density(basis);
@@ -95,29 +121,8 @@ namespace hamiltonian {
 						+= ps.valence_charge()*sep_.long_range_density(rr);
 				}
       }
-			
-      solvers::poisson<basis::real_space> poisson_solver;
-			
-      auto potential = poisson_solver(density);
 
-			//and now add the short range part
-      for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
-				
-				auto atom_position = geo.coordinates()[iatom];
-				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
-				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
-				
-				//DATAOPERATIONS
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
-					auto sr_potential = ps.short_range_potential().value(rr);
-					potential.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
-				}
-				
-      }
-
-			return potential;			
+			return density;			
     }
     
     template <class output_stream>
