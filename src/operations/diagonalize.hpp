@@ -146,7 +146,7 @@ TEST_CASE("function operations::diagonalize", "[diagonalize]") {
 		
 		REQUIRE(evalues[0] == -1.0703967402_a);
 		REQUIRE(evalues[1] ==  0.1722879629_a);
-		REQUIRE(evalues[2] == 2.7426069258_a);
+		REQUIRE(evalues[2] ==  2.7514097773_a);
 
 	}
 }
