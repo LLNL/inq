@@ -82,69 +82,7 @@ namespace ions {
       }
       
     }
-
-    // self-interaction
-    double total_charge = 0.0;
-    for(int iatom = 0; iatom < natoms; iatom++){
-      double zi = charge[iatom];
-
-      total_charge += zi;
-      energy -= alpha*zi*zi/sqrt(M_PI);
-    }
-
-    // G = 0 energy
-    energy -= M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
-
-    double gcut = std::numeric_limits<double>::max();
-    for(int idir = 0; idir < 3; idir++) std::min(gcut, norm(cell.b(idir)));
-    gcut = sqrt(gcut);
-      
-    const int isph = ceil(9.5*alpha/gcut);
-
-    std::vector<std::complex<double> > phase(natoms);
-    
-    for(int ix = -isph; ix <= isph; ix++){
-      for(int iy = -isph; iy <= isph; iy++){
-				for(int iz = -isph; iz <= isph; iz++){
-					
-					const int ss = ix*ix + iy*iy + iz*iz;
-					
-					if(ss == 0 || ss > isph*isph) continue;
-					
-					d3vector gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
-					double gg2 = norm(gg);
-					
-					double exparg = -0.25*gg2/(alpha*alpha);
-					
-					if(exparg < -36.0) continue;
-					
-					double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
-					
-					std::complex<double> sumatoms = 0.0;
-					for(int iatom = 0; iatom < natoms; iatom++){
-						double gx = gg*positions[iatom];
-						auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
-						phase[iatom] = aa;
-						sumatoms += aa;
-					}
-					
-					energy += factor*std::real(sumatoms*std::conj(sumatoms));
-					
-					for(int iatom = 0; iatom < natoms; iatom++){
-						for(int idir = 0; idir < 3; idir++){
-							std::complex<double> tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
-							forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
-						}
-					}
-					
-				}
-      }
-    }
-
-    //forces are not properly validated right now
-    for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = d3vector(0.0, 0.0, 0.0);
-    
-  }
+	}
 }
 
 #ifdef UNIT_TEST
