@@ -131,7 +131,11 @@ namespace hamiltonian {
       out << "  Number of species   = " << num_species() << std::endl;
       out << "  Number of electrons = " << num_electrons() << std::endl;
       out << std::endl;
-    }    
+    }
+
+		auto & range_separation() const {
+			return sep_;
+		}
     
   private:
 

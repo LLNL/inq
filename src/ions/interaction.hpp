@@ -33,30 +33,26 @@ namespace ions {
 
 
 	template <class cell_type, class geometry_type>
-	auto interaction_energy(const cell_type & cell, const geometry_type & geo){
+	auto interaction_energy(const math::erf_range_separation & sep, const cell_type & cell, const geometry_type & geo){
 		double energy;
-		boost::multi::array<math::d3vector, 1> forces(geo.num_atoms());
 		boost::multi::array<double, 1> charges(geo.num_atoms());
 
 		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = geo.atoms()[ii].charge();
 
-		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), energy, forces);
+		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), sep, energy);
 
 		return energy;
 	}
 
-	template <class cell_type, class array_charge, class array_positions, class array_forces>
+	template <class cell_type, class array_charge, class array_positions>
   void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, 
-													double & energy, array_forces & forces){
+													const math::erf_range_separation & sep, double & energy){
 
     using math::d3vector;
 
-		const double alpha = 0.21;
-		
     energy = 0.0;
-    for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = d3vector(0.0, 0.0, 0.0);
 
-    double rcut = 6.0/alpha;
+    double rcut = sep.short_range_potential_radius();
 
     for(int iatom = 0; iatom < natoms; iatom++){
       double zi = charge[iatom];
@@ -70,14 +66,11 @@ namespace ions {
 					double zj = charge[jatom];
 					
 					d3vector rij = xi - positions[jatom];
-					double rr = sqrt(norm(rij));
+					double rr = length(rij);
 					
 					if(rr < 1.0e-5) continue;
 					
-					double eor = erfc(alpha*rr)/rr;
-					
-					energy += 0.5*zi*zj*eor;
-					forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*rr, 2))/(rr*rr));
+					energy += 0.5*zi*zj*sep.short_range_potential(rr);
 				}
       }
       
@@ -102,6 +95,8 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
   using namespace Catch::literals;
   using math::d3vector;
 
+	const math::erf_range_separation sep(0.625);
+
   SECTION("Aluminum cubic cell"){
   
     double aa = 7.653;
@@ -120,7 +115,7 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(4);
     
-    ions::interaction_energy(4, cell, charge, positions, energy, forces);
+    ions::interaction_energy(4, cell, charge, positions, sep, energy);
     
     REQUIRE(energy == -10.78368187_a); //this number comes from Octopus
     
@@ -141,7 +136,7 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, energy, forces);
+    ions::interaction_energy(2, cell, charge, positions, sep, energy);
 
     REQUIRE(energy == -12.78641217_a); //this number comes from Octopus
 
@@ -160,7 +155,7 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(1);
 
-    ions::interaction_energy(1, cell, &charge, &position, energy, forces);
+    ions::interaction_energy(1, cell, &charge, &position, sep, energy);
 
     REQUIRE(energy == -86.31033718_a); //this number comes from Octopus
     
