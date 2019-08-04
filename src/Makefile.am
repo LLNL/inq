@@ -101,5 +101,5 @@ test_programs =                                                 \
 
 bin_PROGRAMS += $(test_programs) 
 
-check: $(@PACKAGE_NAME@_unit_tests) install
-	@PACKAGE_NAME@_unit_tests -s
+check: @PACKAGE_NAME@_unit_tests $(test_programs)
+	for test_prog in @PACKAGE_NAME@_unit_tests $(test_programs); do $(top_builddir)/src/$$test_prog; done
