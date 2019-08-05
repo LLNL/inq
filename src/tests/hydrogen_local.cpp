@@ -69,14 +69,14 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 				 Non-local   =         0.00000000
 
 		*/
-		REQUIRE(energy.self          == -0.7978845608_a); //this matches qball exactly
-		REQUIRE(energy.eigenvalues   == -0.3590112743_a);
-		REQUIRE(fabs(energy.xc)      <=  1e-10);
-		REQUIRE(fabs(energy.nvxc)    <=  1e-10);
-		REQUIRE(fabs(energy.coulomb) <=  1e-10);
-		REQUIRE(energy.total()       == -0.4547670333_a);
-		REQUIRE(energy.external      == -0.8459611938_a);
-		REQUIRE(energy.ion           == -0.0956453566_a);
+		REQUIRE(energy.self            == -0.7978845608_a); //this matches qball exactly
+		REQUIRE(energy.eigenvalues     == -0.3590112743_a);
+		REQUIRE(fabs(energy.xc)        <=  1e-10);
+		REQUIRE(fabs(energy.nvxc)      <=  1e-10);
+		REQUIRE(fabs(energy.coulomb()) <=  1e-10);
+		REQUIRE(energy.total()         == -0.4547670333_a);
+		REQUIRE(energy.external        == -0.8459611938_a);
+		REQUIRE(energy.ion             == -0.0956453566_a);
 	}
 
 	SECTION("LDA"){
@@ -134,7 +134,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		REQUIRE(energy.nvxc          == -0.3025616239_a);
 		REQUIRE(energy.total()       == -0.4712455539_a);
 		REQUIRE(energy.external      == -7.721030e-01_a);
-		REQUIRE(energy.coulomb       ==  2.115318e-01_a);
+		REQUIRE(energy.coulomb()     ==  2.115318e-01_a);
 		REQUIRE(energy.ion           == -0.0956453566_a);
 
 	}
