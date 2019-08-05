@@ -73,6 +73,10 @@ namespace math {
       return sqrt(-2.0*log(tol))/sigma_;
     }
 
+		auto self_interaction() const{
+			return 1.0/(sqrt(2.0*M_PI)*sigma_);
+		}
+
   private:
 
     static double square(double x){
