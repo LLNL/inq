@@ -50,7 +50,7 @@ namespace ions {
     energy = 0.0;
 
 		// the short range interaction
-    double rcut = sep.short_range_potential_radius();
+    double rcut = cell.diagonal_length() + sep.short_range_potential_radius();
 
     for(int iatom = 0; iatom < natoms; iatom++){
       auto zi = charge[iatom];
@@ -80,7 +80,7 @@ namespace ions {
     for(int iatom = 0; iatom < natoms; iatom++){
       auto zi = charge[iatom];
 
-			eself += zi*zi*sep.self_interaction();
+			eself -= zi*zi*sep.self_interaction();
 		}
 			
 	}

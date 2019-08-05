@@ -133,6 +133,11 @@ namespace ions{
     void printsys(std::ostream& os, std::string setcmd) const;  
     bool operator==(const UnitCell& c) const;
     bool operator!=(const UnitCell& c) const;
+
+		auto diagonal_length() const {
+			return sqrt(norm(a_[0]) + norm(a_[1]) + norm(a_[2]));
+		}
+		
   };
   
   std::ostream& operator << (std::ostream& os, const UnitCell& cell);
