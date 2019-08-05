@@ -41,7 +41,7 @@ namespace hamiltonian {
 
     template <class atom_array>
     atomic_potential(const int natoms, const atom_array & atom_list):
-			sep_(0.625),
+			sep_(0.5), //this is the default from qball, but it can be optimized for the grid. Check AtomsSet.cc:1102
       pseudo_set_(config::path::share() + "pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"){
 
       nelectrons_ = 0.0;

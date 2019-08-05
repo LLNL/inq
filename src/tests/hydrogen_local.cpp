@@ -69,13 +69,13 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 				 Non-local   =         0.00000000
 
 		*/
-		
-		REQUIRE(energy.total()       == -0.4547670333_a);
-		REQUIRE(energy.eigenvalues   == -0.3591216767_a);
-		REQUIRE(energy.external      == -0.8459611938_a);
-		REQUIRE(fabs(energy.coulomb) <=  1e-10);
+		REQUIRE(energy.self          == -0.7978845608_a); //this matches qball exactly
+		REQUIRE(energy.eigenvalues   == -0.3590112743_a);
 		REQUIRE(fabs(energy.xc)      <=  1e-10);
 		REQUIRE(fabs(energy.nvxc)    <=  1e-10);
+		REQUIRE(fabs(energy.coulomb) <=  1e-10);
+		REQUIRE(energy.total()       == -0.4547670333_a);
+		REQUIRE(energy.external      == -0.8459611938_a);
 		REQUIRE(energy.ion           == -0.0956453566_a);
 	}
 
@@ -122,18 +122,19 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 			<exc>        -0.23212287 </exc>
 			<evdw>        0.00000000 </evdw>
 			<esr>         0.00000000 </esr>
-			<eself>       0.79788456 </eself>
+			<eself>       0.79788456 </eself> //this is -self.
 			<ets>         0.00000000 </ets>
 			<etotal>     -0.44569809 </etotal>
 
 		*/
-		
+
+		REQUIRE(energy.self          == -0.7978845608_a); //this matches qball exactly
+		REQUIRE(energy.eigenvalues   == -0.2334309275_a); //this is a reasonable match, but I would expect it to be closer to qball since the calculation is essentially the same
+		REQUIRE(energy.xc            == -0.2321787884_a);
+		REQUIRE(energy.nvxc          == -0.3025616239_a);
 		REQUIRE(energy.total()       == -0.4712455539_a);
-		REQUIRE(energy.eigenvalues   == -2.342972e-01_a);
 		REQUIRE(energy.external      == -7.721030e-01_a);
 		REQUIRE(energy.coulomb       ==  2.115318e-01_a);
-		REQUIRE(energy.xc            == -2.316752e-01_a);
-		REQUIRE(energy.nvxc          == -3.019039e-01_a);
 		REQUIRE(energy.ion           == -0.0956453566_a);
 
 	}
