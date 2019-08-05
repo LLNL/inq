@@ -33,20 +33,17 @@ namespace ions {
 
 
 	template <class cell_type, class geometry_type>
-	auto interaction_energy(const math::erf_range_separation & sep, const cell_type & cell, const geometry_type & geo){
-		double energy;
+	void interaction_energy(const math::erf_range_separation & sep, const cell_type & cell, const geometry_type & geo, double & energy, double & eself){
 		boost::multi::array<double, 1> charges(geo.num_atoms());
 
 		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = geo.atoms()[ii].charge();
 
-		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), sep, energy);
-
-		return energy;
+		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), sep, energy, eself);
 	}
 
 	template <class cell_type, class array_charge, class array_positions>
   void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, 
-													const math::erf_range_separation & sep, double & energy){
+													const math::erf_range_separation & sep, double & energy, double & eself){
 
     using math::d3vector;
 
@@ -77,11 +74,13 @@ namespace ions {
       
     }
 
+		eself = 0.0;
+
 		//the self-interaction correction of the long range part
     for(int iatom = 0; iatom < natoms; iatom++){
       auto zi = charge[iatom];
 
-			energy -= zi*zi*sep.long_range_potential(0.0);
+			eself += zi*zi*sep.self_interaction();
 		}
 			
 	}
@@ -121,10 +120,10 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     positions[2] = d3vector(aa/2.0, 0.0,    aa/2.0);
     positions[3] = d3vector(0.0,    aa/2.0, aa/2.0);
     
-    double energy;
+    double energy, eself;
     std::vector<d3vector> forces(4);
     
-    ions::interaction_energy(4, cell, charge, positions, sep, energy);
+    ions::interaction_energy(4, cell, charge, positions, sep, energy, eself);
     
     REQUIRE(energy == -10.78368187_a); //this number comes from Octopus
     
@@ -142,10 +141,10 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     positions[0] = cell.crystal_to_cart(d3vector(0.0,  0.0,  0.0 ));
     positions[1] = cell.crystal_to_cart(d3vector(0.25, 0.25, 0.25));
     
-    double energy;
+    double energy, eself;
     std::vector<d3vector> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, sep, energy);
+    ions::interaction_energy(2, cell, charge, positions, sep, energy, eself);
 
     REQUIRE(energy == -12.78641217_a); //this number comes from Octopus
 
@@ -161,10 +160,10 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     
     const d3vector position(0.0, 0.0, 0.0);
     
-    double energy;
+    double energy, eself;
     std::vector<d3vector> forces(1);
 
-    ions::interaction_energy(1, cell, &charge, &position, sep, energy);
+    ions::interaction_energy(1, cell, &charge, &position, sep, energy, eself);
 
     REQUIRE(energy == -86.31033718_a); //this number comes from Octopus
     
