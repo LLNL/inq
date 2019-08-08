@@ -32,16 +32,17 @@ namespace hamiltonian {
 		double eigenvalues;
 		double external;
 		double hartree;
+		double nvhartree;
 		double xc;
 		double nvxc;
 
 		energy(){
 			ion = 0.0;
-			ion_sr_lr = 0.0;
 			self = 0.0;
 			eigenvalues = 0.0;
 			external = 0.0;
 			hartree = 0.0;
+			nvhartree = 0.0;
 			xc = 0.0;
 			nvxc = 0.0;
 		}
@@ -51,11 +52,11 @@ namespace hamiltonian {
 		}
 		
 		auto kinetic() const {
-			return eigenvalues - 2.0*coulomb() - nvxc - external;
+			return eigenvalues - nvhartree - nvxc - external;
 		}
 		
 		auto total() const {
-			return eigenvalues - 2.0*coulomb() - nvxc + coulomb() + xc;
+			return kinetic() + hartree + self + ion + external + xc;
 		}
 
 		template <class out_type>
@@ -63,12 +64,15 @@ namespace hamiltonian {
 		
 			out << std::endl;
 			out << "  total       = " << total()     << std::endl;
+			out << "  kinetic     = " << kinetic()   << std::endl;
 			out << "  eigenvalues = " << eigenvalues << std::endl;
 			out << "  coulomb     = " << coulomb()   << std::endl;
+			out << "  hartree     = " << hartree     << std::endl;
+			out << "  nvhartree   = " << nvhartree   << std::endl;
+			out << "  external    = " << external    << std::endl;
 			out << "  xc          = " << xc          << std::endl;
 			out << "  intnvxc     = " << nvxc        << std::endl;
 			out << "  ion         = " << ion         << std::endl;
-			out << "  ion sr lr   = " << ion_sr_lr   << std::endl;
 			out << "  self        = " << self        << std::endl;
 			out << std::endl;
 

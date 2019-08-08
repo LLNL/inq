@@ -45,7 +45,6 @@ namespace hamiltonian {
 			assert(vexternal.basis() == electronic_density.basis()); //for the moment they must be equal
 
 			energy.external = operations::integral_product(electronic_density, vexternal);
-			energy.ion_sr_lr = operations::integral_product(ionic_density, vexternal);
 
 			vexternal_type vks(vexternal.basis());
 
@@ -59,7 +58,8 @@ namespace hamiltonian {
 					auto total_density = operations::sum(electronic_density, ionic_density);
 					auto vhartree = poisson_solver(total_density);
 					energy.hartree = 0.5*operations::integral_product(total_density, vhartree);
-					
+					energy.nvhartree = operations::integral_product(electronic_density, vhartree);
+						
 					vexternal_type edxc(vexternal.basis());
 					vexternal_type vxc(vexternal.basis());
 					
@@ -75,14 +75,12 @@ namespace hamiltonian {
 
 			case input::electronic_theory::NON_INTERACTING:
 				{
-					energy.hartree = 0.0;
-					energy.xc = 0.0;
-					energy.nvxc = 0.0;
 
 					auto vion = poisson_solver(ionic_density);
 					energy.hartree = 0.5*operations::integral_product(ionic_density, vion);
+					energy.nvhartree = operations::integral_product(electronic_density, vion);
 					vks = operations::sum(vexternal, vion);
-
+					
 					break;
 				}
 				
