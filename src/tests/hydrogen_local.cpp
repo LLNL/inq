@@ -42,7 +42,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		
 		conf.theory = input::electronic_theory::NON_INTERACTING;
 		
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
+		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 		
 		auto energy = electrons.calculate_ground_state();
 		
@@ -78,7 +78,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		REQUIRE(energy.external        == -0.8459611938_a);
 		REQUIRE(energy.ion             == -0.0956453566_a);
 	}
-
+#if 0
 	SECTION("LDA"){
 		
 		input::config conf;
@@ -138,4 +138,5 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		REQUIRE(energy.ion           == -0.0956453566_a);
 
 	}
+#endif
 }

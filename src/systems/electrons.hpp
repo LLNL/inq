@@ -94,16 +94,16 @@ namespace systems {
 				for(int ii = 0; ii < states_.num_states(); ii++) energy.eigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
 
 				std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy.total()
-									<< "  de = " << energy.total() - old_energy << "  dvks = " << potdiff << std::endl;
+									<< "  de = " << energy.eigenvalues - old_energy << "  dvks = " << potdiff << std::endl;
 
 				for(int ii = 0; ii < states_.num_states(); ii++){
 					std::cout << " state " << ii << ":  occ = " << states_.occupations()[ii] << "  evalue = " << real(eigenvalues[ii]) << std::endl;
 				}
 				std::cout << std::endl;
 				
-				if(fabs(energy.total() - old_energy) < 1e-5) break;
+				if(fabs(energy.eigenvalues - old_energy) < 1e-5) break;
 				
-				old_energy = energy.total();
+				old_energy = energy.eigenvalues;
 
 				//DATAOPERATIONS
 				for(long ii = 0; ii < rs_.size(); ii++){

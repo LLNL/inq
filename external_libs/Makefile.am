@@ -1,3 +1,4 @@
 SUBDIRS =            \
 	catch2       \
-	rapidxml
+	rapidxml     \
+	tinyformat

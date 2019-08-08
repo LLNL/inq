@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <tinyformat/tinyformat.h>
 
 namespace hamiltonian {
 
@@ -61,20 +62,20 @@ namespace hamiltonian {
 
 		template <class out_type>
 		void print(out_type & out) const {
-		
-			out << std::endl;
-			out << "  total       = " << total()     << std::endl;
-			out << "  kinetic     = " << kinetic()   << std::endl;
-			out << "  eigenvalues = " << eigenvalues << std::endl;
-			out << "  coulomb     = " << coulomb()   << std::endl;
-			out << "  hartree     = " << hartree     << std::endl;
-			out << "  nvhartree   = " << nvhartree   << std::endl;
-			out << "  external    = " << external    << std::endl;
-			out << "  xc          = " << xc          << std::endl;
-			out << "  intnvxc     = " << nvxc        << std::endl;
-			out << "  ion         = " << ion         << std::endl;
-			out << "  self        = " << self        << std::endl;
-			out << std::endl;
+
+			tfm::format(out, "\n");
+			tfm::format(out, "  total       = %d16\n", total());			
+			tfm::format(out, "  kinetic     = %d\n", kinetic());
+			tfm::format(out, "  eigenvalues = %d\n", eigenvalues);
+			tfm::format(out, "  coulomb     = %d\n", coulomb());
+			tfm::format(out, "  hartree     = %d\n", hartree);
+			tfm::format(out, "  nvhartree   = %d\n", nvhartree);
+			tfm::format(out, "  external    = %d\n", external);
+			tfm::format(out, "  xc          = %d\n", xc);
+			tfm::format(out, "  intnvxc     = %d\n", nvxc);
+			tfm::format(out, "  ion         = %d\n", ion);
+			tfm::format(out, "  self        = %d\n", self);
+			tfm::format(out, "\n");
 
 		}
 		
