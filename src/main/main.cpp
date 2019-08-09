@@ -52,7 +52,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = input.parse("ExtraStates", 0);
 	conf.excess_charge = input.parse("ExcessCharge", 0.0);
 	
-	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut), conf);
+	systems::electrons electrons(ions, input::basis::cutoff_energy(ecut), input::interaction::dft(), conf);
 
 	electrons.calculate_ground_state();
 	

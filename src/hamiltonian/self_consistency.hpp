@@ -26,7 +26,7 @@
 #include <solvers/poisson.hpp>
 #include <operations/sum.hpp>
 #include <operations/integral.hpp>
-#include <input/electronic_theory.hpp>
+#include <input/interaction.hpp>
 
 namespace hamiltonian {
 
@@ -34,7 +34,7 @@ namespace hamiltonian {
 
 	public:
 
-		self_consistency(input::electronic_theory arg_theory):
+		self_consistency(input::interaction::electronic_theory arg_theory):
 			theory_(arg_theory)	{
 
 		}
@@ -52,7 +52,7 @@ namespace hamiltonian {
 
 			switch(theory_){
 				
-			case input::electronic_theory::DENSITY_FUNCTIONAL:
+			case input::interaction::electronic_theory::DENSITY_FUNCTIONAL:
 				{
 
 					auto total_density = operations::sum(electronic_density, ionic_density);
@@ -73,7 +73,7 @@ namespace hamiltonian {
 					break;
 				}
 
-			case input::electronic_theory::NON_INTERACTING:
+			case input::interaction::electronic_theory::NON_INTERACTING:
 				{
 
 					auto vion = poisson_solver(ionic_density);
@@ -91,7 +91,7 @@ namespace hamiltonian {
 
 	private:
 
-		input::electronic_theory theory_;
+		input::interaction::electronic_theory theory_;
 
 	};
 }

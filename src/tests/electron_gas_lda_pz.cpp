@@ -32,7 +32,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 	conf.extra_states = 2;
 	conf.excess_charge = 14.0;
 		
-	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
+	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), input::interaction::dft(), conf);
 
 	auto energy = electrons.calculate_ground_state(0.0); //pass 0.0 as the preconditioner cutoff, this is necessary to make it converge
 

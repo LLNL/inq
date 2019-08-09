@@ -31,9 +31,8 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 	input::config conf;
 	conf.extra_states = 2;
 	conf.excess_charge = 14.0;
-	conf.theory = input::electronic_theory::NON_INTERACTING;
 		
-	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
+	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), input::interaction::non_interacting(), conf);
 
 	auto energy = electrons.calculate_ground_state();
 
