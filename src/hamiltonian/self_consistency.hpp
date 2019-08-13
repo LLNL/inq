@@ -77,7 +77,7 @@ namespace hamiltonian {
 				{
 
 					auto vion = poisson_solver(ionic_density);
-					energy.hartree = 0.5*operations::integral_product(ionic_density, vion);
+					energy.hartree = 0.5*operations::integral_product(ionic_density, vion) + operations::integral_product(electronic_density, vion);
 					energy.nvhartree = operations::integral_product(electronic_density, vion);
 					vks = operations::sum(vexternal, vion);
 					
