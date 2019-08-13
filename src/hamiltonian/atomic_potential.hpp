@@ -104,10 +104,11 @@ namespace hamiltonian {
     template <class basis_type, class cell_type, class geo_type>
     auto ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
-			//First get the long range part that is calculated from a density distribution
       basis::field<basis_type, double> density(basis);
 			
-      for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+			density = 0.0;
+			
+			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
 				

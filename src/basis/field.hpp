@@ -37,11 +37,19 @@ namespace basis {
       cubic_(sizes(basis)),
 			basis_(basis){
     }
-		
+
 		field(const field & coeff) = delete;
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
+
+		//Initialized by a scalar value
+		field & operator=(const value_type value) {
+			//DATAOPERATIONS
+			for(int ii = 0; ii < basis_.size(); ii++) (*this)[ii] = value;
+
+			return *this;
+		}
 		
 		const basis_type & basis() const {
 			return basis_;
