@@ -24,6 +24,8 @@
 #include <math/d3vector.hpp>
 #include <cassert>
 #include <array>
+#include <optional>
+#include <utils/merge_optional.hpp>
 
 namespace input {
 
