@@ -35,7 +35,7 @@ namespace basis {
   public:
 		
     real_space(const ions::UnitCell & cell, const input::basis & basis_input):
-			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid()){
+			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid(), cell.periodic_dimensions()){
     }
 
 		real_space(const grid & grid_basis):

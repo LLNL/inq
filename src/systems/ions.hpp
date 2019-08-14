@@ -16,7 +16,7 @@ namespace systems {
   public:
 
     ions(const input::cell & arg_cell_input, const ::ions::geometry & geo_arg = ::ions::geometry()):
-      cell_(arg_cell_input),
+      cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
       geo_(geo_arg){
       
       geo_.info(std::cout);

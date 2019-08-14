@@ -40,8 +40,10 @@ namespace ions {
   using namespace std;
   
   ////////////////////////////////////////////////////////////////////////////////
-  void UnitCell::set(const d3vector& a0, const d3vector& a1, const d3vector& a2)
-  {
+  void UnitCell::set(const d3vector& a0, const d3vector& a1, const d3vector& a2, int arg_periodic_dimensions) {
+
+		periodic_dimensions_ = arg_periodic_dimensions;
+		
     a_[0] = a0; a_[1] = a1, a_[2] = a2;
     amat_[0] = a0.x;
     amat_[1] = a0.y;

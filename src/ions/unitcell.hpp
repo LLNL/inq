@@ -34,6 +34,7 @@
 #include <math/d3vector.hpp>
 #include <valarray>
 #include <array>
+#include <input/cell.hpp>
 
 namespace ions{
 
@@ -55,9 +56,13 @@ namespace ions{
     double amat_inv_[9];
     // 3x3 matrix form of inverse transpose
     double amat_inv_t_[9];
-  
+
+		int periodic_dimensions_;
+		
   public:
 
+    void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2, int arg_periodic_dimensions = 3);
+		
 		enum class error { WRONG_LATTICE };
 
 		vector_type const& operator[](int i) const {return a_[i];}
@@ -68,19 +73,18 @@ namespace ions{
     UnitCell() = default;
 
 		template<class lattice_vectors_type>
-		UnitCell(const lattice_vectors_type & lattice_vectors){
+		UnitCell(const lattice_vectors_type & lattice_vectors, int periodic_dimensions = 3){
 			std::array<math::d3vector, 3> lvectors;
 			for(int ii = 0; ii < 3; ii++){
 				for(int jj = 0; jj < 3; jj++) lvectors[ii][jj] = lattice_vectors[ii][jj];
 			}
-			set(lvectors[0], lvectors[1], lvectors[2]);
+			set(lvectors[0], lvectors[1], lvectors[2], periodic_dimensions);
 		}
 		
     UnitCell(math::d3vector const& a0, math::d3vector const& a1, math::d3vector const& a2){
       set(a0,a1,a2);
     }
   
-    void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2);
     double volume() const { return volume_; }
 
     template <class output_stream>
@@ -136,6 +140,10 @@ namespace ions{
 
 		auto diagonal_length() const {
 			return sqrt(norm(a_[0]) + norm(a_[1]) + norm(a_[2]));
+		}
+
+		auto periodic_dimensions() const {
+			return periodic_dimensions_;
 		}
 		
   };
