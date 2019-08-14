@@ -36,6 +36,10 @@ namespace solvers {
 	public:
 
 		auto operator()(const basis::field<basis_type, complex> & density){
+			return solve_periodic(density);
+		}
+
+		auto solve_periodic(const basis::field<basis_type, complex> & density){
 			namespace fftw = boost::multi::fftw;
 			
 			basis::fourier_space fourier_basis(density.basis());
