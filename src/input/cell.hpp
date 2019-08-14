@@ -39,10 +39,37 @@ namespace input {
 			return cell(math::d3vector(aa, 0.0, 0.0), math::d3vector(0.0, bb, 0.0), math::d3vector(0.0, 0.0, cc));
 		}
 
+		static auto periodic() {
+			cell cl;
+			cl.periodic_dimensions_ = 3;
+			return cl;
+		}
+		
+		static auto finite() {
+			cell cl;
+			cl.periodic_dimensions_ = 0;
+			return cl;
+		}
+		
 		auto & operator[](const int ii) const {
 			return lattice_vectors_[ii].value();
 		}
-		
+
+		auto periodic_dimensions() const {
+			return periodic_dimensions_.value_or(3);
+		}
+
+		friend auto operator|(const cell & cell1, const cell & cell2){
+			using utils::merge_optional;
+
+			cell rcell;
+			rcell.lattice_vectors_[0]	= merge_optional(cell1.lattice_vectors_[0], cell2.lattice_vectors_[0]);
+			rcell.lattice_vectors_[1]	= merge_optional(cell1.lattice_vectors_[1], cell2.lattice_vectors_[1]);
+			rcell.lattice_vectors_[2]	= merge_optional(cell1.lattice_vectors_[2], cell2.lattice_vectors_[2]);
+			rcell.periodic_dimensions_	= merge_optional(cell1.periodic_dimensions_, cell2.periodic_dimensions_);
+			return rcell;
+		}
+	
 	private:
 
 		cell(const math::d3vector & a0, const math::d3vector & a1, const math::d3vector & a2){
@@ -51,7 +78,11 @@ namespace input {
 			lattice_vectors_[2] = a2;
 		}
 
+		cell(){
+		}
+
 		std::array<std::optional<math::d3vector>, 3> lattice_vectors_;
+		std::optional<int> periodic_dimensions_;
 		
   };
 }
@@ -60,7 +91,7 @@ namespace input {
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("class input::cell", "[cell]") {
+TEST_CASE("class input::cell", "[input::cell]") {
   
   using namespace Catch::literals;
 
@@ -77,12 +108,32 @@ TEST_CASE("class input::cell", "[cell]") {
 		REQUIRE(ci[2][0] == 0.0_a);
 		REQUIRE(ci[2][1] == 0.0_a);
 		REQUIRE(ci[2][2] == 10.2_a);
+
+		REQUIRE(ci.periodic_dimensions() == 3);
+		
+	}
+	
+	SECTION("Cubic finite"){
+
+		auto ci = input::cell::cubic(10.2) | input::cell::finite();
+
+		REQUIRE(ci[0][0] == 10.2_a);
+		REQUIRE(ci[0][1] == 0.0_a);
+		REQUIRE(ci[0][2] == 0.0_a);
+		REQUIRE(ci[1][0] == 0.0_a);
+		REQUIRE(ci[1][1] == 10.2_a);
+		REQUIRE(ci[1][2] == 0.0_a);
+		REQUIRE(ci[2][0] == 0.0_a);
+		REQUIRE(ci[2][1] == 0.0_a);
+		REQUIRE(ci[2][2] == 10.2_a);
+
+		REQUIRE(ci.periodic_dimensions() == 0);
 		
 	}
 	
 	SECTION("Parallelepipedic"){
 
-		auto ci = input::cell::cubic(10.2, 5.7, 8.3);
+		auto ci = input::cell::cubic(10.2, 5.7, 8.3) | input::cell::periodic();
 
 		REQUIRE(ci[0][0] == 10.2_a);
 		REQUIRE(ci[0][1] == 0.0_a);
@@ -93,6 +144,8 @@ TEST_CASE("class input::cell", "[cell]") {
 		REQUIRE(ci[2][0] == 0.0_a);
 		REQUIRE(ci[2][1] == 0.0_a);
 		REQUIRE(ci[2][2] == 8.3_a);
+
+		REQUIRE(ci.periodic_dimensions() == 3);
 		
 	}
   
