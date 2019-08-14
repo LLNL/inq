@@ -66,6 +66,10 @@ namespace basis {
 			equal = equal and rs1.rspacing()[2] == rs2.rspacing()[2];
 			return equal;
 		}
+
+		auto enlarge(int factor) const {
+			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_));
+		}
 		
 	private:
 
@@ -133,8 +137,18 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       
       REQUIRE(rs.rsize()[0] == 215);
       REQUIRE(rs.rsize()[1] == 39);
-      REQUIRE(rs.rsize()[2] == 64);
+			REQUIRE(rs.rsize()[2] == 64);
 
+			auto rs3x = rs.enlarge(3);
+			
+      REQUIRE(rs3x.rspacing()[0] == 0.3613953488_a);
+      REQUIRE(rs3x.rspacing()[1] == 0.3625641026_a);
+      REQUIRE(rs3x.rspacing()[2] == 0.36328125_a);
+      
+      REQUIRE(rs3x.rsize()[0] == 3*215);
+      REQUIRE(rs3x.rsize()[1] == 3*39);
+			REQUIRE(rs3x.rsize()[2] == 3*64);
+			
     }
 
   }

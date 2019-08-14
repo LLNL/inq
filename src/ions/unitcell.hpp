@@ -81,10 +81,14 @@ namespace ions{
 			set(lvectors[0], lvectors[1], lvectors[2], periodic_dimensions);
 		}
 		
-    UnitCell(math::d3vector const& a0, math::d3vector const& a1, math::d3vector const& a2){
-      set(a0,a1,a2);
+    UnitCell(math::d3vector const& a0, math::d3vector const& a1, math::d3vector const& a2, int periodic_dimensions = 3){
+      set(a0, a1, a2, periodic_dimensions);
     }
-  
+
+		auto enlarge(int factor) const {
+			return UnitCell(factor*a_[0], factor*a_[1], factor*a_[2], periodic_dimensions_);
+		}
+				
     double volume() const { return volume_; }
 
     template <class output_stream>
