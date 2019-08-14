@@ -33,14 +33,14 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		template<class lattice_vectors_type>
-		grid(const lattice_vectors_type & lattice_vectors, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions) :
+		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions) :
+			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
 			periodic_dimensions_(periodic_dimensions){
 				
 			for(int idir = 0; idir < 3; idir++){
-				rlength_[idir] = length(lattice_vectors[idir]);
+				rlength_[idir] = length(cell[idir]);
 				ng_[idir] = nr_[idir];
 				rspacing_[idir] = rlength_[idir]/nr_[idir];
 				glength_[idir] = 2.0*M_PI/rspacing_[idir];
@@ -97,6 +97,8 @@ namespace basis {
 		
 	protected:
 		
+		ions::UnitCell cell_;
+
     std::array<int, 3> nr_;
     std::array<int, 3> ng_;
 
