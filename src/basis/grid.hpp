@@ -90,6 +90,10 @@ namespace basis {
 		friend auto sizes(const grid & gr){
 			return gr.nr_;
 		}
+
+		auto periodic_dimensions() const {
+			return periodic_dimensions_;
+		}
 		
 	protected:
 		
