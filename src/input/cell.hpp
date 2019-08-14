@@ -40,7 +40,7 @@ namespace input {
 		}
 
 		auto & operator[](const int ii) const {
-			return lattice_vectors_[ii];
+			return lattice_vectors_[ii].value();
 		}
 		
 	private:
@@ -51,7 +51,7 @@ namespace input {
 			lattice_vectors_[2] = a2;
 		}
 
-		std::array<math::d3vector, 3> lattice_vectors_;
+		std::array<std::optional<math::d3vector>, 3> lattice_vectors_;
 		
   };
 }
