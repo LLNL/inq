@@ -67,6 +67,11 @@ namespace basis {
       return rlength_;
     }
 
+    double min_rlength() const{
+      return std::min(rlength_[0], std::min(rlength_[1], rlength_[2]));
+    }
+
+		
     long size() const {
       return npoints_;
     }
