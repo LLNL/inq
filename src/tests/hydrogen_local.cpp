@@ -34,7 +34,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 	
 	geo.push_back(local_h | math::d3vector(0.0, 0.0, 0.0));
     
-	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0), geo);
+	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
 
 	SECTION("Non interacting"){
 		
