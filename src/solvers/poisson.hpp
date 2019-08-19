@@ -57,12 +57,15 @@ namespace solvers {
 			for(int ix = 0; ix < potential_fs.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < potential_fs.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < potential_fs.basis().gsize()[2]; iz++){
+
+						auto g2 = potential_fs.basis().g2(ix, iy, iz);
 						
-						if(potential_fs.basis().g_is_zero(ix, iy, iz)){
-							potential_fs.cubic()[0][0][0] = 0;
+						if(potential_fs.basis().g_is_zero(ix, iy, iz) or fourier_basis.outside_sphere(g2)){
+							potential_fs.cubic()[0][0][0] = 0.0;
 							continue;
 						}
-						potential_fs.cubic()[ix][iy][iz] *= -scal/potential_fs.basis().g2(ix, iy, iz);
+						
+						potential_fs.cubic()[ix][iy][iz] *= -scal/g2;
 					}
 				}
 			}
@@ -116,8 +119,16 @@ namespace solvers {
 							potential2x.cubic()[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
 							continue;
 						}
+						
 						auto g2 = fourier_basis.g2(ix, iy, iz);
+
+						if(fourier_basis.outside_sphere(g2)){
+							potential2x.cubic()[ix][iy][iz] = 0.0;
+							continue;
+						}
+
 						potential2x.cubic()[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
+
 					}
 				}
 			}
