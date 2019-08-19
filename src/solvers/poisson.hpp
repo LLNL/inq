@@ -103,7 +103,7 @@ namespace solvers {
 			std::cout << fourier_basis.gsize()[0] << std::endl;
 			
 			const auto scal = (-4.0*M_PI)/fourier_basis.size();
-			const auto cutoff_radius = potential2x.basis().min_rlength();
+			const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 
 			std::cout << "CUTOFF " <<  cutoff_radius << '\t' << fourier_basis.size() << '\t' << density.basis().size() << std::endl;
 			
@@ -308,7 +308,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		const double ll = 8.0;
 		
 		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll}, 0);
-		basis::real_space rs(cell, input::basis::spacing(0.1));
+		basis::real_space rs(cell, input::basis::spacing(0.09));
 
 		solvers::poisson<basis::real_space> psolver;
 
@@ -316,9 +316,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 			REQUIRE(rs.periodic_dimensions() == 0);
 			
-			REQUIRE(rs.rsize()[0] == 90);
-			REQUIRE(rs.rsize()[1] == 90);
-			REQUIRE(rs.rsize()[2] == 90);
+			REQUIRE(rs.rsize()[0] == 89);
+			REQUIRE(rs.rsize()[1] == 89);
+			REQUIRE(rs.rsize()[2] == 89);
 
 		}
 		
