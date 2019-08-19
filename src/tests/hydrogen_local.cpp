@@ -46,25 +46,26 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
-
-			   1   --    -0.359408       1.000000
-				 
-				 Total       =        -0.43003364
-				 Free        =        -0.43003364
-				 -----------
-				 Ion-ion     =        -0.07062564
-				 Eigenvalues =        -0.35940800
-				 Hartree     =         0.00000000
-				 Int[n*v_xc] =         0.00000000
-				 Exchange    =         0.00000000
-				 Correlation =         0.00000000
-				 vanderWaals =         0.00000000
-				 Delta XC    =         0.00000000
-				 Entropy     =         1.38629436
-				 -TS         =        -0.00000000
-				 Kinetic     =         0.49139567
-				 External    =        -0.85080367
-				 Non-local   =         0.00000000
+			#st  Spin   Eigenvalue      Occupation
+			1   --    -0.500174       1.000000
+			
+			Energy [H]:
+      Total       =        -0.50017433
+      Free        =        -0.50017433
+      -----------
+      Ion-ion     =         0.00000000
+      Eigenvalues =        -0.50017433
+      Hartree     =         0.00000000
+      Int[n*v_xc] =         0.00000000
+      Exchange    =         0.00000000
+      Correlation =         0.00000000
+      vanderWaals =         0.00000000
+      Delta XC    =         0.00000000
+      Entropy     =         1.38629436
+      -TS         =        -0.00000000
+      Kinetic     =         0.49296606
+      External    =        -0.99314039
+      Non-local   =         0.00000000
 
 		*/
 		REQUIRE(energy.self            == -0.7978845608_a); //this matches qball exactly
@@ -76,7 +77,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		REQUIRE(energy.external        == -0.8459611938_a);
 		REQUIRE(energy.ion             == -0.0956453566_a);
 	}
-#if 1
+#if 0
 	SECTION("LDA"){
 		
 		input::config conf;
