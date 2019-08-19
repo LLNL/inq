@@ -102,14 +102,9 @@ namespace solvers {
 
 			basis::fourier_space fourier_basis(potential2x.basis());
 
-			std::cout << basis::fourier_space(density.basis()).gsize()[0] << std::endl;
-			std::cout << fourier_basis.gsize()[0] << std::endl;
-			
 			const auto scal = (-4.0*M_PI)/fourier_basis.size();
 			const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 
-			std::cout << "CUTOFF " <<  cutoff_radius << '\t' << fourier_basis.size() << '\t' << density.basis().size() << std::endl;
-			
 			for(int ix = 0; ix < fourier_basis.gsize()[0]; ix++){
 				for(int iy = 0; iy < fourier_basis.gsize()[1]; iy++){
 					for(int iz = 0; iz < fourier_basis.gsize()[2]; iz++){
