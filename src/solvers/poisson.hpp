@@ -84,7 +84,13 @@ namespace solvers {
 			for(int ix = 0; ix < density.basis().rsize()[0]; ix++){
 				for(int iy = 0; iy < density.basis().rsize()[1]; iy++){
 					for(int iz = 0; iz < density.basis().rsize()[2]; iz++){
-						potential2x.cubic()[ix][iy][iz] = density.cubic()[ix][iy][iz];
+						auto i2x = ix;
+						auto i2y = iy;
+						auto i2z = iz;
+						if(ix >= density.basis().rsize()[0]/2) i2x += density.basis().rsize()[0];
+						if(iy >= density.basis().rsize()[1]/2) i2y += density.basis().rsize()[1];
+						if(iz >= density.basis().rsize()[2]/2) i2z += density.basis().rsize()[2];
+						potential2x.cubic()[i2x][i2y][i2z] = density.cubic()[ix][iy][iz];
 					}
 				}
 			}
@@ -92,9 +98,14 @@ namespace solvers {
 			fftw::dft_inplace(potential2x.cubic(), fftw::forward);
 
 			basis::fourier_space fourier_basis(potential2x.basis());
+
+			std::cout << basis::fourier_space(density.basis()).gsize()[0] << std::endl;
+			std::cout << fourier_basis.gsize()[0] << std::endl;
 			
 			const auto scal = (-4.0*M_PI)/fourier_basis.size();
-			const auto cutoff_radius = 0.5*fourier_basis.min_rlength();
+			const auto cutoff_radius = potential2x.basis().min_rlength();
+
+			std::cout << "CUTOFF " <<  cutoff_radius << '\t' << fourier_basis.size() << '\t' << density.basis().size() << std::endl;
 			
 			for(int ix = 0; ix < fourier_basis.gsize()[0]; ix++){
 				for(int iy = 0; iy < fourier_basis.gsize()[1]; iy++){
@@ -102,14 +113,11 @@ namespace solvers {
 						
 						// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
 						if(fourier_basis.g_is_zero(ix, iy, iz)){
-							potential2x.cubic()[0][0][0] *= scal*cutoff_radius*cutoff_radius/2.0;
+							potential2x.cubic()[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
 							continue;
 						}
 						auto g2 = fourier_basis.g2(ix, iy, iz);
-						//potential2x.cubic()[ix][iy][iz] *= -scal/fourier_basis.g2(ix, iy, iz);
-						potential2x.cubic()[ix][iy][iz] *= scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
-						//						potential2x.cubic()[ix][iy][iz] *= scal;
-						
+						potential2x.cubic()[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
 					}
 				}
 			}
@@ -117,11 +125,19 @@ namespace solvers {
 			fftw::dft_inplace(potential2x.cubic(), fftw::backward);
 			
 			basis::field<basis_type, complex> potential(density.basis());
-
+			
+			potential = 0.0;
+			
 			for(int ix = 0; ix < potential.basis().rsize()[0]; ix++){
 				for(int iy = 0; iy < potential.basis().rsize()[1]; iy++){
-					for(int iz = 0; iz < potential.basis().rsize()[2]; iz++){
-						potential.cubic()[ix][iy][iz] = potential2x.cubic()[ix][iy][iz];
+					for(int iz = 0; iz < potential.basis().rsize()[2]; iz++){	
+						auto i2x = ix;
+						auto i2y = iy;
+						auto i2z = iz;
+						if(ix >= density.basis().rsize()[0]/2) i2x += density.basis().rsize()[0];
+						if(iy >= density.basis().rsize()[1]/2) i2y += density.basis().rsize()[1];
+						if(iz >= density.basis().rsize()[2]/2) i2z += density.basis().rsize()[2];
+						potential.cubic()[ix][iy][iz] = potential2x.cubic()[i2x][i2y][i2z];
 					}
 				}
 			}
@@ -159,6 +175,7 @@ namespace solvers {
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
+#include <operations/integral.hpp>
 
 TEST_CASE("class solvers::poisson", "[poisson]") {
 
@@ -288,10 +305,10 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 	{
 
-		const double ll = 9.0;
+		const double ll = 8.0;
 		
 		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll}, 0);
-		basis::real_space rs(cell, input::basis::spacing(1.0));
+		basis::real_space rs(cell, input::basis::spacing(0.1));
 
 		solvers::poisson<basis::real_space> psolver;
 
@@ -313,34 +330,28 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 				for(int iy = 0; iy < rs.rsize()[1]; iy++){
 					for(int iz = 0; iz < rs.rsize()[2]; iz++){
 						density.cubic()[ix][iy][iz] = 0.0;
-						if(norm(rs.rvector(ix, iy, iz)) < 1e-10) density.cubic()[ix][iy][iz] = -1.0;
+						if(norm(rs.rvector(ix, iy, iz)) < 1e-10) density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
 					}
 				}
 			}
+
+			REQUIRE(real(operations::integral(density)) == -1.0_a);
 			
 			auto potential = psolver(density);
-		
+
+			std::ofstream ofile("pot.dat");
+			
 			double sumreal = 0.0;
 			double sumimag = 0.0;
 			for(int ix = 0; ix < rs.rsize()[0]; ix++){
 				for(int iy = 0; iy < rs.rsize()[1]; iy++){
 					for(int iz = 0; iz < rs.rsize()[2]; iz++){
-						double r2 = norm(rs.rvector(ix, iy, iz));
-						
-						std::cout << ix << '\t' << iy << '\t' << iz << "\t->\t" << std::real(potential.cubic()[ix][iy][iz]) << '\t' << 1/sqrt(r2) << std::endl;
-							//1/sqrt(r2) << '\t' << std::real(potential.cubic()[ix][iy][iz]) << '\t' << 1/sqrt(r2)/std::real(potential.cubic()[ix][iy][iz]) << std::endl;
+						auto rr = rs.rvector(ix, iy, iz);
+						if(iz == 0 and iy == 0) ofile << rr[0] << "\t" << std::real(potential.cubic()[ix][iy][iz]) << std::endl;						
 					}
 				}
 			}
 
-			// These values haven't been validated against anything, they are
-			// just for consistency. Of course the imaginary part has to be
-			// zero, since the density is real.
-		
-			//			REQUIRE(sumreal == 59.7758543176_a);
-			//			REQUIRE(sumimag == 3.87333e-13_a);
-		
-			REQUIRE(real(potential.cubic()[1][0][0]) == -0.0241426581_a);
 		}
 
 	}
