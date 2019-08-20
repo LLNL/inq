@@ -74,7 +74,7 @@ namespace math {
     }
 
 		auto self_interaction() const{
-			return 1.0/(sqrt(2.0*M_PI)*sigma_);
+			return 1.0/(2.0*sqrt(M_PI)*sigma_);
 		}
 
   private:
