@@ -37,7 +37,7 @@ namespace math {
     }
 
     auto short_range_potential(double rr) const {
-      return - 1.0/rr - long_range_potential(rr);
+			return -erfc(rr/(sigma_*sqrt(2.0)))/rr;
     }
 
 		[[gnu::pure]] auto short_range_potential_radius(double tol = 1e-15) const {
@@ -131,7 +131,7 @@ TEST_CASE("class math::erf_range_separation", "[math::erf_range_separation]") {
 		REQUIRE(sep.short_range_potential(7.5e-1) == Approx(-0.0002357794));
 		REQUIRE(sep.short_range_potential(1.0) == Approx(-0.0000005733));
 		REQUIRE(sep.short_range_potential(1.25) == Approx(-3.283621e-10));
-		REQUIRE(sep.short_range_potential(1.5) == Approx(-4.252154e-14));
+		REQUIRE(sep.short_range_potential(1.5) == Approx(-4.254522e-14));
 		REQUIRE(fabs(sep.short_range_potential(1.75)) <= 1e-15);
 		REQUIRE(fabs(sep.short_range_potential(2.0)) <= 1e-15);
 		REQUIRE(fabs(sep.short_range_potential(2.5)) <= 1e-15);
@@ -144,7 +144,7 @@ TEST_CASE("class math::erf_range_separation", "[math::erf_range_separation]") {
 
 		auto radius = sep.short_range_potential_radius();
 		REQUIRE(radius == 1.593078562_a);
-		REQUIRE(sep.short_range_potential(radius) == -9.992007e-16_a);
+		REQUIRE(sep.short_range_potential(radius) == -1.033846e-15_a);
 
 		radius = sep.short_range_potential_radius(0.1);
 		REQUIRE(radius == 4.089239e-01_a);
