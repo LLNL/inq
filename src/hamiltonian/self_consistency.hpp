@@ -86,7 +86,7 @@ namespace hamiltonian {
 				
 			}
 			
-			return vks;			
+			return vks;
 		}
 
 	private:

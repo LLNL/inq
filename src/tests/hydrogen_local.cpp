@@ -35,12 +35,12 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 	geo.push_back(local_h | math::d3vector(0.0, 0.0, 0.0));
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
-
+#if 1
 	SECTION("Non interacting"){
 		
 		input::config conf;
 		
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), input::interaction::non_interacting(), conf);
+		systems::electrons electrons(ions, input::basis::cutoff_energy(80.0), input::interaction::non_interacting(), conf);
 		
 		auto energy = electrons.calculate_ground_state();
 		
@@ -68,15 +68,16 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
       Non-local   =         0.00000000
 
 		*/
-		REQUIRE(energy.self            == -0.7978845608_a); //this matches qball exactly
-		REQUIRE(energy.eigenvalues     == -0.3590112743_a);
+		REQUIRE(energy.self            == -0.564189583548_a);
+		REQUIRE(energy.eigenvalues     == -0.4996208097_a);
 		REQUIRE(fabs(energy.xc)        <=  1e-10);
 		REQUIRE(fabs(energy.nvxc)      <=  1e-10);
-		REQUIRE(fabs(energy.coulomb()) <=  1e-10);
-		REQUIRE(energy.total()         == -0.4547670333_a);
-		REQUIRE(energy.external        == -0.8459611938_a);
-		REQUIRE(energy.ion             == -0.0956453566_a);
+		REQUIRE(energy.coulomb()       == -0.7933466497_a);
+		REQUIRE(energy.total()         == -0.499620809721_a);
+		REQUIRE(energy.external        == -0.193740944354_a);
+
 	}
+#endif
 #if 0
 	SECTION("LDA"){
 		
@@ -127,7 +128,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		*/
 
-		REQUIRE(energy.self          == -0.7978845608_a); //this matches qball exactly
+		REQUIRE(energy.self          == -0.7978845608_a); 
 		REQUIRE(energy.eigenvalues   == -0.2334309275_a); //this is a reasonable match, but I would expect it to be closer to qball since the calculation is essentially the same
 		REQUIRE(energy.xc            == -0.2321787884_a);
 		REQUIRE(energy.nvxc          == -0.3025616239_a);
