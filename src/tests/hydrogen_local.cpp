@@ -40,7 +40,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		
 		input::config conf;
 		
-		systems::electrons electrons(ions, input::basis::cutoff_energy(80.0), input::interaction::non_interacting(), conf);
+		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), input::interaction::non_interacting(), conf);
 		
 		auto energy = electrons.calculate_ground_state();
 		
@@ -69,16 +69,16 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		*/
 		REQUIRE(energy.self            == -0.564189583548_a);
-		REQUIRE(energy.eigenvalues     == -0.4996208097_a);
+		REQUIRE(energy.eigenvalues     == -0.499895442304_a);
 		REQUIRE(fabs(energy.xc)        <=  1e-10);
 		REQUIRE(fabs(energy.nvxc)      <=  1e-10);
-		REQUIRE(energy.coulomb()       == -0.7933466497_a);
-		REQUIRE(energy.total()         == -0.499620809721_a);
-		REQUIRE(energy.external        == -0.193740944354_a);
+		REQUIRE(energy.coulomb()       == -0.793703931391_a);
+		REQUIRE(energy.total()         == -0.499895442304_a);
+		REQUIRE(energy.external        == -0.194627483520_a);
 
 	}
 #endif
-#if 0
+#if 1
 	SECTION("LDA"){
 		
 		input::config conf;
