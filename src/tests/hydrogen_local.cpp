@@ -24,7 +24,7 @@
 #include <config/path.hpp>
 #include <input/atom.hpp>
 
-TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_gas]") {
+TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 	using namespace Catch::literals;
 
