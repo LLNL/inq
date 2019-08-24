@@ -75,6 +75,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		REQUIRE(energy.coulomb()       == -0.793703931391_a);
 		REQUIRE(energy.total()         == -0.499895442304_a);
 		REQUIRE(energy.external        == -0.194627483520_a);
+		REQUIRE(energy.kinetic()       ==  0.488435972607_a);
 
 	}
 #endif
@@ -90,52 +91,37 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
 
-			1   --    -0.233333       1.000000
+			1   --    -0.233986       1.000000
 
-      Total       =        -0.44607691
-      Free        =        -0.44607691
+			Energy [H]:
+      Total       =        -0.44606573
+      Free        =        -0.44606573
       -----------
-      Ion-ion     =        -0.07062564
-      Eigenvalues =        -0.23333336
-      Hartree     =         0.21257486
-      Int[n*v_xc] =        -0.30287671
-      Exchange    =        -0.19279832
-      Correlation =        -0.03962144
+      Ion-ion     =         0.00000000
+      Eigenvalues =        -0.23398591
+      Hartree     =         0.28254446
+      Int[n*v_xc] =        -0.30290955
+      Exchange    =        -0.19282007
+      Correlation =        -0.03962486
       vanderWaals =         0.00000000
       Delta XC    =         0.00000000
       Entropy     =         1.38629436
       -TS         =        -0.00000000
-      Kinetic     =         0.41896742
-      External    =        -0.77457392
+      Kinetic     =         0.41903428
+      External    =        -0.91520434
       Non-local   =         0.00000000
-
-			
-			QBALL RESULTS
-
-			<eigenvalue_sum> -0.23303692 </eigenvalue_sum>
-
-			<ekin>        0.41725484 </ekin>
-			<econf>       0.00000000 </econf>
-			<eps>        -0.10437132 </eps>
-			<enl>         0.00000000 </enl>
-			<ecoul>      -0.52645873 </ecoul>
-			<exc>        -0.23212287 </exc>
-			<evdw>        0.00000000 </evdw>
-			<esr>         0.00000000 </esr>
-			<eself>       0.79788456 </eself> //this is -self.
-			<ets>         0.00000000 </ets>
-			<etotal>     -0.44569809 </etotal>
 
 		*/
 
-		REQUIRE(energy.self          == -0.7978845608_a); 
-		REQUIRE(energy.eigenvalues   == -0.2334309275_a); //this is a reasonable match, but I would expect it to be closer to qball since the calculation is essentially the same
-		REQUIRE(energy.xc            == -0.2321787884_a);
-		REQUIRE(energy.nvxc          == -0.3025616239_a);
-		REQUIRE(energy.total()       == -0.4712455539_a);
-		REQUIRE(energy.external      == -7.721030e-01_a);
-		REQUIRE(energy.coulomb()     ==  2.115318e-01_a);
-		REQUIRE(energy.ion           == -0.0956453566_a);
+		REQUIRE(energy.self          == -0.564189583548_a); 
+		REQUIRE(energy.eigenvalues   == -0.234407373371_a);
+		REQUIRE(energy.xc            == -0.232064693875_a);
+		REQUIRE(energy.nvxc          == -0.302412613089_a);
+		REQUIRE(energy.kinetic()     ==  0.417754384376_a);
+		REQUIRE(energy.total()       == -0.446068359498_a);
+		REQUIRE(energy.external      == -0.168489350956_a);
+		REQUIRE(energy.coulomb()     == -0.463268699041_a);
+		REQUIRE(energy.ion           ==  0.000000000000_a);
 
 	}
 #endif
