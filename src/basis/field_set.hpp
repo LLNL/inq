@@ -51,6 +51,13 @@ namespace basis {
 		field_set(field_set && coeff) = default;
 		field_set & operator=(const field_set & coeff) = delete;
 		field_set & operator=(field_set && coeff) = default;
+
+		//set to a scalar value
+		field_set & operator=(const value_type value) {
+			//DATAOPERATIONS
+			for(int ii = 0; ii < cubic_.size(); ii++) cubic_.data()[ii] = value;
+			return *this;
+		}
 		
 		const basis_type & basis() const {
 			return basis_;

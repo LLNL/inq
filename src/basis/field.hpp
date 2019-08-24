@@ -43,7 +43,7 @@ namespace basis {
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
 
-		//Initialized by a scalar value
+		//set to a scalar value
 		field & operator=(const value_type value) {
 			//DATAOPERATIONS
 			for(int ii = 0; ii < basis_.size(); ii++) (*this)[ii] = value;
