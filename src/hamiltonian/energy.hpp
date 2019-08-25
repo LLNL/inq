@@ -32,6 +32,7 @@ namespace hamiltonian {
 		double self;
 		double eigenvalues;
 		double external;
+		double nonlocal;
 		double hartree;
 		double nvhartree;
 		double xc;
@@ -42,6 +43,7 @@ namespace hamiltonian {
 			self = 0.0;
 			eigenvalues = 0.0;
 			external = 0.0;
+			nonlocal = 0.0;
 			hartree = 0.0;
 			nvhartree = 0.0;
 			xc = 0.0;
@@ -53,11 +55,11 @@ namespace hamiltonian {
 		}
 		
 		auto kinetic() const {
-			return eigenvalues - nvhartree - nvxc - external;
+			return eigenvalues - nvhartree - nvxc - external - nonlocal;
 		}
 		
 		auto total() const {
-			return kinetic() + hartree + self + ion + external + xc;
+			return kinetic() + hartree + self + ion + external + nonlocal + xc;
 		}
 
 		template <class out_type>
@@ -71,6 +73,7 @@ namespace hamiltonian {
 			tfm::format(out, "  hartree     = %20.12f\n", hartree);
 			tfm::format(out, "  nvhartree   = %20.12f\n", nvhartree);
 			tfm::format(out, "  external    = %20.12f\n", external);
+			tfm::format(out, "  nonlocal    = %20.12f\n", nonlocal);
 			tfm::format(out, "  xc          = %20.12f\n", xc);
 			tfm::format(out, "  intnvxc     = %20.12f\n", nvxc);
 			tfm::format(out, "  ion         = %20.12f\n", ion);

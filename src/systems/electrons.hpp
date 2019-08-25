@@ -87,13 +87,18 @@ namespace systems {
 				auto vks = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 				
 				auto eigenvalues = operations::overlap_diagonal(ham_(phi_), phi_);
+				auto nlev = operations::overlap_diagonal(ham_.non_local(phi_), phi_);
 
 				auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/abs(operations::integral(vks));
 				
 				//DATAOPERATIONS
 				energy.eigenvalues = 0.0;
-				for(int ii = 0; ii < states_.num_states(); ii++) energy.eigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
-
+				energy.nonlocal = 0.0;
+				for(int ii = 0; ii < states_.num_states(); ii++){
+					energy.eigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
+					energy.nonlocal += states_.occupations()[ii]*real(nlev[ii]);
+				}
+				
 				std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy.total()
 									<< "  de = " << energy.eigenvalues - old_energy << "  dvks = " << potdiff << std::endl;
 

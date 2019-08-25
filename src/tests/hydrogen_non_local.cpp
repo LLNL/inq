@@ -75,7 +75,8 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		REQUIRE(energy.coulomb()       == -0.794655796183_a);
 		REQUIRE(energy.total()         == -0.500213154797_a);
 		REQUIRE(energy.external        == -0.125329604081_a);
-		REQUIRE(energy.kinetic()       ==  0.488435972607_a);
+		REQUIRE(energy.nonlocal        == -0.068186046673_a);
+		REQUIRE(energy.kinetic()       ==  0.487958292140_a);
 
 	}
 #endif
