@@ -83,20 +83,10 @@ namespace hamiltonian {
 			non_local(phi, hphi);
 
 			//the scalar local potential in real space
-			for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
-				for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
-					for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
-						
-						double vv  = scalar_potential.cubic()[ix][iy][iz];
-						
-						for(int ist = 0; ist < phi.set_size(); ist++){
-							hphi.cubic()[ix][iy][iz][ist] += vv*phi.cubic()[ix][iy][iz][ist];
-						}
-						
-					}
-				}
+			for(long ip = 0; ip < phi.basis().size(); ip++){
+				double vv  = scalar_potential[ip];
+				for(int ist = 0; ist < phi.set_size(); ist++) hphi[ip][ist] += vv*phi[ip][ist];
 			}
-			
 		}
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
