@@ -65,6 +65,27 @@ namespace hamiltonian {
 			return vnlphi;
 		}
 
+		void real_space(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & hphi) const {
+			//the non local potential in real space
+			non_local(phi, hphi);
+
+			//the scalar local potential in real space
+			for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
+				for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
+					for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
+						
+						double vv  = scalar_potential.cubic()[ix][iy][iz];
+						
+						for(int ist = 0; ist < phi.set_size(); ist++){
+							hphi.cubic()[ix][iy][iz][ist] += vv*phi.cubic()[ix][iy][iz][ist];
+						}
+						
+					}
+				}
+			}
+			
+		}
+
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
       
 			namespace multi = boost::multi;
@@ -83,24 +104,7 @@ namespace hamiltonian {
 
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			
-			//the non local potential in real space
-			non_local(phi, hphi);
-
-			//the scalar local potential in real space
-			for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
-				for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
-					for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
-
-						double vv  = scalar_potential.cubic()[ix][iy][iz];
-						
-						for(int ist = 0; ist < phi.set_size(); ist++){
-							hphi.cubic()[ix][iy][iz][ist] += vv*phi.cubic()[ix][iy][iz][ist];
-						}
-						
-					}
-				}
-			}
+			real_space(phi, hphi);
 
 			return hphi;
 			
