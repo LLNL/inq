@@ -65,7 +65,20 @@ namespace hamiltonian {
 			return vnlphi;
 		}
 
-		void real_space(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & hphi) const {
+		void fourier_space_terms(basis::field_set<basis::fourier_space, complex> & hphi) const {
+			
+			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
+				for(int iy = 0; iy < hphi.basis().gsize()[1]; iy++){
+					for(int iz = 0; iz < hphi.basis().gsize()[2]; iz++){
+						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
+						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] *= lapl;
+					}
+				}
+			}
+			
+		}
+		
+		void real_space_terms(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & hphi) const {
 			//the non local potential in real space
 			non_local(phi, hphi);
 
@@ -93,18 +106,11 @@ namespace hamiltonian {
 
 			auto hphi_fs = operations::space::to_fourier(phi);
 
-			for(int ix = 0; ix < hphi_fs.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < hphi_fs.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < hphi_fs.basis().gsize()[2]; iz++){
-						double lapl = -0.5*(-hphi_fs.basis().g2(ix, iy, iz));
-						for(int ist = 0; ist < phi.set_size(); ist++) hphi_fs.cubic()[ix][iy][iz][ist] *= lapl;
-					}
-				}
-			}
-
+			fourier_space_terms(hphi_fs);
+	
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			real_space(phi, hphi);
+			real_space_terms(phi, hphi);
 
 			return hphi;
 			
