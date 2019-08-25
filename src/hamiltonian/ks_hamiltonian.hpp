@@ -65,6 +65,19 @@ namespace hamiltonian {
 			return vnlphi;
 		}
 
+		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
+			
+			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
+				for(int iy = 0; iy < hphi.basis().gsize()[1]; iy++){
+					for(int iz = 0; iz < hphi.basis().gsize()[2]; iz++){
+						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
+						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] += lapl*phi.cubic()[ix][iy][iz][ist];
+					}
+				}
+			}
+			
+		}
+		
 		void fourier_space_terms(basis::field_set<basis::fourier_space, complex> & hphi) const {
 			
 			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
@@ -91,9 +104,6 @@ namespace hamiltonian {
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
       
-			namespace multi = boost::multi;
-			namespace fftw = boost::multi::fftw;
-
 			auto hphi_fs = operations::space::to_fourier(phi);
 
 			fourier_space_terms(hphi_fs);
@@ -105,7 +115,25 @@ namespace hamiltonian {
 			return hphi;
 			
 		}
+		
+    auto operator()(const basis::field_set<basis::fourier_space, complex> & phi) const{
 
+			auto phi_rs = operations::space::to_real(phi);
+
+			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.basis());
+
+			hphi_rs = 0.0;
+						
+			real_space_terms(phi_rs, hphi_rs);
+		
+			auto hphi = operations::space::to_fourier(hphi_rs);
+
+			fourier_space_terms(phi, hphi);
+
+			return hphi;
+			
+		}
+		
 		int num_projectors() const {
 			int nn = 0;
 			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++){
