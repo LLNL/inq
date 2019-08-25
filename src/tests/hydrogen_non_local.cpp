@@ -80,7 +80,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 	}
 #endif
-#if 0
+#if 1
 	SECTION("LDA"){
 		
 		input::config conf;
@@ -91,40 +91,41 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
-Eigenvalues [H]
- #st  Spin   Eigenvalue      Occupation
-   1   --    -0.500411       1.000000
-
-Energy [H]:
-      Total       =        -0.50041053
-      Free        =        -0.50041053
+			Eigenvalues [H]
+			#st  Spin   Eigenvalue      Occupation
+			1   --    -0.233880       1.000000
+			
+			Energy [H]:
+      Total      =        -0.44618708
+      Free        =        -0.44618708
       -----------
       Ion-ion     =         0.00000000
-      Eigenvalues =        -0.50041053
-      Hartree     =         0.00000000
-      Int[n*v_xc] =         0.00000000
-      Exchange    =         0.00000000
-      Correlation =         0.00000000
+      Eigenvalues =        -0.23387966
+      Hartree     =         0.28283087
+      Int[n*v_xc] =        -0.30315816
+      Exchange    =        -0.19299390
+      Correlation =        -0.03964083
       vanderWaals =         0.00000000
       Delta XC    =         0.00000000
       Entropy     =         1.38629436
       -TS         =        -0.00000000
-      Kinetic     =         0.49215618
-      External    =        -0.99256671
-      Non-local   =        -0.06871050
+      Kinetic     =         0.41796657
+      External    =        -0.91434707
+      Non-local   =        -0.05876129
+
 
 		*/
 
-		REQUIRE(energy.self          == -0.564189583548_a); 
-		REQUIRE(energy.eigenvalues   == -0.234407373371_a);
-		REQUIRE(energy.xc            == -0.232064693875_a);
-		REQUIRE(energy.nvxc          == -0.302412613089_a);
-		REQUIRE(energy.kinetic()     ==  0.417754384376_a);
-		REQUIRE(energy.total()       == -0.446068359498_a);
-		REQUIRE(energy.external      == -0.168489350956_a);
-		REQUIRE(energy.coulomb()     == -0.463268699041_a);
-		REQUIRE(energy.ion           ==  0.000000000000_a);
-
+		REQUIRE(energy.self            == -0.564189583548_a);
+		REQUIRE(energy.eigenvalues     == -0.234329528903_a);
+		REQUIRE(energy.xc              == -0.232294220410_a);
+		REQUIRE(energy.nvxc            == -0.302713349819_a);
+		REQUIRE(energy.coulomb()       == -0.463639067982_a);
+		REQUIRE(energy.total()         == -0.446253846698_a);
+		REQUIRE(energy.external        == -0.108660738870_a);
+		REQUIRE(energy.nonlocal        == -0.058633055438_a);
+		REQUIRE(energy.kinetic()       ==  0.416973236003_a);
+		
 	}
 #endif
 }
