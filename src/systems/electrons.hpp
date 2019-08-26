@@ -79,9 +79,13 @@ namespace systems {
       for(int ii = 0; ii < 1000; ii++){
 
 				operations::subspace_diagonalization(ham_, phi_);
-				
-				solvers::steepest_descent(ham_, prec, phi_);
 
+				{
+					auto fphi = operations::space::to_fourier(phi_);
+					solvers::steepest_descent(ham_, prec, fphi);
+					phi_ = operations::space::to_real(fphi);
+				}
+				
 				density = operations::calculate_density(states_.occupations(), phi_);
 
 				auto vks = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);

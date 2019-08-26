@@ -30,27 +30,25 @@
 namespace solvers {
 
 	template <class operator_type, class preconditioner_type, class field_set_type>
-	void steepest_descent(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::real_space, field_set_type> & phi){
+	void steepest_descent(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::fourier_space, field_set_type> & phi){
 
 		const int num_steps = 5;
 
-		auto fphi = operations::space::to_fourier(phi);
-		
 		for(int istep = 0; istep < num_steps; istep++){
 			
 			//calculate the residual
 			
-			auto residual = ham(fphi);
+			auto residual = ham(phi);
 			
-			auto eigenvalues = operations::overlap_diagonal(residual, fphi);
-			auto norm =	operations::overlap_diagonal(fphi);
+			auto eigenvalues = operations::overlap_diagonal(residual, phi);
+			auto norm =	operations::overlap_diagonal(phi);
 			
 			auto lambda(eigenvalues);
 			
 			//DATAOPERATIONS
-			for(int ist = 0; ist < fphi.set_size(); ist++) lambda[ist] /= -norm[ist];
+			for(int ist = 0; ist < phi.set_size(); ist++) lambda[ist] /= -norm[ist];
 			
-			operations::shift(lambda, fphi, residual);
+			operations::shift(lambda, phi, residual);
 			
 			//OPTIMIZATIONS: precondition the residual here
 			prec(residual);
@@ -59,13 +57,13 @@ namespace solvers {
 			auto hresidual = ham(residual);
 			
 			auto m1 = operations::overlap_diagonal(residual, residual);
-			auto m2 = operations::overlap_diagonal(fphi, residual);
+			auto m2 = operations::overlap_diagonal(phi, residual);
 			auto m3 = operations::overlap_diagonal(residual, hresidual);
-			auto m4 = operations::overlap_diagonal(fphi, hresidual);
+			auto m4 = operations::overlap_diagonal(phi, hresidual);
 			
 			
 			//DATAOPERATIONS
-			for(int ist = 0; ist < fphi.set_size(); ist++){
+			for(int ist = 0; ist < phi.set_size(); ist++){
 				double ca = real(m1[ist])*real(m4[ist]) - real(m3[ist])*real(m2[ist]);
 				double cb = real(norm[ist])*real(m3[ist]) - real(eigenvalues[ist])*real(m1[ist]);
 				double cc = real(eigenvalues[ist])*real(m2[ist]) - real(m4[ist])*real(norm[ist]);
@@ -73,13 +71,11 @@ namespace solvers {
 				lambda[ist] = 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
 			}
 			
-			operations::shift(lambda, residual, fphi);		
+			operations::shift(lambda, residual, phi);		
 
 		}
 
-		operations::orthogonalization(fphi);
-		
-		phi = operations::space::to_real(fphi);
+		operations::orthogonalization(phi);
 		
 	}
 
