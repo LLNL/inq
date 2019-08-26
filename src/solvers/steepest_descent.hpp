@@ -30,7 +30,7 @@
 namespace solvers {
 
 	template <class operator_type, class preconditioner_type, class field_set_type>
-	void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
+	void steepest_descent(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::real_space, field_set_type> & phi){
 
 		const int num_steps = 5;
 
