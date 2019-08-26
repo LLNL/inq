@@ -89,27 +89,40 @@ namespace systems {
 				density = operations::calculate_density(states_.occupations(), phi_);
 
 				auto vks = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
-				
-				auto eigenvalues = operations::overlap_diagonal(ham_(phi_), phi_);
-				auto nlev = operations::overlap_diagonal(ham_.non_local(phi_), phi_);
 
-				auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/abs(operations::integral(vks));
-				
-				//DATAOPERATIONS
-				energy.eigenvalues = 0.0;
-				energy.nonlocal = 0.0;
-				for(int ii = 0; ii < states_.num_states(); ii++){
-					energy.eigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
-					energy.nonlocal += states_.occupations()[ii]*real(nlev[ii]);
-				}
-				
-				std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy.total()
-									<< "  de = " << energy.eigenvalues - old_energy << "  dvks = " << potdiff << std::endl;
+				{
+					
+					auto residual = ham_(phi_);
+					auto eigenvalues = operations::overlap_diagonal(phi_, residual);
+					operations::shift(eigenvalues, phi_, residual, -1.0);
+					
+					auto normres = operations::overlap_diagonal(residual);
+					
+					auto nlev = operations::overlap_diagonal(ham_.non_local(phi_), phi_);
+					
+					//DATAOPERATIONS
+					energy.eigenvalues = 0.0;
+					energy.nonlocal = 0.0;
+					for(int ii = 0; ii < states_.num_states(); ii++){
+						energy.eigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
+						energy.nonlocal += states_.occupations()[ii]*real(nlev[ii]);
+					}
 
-				for(int ii = 0; ii < states_.num_states(); ii++){
-					std::cout << " state " << ii << ":  occ = " << states_.occupations()[ii] << "  evalue = " << real(eigenvalues[ii]) << std::endl;
+					auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/abs(operations::integral(vks));
+					
+					std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy.total()
+										<< "  de = " << energy.eigenvalues - old_energy << "  dvks = " << potdiff << std::endl;
+					
+					for(int ii = 0; ii < states_.num_states(); ii++){
+						std::cout << " state " << ii << ":"
+											<< "  occ = " << states_.occupations()[ii]
+											<< "  evalue = " << real(eigenvalues[ii])
+											<< "  res = " << sqrt(real(normres[ii])) << std::endl;
+					}
+					
+					std::cout << std::endl;
+
 				}
-				std::cout << std::endl;
 				
 				if(fabs(energy.eigenvalues - old_energy) < 1e-5) break;
 				
