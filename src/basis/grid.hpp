@@ -80,10 +80,6 @@ namespace basis {
 			return npoints_;
 		}
 
-		double volume_element() const {
-			return rspacing_[0]*rspacing_[1]*rspacing_[2];
-		}
-
 		template <class output_stream>
     void info(output_stream & out) const {
       out << "PLANE WAVE BASIS SET:" << std::endl;
