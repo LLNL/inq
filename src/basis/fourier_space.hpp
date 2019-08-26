@@ -83,7 +83,7 @@ namespace basis {
 		}
 
 		auto volume_element() const {
-			return gspacing_[0]*gspacing_[1]*gspacing_[2];
+			return rspacing_[0]*rspacing_[1]*rspacing_[2]/size();
 		}
 		
 	private:
