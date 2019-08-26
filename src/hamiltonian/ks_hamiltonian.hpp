@@ -120,7 +120,7 @@ namespace hamiltonian {
 
 			auto phi_rs = operations::space::to_real(phi);
 
-			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.basis());
+			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.basis(), phi.set_size());
 
 			hphi_rs = 0.0;
 						
@@ -175,11 +175,14 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
   ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
-	REQUIRE(rs.size() == 8000);
-	REQUIRE(rs.rspacing()[0] == 0.5_a);
-	REQUIRE(rs.rspacing()[1] == 0.5_a);	
-	REQUIRE(rs.rspacing()[2] == 0.5_a);
-	REQUIRE(rs.volume_element() == 0.125_a);
+	SECTION("Basis"){
+		
+		REQUIRE(rs.size() == 8000);
+		REQUIRE(rs.rspacing()[0] == 0.5_a);
+		REQUIRE(rs.rspacing()[1] == 0.5_a);	
+		REQUIRE(rs.rspacing()[2] == 0.5_a);
+		REQUIRE(rs.volume_element() == 0.125_a);
+	}
 	
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
@@ -191,7 +194,6 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo);
 
 	SECTION("Constant function"){
-		
 		
 		for(int ix = 0; ix < rs.rsize()[0]; ix++){
 			for(int iy = 0; iy < rs.rsize()[1]; iy++){
@@ -276,6 +278,117 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
 		}
 
 		hphi = ham(phi);
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < rs.rsize()[0]; ix++){
+			for(int iy = 0; iy < rs.rsize()[1]; iy++){
+				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
+					}
+				}
+			}
+		}
+
+		diff /= hphi.cubic().num_elements();
+
+		REQUIRE(diff == 0.0055687279_a);
+		
+	}
+
+
+	SECTION("Plane wave - fourier"){
+		
+		double kk = 2.0*M_PI/rs.rlength()[0];
+		
+		for(int ix = 0; ix < rs.rsize()[0]; ix++){
+			for(int iy = 0; iy < rs.rsize()[1]; iy++){
+				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
+						double xx = rs.rvector(ix, iy, iz)[0];
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
+					}
+				}
+			}
+		}
+
+		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < rs.rsize()[0]; ix++){
+			for(int iy = 0; iy < rs.rsize()[1]; iy++){
+				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
+							diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic()[ix][iy][iz][ist]);
+					}
+				}
+			}
+		}
+
+		diff /= hphi.cubic().num_elements();
+
+		REQUIRE(diff < 1e-15);
+		
+	}
+
+
+	SECTION("Harmonic oscillator"){
+
+		double ww = 2.0;
+
+		for(int ix = 0; ix < rs.rsize()[0]; ix++){
+			for(int iy = 0; iy < rs.rsize()[1]; iy++){
+				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+					double r2 = rs.r2(ix, iy, iz);
+					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
+
+					for(int ist = 0; ist < phi.set_size(); ist++){
+						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
+					}
+					
+				}
+			}
+		}
+
+		hphi = ham(phi);
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < rs.rsize()[0]; ix++){
+			for(int iy = 0; iy < rs.rsize()[1]; iy++){
+				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+					for(int ist = 0; ist < phi.set_size(); ist++){
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
+					}
+				}
+			}
+		}
+
+		diff /= hphi.cubic().num_elements();
+
+		REQUIRE(diff == 0.0055687279_a);
+		
+	}
+
+
+	SECTION("Harmonic oscillator - fourier"){
+
+		double ww = 2.0;
+
+		for(int ix = 0; ix < rs.rsize()[0]; ix++){
+			for(int iy = 0; iy < rs.rsize()[1]; iy++){
+				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+					double r2 = rs.r2(ix, iy, iz);
+					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
+
+					for(int ist = 0; ist < phi.set_size(); ist++){
+						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
+					}
+					
+				}
+			}
+		}
+
+		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.rsize()[0]; ix++){
