@@ -94,12 +94,14 @@ inq_SOURCES = main/main.cpp $(all_srcs)
 @PACKAGE_NAME@_electron_gas_lda_pz_SOURCES = tests/electron_gas_lda_pz.cpp main/unit_tests_main.cpp $(all_srcs)
 @PACKAGE_NAME@_hydrogen_local_SOURCES = tests/hydrogen_local.cpp main/unit_tests_main.cpp $(all_srcs)
 @PACKAGE_NAME@_hydrogen_non_local_SOURCES = tests/hydrogen_non_local.cpp main/unit_tests_main.cpp $(all_srcs)
+@PACKAGE_NAME@_nitrogen_SOURCES = tests/nitrogen.cpp main/unit_tests_main.cpp $(all_srcs)
 
 test_programs =                                                 \
 	@PACKAGE_NAME@_electron_gas_non_interacting	                  \
 	@PACKAGE_NAME@_electron_gas_lda_pz                            \
 	@PACKAGE_NAME@_hydrogen_local                                 \
-	@PACKAGE_NAME@_hydrogen_non_local
+	@PACKAGE_NAME@_hydrogen_non_local                             \
+	@PACKAGE_NAME@_nitrogen
 
 bin_PROGRAMS += $(test_programs) 
 
