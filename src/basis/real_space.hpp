@@ -70,6 +70,10 @@ namespace basis {
 		auto enlarge(int factor) const {
 			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_));
 		}
+
+		auto volume_element() const {
+			return rspacing_[0]*rspacing_[1]*rspacing_[2];
+		}
 		
 	private:
 

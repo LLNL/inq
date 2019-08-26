@@ -81,6 +81,10 @@ namespace basis {
 		bool spherical() const {
 			return spherical_g_grid_;
 		}
+
+		auto volume_element() const {
+			return gspacing_[0]*gspacing_[1]*gspacing_[2];
+		}
 		
 	private:
 		
