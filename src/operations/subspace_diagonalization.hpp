@@ -29,7 +29,7 @@
 namespace operations {
 
 	template <class hamiltonian_type, class field_set_type>
-  auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
+  void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
 
 		auto subspace_hamiltonian = overlap(phi, ham(phi));
 		auto eigenvalues = diagonalize(subspace_hamiltonian);
@@ -48,9 +48,6 @@ namespace operations {
 			for(int ii = 0; ii < nst; ii++) phi[ipoint][ii] = tmp[ii];
 		}
 
-		subspace_hamiltonian = overlap(phi, ham(phi));
-
-		return eigenvalues;
   }
 
 }
