@@ -77,7 +77,6 @@ namespace operations {
 	template <class field_set_type>
 	auto overlap_diagonal(const field_set_type & phi){
 		
-		//OPTIMIZATION: this can be done with syrk/herk
 		return overlap_diagonal(phi, phi);
 	}
 	
