@@ -76,7 +76,7 @@ namespace systems {
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
 																		 
-      for(int ii = 0; ii < 1000; ii++){
+      for(int iiter = 0; iiter < 1000; iiter++){
 
 				operations::subspace_diagonalization(ham_, phi_);
 
@@ -103,24 +103,20 @@ namespace systems {
 					//DATAOPERATIONS
 					energy.eigenvalues = 0.0;
 					energy.nonlocal = 0.0;
-					for(int ii = 0; ii < states_.num_states(); ii++){
-						energy.eigenvalues += states_.occupations()[ii]*real(eigenvalues[ii]);
-						energy.nonlocal += states_.occupations()[ii]*real(nlev[ii]);
+					for(int istates = 0; istates < states_.num_states(); istates++){
+						energy.eigenvalues += states_.occupations()[istates]*real(eigenvalues[istates]);
+						energy.nonlocal += states_.occupations()[istates]*real(nlev[istates]);
 					}
 
 					auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/abs(operations::integral(vks));
 					
-					std::cout << "SCF iter " << ii << ":  e = " << std::scientific << energy.total()
-										<< "  de = " << energy.eigenvalues - old_energy << "  dvks = " << potdiff << std::endl;
+					tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e dvks = %5.0e\n",
+											iiter, energy.total(), energy.eigenvalues - old_energy, potdiff);
 					
-					for(int ii = 0; ii < states_.num_states(); ii++){
-						std::cout << " state " << ii << ":"
-											<< "  occ = " << states_.occupations()[ii]
-											<< "  evalue = " << real(eigenvalues[ii])
-											<< "  res = " << sqrt(real(normres[ii])) << std::endl;
+					for(int istate = 0; istate < states_.num_states(); istate++){
+						tfm::format(std::cout, " state %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
+												istate + 1, states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate]));
 					}
-					
-					std::cout << std::endl;
 
 				}
 				
