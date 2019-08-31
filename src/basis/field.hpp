@@ -86,11 +86,15 @@ namespace basis {
 			std::ofstream file(filename);
 
 			std::array<int, 3> point = {0, 0, 0};
+
+			auto size = std::get<dir>(sizes(fld.cubic()));
 			
-			for(int ip = 0; ip < std::get<dir>(sizes(fld.cubic())); ip++){
+			for(int ii = 0; ii < size; ii++){
+				auto ip = ii + size/2;
+				if(ip >= size) ip -= size;
 				point[dir] = ip;
 				auto rr = fld.basis().rvector(point);
-				tfm::format(file, "%e %e %e\n", rr[dir], real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
+				tfm::format(file, "%f %e %e\n", rr[dir], real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
 			}
 		}
 				
