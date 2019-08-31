@@ -80,13 +80,17 @@ namespace basis {
 			return cubic_.data();
 		}
 
+		template <int dir = 2>
 		friend void print_debug(const field & fld, const std::string & filename){
 
 			std::ofstream file(filename);
+
+			std::array<int, 3> point = {0, 0, 0};
 			
-			for(int ip = 0; ip < std::get<2>(sizes(fld.cubic())); ip++){
-				auto rr = fld.basis().rvector(0, 0, ip);
-				tfm::format(file, "%e %e %e\n", rr[2], real(fld.cubic()[0][0][ip]), imag(fld.cubic()[0][0][ip]));
+			for(int ip = 0; ip < std::get<dir>(sizes(fld.cubic())); ip++){
+				point[dir] = ip;
+				auto rr = fld.basis().rvector(point);
+				tfm::format(file, "%e %e %e\n", rr[dir], real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
 			}
 		}
 				
