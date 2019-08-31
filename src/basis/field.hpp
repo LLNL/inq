@@ -22,6 +22,7 @@
 */
 
 #include <multi/array.hpp>
+#include <tinyformat/tinyformat.h>
 
 namespace basis {
 
@@ -77,6 +78,16 @@ namespace basis {
 
 		auto data() {
 			return cubic_.data();
+		}
+
+		friend void print_debug(const field & fld, const std::string & filename){
+
+			std::ofstream file(filename);
+			
+			for(int ip = 0; ip < std::get<2>(sizes(fld.cubic())); ip++){
+				auto rr = fld.basis().rvector(0, 0, ip);
+				tfm::format(file, "%e %e %e\n", rr[2], real(fld.cubic()[0][0][ip]), imag(fld.cubic()[0][0][ip]));
+			}
 		}
 				
 	private:
