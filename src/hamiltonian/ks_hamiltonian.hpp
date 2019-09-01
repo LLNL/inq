@@ -46,14 +46,6 @@ namespace hamiltonian {
 
 		basis::field<basis::real_space, double> scalar_potential;
 
-		template <class phi_type>
-		auto non_local(const phi_type & phi){
-			phi_type vnlphi(phi.basis(), phi.set_size());
-			vnlphi = 0.0;
-			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](phi, vnlphi);
-			return vnlphi;
-		}
-
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
 			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](phi, vnlphi);
 		}
