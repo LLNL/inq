@@ -20,7 +20,7 @@
 
 utddir = $(pkgdatadir)/unit_tests_data
 
-dist_utd_DATA =                            \
+dist_utd_DATA =                      \
 	benzene.xyz                        \
 	I_HSCV_LDA-1.0.xml                 \
 	W_ONCV_PBE-1.0.upf                 \
@@ -28,4 +28,5 @@ dist_utd_DATA =                            \
 	F.UPF                              \
 	C_ONCV_PBE-1.2.xml                 \
 	input_file                         \
-	H.blyp-vbc.UPF
+	H.blyp-vbc.UPF                     \
+	N.upf
