@@ -416,7 +416,39 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
 		REQUIRE(ps.short_range_potential().value(3.00000000E-00) == -6.18686051E-06_a);
 
     REQUIRE(ps.projector_radius() == 1.35_a);
+    
+    REQUIRE(ps.projector(0).value(0.00000000E+00) ==  9.45961545E+00_a);
+    REQUIRE(ps.projector(0).value(1.00000000E-02) ==  9.45376646E+00_a);
+    REQUIRE(ps.projector(0).value(5.00000000E-02) ==  9.31684484E+00_a);
+    REQUIRE(ps.projector(0).value(1.00000000E-01) ==  8.90580060E+00_a);
+    REQUIRE(ps.projector(0).value(5.00000000E-01) ==  2.21693494E+00_a);
+    REQUIRE(ps.projector(0).value(1.00000000E-00) == -1.24268183E-01_a);
+    REQUIRE(ps.projector(0).value(1.20000000E+00) == -1.28767214E-04_a);
 
+		REQUIRE(ps.projector(1).value(0.00000000E+00) == -6.07818791E+00_a);
+		REQUIRE(ps.projector(1).value(1.00000000E-02) == -6.06581452E+00_a);
+    REQUIRE(ps.projector(1).value(5.00000000E-02) == -5.78271364E+00_a);
+    REQUIRE(ps.projector(1).value(1.00000000E-01) == -4.96486497E+00_a);
+    REQUIRE(ps.projector(1).value(5.00000000E-01) ==  1.62029039E+00_a);
+    REQUIRE(ps.projector(1).value(1.00000000E-00) == -5.84285308E-03_a);
+    REQUIRE(ps.projector(1).value(1.20000000E+00) == -1.62497839E-04_a);
+		
+		REQUIRE(ps.projector(2).value(0.00000000E+00) == -1.12401448E-03_a);
+		REQUIRE(ps.projector(2).value(1.00000000E-02) ==  2.65800505E-01_a);
+    REQUIRE(ps.projector(2).value(5.00000000E-02) ==  1.30653138E+00_a);
+    REQUIRE(ps.projector(2).value(1.00000000E-01) ==  2.47873383E+00_a);
+    REQUIRE(ps.projector(2).value(5.00000000E-01) ==  3.17520408E+00_a);
+    REQUIRE(ps.projector(2).value(1.00000000E-00) == -4.57974975E-01_a);
+    REQUIRE(ps.projector(2).value(1.20000000E+00) ==  4.69107012E-02_a);
+		
+		REQUIRE(ps.projector(3).value(0.00000000E+00) ==  1.78824837E-03_a);
+		REQUIRE(ps.projector(3).value(1.00000000E-02) == -1.93734531E-01_a);
+    REQUIRE(ps.projector(3).value(5.00000000E-02) == -9.32927457E-01_a);
+    REQUIRE(ps.projector(3).value(1.00000000E-01) == -1.65577954E+00_a);
+    REQUIRE(ps.projector(3).value(5.00000000E-01) ==  8.85876846E-01_a);
+    REQUIRE(ps.projector(3).value(1.00000000E-00) ==  6.61170461E-01_a);
+    REQUIRE(ps.projector(3).value(1.20000000E+00) == -3.55726746E-01_a);
+		
   }
 }
 #endif
