@@ -81,7 +81,11 @@ namespace hamiltonian {
     int num_projectors() const {
       return nproj_;
     }
-    
+		
+    auto kb_coeff(int iproj){
+      return kb_coeff_[iproj];
+    }
+		
   private:
 
     basis::spherical_grid sphere_;
@@ -92,6 +96,41 @@ namespace hamiltonian {
   };
   
 }
+
+#ifdef UNIT_TEST
+#include <catch2/catch.hpp>
+
+TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
+  
+  using namespace Catch::literals;
+  using math::d3vector;
+	
+	const math::erf_range_separation sep(0.625);
+	
+	pseudo::pseudopotential ps(config::path::unit_tests_data() + "N.upf", sep);
+
+  double ecut = 20.0;
+  double ll = 10.0;
+
+	ions::geometry geo;
+  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+
+	hamiltonian::projector proj(rs, cell, ps, d3vector(0.0, 0.0, 0.0));
+
+	REQUIRE(proj.num_projectors() == 8);
+	
+	REQUIRE(proj.kb_coeff(0) ==  7.494508815_a);
+	REQUIRE(proj.kb_coeff(1) ==  0.6363049519_a);
+	REQUIRE(proj.kb_coeff(2) == -4.2939052122_a);
+	REQUIRE(proj.kb_coeff(3) == -4.2939052122_a);
+	REQUIRE(proj.kb_coeff(4) == -4.2939052122_a);
+	REQUIRE(proj.kb_coeff(5) == -1.0069878791_a);
+	REQUIRE(proj.kb_coeff(6) == -1.0069878791_a);
+	REQUIRE(proj.kb_coeff(7) == -1.0069878791_a);
+	
+}
+#endif
 
 #endif
 
