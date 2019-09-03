@@ -87,8 +87,6 @@ namespace pseudo {
 
       //SEPARATE THE LOCAL PART
       
-      sigma_erf_ = 0.625; // the constant to separate the pseudo
-      
       pseudo->local_potential(local_potential);
 
       for(unsigned ii = 0; ii < local_potential.size(); ii++){
