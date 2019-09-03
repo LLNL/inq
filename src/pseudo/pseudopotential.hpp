@@ -382,7 +382,42 @@ TEST_CASE("class pseudo::pseudopotential", "[pseudopotential]") {
     REQUIRE(ps.projector_radius() == 1.33_a);
 
   }
+	
+  SECTION("UPF nitrogen"){
+    pseudo::pseudopotential ps(config::path::unit_tests_data() + "N.upf", sep);
 
+    REQUIRE(ps.valence_charge() == 5.0_a);
+
+    REQUIRE(sep.long_range_density_radius() == 5.0922713869_a);
+
+    REQUIRE(ps.short_range_potential_radius() == 2.9_a);
+
+		REQUIRE(ps.num_projectors_l() == 4);
+    REQUIRE(ps.num_projectors_lm() == 8);
+
+		REQUIRE(ps.projector_l(0) == 0);
+		REQUIRE(ps.projector_l(1) == 0);
+		REQUIRE(ps.projector_l(2) == 1);
+		REQUIRE(ps.projector_l(3) == 1);
+
+		REQUIRE(ps.kb_coeff(0) == 7.494508815_a);
+		REQUIRE(ps.kb_coeff(1) == 0.6363049519_a);
+		REQUIRE(ps.kb_coeff(2) == -4.2939052122_a);
+		REQUIRE(ps.kb_coeff(3) == -1.0069878791_a);
+
+    //values validated with Octopus
+    REQUIRE(ps.short_range_potential().value(0.00000000E+00) == -2.18602017E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-02) == -2.18565897E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-02) == -2.17726246E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-01) == -2.15397947E+00_a);
+    REQUIRE(ps.short_range_potential().value(5.00000000E-01) == -1.79645565E+00_a);
+    REQUIRE(ps.short_range_potential().value(1.00000000E-00) == -5.32185535E-01_a);
+		REQUIRE(ps.short_range_potential().value(2.00000000E-00) == -3.45198884E-03_a);
+		REQUIRE(ps.short_range_potential().value(3.00000000E-00) == -6.18686051E-06_a);
+
+    REQUIRE(ps.projector_radius() == 1.35_a);
+
+  }
 }
 #endif
  
