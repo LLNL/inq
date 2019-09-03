@@ -49,12 +49,11 @@ namespace basis {
 						
 						for(int irep = 0; irep < rep.size(); irep++){
 							auto n2 = norm(rpoint - rep[irep]);
-							if(n2 <= radius*radius) {
-								points_.push_back({ix, iy, iz});
-								distance_.push_back(sqrt(n2));
-								relative_pos_.push_back(rpoint - rep[irep]);
-							}
+							if(n2 > radius*radius) continue;
 							
+							points_.push_back({ix, iy, iz});
+							distance_.push_back(sqrt(n2));
+							relative_pos_.push_back(rpoint - rep[irep]);
 						}
 						
 					}
