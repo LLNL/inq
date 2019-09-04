@@ -57,7 +57,7 @@ namespace systems {
 			operations::orthogonalization(phi_);
     }
 
-    auto calculate_ground_state(const double ecutprec = 4.0) {
+    auto calculate_ground_state() {
 
 			//for the moment I am putting here some parameters that should be configurable. XA
 			const double mixing = 0.1;
@@ -65,7 +65,7 @@ namespace systems {
 
 			hamiltonian::energy energy;
 
-			operations::preconditioner prec(ecutprec);
+			operations::preconditioner prec;
 			
       double old_energy = DBL_MAX;
 
@@ -82,7 +82,7 @@ namespace systems {
 
 				{
 					auto fphi = operations::space::to_fourier(phi_);
-					solvers::steepest_descent(ham_, [=](const decltype(fphi) & phi){}, fphi);
+					solvers::steepest_descent(ham_, prec, fphi);
 					phi_ = operations::space::to_real(fphi);
 				}
 				

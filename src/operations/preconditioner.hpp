@@ -28,34 +28,51 @@ namespace operations {
 
 	class preconditioner {
 
+		// Implements the preconditioner of Teter, Payne and Allan, Phys. Rev. B, 40 12255 (1989)
+		
 	public:
 
-		preconditioner(double arg_ecutpr):
-			ecutpr_(arg_ecutpr){
+		auto k_function(double x) const {
+			auto num = ((8.0*x + 12.0)*x + 18.0)*x + 27.0;
+			auto den = (((16.0*x + 8.0)*x + 12.0)*x + 18.0)*x + 27.0;
+			return num/den;
 		}
 		
 		template <class type>
 		void operator()(basis::field_set<basis::fourier_space, type> & phi) const {
 
+			boost::multi::array<double, 1> expect(phi.set_size());
+			
+			//calculate the expectation value of the kinetic energy
 			//DATAOPERATIONS
 			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
-						
-						if(phi.basis().g_is_zero(ix, iy, iz)){
-							for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] = 0;
-							continue;
-						}
-						double e = 0.5*phi.basis().g2(ix, iy, iz);
-						double scal = ( e < ecutpr_ ) ? 0.5/ecutpr_ : 0.5/e;
+						auto lapl = -0.5*(-phi.basis().g2(ix, iy, iz));
+						for(int ist = 0; ist < phi.set_size(); ist++) expect[ist] += lapl*fabs(phi.cubic()[ix][iy][iz][ist]);
+					}
+				}
+			}
 
-						for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] *= -scal;
+			//DATAOPERATIONS
+			for(int ist = 0; ist < phi.set_size(); ist++) expect[ist] *= phi.basis().volume_element();
+
+			//REDUCE GRID
+
+			//DATAOPERATIONS
+			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
+				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
+					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
+
+						auto lapl = -0.5*(-phi.basis().g2(ix, iy, iz));
+						for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] *= k_function(lapl/expect[ist]);
+
 					}
 				}
 			}
 
 		}
-		
+
 		template <class type>
 		void operator()(basis::field_set<basis::real_space, type> & phi) const {
 			
@@ -65,8 +82,9 @@ namespace operations {
 
 		}
 
+
 	private:
-			double ecutpr_;
+
 	};
 	
 }

@@ -34,7 +34,7 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		
 	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), input::interaction::dft(), conf);
 
-	auto energy = electrons.calculate_ground_state(0.0); //pass 0.0 as the preconditioner cutoff, this is necessary to make it converge
+	auto energy = electrons.calculate_ground_state();
 
 	/* OCTOPUS RESULTS (Spacing = 0.2):
 
