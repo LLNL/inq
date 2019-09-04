@@ -60,7 +60,7 @@ namespace systems {
     auto calculate_ground_state() {
 
 			//for the moment I am putting here some parameters that should be configurable. XA
-			const double mixing = 0.1;
+			const double mixing = 0.3;
 			//
 
 			hamiltonian::energy energy;
