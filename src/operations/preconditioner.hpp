@@ -43,7 +43,7 @@ namespace operations {
 					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
 						
 						if(phi.basis().g_is_zero(ix, iy, iz)){
-							for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[0][0][0][ist] = 0;
+							for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] = 0;
 							continue;
 						}
 						double e = 0.5*phi.basis().g2(ix, iy, iz);
