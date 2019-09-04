@@ -32,9 +32,8 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 	auto distance = 2.0739744;
 	
-	//	geo.push_back("N" | math::d3vector(0.0, 0.0, -0.5*distance));
-	//	geo.push_back("N" | math::d3vector(0.0, 0.0,  0.5*distance));
-	geo.push_back("N" | math::d3vector(0.0, 0.0, 0.0));
+	geo.push_back( "N" | math::d3vector(0.0, 0.0, -0.5*distance));
+	geo.push_back( "N" | math::d3vector(0.0, 0.0,  0.5*distance));
 		
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
 
@@ -42,10 +41,9 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		
 		input::config conf;
 
-		conf.extra_states = 8;
-		conf.excess_charge = -3;
+		conf.extra_states = 4;
 
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), input::interaction::non_interacting(), conf);
+		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), input::interaction::dft(), conf);
 		
 		auto energy = electrons.calculate_ground_state();
 		
@@ -72,7 +70,6 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
       Kinetic     =         0.41796657
       External    =        -0.91434707
       Non-local   =        -0.05876129
-
 
 		*/
 
