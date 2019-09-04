@@ -82,7 +82,7 @@ namespace systems {
 
 				{
 					auto fphi = operations::space::to_fourier(phi_);
-					solvers::steepest_descent(ham_, prec, fphi);
+					solvers::steepest_descent(ham_, [=](const decltype(fphi) & phi){}, fphi);
 					phi_ = operations::space::to_real(fphi);
 				}
 				
