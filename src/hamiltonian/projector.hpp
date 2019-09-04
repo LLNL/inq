@@ -35,7 +35,7 @@ namespace hamiltonian {
 				// now construct the projector with the spherical harmonics
 				for(int m = -l; m <= l; m++){
 					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-						matrix_[iproj_l][ipoint] = proj[ipoint]*math::spherical_harmonic(l, m, sphere_.point_pos()[ipoint]);
+						matrix_[iproj_lm][ipoint] = proj[ipoint]*math::spherical_harmonic(l, m, sphere_.point_pos()[ipoint]);
 					}
 					iproj_lm++;
 					kb_coeff_.push_back(ps.kb_coeff(iproj_l));
