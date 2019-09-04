@@ -41,7 +41,8 @@ namespace operations {
 		template <class type>
 		void operator()(basis::field_set<basis::fourier_space, type> & phi) const {
 
-			boost::multi::array<double, 1> expect(phi.set_size());
+			boost::multi::array<double, 1> expect(phi.set_size(), 0.0);
+			boost::multi::array<double, 1> norm(phi.set_size(), 0.0);
 			
 			//calculate the expectation value of the kinetic energy
 			//DATAOPERATIONS
@@ -49,13 +50,17 @@ namespace operations {
 				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
 						auto lapl = -0.5*(-phi.basis().g2(ix, iy, iz));
-						for(int ist = 0; ist < phi.set_size(); ist++) expect[ist] += lapl*fabs(phi.cubic()[ix][iy][iz][ist]);
+						for(int ist = 0; ist < phi.set_size(); ist++){
+							auto phiphi = fabs(phi.cubic()[ix][iy][iz][ist]);
+							expect[ist] += lapl*phiphi;
+							norm[ist] += phiphi;
+						}
 					}
 				}
 			}
 
 			//DATAOPERATIONS
-			for(int ist = 0; ist < phi.set_size(); ist++) expect[ist] *= phi.basis().volume_element();
+			for(int ist = 0; ist < phi.set_size(); ist++) expect[ist] /= norm[ist];
 
 			//REDUCE GRID
 
