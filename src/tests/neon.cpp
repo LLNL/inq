@@ -30,8 +30,6 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 	std::vector<input::atom> geo;
 
-	auto distance = 2.0739744;
-	
 	geo.push_back("Ne" | math::d3vector(0.0, 0.0, 0.0));
 		
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
@@ -40,48 +38,54 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		
 		input::config conf;
 
-		conf.extra_states = 2;
+		conf.extra_states = 3;
 
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), input::interaction::non_interacting(), conf);
+		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), input::interaction::non_interacting(), conf);
 		
 		auto energy = electrons.calculate_ground_state();
 		
 		/*
-			OCTOPUS RESULTS: (Spacing 0.286)
+			OCTOPUS RESULTS: (Spacing 0.350877)
+
 			Eigenvalues [H]
 			#st  Spin   Eigenvalue      Occupation
-			1   --    -0.233880       1.000000
+			1   --    -8.537419       2.000000
+			2   --    -7.457549       2.000000
+			3   --    -7.457549       2.000000
+			4   --    -7.457549       2.000000
+			5   --    -3.733537       0.000000
+			6   --    -3.508765       0.000000
+			7   --    -3.508765       0.000000
 			
 			Energy [H]:
-      Total      =        -0.44618708
-      Free        =        -0.44618708
+      Total       =       -61.82012973
+      Free        =       -61.82012973
       -----------
       Ion-ion     =         0.00000000
-      Eigenvalues =        -0.23387966
-      Hartree     =         0.28283087
-      Int[n*v_xc] =        -0.30315816
-      Exchange    =        -0.19299390
-      Correlation =        -0.03964083
+      Eigenvalues =       -61.82012973
+      Hartree     =         0.00000000
+      Int[n*v_xc] =         0.00000000
+      Exchange    =         0.00000000
+      Correlation =         0.00000000
       vanderWaals =         0.00000000
       Delta XC    =         0.00000000
-      Entropy     =         1.38629436
+      Entropy     =         0.00000000
       -TS         =        -0.00000000
-      Kinetic     =         0.41796657
-      External    =        -0.91434707
-      Non-local   =        -0.05876129
-
+      Kinetic     =        35.71136464
+      External    =       -97.53149437
+      Non-local   =       -18.00231356
 
 		*/
 
-		REQUIRE(energy.self            == -0.564189583548_a);
-		REQUIRE(energy.eigenvalues     == -0.234329528903_a);
-		REQUIRE(energy.xc              == -0.232294220410_a);
-		REQUIRE(energy.nvxc            == -0.302713349819_a);
-		REQUIRE(energy.coulomb()       == -0.463639067982_a);
-		REQUIRE(energy.total()         == -0.446253846698_a);
-		REQUIRE(energy.external        == -0.108660738870_a);
-		REQUIRE(energy.nonlocal        == -0.058633055438_a);
-		REQUIRE(energy.kinetic()       ==  0.416973236003_a);
+		//THE ION-ION ENERGY IS WRONG, IT SHOULD BE ZERO
+
+		REQUIRE(energy.self            == -56.418958354776_a);
+		REQUIRE(energy.eigenvalues     == -61.740948878692_a);
+		REQUIRE(energy.coulomb()       == -96.117184373084_a);
+		REQUIRE(energy.total()         == -82.051773872674_a);
+		REQUIRE(energy.external        ==  -3.603296578514_a);
+		REQUIRE(energy.nonlocal        == -17.878544893202_a);
+		REQUIRE(energy.kinetic()       ==  35.547251972126_a);
 		
 	}
 
