@@ -53,3 +53,4 @@
 #include <operations/diagonalize.hpp>
 #include <operations/shift.hpp>
 #include <solvers/poisson.hpp>
+#include <solvers/linear_mixer.hpp>

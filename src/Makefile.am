@@ -65,6 +65,7 @@ noinst_HEADERS =                             \
 	hamiltonian/energy.hpp                     \
 	solvers/poisson.hpp                        \
 	solvers/steepest_descent.hpp               \
+	solvers/linear_mixer.hpp                   \
 	systems/ions.hpp                           \
 	systems/electrons.hpp
 
