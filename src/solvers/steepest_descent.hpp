@@ -50,7 +50,6 @@ namespace solvers {
 			
 			operations::shift(lambda, phi, residual);
 			
-			//OPTIMIZATIONS: precondition the residual here
 			prec(residual);
 			
 			//now calculate the step size
