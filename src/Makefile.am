@@ -66,6 +66,7 @@ noinst_HEADERS =                             \
 	solvers/poisson.hpp                        \
 	solvers/steepest_descent.hpp               \
 	solvers/linear_mixer.hpp                   \
+	solvers/pulay_mixer.hpp                    \
 	systems/ions.hpp                           \
 	systems/electrons.hpp
 
