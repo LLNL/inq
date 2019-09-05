@@ -33,8 +33,22 @@ namespace operations {
 	public:
 
 		auto k_function(double x) const {
+
+			// The original function of the TPA paper
 			auto num = ((8.0*x + 12.0)*x + 18.0)*x + 27.0;
 			auto den = (((16.0*x + 8.0)*x + 12.0)*x + 18.0)*x + 27.0;
+
+			/* 
+			// A better version by Zhou, Chelikowsky, Gao and Zhou, Commun. Comput. Phys. 18 167 (2015)
+
+			// I won't use it for the moment, since it doesn't seem to
+			// change the results and it might have numerical issues. XA
+
+			auto num = ((((32.0*x + 48.0)*x + 72.0)*x + 108.0)*x + 162)*x + 243.0;
+			auto den = (((((64.0*x + 32.0)*x + 48.0)*x + 72.0)*x + 108.0)*x + 162)*x + 243.0;
+			
+			*/
+			
 			return num/den;
 		}
 		
