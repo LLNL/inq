@@ -24,8 +24,6 @@
 #include <math/complex.hpp>
 #include <math/d3vector.hpp>
 #include <multi/array.hpp>
-#include <hamiltonian/ks_hamiltonian.hpp>
-#include <operations/shift.hpp>
 
 namespace solvers {
 
@@ -36,18 +34,25 @@ namespace solvers {
 
     linear_mixer(double arg_mix_factor, const mix_type & initial_value):
       mix_factor_(arg_mix_factor),
-      old_(initial_value) {
+      old_(initial_value.size()){
+
+      //DATAOPERATIONS
+      for(unsigned ii = 0; ii < initial_value.size(); ii++) old_[ii] = initial_value[ii];
     }
 
-    const auto & operator()(const mix_type & new_value){
-      old_ = (1.0 - mix_factor_)*old_ + mix_factor_*new_value;
-      return old_;
+    void operator()(mix_type & new_value){
+      //DATAOPERATIONS
+      for(unsigned ii = 0; ii < new_value.size(); ii++){
+        auto tmp = new_value[ii];
+        new_value[ii] = (1.0 - mix_factor_)*old_[ii] + mix_factor_*tmp;
+        old_[ii] = tmp;
+      }
     }
 
   private:
 
     double mix_factor_;
-    mix_type old_;
+    boost::multi::array<typename mix_type::value_type, 1> old_;
 		
 	};
 
@@ -61,9 +66,21 @@ namespace solvers {
 
 TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
 
-  solvers::linear_mixer<double> lm(0.5, 10.0);
 
-  REQUIRE(lm(0.0) == 5.0);
+  std::vector<double> v(2);
+
+  v[0] =  10.0;
+  v[1] = -20.0;
+  
+  solvers::linear_mixer<std::vector<double> > lm(0.5, v);
+
+  v[0] = 0.0;
+  v[1] = 22.2;
+
+  lm(v);
+  
+  REQUIRE(v[0] == 5.0);
+  REQUIRE(v[1] == 1.1);
   
 }
 
