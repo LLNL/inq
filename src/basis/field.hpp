@@ -80,6 +80,10 @@ namespace basis {
 			return cubic_.data();
 		}
 
+		auto size() const {
+			return basis_.size();
+		}
+
 		template <int dir = 2>
 		friend void print_debug(const field & fld, const std::string & filename){
 

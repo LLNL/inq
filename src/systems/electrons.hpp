@@ -22,6 +22,7 @@
 #include <operations/integral.hpp>
 #include <operations/subspace_diagonalization.hpp>
 #include <solvers/steepest_descent.hpp>
+#include <solvers/linear_mixer.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
 #include <input/config.hpp>
@@ -73,6 +74,8 @@ namespace systems {
 			
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
+			auto mixer = solvers::linear_mixer<decltype(ham_.scalar_potential)>(0.3, ham_.scalar_potential);
+			
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
 																		 
@@ -125,9 +128,9 @@ namespace systems {
 				old_energy = energy.eigenvalues;
 
 				//DATAOPERATIONS
-				for(long ii = 0; ii < rs_.size(); ii++){
-					ham_.scalar_potential[ii] = mixing*vks[ii] + (1.0 - mixing)*ham_.scalar_potential[ii];
-				}
+				for(long ii = 0; ii < rs_.size(); ii++) ham_.scalar_potential[ii] = vks[ii];
+
+				mixer(ham_.scalar_potential);
 				
       }
 
