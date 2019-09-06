@@ -347,8 +347,8 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 			std::ofstream ofile("pot.dat");
 			
-			double sumreal = 0.0;
-			double sumimag = 0.0;
+			//			double sumreal = 0.0;
+			// double sumimag = 0.0;
 			for(int ix = 0; ix < rs.rsize()[0]; ix++){
 				for(int iy = 0; iy < rs.rsize()[1]; iy++){
 					for(int iz = 0; iz < rs.rsize()[2]; iz++){
