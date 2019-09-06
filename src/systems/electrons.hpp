@@ -111,7 +111,7 @@ namespace systems {
 						energy.nonlocal += states_.occupations()[istates]*real(nlev[istates]);
 					}
 
-					auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/abs(operations::integral(vks));
+					auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/fabs(operations::integral(vks));
 					
 					tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e dvks = %5.0e\n",
 											iiter, energy.total(), energy.eigenvalues - old_energy, potdiff);
