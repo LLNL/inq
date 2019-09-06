@@ -181,7 +181,6 @@ namespace pseudo {
   private:
     
     std::vector<double> grid_;
-    double sigma_erf_;
     math::spline short_range_;
     double valence_charge_;
     std::vector<math::spline> projectors_;

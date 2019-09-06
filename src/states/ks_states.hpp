@@ -92,7 +92,6 @@ namespace states {
 		
   private:
 
-    int nspinor_;
     int nstates_;
     int nquantumnumbers_;
 		std::vector<double> occs_;
