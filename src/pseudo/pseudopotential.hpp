@@ -70,7 +70,6 @@ namespace pseudo {
 				pseudo_file = new pseudo::psp8(filename);
 				break;
       default:
-				delete pseudo_file;
 				throw error::UNSUPPORTED_FORMAT;
       }
 
