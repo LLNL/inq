@@ -54,3 +54,4 @@
 #include <operations/shift.hpp>
 #include <solvers/poisson.hpp>
 #include <solvers/linear_mixer.hpp>
+#include <solvers/pulay_mixer.hpp>
