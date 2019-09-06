@@ -30,7 +30,7 @@ namespace input {
 
 	class species : public pseudo::element {
 
-		class options;
+		struct options;
 		
   public:
 
