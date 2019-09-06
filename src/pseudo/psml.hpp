@@ -262,7 +262,7 @@ namespace pseudo {
       for(unsigned ii = 0; ii < val.size(); ii++) val[ii] /= 4.0*M_PI;
     }
     
-    bool has_density(){
+    bool has_density() const {
       return root_node_->first_node("valence-charge");
     }
     
