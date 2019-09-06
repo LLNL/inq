@@ -47,7 +47,7 @@ namespace pseudo {
     pseudopotential(const std::string & filename, const math::erf_range_separation & sep){
 
       //PARSE THE FILE
-      base * pseudo;    
+      base * pseudo_file;    
       pseudo::format format = pseudo::detect_format(filename);
       
       if(format == pseudo::format::FILE_NOT_FOUND) throw error::FILE_NOT_FOUND;
@@ -55,39 +55,39 @@ namespace pseudo {
       
       switch(format){
       case pseudo::format::QSO:
-				pseudo = new pseudo::qso(filename);
+				pseudo_file = new pseudo::qso(filename);
 				break;
       case pseudo::format::UPF1:
-				pseudo = new pseudo::upf1(filename);
+				pseudo_file = new pseudo::upf1(filename);
 				break;
       case pseudo::format::UPF2:
-				pseudo = new pseudo::upf2(filename);
+				pseudo_file = new pseudo::upf2(filename);
 				break;
       case pseudo::format::PSML:
-				pseudo = new pseudo::psml(filename);
+				pseudo_file = new pseudo::psml(filename);
 				break;
       case pseudo::format::PSP8:
-				pseudo = new pseudo::psp8(filename);
+				pseudo_file = new pseudo::psp8(filename);
 				break;
       default:
-				delete pseudo;
+				delete pseudo_file;
 				throw error::UNSUPPORTED_FORMAT;
       }
 
-      if(pseudo->type() != pseudo::type::KLEINMAN_BYLANDER) {
-				delete pseudo;
+      if(pseudo_file->type() != pseudo::type::KLEINMAN_BYLANDER) {
+				delete pseudo_file;
 				throw error::UNSUPPORTED_TYPE;
       }
       
       std::vector<double> local_potential;
 
-      pseudo->grid(grid_);
+      pseudo_file->grid(grid_);
 
-      valence_charge_ = pseudo->valence_charge();
+      valence_charge_ = pseudo_file->valence_charge();
 
       //SEPARATE THE LOCAL PART
       
-      pseudo->local_potential(local_potential);
+      pseudo_file->local_potential(local_potential);
 
       for(unsigned ii = 0; ii < local_potential.size(); ii++){
 				local_potential[ii] -= valence_charge_*sep.long_range_potential(grid_[ii]);
@@ -100,11 +100,11 @@ namespace pseudo {
       std::vector<double> proj;
       
       nproj_lm_ = 0;
-      for(int ll = 0; ll <= pseudo->lmax(); ll++){
-				for(int ichan = 0; ichan < pseudo->nchannels(); ichan++){
-					if(ll == pseudo->llocal()) continue;
+      for(int ll = 0; ll <= pseudo_file->lmax(); ll++){
+				for(int ichan = 0; ichan < pseudo_file->nchannels(); ichan++){
+					if(ll == pseudo_file->llocal()) continue;
 					
-					pseudo->projector(ll, ichan, proj);
+					pseudo_file->projector(ll, ichan, proj);
 					
 					if(proj.size() == 0) continue;
 					
@@ -112,12 +112,12 @@ namespace pseudo {
 					
 					projectors_.push_back(math::spline(grid_.data(), proj.data(), proj.size(), SPLINE_FLAT_BC, SPLINE_NATURAL_BC));
 					projectors_l_.push_back(ll);
-					kb_coeff_.push_back(pseudo->d_ij(ll, ichan, ichan));
+					kb_coeff_.push_back(pseudo_file->d_ij(ll, ichan, ichan));
 					nproj_lm_ += 2*ll + 1;
 				}
       }
       
-      delete pseudo;
+      delete pseudo_file;
     }
 		
     const double & valence_charge() const {
