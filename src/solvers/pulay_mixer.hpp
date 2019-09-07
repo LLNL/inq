@@ -40,27 +40,50 @@ namespace solvers {
 		
   public:
 
-    pulay_mixer(double arg_mix_factor, const mix_type & initial_value):
+    pulay_mixer(const int arg_steps, const double arg_mix_factor, const mix_type & initial_value):
+			steps_(1),
+			max_steps_(arg_steps),
+			current_(0),
+			previous_(-1),
       mix_factor_(arg_mix_factor),
-      old_(initial_value.size()){
+      ff_({arg_steps, initial_value.size()}),
+			dff_({arg_steps, initial_value.size()}) {
 
       //DATAOPERATIONS
-      for(unsigned ii = 0; ii < initial_value.size(); ii++) old_[ii] = initial_value[ii];
+      for(unsigned ii = 0; ii < initial_value.size(); ii++){
+				ff_[current_][ii] = initial_value[ii];
+				dff_[current_][ii] = initial_value[ii];
+			}
     }
 
     void operator()(mix_type & new_value){
+
+			steps_ = std::min(steps_ + 1, max_steps_);
+
+			current_++;
+			if(current_ > steps_) current_ = 0;
+
+			previous_++;
+			if(previous_ > steps_) previous_ = 0;
+			
       //DATAOPERATIONS
       for(unsigned ii = 0; ii < new_value.size(); ii++){
-        auto tmp = new_value[ii];
-        new_value[ii] = (1.0 - mix_factor_)*old_[ii] + mix_factor_*tmp;
-        old_[ii] = tmp;
-      }
+				ff_[current_][ii] = new_value[ii];
+				dff_[current_][ii] = new_value[ii] - ff_[previous_][ii];
+			}
+
     }
 
   private:
 
+		int steps_;
+		int max_steps_;
+		int current_;
+		int previous_;
     double mix_factor_;
-    boost::multi::array<typename mix_type::value_type, 1> old_;
+    boost::multi::array<typename mix_type::value_type, 2> ff_;
+		boost::multi::array<typename mix_type::value_type, 2> dff_;
+
 		
 	};
 
@@ -80,7 +103,7 @@ TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
   v[0] =  10.0;
   v[1] = -20.0;
   
-  solvers::pulay_mixer<std::vector<double> > lm(0.5, v);
+  solvers::pulay_mixer<std::vector<double> > lm(5, 0.5, v);
 
   v[0] = 0.0;
   v[1] = 22.2;
