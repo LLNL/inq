@@ -72,6 +72,16 @@ namespace solvers {
 				dff_[current_][ii] = new_value[ii] - ff_[previous_][ii];
 			}
 
+			boost::multi::array<typename mix_type::value_type, 2> amatrix({steps_, steps_});
+
+			for(int ii = 0; ii < steps_; ii++){
+				for(int jj = 0; jj < steps_; jj++){
+					typename mix_type::value_type aa = 0.0;
+					for(unsigned kk = 0; kk < new_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
+					amatrix[ii][jj] = aa;
+				}
+			}
+ 
     }
 
   private:
