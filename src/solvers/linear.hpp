@@ -87,7 +87,7 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 
   }
 	
-	SECTION("Symmetric real 2x2"){
+	SECTION("Symmetric real 2x2 -- 1"){
 	
 		using namespace Catch::literals;
 		
@@ -106,7 +106,26 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 		REQUIRE(vector[1] == 0.596579_a);
 		
   }
+	
+	SECTION("Symmetric real 2x2 -- 2"){
+	
+		using namespace Catch::literals;
+		
+		boost::multi::array<double, 2> matrix({2, 2});
+		
+		matrix[0][0] = 6432.12;
+		matrix[0][1] = 4502.48;
+		matrix[1][0] = 4502.48;
+		matrix[1][1] = 3151.74;
 
+		boost::multi::array<double, 1> vector({1.0, 1.0});
+		
+		solvers::linear_symmetric(matrix, vector);
+
+		REQUIRE(vector[0] == -30.882245351_a);
+		REQUIRE(vector[1] ==  44.1177546523_a);
+		
+  }
 }
 
 #endif
