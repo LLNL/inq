@@ -24,10 +24,11 @@
 #include <math/complex.hpp>
 #include <math/d3vector.hpp>
 #include <multi/array.hpp>
+#include <solvers/linear.hpp>
 
 namespace solvers {
 
-	template <class mix_type>
+	template <class type>
   class pulay_mixer {
 
 		/*
@@ -40,8 +41,9 @@ namespace solvers {
 		
   public:
 
+		template <class mix_type>
     pulay_mixer(const int arg_steps, const double arg_mix_factor, const mix_type & initial_value):
-			steps_(1),
+			steps_(0),
 			max_steps_(arg_steps),
 			current_(0),
 			previous_(-1),
@@ -50,14 +52,12 @@ namespace solvers {
 			dff_({arg_steps, initial_value.size()}) {
 
       //DATAOPERATIONS
-      for(unsigned ii = 0; ii < initial_value.size(); ii++){
-				ff_[current_][ii] = initial_value[ii];
-				dff_[current_][ii] = initial_value[ii];
-			}
+      for(unsigned ii = 0; ii < initial_value.size(); ii++)	ff_[current_][ii] = initial_value[ii];
     }
 
+		template <class mix_type>
     void operator()(mix_type & new_value){
-
+			
 			steps_ = std::min(steps_ + 1, max_steps_);
 
 			current_++;
@@ -65,6 +65,18 @@ namespace solvers {
 
 			previous_++;
 			if(previous_ > steps_) previous_ = 0;
+
+			if(steps_ == 1){
+				//the first step we do linear mixing
+				
+				//DATAOPERATIONS
+				for(unsigned ii = 0; ii < new_value.size(); ii++){
+					dff_[current_][ii] = new_value[ii] - ff_[0][ii];
+					new_value[ii] = mix_factor_*new_value[ii] + (1.0 - mix_factor_)*ff_[0][ii];
+				}
+
+				return;
+			}
 			
       //DATAOPERATIONS
       for(unsigned ii = 0; ii < new_value.size(); ii++){
@@ -83,7 +95,26 @@ namespace solvers {
 			}
 
 			// REDUCE GRID amatrix
- 
+
+			boost::multi::array<typename mix_type::value_type, 1> alpha(steps_, 1.0);
+
+			solvers::linear_symmetric(amatrix, alpha);
+
+			//DATAOPERATIONS
+			type sumalpha = 0.0;
+			for(int jj = 0; jj < steps_; jj++) sumalpha += alpha[jj];
+			std::cout << sumalpha << std::endl;
+
+			for(int jj = 0; jj < steps_; jj++) alpha[jj] /= sumalpha;
+			std::cout << sumalpha << std::endl;
+			
+			for(int jj = 0; jj < steps_; jj++) sumalpha += alpha[jj];
+			std::cout << sumalpha << std::endl;
+		
+			//DATAOPERATIONS
+      for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = 0.0;
+			for(int jj = 0; jj < steps_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
+			
     }
 
   private:
@@ -93,8 +124,8 @@ namespace solvers {
 		int current_;
 		int previous_;
     double mix_factor_;
-    boost::multi::array<typename mix_type::value_type, 2> ff_;
-		boost::multi::array<typename mix_type::value_type, 2> dff_;
+    boost::multi::array<type, 2> ff_;
+		boost::multi::array<type, 2> dff_;
 
 		
 	};
@@ -115,7 +146,7 @@ TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
   v[0] =  10.0;
   v[1] = -20.0;
   
-  solvers::pulay_mixer<std::vector<double> > lm(5, 0.5, v);
+  solvers::pulay_mixer<double> lm(5, 0.5, v);
 
   v[0] = 0.0;
   v[1] = 22.2;
