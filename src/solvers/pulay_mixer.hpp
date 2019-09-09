@@ -81,6 +81,8 @@ namespace solvers {
 					amatrix[ii][jj] = aa;
 				}
 			}
+
+			// REDUCE GRID amatrix
  
     }
 
