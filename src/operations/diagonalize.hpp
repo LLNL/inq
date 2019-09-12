@@ -28,14 +28,40 @@
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
+#define dsyev FC_FUNC(dsyev, DZYEV)
+extern "C" void dsyev(const char * jobz, const char * uplo, const int & n, double * a, const int & lda, double * w, double * work, const int & lwork, int & info);
+
 #define zheev FC_FUNC(zheev, ZHEEV) 
 extern "C" void zheev(const char * jobz, const char * uplo, const int & n, complex * a, const int & lda, double * w, complex * work, const int & lwork, double * rwork, int & info);
 
 
 namespace operations {
 
-  template <class matrix_type>
-  auto diagonalize(matrix_type & matrix){
+  auto diagonalize(boost::multi::array<double, 2> & matrix){
+
+    // the matrix must be square
+    assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
+
+    int nn = std::get<0>(sizes(matrix));
+    
+    boost::multi::array<double, 1> eigenvalues(nn);
+
+    double lwork_query;
+
+    int info;
+    dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), &lwork_query, -1, info);
+
+    int lwork = int(lwork_query);
+    auto work = (double *) malloc(lwork*sizeof(complex));
+    
+    dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, info);
+    
+    free(work);
+
+    return eigenvalues;
+  }
+
+  auto diagonalize(boost::multi::array<complex, 2> & matrix){
 
     // the matrix must be square
     assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
@@ -73,9 +99,32 @@ namespace operations {
 #include <operations/randomize.hpp>
 #include <multi/array.hpp>
 
-TEST_CASE("function operations::diagonalize", "[diagonalize]") {
+TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
-	SECTION("Diagonal 2x2"){
+	SECTION("Real diagonal 2x2"){
+	
+		using namespace Catch::literals;
+		
+		boost::multi::array<double, 2> matrix({2, 2});
+		
+		matrix[0][0] = 4.0;
+		matrix[0][1] = 0.0;
+		matrix[1][0] = 0.0;
+		matrix[1][1] = 2.0;
+		
+		auto evalues = operations::diagonalize(matrix);
+		
+		REQUIRE(matrix[0][0] == 0.0_a);
+		REQUIRE(matrix[0][1] == 1.0_a);
+		REQUIRE(matrix[1][0] == 1.0_a);
+		REQUIRE(matrix[0][0] == 0.0_a);
+		
+		REQUIRE(evalues[0] == 2.0_a);
+		REQUIRE(evalues[1] == 4.0_a);
+
+	}
+	
+	SECTION("Complex diagonal 2x2"){
 	
 		using namespace Catch::literals;
 		
@@ -105,11 +154,11 @@ TEST_CASE("function operations::diagonalize", "[diagonalize]") {
 
 	}
 
-	SECTION("Real 3x3"){
+	SECTION("Real dense 3x3"){
 	
 		using namespace Catch::literals;
 		
-		boost::multi::array<complex, 2> matrix({3, 3});
+		boost::multi::array<double, 2> matrix({3, 3});
 		
 		matrix[0][0] = 0.088958;
 		matrix[0][1] = 1.183407;
@@ -128,7 +177,7 @@ TEST_CASE("function operations::diagonalize", "[diagonalize]") {
 		REQUIRE(evalues[2] == 2.7426069258_a);
 	}
 
-	SECTION("Complex 3x3"){
+	SECTION("Complex dense 3x3"){
 	
 		using namespace Catch::literals;
 		
