@@ -59,12 +59,7 @@ namespace systems {
 			operations::orthogonalization(phi_);
     }
 
-    auto calculate_ground_state() {
-
-			//for the moment I am putting here some parameters that should be configurable. XA
-			const double mixing = 0.3;
-			const int mix_size = 5;
-			//
+    auto calculate_ground_state(){
 
 			hamiltonian::energy energy;
 
@@ -76,12 +71,15 @@ namespace systems {
 			
 			auto density = operations::calculate_density(states_.occupations(), phi_);
 
-			auto mixer = solvers::pulay_mixer<double>(mix_size, mixing, ham_.scalar_potential);
+			auto mixer = solvers::pulay_mixer<double>(5, 0.3);
 			
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
-																		 
+
+			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
+
+				if(sc_.theory() != input::interaction::electronic_theory::NON_INTERACTING) mixer(ham_.scalar_potential);
 
 				operations::subspace_diagonalization(ham_, phi_);
 
@@ -123,14 +121,18 @@ namespace systems {
 
 				}
 				
-				if(fabs(energy.eigenvalues - old_energy) < 1e-5) break;
+				if(fabs(energy.eigenvalues - old_energy) < 1e-5){
+					conv_count++;
+					if(conv_count > 2) break;
+				} else {
+					conv_count = 0;
+				}
 				
 				old_energy = energy.eigenvalues;
 
 				ham_.scalar_potential = std::move(vks);
 
-				if(sc_.theory() != input::interaction::electronic_theory::NON_INTERACTING) mixer(ham_.scalar_potential);
-				
+			
       }
 
 			energy.print(std::cout);

@@ -32,25 +32,15 @@ namespace solvers {
   class pulay_mixer {
 
 		/*
-
 			The DIIS mixing of Pulay, as described in Kresse and Furthmueller, Phys. Rev. B, 54 11169 (1996)
-
 		*/
 		
   public:
 
-		template <class mix_type>
-    pulay_mixer(const int arg_steps, const double arg_mix_factor, const mix_type & initial_value):
-			size_(0),
+    pulay_mixer(const int arg_steps, const double arg_mix_factor):
+			size_(-1),
 			max_size_(arg_steps),
-			current_(-1),
-			previous_(-2),
-      mix_factor_(arg_mix_factor),
-      ff_({arg_steps, initial_value.size()}),
-			dff_({arg_steps, initial_value.size()}) {
-
-      //DATAOPERATIONS
-      for(unsigned ii = 0; ii < initial_value.size(); ii++)	ff_[0][ii] = initial_value[ii];
+      mix_factor_(arg_mix_factor){
     }
 
 		template <class mix_type>
@@ -58,14 +48,20 @@ namespace solvers {
 			
 			size_ = std::min(size_ + 1, max_size_);
 
-			current_++;
-			if(current_ >= max_size_) current_ = 0;
+			if(size_ == 0){
+				//the first step we just store
 
-			previous_++;
-			if(previous_ >= max_size_) previous_ = 0;
+				ff_ = boost::multi::array<type, 2>({max_size_, new_value.size()});
+				dff_= boost::multi::array<type, 2>({max_size_, new_value.size()});
+				
+				//DATAOPERATIONS
+				for(unsigned ii = 0; ii < new_value.size(); ii++) ff_[0][ii] = new_value[ii];
+
+				return;
+			}
 
 			if(size_ == 1){
-				//the first step we do linear mixing
+				//the second step we do linear mixing
 				
 				//DATAOPERATIONS
 				for(unsigned ii = 0; ii < new_value.size(); ii++){
@@ -74,10 +70,19 @@ namespace solvers {
 					ff_[0][ii] = new_value[ii];
 				}
 
+				current_ = 0;
+				previous_ = -1;
+				
 				return;
 			}
 
-			//std::cout << "size " << size_ << '\t' << current_ << '\t' << previous_<< std::endl;
+			current_++;
+			if(current_ >= max_size_) current_ = 0;
+
+			previous_++;
+			if(previous_ >= max_size_) previous_ = 0;
+			
+			std::cout << "size " << size_ << '\t' << current_ << '\t' << previous_<< std::endl;
 
       //DATAOPERATIONS
       for(unsigned ii = 0; ii < new_value.size(); ii++){
@@ -147,7 +152,7 @@ TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
   v[0] =  10.0;
   v[1] = -20.0;
   
-  solvers::pulay_mixer<double> lm(5, 0.5, v);
+  solvers::pulay_mixer<double> lm(5, 0.5);
 
   v[0] = 0.0;
   v[1] = 22.2;
