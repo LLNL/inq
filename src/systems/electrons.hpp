@@ -129,7 +129,7 @@ namespace systems {
 
 				ham_.scalar_potential = std::move(vks);
 
-				mixer(ham_.scalar_potential);
+				if(sc_.theory() != input::interaction::electronic_theory::NON_INTERACTING) mixer(ham_.scalar_potential);
 				
       }
 

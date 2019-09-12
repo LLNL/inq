@@ -89,6 +89,10 @@ namespace hamiltonian {
 			return vks;
 		}
 
+		auto theory() const {
+			return theory_;
+		}
+
 	private:
 
 		input::interaction::electronic_theory theory_;
