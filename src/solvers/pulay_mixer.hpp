@@ -50,7 +50,7 @@ namespace solvers {
 			dff_({arg_steps, initial_value.size()}) {
 
       //DATAOPERATIONS
-      for(unsigned ii = 0; ii < initial_value.size(); ii++)	ff_[current_][ii] = initial_value[ii];
+      for(unsigned ii = 0; ii < initial_value.size(); ii++)	ff_[0][ii] = initial_value[ii];
     }
 
 		template <class mix_type>
@@ -77,7 +77,7 @@ namespace solvers {
 				return;
 			}
 
-			std::cout << "size " << size_ << '\t' << current_ << '\t' << previous_<< std::endl;
+			//std::cout << "size " << size_ << '\t' << current_ << '\t' << previous_<< std::endl;
 
       //DATAOPERATIONS
       for(unsigned ii = 0; ii < new_value.size(); ii++){
@@ -95,30 +95,23 @@ namespace solvers {
 				}
 			}
 
-			std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << std::endl;
-			std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << std::endl;
-
+			//std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << std::endl;
+			//std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << std::endl;
 			
 			// REDUCE GRID amatrix
 
 			boost::multi::array<typename mix_type::value_type, 1> alpha(size_, 1.0);
 
-			std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
+			//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 			
 			solvers::linear_symmetric(amatrix, alpha);
 
-			std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
+			//			std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 
 			//DATAOPERATIONS
 			type sumalpha = 0.0;
 			for(int jj = 0; jj < size_; jj++) sumalpha += alpha[jj];
-			std::cout << sumalpha << std::endl;
-
 			for(int jj = 0; jj < size_; jj++) alpha[jj] /= sumalpha;
-			std::cout << sumalpha << std::endl;
-			
-			for(int jj = 0; jj < size_; jj++) sumalpha += alpha[jj];
-			std::cout << sumalpha << std::endl;
 		
 			//DATAOPERATIONS
       for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = 0.0;
@@ -135,7 +128,6 @@ namespace solvers {
     double mix_factor_;
     boost::multi::array<type, 2> ff_;
 		boost::multi::array<type, 2> dff_;
-
 		
 	};
 
