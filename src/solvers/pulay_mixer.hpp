@@ -45,7 +45,8 @@ namespace solvers {
 
 		template <class mix_type>
     void operator()(mix_type & new_value){
-			
+
+			auto full = (size_ == max_size_);
 			size_ = std::min(size_ + 1, max_size_);
 
 			if(size_ == 0){
@@ -70,24 +71,24 @@ namespace solvers {
 					ff_[0][ii] = new_value[ii];
 				}
 
-				current_ = 0;
-				previous_ = -1;
-				
 				return;
 			}
 
-			current_++;
-			if(current_ >= max_size_) current_ = 0;
-
-			previous_++;
-			if(previous_ >= max_size_) previous_ = 0;
+			if(full){
+				//move all the stored functions, this could be avoided but we do it for simplicity
+				for(int istep = 1; istep < size_; istep++){
+					//DATAOPERATIONS
+					for(unsigned ii = 0; ii < new_value.size(); ii++){
+						ff_[istep - 1][ii] = ff_[istep][ii];
+						dff_[istep - 1][ii] = dff_[istep][ii];
+					}
+				}
+			}
 			
-			std::cout << "size " << size_ << '\t' << current_ << '\t' << previous_<< std::endl;
-
       //DATAOPERATIONS
       for(unsigned ii = 0; ii < new_value.size(); ii++){
-				ff_[current_][ii] = new_value[ii];
-				dff_[current_][ii] = new_value[ii] - ff_[previous_][ii];
+				ff_[size_ - 1][ii] = new_value[ii];
+				dff_[size_ - 1][ii] = new_value[ii] - ff_[size_ - 2][ii];
 			}
 
 			boost::multi::array<typename mix_type::value_type, 2> amatrix({size_, size_});
@@ -95,8 +96,11 @@ namespace solvers {
 			for(int ii = 0; ii < size_; ii++){
 				for(int jj = 0; jj < size_; jj++){
 					typename mix_type::value_type aa = 0.0;
-					for(unsigned kk = 0; kk < new_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
+					for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(dff_[ii][kk]);
 					amatrix[ii][jj] = aa;
+
+					if(ii == jj) std::cout << "norm " << ii << '\t' << aa << std::endl;
+					
 				}
 			}
 
@@ -117,9 +121,21 @@ namespace solvers {
 			type sumalpha = 0.0;
 			for(int jj = 0; jj < size_; jj++) sumalpha += alpha[jj];
 			for(int jj = 0; jj < size_; jj++) alpha[jj] /= sumalpha;
-		
+
+			/*			for(int jj = 0; jj < size_; jj++) alpha[jj] = 0.0;
+			alpha[current_] = 0.3;
+			alpha[previous_] = 1.0 - 0.3; 
+			*/
+			
 			//DATAOPERATIONS
       for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = 0.0;
+
+			for(int jj = 0; jj < size_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*dff_[jj][ii];
+
+			typename mix_type::value_type aa = 0.0;
+			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
+			std::cout << "norm opt " << aa << std::endl;
+			
 			for(int jj = 0; jj < size_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
 			
     }
@@ -128,8 +144,6 @@ namespace solvers {
 
 		int size_;
 		int max_size_;
-		int current_;
-		int previous_;
     double mix_factor_;
     boost::multi::array<type, 2> ff_;
 		boost::multi::array<type, 2> dff_;
