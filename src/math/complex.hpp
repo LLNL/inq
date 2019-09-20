@@ -57,5 +57,13 @@ GPU_FUNCTION inline complex operator*(const complex & z1, const complex z2){
 	return complex{real(z1)*real(z2) - imag(z1)*imag(z2), real(z1)*imag(z2) + imag(z1)*real(z2)};
 }
 
+inline double norm(const double & x){
+	return x*x;
+}
+
+inline complex norm(const complex & z){
+	return std::norm(z);
+}
+
 #endif
 
