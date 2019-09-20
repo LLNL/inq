@@ -96,7 +96,7 @@ namespace solvers {
 			for(int ii = 0; ii < size_; ii++){
 				for(int jj = 0; jj < size_; jj++){
 					typename mix_type::value_type aa = 0.0;
-					for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(dff_[ii][kk]);
+					for(unsigned kk = 0; kk < new_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
 					amatrix[ii][jj] = aa;
 
 					if(ii == jj) std::cout << "norm " << ii << '\t' << aa << std::endl;
@@ -106,6 +106,12 @@ namespace solvers {
 
 			//std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << std::endl;
 			//std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << std::endl;
+
+			/*
+			std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << '\t' << amatrix[0][2] << std::endl;
+			std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << '\t' << amatrix[1][2] << std::endl;
+			std::cout << amatrix[2][0] << '\t' << amatrix[2][1] << '\t' << amatrix[2][2] << std::endl;
+			*/
 			
 			// REDUCE GRID amatrix
 
