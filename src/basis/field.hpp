@@ -35,6 +35,7 @@ namespace basis {
 		typedef b_type basis_type;
 		
     field(const basis_type & basis):
+			boost::multi::array<type, 1>(basis.size()),
 			basis_(basis){
     }
 
@@ -56,19 +57,12 @@ namespace basis {
 		}
 
 		auto cubic() const {
-			return boost::multi::array_cref<type, basis_type::dimension>(boost::multi::array<type, 1>::data(), sizes(basis_));
+			return this->partitioned(sizes(basis_)[1]*sizes(basis_)[0]).partitioned(sizes(basis_)[0]);
 		}
 
 		auto cubic() {
-			return boost::multi::array_ref<type, basis_type::dimension>(boost::multi::array<type, 1>::data(), sizes(basis_));
+			return this->partitioned(sizes(basis_)[1]*sizes(basis_)[0]).partitioned(sizes(basis_)[0]);
 		}
-
-		/*
-    template <class self_type>
-		friend auto cubic_view(self_type && self){
-			return boost::multi::array_ref(self.data(), sizes(self.basis()));
-		}
-		*/		
 
 		template <int dir = 2>
 		friend void print_debug(const field & fld, const std::string & filename){
@@ -102,7 +96,7 @@ namespace basis {
 #include <catch2/catch.hpp>
 #include <multi/adaptors/fftw.hpp>
 
-TEST_CASE("Class basis::field", "[field]"){
+TEST_CASE("Class basis::field", "[basis::field]"){
 
   using namespace Catch::literals;
   using math::d3vector;
@@ -118,6 +112,16 @@ TEST_CASE("Class basis::field", "[field]"){
 	namespace fftw = boost::multi::fftw;
 	using boost::multi::array_ref;
 
+	REQUIRE(sizes(rs)[0] == 28);
+	REQUIRE(sizes(rs)[1] == 11);
+	REQUIRE(sizes(rs)[2] == 20);	
+
+	REQUIRE(std::get<0>(sizes(ff)) == 6160);
+
+	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
+	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
+	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
+	
 }
 
 #endif
