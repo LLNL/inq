@@ -35,7 +35,7 @@ namespace operations {
     //TODO: occupations
     //DATAOPERATIONS
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
-      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*real(conj(phi[ipoint][ist])*phi[ipoint][ist]);
+      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi[ist][ipoint]);
     }
 
     return density;
