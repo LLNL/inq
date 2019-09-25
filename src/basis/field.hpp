@@ -25,17 +25,17 @@
 #include <tinyformat/tinyformat.h>
 
 namespace basis {
-
-	template<class basis_type, class type>
-  class field {
+	
+	template<class b_type, class type>
+  class field : public boost::multi::array<type, 1> {
 
   public:
 
 		typedef type value_type;
-		typedef boost::multi::array<type, basis_type::dimension> cubic_type;
+		typedef b_type basis_type;
 		
     field(const basis_type & basis):
-      cubic_(sizes(basis)),
+			boost::multi::array<type, 1>(basis.size()),
 			basis_(basis){
     }
 
@@ -52,36 +52,16 @@ namespace basis {
 			return *this;
 		}
 		
-		const basis_type & basis() const {
+		const auto & basis() const {
 			return basis_;
 		}
 
-		const auto & cubic() const {
-			return cubic_;
+		auto cubic() const {
+			return this->partitioned(sizes(basis_)[1]*sizes(basis_)[0]).partitioned(sizes(basis_)[0]);
 		}
 
-		auto & cubic() {
-			return cubic_;
-		}
-
-		const auto & operator[](const long index) const {
-			return cubic_.data()[index];
-		}
-
-		auto & operator[](const long index) {
-			return cubic_.data()[index];
-		}
-
-		auto data() const {
-			return cubic_.data();
-		}
-
-		auto data() {
-			return cubic_.data();
-		}
-
-		auto size() const {
-			return basis_.size();
+		auto cubic() {
+			return this->partitioned(sizes(basis_)[1]*sizes(basis_)[0]).partitioned(sizes(basis_)[0]);
 		}
 
 		template <int dir = 2>
@@ -104,7 +84,6 @@ namespace basis {
 				
 	private:
 		
-    cubic_type cubic_;
 		basis_type basis_;
 
   };
@@ -115,9 +94,34 @@ namespace basis {
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
+#include <multi/adaptors/fftw.hpp>
 
-TEST_CASE("Class basis::field", "[field]"){
+TEST_CASE("Class basis::field", "[basis::field]"){
+
+  using namespace Catch::literals;
+  using math::d3vector;
   
+  double ecut = 40.0;
+
+  ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 4.0, 0.0), d3vector(0.0, 0.0, 7.0));
+  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+
+	basis::field<basis::real_space, double> ff(rs);
+
+
+	namespace fftw = boost::multi::fftw;
+	using boost::multi::array_ref;
+
+	REQUIRE(sizes(rs)[0] == 28);
+	REQUIRE(sizes(rs)[1] == 11);
+	REQUIRE(sizes(rs)[2] == 20);	
+
+	REQUIRE(std::get<0>(sizes(ff)) == 6160);
+
+	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
+	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
+	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
+	
 }
 
 #endif

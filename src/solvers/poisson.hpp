@@ -61,7 +61,7 @@ namespace solvers {
 						auto g2 = potential_fs.basis().g2(ix, iy, iz);
 						
 						if(potential_fs.basis().g_is_zero(ix, iy, iz) or fourier_basis.outside_sphere(g2)){
-							potential_fs.cubic()[0][0][0] = 0.0;
+							potential_fs.cubic()[ix][iy][iz] = 0.0;
 							continue;
 						}
 						
