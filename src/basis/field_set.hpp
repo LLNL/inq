@@ -106,8 +106,33 @@ namespace basis {
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
 
-TEST_CASE("Class basis::field_set", "[field_set]"){
+TEST_CASE("Class basis::field_set", "[basis::field_set]"){
   
+  using namespace Catch::literals;
+  using math::d3vector;
+  
+  double ecut = 40.0;
+
+  ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 4.0, 0.0), d3vector(0.0, 0.0, 7.0));
+  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+
+	basis::field_set<basis::real_space, double> ff(rs, 12);
+
+	namespace fftw = boost::multi::fftw;
+	using boost::multi::array_ref;
+
+	REQUIRE(sizes(rs)[0] == 28);
+	REQUIRE(sizes(rs)[1] == 11);
+	REQUIRE(sizes(rs)[2] == 20);	
+
+	/*	REQUIRE(std::get<0>(sizes(ff)) == 6160);	
+			REQUIRE(std::get<1>(sizes(ff)) == 12); */
+
+	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
+	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
+	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
+	REQUIRE(std::get<3>(sizes(ff.cubic())) == 12);
+	
 }
 
 #endif
