@@ -24,25 +24,17 @@
 #include <multi/array.hpp>
 
 namespace basis {
-
-	template <class type1, unsigned long dim, class type2>
-	static auto array_append(const std::array<type1, dim> & array, type2 element){
-    std::array<type1, dim + 1> result;
-    std::copy(array.cbegin(), array.cend(), result.begin());
-		result[dim] = element;
-    return result;
-	}
 	
 	template<class basis_type, class type>
-  class field_set {
+  class field_set : public boost::multi::array<type, 2>{
 
   public:
 
 		typedef type value_type;
-		typedef boost::multi::array<type, basis_type::dimension + 1> cubic_type;
+		typedef boost::multi::array<type, 2> base;
 		
     field_set(const basis_type & basis, const int num_vectors):
-			cubic_(array_append(sizes(basis), num_vectors)),
+			boost::multi::array<type, 2>({basis.size(), num_vectors}),
 			num_vectors_(num_vectors),
 			basis_(basis){
     }
@@ -55,7 +47,7 @@ namespace basis {
 		//set to a scalar value
 		field_set & operator=(const value_type value) {
 			//DATAOPERATIONS
-			for(int ii = 0; ii < cubic_.size(); ii++) cubic_.data()[ii] = value;
+			for(int ii = 0; ii < basis_.size()*num_vectors_; ii++) this->data()[ii] = value;
 			return *this;
 		}
 		
@@ -67,33 +59,16 @@ namespace basis {
 			return num_vectors_;
 		}
 		
-		const auto & cubic() const {
-			return cubic_;
+		auto cubic() const {
+			return this->partitioned(sizes(basis_)[1]*sizes(basis_)[0]).partitioned(sizes(basis_)[0]);
 		}
 
-		auto & cubic() {
-			return cubic_;
+		auto cubic() {
+			return this->partitioned(sizes(basis_)[1]*sizes(basis_)[0]).partitioned(sizes(basis_)[0]);
 		}
 
-		auto operator[](long index) const {
-			return &cubic_.data()[num_vectors_*index];
-		}
-
-		auto operator[](long index) {
-			return &cubic_.data()[num_vectors_*index];
-		}	
-
-		auto data() const {
-			return cubic_.data();
-		}
-
-		auto data() {
-			return cubic_.data();
-		}
-		
 	private:
 
-    cubic_type cubic_;
 		int num_vectors_;
 		basis_type basis_;
 
@@ -125,8 +100,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	REQUIRE(sizes(rs)[1] == 11);
 	REQUIRE(sizes(rs)[2] == 20);	
 
-	/*	REQUIRE(std::get<0>(sizes(ff)) == 6160);	
-			REQUIRE(std::get<1>(sizes(ff)) == 12); */
+	REQUIRE(std::get<0>(sizes(ff)) == 6160);	
+	REQUIRE(std::get<1>(sizes(ff)) == 12);
 
 	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
 	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
