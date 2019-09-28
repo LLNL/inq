@@ -12,6 +12,7 @@
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
+#include <multi/adaptors/blas.hpp>
 
 namespace hamiltonian {
 
@@ -56,24 +57,15 @@ namespace hamiltonian {
 
       boost::multi::array<states::ks_states::coeff_type, 2> projections({nproj_, phi.set_size()});
 
+			boost::multi::blas::gemm('N', 'N', sphere_.volume_element(), sphere_phi, matrix_, 0.0, projections);
+			
 			//DATAOPERATIONS
-      //OPTIMIZATION: these two operations should be done by dgemm
-      for(int iproj = 0; iproj < nproj_; iproj++){
-				for(int ist = 0; ist < phi.set_size(); ist++){
-					complex aa = 0.0;
-					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++) aa += matrix_[iproj][ipoint]*sphere_phi[ipoint][ist];
-					projections[iproj][ist] = aa*kb_coeff_[iproj]*sphere_.volume_element();
-				}
-      }
+      for(int iproj = 0; iproj < nproj_; iproj++) {
+				for(int ist = 0; ist < phi.set_size(); ist++)	projections[iproj][ist] *= kb_coeff_[iproj];
+			}
 
-      for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-				for(int ist = 0; ist < phi.set_size(); ist++){
-					complex aa = 0.0;
-					for(int iproj = 0; iproj < nproj_; iproj++) aa += matrix_[iproj][ipoint]*projections[iproj][ist];
-					sphere_phi[ipoint][ist] = aa;
-				}
-      }
-      
+			boost::multi::blas::gemm('N', 'T', 1.0, projections, matrix_, 0.0, sphere_phi);
+			
       sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			
     }
@@ -90,7 +82,8 @@ namespace hamiltonian {
 
     basis::spherical_grid sphere_;
     int nproj_;
-    boost::multi::array<double, 2> matrix_;
+		//OPTIMIZATION: make this matrix real
+    boost::multi::array<complex, 2> matrix_;
     std::vector<double> kb_coeff_;
     
   };
