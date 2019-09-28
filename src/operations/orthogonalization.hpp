@@ -119,7 +119,7 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 					REQUIRE(real(olap[ii][ii]) == 1.0_a);
 					REQUIRE(fabs(imag(olap[ii][ii])) < 1e-14);
 				} else {
-					REQUIRE(fabs(olap[ii][jj]) < 5e-14);
+					REQUIRE(fabs(olap[ii][jj]) < 1e-13);
 				}
 			}
 		}
