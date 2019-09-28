@@ -24,6 +24,7 @@
 #include <multi/array.hpp>
 #include <basis/field_set.hpp>
 #include <cassert>
+#include <multi/adaptors/blas.hpp>
 
 namespace operations {
 
@@ -32,18 +33,7 @@ namespace operations {
 
 		boost::multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
 
-		//DATAOPERATIONS
-
-		//OPTIMIZATION: this is a slow placeholder for a gemm call
-    for(int ii = 0; ii < phi1.set_size(); ii++){
-      for(int jj = 0; jj < phi1.set_size(); jj++){
-
-				typename field_set_type::value_type  aa = 0.0;
-				for(int ip = 0; ip < phi1.basis().num_points(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][jj];
-				overlap_matrix[ii][jj] = aa*phi1.basis().volume_element();
-
-      }
-    }
+		boost::multi::blas::gemm('N', 'C', phi1.basis().volume_element(), phi1, phi2, 0.0, overlap_matrix);
 
 		return overlap_matrix;		
   }
@@ -51,8 +41,13 @@ namespace operations {
 	template <class field_set_type>
 	auto overlap(const field_set_type & phi){
 
-		//OPTIMIZATION: this can be done with syrk/herk
-		return overlap(phi, phi);
+		boost::multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi.set_size(), phi.set_size()});
+
+		// this should be done by herk, but it is not implemented yet.
+		//   boost::multi::blas::herk('U', 'C', phi.basis().volume_element(), phi, 0.0, overlap_matrix);
+		boost::multi::blas::gemm('N', 'C', phi.basis().volume_element(), phi, phi, 0.0, overlap_matrix);
+	
+		return overlap_matrix;
 	}
 
 	template <class field_set_type>
