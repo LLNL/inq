@@ -34,9 +34,6 @@ namespace operations {
 		auto subspace_hamiltonian = overlap(phi, ham(phi));
 		auto eigenvalues = diagonalize(subspace_hamiltonian);
 
-		//this should be done by multi + blas
-		//DATAOPERATIONS
-
 		//OPTIMIZATION: here we don't need to make a full copy. We can
 		//divide into blocks over point index (second dimension of phi).
 		boost::multi::array<typename field_set_type::value_type, 2> tmp = phi;
