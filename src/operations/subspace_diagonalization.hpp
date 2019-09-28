@@ -24,7 +24,7 @@
 #include <config.h>
 #include <operations/overlap.hpp>
 #include <operations/diagonalize.hpp>
-
+#include <multi/adaptors/blas.hpp>
 
 namespace operations {
 
