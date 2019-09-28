@@ -24,7 +24,7 @@
 #include <config.h>
 #include <operations/overlap.hpp>
 #include <operations/diagonalize.hpp>
-
+#include <multi/adaptors/blas.hpp>
 
 namespace operations {
 
@@ -34,20 +34,12 @@ namespace operations {
 		auto subspace_hamiltonian = overlap(phi, ham(phi));
 		auto eigenvalues = diagonalize(subspace_hamiltonian);
 
-		//this should be done by multi + blas
-		//DATAOPERATIONS
-		const int nst = phi.set_size();
-		boost::multi::array<typename field_set_type::value_type, 1> tmp(nst);
-
-		for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
-			for(int ii = 0; ii < nst; ii++){
-				typename field_set_type::value_type aa = 0.0;
-				for(int jj = 0; jj < nst; jj++) aa += conj(subspace_hamiltonian[ii][jj])*phi[ipoint][jj];
-				tmp[ii] = aa;
-			}
-			for(int ii = 0; ii < nst; ii++) phi[ipoint][ii] = tmp[ii];
-		}
-
+		//OPTIMIZATION: here we don't need to make a full copy. We can
+		//divide into blocks over point index (second dimension of phi).
+		boost::multi::array<typename field_set_type::value_type, 2> tmp = phi;
+		
+		boost::multi::blas::gemm('T', 'N', 1.0, subspace_hamiltonian, tmp, 0.0, phi);
+ 
   }
 
 }
