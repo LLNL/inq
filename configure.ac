@@ -9,6 +9,9 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_CONFIG_MACRO_DIR([m4])
 
+# enable cuda first, since this is required for the compiler selection
+AC_ARG_ENABLE(cuda, AS_HELP_STRING([--enable-cuda], [Cuda support (experimental)]))
+
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_CXX(mpic++)
@@ -35,6 +38,11 @@ AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FSEEKO
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([gettimeofday memset mkdir pow sqrt strspn uname])
+
+if test x"${enable_cuda}" == x"yes" ; then
+  AC_DEFINE(HAVE_CUDA, 1, [defined if cuda support is enabled])
+  ACX_CUDA
+fi
 
 #Check for GSL, this is temporary until we modify the parser
 AX_PATH_GSL
