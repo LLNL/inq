@@ -15,7 +15,7 @@ AC_ARG_ENABLE(cuda, AS_HELP_STRING([--enable-cuda], [Cuda support (experimental)
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_CXX(mpic++)
-AX_CXX_COMPILE_STDCXX([17], [], [])
+AX_CXX_COMPILE_STDCXX([14], [], [])
 
 AC_PROG_CC(mpicc)
 AC_PROG_LN_S
