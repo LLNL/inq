@@ -39,13 +39,18 @@ AC_FUNC_FSEEKO
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([gettimeofday memset mkdir pow sqrt strspn uname])
 
+#Check for GSL, this is temporary until we modify the parser
+AX_PATH_GSL
+
 if test x"${enable_cuda}" == x"yes" ; then
+  AC_MSG_NOTICE([
+  ================================================================================
+    CHECKING FOR CUDA
+  ================================================================================])
+
   AC_DEFINE(HAVE_CUDA, 1, [defined if cuda support is enabled])
   ACX_CUDA
 fi
-
-#Check for GSL, this is temporary until we modify the parser
-AX_PATH_GSL
 
 AC_MSG_NOTICE([
 ================================================================================

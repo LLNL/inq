@@ -49,7 +49,8 @@ AC_DEFUN([ACX_CUDA],
   LIBS=""
 
   AC_CHECK_LIB(cuda, cuInit, [], [acx_cuda_ok=no], [$acx_cuda_save_LIBS])
-  AC_CHECK_LIB(nvrtc, nvrtcCreateProgram, [], [acx_cuda_ok=no], [$acx_cuda_save_LIBS])
+  AC_CHECK_LIB(cudart, cudaMemcpy, [], [acx_cuda_ok=no], [$acx_cuda_save_LIBS])
+dnl  AC_CHECK_LIB(nvrtc, nvrtcCreateProgram, [], [acx_cuda_ok=no], [$acx_cuda_save_LIBS])
   AC_CHECK_LIB(cublas, cublasCreate_v2, [], [acx_cuda_ok=no], [$acx_cuda_save_LIBS])
   AC_CHECK_LIB(cufft, cufftPlan3d, [], [acx_cuda_ok=no], [$acx_cuda_save_LIBS])
 
