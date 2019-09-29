@@ -80,9 +80,9 @@ namespace input {
     
   private:
 
-    std::optional<electronic_theory> theory_;
-    std::optional<exchange_functional> exchange_;
-    std::optional<correlation_functional> correlation_;
+    nonstd::optional<electronic_theory> theory_;
+    nonstd::optional<exchange_functional> exchange_;
+    nonstd::optional<correlation_functional> correlation_;
     
   };
     
