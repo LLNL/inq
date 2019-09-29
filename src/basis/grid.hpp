@@ -92,6 +92,10 @@ namespace basis {
 			return gr.nr_;
 		}
 
+		auto & sizes() const {
+			return nr_;
+		}
+
 		auto periodic_dimensions() const {
 			return periodic_dimensions_;
 		}
