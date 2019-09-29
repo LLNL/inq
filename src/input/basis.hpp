@@ -25,6 +25,7 @@
 #include <utils/merge_optional.hpp>
 #include <cassert>
 #include <array>
+#include <nonstd/optional.hpp>
 #include <utils/merge_optional.hpp>
 
 namespace input {
