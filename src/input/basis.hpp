@@ -25,6 +25,7 @@
 #include <utils/merge_optional.hpp>
 #include <cassert>
 #include <array>
+#include <utils/merge_optional.hpp>
 
 namespace input {
 
@@ -72,8 +73,8 @@ namespace input {
 		basis(){
 		}
 		
-		std::optional<double> spacing_;
-		std::optional<bool> spherical_grid_;
+		nonstd::optional<double> spacing_;
+		nonstd::optional<bool> spherical_grid_;
 		
 	};
 }
