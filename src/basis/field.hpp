@@ -57,11 +57,11 @@ namespace basis {
 		}
 
 		auto cubic() const {
-			return this->partitioned(sizes(basis_)[1]*sizes(basis_)[0]).partitioned(sizes(basis_)[0]);
+			return this->partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
 		}
 
 		auto cubic() {
-			return this->partitioned(sizes(basis_)[1]*sizes(basis_)[0]).partitioned(sizes(basis_)[0]);
+			return this->partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
 		}
 
 		template <int dir = 2>
