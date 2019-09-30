@@ -50,23 +50,15 @@ namespace math {
     explicit d3vector(const double* r) : x(r[0]), y(r[1]), z(r[2]) {}
 
     double& operator[](int i){
-		static_assert( sizeof(*this) == sizeof(double)*3 );
-		return reinterpret_cast<double*>(this)[i];
-//      assert(i>=0 && i <3);
-//      if ( i == 0 ) return x;
-//      else if ( i == 1 ) return y;
-//      else return z;
+			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
+			return reinterpret_cast<double*>(this)[i];
     }
-
-	double const& operator[](int i) const{
-		static_assert( sizeof(*this) == sizeof(double)*3 );
-		return reinterpret_cast<double const*>(this)[i];
-//     assert(i>=0 && i <3);
-//     if ( i == 0 ) return x;
-//      else if ( i == 1 ) return y;
-//      else return z;
+		
+		double const& operator[](int i) const{
+			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
+			return reinterpret_cast<double const*>(this)[i];
     }
-
+		
     bool operator==(const d3vector &rhs) const
     {
       return x == rhs.x && y == rhs.y && z == rhs.z;
