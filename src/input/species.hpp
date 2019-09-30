@@ -84,11 +84,13 @@ namespace input {
 		}
 
 		auto symbol() const {
-			return opts.symbol_.value_or(pseudo::element::symbol());
+			using pseudo::element;
+			return opts.symbol_.value_or(element::symbol());
 		}
 
 		auto mass() const {
-			return opts.mass_.value_or(pseudo::element::mass());
+			using pseudo::element;
+			return opts.mass_.value_or(element::mass());
 		}
 
 	private:
