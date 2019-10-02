@@ -17,6 +17,12 @@ AC_PROG_AWK
 AC_PROG_CXX(mpic++)
 AX_CXX_COMPILE_STDCXX([14], [], [])
 
+#we may need to set the linker for the cuda case, so pass that to automake
+if test x"$CXXLD" == x ; then
+   CXXLD=$CXX
+fi
+AC_SUBST(CXXLD)
+
 AC_PROG_CC(mpicc)
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
