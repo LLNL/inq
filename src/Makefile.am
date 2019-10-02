@@ -2,9 +2,10 @@ AM_CXXFLAGS =                             \
 	-I$(top_srcdir)/src/                    \
 	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
-	$(GSL_CFLAGS)
+	$(GSL_CFLAGS)                           \
+	@CFLAGS_CUDA@
 
-LIBS += @GSL_LIBS@ @LIBS_LAPACK@ @LIBS_BLAS@
+LIBS += @GSL_LIBS@ @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@
 
 noinst_HEADERS =                             \
 	utils/merge_optional.hpp

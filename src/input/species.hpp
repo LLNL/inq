@@ -25,6 +25,7 @@
 #include <utils/merge_optional.hpp>
 #include <vector>
 #include <cmath>
+#include <nonstd/optional.hpp>
 
 namespace input {
 
@@ -48,7 +49,7 @@ namespace input {
 			auto rspec = spec;
 			rspec.opts = rspec.opts | opts;
 			return rspec;
-		}
+ 		}
 
 		friend species operator|(const std::string & arg_symbol, const options & opts){
 			auto rspec = species(arg_symbol);
@@ -83,11 +84,13 @@ namespace input {
 		}
 
 		auto symbol() const {
-			return opts.symbol_.value_or(pseudo::element::symbol());
+			using pseudo::element;
+			return opts.symbol_.value_or(element::symbol());
 		}
 
 		auto mass() const {
-			return opts.mass_.value_or(pseudo::element::mass());
+			using pseudo::element;
+			return opts.mass_.value_or(element::mass());
 		}
 
 	private:
@@ -95,9 +98,9 @@ namespace input {
 		struct options {
 		private:
 			
-			std::optional<std::string> symbol_;
-			std::optional<std::string> pseudo_file_;		
-			std::optional<double> mass_;
+			nonstd::optional<std::string> symbol_;
+			nonstd::optional<std::string> pseudo_file_;		
+			nonstd::optional<double> mass_;
 			
 			options(){
 			}

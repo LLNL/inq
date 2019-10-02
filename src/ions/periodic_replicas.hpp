@@ -46,22 +46,22 @@ namespace ions {
       for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell[0]))); 
       
       for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
-	for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
-	  for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
-	    d3vector reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
-
-	    if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
-	  }
-	}
+        for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
+          for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
+            d3vector reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
+            
+            if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
+          }
+        }
       }
       
     }
 
-    const math::d3vector & operator[](const int i) const {
+    const auto & operator[](const int i) const {
       return replicas_[i];
     }
 
-    const int size(){
+    auto size(){
       return replicas_.size();
     }
     
@@ -192,9 +192,3 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
 
 
 #endif
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:

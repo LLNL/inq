@@ -26,6 +26,7 @@
 #include <array>
 #include <optional>
 #include <utils/merge_optional.hpp>
+#include <nonstd/optional.hpp>
 
 namespace input {
 
@@ -83,8 +84,8 @@ namespace input {
 		cell(){
 		}
 
-		std::array<std::optional<math::d3vector>, 3> lattice_vectors_;
-		std::optional<int> periodic_dimensions_;
+		std::array<nonstd::optional<math::d3vector>, 3> lattice_vectors_;
+		nonstd::optional<int> periodic_dimensions_;
 		
   };
 }

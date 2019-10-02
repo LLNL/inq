@@ -40,13 +40,7 @@ namespace operations {
 
 	template <class field_set_type>
 	auto overlap(const field_set_type & phi){
-
-		boost::multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi.set_size(), phi.set_size()});
-
-		// this should be done by herk, but it is not implemented yet.
-		boost::multi::blas::herk('U', 'N', phi.basis().volume_element(), phi, 0.0, overlap_matrix);
-	
-		return overlap_matrix;
+		return overlap(phi, phi);
 	}
 
 	template <class field_set_type>

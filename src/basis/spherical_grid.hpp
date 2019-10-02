@@ -47,7 +47,7 @@ namespace basis {
 					for(int iz = 0; iz < parent_grid.rsize()[2]; iz++){
 						auto rpoint = parent_grid.rvector(ix, iy, iz);
 						
-						for(int irep = 0; irep < rep.size(); irep++){
+						for(unsigned irep = 0; irep < rep.size(); irep++){
 							auto n2 = norm(rpoint - rep[irep]);
 							if(n2 > radius*radius) continue;
 							

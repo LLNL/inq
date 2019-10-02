@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <nonstd/optional.hpp>
 #include <cassert>
 
 namespace input {
@@ -80,9 +81,9 @@ namespace input {
     
   private:
 
-    std::optional<electronic_theory> theory_;
-    std::optional<exchange_functional> exchange_;
-    std::optional<correlation_functional> correlation_;
+    nonstd::optional<electronic_theory> theory_;
+    nonstd::optional<exchange_functional> exchange_;
+    nonstd::optional<correlation_functional> correlation_;
     
   };
     
