@@ -26,6 +26,10 @@
 #include <cassert>
 #include <multi/adaptors/blas.hpp>
 
+#ifdef HAVE_CUDA
+#include <multi/memory/adaptors/cuda/allocator.hpp>
+#endif
+
 namespace operations {
 
 	template <class field_set_type>
@@ -43,12 +47,37 @@ namespace operations {
 		return overlap(phi, phi);
 	}
 
+#ifdef HAVE_CUDA
+	template <class type>
+	__global__ void overlap_diagonal_kernel(const long npoints, const int nst, const double vol_element,
+																					const type * phi1, const type * phi2, type * overlap){
+		
+		int ist = blockIdx.x*blockDim.x + threadIdx.x;
+
+		type aa = 0.0;
+		for(int ip = 0; ip < npoints; ip++){
+			complex p1 = phi1[ip*nst + ist];
+			complex p2 = phi2[ip*nst + ist];
+			aa += conj(p1)*p2;
+		}
+		
+		overlap[ist] = vol_element*aa;
+
+	}
+#endif
+	
 	template <class field_set_type>
   auto overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
 
-		boost::multi::array<typename field_set_type::value_type, 1>  overlap_vector(phi1.set_size());
+		namespace multi = boost::multi;
+
+		using value_type = typename field_set_type::value_type;
+		
+		multi::array<value_type, 1>  overlap_vector(phi1.set_size());
 
 		assert(size(overlap_vector) == phi1.set_size());
+
+#ifndef HAVE_CUDA
 
 		//DATAOPERATIONS
 		
@@ -58,10 +87,27 @@ namespace operations {
 			for(int ip = 0; ip < phi1.basis().num_points(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][ii];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
+
+#else
+
+		namespace cuda = multi::memory::cuda;
+		
+		multi::array<value_type, 1, cuda::allocator<complex>> overlap_cuda(phi1.set_size());
+		multi::array<value_type, 2, cuda::allocator<complex>> phi1_cuda = phi1;
+		multi::array<value_type, 2, cuda::allocator<complex>> phi2_cuda = phi2;
+
+		overlap_diagonal_kernel<complex><<<1, phi1.set_size()>>>(phi1.basis().num_points(), phi1.set_size(), phi1.basis().volume_element(),
+																														 static_cast<value_type const *>(phi1_cuda.data()),
+																														 static_cast<value_type const *>(phi2_cuda.data()),
+																														 static_cast<value_type *>(overlap_cuda.data()));
+
+		overlap_vector = overlap_cuda;
+		
+#endif
 		
 		return overlap_vector;		
   }
-
+	
 	template <class field_set_type>
 	auto overlap_diagonal(const field_set_type & phi){
 		
