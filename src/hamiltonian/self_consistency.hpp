@@ -24,7 +24,7 @@
 #include <basis/field.hpp>
 #include <functionals/lda.hpp>
 #include <solvers/poisson.hpp>
-#include <operations/sum.hpp>
+#include <operations/add.hpp>
 #include <operations/integral.hpp>
 #include <input/interaction.hpp>
 
@@ -55,7 +55,7 @@ namespace hamiltonian {
 			case input::interaction::electronic_theory::DENSITY_FUNCTIONAL:
 				{
 
-					auto total_density = operations::sum(electronic_density, ionic_density);
+					auto total_density = operations::add(electronic_density, ionic_density);
 					auto vhartree = poisson_solver(total_density);
 					energy.hartree = 0.5*operations::integral_product(total_density, vhartree);
 					energy.nvhartree = operations::integral_product(electronic_density, vhartree);
@@ -68,7 +68,7 @@ namespace hamiltonian {
 					energy.xc = operations::integral_product(electronic_density, edxc);
 					energy.nvxc = operations::integral_product(electronic_density, vxc);
 					
-					vks = operations::sum(vexternal, vhartree, vxc);
+					vks = operations::add(vexternal, vhartree, vxc);
 
 					break;
 				}
@@ -79,7 +79,7 @@ namespace hamiltonian {
 					auto vion = poisson_solver(ionic_density);
 					energy.hartree = 0.5*operations::integral_product(ionic_density, vion) + operations::integral_product(electronic_density, vion);
 					energy.nvhartree = operations::integral_product(electronic_density, vion);
-					vks = operations::sum(vexternal, vion);
+					vks = operations::add(vexternal, vion);
 					
 					break;
 				}
