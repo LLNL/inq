@@ -96,6 +96,7 @@ namespace operations {
 		multi::array<value_type, 2, cuda::allocator<complex>> phi1_cuda = phi1;
 		multi::array<value_type, 2, cuda::allocator<complex>> phi2_cuda = phi2;
 
+		//OPTIMIZATION: here we should parallelize over points as well 
 		overlap_diagonal_kernel<complex><<<1, phi1.set_size()>>>(phi1.basis().num_points(), phi1.set_size(), phi1.basis().volume_element(),
 																														 static_cast<value_type const *>(phi1_cuda.data()),
 																														 static_cast<value_type const *>(phi2_cuda.data()),
