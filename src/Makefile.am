@@ -41,6 +41,7 @@ noinst_HEADERS =                             \
 	basis/field.hpp                            \
 	basis/field_set.hpp                        \
 	basis/spherical_grid.hpp                   \
+	basis/trivial.hpp                          \
 	states/ks_states.hpp                       \
 	functionals/lda.hpp                        \
 	functionals/PBESolFunctional.hpp           \
