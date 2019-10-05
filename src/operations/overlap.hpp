@@ -84,7 +84,7 @@ namespace operations {
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
 			typename field_set_type::value_type aa = 0.0;
-			for(int ip = 0; ip < phi1.basis().num_points(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][ii];
+			for(int ip = 0; ip < phi1.basis().size(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][ii];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
 
@@ -97,7 +97,7 @@ namespace operations {
 		multi::array<value_type, 2, cuda::allocator<complex>> phi2_cuda = phi2;
 
 		//OPTIMIZATION: here we should parallelize over points as well 
-		overlap_diagonal_kernel<complex><<<1, phi1.set_size()>>>(phi1.basis().num_points(), phi1.set_size(), phi1.basis().volume_element(),
+		overlap_diagonal_kernel<complex><<<1, phi1.set_size()>>>(phi1.basis().size(), phi1.set_size(), phi1.basis().volume_element(),
 																														 static_cast<value_type const *>(phi1_cuda.data()),
 																														 static_cast<value_type const *>(phi2_cuda.data()),
 																														 static_cast<value_type *>(overlap_cuda.data()));
@@ -138,9 +138,128 @@ namespace operations {
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("function operations::overlap", "[overlap]") {
+TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 	using namespace Catch::literals;
+
+		const int N = 100;
+		const int M = 12;
+			
+		basis::trivial bas(N);
+
+		SECTION("double"){
+		
+			basis::field_set<basis::trivial, double> aa(bas, M);
+			basis::field_set<basis::trivial, double> bb(bas, M);
+
+			for(int ii = 0; ii < N; ii++){
+				for(int jj = 0; jj < M; jj++){
+					aa[ii][jj] = 20.0*(ii + 1)*sqrt(jj);
+					bb[ii][jj] = -0.05/(ii + 1)*sqrt(jj);
+				}
+			}
+
+			{
+				auto cc = operations::overlap(aa, bb);
+				
+				for(int ii = 0; ii < M; ii++){
+					for(int jj = 0; jj < M; jj++) REQUIRE(cc[ii][jj] == Approx(-sqrt(jj)*sqrt(ii)));
+				}
+			}
+
+			{
+				auto dd = operations::overlap_diagonal(aa, bb);
+				
+				for(int jj = 0; jj < M; jj++) REQUIRE(dd[jj] == Approx(-jj));
+			}
+			
+			for(int ii = 0; ii < N; ii++){
+				for(int jj = 0; jj < M; jj++){
+					aa[ii][jj] = sqrt(ii)*sqrt(jj);
+				}
+			}
+
+			{
+				auto cc = operations::overlap(aa);
+								
+				for(int ii = 0; ii < M; ii++){
+					for(int jj = 0; jj < M; jj++) REQUIRE(cc[ii][jj] == Approx(0.5*N*(N - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+				}
+			}
+
+			{
+				auto dd = operations::overlap_diagonal(aa);
+								
+				for(int jj = 0; jj < M; jj++) REQUIRE(dd[jj] == Approx(0.5*N*(N - 1.0)*bas.volume_element()*jj));
+			}
+					
+			
+		}
+
+		SECTION("complex"){
+		
+			basis::field_set<basis::trivial, complex> aa(bas, M);
+			basis::field_set<basis::trivial, complex> bb(bas, M);
+
+			for(int ii = 0; ii < N; ii++){
+				for(int jj = 0; jj < M; jj++){
+					aa[ii][jj] = 20.0*(ii + 1)*sqrt(jj)*exp(complex(0.0, -M_PI/4 + M_PI/7*ii));
+					bb[ii][jj] = -0.05/(ii + 1)*sqrt(jj)*exp(complex(0.0, M_PI/4 + M_PI/7*ii));
+				}
+			}
+
+			{
+				auto cc = operations::overlap(aa, bb);
+
+				for(int ii = 0; ii < M; ii++){
+					for(int jj = 0; jj < M; jj++) {
+						REQUIRE(fabs(real(cc[ii][jj])) < 1.0e-14);
+						REQUIRE(imag(cc[ii][jj]) == Approx(sqrt(jj)*sqrt(ii)));
+					}
+				}
+			}
+
+			{
+				auto dd = operations::overlap_diagonal(aa, bb);
+				
+				for(int jj = 0; jj < M; jj++){
+					REQUIRE(fabs(real(dd[jj])) < 1.0e-14);
+					REQUIRE(imag(dd[jj]) == Approx(-jj));
+				}
+			}
+			
+			for(int ii = 0; ii < N; ii++){
+				for(int jj = 0; jj < M; jj++){
+					aa[ii][jj] = sqrt(ii)*sqrt(jj)*exp(complex(0.0, M_PI/65.0*ii));
+				}
+			}
+
+			{
+				auto cc = operations::overlap(aa);
+
+				std::cout << cc[0][0] << '\t' << cc[0][1] << '\t' << cc[0][2] << '\t' << cc[0][3]<< std::endl;
+				std::cout << cc[1][0] << '\t' << cc[1][1] << '\t' << cc[1][2] << '\t' << cc[1][3]<< std::endl;
+				std::cout << cc[2][0] << '\t' << cc[2][1] << '\t' << cc[2][2] << '\t' << cc[2][3]<< std::endl;
+				std::cout << cc[3][0] << '\t' << cc[3][1] << '\t' << cc[3][2] << '\t' << cc[3][3]<< std::endl;
+				
+				for(int ii = 0; ii < M; ii++){
+					for(int jj = 0; jj < M; jj++){
+						REQUIRE(real(cc[ii][jj]) == Approx(0.5*N*(N - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+						REQUIRE(fabs(imag(cc[ii][jj])) < 1e-13);
+					}
+				}
+			}
+
+			{
+				auto dd = operations::overlap_diagonal(aa);
+								
+				for(int jj = 0; jj < M; jj++) REQUIRE(real(dd[jj]) == Approx(0.5*N*(N - 1.0)*bas.volume_element()*jj));
+			}
+					
+			
+		}
+
+		
 
 }
 
