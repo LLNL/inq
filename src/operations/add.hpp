@@ -21,18 +21,29 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <cstdlib>
 
 namespace operations {
 
+	/*
+
+		Returns a field that has the sum of the values of t1 and t2.
+
+	*/
 	template <class field_type>
 	auto add(const field_type & t1, const field_type & t2){
 		assert(t1.basis() == t2.basis());
 		
 		field_type tadd(t1.basis());
 
+		using type = typename field_type::value_type;
+
 		//DATAOPERATIONS
-		for(long ii = 0; ii < t1.basis().size(); ii++) tadd[ii] = t1[ii] + t2[ii];
+		std::transform(t1.begin(), t1.end(), t2.begin(), tadd.begin(), std::plus<type>());
 		
 		return tadd;
 	}
