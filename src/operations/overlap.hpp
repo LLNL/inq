@@ -56,8 +56,8 @@ namespace operations {
 
 		type aa = 0.0;
 		for(int ip = 0; ip < npoints; ip++){
-			complex p1 = phi1[ip*nst + ist];
-			complex p2 = phi2[ip*nst + ist];
+			auto p1 = phi1[ip*nst + ist];
+			auto p2 = phi2[ip*nst + ist];
 			aa += conj(p1)*p2;
 		}
 		
@@ -97,11 +97,11 @@ namespace operations {
 		multi::array<value_type, 2, cuda::allocator<complex>> phi2_cuda = phi2;
 
 		//OPTIMIZATION: here we should parallelize over points as well 
-		overlap_diagonal_kernel<complex><<<1, phi1.set_size()>>>(phi1.basis().size(), phi1.set_size(), phi1.basis().volume_element(),
-																														 static_cast<value_type const *>(phi1_cuda.data()),
-																														 static_cast<value_type const *>(phi2_cuda.data()),
-																														 static_cast<value_type *>(overlap_cuda.data()));
-
+		overlap_diagonal_kernel<value_type><<<1, phi1.set_size()>>>(phi1.basis().size(), phi1.set_size(), phi1.basis().volume_element(),
+																																static_cast<value_type const *>(phi1_cuda.data()),
+																																static_cast<value_type const *>(phi2_cuda.data()),
+																																static_cast<value_type *>(overlap_cuda.data()));
+		
 		overlap_vector = overlap_cuda;
 		
 #endif
