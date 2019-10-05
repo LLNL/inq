@@ -41,6 +41,7 @@ noinst_HEADERS =                             \
 	basis/field.hpp                            \
 	basis/field_set.hpp                        \
 	basis/spherical_grid.hpp                   \
+	basis/trivial.hpp                          \
 	states/ks_states.hpp                       \
 	functionals/lda.hpp                        \
 	functionals/PBESolFunctional.hpp           \
@@ -58,7 +59,7 @@ noinst_HEADERS =                             \
 	operations/diagonalize.hpp                 \
 	operations/calculate_density.hpp           \
 	operations/integral.hpp                    \
-	operations/sum.hpp                         \
+	operations/add.hpp                         \
 	operations/subspace_diagonalization.hpp    \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \

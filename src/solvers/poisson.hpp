@@ -165,7 +165,7 @@ namespace solvers {
 			basis::field<basis_type, double> potential(density.basis());
 
 			//DATAOPERATIONS
-			for(long ic = 0; ic < potential.basis().size(); ic++) potential[ic] = std::real(complex_potential[ic]);
+			for(long ic = 0; ic < potential.basis().size(); ic++) potential[ic] = real(complex_potential[ic]);
 
 			return potential;
 		}
@@ -353,7 +353,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 				for(int iy = 0; iy < rs.rsize()[1]; iy++){
 					for(int iz = 0; iz < rs.rsize()[2]; iz++){
 						auto rr = rs.rvector(ix, iy, iz);
-						if(iz == 0 and iy == 0) ofile << rr[0] << "\t" << std::real(potential.cubic()[ix][iy][iz]) << std::endl;						
+						if(iz == 0 and iy == 0) ofile << rr[0] << "\t" << real(potential.cubic()[ix][iy][iz]) << std::endl;						
 					}
 				}
 			}
