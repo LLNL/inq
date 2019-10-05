@@ -45,7 +45,7 @@ namespace basis {
     }
 
 		friend auto sizes(const trivial & ss){
-      std::array<long, 1>{ss.size_};
+      return std::array<long, 1>{ss.size_};
 		}
 
 		auto sizes() const {
