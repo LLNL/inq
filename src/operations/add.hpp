@@ -48,6 +48,11 @@ namespace operations {
 		return tadd;
 	}
 
+	/*
+
+		Returns a field that has the sum of the values of t1, t2 and t3.
+
+	*/
 	template <class field_type>
 	auto add(const field_type & t1, const field_type & t2, const field_type & t3){
 		assert(t1.basis() == t2.basis());
