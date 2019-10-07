@@ -49,17 +49,10 @@ namespace operations {
 	
   template <class field_type>
   auto integral_absdiff(const field_type & phi1, const field_type & phi2){
-		assert(phi1.basis() == phi2.basis());
-		
-		//DATAOPERATIONS
-		double diff = 0.0; 
-		for(long ipoint = 0; ipoint < phi1.basis().size(); ipoint++) diff += fabs(phi1[ipoint] - phi2[ipoint]);
-		return diff*phi1.basis().volume_element();
+		return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
 	}
 	
-	
 }
-
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
