@@ -98,6 +98,47 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	}
 
+	SECTION("Integral product double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
+		
+		aa = 2.0;
+		bb = 0.8;
+		
+		REQUIRE(operations::integral_product(aa, bb) == 1.6_a);
+		
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = pow(ii + 1, 2);
+			bb[ii] = 1.0/(ii + 1);
+		}
+		
+		REQUIRE(operations::integral_product(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+	
+	SECTION("Integral product complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
+		
+		aa = complex(2.0, -0.3);
+		bb = complex(0.8, 0.01);
+		
+		REQUIRE(real(operations::integral_product(aa, bb)) == 1.603_a);
+		REQUIRE(imag(operations::integral_product(aa, bb)) == -0.22_a);
+		
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
+			bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
+		}
+		
+		REQUIRE(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+		REQUIRE(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+	
+	
 }
 
 
