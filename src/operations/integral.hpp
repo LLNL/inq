@@ -22,15 +22,14 @@
 */
 
 #include <cassert>
+#include <numeric>
 
 namespace operations {
 
   template <class field_type>
   auto integral(const field_type & phi){
-		//DATAOPERATIONS
-		typename field_type::value_type inte = 0.0; 
-		for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) inte += phi[ipoint];
-		return inte*phi.basis().volume_element();
+		//OPTIMIZATION we should use std::reduce here, but it is not available in C++14
+		return phi.basis().volume_element()*std::accumulate(phi.begin(), phi.end(), (typename field_type::value_type) 0.0);
 	}
 
   template <class field_type>
