@@ -59,12 +59,45 @@ namespace operations {
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
-#include <basis/real_space.hpp>
-#include <ions/unitcell.hpp>
+#include <basis/trivial.hpp>
 
-TEST_CASE("function operations::integral", "[integral]") {
+TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	using namespace Catch::literals;
+	
+	const int N = 1000;
+	
+	basis::trivial bas(N);
+	
+	SECTION("Integral double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+
+		aa = 1.0;
+
+		REQUIRE(operations::integral(aa) == 1.0_a);
+
+		for(int ii = 0; ii < N; ii++)	aa[ii] = ii;
+
+		REQUIRE(operations::integral(aa) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
+
+	}
+	
+	SECTION("Integral complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+
+		aa = complex(1.0, 1.0);
+
+		REQUIRE(real(operations::integral(aa)) == 1.0_a);
+		REQUIRE(imag(operations::integral(aa)) == 1.0_a);
+
+		for(int ii = 0; ii < N; ii++)	aa[ii] = complex(ii, -3.0*ii);
+
+		REQUIRE(real(operations::integral(aa)) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
+		REQUIRE(imag(operations::integral(aa)) == Approx(-1.5*N*(N - 1.0)*bas.volume_element()));
+
+	}
 
 }
 
