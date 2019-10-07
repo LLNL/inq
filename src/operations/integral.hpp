@@ -33,14 +33,18 @@ namespace operations {
 		return phi.basis().volume_element()*std::accumulate(phi.begin(), phi.end(), (typename field_type::value_type) 0.0);
 	}
 
+  template <class field_type, class binary_op>
+  auto integral(const field_type & phi1, const field_type & phi2, const binary_op & op){
+		assert(phi1.basis() == phi2.basis());
+		
+		const typename field_type::value_type initial = 0.0;
+		//DATAOPERATIONS
+		return  phi1.basis().volume_element()*std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);
+	}
+	
   template <class field_type>
   auto integral_product(const field_type & phi1, const field_type & phi2){
-		assert(phi1.basis() == phi2.basis());
-
-		//DATAOPERATIONS
-		typename field_type::value_type inte = 0.0; 
-		for(long ipoint = 0; ipoint < phi1.basis().size(); ipoint++) inte += phi1[ipoint]*phi2[ipoint];
-		return inte*phi1.basis().volume_element();
+		return integral(phi1, phi2, std::multiplies<>());
 	}
 	
   template <class field_type>
