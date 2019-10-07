@@ -34,7 +34,7 @@ namespace operations {
 	}
 
   template <class field_type, class binary_op>
-  auto integral(const field_type & phi1, const field_type & phi2, const binary_op & op){
+  auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
 		assert(phi1.basis() == phi2.basis());
 		
 		const typename field_type::value_type initial = 0.0;
@@ -52,7 +52,7 @@ namespace operations {
 		assert(phi1.basis() == phi2.basis());
 		
 		//DATAOPERATIONS
-		typename field_type::value_type diff = 0.0; 
+		double diff = 0.0; 
 		for(long ipoint = 0; ipoint < phi1.basis().size(); ipoint++) diff += fabs(phi1[ipoint] - phi2[ipoint]);
 		return diff*phi1.basis().volume_element();
 	}
@@ -144,6 +144,48 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	}
 	
 	
+	SECTION("Integral absdiff double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
+		
+		aa = -13.23;
+		bb = -13.23;
+		
+		REQUIRE(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
+
+		double sign = 1.0;
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = sign*2.0*(ii + 1);
+			bb[ii] = sign*1.0*(ii + 1);
+			sign *= -1.0;
+		}
+		
+		REQUIRE(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+	
+	SECTION("Integral absdiff complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
+		
+		aa = -13.23*exp(complex(0.0, M_PI/3.63));
+		bb = -13.23*exp(complex(0.0, M_PI/3.63));
+		
+		REQUIRE(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
+
+		double sign = 1.0;
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = sign*2.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
+			bb[ii] = sign*1.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
+			sign *= -1.0;
+		}
+		
+		REQUIRE(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+		
 }
 
 
