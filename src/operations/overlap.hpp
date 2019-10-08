@@ -237,11 +237,6 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto cc = operations::overlap(aa);
 
-				std::cout << cc[0][0] << '\t' << cc[0][1] << '\t' << cc[0][2] << '\t' << cc[0][3]<< std::endl;
-				std::cout << cc[1][0] << '\t' << cc[1][1] << '\t' << cc[1][2] << '\t' << cc[1][3]<< std::endl;
-				std::cout << cc[2][0] << '\t' << cc[2][1] << '\t' << cc[2][2] << '\t' << cc[2][3]<< std::endl;
-				std::cout << cc[3][0] << '\t' << cc[3][1] << '\t' << cc[3][2] << '\t' << cc[3][3]<< std::endl;
-				
 				for(int ii = 0; ii < M; ii++){
 					for(int jj = 0; jj < M; jj++){
 						REQUIRE(real(cc[ii][jj]) == Approx(0.5*N*(N - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
@@ -295,8 +290,6 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 				bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(ii + 1)));
 			}
 
-			std::cout << operations::overlap_single(aa, bb) << std::endl;
-			
 			REQUIRE(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
 			REQUIRE(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
 		
