@@ -23,14 +23,13 @@
 
 #include <cassert>
 #include <numeric>
+#include <operations/sum.hpp>
 
 namespace operations {
 
   template <class field_type>
   auto integral(const field_type & phi){
-		//OPTIMIZATION we should use std::reduce here, but it is not available in C++14
-		//DATAOPERATIONS
-		return phi.basis().volume_element()*std::accumulate(phi.begin(), phi.end(), (typename field_type::value_type) 0.0);
+		return phi.basis().volume_element()*sum(phi);
 	}
 
   template <class field_type, class binary_op>
