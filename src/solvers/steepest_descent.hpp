@@ -46,8 +46,8 @@ namespace solvers {
 			auto lambda(eigenvalues);
 			
 			//DATAOPERATIONS
-			for(int ist = 0; ist < phi.set_size(); ist++) lambda[ist] /= -norm[ist];
-			
+			std::transform(lambda.begin(), lambda.end(), norm.begin(), lambda.begin(), [](auto lam, auto nor){ return lam /= -nor; });
+
 			operations::shift(lambda, phi, residual);
 			
 			prec(residual);
