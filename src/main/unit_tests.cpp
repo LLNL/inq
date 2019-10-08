@@ -48,6 +48,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/add.hpp>
+#include <operations/sum.hpp>
 #include <operations/overlap.hpp>
 #include <operations/orthogonalization.hpp>
 #include <operations/diagonalize.hpp>
