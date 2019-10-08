@@ -43,13 +43,13 @@ namespace operations {
 		
 		auto olap = overlap(phi);
 		
-		//DATAOPERATIONS RAWLAPACK
+		//DATAOPERATIONS RAWLAPACK zpotrf
 		int info;
 		const int nst = phi.set_size();
 		zpotrf("U", &nst, olap.data(), &nst, &info);
 		
-		//DATAOPERATIONS RAWLAPACK
-		const complex alpha = 1.0;
+		//DATAOPERATIONS RAWBLAS ztrsm
+		const complex alpha = 1.0; 
 		ztrsm("L", "U", "C", "N", &nst, &np, &alpha, olap.data(), &nst, phi.data(), &nst);
 		
   }
