@@ -41,6 +41,11 @@ namespace operations {
 		return std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);
 	}
 	
+	template <class field_type>
+  auto sum_product(const field_type & phi1, const field_type & phi2){
+		return sum(phi1, phi2, std::multiplies<>());
+	}
+	
 }
 
 #ifdef UNIT_TEST
@@ -51,7 +56,7 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 
 	using namespace Catch::literals;
 	
-	const int N = 1000;
+	const int N = 1111;
 	
 	basis::trivial bas(N);
 	
@@ -85,6 +90,47 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 
 	}
 
+	SECTION("Sum product double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
+		
+		aa = 2.0;
+		bb = 0.8;
+		
+		REQUIRE(operations::sum_product(aa, bb) == Approx(1.6*N));
+		
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = pow(ii + 1, 2);
+			bb[ii] = 1.0/(ii + 1);
+		}
+		
+		REQUIRE(operations::sum_product(aa, bb) == Approx(0.5*N*(N + 1.0)));
+		
+	}
+	
+	SECTION("Sum product complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
+		
+		aa = complex(2.0, -0.3);
+		bb = complex(0.8, 0.01);
+		
+		REQUIRE(real(operations::sum_product(aa, bb)) == Approx(1.603*N));
+		REQUIRE(imag(operations::sum_product(aa, bb)) == Approx(-0.22*N));
+		
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
+			bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
+		}
+		
+		REQUIRE(real(operations::sum_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
+		REQUIRE(real(operations::sum_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
+		
+	}
+	
+	
 }
 
 
