@@ -45,7 +45,7 @@ namespace solvers {
 			
 			auto lambda(eigenvalues);
 			
-			//DATAOPERATIONS
+			//DATAOPERATIONS STL
 			std::transform(lambda.begin(), lambda.end(), norm.begin(), lambda.begin(), [](auto lam, auto nor){ return lam /= -nor; });
 
 			operations::shift(lambda, phi, residual);
@@ -54,18 +54,19 @@ namespace solvers {
 			
 			//now calculate the step size
 			auto hresidual = ham(residual);
-			
-			auto m1 = operations::overlap_diagonal(residual, residual);
-			auto m2 = operations::overlap_diagonal(phi, residual);
-			auto m3 = operations::overlap_diagonal(residual, hresidual);
-			auto m4 = operations::overlap_diagonal(phi, hresidual);
-			
+
+			auto mm = boost::multi::array<complex, 2>({4, phi.set_size()});
+
+			mm[0] = operations::overlap_diagonal(residual, residual);
+			mm[1] = operations::overlap_diagonal(phi, residual);
+			mm[2] = operations::overlap_diagonal(residual, hresidual);
+			mm[3] = operations::overlap_diagonal(phi, hresidual);
 			
 			//DATAOPERATIONS
 			for(int ist = 0; ist < phi.set_size(); ist++){
-				double ca = real(m1[ist])*real(m4[ist]) - real(m3[ist])*real(m2[ist]);
-				double cb = real(norm[ist])*real(m3[ist]) - real(eigenvalues[ist])*real(m1[ist]);
-				double cc = real(eigenvalues[ist])*real(m2[ist]) - real(m4[ist])*real(norm[ist]);
+				double ca = real(mm[0][ist])*real(mm[3][ist]) - real(mm[2][ist])*real(mm[1][ist]);
+				double cb = real(norm[ist])*real(mm[2][ist]) - real(eigenvalues[ist])*real(mm[0][ist]);
+				double cc = real(eigenvalues[ist])*real(mm[1][ist]) - real(mm[3][ist])*real(norm[ist]);
 				
 				lambda[ist] = 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
 			}
