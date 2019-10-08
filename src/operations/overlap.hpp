@@ -22,9 +22,9 @@
 */
 
 #include <multi/array.hpp>
-#include <basis/field_set.hpp>
 #include <cassert>
 #include <multi/adaptors/blas.hpp>
+#include <operations/integral.hpp>
 
 #ifdef HAVE_CUDA
 #include <multi/memory/adaptors/cuda/allocator.hpp>
@@ -135,8 +135,9 @@ namespace operations {
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
-#include <basis/real_space.hpp>
-#include <ions/unitcell.hpp>
+#include <basis/field.hpp>
+#include <basis/field_set.hpp>
+#include <basis/trivial.hpp>
 
 TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
