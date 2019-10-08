@@ -117,11 +117,11 @@ namespace operations {
 	
 	template <class field_type>
 	auto overlap_single(const field_type & phi1, const field_type & phi2){
-
+		
 		//DATAOPERATIONS
-		//OPTIMIZATION: this can be done more efficiently
+		//OPTIMIZATION: this can be done with BLAS
 		typename field_type::value_type overlap = 0.0;
-		for(int ip = 0; ip < phi1.basis().num_points(); ip++) overlap += conj(phi1[ip])*phi2[ip];
+		for(int ip = 0; ip < phi1.basis().size(); ip++) overlap += conj(phi1[ip])*phi2[ip];
 		return overlap*phi1.basis().volume_element();
 	}
 	
@@ -260,6 +260,47 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		}
 
 		
+		SECTION("Overlap single double"){
+			
+			basis::field<basis::trivial, double> aa(bas);
+			basis::field<basis::trivial, double> bb(bas);
+			
+			aa = 2.0;
+			bb = 0.8;
+		
+			REQUIRE(operations::overlap_single(aa, bb) == 1.6_a);
+			
+			for(int ii = 0; ii < N; ii++)	{
+				aa[ii] = pow(ii + 1, 2);
+				bb[ii] = 1.0/(ii + 1);
+			}
+			
+			REQUIRE(operations::overlap_single(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+			
+		}
+		
+		SECTION("Integral product complex"){
+			
+			basis::field<basis::trivial, complex> aa(bas);
+			basis::field<basis::trivial, complex> bb(bas);
+			
+			aa = complex(2.0, -0.3);
+			bb = complex(0.8, 0.01);
+		
+			REQUIRE(real(operations::overlap_single(aa, bb)) == 1.597_a);
+			REQUIRE(imag(operations::overlap_single(aa, bb)) == 0.26_a);
+		
+			for(int ii = 0; ii < N; ii++)	{
+				aa[ii] = pow(ii + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(ii + 1)));
+				bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(ii + 1)));
+			}
+
+			std::cout << operations::overlap_single(aa, bb) << std::endl;
+			
+			REQUIRE(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+			REQUIRE(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+		
+	}
 
 }
 
