@@ -30,8 +30,7 @@ namespace operations {
   void randomize(field_set_type & phi){
 		srand48(0);
 
-		//DATAOPERATIONS
-		
+		//DATAOPERATIONS LOOP 2D (can be flattened, random number generator)
 		for(int kk = 0; kk < phi.basis().size(); kk++) {
 			for(int ii = 0; ii < phi.set_size(); ii++)	phi[ii][kk] = complex(drand48(), 0.0);
     }

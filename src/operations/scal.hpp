@@ -26,13 +26,13 @@
 
 namespace operations {
 
+	//TODO: this should receive the operation as argument
   template <class array_1d, class field_set_type>
   void scal_invsqrt(const array_1d & factor, field_set_type & phi){
     
     assert(size(factor) == phi.set_size());
 
-    //DATAOPERATIONS
-    
+    //DATAOPERATIONS LOOP 2D    
     for(int kk = 0; kk < phi.basis().num_points(); kk++) {
       for(int ii = 0; ii < phi.set_size(); ii++) phi[ii][kk] /= sqrt(factor[ii]);
     }

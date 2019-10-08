@@ -31,8 +31,7 @@ namespace operations {
     
     assert(size(factor) == phi.set_size());
 
-    //DATAOPERATIONS
-    
+    //DATAOPERATIONS LOOP 2D    
     for(int ipoint = 0; ipoint < phi.basis().num_points(); ipoint++) {
       for(int ist = 0; ist < phi.set_size(); ist++) phi[ipoint][ist] += scale*factor[ist]*shift[ipoint][ist];
     }

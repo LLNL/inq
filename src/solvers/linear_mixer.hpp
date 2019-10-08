@@ -36,12 +36,12 @@ namespace solvers {
       mix_factor_(arg_mix_factor),
       old_(initial_value.size()){
 
-      //DATAOPERATIONS
+      //DATAOPERATIONS LOOP 1D
       for(unsigned ii = 0; ii < initial_value.size(); ii++) old_[ii] = initial_value[ii];
     }
 
     void operator()(mix_type & new_value){
-      //DATAOPERATIONS
+      //DATAOPERATIONS LOOP 1D
       for(unsigned ii = 0; ii < new_value.size(); ii++){
         auto tmp = new_value[ii];
         new_value[ii] = (1.0 - mix_factor_)*old_[ii] + mix_factor_*tmp;
