@@ -22,9 +22,9 @@
 */
 
 #include <multi/array.hpp>
-#include <basis/field_set.hpp>
 #include <cassert>
 #include <multi/adaptors/blas.hpp>
+#include <operations/integral.hpp>
 
 #ifdef HAVE_CUDA
 #include <multi/memory/adaptors/cuda/allocator.hpp>
@@ -77,10 +77,9 @@ namespace operations {
 
 		assert(size(overlap_vector) == phi1.set_size());
 
+		//DATAOPERATIONS LOOP + CUDA
 #ifndef HAVE_CUDA
 
-		//DATAOPERATIONS
-		
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
 			typename field_set_type::value_type aa = 0.0;
@@ -117,12 +116,7 @@ namespace operations {
 	
 	template <class field_type>
 	auto overlap_single(const field_type & phi1, const field_type & phi2){
-
-		//DATAOPERATIONS
-		//OPTIMIZATION: this can be done more efficiently
-		typename field_type::value_type overlap = 0.0;
-		for(int ip = 0; ip < phi1.basis().num_points(); ip++) overlap += conj(phi1[ip])*phi2[ip];
-		return overlap*phi1.basis().volume_element();
+		return integral(phi1, phi2, [](auto t1, auto t2){ return conj(t1)*t2; });
 	}
 	
 	template <class field_type>
@@ -135,8 +129,9 @@ namespace operations {
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
-#include <basis/real_space.hpp>
-#include <ions/unitcell.hpp>
+#include <basis/field.hpp>
+#include <basis/field_set.hpp>
+#include <basis/trivial.hpp>
 
 TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
@@ -237,11 +232,6 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto cc = operations::overlap(aa);
 
-				std::cout << cc[0][0] << '\t' << cc[0][1] << '\t' << cc[0][2] << '\t' << cc[0][3]<< std::endl;
-				std::cout << cc[1][0] << '\t' << cc[1][1] << '\t' << cc[1][2] << '\t' << cc[1][3]<< std::endl;
-				std::cout << cc[2][0] << '\t' << cc[2][1] << '\t' << cc[2][2] << '\t' << cc[2][3]<< std::endl;
-				std::cout << cc[3][0] << '\t' << cc[3][1] << '\t' << cc[3][2] << '\t' << cc[3][3]<< std::endl;
-				
 				for(int ii = 0; ii < M; ii++){
 					for(int jj = 0; jj < M; jj++){
 						REQUIRE(real(cc[ii][jj]) == Approx(0.5*N*(N - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
@@ -260,6 +250,45 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		}
 
 		
+		SECTION("Overlap single double"){
+			
+			basis::field<basis::trivial, double> aa(bas);
+			basis::field<basis::trivial, double> bb(bas);
+			
+			aa = 2.0;
+			bb = 0.8;
+		
+			REQUIRE(operations::overlap_single(aa, bb) == 1.6_a);
+			
+			for(int ii = 0; ii < N; ii++)	{
+				aa[ii] = pow(ii + 1, 2);
+				bb[ii] = 1.0/(ii + 1);
+			}
+			
+			REQUIRE(operations::overlap_single(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+			
+		}
+		
+		SECTION("Integral product complex"){
+			
+			basis::field<basis::trivial, complex> aa(bas);
+			basis::field<basis::trivial, complex> bb(bas);
+			
+			aa = complex(2.0, -0.3);
+			bb = complex(0.8, 0.01);
+		
+			REQUIRE(real(operations::overlap_single(aa, bb)) == 1.597_a);
+			REQUIRE(imag(operations::overlap_single(aa, bb)) == 0.26_a);
+		
+			for(int ii = 0; ii < N; ii++)	{
+				aa[ii] = pow(ii + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(ii + 1)));
+				bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(ii + 1)));
+			}
+
+			REQUIRE(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+			REQUIRE(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+		
+	}
 
 }
 

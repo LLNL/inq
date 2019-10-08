@@ -61,6 +61,7 @@ noinst_HEADERS =                             \
 	operations/integral.hpp                    \
 	operations/add.hpp                         \
 	operations/subspace_diagonalization.hpp    \
+	operations/sum.hpp                         \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/ks_hamiltonian.hpp             \
 	hamiltonian/self_consistency.hpp           \

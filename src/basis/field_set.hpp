@@ -46,7 +46,7 @@ namespace basis {
 
 		//set to a scalar value
 		field_set & operator=(const value_type value) {
-			//DATAOPERATIONS
+			//DATAOPERATIONS LOOP 1D
 			for(int ii = 0; ii < basis_.size()*num_vectors_; ii++) this->data()[ii] = value;
 			return *this;
 		}

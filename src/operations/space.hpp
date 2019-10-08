@@ -36,14 +36,15 @@ namespace operations {
 	
 			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
 			
-      //DATAOPERATIONS
       
       multi::array<complex, 3> fftgrid(phi.basis().rsize());
-      
+
+			//DATAOPERATIONS LOOP 4D (dissapears with a proper FFTW interface)
       for(int ist = 0; ist < phi.set_size(); ist++){
+
 				
 				// for the moment we have to copy to single grid, since the
-				// fft interfaces assumes the transform is over the last indices					
+				// fft interfaces assumes the transform is over the last indices
 				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
 					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
 						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
@@ -51,9 +52,10 @@ namespace operations {
 						}
 					}
 				}
-				
+
+				//DATAOPERATIONS FFTW
 				fftw::dft_inplace(fftgrid, fftw::forward);
-				
+
 				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
 					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
 						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
@@ -65,7 +67,8 @@ namespace operations {
       }
 
 			if(fphi.basis().spherical()){
-				
+
+				//DATAOPERATIONS LOOP 4D
 				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
 					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
 						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
@@ -88,10 +91,9 @@ namespace operations {
 
 			basis::field_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
 
-      //DATAOPERATIONS
-			
       multi::array<complex, 3> fftgrid(fphi.basis().rsize());
-      
+
+			//DATAOPERATIONS 4D (dissapears with a proper FFTW interface)
       for(int ist = 0; ist < fphi.set_size(); ist++){
 				
 				// for the moment we have to copy to single grid, since the
@@ -103,7 +105,8 @@ namespace operations {
 						}
 					}
 				}
-	
+
+				//DATAOPERATIONS FFTW			
 				fftw::dft_inplace(fftgrid, fftw::backward);
 
 				double norm_factor = phi.basis().num_points();

@@ -22,50 +22,160 @@
 */
 
 #include <cassert>
+#include <numeric>
+#include <operations/sum.hpp>
 
 namespace operations {
 
   template <class field_type>
   auto integral(const field_type & phi){
-		//DATAOPERATIONS
-		typename field_type::value_type inte = 0.0; 
-		for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) inte += phi[ipoint];
-		return inte*phi.basis().volume_element();
+		return phi.basis().volume_element()*sum(phi);
 	}
 
-  template <class field_type>
-  auto integral_product(const field_type & phi1, const field_type & phi2){
+  template <class field_type, class binary_op>
+  auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
 		assert(phi1.basis() == phi2.basis());
 
-		//DATAOPERATIONS
-		typename field_type::value_type inte = 0.0; 
-		for(long ipoint = 0; ipoint < phi1.basis().size(); ipoint++) inte += phi1[ipoint]*phi2[ipoint];
-		return inte*phi1.basis().volume_element();
+		return phi1.basis().volume_element()*operations::sum(phi1, phi2, op);
+	}
+	
+  template <class field_type>
+  auto integral_product(const field_type & phi1, const field_type & phi2){
+		return integral(phi1, phi2, std::multiplies<>());
 	}
 	
   template <class field_type>
   auto integral_absdiff(const field_type & phi1, const field_type & phi2){
-		assert(phi1.basis() == phi2.basis());
-		
-		//DATAOPERATIONS
-		typename field_type::value_type diff = 0.0; 
-		for(long ipoint = 0; ipoint < phi1.basis().size(); ipoint++) diff += fabs(phi1[ipoint] - phi2[ipoint]);
-		return diff*phi1.basis().volume_element();
+		return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
 	}
-	
 	
 }
 
-
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
-#include <basis/real_space.hpp>
-#include <ions/unitcell.hpp>
+#include <basis/trivial.hpp>
 
-TEST_CASE("function operations::integral", "[integral]") {
+TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	using namespace Catch::literals;
+	
+	const int N = 1000;
+	
+	basis::trivial bas(N);
+	
+	SECTION("Integral double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
 
+		aa = 1.0;
+
+		REQUIRE(operations::integral(aa) == 1.0_a);
+
+		for(int ii = 0; ii < N; ii++)	aa[ii] = ii;
+
+		REQUIRE(operations::integral(aa) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
+
+	}
+	
+	SECTION("Integral complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+
+		aa = complex(1.0, 1.0);
+
+		REQUIRE(real(operations::integral(aa)) == 1.0_a);
+		REQUIRE(imag(operations::integral(aa)) == 1.0_a);
+
+		for(int ii = 0; ii < N; ii++)	aa[ii] = complex(ii, -3.0*ii);
+
+		REQUIRE(real(operations::integral(aa)) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
+		REQUIRE(imag(operations::integral(aa)) == Approx(-1.5*N*(N - 1.0)*bas.volume_element()));
+
+	}
+
+	SECTION("Integral product double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
+		
+		aa = 2.0;
+		bb = 0.8;
+		
+		REQUIRE(operations::integral_product(aa, bb) == 1.6_a);
+		
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = pow(ii + 1, 2);
+			bb[ii] = 1.0/(ii + 1);
+		}
+		
+		REQUIRE(operations::integral_product(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+	
+	SECTION("Integral product complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
+		
+		aa = complex(2.0, -0.3);
+		bb = complex(0.8, 0.01);
+		
+		REQUIRE(real(operations::integral_product(aa, bb)) == 1.603_a);
+		REQUIRE(imag(operations::integral_product(aa, bb)) == -0.22_a);
+		
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
+			bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
+		}
+		
+		REQUIRE(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+		REQUIRE(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+	
+	
+	SECTION("Integral absdiff double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
+		
+		aa = -13.23;
+		bb = -13.23;
+		
+		REQUIRE(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
+
+		double sign = 1.0;
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = sign*2.0*(ii + 1);
+			bb[ii] = sign*1.0*(ii + 1);
+			sign *= -1.0;
+		}
+		
+		REQUIRE(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+	
+	SECTION("Integral absdiff complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
+		
+		aa = -13.23*exp(complex(0.0, M_PI/3.63));
+		bb = -13.23*exp(complex(0.0, M_PI/3.63));
+		
+		REQUIRE(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
+
+		double sign = 1.0;
+		for(int ii = 0; ii < N; ii++)	{
+			aa[ii] = sign*2.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
+			bb[ii] = sign*1.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
+			sign *= -1.0;
+		}
+		
+		REQUIRE(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+		
 }
 
 

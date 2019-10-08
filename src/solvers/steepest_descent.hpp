@@ -43,32 +43,36 @@ namespace solvers {
 			auto eigenvalues = operations::overlap_diagonal(residual, phi);
 			auto norm =	operations::overlap_diagonal(phi);
 			
-			auto lambda(eigenvalues);
+			auto lambda = eigenvalues;
 			
-			//DATAOPERATIONS
-			for(int ist = 0; ist < phi.set_size(); ist++) lambda[ist] /= -norm[ist];
-			
+			//DATAOPERATIONS STL
+			std::transform(lambda.begin(), lambda.end(), norm.begin(), lambda.begin(), [](auto lam, auto nor){ return lam /= -nor; });
+
 			operations::shift(lambda, phi, residual);
 			
 			prec(residual);
 			
 			//now calculate the step size
 			auto hresidual = ham(residual);
+
+			auto mm = boost::multi::array<field_set_type, 2>({6, phi.set_size()});
+
+			mm[0] = operations::overlap_diagonal(residual, residual);
+			mm[1] = operations::overlap_diagonal(phi, residual);
+			mm[2] = operations::overlap_diagonal(residual, hresidual);
+			mm[3] = operations::overlap_diagonal(phi, hresidual);
+			mm[4] = eigenvalues;
+			mm[5] = norm;
 			
-			auto m1 = operations::overlap_diagonal(residual, residual);
-			auto m2 = operations::overlap_diagonal(phi, residual);
-			auto m3 = operations::overlap_diagonal(residual, hresidual);
-			auto m4 = operations::overlap_diagonal(phi, hresidual);
-			
-			
-			//DATAOPERATIONS
-			for(int ist = 0; ist < phi.set_size(); ist++){
-				double ca = real(m1[ist])*real(m4[ist]) - real(m3[ist])*real(m2[ist]);
-				double cb = real(norm[ist])*real(m3[ist]) - real(eigenvalues[ist])*real(m1[ist]);
-				double cc = real(eigenvalues[ist])*real(m2[ist]) - real(m4[ist])*real(norm[ist]);
-				
-				lambda[ist] = 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
-			}
+			//DATAOPERATIONS STL
+			std::transform(mm.rotated().begin(), mm.rotated().end(), lambda.begin(),
+										 [](auto mm){
+											 auto ca = real(mm[0]*mm[3] - mm[2]*mm[1]);
+											 auto cb = real(mm[5]*mm[2] - mm[4]*mm[0]);
+											 auto cc = real(mm[4]*mm[1] - mm[3]*mm[5]);
+											 
+											 return 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
+										 });
 			
 			operations::shift(lambda, residual, phi);		
 

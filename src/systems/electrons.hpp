@@ -103,13 +103,11 @@ namespace systems {
 					
 					auto nlev = operations::overlap_diagonal(ham_.non_local(phi_), phi_);
 					
-					//DATAOPERATIONS
-					energy.eigenvalues = 0.0;
-					energy.nonlocal = 0.0;
-					for(int istates = 0; istates < states_.num_states(); istates++){
-						energy.eigenvalues += states_.occupations()[istates]*real(eigenvalues[istates]);
-						energy.nonlocal += states_.occupations()[istates]*real(nlev[istates]);
-					}
+
+					auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
+					
+					energy.eigenvalues = operations::sum(states_.occupations(), eigenvalues, energy_term);
+					energy.nonlocal = operations::sum(states_.occupations(), nlev, energy_term);
 
 					auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/fabs(operations::integral(vks));
 					
@@ -127,8 +125,7 @@ namespace systems {
 				
 				old_energy = energy.eigenvalues;
 
-				//DATAOPERATIONS
-				for(long ii = 0; ii < rs_.size(); ii++) ham_.scalar_potential[ii] = vks[ii];
+				ham_.scalar_potential = std::move(vks);
 
 				mixer(ham_.scalar_potential);
 				

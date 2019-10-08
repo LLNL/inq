@@ -88,7 +88,7 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 				
-				//DATAOPERATIONS
+				//DATAOPERATIONS LOOP 1D
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					auto rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
 					auto sr_potential = ps.short_range_potential().value(rr);
@@ -115,7 +115,7 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
 
-				//DATAOPERATIONS
+				//DATAOPERATIONS LOOP 1D
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					double rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
 					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]]

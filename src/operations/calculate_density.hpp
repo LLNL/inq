@@ -32,8 +32,7 @@ namespace operations {
   auto calculate_density(const occupations_array_type & occupations, const basis::field_set<basis::real_space, complex> & phi){
     basis::field<basis::real_space, double> density(phi.basis());
 
-    //TODO: occupations
-    //DATAOPERATIONS
+    //DATAOPERATIONS LOOP 2D
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
       for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi[ist][ipoint]);
     }
