@@ -42,7 +42,7 @@ namespace operations {
 
 		using type = typename field_type::value_type;
 
-		//DATAOPERATIONS
+		//DATAOPERATIONS STL
 		std::transform(t1.begin(), t1.end(), t2.begin(), tadd.begin(), std::plus<type>());
 		
 		return tadd;
@@ -60,7 +60,7 @@ namespace operations {
 		
 		field_type tadd(t1.basis());
 		
-		//DATAOPERATIONS
+		//DATAOPERATIONS LOOP 1D (3 input arrays)
 		for(long ii = 0; ii < t1.basis().size(); ii++) tadd[ii] = t1[ii] + t2[ii] + t3[ii];
 		
 		return tadd;

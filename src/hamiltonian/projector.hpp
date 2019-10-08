@@ -57,13 +57,15 @@ namespace hamiltonian {
 
       boost::multi::array<states::ks_states::coeff_type, 2> projections({nproj_, phi.set_size()});
 
+			//DATAOPERATIONS BLAS
 			boost::multi::blas::gemm('N', 'N', sphere_.volume_element(), sphere_phi, matrix_, 0.0, projections);
 			
-			//DATAOPERATIONS LOOP 1D
+			//DATAOPERATIONS LOOP 2D
       for(int iproj = 0; iproj < nproj_; iproj++) {
 				for(int ist = 0; ist < phi.set_size(); ist++)	projections[iproj][ist] *= kb_coeff_[iproj];
 			}
 
+			//DATAOPERATIONS BLAS
 			boost::multi::blas::gemm('N', 'T', 1.0, projections, matrix_, 0.0, sphere_phi);
 			
       sphere_.scatter_add(sphere_phi, vnlphi.cubic());

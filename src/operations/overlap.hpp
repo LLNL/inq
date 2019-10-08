@@ -77,10 +77,9 @@ namespace operations {
 
 		assert(size(overlap_vector) == phi1.set_size());
 
+		//DATAOPERATIONS LOOP + CUDA
 #ifndef HAVE_CUDA
 
-		//DATAOPERATIONS
-		
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
 			typename field_set_type::value_type aa = 0.0;

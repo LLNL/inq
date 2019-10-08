@@ -59,7 +59,7 @@ namespace operations {
 			boost::multi::array<double, 1> norm(phi.set_size(), 0.0);
 			
 			//calculate the expectation value of the kinetic energy
-			//DATAOPERATIONS
+			//DATAOPERATIONS LOOP 4D
 			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
@@ -73,12 +73,12 @@ namespace operations {
 				}
 			}
 
-			//DATAOPERATIONS
+			//DATAOPERATIONS LOOP 1D
 			for(int ist = 0; ist < phi.set_size(); ist++) expect[ist] /= norm[ist];
 
 			//REDUCE GRID
 
-			//DATAOPERATIONS
+			//DATAOPERATIONS LOOP 4D
 			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
