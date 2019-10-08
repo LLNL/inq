@@ -45,13 +45,14 @@ namespace solvers {
 
     int nn = std::get<0>(sizes(matrix));
     
-		//DATAOPERATIONS
+		//DATAOPERATIONS RAWLAPACK dpotrf
 		int info;
 		dpotrf("U", &nn, matrix.data(), &nn, &info);
 		
-		//DATAOPERATIONS
 		const int one = 1;
+		//DATAOPERATIONS RAWLAPACK dtrsv
 		dtrsv("U", "T", "N", &nn, matrix.data(), &nn, vector.data(), &one);
+		//DATAOPERATIONS RAWLAPACK dtrsv
 		dtrsv("U", "N", "N", &nn, matrix.data(), &nn, vector.data(), &one);
 		
   }
