@@ -35,10 +35,8 @@ namespace operations {
   template <class field_type, class binary_op>
   auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
 		assert(phi1.basis() == phi2.basis());
-		
-		const typename field_type::value_type initial = 0.0;
-		//DATAOPERATIONS
-		return  phi1.basis().volume_element()*std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);
+
+		return phi1.basis().volume_element()*operations::sum(phi1, phi2, op);
 	}
 	
   template <class field_type>
