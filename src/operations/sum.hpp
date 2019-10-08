@@ -33,10 +33,11 @@ namespace operations {
 		return std::accumulate(phi.begin(), phi.end(), (typename array_type::value_type) 0.0);
 	}
 
-  template <class field_type, class binary_op>
-  auto sum(const field_type & phi1, const field_type & phi2, const binary_op op){
+  template <class array1_type, class array2_type, class binary_op>
+  auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op){
 
-		const typename field_type::value_type initial = 0.0;
+		const typename array1_type::value_type initial = 0.0;
+		//OPTIMIZATION we should use std::transform_reduce here, but it is not available in C++14
 		//DATAOPERATIONS
 		return std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);
 	}
