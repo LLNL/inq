@@ -158,24 +158,21 @@ namespace pseudo {
     }
 
     int nprojectors() const {
-      switch(type_){
-      case pseudo::type::ULTRASOFT:
-	return nbeta();
-      case pseudo::type::KLEINMAN_BYLANDER: {
-	int count = 0;
-	rapidxml::xml_node<> * node = pseudo_node_->first_node("projector");
-	while(node) {
-	  count++;
-	  node = node->next_sibling("projector");
-	}
-	return count;
-      }
-      case pseudo::type::SEMILOCAL:
-	return 0;
-      default:
-	return 0;
-      }
-      return 0;
+		switch(type_){
+			case pseudo::type::ULTRASOFT: return nbeta();
+			case pseudo::type::KLEINMAN_BYLANDER: {
+				int count = 0;
+				rapidxml::xml_node<> * node = pseudo_node_->first_node("projector");
+				while(node) {
+					count++;
+					node = node->next_sibling("projector");
+				}
+				return count;
+			}
+			case pseudo::type::SEMILOCAL: return 0;
+			default:;
+		}
+		return 0;
     }
     
     void projector(int l, int i, std::vector<double> & proj) const {

@@ -1486,9 +1486,9 @@ namespace rapidxml
             {
                 if (Quote == Ch('\''))
                     return internal::lookup_tables<0>::lookup_attribute_data_1[static_cast<unsigned char>(ch)];
-                if (Quote == Ch('\"'))
+                else if (Quote == Ch('\"'))
                     return internal::lookup_tables<0>::lookup_attribute_data_2[static_cast<unsigned char>(ch)];
-                return 0;       // Should never be executed, to avoid warnings on Comeau
+                else return 0;       // Should never be executed, to avoid warnings on Comeau
             }
         };
 
@@ -1500,9 +1500,9 @@ namespace rapidxml
             {
                 if (Quote == Ch('\''))
                     return internal::lookup_tables<0>::lookup_attribute_data_1_pure[static_cast<unsigned char>(ch)];
-                if (Quote == Ch('\"'))
+                else if (Quote == Ch('\"'))
                     return internal::lookup_tables<0>::lookup_attribute_data_2_pure[static_cast<unsigned char>(ch)];
-                return 0;       // Should never be executed, to avoid warnings on Comeau
+                else return 0;       // Should never be executed, to avoid warnings on Comeau
             }
         };
 
@@ -1750,7 +1750,7 @@ namespace rapidxml
                 text += 2;    // Skip '?>'
                 return 0;
             }
-
+			else{
             // Create declaration
             xml_node<Ch> *declaration = this->allocate_node(node_declaration);
 
@@ -1766,6 +1766,7 @@ namespace rapidxml
             text += 2;
             
             return declaration;
+			}
         }
 
         // Parse XML comment (<!--...)
@@ -1785,7 +1786,7 @@ namespace rapidxml
                 text += 3;     // Skip '-->'
                 return 0;      // Do not produce comment node
             }
-
+			else{
             // Remember value start
             Ch *value = text;
 
@@ -1807,6 +1808,7 @@ namespace rapidxml
             
             text += 3;     // Skip '-->'
             return comment;
+			}
         }
 
         // Parse DOCTYPE
@@ -1990,7 +1992,7 @@ namespace rapidxml
             }
 
             // Return character that ends data
-            return *text;
+            else return *text;
         }
 
         // Parse CDATA
