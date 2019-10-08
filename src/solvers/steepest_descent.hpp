@@ -66,9 +66,9 @@ namespace solvers {
 			
 			//DATAOPERATIONS
 			for(int ist = 0; ist < phi.set_size(); ist++){
-				auto ca = real(mm[0][ist])*real(mm[3][ist]) - real(mm[2][ist])*real(mm[1][ist]);
-				auto cb = real(mm[5][ist])*real(mm[2][ist]) - real(mm[4][ist])*real(mm[0][ist]);
-				auto cc = real(mm[4][ist])*real(mm[1][ist]) - real(mm[3][ist])*real(mm[5][ist]);
+				auto ca = real(mm[0][ist]*mm[3][ist] - mm[2][ist]*mm[1][ist]);
+				auto cb = real(mm[5][ist]*mm[2][ist] - mm[4][ist]*mm[0][ist]);
+				auto cc = real(mm[4][ist]*mm[1][ist] - mm[3][ist]*mm[5][ist]);
 				
 				lambda[ist] = 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
 			}
