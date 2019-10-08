@@ -41,7 +41,8 @@ namespace basis {
 			volume_element_(parent_grid.volume_element()){
 
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
-      
+
+			//DATAOPERATIONS LOOP 4D
       for(int ix = 0; ix < parent_grid.rsize()[0]; ix++){
 				for(int iy = 0; iy < parent_grid.rsize()[1]; iy++){
 					for(int iz = 0; iz < parent_grid.rsize()[2]; iz++){
@@ -69,8 +70,7 @@ namespace basis {
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
 
-			//DATAOPERATIONS
-			
+			//DATAOPERATIONS LOOP 1D
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
       }
@@ -79,8 +79,7 @@ namespace basis {
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
 
-			//DATAOPERATIONS
-			
+			//DATAOPERATIONS LOOP 2D
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
 					grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][i1] += subgrid[ipoint][i1];
@@ -91,8 +90,7 @@ namespace basis {
     template <class array_1d, class array_3d>
     void scatter(const array_1d & subgrid, array_3d && grid) const{
 
-			//DATAOPERATIONS
-			
+			//DATAOPERATIONS LOOP 1D			
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }

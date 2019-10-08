@@ -59,7 +59,7 @@ namespace hamiltonian {
 
 			boost::multi::blas::gemm('N', 'N', sphere_.volume_element(), sphere_phi, matrix_, 0.0, projections);
 			
-			//DATAOPERATIONS
+			//DATAOPERATIONS LOOP 1D
       for(int iproj = 0; iproj < nproj_; iproj++) {
 				for(int ist = 0; ist < phi.set_size(); ist++)	projections[iproj][ist] *= kb_coeff_[iproj];
 			}

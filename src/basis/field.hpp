@@ -46,7 +46,7 @@ namespace basis {
 
 		//set to a scalar value
 		field & operator=(const value_type value) {
-			//DATAOPERATIONS
+			//DATAOPERATIONS LOOP 1D
 			for(int ii = 0; ii < basis_.size(); ii++) (*this)[ii] = value;
 
 			return *this;
