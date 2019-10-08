@@ -64,6 +64,9 @@ namespace systems {
 			hamiltonian::energy energy;
 
 			operations::preconditioner prec;
+
+			auto mixer = solvers::linear_mixer<double>(0.3);
+			//auto mixer = solvers::pulay_mixer<double>(5, 0.3);
 			
       double old_energy = DBL_MAX;
 
