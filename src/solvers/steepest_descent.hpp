@@ -64,14 +64,15 @@ namespace solvers {
 			mm[4] = eigenvalues;
 			mm[5] = norm;
 			
-			//DATAOPERATIONS
-			for(int ist = 0; ist < phi.set_size(); ist++){
-				auto ca = real(mm[0][ist]*mm[3][ist] - mm[2][ist]*mm[1][ist]);
-				auto cb = real(mm[5][ist]*mm[2][ist] - mm[4][ist]*mm[0][ist]);
-				auto cc = real(mm[4][ist]*mm[1][ist] - mm[3][ist]*mm[5][ist]);
-				
-				lambda[ist] = 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
-			}
+			//DATAOPERATIONS STL
+			std::transform(mm.rotated().begin(), mm.rotated().end(), lambda.begin(),
+										 [](auto mm){
+											 auto ca = real(mm[0]*mm[3] - mm[2]*mm[1]);
+											 auto cb = real(mm[5]*mm[2] - mm[4]*mm[0]);
+											 auto cc = real(mm[4]*mm[1] - mm[3]*mm[5]);
+											 
+											 return 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
+										 });
 			
 			operations::shift(lambda, residual, phi);		
 
