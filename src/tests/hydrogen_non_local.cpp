@@ -33,7 +33,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 	geo.push_back("H" | math::d3vector(0.0, 0.0, 0.0));
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
-#if 1
+#if 0
 	SECTION("Non interacting"){
 		
 		input::config conf;

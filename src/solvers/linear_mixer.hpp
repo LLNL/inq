@@ -27,20 +27,24 @@
 
 namespace solvers {
 
-	template <class mix_type>
+	template <class type>
   class linear_mixer {
 
   public:
 
-    linear_mixer(double arg_mix_factor, const mix_type & initial_value):
-      mix_factor_(arg_mix_factor),
-      old_(initial_value.size()){
-
-      //DATAOPERATIONS LOOP 1D
-      for(unsigned ii = 0; ii < initial_value.size(); ii++) old_[ii] = initial_value[ii];
+    linear_mixer(double arg_mix_factor):
+			first_iter_(true),
+      mix_factor_(arg_mix_factor){
     }
 
+		template <class mix_type>
     void operator()(mix_type & new_value){
+
+			if(first_iter_) {
+				old_ = boost::multi::array<type, 1>(new_value.begin(), new_value.end());
+				first_iter_ = false;
+			}
+
       //DATAOPERATIONS LOOP 1D
       for(unsigned ii = 0; ii < new_value.size(); ii++){
         auto tmp = new_value[ii];
@@ -50,9 +54,10 @@ namespace solvers {
     }
 
   private:
-
+		
+		bool first_iter_;
     double mix_factor_;
-    boost::multi::array<typename mix_type::value_type, 1> old_;
+    boost::multi::array<type, 1> old_;
 		
 	};
 
@@ -66,21 +71,23 @@ namespace solvers {
 
 TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
 
+	using namespace Catch::literals;
 
   std::vector<double> v(2);
+  solvers::linear_mixer<double> lm(0.5);
 
   v[0] =  10.0;
   v[1] = -20.0;
   
-  solvers::linear_mixer<std::vector<double> > lm(0.5, v);
-
+	lm(v);
+	
   v[0] = 0.0;
   v[1] = 22.2;
 
   lm(v);
   
-  REQUIRE(v[0] == 5.0);
-  REQUIRE(v[1] == 1.1);
+  REQUIRE(v[0] == 5.0_a);
+  REQUIRE(v[1] == 1.1_a);
   
 }
 
