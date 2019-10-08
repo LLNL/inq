@@ -53,11 +53,6 @@ GPU_FUNCTION inline auto & operator+=(complex & z1, const complex z2){
 	return z1;
 }
 
-GPU_FUNCTION inline auto & operator+=(complex & z1, const double d2){
-	z1 = z1 + d2;
-	return z1;
-}
-
 GPU_FUNCTION inline auto operator*(const complex & z1, const complex z2){
 	return complex{real(z1)*real(z2) - imag(z1)*imag(z2), real(z1)*imag(z2) + imag(z1)*real(z2)};
 }
@@ -66,7 +61,7 @@ GPU_FUNCTION inline auto norm(const double & x){
 	return x*x;
 }
 
-GPU_FUNCTION inline auto norm(const complex & z){
+inline auto norm(const complex & z){
 	return std::norm(z);
 }
 
