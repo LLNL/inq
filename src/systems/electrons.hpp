@@ -127,8 +127,7 @@ namespace systems {
 				
 				old_energy = energy.eigenvalues;
 
-				//DATAOPERATIONS
-				for(long ii = 0; ii < rs_.size(); ii++) ham_.scalar_potential[ii] = vks[ii];
+				ham_.scalar_potential = std::move(vks);
 
 				mixer(ham_.scalar_potential);
 				
