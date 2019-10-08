@@ -117,12 +117,7 @@ namespace operations {
 	
 	template <class field_type>
 	auto overlap_single(const field_type & phi1, const field_type & phi2){
-		
-		//DATAOPERATIONS
-		//OPTIMIZATION: this can be done with BLAS
-		typename field_type::value_type overlap = 0.0;
-		for(int ip = 0; ip < phi1.basis().size(); ip++) overlap += conj(phi1[ip])*phi2[ip];
-		return overlap*phi1.basis().volume_element();
+		return integral(phi1, phi2, [](auto t1, auto t2){ return conj(t1)*t2; });
 	}
 	
 	template <class field_type>
