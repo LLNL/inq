@@ -55,7 +55,7 @@ namespace solvers {
 				ff_ = boost::multi::array<type, 2>({max_size_, new_value.size()});
 				dff_= boost::multi::array<type, 2>({max_size_, new_value.size()});
 				
-				//DATAOPERATIONS
+				//DATAOPERATIONS LOOP 1D
 				for(unsigned ii = 0; ii < new_value.size(); ii++) ff_[0][ii] = new_value[ii];
 
 				return;
@@ -64,7 +64,7 @@ namespace solvers {
 			if(size_ == 1){
 				//the second step we do linear mixing
 				
-				//DATAOPERATIONS
+				//DATAOPERATIONS LOOP 1D
 				for(unsigned ii = 0; ii < new_value.size(); ii++){
 					dff_[0][ii] = new_value[ii] - ff_[0][ii];
 					new_value[ii] = mix_factor_*new_value[ii] + (1.0 - mix_factor_)*ff_[0][ii];
@@ -77,7 +77,7 @@ namespace solvers {
 			if(full){
 				//move all the stored functions, this could be avoided but we do it for simplicity
 				for(int istep = 1; istep < size_; istep++){
-					//DATAOPERATIONS
+					//DATAOPERATIONS LOOP 1D
 					for(unsigned ii = 0; ii < new_value.size(); ii++){
 						ff_[istep - 1][ii] = ff_[istep][ii];
 						dff_[istep - 1][ii] = dff_[istep][ii];
@@ -85,7 +85,7 @@ namespace solvers {
 				}
 			}
 			
-      //DATAOPERATIONS
+      //DATAOPERATIONS LOOP 1D
       for(unsigned ii = 0; ii < new_value.size(); ii++){
 				ff_[size_ - 1][ii] = new_value[ii];
 				dff_[size_ - 1][ii] = new_value[ii] - ff_[size_ - 2][ii];
@@ -125,7 +125,10 @@ namespace solvers {
 
 			//DATAOPERATIONS
 			type sumalpha = 0.0;
+			
+			//DATAOPERATIONS LOOP 1D
 			for(int jj = 0; jj < size_; jj++) sumalpha += alpha[jj];
+			//DATAOPERATIONS LOOP 1D
 			for(int jj = 0; jj < size_; jj++) alpha[jj] /= sumalpha;
 
 			/*			for(int jj = 0; jj < size_; jj++) alpha[jj] = 0.0;
@@ -133,15 +136,17 @@ namespace solvers {
 			alpha[previous_] = 1.0 - 0.3; 
 			*/
 			
-			//DATAOPERATIONS
+			//DATAOPERATIONS LOOP 1D
       for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = 0.0;
 
+			//DATAOPERATIONS LOOP 1D
 			for(int jj = 0; jj < size_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*dff_[jj][ii];
 
 			typename mix_type::value_type aa = 0.0;
 			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
 			std::cout << "norm opt " << aa << std::endl;
-			
+
+			//DATAOPERATIONS LOOP 1D
 			for(int jj = 0; jj < size_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
 			
     }
