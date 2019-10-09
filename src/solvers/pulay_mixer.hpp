@@ -77,10 +77,8 @@ namespace solvers {
 			if(full){
 				//move all the stored functions, this could be avoided but we do it for simplicity
 				for(int istep = 1; istep < size_; istep++){
-					//DATAOPERATIONS STL COPY
-					std::copy(ff_[istep].begin(), ff_[istep].end(), ff_[istep - 1].begin());
-					//DATAOPERATIONS STL COPY
-					std::copy(dff_[istep].begin(), dff_[istep].end(), dff_[istep - 1].begin());
+					ff_[istep - 1] = ff_[istep];
+					dff_[istep - 1] = dff_[istep];
 				}
 			}
 			
