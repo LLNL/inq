@@ -70,7 +70,7 @@ namespace basis {
     
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
-
+			
 			//DATAOPERATIONS LOOP 1D
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
@@ -79,11 +79,10 @@ namespace basis {
 
 
 		template <class array_4d>
-    auto && gather(const array_4d & grid) const {
-
+    auto gather(const array_4d & grid) const {
 			const int nst = std::get<3>(sizes(grid));
-			boost::multi::array<typename array_4d::value_type, 2> subgrid({this->size(), nst});
-			
+			boost::multi::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
+
 			//DATAOPERATIONS LOOP 2D
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				for(int ist = 0; ist < nst; ist++) subgrid[ipoint][ist] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][ist];
@@ -94,7 +93,7 @@ namespace basis {
 
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
-
+			
 			//DATAOPERATIONS LOOP 2D
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
