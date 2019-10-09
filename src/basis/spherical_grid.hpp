@@ -71,7 +71,7 @@ namespace basis {
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
 			
-			//DATAOPERATIONS STL
+			//DATAOPERATIONS STL TRANSFORM
 			std::transform(points_.begin(), points_.end(), subgrid.begin(),
 										 [& grid](auto point){
 											 return grid[point[0]][point[1]][point[2]];
@@ -105,7 +105,7 @@ namespace basis {
     template <class array_1d, class array_3d>
     void scatter(const array_1d & subgrid, array_3d && grid) const{
 
-			//DATAOPERATIONS LOOP 1D			
+			//DATAOPERATIONS LOOP 1D
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }

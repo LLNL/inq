@@ -45,7 +45,7 @@ namespace solvers {
 			
 			auto lambda = eigenvalues;
 			
-			//DATAOPERATIONS STL
+			//DATAOPERATIONS STL TRANSFORM
 			std::transform(lambda.begin(), lambda.end(), norm.begin(), lambda.begin(), [](auto lam, auto nor){ return lam /= -nor; });
 
 			operations::shift(lambda, phi, residual);
@@ -64,7 +64,7 @@ namespace solvers {
 			mm[4] = eigenvalues;
 			mm[5] = norm;
 			
-			//DATAOPERATIONS STL
+			//DATAOPERATIONS STL TRANSFORM
 			std::transform(mm.rotated().begin(), mm.rotated().end(), lambda.begin(),
 										 [](auto mm){
 											 auto ca = real(mm[0]*mm[3] - mm[2]*mm[1]);

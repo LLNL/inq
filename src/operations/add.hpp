@@ -42,7 +42,7 @@ namespace operations {
 
 		using type = typename field_type::value_type;
 
-		//DATAOPERATIONS STL
+		//DATAOPERATIONS STL TRANSFORM
 		std::transform(t1.begin(), t1.end(), t2.begin(), tadd.begin(), std::plus<type>());
 		
 		return tadd;
