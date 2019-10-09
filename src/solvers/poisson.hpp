@@ -158,10 +158,7 @@ namespace solvers {
 			using boost::multi::blas::real;
 			
 			//For the moment we copy to a complex array.
-			field<basis_type, complex> complex_density(density.basis());
-
-			//DATAOPERATIONS LOOP 1D
-			for(long ic = 0; ic < density.basis().size(); ic++) complex_density[ic] = density[ic];
+			field<basis_type, complex> complex_density(density.basis(), density);
 
 			auto complex_potential = operator()(complex_density);
 
