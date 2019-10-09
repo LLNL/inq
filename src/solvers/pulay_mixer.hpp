@@ -55,8 +55,8 @@ namespace solvers {
 				ff_ = boost::multi::array<type, 2>({max_size_, new_value.size()});
 				dff_= boost::multi::array<type, 2>({max_size_, new_value.size()});
 				
-				//DATAOPERATIONS LOOP 1D
-				for(unsigned ii = 0; ii < new_value.size(); ii++) ff_[0][ii] = new_value[ii];
+				//DATAOPERATIONS STL COPY
+				std::copy(new_value.begin(), new_value.end(), ff_[0].begin());
 
 				return;
 			}
@@ -64,7 +64,7 @@ namespace solvers {
 			if(size_ == 1){
 				//the second step we do linear mixing
 				
-				//DATAOPERATIONS LOOP 1D
+				//DATAOPERATIONS LOOP 1D (one input three outputs)
 				for(unsigned ii = 0; ii < new_value.size(); ii++){
 					dff_[0][ii] = new_value[ii] - ff_[0][ii];
 					new_value[ii] = mix_factor_*new_value[ii] + (1.0 - mix_factor_)*ff_[0][ii];
@@ -77,11 +77,10 @@ namespace solvers {
 			if(full){
 				//move all the stored functions, this could be avoided but we do it for simplicity
 				for(int istep = 1; istep < size_; istep++){
-					//DATAOPERATIONS LOOP 1D 
-					for(unsigned ii = 0; ii < new_value.size(); ii++){
-						ff_[istep - 1][ii] = ff_[istep][ii];
-						dff_[istep - 1][ii] = dff_[istep][ii];
-					}
+					//DATAOPERATIONS STL COPY
+					std::copy(ff_[istep].begin(), ff_[istep].end(), ff_[istep - 1].begin());
+					//DATAOPERATIONS STL COPY
+					std::copy(dff_[istep].begin(), dff_[istep].end(), dff_[istep - 1].begin());
 				}
 			}
 			
