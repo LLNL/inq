@@ -32,19 +32,31 @@
 
 namespace operations {
 
+	namespace{
+		namespace multi = boost::multi;
+		namespace blas = multi::blas;
+	}
+
+	template<class field_set_type>
+	auto overlap(const field_set_type & phi1, const field_set_type & phi2){
+		multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
+		blas::gemm('N', 'C', phi1.basis().volume_element(), phi1, phi2, 0.0, overlap_matrix);
+		return overlap_matrix;
+	}
+
 	template <class field_set_type>
-  auto overlap(const field_set_type & phi1, const field_set_type & phi2){
+	auto overlap_aux(const field_set_type & phi, complex){
+		return blas::herk(phi.basis().volume_element(), phi);
+	}
 
-		boost::multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
-
-		boost::multi::blas::gemm('N', 'C', phi1.basis().volume_element(), phi1, phi2, 0.0, overlap_matrix);
-
-		return overlap_matrix;		
-  }
-
+	template <class field_set_type>
+	auto overlap_aux(const field_set_type& phi, double){
+		return blas::syrk(phi.basis().volume_element(), phi);
+	}
+	
 	template <class field_set_type>
 	auto overlap(const field_set_type & phi){
-		return overlap(phi, phi);
+		return overlap_aux(phi, typename field_set_type::value_type{});
 	}
 
 #ifdef HAVE_CUDA
