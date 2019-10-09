@@ -46,8 +46,10 @@ namespace basis {
 
 		//set to a scalar value
 		field_set & operator=(const value_type value) {
-			//DATAOPERATIONS LOOP 1D
-			for(int ii = 0; ii < basis_.size()*num_vectors_; ii++) this->data()[ii] = value;
+
+			//DATAOPERATIONS STL FILL
+			std::fill(this->data(), this->data() + basis_.size()*num_vectors_, value);
+
 			return *this;
 		}
 		
@@ -107,6 +109,14 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
 	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
 	REQUIRE(std::get<3>(sizes(ff.cubic())) == 12);
+
+	ff = 12.2244;
+
+	for(int ii = 0; ii < rs.size(); ii++){
+		for(int jj = 0; jj < ff.set_size(); jj++){
+			REQUIRE(ff[ii][jj] == 12.2244_a);
+		}
+	}
 	
 }
 

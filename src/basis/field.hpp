@@ -39,6 +39,18 @@ namespace basis {
 			basis_(basis){
     }
 
+		template <class array_type>
+    field(const basis_type & basis, array_type && array):
+			boost::multi::array<type, 1>(array),
+			basis_(basis){
+    }
+				
+		template <class array_type>
+    field(const basis_type & basis, const array_type & array):
+			boost::multi::array<type, 1>(array),
+			basis_(basis){
+    }
+
 		field(const field & coeff) = delete;
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
@@ -46,8 +58,9 @@ namespace basis {
 
 		//set to a scalar value
 		field & operator=(const value_type value) {
-			//DATAOPERATIONS LOOP 1D
-			for(int ii = 0; ii < basis_.size(); ii++) (*this)[ii] = value;
+
+			//DATAOPERATIONS STL FILL
+			std::fill(this->begin(), this->end(), value);
 
 			return *this;
 		}
@@ -108,7 +121,6 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	basis::field<basis::real_space, double> ff(rs);
 
-
 	namespace fftw = boost::multi::fftw;
 	using boost::multi::array_ref;
 
@@ -121,6 +133,10 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
 	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
 	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
+
+	ff = 12.2244;
+
+	for(int ii = 0; ii < rs.size(); ii++) REQUIRE(ff[ii] == 12.2244_a);	
 	
 }
 

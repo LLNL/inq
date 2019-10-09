@@ -45,7 +45,7 @@ namespace solvers {
 				first_iter_ = false;
 			}
 
-      //DATAOPERATIONS LOOP 1D
+      //DATAOPERATIONS LOOP 1D (one input two outputs)
       for(unsigned ii = 0; ii < new_value.size(); ii++){
         auto tmp = new_value[ii];
         new_value[ii] = (1.0 - mix_factor_)*old_[ii] + mix_factor_*tmp;

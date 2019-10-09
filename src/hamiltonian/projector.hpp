@@ -51,11 +51,9 @@ namespace hamiltonian {
     template <class field_set_type>
     void operator()(const field_set_type & phi, field_set_type & vnlphi) const {
 			
-      boost::multi::array<states::ks_states::coeff_type, 2> sphere_phi({sphere_.size(), phi.set_size()});
+      auto sphere_phi = sphere_.gather(phi.cubic());
 
-      sphere_.gather(phi.cubic(), sphere_phi);
-
-      boost::multi::array<states::ks_states::coeff_type, 2> projections({nproj_, phi.set_size()});
+      boost::multi::array<typename field_set_type::element_type, 2> projections({nproj_, phi.set_size()});
 
 			//DATAOPERATIONS BLAS
 			boost::multi::blas::gemm('N', 'N', sphere_.volume_element(), sphere_phi, matrix_, 0.0, projections);

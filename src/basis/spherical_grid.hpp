@@ -27,6 +27,7 @@
 #include <basis/real_space.hpp>
 #include <cassert>
 #include <array>
+#include <multi/array.hpp>
 
 namespace basis {
 
@@ -69,16 +70,30 @@ namespace basis {
     
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
+			
+			//DATAOPERATIONS STL TRANSFORM
+			std::transform(points_.begin(), points_.end(), subgrid.begin(),
+										 [& grid](auto point){
+											 return grid[point[0]][point[1]][point[2]];
+										 });
+		}
 
-			//DATAOPERATIONS LOOP 1D
+		template <class array_4d>
+    auto gather(const array_4d & grid) const {
+			const int nst = std::get<3>(sizes(grid));
+			boost::multi::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
+
+			//DATAOPERATIONS LOOP 2D
       for(int ipoint = 0; ipoint < size(); ipoint++){
-				subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
+				for(int ist = 0; ist < nst; ist++) subgrid[ipoint][ist] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][ist];
       }
+
+			return subgrid;
     }
 
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
-
+			
 			//DATAOPERATIONS LOOP 2D
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
@@ -90,7 +105,7 @@ namespace basis {
     template <class array_1d, class array_3d>
     void scatter(const array_1d & subgrid, array_3d && grid) const{
 
-			//DATAOPERATIONS LOOP 1D			
+			//DATAOPERATIONS LOOP 1D (random access output)
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }
@@ -132,7 +147,7 @@ namespace basis {
 #include <multi/array.hpp>
 #include <math/complex.hpp>
 
-TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
+TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
   
   using namespace Catch::literals;
   using math::d3vector;

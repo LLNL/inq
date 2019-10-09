@@ -55,8 +55,8 @@ namespace solvers {
 				ff_ = boost::multi::array<type, 2>({max_size_, new_value.size()});
 				dff_= boost::multi::array<type, 2>({max_size_, new_value.size()});
 				
-				//DATAOPERATIONS LOOP 1D
-				for(unsigned ii = 0; ii < new_value.size(); ii++) ff_[0][ii] = new_value[ii];
+				//DATAOPERATIONS STL COPY
+				std::copy(new_value.begin(), new_value.end(), ff_[0].begin());
 
 				return;
 			}
@@ -64,7 +64,7 @@ namespace solvers {
 			if(size_ == 1){
 				//the second step we do linear mixing
 				
-				//DATAOPERATIONS LOOP 1D
+				//DATAOPERATIONS LOOP 1D (one input three outputs)
 				for(unsigned ii = 0; ii < new_value.size(); ii++){
 					dff_[0][ii] = new_value[ii] - ff_[0][ii];
 					new_value[ii] = mix_factor_*new_value[ii] + (1.0 - mix_factor_)*ff_[0][ii];
@@ -77,22 +77,20 @@ namespace solvers {
 			if(full){
 				//move all the stored functions, this could be avoided but we do it for simplicity
 				for(int istep = 1; istep < size_; istep++){
-					//DATAOPERATIONS LOOP 1D
-					for(unsigned ii = 0; ii < new_value.size(); ii++){
-						ff_[istep - 1][ii] = ff_[istep][ii];
-						dff_[istep - 1][ii] = dff_[istep][ii];
-					}
+					ff_[istep - 1] = ff_[istep];
+					dff_[istep - 1] = dff_[istep];
 				}
 			}
 			
-      //DATAOPERATIONS LOOP 1D
+      //DATAOPERATIONS LOOP 1D (one input two outputs)
       for(unsigned ii = 0; ii < new_value.size(); ii++){
 				ff_[size_ - 1][ii] = new_value[ii];
 				dff_[size_ - 1][ii] = new_value[ii] - ff_[size_ - 2][ii];
 			}
-
+			
 			boost::multi::array<typename mix_type::value_type, 2> amatrix({size_, size_});
 
+			//DATAOPERATIONS LOOP 2D (use overlap)
 			for(int ii = 0; ii < size_; ii++){
 				for(int jj = 0; jj < size_; jj++){
 					typename mix_type::value_type aa = 0.0;
@@ -122,31 +120,24 @@ namespace solvers {
 			solvers::linear_symmetric(amatrix, alpha);
 
 			//			std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
-
-			//DATAOPERATIONS
-			type sumalpha = 0.0;
 			
-			//DATAOPERATIONS LOOP 1D
-			for(int jj = 0; jj < size_; jj++) sumalpha += alpha[jj];
-			//DATAOPERATIONS LOOP 1D
-			for(int jj = 0; jj < size_; jj++) alpha[jj] /= sumalpha;
-
-			/*			for(int jj = 0; jj < size_; jj++) alpha[jj] = 0.0;
-			alpha[current_] = 0.3;
-			alpha[previous_] = 1.0 - 0.3; 
-			*/
+			//DATAOPERATIONS STL ACCUMULATE
+			auto sumalpha = std::accumulate(alpha.begin(), alpha.end(), type{0.0});
 			
-			//DATAOPERATIONS LOOP 1D
-      for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = 0.0;
+			//DATAOPERATIONS STL FOR_EACH
+			std::for_each(alpha.begin(), alpha.end(), [sumalpha](auto al){ al /= sumalpha; });
 
-			//DATAOPERATIONS LOOP 1D
+			//DATAOPERATIONS STL FILL 
+			std::fill(new_value.begin(), new_value.end(), 0.0);
+
+			//DATAOPERATIONS LOOP 2D (use gemv)
 			for(int jj = 0; jj < size_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*dff_[jj][ii];
 
 			typename mix_type::value_type aa = 0.0;
 			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
 			std::cout << "norm opt " << aa << std::endl;
 
-			//DATAOPERATIONS LOOP 1D
+			//DATAOPERATIONS LOOP 2D (use gemv)
 			for(int jj = 0; jj < size_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
 			
     }
