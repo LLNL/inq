@@ -30,10 +30,8 @@ namespace operations {
   void randomize(field_set_type & phi){
 		srand48(0);
 
-		//DATAOPERATIONS LOOP 2D (can be flattened, random number generator)
-		for(int kk = 0; kk < phi.basis().size(); kk++) {
-			for(int ii = 0; ii < phi.set_size(); ii++)	phi[ii][kk] = complex(drand48(), 0.0);
-    }
+		//DATAOPERATIONS STL FOR_EACH (random number generator)
+		std::for_each(phi.data(), phi.data() + phi.basis().size()*phi.set_size(), [](auto & coeff) { coeff = drand48(); }); 
 
   }
 
