@@ -71,12 +71,12 @@ namespace basis {
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
 			
-			//DATAOPERATIONS LOOP 1D
-      for(int ipoint = 0; ipoint < size(); ipoint++){
-				subgrid[ipoint] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]];
-      }
-    }
-
+			//DATAOPERATIONS STL
+			std::transform(points_.begin(), points_.end(), subgrid.begin(),
+										 [& grid](auto point){
+											 return grid[point[0]][point[1]][point[2]];
+										 });
+		}
 
 		template <class array_4d>
     auto gather(const array_4d & grid) const {
@@ -147,7 +147,7 @@ namespace basis {
 #include <multi/array.hpp>
 #include <math/complex.hpp>
 
-TEST_CASE("class basis::spherical_grid", "[spherical_grid]") {
+TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
   
   using namespace Catch::literals;
   using math::d3vector;
