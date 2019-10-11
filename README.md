@@ -8,6 +8,8 @@ This is not a PW code
 sudo apt install libgsl-dev libblas-dev liblapack-dev libfftw3-dev
 ```
 
+Instructions for compiling with Cuda
+
 ```bash
 git clone ...
 cd inq
