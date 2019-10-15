@@ -4,7 +4,7 @@
 #define OPERATIONS__OVERLAP
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa.
+ Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -32,20 +32,20 @@
 
 namespace operations {
 
-namespace{
-	namespace multi = boost::multi;
-	namespace blas = multi::blas;
-}
+	template <class field_set_type>
+  auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 
-	template<class field_set_type>
-	auto overlap(const field_set_type & phi1, const field_set_type & phi2){
-		multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
-		blas::gemm('N', 'C', phi1.basis().volume_element(), phi1, phi2, 0.0, overlap_matrix);
-		return overlap_matrix;
+		boost::multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
+
+		boost::multi::blas::gemm('N', 'C', phi1.basis().volume_element(), phi1, phi2, 0.0, overlap_matrix);
+
+		return overlap_matrix;		
+  }
+
+	template <class field_set_type>
+	auto overlap(const field_set_type & phi){
+		return overlap(phi, phi);
 	}
-
-template<class FieldSet>
-auto overlap(FieldSet const& phi){return blas::herk(phi.basis().volume_element(), phi);} // multi::blas::herk takes real and complex
 
 #ifdef HAVE_CUDA
 	template <class type>
