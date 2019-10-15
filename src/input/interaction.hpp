@@ -31,7 +31,8 @@ namespace input {
   public:
 
     enum class electronic_theory { NON_INTERACTING,
-                                   DENSITY_FUNCTIONAL
+                                   DENSITY_FUNCTIONAL,
+																	 HARTREE_FOCK
     };
 
     // these numbers match the libxc definition
@@ -66,6 +67,13 @@ namespace input {
       inter.theory_ = electronic_theory::DENSITY_FUNCTIONAL;
       return inter;
     }
+
+		static auto hartree_fock(){
+      interaction inter;
+      inter.theory_ = electronic_theory::HARTREE_FOCK;
+      return inter;
+    }
+		
 
     auto theory() const {
       return theory_.value_or(electronic_theory::DENSITY_FUNCTIONAL);
