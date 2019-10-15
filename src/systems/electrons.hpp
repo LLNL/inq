@@ -87,9 +87,9 @@ namespace systems {
 				operations::subspace_diagonalization(ham_, phi_);
 
 				{
-					auto fphi = operations::space::to_fourier(phi_);
+					auto fphi = operations::space::to_fourier(std::move(phi_));
 					solvers::steepest_descent(ham_, prec, fphi);
-					phi_ = operations::space::to_real(fphi);
+					phi_ = operations::space::to_real(std::move(fphi));
 				}
 				
 				density = operations::calculate_density(states_.occupations(), phi_);

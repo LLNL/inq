@@ -51,6 +51,27 @@ namespace hamiltonian {
 			solvers::poisson<basis::real_space> poisson_solver;
 
 			switch(theory_){
+
+			case input::interaction::electronic_theory::HARTREE_FOCK:
+				{
+
+					auto total_density = operations::add(electronic_density, ionic_density);
+					auto vhartree = poisson_solver(total_density);
+					energy.hartree = 0.5*operations::integral_product(total_density, vhartree);
+					energy.nvhartree = operations::integral_product(electronic_density, vhartree);
+						
+					vexternal_type edxc(vexternal.basis());
+					vexternal_type vxc(vexternal.basis());
+					
+					functionals::lda::xc_unpolarized(electronic_density.basis().size(), electronic_density, edxc, vxc);
+					
+					energy.xc = operations::integral_product(electronic_density, edxc);
+					energy.nvxc = operations::integral_product(electronic_density, vxc);
+					
+					vks = operations::add(vexternal, vhartree, vxc);
+
+					break;
+				}
 				
 			case input::interaction::electronic_theory::DENSITY_FUNCTIONAL:
 				{
