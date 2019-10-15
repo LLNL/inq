@@ -33,8 +33,14 @@ namespace hamiltonian {
 		
   public:
 
-    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo):
-			scalar_potential(basis){
+		basis::field<basis::real_space, double> scalar_potential;
+		basis::field_set<basis::real_space, complex> hf_orbitals;
+
+		template <class orbitals_type>
+    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo,
+									 const orbitals_type & orbitals):
+			scalar_potential(basis),
+			hf_orbitals(orbitals) {
 
 			scalar_potential = pot.local_potential(basis, cell, geo);
 
@@ -43,8 +49,6 @@ namespace hamiltonian {
 			}
 
     }
-
-		basis::field<basis::real_space, double> scalar_potential;
 
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
 			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](phi, vnlphi);
@@ -155,7 +159,7 @@ namespace hamiltonian {
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 
-TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
+TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
   using namespace Catch::literals;
   using math::d3vector;
@@ -183,7 +187,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
   basis::field_set<basis::real_space, complex> phi(rs, st.num_states());
 	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states());
 	
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo, phi);
 
 	SECTION("Constant function"){
 		

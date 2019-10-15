@@ -44,8 +44,8 @@ namespace systems {
       rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
-      ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
-      phi_(rs_, states_.num_states()),
+			phi_(rs_, states_.num_states()),
+      ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo(), phi_),
 			sc_(inter.theory()){
 
       rs_.info(std::cout);  
@@ -149,8 +149,8 @@ namespace systems {
     basis::real_space rs_;
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;
+		basis::field_set<basis::real_space, complex> phi_;
     hamiltonian::ks_hamiltonian<basis::real_space> ham_;      
-    basis::field_set<basis::real_space, complex> phi_;
 		hamiltonian::self_consistency sc_;
 
   };  
