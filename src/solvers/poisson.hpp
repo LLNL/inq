@@ -36,7 +36,7 @@ namespace solvers {
 
 	public:
 
-		auto operator()(const basis::field<basis_type, complex> & density){
+		auto operator()(const basis::field<basis_type, complex> & density) const {
 			if(density.basis().periodic_dimensions() == 3){
 				return solve_periodic(density);
 			} else {
@@ -44,7 +44,7 @@ namespace solvers {
 			}
 		}
 
-		auto solve_periodic(const basis::field<basis_type, complex> & density){
+		auto solve_periodic(const basis::field<basis_type, complex> & density) const {
 			namespace fftw = boost::multi::fftw;
 			
 			basis::fourier_space fourier_basis(density.basis());
@@ -78,7 +78,7 @@ namespace solvers {
 			return potential_rs;
 		}
 
-		auto solve_finite(const basis::field<basis_type, complex> & density){
+		auto solve_finite(const basis::field<basis_type, complex> & density) const {
 			namespace fftw = boost::multi::fftw;
 
 			basis::field<basis_type, complex> potential2x(density.basis().enlarge(2));
@@ -152,7 +152,7 @@ namespace solvers {
 			return potential;
 		}
 		
-		auto operator()(const basis::field<basis_type, double> & density){
+		auto operator()(const basis::field<basis_type, double> & density) const {
 
 			using basis::field;
 			using boost::multi::blas::real;
