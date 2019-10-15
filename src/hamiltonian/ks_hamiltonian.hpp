@@ -34,13 +34,15 @@ namespace hamiltonian {
   public:
 
 		basis::field<basis::real_space, double> scalar_potential;
+		boost::multi::array<double, 1> hf_occupations;
 		basis::field_set<basis::real_space, complex> hf_orbitals;
-
+		
 		template <class orbitals_type>
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo,
 									 const orbitals_type & orbitals):
 			scalar_potential(basis),
-			hf_orbitals(orbitals) {
+			hf_occupations(orbitals.set_size()),
+			hf_orbitals(basis, orbitals.set_size()) {
 
 			scalar_potential = pot.local_potential(basis, cell, geo);
 
@@ -96,6 +98,24 @@ namespace hamiltonian {
 				double vv  = scalar_potential[ip];
 				for(int ist = 0; ist < phi.set_size(); ist++) hphi[ip][ist] += vv*phi[ip][ist];
 			}
+
+			// Hartree-Fock exchange
+			for(int ii = 0; ii < phi.set_size(); ii++){
+				for(int jj = 0; jj < phi.set_size(); jj++){
+
+					basis::field<basis::real_space, complex> rhoij(phi.basis());
+
+					//DATAOPERATIONS LOOP 1D
+					for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij[ipoint] = hf_orbitals[ipoint][jj]*phi[ipoint][ii];
+
+					poisson_solver_(rhoij);
+
+					//DATAOPERATIONS LOOP 1D
+					for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) hphi[ipoint][ii] += hf_occupations[jj]*hf_orbitals[ipoint][jj]*rhoij[ipoint];
+					
+				}
+			}
+			
 		}
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
@@ -147,6 +167,7 @@ namespace hamiltonian {
 		
   private:
 
+		solvers::poisson<basis::real_space> poisson_solver_;
 		std::vector<projector> projectors_;
 
   };

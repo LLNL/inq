@@ -79,6 +79,8 @@ namespace systems {
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
 
+			ham_.hf_orbitals = 0.0;
+			
 			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
 
