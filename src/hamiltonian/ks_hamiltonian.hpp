@@ -37,15 +37,14 @@ namespace hamiltonian {
 		boost::multi::array<double, 1> hf_occupations;
 		basis::field_set<basis::real_space, complex> hf_orbitals;
 		
-		template <class orbitals_type>
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo,
-									 const orbitals_type & orbitals):
+									 const int num_hf_orbitals):
 			scalar_potential(basis),
-			hf_occupations(orbitals.set_size()),
-			hf_orbitals(basis, orbitals.set_size()) {
+			hf_occupations(num_hf_orbitals),
+			hf_orbitals(basis, num_hf_orbitals){
 
 			scalar_potential = pot.local_potential(basis, cell, geo);
-
+			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				projectors_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
 			}
@@ -208,7 +207,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
   basis::field_set<basis::real_space, complex> phi(rs, st.num_states());
 	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states());
 	
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo, phi);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo, st.num_states());
 
 	SECTION("Constant function"){
 		
