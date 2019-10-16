@@ -51,7 +51,7 @@ namespace states {
       nquantumnumbers_ = 1;
       if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
 
-			occs_.resize(nstates_);
+			occs_.reextent({nstates_});
 
 			auto rem_electrons = nelectrons;
 			for(int ist = 0; ist < nstates_; ist++){
@@ -94,7 +94,7 @@ namespace states {
 
     int nstates_;
     int nquantumnumbers_;
-		std::vector<double> occs_;
+		boost::multi::array<double, 1> occs_;
 
   };
 
