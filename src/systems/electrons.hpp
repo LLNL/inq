@@ -79,6 +79,8 @@ namespace systems {
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
 
+			//DATAOPERATIONS STL FILL
+			std::fill(ham_.hf_occupations.begin(), ham_.hf_occupations.end(), 0.0);
 			ham_.hf_orbitals = 0.0;
 			
 			int conv_count = 0;
@@ -93,6 +95,10 @@ namespace systems {
 					solvers::steepest_descent(ham_, prec, fphi);
 					phi_ = operations::space::to_real(std::move(fphi));
 				}
+
+				//here we should mix
+				ham_.hf_occupations = states_.occupations();
+				ham_.hf_orbitals = phi_;
 				
 				density = operations::calculate_density(states_.occupations(), phi_);
 
