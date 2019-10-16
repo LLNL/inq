@@ -65,8 +65,10 @@ namespace systems {
 
 			operations::preconditioner prec;
 
-			auto mixer = solvers::linear_mixer<double>(0.3);
-			//auto mixer = solvers::pulay_mixer<double>(5, 0.3);
+			const double mixing = 0.3;
+			
+			auto mixer = solvers::linear_mixer<double>(mixing);
+			//auto mixer = solvers::pulay_mixer<double>(5, mixing);
 			
       double old_energy = DBL_MAX;
 
@@ -98,7 +100,9 @@ namespace systems {
 
 				//here we should mix
 				ham_.hf_occupations = states_.occupations();
-				ham_.hf_orbitals = phi_;
+				for(int ii = 0; ii < phi_.num_elements(); ii++){
+					ham_.hf_orbitals.data()[ii] = (1.0 - mixing)*ham_.hf_orbitals.data()[ii] + mixing*phi_.data()[ii];
+				}
 				
 				density = operations::calculate_density(states_.occupations(), phi_);
 
