@@ -34,6 +34,7 @@ namespace operations {
 
     //DATAOPERATIONS LOOP 2D
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
+			density[ipoint] = 0.0;
       for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi[ist][ipoint]);
     }
 
