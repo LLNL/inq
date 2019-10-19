@@ -97,7 +97,7 @@ namespace hamiltonian {
 				double vv  = scalar_potential[ip];
 				for(int ist = 0; ist < phi.set_size(); ist++) hphi[ip][ist] += vv*phi[ip][ist];
 			}
-
+			
 			// Hartree-Fock exchange
 			for(int ii = 0; ii < phi.set_size(); ii++){
 				for(int jj = 0; jj < phi.set_size(); jj++){
@@ -107,14 +107,15 @@ namespace hamiltonian {
 					//DATAOPERATIONS LOOP 1D
 					for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij[ipoint] = conj(hf_orbitals[ipoint][jj])*phi[ipoint][ii];
 
-					poisson_solver_(rhoij);
+					//OPTIMIZATION: this could be done in place
+					auto potij = poisson_solver_(rhoij);
 
 					//DATAOPERATIONS LOOP 1D
-					for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) hphi[ipoint][ii] -= 0.5*hf_occupations[jj]*hf_orbitals[ipoint][jj]*rhoij[ipoint];
+					for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) hphi[ipoint][ii] -= 0.5*hf_occupations[jj]*hf_orbitals[ipoint][jj]*potij[ipoint];
 					
-				} 
+				}
 			}
-
+			
 		}
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
