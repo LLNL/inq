@@ -119,14 +119,14 @@ namespace systems {
 					operations::shift(eigenvalues, phi_, residual, -1.0);
 					
 					auto normres = operations::overlap_diagonal(residual);
-					
-					auto nlev = operations::overlap_diagonal(ham_.non_local(phi_), phi_);
-					
+					auto nl_me = operations::overlap_diagonal(ham_.non_local(phi_), phi_);
+					auto exchange_me = operations::overlap_diagonal(ham_.exchange(phi_), phi_);
 
 					auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 					
 					energy.eigenvalues = operations::sum(states_.occupations(), eigenvalues, energy_term);
-					energy.nonlocal = operations::sum(states_.occupations(), nlev, energy_term);
+					energy.nonlocal = operations::sum(states_.occupations(), nl_me, energy_term);
+					energy.exact_exchange = operations::sum(states_.occupations(), exchange_me, energy_term);
 
 					auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/fabs(operations::integral(vks));
 					

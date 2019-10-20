@@ -62,7 +62,42 @@ namespace hamiltonian {
 			non_local(phi, vnlphi);
 			return vnlphi;
 		}
+		
+		void exchange(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & exxphi) const {
 
+			if(exchange_coefficient_ != 0.0){
+
+				// Hartree-Fock exchange
+				for(int ii = 0; ii < phi.set_size(); ii++){
+					for(int jj = 0; jj < phi.set_size(); jj++){
+						
+						basis::field<basis::real_space, complex> rhoij(phi.basis());
+
+						//DATAOPERATIONS LOOP 1D
+						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij[ipoint] = conj(hf_orbitals[ipoint][jj])*phi[ipoint][ii];
+						
+						//OPTIMIZATION: this could be done in place
+						auto potij = poisson_solver_(rhoij);
+						
+						//DATAOPERATIONS LOOP 1D
+						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
+							exxphi[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals[ipoint][jj]*potij[ipoint];
+						}
+						
+					}
+				}
+				
+			}
+			
+		}
+
+		auto exchange(const basis::field_set<basis::real_space, complex> & phi) const {
+			basis::field_set<basis::real_space, complex> exxphi(phi.basis(), phi.set_size());
+			exxphi = 0.0;
+			exchange(phi, exxphi);
+			return exxphi;
+		}
+		
 		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
 			
 			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
@@ -99,30 +134,7 @@ namespace hamiltonian {
 				for(int ist = 0; ist < phi.set_size(); ist++) hphi[ip][ist] += vv*phi[ip][ist];
 			}
 
-			if(exchange_coefficient_ != 0.0){
-
-				// Hartree-Fock exchange
-				for(int ii = 0; ii < phi.set_size(); ii++){
-					for(int jj = 0; jj < phi.set_size(); jj++){
-						
-						basis::field<basis::real_space, complex> rhoij(phi.basis());
-
-						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij[ipoint] = conj(hf_orbitals[ipoint][jj])*phi[ipoint][ii];
-						
-						//OPTIMIZATION: this could be done in place
-						auto potij = poisson_solver_(rhoij);
-						
-						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
-							hphi[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals[ipoint][jj]*potij[ipoint];
-						}
-						
-					}
-				}
-
-			}
-				
+			exchange(phi, hphi);
 		}
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
