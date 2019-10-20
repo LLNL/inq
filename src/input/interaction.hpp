@@ -86,7 +86,12 @@ namespace input {
     auto correlation() const {
       return correlation_.value_or(correlation_functional::LDA_PZ);
     }
-    
+
+		auto exchange_coefficient() const {
+			if(theory_ == electronic_theory::HARTREE_FOCK) return 1.0;
+			return 0.0;
+		}
+		
   private:
 
     nonstd::optional<electronic_theory> theory_;
