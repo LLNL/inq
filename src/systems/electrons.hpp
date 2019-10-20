@@ -98,11 +98,14 @@ namespace systems {
 					phi_ = operations::space::to_real(std::move(fphi));
 				}
 
-				//here we should mix
-				ham_.hf_occupations = states_.occupations();
+				//update the Hartree-Fock operator, mixing the new and old orbitals
+				
+				//DATAOPERATIONS LOOP 1D
 				for(int ii = 0; ii < phi_.num_elements(); ii++){
 					ham_.hf_orbitals.data()[ii] = (1.0 - mixing)*ham_.hf_orbitals.data()[ii] + mixing*phi_.data()[ii];
 				}
+				//probably the occupations should be mixed too
+				ham_.hf_occupations = states_.occupations();
 				
 				density = operations::calculate_density(states_.occupations(), phi_);
 
