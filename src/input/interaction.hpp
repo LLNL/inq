@@ -91,6 +91,10 @@ namespace input {
 			if(theory_ == electronic_theory::HARTREE_FOCK) return 1.0;
 			return 0.0;
 		}
+
+		auto self_consistent() const {
+			return theory_ != electronic_theory::NON_INTERACTING;
+		}
 		
   private:
 
