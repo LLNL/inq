@@ -41,12 +41,13 @@ namespace systems {
 		
     electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::interaction & inter, const input::config & conf):
       ions_(ions_arg),
+			inter_(inter),
       rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
 			phi_(rs_, states_.num_states()),
-      ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter.exchange_coefficient()),
-			sc_(inter.theory()){
+      ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter_.exchange_coefficient()),
+			sc_(inter_.theory()){
 
       rs_.info(std::cout);  
       states_.info(std::cout);
@@ -88,7 +89,7 @@ namespace systems {
 			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
 
-				if(sc_.theory() != input::interaction::electronic_theory::NON_INTERACTING) mixer(ham_.scalar_potential);
+				if(inter_.self_consistent()) mixer(ham_.scalar_potential);
 
 				operations::subspace_diagonalization(ham_, phi_);
 
@@ -161,6 +162,7 @@ namespace systems {
   private:
 
 		const systems::ions & ions_;
+		input::interaction inter_;
     basis::real_space rs_;
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;
