@@ -126,7 +126,7 @@ namespace systems {
 					
 					energy.eigenvalues = operations::sum(states_.occupations(), eigenvalues, energy_term);
 					energy.nonlocal = operations::sum(states_.occupations(), nl_me, energy_term);
-					energy.exact_exchange = operations::sum(states_.occupations(), exchange_me, energy_term);
+					energy.hf_exchange = operations::sum(states_.occupations(), exchange_me, energy_term);
 
 					auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/fabs(operations::integral(vks));
 					
