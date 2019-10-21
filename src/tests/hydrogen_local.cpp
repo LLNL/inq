@@ -35,7 +35,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 	geo.push_back(local_h | math::d3vector(0.0, 0.0, 0.0));
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
-#if 1
+#if 0
 	SECTION("Non interacting"){
 		
 		input::config conf;
@@ -78,12 +78,13 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		REQUIRE(fabs(energy.nonlocal)  <=  1e-10);
 		REQUIRE(fabs(energy.xc)        <=  1e-10);
 		REQUIRE(fabs(energy.nvxc)      <=  1e-10);
+		REQUIRE(fabs(energy.hf_exchange) <=  1e-10);
 		REQUIRE(fabs(energy.ion)       <=  1e-10);
 		REQUIRE(energy.self            == -0.564189583548_a);
 		
 	}
 #endif
-#if 1
+#if 0
 	SECTION("LDA"){
 		
 		input::config conf;
@@ -118,19 +119,45 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		*/
 
 		REQUIRE(energy.total()         == -0.445955778428_a);
-		REQUIRE(energy.kinetic()       == 0.418145323059_a);
+		REQUIRE(energy.kinetic()       ==  0.418145323059_a);
 		REQUIRE(energy.eigenvalues     == -0.234279210059_a);
 		REQUIRE(energy.coulomb()       == -0.463367049186_a);
-		REQUIRE(energy.hartree         == 0.100822534362_a);
+		REQUIRE(energy.hartree         ==  0.100822534362_a);
 		REQUIRE(energy.nvhartree       == -0.181332091353_a);
 		REQUIRE(energy.external        == -0.168637544117_a);
 		REQUIRE(fabs(energy.nonlocal)  <=  1e-10);
 		REQUIRE(energy.xc              == -0.232096508183_a);
 		REQUIRE(energy.nvxc            == -0.302454897648_a);
+		REQUIRE(fabs(energy.hf_exchange) <=  1e-10);
 		REQUIRE(fabs(energy.ion)       <=  1e-10);
 		REQUIRE(energy.self            == -0.564189583548_a);
 
 	}
 #endif
+#if 1
+	SECTION("Hartree-Fock"){
+		
+		input::config conf;
 	
+		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), input::interaction::hartree_fock(), conf);
+		
+		auto energy = electrons.calculate_ground_state();
+
+		REQUIRE(energy.total()         == -0.485932246662_a);
+		REQUIRE(energy.kinetic()       ==  0.352630715248_a);
+		REQUIRE(energy.eigenvalues     == -0.229929375677_a);
+		REQUIRE(energy.coulomb()       == -0.440599234451_a);
+		REQUIRE(energy.hartree         ==  0.123590349097_a);
+		REQUIRE(energy.nvhartree       == -0.184596363466_a);
+		REQUIRE(energy.external        == -0.141980160329_a);
+		REQUIRE(fabs(energy.nonlocal)  <=  1e-10);
+		REQUIRE(energy.xc              == -0.232096508183_a);
+		REQUIRE(energy.nvxc            == -0.302454897648_a);
+		REQUIRE(energy.hf_exchange     ==  1e-10);
+		REQUIRE(fabs(energy.ion)       <=  1e-10);
+		REQUIRE(energy.self            == -0.564189583548_a);
+
+	}
+#endif
+
 }
