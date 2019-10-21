@@ -34,7 +34,6 @@ stages:
 Build:
     stage: build
     script:
-      - #git submodule update --init --recursive
       - autoreconf -i
       - mkdir build
       - cd build
