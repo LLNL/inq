@@ -16,6 +16,11 @@
 #  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
 #  - cd $GOPATH/src/$REPO_NAME
 
+image: debian:stable
+
+before_script:
+	- apt update -qq
+	- apt install -y -qq build-essential autoconf automake pkg-config
 
 variables:
   CXX: "c++"
