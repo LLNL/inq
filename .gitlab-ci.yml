@@ -21,13 +21,23 @@ image: debian:stable
 before_script:
     - apt update -qq
     - apt install -y -qq build-essential autoconf automake pkg-config
+    - apt install -y -qq libgsl-dev libblas-dev liblapack-dev libfftw3-dev
 
 variables:
   CXX: "c++"
 
 stages:
+    - build
     - test
-#    - build
+
+Build:
+    stage: build
+    script:
+      - autoreconf -i
+      - mkdir build
+      - cd build
+      - ../configure -prefix=$HOME
+      - make -j install
 
 Test:
     stage: test
