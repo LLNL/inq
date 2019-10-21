@@ -24,6 +24,7 @@ before_script:
     - apt install -y -qq libgsl-dev libblas-dev liblapack-dev libfftw3-dev
 
 variables:
+  GIT_SUBMODULE_STRATEGY: recursive
   CXX: "c++"
 
 stages:
