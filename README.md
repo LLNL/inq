@@ -18,5 +18,7 @@ cd your_build
 export CXX="/usr/lib/cuda/bin/nvcc -x cu"
 export CXXFLAGS="-D_DISABLE_CUDA_SLOW -O3 -std=c++14 --expt-relaxed-constexpr --compiler-options -std=c++14,-Wall,-Wfatal-errors"
 export CXXLD=/usr/lib/cuda/bin/nvcc
-../../inq/configure -prefix-$HOME --enable-cuda --with-cuda-prefix
+../../inq/configure -prefix=$HOME --enable-cuda --with-cuda-prefix
 ```
+
+This instructions might be incomplete, to see how to have a basic install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npnq/inq/blob/master/.gitlab-ci.yml).
