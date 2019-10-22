@@ -30,7 +30,6 @@ variables:
 
 stages:
     - build
-    - test
 
 Build:
     stage: build
@@ -40,9 +39,5 @@ Build:
       - cd build
       - ../configure -prefix=$HOME
       - make install
-
-Test:
-    stage: test
-    script:
       - src/inq_unit_tests
 
