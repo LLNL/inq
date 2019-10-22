@@ -26,6 +26,7 @@ before_script:
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CXX: "c++"
+  CXXFLAGS: "-O0"
 
 stages:
     - build
