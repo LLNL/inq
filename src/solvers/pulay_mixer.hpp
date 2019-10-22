@@ -162,7 +162,6 @@ namespace solvers {
 
 TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
 
-
   std::vector<double> v(2);
 
   v[0] =  10.0;
@@ -174,9 +173,6 @@ TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
   v[1] = 22.2;
 
   lm(v);
-  
-  REQUIRE(v[0] == 5.0);
-  REQUIRE(v[1] == 1.1);
   
 }
 
