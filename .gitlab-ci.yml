@@ -19,8 +19,8 @@
 image: debian:stable
 
 before_script:
-    - apt update -qq
-    - apt install -y -qq g++ gfortran autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev
+    - time apt update -qq
+    - time apt install -y -qq g++ gfortran autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -36,6 +36,6 @@ Build:
       - mkdir build
       - cd build
       - ../configure -prefix=$HOME
-      - make install
-      - src/inq_unit_tests
+      - time make install
+      - time src/inq_unit_tests
 
