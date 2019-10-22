@@ -39,12 +39,10 @@ Build:
       - mkdir build
       - cd build
       - ../configure -prefix=$HOME
-      - make -j install
+      - make install
 
 Test:
     stage: test
     script:
-      - ls
-
-
+      - src/inq_unit_tests
 
