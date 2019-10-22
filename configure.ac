@@ -14,7 +14,7 @@ AC_ARG_ENABLE(cuda, AS_HELP_STRING([--enable-cuda], [Cuda support (experimental)
 
 # Checks for programs.
 AC_PROG_AWK
-AC_PROG_CXX(mpic++)
+AC_PROG_CXX(c++)
 AX_CXX_COMPILE_STDCXX([14], [], [])
 
 #we may need to set the linker for the cuda case, so pass that to automake
@@ -23,7 +23,7 @@ if test x"$CXXLD" == x ; then
 fi
 AC_SUBST(CXXLD)
 
-AC_PROG_CC(mpicc)
+AC_PROG_CC(cc)
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
@@ -83,7 +83,7 @@ AC_MSG_NOTICE([
   CHECKING FOR FORTRAN LIBRARIES
 ================================================================================])
 dnl We need to check for fortran, to link with blas and other libraries
-AC_PROG_FC(mpif90)
+AC_PROG_FC()
 AC_FC_LIBRARY_LDFLAGS
 AC_FC_WRAPPERS
 		

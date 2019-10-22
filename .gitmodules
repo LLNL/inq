@@ -1,3 +1,4 @@
 [submodule "external_libs/multi"]
 	path = external_libs/multi
-	url = git@gitlab.com:npnq/boost-multi.git
+	url = ../boost-multi.git
+
