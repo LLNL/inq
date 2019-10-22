@@ -20,7 +20,7 @@ image: debian:stable
 
 before_script:
     - apt update -qq
-    - apt install -y -qq git build-essential autoconf automake pkg-config gfortran
+    - apt install -y -qq git g++ gfortran autoconf automake pkg-config
     - apt install -y -qq libgsl-dev libblas-dev liblapack-dev libfftw3-dev
 
 variables:
