@@ -20,12 +20,10 @@ image: debian:stable
 
 before_script:
     - apt update -qq
-    - apt install -y -qq g++ gfortran autoconf make automake pkg-config
-    - apt install -y -qq libgsl-dev libblas-dev liblapack-dev libfftw3-dev
+    - apt install -y -qq g++ gfortran autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  CXX: "c++"
   CXXFLAGS: "-O0"
 
 stages:
