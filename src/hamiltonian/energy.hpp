@@ -37,6 +37,7 @@ namespace hamiltonian {
 		double nvhartree;
 		double xc;
 		double nvxc;
+		double hf_exchange;
 
 		energy(){
 			ion = 0.0;
@@ -48,6 +49,7 @@ namespace hamiltonian {
 			nvhartree = 0.0;
 			xc = 0.0;
 			nvxc = 0.0;
+			hf_exchange = 0.0;
 		}
 
 		auto coulomb() const {
@@ -55,29 +57,30 @@ namespace hamiltonian {
 		}
 		
 		auto kinetic() const {
-			return eigenvalues - nvhartree - nvxc - external - nonlocal;
+			return eigenvalues - nvhartree - nvxc - hf_exchange - external - nonlocal;
 		}
 		
 		auto total() const {
-			return kinetic() + hartree + self + ion + external + nonlocal + xc;
+			return kinetic() + hartree + self + ion + external + nonlocal + xc + hf_exchange;
 		}
 
 		template <class out_type>
 		void print(out_type & out) const {
 
 			tfm::format(out, "\n");
-			tfm::format(out, "  total       = %20.12f\n", total());			
-			tfm::format(out, "  kinetic     = %20.12f\n", kinetic());
-			tfm::format(out, "  eigenvalues = %20.12f\n", eigenvalues);
-			tfm::format(out, "  coulomb     = %20.12f\n", coulomb());
-			tfm::format(out, "  hartree     = %20.12f\n", hartree);
-			tfm::format(out, "  nvhartree   = %20.12f\n", nvhartree);
-			tfm::format(out, "  external    = %20.12f\n", external);
-			tfm::format(out, "  nonlocal    = %20.12f\n", nonlocal);
-			tfm::format(out, "  xc          = %20.12f\n", xc);
-			tfm::format(out, "  intnvxc     = %20.12f\n", nvxc);
-			tfm::format(out, "  ion         = %20.12f\n", ion);
-			tfm::format(out, "  self        = %20.12f\n", self);
+			tfm::format(out, "  total          = %20.12f\n", total());			
+			tfm::format(out, "  kinetic        = %20.12f\n", kinetic());
+			tfm::format(out, "  eigenvalues    = %20.12f\n", eigenvalues);
+			tfm::format(out, "  coulomb        = %20.12f\n", coulomb());
+			tfm::format(out, "  hartree        = %20.12f\n", hartree);
+			tfm::format(out, "  nvhartree      = %20.12f\n", nvhartree);
+			tfm::format(out, "  external       = %20.12f\n", external);
+			tfm::format(out, "  nonlocal       = %20.12f\n", nonlocal);
+			tfm::format(out, "  xc             = %20.12f\n", xc);
+			tfm::format(out, "  intnvxc        = %20.12f\n", nvxc);
+			tfm::format(out, "  HF exchange    = %20.12f\n", hf_exchange);
+			tfm::format(out, "  ion            = %20.12f\n", ion);
+			tfm::format(out, "  self           = %20.12f\n", self);
 			tfm::format(out, "\n");
 
 		}

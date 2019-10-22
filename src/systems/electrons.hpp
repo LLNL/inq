@@ -41,12 +41,13 @@ namespace systems {
 		
     electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::interaction & inter, const input::config & conf):
       ions_(ions_arg),
+			inter_(inter),
       rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
-      ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo()),
-      phi_(rs_, states_.num_states()),
-			sc_(inter.theory()){
+			phi_(rs_, states_.num_states()),
+      ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter_.exchange_coefficient()),
+			sc_(inter_.theory()){
 
       rs_.info(std::cout);  
       states_.info(std::cout);
@@ -65,8 +66,10 @@ namespace systems {
 
 			operations::preconditioner prec;
 
-			auto mixer = solvers::linear_mixer<double>(0.3);
-			//auto mixer = solvers::pulay_mixer<double>(5, 0.3);
+			const double mixing = 0.3;
+			
+			auto mixer = solvers::linear_mixer<double>(mixing);
+			//auto mixer = solvers::pulay_mixer<double>(5, mixing);
 			
       double old_energy = DBL_MAX;
 
@@ -79,18 +82,31 @@ namespace systems {
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
 
+			//DATAOPERATIONS STL FILL
+			std::fill(ham_.hf_occupations.begin(), ham_.hf_occupations.end(), 0.0);
+			ham_.hf_orbitals = 0.0;
+			
 			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
 
-				if(sc_.theory() != input::interaction::electronic_theory::NON_INTERACTING) mixer(ham_.scalar_potential);
+				if(inter_.self_consistent()) mixer(ham_.scalar_potential);
 
 				operations::subspace_diagonalization(ham_, phi_);
 
 				{
-					auto fphi = operations::space::to_fourier(phi_);
+					auto fphi = operations::space::to_fourier(std::move(phi_));
 					solvers::steepest_descent(ham_, prec, fphi);
-					phi_ = operations::space::to_real(fphi);
+					phi_ = operations::space::to_real(std::move(fphi));
 				}
+
+				//update the Hartree-Fock operator, mixing the new and old orbitals
+				
+				//DATAOPERATIONS LOOP 1D
+				for(int ii = 0; ii < phi_.num_elements(); ii++){
+					ham_.hf_orbitals.data()[ii] = (1.0 - mixing)*ham_.hf_orbitals.data()[ii] + mixing*phi_.data()[ii];
+				}
+				//probably the occupations should be mixed too
+				ham_.hf_occupations = states_.occupations();
 				
 				density = operations::calculate_density(states_.occupations(), phi_);
 
@@ -103,14 +119,14 @@ namespace systems {
 					operations::shift(eigenvalues, phi_, residual, -1.0);
 					
 					auto normres = operations::overlap_diagonal(residual);
-					
-					auto nlev = operations::overlap_diagonal(ham_.non_local(phi_), phi_);
-					
+					auto nl_me = operations::overlap_diagonal(ham_.non_local(phi_), phi_);
+					auto exchange_me = operations::overlap_diagonal(ham_.exchange(phi_), phi_);
 
 					auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 					
 					energy.eigenvalues = operations::sum(states_.occupations(), eigenvalues, energy_term);
-					energy.nonlocal = operations::sum(states_.occupations(), nlev, energy_term);
+					energy.nonlocal = operations::sum(states_.occupations(), nl_me, energy_term);
+					energy.hf_exchange = operations::sum(states_.occupations(), exchange_me, energy_term);
 
 					auto potdiff = operations::integral_absdiff(vks, ham_.scalar_potential)/fabs(operations::integral(vks));
 					
@@ -146,11 +162,12 @@ namespace systems {
   private:
 
 		const systems::ions & ions_;
+		input::interaction inter_;
     basis::real_space rs_;
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;
+		basis::field_set<basis::real_space, complex> phi_;
     hamiltonian::ks_hamiltonian<basis::real_space> ham_;      
-    basis::field_set<basis::real_space, complex> phi_;
 		hamiltonian::self_consistency sc_;
 
   };  

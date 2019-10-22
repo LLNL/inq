@@ -31,7 +31,8 @@ namespace input {
   public:
 
     enum class electronic_theory { NON_INTERACTING,
-                                   DENSITY_FUNCTIONAL
+                                   DENSITY_FUNCTIONAL,
+																	 HARTREE_FOCK
     };
 
     // these numbers match the libxc definition
@@ -67,6 +68,13 @@ namespace input {
       return inter;
     }
 
+		static auto hartree_fock(){
+      interaction inter;
+      inter.theory_ = electronic_theory::HARTREE_FOCK;
+      return inter;
+    }
+		
+
     auto theory() const {
       return theory_.value_or(electronic_theory::DENSITY_FUNCTIONAL);
     }
@@ -78,7 +86,16 @@ namespace input {
     auto correlation() const {
       return correlation_.value_or(correlation_functional::LDA_PZ);
     }
-    
+
+		auto exchange_coefficient() const {
+			if(theory_ == electronic_theory::HARTREE_FOCK) return 1.0;
+			return 0.0;
+		}
+
+		auto self_consistent() const {
+			return theory_ != electronic_theory::NON_INTERACTING;
+		}
+		
   private:
 
     nonstd::optional<electronic_theory> theory_;

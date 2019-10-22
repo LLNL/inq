@@ -39,9 +39,9 @@ namespace basis {
 			basis_(basis){
     }
 
-		field_set(const field_set & coeff) = delete;
+		field_set(const field_set & coeff) = default;
 		field_set(field_set && coeff) = default;
-		field_set & operator=(const field_set & coeff) = delete;
+		field_set & operator=(const field_set & coeff) = default;
 		field_set & operator=(field_set && coeff) = default;
 
 		//set to a scalar value

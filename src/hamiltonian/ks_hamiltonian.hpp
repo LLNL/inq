@@ -33,18 +33,24 @@ namespace hamiltonian {
 		
   public:
 
-    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo):
-			scalar_potential(basis){
+		basis::field<basis::real_space, double> scalar_potential;
+		boost::multi::array<double, 1> hf_occupations;
+		basis::field_set<basis::real_space, complex> hf_orbitals;
+		
+    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo,
+									 const int num_hf_orbitals, const double exchange_coefficient):
+			scalar_potential(basis),
+			hf_occupations(num_hf_orbitals),
+			hf_orbitals(basis, num_hf_orbitals),
+			exchange_coefficient_(exchange_coefficient){
 
 			scalar_potential = pot.local_potential(basis, cell, geo);
-
+			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				projectors_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
 			}
 
     }
-
-		basis::field<basis::real_space, double> scalar_potential;
 
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
 			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](phi, vnlphi);
@@ -56,7 +62,42 @@ namespace hamiltonian {
 			non_local(phi, vnlphi);
 			return vnlphi;
 		}
+		
+		void exchange(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & exxphi) const {
 
+			if(exchange_coefficient_ != 0.0){
+
+				// Hartree-Fock exchange
+				for(int ii = 0; ii < phi.set_size(); ii++){
+					for(int jj = 0; jj < phi.set_size(); jj++){
+						
+						basis::field<basis::real_space, complex> rhoij(phi.basis());
+
+						//DATAOPERATIONS LOOP 1D
+						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij[ipoint] = conj(hf_orbitals[ipoint][jj])*phi[ipoint][ii];
+						
+						//OPTIMIZATION: this could be done in place
+						auto potij = poisson_solver_(rhoij);
+						
+						//DATAOPERATIONS LOOP 1D
+						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
+							exxphi[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals[ipoint][jj]*potij[ipoint];
+						}
+						
+					}
+				}
+				
+			}
+			
+		}
+
+		auto exchange(const basis::field_set<basis::real_space, complex> & phi) const {
+			basis::field_set<basis::real_space, complex> exxphi(phi.basis(), phi.set_size());
+			exxphi = 0.0;
+			exchange(phi, exxphi);
+			return exxphi;
+		}
+		
 		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
 			
 			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
@@ -92,6 +133,8 @@ namespace hamiltonian {
 				double vv  = scalar_potential[ip];
 				for(int ist = 0; ist < phi.set_size(); ist++) hphi[ip][ist] += vv*phi[ip][ist];
 			}
+
+			exchange(phi, hphi);
 		}
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
@@ -143,7 +186,9 @@ namespace hamiltonian {
 		
   private:
 
+		solvers::poisson<basis::real_space> poisson_solver_;
 		std::vector<projector> projectors_;
+		double exchange_coefficient_;
 
   };
 
@@ -155,7 +200,7 @@ namespace hamiltonian {
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 
-TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
+TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
   using namespace Catch::literals;
   using math::d3vector;
@@ -183,7 +228,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[ks_hamiltonian]"){
   basis::field_set<basis::real_space, complex> phi(rs, st.num_states());
 	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states());
 	
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo, st.num_states(), 0.0);
 
 	SECTION("Constant function"){
 		
