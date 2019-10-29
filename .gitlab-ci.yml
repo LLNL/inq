@@ -32,10 +32,10 @@ stages:
 Build:
     stage: build
     script:
-      - autoreconf -i
+      - time autoreconf -i
       - mkdir build
       - cd build
-      - ../configure -prefix=$HOME
+      - time ../configure -prefix=$HOME
       - time make install
       - time src/inq_unit_tests
 
