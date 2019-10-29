@@ -20,6 +20,7 @@ noinst_HEADERS =                             \
 	input/config.hpp                           \
 	input/species.hpp                          \
 	input/atom.hpp                             \
+	math/array.hpp                             \
 	math/d3vector.hpp                          \
 	math/erf_range_separation.hpp              \
 	math/spline.hpp                            \
