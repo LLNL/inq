@@ -23,7 +23,7 @@
 
 #include <math/complex.hpp>
 #include <math/d3vector.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <basis/field.hpp>
 #include <basis/fourier_space.hpp>

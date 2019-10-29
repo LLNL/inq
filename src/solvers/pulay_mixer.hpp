@@ -23,7 +23,7 @@
 
 #include <math/complex.hpp>
 #include <math/d3vector.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <solvers/linear.hpp>
 
 namespace solvers {
@@ -52,8 +52,8 @@ namespace solvers {
 			if(size_ == 0){
 				//the first step we just store
 
-				ff_ = boost::multi::array<type, 2>({max_size_, new_value.size()});
-				dff_= boost::multi::array<type, 2>({max_size_, new_value.size()});
+				ff_ = math::array<type, 2>({max_size_, new_value.size()});
+				dff_= math::array<type, 2>({max_size_, new_value.size()});
 				
 				//DATAOPERATIONS STL COPY
 				std::copy(new_value.begin(), new_value.end(), ff_[0].begin());
@@ -88,7 +88,7 @@ namespace solvers {
 				dff_[size_ - 1][ii] = new_value[ii] - ff_[size_ - 2][ii];
 			}
 			
-			boost::multi::array<typename mix_type::value_type, 2> amatrix({size_, size_});
+			math::array<typename mix_type::value_type, 2> amatrix({size_, size_});
 
 			//DATAOPERATIONS LOOP 2D (use overlap)
 			for(int ii = 0; ii < size_; ii++){
@@ -113,7 +113,7 @@ namespace solvers {
 			
 			// REDUCE GRID amatrix
 
-			boost::multi::array<typename mix_type::value_type, 1> alpha(size_, 1.0);
+			math::array<typename mix_type::value_type, 1> alpha(size_, 1.0);
 
 			//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 			
@@ -147,8 +147,8 @@ namespace solvers {
 		int size_;
 		int max_size_;
     double mix_factor_;
-    boost::multi::array<type, 2> ff_;
-		boost::multi::array<type, 2> dff_;
+    math::array<type, 2> ff_;
+		math::array<type, 2> dff_;
 		
 	};
 

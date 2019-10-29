@@ -55,8 +55,8 @@ namespace operations {
 		template <class type>
 		void operator()(basis::field_set<basis::fourier_space, type> & phi) const {
 
-			boost::multi::array<double, 1> expect(phi.set_size(), 0.0);
-			boost::multi::array<double, 1> norm(phi.set_size(), 0.0);
+			math::array<double, 1> expect(phi.set_size(), 0.0);
+			math::array<double, 1> norm(phi.set_size(), 0.0);
 			
 			//calculate the expectation value of the kinetic energy
 			//DATAOPERATIONS LOOP 4D REDUCTIONS

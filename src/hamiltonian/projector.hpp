@@ -3,7 +3,7 @@
 #ifndef HAMILTONIAN_PROJECTOR
 #define HAMILTONIAN_PROJECTOR
 
-#include <multi/array.hpp>
+#include <math/array.hpp>
 
 #include <math/d3vector.hpp>
 #include <math/spherical_harmonic.hpp>
@@ -53,7 +53,7 @@ namespace hamiltonian {
 			
       auto sphere_phi = sphere_.gather(phi.cubic());
 
-      boost::multi::array<typename field_set_type::element_type, 2> projections({nproj_, phi.set_size()});
+      math::array<typename field_set_type::element_type, 2> projections({nproj_, phi.set_size()});
 
 			//DATAOPERATIONS BLAS
 			boost::multi::blas::gemm('N', 'N', sphere_.volume_element(), sphere_phi, matrix_, 0.0, projections);
@@ -83,7 +83,7 @@ namespace hamiltonian {
     basis::spherical_grid sphere_;
     int nproj_;
 		//OPTIMIZATION: make this matrix real
-    boost::multi::array<complex, 2> matrix_;
+    math::array<complex, 2> matrix_;
     std::vector<double> kb_coeff_;
     
   };

@@ -20,7 +20,7 @@
 
 #include <systems/electrons.hpp>
 #include <systems/ions.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <parser/input_file.hpp>
 #include <input/config.hpp>

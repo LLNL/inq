@@ -64,7 +64,7 @@ namespace solvers {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-#include <multi/array.hpp>
+#include <math/array.hpp>
 
 TEST_CASE("function solvers::linear", "[solvers::linear]") {
 
@@ -72,14 +72,14 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 	
 		using namespace Catch::literals;
 		
-		boost::multi::array<double, 2> matrix({2, 2});
+		math::array<double, 2> matrix({2, 2});
 		
 		matrix[0][0] = 4.0;
 		matrix[0][1] = 0.0;
 		matrix[1][0] = 0.0;
 		matrix[1][1] = 2.0;
 
-		boost::multi::array<double, 1> vector = {0.0, 1.0, };
+		math::array<double, 1> vector = {0.0, 1.0, };
 		
 		solvers::linear_symmetric(matrix, vector);
 
@@ -92,14 +92,14 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 	
 		using namespace Catch::literals;
 		
-		boost::multi::array<double, 2> matrix({2, 2});
+		math::array<double, 2> matrix({2, 2});
 		
 		matrix[0][0] = 0.89653;
 		matrix[0][1] = 0.41072;
 		matrix[1][0] = 0.41072;
 		matrix[1][1] = 0.69479;
 
-		boost::multi::array<double, 1> vector = {0.21563, 0.40103, };
+		math::array<double, 1> vector = {0.21563, 0.40103, };
 		
 		solvers::linear_symmetric(matrix, vector);
 
@@ -112,14 +112,14 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 	
 		using namespace Catch::literals;
 		
-		boost::multi::array<double, 2> matrix({2, 2});
+		math::array<double, 2> matrix({2, 2});
 		
 		matrix[0][0] = 6432.12;
 		matrix[0][1] = 4502.48;
 		matrix[1][0] = 4502.48;
 		matrix[1][1] = 3151.74;
 
-		boost::multi::array<double, 1> vector({1.0, 1.0});
+		math::array<double, 1> vector({1.0, 1.0});
 		
 		solvers::linear_symmetric(matrix, vector);
 

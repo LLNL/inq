@@ -22,7 +22,7 @@
 */
 
 #include <math/complex.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <basis/real_space.hpp>
 
 namespace states {
@@ -94,7 +94,7 @@ namespace states {
 
     int nstates_;
     int nquantumnumbers_;
-		boost::multi::array<double, 1> occs_;
+		math::array<double, 1> occs_;
 
   };
 

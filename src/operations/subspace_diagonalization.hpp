@@ -36,7 +36,7 @@ namespace operations {
 
 		//OPTIMIZATION: here we don't need to make a full copy. We can
 		//divide into blocks over point index (second dimension of phi).
-		boost::multi::array<typename field_set_type::value_type, 2> tmp = phi;
+		math::array<typename field_set_type::value_type, 2> tmp = phi;
 		
 		boost::multi::blas::gemm('T', 'N', 1.0, subspace_hamiltonian, tmp, 0.0, phi);
  

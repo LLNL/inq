@@ -34,7 +34,7 @@ namespace hamiltonian {
   public:
 
 		basis::field<basis::real_space, double> scalar_potential;
-		boost::multi::array<double, 1> hf_occupations;
+		math::array<double, 1> hf_occupations;
 		basis::field_set<basis::real_space, complex> hf_orbitals;
 		
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo,

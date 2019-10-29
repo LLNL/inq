@@ -25,7 +25,7 @@
 #include <math/d3vector.hpp>
 #include <cmath>
 #include <ions/periodic_replicas.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <limits>
 #include <complex>
 
@@ -34,7 +34,7 @@ namespace ions {
 
 	template <class cell_type, class geometry_type>
 	void interaction_energy(const math::erf_range_separation & sep, const cell_type & cell, const geometry_type & geo, double & energy, double & eself){
-		boost::multi::array<double, 1> charges(geo.num_atoms());
+		math::array<double, 1> charges(geo.num_atoms());
 
 		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = geo.atoms()[ii].charge();
 
