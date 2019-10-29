@@ -37,14 +37,14 @@ extern "C" void zheev(const char * jobz, const char * uplo, const int & n, compl
 
 namespace operations {
 
-  auto diagonalize(boost::multi::array<double, 2> & matrix){
+  auto diagonalize(math::array<double, 2> & matrix){
 
     // the matrix must be square
     assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
 
     int nn = std::get<0>(sizes(matrix));
     
-    boost::multi::array<double, 1> eigenvalues(nn);
+    math::array<double, 1> eigenvalues(nn);
 
     double lwork_query;
 
@@ -61,14 +61,14 @@ namespace operations {
     return eigenvalues;
   }
 
-  auto diagonalize(boost::multi::array<complex, 2> & matrix){
+  auto diagonalize(math::array<complex, 2> & matrix){
 
     // the matrix must be square
     assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
 
     int nn = std::get<0>(sizes(matrix));
     
-    boost::multi::array<double, 1> eigenvalues(nn);
+    math::array<double, 1> eigenvalues(nn);
 
     complex lwork_query;
 
@@ -97,7 +97,7 @@ namespace operations {
 #include <catch2/catch.hpp>
 
 #include <operations/randomize.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 
 TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
@@ -105,7 +105,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	
 		using namespace Catch::literals;
 		
-		boost::multi::array<double, 2> matrix({2, 2});
+		math::array<double, 2> matrix({2, 2});
 		
 		matrix[0][0] = 4.0;
 		matrix[0][1] = 0.0;
@@ -128,7 +128,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	
 		using namespace Catch::literals;
 		
-		boost::multi::array<complex, 2> matrix({2, 2});
+		math::array<complex, 2> matrix({2, 2});
 		
 		matrix[0][0] = 4.0;
 		matrix[0][1] = 0.0;
@@ -158,7 +158,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	
 		using namespace Catch::literals;
 		
-		boost::multi::array<double, 2> matrix({3, 3});
+		math::array<double, 2> matrix({3, 3});
 		
 		matrix[0][0] = 0.088958;
 		matrix[0][1] = 1.183407;
@@ -181,7 +181,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	
 		using namespace Catch::literals;
 		
-		boost::multi::array<complex, 2> matrix({3, 3});
+		math::array<complex, 2> matrix({3, 3});
 		
 		matrix[0][0] = complex(0.088958,  0.00000);
 		matrix[0][1] = complex(1.183407,  0.08285);

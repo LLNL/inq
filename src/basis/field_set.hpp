@@ -21,20 +21,20 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <multi/array.hpp>
+#include <math/array.hpp>
 
 namespace basis {
 	
 	template<class basis_type, class type>
-  class field_set : public boost::multi::array<type, 2>{
+  class field_set : public math::array<type, 2>{
 
   public:
 
 		typedef type value_type;
-		typedef boost::multi::array<type, 2> base;
+		typedef math::array<type, 2> base;
 		
     field_set(const basis_type & basis, const int num_vectors):
-			boost::multi::array<type, 2>({basis.size(), num_vectors}),
+			math::array<type, 2>({basis.size(), num_vectors}),
 			num_vectors_(num_vectors),
 			basis_(basis){
     }
@@ -96,7 +96,6 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	basis::field_set<basis::real_space, double> ff(rs, 12);
 
 	namespace fftw = boost::multi::fftw;
-	using boost::multi::array_ref;
 
 	REQUIRE(sizes(rs)[0] == 28);
 	REQUIRE(sizes(rs)[1] == 11);

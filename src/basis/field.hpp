@@ -21,13 +21,13 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <tinyformat/tinyformat.h>
 
 namespace basis {
 	
 	template<class b_type, class type>
-  class field : public boost::multi::array<type, 1> {
+  class field : public math::array<type, 1> {
 
   public:
 
@@ -35,19 +35,19 @@ namespace basis {
 		typedef b_type basis_type;
 		
     field(const basis_type & basis):
-			boost::multi::array<type, 1>(basis.size()),
+			math::array<type, 1>(basis.size()),
 			basis_(basis){
     }
 
 		template <class array_type>
     field(const basis_type & basis, array_type && array):
-			boost::multi::array<type, 1>(array),
+			math::array<type, 1>(array),
 			basis_(basis){
     }
 				
 		template <class array_type>
     field(const basis_type & basis, const array_type & array):
-			boost::multi::array<type, 1>(array),
+			math::array<type, 1>(array),
 			basis_(basis){
     }
 
@@ -122,7 +122,6 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	basis::field<basis::real_space, double> ff(rs);
 
 	namespace fftw = boost::multi::fftw;
-	using boost::multi::array_ref;
 
 	REQUIRE(sizes(rs)[0] == 28);
 	REQUIRE(sizes(rs)[1] == 11);

@@ -24,7 +24,7 @@
 #include <pseudo/set.hpp>
 #include <pseudo/pseudopotential.hpp>
 #include <basis/spherical_grid.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <solvers/poisson.hpp>
 
 #include <unordered_map>

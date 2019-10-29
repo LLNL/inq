@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <cassert>
 #include <multi/adaptors/blas.hpp>
 #include <operations/integral.hpp>
@@ -35,7 +35,7 @@ namespace operations {
 	template <class field_set_type>
   auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 
-		boost::multi::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
+		math::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
 
 		boost::multi::blas::gemm('N', 'C', phi1.basis().volume_element(), phi1, phi2, 0.0, overlap_matrix);
 
@@ -288,8 +288,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			REQUIRE(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
 			REQUIRE(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
 		
-	}
-
+		}
+		
 }
 
 

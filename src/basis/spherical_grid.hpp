@@ -27,7 +27,7 @@
 #include <basis/real_space.hpp>
 #include <cassert>
 #include <array>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 
 namespace basis {
 
@@ -81,7 +81,7 @@ namespace basis {
 		template <class array_4d>
     auto gather(const array_4d & grid) const {
 			const int nst = std::get<3>(sizes(grid));
-			boost::multi::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
+			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
 
 			//DATAOPERATIONS LOOP 2D
       for(int ipoint = 0; ipoint < size(); ipoint++){
@@ -144,7 +144,7 @@ namespace basis {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <math/complex.hpp>
 
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
@@ -166,7 +166,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 						       
     REQUIRE(sphere.size() == 257);
 
-    boost::multi::array<complex, 3> grid(pw.rsize());
+    math::array<complex, 3> grid(pw.rsize());
     std::vector<complex> subgrid(sphere.size());
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;
@@ -190,8 +190,8 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     
     REQUIRE(sphere.size() == 257);
     
-    boost::multi::array<complex, 4> grid({pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 20}, 0.0);
-    boost::multi::array<complex, 2> subgrid({sphere.size(), 20}, 0.0);
+    math::array<complex, 4> grid({pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 20}, 0.0);
+    math::array<complex, 2> subgrid({sphere.size(), 20}, 0.0);
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 1.0;
     
@@ -219,8 +219,8 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     
     REQUIRE(sphere.size() == 257);
 
-    boost::multi::array<complex, 6> grid({1, pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 2, 20}, 0.0);
-    boost::multi::array<complex, 3> subgrid({sphere.size(), 2, 20}, 0.0);
+    math::array<complex, 6> grid({1, pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 2, 20}, 0.0);
+    math::array<complex, 3> subgrid({sphere.size(), 2, 20}, 0.0);
 
     sphere.gather(grid[0], subgrid);
 

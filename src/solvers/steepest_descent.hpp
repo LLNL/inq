@@ -23,7 +23,7 @@
 
 #include <math/complex.hpp>
 #include <math/d3vector.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
 
@@ -55,7 +55,7 @@ namespace solvers {
 			//now calculate the step size
 			auto hresidual = ham(residual);
 
-			auto mm = boost::multi::array<field_set_type, 2>({6, phi.set_size()});
+			auto mm = math::array<field_set_type, 2>({6, phi.set_size()});
 
 			mm[0] = operations::overlap_diagonal(residual, residual);
 			mm[1] = operations::overlap_diagonal(phi, residual);

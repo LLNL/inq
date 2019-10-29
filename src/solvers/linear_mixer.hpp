@@ -23,7 +23,7 @@
 
 #include <math/complex.hpp>
 #include <math/d3vector.hpp>
-#include <multi/array.hpp>
+#include <math/array.hpp>
 
 namespace solvers {
 
@@ -41,7 +41,7 @@ namespace solvers {
     void operator()(mix_type & new_value){
 
 			if(first_iter_) {
-				old_ = boost::multi::array<type, 1>(new_value.begin(), new_value.end());
+				old_ = math::array<type, 1>(new_value.begin(), new_value.end());
 				first_iter_ = false;
 			}
 
@@ -57,7 +57,7 @@ namespace solvers {
 		
 		bool first_iter_;
     double mix_factor_;
-    boost::multi::array<type, 1> old_;
+    math::array<type, 1> old_;
 		
 	};
 
