@@ -24,7 +24,9 @@
 #include <xc.h>
 
 namespace hamiltonian {
-	namespace xc_functional {
+	class xc_functional {
+
+		public:
 		
 		template <class density_type, class exc_type, class vxc_type>
 		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc){
@@ -53,7 +55,7 @@ namespace hamiltonian {
 			xc_func_end(&func);
 
 		}
-	}
+	};
 }
 
 #endif
