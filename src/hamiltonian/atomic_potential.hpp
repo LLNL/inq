@@ -21,8 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <pseudo/set.hpp>
-#include <pseudo/pseudopotential.hpp>
+#include <pseudopod/set.hpp>
+#include <pseudopod/pseudopotential.hpp>
 #include <basis/spherical_grid.hpp>
 #include <math/array.hpp>
 #include <solvers/poisson.hpp>

@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <pseudo/element.hpp>
+#include <pseudopod/element.hpp>
 #include <utils/merge_optional.hpp>
 #include <vector>
 #include <cmath>
