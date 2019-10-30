@@ -4,7 +4,7 @@
 #define OPERATIONS__ORTHOGONALIZATION
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -29,9 +29,9 @@
 #define zpotrf FC_FUNC(zpotrf, ZPOTRF) 
 extern "C" void zpotrf(const char * uplo, const int * n, complex * a, const int * lda, int * info);
 
-#define ztrsm FC_FUNC(ztrsm, ZTRSM) 
-extern "C" void ztrsm(const char * side, const char * uplo, const char * transa, const char * diag,
-											const int * m, const int * n, const complex * alpha, const complex * a, const int * lda, complex * B, const int * ldb);
+//#define blas_ztrsm FC_FUNC(ztrsm, ZTRSM) 
+//extern "C" void blas_ztrsm(const char& side, const char& uplo, const char& transa, const char& diag,
+//											const long& m, const long& n, const complex& alpha, const complex * a, const long& lda, complex * B, const long& ldb);
 
 
 namespace operations {
@@ -50,7 +50,7 @@ namespace operations {
 		
 		//DATAOPERATIONS RAWBLAS ztrsm
 		const complex alpha = 1.0; 
-		ztrsm("L", "U", "C", "N", &nst, &np, &alpha, olap.data(), &nst, phi.data(), &nst);
+		FC_FUNC(ztrsm, ZTRSM)('L', 'U', 'C', 'N', nst, np, alpha, olap.data(), nst, phi.data(), nst);
 		
   }
 
@@ -64,14 +64,14 @@ namespace operations {
 TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 
 	using namespace Catch::literals;
-  using math::d3vector;
+	using math::d3vector;
 
 	double ecut = 25.0;
-  double ll = 6.3;
+	double ll = 6.3;
 
 	ions::geometry geo;
-  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
-  basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
+	ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+	basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
@@ -101,7 +101,6 @@ TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
 				}
 			}
 		}
-
 	}
 
 	SECTION("Dimension 100"){
