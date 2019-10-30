@@ -29,8 +29,11 @@
 
 namespace math {
 
-  template <class type, size_t dim>
-  using array = boost::multi::array<type, dim>;
+  template <class type, size_t dim,
+						class allocator = std::allocator<type>
+						>
+  using array = boost::multi::array<type, dim, allocator>;
+	//	using array = boost::multi::array<type, dim, boost::multi::memory::cuda::managed::allocator<type>>;
  
 }
 
