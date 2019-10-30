@@ -25,15 +25,6 @@ noinst_HEADERS =                             \
 	math/erf_range_separation.hpp              \
 	math/spline.hpp                            \
 	math/spherical_harmonic.hpp                \
-	pseudo/anygrid.hpp                         \
-	pseudo/base.hpp                            \
-	pseudo/element.hpp                         \
-	pseudo/psml.hpp                            \
-	pseudo/qso.hpp                             \
-	pseudo/set.hpp                             \
-	pseudo/upf.hpp                             \
-	pseudo/upf1.hpp                            \
-	pseudo/upf2.hpp                            \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
