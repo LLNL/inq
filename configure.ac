@@ -99,6 +99,13 @@ ACX_LAPACK([], AC_MSG_ERROR([could not find required LAPACK library]))
 
 AC_MSG_NOTICE([
 ================================================================================
+  CHECKING FOR REQUIRED LIBXC
+================================================================================])
+dnl check for BLAS
+ACX_LIBXC
+
+AC_MSG_NOTICE([
+================================================================================
   CONFIGURATION DONE, GENERATING MAKEFILES
 ================================================================================])
 AC_CONFIG_FILES([Makefile

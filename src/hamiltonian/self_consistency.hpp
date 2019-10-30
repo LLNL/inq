@@ -22,11 +22,11 @@
 */
 
 #include <basis/field.hpp>
-#include <functionals/lda.hpp>
 #include <solvers/poisson.hpp>
 #include <operations/add.hpp>
 #include <operations/integral.hpp>
 #include <input/interaction.hpp>
+#include <hamiltonian/xc_functional.hpp>
 
 namespace hamiltonian {
 
@@ -34,9 +34,10 @@ namespace hamiltonian {
 
 	public:
 
-		self_consistency(input::interaction::electronic_theory arg_theory):
-			theory_(arg_theory)	{
-
+		self_consistency(input::interaction interaction):
+			theory_(interaction.theory()),
+			exchange_(int(interaction.exchange())),
+			correlation_(int(interaction.correlation())){
 		}
 		
 		template <class vexternal_type, class density_type, class energy_type>
@@ -73,12 +74,20 @@ namespace hamiltonian {
 					energy.hartree = 0.5*operations::integral_product(total_density, vhartree);
 					energy.nvhartree = operations::integral_product(electronic_density, vhartree);
 						
-					vexternal_type edxc(vexternal.basis());
-					vexternal_type vxc(vexternal.basis());
+					vexternal_type ex(vexternal.basis());
+					vexternal_type vx(vexternal.basis());
+
+					exchange_.unpolarized(electronic_density.basis().size(), electronic_density, ex, vx);
+
+					vexternal_type ec(vexternal.basis());
+					vexternal_type vc(vexternal.basis());
+
+					correlation_.unpolarized(electronic_density.basis().size(), electronic_density, ec, vc);
 					
-					functionals::lda::xc_unpolarized(electronic_density.basis().size(), electronic_density, edxc, vxc);
+					energy.xc = operations::integral_product(electronic_density, operations::add(ex, ec));
+
+					auto vxc = operations::add(vx, vc);
 					
-					energy.xc = operations::integral_product(electronic_density, edxc);
 					energy.nvxc = operations::integral_product(electronic_density, vxc);
 					
 					vks = operations::add(vexternal, vhartree, vxc);
@@ -109,6 +118,8 @@ namespace hamiltonian {
 	private:
 
 		input::interaction::electronic_theory theory_;
+		hamiltonian::xc_functional exchange_;
+		hamiltonian::xc_functional correlation_;
 
 	};
 }
