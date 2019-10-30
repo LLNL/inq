@@ -27,35 +27,37 @@ namespace hamiltonian {
 	class xc_functional {
 
 		public:
+
+		xc_functional(const int functional_id){
+			if(xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
+				fprintf(stderr, "Functional '%d' not found\n", functional_id);
+				exit(1);
+			}
+		}
+
+		~xc_functional(){
+			xc_func_end(&func_);
+		}
 		
 		template <class density_type, class exc_type, class vxc_type>
 		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc){
 			
-			xc_func_type func;
-			int vmajor, vminor, vmicro, func_id = XC_LDA_X;
-			
-			xc_version(&vmajor, &vminor, &vmicro);
-			printf("Libxc version: %d.%d.%d\n", vmajor, vminor, vmicro);
-			
-			if(xc_func_init(&func, func_id, XC_UNPOLARIZED) != 0){
-				fprintf(stderr, "Functional '%d' not found\n", func_id);
-				exit(1);
-			}
-			
-			switch(func.info->family)
-				{
+			switch(func_.info->family) {
 				case XC_FAMILY_LDA:
-					xc_lda_exc_vxc(&func, size, density.data(), exc.data(), vxc.data());
+					xc_lda_exc_vxc(&func_, size, density.data(), exc.data(), vxc.data());
 					break;
 				case XC_FAMILY_GGA:
 				case XC_FAMILY_HYB_GGA:
 					break;
 				}
-			
-			xc_func_end(&func);
-
 		}
+
+		private:
+
+			xc_func_type func_;
+			
 	};
+
 }
 
 #endif

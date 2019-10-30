@@ -36,7 +36,9 @@ namespace hamiltonian {
 	public:
 
 		self_consistency(input::interaction::electronic_theory arg_theory):
-			theory_(arg_theory)	{
+			theory_(arg_theory),
+			exchange_(XC_LDA_X),
+			correlation_(XC_LDA_C_PZ){
 
 		}
 		
