@@ -67,6 +67,7 @@ noinst_HEADERS =                             \
 	hamiltonian/ks_hamiltonian.hpp             \
 	hamiltonian/self_consistency.hpp           \
 	hamiltonian/energy.hpp                     \
+	hamiltonian/xc_functional.hpp              \
 	solvers/poisson.hpp                        \
 	solvers/steepest_descent.hpp               \
 	solvers/linear_mixer.hpp                   \
