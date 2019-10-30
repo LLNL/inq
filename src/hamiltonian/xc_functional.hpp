@@ -27,10 +27,10 @@ namespace hamiltonian {
 	namespace xc_functional {
 		
 		template <class density_type, class exc_type, class vxc_type>
-		void unpolarized(long size, density_type const & density, exc_type const & exc, vxc_type const & vxc){
+		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc){
 			
 			xc_func_type func;
-			int vmajor, vminor, vmicro, func_id = 1;
+			int vmajor, vminor, vmicro, func_id = XC_LDA_X;
 			
 			xc_version(&vmajor, &vminor, &vmicro);
 			printf("Libxc version: %d.%d.%d\n", vmajor, vminor, vmicro);
@@ -43,7 +43,7 @@ namespace hamiltonian {
 			switch(func.info->family)
 				{
 				case XC_FAMILY_LDA:
-					//					xc_lda_exc(&func, size, density.data(), exc);
+					xc_lda_exc_vxc(&func, size, density.data(), exc.data(), vxc.data());
 					break;
 				case XC_FAMILY_GGA:
 				case XC_FAMILY_HYB_GGA:
