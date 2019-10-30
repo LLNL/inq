@@ -46,7 +46,7 @@ namespace systems {
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
 			phi_(rs_, states_.num_states()),
       ham_(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter_.exchange_coefficient()),
-			sc_(inter_.theory()){
+			sc_(inter_){
 
       rs_.info(std::cout);  
       states_.info(std::cout);

@@ -34,11 +34,10 @@ namespace hamiltonian {
 
 	public:
 
-		self_consistency(input::interaction::electronic_theory arg_theory):
-			theory_(arg_theory),
-			exchange_(XC_LDA_X),
-			correlation_(XC_LDA_C_PZ){
-
+		self_consistency(input::interaction interaction):
+			theory_(interaction.theory()),
+			exchange_(int(interaction.exchange())),
+			correlation_(int(interaction.correlation())){
 		}
 		
 		template <class vexternal_type, class density_type, class energy_type>
