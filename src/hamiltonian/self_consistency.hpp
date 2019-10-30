@@ -22,7 +22,6 @@
 */
 
 #include <basis/field.hpp>
-#include <functionals/lda.hpp>
 #include <solvers/poisson.hpp>
 #include <operations/add.hpp>
 #include <operations/integral.hpp>

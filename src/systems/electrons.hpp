@@ -28,7 +28,6 @@
 #include <input/basis.hpp>
 #include <input/config.hpp>
 #include <input/interaction.hpp>
-#include <functionals/lda.hpp>
 #include <ions/interaction.hpp>
 
 namespace systems {

@@ -44,12 +44,6 @@ noinst_HEADERS =                             \
 	basis/spherical_grid.hpp                   \
 	basis/trivial.hpp                          \
 	states/ks_states.hpp                       \
-	functionals/lda.hpp                        \
-	functionals/PBESolFunctional.hpp           \
-	functionals/BLYPFunctional.hpp             \
-	functionals/PBERevFunctional.hpp           \
-	functionals/XCFunctional.hpp               \
-	functionals/PBEFunctional.hpp              \
 	operations/overlap.hpp                     \
 	operations/randomize.hpp                   \
 	operations/scal.hpp                        \
@@ -82,11 +76,7 @@ all_srcs =                                   \
 	parser/parse_exp.c                         \
 	parser/gsl_userdef.c                       \
 	math/spline.cpp                            \
-	ions/unitcell.cpp                          \
-	functionals/PBEFunctional.cpp              \
-	functionals/PBERevFunctional.cpp           \
-	functionals/BLYPFunctional.cpp             \
-	functionals/PBESolFunctional.cpp
+	ions/unitcell.cpp
 
 bin_PROGRAMS  =                              \
 	inq                                        \
