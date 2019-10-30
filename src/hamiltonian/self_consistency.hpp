@@ -27,6 +27,7 @@
 #include <operations/add.hpp>
 #include <operations/integral.hpp>
 #include <input/interaction.hpp>
+#include <hamiltonian/xc_functional.hpp>
 
 namespace hamiltonian {
 
@@ -75,7 +76,8 @@ namespace hamiltonian {
 						
 					vexternal_type edxc(vexternal.basis());
 					vexternal_type vxc(vexternal.basis());
-					
+
+					hamiltonian::xc_functional::unpolarized(electronic_density.basis().size(), electronic_density, edxc, vxc);
 					functionals::lda::xc_unpolarized(electronic_density.basis().size(), electronic_density, edxc, vxc);
 					
 					energy.xc = operations::integral_product(electronic_density, edxc);

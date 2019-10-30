@@ -57,8 +57,6 @@ else
   AC_MSG_ERROR([Could not find required libxc library ( >= v 2.0.0).])
 fi
 
-AC_SUBST(CXXFLAGS_LIBXC)
-AC_SUBST(LIBS_LIBXC)
-CXXFLAGS="$acx_libxc_save_CXXFLAGS"
-LIBS="$acx_libxc_save_LIBS"
+dnl CXXFLAGS="$acx_libxc_save_CXXFLAGS"
+dnl LIBS="$acx_libxc_save_LIBS"
 ])dnl ACX_LIBXC
