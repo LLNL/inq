@@ -21,8 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <pseudo/set.hpp>
-#include <pseudo/pseudopotential.hpp>
+#include <pseudopod/set.hpp>
+#include <pseudopod/pseudopotential.hpp>
 #include <basis/spherical_grid.hpp>
 #include <math/array.hpp>
 #include <solvers/poisson.hpp>
@@ -42,7 +42,7 @@ namespace hamiltonian {
     template <class atom_array>
     atomic_potential(const int natoms, const atom_array & atom_list):
 			sep_(0.5), //this is the default from qball, but it can be optimized for the grid. Check AtomsSet.cc:1102
-      pseudo_set_(config::path::share() + "pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"){
+      pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"){
 
       nelectrons_ = 0.0;
       for(int iatom = 0; iatom < natoms; iatom++){

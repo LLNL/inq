@@ -19,7 +19,6 @@
 ##
 
 SUBDIRS =                      \
-	pseudopotentials       \
 	unit_tests_data
 
 check: install

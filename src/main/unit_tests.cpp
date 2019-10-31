@@ -22,17 +22,18 @@
 
 #include <catch2/catch.hpp>
 
+#include <pseudopod/spline.hpp>
+#include <pseudopod/erf_range_separation.hpp>
+#include <pseudopod/element.hpp>
+#include <pseudopod/pseudopotential.hpp>
+#include <pseudopod/spherical_harmonic.hpp>
+
 #include <input/basis.hpp>
 #include <input/cell.hpp>
 #include <input/species.hpp>
 #include <parser/input_file.hpp>
 #include <config/path.hpp>
 #include <math/d3vector.hpp>
-#include <math/spline.hpp>
-#include <math/spherical_harmonic.hpp>
-#include <math/erf_range_separation.hpp>
-#include <pseudo/element.hpp>
-#include <pseudo/pseudopotential.hpp>
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/interaction.hpp>

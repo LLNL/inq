@@ -2,3 +2,6 @@
 	path = external_libs/multi
 	url = ../boost-multi.git
 
+[submodule "external_libs/pseudopod"]
+	path = external_libs/pseudopod
+	url = ../pseudopod.git

@@ -2,6 +2,7 @@ AM_CXXFLAGS =                             \
 	-I$(top_srcdir)/src/                    \
 	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
+	-DPREFIX_DIR='"$(prefix)"'              \
 	$(GSL_CFLAGS)                           \
 	@CFLAGS_CUDA@
 
@@ -22,18 +23,6 @@ noinst_HEADERS =                             \
 	input/atom.hpp                             \
 	math/array.hpp                             \
 	math/d3vector.hpp                          \
-	math/erf_range_separation.hpp              \
-	math/spline.hpp                            \
-	math/spherical_harmonic.hpp                \
-	pseudo/anygrid.hpp                         \
-	pseudo/base.hpp                            \
-	pseudo/element.hpp                         \
-	pseudo/psml.hpp                            \
-	pseudo/qso.hpp                             \
-	pseudo/set.hpp                             \
-	pseudo/upf.hpp                             \
-	pseudo/upf1.hpp                            \
-	pseudo/upf2.hpp                            \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
@@ -75,7 +64,6 @@ all_srcs =                                   \
 	parser/parse.c                             \
 	parser/parse_exp.c                         \
 	parser/gsl_userdef.c                       \
-	math/spline.cpp                            \
 	ions/unitcell.cpp
 
 bin_PROGRAMS  =                              \

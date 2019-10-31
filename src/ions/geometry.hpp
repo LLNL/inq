@@ -22,7 +22,7 @@
 */
 
 #include <math/d3vector.hpp>
-#include <pseudo/element.hpp>
+#include <pseudopod/element.hpp>
 #include <input/species.hpp>
 #include <input/atom.hpp>
 
