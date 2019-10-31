@@ -3,11 +3,11 @@
 #ifndef HAMILTONIAN_PROJECTOR
 #define HAMILTONIAN_PROJECTOR
 
-#include <math/array.hpp>
-
-#include <math/d3vector.hpp>
-#include <math/spherical_harmonic.hpp>
+#include <pseudopod/spherical_harmonic.hpp>
 #include <pseudopod/pseudopotential.hpp>
+
+#include <math/array.hpp>
+#include <math/d3vector.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>

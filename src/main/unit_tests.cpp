@@ -24,6 +24,9 @@
 
 #include <pseudopod/spline.hpp>
 #include <pseudopod/erf_range_separation.hpp>
+#include <pseudopod/element.hpp>
+#include <pseudopod/pseudopotential.hpp>
+#include <pseudopod/spherical_harmonic.hpp>
 
 #include <input/basis.hpp>
 #include <input/cell.hpp>
@@ -31,9 +34,6 @@
 #include <parser/input_file.hpp>
 #include <config/path.hpp>
 #include <math/d3vector.hpp>
-#include <math/spherical_harmonic.hpp>
-#include <pseudopod/element.hpp>
-#include <pseudopod/pseudopotential.hpp>
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/interaction.hpp>

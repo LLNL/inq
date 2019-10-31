@@ -22,7 +22,6 @@ noinst_HEADERS =                             \
 	input/atom.hpp                             \
 	math/array.hpp                             \
 	math/d3vector.hpp                          \
-	math/spherical_harmonic.hpp                \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
