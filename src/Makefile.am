@@ -22,8 +22,6 @@ noinst_HEADERS =                             \
 	input/atom.hpp                             \
 	math/array.hpp                             \
 	math/d3vector.hpp                          \
-	math/erf_range_separation.hpp              \
-	math/spline.hpp                            \
 	math/spherical_harmonic.hpp                \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
@@ -66,7 +64,6 @@ all_srcs =                                   \
 	parser/parse.c                             \
 	parser/parse_exp.c                         \
 	parser/gsl_userdef.c                       \
-	math/spline.cpp                            \
 	ions/unitcell.cpp
 
 bin_PROGRAMS  =                              \
