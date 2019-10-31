@@ -115,16 +115,7 @@ AC_CONFIG_FILES([Makefile
                  external_libs/rapidxml/Makefile
                  external_libs/tinyformat/Makefile
                  share/Makefile
-		 share/pseudopotentials/pseudo-dojo.org/nc-sr-04_pbesol_standard/Makefile
-		 share/pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/Makefile
-		 share/pseudopotentials/pseudo-dojo.org/nc-sr-04_pw_standard/Makefile
-		 share/pseudopotentials/pseudo-dojo.org/nc-sr-04_pbesol_stringent/Makefile
-		 share/pseudopotentials/pseudo-dojo.org/Makefile
-		 share/pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_stringent/Makefile
-		 share/pseudopotentials/pseudo-dojo.org/nc-sr-04_pw_stringent/Makefile
-		 share/pseudopotentials/quantum-simulation.org/Makefile
-		 share/pseudopotentials/quantum-simulation.org/sg15/Makefile
-		 share/unit_tests_data/Makefile
+                 share/unit_tests_data/Makefile
                  src/Makefile])
 
 AC_OUTPUT
