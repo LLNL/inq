@@ -108,10 +108,12 @@ AC_MSG_NOTICE([
 ================================================================================
   CONFIGURATION DONE, GENERATING MAKEFILES
 ================================================================================])
+
+AC_CONFIG_SUBDIRS([external_libs/pseudopod])
+
 AC_CONFIG_FILES([Makefile
                  external_libs/Makefile
 		             external_libs/catch2/Makefile
-                 external_libs/pseudopod/Makefile                 
                  external_libs/rapidxml/Makefile
                  external_libs/tinyformat/Makefile
                  share/Makefile
