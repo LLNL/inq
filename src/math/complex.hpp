@@ -2,6 +2,11 @@
 
 #ifndef MATH_COMPLEX
 #define MATH_COMPLEX
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <complex>
 
 #ifdef HAVE_CUDA
