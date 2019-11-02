@@ -48,7 +48,9 @@ namespace operations {
 
 	template <class field_set_type>
 	auto overlap(const field_set_type & phi){
-		return overlap(phi, phi);
+		using boost::multi::blas::hermitized;
+		return boost::multi::blas::herk(phi.basis().volume_element(), hermitized(phi));
+		
 	}
 
 	template <class field_set_type>
@@ -168,7 +170,10 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 			{
 				auto cc = operations::overlap(aa);
-								
+
+				REQUIRE(std::get<0>(sizes(cc)) == M);
+				REQUIRE(std::get<1>(sizes(cc)) == M);
+				
 				for(int ii = 0; ii < M; ii++){
 					for(int jj = 0; jj < M; jj++) REQUIRE(cc[ii][jj] == Approx(0.5*N*(N - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
 				}
@@ -198,6 +203,9 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto cc = operations::overlap(aa, bb);
 
+				REQUIRE(std::get<0>(sizes(cc)) == M);
+				REQUIRE(std::get<1>(sizes(cc)) == M);
+				
 				for(int ii = 0; ii < M; ii++){
 					for(int jj = 0; jj < M; jj++) {
 						REQUIRE(fabs(real(cc[ii][jj])) < 1.0e-14);
@@ -208,6 +216,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 			{
 				auto dd = operations::overlap_diagonal(aa, bb);
+
+				REQUIRE(std::get<0>(sizes(dd)) == M);
 				
 				for(int jj = 0; jj < M; jj++){
 					REQUIRE(fabs(real(dd[jj])) < 1.0e-14);
@@ -224,6 +234,9 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto cc = operations::overlap(aa);
 
+				REQUIRE(std::get<0>(sizes(cc)) == M);
+				REQUIRE(std::get<1>(sizes(cc)) == M);
+				
 				for(int ii = 0; ii < M; ii++){
 					for(int jj = 0; jj < M; jj++){
 						REQUIRE(real(cc[ii][jj]) == Approx(0.5*N*(N - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
@@ -234,7 +247,9 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 			{
 				auto dd = operations::overlap_diagonal(aa);
-								
+
+				REQUIRE(std::get<0>(sizes(dd)) == M);
+				
 				for(int jj = 0; jj < M; jj++) REQUIRE(real(dd[jj]) == Approx(0.5*N*(N - 1.0)*bas.volume_element()*jj));
 			}
 					
