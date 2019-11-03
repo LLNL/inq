@@ -16,7 +16,7 @@
 #  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
 #  - cd $GOPATH/src/$REPO_NAME
 
-image: debian:stable
+image: gcc:8
 
 before_script:
     - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
@@ -45,4 +45,5 @@ nvcc:
       - mkdir nvcc
       - cd nvcc
       - CXX="nvcc -x cu" CXXLD="nvcc" CXXFLAGS="-D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --compiler-options -std=c++14,-Wall,-Wfatal-errors" ../configure -prefix=$HOME
+      - time make
       
