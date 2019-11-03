@@ -19,6 +19,7 @@
 image: debian:stable
 
 before_script:
+    - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
     - time apt update -qq
     - time apt install -y -qq g++ gfortran autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev nvidia-cuda nvidia-cuda-toolkit nvidia-cuda-dev
 
