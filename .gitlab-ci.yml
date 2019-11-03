@@ -27,12 +27,8 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CXXFLAGS: "-O0"
 
-stages:
-    - gcc
-    - nvcc
-
-Build:
-    stage: gcc
+gcc:
+    stage: build
     script:
       - time autoreconf -i
       - mkdir build
@@ -41,8 +37,9 @@ Build:
       - time make install
       - time src/inq_unit_tests
       - cd ../
-    stage: nvcc
+
+nvcc:
+    stage: build
     script:
       - mkdir nvcc
       - cd nvcc
-      
