@@ -28,11 +28,11 @@ variables:
   CXXFLAGS: "-O0"
 
 stages:
-    - build
+    - gcc
     - nvcc
 
 Build:
-    stage: build
+    stage: gcc
     script:
       - time autoreconf -i
       - mkdir build
