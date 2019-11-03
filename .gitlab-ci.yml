@@ -7,7 +7,7 @@ before_script:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  CXXFLAGS: "-O0"
+  CXXFLAGS: "-O3"
 
 gcc:
     stage: build
