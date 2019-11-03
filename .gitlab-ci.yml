@@ -28,7 +28,7 @@ variables:
   CXXFLAGS: "-O0"
 
 stages:
-    - build
+    - gcc
     - nvcc
 
 Build:
