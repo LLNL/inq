@@ -28,7 +28,7 @@ variables:
   CXXFLAGS: "-O0"
 
 stages:
-    - gcc
+    - build
     - nvcc
 
 Build:
@@ -40,13 +40,9 @@ Build:
       - time ../configure -prefix=$HOME
       - time make install
       - time src/inq_unit_tests
-
-Build:
+      - cd ../
     stage: nvcc
     script:
-      - time autoreconf -i
-      - mkdir build
-      - cd build
-      - time ../configure -prefix=$HOME
-      - time make install
-      - time src/inq_unit_tests
+      - mkdir nvcc
+      - cd nvcc
+      
