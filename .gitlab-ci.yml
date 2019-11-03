@@ -28,7 +28,8 @@ clang:
       - time autoreconf -i
       - mkdir build
       - cd build
-      - CXX=clang++ time ../configure -prefix=$HOME
+      - export CXX=clang++
+      - time ../configure -prefix=$HOME
       - time make install
       - time src/inq_unit_tests
       - cd ../
