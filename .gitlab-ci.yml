@@ -29,6 +29,7 @@ variables:
 
 stages:
     - build
+    - nvcc
 
 Build:
     stage: build
@@ -40,3 +41,12 @@ Build:
       - time make install
       - time src/inq_unit_tests
 
+Build:
+    stage: nvcc
+    script:
+      - time autoreconf -i
+      - mkdir build
+      - cd build
+      - time ../configure -prefix=$HOME
+      - time make install
+      - time src/inq_unit_tests
