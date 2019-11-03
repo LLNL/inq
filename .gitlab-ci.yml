@@ -24,7 +24,7 @@ gcc:
 clang:
     stage: build
     script:
-      - g++ --version
+      - clang++ --version
       - time autoreconf -i
       - mkdir build
       - cd build
