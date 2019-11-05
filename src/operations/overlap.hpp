@@ -97,6 +97,7 @@ namespace operations {
 																																static_cast<value_type const *>(phi1.data()),
 																																static_cast<value_type const *>(phi2.data()),
 																																static_cast<value_type *>(overlap_vector.data()));
+		cudaDeviceSynchronize();
 #endif
 		
 		return overlap_vector;		
