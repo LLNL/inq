@@ -77,7 +77,7 @@ namespace operations {
 
 		using value_type = typename field_set_type::value_type;
 		
-		multi::array<value_type, 1>  overlap_vector(phi1.set_size());
+		math::array<value_type, 1>  overlap_vector(phi1.set_size());
 
 		assert(size(overlap_vector) == phi1.set_size());
 
