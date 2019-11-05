@@ -162,7 +162,14 @@ namespace solvers {
 
 			auto complex_potential = operator()(complex_density);
 
-			return field<basis_type, double>(density.basis(), real(complex_potential));
+
+			field<basis_type, double> real_potential(density.basis());
+
+			//DATAOPERATIONS LOOP 1D
+			for(long ii = 0; real_potential.size(); ii++) real_potential[ii] = real(complex_potential[ii]);
+
+			return real_potential;
+			
 		}
 		
 	private:
