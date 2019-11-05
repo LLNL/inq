@@ -73,11 +73,9 @@ namespace operations {
 	template <class field_set_type>
   auto overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
 
-		namespace multi = boost::multi;
-
-		using value_type = typename field_set_type::value_type;
+		using value_type = typename field_set_type::element_type;
 		
-		multi::array<value_type, 1>  overlap_vector(phi1.set_size());
+		math::array<value_type, 1>  overlap_vector(phi1.set_size());
 
 		assert(size(overlap_vector) == phi1.set_size());
 
@@ -86,7 +84,7 @@ namespace operations {
 
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
-			typename field_set_type::value_type aa = 0.0;
+			value_type aa = 0.0;
 			for(int ip = 0; ip < phi1.basis().size(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][ii];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
@@ -97,6 +95,7 @@ namespace operations {
 																																static_cast<value_type const *>(phi1.data()),
 																																static_cast<value_type const *>(phi2.data()),
 																																static_cast<value_type *>(overlap_vector.data()));
+		cudaDeviceSynchronize();
 #endif
 		
 		return overlap_vector;		
