@@ -25,7 +25,6 @@
 #include <config.h>
 #endif
 
-
 #include <multi/array.hpp>
 
 #ifdef HAVE_CUDA
@@ -35,10 +34,13 @@
 namespace math {
 
   template <class type, size_t dim,
+#ifdef HAVE_CUDA
+						class allocator = boost::multi::memory::cuda::managed::allocator<type>
+#else
 						class allocator = std::allocator<type>
+#endif
 						>
   using array = boost::multi::array<type, dim, allocator>;
-	//	using array = boost::multi::array<type, dim, boost::multi::memory::cuda::managed::allocator<type>>;
  
 }
 

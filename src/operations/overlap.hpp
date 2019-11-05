@@ -92,21 +92,11 @@ namespace operations {
     }
 
 #else
-
-		namespace cuda = multi::memory::cuda;
-		
-		multi::array<value_type, 1, cuda::allocator<value_type> > overlap_cuda(phi1.set_size());
-		multi::array<value_type, 2, cuda::allocator<value_type> > phi1_cuda = phi1;
-		multi::array<value_type, 2, cuda::allocator<value_type> > phi2_cuda = phi2;
-
 		//OPTIMIZATION: here we should parallelize over points as well 
 		overlap_diagonal_kernel<value_type><<<1, phi1.set_size()>>>(phi1.basis().size(), phi1.set_size(), phi1.basis().volume_element(),
-																																static_cast<value_type const *>(phi1_cuda.data()),
-																																static_cast<value_type const *>(phi2_cuda.data()),
-																																static_cast<value_type *>(overlap_cuda.data()));
-		
-		overlap_vector = overlap_cuda;
-		
+																																static_cast<value_type const *>(phi1.data()),
+																																static_cast<value_type const *>(phi2.data()),
+																																static_cast<value_type *>(overlap_vector.data()));
 #endif
 		
 		return overlap_vector;		
