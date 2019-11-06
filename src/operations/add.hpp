@@ -48,6 +48,15 @@ namespace operations {
 		return tadd;
 	}
 
+
+#ifdef HAVE_CUDA
+	template <class field_type>
+	__global__ static void add_cuda(const field_type t1, const field_type t2, const field_type t3, field_type tadd){
+		auto ii = blockIdx.x*blockDim.x + threadIdx.x;
+		tadd[ii] = t1[ii] + t2[ii] + t3[ii];
+	}
+#endif
+	
 	/*
 
 		Returns a field that has the sum of the values of t1, t2 and t3.
@@ -59,9 +68,17 @@ namespace operations {
 		assert(t1.basis() == t3.basis());
 		
 		field_type tadd(t1.basis());
+
+		using type = typename field_type::element_type;
 		
-		//DATAOPERATIONS LOOP 1D (3 input arrays)
+#ifdef HAVE_CUDA
+		add_cuda<type *><<<t1.basis().size(), 1>>>(t1.data(), t2.data(), t3.data(), tadd.data());
+		//add_cuda<<<t1.basis().size(), 1>>>(t1.begin(), t2.begin(), t3.begin(), tadd.begin());
+		cudaDeviceSynchronize();
+#else
+		//DATAOPERATIONS LOOP + CUDA 1D (3 input arrays)
 		for(long ii = 0; ii < t1.basis().size(); ii++) tadd[ii] = t1[ii] + t2[ii] + t3[ii];
+#endif
 		
 		return tadd;
 	}
