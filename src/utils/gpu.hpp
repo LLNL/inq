@@ -39,10 +39,10 @@ namespace gpu {
 
   template <class kernel_type>
   void run(long size, kernel_type kernel){
-    
+
+#ifdef HAVE_CUDA
     unsigned nblock = (size + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
     
-#ifdef HAVE_CUDA
     cuda_run_kernel_1<<<nblock, CUDA_BLOCK_SIZE>>>(size, kernel);
     
     cudaDeviceSynchronize();
@@ -62,10 +62,10 @@ namespace gpu {
   template <class kernel_type>
   void run(long sizex, long sizey, kernel_type kernel){
 
+#ifdef HAVE_CUDA
     //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
     unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
     
-#ifdef HAVE_CUDA
     cuda_run_kernel_2<<<{nblock, unsigned(sizey)}, {CUDA_BLOCK_SIZE, 1}>>>(sizex, sizey, kernel);
     
     cudaDeviceSynchronize();
