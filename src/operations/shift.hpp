@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <utils/gpu.hpp>
 #include <basis/field_set.hpp>
 #include <cassert>
 
@@ -31,11 +32,25 @@ namespace operations {
     
     assert(size(factor) == phi.set_size());
 
+#ifdef HAVE_CUDA
+
+		auto nst = phi.set_size();
+		auto factorp = raw_pointer_cast(factor.data());
+		auto shiftp = raw_pointer_cast(shift.data());
+		auto phip = raw_pointer_cast(phi.data());
+		
+		gpu::run(phi.set_size(), phi.basis().size(),
+						 [=] __device__ (auto ist, auto ipoint){
+							 phip[ipoint*nst + ist] += scale*(factorp[ist]*shiftp[ipoint*nst + ist]);
+						 });
+
+#else
     //DATAOPERATIONS LOOP 2D    
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
-			for(int ist = 0; ist < phi.set_size(); ist++) phi[ipoint][ist] += scale*factor[ist]*shift[ipoint][ist];
+			for(int ist = 0; ist < phi.set_size(); ist++) phi[ipoint][ist] += scale*(factor[ist]*shift[ipoint][ist]);
     }
-    
+#endif
+
   }
   
 }
