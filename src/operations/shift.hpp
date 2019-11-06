@@ -32,8 +32,8 @@ namespace operations {
     assert(size(factor) == phi.set_size());
 
     //DATAOPERATIONS LOOP 2D    
-    for(int ipoint = 0; ipoint < phi.basis().num_points(); ipoint++) {
-      for(int ist = 0; ist < phi.set_size(); ist++) phi[ipoint][ist] += scale*factor[ist]*shift[ipoint][ist];
+    for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
+			for(int ist = 0; ist < phi.set_size(); ist++) phi[ipoint][ist] += scale*factor[ist]*shift[ipoint][ist];
     }
     
   }
@@ -43,9 +43,85 @@ namespace operations {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("function operations::shift", "[shift]") {
+TEST_CASE("function operations::shift", "[operations::shift]") {
 
 	using namespace Catch::literals;
+	const int N = 100;
+	const int M = 12;
+	
+	basis::trivial bas(N);
+	
+	SECTION("double"){
+		
+		basis::field_set<basis::trivial, double> aa(bas, M);
+		basis::field_set<basis::trivial, double> bb(bas, M);
+
+		math::array<double, 1> factor(M);
+		
+		for(int jj = 0; jj < M; jj++){
+			for(int ii = 0; ii < N; ii++){
+				aa[ii][jj] = 1.0 + 0.765*ii*jj;
+				bb[ii][jj] = ii;
+			}
+			factor[jj] = 2.0*0.765*jj;
+		}
+
+		operations::shift(factor, bb, aa, -0.5);
+				
+		for(int ii = 0; ii < M; ii++){
+			for(int jj = 0; jj < M; jj++) REQUIRE(aa[ii][jj] == Approx(1.0));
+		}
+	}	
+	
+	SECTION("complex"){
+		
+		basis::field_set<basis::trivial, complex> aa(bas, M);
+		basis::field_set<basis::trivial, complex> bb(bas, M);
+
+		math::array<complex, 1> factor(M);
+		
+		for(int jj = 0; jj < M; jj++){
+			for(int ii = 0; ii < N; ii++){
+				aa[ii][jj] = complex(ii, 1.0 + 0.765*ii*jj);
+				bb[ii][jj] = ii;
+			}
+			factor[jj] = complex(0.0, 2.0*0.765*jj);
+		}
+
+		operations::shift(factor, bb, aa, -0.5);
+				
+		for(int ii = 0; ii < M; ii++){
+			for(int jj = 0; jj < M; jj++) REQUIRE(real(aa[ii][jj]) == Approx(ii));
+			for(int jj = 0; jj < M; jj++) REQUIRE(imag(aa[ii][jj]) == Approx(1.0));
+		}
+	}	
+	
+	SECTION("mixed types"){
+		
+		basis::field_set<basis::trivial, complex> aa(bas, M);
+		basis::field_set<basis::trivial, complex> bb(bas, M);
+
+		math::array<double, 1> factor(M);
+		
+		for(int jj = 0; jj < M; jj++){
+			for(int ii = 0; ii < N; ii++){
+				aa[ii][jj] = complex(ii, 1.0 + 0.765*ii*jj);
+				bb[ii][jj] = complex(0.0, ii);
+			}
+			factor[jj] = 2.0*0.765*jj;
+		}
+
+		operations::shift(factor, bb, aa, -0.5);
+				
+		for(int ii = 0; ii < M; ii++){
+			for(int jj = 0; jj < M; jj++) {
+				std::cout << ii << '\t' << jj << '\t' << aa[ii][jj] << std::endl;
+				REQUIRE(real(aa[ii][jj]) == Approx(ii));
+				REQUIRE(imag(aa[ii][jj]) == Approx(1.0));
+			}
+		}
+	}
+	
 }
 
 
