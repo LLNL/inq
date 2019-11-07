@@ -21,8 +21,9 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-//#include <multi/adaptors/fftw.hpp>
+#include <utils/gpu.hpp>
 #include <basis/field_set.hpp>
+
 #include <cassert>
 #include <fftw3.h>
 
@@ -128,19 +129,34 @@ namespace operations {
       return fphi;    
     }
     
-    auto to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
+    	basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
 
 			basis::field_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
 
+#ifdef HAVE_CUDA
+
+			auto plan = cuda_fft_plan(phi);
+			
+			auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(fphi.data()),
+															(cufftDoubleComplex *) raw_pointer_cast(phi.data()), CUFFT_INVERSE);
+
+			assert(res == CUFFT_SUCCESS);
+			
+			cudaDeviceSynchronize();
+			
+			cufftDestroy(plan);
+			
+#else
+			
 			//DATAOPERATIONS RAWFFTW
 			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
 																					/* n = */ phi.basis().rsize().data(),
 																					/* howmany = */ phi.set_size(),
-																					/* in = */ (fftw_complex *) raw_pointer_cast(fphi.data()),
+																					/* in = */ (fftw_complex *) fphi.data(),
 																					/* inembed = */ NULL,
 																					/* istride = */ phi.set_size(),
 																					/* idist = */ 1,
-																					/* out = */ (fftw_complex *) raw_pointer_cast(phi.data()),
+																					/* out = */ (fftw_complex *) phi.data(),
 																					/* onembed = */ NULL,
 																					/* ostride = */ phi.set_size(),
 																					/* odist =*/ 1,
@@ -151,11 +167,21 @@ namespace operations {
 
 			fftw_destroy_plan(plan);
 
+#endif
+			
 			double norm_factor = phi.basis().size();
 
-			//DATAOPERATIONS LOOP 1D
+			//DATAOPERATIONS LOOP + GPU::RUN 1D
+#ifdef HAVE_CUDA
+			auto phip = raw_pointer_cast(phi.data());
+			
+			gpu::run(fphi.basis().size()*phi.set_size(),
+							 [=] __device__ (auto ii){
+								 phip[ii] = phip[ii]/norm_factor;
+							 });
+#else
 			for(long ii = 0; ii < fphi.basis().size()*phi.set_size(); ii++) phi.data()[ii] /= norm_factor;
-
+#endif
 			return phi;
     }
 
