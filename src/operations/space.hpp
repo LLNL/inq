@@ -26,6 +26,10 @@
 #include <cassert>
 #include <fftw3.h>
 
+#ifdef HAVE_CUDA
+#include <cufft.h>
+#endif
+
 namespace operations {
 
   namespace space {
@@ -34,6 +38,42 @@ namespace operations {
       
 			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
 
+#ifdef HAVE_CUDA
+
+			// the information about the layout can be found here:
+			//   https://docs.nvidia.com/cuda/cufft/index.html#advanced-data-layout
+			//
+			// Essentially the access is:
+			//   input[b*idist + ((x*inembed[1] + y)*inembed[2] + z)*istride]
+			
+			int nn[3] = {phi.basis().rsize()[0], phi.basis().rsize()[1], phi.basis().rsize()[2]};
+	
+			cufftHandle plan;
+			auto res1 = cufftPlanMany(/* plan = */ &plan,
+																/* rank = */ 3,
+																/* n = */ nn,
+																/* inembed = */ nn,
+																/* istride = */ phi.set_size(),
+																/* idist = */ 1,
+																/* onembed = */ nn,
+																/* ostride = */ phi.set_size(),
+																/* odist =*/ 1,
+																/* type = */ CUFFT_Z2Z,
+																/* batch = */ phi.set_size());
+
+			assert(res1 == CUFFT_SUCCESS);
+			
+			auto res2 = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(phi.data()),
+															 (cufftDoubleComplex *) raw_pointer_cast(fphi.data()), CUFFT_FORWARD);
+
+			assert(res2 == CUFFT_SUCCESS);
+			
+			cudaDeviceSynchronize();
+			
+			cufftDestroy(plan);
+						
+#else
+			
 			//DATAOPERATIONS RAWFFTW
 			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
 																					/* n = */ phi.basis().rsize().data(),
@@ -52,6 +92,8 @@ namespace operations {
 			fftw_execute(plan);
 
 			fftw_destroy_plan(plan);
+
+#endif
 			
 			if(fphi.basis().spherical()){
 
@@ -79,11 +121,11 @@ namespace operations {
 			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
 																					/* n = */ phi.basis().rsize().data(),
 																					/* howmany = */ phi.set_size(),
-																					/* in = */ (fftw_complex *) fphi.data(),
+																					/* in = */ (fftw_complex *) raw_pointer_cast(fphi.data()),
 																					/* inembed = */ NULL,
 																					/* istride = */ phi.set_size(),
 																					/* idist = */ 1,
-																					/* out = */ (fftw_complex *) phi.data(),
+																					/* out = */ (fftw_complex *) raw_pointer_cast(phi.data()),
 																					/* onembed = */ NULL,
 																					/* ostride = */ phi.set_size(),
 																					/* odist =*/ 1,
