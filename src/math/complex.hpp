@@ -46,7 +46,7 @@ GPU_FUNCTION inline auto operator*(const double x, const complex & z){
 }
 
 GPU_FUNCTION inline auto operator*(const complex & z, const double x){
-	return complex{x*real(z), x*imag(z)};
+	return complex{real(z)*x, imag(z)*x};
 }
 
 GPU_FUNCTION inline auto operator+(const complex & z1, const complex z2){
@@ -56,6 +56,10 @@ GPU_FUNCTION inline auto operator+(const complex & z1, const complex z2){
 GPU_FUNCTION inline auto & operator+=(complex & z1, const complex z2){
 	z1 = z1 + z2;
 	return z1;
+}
+
+GPU_FUNCTION inline auto operator/(const complex & z, const double x){
+	return complex{real(z)/x, imag(z)/x};
 }
 
 GPU_FUNCTION inline auto operator*(const complex & z1, const complex z2){

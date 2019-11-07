@@ -21,51 +21,96 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <multi/adaptors/fftw.hpp>
+#include <utils/gpu.hpp>
 #include <basis/field_set.hpp>
+
 #include <cassert>
+#include <fftw3.h>
+
+#ifdef HAVE_CUDA
+#include <cufft.h>
+#endif
 
 namespace operations {
 
   namespace space {
 
+#ifdef HAVE_CUDA
+		template <class field_type>
+		auto cuda_fft_plan(const field_type & phi){
+
+			// the information about the layout can be found here:
+			//
+			//   https://docs.nvidia.com/cuda/cufft/index.html#advanced-data-layout
+			//
+			// Essentially the access is:
+			//
+			//   input[b*idist + ((x*inembed[1] + y)*inembed[2] + z)*istride]
+		
+			int nn[3] = {phi.basis().rsize()[0], phi.basis().rsize()[1], phi.basis().rsize()[2]};
+			
+			cufftHandle plan;
+
+			auto res = cufftPlanMany(/* plan = */ &plan,
+																/* rank = */ 3,
+																/* n = */ nn,
+																/* inembed = */ nn,
+																/* istride = */ phi.set_size(),
+																/* idist = */ 1,
+																/* onembed = */ nn,
+																/* ostride = */ phi.set_size(),
+																/* odist =*/ 1,
+																/* type = */ CUFFT_Z2Z,
+																/* batch = */ phi.set_size());
+
+			assert(res == CUFFT_SUCCESS);
+
+			return plan;
+			
+		}
+		
+#endif
+		
     auto to_fourier(const basis::field_set<basis::real_space, complex> & phi){
       
-      namespace multi = boost::multi;
-      namespace fftw = boost::multi::fftw;
-	
 			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
+
+#ifdef HAVE_CUDA
+
+			auto plan = cuda_fft_plan(phi);
 			
-      
-      multi::array<complex, 3> fftgrid(phi.basis().rsize());
+			auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(phi.data()),
+															(cufftDoubleComplex *) raw_pointer_cast(fphi.data()), CUFFT_FORWARD);
 
-			//DATAOPERATIONS LOOP 4D (dissapears with a proper FFTW interface)
-      for(int ist = 0; ist < phi.set_size(); ist++){
+			assert(res == CUFFT_SUCCESS);
+			
+			cudaDeviceSynchronize();
+			
+			cufftDestroy(plan);
+						
+#else
+			
+			//DATAOPERATIONS RAWFFTW
+			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
+																					/* n = */ phi.basis().rsize().data(),
+																					/* howmany = */ phi.set_size(),
+																					/* in = */ (fftw_complex *) phi.data(),
+																					/* inembed = */ NULL,
+																					/* istride = */ phi.set_size(),
+																					/* idist = */ 1,
+																					/* out = */ (fftw_complex *) fphi.data(),
+																					/* onembed = */ NULL,
+																					/* ostride = */ phi.set_size(),
+																					/* odist =*/ 1,
+																					/* sign = */ FFTW_FORWARD,
+																					/* flags = */ FFTW_ESTIMATE);
 
-				
-				// for the moment we have to copy to single grid, since the
-				// fft interfaces assumes the transform is over the last indices
-				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
-					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
-						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = phi.cubic()[ix][iy][iz][ist];
-						}
-					}
-				}
+			fftw_execute(plan);
 
-				//DATAOPERATIONS FFTW
-				fftw::dft_inplace(fftgrid, fftw::forward);
+			fftw_destroy_plan(plan);
 
-				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
-					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
-						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
-							fphi.cubic()[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
-						}
-					}
-				}
-				
-      }
-
+#endif
+			
 			if(fphi.basis().spherical()){
 
 				//DATAOPERATIONS LOOP 4D
@@ -84,43 +129,59 @@ namespace operations {
       return fphi;    
     }
     
-    auto to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
-      
-      namespace multi = boost::multi;
-      namespace fftw = boost::multi::fftw;
+    	basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
 
 			basis::field_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
 
-      multi::array<complex, 3> fftgrid(fphi.basis().rsize());
+#ifdef HAVE_CUDA
 
-			//DATAOPERATIONS 4D (dissapears with a proper FFTW interface)
-      for(int ist = 0; ist < fphi.set_size(); ist++){
-				
-				// for the moment we have to copy to single grid, since the
-				// fft interfaces assumes the transform is over the last indices					
-				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
-					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
-						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = fphi.cubic()[ix][iy][iz][ist];
-						}
-					}
-				}
+			auto plan = cuda_fft_plan(phi);
+			
+			auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(fphi.data()),
+															(cufftDoubleComplex *) raw_pointer_cast(phi.data()), CUFFT_INVERSE);
 
-				//DATAOPERATIONS FFTW			
-				fftw::dft_inplace(fftgrid, fftw::backward);
+			assert(res == CUFFT_SUCCESS);
+			
+			cudaDeviceSynchronize();
+			
+			cufftDestroy(plan);
+			
+#else
+			
+			//DATAOPERATIONS RAWFFTW
+			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
+																					/* n = */ phi.basis().rsize().data(),
+																					/* howmany = */ phi.set_size(),
+																					/* in = */ (fftw_complex *) fphi.data(),
+																					/* inembed = */ NULL,
+																					/* istride = */ phi.set_size(),
+																					/* idist = */ 1,
+																					/* out = */ (fftw_complex *) phi.data(),
+																					/* onembed = */ NULL,
+																					/* ostride = */ phi.set_size(),
+																					/* odist =*/ 1,
+																					/* sign = */ FFTW_BACKWARD,
+																					/* flags = */ FFTW_ESTIMATE);
 
-				double norm_factor = phi.basis().num_points();
-	
-				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
-					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
-						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
-							phi.cubic()[ix][iy][iz][ist] = fftgrid[ix][iy][iz]/norm_factor;
-						}
-					}
-				}
-				
-      }
+			fftw_execute(plan);
 
+			fftw_destroy_plan(plan);
+
+#endif
+			
+			double norm_factor = phi.basis().size();
+
+			//DATAOPERATIONS LOOP + GPU::RUN 1D
+#ifdef HAVE_CUDA
+			auto phip = raw_pointer_cast(phi.data());
+			
+			gpu::run(fphi.basis().size()*phi.set_size(),
+							 [=] __device__ (auto ii){
+								 phip[ii] = phip[ii]/norm_factor;
+							 });
+#else
+			for(long ii = 0; ii < fphi.basis().size()*phi.set_size(); ii++) phi.data()[ii] /= norm_factor;
+#endif
 			return phi;
     }
 
@@ -131,7 +192,7 @@ namespace operations {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("function operations::space", "[space]") {
+TEST_CASE("function operations::space", "[operations::space]") {
 
 	using namespace Catch::literals;
 	using math::d3vector;
