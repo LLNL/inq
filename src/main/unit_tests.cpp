@@ -31,28 +31,38 @@
 #include <input/basis.hpp>
 #include <input/cell.hpp>
 #include <input/species.hpp>
+
 #include <parser/input_file.hpp>
+
 #include <config/path.hpp>
+
 #include <math/d3vector.hpp>
+
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/interaction.hpp>
 #include <ions/periodic_replicas.hpp>
+
 #include <basis/grid.hpp>
 #include <basis/spherical_grid.hpp>
 #include <basis/real_space.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
+
 #include <states/ks_states.hpp>
+
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
+
 #include <operations/add.hpp>
+#include <operations/calculate_density.hpp>
 #include <operations/sum.hpp>
 #include <operations/overlap.hpp>
 #include <operations/orthogonalization.hpp>
 #include <operations/diagonalize.hpp>
 #include <operations/shift.hpp>
+
 #include <solvers/poisson.hpp>
 #include <solvers/linear_mixer.hpp>
 #include <solvers/pulay_mixer.hpp>
