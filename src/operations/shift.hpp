@@ -32,6 +32,7 @@ namespace operations {
     
     assert(size(factor) == phi.set_size());
 
+		//DATAOPERATIONS LOOP + GPU::RUN 2D 
 #ifdef HAVE_CUDA
 
 		auto nst = phi.set_size();
@@ -45,7 +46,6 @@ namespace operations {
 						 });
 
 #else
-    //DATAOPERATIONS LOOP 2D    
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
 			for(int ist = 0; ist < phi.set_size(); ist++) phi[ipoint][ist] += scale*(factor[ist]*shift[ipoint][ist]);
     }
