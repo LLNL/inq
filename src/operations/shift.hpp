@@ -130,7 +130,6 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 				
 		for(int ii = 0; ii < M; ii++){
 			for(int jj = 0; jj < M; jj++) {
-				std::cout << ii << '\t' << jj << '\t' << aa[ii][jj] << std::endl;
 				REQUIRE(real(aa[ii][jj]) == Approx(ii));
 				REQUIRE(imag(aa[ii][jj]) == Approx(1.0));
 			}
