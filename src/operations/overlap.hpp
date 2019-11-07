@@ -51,51 +51,50 @@ namespace operations {
 		return overlap(phi, phi);
 	}
 
-#ifdef HAVE_CUDA
-	template <class type>
-	__global__ void overlap_diagonal_kernel(const long npoints, const int nst, const double vol_element,
-																					const type * phi1, const type * phi2, type * overlap){
-		
-		int ist = blockIdx.x*blockDim.x + threadIdx.x;
-
-		type aa = 0.0;
-		for(int ip = 0; ip < npoints; ip++){
-			auto p1 = phi1[ip*nst + ist];
-			auto p2 = phi2[ip*nst + ist];
-			aa += conj(p1)*p2;
-		}
-		
-		overlap[ist] = vol_element*aa;
-
-	}
-#endif
-	
 	template <class field_set_type>
-  auto overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
+	math::array<typename field_set_type::element_type, 1> overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
 
-		using value_type = typename field_set_type::element_type;
+		using type = typename field_set_type::element_type;
 		
-		math::array<value_type, 1>  overlap_vector(phi1.set_size());
+		math::array<type, 1> overlap_vector(phi1.set_size());
 
 		assert(size(overlap_vector) == phi1.set_size());
 
-		//DATAOPERATIONS LOOP + CUDA
+		//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifndef HAVE_CUDA
 
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
-			value_type aa = 0.0;
+			type aa = 0.0;
 			for(int ip = 0; ip < phi1.basis().size(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][ii];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
 
 #else
-		//OPTIMIZATION: here we should parallelize over points as well 
-		overlap_diagonal_kernel<value_type><<<1, phi1.set_size()>>>(phi1.basis().size(), phi1.set_size(), phi1.basis().volume_element(),
-																																static_cast<value_type const *>(phi1.data()),
-																																static_cast<value_type const *>(phi2.data()),
-																																static_cast<value_type *>(overlap_vector.data()));
-		cudaDeviceSynchronize();
+
+		{
+			int npoints = phi1.basis().size();
+			int nst = phi1.set_size();
+			double vol_element = phi1.basis().volume_element();
+			type const * phi1p = phi1.data();
+			type const * phi2p = phi2.data();
+			type * overlap = overlap_vector.data();		
+			
+			//OPTIMIZATION: here we should parallelize over points as well 
+			gpu::run(phi1.set_size(),
+							 [=] __device__ (auto ist){
+								 type aa = 0.0;
+								 for(int ip = 0; ip < npoints; ip++){
+									 auto p1 = phi1p[ip*nst + ist];
+									 auto p2 = phi2p[ip*nst + ist];
+									 aa += conj(p1)*p2;
+									 
+								 }
+								 
+								 overlap[ist] = vol_element*aa;
+							 });
+		}
+		
 #endif
 		
 		return overlap_vector;		

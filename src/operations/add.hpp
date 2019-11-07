@@ -26,6 +26,7 @@
 #endif
 
 #include <cstdlib>
+#include <utils/gpu.hpp>
 
 namespace operations {
 
@@ -47,21 +48,36 @@ namespace operations {
 		
 		return tadd;
 	}
-
+	
 	/*
 
 		Returns a field that has the sum of the values of t1, t2 and t3.
 
 	*/
 	template <class field_type>
-	auto add(const field_type & t1, const field_type & t2, const field_type & t3){
+	field_type add(const field_type & t1, const field_type & t2, const field_type & t3){
 		assert(t1.basis() == t2.basis());
 		assert(t1.basis() == t3.basis());
 		
 		field_type tadd(t1.basis());
+
+		//DATAOPERATIONS LOOP + GPU::RUN 1D
+#ifdef HAVE_CUDA
+
+		using type = typename field_type::element_type;
 		
-		//DATAOPERATIONS LOOP 1D (3 input arrays)
+		const type * t1p = t1.data();
+		const type * t2p = t2.data();
+		const type * t3p = t3.data();
+		type * taddp = tadd.data();
+		
+		gpu::run(t1.basis().size(),
+						 [=] __device__ (long ii){
+							 taddp[ii] = t1p[ii] + t2p[ii] + t3p[ii];
+						 });
+#else
 		for(long ii = 0; ii < t1.basis().size(); ii++) tadd[ii] = t1[ii] + t2[ii] + t3[ii];
+#endif
 		
 		return tadd;
 	}

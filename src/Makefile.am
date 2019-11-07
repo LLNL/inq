@@ -9,7 +9,8 @@ AM_CXXFLAGS =                             \
 LIBS += @GSL_LIBS@ @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@
 
 noinst_HEADERS =                             \
-	utils/merge_optional.hpp
+	utils/gpu.hpp                              \
+	utils/merge_optional.hpp                   \
 	parser/gsl_userdef.h                       \
 	parser/input_file.hpp                      \
 	parser/liboct_parser.h                     \
