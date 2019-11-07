@@ -21,9 +21,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <multi/adaptors/fftw.hpp>
+//#include <multi/adaptors/fftw.hpp>
 #include <basis/field_set.hpp>
 #include <cassert>
+#include <fftw3.h>
 
 namespace operations {
 
@@ -39,33 +40,25 @@ namespace operations {
       
       multi::array<complex, 3> fftgrid(phi.basis().rsize());
 
-			//DATAOPERATIONS LOOP 4D (dissapears with a proper FFTW interface)
-      for(int ist = 0; ist < phi.set_size(); ist++){
+			//DATAOPERATIONS RAWFFTW
+			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
+																					/* n = */ phi.basis().rsize().data(),
+																					/* howmany = */ phi.set_size(),
+																					/* in = */ (fftw_complex *) phi.data(),
+																					/* inembed = */ NULL,
+																					/* istride = */ phi.set_size(),
+																					/* idist = */ 1,
+																					/* out = */ (fftw_complex *) fphi.data(),
+																					/* onembed = */ NULL,
+																					/* ostride = */ phi.set_size(),
+																					/* odist =*/ 1,
+																					/* sign = */ FFTW_FORWARD,
+																					/* flags = */ FFTW_ESTIMATE);
 
-				
-				// for the moment we have to copy to single grid, since the
-				// fft interfaces assumes the transform is over the last indices
-				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
-					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
-						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = phi.cubic()[ix][iy][iz][ist];
-						}
-					}
-				}
+			fftw_execute(plan);
 
-				//DATAOPERATIONS FFTW
-				fftw::dft_inplace(fftgrid, fftw::forward);
-
-				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
-					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
-						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
-							fphi.cubic()[ix][iy][iz][ist] = fftgrid[ix][iy][iz];
-						}
-					}
-				}
-				
-      }
-
+			fftw_destroy_plan(plan);
+			
 			if(fphi.basis().spherical()){
 
 				//DATAOPERATIONS LOOP 4D
@@ -131,7 +124,7 @@ namespace operations {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("function operations::space", "[space]") {
+TEST_CASE("function operations::space", "[operations::space]") {
 
 	using namespace Catch::literals;
 	using math::d3vector;
