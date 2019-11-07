@@ -34,22 +34,23 @@ namespace operations {
 
   namespace space {
 
-    auto to_fourier(const basis::field_set<basis::real_space, complex> & phi){
-      
-			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
-
 #ifdef HAVE_CUDA
+		template <class field_type>
+		auto cuda_fft_plan(const field_type & phi){
 
 			// the information about the layout can be found here:
+			//
 			//   https://docs.nvidia.com/cuda/cufft/index.html#advanced-data-layout
 			//
 			// Essentially the access is:
+			//
 			//   input[b*idist + ((x*inembed[1] + y)*inembed[2] + z)*istride]
-			
+		
 			int nn[3] = {phi.basis().rsize()[0], phi.basis().rsize()[1], phi.basis().rsize()[2]};
-	
+			
 			cufftHandle plan;
-			auto res1 = cufftPlanMany(/* plan = */ &plan,
+
+			auto res = cufftPlanMany(/* plan = */ &plan,
 																/* rank = */ 3,
 																/* n = */ nn,
 																/* inembed = */ nn,
@@ -61,12 +62,26 @@ namespace operations {
 																/* type = */ CUFFT_Z2Z,
 																/* batch = */ phi.set_size());
 
-			assert(res1 == CUFFT_SUCCESS);
-			
-			auto res2 = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(phi.data()),
-															 (cufftDoubleComplex *) raw_pointer_cast(fphi.data()), CUFFT_FORWARD);
+			assert(res == CUFFT_SUCCESS);
 
-			assert(res2 == CUFFT_SUCCESS);
+			return plan;
+			
+		}
+		
+#endif
+		
+    auto to_fourier(const basis::field_set<basis::real_space, complex> & phi){
+      
+			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
+
+#ifdef HAVE_CUDA
+
+			auto plan = cuda_fft_plan(phi);
+			
+			auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(phi.data()),
+															(cufftDoubleComplex *) raw_pointer_cast(fphi.data()), CUFFT_FORWARD);
+
+			assert(res == CUFFT_SUCCESS);
 			
 			cudaDeviceSynchronize();
 			
