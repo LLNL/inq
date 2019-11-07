@@ -32,13 +32,7 @@ namespace operations {
 
     auto to_fourier(const basis::field_set<basis::real_space, complex> & phi){
       
-      namespace multi = boost::multi;
-      namespace fftw = boost::multi::fftw;
-	
 			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
-			
-      
-      multi::array<complex, 3> fftgrid(phi.basis().rsize());
 
 			//DATAOPERATIONS RAWFFTW
 			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
@@ -78,41 +72,32 @@ namespace operations {
     }
     
     auto to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
-      
-      namespace multi = boost::multi;
-      namespace fftw = boost::multi::fftw;
 
 			basis::field_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
 
-      multi::array<complex, 3> fftgrid(fphi.basis().rsize());
+			//DATAOPERATIONS RAWFFTW
+			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
+																					/* n = */ phi.basis().rsize().data(),
+																					/* howmany = */ phi.set_size(),
+																					/* in = */ (fftw_complex *) fphi.data(),
+																					/* inembed = */ NULL,
+																					/* istride = */ phi.set_size(),
+																					/* idist = */ 1,
+																					/* out = */ (fftw_complex *) phi.data(),
+																					/* onembed = */ NULL,
+																					/* ostride = */ phi.set_size(),
+																					/* odist =*/ 1,
+																					/* sign = */ FFTW_BACKWARD,
+																					/* flags = */ FFTW_ESTIMATE);
 
-			//DATAOPERATIONS 4D (dissapears with a proper FFTW interface)
-      for(int ist = 0; ist < fphi.set_size(); ist++){
-				
-				// for the moment we have to copy to single grid, since the
-				// fft interfaces assumes the transform is over the last indices					
-				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
-					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
-						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
-							fftgrid[ix][iy][iz] = fphi.cubic()[ix][iy][iz][ist];
-						}
-					}
-				}
+			fftw_execute(plan);
 
-				//DATAOPERATIONS FFTW			
-				fftw::dft_inplace(fftgrid, fftw::backward);
+			fftw_destroy_plan(plan);
 
-				double norm_factor = phi.basis().num_points();
-	
-				for(int ix = 0; ix < phi.basis().rsize()[0]; ix++){
-					for(int iy = 0; iy < phi.basis().rsize()[1]; iy++){
-						for(int iz = 0; iz < phi.basis().rsize()[2]; iz++){
-							phi.cubic()[ix][iy][iz][ist] = fftgrid[ix][iy][iz]/norm_factor;
-						}
-					}
-				}
-				
-      }
+			double norm_factor = phi.basis().size();
+
+			//DATAOPERATIONS LOOP 1D
+			for(long ii = 0; ii < fphi.basis().size()*phi.set_size(); ii++) phi.data()[ii] /= norm_factor;
 
 			return phi;
     }
