@@ -29,16 +29,33 @@
 namespace operations {
 
   template<class occupations_array_type, class field_set_type>
-  auto calculate_density(const occupations_array_type & occupations, field_set_type & phi){
+  basis::field<typename field_set_type::basis_type, double> calculate_density(const occupations_array_type & occupations, field_set_type & phi){
 
     basis::field<typename field_set_type::basis_type, double> density(phi.basis());
 
-    //DATAOPERATIONS LOOP 2D
+    //DATAOPERATIONS LOOP + GPU::RUN 2D
+#ifdef HAVE_CUDA
+
+		const auto nst = phi.set_size();
+		auto occupationsp = raw_pointer_cast(occupations.data());
+		auto phip = raw_pointer_cast(phi.data());
+		auto densityp = raw_pointer_cast(density.data());
+		
+		gpu::run(phi.basis().size(),
+						 [=] __device__ (auto ipoint){
+							 densityp[ipoint] = 0.0;
+							 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint*nst + ist]);
+						 });
+		
+#else
+		
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
 			density[ipoint] = 0.0;
       for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi[ipoint][ist]);
     }
-
+		
+#endif
+		
     return density;
   }
   
