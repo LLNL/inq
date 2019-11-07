@@ -25,11 +25,12 @@
 
 namespace basis {
 	
-	template<class basis_type, class type>
+	template<class Basis, class type>
   class field_set : public math::array<type, 2>{
 
   public:
 
+		typedef Basis basis_type;
 		typedef type value_type;
 		typedef math::array<type, 2> base;
 		

@@ -28,16 +28,34 @@
 
 namespace operations {
 
-  template<class occupations_array_type>
-  auto calculate_density(const occupations_array_type & occupations, const basis::field_set<basis::real_space, complex> & phi){
-    basis::field<basis::real_space, double> density(phi.basis());
+  template<class occupations_array_type, class field_set_type>
+  basis::field<typename field_set_type::basis_type, double> calculate_density(const occupations_array_type & occupations, field_set_type & phi){
 
-    //DATAOPERATIONS LOOP 2D
+    basis::field<typename field_set_type::basis_type, double> density(phi.basis());
+
+    //DATAOPERATIONS LOOP + GPU::RUN 2D
+#ifdef HAVE_CUDA
+
+		const auto nst = phi.set_size();
+		auto occupationsp = raw_pointer_cast(occupations.data());
+		auto phip = raw_pointer_cast(phi.data());
+		auto densityp = raw_pointer_cast(density.data());
+		
+		gpu::run(phi.basis().size(),
+						 [=] __device__ (auto ipoint){
+							 densityp[ipoint] = 0.0;
+							 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint*nst + ist]);
+						 });
+		
+#else
+		
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
 			density[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi[ist][ipoint]);
+      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi[ipoint][ist]);
     }
-
+		
+#endif
+		
     return density;
   }
   
@@ -46,10 +64,55 @@ namespace operations {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("function operations::randomize", "[randomize]") {
+TEST_CASE("function operations::calculate_density", "[operations::calculate_density]") {
 
 	using namespace Catch::literals;
 
+	const int N = 100;
+	const int M = 12;
+	
+	basis::trivial bas(N);
+	
+	SECTION("double"){
+		
+		basis::field_set<basis::trivial, double> aa(bas, M);
+
+		math::array<double, 1> occ(M);
+		
+		for(int ii = 0; ii < N; ii++){
+			for(int jj = 0; jj < M; jj++){
+				aa[ii][jj] = sqrt(ii)*(jj + 1);
+			}
+		}
+
+		for(int jj = 0; jj < M; jj++) occ[jj] = 1.0/(jj + 1);
+
+		auto dd = operations::calculate_density(occ, aa);
+		
+		for(int ii = 0; ii < M; ii++) REQUIRE(dd[ii] == Approx(0.5*ii*M*(M + 1)));
+		
+	}
+	
+	SECTION("complex"){
+		
+		basis::field_set<basis::trivial, complex> aa(bas, M);
+
+		math::array<double, 1> occ(M);
+		
+		for(int ii = 0; ii < N; ii++){
+			for(int jj = 0; jj < M; jj++){
+				aa[ii][jj] = sqrt(ii)*(jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
+			}
+		}
+
+		for(int jj = 0; jj < M; jj++) occ[jj] = 1.0/(jj + 1);
+
+		auto dd = operations::calculate_density(occ, aa);
+		
+		for(int ii = 0; ii < M; ii++) REQUIRE(dd[ii] == Approx(0.5*ii*M*(M + 1)));
+		
+	}
+	
 }
 
 

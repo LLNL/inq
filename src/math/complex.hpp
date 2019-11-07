@@ -66,8 +66,8 @@ GPU_FUNCTION inline auto norm(const double & x){
 	return x*x;
 }
 
-inline auto norm(const complex & z){
-	return std::norm(z);
+GPU_FUNCTION inline auto norm(const complex & z){
+	return real(z)*real(z) + imag(z)*imag(z);
 }
 
 #endif
