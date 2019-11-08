@@ -28,6 +28,8 @@
 #include <pseudopod/pseudopotential.hpp>
 #include <pseudopod/spherical_harmonic.hpp>
 
+#include <utils/gpu.hpp>
+
 #include <input/basis.hpp>
 #include <input/cell.hpp>
 #include <input/species.hpp>

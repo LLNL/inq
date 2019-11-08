@@ -21,6 +21,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef HAVE_CUDA
 #include <cuda.h>
 #endif
@@ -44,7 +48,8 @@ namespace gpu {
   void run(long size, kernel_type kernel){
 
 #ifdef HAVE_CUDA
-    unsigned nblock = (size + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
+
+		unsigned nblock = (size + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
     
     cuda_run_kernel_1<<<nblock, CUDA_BLOCK_SIZE>>>(size, kernel);
     
@@ -78,4 +83,76 @@ namespace gpu {
 
 }
 
+#ifdef HAVE_CUDA
+#ifdef UNIT_TEST
+#include <catch2/catch.hpp>
+#include <math/array.hpp>
+
+TEST_CASE("function gpu::run", "[gpu::run]") {
+
+	using namespace Catch::literals;
+
+	SECTION("1D very small"){
+
+		int N = 200;
+
+		math::array<int, 1> list(N, 0);
+
+		gpu::run(N,
+						 [ll = begin(list)] __device__ (auto ii){
+							 atomicAdd(&(ll[ii]), ii);
+						 });
+
+		int diff = 0;
+		for(int ii = 0; ii < N; ii++) {
+			diff += list[ii] - ii;
+		}
+
+		REQUIRE(diff == 0);
+
+	}
+
+	SECTION("1D small"){
+
+		int N = 6666;
+		
+		math::array<int, 1> list(N, 0);
+		
+		gpu::run(N,
+						 [ll = begin(list)] __device__ (auto ii){
+							 atomicAdd(&(ll[ii]), ii);
+						 });
+
+		int diff = 0;
+		for(int ii = 0; ii < N; ii++) {
+			diff += list[ii] - ii;
+		}
+
+		REQUIRE(diff == 0);
+
+	}
+
+	SECTION("1D medium"){
+
+		long N = 127939;
+		
+		math::array<int, 1> list(N, 0);
+		
+		gpu::run(N,
+						 [ll = begin(list)] __device__ (auto ii){
+							 atomicAdd(&(ll[ii]), ii);
+						 });
+
+		int diff = 0;
+		for(int ii = 0; ii < N; ii++) {
+			diff += list[ii] - ii;
+		}
+
+		REQUIRE(diff == 0);
+
+	}
+}
+
+#endif
+#endif
 #endif
