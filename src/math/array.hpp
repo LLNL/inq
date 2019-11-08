@@ -28,7 +28,7 @@
 #include <multi/array.hpp>
 
 #ifdef HAVE_CUDA
-#include <multi/memory/adaptors/cuda/allocator.hpp>
+#include <multi/memory/adaptors/cuda/managed/allocator.hpp>
 #endif
 
 namespace math {
