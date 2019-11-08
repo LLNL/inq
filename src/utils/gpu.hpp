@@ -105,7 +105,7 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 
 		int diff = 0;
 		for(int ii = 0; ii < N; ii++) {
-			diff += list[ii] - ii;
+			diff += abs(list[ii] - ii);
 		}
 
 		REQUIRE(diff == 0);
@@ -125,7 +125,7 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 
 		int diff = 0;
 		for(int ii = 0; ii < N; ii++) {
-			diff += list[ii] - ii;
+			diff += abs(list[ii] - ii);
 		}
 
 		REQUIRE(diff == 0);
@@ -145,12 +145,39 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 
 		int diff = 0;
 		for(int ii = 0; ii < N; ii++) {
-			diff += list[ii] - ii;
+			diff += abs(list[ii] - ii);
 		}
 
 		REQUIRE(diff == 0);
 
 	}
+
+	SECTION("2D very small"){
+
+		int N1 = 200;
+		int N2 = 200;
+		
+		math::array<int, 3> list({N1, N2, 2}, 0);
+
+		gpu::run(N1, N2, 
+						 [ll = begin(list)] __device__ (auto ii, auto jj){
+							 atomicAdd(&(ll[ii][jj][0]), ii);
+							 atomicAdd(&(ll[ii][jj][1]), jj);
+						 });
+
+		int diff = 0;
+		for(int ii = 0; ii < N1; ii++) {
+			for(int jj = 0; jj < N2; jj++) {
+				diff += abs(list[ii][jj][0] - ii);
+				diff += abs(list[ii][jj][1] - jj);
+			}
+		}
+
+		REQUIRE(diff == 0);
+
+	}
+
+	
 }
 
 #endif
