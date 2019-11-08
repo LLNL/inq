@@ -100,12 +100,34 @@ namespace gpu {
 						 });
 
 		size_t diff = 0;
-		for(int ii = 0; ii < size; ii++) {
+		for(size_t ii = 0; ii < size; ii++) {
 			diff += ii + 1 - list[ii];
 		}
 		return diff;
 	}
-		
+
+	size_t check_run(size_t size1, size_t size2){
+
+		math::array<size_t, 3> list({size1, size2, 2}, 0);
+
+		gpu::run(size1, size2, 
+						 [ll = begin(list)] __device__ (auto ii, auto jj){
+							 atomicAdd((unsigned long long int*) &(ll[ii][jj][0]), (unsigned long long int) ii + 1);
+							 atomicAdd((unsigned long long int*) &(ll[ii][jj][1]), (unsigned long long int) jj + 1);
+						 });
+
+		size_t diff = 0;
+		for(size_t ii = 0; ii < size1; ii++) {
+			for(size_t jj = 0; jj < size2; jj++) {
+				diff += ii + 1 - list[ii][jj][0];
+				diff += jj + 1 - list[ii][jj][1];
+			}
+		}
+
+		return diff;
+
+	}
+	
 }
 
 TEST_CASE("function gpu::run", "[gpu::run]") {
@@ -114,33 +136,15 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 
 	SECTION("1D"){
 		REQUIRE(gpu::check_run(200) == 0);
+		REQUIRE(gpu::check_run(1024) == 0);
 		REQUIRE(gpu::check_run(6666) == 0);
 		REQUIRE(gpu::check_run(127939) == 0);
 	}
 
-	SECTION("2D very small"){
-
-		int N1 = 200;
-		int N2 = 200;
-		
-		math::array<int, 3> list({N1, N2, 2}, 0);
-
-		gpu::run(N1, N2, 
-						 [ll = begin(list)] __device__ (auto ii, auto jj){
-							 atomicAdd(&(ll[ii][jj][0]), ii);
-							 atomicAdd(&(ll[ii][jj][1]), jj);
-						 });
-
-		int diff = 0;
-		for(int ii = 0; ii < N1; ii++) {
-			for(int jj = 0; jj < N2; jj++) {
-				diff += abs(list[ii][jj][0] - ii);
-				diff += abs(list[ii][jj][1] - jj);
-			}
-		}
-
-		REQUIRE(diff == 0);
-
+	SECTION("2D"){
+		REQUIRE(gpu::check_run(200, 200) == 0);
+		REQUIRE(gpu::check_run(256, 1200) == 0);
+		REQUIRE(gpu::check_run(2023, 4) == 0);
 	}
 
 	
