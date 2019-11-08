@@ -129,7 +129,7 @@ namespace operations {
       return fphi;    
     }
     
-    	basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
+		basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
 
 			basis::field_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
 
