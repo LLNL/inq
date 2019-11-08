@@ -72,7 +72,9 @@ namespace gpu {
 		unsigned nblock = (size + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
     
     cuda_run_kernel_1<<<nblock, CUDA_BLOCK_SIZE>>>(size, kernel);
-    
+
+		assert(cudaGetLastError() == CUDA_SUCCESS);
+		
     cudaDeviceSynchronize();
 #endif
     
@@ -103,6 +105,8 @@ namespace gpu {
 		
     cuda_run_kernel_2<<<{nblock, unsigned(dim2), unsigned(dim3)}, {CUDA_BLOCK_SIZE, 1}>>>(sizex, sizey, dim2, kernel);
     
+		assert(cudaGetLastError() == CUDA_SUCCESS);
+		
     cudaDeviceSynchronize();
 #endif
     
@@ -130,7 +134,9 @@ namespace gpu {
     unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
     
     cuda_run_kernel_4<<<{nblock, unsigned(sizey), unsigned(sizez)}, {CUDA_BLOCK_SIZE, 1, 1}>>>(sizex, sizey, sizez, sizew, kernel);
-    
+
+		assert(cudaGetLastError() == CUDA_SUCCESS);
+		
     cudaDeviceSynchronize();
 #endif
     
