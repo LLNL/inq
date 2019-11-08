@@ -8,12 +8,7 @@
 #endif
 
 #include <complex>
-
-#ifdef HAVE_CUDA
-#define GPU_FUNCTION __host__ __device__
-#else
-#define GPU_FUNCTION
-#endif
+#include <utils/gpu.hpp>
 
 using complex = std::complex<double>;
 

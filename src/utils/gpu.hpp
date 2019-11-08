@@ -29,6 +29,12 @@
 #include <cuda.h>
 #endif
 
+#ifdef HAVE_CUDA
+#define GPU_FUNCTION __host__ __device__
+#else
+#define GPU_FUNCTION
+#endif
+
 #define CUDA_BLOCK_SIZE 1024
 
 #define CUDA_MAX_DIM1 2147483647ULL
@@ -96,6 +102,34 @@ namespace gpu {
 		factorize(sizey, CUDA_MAX_DIM23, dim2, dim3);
 		
     cuda_run_kernel_2<<<{nblock, unsigned(dim2), unsigned(dim3)}, {CUDA_BLOCK_SIZE, 1}>>>(sizex, sizey, dim2, kernel);
+    
+    cudaDeviceSynchronize();
+#endif
+    
+  }
+
+#ifdef HAVE_CUDA
+  template <class kernel_type>
+  __global__ void cuda_run_kernel_4(unsigned sizex, unsigned sizey, unsigned sizez, unsigned sizew, kernel_type kernel){
+    auto ix = blockIdx.x*blockDim.x + threadIdx.x;
+    auto iy = blockIdx.y*blockDim.y + threadIdx.y;
+		auto iz = blockIdx.y*blockDim.z + threadIdx.z;
+    if(ix < sizex && iy < sizey && iz < sizez){
+			for(int iw = 0; iw < sizew; iw++){
+				kernel(ix, iy, iz, iw);
+			}
+		}
+  }
+#endif
+ 
+  template <class kernel_type>
+  void run(long sizex, long sizey, long sizez, long sizew, kernel_type kernel){
+
+#ifdef HAVE_CUDA
+    //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
+    unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
+    
+    cuda_run_kernel_4<<<{nblock, unsigned(sizey), unsigned(sizez)}, {CUDA_BLOCK_SIZE, 1, 1}>>>(sizex, sizey, sizez, sizew, kernel);
     
     cudaDeviceSynchronize();
 #endif
