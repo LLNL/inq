@@ -39,12 +39,13 @@ namespace operations {
 		const auto nst = phi.set_size();
 		auto occupationsp = raw_pointer_cast(occupations.data());
 		auto phip = raw_pointer_cast(phi.data());
+		auto it_phi = begin(phi);
 		auto densityp = raw_pointer_cast(density.data());
 		
 		gpu::run(phi.basis().size(),
 						 [=] __device__ (auto ipoint){
 							 densityp[ipoint] = 0.0;
-							 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint*nst + ist]);
+							 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(it_phi[ipoint][ist]);
 						 });
 		
 #else
