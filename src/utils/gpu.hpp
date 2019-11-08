@@ -27,6 +27,9 @@
 
 #define CUDA_BLOCK_SIZE 1024
 
+#define CUDA_MAX_DIM1 2147483647ULL
+#define CUDA_MAX_DIM23 65535
+
 namespace gpu {
 
 #ifdef HAVE_CUDA
