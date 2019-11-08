@@ -88,68 +88,34 @@ namespace gpu {
 #include <catch2/catch.hpp>
 #include <math/array.hpp>
 
+namespace gpu {
+	
+	size_t check_run(size_t size){
+		
+		math::array<size_t, 1> list(size, 0);
+
+		gpu::run(size,
+						 [ll = begin(list)] __device__ (auto ii){
+							 atomicAdd((unsigned long long int*) &(ll[ii]), (unsigned long long int) ii + 1);
+						 });
+
+		size_t diff = 0;
+		for(int ii = 0; ii < size; ii++) {
+			diff += ii + 1 - list[ii];
+		}
+		return diff;
+	}
+		
+}
+
 TEST_CASE("function gpu::run", "[gpu::run]") {
 
 	using namespace Catch::literals;
 
-	SECTION("1D very small"){
-
-		int N = 200;
-
-		math::array<int, 1> list(N, 0);
-
-		gpu::run(N,
-						 [ll = begin(list)] __device__ (auto ii){
-							 atomicAdd(&(ll[ii]), ii);
-						 });
-
-		int diff = 0;
-		for(int ii = 0; ii < N; ii++) {
-			diff += abs(list[ii] - ii);
-		}
-
-		REQUIRE(diff == 0);
-
-	}
-
-	SECTION("1D small"){
-
-		int N = 6666;
-		
-		math::array<int, 1> list(N, 0);
-		
-		gpu::run(N,
-						 [ll = begin(list)] __device__ (auto ii){
-							 atomicAdd(&(ll[ii]), ii);
-						 });
-
-		int diff = 0;
-		for(int ii = 0; ii < N; ii++) {
-			diff += abs(list[ii] - ii);
-		}
-
-		REQUIRE(diff == 0);
-
-	}
-
-	SECTION("1D medium"){
-
-		long N = 127939;
-		
-		math::array<int, 1> list(N, 0);
-		
-		gpu::run(N,
-						 [ll = begin(list)] __device__ (auto ii){
-							 atomicAdd(&(ll[ii]), ii);
-						 });
-
-		int diff = 0;
-		for(int ii = 0; ii < N; ii++) {
-			diff += abs(list[ii] - ii);
-		}
-
-		REQUIRE(diff == 0);
-
+	SECTION("1D"){
+		REQUIRE(gpu::check_run(200) == 0);
+		REQUIRE(gpu::check_run(6666) == 0);
+		REQUIRE(gpu::check_run(127939) == 0);
 	}
 
 	SECTION("2D very small"){
