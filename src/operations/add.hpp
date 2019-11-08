@@ -65,11 +65,11 @@ namespace operations {
 #ifdef HAVE_CUDA
 
 		using type = typename field_type::element_type;
-		
-		const type * t1p = t1.data();
-		const type * t2p = t2.data();
-		const type * t3p = t3.data();
-		type * taddp = tadd.data();
+
+		auto t1p = t1.begin();
+		auto t2p = t2.begin();
+		auto t3p = t3.begin();
+		auto taddp = tadd.begin();
 		
 		gpu::run(t1.basis().size(),
 						 [=] __device__ (long ii){

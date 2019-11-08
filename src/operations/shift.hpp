@@ -36,13 +36,13 @@ namespace operations {
 #ifdef HAVE_CUDA
 
 		auto nst = phi.set_size();
-		auto factorp = raw_pointer_cast(factor.data());
-		auto shiftp = raw_pointer_cast(shift.data());
-		auto phip = raw_pointer_cast(phi.data());
+		auto factorp = begin(factor);
+		auto shiftp = begin(shift);
+		auto phip = begin(phi);
 		
 		gpu::run(phi.set_size(), phi.basis().size(),
 						 [=] __device__ (auto ist, auto ipoint){
-							 phip[ipoint*nst + ist] += scale*(factorp[ist]*shiftp[ipoint*nst + ist]);
+							 phip[ipoint][ist] += scale*(factorp[ist]*shiftp[ipoint][ist]);
 						 });
 
 #else
