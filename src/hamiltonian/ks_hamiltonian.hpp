@@ -257,7 +257,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 		
-		REQUIRE(diff == 0.0_a);
+		REQUIRE(diff < 1e-14);
 		
 	}
 	
@@ -291,7 +291,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff < 1e-15);
+		REQUIRE(diff < 1e-14);
 		
 	}
 
@@ -364,7 +364,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff < 1e-15);
+		REQUIRE(diff < 1e-14);
 		
 	}
 
