@@ -61,8 +61,8 @@ namespace operations {
 TEST_CASE("function operations::shift", "[operations::shift]") {
 
 	using namespace Catch::literals;
-	const int N = 100;
-	const int M = 12;
+	const int N = 185193;
+	const int M = 7;
 	
 	basis::trivial bas(N);
 	
