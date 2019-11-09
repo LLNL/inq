@@ -26,7 +26,7 @@
 #endif
 
 #include <cstdlib>
-#include <utils/gpu.hpp>
+#include <gpu/run.hpp>
 
 namespace operations {
 

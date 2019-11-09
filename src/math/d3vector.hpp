@@ -39,7 +39,7 @@
 #include <cmath>
 #include <cassert>
 
-#include <utils/gpu.hpp>
+#include <gpu/run.hpp>
 
 namespace math {
   class d3vector {
