@@ -63,7 +63,7 @@ namespace gpu {
 #endif
 
   template <class kernel_type>
-  void run(long size, kernel_type kernel){
+  void run(size_t size, kernel_type kernel){
 
 #ifdef HAVE_CUDA
 
@@ -94,7 +94,7 @@ namespace gpu {
 #endif
  
   template <class kernel_type>
-  void run(long sizex, long sizey, kernel_type kernel){
+  void run(size_t sizex, size_t sizey, kernel_type kernel){
 
 #ifdef HAVE_CUDA
     //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
@@ -124,7 +124,7 @@ namespace gpu {
 #endif
  
   template <class kernel_type>
-  void run(long sizex, long sizey, long sizez, kernel_type kernel){
+  void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 
 #ifdef HAVE_CUDA
     //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
@@ -154,7 +154,7 @@ namespace gpu {
 #endif
  
   template <class kernel_type>
-  void run(long sizex, long sizey, long sizez, long sizew, kernel_type kernel){
+  void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type kernel){
 
 #ifdef HAVE_CUDA
     //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
