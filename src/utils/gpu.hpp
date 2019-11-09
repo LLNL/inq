@@ -111,7 +111,34 @@ namespace gpu {
 #endif
     
   }
+	
+#ifdef HAVE_CUDA
+  template <class kernel_type>
+  __global__ void cuda_run_kernel_3(unsigned sizex, unsigned sizey, unsigned sizez, kernel_type kernel){
+    auto ix = blockIdx.x*blockDim.x + threadIdx.x;
+    auto iy = blockIdx.y*blockDim.y + threadIdx.y;
+		auto iz = blockIdx.z*blockDim.z + threadIdx.z;
+    if(ix < sizex && iy < sizey && iz < sizez) kernel(ix, iy, iz);
 
+  }
+#endif
+ 
+  template <class kernel_type>
+  void run(long sizex, long sizey, long sizez, kernel_type kernel){
+
+#ifdef HAVE_CUDA
+    //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
+    unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
+    
+		cuda_run_kernel_3<<<{nblock, unsigned(sizey), unsigned(sizez)}, {CUDA_BLOCK_SIZE, 1, 1}>>>(sizex, sizey, sizez, kernel);
+
+		assert(cudaGetLastError() == CUDA_SUCCESS);
+		
+    cudaDeviceSynchronize();
+#endif
+    
+  }
+	
 #ifdef HAVE_CUDA
   template <class kernel_type>
   __global__ void cuda_run_kernel_4(unsigned sizex, unsigned sizey, unsigned sizez, unsigned sizew, kernel_type kernel){
@@ -134,7 +161,6 @@ namespace gpu {
     unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
     
 		cuda_run_kernel_4<<<{nblock, unsigned(sizey), unsigned(sizez)}, {CUDA_BLOCK_SIZE, 1, 1}>>>(sizex, sizey, sizez, sizew, kernel);
-		//cuda_run_kernel_4<<<{unsigned(sizex), unsigned(sizey), unsigned(sizez)}, {1, 1, 1}>>>(sizex, sizey, sizez, sizew, kernel);
 
 		assert(cudaGetLastError() == CUDA_SUCCESS);
 		
@@ -183,6 +209,32 @@ namespace gpu {
 			for(size_t jj = 0; jj < size2; jj++) {
 				diff += ii + 1 - list[ii][jj][0];
 				diff += jj + 1 - list[ii][jj][1];
+			}
+		}
+
+		return diff;
+
+	}
+
+	size_t check_run(size_t size1, size_t size2, size_t size3){
+
+		math::array<size_t, 4> list({size1, size2, size3, 3}, 0);
+
+		gpu::run(size1, size2, size3,
+						 [itlist = begin(list)] __device__ (auto ii, auto jj, auto kk){
+							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][0]), (unsigned long long int) ii + 1);
+							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][1]), (unsigned long long int) jj + 1);
+							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][2]), (unsigned long long int) kk + 1);
+						 });
+		
+		size_t diff = 0;
+		for(size_t ii = 0; ii < size1; ii++) {
+			for(size_t jj = 0; jj < size2; jj++) {
+				for(size_t kk = 0; kk < size3; kk++) {
+					diff += ii + 1 - list[ii][jj][kk][0];
+					diff += jj + 1 - list[ii][jj][kk][1];
+					diff += kk + 1 - list[ii][jj][kk][2];
+				}
 			}
 		}
 
@@ -240,6 +292,17 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 		REQUIRE(gpu::check_run(7, 57*57*57) == 0);
 	}
 
+	SECTION("3D"){
+		REQUIRE(gpu::check_run(2, 2, 2) == 0);
+		REQUIRE(gpu::check_run(7, 2, 2) == 0);
+		REQUIRE(gpu::check_run(7, 57, 57) == 0);
+		REQUIRE(gpu::check_run(32, 23, 18) == 0);
+		REQUIRE(gpu::check_run(213, 27, 78) == 0);
+		REQUIRE(gpu::check_run(2500, 10, 12) == 0);
+		REQUIRE(gpu::check_run(7, 1023, 12) == 0);	
+		REQUIRE(gpu::check_run(1, 11, 1229) == 0);	
+	}
+	
 	SECTION("4D"){
 		REQUIRE(gpu::check_run(2, 2, 2, 2) == 0);
 		REQUIRE(gpu::check_run(7, 2, 2, 2) == 0);
