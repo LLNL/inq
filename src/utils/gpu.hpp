@@ -36,6 +36,18 @@
 
 namespace gpu {
 
+	//finds fact1, fact2 < thres such that fact1*fact2 >= val
+	void factorize(const size_t val, const size_t thres, size_t & fact1, size_t & fact2){
+		fact1 = val;
+		fact2 = 1;
+		while (fact1 > thres){
+			fact1 = (fact1 + 1)/2;
+			fact2 *= 2;
+		}
+
+		assert(fact1*fact2 >= val);
+	}
+	
 #ifdef HAVE_CUDA
   template <class kernel_type>
   __global__ void cuda_run_kernel_1(unsigned size, kernel_type kernel){
@@ -49,6 +61,8 @@ namespace gpu {
 
 #ifdef HAVE_CUDA
 
+		assert(size <= CUDA_MAX_DIM1);
+		
 		unsigned nblock = (size + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
     
     cuda_run_kernel_1<<<nblock, CUDA_BLOCK_SIZE>>>(size, kernel);
@@ -60,9 +74,13 @@ namespace gpu {
 
 #ifdef HAVE_CUDA
   template <class kernel_type>
-  __global__ void cuda_run_kernel_2(unsigned sizex, unsigned sizey, kernel_type kernel){
-    auto ix = blockIdx.x*blockDim.x + threadIdx.x;
-    auto iy = blockIdx.y*blockDim.y + threadIdx.y;
+  __global__ void cuda_run_kernel_2(unsigned sizex, unsigned sizey, unsigned dim2, kernel_type kernel){
+		auto i1 = blockIdx.x*blockDim.x + threadIdx.x;
+		auto i2 = blockIdx.y*blockDim.y + threadIdx.y;
+		auto i3 = blockIdx.z*blockDim.z + threadIdx.z;
+		
+    auto ix = i1;
+    auto iy = i2 + dim2*i3;
     if(ix < sizex && iy < sizey) kernel(ix, iy);
   }
 #endif
@@ -73,8 +91,11 @@ namespace gpu {
 #ifdef HAVE_CUDA
     //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
     unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
-    
-    cuda_run_kernel_2<<<{nblock, unsigned(sizey)}, {CUDA_BLOCK_SIZE, 1}>>>(sizex, sizey, kernel);
+
+		size_t dim2, dim3;
+		factorize(sizey, CUDA_MAX_DIM23, dim2, dim3);
+		
+    cuda_run_kernel_2<<<{nblock, unsigned(dim2), unsigned(dim3)}, {CUDA_BLOCK_SIZE, 1}>>>(sizex, sizey, dim2, kernel);
     
     cudaDeviceSynchronize();
 #endif
@@ -145,8 +166,8 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 		REQUIRE(gpu::check_run(200, 200) == 0);
 		REQUIRE(gpu::check_run(256, 1200) == 0);
 		REQUIRE(gpu::check_run(2023, 4) == 0);
+		REQUIRE(gpu::check_run(7, 57*57*57) == 0);		
 	}
-
 	
 }
 
