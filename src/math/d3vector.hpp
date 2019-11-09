@@ -31,9 +31,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <iostream>
 #include <cmath>
 #include <cassert>
+
+#include <utils/gpu.hpp>
 
 namespace math {
   class d3vector {
@@ -42,94 +48,94 @@ namespace math {
     double x, y, z;
     
     // explicit constructor to avoid implicit conversion from double to d3vector
-    d3vector(double xv, double yv, double zv) : x{xv}, y{yv}, z{zv}{}
-    explicit d3vector() : x(0.0), y(0.0), z(0.0) {}
+    GPU_FUNCTION d3vector(double xv, double yv, double zv) : x{xv}, y{yv}, z{zv}{}
+    GPU_FUNCTION explicit d3vector() : x(0.0), y(0.0), z(0.0) {}
 
-    explicit d3vector(const double & vv) : x(vv), y(vv), z(vv) {}    
+    GPU_FUNCTION explicit d3vector(const double & vv) : x(vv), y(vv), z(vv) {}    
 
-    explicit d3vector(const double* r) : x(r[0]), y(r[1]), z(r[2]) {}
+    GPU_FUNCTION explicit d3vector(const double* r) : x(r[0]), y(r[1]), z(r[2]) {}
 
-    double& operator[](int i){
+    GPU_FUNCTION double& operator[](int i){
 			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
 			return reinterpret_cast<double*>(this)[i];
     }
 		
-		double const& operator[](int i) const{
+		GPU_FUNCTION double const& operator[](int i) const{
 			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
 			return reinterpret_cast<double const*>(this)[i];
     }
 		
-    bool operator==(const d3vector &rhs) const
+    GPU_FUNCTION bool operator==(const d3vector &rhs) const
     {
       return x == rhs.x && y == rhs.y && z == rhs.z;
     }
 
-    bool operator!=(const d3vector &rhs) const
+    GPU_FUNCTION bool operator!=(const d3vector &rhs) const
     {
       return x != rhs.x || y != rhs.y || z != rhs.z;
     }
 
-    d3vector& operator += ( const d3vector& rhs )
+    GPU_FUNCTION d3vector& operator += ( const d3vector& rhs )
     {
       x += rhs.x; y += rhs.y; z += rhs.z;
       return *this;
     }
 
-    d3vector& operator -= ( const d3vector& rhs )
+    GPU_FUNCTION d3vector& operator -= ( const d3vector& rhs )
     {
       x -= rhs.x; y -= rhs.y; z -= rhs.z;
       return *this;
     }
 
-    d3vector& operator *= ( const double& rhs )
+    GPU_FUNCTION d3vector& operator *= ( const double& rhs )
     {
       x *= rhs; y *= rhs; z *= rhs;
       return *this;
     }
 
-    d3vector& operator /= ( const double& rhs )
+    GPU_FUNCTION d3vector& operator /= ( const double& rhs )
     {
       x /= rhs; y /= rhs; z /= rhs;
       return *this;
     }
 
-    friend const d3vector operator + (const d3vector& lhs, const d3vector& rhs )
+    GPU_FUNCTION friend const d3vector operator + (const d3vector& lhs, const d3vector& rhs )
     {
       return d3vector(lhs) += rhs;
     }
 
-    friend const d3vector operator - ( const d3vector& a, const d3vector& b )
+    GPU_FUNCTION friend const d3vector operator - ( const d3vector& a, const d3vector& b )
     {
       return d3vector(a) -= b;
     }
 
-    friend d3vector operator - ( const d3vector& a ) // unary minus
+    GPU_FUNCTION friend d3vector operator - ( const d3vector& a ) // unary minus
     {
       return d3vector( -a.x, -a.y, -a.z );
     }
 
-    friend d3vector operator * ( const double& a, const d3vector& b )
+    GPU_FUNCTION friend d3vector operator * ( const double& a, const d3vector& b )
     {
       return d3vector(b) *= a;
     }
 
-    friend d3vector operator * ( const d3vector& a, const double& b )
+    GPU_FUNCTION friend d3vector operator * ( const d3vector& a, const double& b )
     {
       return d3vector(a) *= b;
     }
 
-    friend d3vector operator / ( const d3vector& a, const double& b )
+    GPU_FUNCTION friend d3vector operator / ( const d3vector& a, const double& b )
     {
       return d3vector(a) /= b;
     }
 
     // scalar product
-    friend double operator * ( const d3vector& a, const d3vector& b )
+    GPU_FUNCTION friend double operator * ( const d3vector& a, const d3vector& b )
     {
       return a.x * b.x + a.y * b.y + a.z * b.z ;
     }
 
-    friend d3vector operator ^ ( const d3vector& a, const d3vector& b )
+    GPU_FUNCTION friend d3vector operator ^ ( const d3vector& a, const d3vector& b )
     {
       return d3vector( a.y * b.z - a.z * b.y ,
 		       a.z * b.x - a.x * b.z ,
@@ -150,17 +156,17 @@ namespace math {
       return  (x*ew)*ew + p*cos(theta)*u + p*sin(theta)*v ;
     }
 
-    friend double length( const d3vector& a )
+    GPU_FUNCTION friend double length( const d3vector& a )
     {
       return sqrt( a.x * a.x + a.y * a.y + a.z * a.z );
     }
 
-    friend double norm( const d3vector& a )
+    GPU_FUNCTION friend double norm( const d3vector& a )
     {
       return a.x * a.x + a.y * a.y + a.z * a.z;
     }
 
-    friend d3vector normalized( const d3vector a )
+    GPU_FUNCTION friend d3vector normalized( const d3vector a )
     {
       return a / length( a );
     }
