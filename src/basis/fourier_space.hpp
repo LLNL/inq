@@ -21,6 +21,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <math/d3vector.hpp>
 #include <ions/unitcell.hpp>
 #include "grid.hpp"
@@ -37,7 +41,7 @@ namespace basis {
 			grid(grid_basis){
     }
 
-		math::d3vector gvector(const int ix, const int iy, const int iz) const {
+		GPU_FUNCTION math::d3vector gvector(const int ix, const int iy, const int iz) const {
 
 			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 			//grid from -pi/h to pi/h
@@ -49,7 +53,7 @@ namespace basis {
 			return g;
 		}
 
-    const math::d3vector & glength() const{
+    GPU_FUNCTION const math::d3vector & glength() const{
       return glength_;
     }
 
@@ -62,7 +66,7 @@ namespace basis {
 			return g2 > radius()*radius();
 		}		
 
-    const math::d3vector & gspacing() const{
+    GPU_FUNCTION const math::d3vector & gspacing() const{
       return gspacing_;
     }
 
@@ -74,7 +78,7 @@ namespace basis {
 			return (ix == 0 and iy == 0 and iz == 0);
 		}
 
-		double g2(const int ix, const int iy, const int iz) const {
+		GPU_FUNCTION double g2(const int ix, const int iy, const int iz) const {
 			return norm(gvector(ix, iy, iz));
 		}
 
