@@ -8,7 +8,7 @@
 #endif
 
 #include <complex>
-#include <utils/gpu.hpp>
+#include <gpu/run.hpp>
 
 using complex = std::complex<double>;
 

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef UTILS__GPU
-#define UTILS__GPU
+#ifndef GPU__RUN
+#define GPU__RUN
 
 /*
  Copyright (C) 2019 Xavier Andrade
