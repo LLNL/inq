@@ -59,10 +59,17 @@ namespace hamiltonian {
 			//DATAOPERATIONS BLAS
 			boost::multi::blas::gemm('N', 'N', sphere_.volume_element(), sphere_phi, matrix_, 0.0, projections);
 			
-			//DATAOPERATIONS LOOP 2D
+			//DATAOPERATIONS LOOP + GPU::RUN 2D
+#ifdef HAVE_CUDA
+			gpu::run(phi.set_size(), nproj_,
+							 [proj = begin(projections), coeff = begin(kb_coeff_)] __device__ (auto ist, auto iproj){
+								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+							 });
+#else
       for(int iproj = 0; iproj < nproj_; iproj++) {
 				for(int ist = 0; ist < phi.set_size(); ist++)	projections[iproj][ist] *= kb_coeff_[iproj];
 			}
+#endif
 			
 			//DATAOPERATIONS BLAS
 			boost::multi::blas::gemm('N', 'T', 1.0, projections, matrix_, 0.0, sphere_phi);
