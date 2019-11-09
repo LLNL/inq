@@ -22,7 +22,8 @@ namespace hamiltonian {
     projector(const basis::real_space & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps, math::d3vector atom_position):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
-      matrix_({nproj_, sphere_.size()}){
+      matrix_({nproj_, sphere_.size()}),
+			kb_coeff_(nproj_) {
 
 			std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 
@@ -38,8 +39,8 @@ namespace hamiltonian {
 					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
 						matrix_[iproj_lm][ipoint] = proj[ipoint]*math::spherical_harmonic(l, m, sphere_.point_pos()[ipoint]);
 					}
+					kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
 					iproj_lm++;
-					kb_coeff_.push_back(ps.kb_coeff(iproj_l));
 				}
 				
       }
@@ -58,11 +59,18 @@ namespace hamiltonian {
 			//DATAOPERATIONS BLAS
 			boost::multi::blas::gemm('N', 'N', sphere_.volume_element(), sphere_phi, matrix_, 0.0, projections);
 			
-			//DATAOPERATIONS LOOP 2D
+			//DATAOPERATIONS LOOP + GPU::RUN 2D
+#ifdef HAVE_CUDA
+			gpu::run(phi.set_size(), nproj_,
+							 [proj = begin(projections), coeff = begin(kb_coeff_)] __device__ (auto ist, auto iproj){
+								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+							 });
+#else
       for(int iproj = 0; iproj < nproj_; iproj++) {
 				for(int ist = 0; ist < phi.set_size(); ist++)	projections[iproj][ist] *= kb_coeff_[iproj];
 			}
-
+#endif
+			
 			//DATAOPERATIONS BLAS
 			boost::multi::blas::gemm('N', 'T', 1.0, projections, matrix_, 0.0, sphere_phi);
 			
@@ -84,7 +92,7 @@ namespace hamiltonian {
     int nproj_;
 		//OPTIMIZATION: make this matrix real
     math::array<complex, 2> matrix_;
-    std::vector<double> kb_coeff_;
+		math::array<double, 1> kb_coeff_;
     
   };
   

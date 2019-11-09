@@ -99,6 +99,22 @@ namespace hamiltonian {
 		}
 		
 		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
+
+			//DATAOPERATIONS LOOP + GPU::RUN 4D
+#ifdef HAVE_CUDA
+
+			gpu::run(hphi.set_size(), hphi.basis().gsize()[2], hphi.basis().gsize()[1], hphi.basis().gsize()[0],
+							 [basis = hphi.basis(),
+								hphicub = begin(hphi.cubic()),
+								phicub = begin(phi.cubic())]
+							 __device__ (auto ist, auto iz, auto iy, auto ix){
+								 
+								 double lapl = -0.5*(-basis.g2(ix, iy, iz));
+								 hphicub[ix][iy][iz][ist] += lapl*phicub[ix][iy][iz][ist];
+
+							 });
+
+#else
 			
 			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < hphi.basis().gsize()[1]; iy++){
@@ -108,11 +124,28 @@ namespace hamiltonian {
 					}
 				}
 			}
+
+#endif
 			
 		}
 		
 		void fourier_space_terms(basis::field_set<basis::fourier_space, complex> & hphi) const {
-			
+
+			//DATAOPERATIONS LOOP + GPU::RUN 4D
+#ifdef HAVE_CUDA
+
+			gpu::run(hphi.set_size(), hphi.basis().gsize()[2], hphi.basis().gsize()[1], hphi.basis().gsize()[0],
+							 [basis = hphi.basis(),
+								hphicub = begin(hphi.cubic())]
+							 __device__ (auto ist, auto iz, auto iy, auto ix){
+								 
+								 double lapl = -0.5*(-basis.g2(ix, iy, iz));
+								 hphicub[ix][iy][iz][ist] = hphicub[ix][iy][iz][ist]*lapl;
+								 
+							 });
+
+#else
+
 			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < hphi.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < hphi.basis().gsize()[2]; iz++){
@@ -121,6 +154,8 @@ namespace hamiltonian {
 					}
 				}
 			}
+
+#endif
 			
 		}
 		
@@ -257,7 +292,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 		
-		REQUIRE(diff == 0.0_a);
+		REQUIRE(diff < 1e-14);
 		
 	}
 	
@@ -291,7 +326,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff < 1e-15);
+		REQUIRE(diff < 1e-14);
 		
 	}
 
@@ -364,7 +399,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff < 1e-15);
+		REQUIRE(diff < 1e-14);
 		
 	}
 
