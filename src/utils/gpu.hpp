@@ -43,7 +43,7 @@
 namespace gpu {
 
 	//finds fact1, fact2 < thres such that fact1*fact2 >= val
-	void factorize(const size_t val, const size_t thres, size_t & fact1, size_t & fact2){
+	inline static void factorize(const size_t val, const size_t thres, size_t & fact1, size_t & fact2){
 		fact1 = val;
 		fact2 = 1;
 		while (fact1 > thres){
