@@ -48,9 +48,10 @@ noinst_HEADERS =                             \
 	operations/subspace_diagonalization.hpp    \
 	operations/sum.hpp                         \
 	hamiltonian/atomic_potential.hpp           \
+	hamiltonian/energy.hpp                     \
+	hamiltonian/exchange_operator.hpp          \
 	hamiltonian/ks_hamiltonian.hpp             \
 	hamiltonian/self_consistency.hpp           \
-	hamiltonian/energy.hpp                     \
 	hamiltonian/xc_functional.hpp              \
 	solvers/poisson.hpp                        \
 	solvers/steepest_descent.hpp               \

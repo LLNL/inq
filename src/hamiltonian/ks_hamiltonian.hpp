@@ -25,6 +25,7 @@
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <hamiltonian/projector.hpp>
+#include <hamiltonian/exchange_operator.hpp>
 #include <operations/space.hpp>
 
 namespace hamiltonian {
@@ -34,15 +35,12 @@ namespace hamiltonian {
   public:
 
 		basis::field<basis::real_space, double> scalar_potential;
-		math::array<double, 1> hf_occupations;
-		basis::field_set<basis::real_space, complex> hf_orbitals;
+		exchange_operator exchange;
 		
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo,
 									 const int num_hf_orbitals, const double exchange_coefficient):
 			scalar_potential(basis),
-			hf_occupations(num_hf_orbitals),
-			hf_orbitals(basis, num_hf_orbitals),
-			exchange_coefficient_(exchange_coefficient){
+			exchange(basis, num_hf_orbitals, exchange_coefficient){
 
 			scalar_potential = pot.local_potential(basis, cell, geo);
 			
@@ -61,41 +59,6 @@ namespace hamiltonian {
 			vnlphi = 0.0;
 			non_local(phi, vnlphi);
 			return vnlphi;
-		}
-		
-		void exchange(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & exxphi) const {
-
-			if(exchange_coefficient_ != 0.0){
-
-				// Hartree-Fock exchange
-				for(int ii = 0; ii < phi.set_size(); ii++){
-					for(int jj = 0; jj < phi.set_size(); jj++){
-						
-						basis::field<basis::real_space, complex> rhoij(phi.basis());
-
-						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij[ipoint] = conj(hf_orbitals[ipoint][jj])*phi[ipoint][ii];
-						
-						//OPTIMIZATION: this could be done in place
-						auto potij = poisson_solver_(rhoij);
-						
-						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
-							exxphi[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals[ipoint][jj]*potij[ipoint];
-						}
-						
-					}
-				}
-				
-			}
-			
-		}
-
-		auto exchange(const basis::field_set<basis::real_space, complex> & phi) const {
-			basis::field_set<basis::real_space, complex> exxphi(phi.basis(), phi.set_size());
-			exxphi = 0.0;
-			exchange(phi, exxphi);
-			return exxphi;
 		}
 		
 		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
@@ -221,9 +184,7 @@ namespace hamiltonian {
 		
   private:
 
-		solvers::poisson<basis::real_space> poisson_solver_;
 		std::vector<projector> projectors_;
-		double exchange_coefficient_;
 
   };
 
