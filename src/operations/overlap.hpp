@@ -73,20 +73,20 @@ namespace operations {
 #else
 
 		{
-			int npoints = phi1.basis().size();
-			int nst = phi1.set_size();
-			double vol_element = phi1.basis().volume_element();
-			type const * phi1p = phi1.data();
-			type const * phi2p = phi2.data();
-			type * overlap = overlap_vector.data();		
+			auto npoints = phi1.basis().size();
+			auto nst = phi1.set_size();
+			auto vol_element = phi1.basis().volume_element();
+			auto phi1p = begin(phi1);
+			auto phi2p = begin(phi2);
+			auto overlap = begin(overlap_vector);
 			
 			//OPTIMIZATION: here we should parallelize over points as well 
 			gpu::run(phi1.set_size(),
 							 [=] __device__ (auto ist){
 								 type aa = 0.0;
 								 for(int ip = 0; ip < npoints; ip++){
-									 auto p1 = phi1p[ip*nst + ist];
-									 auto p2 = phi2p[ip*nst + ist];
+									 auto p1 = phi1p[ip][ist];
+									 auto p2 = phi2p[ip][ist];
 									 aa += conj(p1)*p2;
 									 
 								 }
