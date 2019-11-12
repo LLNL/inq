@@ -82,8 +82,8 @@ namespace systems {
 			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
 
 			//DATAOPERATIONS STL FILL
-			std::fill(ham_.hf_occupations.begin(), ham_.hf_occupations.end(), 0.0);
-			ham_.hf_orbitals = 0.0;
+			std::fill(ham_.exchange.hf_occupations.begin(), ham_.exchange.hf_occupations.end(), 0.0);
+			ham_.exchange.hf_orbitals = 0.0;
 			
 			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
@@ -102,10 +102,10 @@ namespace systems {
 				
 				//DATAOPERATIONS LOOP 1D
 				for(int ii = 0; ii < phi_.num_elements(); ii++){
-					ham_.hf_orbitals.data()[ii] = (1.0 - mixing)*ham_.hf_orbitals.data()[ii] + mixing*phi_.data()[ii];
+					ham_.exchange.hf_orbitals.data()[ii] = (1.0 - mixing)*ham_.exchange.hf_orbitals.data()[ii] + mixing*phi_.data()[ii];
 				}
 				//probably the occupations should be mixed too
-				ham_.hf_occupations = states_.occupations();
+				ham_.exchange.hf_occupations = states_.occupations();
 				
 				density = operations::calculate_density(states_.occupations(), phi_);
 
@@ -149,7 +149,6 @@ namespace systems {
 				old_energy = energy.eigenvalues;
 
 				ham_.scalar_potential = std::move(vks);
-
 			
       }
 
