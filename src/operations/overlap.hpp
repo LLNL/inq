@@ -297,6 +297,29 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 		}
 		
+		SECTION("complex 1x1"){
+
+			const int M = 1;
+			const int N = 60000;
+			
+			basis::field_set<basis::trivial, complex> aa(bas, M);
+
+			{
+				auto cc = operations::overlap(aa);
+
+				REQUIRE(std::get<0>(sizes(cc)) == M);
+				REQUIRE(std::get<1>(sizes(cc)) == M);
+				
+				for(int ii = 0; ii < M; ii++){
+					for(int jj = 0; jj < M; jj++){
+						REQUIRE(real(cc[ii][jj]) == Approx(0.5*N*(N - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+						REQUIRE(fabs(imag(cc[ii][jj])) < 1e-13);
+					}
+				}
+			}
+
+		}
+
 }
 
 
