@@ -48,9 +48,12 @@ namespace operations {
 
 	template <class field_set_type>
 	auto overlap(const field_set_type & phi){
+#ifdef HAVE_CUDA
+		return overlap(phi, phi);
+#else
 		using boost::multi::blas::hermitized;
 		return boost::multi::blas::herk(phi.basis().volume_element(), hermitized(phi));
-		
+#endif
 	}
 
 	template <class field_set_type>
