@@ -43,6 +43,8 @@ namespace basis {
 
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
+			std::vector<std::array<int, 3> > tmp_points;
+					
 			//DATAOPERATIONS LOOP 4D
       for(int ix = 0; ix < parent_grid.rsize()[0]; ix++){
 				for(int iy = 0; iy < parent_grid.rsize()[1]; iy++){
@@ -53,7 +55,7 @@ namespace basis {
 							auto n2 = norm(rpoint - rep[irep]);
 							if(n2 > radius*radius) continue;
 							
-							points_.push_back({ix, iy, iz});
+							tmp_points.push_back({ix, iy, iz});
 							distance_.push_back(sqrt(n2));
 							relative_pos_.push_back(rpoint - rep[irep]);
 						}
@@ -61,6 +63,14 @@ namespace basis {
 					}
 				}
       }
+
+			points_.reextent({tmp_points.size()});
+			
+			for(unsigned ii = 0; ii < tmp_points.size(); ii++){
+				for(int jj = 0; jj < 3; jj++){
+					points_[ii][jj] = tmp_points[ii][jj];
+				}
+			}
 			
     }
 
@@ -132,8 +142,8 @@ namespace basis {
 		}
 
   private:
-    
-    std::vector<std::array<int, 3> > points_;
+
+		math::array<std::array<int, 3>, 1> points_;
 		std::vector<float> distance_; //I don't think we need additional precision for this. XA
 		std::vector<math::d3vector> relative_pos_;
 		double volume_element_;
@@ -148,7 +158,10 @@ namespace basis {
 #include <math/complex.hpp>
 
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
-  
+
+	boost::multi::array<int, 2, boost::multi::memory::cuda::managed::allocator<int>> points_;
+	points_.reextent({10, 10});
+	
   using namespace Catch::literals;
   using math::d3vector;
 
