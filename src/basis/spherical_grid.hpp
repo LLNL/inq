@@ -89,15 +89,22 @@ namespace basis {
 		}
 
 		template <class array_4d>
-    auto gather(const array_4d & grid) const {
+    math::array<typename array_4d::element_type, 2> gather(const array_4d & grid) const {
 			const int nst = std::get<3>(sizes(grid));
 			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
 
 			//DATAOPERATIONS LOOP 2D
+#ifdef HAVE_CUDA
+			gpu::run(nst, size(),
+							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
+							 __device__ (auto ist, auto ipoint){
+								 sgr[ipoint][ist] = gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist];
+							 });
+#else
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				for(int ist = 0; ist < nst; ist++) subgrid[ipoint][ist] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][ist];
       }
-
+#endif
 			return subgrid;
     }
 
@@ -158,9 +165,6 @@ namespace basis {
 #include <math/complex.hpp>
 
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
-
-	boost::multi::array<int, 2, boost::multi::memory::cuda::managed::allocator<int>> points_;
-	points_.reextent({10, 10});
 	
   using namespace Catch::literals;
   using math::d3vector;
