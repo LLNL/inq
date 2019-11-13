@@ -42,7 +42,7 @@ nvcc:
       - cd nvcc
       - export CXX="nvcc -x cu"
       - export CXXLD="nvcc"
-      - export CXXFLAGS="-D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --compiler-options -std=c++14,-Wall,-Wfatal-errors"
+      - export CXXFLAGS="-D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambd --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
       - time ../configure -prefix=$HOME
       - time make
       
