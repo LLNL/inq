@@ -11,11 +11,6 @@ LIBS += @GSL_LIBS@ @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@
 noinst_HEADERS =                             \
 	gpu/run.hpp                                \
 	utils/merge_optional.hpp                   \
-	parser/gsl_userdef.h                       \
-	parser/input_file.hpp                      \
-	parser/liboct_parser.h                     \
-	parser/string_f.h                          \
-	parser/symbols.h                           \
 	input/interaction.hpp                      \
 	input/basis.hpp                            \
 	input/cell.hpp                             \
@@ -62,10 +57,6 @@ noinst_HEADERS =                             \
 	systems/electrons.hpp
 
 all_srcs =                                   \
-	parser/symbols.c                           \
-	parser/parse.c                             \
-	parser/parse_exp.c                         \
-	parser/gsl_userdef.c                       \
 	ions/unitcell.cpp
 
 bin_PROGRAMS  =                              \
