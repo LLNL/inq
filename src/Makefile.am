@@ -3,19 +3,13 @@ AM_CXXFLAGS =                             \
 	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
 	-DPREFIX_DIR='"$(prefix)"'              \
-	$(GSL_CFLAGS)                           \
 	@CFLAGS_CUDA@
 
-LIBS += @GSL_LIBS@ @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@
+LIBS += @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@
 
 noinst_HEADERS =                             \
 	gpu/run.hpp                                \
 	utils/merge_optional.hpp                   \
-	parser/gsl_userdef.h                       \
-	parser/input_file.hpp                      \
-	parser/liboct_parser.h                     \
-	parser/string_f.h                          \
-	parser/symbols.h                           \
 	input/interaction.hpp                      \
 	input/basis.hpp                            \
 	input/cell.hpp                             \
@@ -62,17 +56,10 @@ noinst_HEADERS =                             \
 	systems/electrons.hpp
 
 all_srcs =                                   \
-	parser/symbols.c                           \
-	parser/parse.c                             \
-	parser/parse_exp.c                         \
-	parser/gsl_userdef.c                       \
 	ions/unitcell.cpp
 
 bin_PROGRAMS  =                              \
-	inq                                        \
 	@PACKAGE_NAME@_unit_tests
-
-inq_SOURCES = main/main.cpp $(all_srcs)
 
 @PACKAGE_NAME@_unit_tests_SOURCES = main/unit_tests.cpp main/unit_tests_main.cpp $(all_srcs)
 
