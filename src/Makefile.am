@@ -3,10 +3,9 @@ AM_CXXFLAGS =                             \
 	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
 	-DPREFIX_DIR='"$(prefix)"'              \
-	$(GSL_CFLAGS)                           \
 	@CFLAGS_CUDA@
 
-LIBS += @GSL_LIBS@ @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@
+LIBS += @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@
 
 noinst_HEADERS =                             \
 	gpu/run.hpp                                \
