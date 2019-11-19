@@ -27,12 +27,11 @@
 
 #include <math/array.hpp>
 #include <cassert>
+#ifdef HAVE_CUDA
+#include "multi/adaptors/blas/cuda.hpp" // must be included before blas.hpp
+#endif
 #include <multi/adaptors/blas.hpp>
 #include <operations/integral.hpp>
-
-#ifdef HAVE_CUDA
-#include <multi/memory/adaptors/cuda/allocator.hpp>
-#endif
 
 namespace operations {
 
@@ -48,9 +47,7 @@ namespace operations {
 
 	template <class field_set_type>
 	auto overlap(const field_set_type & phi){
-		using boost::multi::blas::hermitized;
-		return boost::multi::blas::herk(phi.basis().volume_element(), hermitized(phi));
-		
+		return overlap(phi, phi);
 	}
 
 	template <class field_set_type>

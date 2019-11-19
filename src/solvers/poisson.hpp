@@ -27,7 +27,6 @@
 #include <multi/adaptors/fftw.hpp>
 #include <basis/field.hpp>
 #include <basis/fourier_space.hpp>
-#include <multi/adaptors/blas.hpp>
 
 namespace solvers {
 
@@ -155,13 +154,11 @@ namespace solvers {
 		auto operator()(const basis::field<basis_type, double> & density) const {
 
 			using basis::field;
-			using boost::multi::blas::real;
 			
 			//For the moment we copy to a complex array.
 			field<basis_type, complex> complex_density(density.basis(), density);
 
 			auto complex_potential = operator()(complex_density);
-
 
 			field<basis_type, double> real_potential(density.basis());
 

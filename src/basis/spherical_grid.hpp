@@ -43,6 +43,8 @@ namespace basis {
 
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
+			std::vector<std::array<int, 3> > tmp_points;
+					
 			//DATAOPERATIONS LOOP 4D
       for(int ix = 0; ix < parent_grid.rsize()[0]; ix++){
 				for(int iy = 0; iy < parent_grid.rsize()[1]; iy++){
@@ -53,7 +55,7 @@ namespace basis {
 							auto n2 = norm(rpoint - rep[irep]);
 							if(n2 > radius*radius) continue;
 							
-							points_.push_back({ix, iy, iz});
+							tmp_points.push_back({ix, iy, iz});
 							distance_.push_back(sqrt(n2));
 							relative_pos_.push_back(rpoint - rep[irep]);
 						}
@@ -61,6 +63,14 @@ namespace basis {
 					}
 				}
       }
+
+			points_.reextent({tmp_points.size()});
+			
+			for(unsigned ii = 0; ii < tmp_points.size(); ii++){
+				for(int jj = 0; jj < 3; jj++){
+					points_[ii][jj] = tmp_points[ii][jj];
+				}
+			}
 			
     }
 
@@ -79,15 +89,22 @@ namespace basis {
 		}
 
 		template <class array_4d>
-    auto gather(const array_4d & grid) const {
+    math::array<typename array_4d::element_type, 2> gather(const array_4d & grid) const {
 			const int nst = std::get<3>(sizes(grid));
 			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
 
-			//DATAOPERATIONS LOOP 2D
+			//DATAOPERATIONS LOOP + GPU::RUN 2D
+#ifdef HAVE_CUDA
+			gpu::run(nst, size(),
+							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
+							 __device__ (auto ist, auto ipoint){
+								 sgr[ipoint][ist] = gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist];
+							 });
+#else
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				for(int ist = 0; ist < nst; ist++) subgrid[ipoint][ist] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][ist];
       }
-
+#endif
 			return subgrid;
     }
 
@@ -95,11 +112,19 @@ namespace basis {
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
 			
 			//DATAOPERATIONS LOOP 2D
+#ifdef HAVE_CUDA
+			gpu::run(std::get<1>(sizes(subgrid)), size(),
+							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
+							 __device__ (auto ist, auto ipoint){
+								 gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist] += sgr[ipoint][ist];
+							 });
+#else
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
 					grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][i1] += subgrid[ipoint][i1];
 				}
       }
+#endif
     }
     
     template <class array_1d, class array_3d>
@@ -132,8 +157,8 @@ namespace basis {
 		}
 
   private:
-    
-    std::vector<std::array<int, 3> > points_;
+
+		math::array<std::array<int, 3>, 1> points_;
 		std::vector<float> distance_; //I don't think we need additional precision for this. XA
 		std::vector<math::d3vector> relative_pos_;
 		double volume_element_;
@@ -148,7 +173,7 @@ namespace basis {
 #include <math/complex.hpp>
 
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
-  
+	
   using namespace Catch::literals;
   using math::d3vector;
 
