@@ -27,7 +27,6 @@
 #include <multi/adaptors/fftw.hpp>
 #include <basis/field.hpp>
 #include <basis/fourier_space.hpp>
-#include <multi/adaptors/blas.hpp>
 
 namespace solvers {
 
