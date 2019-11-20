@@ -70,7 +70,7 @@ namespace basis {
       return gspacing_;
     }
 
-    const std::array<int, 3> & gsize() const{
+    GPU_FUNCTION const std::array<int, 3> & gsize() const{
       return ng_;
     }
 		
