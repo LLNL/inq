@@ -91,6 +91,25 @@ GPU_FUNCTION inline auto operator/(const complex & z, const double x){
 	return complex{real(z)/x, imag(z)/x};
 }
 
+GPU_FUNCTION inline auto operator/(const complex & x, const complex & y){
+  using std::abs;
 
+  double s = abs(y.real()) + abs(y.imag());
+
+  double oos = double(1.0) / s;
+
+  double ars = x.real() * oos;
+  double ais = x.imag() * oos;
+  double brs = y.real() * oos;
+  double bis = y.imag() * oos;
+
+  s = (brs * brs) + (bis * bis);
+
+  oos = double(1.0) / s;
+
+  complex quot( ((ars * brs) + (ais * bis)) * oos, ((ais * brs) - (ars * bis)) * oos);
+  return quot;
+
+}
 #endif
 
