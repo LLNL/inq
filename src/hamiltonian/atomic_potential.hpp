@@ -102,7 +102,7 @@ namespace hamiltonian {
 
 		
     template <class basis_type, class cell_type, class geo_type>
-    auto ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
       basis::field<basis_type, double> density(basis);
 			
@@ -115,12 +115,24 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
 
-				//DATAOPERATIONS LOOP 1D (random access output)
+				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
+#ifdef HAVE_CUDA
+				//OPTIMIZATION: this should be done in parallel for atoms too
+				gpu::run(sphere.size(),
+								 [dns = begin(density.cubic()), pts = begin(sphere.points()),
+									atpos = atom_position, chrg = ps.valence_charge(),
+									sp = sep_, bas = basis] __device__
+								 (auto ipoint){
+									 double rr = length(bas.rvector(pts[ipoint]) - atpos);
+									 dns[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += chrg*sp.long_range_density(rr);
+								 });
+#else
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					double rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
 					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]]
 						+= ps.valence_charge()*sep_.long_range_density(rr);
 				}
+#endif
       }
 
 			return density;			
