@@ -23,6 +23,10 @@
 
 #include <math/array.hpp>
 #include <tinyformat/tinyformat.h>
+#include <algorithm>
+#ifdef HAVE_CUDA
+#include <thrust/fill.h>
+#endif
 
 namespace basis {
 	
@@ -59,9 +63,13 @@ namespace basis {
 		//set to a scalar value
 		field & operator=(const value_type value) {
 
-			//DATAOPERATIONS STL FILL
+			//DATAOPERATIONS STL + THRUST FILL
+#ifdef HAVE_CUDA
+			thrust::fill(this->begin(), this->end(), value);
+#else			 
 			std::fill(this->begin(), this->end(), value);
-
+#endif
+			
 			return *this;
 		}
 		

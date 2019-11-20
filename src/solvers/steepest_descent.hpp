@@ -45,9 +45,17 @@ namespace solvers {
 			
 			auto lambda = eigenvalues;
 			
-			//DATAOPERATIONS STL TRANSFORM
+			//DATAOPERATIONS STL + GPU::RUN TRANSFORM
+#ifdef HAVE_CUDA
+			gpu::run(phi.set_size(),
+							 [lam = begin(lambda), nor = begin(norm)] __device__
+							 (auto ist){
+								 lam[ist] = lam[ist]/(-1.0*nor[ist]);
+							 });
+#else
 			std::transform(lambda.begin(), lambda.end(), norm.begin(), lambda.begin(), [](auto lam, auto nor){ return lam /= -nor; });
-
+#endif
+			
 			operations::shift(lambda, phi, residual);
 			
 			prec(residual);
@@ -64,7 +72,18 @@ namespace solvers {
 			mm[4] = eigenvalues;
 			mm[5] = norm;
 			
-			//DATAOPERATIONS STL TRANSFORM
+			//DATAOPERATIONS STL + GPU::RUN TRANSFORM
+#ifdef HAVE_CUDA
+			gpu::run(phi.set_size(),
+							 [m = begin(mm), lam = begin(lambda)]
+							 __device__ (auto ist){
+								 auto ca = real(m[0][ist]*m[3][ist] - m[2][ist]*m[1][ist]);
+								 auto cb = real(m[5][ist]*m[2][ist] - m[4][ist]*m[0][ist]);
+								 auto cc = real(m[4][ist]*m[1][ist] - m[3][ist]*m[5][ist]);
+								 
+								 lam[ist] = complex(2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc)), 0);
+							 });
+#else
 			std::transform(mm.rotated().begin(), mm.rotated().end(), lambda.begin(),
 										 [](auto mm){
 											 auto ca = real(mm[0]*mm[3] - mm[2]*mm[1]);
@@ -73,6 +92,7 @@ namespace solvers {
 											 
 											 return 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
 										 });
+#endif
 			
 			operations::shift(lambda, residual, phi);		
 

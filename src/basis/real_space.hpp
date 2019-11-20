@@ -27,6 +27,7 @@
 #include <cassert>
 #include <array>
 #include <input/basis.hpp>
+#include <gpu/run.hpp>
 
 namespace basis {
 
@@ -42,7 +43,7 @@ namespace basis {
 			grid(grid_basis){
     }
 
-		math::d3vector rvector(const int ix, const int iy, const int iz) const {
+		GPU_FUNCTION math::d3vector rvector(const int ix, const int iy, const int iz) const {
 			math::d3vector rr{ix*rspacing()[0], iy*rspacing()[1], iz*rspacing()[2]};
 			for(int idir = 0; idir < 3; idir++) {
 				if(rr[idir] >= 0.5*rlength()[idir]) rr[idir] -= rlength()[idir];
@@ -51,7 +52,7 @@ namespace basis {
 		}
 		
 		template <class int_array>
-		math::d3vector rvector(const int_array & indices) const {
+		GPU_FUNCTION math::d3vector rvector(const int_array & indices) const {
 			return rvector(indices[0], indices[1], indices[2]);
 		}
 		

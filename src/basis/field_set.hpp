@@ -22,6 +22,10 @@
 */
 
 #include <math/array.hpp>
+#include <algorithm>
+#ifdef HAVE_CUDA
+#include <thrust/fill.h>
+#endif
 
 namespace basis {
 	
@@ -48,9 +52,13 @@ namespace basis {
 		//set to a scalar value
 		field_set & operator=(const value_type value) {
 
-			//DATAOPERATIONS STL FILL
+			//DATAOPERATIONS STL + THRUST FILL
+#ifdef HAVE_CUDA
+			thrust::fill(this->data(), this->data() + basis_.size()*num_vectors_, value);
+#else
 			std::fill(this->data(), this->data() + basis_.size()*num_vectors_, value);
-
+#endif
+			
 			return *this;
 		}
 		
