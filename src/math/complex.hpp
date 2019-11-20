@@ -42,6 +42,10 @@ GPU_FUNCTION inline auto norm(const complex & z){
 	return real(z)*real(z) + imag(z)*imag(z);
 }
 
+GPU_FUNCTION inline auto fabs(const complex & z){
+	return hypot(real(z), imag(z));
+}
+
 //conj
 
 GPU_FUNCTION inline double conj(const double & x){
