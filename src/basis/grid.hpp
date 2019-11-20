@@ -55,7 +55,7 @@ namespace basis {
       return nr_;
     }
 
-    const math::d3vector & rspacing() const{
+    GPU_FUNCTION const math::d3vector & rspacing() const{
       return rspacing_;
     }
 
@@ -63,7 +63,7 @@ namespace basis {
 			return length(rlength_);
 		}
 		
-    const math::d3vector & rlength() const{
+    GPU_FUNCTION const math::d3vector & rlength() const{
       return rlength_;
     }
 
