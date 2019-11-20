@@ -27,6 +27,10 @@
 
 #include <cstdlib>
 #include <gpu/run.hpp>
+#include <algorithm>
+#ifdef HAVE_CUDA
+#include <thrust/transform.h>
+#endif
 
 namespace operations {
 
@@ -43,8 +47,12 @@ namespace operations {
 
 		using type = typename field_type::value_type;
 
-		//DATAOPERATIONS STL TRANSFORM
+		//DATAOPERATIONS STL + THRUST TRANSFORM
+#ifdef HAVE_CUDA
+		thrust::transform(t1.begin(), t1.end(), t2.begin(), tadd.begin(), thrust::plus<type>());
+#else
 		std::transform(t1.begin(), t1.end(), t2.begin(), tadd.begin(), std::plus<type>());
+#endif
 		
 		return tadd;
 	}
