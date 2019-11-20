@@ -30,6 +30,10 @@
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
 
+#ifdef HAVE_CUDA
+#include <thrust/fill.h>
+#endif
+
 namespace systems {
 
   class electrons {
@@ -82,7 +86,11 @@ namespace systems {
 			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
 
 			//DATAOPERATIONS STL FILL
+#ifdef HAVE_CUDA
+			thrust::fill(ham_.exchange.hf_occupations.begin(), ham_.exchange.hf_occupations.end(), 0.0);
+#else
 			std::fill(ham_.exchange.hf_occupations.begin(), ham_.exchange.hf_occupations.end(), 0.0);
+#endif
 			ham_.exchange.hf_orbitals = 0.0;
 			
 			int conv_count = 0;
