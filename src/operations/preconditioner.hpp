@@ -32,7 +32,7 @@ namespace operations {
 		
 	public:
 
-		auto k_function(double x) const {
+		GPU_FUNCTION static auto k_function(double x) {
 
 			// The original function of the TPA paper
 			auto num = ((8.0*x + 12.0)*x + 18.0)*x + 27.0;
@@ -59,7 +59,7 @@ namespace operations {
 			math::array<double, 1> norm(phi.set_size(), 0.0);
 			
 			//calculate the expectation value of the kinetic energy
-			//DATAOPERATIONS LOOP 4D REDUCTIONS
+			//DATAOPERATIONS LOOP + GPU::RUN 4D REDUCTIONS
 #ifdef HAVE_CUDA
 			gpu::run(phi.set_size(),
 							 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()), bas = phi.basis()]
@@ -89,21 +89,29 @@ namespace operations {
 				}
 			}
 #endif
-			
 
 			//REDUCE GRID expect norm
 
-			//DATAOPERATIONS LOOP 4D
+			//DATAOPERATIONS LOOP + GPU::RUN 4D
+#ifdef HAVE_CUDA
+			gpu::run(phi.set_size(), phi.basis().gsize()[2], phi.basis().gsize()[1], phi.basis().gsize()[0], 
+							 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()), bas = phi.basis()] __device__
+							 (auto ist, auto iz, auto iy, auto ix){
+								 auto lapl = -0.5*(-bas.g2(ix, iy, iz));
+								 phcub[ix][iy][iz][ist] = k_function(lapl*nrm[ist]/expc[ist])*phcub[ix][iy][iz][ist];
+							 });
+#else
 			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
-
+						
 						auto lapl = -0.5*(-phi.basis().g2(ix, iy, iz));
 						for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] *= k_function(lapl*norm[ist]/expect[ist]);
-
+						
 					}
 				}
 			}
+#endif
 
 		}
 
