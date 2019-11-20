@@ -60,6 +60,22 @@ namespace operations {
 			
 			//calculate the expectation value of the kinetic energy
 			//DATAOPERATIONS LOOP 4D REDUCTIONS
+#ifdef HAVE_CUDA
+			gpu::run(phi.set_size(),
+							 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()), bas = phi.basis()]
+							 __device__ (auto ist){
+								 for(int ix = 0; ix < bas.gsize()[0]; ix++){
+									 for(int iy = 0; iy < bas.gsize()[1]; iy++){
+										 for(int iz = 0; iz < bas.gsize()[2]; iz++){
+											 auto lapl = -0.5*(-bas.g2(ix, iy, iz));
+											 auto phiphi = fabs(phcub[ix][iy][iz][ist]);
+											 expc[ist] += lapl*phiphi;
+											 nrm[ist] += phiphi;
+										 }
+									 }
+								 }
+							 });
+#else
 			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
 				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
 					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
@@ -72,6 +88,8 @@ namespace operations {
 					}
 				}
 			}
+#endif
+			
 
 			//REDUCE GRID expect norm
 
