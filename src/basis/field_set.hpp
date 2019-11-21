@@ -49,6 +49,10 @@ namespace basis {
 		field_set & operator=(const field_set & coeff) = default;
 		field_set & operator=(field_set && coeff) = default;
 
+		field_set & operator=(base && coeff){
+			base(*this) = coeff;
+		}
+		
 		//set to a scalar value
 		field_set & operator=(const value_type value) {
 
