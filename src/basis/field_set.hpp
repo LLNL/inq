@@ -35,7 +35,7 @@ namespace basis {
   public:
 
 		typedef Basis basis_type;
-		typedef math::array<type, 2> base;
+		typedef math::array<type, 2> internal_array_type;
 		
     field_set(const basis_type & basis, const int num_vectors):
 			math::array<type, 2>({basis.size(), num_vectors}),
@@ -48,8 +48,10 @@ namespace basis {
 		field_set & operator=(const field_set & coeff) = default;
 		field_set & operator=(field_set && coeff) = default;
 
-		field_set & operator=(base && coeff){
-			base(*this) = coeff;
+		field_set & operator=(internal_array_type && coeff){
+			internal_array_type(*this) = coeff;
+
+			return *this;
 		}
 		
 		//set to a scalar value
