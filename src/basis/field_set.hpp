@@ -35,7 +35,6 @@ namespace basis {
   public:
 
 		typedef Basis basis_type;
-		typedef type value_type;
 		typedef math::array<type, 2> base;
 		
     field_set(const basis_type & basis, const int num_vectors):
@@ -54,7 +53,7 @@ namespace basis {
 		}
 		
 		//set to a scalar value
-		field_set & operator=(const value_type value) {
+		field_set & operator=(const type value) {
 
 			//DATAOPERATIONS STL + THRUST FILL
 #ifdef HAVE_CUDA

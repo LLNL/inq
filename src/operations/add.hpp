@@ -45,7 +45,7 @@ namespace operations {
 		
 		field_type tadd(t1.basis());
 
-		using type = typename field_type::value_type;
+		using type = typename field_type::element_type;
 
 		//DATAOPERATIONS STL + THRUST TRANSFORM
 #ifdef HAVE_CUDA
