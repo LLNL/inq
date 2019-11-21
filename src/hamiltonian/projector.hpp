@@ -54,13 +54,14 @@ namespace hamiltonian {
 
     template <class field_set_type>
     void operator()(const field_set_type & phi, field_set_type & vnlphi) const {
+
+			using boost::multi::blas::gemm;
+			using boost::multi::blas::transposed;
+				
+			auto sphere_phi = sphere_.gather(phi.cubic());
 			
-      auto sphere_phi = sphere_.gather(phi.cubic());
-
-      math::array<typename field_set_type::element_type, 2> projections({nproj_, phi.set_size()});
-
 			//DATAOPERATIONS BLAS
-			boost::multi::blas::gemm('N', 'N', sphere_.volume_element(), sphere_phi, matrix_, 0.0, projections);
+			auto projections = gemm(sphere_.volume_element(), sphere_phi, matrix_);
 			
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
@@ -75,7 +76,7 @@ namespace hamiltonian {
 #endif
 			
 			//DATAOPERATIONS BLAS
-			boost::multi::blas::gemm('N', 'T', 1.0, projections, matrix_, 0.0, sphere_phi);
+			sphere_phi = gemm(projections, transposed(matrix_));
 			
       sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			
