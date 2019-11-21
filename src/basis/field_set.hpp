@@ -48,10 +48,12 @@ namespace basis {
 		field_set & operator=(const field_set & coeff) = default;
 		field_set & operator=(field_set && coeff) = default;
 
-		field_set & operator=(internal_array_type && coeff){
-			internal_array_type(*this) = coeff;
+		auto matrix() {
+			return static_cast<internal_array_type &>(*this);
+		}
 
-			return *this;
+		auto matrix() const{
+			return static_cast<internal_array_type const &>(*this);
 		}
 		
 		//set to a scalar value
