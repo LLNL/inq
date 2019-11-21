@@ -41,7 +41,7 @@ namespace operations {
 		using boost::multi::blas::gemm;
 		using boost::multi::blas::hermitized;
 
-		return gemm(phi1.basis().volume_element(), phi1, hermitized(phi2));
+		return gemm(phi1.basis().volume_element(), phi1.matrix(), hermitized(phi2.matrix()));
 
   }
 

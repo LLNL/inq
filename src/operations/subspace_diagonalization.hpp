@@ -42,9 +42,7 @@ namespace operations {
 		using boost::multi::blas::gemm;
 		using boost::multi::blas::transposed;
 		
-		auto tmp = gemm(transposed(subspace_hamiltonian), phi);
-
-		phi = std::move(tmp);
+		phi.matrix() = gemm(transposed(subspace_hamiltonian), phi.matrix());
 		
   }
 
