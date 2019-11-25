@@ -35,8 +35,7 @@ namespace basis {
   public:
 
 		typedef Basis basis_type;
-		typedef type value_type;
-		typedef math::array<type, 2> base;
+		typedef math::array<type, 2> internal_array_type;
 		
     field_set(const basis_type & basis, const int num_vectors):
 			math::array<type, 2>({basis.size(), num_vectors}),
@@ -49,8 +48,16 @@ namespace basis {
 		field_set & operator=(const field_set & coeff) = default;
 		field_set & operator=(field_set && coeff) = default;
 
+		auto matrix() {
+			return static_cast<internal_array_type &>(*this);
+		}
+
+		auto matrix() const{
+			return static_cast<internal_array_type const &>(*this);
+		}
+		
 		//set to a scalar value
-		field_set & operator=(const value_type value) {
+		field_set & operator=(const type value) {
 
 			//DATAOPERATIONS STL + THRUST FILL
 #ifdef HAVE_CUDA

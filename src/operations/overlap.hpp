@@ -38,11 +38,11 @@ namespace operations {
 	template <class field_set_type>
   auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 
-		math::array<typename field_set_type::value_type, 2>  overlap_matrix({phi1.set_size(), phi1.set_size()});
+		using boost::multi::blas::gemm;
+		using boost::multi::blas::hermitized;
 
-		boost::multi::blas::gemm('N', 'C', phi1.basis().volume_element(), phi1, phi2, 0.0, overlap_matrix);
+		return gemm(phi1.basis().volume_element(), phi1.matrix(), hermitized(phi2.matrix()));
 
-		return overlap_matrix;		
   }
 
 	template <class field_set_type>

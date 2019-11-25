@@ -35,7 +35,6 @@ namespace basis {
 
   public:
 
-		typedef type value_type;
 		typedef b_type basis_type;
 		
     field(const basis_type & basis):
@@ -61,7 +60,7 @@ namespace basis {
 		field & operator=(field && coeff) = default;
 
 		//set to a scalar value
-		field & operator=(const value_type value) {
+		field & operator=(const type value) {
 
 			//DATAOPERATIONS STL + THRUST FILL
 #ifdef HAVE_CUDA
