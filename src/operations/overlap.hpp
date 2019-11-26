@@ -41,7 +41,7 @@ namespace operations {
 		using boost::multi::blas::gemm;
 		using boost::multi::blas::hermitized;
 
-		return gemm(phi1.basis().volume_element(), phi1.matrix(), hermitized(phi2.matrix()));
+		return gemm(phi1.basis().volume_element(), hermitized(phi2.matrix()), phi1.matrix());
 
   }
 
@@ -125,7 +125,7 @@ namespace operations {
 #include <basis/trivial.hpp>
 
 TEST_CASE("function operations::overlap", "[operations::overlap]") {
-
+	
 	using namespace Catch::literals;
 
 		const int npoint = 100;
@@ -293,7 +293,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			REQUIRE(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
 		
 		}
-		
+
 		SECTION("complex 1x1"){
 
 			const int nvec = 1;
