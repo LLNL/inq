@@ -75,6 +75,8 @@ namespace operations {
       
 			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
 
+
+			//DATAOPERATIONS FFT
 #ifdef HAVE_CUDA
 
 			auto plan = cuda_fft_plan(phi);
@@ -89,26 +91,7 @@ namespace operations {
 			cufftDestroy(plan);
 						
 #else
-			
-			//DATAOPERATIONS RAWFFTW
-			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
-																					/* n = */ phi.basis().rsize().data(),
-																					/* howmany = */ phi.set_size(),
-																					/* in = */ (fftw_complex *) (complex *) phi.data(),
-																					/* inembed = */ NULL,
-																					/* istride = */ phi.set_size(),
-																					/* idist = */ 1,
-																					/* out = */ (fftw_complex *) (complex *) fphi.data(),
-																					/* onembed = */ NULL,
-																					/* ostride = */ phi.set_size(),
-																					/* odist =*/ 1,
-																					/* sign = */ FFTW_FORWARD,
-																					/* flags = */ FFTW_ESTIMATE);
-
-			fftw_execute(plan);
-
-			fftw_destroy_plan(plan);
-
+			boost::multi::fftw::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fftw::forward);
 #endif
 			
 			if(fphi.basis().spherical()){
@@ -133,6 +116,7 @@ namespace operations {
 
 			basis::field_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size());
 
+			//DATAOPERATIONS FFT
 #ifdef HAVE_CUDA
 
 			auto plan = cuda_fft_plan(phi);
@@ -147,26 +131,7 @@ namespace operations {
 			cufftDestroy(plan);
 			
 #else
-			
-			//DATAOPERATIONS RAWFFTW
-			fftw_plan plan = fftw_plan_many_dft(/* rank = */ 3,
-																					/* n = */ phi.basis().rsize().data(),
-																					/* howmany = */ phi.set_size(),
-																					/* in = */ (fftw_complex *) (complex *) fphi.data(),
-																					/* inembed = */ NULL,
-																					/* istride = */ phi.set_size(),
-																					/* idist = */ 1,
-																					/* out = */ (fftw_complex *) (complex *) phi.data(),
-																					/* onembed = */ NULL,
-																					/* ostride = */ phi.set_size(),
-																					/* odist =*/ 1,
-																					/* sign = */ FFTW_BACKWARD,
-																					/* flags = */ FFTW_ESTIMATE);
-
-			fftw_execute(plan);
-
-			fftw_destroy_plan(plan);
-
+			boost::multi::fftw::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), boost::multi::fftw::backward);
 #endif
 			
 			double norm_factor = phi.basis().size();
