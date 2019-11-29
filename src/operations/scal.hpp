@@ -32,11 +32,19 @@ namespace operations {
     
     assert(size(factor) == phi.set_size());
 
-    //DATAOPERATIONS LOOP 2D    
+    //DATAOPERATIONS LOOP + GPU::RUN 2D
+#ifdef HAVE_CUDA
+		gpu::run(phi.set_size(), phi.basis().num_points(),
+						 [factor, phimat = begin(phi.matrix()), fac = begin(factor)] __device__
+						 (auto ist, auto ipoint){
+							 phimat[ist][ipoint] /= sqrt(fac[ist]);
+						 });
+#else
     for(int kk = 0; kk < phi.basis().num_points(); kk++) {
-      for(int ii = 0; ii < phi.set_size(); ii++) phi[ii][kk] /= sqrt(factor[ii]);
+      for(int ii = 0; ii < phi.set_size(); ii++) phi.matrix()[ii][kk] /= sqrt(factor[ii]);
     }
-    
+#endif
+		
   }
   
 }
