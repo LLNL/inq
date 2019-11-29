@@ -61,7 +61,7 @@ namespace hamiltonian {
 			auto sphere_phi = sphere_.gather(phi.cubic());
 			
 			//DATAOPERATIONS BLAS
-			auto projections = gemm(sphere_.volume_element(), sphere_phi, matrix_);
+			auto projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
 			
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
@@ -76,9 +76,9 @@ namespace hamiltonian {
 #endif
 			
 			//DATAOPERATIONS BLAS
-			sphere_phi = gemm(projections, transposed(matrix_));
+			sphere_phi = gemm(transposed(matrix_), projections);
 			
-      sphere_.scatter_add(sphere_phi, vnlphi.cubic());
+			sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			
     }
 
