@@ -71,7 +71,7 @@ namespace operations {
 		
 #endif
 		
-    auto to_fourier(const basis::field_set<basis::real_space, complex> & phi){
+    basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
       
 			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size());
 
@@ -97,6 +97,13 @@ namespace operations {
 			if(fphi.basis().spherical()){
 
 				//DATAOPERATIONS LOOP 4D
+#ifdef HAVE_CUDA
+				gpu::run(phi.set_size(), fphi.basis().gsize()[2], fphi.basis().gsize()[1], fphi.basis().gsize()[0],
+								 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] __device__
+								 (auto ist, auto iz, auto iy, auto ix){
+									 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
+								 });
+#else
 				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
 					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
 						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
@@ -107,6 +114,8 @@ namespace operations {
 					}
 				}
 
+#endif
+				
 			}
       
       return fphi;    
