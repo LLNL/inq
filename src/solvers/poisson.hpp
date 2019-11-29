@@ -151,7 +151,7 @@ namespace solvers {
 			return potential;
 		}
 		
-		auto operator()(const basis::field<basis_type, double> & density) const {
+		 basis::field<basis_type, double> operator()(const basis::field<basis_type, double> & density) const {
 
 			using basis::field;
 			
@@ -162,9 +162,17 @@ namespace solvers {
 
 			field<basis_type, double> real_potential(density.basis());
 
-			//DATAOPERATIONS LOOP 1D
+			//DATAOPERATIONS LOOP + GPU::RUN 1D
+#ifdef HAVE_CUDA
+			gpu::run(real_potential.size(),
+							 [rp = begin(real_potential), cp = begin(complex_potential)] __device__
+							 (auto ii){
+								 rp[ii] = real(cp[ii]);
+							 });
+#else
 			for(long ii = 0; ii < real_potential.size(); ii++) real_potential[ii] = real(complex_potential[ii]);
-
+#endif
+			
 			return real_potential;
 			
 		}
