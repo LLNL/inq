@@ -49,6 +49,35 @@ namespace operations {
     math::array<double, 1> eigenvalues(nn);
 
 		//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
+#ifdef HAVE_CUDA
+		{
+			cusolverDnHandle_t cusolver_handle;
+			
+			auto cusolver_status = cusolverDnCreate(&cusolver_handle);
+			assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
+			
+			//query the work size
+			int lwork;
+			cusolver_status = cusolverDnDsyevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																										raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
+			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+			assert(lwork >= 0);
+
+			//allocate the work array
+		  double * work;
+			auto cuda_status = cudaMalloc((void**)&work, sizeof(double)*lwork);
+			assert(cudaSuccess == cuda_status);
+
+			//finally, diagonalize
+			int devInfo;
+			cusolver_status = cusolverDnDsyevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																				 raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, &devInfo);
+			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+			cudaDeviceSynchronize();
+			
+			cusolverDnDestroy(cusolver_handle);
+		}
+#else
     double lwork_query;
 
     int info;
@@ -60,6 +89,7 @@ namespace operations {
     dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, info);
     
     free(work);
+#endif
 
     return eigenvalues;
   }
