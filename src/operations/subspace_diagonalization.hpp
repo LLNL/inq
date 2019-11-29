@@ -36,13 +36,13 @@ namespace operations {
 
 		auto subspace_hamiltonian = overlap(phi, ham(phi));
 		auto eigenvalues = diagonalize(subspace_hamiltonian);
-
+		
 		//OPTIMIZATION: here we don't need to make a full copy. We can
 		//divide into blocks over point index (second dimension of phi).
 		using boost::multi::blas::gemm;
 		using boost::multi::blas::transposed;
-		
-		phi.matrix() = gemm(transposed(subspace_hamiltonian), phi.matrix());
+
+		phi.matrix() = gemm(phi.matrix(), transposed(subspace_hamiltonian));
 		
   }
 

@@ -48,11 +48,11 @@ namespace basis {
 		field_set & operator=(const field_set & coeff) = default;
 		field_set & operator=(field_set && coeff) = default;
 
-		auto matrix() {
+		internal_array_type & matrix() {
 			return static_cast<internal_array_type &>(*this);
 		}
 
-		auto matrix() const{
+		internal_array_type const & matrix() const{
 			return static_cast<internal_array_type const &>(*this);
 		}
 		
