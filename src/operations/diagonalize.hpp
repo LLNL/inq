@@ -69,12 +69,18 @@ namespace operations {
 			assert(cudaSuccess == cuda_status);
 
 			//finally, diagonalize
-			int devInfo;
+			int * devInfo;
+			cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
+			assert(cudaSuccess == cuda_status);
+			
 			cusolver_status = cusolverDnDsyevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																				 raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, &devInfo);
+																				 raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
+
 			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 			cudaDeviceSynchronize();
-			
+			assert(*devInfo == 0);
+
+			cudaFree(devInfo);
 			cusolverDnDestroy(cusolver_handle);
 		}
 #else
@@ -124,12 +130,17 @@ namespace operations {
 			assert(cudaSuccess == cuda_status);
 
 			//finally, diagonalize
-			int devInfo;
+			int * devInfo;
+			cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
+			assert(cudaSuccess == cuda_status);
+			
 			cusolver_status = cusolverDnZheevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																				 (cuDoubleComplex *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, &devInfo);
+																				 (cuDoubleComplex *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
 			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 			cudaDeviceSynchronize();
+			assert(*devInfo == 0);
 			
+			cudaFree(devInfo);
 			cusolverDnDestroy(cusolver_handle);
 		}
 #else
