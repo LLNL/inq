@@ -111,7 +111,7 @@ namespace basis {
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
 			
-			//DATAOPERATIONS LOOP 2D
+			//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
 			gpu::run(std::get<1>(sizes(subgrid)), size(),
 							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
