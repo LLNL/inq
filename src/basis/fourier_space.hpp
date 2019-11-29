@@ -57,11 +57,11 @@ namespace basis {
       return glength_;
     }
 
-		auto radius() const {
-			return 0.5*std::min(glength_[0], std::min(glength_[1], glength_[2]));
+		GPU_FUNCTION auto radius() const {
+			return 0.5*std::min({glength_[0], glength_[1], glength_[2]});
 		}
 
-		auto outside_sphere(const double g2) const {
+		GPU_FUNCTION auto outside_sphere(const double g2) const {
 			if(not spherical_g_grid_) return false;
 			return g2 > radius()*radius();
 		}		
