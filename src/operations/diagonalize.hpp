@@ -28,7 +28,9 @@
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
+#ifdef HAVE_CUDA
 #include <cusolverDn.h>
+#endif
 
 #define dsyev FC_FUNC(dsyev, DZYEV)
 extern "C" void dsyev(const char * jobz, const char * uplo, const int & n, double * a, const int & lda, double * w, double * work, const int & lwork, int & info);
