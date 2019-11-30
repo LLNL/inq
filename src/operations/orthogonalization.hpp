@@ -26,6 +26,10 @@
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
+#ifdef HAVE_CUDA
+#include <cusolverDn.h>
+#endif
+
 #define zpotrf FC_FUNC(zpotrf, ZPOTRF) 
 extern "C" void zpotrf(const char * uplo, const int * n, complex * a, const int * lda, int * info);
 
@@ -42,15 +46,51 @@ namespace operations {
 		const int np = phi.basis().num_points();
 		
 		auto olap = overlap(phi);
+
+		const int nst = phi.set_size();
 		
 		//DATAOPERATIONS RAWLAPACK zpotrf
+#ifdef HAVE_CUDA
+		{
+			cusolverDnHandle_t cusolver_handle;
+			
+			auto cusolver_status = cusolverDnCreate(&cusolver_handle);
+			assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
+			
+			//query the work size
+			int lwork;
+			cusolver_status = cusolverDnZpotrf_bufferSize(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, &lwork);
+			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+			assert(lwork >= 0);
+			
+			//allocate the work array
+			cuDoubleComplex * work;
+			auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
+			assert(cudaSuccess == cuda_status);
+
+			//finaly do the decomposition
+			int * devInfo;
+			cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
+			assert(cudaSuccess == cuda_status);
+
+			cusolver_status = cusolverDnZpotrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, work, lwork, devInfo);
+			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+			cudaDeviceSynchronize();
+			assert(*devInfo == 0);
+			
+			cudaFree(devInfo);
+			cusolverDnDestroy(cusolver_handle);
+			
+		}
+#else
 		int info;
-		const int nst = phi.set_size();
 		zpotrf("U", &nst, olap.data(), &nst, &info);
+#endif
 		
 		//DATAOPERATIONS RAWBLAS ztrsm
 		const complex alpha = 1.0; 
 		FC_FUNC(ztrsm, ZTRSM)('L', 'U', 'C', 'N', nst, np, alpha, olap.data(), nst, phi.data(), nst);
+		
 		
   }
 

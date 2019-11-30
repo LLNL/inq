@@ -28,6 +28,10 @@
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
+#ifdef HAVE_CUDA
+#include <cusolverDn.h>
+#endif
+
 #define dsyev FC_FUNC(dsyev, DZYEV)
 extern "C" void dsyev(const char * jobz, const char * uplo, const int & n, double * a, const int & lda, double * w, double * work, const int & lwork, int & info);
 
@@ -46,6 +50,42 @@ namespace operations {
     
     math::array<double, 1> eigenvalues(nn);
 
+		//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
+#ifdef HAVE_CUDA
+		{
+			cusolverDnHandle_t cusolver_handle;
+			
+			auto cusolver_status = cusolverDnCreate(&cusolver_handle);
+			assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
+			
+			//query the work size
+			int lwork;
+			cusolver_status = cusolverDnDsyevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																										raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
+			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+			assert(lwork >= 0);
+
+			//allocate the work array
+		  double * work;
+			auto cuda_status = cudaMalloc((void**)&work, sizeof(double)*lwork);
+			assert(cudaSuccess == cuda_status);
+
+			//finally, diagonalize
+			int * devInfo;
+			cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
+			assert(cudaSuccess == cuda_status);
+			
+			cusolver_status = cusolverDnDsyevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																				 raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
+
+			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+			cudaDeviceSynchronize();
+			assert(*devInfo == 0);
+
+			cudaFree(devInfo);
+			cusolverDnDestroy(cusolver_handle);
+		}
+#else
     double lwork_query;
 
     int info;
@@ -57,6 +97,7 @@ namespace operations {
     dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, info);
     
     free(work);
+#endif
 
     return eigenvalues;
   }
@@ -70,6 +111,41 @@ namespace operations {
     
     math::array<double, 1> eigenvalues(nn);
 
+		//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
+#ifdef HAVE_CUDA
+		{
+			cusolverDnHandle_t cusolver_handle;
+			
+			auto cusolver_status = cusolverDnCreate(&cusolver_handle);
+			assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
+			
+			//query the work size
+			int lwork;
+			cusolver_status = cusolverDnZheevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																										(cuDoubleComplex const *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
+			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+			assert(lwork >= 0);
+
+			//allocate the work array
+			cuDoubleComplex * work;
+			auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
+			assert(cudaSuccess == cuda_status);
+
+			//finally, diagonalize
+			int * devInfo;
+			cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
+			assert(cudaSuccess == cuda_status);
+			
+			cusolver_status = cusolverDnZheevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																				 (cuDoubleComplex *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
+			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+			cudaDeviceSynchronize();
+			assert(*devInfo == 0);
+			
+			cudaFree(devInfo);
+			cusolverDnDestroy(cusolver_handle);
+		}
+#else
     complex lwork_query;
 
     auto rwork = (double *) malloc(std::max(1, 3*nn - 2)*sizeof(double));
@@ -85,7 +161,8 @@ namespace operations {
     
     free(rwork);
     free(work);
-
+#endif
+		
     return eigenvalues;
   }
 
@@ -153,7 +230,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		REQUIRE(evalues[1] == 4.0_a);
 
 	}
-
+	
 	SECTION("Real dense 3x3"){
 	
 		using namespace Catch::literals;
