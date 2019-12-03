@@ -76,7 +76,8 @@ namespace operations {
 			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 			cudaDeviceSynchronize();
 			assert(*devInfo == 0);
-			
+
+			cudaFree(work);
 			cudaFree(devInfo);
 			cusolverDnDestroy(cusolver_handle);
 			
@@ -116,7 +117,7 @@ namespace operations {
 
 #include <operations/randomize.hpp>
 
-TEST_CASE("function operations::orthogonalization", "[orthogonalization]") {
+TEST_CASE("function operations::orthogonalization", "[operations::orthogonalization]") {
 
 	using namespace Catch::literals;
 	using math::d3vector;
