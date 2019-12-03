@@ -40,9 +40,8 @@ nvcc:
       - time autoreconf -i
       - mkdir nvcc
       - cd nvcc
-      - export CXX="nvcc -x cu"
-      - export CXXLD="nvcc"
+      - export CXX="nvcc -x cu -ccbin clang++-8"
+      - export CXXLD="nvcc -ccbin clang++-8"
       - export CXXFLAGS="-D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
-      - time ../configure -prefix=$HOME
+      - time ../configure -prefix=$HOME || cat config.log
       - time make
-      
