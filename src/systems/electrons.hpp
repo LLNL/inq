@@ -48,9 +48,8 @@ namespace systems {
       rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
-			phi_(rs_, states_.num_states()),
-			sc_(inter_){
-
+			phi_(rs_, states_.num_states()){
+			
       rs_.info(std::cout);  
       states_.info(std::cout);
 
@@ -66,7 +65,9 @@ namespace systems {
 			hamiltonian::ks_hamiltonian<basis::real_space> ham(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter_.exchange_coefficient());
 
 			ham.info(std::cout);
-				
+
+			hamiltonian::self_consistency sc(inter_);
+
 			hamiltonian::energy energy;
 
 			operations::preconditioner prec;
@@ -84,7 +85,7 @@ namespace systems {
 
 			std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
 			
-			ham.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
+			ham.scalar_potential = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 			energy.ion = ::ions::interaction_energy(ions_.cell(), ions_.geo(), atomic_pot_);
 
 			//DATAOPERATIONS STL FILL
@@ -119,7 +120,7 @@ namespace systems {
 				
 				density = operations::calculate_density(states_.occupations(), phi_);
 
-				auto vks = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
+				auto vks = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 
 				{
 					
@@ -175,7 +176,6 @@ namespace systems {
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;
 		basis::field_set<basis::real_space, complex> phi_;
-		hamiltonian::self_consistency sc_;
 
   };  
   
