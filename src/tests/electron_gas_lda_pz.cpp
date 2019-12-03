@@ -32,9 +32,9 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 	conf.extra_states = 2;
 	conf.excess_charge = 14.0;
 		
-	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), input::interaction::dft(), conf);
+	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 
-	auto energy = electrons.calculate_ground_state();
+	auto energy = electrons.calculate_ground_state(input::interaction::dft());
 
 	/* OCTOPUS RESULTS (Spacing = 0.2):
 

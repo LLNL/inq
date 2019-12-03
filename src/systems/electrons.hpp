@@ -42,9 +42,8 @@ namespace systems {
 
 		enum class error { NO_ELECTRONS };
 		
-    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::interaction & inter, const input::config & conf):
+    electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::config & conf):
       ions_(ions_arg),
-			inter_(inter),
       rs_(ions_.cell(), arg_basis_input),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
@@ -60,13 +59,13 @@ namespace systems {
 			operations::orthogonalization(phi_);
     }
 
-    auto calculate_ground_state(){
+    auto calculate_ground_state(const input::interaction & inter){
 
-			hamiltonian::ks_hamiltonian<basis::real_space> ham(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter_.exchange_coefficient());
+			hamiltonian::ks_hamiltonian<basis::real_space> ham(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter.exchange_coefficient());
 
 			ham.info(std::cout);
 
-			hamiltonian::self_consistency sc(inter_);
+			hamiltonian::self_consistency sc(inter);
 
 			hamiltonian::energy energy;
 
@@ -99,7 +98,7 @@ namespace systems {
 			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
 
-				if(inter_.self_consistent()) mixer(ham.scalar_potential.linear());
+				if(inter.self_consistent()) mixer(ham.scalar_potential.linear());
 
 				operations::subspace_diagonalization(ham, phi_);
 
@@ -171,7 +170,6 @@ namespace systems {
   private:
 
 		const systems::ions & ions_;
-		input::interaction inter_;
     basis::real_space rs_;
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;
