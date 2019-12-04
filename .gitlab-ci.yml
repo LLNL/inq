@@ -3,7 +3,7 @@ image: debian:testing
 before_script:
     - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
     - time apt update -qq
-    - time apt install --no-install-recommends -y -qq g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin
+    - time apt install --no-install-recommends -y -qq g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
