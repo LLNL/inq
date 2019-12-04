@@ -5,7 +5,7 @@ AM_CXXFLAGS =                             \
 	-DPREFIX_DIR='"$(prefix)"'              \
 	@CFLAGS_CUDA@
 
-LIBS += @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@
+LIBS = @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@
 
 noinst_HEADERS =                             \
 	gpu/run.hpp                                \

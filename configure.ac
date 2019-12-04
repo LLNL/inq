@@ -14,7 +14,7 @@ AC_ARG_ENABLE(cuda, AS_HELP_STRING([--enable-cuda], [Cuda support (experimental)
 
 # Checks for programs.
 AC_PROG_AWK
-AC_PROG_CXX(c++)
+AC_PROG_CXX(mpic++)
 AX_CXX_COMPILE_STDCXX([14], [], [])
 
 #we may need to set the linker for the cuda case, so pass that to automake
@@ -101,6 +101,16 @@ AC_MSG_NOTICE([
 AC_LANG_PUSH([C++])
 
 ACX_LIBXC
+
+AC_LANG_POP
+
+AC_MSG_NOTICE([
+================================================================================
+  CHECKING FOR MPI
+================================================================================])
+AC_LANG_PUSH([C++])
+
+AC_CHECK_HEADER([mpi.h], [], [AC_MSG_ERROR([could not find MPI])])
 
 AC_LANG_POP
 

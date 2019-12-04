@@ -3,7 +3,7 @@ image: debian:testing
 before_script:
     - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
     - time apt update -qq
-    - time apt install --no-install-recommends -y -qq g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev
+    - time apt install --no-install-recommends -y -qq g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -12,7 +12,7 @@ variables:
 gcc:
     stage: build
     script:
-      - g++ --version
+      - mpic++ --version
       - time autoreconf -i
       - mkdir build
       - cd build
@@ -27,7 +27,7 @@ clang:
       - time autoreconf -i
       - mkdir build
       - cd build
-      - export CXX=clang++
+      - export OMPI_CXX=clang++
       - time ../configure -prefix=$HOME
       - time make install
       - time src/inq_unit_tests
@@ -42,6 +42,8 @@ nvcc:
       - cd nvcc
       - export CXX="nvcc -x cu -ccbin clang++-8"
       - export CXXLD="nvcc -ccbin clang++-8"
-      - export CXXFLAGS="-D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
+      - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
+      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure -prefix=$HOME || cat config.log
       - time make
