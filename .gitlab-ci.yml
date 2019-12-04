@@ -28,7 +28,6 @@ clang:
       - mkdir build
       - cd build
       - export OMPI_CXX=clang++
-      - mpic++ -show
       - time ../configure -prefix=$HOME
       - time make install
       - time src/inq_unit_tests
@@ -41,10 +40,10 @@ nvcc:
       - time autoreconf -i
       - mkdir nvcc
       - cd nvcc
-      - export OMPI_CXX=nvcc
-      - mpic++ -show 
-      - export CXX="mpic++ -x cu"
-      - export CXXLD=mpic++
-      - export CXXFLAGS="-ccbin clang++-8 -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
+      - export CXX="nvcc -x cu -ccbin clang++-8"
+      - export CXXLD="nvcc -ccbin clang++-8"
+      - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
+      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure -prefix=$HOME || cat config.log
       - time make
