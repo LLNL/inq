@@ -27,7 +27,8 @@ clang:
       - time autoreconf -i
       - mkdir build
       - cd build
-      - export CXX=clang++
+      - export OMPI_CXX=clang++
+      - mpic++ -show
       - time ../configure -prefix=$HOME
       - time make install
       - time src/inq_unit_tests
