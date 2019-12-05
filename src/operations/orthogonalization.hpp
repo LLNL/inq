@@ -25,6 +25,7 @@
 #include <math/complex.hpp>
 #include <basis/field_set.hpp>
 #include <cstdlib>
+#include <multi/adaptors/blas/trsm.hpp>
 
 #ifdef HAVE_CUDA
 #include <cusolverDn.h>
@@ -43,8 +44,6 @@ namespace operations {
 	template <class field_set_type>
   void orthogonalization(field_set_type & phi){
 
-		const int np = phi.basis().num_points();
-		
 		auto olap = overlap(phi);
 
 		const int nst = phi.set_size();
@@ -88,10 +87,13 @@ namespace operations {
 #endif
 		
 		//DATAOPERATIONS RAWBLAS ztrsm
-		const complex alpha = 1.0; 
-		FC_FUNC(ztrsm, ZTRSM)('L', 'U', 'C', 'N', nst, np, alpha, olap.data(), nst, phi.data(), nst);
+		using boost::multi::blas::hermitized;
+		using boost::multi::blas::trsm;
+		using boost::multi::blas::side;
+		using boost::multi::blas::fill;
+		using boost::multi::blas::diagonal;
 		
-		
+		trsm(side::left, fill::lower, diagonal::general, 1.0, olap, hermitized(phi.matrix()));
   }
 
 }
