@@ -47,10 +47,18 @@ namespace utils {
       return size_;
     }
 
+    auto start() const {
+      return start_;
+    }
+
+    auto end() const {
+      return end_;
+    }
+    
     auto local_size() const {
       return end_ - start_;
     }
-    
+
 	protected:
 
     long size_;
@@ -73,19 +81,52 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
   using namespace Catch::literals;
   using math::d3vector;
 
-  const int NN = 1000;
+  const int NN = 1033;
 
   auto comm = boost::mpi3::environment::get_world_instance();
   
   utils::distribution<boost::mpi3::communicator> dist(NN, comm);
 
-  REQUIRE(NN == dist.size());
+  auto next = comm.rank() + 1;
+  if(next == comm.size()) next = 0;
+  
+  auto prev = comm.rank() - 1;
+  if(prev == -1) prev = comm.size() - 1;
 
-  auto calculated_size = dist.local_size();
+  SECTION("Total"){
 
-  comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
+    REQUIRE(NN == dist.size());
 
-  REQUIRE(NN == calculated_size);
+    auto calculated_size = dist.local_size();
+    
+    comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
+    
+    REQUIRE(NN == calculated_size);
+  }
+
+  SECTION("Upper bound"){
+    auto boundary_value = dist.end();
+    
+    comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ next, /* source = */ prev, 0, 0);
+    
+    if(comm.rank() != 0){
+      REQUIRE(boundary_value == dist.start());
+    } else {
+      REQUIRE(boundary_value == NN);
+    }
+  }
+
+  SECTION("Lower bound"){
+    auto boundary_value = dist.start();
+
+    comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ prev, /* source = */ next, 1, 1);
+    
+    if(comm.rank() != comm.size() - 1){
+      REQUIRE(boundary_value == dist.end());
+    } else {
+      REQUIRE(boundary_value == 0);
+    }
+  }
   
 }
 #endif
