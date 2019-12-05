@@ -18,6 +18,14 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_RUNNER
 #include <catch2/catch.hpp>
 
+#include <mpi3/environment.hpp>
+
+int main( int argc, char* argv[] ) {
+
+  int result = Catch::Session().run( argc, argv );
+
+  return result;
+}
