@@ -25,7 +25,6 @@
 #include <basis/field_set.hpp>
 #include <math/complex.hpp>
 #include <cstdlib>
-#include <mpi3/environment.hpp>
 
 namespace operations {
 
@@ -66,8 +65,6 @@ namespace operations {
 #include <catch2/catch.hpp>
 
 TEST_CASE("function operations::calculate_density", "[operations::calculate_density]") {
-
-	boost::mpi3::environment env;
 
 	using namespace Catch::literals;
 

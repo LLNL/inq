@@ -25,6 +25,8 @@
 
 int main( int argc, char* argv[] ) {
 
+	boost::mpi3::environment env(argc, argv);
+	
   int result = Catch::Session().run( argc, argv );
 
   return result;
