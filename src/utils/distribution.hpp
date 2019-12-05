@@ -31,13 +31,32 @@ namespace utils {
 
   public:
 
-		distribution(const comm_type & comm):
-      comm_(comm){
+		distribution(const long size, const comm_type & comm):
+      size_(size),
+      comm_(comm)
+    {
+      auto bsize = (size_ + comm_.size() - 1)/comm_.size();
+
+      start_ = bsize*comm_.rank();
+      end_ = std::min(bsize*(comm_.rank() + 1), size_);
+
+      assert(local_size() <= bsize);
 		}
+
+    auto size() const {
+      return size_;
+    }
+
+    auto local_size() const {
+      return end_ - start_;
+    }
     
 	protected:
-    
+
+    long size_;
     comm_type comm_;
+    long start_;
+    long end_;
     
   };
 }
@@ -54,7 +73,19 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
   using namespace Catch::literals;
   using math::d3vector;
 
-  utils::distribution<boost::mpi3::communicator> dist(boost::mpi3::environment::get_world_instance());
+  const int NN = 1000;
+
+  auto comm = boost::mpi3::environment::get_world_instance();
+  
+  utils::distribution<boost::mpi3::communicator> dist(NN, comm);
+
+  REQUIRE(NN == dist.size());
+
+  auto calculated_size = dist.local_size();
+
+  comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
+
+  REQUIRE(NN == calculated_size);
   
 }
 #endif
