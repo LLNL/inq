@@ -99,17 +99,17 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 	
 	SECTION("complex"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, M);
+		basis::field_set<basis::trivial, complex> aa(bas, M, boost::mpi3::environment::get_world_instance());
 
 		math::array<double, 1> occ(M);
 		
 		for(int ii = 0; ii < N; ii++){
-			for(int jj = 0; jj < M; jj++){
-				aa.matrix()[ii][jj] = sqrt(ii)*(jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
+			for(int jj = 0; jj < aa.dist().local_size(); jj++){
+				aa.matrix()[ii][jj] = sqrt(ii)*(aa.dist().start() + jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
 			}
 		}
 
-		for(int jj = 0; jj < M; jj++) occ[jj] = 1.0/(jj + 1);
+		for(int jj = 0; jj < aa.dist().local_size(); jj++) occ[jj] = 1.0/(aa.dist().start() + jj + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
