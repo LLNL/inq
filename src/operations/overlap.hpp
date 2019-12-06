@@ -268,8 +268,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			REQUIRE(operations::overlap_single(aa, bb) == 1.6_a);
 			
 			for(int ii = 0; ii < npoint; ii++)	{
-				aa[ii] = pow(ii + 1, 2);
-				bb[ii] = 1.0/(ii + 1);
+				aa.linear()[ii] = pow(ii + 1, 2);
+				bb.linear()[ii] = 1.0/(ii + 1);
 			}
 			
 			REQUIRE(operations::overlap_single(aa, bb) == Approx(0.5*npoint*(npoint + 1.0)*bas.volume_element()));
@@ -288,8 +288,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			REQUIRE(imag(operations::overlap_single(aa, bb)) == 0.26_a);
 		
 			for(int ii = 0; ii < npoint; ii++)	{
-				aa[ii] = pow(ii + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(ii + 1)));
-				bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(ii + 1)));
+				aa.linear()[ii] = pow(ii + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(ii + 1)));
+				bb.linear()[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(ii + 1)));
 			}
 
 			REQUIRE(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));

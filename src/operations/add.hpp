@@ -49,9 +49,9 @@ namespace operations {
 
 		//DATAOPERATIONS STL + THRUST TRANSFORM
 #ifdef HAVE_CUDA
-		thrust::transform(t1.begin(), t1.end(), t2.begin(), tadd.begin(), thrust::plus<type>());
+		thrust::transform(t1.linear().begin(), t1.linear().end(), t2.linear().begin(), tadd.linear().begin(), thrust::plus<type>());
 #else
-		std::transform(t1.begin(), t1.end(), t2.begin(), tadd.begin(), std::plus<type>());
+		std::transform(t1.linear().begin(), t1.linear().end(), t2.linear().begin(), tadd.linear().begin(), std::plus<type>());
 #endif
 		
 		return tadd;
@@ -74,17 +74,17 @@ namespace operations {
 
 		using type = typename field_type::element_type;
 
-		auto t1p = t1.begin();
-		auto t2p = t2.begin();
-		auto t3p = t3.begin();
-		auto taddp = tadd.begin();
+		auto t1p = t1.linear().begin();
+		auto t2p = t2.linear().begin();
+		auto t3p = t3.linear().begin();
+		auto taddp = tadd.linear().begin();
 		
 		gpu::run(t1.basis().size(),
 						 [=] __device__ (long ii){
 							 taddp[ii] = t1p[ii] + t2p[ii] + t3p[ii];
 						 });
 #else
-		for(long ii = 0; ii < t1.basis().size(); ii++) tadd[ii] = t1[ii] + t2[ii] + t3[ii];
+		for(long ii = 0; ii < t1.basis().size(); ii++) tadd.linear()[ii] = t1.linear()[ii] + t2.linear()[ii] + t3.linear()[ii];
 #endif
 		
 		return tadd;
@@ -115,7 +115,7 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 		cc = operations::add(aa, bb);
 		
-		for(int ii = 0; ii < N; ii++) REQUIRE(cc[ii] == 3.5_a);
+		for(int ii = 0; ii < N; ii++) REQUIRE(cc.linear()[ii] == 3.5_a);
 
 	}
 	
@@ -135,8 +135,8 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		cc = operations::add(aa, bb);
 		
 		for(int ii = 0; ii < N; ii++){
-			REQUIRE(real(cc[ii]) == 3.5_a);
-			REQUIRE(imag(cc[ii]) == -19.0_a);
+			REQUIRE(real(cc.linear()[ii]) == 3.5_a);
+			REQUIRE(imag(cc.linear()[ii]) == -19.0_a);
 		}
 
 	}
@@ -158,7 +158,7 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 		dd = operations::add(aa, bb, cc);
 		
-		for(int ii = 0; ii < N; ii++) REQUIRE(dd[ii] == -0.5_a);
+		for(int ii = 0; ii < N; ii++) REQUIRE(dd.linear()[ii] == -0.5_a);
 
 	}
 	
@@ -180,8 +180,8 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		dd = operations::add(aa, bb, cc);
 		
 		for(int ii = 0; ii < N; ii++){
-			REQUIRE(real(dd[ii]) == 0.8_a);
-			REQUIRE(imag(dd[ii]) == -10.4_a);
+			REQUIRE(real(dd.linear()[ii]) == 0.8_a);
+			REQUIRE(imag(dd.linear()[ii]) == -10.4_a);
 		}
 
 	}	

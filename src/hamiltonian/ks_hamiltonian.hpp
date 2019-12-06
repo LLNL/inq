@@ -130,14 +130,14 @@ namespace hamiltonian {
 			//DATAOPERATIONS LOOP + GPU:RUN 2D
 #ifdef HAVE_CUDA2
 			gpu::run(phi.set_size(), phi.basis().size(),
-							 [pot = begin(scalar_potential), it_hphi = begin(hphi), it_phi = begin(hphi)] __device__
+							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi), it_phi = begin(hphi)] __device__
 							 (auto ist, auto ip){
 								 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
 							 });
 							 
 #else
 			for(long ip = 0; ip < phi.basis().size(); ip++){
-				double vv  = scalar_potential[ip];
+				double vv  = scalar_potential.linear()[ip];
 				for(int ist = 0; ist < phi.set_size(); ist++) hphi.matrix()[ip][ist] += vv*phi.matrix()[ip][ist];
 			}
 #endif

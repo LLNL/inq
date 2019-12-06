@@ -31,26 +31,28 @@
 namespace basis {
 	
 	template<class b_type, class type>
-  class field : public math::array<type, 1> {
+  class field {
 
   public:
 
+		typedef math::array<type, 1> internal_array_type;
 		typedef b_type basis_type;
+		typedef type element_type;
 		
     field(const basis_type & basis):
-			math::array<type, 1>(basis.size()),
+			linear_(basis.size()),
 			basis_(basis){
     }
 
 		template <class array_type>
     field(const basis_type & basis, array_type && array):
-			math::array<type, 1>(array),
+			linear_(array),
 			basis_(basis){
     }
 				
 		template <class array_type>
     field(const basis_type & basis, const array_type & array):
-			math::array<type, 1>(array),
+			linear_(array),
 			basis_(basis){
     }
 
@@ -64,12 +66,16 @@ namespace basis {
 
 			//DATAOPERATIONS STL + THRUST FILL
 #ifdef HAVE_CUDA
-			thrust::fill(this->begin(), this->end(), value);
+			thrust::fill_n(linear_.data(), linear_.num_elements(), value);
 #else			 
-			std::fill(this->begin(), this->end(), value);
+			std::fill_n(linear_.data(), linear_.num_elements(), value);
 #endif
 			
 			return *this;
+		}
+
+		auto size() const {
+			return basis_.size();
 		}
 		
 		const auto & basis() const {
@@ -77,11 +83,27 @@ namespace basis {
 		}
 
 		auto cubic() const {
-			return this->partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+			return linear_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
 		}
 
 		auto cubic() {
-			return this->partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+			return linear_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+		}
+
+		auto data() {
+			return linear_.data();
+		}
+
+		auto data() const {
+			return linear_.data();
+		}
+
+		auto & linear() const {
+			return linear_;
+		}
+
+		auto & linear() {
+			return linear_;
 		}
 
 		template <int dir = 2>
@@ -103,7 +125,8 @@ namespace basis {
 		}
 				
 	private:
-		
+
+		internal_array_type linear_;
 		basis_type basis_;
 
   };
@@ -134,7 +157,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	REQUIRE(sizes(rs)[1] == 11);
 	REQUIRE(sizes(rs)[2] == 20);	
 
-	REQUIRE(std::get<0>(sizes(ff)) == 6160);
+	REQUIRE(std::get<0>(sizes(ff.linear())) == 6160);
 
 	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
 	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
@@ -142,7 +165,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	ff = 12.2244;
 
-	for(int ii = 0; ii < rs.size(); ii++) REQUIRE(ff[ii] == 12.2244_a);	
+	for(int ii = 0; ii < rs.size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
 	
 }
 
