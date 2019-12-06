@@ -55,6 +55,10 @@ namespace operations {
     }
 		
 #endif
+
+		if(phi.dist().parallel()){
+			phi.dist().comm().all_reduce_in_place_n(density.data(), density.size(), std::plus<>{});
+		}
 		
     return density;
   }
@@ -75,7 +79,7 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 	
 	SECTION("double"){
 		
-		basis::field_set<basis::trivial, double> aa(bas, M);
+		basis::field_set<basis::trivial, double> aa(bas, M, boost::mpi3::environment::get_world_instance());
 
 		math::array<double, 1> occ(M);
 		
