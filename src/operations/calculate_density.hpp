@@ -38,7 +38,7 @@ namespace operations {
 
 		const auto nst = phi.set_size();
 		auto occupationsp = begin(occupations);
-		auto phip = begin(phi);
+		auto phip = begin(phi.matrix());
 		auto densityp = begin(density);
 		
 		gpu::run(phi.basis().size(),
@@ -51,7 +51,7 @@ namespace operations {
 		
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
 			density[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi[ipoint][ist]);
+      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
     }
 		
 #endif
@@ -81,7 +81,7 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 		
 		for(int ii = 0; ii < N; ii++){
 			for(int jj = 0; jj < M; jj++){
-				aa[ii][jj] = sqrt(ii)*(jj + 1);
+				aa.matrix()[ii][jj] = sqrt(ii)*(jj + 1);
 			}
 		}
 
@@ -101,7 +101,7 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 		
 		for(int ii = 0; ii < N; ii++){
 			for(int jj = 0; jj < M; jj++){
-				aa[ii][jj] = sqrt(ii)*(jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
+				aa.matrix()[ii][jj] = sqrt(ii)*(jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
 			}
 		}
 

@@ -68,7 +68,7 @@ namespace operations {
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_size(); ii++){
 			type aa = 0.0;
-			for(int ip = 0; ip < phi1.basis().size(); ip++) aa += conj(phi1[ip][ii])*phi2[ip][ii];
+			for(int ip = 0; ip < phi1.basis().size(); ip++) aa += conj(phi1.matrix()[ip][ii])*phi2.matrix()[ip][ii];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
 
@@ -78,8 +78,8 @@ namespace operations {
 			auto npoints = phi1.basis().size();
 			auto nst = phi1.set_size();
 			auto vol_element = phi1.basis().volume_element();
-			auto phi1p = begin(phi1);
-			auto phi2p = begin(phi2);
+			auto phi1p = begin(phi1.matrix());
+			auto phi2p = begin(phi2.matrix());
 			auto overlap = begin(overlap_vector);
 			
 			//OPTIMIZATION: here we should parallelize over points as well 
@@ -143,14 +143,14 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 			for(int ii = 0; ii < npoint; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					aa[ii][jj] = 20.0*(ii + 1)*sqrt(jj);
-					bb[ii][jj] = -0.05/(ii + 1)*sqrt(jj);
+					aa.matrix()[ii][jj] = 20.0*(ii + 1)*sqrt(jj);
+					bb.matrix()[ii][jj] = -0.05/(ii + 1)*sqrt(jj);
 				}
 			}
 
 			{
 				auto cc = operations::overlap(aa, bb);
-				
+
 				for(int ii = 0; ii < nvec; ii++){
 					for(int jj = 0; jj < nvec; jj++) REQUIRE(cc[ii][jj] == Approx(-sqrt(jj)*sqrt(ii)));
 				}
@@ -164,7 +164,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			
 			for(int ii = 0; ii < npoint; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					aa[ii][jj] = sqrt(ii)*sqrt(jj);
+					aa.matrix()[ii][jj] = sqrt(ii)*sqrt(jj);
 				}
 			}
 
@@ -195,8 +195,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 			for(int ii = 0; ii < npoint; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					aa[ii][jj] = 20.0*(ii + 1)*sqrt(jj)*exp(complex(0.0, -M_PI/4 + M_PI/7*ii));
-					bb[ii][jj] = -0.05/(ii + 1)*sqrt(jj)*exp(complex(0.0, M_PI/4 + M_PI/7*ii));
+					aa.matrix()[ii][jj] = 20.0*(ii + 1)*sqrt(jj)*exp(complex(0.0, -M_PI/4 + M_PI/7*ii));
+					bb.matrix()[ii][jj] = -0.05/(ii + 1)*sqrt(jj)*exp(complex(0.0, M_PI/4 + M_PI/7*ii));
 				}
 			}
 
@@ -227,7 +227,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			
 			for(int ii = 0; ii < npoint; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					aa[ii][jj] = sqrt(ii)*sqrt(jj)*exp(complex(0.0, M_PI/65.0*ii));
+					aa.matrix()[ii][jj] = sqrt(ii)*sqrt(jj)*exp(complex(0.0, M_PI/65.0*ii));
 				}
 			}
 
