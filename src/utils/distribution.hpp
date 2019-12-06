@@ -59,10 +59,18 @@ namespace utils {
       return end_ - start_;
     }
 
+		auto & comm() const {
+			return comm_;
+		}
+
+		auto parallel() const {
+			return comm_.size() > 1;
+		}
+		
 	protected:
 
     long size_;
-    comm_type comm_;
+    mutable comm_type comm_;
     long start_;
     long end_;
     
