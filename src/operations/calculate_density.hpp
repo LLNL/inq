@@ -36,7 +36,7 @@ namespace operations {
     //DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
 
-		const auto nst = phi.set_size();
+		const auto nst = phi.dist().local_size();
 		auto occupationsp = begin(occupations);
 		auto phip = begin(phi.matrix());
 		auto densityp = begin(density);
@@ -51,10 +51,14 @@ namespace operations {
 		
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
 			density[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
+      for(int ist = 0; ist < phi.dist().local_size(); ist++) density[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
     }
 		
 #endif
+
+		if(phi.dist().parallel()){
+			phi.dist().comm().all_reduce_in_place_n(density.data(), density.size(), std::plus<>{});
+		}
 		
     return density;
   }
@@ -75,17 +79,17 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 	
 	SECTION("double"){
 		
-		basis::field_set<basis::trivial, double> aa(bas, M);
+		basis::field_set<basis::trivial, double> aa(bas, M, boost::mpi3::environment::get_world_instance());
 
-		math::array<double, 1> occ(M);
+		math::array<double, 1> occ(aa.dist().local_size());
 		
 		for(int ii = 0; ii < N; ii++){
-			for(int jj = 0; jj < M; jj++){
-				aa.matrix()[ii][jj] = sqrt(ii)*(jj + 1);
+			for(int jj = 0; jj < aa.dist().local_size(); jj++){
+				aa.matrix()[ii][jj] = sqrt(ii)*(aa.dist().start() + jj + 1);
 			}
 		}
 
-		for(int jj = 0; jj < M; jj++) occ[jj] = 1.0/(jj + 1);
+		for(int jj = 0; jj < aa.dist().local_size(); jj++) occ[jj] = 1.0/(aa.dist().start() + jj + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
@@ -95,17 +99,17 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 	
 	SECTION("complex"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, M);
+		basis::field_set<basis::trivial, complex> aa(bas, M, boost::mpi3::environment::get_world_instance());
 
 		math::array<double, 1> occ(M);
 		
 		for(int ii = 0; ii < N; ii++){
-			for(int jj = 0; jj < M; jj++){
-				aa.matrix()[ii][jj] = sqrt(ii)*(jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
+			for(int jj = 0; jj < aa.dist().local_size(); jj++){
+				aa.matrix()[ii][jj] = sqrt(ii)*(aa.dist().start() + jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
 			}
 		}
 
-		for(int jj = 0; jj < M; jj++) occ[jj] = 1.0/(jj + 1);
+		for(int jj = 0; jj < aa.dist().local_size(); jj++) occ[jj] = 1.0/(aa.dist().start() + jj + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		

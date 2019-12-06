@@ -37,10 +37,13 @@ namespace utils {
     {
       auto bsize = (size_ + comm_.size() - 1)/comm_.size();
 
+			assert(bsize > 0);
+
       start_ = bsize*comm_.rank();
       end_ = std::min(bsize*(comm_.rank() + 1), size_);
 
       assert(local_size() <= bsize);
+			assert(end_ > start_);
 		}
 
     auto size() const {
@@ -59,10 +62,18 @@ namespace utils {
       return end_ - start_;
     }
 
+		auto & comm() const {
+			return comm_;
+		}
+
+		auto parallel() const {
+			return comm_.size() > 1;
+		}
+		
 	protected:
 
     long size_;
-    comm_type comm_;
+    mutable comm_type comm_;
     long start_;
     long end_;
     
