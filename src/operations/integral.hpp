@@ -29,14 +29,14 @@ namespace operations {
 
   template <class field_type>
   auto integral(const field_type & phi){
-		return phi.basis().volume_element()*sum(phi);
+		return phi.basis().volume_element()*sum(phi.linear());
 	}
 
   template <class field_type, class binary_op>
   auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
 		assert(phi1.basis() == phi2.basis());
 
-		return phi1.basis().volume_element()*operations::sum(phi1, phi2, op);
+		return phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
 	}
 	
   template <class field_type>
@@ -71,7 +71,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		REQUIRE(operations::integral(aa) == 1.0_a);
 
-		for(int ii = 0; ii < N; ii++)	aa[ii] = ii;
+		for(int ii = 0; ii < N; ii++)	aa.linear()[ii] = ii;
 
 		REQUIRE(operations::integral(aa) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
 
@@ -86,7 +86,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(real(operations::integral(aa)) == 1.0_a);
 		REQUIRE(imag(operations::integral(aa)) == 1.0_a);
 
-		for(int ii = 0; ii < N; ii++)	aa[ii] = complex(ii, -3.0*ii);
+		for(int ii = 0; ii < N; ii++)	aa.linear()[ii] = complex(ii, -3.0*ii);
 
 		REQUIRE(real(operations::integral(aa)) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
 		REQUIRE(imag(operations::integral(aa)) == Approx(-1.5*N*(N - 1.0)*bas.volume_element()));
@@ -104,8 +104,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(operations::integral_product(aa, bb) == 1.6_a);
 		
 		for(int ii = 0; ii < N; ii++)	{
-			aa[ii] = pow(ii + 1, 2);
-			bb[ii] = 1.0/(ii + 1);
+			aa.linear()[ii] = pow(ii + 1, 2);
+			bb.linear()[ii] = 1.0/(ii + 1);
 		}
 		
 		REQUIRE(operations::integral_product(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
@@ -124,8 +124,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(imag(operations::integral_product(aa, bb)) == -0.22_a);
 		
 		for(int ii = 0; ii < N; ii++)	{
-			aa[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
-			bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
+			aa.linear()[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
+			bb.linear()[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
 		}
 		
 		REQUIRE(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
@@ -146,8 +146,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		double sign = 1.0;
 		for(int ii = 0; ii < N; ii++)	{
-			aa[ii] = sign*2.0*(ii + 1);
-			bb[ii] = sign*1.0*(ii + 1);
+			aa.linear()[ii] = sign*2.0*(ii + 1);
+			bb.linear()[ii] = sign*1.0*(ii + 1);
 			sign *= -1.0;
 		}
 		
@@ -167,8 +167,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		double sign = 1.0;
 		for(int ii = 0; ii < N; ii++)	{
-			aa[ii] = sign*2.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
-			bb[ii] = sign*1.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
+			aa.linear()[ii] = sign*2.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
+			bb.linear()[ii] = sign*1.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
 			sign *= -1.0;
 		}
 		

@@ -96,7 +96,7 @@ namespace systems {
 			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
 
-				if(inter_.self_consistent()) mixer(ham_.scalar_potential);
+				if(inter_.self_consistent()) mixer(ham_.scalar_potential.linear());
 
 				operations::subspace_diagonalization(ham_, phi_);
 

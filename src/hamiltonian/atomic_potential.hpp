@@ -79,7 +79,7 @@ namespace hamiltonian {
 
       basis::field<basis_type, double> potential(basis);
 
-			for(long ii = 0; ii < potential.basis().size(); ii++) potential[ii] = 0.0;
+			for(long ii = 0; ii < potential.basis().size(); ii++) potential.linear()[ii] = 0.0;
 			
       for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				

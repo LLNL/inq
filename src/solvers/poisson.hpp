@@ -156,7 +156,7 @@ namespace solvers {
 			using basis::field;
 			
 			//For the moment we copy to a complex array.
-			field<basis_type, complex> complex_density(density.basis(), density);
+			field<basis_type, complex> complex_density(density.basis(), density.linear());
 
 			auto complex_potential = operator()(complex_density);
 
@@ -165,12 +165,12 @@ namespace solvers {
 			//DATAOPERATIONS LOOP + GPU::RUN 1D
 #ifdef HAVE_CUDA
 			gpu::run(real_potential.size(),
-							 [rp = begin(real_potential), cp = begin(complex_potential)] __device__
+							 [rp = begin(real_potential.linear()), cp = begin(complex_potential.linear())] __device__
 							 (auto ii){
 								 rp[ii] = real(cp[ii]);
 							 });
 #else
-			for(long ii = 0; ii < real_potential.size(); ii++) real_potential[ii] = real(complex_potential[ii]);
+			for(long ii = 0; ii < real_potential.size(); ii++) real_potential.linear()[ii] = real(complex_potential.linear()[ii]);
 #endif
 			
 			return real_potential;

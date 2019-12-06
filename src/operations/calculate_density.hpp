@@ -39,7 +39,7 @@ namespace operations {
 		const auto nst = phi.dist().local_size();
 		auto occupationsp = begin(occupations);
 		auto phip = begin(phi.matrix());
-		auto densityp = begin(density);
+		auto densityp = begin(density.linear());
 		
 		gpu::run(phi.basis().size(),
 						 [=] __device__ (auto ipoint){
@@ -50,14 +50,14 @@ namespace operations {
 #else
 		
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
-			density[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.dist().local_size(); ist++) density[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
+			density.linear()[ipoint] = 0.0;
+      for(int ist = 0; ist < phi.dist().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
     }
 		
 #endif
 
 		if(phi.dist().parallel()){
-			phi.dist().comm().all_reduce_in_place_n(density.data(), density.size(), std::plus<>{});
+			phi.dist().comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
 		}
 		
     return density;
@@ -93,7 +93,7 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 		auto dd = operations::calculate_density(occ, aa);
 		
-		for(int ii = 0; ii < M; ii++) REQUIRE(dd[ii] == Approx(0.5*ii*M*(M + 1)));
+		for(int ii = 0; ii < M; ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*ii*M*(M + 1)));
 		
 	}
 	
@@ -113,7 +113,7 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 		auto dd = operations::calculate_density(occ, aa);
 		
-		for(int ii = 0; ii < M; ii++) REQUIRE(dd[ii] == Approx(0.5*ii*M*(M + 1)));
+		for(int ii = 0; ii < M; ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*ii*M*(M + 1)));
 		
 	}
 	
