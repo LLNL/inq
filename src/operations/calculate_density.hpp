@@ -57,7 +57,7 @@ namespace operations {
 #endif
 
 		if(phi.dist().parallel()){
-			phi.dist().comm().all_reduce_in_place_n(raw_pointer_cast(density.linear().data()), density.linear().size(), std::plus<>{});
+			phi.dist().comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
 		}
 		
     return density;
