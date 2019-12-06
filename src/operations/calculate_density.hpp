@@ -81,15 +81,15 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 		
 		basis::field_set<basis::trivial, double> aa(bas, M, boost::mpi3::environment::get_world_instance());
 
-		math::array<double, 1> occ(M);
+		math::array<double, 1> occ(aa.dist().local_size());
 		
 		for(int ii = 0; ii < N; ii++){
-			for(auto jj = aa.dist().start(); jj < aa.dist().end(); jj++){
-				aa.matrix()[ii][jj] = sqrt(ii)*(jj + 1);
+			for(int jj = 0; jj < aa.dist().local_size(); jj++){
+				aa.matrix()[ii][jj] = sqrt(ii)*(aa.dist().start() + jj + 1);
 			}
 		}
 
-		for(int jj = 0; jj < M; jj++) occ[jj] = 1.0/(jj + 1);
+		for(int jj = 0; jj < aa.dist().local_size(); jj++) occ[jj] = 1.0/(aa.dist().start() + jj + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
