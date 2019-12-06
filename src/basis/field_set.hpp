@@ -30,15 +30,16 @@
 namespace basis {
 	
 	template<class Basis, class type>
-  class field_set : public math::array<type, 2>{
+  class field_set {
 
   public:
 
 		typedef Basis basis_type;
 		typedef math::array<type, 2> internal_array_type;
+		typedef type element_type;
 		
     field_set(const basis_type & basis, const int num_vectors):
-			math::array<type, 2>({basis.size(), num_vectors}),
+			matrix_({basis.size(), num_vectors}),
 			num_vectors_(num_vectors),
 			basis_(basis){
     }
@@ -49,11 +50,23 @@ namespace basis {
 		field_set & operator=(field_set && coeff) = default;
 
 		internal_array_type & matrix() {
-			return static_cast<internal_array_type &>(*this);
+			return matrix_;
 		}
 
 		internal_array_type const & matrix() const{
-			return static_cast<internal_array_type const &>(*this);
+			return matrix_;
+		}
+
+		auto data() const {
+			return matrix_.data();
+		}
+
+		auto data() {
+			return matrix_.data();
+		}
+
+		auto num_elements() const {
+			return matrix_.num_elements();
 		}
 		
 		//set to a scalar value
@@ -78,15 +91,16 @@ namespace basis {
 		}
 		
 		auto cubic() const {
-			return this->partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+			return matrix_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
 		}
 
 		auto cubic() {
-			return this->partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+			return matrix_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
 		}
 
 	private:
 
+		internal_array_type matrix_;
 		int num_vectors_;
 		basis_type basis_;
 
@@ -117,8 +131,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	REQUIRE(sizes(rs)[1] == 11);
 	REQUIRE(sizes(rs)[2] == 20);	
 
-	REQUIRE(std::get<0>(sizes(ff)) == 6160);	
-	REQUIRE(std::get<1>(sizes(ff)) == 12);
+	REQUIRE(std::get<0>(sizes(ff.matrix())) == 6160);	
+	REQUIRE(std::get<1>(sizes(ff.matrix())) == 12);
 
 	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
 	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
@@ -129,7 +143,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	for(int ii = 0; ii < rs.size(); ii++){
 		for(int jj = 0; jj < ff.set_size(); jj++){
-			REQUIRE(ff[ii][jj] == 12.2244_a);
+			REQUIRE(ff.matrix()[ii][jj] == 12.2244_a);
 		}
 	}
 	
