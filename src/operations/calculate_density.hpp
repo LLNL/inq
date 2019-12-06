@@ -36,7 +36,7 @@ namespace operations {
     //DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
 
-		const auto nst = phi.set_size();
+		const auto nst = phi.dist().local_size();
 		auto occupationsp = begin(occupations);
 		auto phip = begin(phi.matrix());
 		auto densityp = begin(density);
@@ -51,7 +51,7 @@ namespace operations {
 		
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
 			density[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.set_size(); ist++) density[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
+      for(int ist = 0; ist < phi.dist().local_size(); ist++) density[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
     }
 		
 #endif
@@ -80,7 +80,7 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 		math::array<double, 1> occ(M);
 		
 		for(int ii = 0; ii < N; ii++){
-			for(int jj = 0; jj < M; jj++){
+			for(auto jj = aa.dist().start(); jj < aa.dist().end(); jj++){
 				aa.matrix()[ii][jj] = sqrt(ii)*(jj + 1);
 			}
 		}

@@ -21,11 +21,14 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <utils/distribution.hpp>
 #include <math/array.hpp>
 #include <algorithm>
 #ifdef HAVE_CUDA
 #include <thrust/fill.h>
 #endif
+
+#include <mpi3/environment.hpp>
 
 namespace basis {
 	
@@ -37,11 +40,13 @@ namespace basis {
 		typedef Basis basis_type;
 		typedef math::array<type, 2> internal_array_type;
 		typedef type element_type;
-		
-    field_set(const basis_type & basis, const int num_vectors):
-			matrix_({basis.size(), num_vectors}),
+
+		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+			dist_(num_vectors, comm),
+			matrix_({basis.size(), dist_.local_size()}),
 			num_vectors_(num_vectors),
-			basis_(basis){
+			basis_(basis)
+		{
     }
 
 		field_set(const field_set & coeff) = default;
@@ -89,6 +94,10 @@ namespace basis {
 		const int & set_size() const {
 			return num_vectors_;
 		}
+
+		auto & dist() const {
+			return dist_;
+		}
 		
 		auto cubic() const {
 			return matrix_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
@@ -100,6 +109,7 @@ namespace basis {
 
 	private:
 
+		utils::distribution<boost::mpi3::communicator> dist_;
 		internal_array_type matrix_;
 		int num_vectors_;
 		basis_type basis_;
