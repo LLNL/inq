@@ -138,7 +138,7 @@ namespace hamiltonian {
 #else
 			for(long ip = 0; ip < phi.basis().size(); ip++){
 				double vv  = scalar_potential[ip];
-				for(int ist = 0; ist < phi.set_size(); ist++) hphi[ip][ist] += vv*phi[ip][ist];
+				for(int ist = 0; ist < phi.set_size(); ist++) hphi.matrix()[ip][ist] += vv*phi.matrix()[ip][ist];
 			}
 #endif
 			

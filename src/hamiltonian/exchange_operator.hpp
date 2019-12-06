@@ -47,14 +47,14 @@ namespace hamiltonian {
 						basis::field<basis::real_space, complex> rhoij(phi.basis());
 
 						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij[ipoint] = conj(hf_orbitals[ipoint][jj])*phi[ipoint][ii];
+						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij[ipoint] = conj(hf_orbitals.matrix()[ipoint][jj])*phi.matrix()[ipoint][ii];
 						
 						//OPTIMIZATION: this could be done in place
 						auto potij = poisson_solver_(rhoij);
 						
 						//DATAOPERATIONS LOOP 1D
 						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
-							exxphi[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals[ipoint][jj]*potij[ipoint];
+							exxphi.matrix()[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals.matrix()[ipoint][jj]*potij[ipoint];
 						}
 						
 					}
