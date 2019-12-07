@@ -37,13 +37,13 @@ namespace utils {
     {
       auto bsize = (size_ + comm_.size() - 1)/comm_.size();
 
-			assert(bsize > 0);
+			if(size_ > 0) assert(bsize > 0);
 
       start_ = bsize*comm_.rank();
       end_ = std::min(bsize*(comm_.rank() + 1), size_);
 
       assert(local_size() <= bsize);
-			assert(end_ > start_);
+			assert(end_ >= start_);
 		}
 
     auto size() const {
