@@ -115,8 +115,8 @@ namespace hamiltonian {
       basis::field<basis_type, double> density(basis);
 			
 			density = 0.0;
-			
-			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+
+			for(auto iatom = dist_.start(); iatom < dist_.end(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
 				
@@ -143,6 +143,10 @@ namespace hamiltonian {
 #endif
       }
 
+			if(dist_.parallel()){
+				dist_.comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
+			}
+			
 			return density;			
     }
     
