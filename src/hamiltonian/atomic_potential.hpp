@@ -26,8 +26,11 @@
 #include <basis/spherical_grid.hpp>
 #include <math/array.hpp>
 #include <solvers/poisson.hpp>
+#include <utils/distribution.hpp>
 
 #include <unordered_map>
+
+#include <mpi3/environment.hpp>
 
 namespace hamiltonian {
 
@@ -40,9 +43,11 @@ namespace hamiltonian {
     };
 
     template <class atom_array>
-    atomic_potential(const int natoms, const atom_array & atom_list):
+    atomic_potential(const int natoms, const atom_array & atom_list, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			sep_(0.5), //this is the default from qball, but it can be optimized for the grid. Check AtomsSet.cc:1102
-      pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"){
+      pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
+			dist_(natoms, comm)
+		{
 
       nelectrons_ = 0.0;
       for(int iatom = 0; iatom < natoms; iatom++){
@@ -81,14 +86,14 @@ namespace hamiltonian {
 
 			for(long ii = 0; ii < potential.basis().size(); ii++) potential.linear()[ii] = 0.0;
 			
-      for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+      for(auto iatom = dist_.start(); iatom < dist_.end(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 				
-				//DATAOPERATIONS LOOP 1D (random access output)
+				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					auto rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
 					auto sr_potential = ps.short_range_potential().value(rr);
@@ -97,9 +102,12 @@ namespace hamiltonian {
 				
       }
 
+			if(dist_.parallel()){
+				dist_.comm().all_reduce_in_place_n(static_cast<double *>(potential.linear().data()), potential.linear().size(), std::plus<>{});
+			}
+
 			return potential;			
     }
-
 		
     template <class basis_type, class cell_type, class geo_type>
     basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
@@ -107,8 +115,8 @@ namespace hamiltonian {
       basis::field<basis_type, double> density(basis);
 			
 			density = 0.0;
-			
-			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+
+			for(auto iatom = dist_.start(); iatom < dist_.end(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
 				
@@ -135,6 +143,10 @@ namespace hamiltonian {
 #endif
       }
 
+			if(dist_.parallel()){
+				dist_.comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
+			}
+			
 			return density;			
     }
     
@@ -156,6 +168,7 @@ namespace hamiltonian {
     double nelectrons_;
     pseudo::set pseudo_set_;
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
+		utils::distribution<boost::mpi3::communicator> dist_;
         
   };
 
@@ -164,14 +177,17 @@ namespace hamiltonian {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 #include <ions/geometry.hpp>
+#include <basis/real_space.hpp>
 
-TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
+TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential]") {
 
   using namespace Catch::literals;
 	using pseudo::element;
   using input::species;
 
-  SECTION("Non-existing element"){
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
+	SECTION("Non-existing element"){
     std::vector<species> el_list({element("P"), element("X")});
 
     REQUIRE_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list));
@@ -206,13 +222,32 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[atomic_potential]") {
   }
 
   SECTION("Construct from a geometry"){
-    
+
     ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
 
-    hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
+    hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), comm);
 
     REQUIRE(pot.num_species() == 2);
     REQUIRE(pot.num_electrons() == 30.0_a);
+
+		double ll = 20.0;
+		auto cell = input::cell::cubic(ll, ll, ll);
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
+
+		rs.info(std::cout);
+		
+		auto vv = pot.local_potential(rs, cell, geo);
+
+		REQUIRE(operations::integral(vv) == -19.0458972795_a);
+
+		REQUIRE(vv.cubic()[5][3][0] == -0.4493576913_a);
+		REQUIRE(vv.cubic()[3][1][0] == -0.0921256967_a);
+							 
+		auto nn = pot.ionic_density(rs, cell, geo);
+
+		REQUIRE(operations::integral(nn) == -30.0000000746_a);
+		REQUIRE(nn.cubic()[5][3][0] == -1.7354140489_a);
+		REQUIRE(nn.cubic()[3][1][0] == -0.155824769_a);
   }
   
 }
