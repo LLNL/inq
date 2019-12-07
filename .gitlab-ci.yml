@@ -19,6 +19,10 @@ gcc:
       - time ../configure -prefix=$HOME
       - time make install
       - time src/inq_unit_tests
+      - time mpirun -np 2 src/inq_unit_tests
+      - time mpirun -np 3 src/inq_unit_tests
+      - time mpirun -np 4 src/inq_unit_tests
+      - time mpirun -np 5 src/inq_unit_tests
 
 clang:
     stage: build
@@ -31,6 +35,10 @@ clang:
       - time ../configure -prefix=$HOME
       - time make install
       - time src/inq_unit_tests
+      - time mpirun -np 2 src/inq_unit_tests
+      - time mpirun -np 3 src/inq_unit_tests
+      - time mpirun -np 4 src/inq_unit_tests
+      - time mpirun -np 5 src/inq_unit_tests
 
 nvcc:
     stage: build
