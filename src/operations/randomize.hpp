@@ -24,15 +24,29 @@
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
+#include <pcg-cpp/pcg_random.hpp>
+
 namespace operations {
 
 	template <class field_set_type>
   void randomize(field_set_type & phi){
-		srand48(0);
 
-		//DATAOPERATIONS STL FOR_EACH (random number generator)
-		std::for_each(phi.data(), phi.data() + phi.basis().size()*phi.set_size(), [](auto & coeff) { coeff = drand48(); }); 
+		auto seed = phi.basis().size()*phi.set_size();
+		
+		pcg32 rng(seed);
+		
+		std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
 
+		for(uint64_t ix = 0; ix < uint64_t(phi.basis().rsize()[0]); ix++){
+			for(uint64_t iy = 0; iy < uint64_t(phi.basis().rsize()[1]); iy++){
+				for(uint64_t iz = 0; iz < uint64_t(phi.basis().rsize()[2]); iz++){
+					for(uint64_t ist = 0; ist < uint64_t(phi.dist().local_size()); ist++) {
+						phi.cubic()[ix][iy][iz][ist] = uniform_dist(rng);
+					}
+				}
+			}
+		}
+		
   }
 
 }
@@ -40,7 +54,7 @@ namespace operations {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("function operations::randomize", "[randomize]") {
+TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
 	using namespace Catch::literals;
 

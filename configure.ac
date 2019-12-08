@@ -126,6 +126,7 @@ AC_CONFIG_FILES([Makefile
 		             external_libs/catch2/Makefile
                  external_libs/rapidxml/Makefile
                  external_libs/tinyformat/Makefile
+                 external_libs/pcg-cpp/Makefile
                  share/Makefile
                  share/unit_tests_data/Makefile
                  src/Makefile])

@@ -2,4 +2,5 @@ SUBDIRS =      \
 	catch2       \
 	pseudopod    \
 	rapidxml     \
-	tinyformat
+	tinyformat   \
+	pcg-cpp
