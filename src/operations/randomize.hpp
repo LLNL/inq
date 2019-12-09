@@ -33,15 +33,18 @@ namespace operations {
 
 		auto seed = phi.basis().size()*phi.set_size();
 		
-		pcg32 rng(seed);
-		
 		std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
 
 		for(uint64_t ix = 0; ix < uint64_t(phi.basis().sizes()[0]); ix++){
 			for(uint64_t iy = 0; iy < uint64_t(phi.basis().sizes()[1]); iy++){
 				for(uint64_t iz = 0; iz < uint64_t(phi.basis().sizes()[2]); iz++){
 					for(uint64_t ist = 0; ist < uint64_t(phi.dist().local_size()); ist++) {
+
+						uint64_t step = ist + phi.dist().start() + phi.set_size()*(iz + phi.basis().sizes()[2]*(iy + ix*phi.basis().sizes()[1]));
+						pcg32 rng(seed);
+						rng.advance(step);
 						phi.cubic()[ix][iy][iz][ist] = uniform_dist(rng);
+						
 					}
 				}
 			}
@@ -76,6 +79,10 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 		operations::randomize(aa);
 		
 		auto norms = operations::overlap_diagonal(aa);
+
+		for(int ist = 0; ist < nst; ist++){
+			std::cout << norms[ist] << std::endl;
+		}
 
 		REQUIRE(norms[0] == 336.674_a);
 		REQUIRE(norms[1] == 326.192_a);
