@@ -37,9 +37,9 @@ namespace operations {
 		
 		std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
 
-		for(uint64_t ix = 0; ix < uint64_t(phi.basis().rsize()[0]); ix++){
-			for(uint64_t iy = 0; iy < uint64_t(phi.basis().rsize()[1]); iy++){
-				for(uint64_t iz = 0; iz < uint64_t(phi.basis().rsize()[2]); iz++){
+		for(uint64_t ix = 0; ix < uint64_t(phi.basis().sizes()[0]); ix++){
+			for(uint64_t iy = 0; iy < uint64_t(phi.basis().sizes()[1]); iy++){
+				for(uint64_t iz = 0; iz < uint64_t(phi.basis().sizes()[2]); iz++){
 					for(uint64_t ist = 0; ist < uint64_t(phi.dist().local_size()); ist++) {
 						phi.cubic()[ix][iy][iz][ist] = uniform_dist(rng);
 					}
@@ -57,7 +57,40 @@ namespace operations {
 TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
 	using namespace Catch::literals;
+  using math::d3vector;
 
+	const int npoints = 100;
+	const int nst = 12;
+
+	double ll = 10.0;
+	
+  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+  basis::real_space bas(cell, input::basis::cutoff_energy(20.0));
+	
+	SECTION("double"){
+		
+		basis::field_set<basis::real_space, double> aa(bas, nst);
+
+		aa = 0.0;
+		
+		operations::randomize(aa);
+		
+		auto norms = operations::overlap_diagonal(aa);
+
+		REQUIRE(norms[0] == 336.674_a);
+		REQUIRE(norms[1] == 326.192_a);
+		REQUIRE(norms[2] == 328.883_a);
+		REQUIRE(norms[3] == 331.703_a);
+		REQUIRE(norms[4] == 329.812_a);
+		REQUIRE(norms[5] == 331.282_a);
+		REQUIRE(norms[6] == 333.472_a);
+		REQUIRE(norms[7] == 330.646_a);
+		REQUIRE(norms[8] == 333.808_a);
+		REQUIRE(norms[9] == 331.975_a);
+		REQUIRE(norms[10] == 333.3_a);
+		REQUIRE(norms[11] == 332.237_a);
+		
+	}
 	
 	
 }
