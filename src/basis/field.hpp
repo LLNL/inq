@@ -64,12 +64,8 @@ namespace basis {
 		//set to a scalar value
 		field & operator=(const type value) {
 
-			//DATAOPERATIONS STL + THRUST FILL
-#ifdef HAVE_CUDA
-			thrust::fill_n(linear_.data(), linear_.num_elements(), value);
-#else			 
+			//DATAOPERATIONS STL FILL
 			std::fill_n(linear_.data(), linear_.num_elements(), value);
-#endif
 			
 			return *this;
 		}
