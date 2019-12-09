@@ -84,18 +84,18 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 			std::cout << norms[ist] << std::endl;
 		}
 
-		REQUIRE(norms[0] == 336.674_a);
-		REQUIRE(norms[1] == 326.192_a);
-		REQUIRE(norms[2] == 328.883_a);
-		REQUIRE(norms[3] == 331.703_a);
-		REQUIRE(norms[4] == 329.812_a);
-		REQUIRE(norms[5] == 331.282_a);
-		REQUIRE(norms[6] == 333.472_a);
-		REQUIRE(norms[7] == 330.646_a);
-		REQUIRE(norms[8] == 333.808_a);
-		REQUIRE(norms[9] == 331.975_a);
-		REQUIRE(norms[10] == 333.3_a);
-		REQUIRE(norms[11] == 332.237_a);
+		REQUIRE(norms[0] == 335.697_a);
+		REQUIRE(norms[1] == 335.101_a);
+		REQUIRE(norms[2] == 327.385_a);
+		REQUIRE(norms[3] == 337.327_a);
+		REQUIRE(norms[4] == 330.692_a);
+		REQUIRE(norms[5] == 331.003_a);
+		REQUIRE(norms[6] == 328.333_a);
+		REQUIRE(norms[7] == 333.662_a);
+		REQUIRE(norms[8] == 330.545_a);
+		REQUIRE(norms[9] == 335.836_a);
+		REQUIRE(norms[10] == 328.899_a);
+		REQUIRE(norms[11] == 336.042_a);
 		
 	}
 	
