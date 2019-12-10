@@ -91,7 +91,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 	
 	SECTION("double"){
 		
-		basis::field_set<basis::real_space, double> aa(bas, nst);
+		basis::field_set<basis::real_space, double> aa(bas, nst, boost::mpi3::environment::get_world_instance());
 
 		aa = 0.0;
 		
@@ -99,22 +99,22 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 		
 		auto norms = operations::overlap_diagonal(aa);
 
-		for(int ist = 0; ist < nst; ist++){
+		for(int ist = 0; ist < aa.dist().local_size(); ist++){
 			std::cout << norms[ist] << std::endl;
 		}
 
-		REQUIRE(norms[0]  == 336.099_a);
-		REQUIRE(norms[1]  == 335.697_a);
-		REQUIRE(norms[2]  == 335.101_a);
-		REQUIRE(norms[3]  == 327.385_a);
-		REQUIRE(norms[4]  == 337.327_a);
-		REQUIRE(norms[5]  == 330.692_a);
-		REQUIRE(norms[6]  == 331.003_a);
-		REQUIRE(norms[7]  == 328.333_a);
-		REQUIRE(norms[8]  == 333.662_a);
-		REQUIRE(norms[9]  == 330.545_a);
-		REQUIRE(norms[10] == 335.836_a);
-		REQUIRE(norms[11] == 328.899_a);
+		if(aa.dist().contains(0))  REQUIRE(norms[0  - aa.dist().start()] == 336.099_a);
+		if(aa.dist().contains(1))  REQUIRE(norms[1  - aa.dist().start()] == 335.697_a);
+		if(aa.dist().contains(2))  REQUIRE(norms[2  - aa.dist().start()] == 335.101_a);
+		if(aa.dist().contains(3))  REQUIRE(norms[3  - aa.dist().start()] == 327.385_a);
+		if(aa.dist().contains(4))  REQUIRE(norms[4  - aa.dist().start()] == 337.327_a);
+		if(aa.dist().contains(5))  REQUIRE(norms[5  - aa.dist().start()] == 330.692_a);
+		if(aa.dist().contains(6))  REQUIRE(norms[6  - aa.dist().start()] == 331.003_a);
+		if(aa.dist().contains(7))  REQUIRE(norms[7  - aa.dist().start()] == 328.333_a);
+		if(aa.dist().contains(8))  REQUIRE(norms[8  - aa.dist().start()] == 333.662_a);
+		if(aa.dist().contains(9))  REQUIRE(norms[9  - aa.dist().start()] == 330.545_a);
+		if(aa.dist().contains(10)) REQUIRE(norms[10 - aa.dist().start()] == 335.836_a);
+		if(aa.dist().contains(11)) REQUIRE(norms[11 - aa.dist().start()] == 328.899_a);
 		
 	}
 	
