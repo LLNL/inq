@@ -58,15 +58,15 @@ namespace operations {
 
 		using type = typename field_set_type::element_type;
 		
-		math::array<type, 1> overlap_vector(phi1.set_size());
+		math::array<type, 1> overlap_vector(phi1.dist().local_size());
 
-		assert(size(overlap_vector) == phi1.set_size());
+		assert(size(overlap_vector) == phi1.dist().local_size());
 
 		//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifndef HAVE_CUDA
 
 		//OPTIMIZATION: this can be done more efficiently
-    for(int ii = 0; ii < phi1.set_size(); ii++){
+    for(int ii = 0; ii < phi1.dist().local_size(); ii++){
 			type aa = 0.0;
 			for(int ip = 0; ip < phi1.basis().size(); ip++) aa += conj(phi1.matrix()[ip][ii])*phi2.matrix()[ip][ii];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
@@ -76,7 +76,7 @@ namespace operations {
 
 		{
 			auto npoints = phi1.basis().size();
-			auto nst = phi1.set_size();
+			auto nst = phi1.dist().local_size();
 			auto vol_element = phi1.basis().volume_element();
 			auto phi1p = begin(phi1.matrix());
 			auto phi2p = begin(phi2.matrix());
