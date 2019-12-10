@@ -32,9 +32,7 @@ namespace operations {
   void randomize(field_set_type & phi){
 
 		auto seed = phi.basis().size()*phi.set_size();
-
-		pcg32 rng2(seed);
-		double maxrng = std::numeric_limits<decltype(rng2())>::max();
+		double maxrng = std::numeric_limits<pcg32::result_type>::max();
 
 #ifdef HAVE_CUDA
 
