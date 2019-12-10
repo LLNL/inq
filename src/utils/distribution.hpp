@@ -69,6 +69,10 @@ namespace utils {
 		auto parallel() const {
 			return comm_.size() > 1;
 		}
+
+		auto contains(long index) const {
+			return start() <= index and index < end();
+		}
 		
 	protected:
 
