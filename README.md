@@ -1,6 +1,18 @@
-# inq
+# INQ
 
-This is not a PW code
+[Xavier Andrade](mailto:xavier@llnl.gov) (LLNL), [Alfredo A. Correa](mailto:correaa@llnl.gov) (LLNL)
+
+
+INQ is a set of library components designed to build a parallel, portable code for electronic structure calculations, including ground state and excited states.
+It concentrates on algorithms as a portability hardware layer, generic types and flexibility of usage.
+
+## Components
+
+* Electronic states, complex and real fields
+* Solvers
+* Diagonalization
+* CPU/GPU generic algorithms
+* Parallel distribution MPI/GPU/threads
 
 ## Basic installation
 
