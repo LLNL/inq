@@ -32,8 +32,27 @@ namespace operations {
   void randomize(field_set_type & phi){
 
 		auto seed = phi.basis().size()*phi.set_size();
-		
-		std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
+
+		pcg32 rng2(seed);
+		double maxrng = std::numeric_limits<decltype(rng2())>::max();
+
+#ifdef HAVE_CUDA
+
+		uint64_t start = phi.dist().start();
+		uint64_t set_size = phi.set_size();
+		uint64_t size_z = phi.basis().sizes()[2];
+		uint64_t size_y = phi.basis().sizes()[1];
+		auto phicub = begin(phi.cubic());
+
+		gpu::run(phi.dist().local_size(), phi.basis().sizes()[2], phi.basis().sizes()[1], phi.basis().sizes()[0],
+						 [=] __device__ (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
+							 uint64_t step = ist + start + set_size*(iz + size_z*(iy + ix*size_y));
+							 pcg32 rng(seed);
+							 rng.advance(step);
+							 phicub[ix][iy][iz][ist] = rng()/maxrng;
+							 });
+
+#else
 
 		for(uint64_t ix = 0; ix < uint64_t(phi.basis().sizes()[0]); ix++){
 			for(uint64_t iy = 0; iy < uint64_t(phi.basis().sizes()[1]); iy++){
@@ -43,12 +62,13 @@ namespace operations {
 						uint64_t step = ist + phi.dist().start() + phi.set_size()*(iz + phi.basis().sizes()[2]*(iy + ix*phi.basis().sizes()[1]));
 						pcg32 rng(seed);
 						rng.advance(step);
-						phi.cubic()[ix][iy][iz][ist] = uniform_dist(rng);
+						phi.cubic()[ix][iy][iz][ist] = rng()/maxrng;
 						
 					}
 				}
 			}
 		}
+#endif
 		
   }
 
@@ -62,7 +82,6 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 	using namespace Catch::literals;
   using math::d3vector;
 
-	const int npoints = 100;
 	const int nst = 12;
 
 	double ll = 10.0;
@@ -84,25 +103,26 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 			std::cout << norms[ist] << std::endl;
 		}
 
-		REQUIRE(norms[0] == 335.697_a);
-		REQUIRE(norms[1] == 335.101_a);
-		REQUIRE(norms[2] == 327.385_a);
-		REQUIRE(norms[3] == 337.327_a);
-		REQUIRE(norms[4] == 330.692_a);
-		REQUIRE(norms[5] == 331.003_a);
-		REQUIRE(norms[6] == 328.333_a);
-		REQUIRE(norms[7] == 333.662_a);
-		REQUIRE(norms[8] == 330.545_a);
-		REQUIRE(norms[9] == 335.836_a);
-		REQUIRE(norms[10] == 328.899_a);
-		REQUIRE(norms[11] == 336.042_a);
+		REQUIRE(norms[0]  == 336.099_a);
+		REQUIRE(norms[1]  == 335.697_a);
+		REQUIRE(norms[2]  == 335.101_a);
+		REQUIRE(norms[3]  == 327.385_a);
+		REQUIRE(norms[4]  == 337.327_a);
+		REQUIRE(norms[5]  == 330.692_a);
+		REQUIRE(norms[6]  == 331.003_a);
+		REQUIRE(norms[7]  == 328.333_a);
+		REQUIRE(norms[8]  == 333.662_a);
+		REQUIRE(norms[9]  == 330.545_a);
+		REQUIRE(norms[10] == 335.836_a);
+		REQUIRE(norms[11] == 328.899_a);
 		
 	}
 	
 	
 }
 
-
+#endif
 #endif
 
-#endif
+
+
