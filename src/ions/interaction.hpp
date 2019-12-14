@@ -28,19 +28,20 @@
 #include <multi/array.hpp>
 #include <limits>
 #include <complex>
+#include <hamiltonian/atomic_potential.hpp>
 
 namespace ions {
 
 
 	template <class cell_type, class geometry_type>
-	auto interaction_energy(const cell_type & cell, const geometry_type & geo, const math::erf_range_separation & sep){
+	auto interaction_energy(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
 		double energy;
 		boost::multi::array<math::d3vector, 1> forces(geo.num_atoms());
 		boost::multi::array<double, 1> charges(geo.num_atoms());
 
-		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = geo.atoms()[ii].charge();
+		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
 
-		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), sep, energy, forces);
+		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
 
 		return energy;
 	}
@@ -53,7 +54,7 @@ namespace ions {
 
 		const double alpha = 0.21;
 		
-    energy = 0.0;
+    double ers = 0.0;
     for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = d3vector(0.0, 0.0, 0.0);
 
     double rcut = 6.0/alpha;
@@ -76,12 +77,14 @@ namespace ions {
 					
 					double eor = erfc(alpha*rr)/rr;
 					
-					energy += 0.5*zi*zj*eor;
+					ers += 0.5*zi*zj*eor;
 					forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*rr, 2))/(rr*rr));
 				}
       }
       
     }
+
+		double eself = 0.0;
 
     // self-interaction
     double total_charge = 0.0;
@@ -89,11 +92,11 @@ namespace ions {
       double zi = charge[iatom];
 
       total_charge += zi;
-      energy -= alpha*zi*zi/sqrt(M_PI);
+      eself -= alpha*zi*zi/sqrt(M_PI);
     }
 
     // G = 0 energy
-    energy -= M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
+    auto efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
 
     double gcut = std::numeric_limits<double>::max();
     for(int idir = 0; idir < 3; idir++) std::min(gcut, norm(cell.b(idir)));
@@ -128,7 +131,7 @@ namespace ions {
 						sumatoms += aa;
 					}
 					
-					energy += factor*std::real(sumatoms*std::conj(sumatoms));
+					efs += factor*std::real(sumatoms*std::conj(sumatoms));
 					
 					for(int iatom = 0; iatom < natoms; iatom++){
 						for(int idir = 0; idir < 3; idir++){
@@ -150,8 +153,15 @@ namespace ions {
 		for(int iatom = 0; iatom < natoms; iatom++){
 			epseudo += M_PI*charge[iatom]*pow(sep.sigma()*sqrt(2.0), 2)/cell.volume()*total_charge;
 		}
+
+		/*
+		std::cout << "ers     = " << ers << std::endl;
+		std::cout << "eself   = " << eself << std::endl;
+		std::cout << "efs     = " << efs << std::endl;
+		std::cout << "epseudo = " << epseudo << std::endl;
+		*/
 		
-		energy = energy + epseudo;
+		energy = ers + eself + efs + epseudo;
 
 	}
 }
