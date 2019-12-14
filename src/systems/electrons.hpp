@@ -83,7 +83,7 @@ namespace systems {
 			std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
 			
 			ham_.scalar_potential = sc_.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
-			::ions::interaction_energy(atomic_pot_.range_separation(), ions_.cell(), ions_.geo(), energy.ion, energy.self);
+			energy.ion = ::ions::interaction_energy(ions_.cell(), ions_.geo());
 
 			//DATAOPERATIONS STL FILL
 #ifdef HAVE_CUDA
