@@ -99,7 +99,7 @@ namespace ions {
     auto efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
 
     double gcut = std::numeric_limits<double>::max();
-    for(int idir = 0; idir < 3; idir++) std::min(gcut, norm(cell.b(idir)));
+    for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.b(idir)));
     gcut = sqrt(gcut);
       
     const int isph = ceil(9.5*alpha/gcut);
