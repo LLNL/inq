@@ -44,7 +44,7 @@ namespace hamiltonian {
 
     template <class atom_array>
     atomic_potential(const int natoms, const atom_array & atom_list, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			sep_(0.5), //this is the default from qball, but it can be optimized for the grid. Check AtomsSet.cc:1102
+			sep_(0.625), //this is the default from octopus
       pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
 			dist_(natoms, comm)
 		{
