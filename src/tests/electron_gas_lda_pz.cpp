@@ -71,7 +71,6 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 	REQUIRE(energy.total()         == -0.6848531681_a);
 	REQUIRE(energy.kinetic()       == 2.368793_a);
 	REQUIRE(energy.eigenvalues     == -1.6053918367_a);
-	REQUIRE(fabs(energy.coulomb()) <=  1e-10);
 	REQUIRE(energy.xc              == -3.0536456687_a);
 	REQUIRE(energy.nvxc            == -3.9741843374_a);
 	
