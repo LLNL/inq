@@ -33,20 +33,20 @@ namespace ions {
 
 
 	template <class cell_type, class geometry_type>
-	auto interaction_energy(const cell_type & cell, const geometry_type & geo){
+	auto interaction_energy(const cell_type & cell, const geometry_type & geo, const math::erf_range_separation & sep){
 		double energy;
 		boost::multi::array<math::d3vector, 1> forces(geo.num_atoms());
 		boost::multi::array<double, 1> charges(geo.num_atoms());
 
 		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = geo.atoms()[ii].charge();
 
-		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), energy, forces);
+		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), sep, energy, forces);
 
 		return energy;
 	}
 
 	template <class cell_type, class array_charge, class array_positions, class array_forces>
-  void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, 
+  void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, const math::erf_range_separation & sep,
 													double & energy, array_forces & forces){
 
     using math::d3vector;
@@ -143,8 +143,17 @@ namespace ions {
 
     //forces are not properly validated right now
     for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = d3vector(0.0, 0.0, 0.0);
-    
-  }
+
+		// Previously unaccounted G = 0 term from pseudopotentials. 
+		// See J. Ihm, A. Zunger, M.L. Cohen, J. Phys. C 12, 4409 (1979)
+		double epseudo = 0.0;
+		for(int iatom = 0; iatom < natoms; iatom++){
+			epseudo += M_PI*charge[iatom]*pow(sep.sigma()*sqrt(2.0), 2)/cell.volume()*total_charge;
+		}
+		
+		energy = energy + epseudo;
+
+	}
 }
 
 #ifdef UNIT_TEST
@@ -156,14 +165,10 @@ namespace ions {
 
 TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
-  //Note: here we use Octopus' results for validation. However,
-  //normally Octopus add a pseudopotential energy term to the ion-ion
-  //energy that we include elsewhere, and that was removed for this
-  //comparison.
-  
   using namespace Catch::literals;
   using math::d3vector;
-
+	const math::erf_range_separation sep(0.625);
+ 
   SECTION("Aluminum cubic cell"){
   
     double aa = 7.653;
@@ -182,9 +187,9 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(4);
     
-    ions::interaction_energy(4, cell, charge, positions, energy, forces);
+    ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
     
-    REQUIRE(energy == -10.78368187_a); //this number comes from Octopus
+    REQUIRE(energy == -9.99517178_a); //this number comes from Octopus
     
   }
 
@@ -203,9 +208,9 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, energy, forces);
+    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
-    REQUIRE(energy == -12.78641217_a); //this number comes from Octopus
+    REQUIRE(energy == -10.73490075_a); //this number comes from Octopus
 
   }
 
@@ -222,9 +227,9 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     double energy;
     std::vector<d3vector> forces(1);
 
-    ions::interaction_energy(1, cell, &charge, &position, energy, forces);
+    ions::interaction_energy(1, cell, &charge, &position, sep, energy, forces);
 
-    REQUIRE(energy == -86.31033718_a); //this number comes from Octopus
+    REQUIRE(energy == -78.31680646_a); //this number comes from Octopus
     
   }
     
