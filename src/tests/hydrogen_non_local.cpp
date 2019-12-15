@@ -68,11 +68,9 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
       Non-local   =        -0.06871050
 
 		*/
-		REQUIRE(energy.self            == -0.564189583548_a);
 		REQUIRE(energy.eigenvalues     == -0.500213154797_a);
 		REQUIRE(fabs(energy.xc)        <=  1e-10);
 		REQUIRE(fabs(energy.nvxc)      <=  1e-10);
-		REQUIRE(energy.coulomb()       == -0.794655796183_a);
 		REQUIRE(energy.total()         == -0.500213154797_a);
 		REQUIRE(energy.external        == -0.125329604081_a);
 		REQUIRE(energy.nonlocal        == -0.068186046673_a);
@@ -116,11 +114,9 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		*/
 
-		REQUIRE(energy.self            == -0.564189583548_a);
 		REQUIRE(energy.eigenvalues     == -0.234329528903_a);
 		REQUIRE(energy.xc              == -0.232294220410_a);
 		REQUIRE(energy.nvxc            == -0.302713349819_a);
-		REQUIRE(energy.coulomb()       == -0.463639067982_a);
 		REQUIRE(energy.total()         == -0.446253846698_a);
 		REQUIRE(energy.external        == -0.108660738870_a);
 		REQUIRE(energy.nonlocal        == -0.058633055438_a);

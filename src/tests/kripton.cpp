@@ -79,9 +79,7 @@ TEST_CASE("Test kripton", "[test::kripton]") {
 		
 		//THE ION-ION ENERGY IS WRONG, IT SHOULD BE ZERO
 
-		REQUIRE(energy.self            == -56.418958354776_a);
 		REQUIRE(energy.eigenvalues     == -61.740948878692_a);
-		REQUIRE(energy.coulomb()       == -96.117184373084_a);
 		REQUIRE(energy.total()         == -82.051773872674_a);
 		REQUIRE(energy.external        ==  -3.603296578514_a);
 		REQUIRE(energy.nonlocal        == -17.878544893202_a);

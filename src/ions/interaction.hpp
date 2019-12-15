@@ -25,64 +25,144 @@
 #include <math/d3vector.hpp>
 #include <cmath>
 #include <ions/periodic_replicas.hpp>
-#include <math/array.hpp>
+#include <multi/array.hpp>
 #include <limits>
 #include <complex>
+#include <hamiltonian/atomic_potential.hpp>
 
 namespace ions {
 
 
 	template <class cell_type, class geometry_type>
-	void interaction_energy(const math::erf_range_separation & sep, const cell_type & cell, const geometry_type & geo, double & energy, double & eself){
-		math::array<double, 1> charges(geo.num_atoms());
+	auto interaction_energy(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
+		double energy;
+		boost::multi::array<math::d3vector, 1> forces(geo.num_atoms());
+		boost::multi::array<double, 1> charges(geo.num_atoms());
 
-		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = geo.atoms()[ii].charge();
+		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
 
-		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), sep, energy, eself);
+		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+
+		return energy;
 	}
 
-	template <class cell_type, class array_charge, class array_positions>
-  void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, 
-													const math::erf_range_separation & sep, double & energy, double & eself){
+	template <class cell_type, class array_charge, class array_positions, class array_forces>
+  void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, const math::erf_range_separation & sep,
+													double & energy, array_forces & forces){
 
     using math::d3vector;
 
-    energy = 0.0;
+		const double alpha = 0.21;
+		
+    double ers = 0.0;
+    for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = d3vector(0.0, 0.0, 0.0);
 
-		// the short range interaction
-    double rcut = cell.diagonal_length() + sep.short_range_potential_radius();
+    double rcut = 6.0/alpha;
 
     for(int iatom = 0; iatom < natoms; iatom++){
-      auto zi = charge[iatom];
+      double zi = charge[iatom];
       
       periodic_replicas rep(cell, positions[iatom], rcut);
 
-      for(unsigned irep = 0; irep < rep.size(); irep++){
-				auto xi = rep[irep];
+      for(int irep = 0; irep < rep.size(); irep++){
+				d3vector xi = rep[irep];
 				
 				for(int jatom = 0; jatom < natoms; jatom++){
-					auto zj = charge[jatom];
+					double zj = charge[jatom];
 					
-					auto rij = xi - positions[jatom];
-					auto rr = length(rij);
+					d3vector rij = xi - positions[jatom];
+					double rr = sqrt(norm(rij));
 					
 					if(rr < 1.0e-5) continue;
 					
-					energy += 0.5*zi*zj*sep.short_range_potential(rr);
+					double eor = erfc(alpha*rr)/rr;
+					
+					ers += 0.5*zi*zj*eor;
+					forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*rr, 2))/(rr*rr));
 				}
       }
       
     }
 
-		eself = 0.0;
+		double eself = 0.0;
 
-		//the self-interaction correction of the long range part
+    // self-interaction
+    double total_charge = 0.0;
     for(int iatom = 0; iatom < natoms; iatom++){
-      auto zi = charge[iatom];
+      double zi = charge[iatom];
 
-			eself -= zi*zi*sep.self_interaction();
+      total_charge += zi;
+      eself -= alpha*zi*zi/sqrt(M_PI);
+    }
+
+    // G = 0 energy
+    auto efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
+
+    double gcut = std::numeric_limits<double>::max();
+    for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.b(idir)));
+    gcut = sqrt(gcut);
+      
+    const int isph = ceil(9.5*alpha/gcut);
+
+    std::vector<std::complex<double> > phase(natoms);
+    
+    for(int ix = -isph; ix <= isph; ix++){
+      for(int iy = -isph; iy <= isph; iy++){
+				for(int iz = -isph; iz <= isph; iz++){
+					
+					const int ss = ix*ix + iy*iy + iz*iz;
+					
+					if(ss == 0 || ss > isph*isph) continue;
+					
+					d3vector gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
+					double gg2 = norm(gg);
+					
+					double exparg = -0.25*gg2/(alpha*alpha);
+					
+					if(exparg < -36.0) continue;
+					
+					double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
+					
+					std::complex<double> sumatoms = 0.0;
+					for(int iatom = 0; iatom < natoms; iatom++){
+						double gx = gg*positions[iatom];
+						auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
+						phase[iatom] = aa;
+						sumatoms += aa;
+					}
+					
+					efs += factor*std::real(sumatoms*std::conj(sumatoms));
+					
+					for(int iatom = 0; iatom < natoms; iatom++){
+						for(int idir = 0; idir < 3; idir++){
+							std::complex<double> tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
+							forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
+						}
+					}
+					
+				}
+      }
+    }
+
+    //forces are not properly validated right now
+    for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = d3vector(0.0, 0.0, 0.0);
+
+		// Previously unaccounted G = 0 term from pseudopotentials. 
+		// See J. Ihm, A. Zunger, M.L. Cohen, J. Phys. C 12, 4409 (1979)
+		double epseudo = 0.0;
+		for(int iatom = 0; iatom < natoms; iatom++){
+			epseudo += M_PI*charge[iatom]*pow(sep.sigma()*sqrt(2.0), 2)/cell.volume()*total_charge;
 		}
-			
+
+		/*
+		std::cout << "ers     = " << ers << std::endl;
+		std::cout << "eself   = " << eself << std::endl;
+		std::cout << "efs     = " << efs << std::endl;
+		std::cout << "epseudo = " << epseudo << std::endl;
+		*/
+		
+		energy = ers + eself + efs + epseudo;
+
 	}
 }
 
@@ -93,18 +173,12 @@ namespace ions {
 #include <valarray>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
+TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
-  //Note: here we use Octopus' results for validation. However,
-  //normally Octopus add a pseudopotential energy term to the ion-ion
-  //energy that we include elsewhere, and that was removed for this
-  //comparison.
-  
   using namespace Catch::literals;
   using math::d3vector;
-
 	const math::erf_range_separation sep(0.625);
-
+ 
   SECTION("Aluminum cubic cell"){
   
     double aa = 7.653;
@@ -120,12 +194,12 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     positions[2] = d3vector(aa/2.0, 0.0,    aa/2.0);
     positions[3] = d3vector(0.0,    aa/2.0, aa/2.0);
     
-    double energy, eself;
+    double energy;
     std::vector<d3vector> forces(4);
     
-    ions::interaction_energy(4, cell, charge, positions, sep, energy, eself);
+    ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
     
-		//    REQUIRE(energy == -10.78368187_a); //this number comes from Octopus
+    REQUIRE(energy == -9.99517178_a); //this number comes from Octopus
     
   }
 
@@ -141,12 +215,12 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     positions[0] = cell.crystal_to_cart(d3vector(0.0,  0.0,  0.0 ));
     positions[1] = cell.crystal_to_cart(d3vector(0.25, 0.25, 0.25));
     
-    double energy, eself;
+    double energy;
     std::vector<d3vector> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, sep, energy, eself);
+    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
-		//    REQUIRE(energy == -12.78641217_a); //this number comes from Octopus
+    REQUIRE(energy == -10.73490075_a); //this number comes from Octopus
 
   }
 
@@ -160,12 +234,12 @@ TEST_CASE("Function ions::interaction_energy", "[interaction_energy]") {
     
     const d3vector position(0.0, 0.0, 0.0);
     
-    double energy, eself;
+    double energy;
     std::vector<d3vector> forces(1);
 
-    ions::interaction_energy(1, cell, &charge, &position, sep, energy, eself);
+    ions::interaction_energy(1, cell, &charge, &position, sep, energy, forces);
 
-		//    REQUIRE(energy == -86.31033718_a); //this number comes from Octopus
+    REQUIRE(energy == -78.31680646_a); //this number comes from Octopus
     
   }
     

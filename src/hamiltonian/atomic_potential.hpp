@@ -44,7 +44,7 @@ namespace hamiltonian {
 
     template <class atom_array>
     atomic_potential(const int natoms, const atom_array & atom_list, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			sep_(0.5), //this is the default from qball, but it can be optimized for the grid. Check AtomsSet.cc:1102
+			sep_(0.625), //this is the default from octopus
       pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
 			dist_(natoms, comm)
 		{
@@ -238,16 +238,16 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		
 		auto vv = pot.local_potential(rs, cell, geo);
 
-		REQUIRE(operations::integral(vv) == -19.0458972795_a);
+		REQUIRE(operations::integral(vv) == -45.5544154295_a);
 
-		REQUIRE(vv.cubic()[5][3][0] == -0.4493576913_a);
-		REQUIRE(vv.cubic()[3][1][0] == -0.0921256967_a);
+		REQUIRE(vv.cubic()[5][3][0] == -1.574376555_a);
+		REQUIRE(vv.cubic()[3][1][0] == -0.258229883_a);
 							 
 		auto nn = pot.ionic_density(rs, cell, geo);
 
 		REQUIRE(operations::integral(nn) == -30.0000000746_a);
-		REQUIRE(nn.cubic()[5][3][0] == -1.7354140489_a);
-		REQUIRE(nn.cubic()[3][1][0] == -0.155824769_a);
+		REQUIRE(nn.cubic()[5][3][0] == -0.9448936487_a);
+		REQUIRE(nn.cubic()[3][1][0] == -0.2074502252_a);
   }
   
 }
