@@ -238,16 +238,16 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		
 		auto vv = pot.local_potential(rs, cell, geo);
 
-		REQUIRE(operations::integral(vv) == -19.0458972795_a);
+		REQUIRE(operations::integral(vv) == -45.5544154295_a);
 
-		REQUIRE(vv.cubic()[5][3][0] == -0.4493576913_a);
-		REQUIRE(vv.cubic()[3][1][0] == -0.0921256967_a);
+		REQUIRE(vv.cubic()[5][3][0] == -1.574376555_a);
+		REQUIRE(vv.cubic()[3][1][0] == -0.258229883_a);
 							 
 		auto nn = pot.ionic_density(rs, cell, geo);
 
 		REQUIRE(operations::integral(nn) == -30.0000000746_a);
-		REQUIRE(nn.cubic()[5][3][0] == -1.7354140489_a);
-		REQUIRE(nn.cubic()[3][1][0] == -0.155824769_a);
+		REQUIRE(nn.cubic()[5][3][0] == -0.9448936487_a);
+		REQUIRE(nn.cubic()[3][1][0] == -0.2074502252_a);
   }
   
 }
