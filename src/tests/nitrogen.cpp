@@ -73,6 +73,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		*/
 
+		REQUIRE(energy.ion             ==  5.02018926_a); //value from Octopus
 		REQUIRE(energy.eigenvalues     == -0.234329528903_a);
 		REQUIRE(energy.xc              == -0.232294220410_a);
 		REQUIRE(energy.nvxc            == -0.302713349819_a);
