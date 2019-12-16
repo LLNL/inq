@@ -84,6 +84,7 @@ namespace operations {
 #else
 		int info;
 		zpotrf("U", &nst, olap.data(), &nst, &info);
+		assert(info == 0);
 #endif
 		
 		//DATAOPERATIONS RAWBLAS ztrsm
