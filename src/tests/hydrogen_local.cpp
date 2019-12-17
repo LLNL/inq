@@ -35,7 +35,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 	geo.push_back(local_h | math::d3vector(0.0, 0.0, 0.0));
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
-#if 0
+#if 1
 	SECTION("Non interacting"){
 		
 		input::config conf;
@@ -68,12 +68,13 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
       Non-local   =         0.00000000
 
 		*/
+		
 		REQUIRE(energy.ion             == -0.070625640829_a);
 		REQUIRE(energy.eigenvalues     == -0.500021331363_a);
-		REQUIRE(energy.total()         == -0.500059861114_a);
-		REQUIRE(energy.kinetic()       ==  0.491700841506_a);
-		REQUIRE(energy.hartree         == -0.231898537446_a);
-		REQUIRE(energy.external        == -0.195672581626_a);
+		REQUIRE(energy.total()         == -0.570646972193_a);
+		REQUIRE(energy.kinetic()       ==  0.489178284075_a);
+		REQUIRE(energy.external        ==  -0.989199615438_a);
+		REQUIRE(fabs(energy.hartree)   <=  1e-10);
 		REQUIRE(fabs(energy.nonlocal)  <=  1e-10);
 		REQUIRE(fabs(energy.xc)        <=  1e-10);
 		REQUIRE(fabs(energy.nvxc)      <=  1e-10);
