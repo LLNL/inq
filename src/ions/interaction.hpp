@@ -64,7 +64,7 @@ namespace ions {
       
       periodic_replicas rep(cell, positions[iatom], rcut);
 
-      for(int irep = 0; irep < rep.size(); irep++){
+      for(unsigned irep = 0; irep < rep.size(); irep++){
 				d3vector xi = rep[irep];
 				
 				for(int jatom = 0; jatom < natoms; jatom++){
