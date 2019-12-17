@@ -68,10 +68,13 @@ namespace hamiltonian {
 			case input::interaction::electronic_theory::DENSITY_FUNCTIONAL:
 				{
 
-					auto total_density = operations::add(electronic_density, ionic_density);
-					auto vhartree = poisson_solver(total_density);
+					auto vhartree = poisson_solver(electronic_density);
+					auto vion = poisson_solver(ionic_density);
+					
 					energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
-						
+					energy.external += operations::integral_product(electronic_density, vion);					
+					vion = operations::add(vion, vexternal);
+					
 					vexternal_type ex(vexternal.basis());
 					vexternal_type vx(vexternal.basis());
 
@@ -87,8 +90,8 @@ namespace hamiltonian {
 					auto vxc = operations::add(vx, vc);
 					
 					energy.nvxc = operations::integral_product(electronic_density, vxc);
-					
-					vks = operations::add(vexternal, vhartree, vxc);
+
+					vks = operations::add(vion, vhartree, vxc);
 
 					break;
 				}
