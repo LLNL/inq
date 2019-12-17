@@ -87,14 +87,25 @@ namespace operations {
 		assert(info == 0);
 #endif
 
-		//DATAOPERATIONS RAWBLAS ztrsm
-		using boost::multi::blas::hermitized;
-		using boost::multi::blas::trsm;
-		using boost::multi::blas::side;
-		using boost::multi::blas::fill;
-		using boost::multi::blas::diagonal;
-		
-		trsm(side::right, fill::upper, diagonal::general, 1.0, hermitized(olap), phi.matrix());
+		//workaround for a bug in multi
+		if(phi.set_size() > 1){
+			
+			//DATAOPERATIONS RAWBLAS ztrsm
+			using boost::multi::blas::hermitized;
+			using boost::multi::blas::trsm;
+			using boost::multi::blas::side;
+			using boost::multi::blas::fill;
+			using boost::multi::blas::diagonal;
+			
+			trsm(side::right, fill::upper, diagonal::general, 1.0, hermitized(olap), phi.matrix());
+
+		} else {
+
+			const int np = phi.basis().num_points();
+			const complex alpha = 1.0; 
+			FC_FUNC(ztrsm, ZTRSM)('L', 'U', 'C', 'N', nst, np, alpha, olap.data(), nst, phi.data(), nst);
+			
+		}
 
   }
 
