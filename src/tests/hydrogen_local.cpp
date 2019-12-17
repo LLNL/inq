@@ -116,13 +116,25 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		*/
 
 		REQUIRE(energy.ion             == -0.070625640829_a);
+
+		//octopus                         -0.23398591
 		REQUIRE(energy.eigenvalues     == -0.234241482074_a);
 		REQUIRE(energy.total()         == -0.516605833121_a);
+		
+		//octopus                          0.41903428
 		REQUIRE(energy.kinetic()       ==  0.418063662167_a);
+
+		//octopus                          0.28254446
 		REQUIRE(energy.hartree         ==  0.282108906776_a);
+
+		//octopus                         -0.91520434
 		REQUIRE(energy.external        == -0.914015775420_a);
 		REQUIRE(fabs(energy.nonlocal)  <=  1e-10);
+
+		//octopus                         -0.23244493
 		REQUIRE(energy.xc              == -0.232136985814_a);
+
+		//octopus                         -0.30290955
 		REQUIRE(energy.nvxc            == -0.302507182372_a);
 		REQUIRE(fabs(energy.hf_exchange) <=  1e-10);
 
