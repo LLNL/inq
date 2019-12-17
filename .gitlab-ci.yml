@@ -24,6 +24,7 @@ gcc:
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
+      - src/inq_hydrogen_local
 
 clang:
     stage: build
@@ -39,6 +40,7 @@ clang:
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
+      - src/inq_hydrogen_local      
 
 nvcc:
     stage: build
