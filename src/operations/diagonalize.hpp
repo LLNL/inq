@@ -95,7 +95,8 @@ namespace operations {
     auto work = (double *) malloc(lwork*sizeof(complex));
     
     dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, info);
-    
+		assert(info == 0);
+		
     free(work);
 #endif
 
