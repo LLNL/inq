@@ -86,7 +86,7 @@ namespace operations {
 		zpotrf("U", &nst, olap.data(), &nst, &info);
 		assert(info == 0);
 #endif
-		
+
 		//DATAOPERATIONS RAWBLAS ztrsm
 		using boost::multi::blas::hermitized;
 		using boost::multi::blas::trsm;
@@ -94,7 +94,8 @@ namespace operations {
 		using boost::multi::blas::fill;
 		using boost::multi::blas::diagonal;
 		
-		trsm(side::left, fill::lower, diagonal::general, 1.0, olap, hermitized(phi.matrix()));
+		trsm(side::right, fill::upper, diagonal::general, 1.0, hermitized(olap), phi.matrix());
+
   }
 
 }
