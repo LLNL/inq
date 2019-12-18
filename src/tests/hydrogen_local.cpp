@@ -35,14 +35,16 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 	geo.push_back(local_h | math::d3vector(0.0, 0.0, 0.0));
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
+
+	input::config conf;
+	
+	systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
+
 #if 1
 	SECTION("Non interacting"){
 		
-		input::config conf;
-		
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), input::interaction::non_interacting(), conf);
-		
-		auto energy = electrons.calculate_ground_state();
+	
+		auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -85,11 +87,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 #if 1
 	SECTION("LDA"){
 		
-		input::config conf;
-	
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), input::interaction::dft(), conf);
-		
-		auto energy = electrons.calculate_ground_state();
+		auto energy = electrons.calculate_ground_state(input::interaction::dft());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -144,11 +142,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 #if 0
 	SECTION("Hartree-Fock"){
 		
-		input::config conf;
-	
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), input::interaction::hartree_fock(), conf);
-		
-		auto energy = electrons.calculate_ground_state();
+		auto energy = electrons.calculate_ground_state(input::interaction::hartree_fock());
 
 		REQUIRE(energy.total()         == -0.485932246662_a);
 		REQUIRE(energy.kinetic()       ==  0.352630715248_a);

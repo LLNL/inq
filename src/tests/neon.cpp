@@ -40,9 +40,9 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		conf.extra_states = 3;
 
-		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), input::interaction::non_interacting(), conf);
+		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 		
-		auto energy = electrons.calculate_ground_state();
+		auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.350877)
