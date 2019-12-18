@@ -92,10 +92,12 @@ namespace hamiltonian {
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
+
+				std::cout << ps.short_range_potential_radius() << std::endl;
 				
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
+					auto rr = sphere.distance()[ipoint];
 					auto sr_potential = ps.short_range_potential().value(rr);
 					potential.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
 				}
@@ -129,14 +131,14 @@ namespace hamiltonian {
 				gpu::run(sphere.size(),
 								 [dns = begin(density.cubic()), pts = begin(sphere.points()),
 									atpos = atom_position, chrg = ps.valence_charge(),
-									sp = sep_, bas = basis] __device__
+									sp = sep_, dist = begin(sphere.distance())] __device__
 								 (auto ipoint){
-									 double rr = length(bas.rvector(pts[ipoint]) - atpos);
+									 double rr = dist[ipoint];
 									 dns[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += chrg*sp.long_range_density(rr);
 								 });
 #else
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					double rr = length(basis.rvector(sphere.points()[ipoint]) - atom_position);
+					auto rr = sphere.distance()[ipoint];
 					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]]
 						+= ps.valence_charge()*sep_.long_range_density(rr);
 				}
