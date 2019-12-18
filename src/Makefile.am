@@ -72,6 +72,7 @@ bin_PROGRAMS  =                              \
 @PACKAGE_NAME@_neon_SOURCES = tests/neon.cpp main/unit_tests_main.cpp $(all_srcs)
 @PACKAGE_NAME@_kripton_SOURCES = tests/kripton.cpp main/unit_tests_main.cpp $(all_srcs)
 @PACKAGE_NAME@_nitrogen_SOURCES = tests/nitrogen.cpp main/unit_tests_main.cpp $(all_srcs)
+@PACKAGE_NAME@_silicon_SOURCES = tests/silicon.cpp main/unit_tests_main.cpp $(all_srcs)
 
 test_programs =                                                 \
 	@PACKAGE_NAME@_electron_gas_non_interacting	                  \
@@ -80,7 +81,8 @@ test_programs =                                                 \
 	@PACKAGE_NAME@_hydrogen_non_local                             \
 	@PACKAGE_NAME@_neon                                           \
 	@PACKAGE_NAME@_kripton                                        \
-	@PACKAGE_NAME@_nitrogen
+	@PACKAGE_NAME@_nitrogen                                       \
+	@PACKAGE_NAME@_silicon
 
 bin_PROGRAMS += $(test_programs) 
 
