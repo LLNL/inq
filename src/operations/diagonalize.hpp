@@ -82,6 +82,7 @@ namespace operations {
 			cudaDeviceSynchronize();
 			assert(*devInfo == 0);
 
+			cudaFree(work);
 			cudaFree(devInfo);
 			cusolverDnDestroy(cusolver_handle);
 		}
