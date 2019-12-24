@@ -56,4 +56,6 @@ nvcc:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure -prefix=$HOME || cat config.log
+      - nvidia-smi
+      - time src/inq_unit_tests
       - time make
