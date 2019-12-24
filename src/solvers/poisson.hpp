@@ -246,7 +246,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			// zero, since the density is real.
 		
 			REQUIRE(sumreal == 59.7758543176_a);
-			REQUIRE(sumimag == 3.87333e-13_a);
+			REQUIRE(fabs(sumimag) <= 1e-12);
 		
 			REQUIRE(real(potential.cubic()[0][0][0]) == -0.0241426581_a);
 		}
