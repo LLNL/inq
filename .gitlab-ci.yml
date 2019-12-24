@@ -45,7 +45,7 @@ clang:
 nvcc:
     stage: build
     script:
-      - time apt install --no-install-recommends -y -qq nvidia-cuda-toolkit nvidia-cuda-dev
+      - time apt install --no-install-recommends -y -qq nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
       - nvcc -V
       - time autoreconf -i
       - mkdir nvcc
