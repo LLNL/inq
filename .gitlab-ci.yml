@@ -1,9 +1,9 @@
-image: debian:testing
+#required packages:
+#    - time apt update -qq
+#    - time apt install --no-install-recommends -y -qq ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+#    - time apt install --no-install-recommends -y -qq nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
 
-before_script:
-    - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
-    - time apt update -qq
-    - time apt install --no-install-recommends -y -qq ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+image: debian:testing
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -19,7 +19,7 @@ gcc:
       - mkdir build
       - cd build
       - time ../configure -prefix=$HOME
-      - time make install
+      - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
@@ -35,7 +35,7 @@ clang:
       - cd build
       - export OMPI_CXX=clang++
       - time ../configure -prefix=$HOME
-      - time make install
+      - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
@@ -45,15 +45,15 @@ clang:
 nvcc:
     stage: build
     script:
-      - time apt install --no-install-recommends -y -qq nvidia-cuda-toolkit nvidia-cuda-dev
+      - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
       - time autoreconf -i
       - mkdir nvcc
       - cd nvcc
-      - export CXX="nvcc -x cu -ccbin clang++-8"
-      - export CXXLD="nvcc -ccbin clang++-8"
+      - export CXX="nvcc -x cu"
+      - export CXXLD="nvcc"
       - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure -prefix=$HOME || cat config.log
-      - time make
+      - time make -j4

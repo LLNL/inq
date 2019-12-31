@@ -26,15 +26,40 @@
 
 #include <pcg-cpp/pcg_random.hpp>
 
+template<class T>
+struct uniform_distribution;
+
+template<>
+struct uniform_distribution<double>{// : std::uniform_real_distribution<double>{
+	template<class Generator>
+	auto operator()(Generator& g){
+		static double const max = std::numeric_limits<typename Generator::result_type>::max() + 1.;
+		return g()/max; // std::uniform_real_distribution<double>::operator()(g);}
+	}
+	static constexpr std::size_t rngs_per_sample = 1;
+};
+
+template<>
+struct uniform_distribution<std::complex<double>>{
+	using result_type = std::complex<double>;
+	using param_type = void;
+	uniform_distribution<double> impl_;
+	template<class Generator> 
+	result_type operator()(Generator& g){
+		return {impl_(g), impl_(g)};
+	}
+	static constexpr std::size_t rngs_per_sample = 2;
+};
+
 namespace operations {
 
 	template <class field_set_type>
-  void randomize(field_set_type & phi){
+	void randomize(field_set_type & phi){
 
 		auto seed = phi.basis().size()*phi.set_size();
-		double maxrng = std::numeric_limits<pcg32::result_type>::max();
 
 #ifdef HAVE_CUDA
+		double maxrng = std::numeric_limits<pcg32::result_type>::max();
 
 		uint64_t start = phi.dist().start();
 		uint64_t set_size = phi.set_size();
@@ -49,8 +74,8 @@ namespace operations {
 							 rng.advance(step);
 							 phicub[ix][iy][iz][ist] = rng()/maxrng;
 							 });
-
 #else
+		uniform_distribution<typename field_set_type::element_type> dist;
 
 		for(uint64_t ix = 0; ix < uint64_t(phi.basis().sizes()[0]); ix++){
 			for(uint64_t iy = 0; iy < uint64_t(phi.basis().sizes()[1]); iy++){
@@ -59,8 +84,8 @@ namespace operations {
 
 						uint64_t step = ist + phi.dist().start() + phi.set_size()*(iz + phi.basis().sizes()[2]*(iy + ix*phi.basis().sizes()[1]));
 						pcg32 rng(seed);
-						rng.advance(step);
-						phi.cubic()[ix][iy][iz][ist] = rng()/maxrng;
+						rng.discard(step*dist.rngs_per_sample);
+						phi.cubic()[ix][iy][iz][ist] = dist(rng);//rng()/maxrng;
 						
 					}
 				}

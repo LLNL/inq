@@ -93,8 +93,6 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 
-				std::cout << ps.short_range_potential_radius() << std::endl;
-				
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					auto rr = sphere.distance()[ipoint];
