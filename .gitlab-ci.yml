@@ -5,9 +5,6 @@
 
 image: debian:testing
 
-before_script:
-    - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
-
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CXXFLAGS: "-O3 -pipe"
@@ -48,6 +45,7 @@ clang:
 nvcc:
     stage: build
     script:
+      - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
       - time autoreconf -i
       - mkdir nvcc
@@ -58,6 +56,5 @@ nvcc:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure -prefix=$HOME || cat config.log
-      - nvidia-smi
       - time src/inq_unit_tests
       - time make -j4
