@@ -1,9 +1,12 @@
+#required packages:
+#    - time apt update -qq
+#    - time apt install --no-install-recommends -y -qq ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+#    - time apt install --no-install-recommends -y -qq nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
+
 image: debian:testing
 
 before_script:
     - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
-#    - time apt update -qq
-#    - time apt install --no-install-recommends -y -qq ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -19,7 +22,7 @@ gcc:
       - mkdir build
       - cd build
       - time ../configure -prefix=$HOME
-      - time make install
+      - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
@@ -35,7 +38,7 @@ clang:
       - cd build
       - export OMPI_CXX=clang++
       - time ../configure -prefix=$HOME
-      - time make install
+      - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
@@ -45,7 +48,6 @@ clang:
 nvcc:
     stage: build
     script:
-      - time apt install --no-install-recommends -y -qq nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
       - nvcc -V
       - time autoreconf -i
       - mkdir nvcc
@@ -58,4 +60,4 @@ nvcc:
       - time ../configure -prefix=$HOME || cat config.log
       - nvidia-smi
       - time src/inq_unit_tests
-      - time make
+      - time make -j4
