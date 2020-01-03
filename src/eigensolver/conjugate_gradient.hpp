@@ -32,14 +32,14 @@ namespace eigensolver {
 	template <class operator_type, class preconditioner_type, class field_set_type>
 	void conjugate_gradient(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::fourier_space, field_set_type> & phi_all){
     
-		const int num_steps = 10;
+		const int num_iter = 10;
+    const double tol = 1.0e-8;
     
     for(int ist = 0; ist < phi_all.set_size(); ist++){
       
       basis::field_set<basis::fourier_space, field_set_type> phi(phi_all.basis(), 1);
       
       phi.matrix().rotated()[0] = phi_all.matrix().rotated()[ist];
-
 
       //TODO: orthogonalize phi
       
@@ -52,7 +52,7 @@ namespace eigensolver {
 
       complex gg0;
       
-      for(int istep = 0; istep < num_steps; istep++){
+      for(int iter = 0; iter < num_iter + 1; iter++){
 
         eigenvalue = operations::overlap_diagonal(phi, hphi);
         
@@ -60,7 +60,12 @@ namespace eigensolver {
 
         for(long ip = 0; ip < g.basis().size(); ip++) g.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
 
-        std::cout << istep << '\t' << real(eigenvalue[0]) << '\t' << real(operations::overlap_diagonal(g)[0]) << std::endl;
+        double res = fabs(operations::overlap_diagonal(g)[0]);
+
+        if(res < tol or iter == num_iter){
+          std::cout << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
+          break;
+        }
         
         auto g0 = g;
         
@@ -74,9 +79,9 @@ namespace eigensolver {
 
         auto gg = operations::overlap_diagonal(g0, g);
 
-        //        std::cout << istep << '\t' << fabs(gg[0]) << std::endl;
+        //        std::cout << iter << '\t' << fabs(gg[0]) << std::endl;
 
-        if(istep == 0){
+        if(iter == 0){
           cg = g0;
           gg0 = gg[0];
         } else {
