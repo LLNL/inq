@@ -40,12 +40,17 @@ namespace eigensolver {
       
       phi.matrix().rotated()[0] = phi_all.matrix().rotated()[ist];
 
+
+      //TODO: orthogonalize phi
+      
       auto hphi = ham(phi);
 
       auto eigenvalue = operations::overlap_diagonal(hphi, phi);
       auto old_energy = eigenvalue;
 
       basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1);
+
+      complex gg0;
       
       for(int istep = 0; istep < num_steps; istep++){
 
@@ -65,14 +70,14 @@ namespace eigensolver {
 
         auto gg = operations::overlap_diagonal(g0, g);
 
-        std::cout << istep << '\t' << fabs(gg[0]) << std::endl;
+        //        std::cout << istep << '\t' << fabs(gg[0]) << std::endl;
 
-        auto gg0 = gg[0];
-        
         if(istep == 0){
-          cg = g0;          
+          cg = g0;
+          gg0 = gg[0];
         } else {
           auto gamma = gg[0]/gg0;
+          gg0 = gg[0];
           for(long ip = 0; ip < cg.basis().size(); ip++) cg.matrix()[ip][0] = gamma*cg.matrix()[ip][0] + g0.matrix()[ip][0];
 
           auto norma = operations::overlap_diagonal(phi, cg);
@@ -92,7 +97,7 @@ namespace eigensolver {
         a0 = 2.0*a0/cg0;
         b0 = b0/(cg0*cg0);
         auto alpha = 2.0*real(eigenvalue[0] - b0);
-        auto beta = real(a0)*2.0;        
+        auto beta = real(a0)*2.0;
 
         auto theta = atan(beta/alpha)*0.5;
         auto stheta = sin(theta);
@@ -112,9 +117,19 @@ namespace eigensolver {
         }
 
         for(long ip = 0; ip < cg.basis().size(); ip++){
-          phi.matrix()[ip][0] = a0*phi.matrix()[ip][0] - b0*cg.matrix()[ip][0];
-          hphi.matrix()[ip][0] = a0*hphi.matrix()[ip][0] - b0*hcg.matrix()[ip][0];
+          phi.matrix()[ip][0] = a0*phi.matrix()[ip][0] + b0*cg.matrix()[ip][0];
+          hphi.matrix()[ip][0] = a0*hphi.matrix()[ip][0] + b0*hcg.matrix()[ip][0];
         }
+        
+        basis::field_set<basis::fourier_space, field_set_type> res(phi_all.basis(), 1);
+
+        eigenvalue = operations::overlap_diagonal(phi, hphi);
+        
+        for(long ip = 0; ip < cg.basis().size(); ip++){
+          res.matrix()[ip][0] = phi.matrix()[ip][0] - eigenvalue[0]*hphi.matrix()[ip][0];
+        }
+
+        std::cout << istep << '\t' << real(operations::overlap_diagonal(res)[0]) << std::endl;
         
       }
 
