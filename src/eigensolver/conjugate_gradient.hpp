@@ -26,6 +26,7 @@
 #include <math/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
+#include <operations/orthogonalization.hpp>
 
 namespace eigensolver {
 
@@ -41,7 +42,7 @@ namespace eigensolver {
       
       phi.matrix().rotated()[0] = phi_all.matrix().rotated()[ist];
 
-      //TODO: orthogonalize phi
+      operations::orthogonalize_single(phi, phi_all, ist);
       
       auto hphi = ham(phi);
 
@@ -73,7 +74,7 @@ namespace eigensolver {
 
         auto dot = operations::overlap_diagonal(phi, g0);
 
-        //TODO: orthogonalize gg against other states
+        operations::orthogonalize_single(g0, phi_all, ist);
         
         for(long ip = 0; ip < g.basis().size(); ip++) g0.matrix()[ip][0] = g0.matrix()[ip][0] - dot[0]*phi.matrix()[ip][0];
 
