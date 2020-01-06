@@ -93,12 +93,9 @@ namespace operations {
 			
 			//DATAOPERATIONS RAWBLAS ztrsm
 			using boost::multi::blas::hermitized;
-			using boost::multi::blas::trsm;
-			using boost::multi::blas::side;
-			using boost::multi::blas::fill;
-			using boost::multi::blas::diagonal;
+			using boost::multi::blas::filling;
 			
-			trsm(side::right, fill::upper, diagonal::general, 1.0, hermitized(olap), phi.matrix());
+			trsm(filling::lower, olap, hermitized(phi.matrix()));
 
 		} else {
 
