@@ -51,7 +51,7 @@ namespace eigensolver {
 
       basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1);
 
-      complex gg0;
+      complex gg0 = 1.0;
       
       for(int iter = 0; iter < num_iter + 1; iter++){
 
@@ -63,7 +63,7 @@ namespace eigensolver {
 
         double res = fabs(operations::overlap_diagonal(g)[0]);
 
-        if(res < tol or iter == num_iter){
+        if(res < tol or iter == num_iter or fabs(gg0) < 1e-14){
           std::cout << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
           break;
         }
@@ -72,10 +72,10 @@ namespace eigensolver {
         
         prec(g0);
 
+        operations::orthogonalize_single(g0, phi_all);//, ist);
+
         auto dot = operations::overlap_diagonal(phi, g0);
 
-        operations::orthogonalize_single(g0, phi_all, ist);
-        
         for(long ip = 0; ip < g.basis().size(); ip++) g0.matrix()[ip][0] = g0.matrix()[ip][0] - dot[0]*phi.matrix()[ip][0];
 
         auto gg = operations::overlap_diagonal(g0, g);
