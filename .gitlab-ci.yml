@@ -57,3 +57,4 @@ nvcc:
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure -prefix=$HOME || cat config.log
       - time make -j4
+      - time src/inq_unit_tests
