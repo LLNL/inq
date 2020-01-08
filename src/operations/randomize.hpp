@@ -4,7 +4,7 @@
 #define OPERATIONS__RANDOMIZE
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -32,9 +32,9 @@ struct uniform_distribution;
 template<>
 struct uniform_distribution<double>{// : std::uniform_real_distribution<double>{
 	template<class Generator>
-	auto operator()(Generator& g){
+	auto operator()(Generator& g) __host__ __device__{
 		static double const max = std::numeric_limits<typename Generator::result_type>::max() + 1.;
-		return g()/max; // std::uniform_real_distribution<double>::operator()(g);}
+		return g()/max;
 	}
 	static constexpr std::size_t rngs_per_sample = 1;
 };
@@ -45,7 +45,7 @@ struct uniform_distribution<std::complex<double>>{
 	using param_type = void;
 	uniform_distribution<double> impl_;
 	template<class Generator> 
-	result_type operator()(Generator& g){
+	result_type operator()(Generator& g) __host__ __device__{
 		return {impl_(g), impl_(g)};
 	}
 	static constexpr std::size_t rngs_per_sample = 2;
@@ -58,8 +58,8 @@ namespace operations {
 
 		auto seed = phi.basis().size()*phi.set_size();
 
+
 #ifdef HAVE_CUDA
-		double maxrng = std::numeric_limits<pcg32::result_type>::max();
 
 		uint64_t start = phi.dist().start();
 		uint64_t set_size = phi.set_size();
@@ -69,11 +69,12 @@ namespace operations {
 
 		gpu::run(phi.dist().local_size(), phi.basis().sizes()[2], phi.basis().sizes()[1], phi.basis().sizes()[0],
 						 [=] __device__ (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
-							 uint64_t step = ist + start + set_size*(iz + size_z*(iy + ix*size_y));
-							 pcg32 rng(seed);
-							 rng.advance(step);
-							 phicub[ix][iy][iz][ist] = rng()/maxrng;
-							 });
+						uniform_distribution<typename field_set_type::element_type> dist;
+						uint64_t step = ist + start + set_size*(iz + size_z*(iy + ix*size_y));
+						pcg32 rng(seed);
+						rng.discard(step*dist.rngs_per_sample);
+						phicub[ix][iy][iz][ist] = dist(rng);
+					});
 #else
 		uniform_distribution<typename field_set_type::element_type> dist;
 
@@ -85,7 +86,7 @@ namespace operations {
 						uint64_t step = ist + phi.dist().start() + phi.set_size()*(iz + phi.basis().sizes()[2]*(iy + ix*phi.basis().sizes()[1]));
 						pcg32 rng(seed);
 						rng.discard(step*dist.rngs_per_sample);
-						phi.cubic()[ix][iy][iz][ist] = dist(rng);//rng()/maxrng;
+						phi.cubic()[ix][iy][iz][ist] = dist(rng);
 						
 					}
 				}
@@ -113,7 +114,6 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
   basis::real_space bas(cell, input::basis::cutoff_energy(20.0));
 	
 	SECTION("double"){
-		
 		basis::field_set<basis::real_space, double> aa(bas, nst, boost::mpi3::environment::get_world_instance());
 
 		aa = 0.0;
@@ -138,9 +138,39 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 		if(aa.dist().contains(9))  REQUIRE(norms[9  - aa.dist().start()] == 330.545_a);
 		if(aa.dist().contains(10)) REQUIRE(norms[10 - aa.dist().start()] == 335.836_a);
 		if(aa.dist().contains(11)) REQUIRE(norms[11 - aa.dist().start()] == 328.899_a);
-		
+
 	}
 	
+	SECTION("complex"){
+		
+		basis::field_set<basis::real_space, complex> aa(bas, nst, boost::mpi3::environment::get_world_instance());
+
+		aa = 0.0;
+		
+		operations::randomize(aa);
+		
+		auto norms = operations::overlap_diagonal(aa);
+
+		for(int ist = 0; ist < aa.dist().local_size(); ist++){
+			std::cout << norms[ist] << std::endl;
+		}
+
+	#if 0
+		if(aa.dist().contains(0))  REQUIRE(norms[0  - aa.dist().start()] == 336.099_a);
+		if(aa.dist().contains(1))  REQUIRE(norms[1  - aa.dist().start()] == 335.697_a);
+		if(aa.dist().contains(2))  REQUIRE(norms[2  - aa.dist().start()] == 335.101_a);
+		if(aa.dist().contains(3))  REQUIRE(norms[3  - aa.dist().start()] == 327.385_a);
+		if(aa.dist().contains(4))  REQUIRE(norms[4  - aa.dist().start()] == 337.327_a);
+		if(aa.dist().contains(5))  REQUIRE(norms[5  - aa.dist().start()] == 330.692_a);
+		if(aa.dist().contains(6))  REQUIRE(norms[6  - aa.dist().start()] == 331.003_a);
+		if(aa.dist().contains(7))  REQUIRE(norms[7  - aa.dist().start()] == 328.333_a);
+		if(aa.dist().contains(8))  REQUIRE(norms[8  - aa.dist().start()] == 333.662_a);
+		if(aa.dist().contains(9))  REQUIRE(norms[9  - aa.dist().start()] == 330.545_a);
+		if(aa.dist().contains(10)) REQUIRE(norms[10 - aa.dist().start()] == 335.836_a);
+		if(aa.dist().contains(11)) REQUIRE(norms[11 - aa.dist().start()] == 328.899_a);
+	#endif
+	}
+
 	
 }
 
