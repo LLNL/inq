@@ -88,25 +88,11 @@ namespace operations {
 		assert(info == 0);
 #endif
 
-		//workaround for a bug in multi
-		if(phi.set_size() > 1){
-			
-			//DATAOPERATIONS RAWBLAS ztrsm
-			using boost::multi::blas::hermitized;
-			using boost::multi::blas::trsm;
-			using boost::multi::blas::side;
-			using boost::multi::blas::fill;
-			using boost::multi::blas::diagonal;
-			
-			trsm(side::right, fill::upper, diagonal::general, 1.0, hermitized(olap), phi.matrix());
-
-		} else {
-
-			const int np = phi.basis().num_points();
-			const complex alpha = 1.0; 
-			FC_FUNC(ztrsm, ZTRSM)('L', 'U', 'C', 'N', nst, np, alpha, olap.data(), nst, phi.data(), nst);
-			
-		}
+		//DATAOPERATIONS trsm
+		using boost::multi::blas::hermitized;
+		using boost::multi::blas::filling;
+		
+		trsm(filling::lower, olap, hermitized(phi.matrix()));
 
   }
 
@@ -125,12 +111,9 @@ TEST_CASE("function operations::orthogonalization", "[operations::orthogonalizat
 	double ecut = 25.0;
 	double ll = 6.3;
 
-	ions::geometry geo;
 	ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
 	basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
-	
 	SECTION("Dimension 3"){
 		basis::field_set<basis::real_space, complex> phi(pw, 3);
 		
