@@ -111,12 +111,9 @@ TEST_CASE("function operations::orthogonalization", "[operations::orthogonalizat
 	double ecut = 25.0;
 	double ll = 6.3;
 
-	ions::geometry geo;
 	ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
 	basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
-	
 	SECTION("Dimension 3"){
 		basis::field_set<basis::real_space, complex> phi(pw, 3);
 		
