@@ -32,7 +32,7 @@ struct uniform_distribution;
 template<>
 struct uniform_distribution<double>{// : std::uniform_real_distribution<double>{
 	template<class Generator>
-	auto operator()(Generator& g) GPU_FUNCION {
+	auto operator()(Generator& g) GPU_FUNCTION {
 		static double const max = std::numeric_limits<typename Generator::result_type>::max() + 1.;
 		return g()/max;
 	}
@@ -45,7 +45,7 @@ struct uniform_distribution<std::complex<double>>{
 	using param_type = void;
 	uniform_distribution<double> impl_;
 	template<class Generator> 
-	result_type operator()(Generator& g) GPU_FUNCION {
+	result_type operator()(Generator& g) GPU_FUNCTION {
 		return {impl_(g), impl_(g)};
 	}
 	static constexpr std::size_t rngs_per_sample = 2;
