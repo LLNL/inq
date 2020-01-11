@@ -41,6 +41,7 @@ noinst_HEADERS =                             \
 	operations/add.hpp                         \
 	operations/subspace_diagonalization.hpp    \
 	operations/sum.hpp                         \
+	operations/matrix_operator.hpp             \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/energy.hpp                     \
 	hamiltonian/exchange_operator.hpp          \

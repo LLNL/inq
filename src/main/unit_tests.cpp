@@ -66,6 +66,8 @@
 #include <operations/shift.hpp>
 #include <operations/randomize.hpp>
 
+#include <operations/matrix_operator.hpp>
+
 #include <solvers/poisson.hpp>
 #include <solvers/linear_mixer.hpp>
 #include <solvers/pulay_mixer.hpp>
