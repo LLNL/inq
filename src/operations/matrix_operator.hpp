@@ -169,7 +169,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
 
   }
 
-  SECTION("Laplacian matrix complex"){
+  SECTION("Periodic Laplacian matrix complex"){
   
     math::array<complex, 2> matrix({npoint, npoint});
     
@@ -180,6 +180,9 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
         if(ip == jp + 1 or ip == jp - 1) matrix[ip][jp] = 2.0/bas.volume_element();
       }
     }
+    //the periodic part
+    matrix[0][npoint - 1] = 2.0/bas.volume_element();
+    matrix[npoint - 1][0] = 2.0/bas.volume_element();
     
     operations::matrix_operator<math::array<complex, 2>> mo(std::move(matrix));
     
@@ -193,10 +196,14 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
 
     auto bb = mo(aa);
     
-    for(int ip = 1; ip < npoint - 1; ip++){
+    for(int ip = 0; ip < npoint; ip++){
       for(int ivec = 0; ivec < nvec; ivec++){
-        REQUIRE(real(bb.matrix()[ip][ivec]) == Approx(real(2.0*aa.matrix()[ip - 1][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[ip + 1][ivec])));
-        REQUIRE(imag(bb.matrix()[ip][ivec]) == Approx(imag(2.0*aa.matrix()[ip - 1][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[ip + 1][ivec])));
+        auto prev = ip - 1;
+        auto next = ip + 1;
+        if(prev == -1) prev = npoint - 1;
+        if(next == npoint) next = 0;
+        REQUIRE(real(bb.matrix()[ip][ivec]) == Approx(real(2.0*aa.matrix()[prev][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[next][ivec])));
+        REQUIRE(imag(bb.matrix()[ip][ivec]) == Approx(imag(2.0*aa.matrix()[prev][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[next][ivec])));
       }
     }
 
