@@ -57,7 +57,7 @@ namespace solvers {
 #endif
 			
 			operations::shift(lambda, phi, residual);
-			
+
 			prec(residual);
 			
 			//now calculate the step size
@@ -80,8 +80,11 @@ namespace solvers {
 								 auto ca = real(m[0][ist]*m[3][ist] - m[2][ist]*m[1][ist]);
 								 auto cb = real(m[5][ist]*m[2][ist] - m[4][ist]*m[0][ist]);
 								 auto cc = real(m[4][ist]*m[1][ist] - m[3][ist]*m[5][ist]);
-								 
-								 lam[ist] = complex(2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc)), 0);
+
+								 auto den = cb + sqrt(cb*cb - 4.0*ca*cc);
+
+								 if(fabs(den) < 1e-15) lam[ist] = complex(0.0, 0.0); //this happens if we are perfectly converged
+								 lam[ist] = complex(2.0*cc/den, 0.0);
 							 });
 #else
 			std::transform(mm.rotated().begin(), mm.rotated().end(), lambda.begin(),
@@ -89,12 +92,15 @@ namespace solvers {
 											 auto ca = real(mm[0]*mm[3] - mm[2]*mm[1]);
 											 auto cb = real(mm[5]*mm[2] - mm[4]*mm[0]);
 											 auto cc = real(mm[4]*mm[1] - mm[3]*mm[5]);
-											 
-											 return 2.0*cc/(cb + sqrt(cb*cb - 4.0*ca*cc));
+
+											 auto den = cb + sqrt(cb*cb - 4.0*ca*cc); 
+
+											 if(fabs(den) < 1e-15) return 0.0;  //this happens if we are perfectly converged
+											 return 2.0*cc/den;
 										 });
 #endif
 			
-			operations::shift(lambda, residual, phi);		
+			operations::shift(lambda, residual, phi);
 
 		}
 
@@ -135,7 +141,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){
         diagonal_matrix[ip][jp] = 0.0;
-        if(ip == jp) diagonal_matrix[ip][jp] = ip;///bas.volume_element();
+        if(ip == jp) diagonal_matrix[ip][jp] = ip;
       }
     }
     
@@ -148,7 +154,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 
 		for(int iter = 0; iter < 1; iter++){
 			
-			//solvers::steepest_descent(diagonal_op, identity, phi);
+			solvers::steepest_descent(diagonal_op, identity, phi);
 			
 			auto residual = diagonal_op(phi);
 			auto eigenvalues = operations::overlap_diagonal(phi, residual);
