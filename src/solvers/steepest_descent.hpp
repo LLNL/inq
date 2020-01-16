@@ -144,11 +144,11 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
     basis::field_set<basis::trivial, complex> phi(bas, nvec);
 
 		phi = 0.0;
-		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0/bas.volume_element();
+		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0/sqrt(bas.volume_element());
 
 		for(int iter = 0; iter < 1; iter++){
 			
-			//			solvers::steepest_descent(diagonal_op, identity, phi);
+			//solvers::steepest_descent(diagonal_op, identity, phi);
 			
 			auto residual = diagonal_op(phi);
 			auto eigenvalues = operations::overlap_diagonal(phi, residual);

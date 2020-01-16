@@ -48,7 +48,7 @@ namespace operations {
       using boost::multi::blas::hermitized;
     
       field_set_type mphi = phi;
-      mphi.matrix() = gemm(phi.basis().volume_element(), matrix_, phi.matrix());
+      mphi.matrix() = gemm(matrix_, phi.matrix());
 
       return mphi;      
     }
@@ -98,7 +98,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
     
     for(int ip = 0; ip < npoint; ip++){
       for(int ivec = 0; ivec < nvec; ivec++){
-        REQUIRE(bb.matrix()[ip][ivec] == Approx((ip + 2.0)*bas.volume_element()*aa.matrix()[ip][ivec]));
+        REQUIRE(bb.matrix()[ip][ivec] == Approx((ip + 2.0)*aa.matrix()[ip][ivec]));
       }
     }
 
@@ -111,8 +111,8 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){
         matrix[ip][jp] = 0.0;
-        if(ip == jp) matrix[ip][jp] = -1.0/bas.volume_element();
-        if(ip == jp + 1 or ip == jp - 1) matrix[ip][jp] = 2.0/bas.volume_element();
+        if(ip == jp) matrix[ip][jp] = -1.0;
+        if(ip == jp + 1 or ip == jp - 1) matrix[ip][jp] = 2.0;
       }
     }
     
@@ -161,8 +161,8 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
     
     for(int ip = 0; ip < npoint; ip++){
       for(int ivec = 0; ivec < nvec; ivec++){
-        REQUIRE(real(bb.matrix()[ip][ivec]) == Approx(real(complex(ip + 2.0, 0.3*ip - 6.7)*bas.volume_element()*aa.matrix()[ip][ivec])));
-        REQUIRE(imag(bb.matrix()[ip][ivec]) == Approx(imag(complex(ip + 2.0, 0.3*ip - 6.7)*bas.volume_element()*aa.matrix()[ip][ivec])));
+        REQUIRE(real(bb.matrix()[ip][ivec]) == Approx(real(complex(ip + 2.0, 0.3*ip - 6.7)*aa.matrix()[ip][ivec])));
+        REQUIRE(imag(bb.matrix()[ip][ivec]) == Approx(imag(complex(ip + 2.0, 0.3*ip - 6.7)*aa.matrix()[ip][ivec])));
       }
     }
 
@@ -175,13 +175,13 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){
         matrix[ip][jp] = 0.0;
-        if(ip == jp) matrix[ip][jp] = -1.0/bas.volume_element();
-        if(ip == jp + 1 or ip == jp - 1) matrix[ip][jp] = 2.0/bas.volume_element();
+        if(ip == jp) matrix[ip][jp] = -1.0;
+        if(ip == jp + 1 or ip == jp - 1) matrix[ip][jp] = 2.0;
       }
     }
     //the periodic part
-    matrix[0][npoint - 1] = 2.0/bas.volume_element();
-    matrix[npoint - 1][0] = 2.0/bas.volume_element();
+    matrix[0][npoint - 1] = 2.0;
+    matrix[npoint - 1][0] = 2.0;
     
     operations::matrix_operator<math::array<complex, 2>> mo(std::move(matrix));
     
