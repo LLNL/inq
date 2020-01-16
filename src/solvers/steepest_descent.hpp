@@ -149,10 +149,17 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
     
     basis::field_set<basis::trivial, complex> phi(bas, nvec);
 
-		phi = 0.0;
-		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0/sqrt(bas.volume_element());
+		for(int ip = 0; ip < npoint; ip++){
+      for(int ivec = 0; ivec < nvec; ivec++){
+        phi.matrix()[ip][ivec] = exp(complex(0.0, (ip*ivec)*0.1));
+      }
+    }
 
-		for(int iter = 0; iter < 1; iter++){
+		operations::orthogonalization(phi);
+		
+		for(int iter = 0; iter < 100; iter++){
+
+			tfm::format(std::cout, "  Iteration %4d:\n", iter);
 			
 			solvers::steepest_descent(diagonal_op, identity, phi);
 			
@@ -162,7 +169,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 			auto normres = operations::overlap_diagonal(residual);
 			
 			for(int ivec = 0; ivec < phi.set_size(); ivec++){
-				tfm::format(std::cout, " state %4d  evalue = %18.12f  res = %15.10e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
+				tfm::format(std::cout, "    state %4d  evalue = %18.12f  res = %15.10e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
 			}
 		}
  	
