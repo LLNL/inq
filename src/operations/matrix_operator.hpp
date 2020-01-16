@@ -39,7 +39,7 @@ namespace operations {
     }
       
     template <class field_set_type>
-		field_set_type operator()(field_set_type & phi) const {
+		field_set_type operator()(const field_set_type & phi) const {
       
       assert(std::get<0>(sizes(matrix_)) == phi.basis().size());
       assert(std::get<1>(sizes(matrix_)) == phi.basis().size());
@@ -49,7 +49,6 @@ namespace operations {
     
       field_set_type mphi = phi;
       mphi.matrix() = gemm(phi.basis().volume_element(), matrix_, phi.matrix());
-      //mphi.matrix() = gemm(matrix_, phi.matrix());
 
       return mphi;      
     }

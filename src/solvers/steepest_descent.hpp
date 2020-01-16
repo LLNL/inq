@@ -30,7 +30,7 @@
 namespace solvers {
 
 	template <class operator_type, class preconditioner_type, class field_set_type>
-	void steepest_descent(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::fourier_space, field_set_type> & phi){
+	void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
 
 		const int num_steps = 5;
 
@@ -63,7 +63,7 @@ namespace solvers {
 			//now calculate the step size
 			auto hresidual = ham(residual);
 
-			auto mm = math::array<field_set_type, 2>({6, phi.set_size()});
+			auto mm = math::array<typename field_set_type::element_type, 2>({6, phi.set_size()});
 
 			mm[0] = operations::overlap_diagonal(residual, residual);
 			mm[1] = operations::overlap_diagonal(phi, residual);
@@ -110,8 +110,99 @@ namespace solvers {
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("solvers::steepest_descent", "[steepest_descent]") {
+TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 
+  const int npoint = 100;
+  const int nvec = 12;
+  
+  basis::trivial bas(npoint);
+	
+	math::array<complex, 2> identity_matrix({npoint, npoint});
+  
+	for(int ip = 0; ip < npoint; ip++){
+		for(int jp = 0; jp < npoint; jp++){
+			identity_matrix[ip][jp] = 0.0;
+			if(ip == jp) identity_matrix[ip][jp] = 1.0;
+		}
+	}
+  
+	operations::matrix_operator<math::array<complex, 2>> identity(std::move(identity_matrix));
+
+	SECTION("Diagonal matrix complex"){
+  
+    math::array<complex, 2> diagonal_matrix({npoint, npoint});
+    
+    for(int ip = 0; ip < npoint; ip++){
+      for(int jp = 0; jp < npoint; jp++){
+        diagonal_matrix[ip][jp] = 0.0;
+        if(ip == jp) diagonal_matrix[ip][jp] = ip;///bas.volume_element();
+      }
+    }
+    
+    operations::matrix_operator<math::array<complex, 2>> diagonal_op(std::move(diagonal_matrix));
+    
+    basis::field_set<basis::trivial, complex> phi(bas, nvec);
+
+		phi = 0.0;
+		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0/bas.volume_element();
+
+		for(int iter = 0; iter < 1; iter++){
+			
+			//			solvers::steepest_descent(diagonal_op, identity, phi);
+			
+			auto residual = diagonal_op(phi);
+			auto eigenvalues = operations::overlap_diagonal(phi, residual);
+			operations::shift(eigenvalues, phi, residual, -1.0);
+			auto normres = operations::overlap_diagonal(residual);
+			
+			for(int ivec = 0; ivec < phi.set_size(); ivec++){
+				tfm::format(std::cout, " state %4d  evalue = %18.12f  res = %15.10e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
+			}
+		}
+ 	
+ }
+
+#if 0
+	SECTION("Periodic Laplacian matrix complex"){
+  
+    math::array<complex, 2> laplacian_matrix({npoint, npoint});
+    
+    for(int ip = 0; ip < npoint; ip++){
+      for(int jp = 0; jp < npoint; jp++){
+        laplacian_matrix[ip][jp] = 0.0;
+				identity_matrix[ip][jp] = 0.0;
+        if(ip == jp) laplacian_matrix[ip][jp] = -1.0;
+        if(ip == jp + 1 or ip == jp - 1) laplacian_matrix[ip][jp] = 2.0;
+      }
+    }
+    //the periodic part
+    laplacian_matrix[0][npoint - 1] = 2.0/bas.volume_element();
+    laplacian_matrix[npoint - 1][0] = 2.0/bas.volume_element();
+    
+    operations::matrix_operator<math::array<complex, 2>> laplacian(std::move(laplacian_matrix));
+    
+    basis::field_set<basis::trivial, complex> phi(bas, nvec);
+
+		phi = 0.0;
+		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
+
+		for(int iter = 0; iter < 100; iter++){
+			
+			solvers::steepest_descent(laplacian, identity, phi);
+			
+			auto residual = laplacian(phi);
+			auto eigenvalues = operations::overlap_diagonal(phi, residual);
+			operations::shift(eigenvalues, phi, residual, -1.0);
+			auto normres = operations::overlap_diagonal(residual);
+			
+			for(int ivec = 0; ivec < phi.set_size(); ivec++){
+				tfm::format(std::cout, " state %4d  evalue = %18.12f  res = %5.0e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
+			}
+		}
+ 	
+ }
+#endif
+	
 
 }
 
