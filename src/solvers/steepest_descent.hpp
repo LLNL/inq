@@ -118,6 +118,8 @@ namespace solvers {
 
 TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 
+	using namespace Catch::literals;
+	
   const int npoint = 100;
   const int nvec = 12;
   
@@ -141,7 +143,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){
         diagonal_matrix[ip][jp] = 0.0;
-        if(ip == jp) diagonal_matrix[ip][jp] = ip;
+        if(ip == jp) diagonal_matrix[ip][jp] = ip + 1.0;
       }
     }
     
@@ -156,8 +158,10 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
     }
 
 		operations::orthogonalization(phi);
+
+		const int num_iter = 100;
 		
-		for(int iter = 0; iter < 100; iter++){
+		for(int iter = 0; iter < num_iter; iter++){
 
 			tfm::format(std::cout, "  Iteration %4d:\n", iter);
 			
@@ -171,6 +175,24 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 			for(int ivec = 0; ivec < phi.set_size(); ivec++){
 				tfm::format(std::cout, "    state %4d  evalue = %18.12f  res = %15.10e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
 			}
+
+			if(num_iter - 1 == iter){
+
+				REQUIRE(fabs(eigenvalues[0]) == 1.000000001634_a);
+				REQUIRE(fabs(eigenvalues[1]) == 2.000000003689_a);
+				REQUIRE(fabs(eigenvalues[2]) == 3.000000001955_a);
+				REQUIRE(fabs(eigenvalues[3]) == 4.000000001760_a);
+				REQUIRE(fabs(eigenvalues[4]) == 5.000000002561_a);
+				REQUIRE(fabs(eigenvalues[5]) == 6.000000003127_a);
+				REQUIRE(fabs(eigenvalues[6]) == 7.000000002312_a);
+				REQUIRE(fabs(eigenvalues[7]) == 8.000000000292_a);
+				REQUIRE(fabs(eigenvalues[8]) == 8.999999999033_a);
+				REQUIRE(fabs(eigenvalues[9]) == 9.999999998497_a);
+				REQUIRE(fabs(eigenvalues[10]) == 10.999999998768_a);
+				REQUIRE(fabs(eigenvalues[11]) == 11.999999998422_a);
+
+			}
+			
 		}
  	
  }
