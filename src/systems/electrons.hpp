@@ -21,9 +21,9 @@
 #include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
 #include <operations/subspace_diagonalization.hpp>
-#include <solvers/steepest_descent.hpp>
 #include <solvers/linear_mixer.hpp>
 #include <solvers/pulay_mixer.hpp>
+#include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
 #include <input/config.hpp>
