@@ -23,6 +23,7 @@
 #include <operations/subspace_diagonalization.hpp>
 #include <solvers/linear_mixer.hpp>
 #include <solvers/pulay_mixer.hpp>
+#include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
@@ -105,6 +106,7 @@ namespace systems {
 				{
 					auto fphi = operations::space::to_fourier(std::move(phi_));
 					solvers::steepest_descent(ham, prec, fphi);
+					// eigensolver::conjugate_gradient(ham, prec, fphi);
 					phi_ = operations::space::to_real(std::move(fphi));
 				}
 

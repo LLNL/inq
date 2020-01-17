@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__ORTHOGONALIZATION
-#define OPERATIONS__ORTHOGONALIZATION
+#ifndef OPERATIONS__ORTHOGONALIZE
+#define OPERATIONS__ORTHOGONALIZE
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
@@ -95,7 +95,45 @@ namespace operations {
 		trsm(filling::lower, olap, hermitized(phi.matrix()));
 
   }
+	
+	template <class field_set_type>
+  void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int num_states = -1){
 
+		if(num_states == -1) num_states = phi.set_size();
+		
+		assert(num_states <= phi.set_size());
+		
+		for(int ist = 0; ist < num_states; ist++){
+
+
+			typename field_set_type::element_type olap = 0.0;
+			typename field_set_type::element_type norm = 0.0;
+			for(long ip = 0; ip < phi.basis().size(); ip++){
+				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+				norm += conj(phi.matrix()[ip][ist])*phi.matrix()[ip][ist];
+			}
+
+			//reduce olap, norm
+
+			for(long ip = 0; ip < phi.basis().size(); ip++)	vec.matrix()[ip][0] -= olap/real(norm)*phi.matrix()[ip][ist];
+
+#if 0
+			{
+				typename field_set_type::element_type olap = 0.0;
+				
+				for(long ip = 0; ip < phi.basis().size(); ip++){
+					olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+				}
+				
+				//reduce olap, norm
+				
+				std::cout << ist << '\t' << num_states << '\t' << fabs(olap) << std::endl;
+			}
+#endif
+			
+		}
+		
+	}
 }
 
 #ifdef UNIT_TEST
@@ -185,9 +223,23 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 			}
 		}
 	}
+	
+	SECTION("single -- Dimension 3"){
+		basis::field_set<basis::real_space, complex> phi(pw, 3);
+		basis::field_set<basis::real_space, complex> vec(pw, 1);
+		
+		operations::randomize(phi);
+		operations::orthogonalize(phi);
+		
+		operations::randomize(vec);
 
-	
-	
+		operations::orthogonalize_single(vec, phi, 2);
+		
+		operations::randomize(vec);
+		
+		operations::orthogonalize_single(vec, phi);
+		
+	}
 }
 
 
