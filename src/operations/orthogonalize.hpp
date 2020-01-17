@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__ORTHOGONALIZATION
-#define OPERATIONS__ORTHOGONALIZATION
+#ifndef OPERATIONS__ORTHOGONALIZE
+#define OPERATIONS__ORTHOGONALIZE
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
@@ -229,7 +229,7 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		basis::field_set<basis::real_space, complex> vec(pw, 1);
 		
 		operations::randomize(phi);
-		operations::orthogonalization(phi);
+		operations::orthogonalize(phi);
 		
 		operations::randomize(vec);
 
