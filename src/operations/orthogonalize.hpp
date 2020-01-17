@@ -42,7 +42,7 @@ extern "C" void zpotrf(const char * uplo, const int * n, complex * a, const int 
 namespace operations {
 
 	template <class field_set_type>
-  void orthogonalization(field_set_type & phi){
+  void orthogonalize(field_set_type & phi){
 
 		auto olap = overlap(phi);
 
@@ -103,7 +103,7 @@ namespace operations {
 
 #include <operations/randomize.hpp>
 
-TEST_CASE("function operations::orthogonalization", "[operations::orthogonalization]") {
+TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 
 	using namespace Catch::literals;
 	using math::d3vector;
@@ -119,7 +119,7 @@ TEST_CASE("function operations::orthogonalization", "[operations::orthogonalizat
 		
 		operations::randomize(phi);
 		
-		operations::orthogonalization(phi);
+		operations::orthogonalize(phi);
 		
 		auto olap = operations::overlap(phi);
 		
@@ -147,7 +147,7 @@ TEST_CASE("function operations::orthogonalization", "[operations::orthogonalizat
 		
 		operations::randomize(phi);
 		
-		operations::orthogonalization(phi);
+		operations::orthogonalize(phi);
 		
 		auto olap = operations::overlap(phi);
 		
@@ -164,13 +164,13 @@ TEST_CASE("function operations::orthogonalization", "[operations::orthogonalizat
 	}
 
 
-	SECTION("Dimension 37 - double orthogonalization"){
+	SECTION("Dimension 37 - double orthogonalize"){
 		basis::field_set<basis::real_space, complex> phi(pw, 37);
 		
 		operations::randomize(phi);
 		
-		operations::orthogonalization(phi);
-		operations::orthogonalization(phi);
+		operations::orthogonalize(phi);
+		operations::orthogonalize(phi);
 		
 		auto olap = operations::overlap(phi);
 		

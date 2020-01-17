@@ -32,7 +32,7 @@ noinst_HEADERS =                             \
 	operations/randomize.hpp                   \
 	operations/scal.hpp                        \
 	operations/space.hpp                       \
-	operations/orthogonalization.hpp           \
+	operations/orthogonalize.hpp               \
 	operations/shift.hpp                       \
 	operations/preconditioner.hpp              \
 	operations/diagonalize.hpp                 \

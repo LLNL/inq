@@ -16,7 +16,7 @@
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
 #include <operations/scal.hpp>
-#include <operations/orthogonalization.hpp>
+#include <operations/orthogonalize.hpp>
 #include <operations/preconditioner.hpp>
 #include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
@@ -56,7 +56,7 @@ namespace systems {
  
 
       operations::randomize(phi_);
-			operations::orthogonalization(phi_);
+			operations::orthogonalize(phi_);
     }
 
     auto calculate_ground_state(const input::interaction & inter){
