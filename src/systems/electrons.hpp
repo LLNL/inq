@@ -23,13 +23,13 @@
 #include <operations/subspace_diagonalization.hpp>
 #include <solvers/linear_mixer.hpp>
 #include <solvers/pulay_mixer.hpp>
+#include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
-#include <eigensolver/conjugate_gradient.hpp>
 
 #ifdef HAVE_CUDA
 #include <thrust/fill.h>
@@ -105,7 +105,7 @@ namespace systems {
 
 				{
 					auto fphi = operations::space::to_fourier(std::move(phi_));
-					//					solvers::steepest_descent(ham, prec, fphi);
+					// solvers::steepest_descent(ham, prec, fphi);
 					eigensolver::conjugate_gradient(ham, prec, fphi);
 					phi_ = operations::space::to_real(std::move(fphi));
 				}

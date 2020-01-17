@@ -26,7 +26,7 @@
 #include <math/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
-#include <operations/orthogonalization.hpp>
+#include <operations/orthogonalize.hpp>
 
 namespace eigensolver {
 

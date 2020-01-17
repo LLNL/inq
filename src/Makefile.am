@@ -52,8 +52,8 @@ noinst_HEADERS =                             \
 	solvers/linear_mixer.hpp                   \
 	solvers/linear.hpp                         \
 	solvers/pulay_mixer.hpp                    \
+	eigensolvers/conjugate_gradient.hpp        \
 	eigensolvers/steepest_descent.hpp          \
-	eigensolver/conjugate_gradient.hpp         \
 	systems/ions.hpp                           \
 	systems/electrons.hpp
 

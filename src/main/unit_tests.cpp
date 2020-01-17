@@ -73,5 +73,6 @@
 #include <solvers/pulay_mixer.hpp>
 #include <solvers/linear.hpp>
 
+#include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 
