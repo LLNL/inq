@@ -163,8 +163,6 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 		
 		for(int iter = 0; iter < num_iter; iter++){
 
-			tfm::format(std::cout, "  Iteration %4d:\n", iter);
-			
 			solvers::steepest_descent(diagonal_op, identity, phi);
 			
 			auto residual = diagonal_op(phi);
@@ -172,9 +170,13 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 			operations::shift(eigenvalues, phi, residual, -1.0);
 			auto normres = operations::overlap_diagonal(residual);
 			
-			for(int ivec = 0; ivec < phi.set_size(); ivec++){
+			/*
+				tfm::format(std::cout, "  Iteration %4d:\n", iter);
+				
+				for(int ivec = 0; ivec < phi.set_size(); ivec++){
 				tfm::format(std::cout, "    state %4d  evalue = %18.12f  res = %15.10e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
-			}
+				}
+			*/
 
 			if(num_iter - 1 == iter){
 
@@ -199,7 +201,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 
 #if 0
 	SECTION("Periodic Laplacian matrix complex"){
-  
+		
     math::array<complex, 2> laplacian_matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
@@ -210,10 +212,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
         if(ip == jp + 1 or ip == jp - 1) laplacian_matrix[ip][jp] = 2.0;
       }
     }
-    //the periodic part
-    laplacian_matrix[0][npoint - 1] = 2.0/bas.volume_element();
-    laplacian_matrix[npoint - 1][0] = 2.0/bas.volume_element();
-    
+		
     operations::matrix_operator<math::array<complex, 2>> laplacian(std::move(laplacian_matrix));
     
     basis::field_set<basis::trivial, complex> phi(bas, nvec);
@@ -234,10 +233,8 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 				tfm::format(std::cout, " state %4d  evalue = %18.12f  res = %5.0e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
 			}
 		}
- 	
- }
-#endif
-	
+	}
+#endif 	
 
 }
 
