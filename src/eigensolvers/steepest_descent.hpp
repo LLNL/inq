@@ -26,6 +26,7 @@
 #include <math/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
+#include <operations/orthogonalize.hpp>
 
 namespace solvers {
 
@@ -104,7 +105,7 @@ namespace solvers {
 
 		}
 
-		operations::orthogonalization(phi);
+		operations::orthogonalize(phi);
 		
 	}
 
@@ -157,7 +158,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
       }
     }
 
-		operations::orthogonalization(phi);
+		operations::orthogonalize(phi);
 
 		const int num_iter = 100;
 		

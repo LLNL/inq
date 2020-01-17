@@ -61,7 +61,7 @@
 #include <operations/calculate_density.hpp>
 #include <operations/sum.hpp>
 #include <operations/overlap.hpp>
-#include <operations/orthogonalization.hpp>
+#include <operations/orthogonalize.hpp>
 #include <operations/diagonalize.hpp>
 #include <operations/shift.hpp>
 #include <operations/randomize.hpp>
@@ -72,4 +72,6 @@
 #include <solvers/linear_mixer.hpp>
 #include <solvers/pulay_mixer.hpp>
 #include <solvers/linear.hpp>
-#include <solvers/steepest_descent.hpp>
+
+#include <eigensolvers/steepest_descent.hpp>
+

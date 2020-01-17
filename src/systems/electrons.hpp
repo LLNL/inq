@@ -16,14 +16,14 @@
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
 #include <operations/scal.hpp>
-#include <operations/orthogonalization.hpp>
+#include <operations/orthogonalize.hpp>
 #include <operations/preconditioner.hpp>
 #include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
 #include <operations/subspace_diagonalization.hpp>
-#include <solvers/steepest_descent.hpp>
 #include <solvers/linear_mixer.hpp>
 #include <solvers/pulay_mixer.hpp>
+#include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
 #include <input/config.hpp>
@@ -56,7 +56,7 @@ namespace systems {
  
 
       operations::randomize(phi_);
-			operations::orthogonalization(phi_);
+			operations::orthogonalize(phi_);
     }
 
     auto calculate_ground_state(const input::interaction & inter){

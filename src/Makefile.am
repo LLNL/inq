@@ -32,7 +32,7 @@ noinst_HEADERS =                             \
 	operations/randomize.hpp                   \
 	operations/scal.hpp                        \
 	operations/space.hpp                       \
-	operations/orthogonalization.hpp           \
+	operations/orthogonalize.hpp               \
 	operations/shift.hpp                       \
 	operations/preconditioner.hpp              \
 	operations/diagonalize.hpp                 \
@@ -49,10 +49,10 @@ noinst_HEADERS =                             \
 	hamiltonian/self_consistency.hpp           \
 	hamiltonian/xc_functional.hpp              \
 	solvers/poisson.hpp                        \
-	solvers/steepest_descent.hpp               \
 	solvers/linear_mixer.hpp                   \
 	solvers/linear.hpp                         \
 	solvers/pulay_mixer.hpp                    \
+	eigensolvers/steepest_descent.hpp          \
 	systems/ions.hpp                           \
 	systems/electrons.hpp
 
