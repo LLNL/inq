@@ -51,6 +51,7 @@ namespace operations {
 		using boost::multi::blas::hermitized;
 		
 		return herk(phi.basis().volume_element(), hermitized(phi.matrix()));
+
 	}
 
 	template <class field_set_type>

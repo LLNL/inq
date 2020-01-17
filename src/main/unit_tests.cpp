@@ -72,3 +72,4 @@
 #include <solvers/linear_mixer.hpp>
 #include <solvers/pulay_mixer.hpp>
 #include <solvers/linear.hpp>
+#include <solvers/steepest_descent.hpp>
