@@ -28,9 +28,6 @@
 extern "C" void dpotrf(const char * uplo, const int * n, double * a, const int * lda, int * info);
 
 #define dtrsv FC_FUNC(dtrsv, DTRSV) 
-extern "C" void dtrsv(const char * uplo, const char * trans, const char * diag,
-											const int * n, const double * a, const int * lda, double * x, const int * incx);
-
 
 namespace solvers {
 
@@ -51,9 +48,9 @@ namespace solvers {
 		
 		const int one = 1;
 		//DATAOPERATIONS RAWLAPACK dtrsv
-		dtrsv("U", "T", "N", &nn, matrix.data(), &nn, vector.data(), &one);
+		dtrsv('U', 'T', 'N', nn, matrix.data(), nn, vector.data(), one);
 		//DATAOPERATIONS RAWLAPACK dtrsv
-		dtrsv("U", "N", "N", &nn, matrix.data(), &nn, vector.data(), &one);
+		dtrsv('U', 'N', 'N', nn, matrix.data(), nn, vector.data(), one);
 		
   }
 
