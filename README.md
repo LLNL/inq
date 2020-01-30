@@ -70,7 +70,8 @@ This instructions might be incomplete, to see how to have a basic install in a s
 ## Release information 
 
 INQ is licensed under the terms of the [LGPL v3 License](/COPYING).
-``LLNL-CODE-XXXXXX``
+
+``LLNL-CODE-803817``
 
 CP Number: CP02279
 Software Title: Electronic Structure Engine
