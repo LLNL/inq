@@ -66,3 +66,14 @@ export CXXLD=/usr/lib/cuda/bin/nvcc
 ```
 
 This instructions might be incomplete, to see how to have a basic install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npnq/inq/blob/master/.gitlab-ci.yml).
+
+## Release information 
+
+INQ is licensed under the terms of the [LGPL v3 License](/COPYING).
+
+``LLNL-CODE-803817``
+
+CP Number: CP02279
+Software Title: Electronic Structure Engine
+Date Submitted: Wednesday, December 11, 2019
+Date Accepted: Wednesday, January 29, 2020
