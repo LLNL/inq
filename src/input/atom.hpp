@@ -32,7 +32,7 @@ namespace input {
 
 	public:
 		
-		atom(const input::species & arg_spec, const math::d3vector & arg_position):
+		atom(const input::species & arg_spec, const math::vec3d & arg_position):
 			species_(arg_spec),
 			position_(arg_position){
 		}
@@ -48,20 +48,20 @@ namespace input {
 	private:
 
 		input::species species_;
-		math::d3vector position_;
+		math::vec3d position_;
 		
   };
 }
 
-auto operator|(const input::species & arg_spec, const math::d3vector & arg_position){
+auto operator|(const input::species & arg_spec, const math::vec3d & arg_position){
 	return input::atom(arg_spec, arg_position);
 }
 
-auto operator|(const pseudo::element & arg_element, const math::d3vector & arg_position){
+auto operator|(const pseudo::element & arg_element, const math::vec3d & arg_position){
 	return input::atom(arg_element, arg_position);
 }
 
-auto operator|(const std::string & arg_symbol, const math::d3vector & arg_position){
+auto operator|(const std::string & arg_symbol, const math::vec3d & arg_position){
 	return input::atom(pseudo::element(arg_symbol), arg_position);
 }
 
@@ -73,7 +73,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
   using namespace Catch::literals;
 
 	SECTION("Constructor"){
-		input::atom at(pseudo::element("H"), math::d3vector(1.0, 2.0, 3.0));
+		input::atom at(pseudo::element("H"), math::vec3d(1.0, 2.0, 3.0));
 
 		REQUIRE(at.species().atomic_number() == 1);
 		REQUIRE(at.position()[0] == 1.0_a);
@@ -83,7 +83,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 	}
 	
 	SECTION("Species composition"){
-		input::atom at = input::species(pseudo::element("C")) | math::d3vector(1.0, 2.0, 3.0);
+		input::atom at = input::species(pseudo::element("C")) | math::vec3d(1.0, 2.0, 3.0);
 
 		REQUIRE(at.species().symbol() == "C");
 		REQUIRE(at.position()[0] == 1.0_a);
@@ -94,7 +94,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 	
 	SECTION("Species option composition"){
 		
-		input::atom at = pseudo::element("C") | input::species::symbol("C1") | math::d3vector(1.0, 2.0, 3.0);
+		input::atom at = pseudo::element("C") | input::species::symbol("C1") | math::vec3d(1.0, 2.0, 3.0);
 		
 		REQUIRE(at.species().symbol() == "C1");
 		REQUIRE(at.position()[0] == 1.0_a);
@@ -105,7 +105,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 
 	SECTION("Element composition"){
 		
-		input::atom at = pseudo::element("W") | math::d3vector(1.0, 2.0, 3.0);
+		input::atom at = pseudo::element("W") | math::vec3d(1.0, 2.0, 3.0);
 		
 		REQUIRE(at.species().symbol() == "W");
 		REQUIRE(at.position()[0] == 1.0_a);
@@ -116,7 +116,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 
 	SECTION("String composition"){
 		
-		input::atom at = std::string("Xe") | math::d3vector(1.0, 2.0, 3.0);
+		input::atom at = std::string("Xe") | math::vec3d(1.0, 2.0, 3.0);
 		
 		REQUIRE(at.species().symbol() == "Xe");
 		REQUIRE(at.position()[0] == 1.0_a);
@@ -127,7 +127,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 	
 	SECTION("Char * composition"){
 		
-		input::atom at = "Tc" | math::d3vector(1.0, 2.0, 3.0);
+		input::atom at = "Tc" | math::vec3d(1.0, 2.0, 3.0);
 		
 		REQUIRE(at.species().symbol() == "Tc");
 		REQUIRE(at.position()[0] == 1.0_a);

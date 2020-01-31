@@ -36,73 +36,73 @@
 
 namespace ions {
 
-  using math::d3vector;
+  using math::vec3d;
   using namespace std;
   
   ////////////////////////////////////////////////////////////////////////////////
-  void UnitCell::set(const d3vector& a0, const d3vector& a1, const d3vector& a2, int arg_periodic_dimensions) {
+  void UnitCell::set(const vec3d& a0, const vec3d& a1, const vec3d& a2, int arg_periodic_dimensions) {
 
 		periodic_dimensions_ = arg_periodic_dimensions;
 		
     a_[0] = a0; a_[1] = a1, a_[2] = a2;
-    amat_[0] = a0.x;
-    amat_[1] = a0.y;
-    amat_[2] = a0.z;
-    amat_[3] = a1.x;
-    amat_[4] = a1.y;
-    amat_[5] = a1.z;
-    amat_[6] = a2.x;
-    amat_[7] = a2.y;
-    amat_[8] = a2.z;
+    amat_[0] = a0[0];
+    amat_[1] = a0[1];
+    amat_[2] = a0[2];
+    amat_[3] = a1[0];
+    amat_[4] = a1[1];
+    amat_[5] = a1[2];
+    amat_[6] = a2[0];
+    amat_[7] = a2[1];
+    amat_[8] = a2[2];
   
     // volume = det(A)
-    volume_ = a0 * ( a1 ^ a2 );
+    volume_ = (a0|(a1^a2));
 
 		if(fabs(volume_) < 1e-10) throw error::WRONG_LATTICE;
 		
     if ( volume_ > 0.0 ){
 			// Compute rows of A-1 (columns of A^-T)
 			double fac = 1.0 / volume_;
-			d3vector amt0 = fac * a1 ^ a2;
-			d3vector amt1 = fac * a2 ^ a0;
-			d3vector amt2 = fac * a0 ^ a1;
+			vec3d amt0 = fac * a1 ^ a2;
+			vec3d amt1 = fac * a2 ^ a0;
+			vec3d amt2 = fac * a0 ^ a1;
 			
-			amat_inv_[0] = amt0.x;
-			amat_inv_[1] = amt1.x;
-			amat_inv_[2] = amt2.x;
-			amat_inv_[3] = amt0.y;
-			amat_inv_[4] = amt1.y;
-			amat_inv_[5] = amt2.y;
-			amat_inv_[6] = amt0.z;
-			amat_inv_[7] = amt1.z;
-			amat_inv_[8] = amt2.z;
+			amat_inv_[0] = amt0[0];
+			amat_inv_[1] = amt1[0];
+			amat_inv_[2] = amt2[0];
+			amat_inv_[3] = amt0[1];
+			amat_inv_[4] = amt1[1];
+			amat_inv_[5] = amt2[1];
+			amat_inv_[6] = amt0[2];
+			amat_inv_[7] = amt1[2];
+			amat_inv_[8] = amt2[2];
 			
-			amat_inv_t_[0] = amt0.x;
-			amat_inv_t_[1] = amt0.y;
-			amat_inv_t_[2] = amt0.z;
-			amat_inv_t_[3] = amt1.x;
-			amat_inv_t_[4] = amt1.y;
-			amat_inv_t_[5] = amt1.z;
-			amat_inv_t_[6] = amt2.x;
-			amat_inv_t_[7] = amt2.y;
-			amat_inv_t_[8] = amt2.z;
+			amat_inv_t_[0] = amt0[0];
+			amat_inv_t_[1] = amt0[1];
+			amat_inv_t_[2] = amt0[2];
+			amat_inv_t_[3] = amt1[0];
+			amat_inv_t_[4] = amt1[1];
+			amat_inv_t_[5] = amt1[2];
+			amat_inv_t_[6] = amt2[0];
+			amat_inv_t_[7] = amt2[1];
+			amat_inv_t_[8] = amt2[2];
 			
 			// B = 2 pi A^-T
 			b_[0] = 2.0 * M_PI * amt0;
 			b_[1] = 2.0 * M_PI * amt1;
 			b_[2] = 2.0 * M_PI * amt2;
 			
-			bmat_[0] = b_[0].x;
-			bmat_[1] = b_[0].y;
-			bmat_[2] = b_[0].z;
-			bmat_[3] = b_[1].x;
-			bmat_[4] = b_[1].y;
-			bmat_[5] = b_[1].z;
-			bmat_[6] = b_[2].x;
-			bmat_[7] = b_[2].y;
-			bmat_[8] = b_[2].z;
+			bmat_[0] = b_[0][0];
+			bmat_[1] = b_[0][1];
+			bmat_[2] = b_[0][2];
+			bmat_[3] = b_[1][0];
+			bmat_[4] = b_[1][1];
+			bmat_[5] = b_[1][2];
+			bmat_[6] = b_[2][0];
+			bmat_[7] = b_[2][1];
+			bmat_[8] = b_[2][2];
 		} else  {
-			b_[0] = b_[1] = b_[2] = d3vector(0.0,0.0,0.0);
+			b_[0] = b_[1] = b_[2] = vec3d(0.0,0.0,0.0);
 			amat_inv_[0] =  amat_inv_[1] =  amat_inv_[2] = 
 				amat_inv_[3] =  amat_inv_[4] =  amat_inv_[5] = 
 				amat_inv_[6] =  amat_inv_[7] =  amat_inv_[8] = 0.0;
@@ -146,17 +146,18 @@ namespace ions {
   }
  
   ////////////////////////////////////////////////////////////////////////////////
-  d3vector UnitCell::cart_to_crystal(const d3vector& v) const {
-    d3vector vcryst;
+  vec3d UnitCell::cart_to_crystal(const vec3d& v) const {
+    vec3d vcryst;
     const double twopiinv = 0.5/M_PI;
-    vcryst.x = b_[0]*v*twopiinv;
-    vcryst.y = b_[1]*v*twopiinv;
-    vcryst.z = b_[2]*v*twopiinv;
+    vcryst[0] = (b_[0]|v)*twopiinv;
+		vcryst[1] = (b_[1]|v)*twopiinv;
+    vcryst[2] = (b_[2]|v)*twopiinv;
     return vcryst;
   }
+	
   ////////////////////////////////////////////////////////////////////////////////
-  d3vector UnitCell::crystal_to_cart(const d3vector& v) const {
-    d3vector vcart = v.x*a_[0] + v.y*a_[1] + v.z*a_[2];
+  vec3d UnitCell::crystal_to_cart(const vec3d& v) const {
+    vec3d vcart = v[0]*a_[0] + v[1]*a_[1] + v[2]*a_[2];
     return vcart;
   }
   ////////////////////////////////////////////////////////////////////////////////
@@ -166,29 +167,29 @@ namespace ions {
     // scart[4] = s_yz, scart[5] = s_xz
 
     scryst[0] = 
-      a_[0].x*scart[0]*a_[0].x + a_[0].x*scart[3]*a_[0].y + a_[0].x*scart[5]*a_[0].z + 
-      a_[0].y*scart[3]*a_[0].x + a_[0].y*scart[1]*a_[0].y + a_[0].y*scart[4]*a_[0].z + 
-      a_[0].z*scart[5]*a_[0].x + a_[0].z*scart[4]*a_[0].y + a_[0].z*scart[2]*a_[0].z;
+      a_[0][0]*scart[0]*a_[0][0] + a_[0][0]*scart[3]*a_[0][1] + a_[0][0]*scart[5]*a_[0][2] + 
+      a_[0][1]*scart[3]*a_[0][0] + a_[0][1]*scart[1]*a_[0][1] + a_[0][1]*scart[4]*a_[0][2] + 
+      a_[0][2]*scart[5]*a_[0][0] + a_[0][2]*scart[4]*a_[0][1] + a_[0][2]*scart[2]*a_[0][2];
     scryst[1] = 
-      a_[1].x*scart[0]*a_[1].x + a_[1].x*scart[3]*a_[1].y + a_[1].x*scart[5]*a_[1].z + 
-      a_[1].y*scart[3]*a_[1].x + a_[1].y*scart[1]*a_[1].y + a_[1].y*scart[4]*a_[1].z + 
-      a_[1].z*scart[5]*a_[1].x + a_[1].z*scart[4]*a_[1].y + a_[1].z*scart[2]*a_[1].z;
+      a_[1][0]*scart[0]*a_[1][0] + a_[1][0]*scart[3]*a_[1][1] + a_[1][0]*scart[5]*a_[1][2] + 
+      a_[1][1]*scart[3]*a_[1][0] + a_[1][1]*scart[1]*a_[1][1] + a_[1][1]*scart[4]*a_[1][2] + 
+      a_[1][2]*scart[5]*a_[1][0] + a_[1][2]*scart[4]*a_[1][1] + a_[1][2]*scart[2]*a_[1][2];
     scryst[2] = 
-      a_[2].x*scart[0]*a_[2].x + a_[2].x*scart[3]*a_[2].y + a_[2].x*scart[5]*a_[2].z + 
-      a_[2].y*scart[3]*a_[2].x + a_[2].y*scart[1]*a_[2].y + a_[2].y*scart[4]*a_[2].z + 
-      a_[2].z*scart[5]*a_[2].x + a_[2].z*scart[4]*a_[2].y + a_[2].z*scart[2]*a_[2].z;
+      a_[2][0]*scart[0]*a_[2][0] + a_[2][0]*scart[3]*a_[2][1] + a_[2][0]*scart[5]*a_[2][2] + 
+      a_[2][1]*scart[3]*a_[2][0] + a_[2][1]*scart[1]*a_[2][1] + a_[2][1]*scart[4]*a_[2][2] + 
+      a_[2][2]*scart[5]*a_[2][0] + a_[2][2]*scart[4]*a_[2][1] + a_[2][2]*scart[2]*a_[2][2];
     scryst[3] = 
-      a_[0].x*scart[0]*a_[1].x + a_[0].x*scart[3]*a_[1].y + a_[0].x*scart[5]*a_[1].z + 
-      a_[0].y*scart[3]*a_[1].x + a_[0].y*scart[1]*a_[1].y + a_[0].y*scart[4]*a_[1].z + 
-      a_[0].z*scart[5]*a_[1].x + a_[0].z*scart[4]*a_[1].y + a_[0].z*scart[2]*a_[1].z;
+      a_[0][0]*scart[0]*a_[1][0] + a_[0][0]*scart[3]*a_[1][1] + a_[0][0]*scart[5]*a_[1][2] + 
+      a_[0][1]*scart[3]*a_[1][0] + a_[0][1]*scart[1]*a_[1][1] + a_[0][1]*scart[4]*a_[1][2] + 
+      a_[0][2]*scart[5]*a_[1][0] + a_[0][2]*scart[4]*a_[1][1] + a_[0][2]*scart[2]*a_[1][2];
     scryst[4] = 
-      a_[1].x*scart[0]*a_[2].x + a_[1].x*scart[3]*a_[2].y + a_[1].x*scart[5]*a_[2].z + 
-      a_[1].y*scart[3]*a_[2].x + a_[1].y*scart[1]*a_[2].y + a_[1].y*scart[4]*a_[2].z + 
-      a_[1].z*scart[5]*a_[2].x + a_[1].z*scart[4]*a_[2].y + a_[1].z*scart[2]*a_[2].z;
+      a_[1][0]*scart[0]*a_[2][0] + a_[1][0]*scart[3]*a_[2][1] + a_[1][0]*scart[5]*a_[2][2] + 
+      a_[1][1]*scart[3]*a_[2][0] + a_[1][1]*scart[1]*a_[2][1] + a_[1][1]*scart[4]*a_[2][2] + 
+      a_[1][2]*scart[5]*a_[2][0] + a_[1][2]*scart[4]*a_[2][1] + a_[1][2]*scart[2]*a_[2][2];
     scryst[5] = 
-      a_[0].x*scart[0]*a_[2].x + a_[0].x*scart[3]*a_[2].y + a_[0].x*scart[5]*a_[2].z + 
-      a_[0].y*scart[3]*a_[2].x + a_[0].y*scart[1]*a_[2].y + a_[0].y*scart[4]*a_[2].z + 
-      a_[0].z*scart[5]*a_[2].x + a_[0].z*scart[4]*a_[2].y + a_[0].z*scart[2]*a_[2].z;
+      a_[0][0]*scart[0]*a_[2][0] + a_[0][0]*scart[3]*a_[2][1] + a_[0][0]*scart[5]*a_[2][2] + 
+      a_[0][1]*scart[3]*a_[2][0] + a_[0][1]*scart[1]*a_[2][1] + a_[0][1]*scart[4]*a_[2][2] + 
+      a_[0][2]*scart[5]*a_[2][0] + a_[0][2]*scart[4]*a_[2][1] + a_[0][2]*scart[2]*a_[2][2];
 
     return;
   }
@@ -200,29 +201,29 @@ namespace ions {
     const double twopiinv = 0.5/M_PI;
 
     scart[0] = 
-      b_[0].x*scryst[0]*b_[0].x + b_[0].x*scryst[3]*b_[1].x + b_[0].x*scryst[5]*b_[2].x + 
-      b_[1].x*scryst[3]*b_[0].x + b_[1].x*scryst[1]*b_[1].x + b_[1].x*scryst[4]*b_[2].x + 
-      b_[2].x*scryst[5]*b_[0].x + b_[2].x*scryst[4]*b_[1].x + b_[2].x*scryst[2]*b_[2].x;
+      b_[0][0]*scryst[0]*b_[0][0] + b_[0][0]*scryst[3]*b_[1][0] + b_[0][0]*scryst[5]*b_[2][0] + 
+      b_[1][0]*scryst[3]*b_[0][0] + b_[1][0]*scryst[1]*b_[1][0] + b_[1][0]*scryst[4]*b_[2][0] + 
+      b_[2][0]*scryst[5]*b_[0][0] + b_[2][0]*scryst[4]*b_[1][0] + b_[2][0]*scryst[2]*b_[2][0];
     scart[1] = 
-      b_[0].y*scryst[0]*b_[0].y + b_[0].y*scryst[3]*b_[1].y + b_[0].y*scryst[5]*b_[2].y + 
-      b_[1].y*scryst[3]*b_[0].y + b_[1].y*scryst[1]*b_[1].y + b_[1].y*scryst[4]*b_[2].y + 
-      b_[2].y*scryst[5]*b_[0].y + b_[2].y*scryst[4]*b_[1].y + b_[2].y*scryst[2]*b_[2].y;
+      b_[0][1]*scryst[0]*b_[0][1] + b_[0][1]*scryst[3]*b_[1][1] + b_[0][1]*scryst[5]*b_[2][1] + 
+      b_[1][1]*scryst[3]*b_[0][1] + b_[1][1]*scryst[1]*b_[1][1] + b_[1][1]*scryst[4]*b_[2][1] + 
+      b_[2][1]*scryst[5]*b_[0][1] + b_[2][1]*scryst[4]*b_[1][1] + b_[2][1]*scryst[2]*b_[2][1];
     scart[2] = 
-      b_[0].z*scryst[0]*b_[0].z + b_[0].z*scryst[3]*b_[1].z + b_[0].z*scryst[5]*b_[2].z + 
-      b_[1].z*scryst[3]*b_[0].z + b_[1].z*scryst[1]*b_[1].z + b_[1].z*scryst[4]*b_[2].z + 
-      b_[2].z*scryst[5]*b_[0].z + b_[2].z*scryst[4]*b_[1].z + b_[2].z*scryst[2]*b_[2].z;
+      b_[0][2]*scryst[0]*b_[0][2] + b_[0][2]*scryst[3]*b_[1][2] + b_[0][2]*scryst[5]*b_[2][2] + 
+      b_[1][2]*scryst[3]*b_[0][2] + b_[1][2]*scryst[1]*b_[1][2] + b_[1][2]*scryst[4]*b_[2][2] + 
+      b_[2][2]*scryst[5]*b_[0][2] + b_[2][2]*scryst[4]*b_[1][2] + b_[2][2]*scryst[2]*b_[2][2];
     scart[3] = 
-      b_[0].x*scryst[0]*b_[0].y + b_[0].x*scryst[3]*b_[1].y + b_[0].x*scryst[5]*b_[2].y + 
-      b_[1].x*scryst[3]*b_[0].y + b_[1].x*scryst[1]*b_[1].y + b_[1].x*scryst[4]*b_[2].y + 
-      b_[2].x*scryst[5]*b_[0].y + b_[2].x*scryst[4]*b_[1].y + b_[2].x*scryst[2]*b_[2].y;
+      b_[0][0]*scryst[0]*b_[0][1] + b_[0][0]*scryst[3]*b_[1][1] + b_[0][0]*scryst[5]*b_[2][1] + 
+      b_[1][0]*scryst[3]*b_[0][1] + b_[1][0]*scryst[1]*b_[1][1] + b_[1][0]*scryst[4]*b_[2][1] + 
+      b_[2][0]*scryst[5]*b_[0][1] + b_[2][0]*scryst[4]*b_[1][1] + b_[2][0]*scryst[2]*b_[2][1];
     scart[4] = 
-      b_[0].y*scryst[0]*b_[0].z + b_[0].y*scryst[3]*b_[1].z + b_[0].y*scryst[5]*b_[2].z + 
-      b_[1].y*scryst[3]*b_[0].z + b_[1].y*scryst[1]*b_[1].z + b_[1].y*scryst[4]*b_[2].z + 
-      b_[2].y*scryst[5]*b_[0].z + b_[2].y*scryst[4]*b_[1].z + b_[2].y*scryst[2]*b_[2].z;
+      b_[0][1]*scryst[0]*b_[0][2] + b_[0][1]*scryst[3]*b_[1][2] + b_[0][1]*scryst[5]*b_[2][2] + 
+      b_[1][1]*scryst[3]*b_[0][2] + b_[1][1]*scryst[1]*b_[1][2] + b_[1][1]*scryst[4]*b_[2][2] + 
+      b_[2][1]*scryst[5]*b_[0][2] + b_[2][1]*scryst[4]*b_[1][2] + b_[2][1]*scryst[2]*b_[2][2];
     scart[5] = 
-      b_[0].x*scryst[0]*b_[0].z + b_[0].x*scryst[3]*b_[1].z + b_[0].x*scryst[5]*b_[2].z + 
-      b_[1].x*scryst[3]*b_[0].z + b_[1].x*scryst[1]*b_[1].z + b_[1].x*scryst[4]*b_[2].z + 
-      b_[2].x*scryst[5]*b_[0].z + b_[2].x*scryst[4]*b_[1].z + b_[2].x*scryst[2]*b_[2].z;
+      b_[0][0]*scryst[0]*b_[0][2] + b_[0][0]*scryst[3]*b_[1][2] + b_[0][0]*scryst[5]*b_[2][2] + 
+      b_[1][0]*scryst[3]*b_[0][2] + b_[1][0]*scryst[1]*b_[1][2] + b_[1][0]*scryst[4]*b_[2][2] + 
+      b_[2][0]*scryst[5]*b_[0][2] + b_[2][0]*scryst[4]*b_[1][2] + b_[2][0]*scryst[2]*b_[2][2];
 
     for (int i=0; i<6; i++)
       scart[i] *= twopiinv*twopiinv;
@@ -230,15 +231,14 @@ namespace ions {
     return;
   }
   ////////////////////////////////////////////////////////////////////////////////
-  bool UnitCell::in_ws(const d3vector& v) const
+  bool UnitCell::in_ws(const vec3d& v) const
   {
     bool in = true;
     int i = 0;
-    while ( i < 13 && in )
-      {
-	in = ( abs(v*an_[i]) <= an2h_[i] ) ;
-	i++;
-      }
+    while ( i < 13 && in ) {
+			in = ( abs(v|an_[i]) <= an2h_[i] ) ;
+			i++;
+		}
     return in;
   }
 
@@ -253,7 +253,7 @@ namespace ions {
   }
  
   ////////////////////////////////////////////////////////////////////////////////
-  void UnitCell::fold_in_ws(d3vector& v) const
+  void UnitCell::fold_in_ws(vec3d& v) const
   {
     const double epsilon = 1.e-10;
     bool done = false;
@@ -264,20 +264,20 @@ namespace ions {
 	done = true;
 	for ( int i = 0; (i < 13) && done; i++ )
 	  {
-	    const double sp = v*an_[i];
+	    const double sp = (v|an_[i]);
 	    if ( sp > an2h_[i] + epsilon )
 	      {
 		done = false;
 		do
 		  v -= an_[i];
-		while ( v*an_[i] > an2h_[i] + epsilon );
+		while ( (v|an_[i]) > an2h_[i] + epsilon );
 	      }
 	    else if ( sp < -an2h_[i] - epsilon )
 	      {
 		done = false;
 		do
 		  v += an_[i];
-		while ( v*an_[i] < -an2h_[i] - epsilon );
+		while ( (v|an_[i]) < -an2h_[i] - epsilon );
 	      }
 	  }
 	iter++;
@@ -286,20 +286,20 @@ namespace ions {
   }
  
   ////////////////////////////////////////////////////////////////////////////////
-  bool UnitCell::in_bz(const d3vector& k) const
+  bool UnitCell::in_bz(const vec3d& k) const
   {
     bool in = true;
     int i = 0;
     while ( i < 13 && in )
       {
-	in = ( abs(k*bn_[i]) <= bn2h_[i] ) ;
+	in = ( abs(k|bn_[i]) <= bn2h_[i] ) ;
 	i++;
       }
     return in;
   }
  
   ////////////////////////////////////////////////////////////////////////////////
-  void UnitCell::fold_in_bz(d3vector& k) const
+  void UnitCell::fold_in_bz(vec3d& k) const
   {
     const double epsilon = 1.e-10;
     bool done = false;
@@ -310,20 +310,20 @@ namespace ions {
 	done = true;
 	for ( int i = 0; (i < 13) && done; i++ )
 	  {
-	    double sp = k*bn_[i];
+	    double sp = (k|bn_[i]);
 	    if ( sp > bn2h_[i] + epsilon )
 	      {
 		done = false;
 		do
 		  k -= bn_[i];
-		while ( k*bn_[i] > bn2h_[i] + epsilon );
+		while ( (k|bn_[i]) > bn2h_[i] + epsilon );
 	      }
 	    else if ( sp < -bn2h_[i] - epsilon )
 	      {
 		done = false;
 		do
 		  k += bn_[i];
-		while ( k*bn_[i] < -bn2h_[i] - epsilon );
+		while ( (k|bn_[i]) < -bn2h_[i] - epsilon );
 	      }
 	  }
 	iter++;
@@ -348,15 +348,13 @@ namespace ions {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  bool UnitCell::contains(d3vector v) const
-  {
+  bool UnitCell::contains(vec3d v) const {
     const double fac = 0.5 / ( 2.0 * M_PI );
-    const double p0 = fac * v * b_[0];
-    const double p1 = fac * v * b_[1];
-    const double p2 = fac * v * b_[2];
-    return ( (p0 > 0.0) && (p0 <= 1.0) &&
-	     (p1 > 0.0) && (p1 <= 1.0) &&
-	     (p2 > 0.0) && (p2 <= 1.0) );
+    const double p0 = fac*(v|b_[0]);
+    const double p1 = fac*(v|b_[1]);
+		const double p2 = fac*(v|b_[2]);
+		
+    return ( (p0 > 0.0) && (p0 <= 1.0) && (p1 > 0.0) && (p1 <= 1.0) && (p2 > 0.0) && (p2 <= 1.0) );
   }
  
   ////////////////////////////////////////////////////////////////////////////////
@@ -365,35 +363,35 @@ namespace ions {
     os.setf(ios::fixed,ios::floatfield);
     os << std::setprecision(8);
     os << "<unit_cell " << endl;
-    os << "    a=\"" << setw(12) << a_[0].x << " "
-       << setw(12) << a_[0].y << " "
-       << setw(12) << a_[0].z << "\"" << endl;
-    os << "    b=\"" << setw(12) << a_[1].x << " "
-       << setw(12) << a_[1].y << " "
-       << setw(12) << a_[1].z << "\"" << endl;
-    os << "    c=\"" << setw(12) << a_[2].x << " "
-       << setw(12) << a_[2].y << " "
-       << setw(12) << a_[2].z << "\"" << " />" << endl;
+    os << "    a=\"" << setw(12) << a_[0][0] << " "
+       << setw(12) << a_[0][1] << " "
+       << setw(12) << a_[0][2] << "\"" << endl;
+    os << "    b=\"" << setw(12) << a_[1][0] << " "
+       << setw(12) << a_[1][1] << " "
+       << setw(12) << a_[1][2] << "\"" << endl;
+    os << "    c=\"" << setw(12) << a_[2][0] << " "
+       << setw(12) << a_[2][1] << " "
+       << setw(12) << a_[2][2] << "\"" << " />" << endl;
     /*
       os << "    <volume> " << setw(12) << volume_ << " </volume>" << endl;
-      os << "    <a0> " << setw(12) << a_[0].x << " " 
-      << setw(12) << a_[0].y << " " 
-      << setw(12) << a_[0].z << " </a0>" << endl;
-      os << "    <a1> " << setw(12) << a_[1].x << " " 
-      << setw(12) << a_[1].y << " " 
-      << setw(12) << a_[1].z << " </a1>" << endl;
-      os << "    <a2> " << setw(12) << a_[2].x << " " 
-      << setw(12) << a_[2].y << " " 
-      << setw(12) << a_[2].z << " </a2>" << endl;
-      os << "    <b0> " << setw(12) << b_[0].x << " " 
-      << setw(12) << b_[0].y << " " 
-      << setw(12) << b_[0].z << " </b0>" << endl;
-      os << "    <b1> " << setw(12) << b_[1].x << " " 
-      << setw(12) << b_[1].y << " " 
-      << setw(12) << b_[1].z << " </b1>" << endl;
-      os << "    <b2> " << setw(12) << b_[2].x << " " 
-      << setw(12) << b_[2].y << " " 
-      << setw(12) << b_[2].z << " </b2>" << endl;
+      os << "    <a0> " << setw(12) << a_[0][0] << " " 
+      << setw(12) << a_[0][1] << " " 
+      << setw(12) << a_[0][2] << " </a0>" << endl;
+      os << "    <a1> " << setw(12) << a_[1][0] << " " 
+      << setw(12) << a_[1][1] << " " 
+      << setw(12) << a_[1][2] << " </a1>" << endl;
+      os << "    <a2> " << setw(12) << a_[2][0] << " " 
+      << setw(12) << a_[2][1] << " " 
+      << setw(12) << a_[2][2] << " </a2>" << endl;
+      os << "    <b0> " << setw(12) << b_[0][0] << " " 
+      << setw(12) << b_[0][1] << " " 
+      << setw(12) << b_[0][2] << " </b0>" << endl;
+      os << "    <b1> " << setw(12) << b_[1][0] << " " 
+      << setw(12) << b_[1][1] << " " 
+      << setw(12) << b_[1][2] << " </b1>" << endl;
+      os << "    <b2> " << setw(12) << b_[2][0] << " " 
+      << setw(12) << b_[2][1] << " " 
+      << setw(12) << b_[2][2] << " </b2>" << endl;
     */
   }
   
@@ -402,9 +400,9 @@ namespace ions {
     os.setf(ios::fixed,ios::floatfield);
     os << setprecision(8);
     os << setcmd.c_str()
-       << setw(12) << a_[0].x << " " << setw(12) << a_[0].y << " " << setw(12) << a_[0].z << " " 
-       << setw(12) << a_[1].x << " " << setw(12) << a_[1].y << " " << setw(12) << a_[1].z << " " 
-       << setw(12) << a_[2].x << " " << setw(12) << a_[2].y << " " << setw(12) << a_[2].z
+       << setw(12) << a_[0][0] << " " << setw(12) << a_[0][1] << " " << setw(12) << a_[0][2] << " " 
+       << setw(12) << a_[1][0] << " " << setw(12) << a_[1][1] << " " << setw(12) << a_[1][2] << " " 
+       << setw(12) << a_[2][0] << " " << setw(12) << a_[2][1] << " " << setw(12) << a_[2][2]
        << " bohr" << endl;
   }
   

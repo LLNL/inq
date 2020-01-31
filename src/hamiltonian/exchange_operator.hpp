@@ -91,14 +91,14 @@ namespace hamiltonian {
 TEST_CASE("Class hamiltonian::exchange", "[hamiltonian::exchange]"){
 
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
   /*
   double ecut = 20.0;
   double ll = 10.0;
 	*/
 	/*
 	ions::geometry geo;
-  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());

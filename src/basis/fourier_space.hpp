@@ -25,7 +25,7 @@
 #include <config.h>
 #endif
 
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <ions/unitcell.hpp>
 #include "grid.hpp"
 #include <cassert>
@@ -41,19 +41,19 @@ namespace basis {
 			grid(grid_basis){
     }
 
-		GPU_FUNCTION math::d3vector gvector(const int ix, const int iy, const int iz) const {
+		GPU_FUNCTION math::vec3d gvector(const int ix, const int iy, const int iz) const {
 
 			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 			//grid from -pi/h to pi/h
 			
-			math::d3vector g{ix*gspacing()[0], iy*gspacing()[1], iz*gspacing()[2]};
+			math::vec3d g{ix*gspacing()[0], iy*gspacing()[1], iz*gspacing()[2]};
 			for(int idir = 0; idir < 3; idir++) {
 				if(g[idir] >= 0.5*glength()[idir]) g[idir] -= glength()[idir];
 			}
 			return g;
 		}
 
-    GPU_FUNCTION const math::d3vector & glength() const{
+    GPU_FUNCTION const math::vec3d & glength() const{
       return glength_;
     }
 
@@ -66,7 +66,7 @@ namespace basis {
 			return g2 > radius()*radius();
 		}		
 
-    GPU_FUNCTION const math::d3vector & gspacing() const{
+    GPU_FUNCTION const math::vec3d & gspacing() const{
       return gspacing_;
     }
 

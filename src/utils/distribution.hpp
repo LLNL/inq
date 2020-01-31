@@ -94,7 +94,7 @@ namespace utils {
 TEST_CASE("class utils::distribution", "[utils::distribution]") {
   
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
 
   const int NN = 1033;
 

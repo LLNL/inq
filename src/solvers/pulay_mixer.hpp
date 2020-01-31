@@ -22,7 +22,7 @@
 */
 
 #include <math/complex.hpp>
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <math/array.hpp>
 #include <solvers/linear.hpp>
 

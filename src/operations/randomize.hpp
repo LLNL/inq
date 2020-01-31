@@ -104,13 +104,13 @@ namespace operations {
 TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
 	using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
 
 	const int nst = 12;
 
 	double ll = 10.0;
 	
-  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space bas(cell, input::basis::cutoff_energy(20.0));
 	
 	SECTION("double"){

@@ -38,7 +38,7 @@
 
 #include <config/path.hpp>
 
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>

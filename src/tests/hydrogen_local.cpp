@@ -32,7 +32,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 	
 	std::vector<input::atom> geo;
 	
-	geo.push_back(local_h | math::d3vector(0.0, 0.0, 0.0));
+	geo.push_back(local_h | math::vec3d(0.0, 0.0, 0.0));
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
 

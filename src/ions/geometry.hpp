@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <pseudopod/element.hpp>
 #include <input/species.hpp>
 #include <input/atom.hpp>
@@ -61,7 +61,7 @@ namespace ions {
       std::getline(xyz_file, comment_line);
       
       std::string atom_name;
-      math::d3vector atom_position;
+      math::vec3d atom_position;
       
       for(int iatom = 0; iatom < natoms; iatom++){
       xyz_file >> atom_name >> atom_position;
@@ -89,7 +89,7 @@ namespace ions {
     
     int num_atoms() const { return coordinates_.size(); }
 
-    void add_atom(const input::species & element, const math::d3vector & position){
+    void add_atom(const input::species & element, const math::vec3d & position){
       atoms_.push_back(element);
       coordinates_.push_back(position);
     }
@@ -116,7 +116,7 @@ namespace ions {
   private:
 
     std::vector<input::species> atoms_;
-    std::vector<math::d3vector> coordinates_;
+    std::vector<math::vec3d> coordinates_;
     
   };
   
@@ -132,7 +132,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
 
     REQUIRE(geo.num_atoms() == 0);
 
-    geo.add_atom(pseudo::element("Xe"), math::d3vector(1000.0, -200.0, 6.0));
+    geo.add_atom(pseudo::element("Xe"), math::vec3d(1000.0, -200.0, 6.0));
 
     REQUIRE(geo.num_atoms() == 1);
     REQUIRE(geo.atoms()[0].atomic_number() == 54);
@@ -167,7 +167,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     REQUIRE(geo.coordinates()[11][1] == 2.343260364_a);
     REQUIRE(geo.coordinates()[11][2] == 0.0_a);
 
-    geo.add_atom(pseudo::element("Cl"), math::d3vector(-3.0, 4.0, 5.0));
+    geo.add_atom(pseudo::element("Cl"), math::vec3d(-3.0, 4.0, 5.0));
 
     REQUIRE(geo.num_atoms() == 13);
     REQUIRE(geo.atoms()[12].atomic_number() == 17);

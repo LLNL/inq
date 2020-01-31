@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <ions/unitcell.hpp>
 #include "grid.hpp"
 #include <cassert>
@@ -43,8 +43,8 @@ namespace basis {
 			grid(grid_basis){
     }
 
-		GPU_FUNCTION math::d3vector rvector(const int ix, const int iy, const int iz) const {
-			math::d3vector rr{ix*rspacing()[0], iy*rspacing()[1], iz*rspacing()[2]};
+		GPU_FUNCTION math::vec3d rvector(const int ix, const int iy, const int iz) const {
+			math::vec3d rr{ix*rspacing()[0], iy*rspacing()[1], iz*rspacing()[2]};
 			for(int idir = 0; idir < 3; idir++) {
 				if(rr[idir] >= 0.5*rlength()[idir]) rr[idir] -= rlength()[idir];
 			}
@@ -52,7 +52,7 @@ namespace basis {
 		}
 		
 		template <class int_array>
-		GPU_FUNCTION math::d3vector rvector(const int_array & indices) const {
+		GPU_FUNCTION math::vec3d rvector(const int_array & indices) const {
 			return rvector(indices[0], indices[1], indices[2]);
 		}
 		
@@ -102,13 +102,13 @@ namespace basis {
 TEST_CASE("class basis::real_space", "[real_space]") {
   
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
   
   {
     
     SECTION("Cubic cell"){
 
-      ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
+      ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
 
       double ecut = 20.0;
       
@@ -128,7 +128,7 @@ TEST_CASE("class basis::real_space", "[real_space]") {
 
     SECTION("Parallelepipedic cell"){
 
-      ions::UnitCell cell(d3vector(77.7, 0.0, 0.0), d3vector(0.0, 14.14, 0.0), d3vector(0.0, 0.0, 23.25));
+      ions::UnitCell cell(vec3d(77.7, 0.0, 0.0), vec3d(0.0, 14.14, 0.0), vec3d(0.0, 0.0, 23.25));
 
       double ecut = 37.9423091;
       

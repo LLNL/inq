@@ -7,7 +7,7 @@
 #include <pseudopod/pseudopotential.hpp>
 
 #include <math/array.hpp>
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
@@ -22,7 +22,7 @@ namespace hamiltonian {
   class projector {
 
   public:
-    projector(const basis::real_space & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps, math::d3vector atom_position):
+    projector(const basis::real_space & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps, math::vec3d atom_position):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),
@@ -110,7 +110,7 @@ namespace hamiltonian {
 TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
 	
 	const math::erf_range_separation sep(0.625);
 	
@@ -120,10 +120,10 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   double ll = 10.0;
 
 	ions::geometry geo;
-  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
-	hamiltonian::projector proj(rs, cell, ps, d3vector(0.0, 0.0, 0.0));
+	hamiltonian::projector proj(rs, cell, ps, vec3d(0.0, 0.0, 0.0));
 
 	REQUIRE(proj.num_projectors() == 8);
 	
