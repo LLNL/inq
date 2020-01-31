@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <vector>
 #include <cmath>
 
@@ -34,9 +34,9 @@ namespace ions {
       NEGATIVE_RANGE
     };
     template <class cell_array>
-    periodic_replicas(const cell_array & cell, const math::d3vector & position, const double range){
+    periodic_replicas(const cell_array & cell, const math::vec3d & position, const double range){
 
-      using math::d3vector;
+      using math::vec3d;
       
       if(range < 0) throw error::NEGATIVE_RANGE;
 
@@ -48,7 +48,7 @@ namespace ions {
       for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
         for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
           for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
-            d3vector reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
+            vec3d reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
             
             if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
           }
@@ -67,7 +67,7 @@ namespace ions {
     
   private:
 
-    std::vector<math::d3vector> replicas_;
+    std::vector<math::vec3d> replicas_;
 
   };    
   
@@ -81,17 +81,17 @@ namespace ions {
 TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
   
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
   
   {
-    ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
+    ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
 
     SECTION("Negative range"){
-      REQUIRE_THROWS(ions::periodic_replicas(cell, d3vector(0.0, 0.0, 0.0), -1.0));
+      REQUIRE_THROWS(ions::periodic_replicas(cell, vec3d(0.0, 0.0, 0.0), -1.0));
     }
     
     SECTION("Cubic cell 0"){
-      ions::periodic_replicas rep(cell, d3vector(5.0, 5.0, 5.0), 9.5);
+      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 9.5);
       
       REQUIRE(rep.size() == 1);
       
@@ -102,7 +102,7 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
     }
     
     SECTION("Cubic cell 1"){
-      ions::periodic_replicas rep(cell, d3vector(5.0, 5.0, 5.0), 10.0);
+      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 10.0);
       
       REQUIRE(rep.size() == 7);
       
@@ -137,7 +137,7 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
     }
     
     SECTION("Cubic cell 2"){
-      ions::periodic_replicas rep(cell, d3vector(5.0, 5.0, 5.0), 11.0);
+      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 11.0);
       
       REQUIRE(rep.size() == 7);
       
@@ -172,13 +172,13 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
     }
 
     SECTION("Cubic cell 3"){
-      ions::periodic_replicas rep(cell, d3vector(5.0, 5.0, 5.0), 15.0);
+      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 15.0);
       
       REQUIRE(rep.size() == 19);
     }
 
     SECTION("Cubic cell 4"){
-      ions::periodic_replicas rep(cell, d3vector(5.0, 5.0, 5.0), 18.0);
+      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 18.0);
       
       REQUIRE(rep.size() == 27);
     }

@@ -17,7 +17,7 @@ noinst_HEADERS =                             \
 	input/species.hpp                          \
 	input/atom.hpp                             \
 	math/array.hpp                             \
-	math/d3vector.hpp                          \
+	math/vec3d.hpp                             \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \

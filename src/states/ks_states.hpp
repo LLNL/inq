@@ -107,12 +107,12 @@ namespace states {
 
 TEST_CASE("Class states::ks_states", "[ks_states]"){
 
-  using math::d3vector;
+  using math::vec3d;
   
   double ecut = 30.0;
   double ll = 10.0;
   
-  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
   
   SECTION("Spin unpolarized"){

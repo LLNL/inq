@@ -169,13 +169,13 @@ namespace operations {
 TEST_CASE("function operations::space", "[operations::space]") {
 
 	using namespace Catch::literals;
-	using math::d3vector;
+	using math::vec3d;
 
 	double ecut = 23.0;
 	double ll = 6.66;
 	
 	ions::geometry geo;
-	ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+	ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
 	basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 	
 	basis::field_set<basis::real_space, complex> phi(rs, 7);

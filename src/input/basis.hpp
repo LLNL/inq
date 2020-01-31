@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <utils/merge_optional.hpp>
 #include <cassert>
 #include <array>

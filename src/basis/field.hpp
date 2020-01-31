@@ -138,11 +138,11 @@ namespace basis {
 TEST_CASE("Class basis::field", "[basis::field]"){
 
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
   
   double ecut = 40.0;
 
-  ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 4.0, 0.0), d3vector(0.0, 0.0, 7.0));
+  ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
 	basis::field<basis::real_space, double> ff(rs);

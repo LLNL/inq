@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "../math/d3vector.hpp"
+#include "../math/vec3d.hpp"
 #include <cassert>
 #include <array>
 
@@ -55,7 +55,7 @@ namespace basis {
       return nr_;
     }
 
-    GPU_FUNCTION const math::d3vector & rspacing() const{
+    GPU_FUNCTION const math::vec3d & rspacing() const{
       return rspacing_;
     }
 
@@ -63,7 +63,7 @@ namespace basis {
 			return length(rlength_);
 		}
 		
-    GPU_FUNCTION const math::d3vector & rlength() const{
+    GPU_FUNCTION const math::vec3d & rlength() const{
       return rlength_;
     }
 
@@ -107,11 +107,11 @@ namespace basis {
     std::array<int, 3> nr_;
     std::array<int, 3> ng_;
 
-    math::d3vector rspacing_;
-    math::d3vector gspacing_;
+    math::vec3d rspacing_;
+    math::vec3d gspacing_;
     
-    math::d3vector rlength_;
-    math::d3vector glength_;
+    math::vec3d rlength_;
+    math::vec3d glength_;
 
 		long npoints_;
 
@@ -129,7 +129,7 @@ namespace basis {
 TEST_CASE("class basis::grid", "[grid]") {
   
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
   
 }
 #endif

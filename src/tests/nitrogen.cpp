@@ -32,8 +32,8 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 	auto distance = 2.0739744;
 	
-	geo.push_back( "N" | math::d3vector(0.0, 0.0, -0.5*distance));
-	geo.push_back( "N" | math::d3vector(0.0, 0.0,  0.5*distance));
+	geo.push_back( "N" | math::vec3d(0.0, 0.0, -0.5*distance));
+	geo.push_back( "N" | math::vec3d(0.0, 0.0,  0.5*distance));
 		
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
 

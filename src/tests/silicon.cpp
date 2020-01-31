@@ -32,14 +32,14 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 	double a = 10.18;
 	
-	geo.push_back( "Si" | a*math::d3vector(0.0,  0.0,  0.0 ));
-	geo.push_back( "Si" | a*math::d3vector(0.25, 0.25, 0.25));
-	geo.push_back( "Si" | a*math::d3vector(0.5,  0.5,  0.0 ));
-	geo.push_back( "Si" | a*math::d3vector(0.75, 0.75, 0.25));
-	geo.push_back( "Si" | a*math::d3vector(0.5,  0.0,  0.5 ));
-	geo.push_back( "Si" | a*math::d3vector(0.75, 0.25, 0.75));
-	geo.push_back( "Si" | a*math::d3vector(0.0,  0.5,  0.5 ));
-	geo.push_back( "Si" | a*math::d3vector(0.25, 0.75, 0.75));
+	geo.push_back( "Si" | a*math::vec3d(0.0,  0.0,  0.0 ));
+	geo.push_back( "Si" | a*math::vec3d(0.25, 0.25, 0.25));
+	geo.push_back( "Si" | a*math::vec3d(0.5,  0.5,  0.0 ));
+	geo.push_back( "Si" | a*math::vec3d(0.75, 0.75, 0.25));
+	geo.push_back( "Si" | a*math::vec3d(0.5,  0.0,  0.5 ));
+	geo.push_back( "Si" | a*math::vec3d(0.75, 0.25, 0.75));
+	geo.push_back( "Si" | a*math::vec3d(0.0,  0.5,  0.5 ));
+	geo.push_back( "Si" | a*math::vec3d(0.25, 0.75, 0.75));
 
 	systems::ions ions(input::cell::cubic(a) | input::cell::finite(), geo);
 

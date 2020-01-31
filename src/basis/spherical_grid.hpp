@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
@@ -38,7 +38,7 @@ namespace basis {
 		const static int dimension = 1;
 		
 		template <class basis>
-    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::d3vector & center_point, const double radius):
+    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vec3d & center_point, const double radius):
 			volume_element_(parent_grid.volume_element()){
 
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
@@ -164,7 +164,7 @@ namespace basis {
 
 		math::array<std::array<int, 3>, 1> points_;
 		math::array<float, 1> distance_; //I don't think we need additional precision for this. XA
-		std::vector<math::d3vector> relative_pos_;
+		std::vector<math::vec3d> relative_pos_;
 		double volume_element_;
 		
   };
@@ -179,11 +179,11 @@ namespace basis {
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 	
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
 
   double ll = 10.0;
   
-  ions::UnitCell cell(d3vector(ll, 0.0, 0.0), d3vector(0.0, ll, 0.0), d3vector(0.0, 0.0, ll));
+  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   
   double ecut = 20.0;
   

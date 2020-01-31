@@ -31,7 +31,7 @@
 #ifndef UNITCELL_H
 #define UNITCELL_H
 
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <valarray>
 #include <array>
 #include <input/cell.hpp>
@@ -39,7 +39,7 @@
 namespace ions{
 
   class UnitCell{
-	using vector_type = math::d3vector;
+	using vector_type = math::vec3d;
   private:
     vector_type a_[3];
     vector_type b_[3];
@@ -61,7 +61,7 @@ namespace ions{
 		
   public:
 
-    void set(const math::d3vector& a0, const math::d3vector& a1, const math::d3vector& a2, int arg_periodic_dimensions = 3);
+    void set(const math::vec3d& a0, const math::vec3d& a1, const math::vec3d& a2, int arg_periodic_dimensions = 3);
 		
 		enum class error { WRONG_LATTICE };
 
@@ -74,14 +74,14 @@ namespace ions{
 
 		template<class lattice_vectors_type>
 		UnitCell(const lattice_vectors_type & lattice_vectors, int periodic_dimensions = 3){
-			std::array<math::d3vector, 3> lvectors;
+			std::array<math::vec3d, 3> lvectors;
 			for(int ii = 0; ii < 3; ii++){
 				for(int jj = 0; jj < 3; jj++) lvectors[ii][jj] = lattice_vectors[ii][jj];
 			}
 			set(lvectors[0], lvectors[1], lvectors[2], periodic_dimensions);
 		}
 		
-    UnitCell(math::d3vector const& a0, math::d3vector const& a1, math::d3vector const& a2, int periodic_dimensions = 3){
+    UnitCell(math::vec3d const& a0, math::vec3d const& a1, math::vec3d const& a2, int periodic_dimensions = 3){
       set(a0, a1, a2, periodic_dimensions);
     }
 
@@ -125,17 +125,17 @@ namespace ions{
     void compute_deda(const std::valarray<double>& sigma, std::valarray<double>& deda) const;
   
     void cart_to_crystal(const double* scart, double* scryst) const;
-    math::d3vector cart_to_crystal(const math::d3vector& v) const;
+    math::vec3d cart_to_crystal(const math::vec3d& v) const;
     void crystal_to_cart(const double* scryst, double* scart) const;
-    math::d3vector crystal_to_cart(const math::d3vector& v) const;
-    bool in_ws(const math::d3vector& v) const;
+    math::vec3d crystal_to_cart(const math::vec3d& v) const;
+    bool in_ws(const math::vec3d& v) const;
     double min_wsdist() const;
-    void fold_in_ws(math::d3vector& v) const;
-    bool in_bz(const math::d3vector& k) const;
-    void fold_in_bz(math::d3vector& k) const;
+    void fold_in_ws(math::vec3d& v) const;
+    bool in_bz(const math::vec3d& k) const;
+    void fold_in_bz(math::vec3d& k) const;
   
     bool encloses(const UnitCell& c) const;
-    bool contains(math::d3vector v) const;
+    bool contains(math::vec3d v) const;
   
     void print(std::ostream& os) const;  
     void printsys(std::ostream& os, std::string setcmd) const;  
@@ -162,13 +162,13 @@ namespace ions{
 TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
 
   {
     
     SECTION("Cubic cell"){
     
-      ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
+      ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
 
       REQUIRE(cell[0][0] == 10.0_a);
       REQUIRE(cell[0][1] ==  0.0_a);
@@ -262,26 +262,26 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       REQUIRE(cell.amat_inv(7) == 0.0_a);
       REQUIRE(cell.amat_inv(8) == 0.1_a);
 
-      REQUIRE(cell.contains(d3vector(5.0, 5.0, 5.0)));
-      REQUIRE(!cell.contains(d3vector(-5.0, 5.0, 5.0)));
-      REQUIRE(!cell.contains(d3vector(5.0, -5.0, 5.0)));
-      REQUIRE(!cell.contains(d3vector(5.0, 5.0, -5.0)));
+      REQUIRE(cell.contains(vec3d(5.0, 5.0, 5.0)));
+      REQUIRE(!cell.contains(vec3d(-5.0, 5.0, 5.0)));
+      REQUIRE(!cell.contains(vec3d(5.0, -5.0, 5.0)));
+      REQUIRE(!cell.contains(vec3d(5.0, 5.0, -5.0)));
 
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[0] == 2.0_a);
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[1] == -5.0_a);
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[2] == 8.67_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[0] == 2.0_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[1] == -5.0_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[2] == 8.67_a);
 
-      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[0] == 0.666_a);
-      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[1] == -0.377_a);
-      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -3.77, 27.2))[2] == 2.72_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(6.66, -3.77, 27.2))[0] == 0.666_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(6.66, -3.77, 27.2))[1] == -0.377_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(6.66, -3.77, 27.2))[2] == 2.72_a);
     
     }
 
     SECTION("Parallelepipedic cell"){
 
-			ions::UnitCell cell(d3vector(10.0, 0.0, 0.0), d3vector(0.0, 10.0, 0.0), d3vector(0.0, 0.0, 10.0));
+			ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
    
-      cell.set(d3vector(28.62, 0.0, 0.0), d3vector(0.0, 90.14, 0.0), d3vector(0.0, 0.0, 12.31));
+      cell.set(vec3d(28.62, 0.0, 0.0), vec3d(0.0, 90.14, 0.0), vec3d(0.0, 0.0, 12.31));
 
 
       REQUIRE(cell.a(0)[0] == 28.62_a);
@@ -366,18 +366,18 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       REQUIRE(cell.amat_inv(7) == 0.0_a);
       REQUIRE(cell.amat_inv(8) == 0.0812347685_a);
 
-      REQUIRE(cell.contains(d3vector(5.0, 5.0, 5.0)));
-      REQUIRE(!cell.contains(d3vector(-5.0, 5.0, 5.0)));
-      REQUIRE(!cell.contains(d3vector(5.0, -5.0, 5.0)));
-      REQUIRE(!cell.contains(d3vector(5.0, 5.0, -5.0)));
+      REQUIRE(cell.contains(vec3d(5.0, 5.0, 5.0)));
+      REQUIRE(!cell.contains(vec3d(-5.0, 5.0, 5.0)));
+      REQUIRE(!cell.contains(vec3d(5.0, -5.0, 5.0)));
+      REQUIRE(!cell.contains(vec3d(5.0, 5.0, -5.0)));
 
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[0] == 5.724_a);
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[1] == -45.07_a);
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[2] == 10.67277_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[0] == 5.724_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[1] == -45.07_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[2] == 10.67277_a);
 
-      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -203.77, 927.2))[0] == 0.2327044025_a);
-      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -203.77, 927.2))[1] == -2.2605946306_a);
-      REQUIRE(cell.cart_to_crystal(d3vector(6.66, -203.77, 927.2))[2] == 75.3208773355_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(6.66, -203.77, 927.2))[0] == 0.2327044025_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(6.66, -203.77, 927.2))[1] == -2.2605946306_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(6.66, -203.77, 927.2))[2] == 75.3208773355_a);
           
     }
 
@@ -468,19 +468,19 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       REQUIRE(cell.amat_inv(7) == 4.2423219287_a); 
       REQUIRE(cell.amat_inv(8) == -4.8560911922_a);
 
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[0] == 0.121797_a);
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[1] == -1.161093_a);
-      REQUIRE(cell.crystal_to_cart(d3vector(0.2, -0.5, 0.867))[2] == -0.553419_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[0] == 0.121797_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[1] == -1.161093_a);
+      REQUIRE(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[2] == -0.553419_a);
 
-      REQUIRE(cell.cart_to_crystal(d3vector(0.66, -23.77, 2.72))[0] == -39.3396165136_a);
-      REQUIRE(cell.cart_to_crystal(d3vector(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
-      REQUIRE(cell.cart_to_crystal(d3vector(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(0.66, -23.77, 2.72))[0] == -39.3396165136_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
+      REQUIRE(cell.cart_to_crystal(vec3d(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
 
-      REQUIRE(cell.contains(cell.crystal_to_cart(d3vector(0.5, 0.5, 0.5))));
+      REQUIRE(cell.contains(cell.crystal_to_cart(vec3d(0.5, 0.5, 0.5))));
       //This next one fails, this has to be checked.
-      //REQUIRE(!cell.contains(cell.crystal_to_cart(d3vector(1.5, 0.5, 0.5))));
-      REQUIRE(!cell.contains(cell.crystal_to_cart(d3vector(0.5, -0.1, 0.0))));
-      REQUIRE(!cell.contains(cell.crystal_to_cart(d3vector(0.5, 0.5, -1.0))));
+      //REQUIRE(!cell.contains(cell.crystal_to_cart(vec3d(1.5, 0.5, 0.5))));
+      REQUIRE(!cell.contains(cell.crystal_to_cart(vec3d(0.5, -0.1, 0.0))));
+      REQUIRE(!cell.contains(cell.crystal_to_cart(vec3d(0.5, 0.5, -1.0))));
       
     }
   }

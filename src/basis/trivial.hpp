@@ -74,7 +74,7 @@ namespace basis {
 TEST_CASE("class basis::trivial", "[basis::trivial]") {
   
   using namespace Catch::literals;
-  using math::d3vector;
+  using math::vec3d;
   
 }
 #endif

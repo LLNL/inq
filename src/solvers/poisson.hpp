@@ -22,7 +22,7 @@
 */
 
 #include <math/complex.hpp>
-#include <math/d3vector.hpp>
+#include <math/vec3d.hpp>
 #include <math/array.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <basis/field.hpp>
