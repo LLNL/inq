@@ -48,11 +48,7 @@ namespace operations {
 		using type = typename field_type::element_type;
 
 		//DATAOPERATIONS STL + THRUST TRANSFORM
-#ifdef HAVE_CUDA
-		thrust::transform(t1.linear().begin(), t1.linear().end(), t2.linear().begin(), tadd.linear().begin(), thrust::plus<type>());
-#else
 		std::transform(t1.linear().begin(), t1.linear().end(), t2.linear().begin(), tadd.linear().begin(), std::plus<type>());
-#endif
 		
 		return tadd;
 	}
