@@ -102,8 +102,10 @@ namespace gpu {
 
 		size_t dim2, dim3;
 		factorize(sizey, CUDA_MAX_DIM23, dim2, dim3);
-		
-    cuda_run_kernel_2<<<{nblock, unsigned(dim2), unsigned(dim3)}, {CUDA_BLOCK_SIZE, 1}>>>(sizex, sizey, dim2, kernel);
+
+		struct dim3 dg{nblock, unsigned(dim2), unsigned(dim3)};
+		struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
+    cuda_run_kernel_2<<<dg, db>>>(sizex, sizey, dim2, kernel);
     
 		assert(cudaGetLastError() == CUDA_SUCCESS);
 		
@@ -129,8 +131,9 @@ namespace gpu {
 #ifdef HAVE_CUDA
     //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
     unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
-    
-		cuda_run_kernel_3<<<{nblock, unsigned(sizey), unsigned(sizez)}, {CUDA_BLOCK_SIZE, 1, 1}>>>(sizex, sizey, sizez, kernel);
+    struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
+		struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
+		cuda_run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
 
 		assert(cudaGetLastError() == CUDA_SUCCESS);
 		
@@ -159,8 +162,9 @@ namespace gpu {
 #ifdef HAVE_CUDA
     //OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
     unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
-    
-		cuda_run_kernel_4<<<{nblock, unsigned(sizey), unsigned(sizez)}, {CUDA_BLOCK_SIZE, 1, 1}>>>(sizex, sizey, sizez, sizew, kernel);
+    struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
+		struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
+		cuda_run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);
 
 		assert(cudaGetLastError() == CUDA_SUCCESS);
 		
