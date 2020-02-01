@@ -68,7 +68,7 @@ clang_cuda:
     stage: build
     script:
       - export PATH=/usr/local/cuda/bin:$PATH
-      - clang_cuda -V
+      - clang-9 -V
       - time autoreconf -i
       - mkdir clang_cuda
       - cd clang_cuda
