@@ -73,7 +73,7 @@ clang_cuda:
       - time autoreconf -i
       - mkdir clang_cuda
       - cd clang_cuda
-      - export CXX="clang++-9 -x cuda --cuda-gpu-arch=sm_60"
+      - export CXX="clang++-9 -x cuda --cuda-gpu-arch=sm_52"
       - export CXXLD="clang++-9"
       - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -DNEBUG -std=c++14 -Wall -Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
