@@ -18,7 +18,7 @@ gcc:
       - time autoreconf -i
       - mkdir build
       - cd build
-      - time ../configure -prefix=$HOME
+      - time ../configure --prefix=$HOME
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -34,13 +34,34 @@ clang:
       - mkdir build
       - cd build
       - export OMPI_CXX=clang++
-      - time ../configure -prefix=$HOME
+      - time ../configure --prefix=$HOME
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - src/inq_hydrogen_local      
+
+nvcc_nocuda:
+    stage: build
+    script:
+      - export PATH=/usr/local/cuda/bin:$PATH
+      - nvcc -V
+      - time autoreconf -i
+      - mkdir nvcc
+      - cd nvcc
+      - export CXX="nvcc -x cu"
+      - export CXXLD="nvcc"
+      - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
+      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+      - time ../configure --prefix=$HOME || cat config.log
+      - time make -j4
+      - time src/inq_unit_tests
+      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
+      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
+      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
+      - src/inq_hydrogen_local
 
 nvcc:
     stage: build
@@ -55,14 +76,13 @@ nvcc:
       - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure -prefix=$HOME || cat config.log
+      - time ../configure --prefix=$HOME --enable-cuda || cat config.log
       - time make -j4
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - src/inq_hydrogen_local
-
 
 clang_cuda:
     stage: build
@@ -78,7 +98,7 @@ clang_cuda:
       - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -DNEBUG -std=c++14 -Wall -Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure -prefix=$HOME || cat config.log
+      - time ../configure --prefix=$HOME --enable-cuda || cat config.log
       - time make -j4
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
