@@ -65,6 +65,7 @@ nvcc_nocuda:
 
 nvcc:
     stage: build
+    allow_failure: true
     script:
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
