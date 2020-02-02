@@ -135,7 +135,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 		}
 	}
   
-	operations::matrix_operator<math::array<complex, 2>> identity(std::move(identity_matrix));
+	operations::matrix_operator<complex> identity(std::move(identity_matrix));
 
 	SECTION("Diagonal matrix complex"){
   
@@ -148,7 +148,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
       }
     }
     
-    operations::matrix_operator<math::array<complex, 2>> diagonal_op(std::move(diagonal_matrix));
+    operations::matrix_operator<complex> diagonal_op(std::move(diagonal_matrix));
     
     basis::field_set<basis::trivial, complex> phi(bas, nvec);
 
@@ -214,7 +214,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
       }
     }
 		
-    operations::matrix_operator<math::array<complex, 2>> laplacian(std::move(laplacian_matrix));
+    operations::matrix_operator<complex> laplacian(std::move(laplacian_matrix));
     
     basis::field_set<basis::trivial, complex> phi(bas, nvec);
 
