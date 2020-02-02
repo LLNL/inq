@@ -26,12 +26,12 @@
 
 namespace operations {
 
-  template <class matrix_type>
+  template <class type>
 	class matrix_operator {
 
 	public:
 
-    matrix_operator(matrix_type && matrix):
+    matrix_operator(math::array<type, 2> && matrix):
       matrix_(matrix){
 
       assert(std::get<0>(sizes(matrix_)) == std::get<1>(sizes(matrix_)));
@@ -55,7 +55,7 @@ namespace operations {
 
 	private:
 
-    matrix_type matrix_;
+    math::array<type, 2> matrix_;
     
 	};
 	
@@ -84,7 +84,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
       }
     }
     
-    operations::matrix_operator<math::array<double, 2>> mo(std::move(matrix));
+    operations::matrix_operator<double> mo(std::move(matrix));
     
     basis::field_set<basis::trivial, double> aa(bas, nvec);
 
@@ -116,7 +116,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
       }
     }
     
-    operations::matrix_operator<math::array<double, 2>> mo(std::move(matrix));
+    operations::matrix_operator<double> mo(std::move(matrix));
     
     basis::field_set<basis::trivial, double> aa(bas, nvec);
     
@@ -147,7 +147,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
       }
     }
     
-    operations::matrix_operator<math::array<complex, 2>> mo(std::move(matrix));
+    operations::matrix_operator<complex> mo(std::move(matrix));
     
     basis::field_set<basis::trivial, complex> aa(bas, nvec);
 
@@ -183,7 +183,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
     matrix[0][npoint - 1] = 2.0;
     matrix[npoint - 1][0] = 2.0;
     
-    operations::matrix_operator<math::array<complex, 2>> mo(std::move(matrix));
+    operations::matrix_operator<complex> mo(std::move(matrix));
     
     basis::field_set<basis::trivial, complex> aa(bas, nvec);
     
