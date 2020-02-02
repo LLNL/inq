@@ -76,7 +76,7 @@ nvcc:
       - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++14,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda || cat config.log
+      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
       - time make -j4
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -89,20 +89,19 @@ clang_cuda:
     allow_failure: true
     script:
       - export PATH=/usr/local/cuda/bin:$PATH
-      - clang++-9 -v
+      - clang++-10 -v
       - time autoreconf -i
       - mkdir clang_cuda
       - cd clang_cuda
-      - export CXX="clang++-9 -x cuda --cuda-gpu-arch=sm_52"
-      - export CXXLD="clang++-9"
+      - export CXX="clang++-10 -x cuda --cuda-gpu-arch=sm_50"
+      - export CXXLD="clang++-10"
       - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -DNEBUG -std=c++14 -Wall -Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda || cat config.log
+      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
       - time make -j4
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - src/inq_hydrogen_local
-      
