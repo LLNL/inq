@@ -65,7 +65,6 @@ nvcc_nocuda:
 
 nvcc:
     stage: build
-    allow_failure: false
     script:
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
@@ -80,14 +79,10 @@ nvcc:
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
       - time make -j4
       - time src/inq_unit_tests
-      - 3time mpirun -np 2 --oversubscribe src/inq_unit_tests
-      - #time mpirun -np 3 --oversubscribe src/inq_unit_tests
-      - #time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - src/inq_hydrogen_local
 
 clang_cuda:
     stage: build
-    allow_failure: false
     script:
       - export PATH=/usr/local/cuda/bin:$PATH
       - clang++-10 -v
@@ -102,7 +97,4 @@ clang_cuda:
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
       - time make -j4
       - time src/inq_unit_tests
-      - #time mpirun -np 2 --oversubscribe src/inq_unit_tests
-      - #time mpirun -np 3 --oversubscribe src/inq_unit_tests
-      - #time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - src/inq_hydrogen_local
