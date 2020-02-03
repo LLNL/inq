@@ -46,16 +46,12 @@ namespace solvers {
 			
 			auto lambda = eigenvalues;
 			
-			//DATAOPERATIONS STL + GPU::RUN TRANSFORM
-#ifdef HAVE_CUDA
+			//DATAOPERATIONS GPU::RUN TRANSFORM
 			gpu::run(phi.set_size(),
-							 [lam = begin(lambda), nor = begin(norm)] __device__
-							 (auto ist){
+							 [lam = begin(lambda), nor = begin(norm)]
+							 GPU_FUNCTION (auto ist){
 								 lam[ist] = lam[ist]/(-1.0*nor[ist]);
 							 });
-#else
-			std::transform(lambda.begin(), lambda.end(), norm.begin(), lambda.begin(), [](auto lam, auto nor){ return lam /= -nor; });
-#endif
 			
 			operations::shift(lambda, phi, residual);
 
@@ -73,11 +69,10 @@ namespace solvers {
 			mm[4] = eigenvalues;
 			mm[5] = norm;
 			
-			//DATAOPERATIONS STL + GPU::RUN TRANSFORM
-#ifdef HAVE_CUDA
+			//DATAOPERATIONS GPU::RUN TRANSFORM
 			gpu::run(phi.set_size(),
 							 [m = begin(mm), lam = begin(lambda)]
-							 __device__ (auto ist){
+							 GPU_FUNCTION (auto ist){
 								 auto ca = real(m[0][ist]*m[3][ist] - m[2][ist]*m[1][ist]);
 								 auto cb = real(m[5][ist]*m[2][ist] - m[4][ist]*m[0][ist]);
 								 auto cc = real(m[4][ist]*m[1][ist] - m[3][ist]*m[5][ist]);
@@ -87,20 +82,7 @@ namespace solvers {
 								 if(fabs(den) < 1e-15) lam[ist] = complex(0.0, 0.0); //this happens if we are perfectly converged
 								 lam[ist] = complex(2.0*cc/den, 0.0);
 							 });
-#else
-			std::transform(mm.rotated().begin(), mm.rotated().end(), lambda.begin(),
-										 [](auto mm){
-											 auto ca = real(mm[0]*mm[3] - mm[2]*mm[1]);
-											 auto cb = real(mm[5]*mm[2] - mm[4]*mm[0]);
-											 auto cc = real(mm[4]*mm[1] - mm[3]*mm[5]);
 
-											 auto den = cb + sqrt(cb*cb - 4.0*ca*cc); 
-
-											 if(fabs(den) < 1e-15) return 0.0;  //this happens if we are perfectly converged
-											 return 2.0*cc/den;
-										 });
-#endif
-			
 			operations::shift(lambda, residual, phi);
 
 		}
