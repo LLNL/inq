@@ -77,7 +77,6 @@ namespace operations {
 
 		{
 			auto npoints = phi1.basis().size();
-			auto nst = phi1.dist().local_size();
 			auto vol_element = phi1.basis().volume_element();
 			auto phi1p = begin(phi1.matrix());
 			auto phi2p = begin(phi2.matrix());
