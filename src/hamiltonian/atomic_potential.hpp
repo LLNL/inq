@@ -128,7 +128,7 @@ namespace hamiltonian {
 				//OPTIMIZATION: this should be done in parallel for atoms too
 				gpu::run(sphere.size(),
 								 [dns = begin(density.cubic()), pts = begin(sphere.points()),
-									atpos = atom_position, chrg = ps.valence_charge(),
+									chrg = ps.valence_charge(),
 									sp = sep_, dist = begin(sphere.distance())] __device__
 								 (auto ipoint){
 									 double rr = dist[ipoint];

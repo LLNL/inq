@@ -35,7 +35,6 @@ namespace operations {
 		//DATAOPERATIONS LOOP + GPU::RUN 2D 
 #ifdef HAVE_CUDA
 
-		auto nst = phi.set_size();
 		auto factorp = begin(factor);
 		auto shiftp = begin(shift.matrix());
 		auto phip = begin(phi.matrix());

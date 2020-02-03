@@ -48,7 +48,7 @@ namespace operations {
       using boost::multi::blas::hermitized;
     
       field_set_type mphi = phi;
-      mphi.matrix() = gemm(matrix_, phi.matrix());
+			gemm(1.0, matrix_, phi.matrix(),	0.0, mphi.matrix());
 
       return mphi;      
     }

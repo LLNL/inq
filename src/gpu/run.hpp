@@ -73,7 +73,7 @@ namespace gpu {
     
     cuda_run_kernel_1<<<nblock, CUDA_BLOCK_SIZE>>>(size, kernel);
 
-		assert(cudaGetLastError() == CUDA_SUCCESS);
+		assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
 		
     cudaDeviceSynchronize();
 #endif
@@ -107,7 +107,7 @@ namespace gpu {
 		struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
     cuda_run_kernel_2<<<dg, db>>>(sizex, sizey, dim2, kernel);
     
-		assert(cudaGetLastError() == CUDA_SUCCESS);
+		assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
 		
     cudaDeviceSynchronize();
 #endif
@@ -135,7 +135,7 @@ namespace gpu {
 		struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
 		cuda_run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
 
-		assert(cudaGetLastError() == CUDA_SUCCESS);
+		assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
 		
     cudaDeviceSynchronize();
 #endif
@@ -166,7 +166,7 @@ namespace gpu {
 		struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
 		cuda_run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);
 
-		assert(cudaGetLastError() == CUDA_SUCCESS);
+		assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
 		
     cudaDeviceSynchronize();
 #endif
