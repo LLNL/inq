@@ -150,6 +150,17 @@ namespace gpu {
 		assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
 		
     cudaDeviceSynchronize();
+
+#else
+
+		for(int iz = 0; iz < sizez; iz++){
+			for(int iy = 0; iy < sizey; iy++){
+				for(int ix = 0; ix < sizex; ix++){
+					kernel(ix, iy, iz);
+				}
+			}
+		}
+		
 #endif
     
   }
@@ -181,25 +192,44 @@ namespace gpu {
 		assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
 		
     cudaDeviceSynchronize();
+
+#else
+
+		for(int iw = 0; iw < sizew; iw++){
+			for(int iz = 0; iz < sizez; iz++){
+				for(int iy = 0; iy < sizey; iy++){
+					for(int ix = 0; ix < sizex; ix++){
+						kernel(ix, iy, iz, iw);
+					}
+				}
+			}
+		}
+		
 #endif
     
   }
 
 }
 
-#ifdef HAVE_CUDA
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 #include <math/array.hpp>
 
 namespace gpu {
+
+#ifndef HAVE_CUDA
+	template <class Type>
+	void atomicAdd(Type * address, Type val){
+		*address += val;
+	}
+#endif
 	
 	size_t check_run(size_t size){
 		
 		math::array<size_t, 1> list(size, 0);
 
 		gpu::run(size,
-						 [itlist = begin(list)] __device__ (auto ii){
+						 [itlist = begin(list)] GPU_FUNCTION (auto ii){
 							 atomicAdd((unsigned long long int*) &(itlist[ii]), (unsigned long long int) ii + 1);
 						 });
 
@@ -215,7 +245,7 @@ namespace gpu {
 		math::array<size_t, 3> list({size1, size2, 2}, 0);
 
 		gpu::run(size1, size2, 
-						 [itlist = begin(list)] __device__ (auto ii, auto jj){
+						 [itlist = begin(list)] GPU_FUNCTION (auto ii, auto jj){
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][0]), (unsigned long long int) ii + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][1]), (unsigned long long int) jj + 1);
 						 });
@@ -237,7 +267,7 @@ namespace gpu {
 		math::array<size_t, 4> list({size1, size2, size3, 3}, 0);
 
 		gpu::run(size1, size2, size3,
-						 [itlist = begin(list)] __device__ (auto ii, auto jj, auto kk){
+						 [itlist = begin(list)] GPU_FUNCTION (auto ii, auto jj, auto kk){
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][0]), (unsigned long long int) ii + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][1]), (unsigned long long int) jj + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][2]), (unsigned long long int) kk + 1);
@@ -263,7 +293,7 @@ namespace gpu {
 		math::array<size_t, 5> list({size1, size2, size3, size4, 4}, 0);
 
 		gpu::run(size1, size2, size3, size4,
-						 [itlist = begin(list)] __device__ (auto ii, auto jj, auto kk, auto ll){
+						 [itlist = begin(list)] GPU_FUNCTION (auto ii, auto jj, auto kk, auto ll){
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][ll][0]), (unsigned long long int) ii + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][ll][1]), (unsigned long long int) jj + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][ll][2]), (unsigned long long int) kk + 1);
@@ -331,6 +361,5 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 	}
 }
 
-#endif
 #endif
 #endif
