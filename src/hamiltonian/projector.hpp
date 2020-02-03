@@ -86,7 +86,7 @@ namespace hamiltonian {
 			//DATAOPERATIONS GPU::RUN 2D
 			gpu::run(phi.set_size(), nproj_,
 							 [proj = begin(projections), coeff = begin(kb_coeff_)]
-							 GPU_FUNCTION (auto ist, auto iproj){
+							 GPU_LAMBDA (auto ist, auto iproj){
 								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
 							 });
 			

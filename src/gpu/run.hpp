@@ -31,8 +31,10 @@
 
 #ifdef HAVE_CUDA
 #define GPU_FUNCTION __host__ __device__
+#define GPU_LAMBDA __device__
 #else
 #define GPU_FUNCTION
+#define GPU_LAMBDA
 #endif
 
 #define CUDA_BLOCK_SIZE 1024
@@ -229,7 +231,7 @@ namespace gpu {
 		math::array<size_t, 1> list(size, 0);
 
 		gpu::run(size,
-						 [itlist = begin(list)] GPU_FUNCTION (auto ii){
+						 [itlist = begin(list)] GPU_LAMBDA (auto ii){
 							 atomicAdd((unsigned long long int*) &(itlist[ii]), (unsigned long long int) ii + 1);
 						 });
 
@@ -245,7 +247,7 @@ namespace gpu {
 		math::array<size_t, 3> list({size1, size2, 2}, 0);
 
 		gpu::run(size1, size2, 
-						 [itlist = begin(list)] GPU_FUNCTION (auto ii, auto jj){
+						 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj){
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][0]), (unsigned long long int) ii + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][1]), (unsigned long long int) jj + 1);
 						 });
@@ -267,7 +269,7 @@ namespace gpu {
 		math::array<size_t, 4> list({size1, size2, size3, 3}, 0);
 
 		gpu::run(size1, size2, size3,
-						 [itlist = begin(list)] GPU_FUNCTION (auto ii, auto jj, auto kk){
+						 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk){
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][0]), (unsigned long long int) ii + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][1]), (unsigned long long int) jj + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][2]), (unsigned long long int) kk + 1);
@@ -293,7 +295,7 @@ namespace gpu {
 		math::array<size_t, 5> list({size1, size2, size3, size4, 4}, 0);
 
 		gpu::run(size1, size2, size3, size4,
-						 [itlist = begin(list)] GPU_FUNCTION (auto ii, auto jj, auto kk, auto ll){
+						 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk, auto ll){
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][ll][0]), (unsigned long long int) ii + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][ll][1]), (unsigned long long int) jj + 1);
 							 atomicAdd((unsigned long long int*) &(itlist[ii][jj][kk][ll][2]), (unsigned long long int) kk + 1);

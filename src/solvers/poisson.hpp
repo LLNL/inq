@@ -165,7 +165,7 @@ namespace solvers {
 			//DATAOPERATIONS GPU::RUN 1D
 			gpu::run(real_potential.size(),
 							 [rp = begin(real_potential.linear()), cp = begin(complex_potential.linear())]
-							 GPU_FUNCTION (auto ii){
+							 GPU_LAMBDA (auto ii){
 								 rp[ii] = real(cp[ii]);
 							 });
 			
