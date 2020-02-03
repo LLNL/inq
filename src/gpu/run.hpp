@@ -115,6 +115,13 @@ namespace gpu {
 		assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
 		
     cudaDeviceSynchronize();
+
+#else
+		for(int iy = 0; iy < sizey; iy++){
+			for(int ix = 0; ix < sizex; ix++){
+				kernel(ix, iy);
+			}
+		}
 #endif
     
   }
