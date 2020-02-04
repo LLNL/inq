@@ -58,42 +58,23 @@ namespace operations {
 
 		auto seed = phi.basis().size()*phi.set_size();
 
-
-#ifdef HAVE_CUDA
-
 		uint64_t start = phi.dist().start();
 		uint64_t set_size = phi.set_size();
 		uint64_t size_z = phi.basis().sizes()[2];
 		uint64_t size_y = phi.basis().sizes()[1];
 		auto phicub = begin(phi.cubic());
 
+
+		// DATAOPERATIONS GPU:RUN 4D
 		gpu::run(phi.dist().local_size(), phi.basis().sizes()[2], phi.basis().sizes()[1], phi.basis().sizes()[0],
-						 [=] __device__ (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
+						 [=] GPU_LAMBDA (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
 						uniform_distribution<typename field_set_type::element_type> dist;
 						uint64_t step = ist + start + set_size*(iz + size_z*(iy + ix*size_y));
 						pcg32 rng(seed);
 						rng.discard(step*dist.rngs_per_sample);
 						phicub[ix][iy][iz][ist] = dist(rng);
 					});
-#else
-		uniform_distribution<typename field_set_type::element_type> dist;
-
-		for(uint64_t ix = 0; ix < uint64_t(phi.basis().sizes()[0]); ix++){
-			for(uint64_t iy = 0; iy < uint64_t(phi.basis().sizes()[1]); iy++){
-				for(uint64_t iz = 0; iz < uint64_t(phi.basis().sizes()[2]); iz++){
-					for(uint64_t ist = 0; ist < uint64_t(phi.dist().local_size()); ist++) {
-
-						uint64_t step = ist + phi.dist().start() + phi.set_size()*(iz + phi.basis().sizes()[2]*(iy + ix*phi.basis().sizes()[1]));
-						pcg32 rng(seed);
-						rng.discard(step*dist.rngs_per_sample);
-						phi.cubic()[ix][iy][iz][ist] = dist(rng);
-						
-					}
-				}
-			}
-		}
-#endif
-		
+	
   }
 
 }
