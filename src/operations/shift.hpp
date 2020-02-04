@@ -60,20 +60,20 @@ namespace operations {
 TEST_CASE("function operations::shift", "[operations::shift]") {
 
 	using namespace Catch::literals;
-	const int N = 185193;
-	const int M = 7;
+	const int npoint = 185193;
+	const int nvec = 7;
 	
-	basis::trivial bas(N);
+	basis::trivial bas(npoint);
 	
 	SECTION("double"){
 		
-		basis::field_set<basis::trivial, double> aa(bas, M);
-		basis::field_set<basis::trivial, double> bb(bas, M);
+		basis::field_set<basis::trivial, double> aa(bas, nvec);
+		basis::field_set<basis::trivial, double> bb(bas, nvec);
 
-		math::array<double, 1> factor(M);
+		math::array<double, 1> factor(nvec);
 		
-		for(int jj = 0; jj < M; jj++){
-			for(int ii = 0; ii < N; ii++){
+		for(int jj = 0; jj < nvec; jj++){
+			for(int ii = 0; ii < npoint; ii++){
 				aa.matrix()[ii][jj] = 1.0 + 0.765*ii*jj;
 				bb.matrix()[ii][jj] = ii;
 			}
@@ -82,20 +82,20 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 		operations::shift(factor, bb, aa, -0.5);
 				
-		for(int ii = 0; ii < M; ii++){
-			for(int jj = 0; jj < M; jj++) REQUIRE(aa.matrix()[ii][jj] == Approx(1.0));
+		for(int ii = 0; ii < nvec; ii++){
+			for(int jj = 0; jj < nvec; jj++) REQUIRE(aa.matrix()[ii][jj] == Approx(1.0));
 		}
 	}	
 	
 	SECTION("complex"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, M);
-		basis::field_set<basis::trivial, complex> bb(bas, M);
+		basis::field_set<basis::trivial, complex> aa(bas, nvec);
+		basis::field_set<basis::trivial, complex> bb(bas, nvec);
 
-		math::array<complex, 1> factor(M);
+		math::array<complex, 1> factor(nvec);
 		
-		for(int jj = 0; jj < M; jj++){
-			for(int ii = 0; ii < N; ii++){
+		for(int jj = 0; jj < nvec; jj++){
+			for(int ii = 0; ii < npoint; ii++){
 				aa.matrix()[ii][jj] = complex(ii, 1.0 + 0.765*ii*jj);
 				bb.matrix()[ii][jj] = ii;
 			}
@@ -104,21 +104,21 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 		operations::shift(factor, bb, aa, -0.5);
 				
-		for(int ii = 0; ii < M; ii++){
-			for(int jj = 0; jj < M; jj++) REQUIRE(real(aa.matrix()[ii][jj]) == Approx(ii));
-			for(int jj = 0; jj < M; jj++) REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
+		for(int ii = 0; ii < npoint; ii++){
+			for(int jj = 0; jj < nvec; jj++) REQUIRE(real(aa.matrix()[ii][jj]) == Approx(ii));
+			for(int jj = 0; jj < nvec; jj++) REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 		}
 	}	
 	
 	SECTION("mixed types"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, M);
-		basis::field_set<basis::trivial, complex> bb(bas, M);
+		basis::field_set<basis::trivial, complex> aa(bas, nvec);
+		basis::field_set<basis::trivial, complex> bb(bas, nvec);
 
-		math::array<double, 1> factor(M);
+		math::array<double, 1> factor(nvec);
 		
-		for(int jj = 0; jj < M; jj++){
-			for(int ii = 0; ii < N; ii++){
+		for(int jj = 0; jj < nvec; jj++){
+			for(int ii = 0; ii < npoint; ii++){
 				aa.matrix()[ii][jj] = complex(ii, 1.0 + 0.765*ii*jj);
 				bb.matrix()[ii][jj] = complex(0.0, ii);
 			}
@@ -127,8 +127,8 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 		operations::shift(factor, bb, aa, -0.5);
 				
-		for(int ii = 0; ii < M; ii++){
-			for(int jj = 0; jj < M; jj++) {
+		for(int ii = 0; ii < npoint; ii++){
+			for(int jj = 0; jj < nvec; jj++) {
 				REQUIRE(real(aa.matrix()[ii][jj]) == Approx(ii));
 				REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 			}
