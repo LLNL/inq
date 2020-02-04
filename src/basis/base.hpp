@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS__TRIVIAL
-#define BASIS__TRIVIAL
+#ifndef BASIS__BASE
+#define BASIS__BASE
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -22,9 +22,9 @@
 */
 
 #include <cassert>
-#include <array>
 
-#include <basis/base.hpp>
+#include <mpi3/environment.hpp>
+#include <utils/distribution.hpp>
 
 namespace basis {
 
@@ -32,40 +32,25 @@ namespace basis {
 		This is a class that implements a very simple basis object. Useful for testing.
 	*/
 	
-  class trivial : public base {
+  class base {
 
   public:
-
-		const static int dimension = 1;
 		
-		trivial(const long size, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			base(size, comm),
-      size_(size){
+		base(const long size, boost::mpi3::communicator & comm):
+			dist_(size, comm){
 		}
-		
-    long size() const {
-      return size_;
-    }
-
-		friend auto sizes(const trivial & ss){
-      return std::array<long, 1>{ss.size_};
+    
+		auto dist() {
+			return dist_;
 		}
 
-		auto sizes() const {
-			return std::array<long, 1>{size_};
+		auto dist() const {
+			return dist_;
 		}
-
-    double volume_element() const {
-      return 1.0/size_;
-    }    
-
-    friend bool operator==(trivial const & b1, trivial const & b2){
-      return b1.size_ == b2.size_;
-    }
     
 	protected:
 
-    long size_;
+		utils::distribution<boost::mpi3::communicator> dist_;
 		
   };
 }
@@ -74,7 +59,7 @@ namespace basis {
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("class basis::trivial", "[basis::trivial]") {
+TEST_CASE("class basis::base", "[basis::base]") {
   
   using namespace Catch::literals;
   using math::vec3d;

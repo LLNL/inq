@@ -21,6 +21,7 @@ noinst_HEADERS =                             \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
+	basis/base.hpp                             \
 	basis/grid.hpp                             \
 	basis/real_space.hpp                       \
 	basis/field.hpp                            \
