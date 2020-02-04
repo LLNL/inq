@@ -73,12 +73,12 @@ namespace operations {
 		auto t3p = t3.linear().begin();
 		auto taddp = tadd.linear().begin();
 		
-		gpu::run(t1.basis().size(),
+		gpu::run(t1.linear().size(),
 						 [=] __device__ (long ii){
 							 taddp[ii] = t1p[ii] + t2p[ii] + t3p[ii];
 						 });
 #else
-		for(long ii = 0; ii < t1.basis().size(); ii++) tadd.linear()[ii] = t1.linear()[ii] + t2.linear()[ii] + t3.linear()[ii];
+		for(long ii = 0; ii < t1.linear().size(); ii++) tadd.linear()[ii] = t1.linear()[ii] + t2.linear()[ii] + t3.linear()[ii];
 #endif
 		
 		return tadd;
@@ -94,11 +94,13 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 	using namespace Catch::literals;
 
-	SECTION("Add 2 double arrays"){
-		
-		const int N = 100;
+	const int N = 100;
 
-		basis::trivial bas(N);
+	auto comm = boost::mpi3::environment::get_world_instance();
+ 
+	basis::trivial bas(N, comm);
+
+	SECTION("Add 2 double arrays"){
 		
 		basis::field<basis::trivial, double> aa(bas);
 		basis::field<basis::trivial, double> bb(bas);
@@ -109,15 +111,11 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 		cc = operations::add(aa, bb);
 		
-		for(int ii = 0; ii < N; ii++) REQUIRE(cc.linear()[ii] == 3.5_a);
+		for(int ii = 0; ii < cc.linear().size(); ii++) REQUIRE(cc.linear()[ii] == 3.5_a);
 
 	}
 	
 	SECTION("Add 2 complex arrays"){
-		
-		const int N = 100;
-
-		basis::trivial bas(N);
 		
 		basis::field<basis::trivial, complex> aa(bas);
 		basis::field<basis::trivial, complex> bb(bas);
@@ -128,7 +126,7 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 		cc = operations::add(aa, bb);
 		
-		for(int ii = 0; ii < N; ii++){
+		for(int ii = 0; ii < cc.linear().size(); ii++){
 			REQUIRE(real(cc.linear()[ii]) == 3.5_a);
 			REQUIRE(imag(cc.linear()[ii]) == -19.0_a);
 		}
@@ -136,10 +134,6 @@ TEST_CASE("function operations::add", "[operations::add]") {
 	}
 
 	SECTION("Add 3 double arrays"){
-		
-		const int N = 100;
-
-		basis::trivial bas(N);
 		
 		basis::field<basis::trivial, double> aa(bas);
 		basis::field<basis::trivial, double> bb(bas);
@@ -152,15 +146,11 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 		dd = operations::add(aa, bb, cc);
 		
-		for(int ii = 0; ii < N; ii++) REQUIRE(dd.linear()[ii] == -0.5_a);
+		for(int ii = 0; ii < cc.linear().size(); ii++) REQUIRE(dd.linear()[ii] == -0.5_a);
 
 	}
 	
 	SECTION("Add 3 complex arrays"){
-		
-		const int N = 100;
-
-		basis::trivial bas(N);
 		
 		basis::field<basis::trivial, complex> aa(bas);
 		basis::field<basis::trivial, complex> bb(bas);
@@ -173,7 +163,7 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 		dd = operations::add(aa, bb, cc);
 		
-		for(int ii = 0; ii < N; ii++){
+		for(int ii = 0; ii < cc.linear().size(); ii++){
 			REQUIRE(real(dd.linear()[ii]) == 0.8_a);
 			REQUIRE(imag(dd.linear()[ii]) == -10.4_a);
 		}
