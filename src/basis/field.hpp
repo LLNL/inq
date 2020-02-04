@@ -37,7 +37,7 @@ namespace basis {
 		typedef type element_type;
 		
     field(const basis_type & basis):
-			linear_(basis.size()),
+			linear_(basis.dist().local_size()),
 			basis_(basis){
     }
 
