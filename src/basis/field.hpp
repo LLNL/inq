@@ -44,18 +44,6 @@ namespace basis {
 			basis_(basis){
     }
 
-		template <class array_type>
-    field(const basis_type & basis, array_type && array):
-			linear_(array),
-			basis_(basis){
-    }
-				
-		template <class array_type>
-    field(const basis_type & basis, const array_type & array):
-			linear_(array),
-			basis_(basis){
-    }
-
 		field(const field & coeff) = delete;
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
