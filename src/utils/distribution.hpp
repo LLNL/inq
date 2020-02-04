@@ -73,6 +73,10 @@ namespace utils {
 		auto contains(long index) const {
 			return start() <= index and index < end();
 		}
+
+		auto local_to_global(long local_i) const {
+			return start_ + local_i;
+		}
 		
 	protected:
 

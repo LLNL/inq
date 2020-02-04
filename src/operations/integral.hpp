@@ -85,7 +85,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		REQUIRE(operations::integral(aa) == 1.0_a);
 
-		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	aa.linear()[ii] = aa.basis().dist().start() + ii;
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	aa.linear()[ii] = aa.basis().dist().local_to_global(ii);
 
 		REQUIRE(operations::integral(aa) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
 
@@ -101,7 +101,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(imag(operations::integral(aa)) == 1.0_a);
 
 		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++) {
-			auto iig = aa.basis().dist().start() + ii;
+			auto iig = aa.basis().dist().local_to_global(ii);
 			aa.linear()[ii] = complex(iig, -3.0*iig);
 		}
 
@@ -121,7 +121,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(operations::integral_product(aa, bb) == 1.6_a);
 		
 		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	{
-			auto iig = aa.basis().dist().start() + ii;
+			auto iig = aa.basis().dist().local_to_global(ii);
 			aa.linear()[ii] = pow(iig + 1, 2);
 			bb.linear()[ii] = 1.0/(iig + 1);
 		}
@@ -142,7 +142,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(imag(operations::integral_product(aa, bb)) == -0.22_a);
 		
 		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	{
-			auto iig = aa.basis().dist().start() + ii;
+			auto iig = aa.basis().dist().local_to_global(ii);
 			aa.linear()[ii] = pow(iig + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*iig));
 			bb.linear()[ii] = 1.0/(iig + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*iig));
 		}
@@ -165,7 +165,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		double sign = 1.0;
 		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	{
-			auto iig = aa.basis().dist().start() + ii;
+			auto iig = aa.basis().dist().local_to_global(ii);
 			aa.linear()[ii] = sign*2.0*(iig + 1);
 			bb.linear()[ii] = sign*1.0*(iig + 1);
 			sign *= -1.0;
@@ -187,7 +187,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		double sign = 1.0;
 		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	{
-			auto iig = aa.basis().dist().start() + ii;
+			auto iig = aa.basis().dist().local_to_global(ii);
 			aa.linear()[ii] = sign*2.0*(iig + 1)*exp(complex(0.0, 0.123*iig));
 			bb.linear()[ii] = sign*1.0*(iig + 1)*exp(complex(0.0, 0.123*iig));
 			sign *= -1.0;
