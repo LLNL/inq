@@ -162,16 +162,12 @@ namespace solvers {
 
 			field<basis_type, double> real_potential(density.basis());
 
-			//DATAOPERATIONS LOOP + GPU::RUN 1D
-#ifdef HAVE_CUDA
+			//DATAOPERATIONS GPU::RUN 1D
 			gpu::run(real_potential.size(),
-							 [rp = begin(real_potential.linear()), cp = begin(complex_potential.linear())] __device__
-							 (auto ii){
+							 [rp = begin(real_potential.linear()), cp = begin(complex_potential.linear())]
+							 GPU_LAMBDA (auto ii){
 								 rp[ii] = real(cp[ii]);
 							 });
-#else
-			for(long ii = 0; ii < real_potential.size(); ii++) real_potential.linear()[ii] = real(complex_potential.linear()[ii]);
-#endif
 			
 			return real_potential;
 			

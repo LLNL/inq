@@ -83,17 +83,12 @@ namespace hamiltonian {
 			//DATAOPERATIONS BLAS
 			auto projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
 			
-			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
+			//DATAOPERATIONS GPU::RUN 2D
 			gpu::run(phi.set_size(), nproj_,
-							 [proj = begin(projections), coeff = begin(kb_coeff_)] __device__ (auto ist, auto iproj){
+							 [proj = begin(projections), coeff = begin(kb_coeff_)]
+							 GPU_LAMBDA (auto ist, auto iproj){
 								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
 							 });
-#else
-      for(int iproj = 0; iproj < nproj_; iproj++) {
-				for(int ist = 0; ist < phi.set_size(); ist++)	projections[iproj][ist] *= kb_coeff_[iproj];
-			}
-#endif
 			
 			//DATAOPERATIONS BLAS
 			sphere_phi = gemm(transposed(matrix_), projections);
