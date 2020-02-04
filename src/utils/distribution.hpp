@@ -77,6 +77,10 @@ namespace utils {
 		auto local_to_global(long local_i) const {
 			return start_ + local_i;
 		}
+
+		auto global_to_local(long global_i) const {
+			return global_i - start_;
+		}
 		
 	protected:
 
