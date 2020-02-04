@@ -24,9 +24,6 @@
 #include <math/array.hpp>
 #include <tinyformat/tinyformat.h>
 #include <algorithm>
-#ifdef HAVE_CUDA
-#include <thrust/fill.h>
-#endif
 
 namespace basis {
 	
