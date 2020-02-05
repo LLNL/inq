@@ -24,9 +24,6 @@
 #include <math/array.hpp>
 #include <tinyformat/tinyformat.h>
 #include <algorithm>
-#ifdef HAVE_CUDA
-#include <thrust/fill.h>
-#endif
 
 namespace basis {
 	
@@ -40,19 +37,7 @@ namespace basis {
 		typedef type element_type;
 		
     field(const basis_type & basis):
-			linear_(basis.size()),
-			basis_(basis){
-    }
-
-		template <class array_type>
-    field(const basis_type & basis, array_type && array):
-			linear_(array),
-			basis_(basis){
-    }
-				
-		template <class array_type>
-    field(const basis_type & basis, const array_type & array):
-			linear_(array),
+			linear_(basis.dist().local_size()),
 			basis_(basis){
     }
 

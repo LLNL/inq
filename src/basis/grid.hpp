@@ -25,15 +25,18 @@
 #include <cassert>
 #include <array>
 
+#include <basis/base.hpp>
+
 namespace basis {
 
-  class grid {
+  class grid : public base {
 
   public:
 
 		const static int dimension = 3;
 		
-		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions) :
+		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions, comm_type & comm) :
+			base(nr[0]*long(nr[1])*nr[2], comm),
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),

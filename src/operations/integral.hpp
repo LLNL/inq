@@ -29,14 +29,26 @@ namespace operations {
 
   template <class field_type>
   auto integral(const field_type & phi){
-		return phi.basis().volume_element()*sum(phi.linear());
+		auto integral_value = phi.basis().volume_element()*sum(phi.linear());
+
+		if(phi.basis().dist().parallel()){
+			MPI_Allreduce(MPI_IN_PLACE, &integral_value, 1, boost::mpi3::detail::basic_datatype<typename field_type::element_type>{}, MPI_SUM, phi.basis().dist().comm());
+		}
+
+		return integral_value;
 	}
 
   template <class field_type, class binary_op>
   auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
 		assert(phi1.basis() == phi2.basis());
 
-		return phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
+		auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
+		
+		if(phi1.basis().dist().parallel()){
+			MPI_Allreduce(MPI_IN_PLACE, &integral_value, 1, boost::mpi3::detail::basic_datatype<typename field_type::element_type>{}, MPI_SUM, phi1.basis().dist().comm());
+		}
+
+		return integral_value;
 	}
 	
   template <class field_type>
@@ -60,8 +72,10 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	using namespace Catch::literals;
 	
 	const int N = 1000;
-	
-	basis::trivial bas(N);
+
+	auto comm = MPI_COMM_WORLD;
+		
+	basis::trivial bas(N, comm);
 	
 	SECTION("Integral double"){
 		
@@ -71,12 +85,12 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		REQUIRE(operations::integral(aa) == 1.0_a);
 
-		for(int ii = 0; ii < N; ii++)	aa.linear()[ii] = ii;
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	aa.linear()[ii] = aa.basis().dist().local_to_global(ii);
 
 		REQUIRE(operations::integral(aa) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
 
 	}
-	
+
 	SECTION("Integral complex"){
 		
 		basis::field<basis::trivial, complex> aa(bas);
@@ -86,7 +100,10 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(real(operations::integral(aa)) == 1.0_a);
 		REQUIRE(imag(operations::integral(aa)) == 1.0_a);
 
-		for(int ii = 0; ii < N; ii++)	aa.linear()[ii] = complex(ii, -3.0*ii);
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++) {
+			auto iig = aa.basis().dist().local_to_global(ii);
+			aa.linear()[ii] = complex(iig, -3.0*iig);
+		}
 
 		REQUIRE(real(operations::integral(aa)) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
 		REQUIRE(imag(operations::integral(aa)) == Approx(-1.5*N*(N - 1.0)*bas.volume_element()));
@@ -103,9 +120,10 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		
 		REQUIRE(operations::integral_product(aa, bb) == 1.6_a);
 		
-		for(int ii = 0; ii < N; ii++)	{
-			aa.linear()[ii] = pow(ii + 1, 2);
-			bb.linear()[ii] = 1.0/(ii + 1);
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	{
+			auto iig = aa.basis().dist().local_to_global(ii);
+			aa.linear()[ii] = pow(iig + 1, 2);
+			bb.linear()[ii] = 1.0/(iig + 1);
 		}
 		
 		REQUIRE(operations::integral_product(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
@@ -123,9 +141,10 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(real(operations::integral_product(aa, bb)) == 1.603_a);
 		REQUIRE(imag(operations::integral_product(aa, bb)) == -0.22_a);
 		
-		for(int ii = 0; ii < N; ii++)	{
-			aa.linear()[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
-			bb.linear()[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	{
+			auto iig = aa.basis().dist().local_to_global(ii);
+			aa.linear()[ii] = pow(iig + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*iig));
+			bb.linear()[ii] = 1.0/(iig + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*iig));
 		}
 		
 		REQUIRE(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
@@ -145,9 +164,10 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
 
 		double sign = 1.0;
-		for(int ii = 0; ii < N; ii++)	{
-			aa.linear()[ii] = sign*2.0*(ii + 1);
-			bb.linear()[ii] = sign*1.0*(ii + 1);
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	{
+			auto iig = aa.basis().dist().local_to_global(ii);
+			aa.linear()[ii] = sign*2.0*(iig + 1);
+			bb.linear()[ii] = sign*1.0*(iig + 1);
 			sign *= -1.0;
 		}
 		
@@ -166,9 +186,10 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		REQUIRE(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
 
 		double sign = 1.0;
-		for(int ii = 0; ii < N; ii++)	{
-			aa.linear()[ii] = sign*2.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
-			bb.linear()[ii] = sign*1.0*(ii + 1)*exp(complex(0.0, 0.123*ii));
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++)	{
+			auto iig = aa.basis().dist().local_to_global(ii);
+			aa.linear()[ii] = sign*2.0*(iig + 1)*exp(complex(0.0, 0.123*iig));
+			bb.linear()[ii] = sign*1.0*(iig + 1)*exp(complex(0.0, 0.123*iig));
 			sign *= -1.0;
 		}
 		

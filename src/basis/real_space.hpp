@@ -31,12 +31,12 @@
 
 namespace basis {
 
-  class real_space : public grid{
+  class real_space : public grid {
 
   public:
 		
-    real_space(const ions::UnitCell & cell, const input::basis & basis_input):
-			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid(), cell.periodic_dimensions()){
+    real_space(const ions::UnitCell & cell, const input::basis & basis_input, comm_type comm = MPI_COMM_SELF):
+			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid(), cell.periodic_dimensions(), comm){
     }
 
 		real_space(const grid & grid_basis):
@@ -69,7 +69,7 @@ namespace basis {
 		}
 
 		auto enlarge(int factor) const {
-			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_));
+			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, this->dist().comm()));
 		}
 
 		auto volume_element() const {

@@ -156,7 +156,9 @@ namespace solvers {
 			using basis::field;
 			
 			//For the moment we copy to a complex array.
-			field<basis_type, complex> complex_density(density.basis(), density.linear());
+			field<basis_type, complex> complex_density(density.basis());
+
+			complex_density.linear() = density.linear();
 
 			auto complex_potential = operator()(complex_density);
 

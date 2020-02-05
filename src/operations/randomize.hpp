@@ -58,42 +58,23 @@ namespace operations {
 
 		auto seed = phi.basis().size()*phi.set_size();
 
-
-#ifdef HAVE_CUDA
-
 		uint64_t start = phi.dist().start();
 		uint64_t set_size = phi.set_size();
 		uint64_t size_z = phi.basis().sizes()[2];
 		uint64_t size_y = phi.basis().sizes()[1];
 		auto phicub = begin(phi.cubic());
 
+
+		// DATAOPERATIONS GPU:RUN 4D
 		gpu::run(phi.dist().local_size(), phi.basis().sizes()[2], phi.basis().sizes()[1], phi.basis().sizes()[0],
-						 [=] __device__ (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
+						 [=] GPU_LAMBDA (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
 						uniform_distribution<typename field_set_type::element_type> dist;
 						uint64_t step = ist + start + set_size*(iz + size_z*(iy + ix*size_y));
 						pcg32 rng(seed);
 						rng.discard(step*dist.rngs_per_sample);
 						phicub[ix][iy][iz][ist] = dist(rng);
 					});
-#else
-		uniform_distribution<typename field_set_type::element_type> dist;
-
-		for(uint64_t ix = 0; ix < uint64_t(phi.basis().sizes()[0]); ix++){
-			for(uint64_t iy = 0; iy < uint64_t(phi.basis().sizes()[1]); iy++){
-				for(uint64_t iz = 0; iz < uint64_t(phi.basis().sizes()[2]); iz++){
-					for(uint64_t ist = 0; ist < uint64_t(phi.dist().local_size()); ist++) {
-
-						uint64_t step = ist + phi.dist().start() + phi.set_size()*(iz + phi.basis().sizes()[2]*(iy + ix*phi.basis().sizes()[1]));
-						pcg32 rng(seed);
-						rng.discard(step*dist.rngs_per_sample);
-						phi.cubic()[ix][iy][iz][ist] = dist(rng);
-						
-					}
-				}
-			}
-		}
-#endif
-		
+	
   }
 
 }
@@ -126,18 +107,18 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 			std::cout << norms[ist] << std::endl;
 			}*/
 
-		if(aa.dist().contains(0))  REQUIRE(norms[0  - aa.dist().start()] == 336.099_a);
-		if(aa.dist().contains(1))  REQUIRE(norms[1  - aa.dist().start()] == 335.697_a);
-		if(aa.dist().contains(2))  REQUIRE(norms[2  - aa.dist().start()] == 335.101_a);
-		if(aa.dist().contains(3))  REQUIRE(norms[3  - aa.dist().start()] == 327.385_a);
-		if(aa.dist().contains(4))  REQUIRE(norms[4  - aa.dist().start()] == 337.327_a);
-		if(aa.dist().contains(5))  REQUIRE(norms[5  - aa.dist().start()] == 330.692_a);
-		if(aa.dist().contains(6))  REQUIRE(norms[6  - aa.dist().start()] == 331.003_a);
-		if(aa.dist().contains(7))  REQUIRE(norms[7  - aa.dist().start()] == 328.333_a);
-		if(aa.dist().contains(8))  REQUIRE(norms[8  - aa.dist().start()] == 333.662_a);
-		if(aa.dist().contains(9))  REQUIRE(norms[9  - aa.dist().start()] == 330.545_a);
-		if(aa.dist().contains(10)) REQUIRE(norms[10 - aa.dist().start()] == 335.836_a);
-		if(aa.dist().contains(11)) REQUIRE(norms[11 - aa.dist().start()] == 328.899_a);
+		if(aa.dist().contains(0))  REQUIRE(norms[aa.dist().global_to_local(0)] == 336.099_a);
+		if(aa.dist().contains(1))  REQUIRE(norms[aa.dist().global_to_local(1)] == 335.697_a);
+		if(aa.dist().contains(2))  REQUIRE(norms[aa.dist().global_to_local(2)] == 335.101_a);
+		if(aa.dist().contains(3))  REQUIRE(norms[aa.dist().global_to_local(3)] == 327.385_a);
+		if(aa.dist().contains(4))  REQUIRE(norms[aa.dist().global_to_local(4)] == 337.327_a);
+		if(aa.dist().contains(5))  REQUIRE(norms[aa.dist().global_to_local(5)] == 330.692_a);
+		if(aa.dist().contains(6))  REQUIRE(norms[aa.dist().global_to_local(6)] == 331.003_a);
+		if(aa.dist().contains(7))  REQUIRE(norms[aa.dist().global_to_local(7)] == 328.333_a);
+		if(aa.dist().contains(8))  REQUIRE(norms[aa.dist().global_to_local(8)] == 333.662_a);
+		if(aa.dist().contains(9))  REQUIRE(norms[aa.dist().global_to_local(9)] == 330.545_a);
+		if(aa.dist().contains(10)) REQUIRE(norms[aa.dist().global_to_local(10)] == 335.836_a);
+		if(aa.dist().contains(11)) REQUIRE(norms[aa.dist().global_to_local(11)] == 328.899_a);
 
 	}
 	
@@ -155,18 +136,18 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 			std::cout << std::scientific << real(norms[ist])<< std::endl;
 			}*/
 
-		if(aa.dist().contains(0))  REQUIRE(real(norms[0  - aa.dist().start()]) == 670.4340_a);
-		if(aa.dist().contains(1))  REQUIRE(real(norms[1  - aa.dist().start()]) == 663.3693_a);
-		if(aa.dist().contains(2))  REQUIRE(real(norms[2  - aa.dist().start()]) == 665.3004_a);
-		if(aa.dist().contains(3))  REQUIRE(real(norms[3  - aa.dist().start()]) == 660.0291_a);
-		if(aa.dist().contains(4))  REQUIRE(real(norms[4  - aa.dist().start()]) == 660.9823_a);
-		if(aa.dist().contains(5))  REQUIRE(real(norms[5  - aa.dist().start()]) == 659.2983_a);
-		if(aa.dist().contains(6))  REQUIRE(real(norms[6  - aa.dist().start()]) == 664.7990_a);
-		if(aa.dist().contains(7))  REQUIRE(real(norms[7  - aa.dist().start()]) == 666.0472_a);
-		if(aa.dist().contains(8))  REQUIRE(real(norms[8  - aa.dist().start()]) == 669.8478_a);
-		if(aa.dist().contains(9))  REQUIRE(real(norms[9  - aa.dist().start()]) == 667.2162_a);
-		if(aa.dist().contains(10)) REQUIRE(real(norms[10 - aa.dist().start()]) == 666.8721_a);
-		if(aa.dist().contains(11)) REQUIRE(real(norms[11 - aa.dist().start()]) == 668.4646_a);
+		if(aa.dist().contains(0))  REQUIRE(real(norms[aa.dist().global_to_local(0)]) == 670.4340_a);
+		if(aa.dist().contains(1))  REQUIRE(real(norms[aa.dist().global_to_local(1)]) == 663.3693_a);
+		if(aa.dist().contains(2))  REQUIRE(real(norms[aa.dist().global_to_local(2)]) == 665.3004_a);
+		if(aa.dist().contains(3))  REQUIRE(real(norms[aa.dist().global_to_local(3)]) == 660.0291_a);
+		if(aa.dist().contains(4))  REQUIRE(real(norms[aa.dist().global_to_local(4)]) == 660.9823_a);
+		if(aa.dist().contains(5))  REQUIRE(real(norms[aa.dist().global_to_local(5)]) == 659.2983_a);
+		if(aa.dist().contains(6))  REQUIRE(real(norms[aa.dist().global_to_local(6)]) == 664.7990_a);
+		if(aa.dist().contains(7))  REQUIRE(real(norms[aa.dist().global_to_local(7)]) == 666.0472_a);
+		if(aa.dist().contains(8))  REQUIRE(real(norms[aa.dist().global_to_local(8)]) == 669.8478_a);
+		if(aa.dist().contains(9))  REQUIRE(real(norms[aa.dist().global_to_local(9)]) == 667.2162_a);
+		if(aa.dist().contains(10)) REQUIRE(real(norms[aa.dist().global_to_local(10)]) == 666.8721_a);
+		if(aa.dist().contains(11)) REQUIRE(real(norms[aa.dist().global_to_local(11)]) == 668.4646_a);
 
 	}
 
