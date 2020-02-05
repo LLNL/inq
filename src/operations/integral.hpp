@@ -32,7 +32,7 @@ namespace operations {
 		auto integral_value = phi.basis().volume_element()*sum(phi.linear());
 
 		if(phi.basis().dist().parallel()){
-			phi.basis().dist().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+			MPI_Allreduce(MPI_IN_PLACE, &integral_value, 1, boost::mpi3::detail::basic_datatype<typename field_type::element_type>{}, MPI_SUM, phi.basis().dist().comm());
 		}
 
 		return integral_value;
@@ -45,7 +45,7 @@ namespace operations {
 		auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
 		
 		if(phi1.basis().dist().parallel()){
-			phi1.basis().dist().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+			MPI_Allreduce(MPI_IN_PLACE, &integral_value, 1, boost::mpi3::detail::basic_datatype<typename field_type::element_type>{}, MPI_SUM, phi1.basis().dist().comm());
 		}
 
 		return integral_value;
@@ -73,7 +73,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	
 	const int N = 1000;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	auto comm = MPI_COMM_WORLD;
 		
 	basis::trivial bas(N, comm);
 	

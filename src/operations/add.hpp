@@ -96,7 +96,7 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 	const int N = 100;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	auto comm = MPI_COMM_WORLD;
  
 	basis::trivial bas(N, comm);
 

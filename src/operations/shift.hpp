@@ -51,7 +51,7 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 	const int npoint = 185193;
 	const int nvec = 7;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	auto comm = MPI_COMM_WORLD;
 	
 	basis::trivial bas(npoint, comm);
 	
