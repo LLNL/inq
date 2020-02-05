@@ -54,10 +54,6 @@ namespace basis {
 
 		}
 
-    const std::array<int, 3> & rsize() const{
-      return nr_;
-    }
-
     GPU_FUNCTION const math::vec3d & rspacing() const{
       return rspacing_;
     }
@@ -83,14 +79,6 @@ namespace basis {
 			return npoints_;
 		}
 
-		template <class output_stream>
-    void info(output_stream & out) const {
-      out << "PLANE WAVE BASIS SET:" << std::endl;
-      out << "  Grid size   = " << rsize()[0] << " x " << rsize()[1] << " x " << rsize()[2] << std::endl;
-			out << "  Spacing [b] = " << rspacing() << std::endl;
-			out << std::endl;
-    }
-
 		friend auto sizes(const grid & gr){
 			return gr.nr_;
 		}
@@ -102,7 +90,15 @@ namespace basis {
 		auto periodic_dimensions() const {
 			return periodic_dimensions_;
 		}
-		
+
+		template <class output_stream>
+    void info(output_stream & out) const {
+      out << "PLANE WAVE BASIS SET:" << std::endl;
+      out << "  Grid size   = " << sizes()[0] << " x " << sizes()[1] << " x " << sizes()[2] << std::endl;
+			out << "  Spacing [b] = " << rspacing() << std::endl;
+			out << std::endl;
+    }
+	
 	protected:
 		
 		ions::UnitCell cell_;

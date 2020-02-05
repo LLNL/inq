@@ -47,9 +47,9 @@ namespace basis {
 			std::vector<float> tmp_distance;
 					
 			//DATAOPERATIONS LOOP 4D
-      for(int ix = 0; ix < parent_grid.rsize()[0]; ix++){
-				for(int iy = 0; iy < parent_grid.rsize()[1]; iy++){
-					for(int iz = 0; iz < parent_grid.rsize()[2]; iz++){
+      for(int ix = 0; ix < parent_grid.sizes()[0]; ix++){
+				for(int iy = 0; iy < parent_grid.sizes()[1]; iy++){
+					for(int iz = 0; iz < parent_grid.sizes()[2]; iz++){
 						auto rpoint = parent_grid.rvector(ix, iy, iz);
 						
 						for(unsigned irep = 0; irep < rep.size(); irep++){
@@ -195,7 +195,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 						       
     REQUIRE(sphere.size() == 257);
 
-    math::array<complex, 3> grid(pw.rsize());
+    math::array<complex, 3> grid(pw.sizes());
     std::vector<complex> subgrid(sphere.size());
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;
@@ -219,7 +219,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     
     REQUIRE(sphere.size() == 257);
     
-    math::array<complex, 4> grid({pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 20}, 0.0);
+    math::array<complex, 4> grid({pw.sizes()[0], pw.sizes()[1], pw.sizes()[2], 20}, 0.0);
     math::array<complex, 2> subgrid({sphere.size(), 20}, 0.0);
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 1.0;
@@ -248,7 +248,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     
     REQUIRE(sphere.size() == 257);
 
-    math::array<complex, 6> grid({1, pw.rsize()[0], pw.rsize()[1], pw.rsize()[2], 2, 20}, 0.0);
+    math::array<complex, 6> grid({1, pw.sizes()[0], pw.sizes()[1], pw.sizes()[2], 2, 20}, 0.0);
     math::array<complex, 3> subgrid({sphere.size(), 2, 20}, 0.0);
 
     sphere.gather(grid[0], subgrid);

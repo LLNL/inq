@@ -120,9 +120,9 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       REQUIRE(rs.rspacing()[1] == 0.5_a);
       REQUIRE(rs.rspacing()[2] == 0.5_a);
       
-      REQUIRE(rs.rsize()[0] == 20);
-      REQUIRE(rs.rsize()[1] == 20);
-      REQUIRE(rs.rsize()[2] == 20);
+      REQUIRE(rs.sizes()[0] == 20);
+      REQUIRE(rs.sizes()[1] == 20);
+      REQUIRE(rs.sizes()[2] == 20);
 
     }
 
@@ -140,9 +140,9 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       REQUIRE(rs.rspacing()[1] == 0.3625641026_a);
       REQUIRE(rs.rspacing()[2] == 0.36328125_a);
       
-      REQUIRE(rs.rsize()[0] == 215);
-      REQUIRE(rs.rsize()[1] == 39);
-			REQUIRE(rs.rsize()[2] == 64);
+      REQUIRE(rs.sizes()[0] == 215);
+      REQUIRE(rs.sizes()[1] == 39);
+			REQUIRE(rs.sizes()[2] == 64);
 
 			auto rs3x = rs.enlarge(3);
 			
@@ -150,9 +150,9 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       REQUIRE(rs3x.rspacing()[1] == 0.3625641026_a);
       REQUIRE(rs3x.rspacing()[2] == 0.36328125_a);
       
-      REQUIRE(rs3x.rsize()[0] == 3*215);
-      REQUIRE(rs3x.rsize()[1] == 3*39);
-			REQUIRE(rs3x.rsize()[2] == 3*64);
+      REQUIRE(rs3x.sizes()[0] == 3*215);
+      REQUIRE(rs3x.sizes()[1] == 3*39);
+			REQUIRE(rs3x.sizes()[2] == 3*64);
 			
     }
 
