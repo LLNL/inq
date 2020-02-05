@@ -82,7 +82,7 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 		operations::shift(factor, bb, aa, -0.5);
 				
-		for(int ii = 0; ii < nvec; ii++){
+		for(int ii = 0; ii < npoint; ii++){
 			for(int jj = 0; jj < nvec; jj++) REQUIRE(aa.matrix()[ii][jj] == Approx(1.0));
 		}
 	}	
