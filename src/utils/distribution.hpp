@@ -21,11 +21,34 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <mpi.h>
 #include <cassert>
 #include <array>
 
+#include <mpi3/communicator.hpp>
+
 namespace utils {
 
+	static auto comm_size(boost::mpi3::communicator & comm){
+		return comm.size();
+	}
+
+	static int comm_size(MPI_Comm comm){
+		int comm_size;
+		MPI_Comm_size(comm, &comm_size);
+		return comm_size;
+	}
+	
+	static auto comm_rank(boost::mpi3::communicator & comm){
+		return comm.rank();
+	}
+
+	static int comm_rank(MPI_Comm comm){
+		int comm_rank;
+		MPI_Comm_rank(comm, &comm_rank);
+		return comm_rank;
+	}
+	
   template <class comm_type>
   class distribution {
 
@@ -33,14 +56,15 @@ namespace utils {
 
 		distribution(const long size, const comm_type & comm):
       size_(size),
-      comm_(comm)
-    {
-      auto bsize = (size_ + comm_.size() - 1)/comm_.size();
+      comm_(comm),
+			comm_size_(comm_size(comm_)){
+
+      auto bsize = (size_ + comm_size_ - 1)/comm_size_;
 
 			if(size_ > 0) assert(bsize > 0);
 
-      start_ = bsize*comm_.rank();
-      end_ = std::min(bsize*(comm_.rank() + 1), size_);
+      start_ = bsize*comm_rank(comm_);
+      end_ = std::min(bsize*(comm_rank(comm_) + 1), size_);
 
       assert(local_size() <= bsize);
 			assert(end_ >= start_);
@@ -67,7 +91,7 @@ namespace utils {
 		}
 
 		auto parallel() const {
-			return comm_.size() > 1;
+			return comm_size_ > 1;
 		}
 
 		auto contains(long index) const {
@@ -88,7 +112,8 @@ namespace utils {
     mutable comm_type comm_;
     long start_;
     long end_;
-    
+		int comm_size_;
+		
   };
 }
 
