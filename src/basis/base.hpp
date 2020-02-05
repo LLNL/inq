@@ -39,12 +39,12 @@ namespace basis {
 		base(const long size, boost::mpi3::communicator & comm):
 			dist_(size, comm){
 		}
-    
-		auto dist() {
+
+		auto & dist() {
 			return dist_;
 		}
 
-		auto dist() const {
+		auto & dist() const {
 			return dist_;
 		}
     
