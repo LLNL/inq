@@ -32,24 +32,12 @@ namespace operations {
     
     assert(size(factor) == phi.set_size());
 
-		//DATAOPERATIONS LOOP + GPU::RUN 2D 
-#ifdef HAVE_CUDA
-
-		auto factorp = begin(factor);
-		auto shiftp = begin(shift.matrix());
-		auto phip = begin(phi.matrix());
-		
+		//DATAOPERATIONS GPU::RUN 2D 
 		gpu::run(phi.set_size(), phi.basis().dist().local_size(),
-						 [=] __device__ (auto ist, auto ipoint){
+						 [factorp = begin(factor), shiftp = begin(shift.matrix()), phip = begin(phi.matrix()), scale]
+						 GPU_LAMBDA (auto ist, auto ipoint){
 							 phip[ipoint][ist] += scale*(factorp[ist]*shiftp[ipoint][ist]);
 						 });
-
-#else
-    for(int ipoint = 0; ipoint < phi.basis().dist().local_size(); ipoint++) {
-			for(int ist = 0; ist < phi.set_size(); ist++) phi.matrix()[ipoint][ist] += scale*(factor[ist]*shift.matrix()[ipoint][ist]);
-    }
-#endif
-
   }
   
 }
