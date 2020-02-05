@@ -66,7 +66,7 @@ namespace hamiltonian {
 			//DATAOPERATIONS LOOP + GPU::RUN 4D
 #ifdef HAVE_CUDA
 
-			gpu::run(hphi.set_size(), hphi.basis().gsize()[2], hphi.basis().gsize()[1], hphi.basis().gsize()[0],
+			gpu::run(hphi.set_size(), hphi.basis().sizes()[2], hphi.basis().sizes()[1], hphi.basis().sizes()[0],
 							 [basis = hphi.basis(),
 								hphicub = begin(hphi.cubic()),
 								phicub = begin(phi.cubic())]
@@ -79,9 +79,9 @@ namespace hamiltonian {
 
 #else
 			
-			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < hphi.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < hphi.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < hphi.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < hphi.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < hphi.basis().sizes()[2]; iz++){
 						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
 						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] += lapl*phi.cubic()[ix][iy][iz][ist];
 					}
@@ -97,7 +97,7 @@ namespace hamiltonian {
 			//DATAOPERATIONS LOOP + GPU::RUN 4D
 #ifdef HAVE_CUDA
 
-			gpu::run(hphi.set_size(), hphi.basis().gsize()[2], hphi.basis().gsize()[1], hphi.basis().gsize()[0],
+			gpu::run(hphi.set_size(), hphi.basis().sizes()[2], hphi.basis().sizes()[1], hphi.basis().sizes()[0],
 							 [basis = hphi.basis(),
 								hphicub = begin(hphi.cubic())]
 							 __device__ (auto ist, auto iz, auto iy, auto ix){
@@ -109,9 +109,9 @@ namespace hamiltonian {
 
 #else
 
-			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < hphi.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < hphi.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < hphi.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < hphi.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < hphi.basis().sizes()[2]; iz++){
 						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
 						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] *= lapl;
 					}

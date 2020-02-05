@@ -54,9 +54,9 @@ namespace solvers {
 
 			const double scal = (-4.0*M_PI)/potential_fs.basis().size();
 			
-			for(int ix = 0; ix < potential_fs.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < potential_fs.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < potential_fs.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < potential_fs.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < potential_fs.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < potential_fs.basis().sizes()[2]; iz++){
 
 						auto g2 = potential_fs.basis().g2(ix, iy, iz);
 						
@@ -105,9 +105,9 @@ namespace solvers {
 			const auto scal = (-4.0*M_PI)/fourier_basis.size();
 			const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 
-			for(int ix = 0; ix < fourier_basis.gsize()[0]; ix++){
-				for(int iy = 0; iy < fourier_basis.gsize()[1]; iy++){
-					for(int iz = 0; iz < fourier_basis.gsize()[2]; iz++){
+			for(int ix = 0; ix < fourier_basis.sizes()[0]; ix++){
+				for(int iy = 0; iy < fourier_basis.sizes()[1]; iy++){
+					for(int iz = 0; iz < fourier_basis.sizes()[2]; iz++){
 						
 						// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
 						if(fourier_basis.g_is_zero(ix, iy, iz)){
