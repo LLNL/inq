@@ -35,7 +35,7 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions, comm_type & comm) :
+		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
 			base(nr[0]*long(nr[1])*nr[2], comm),
 			cell_(cell),
 			nr_(nr),

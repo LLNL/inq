@@ -35,7 +35,7 @@ namespace basis {
 
   public:
 		
-    real_space(const ions::UnitCell & cell, const input::basis & basis_input, comm_type comm = MPI_COMM_SELF):
+    real_space(const ions::UnitCell & cell, const input::basis & basis_input, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid(), cell.periodic_dimensions(), comm){
     }
 
