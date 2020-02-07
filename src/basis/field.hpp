@@ -53,7 +53,7 @@ namespace basis {
 			//DATAOPERATIONS GPU::RUN FILL
 			gpu::run(linear_.size(),
 							 [lin = begin(linear_), value] GPU_LAMBDA (auto ii){
-								 lin[ii] = element_type(value);
+								 lin[ii] = value;
 							 });
 
 			return *this;
