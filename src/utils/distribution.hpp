@@ -25,6 +25,7 @@
 #include <array>
 
 #include <mpi3/communicator.hpp>
+#include <mpi3/environment.hpp>
 
 namespace utils {
 
@@ -36,7 +37,7 @@ namespace utils {
       return end_ - start_;
     }
 		
-		distribution(const long size, const boost::mpi3::communicator & comm):
+		distribution(const long size, const boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			comm_size_(comm.size()),
       size_(size){
 			
