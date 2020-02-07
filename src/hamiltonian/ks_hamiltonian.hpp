@@ -66,7 +66,7 @@ namespace hamiltonian {
 			//DATAOPERATIONS LOOP + GPU::RUN 4D
 #ifdef HAVE_CUDA
 
-			gpu::run(hphi.set_size(), hphi.basis().gsize()[2], hphi.basis().gsize()[1], hphi.basis().gsize()[0],
+			gpu::run(hphi.set_size(), hphi.basis().sizes()[2], hphi.basis().sizes()[1], hphi.basis().sizes()[0],
 							 [basis = hphi.basis(),
 								hphicub = begin(hphi.cubic()),
 								phicub = begin(phi.cubic())]
@@ -79,9 +79,9 @@ namespace hamiltonian {
 
 #else
 			
-			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < hphi.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < hphi.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < hphi.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < hphi.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < hphi.basis().sizes()[2]; iz++){
 						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
 						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] += lapl*phi.cubic()[ix][iy][iz][ist];
 					}
@@ -97,7 +97,7 @@ namespace hamiltonian {
 			//DATAOPERATIONS LOOP + GPU::RUN 4D
 #ifdef HAVE_CUDA
 
-			gpu::run(hphi.set_size(), hphi.basis().gsize()[2], hphi.basis().gsize()[1], hphi.basis().gsize()[0],
+			gpu::run(hphi.set_size(), hphi.basis().sizes()[2], hphi.basis().sizes()[1], hphi.basis().sizes()[0],
 							 [basis = hphi.basis(),
 								hphicub = begin(hphi.cubic())]
 							 __device__ (auto ist, auto iz, auto iy, auto ix){
@@ -109,9 +109,9 @@ namespace hamiltonian {
 
 #else
 
-			for(int ix = 0; ix < hphi.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < hphi.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < hphi.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < hphi.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < hphi.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < hphi.basis().sizes()[2]; iz++){
 						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
 						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] *= lapl;
 					}
@@ -238,9 +238,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 	SECTION("Constant function"){
 		
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] = 1.0;
 					}
@@ -251,9 +251,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = ham(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.0);
 					}
@@ -271,9 +271,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		
 		double kk = 2.0*M_PI/rs.rlength()[0];
 		
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double xx = rs.rvector(ix, iy, iz)[0];
 						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
@@ -285,9 +285,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = ham(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 							diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
@@ -306,9 +306,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		double ww = 2.0;
 
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					double r2 = rs.r2(ix, iy, iz);
 					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
 
@@ -323,9 +323,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = ham(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
 					}
@@ -344,9 +344,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		
 		double kk = 2.0*M_PI/rs.rlength()[0];
 		
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double xx = rs.rvector(ix, iy, iz)[0];
 						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
@@ -358,9 +358,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 							diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
@@ -379,9 +379,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		double ww = 2.0;
 
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					double r2 = rs.r2(ix, iy, iz);
 					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
 
@@ -396,9 +396,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = ham(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
 					}
@@ -417,9 +417,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		double ww = 2.0;
 
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					double r2 = rs.r2(ix, iy, iz);
 					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
 
@@ -434,9 +434,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
 					}

@@ -64,9 +64,9 @@ namespace operations {
 			gpu::run(phi.set_size(),
 							 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()), bas = phi.basis()]
 							 __device__ (auto ist){
-								 for(int ix = 0; ix < bas.gsize()[0]; ix++){
-									 for(int iy = 0; iy < bas.gsize()[1]; iy++){
-										 for(int iz = 0; iz < bas.gsize()[2]; iz++){
+								 for(int ix = 0; ix < bas.sizes()[0]; ix++){
+									 for(int iy = 0; iy < bas.sizes()[1]; iy++){
+										 for(int iz = 0; iz < bas.sizes()[2]; iz++){
 											 auto lapl = -0.5*(-bas.g2(ix, iy, iz));
 											 auto phiphi = fabs(phcub[ix][iy][iz][ist]);
 											 expc[ist] += lapl*phiphi;
@@ -76,9 +76,9 @@ namespace operations {
 								 }
 							 });
 #else
-			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < phi.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < phi.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < phi.basis().sizes()[2]; iz++){
 						auto lapl = -0.5*(-phi.basis().g2(ix, iy, iz));
 						for(int ist = 0; ist < phi.set_size(); ist++){
 							auto phiphi = fabs(phi.cubic()[ix][iy][iz][ist]);
@@ -94,16 +94,16 @@ namespace operations {
 
 			//DATAOPERATIONS LOOP + GPU::RUN 4D
 #ifdef HAVE_CUDA
-			gpu::run(phi.set_size(), phi.basis().gsize()[2], phi.basis().gsize()[1], phi.basis().gsize()[0], 
+			gpu::run(phi.set_size(), phi.basis().sizes()[2], phi.basis().sizes()[1], phi.basis().sizes()[0], 
 							 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()), bas = phi.basis()] __device__
 							 (auto ist, auto iz, auto iy, auto ix){
 								 auto lapl = -0.5*(-bas.g2(ix, iy, iz));
 								 phcub[ix][iy][iz][ist] = k_function(lapl*nrm[ist]/expc[ist])*phcub[ix][iy][iz][ist];
 							 });
 #else
-			for(int ix = 0; ix < phi.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < phi.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < phi.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < phi.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < phi.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < phi.basis().sizes()[2]; iz++){
 						
 						auto lapl = -0.5*(-phi.basis().g2(ix, iy, iz));
 						for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] *= k_function(lapl*norm[ist]/expect[ist]);

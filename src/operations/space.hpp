@@ -47,7 +47,7 @@ namespace operations {
 			//
 			//   input[b*idist + ((x*inembed[1] + y)*inembed[2] + z)*istride]
 		
-			int nn[3] = {phi.basis().rsize()[0], phi.basis().rsize()[1], phi.basis().rsize()[2]};
+			int nn[3] = {phi.basis().sizes()[0], phi.basis().sizes()[1], phi.basis().sizes()[2]};
 			
 			cufftHandle plan;
 
@@ -98,15 +98,15 @@ namespace operations {
 
 				//DATAOPERATIONS LOOP 4D
 #ifdef HAVE_CUDA
-				gpu::run(phi.set_size(), fphi.basis().gsize()[2], fphi.basis().gsize()[1], fphi.basis().gsize()[0],
+				gpu::run(phi.set_size(), fphi.basis().sizes()[2], fphi.basis().sizes()[1], fphi.basis().sizes()[0],
 								 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] __device__
 								 (auto ist, auto iz, auto iy, auto ix){
 									 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
 								 });
 #else
-				for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
-					for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
-						for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
+				for(int ix = 0; ix < fphi.basis().sizes()[0]; ix++){
+					for(int iy = 0; iy < fphi.basis().sizes()[1]; iy++){
+						for(int iz = 0; iz < fphi.basis().sizes()[2]; iz++){
 							if(fphi.basis().outside_sphere(fphi.basis().g2(ix, iy, iz))){
 								for(int ist = 0; ist < phi.set_size(); ist++) fphi.cubic()[ix][iy][iz][ist] = 0.0;
 							}
@@ -182,9 +182,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	
 	SECTION("Zero"){
 		
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] = 0.0;
 				}
 			}
@@ -193,9 +193,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		auto fphi = operations::space::to_fourier(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
-			for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
-				for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
+		for(int ix = 0; ix < fphi.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < fphi.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < fphi.basis().sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						diff += fabs(fphi.cubic()[ix][iy][iz][ist]);
 					}
@@ -210,9 +210,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		auto phi2 = operations::space::to_real(fphi);
 
 		diff = 0.0;
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++)	diff += fabs(phi.cubic()[ix][iy][iz][ist]);
 				}
 			}
@@ -226,9 +226,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	
 	SECTION("Gaussian"){
 		
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					double r2 = rs.r2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double sigma = 0.5*(ist + 1);
@@ -241,9 +241,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		auto fphi = operations::space::to_fourier(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < fphi.basis().gsize()[0]; ix++){
-			for(int iy = 0; iy < fphi.basis().gsize()[1]; iy++){
-				for(int iz = 0; iz < fphi.basis().gsize()[2]; iz++){
+		for(int ix = 0; ix < fphi.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < fphi.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < fphi.basis().sizes()[2]; iz++){
 					double g2 = fphi.basis().g2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						double sigma = 0.5*(ist + 1);
@@ -261,9 +261,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		auto phi2 = operations::space::to_real(fphi);
 
 		diff = 0.0;
-		for(int ix = 0; ix < rs.rsize()[0]; ix++){
-			for(int iy = 0; iy < rs.rsize()[1]; iy++){
-				for(int iz = 0; iz < rs.rsize()[2]; iz++){
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_size(); ist++){
 						diff += fabs(phi.cubic()[ix][iy][iz][ist] - phi2.cubic()[ix][iy][iz][ist]);
 					}

@@ -36,7 +36,8 @@ namespace basis {
 		typedef b_type basis_type;
 		typedef type element_type;
 		
-    field(const basis_type & basis):
+    field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+			basis_comm_(comm),
 			linear_(basis.dist().local_size()),
 			basis_(basis){
     }
@@ -104,9 +105,14 @@ namespace basis {
 				tfm::format(file, "%f %e %e\n", rr[dir], real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
 			}
 		}
+
+		auto & basis_comm() const {
+			return basis_comm_;
+		}
+		
 				
 	private:
-
+		mutable boost::mpi3::communicator basis_comm_;
 		internal_array_type linear_;
 		basis_type basis_;
 

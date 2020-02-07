@@ -26,8 +26,6 @@
 #include <mpi3/environment.hpp>
 #include <utils/distribution.hpp>
 
-#include <mpi.h>
-
 namespace basis {
 
 	/*
@@ -37,10 +35,8 @@ namespace basis {
   class base {
 
   public:
-
-		using comm_type = MPI_Comm;
-
-		base(const long size, comm_type comm):
+		
+		base(const long size, boost::mpi3::communicator & comm):
 			dist_(size, comm){
 		}
 
@@ -54,7 +50,7 @@ namespace basis {
     
 	protected:
 
-		utils::distribution<comm_type> dist_;
+		utils::distribution dist_;
 		
   };
 }

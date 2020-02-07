@@ -35,7 +35,7 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions, comm_type & comm) :
+		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
 			base(nr[0]*long(nr[1])*nr[2], comm),
 			cell_(cell),
 			nr_(nr),
@@ -53,10 +53,6 @@ namespace basis {
 			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
 
 		}
-
-    const std::array<int, 3> & rsize() const{
-      return nr_;
-    }
 
     GPU_FUNCTION const math::vec3d & rspacing() const{
       return rspacing_;
@@ -83,18 +79,12 @@ namespace basis {
 			return npoints_;
 		}
 
-		template <class output_stream>
-    void info(output_stream & out) const {
-      out << "PLANE WAVE BASIS SET:" << std::endl;
-      out << "  Grid size   = " << rsize()[0] << " x " << rsize()[1] << " x " << rsize()[2] << std::endl;
-			out << "  Spacing [b] = " << rspacing() << std::endl;
-			out << std::endl;
-    }
-
+		GPU_FUNCTION
 		friend auto sizes(const grid & gr){
 			return gr.nr_;
 		}
 
+		GPU_FUNCTION
 		auto & sizes() const {
 			return nr_;
 		}
@@ -102,7 +92,15 @@ namespace basis {
 		auto periodic_dimensions() const {
 			return periodic_dimensions_;
 		}
-		
+
+		template <class output_stream>
+    void info(output_stream & out) const {
+      out << "PLANE WAVE BASIS SET:" << std::endl;
+      out << "  Grid size   = " << sizes()[0] << " x " << sizes()[1] << " x " << sizes()[2] << std::endl;
+			out << "  Spacing [b] = " << rspacing() << std::endl;
+			out << std::endl;
+    }
+	
 	protected:
 		
 		ions::UnitCell cell_;

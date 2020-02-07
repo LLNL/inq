@@ -121,10 +121,10 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     REQUIRE(st.num_states() == 6);
     REQUIRE(st.num_quantum_numbers() == 1);
-		REQUIRE(st.cubic_dims(pw.rsize())[0] == pw.rsize()[0]);
-		REQUIRE(st.cubic_dims(pw.rsize())[1] == pw.rsize()[1]);
-		REQUIRE(st.cubic_dims(pw.rsize())[2] == pw.rsize()[2]);
-		REQUIRE(st.cubic_dims(pw.rsize())[3] == st.num_states());
+		REQUIRE(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
+		REQUIRE(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
+		REQUIRE(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
+		REQUIRE(st.cubic_dims(pw.sizes())[3] == st.num_states());
 
 		REQUIRE(st.occupations()[0] == 2.0);
 		REQUIRE(st.occupations()[1] == 2.0);
@@ -141,10 +141,10 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     REQUIRE(st.num_states() == 6);
     REQUIRE(st.num_quantum_numbers() == 2);
-    REQUIRE(st.cubic_dims(pw.rsize())[0] == pw.rsize()[0]);
-    REQUIRE(st.cubic_dims(pw.rsize())[1] == pw.rsize()[1]);
-    REQUIRE(st.cubic_dims(pw.rsize())[2] == pw.rsize()[2]);
-    REQUIRE(st.cubic_dims(pw.rsize())[3] == st.num_states());
+    REQUIRE(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
+    REQUIRE(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
+    REQUIRE(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
+    REQUIRE(st.cubic_dims(pw.sizes())[3] == st.num_states());
   }
 
   SECTION("Non-collinear spin"){
@@ -153,10 +153,10 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     REQUIRE(st.num_states() == 11);
     REQUIRE(st.num_quantum_numbers() == 1);
-    REQUIRE(st.cubic_dims(pw.rsize())[0] == pw.rsize()[0]);
-    REQUIRE(st.cubic_dims(pw.rsize())[1] == pw.rsize()[1]);
-    REQUIRE(st.cubic_dims(pw.rsize())[2] == pw.rsize()[2]);
-    REQUIRE(st.cubic_dims(pw.rsize())[3] == st.num_states());
+    REQUIRE(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
+    REQUIRE(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
+    REQUIRE(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
+    REQUIRE(st.cubic_dims(pw.sizes())[3] == st.num_states());
   }
 
   

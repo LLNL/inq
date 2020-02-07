@@ -21,7 +21,6 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <mpi.h>
 #include <cassert>
 #include <array>
 
@@ -29,42 +28,24 @@
 
 namespace utils {
 
-	static auto comm_size(boost::mpi3::communicator & comm){
-		return comm.size();
-	}
-
-	static int comm_size(MPI_Comm comm){
-		int comm_size;
-		MPI_Comm_size(comm, &comm_size);
-		return comm_size;
-	}
-	
-	static auto comm_rank(boost::mpi3::communicator & comm){
-		return comm.rank();
-	}
-
-	static int comm_rank(MPI_Comm comm){
-		int comm_rank;
-		MPI_Comm_rank(comm, &comm_rank);
-		return comm_rank;
-	}
-	
-  template <class comm_type>
   class distribution {
 
   public:
 
-		distribution(const long size, const comm_type & comm):
-      size_(size),
-      comm_(comm),
-			comm_size_(comm_size(comm_)){
-
+    auto local_size() const {
+      return end_ - start_;
+    }
+		
+		distribution(const long size, const boost::mpi3::communicator & comm):
+			comm_size_(comm.size()),
+      size_(size){
+			
       auto bsize = (size_ + comm_size_ - 1)/comm_size_;
 
 			if(size_ > 0) assert(bsize > 0);
 
-      start_ = bsize*comm_rank(comm_);
-      end_ = std::min(bsize*(comm_rank(comm_) + 1), size_);
+      start_ = bsize*comm.rank();
+      end_ = std::min(bsize*(comm.rank() + 1), size_);
 
       assert(local_size() <= bsize);
 			assert(end_ >= start_);
@@ -82,14 +63,6 @@ namespace utils {
       return end_;
     }
     
-    auto local_size() const {
-      return end_ - start_;
-    }
-
-		auto & comm() const {
-			return comm_;
-		}
-
 		auto parallel() const {
 			return comm_size_ > 1;
 		}
@@ -108,12 +81,11 @@ namespace utils {
 		
 	protected:
 
+		long comm_size_;
     long size_;
-    mutable comm_type comm_;
     long start_;
     long end_;
-		int comm_size_;
-		
+    
   };
 }
 
@@ -121,7 +93,6 @@ namespace utils {
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-#include <mpi3/communicator.hpp>
 #include <mpi3/environment.hpp>
 
 TEST_CASE("class utils::distribution", "[utils::distribution]") {
@@ -133,7 +104,7 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
 
   auto comm = boost::mpi3::environment::get_world_instance();
   
-  utils::distribution<boost::mpi3::communicator> dist(NN, comm);
+  utils::distribution dist(NN, comm);
 
   auto next = comm.rank() + 1;
   if(next == comm.size()) next = 0;

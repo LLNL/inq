@@ -54,9 +54,9 @@ namespace solvers {
 
 			const double scal = (-4.0*M_PI)/potential_fs.basis().size();
 			
-			for(int ix = 0; ix < potential_fs.basis().gsize()[0]; ix++){
-				for(int iy = 0; iy < potential_fs.basis().gsize()[1]; iy++){
-					for(int iz = 0; iz < potential_fs.basis().gsize()[2]; iz++){
+			for(int ix = 0; ix < potential_fs.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < potential_fs.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < potential_fs.basis().sizes()[2]; iz++){
 
 						auto g2 = potential_fs.basis().g2(ix, iy, iz);
 						
@@ -84,15 +84,15 @@ namespace solvers {
 
 			potential2x = 0.0;
 			
-			for(int ix = 0; ix < density.basis().rsize()[0]; ix++){
-				for(int iy = 0; iy < density.basis().rsize()[1]; iy++){
-					for(int iz = 0; iz < density.basis().rsize()[2]; iz++){
+			for(int ix = 0; ix < density.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < density.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < density.basis().sizes()[2]; iz++){
 						auto i2x = ix;
 						auto i2y = iy;
 						auto i2z = iz;
-						if(ix >= density.basis().rsize()[0]/2) i2x += density.basis().rsize()[0];
-						if(iy >= density.basis().rsize()[1]/2) i2y += density.basis().rsize()[1];
-						if(iz >= density.basis().rsize()[2]/2) i2z += density.basis().rsize()[2];
+						if(ix >= density.basis().sizes()[0]/2) i2x += density.basis().sizes()[0];
+						if(iy >= density.basis().sizes()[1]/2) i2y += density.basis().sizes()[1];
+						if(iz >= density.basis().sizes()[2]/2) i2z += density.basis().sizes()[2];
 						potential2x.cubic()[i2x][i2y][i2z] = density.cubic()[ix][iy][iz];
 					}
 				}
@@ -105,9 +105,9 @@ namespace solvers {
 			const auto scal = (-4.0*M_PI)/fourier_basis.size();
 			const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 
-			for(int ix = 0; ix < fourier_basis.gsize()[0]; ix++){
-				for(int iy = 0; iy < fourier_basis.gsize()[1]; iy++){
-					for(int iz = 0; iz < fourier_basis.gsize()[2]; iz++){
+			for(int ix = 0; ix < fourier_basis.sizes()[0]; ix++){
+				for(int iy = 0; iy < fourier_basis.sizes()[1]; iy++){
+					for(int iz = 0; iz < fourier_basis.sizes()[2]; iz++){
 						
 						// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
 						if(fourier_basis.g_is_zero(ix, iy, iz)){
@@ -134,15 +134,15 @@ namespace solvers {
 			
 			potential = 0.0;
 			
-			for(int ix = 0; ix < potential.basis().rsize()[0]; ix++){
-				for(int iy = 0; iy < potential.basis().rsize()[1]; iy++){
-					for(int iz = 0; iz < potential.basis().rsize()[2]; iz++){	
+			for(int ix = 0; ix < potential.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < potential.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < potential.basis().sizes()[2]; iz++){	
 						auto i2x = ix;
 						auto i2y = iy;
 						auto i2z = iz;
-						if(ix >= density.basis().rsize()[0]/2) i2x += density.basis().rsize()[0];
-						if(iy >= density.basis().rsize()[1]/2) i2y += density.basis().rsize()[1];
-						if(iz >= density.basis().rsize()[2]/2) i2z += density.basis().rsize()[2];
+						if(ix >= density.basis().sizes()[0]/2) i2x += density.basis().sizes()[0];
+						if(iy >= density.basis().sizes()[1]/2) i2y += density.basis().sizes()[1];
+						if(iz >= density.basis().sizes()[2]/2) i2z += density.basis().sizes()[2];
 						potential.cubic()[ix][iy][iz] = potential2x.cubic()[i2x][i2y][i2z];
 					}
 				}
@@ -205,9 +205,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		
 			REQUIRE(rs.periodic_dimensions() == 3);
 			
-			REQUIRE(rs.rsize()[0] == 100);
-			REQUIRE(rs.rsize()[1] == 100);
-			REQUIRE(rs.rsize()[2] == 100);
+			REQUIRE(rs.sizes()[0] == 100);
+			REQUIRE(rs.sizes()[1] == 100);
+			REQUIRE(rs.sizes()[2] == 100);
 
 		}
 		
@@ -216,9 +216,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		
 		SECTION("Point charge"){
 		
-			for(int ix = 0; ix < rs.rsize()[0]; ix++){
-				for(int iy = 0; iy < rs.rsize()[1]; iy++){
-					for(int iz = 0; iz < rs.rsize()[2]; iz++){
+			for(int ix = 0; ix < rs.sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.sizes()[2]; iz++){
 						density.cubic()[ix][iy][iz] = 0.0;
 					}
 				}
@@ -230,9 +230,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		
 			double sumreal = 0.0;
 			double sumimag = 0.0;
-			for(int ix = 0; ix < rs.rsize()[0]; ix++){
-				for(int iy = 0; iy < rs.rsize()[1]; iy++){
-					for(int iz = 0; iz < rs.rsize()[2]; iz++){
+			for(int ix = 0; ix < rs.sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.sizes()[2]; iz++){
 						sumreal += fabs(real(potential.cubic()[ix][iy][iz]));
 						sumimag += fabs(imag(potential.cubic()[ix][iy][iz]));
 					}
@@ -253,9 +253,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 			double kk = 2.0*M_PI/rs.rlength()[0];
 		
-			for(int ix = 0; ix < rs.rsize()[0]; ix++){
-				for(int iy = 0; iy < rs.rsize()[1]; iy++){
-					for(int iz = 0; iz < rs.rsize()[2]; iz++){
+			for(int ix = 0; ix < rs.sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.sizes()[2]; iz++){
 						double xx = rs.rvector(ix, iy, iz)[0];
 						density.cubic()[ix][iy][iz] = complex(cos(kk*xx), sin(kk*xx));
 					
@@ -266,9 +266,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			auto potential = psolver(density);
 
 			double diff = 0.0;
-			for(int ix = 0; ix < rs.rsize()[0]; ix++){
-				for(int iy = 0; iy < rs.rsize()[1]; iy++){
-					for(int iz = 0; iz < rs.rsize()[2]; iz++){
+			for(int ix = 0; ix < rs.sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.sizes()[2]; iz++){
 						diff += fabs(potential.cubic()[ix][iy][iz] - 4*M_PI/kk/kk*density.cubic()[ix][iy][iz]);
 					}
 				}
@@ -287,9 +287,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 			double kk = 8.0*M_PI/rs.rlength()[1];
 		
-			for(int ix = 0; ix < rs.rsize()[0]; ix++){
-				for(int iy = 0; iy < rs.rsize()[1]; iy++){
-					for(int iz = 0; iz < rs.rsize()[2]; iz++){
+			for(int ix = 0; ix < rs.sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.sizes()[2]; iz++){
 						double yy = rs.rvector(ix, iy, iz)[1];
 						rdensity.cubic()[ix][iy][iz] = cos(kk*yy);
 					}
@@ -299,9 +299,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			auto rpotential = psolver(rdensity);
 
 			double diff = 0.0;
-			for(int ix = 0; ix < rs.rsize()[0]; ix++){
-				for(int iy = 0; iy < rs.rsize()[1]; iy++){
-					for(int iz = 0; iz < rs.rsize()[2]; iz++){
+			for(int ix = 0; ix < rs.sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.sizes()[2]; iz++){
 						diff += fabs(rpotential.cubic()[ix][iy][iz] - 4*M_PI/kk/kk*rdensity.cubic()[ix][iy][iz]);
 					}
 				}
@@ -327,9 +327,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 			REQUIRE(rs.periodic_dimensions() == 0);
 			
-			REQUIRE(rs.rsize()[0] == 89);
-			REQUIRE(rs.rsize()[1] == 89);
-			REQUIRE(rs.rsize()[2] == 89);
+			REQUIRE(rs.sizes()[0] == 89);
+			REQUIRE(rs.sizes()[1] == 89);
+			REQUIRE(rs.sizes()[2] == 89);
 
 		}
 		
@@ -337,9 +337,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 		SECTION("Point charge finite"){
 
-			for(int ix = 0; ix < rs.rsize()[0]; ix++){
-				for(int iy = 0; iy < rs.rsize()[1]; iy++){
-					for(int iz = 0; iz < rs.rsize()[2]; iz++){
+			for(int ix = 0; ix < rs.sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.sizes()[2]; iz++){
 						density.cubic()[ix][iy][iz] = 0.0;
 						if(norm(rs.rvector(ix, iy, iz)) < 1e-10) density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
 					}
@@ -354,9 +354,9 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			
 			//			double sumreal = 0.0;
 			// double sumimag = 0.0;
-			for(int ix = 0; ix < rs.rsize()[0]; ix++){
-				for(int iy = 0; iy < rs.rsize()[1]; iy++){
-					for(int iz = 0; iz < rs.rsize()[2]; iz++){
+			for(int ix = 0; ix < rs.sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.sizes()[2]; iz++){
 						auto rr = rs.rvector(ix, iy, iz);
 						if(iz == 0 and iy == 0) ofile << rr[0] << "\t" << real(potential.cubic()[ix][iy][iz]) << std::endl;						
 					}

@@ -46,7 +46,8 @@ namespace hamiltonian {
     atomic_potential(const int natoms, const atom_array & atom_list, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			sep_(0.625), //this is the default from octopus
       pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
-			dist_(natoms, comm)
+			comm_(comm),
+			dist_(natoms, comm_)
 		{
 
       nelectrons_ = 0.0;
@@ -103,7 +104,7 @@ namespace hamiltonian {
       }
 
 			if(dist_.parallel()){
-				dist_.comm().all_reduce_in_place_n(static_cast<double *>(potential.linear().data()), potential.linear().size(), std::plus<>{});
+				comm_.all_reduce_in_place_n(static_cast<double *>(potential.linear().data()), potential.linear().size(), std::plus<>{});
 			}
 
 			return potential;			
@@ -144,7 +145,7 @@ namespace hamiltonian {
       }
 
 			if(dist_.parallel()){
-				dist_.comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
+				comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
 			}
 			
 			return density;			
@@ -168,7 +169,8 @@ namespace hamiltonian {
     double nelectrons_;
     pseudo::set pseudo_set_;
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
-		utils::distribution<boost::mpi3::communicator> dist_;
+		mutable boost::mpi3::communicator comm_;
+		utils::distribution dist_;
         
   };
 
