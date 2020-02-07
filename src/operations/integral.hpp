@@ -32,7 +32,7 @@ namespace operations {
 		auto integral_value = phi.basis().volume_element()*sum(phi.linear());
 
 		if(phi.basis().dist().parallel()){
-			phi.basis().dist().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+			phi.basis_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 		}
 
 		return integral_value;
@@ -45,7 +45,7 @@ namespace operations {
 		auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
 		
 		if(phi1.basis().dist().parallel()){
-			phi1.basis().dist().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+			phi1.basis_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 		}
 
 		return integral_value;
@@ -75,11 +75,11 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 		
-	basis::trivial bas(N, comm);
+	basis::trivial bas(N);
 	
 	SECTION("Integral double"){
 		
-		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> aa(bas, comm);
 
 		aa = 1.0;
 
@@ -93,7 +93,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	SECTION("Integral complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> aa(bas, comm);
 
 		aa = complex(1.0, 1.0);
 
@@ -112,8 +112,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	SECTION("Integral product double"){
 		
-		basis::field<basis::trivial, double> aa(bas);
-		basis::field<basis::trivial, double> bb(bas);
+		basis::field<basis::trivial, double> aa(bas, comm);
+		basis::field<basis::trivial, double> bb(bas, comm);
 		
 		aa = 2.0;
 		bb = 0.8;
@@ -132,8 +132,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	
 	SECTION("Integral product complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas);
-		basis::field<basis::trivial, complex> bb(bas);
+		basis::field<basis::trivial, complex> aa(bas, comm);
+		basis::field<basis::trivial, complex> bb(bas, comm);
 		
 		aa = complex(2.0, -0.3);
 		bb = complex(0.8, 0.01);
@@ -155,8 +155,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	
 	SECTION("Integral absdiff double"){
 		
-		basis::field<basis::trivial, double> aa(bas);
-		basis::field<basis::trivial, double> bb(bas);
+		basis::field<basis::trivial, double> aa(bas, comm);
+		basis::field<basis::trivial, double> bb(bas, comm);
 		
 		aa = -13.23;
 		bb = -13.23;
@@ -177,8 +177,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	
 	SECTION("Integral absdiff complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas);
-		basis::field<basis::trivial, complex> bb(bas);
+		basis::field<basis::trivial, complex> aa(bas, comm);
+		basis::field<basis::trivial, complex> bb(bas, comm);
 		
 		aa = -13.23*exp(complex(0.0, M_PI/3.63));
 		bb = -13.23*exp(complex(0.0, M_PI/3.63));
