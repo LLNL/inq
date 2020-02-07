@@ -68,8 +68,8 @@ namespace basis {
 			return equal;
 		}
 
-		auto enlarge(int factor) const {
-			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, this->dist().comm()));
+		auto enlarge(int factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
+			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, comm));
 		}
 
 		auto volume_element() const {

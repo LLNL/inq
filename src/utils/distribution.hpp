@@ -32,15 +32,15 @@ namespace utils {
   public:
 
 		distribution(const long size, const comm_type & comm):
-      size_(size),
-      comm_(comm)
-    {
-      auto bsize = (size_ + comm_.size() - 1)/comm_.size();
+			comm_size_(comm.size()),
+      size_(size){
+			
+      auto bsize = (size_ + comm_size_ - 1)/comm_size_;
 
 			if(size_ > 0) assert(bsize > 0);
 
-      start_ = bsize*comm_.rank();
-      end_ = std::min(bsize*(comm_.rank() + 1), size_);
+      start_ = bsize*comm.rank();
+      end_ = std::min(bsize*(comm.rank() + 1), size_);
 
       assert(local_size() <= bsize);
 			assert(end_ >= start_);
@@ -62,12 +62,8 @@ namespace utils {
       return end_ - start_;
     }
 
-		auto & comm() const {
-			return comm_;
-		}
-
 		auto parallel() const {
-			return comm_.size() > 1;
+			return comm_size_ > 1;
 		}
 
 		auto contains(long index) const {
@@ -84,8 +80,8 @@ namespace utils {
 		
 	protected:
 
+		long comm_size_;
     long size_;
-    mutable comm_type comm_;
     long start_;
     long end_;
     
