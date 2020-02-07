@@ -151,19 +151,19 @@ namespace solvers {
 			return potential;
 		}
 		
-		 basis::field<basis_type, double> operator()(const basis::field<basis_type, double> & density) const {
+		basis::field<basis_type, double> operator()(const basis::field<basis_type, double> & density) const {
 
 			using basis::field;
 			
 			//For the moment we copy to a complex array.
 			field<basis_type, complex> complex_density(density.basis());
-
+			
 			complex_density.linear() = density.linear();
-
+			
 			auto complex_potential = operator()(complex_density);
-
+			
 			field<basis_type, double> real_potential(density.basis());
-
+			
 			//DATAOPERATIONS GPU::RUN 1D
 			gpu::run(real_potential.size(),
 							 [rp = begin(real_potential.linear()), cp = begin(complex_potential.linear())]
