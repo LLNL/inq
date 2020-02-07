@@ -50,9 +50,12 @@ namespace basis {
 		//set to a scalar value
 		field & operator=(const type value) {
 
-			//DATAOPERATIONS STL FILL
-			std::fill_n(linear_.data(), linear_.num_elements(), value);
-			
+			//DATAOPERATIONS GPU::RUN FILL
+			gpu::run(linear_.size(),
+							 [lin = begin(linear_), value] GPU_LAMBDA (auto ii){
+								 lin[ii] = element_type(value);
+							 });
+
 			return *this;
 		}
 
