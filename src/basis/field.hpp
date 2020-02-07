@@ -153,7 +153,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	ff = 12.2244;
 
 	for(int ii = 0; ii < rs.size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
-	
+
 }
 
 #endif
