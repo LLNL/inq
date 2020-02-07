@@ -50,7 +50,7 @@ namespace basis {
     
 	protected:
 
-		utils::distribution<boost::mpi3::communicator> dist_;
+		utils::distribution dist_;
 		
   };
 }

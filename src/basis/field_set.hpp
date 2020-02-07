@@ -115,7 +115,7 @@ namespace basis {
 	private:
 
 		mutable boost::mpi3::communicator set_comm_;
-		utils::distribution<boost::mpi3::communicator> set_dist_;
+		utils::distribution set_dist_;
 		internal_array_type matrix_;
 		int num_vectors_;
 		basis_type basis_;

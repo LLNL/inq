@@ -24,14 +24,19 @@
 #include <cassert>
 #include <array>
 
+#include <mpi3/communicator.hpp>
+
 namespace utils {
 
-  template <class comm_type>
   class distribution {
 
   public:
 
-		distribution(const long size, const comm_type & comm):
+    auto local_size() const {
+      return end_ - start_;
+    }
+		
+		distribution(const long size, const boost::mpi3::communicator & comm):
 			comm_size_(comm.size()),
       size_(size){
 			
@@ -58,10 +63,6 @@ namespace utils {
       return end_;
     }
     
-    auto local_size() const {
-      return end_ - start_;
-    }
-
 		auto parallel() const {
 			return comm_size_ > 1;
 		}
@@ -92,7 +93,6 @@ namespace utils {
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-#include <mpi3/communicator.hpp>
 #include <mpi3/environment.hpp>
 
 TEST_CASE("class utils::distribution", "[utils::distribution]") {
@@ -104,7 +104,7 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
 
   auto comm = boost::mpi3::environment::get_world_instance();
   
-  utils::distribution<boost::mpi3::communicator> dist(NN, comm);
+  utils::distribution dist(NN, comm);
 
   auto next = comm.rank() + 1;
   if(next == comm.size()) next = 0;
