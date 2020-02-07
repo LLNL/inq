@@ -79,10 +79,12 @@ namespace basis {
 			return npoints_;
 		}
 
+		GPU_FUNCTION
 		friend auto sizes(const grid & gr){
 			return gr.nr_;
 		}
 
+		GPU_FUNCTION
 		auto & sizes() const {
 			return nr_;
 		}
