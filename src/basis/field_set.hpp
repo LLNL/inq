@@ -42,8 +42,9 @@ namespace basis {
 		typedef type element_type;
 
 		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			dist_(num_vectors, comm),
-			matrix_({basis.size(), dist_.local_size()}),
+			set_comm_(comm),
+			set_dist_(num_vectors, comm),
+			matrix_({basis.size(), set_dist_.local_size()}),
 			num_vectors_(num_vectors),
 			basis_(basis)
 		{
@@ -95,8 +96,12 @@ namespace basis {
 			return num_vectors_;
 		}
 
-		auto & dist() const {
-			return dist_;
+		auto & set_dist() const {
+			return set_dist_;
+		}
+		
+		auto & set_comm() const {
+			return set_comm_;
 		}
 		
 		auto cubic() const {
@@ -109,7 +114,8 @@ namespace basis {
 
 	private:
 
-		utils::distribution<boost::mpi3::communicator> dist_;
+		mutable boost::mpi3::communicator set_comm_;
+		utils::distribution<boost::mpi3::communicator> set_dist_;
 		internal_array_type matrix_;
 		int num_vectors_;
 		basis_type basis_;
@@ -154,7 +160,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	ff = 12.2244;
 
 	for(int ii = 0; ii < rs.size(); ii++){
-		for(int jj = 0; jj < ff.dist().local_size(); jj++){
+		for(int jj = 0; jj < ff.set_dist().local_size(); jj++){
 			REQUIRE(ff.matrix()[ii][jj] == 12.2244_a);
 		}
 	}

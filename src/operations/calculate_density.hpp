@@ -36,7 +36,7 @@ namespace operations {
     //DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
 
-		const auto nst = phi.dist().local_size();
+		const auto nst = phi.set_dist().local_size();
 		auto occupationsp = begin(occupations);
 		auto phip = begin(phi.matrix());
 		auto densityp = begin(density.linear());
@@ -51,13 +51,13 @@ namespace operations {
 		
     for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
 			density.linear()[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.dist().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
+      for(int ist = 0; ist < phi.set_dist().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
     }
 		
 #endif
 
-		if(phi.dist().parallel()){
-			phi.dist().comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
+		if(phi.set_dist().parallel()){
+			phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
 		}
 		
     return density;
@@ -81,15 +81,15 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 		
 		basis::field_set<basis::trivial, double> aa(bas, M, boost::mpi3::environment::get_world_instance());
 
-		math::array<double, 1> occ(aa.dist().local_size());
+		math::array<double, 1> occ(aa.set_dist().local_size());
 		
 		for(int ii = 0; ii < N; ii++){
-			for(int jj = 0; jj < aa.dist().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(ii)*(aa.dist().start() + jj + 1);
+			for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
+				aa.matrix()[ii][jj] = sqrt(ii)*(aa.set_dist().start() + jj + 1);
 			}
 		}
 
-		for(int jj = 0; jj < aa.dist().local_size(); jj++) occ[jj] = 1.0/(aa.dist().start() + jj + 1);
+		for(int jj = 0; jj < aa.set_dist().local_size(); jj++) occ[jj] = 1.0/(aa.set_dist().start() + jj + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
@@ -104,12 +104,12 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 		math::array<double, 1> occ(M);
 		
 		for(int ii = 0; ii < N; ii++){
-			for(int jj = 0; jj < aa.dist().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(ii)*(aa.dist().start() + jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
+			for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
+				aa.matrix()[ii][jj] = sqrt(ii)*(aa.set_dist().start() + jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
 			}
 		}
 
-		for(int jj = 0; jj < aa.dist().local_size(); jj++) occ[jj] = 1.0/(aa.dist().start() + jj + 1);
+		for(int jj = 0; jj < aa.set_dist().local_size(); jj++) occ[jj] = 1.0/(aa.set_dist().start() + jj + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
