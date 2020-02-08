@@ -44,9 +44,11 @@ namespace basis {
 		typedef type element_type;
 
 		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator && comm)
-			:set_comm_(comm),
+			:full_comm_(comm),
+			 basis_comm_(comm.sub({1, 0})),
+			 set_comm_(comm.sub({0, 1})),
 			 set_dist_(num_vectors, comm),
-			 matrix_({basis.size(), set_dist_.local_size()}),
+			 matrix_({basis.dist().local_size(), set_dist_.local_size()}),
 			 num_vectors_(num_vectors),
 			 basis_(basis)
 		{
@@ -109,6 +111,14 @@ namespace basis {
 		auto & set_comm() const {
 			return set_comm_;
 		}
+				
+		auto & basis_comm() const {
+			return basis_comm_;
+		}
+
+		auto & full_comm() const {
+			return full_comm_;
+		}
 		
 		auto cubic() const {
 			return matrix_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
@@ -120,6 +130,8 @@ namespace basis {
 
 	private:
 
+		mutable boost::mpi3::cartesian_communicator full_comm_;
+		mutable boost::mpi3::cartesian_communicator basis_comm_;
 		mutable boost::mpi3::cartesian_communicator set_comm_;
 		utils::distribution set_dist_;
 		internal_array_type matrix_;
