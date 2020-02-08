@@ -58,7 +58,10 @@ namespace operations {
 
 		auto seed = phi.basis().size()*phi.set_size();
 
-		uint64_t start = phi.set_dist().start();
+		uint64_t st_start = phi.set_dist().start();
+		uint64_t x_start = phi.basis().cubic_dist(0).start();
+		uint64_t y_start = phi.basis().cubic_dist(1).start();
+		uint64_t z_start = phi.basis().cubic_dist(2).start();
 		uint64_t set_size = phi.set_size();
 		uint64_t size_z = phi.basis().sizes()[2];
 		uint64_t size_y = phi.basis().sizes()[1];
@@ -66,10 +69,10 @@ namespace operations {
 
 
 		// DATAOPERATIONS GPU:RUN 4D
-		gpu::run(phi.set_dist().local_size(), phi.basis().sizes()[2], phi.basis().sizes()[1], phi.basis().sizes()[0],
+		gpu::run(phi.set_dist().local_size(), phi.basis().cubic_dist(2).local_size(), phi.basis().cubic_dist(1).local_size(), phi.basis().cubic_dist(0).local_size(),
 						 [=] GPU_LAMBDA (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
 						uniform_distribution<typename field_set_type::element_type> dist;
-						uint64_t step = ist + start + set_size*(iz + size_z*(iy + ix*size_y));
+						uint64_t step = ist + st_start + set_size*(iz + z_start + size_z*(iy + y_start + (ix + x_start)*size_y));
 						pcg32 rng(seed);
 						rng.discard(step*dist.rngs_per_sample);
 						phicub[ix][iy][iz][ist] = dist(rng);
@@ -90,12 +93,18 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 	const int nst = 12;
 
 	double ll = 10.0;
+
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
+	boost::mpi3::cartesian_communicator cart_comm(comm, boost::mpi3::dims_create(comm.size(), 2), true);
+
+	auto basis_comm = cart_comm.sub({1, 0});
 	
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
-  basis::real_space bas(cell, input::basis::cutoff_energy(20.0));
+  basis::real_space bas(cell, input::basis::cutoff_energy(20.0), basis_comm);
 	
 	SECTION("double"){
-		basis::field_set<basis::real_space, double> aa(bas, nst, boost::mpi3::environment::get_world_instance());
+		basis::field_set<basis::real_space, double> aa(bas, nst, cart_comm);
 
 		aa = 0.0;
 		
@@ -124,7 +133,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 	
 	SECTION("complex"){
 		
-		basis::field_set<basis::real_space, complex> aa(bas, nst, boost::mpi3::environment::get_world_instance());
+		basis::field_set<basis::real_space, complex> aa(bas, nst, cart_comm);
 
 		aa = 0.0;
 		
