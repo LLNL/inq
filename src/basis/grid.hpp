@@ -132,14 +132,37 @@ namespace basis {
 }
 
 #ifdef UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("class basis::grid", "[grid]") {
+TEST_CASE("class basis::grid", "[basis::grid]") {
   
   using namespace Catch::literals;
   using math::vec3d;
-  
+
+  ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
+
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
+	basis::grid gr(cell, {120, 45, 77}, true, 3, comm);
+
+	REQUIRE(gr.sizes()[0] == 120);
+	REQUIRE(gr.sizes()[1] == 45);
+	REQUIRE(gr.sizes()[2] == 77);
+
+	if(comm.size() == 1) REQUIRE(gr.cubic_dist(0).local_size() == 120);
+	if(comm.size() == 2) REQUIRE(gr.cubic_dist(0).local_size() == 60);
+	if(comm.size() == 3) REQUIRE(gr.cubic_dist(0).local_size() == 40);
+	if(comm.size() == 4) REQUIRE(gr.cubic_dist(0).local_size() == 30);
+	if(comm.size() == 5) REQUIRE(gr.cubic_dist(0).local_size() == 24);
+	if(comm.size() == 6) REQUIRE(gr.cubic_dist(0).local_size() == 20);
+	if(comm.size() == 8) REQUIRE(gr.cubic_dist(0).local_size() == 15);
+	if(comm.size() == 10) REQUIRE(gr.cubic_dist(0).local_size() == 12);
+	if(comm.size() == 12) REQUIRE(gr.cubic_dist(0).local_size() == 10);
+	REQUIRE(gr.cubic_dist(1).local_size() == 45);
+	REQUIRE(gr.cubic_dist(2).local_size() == 77);
+	
 }
 #endif
 
