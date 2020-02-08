@@ -75,7 +75,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 		
-	basis::trivial bas(N);
+	basis::trivial bas(N, comm);
 	
 	SECTION("Integral double"){
 		

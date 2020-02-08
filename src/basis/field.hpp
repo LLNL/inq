@@ -40,6 +40,8 @@ namespace basis {
 			basis_comm_(comm),
 			linear_(basis.dist().local_size()),
 			basis_(basis){
+
+			assert(basis_.dist().comm_size() == basis_comm_.size());
     }
 
 		field(const field & coeff) = delete;
@@ -50,9 +52,12 @@ namespace basis {
 		//set to a scalar value
 		field & operator=(const type value) {
 
-			//DATAOPERATIONS STL FILL
-			std::fill_n(linear_.data(), linear_.num_elements(), value);
-			
+			//DATAOPERATIONS GPU::RUN FILL
+			gpu::run(linear_.size(),
+							 [lin = begin(linear_), value] GPU_LAMBDA (auto ii){
+								 lin[ii] = value;
+							 });
+
 			return *this;
 		}
 
@@ -153,7 +158,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	ff = 12.2244;
 
 	for(int ii = 0; ii < rs.size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
-	
+
 }
 
 #endif

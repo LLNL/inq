@@ -78,12 +78,11 @@ namespace basis {
 		//set to a scalar value
 		field_set & operator=(const type value) {
 
-			//DATAOPERATIONS STL + THRUST FILL
-#ifdef HAVE_CUDA
-			thrust::fill(this->data(), this->data() + num_elements(), value);
-#else
-			std::fill(this->data(), this->data() + num_elements(), value);
-#endif
+			//DATAOPERATIONS GPU::RUN FILL
+			gpu::run(matrix_.num_elements(),
+							 [lin = (element_type *) matrix_.data(), value] GPU_LAMBDA (auto ii){
+								 lin[ii] = value;
+							 });
 			
 			return *this;
 		}

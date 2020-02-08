@@ -25,6 +25,7 @@
 #include <array>
 
 #include <mpi3/communicator.hpp>
+#include <mpi3/environment.hpp>
 
 namespace utils {
 
@@ -36,7 +37,7 @@ namespace utils {
       return end_ - start_;
     }
 		
-		distribution(const long size, const boost::mpi3::communicator & comm):
+		distribution(const long size, const boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			comm_size_(comm.size()),
       size_(size){
 			
@@ -51,6 +52,14 @@ namespace utils {
 			assert(end_ >= start_);
 		}
 
+		auto operator*=(const long factor) {
+			size_ *= factor;
+			start_ *= factor;
+			end_ *= factor;
+			
+			return *this;
+		}
+		
     auto size() const {
       return size_;
     }
@@ -77,6 +86,10 @@ namespace utils {
 
 		auto global_to_local(long global_i) const {
 			return global_i - start_;
+		}
+
+		auto comm_size() const {
+			return comm_size_;
 		}
 		
 	protected:
@@ -146,7 +159,46 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
       REQUIRE(boundary_value == 0);
     }
   }
-  
+
+
+	long factor = 13;
+
+	dist *= factor;
+	
+	SECTION("Scaled - Total"){
+		
+    REQUIRE(NN*factor == dist.size());
+		
+    auto calculated_size = dist.local_size();
+    
+    comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
+    
+    REQUIRE(NN*factor == calculated_size);
+  }
+
+  SECTION("Scaled - Upper bound"){
+    auto boundary_value = dist.end();
+    
+    comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ next, /* source = */ prev, 0, 0);
+    
+    if(comm.rank() != 0){
+      REQUIRE(boundary_value == dist.start());
+    } else {
+      REQUIRE(boundary_value == NN*factor);
+    }
+  }
+
+  SECTION("Scaled - Lower bound"){
+    auto boundary_value = dist.start();
+
+    comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ prev, /* source = */ next, 1, 1);
+    
+    if(comm.rank() != comm.size() - 1){
+      REQUIRE(boundary_value == dist.end());
+    } else {
+      REQUIRE(boundary_value == 0);
+    }
+  }
 }
 #endif
 
