@@ -69,14 +69,14 @@ namespace operations {
 		//OPTIMIZATION: this can be done more efficiently
     for(int ii = 0; ii < phi1.set_dist().local_size(); ii++){
 			type aa = 0.0;
-			for(int ip = 0; ip < phi1.basis().size(); ip++) aa += conj(phi1.matrix()[ip][ii])*phi2.matrix()[ip][ii];
+			for(int ip = 0; ip < phi1.basis().dist().local_size(); ip++) aa += conj(phi1.matrix()[ip][ii])*phi2.matrix()[ip][ii];
 			overlap_vector[ii] = aa*phi1.basis().volume_element();
     }
 
 #else
 
 		{
-			auto npoints = phi1.basis().size();
+			auto npoints = phi1.basis().dist().local_size();
 			auto vol_element = phi1.basis().volume_element();
 			auto phi1p = begin(phi1.matrix());
 			auto phi2p = begin(phi2.matrix());
@@ -98,8 +98,12 @@ namespace operations {
 		}
 		
 #endif
+
+		if(phi1.basis().dist().parallel()){
+			phi1.basis_comm().all_reduce_in_place_n(static_cast<type *>(overlap_vector.data()), overlap_vector.size(), std::plus<>{});
+		}
 		
-		return overlap_vector;		
+		return overlap_vector;
   }
 	
 	template <class field_set_type>

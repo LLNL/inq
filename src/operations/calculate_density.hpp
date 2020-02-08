@@ -31,7 +31,7 @@ namespace operations {
   template<class occupations_array_type, class field_set_type>
   basis::field<typename field_set_type::basis_type, double> calculate_density(const occupations_array_type & occupations, field_set_type & phi){
 
-    basis::field<typename field_set_type::basis_type, double> density(phi.basis());
+    basis::field<typename field_set_type::basis_type, double> density(phi.basis(), phi.basis_comm());
 
     //DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
@@ -41,7 +41,7 @@ namespace operations {
 		auto phip = begin(phi.matrix());
 		auto densityp = begin(density.linear());
 		
-		gpu::run(phi.basis().size(),
+		gpu::run(phi.basis().dist().local_size(),
 						 [=] __device__ (auto ipoint){
 							 densityp[ipoint] = 0.0;
 							 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
@@ -49,7 +49,7 @@ namespace operations {
 		
 #else
 		
-    for(int ipoint = 0; ipoint < phi.basis().size(); ipoint++){
+    for(int ipoint = 0; ipoint < phi.basis().dist().local_size(); ipoint++){
 			density.linear()[ipoint] = 0.0;
       for(int ist = 0; ist < phi.set_dist().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
     }
@@ -72,48 +72,56 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 	using namespace Catch::literals;
 
-	const int N = 100;
-	const int M = 12;
+	const int npoint = 100;
+	const int nvec = 12;
+
+	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	basis::trivial bas(N);
+	boost::mpi3::cartesian_communicator cart_comm(comm, boost::mpi3::dims_create(comm.size(), 2), true);  
+	
+	REQUIRE(cart_comm.dimension() == 2);
+	
+	auto basis_comm = cart_comm.sub({1, 0});
+	
+	basis::trivial bas(npoint, basis_comm);
 	
 	SECTION("double"){
 		
-		basis::field_set<basis::trivial, double> aa(bas, M, boost::mpi3::environment::get_world_instance());
+		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 
 		math::array<double, 1> occ(aa.set_dist().local_size());
 		
-		for(int ii = 0; ii < N; ii++){
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(ii)*(aa.set_dist().start() + jj + 1);
+				aa.matrix()[ii][jj] = sqrt(bas.dist().local_to_global(ii))*(aa.set_dist().local_to_global(jj) + 1);
 			}
 		}
 
-		for(int jj = 0; jj < aa.set_dist().local_size(); jj++) occ[jj] = 1.0/(aa.set_dist().start() + jj + 1);
+		for(int jj = 0; jj < aa.set_dist().local_size(); jj++) occ[jj] = 1.0/(aa.set_dist().local_to_global(jj) + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
-		for(int ii = 0; ii < M; ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*ii*M*(M + 1)));
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*bas.dist().local_to_global(ii)*nvec*(nvec + 1)));
 		
 	}
 	
 	SECTION("complex"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, M, boost::mpi3::environment::get_world_instance());
+		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 
-		math::array<double, 1> occ(M);
+		math::array<double, 1> occ(nvec);
 		
-		for(int ii = 0; ii < N; ii++){
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(ii)*(aa.set_dist().start() + jj + 1)*exp(complex(0.0, M_PI/65.0*ii));
+				aa.matrix()[ii][jj] = sqrt(bas.dist().local_to_global(ii))*(aa.set_dist().local_to_global(jj) + 1)*exp(complex(0.0, M_PI/65.0*bas.dist().local_to_global(ii)));
 			}
 		}
 
-		for(int jj = 0; jj < aa.set_dist().local_size(); jj++) occ[jj] = 1.0/(aa.set_dist().start() + jj + 1);
+		for(int jj = 0; jj < aa.set_dist().local_size(); jj++) occ[jj] = 1.0/(aa.set_dist().local_to_global(jj) + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
-		for(int ii = 0; ii < M; ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*ii*M*(M + 1)));
+		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*bas.dist().local_to_global(ii)*nvec*(nvec + 1)));
 		
 	}
 	

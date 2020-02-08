@@ -70,11 +70,11 @@ namespace basis {
 		}
 
 		auto cubic() const {
-			return linear_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+			return linear_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
 		auto cubic() {
-			return linear_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+			return linear_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
 		auto data() {
@@ -138,10 +138,12 @@ TEST_CASE("Class basis::field", "[basis::field]"){
   
   double ecut = 40.0;
 
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
   ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
 
-	basis::field<basis::real_space, double> ff(rs);
+	basis::field<basis::real_space, double> ff(rs, comm);
 
 	namespace fftw = boost::multi::fftw;
 
@@ -149,15 +151,19 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	REQUIRE(sizes(rs)[1] == 11);
 	REQUIRE(sizes(rs)[2] == 20);	
 
-	REQUIRE(std::get<0>(sizes(ff.linear())) == 6160);
+	if(comm.size() == 1) REQUIRE(std::get<0>(sizes(ff.linear())) == 6160);
+	if(comm.size() == 2) REQUIRE(std::get<0>(sizes(ff.linear())) == 3080);
+	if(comm.size() == 4) REQUIRE(std::get<0>(sizes(ff.linear())) == 1540);
 
-	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
+	if(comm.size() == 1) REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
+	if(comm.size() == 2) REQUIRE(std::get<0>(sizes(ff.cubic())) == 14);
+	if(comm.size() == 4) REQUIRE(std::get<0>(sizes(ff.cubic())) == 7);
 	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
 	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
 
 	ff = 12.2244;
 
-	for(int ii = 0; ii < rs.size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
+	for(int ii = 0; ii < rs.dist().local_size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
 
 }
 
