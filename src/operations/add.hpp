@@ -43,7 +43,7 @@ namespace operations {
 	auto add(const field_type & t1, const field_type & t2){
 		assert(t1.basis() == t2.basis());
 		
-		field_type tadd(t1.basis());
+		field_type tadd(t1.basis(), t1.basis_comm());
 
 		using type = typename field_type::element_type;
 
@@ -63,7 +63,7 @@ namespace operations {
 		assert(t1.basis() == t2.basis());
 		assert(t1.basis() == t3.basis());
 		
-		field_type tadd(t1.basis());
+		field_type tadd(t1.basis(), t1.basis_comm());
 
 		//DATAOPERATIONS LOOP + GPU::RUN 1D
 #ifdef HAVE_CUDA

@@ -40,6 +40,8 @@ namespace basis {
 			basis_comm_(comm),
 			linear_(basis.dist().local_size()),
 			basis_(basis){
+
+			assert(basis_.dist().comm_size() == basis_comm_.size());
     }
 
 		field(const field & coeff) = delete;

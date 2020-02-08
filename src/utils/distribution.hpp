@@ -87,6 +87,10 @@ namespace utils {
 		auto global_to_local(long global_i) const {
 			return global_i - start_;
 		}
+
+		auto comm_size() const {
+			return comm_size_;
+		}
 		
 	protected:
 
