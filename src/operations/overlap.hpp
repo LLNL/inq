@@ -98,8 +98,12 @@ namespace operations {
 		}
 		
 #endif
+
+		if(phi1.basis().dist().parallel()){
+			phi1.basis_comm().all_reduce_in_place_n(static_cast<type *>(overlap_vector.data()), overlap_vector.size(), std::plus<>{});
+		}
 		
-		return overlap_vector;		
+		return overlap_vector;
   }
 	
 	template <class field_set_type>
