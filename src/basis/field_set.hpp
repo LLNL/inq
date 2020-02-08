@@ -47,11 +47,12 @@ namespace basis {
 			:full_comm_(comm),
 			 basis_comm_(comm.sub({1, 0})),
 			 set_comm_(comm.sub({0, 1})),
-			 set_dist_(num_vectors, comm),
+			 set_dist_(num_vectors, set_comm_),
 			 matrix_({basis.dist().local_size(), set_dist_.local_size()}),
 			 num_vectors_(num_vectors),
 			 basis_(basis)
 		{
+			assert(basis_.dist().comm_size() == basis_comm_.size());
     }
 
 		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance())
@@ -121,11 +122,11 @@ namespace basis {
 		}
 		
 		auto cubic() const {
-			return matrix_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
 		auto cubic() {
-			return matrix_.partitioned(basis_.sizes()[1]*basis_.sizes()[0]).partitioned(basis_.sizes()[0]);
+			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
 	private:
@@ -162,8 +163,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	REQUIRE(cart_comm.dimension() == 2);
 
-	auto set_comm = cart_comm.sub({1, 0});
-	auto basis_comm = cart_comm.sub({0, 1});	
+	auto set_comm = cart_comm.sub({0, 1});
+	auto basis_comm = cart_comm.sub({1, 0});	
 	
   ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
 
@@ -173,21 +174,30 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	REQUIRE(sizes(rs)[0] == 28);
 	REQUIRE(sizes(rs)[1] == 11);
-	REQUIRE(sizes(rs)[2] == 20);	
+	REQUIRE(sizes(rs)[2] == 20);
 
-	REQUIRE(std::get<0>(sizes(ff.matrix())) == 6160);	
-	if(comm.size() == 1) REQUIRE(std::get<1>(sizes(ff.matrix())) == 12);
-	if(comm.size() == 2) REQUIRE(std::get<1>(sizes(ff.matrix())) == 6);
+	//std::cout << ff.basis_comm().size() << " x " << ff.set_comm().size() << std::endl;
+	//	std::cout << rs.dist().comm_size() << std::endl;
 
-	REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
+	if(ff.basis_comm().size() == 1) REQUIRE(std::get<0>(sizes(ff.matrix())) == 6160);
+	if(ff.basis_comm().size() == 2) REQUIRE(std::get<0>(sizes(ff.matrix())) == 6160/2);
+	if(ff.set_comm().size() == 1) REQUIRE(std::get<1>(sizes(ff.matrix())) == 12);
+	if(ff.set_comm().size() == 2) REQUIRE(std::get<1>(sizes(ff.matrix())) == 6);
+	if(ff.set_comm().size() == 3) REQUIRE(std::get<1>(sizes(ff.matrix())) == 4);
+	if(ff.set_comm().size() == 4) REQUIRE(std::get<1>(sizes(ff.matrix())) == 3);
+	if(ff.set_comm().size() == 6) REQUIRE(std::get<1>(sizes(ff.matrix())) == 2);
+
+	if(ff.basis_comm().size() == 1) REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
+	if(ff.basis_comm().size() == 2) REQUIRE(std::get<0>(sizes(ff.cubic())) == 14);
+	if(ff.basis_comm().size() == 4) REQUIRE(std::get<0>(sizes(ff.cubic())) == 7);
 	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
 	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
-	if(comm.size() == 1) REQUIRE(std::get<3>(sizes(ff.cubic())) == 12);
-	if(comm.size() == 2) REQUIRE(std::get<3>(sizes(ff.cubic())) == 6);
+	if(ff.set_comm().size() == 1) REQUIRE(std::get<3>(sizes(ff.cubic())) == 12);
+	if(ff.set_comm().size() == 2) REQUIRE(std::get<3>(sizes(ff.cubic())) == 6);
 
 	ff = 12.2244;
 
-	for(int ii = 0; ii < rs.size(); ii++){
+	for(int ii = 0; ii < ff.basis().dist().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_dist().local_size(); jj++){
 			REQUIRE(ff.matrix()[ii][jj] == 12.2244_a);
 		}
