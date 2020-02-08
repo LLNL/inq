@@ -30,10 +30,10 @@ namespace operations {
 	template <class array_1d, class field_set_type>
   void shift(const array_1d & factor, const field_set_type & shift, field_set_type & phi, double scale = 1.0){
     
-    assert(size(factor) == phi.set_size());
+    assert(size(factor) == phi.set_dist().local_size());
 
 		//DATAOPERATIONS GPU::RUN 2D 
-		gpu::run(phi.set_size(), phi.basis().dist().local_size(),
+		gpu::run(phi.set_dist().local_size(), phi.basis().dist().local_size(),
 						 [factorp = begin(factor), shiftp = begin(shift.matrix()), phip = begin(phi.matrix()), scale]
 						 GPU_LAMBDA (auto ist, auto ipoint){
 							 phip[ipoint][ist] += scale*(factorp[ist]*shiftp[ipoint][ist]);
@@ -53,76 +53,83 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	basis::trivial bas(npoint, comm);
+	boost::mpi3::cartesian_communicator cart_comm(comm, boost::mpi3::dims_create(comm.size(), 2), true);
+
+	auto basis_comm = cart_comm.sub({1, 0});
+	
+	basis::trivial bas(npoint, basis_comm);
 	
 	SECTION("double"){
 		
-		basis::field_set<basis::trivial, double> aa(bas, nvec);
-		basis::field_set<basis::trivial, double> bb(bas, nvec);
+		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
+		basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
 
-		math::array<double, 1> factor(nvec);
+		math::array<double, 1> factor(aa.set_dist().local_size());
 		
-		for(int jj = 0; jj < nvec; jj++){
+		for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
+			auto jjg = aa.set_dist().local_to_global(jj);
 			for(int ii = 0; ii < bas.dist().local_size(); ii++){
 				auto iig = bas.dist().local_to_global(ii);
-				aa.matrix()[ii][jj] = 1.0 + 0.765*iig*jj;
+				aa.matrix()[ii][jj] = 1.0 + 0.765*iig*jjg;
 				bb.matrix()[ii][jj] = iig;
 			}
-			factor[jj] = 2.0*0.765*jj;
+			factor[jj] = 2.0*0.765*jjg;
 		}
 
 		operations::shift(factor, bb, aa, -0.5);
 				
 		for(int ii = 0; ii < bas.dist().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++) REQUIRE(aa.matrix()[ii][jj] == Approx(1.0));
+			for(int jj = 0; jj < aa.set_dist().local_size(); jj++) REQUIRE(aa.matrix()[ii][jj] == Approx(1.0));
 		}
 	}
 	
 	SECTION("complex"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, nvec);
-		basis::field_set<basis::trivial, complex> bb(bas, nvec);
+		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
+		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
-		math::array<complex, 1> factor(nvec);
+		math::array<complex, 1> factor(aa.set_dist().local_size());
 		
-		for(int jj = 0; jj < nvec; jj++){
+		for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
+			auto jjg = aa.set_dist().local_to_global(jj);
 			for(int ii = 0; ii < bas.dist().local_size(); ii++){
 				auto iig = bas.dist().local_to_global(ii);
-				aa.matrix()[ii][jj] = complex(iig, 1.0 + 0.765*iig*jj);
+				aa.matrix()[ii][jj] = complex(iig, 1.0 + 0.765*iig*jjg);
 				bb.matrix()[ii][jj] = iig;
 			}
-			factor[jj] = complex(0.0, 2.0*0.765*jj);
+			factor[jj] = complex(0.0, 2.0*0.765*jjg);
 		}
 
 		operations::shift(factor, bb, aa, -0.5);
 				
 		for(int ii = 0; ii < bas.dist().local_size(); ii++){
 			auto iig = bas.dist().local_to_global(ii);
-			for(int jj = 0; jj < nvec; jj++) REQUIRE(real(aa.matrix()[ii][jj]) == Approx(iig));
-			for(int jj = 0; jj < nvec; jj++) REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
+			for(int jj = 0; jj < aa.set_dist().local_size(); jj++) REQUIRE(real(aa.matrix()[ii][jj]) == Approx(iig));
+			for(int jj = 0; jj < aa.set_dist().local_size(); jj++) REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 		}
 	}	
 	
 	SECTION("mixed types"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, nvec);
-		basis::field_set<basis::trivial, complex> bb(bas, nvec);
+		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
+		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
-		math::array<double, 1> factor(nvec);
+		math::array<double, 1> factor(aa.set_dist().local_size());
 		
-		for(int jj = 0; jj < nvec; jj++){
+		for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
+			auto jjg = aa.set_dist().local_to_global(jj);
 			for(int ii = 0; ii < bas.dist().local_size(); ii++){
 				auto iig = bas.dist().local_to_global(ii);
-				aa.matrix()[ii][jj] = complex(iig, 1.0 + 0.765*iig*jj);
+				aa.matrix()[ii][jj] = complex(iig, 1.0 + 0.765*iig*jjg);
 				bb.matrix()[ii][jj] = complex(0.0, iig);
 			}
-			factor[jj] = 2.0*0.765*jj;
+			factor[jj] = 2.0*0.765*jjg;
 		}
 
 		operations::shift(factor, bb, aa, -0.5);
 				
 		for(int ii = 0; ii < bas.dist().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++) {
+			for(int jj = 0; jj < aa.set_dist().local_size(); jj++) {
 				auto iig = bas.dist().local_to_global(ii);
 				REQUIRE(real(aa.matrix()[ii][jj]) == Approx(iig));
 				REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
