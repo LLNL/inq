@@ -29,6 +29,8 @@
 #endif
 
 #include <mpi3/environment.hpp>
+#include <mpi3/cartesian_communicator.hpp>
+#include <mpi3/dims_create.hpp>
 
 namespace basis {
 	
@@ -41,15 +43,20 @@ namespace basis {
 		typedef math::array<type, 2> internal_array_type;
 		typedef type element_type;
 
-		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			set_comm_(comm),
-			set_dist_(num_vectors, comm),
-			matrix_({basis.size(), set_dist_.local_size()}),
-			num_vectors_(num_vectors),
-			basis_(basis)
+		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator && comm)
+			:set_comm_(comm),
+			 set_dist_(num_vectors, comm),
+			 matrix_({basis.size(), set_dist_.local_size()}),
+			 num_vectors_(num_vectors),
+			 basis_(basis)
 		{
     }
 
+		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance())
+			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator(comm, boost::mpi3::dims_create(comm.size(), 2), true))
+		{
+		}
+			
 		field_set(const field_set & coeff) = default;
 		field_set(field_set && coeff) = default;
 		field_set & operator=(const field_set & coeff) = default;
@@ -113,7 +120,7 @@ namespace basis {
 
 	private:
 
-		mutable boost::mpi3::communicator set_comm_;
+		mutable boost::mpi3::cartesian_communicator set_comm_;
 		utils::distribution set_dist_;
 		internal_array_type matrix_;
 		int num_vectors_;
@@ -128,6 +135,8 @@ namespace basis {
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
 
+#include <mpi3/cartesian_communicator.hpp>
+
 TEST_CASE("Class basis::field_set", "[basis::field_set]"){
   
   using namespace Catch::literals;
@@ -135,12 +144,20 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
   
   double ecut = 40.0;
 
-  ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
-
 	auto comm = boost::mpi3::environment::get_world_instance();
+
+	boost::mpi3::cartesian_communicator cart_comm(comm, boost::mpi3::dims_create(comm.size(), 2), true);  
+
+	REQUIRE(cart_comm.dimension() == 2);
+
+	auto set_comm = cart_comm.sub({1, 0});
+	auto basis_comm = cart_comm.sub({0, 1});	
 	
-	basis::field_set<basis::real_space, double> ff(rs, 12, comm);
+  ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
+
+  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), basis_comm);
+
+	basis::field_set<basis::real_space, double> ff(rs, 12, cart_comm);
 
 	REQUIRE(sizes(rs)[0] == 28);
 	REQUIRE(sizes(rs)[1] == 11);
