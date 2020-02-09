@@ -38,20 +38,37 @@ namespace operations {
 	template <class field_set_type>
   auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 
+		// no state parallelization for now
+		assert(not phi1.set_dist().parallel());
+		
 		using boost::multi::blas::gemm;
 		using boost::multi::blas::hermitized;
 
-		return gemm(phi1.basis().volume_element(), hermitized(phi2.matrix()), phi1.matrix());
+		auto overlap_matrix = gemm(phi1.basis().volume_element(), hermitized(phi2.matrix()), phi1.matrix());
 
+		if(phi1.basis().dist().parallel()){
+			phi1.basis_comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data()), overlap_matrix.num_elements(), std::plus<>{});
+		}
+		
+		return overlap_matrix;
   }
 
 	template <class field_set_type>
 	auto overlap(const field_set_type & phi){
+
+		// no state parallelization for now
+		assert(not phi.set_dist().parallel());
+
 		using boost::multi::blas::herk;
 		using boost::multi::blas::hermitized;
 		
-		return herk(phi.basis().volume_element(), hermitized(phi.matrix()));
+		auto overlap_matrix = herk(phi.basis().volume_element(), hermitized(phi.matrix()));
 
+		if(phi.basis().dist().parallel()){
+			phi.basis_comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data()), overlap_matrix.num_elements(), std::plus<>{});
+		}
+		
+		return overlap_matrix;
 	}
 
 	template <class field_set_type>
@@ -138,17 +155,29 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		const int npoint = 100;
 		const int nvec = 12;
 			
-		basis::trivial bas(npoint);
+		auto comm = boost::mpi3::environment::get_world_instance();
+		
+		boost::mpi3::cartesian_communicator cart_comm(comm, {comm.size(), 1}, true);
+
+		REQUIRE(cart_comm.dimension() == 2);
+		
+		auto basis_comm = cart_comm.sub({1, 0});
+
+		REQUIRE(basis_comm.size() == comm.size());
+		
+		basis::trivial bas(npoint, basis_comm);
 
 		SECTION("double"){
 		
-			basis::field_set<basis::trivial, double> aa(bas, nvec);
-			basis::field_set<basis::trivial, double> bb(bas, nvec);
+			basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
+			basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
 
-			for(int ii = 0; ii < npoint; ii++){
+			for(int ii = 0; ii < bas.dist().local_size(); ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					aa.matrix()[ii][jj] = 20.0*(ii + 1)*sqrt(jj);
-					bb.matrix()[ii][jj] = -0.05/(ii + 1)*sqrt(jj);
+					auto jjg = aa.set_dist().local_to_global(jj);
+					auto iig = bas.dist().local_to_global(ii);
+					aa.matrix()[ii][jj] = 20.0*(iig + 1)*sqrt(jjg);
+					bb.matrix()[ii][jj] = -0.05/(iig + 1)*sqrt(jjg);
 				}
 			}
 
@@ -166,9 +195,11 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 				for(int jj = 0; jj < nvec; jj++) REQUIRE(dd[jj] == Approx(-jj));
 			}
 			
-			for(int ii = 0; ii < npoint; ii++){
+			for(int ii = 0; ii < bas.dist().local_size(); ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					aa.matrix()[ii][jj] = sqrt(ii)*sqrt(jj);
+					auto jjg = aa.set_dist().local_to_global(jj);
+					auto iig = bas.dist().local_to_global(ii);
+					aa.matrix()[ii][jj] = sqrt(iig)*sqrt(jjg);
 				}
 			}
 
@@ -194,13 +225,15 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 		SECTION("complex"){
 		
-			basis::field_set<basis::trivial, complex> aa(bas, nvec);
-			basis::field_set<basis::trivial, complex> bb(bas, nvec);
+			basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
+			basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
-			for(int ii = 0; ii < npoint; ii++){
+			for(int ii = 0; ii < bas.dist().local_size(); ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					aa.matrix()[ii][jj] = 20.0*(ii + 1)*sqrt(jj)*exp(complex(0.0, -M_PI/4 + M_PI/7*ii));
-					bb.matrix()[ii][jj] = -0.05/(ii + 1)*sqrt(jj)*exp(complex(0.0, M_PI/4 + M_PI/7*ii));
+					auto jjg = aa.set_dist().local_to_global(jj);
+					auto iig = bas.dist().local_to_global(ii);
+					aa.matrix()[ii][jj] = 20.0*(iig + 1)*sqrt(jjg)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig));
+					bb.matrix()[ii][jj] = -0.05/(iig + 1)*sqrt(jjg)*exp(complex(0.0, M_PI/4 + M_PI/7*iig));
 				}
 			}
 
@@ -229,9 +262,11 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 				}
 			}
 			
-			for(int ii = 0; ii < npoint; ii++){
+			for(int ii = 0; ii < bas.dist().local_size(); ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					aa.matrix()[ii][jj] = sqrt(ii)*sqrt(jj)*exp(complex(0.0, M_PI/65.0*ii));
+					auto jjg = aa.set_dist().local_to_global(jj);
+					auto iig = bas.dist().local_to_global(ii);
+					aa.matrix()[ii][jj] = sqrt(iig)*sqrt(jjg)*exp(complex(0.0, M_PI/65.0*iig));
 				}
 			}
 
@@ -263,17 +298,18 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 		SECTION("Overlap single double"){
 			
-			basis::field<basis::trivial, double> aa(bas);
-			basis::field<basis::trivial, double> bb(bas);
+			basis::field<basis::trivial, double> aa(bas, basis_comm);
+			basis::field<basis::trivial, double> bb(bas, basis_comm);
 			
 			aa = 2.0;
 			bb = 0.8;
 		
 			REQUIRE(operations::overlap_single(aa, bb) == 1.6_a);
 			
-			for(int ii = 0; ii < npoint; ii++)	{
-				aa.linear()[ii] = pow(ii + 1, 2);
-				bb.linear()[ii] = 1.0/(ii + 1);
+			for(int ii = 0; ii < bas.dist().local_size(); ii++)	{
+				auto iig = bas.dist().local_to_global(ii);
+				aa.linear()[ii] = pow(iig + 1, 2);
+				bb.linear()[ii] = 1.0/(iig + 1);
 			}
 			
 			REQUIRE(operations::overlap_single(aa, bb) == Approx(0.5*npoint*(npoint + 1.0)*bas.volume_element()));
@@ -282,8 +318,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 		SECTION("Integral product complex"){
 			
-			basis::field<basis::trivial, complex> aa(bas);
-			basis::field<basis::trivial, complex> bb(bas);
+			basis::field<basis::trivial, complex> aa(bas, basis_comm);
+			basis::field<basis::trivial, complex> bb(bas, basis_comm);
 			
 			aa = complex(2.0, -0.3);
 			bb = complex(0.8, 0.01);
@@ -291,9 +327,10 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			REQUIRE(real(operations::overlap_single(aa, bb)) == 1.597_a);
 			REQUIRE(imag(operations::overlap_single(aa, bb)) == 0.26_a);
 		
-			for(int ii = 0; ii < npoint; ii++)	{
-				aa.linear()[ii] = pow(ii + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(ii + 1)));
-				bb.linear()[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(ii + 1)));
+			for(int ii = 0; ii < bas.dist().local_size(); ii++)	{
+				auto iig = bas.dist().local_to_global(ii);
+				aa.linear()[ii] = pow(iig + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(iig + 1)));
+				bb.linear()[ii] = 1.0/(iig + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(iig + 1)));
 			}
 
 			REQUIRE(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
@@ -304,9 +341,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		SECTION("complex 1x1"){
 
 			const int nvec = 1;
-			const int npoint = 60000;
 			
-			basis::field_set<basis::trivial, complex> aa(bas, nvec);
+			basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 
 			{
 				auto cc = operations::overlap(aa);

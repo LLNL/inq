@@ -43,7 +43,7 @@ namespace basis {
 		typedef math::array<type, 2> internal_array_type;
 		typedef type element_type;
 
-		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator && comm)
+		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator const & comm)
 			:full_comm_(comm),
 			 basis_comm_(comm.sub({1, 0})),
 			 set_comm_(comm.sub({0, 1})),
