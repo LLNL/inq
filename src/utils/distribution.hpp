@@ -41,14 +41,14 @@ namespace utils {
 			comm_size_(comm.size()),
       size_(size){
 			
-      auto bsize = (size_ + comm_size_ - 1)/comm_size_;
+      bsize_ = (size_ + comm_size_ - 1)/comm_size_;
 
-			if(size_ > 0) assert(bsize > 0);
+			if(size_ > 0) assert(bsize_ > 0);
 
-      start_ = bsize*comm.rank();
-      end_ = std::min(bsize*(comm.rank() + 1), size_);
+      start_ = bsize_*comm.rank();
+      end_ = std::min(bsize_*(comm.rank() + 1), size_);
 
-      assert(local_size() <= bsize);
+      assert(local_size() <= bsize_);
 			assert(end_ >= start_);
 		}
 
@@ -91,6 +91,10 @@ namespace utils {
 		auto comm_size() const {
 			return comm_size_;
 		}
+
+		auto block_size() const {
+			return bsize_;
+		}
 		
 	protected:
 
@@ -98,6 +102,7 @@ namespace utils {
     long size_;
     long start_;
     long end_;
+		long bsize_;
     
   };
 }
