@@ -81,7 +81,7 @@ namespace gpu {
 
 #else
 
-		for(int ii = 0; ii < size; ii++) kernel(ii);
+		for(size_t ii = 0; ii < size; ii++) kernel(ii);
 		
 #endif
     
@@ -119,8 +119,8 @@ namespace gpu {
     cudaDeviceSynchronize();
 
 #else
-		for(int iy = 0; iy < sizey; iy++){
-			for(int ix = 0; ix < sizex; ix++){
+		for(size_t iy = 0; iy < sizey; iy++){
+			for(size_t ix = 0; ix < sizex; ix++){
 				kernel(ix, iy);
 			}
 		}
@@ -155,9 +155,9 @@ namespace gpu {
 
 #else
 
-		for(int iz = 0; iz < sizez; iz++){
-			for(int iy = 0; iy < sizey; iy++){
-				for(int ix = 0; ix < sizex; ix++){
+		for(size_t iz = 0; iz < sizez; iz++){
+			for(size_t iy = 0; iy < sizey; iy++){
+				for(size_t ix = 0; ix < sizex; ix++){
 					kernel(ix, iy, iz);
 				}
 			}
@@ -197,10 +197,10 @@ namespace gpu {
 
 #else
 
-		for(int iw = 0; iw < sizew; iw++){
-			for(int iz = 0; iz < sizez; iz++){
-				for(int iy = 0; iy < sizey; iy++){
-					for(int ix = 0; ix < sizex; ix++){
+		for(size_t iw = 0; iw < sizew; iw++){
+			for(size_t iz = 0; iz < sizez; iz++){
+				for(size_t iy = 0; iy < sizey; iy++){
+					for(size_t ix = 0; ix < sizex; ix++){
 						kernel(ix, iy, iz, iw);
 					}
 				}
