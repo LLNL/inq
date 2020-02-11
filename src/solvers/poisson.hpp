@@ -394,7 +394,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		}
 	}
 
-#if 0
+
 	{
 
 		const double ll = 8.0;
@@ -447,7 +447,6 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		}
 
 	}
-#endif
 
 }
 
