@@ -63,14 +63,19 @@ namespace solvers {
 
 				assert(local_n0 == density.basis().cubic_dist(0).local_size());
 				assert(local_0_start == density.basis().cubic_dist(0).start());
-				assert(alloc_local == density.linear().size());
 
-				auto plan = fftw_mpi_plan_dft_3d(density.basis().sizes()[0], density.basis().sizes()[1], density.basis().sizes()[2],
-																				 (fftw_complex *) const_cast<complex *>(static_cast<const complex *>(density.linear().data())), (fftw_complex *) static_cast<const complex *>(potential_fs.linear().data()),
-																				 &density.basis_comm(), FFTW_FORWARD, FFTW_ESTIMATE);
+				auto buff = fftw_alloc_complex(alloc_local);
+
+				memcpy(buff, static_cast<const complex *>(density.linear().data()), density.linear().size()*sizeof(complex));
+				
+				auto plan = fftw_mpi_plan_dft_3d(density.basis().sizes()[0], density.basis().sizes()[1], density.basis().sizes()[2], buff, buff, &density.basis_comm(), FFTW_FORWARD, FFTW_ESTIMATE);
 
 				fftw_execute(plan);
-				
+
+				memcpy(static_cast<complex *>(potential_fs.linear().data()), buff, potential_fs.linear().size()*sizeof(complex));
+
+				fftw_free(buff);
+							
 				fftw_destroy_plan(plan);
 
 			}
@@ -111,13 +116,18 @@ namespace solvers {
 				
 				assert(local_n0 == potential_fs.basis().cubic_dist(0).local_size());
 				assert(local_0_start == potential_fs.basis().cubic_dist(0).start());
-				assert(alloc_local == potential_fs.linear().size());
 
-				auto plan = fftw_mpi_plan_dft_3d(potential_fs.basis().sizes()[0], potential_fs.basis().sizes()[1], potential_fs.basis().sizes()[2],
-																				 (fftw_complex *) static_cast<complex *>(potential_fs.linear().data()), (fftw_complex *) static_cast<complex *>(potential_rs.linear().data()),
-																				 &potential_fs.basis_comm(), FFTW_BACKWARD, FFTW_ESTIMATE);
+				auto buff = fftw_alloc_complex(alloc_local);
+
+				memcpy(buff, static_cast<complex *>(potential_fs.linear().data()), potential_fs.linear().size()*sizeof(complex));
+				
+				auto plan = fftw_mpi_plan_dft_3d(potential_fs.basis().sizes()[0], potential_fs.basis().sizes()[1], potential_fs.basis().sizes()[2], buff, buff, &potential_fs.basis_comm(), FFTW_BACKWARD, FFTW_ESTIMATE);
 
 				fftw_execute(plan);
+				
+				memcpy(static_cast<complex *>(potential_rs.linear().data()), buff, potential_rs.linear().size()*sizeof(complex));
+
+				fftw_free(buff);
 				
 				fftw_destroy_plan(plan);
 
