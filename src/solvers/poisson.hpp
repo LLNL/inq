@@ -206,21 +206,21 @@ namespace solvers {
 			using basis::field;
 			
 			//For the moment we copy to a complex array.
-			field<basis_type, complex> complex_density(density.basis());
+			field<basis_type, complex> complex_density(density.basis(), density.basis_comm());
 			
 			complex_density.linear() = density.linear();
 			
 			auto complex_potential = operator()(complex_density);
 			
-			field<basis_type, double> real_potential(density.basis());
+			field<basis_type, double> real_potential(density.basis(), density.basis_comm());
 			
 			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(real_potential.size(),
+			gpu::run(density.basis().dist().local_size(),
 							 [rp = begin(real_potential.linear()), cp = begin(complex_potential.linear())]
 							 GPU_LAMBDA (auto ii){
 								 rp[ii] = real(cp[ii]);
 							 });
-			
+
 			return real_potential;
 			
 		}
@@ -346,17 +346,21 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 	
 		}
 
-		/*
+
 		SECTION("Real plane wave"){
 
-			field<real_space, double> rdensity(rs);
+			field<real_space, double> rdensity(rs, comm);
 
 			double kk = 8.0*M_PI/rs.rlength()[1];
 		
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-						double yy = rs.rvector(ix, iy, iz)[1];
+						
+						auto ixg = rs.cubic_dist(0).local_to_global(ix);
+						auto iyg = rs.cubic_dist(1).local_to_global(iy);
+						auto izg = rs.cubic_dist(2).local_to_global(iz);						
+						double yy = rs.rvector(ixg, iyg, izg)[1];
 						rdensity.cubic()[ix][iy][iz] = cos(kk*yy);
 					}
 				}
@@ -380,6 +384,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		}
 	}
 
+#if 0
 	{
 
 		const double ll = 8.0;
@@ -431,9 +436,8 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 		}
 
-		*/
-
 	}
+#endif
 
 }
 
