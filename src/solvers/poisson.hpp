@@ -52,7 +52,12 @@ namespace solvers {
 
 			basis::field<basis::fourier_space, complex> potential_fs(fourier_basis, density.basis_comm());
 
-			if(density.basis().dist().parallel()) {
+			if(not density.basis().dist().parallel()) {
+
+				potential_fs.cubic() = fftw::dft(density.cubic(), fftw::forward);
+
+			} else {
+				
 				ptrdiff_t local_n0, local_0_start;
 				auto alloc_local = fftw_mpi_local_size_3d(density.basis().sizes()[0], density.basis().sizes()[1], density.basis().sizes()[2], &density.basis_comm(), &local_n0, &local_0_start);
 
@@ -67,8 +72,6 @@ namespace solvers {
 				
 				fftw_destroy_plan(plan);
 
-			} else {
-				potential_fs.cubic() = fftw::dft(density.cubic(), fftw::forward);
 			}
 
 			const double scal = (-4.0*M_PI)/potential_fs.basis().size();
@@ -82,7 +85,7 @@ namespace solvers {
 						auto izg = potential_fs.basis().cubic_dist(2).local_to_global(iz);
 
 						auto g2 = potential_fs.basis().g2(ixg, iyg, izg);
-						
+
 						if(potential_fs.basis().g_is_zero(ixg, iyg, izg) or fourier_basis.outside_sphere(g2)){
 							potential_fs.cubic()[ix][iy][iz] = 0.0;
 							continue;
@@ -95,7 +98,11 @@ namespace solvers {
 
 			basis::field<basis_type, complex> potential_rs(density.basis(), density.basis_comm());
 
-			if(density.basis().dist().parallel()) {
+			if(not density.basis().dist().parallel()) {
+
+				potential_rs.cubic() = fftw::dft(potential_fs.cubic(), fftw::backward);
+				
+			} else {
 
 				ptrdiff_t local_n0, local_0_start;
 
@@ -111,11 +118,11 @@ namespace solvers {
 				fftw_execute(plan);
 				
 				fftw_destroy_plan(plan);
-			} else {
-				potential_rs.cubic() = fftw::dft(potential_fs.cubic(), fftw::backward);
+
 			}
 
 			return potential_rs;
+			
 		}
 
 		auto solve_finite(const basis::field<basis_type, complex> & density) const {
@@ -264,12 +271,16 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+						auto ixg = rs.cubic_dist(0).local_to_global(ix);
+						auto iyg = rs.cubic_dist(1).local_to_global(iy);
+						auto izg = rs.cubic_dist(2).local_to_global(iz);
+
 						density.cubic()[ix][iy][iz] = 0.0;
+
+						if(ixg == 0 and iyg == 0 and izg == 0) density.cubic()[ix][iy][iz] = -1.0;
 					}
 				}
 			}
-
-			density.cubic()[0][0][0] = -1.0;
 		
 			auto potential = psolver(density);
 		
@@ -292,7 +303,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			REQUIRE(sum[0] == 59.7758543176_a);
 			REQUIRE(fabs(sum[1]) <= 1e-12);
 		
-			REQUIRE(real(potential.cubic()[0][0][0]) == -0.0241426581_a);
+			if(rs.cubic_dist(0).start() == 0 and rs.cubic_dist(1).start() == 0 and rs.cubic_dist(2).start() == 0) REQUIRE(real(potential.cubic()[0][0][0]) == -0.0241426581_a);
 		}
 
 		SECTION("Plane wave"){
@@ -302,7 +313,12 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-						double xx = rs.rvector(ix, iy, iz)[0];
+						
+						auto ixg = rs.cubic_dist(0).local_to_global(ix);
+						auto iyg = rs.cubic_dist(1).local_to_global(iy);
+						auto izg = rs.cubic_dist(2).local_to_global(iz);
+						
+						double xx = rs.rvector(ixg, iyg, izg)[0];
 						density.cubic()[ix][iy][iz] = complex(cos(kk*xx), sin(kk*xx));
 					
 					}
