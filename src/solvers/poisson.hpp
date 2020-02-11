@@ -48,7 +48,7 @@ namespace solvers {
 		auto solve_periodic(const basis::field<basis_type, complex> & density) const {
 			namespace fftw = boost::multi::fftw;
 			
-			basis::fourier_space fourier_basis(density.basis());
+			basis::fourier_space fourier_basis(density.basis(), density.basis_comm());
 
 			basis::field<basis::fourier_space, complex> potential_fs(fourier_basis, density.basis_comm());
 
@@ -58,6 +58,50 @@ namespace solvers {
 
 			} else {
 				
+				auto tmp = fftw::dft({false, true, true}, density.cubic(), fftw::forward);
+
+				int xblock = density.basis().cubic_dist(0).block_size();
+				int zblock = density.basis().cubic_dist(2).block_size();
+					
+				math::array<complex, 4> send_buffer({density.basis_comm().size(), density.basis().local_sizes()[1], density.basis().cubic_dist(1).local_size(), zblock});
+				
+				for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
+					for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
+
+						int dest = 0;
+						for(int izb = 0; izb < density.basis().local_sizes()[2]; izb += zblock){
+							
+							for(int iz = 0; iz < std::min(zblock, density.basis().local_sizes()[2] - izb); iz++){
+								send_buffer[dest][ix][iy][iz] = tmp[ix][iy][izb + iz];
+							}
+							dest++;
+						}
+					}
+				}
+
+				math::array<complex, 4> recv_buffer({density.basis_comm().size(), density.basis().cubic_dist(0).block_size(), density.basis().cubic_dist(1).local_size(), zblock});
+				
+				density.basis_comm().all_to_all_n(send_buffer.data(), send_buffer[0].num_elements(), recv_buffer.data());
+
+				int src = 0;
+				for(int ixb = 0; ixb < potential_fs.basis().local_sizes()[0]; ixb += xblock){
+
+					for(int ix = 0; ix < std::min(xblock, density.basis().local_sizes()[0] - ixb); ix++){
+						
+						for(int iy = 0; iy < potential_fs.basis().local_sizes()[1]; iy++){
+							for(int iz = 0; iz < potential_fs.basis().local_sizes()[2]; iz++){
+								tmp[ixb + ix][iy][iz] = recv_buffer[src][ix][iy][iz];
+							}
+						}
+					}
+					
+					src++;
+					
+				}
+				
+				potential_fs.cubic() = fftw::dft({true, false, false}, tmp, fftw::forward);
+				
+#if 0
 				ptrdiff_t local_n0, local_0_start;
 				auto alloc_local = fftw_mpi_local_size_3d(density.basis().sizes()[0], density.basis().sizes()[1], density.basis().sizes()[2], &density.basis_comm(), &local_n0, &local_0_start);
 
@@ -77,7 +121,7 @@ namespace solvers {
 				fftw_free(buff);
 							
 				fftw_destroy_plan(plan);
-
+#endif
 			}
 
 			const double scal = (-4.0*M_PI)/potential_fs.basis().size();
