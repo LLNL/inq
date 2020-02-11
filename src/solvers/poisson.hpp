@@ -66,7 +66,8 @@ namespace solvers {
 				assert(alloc_local == density.linear().size());
 
 				auto plan = fftw_mpi_plan_dft_3d(density.basis().sizes()[0], density.basis().sizes()[1], density.basis().sizes()[2],
-																				 (fftw_complex *) const_cast<complex *>(density.linear().data()), (fftw_complex *) potential_fs.linear().data(), &density.basis_comm(), FFTW_FORWARD, FFTW_ESTIMATE);
+																				 (fftw_complex *) const_cast<complex *>(static_cast<const complex *>(density.linear().data())), (fftw_complex *) static_cast<const complex *>(potential_fs.linear().data()),
+																				 &density.basis_comm(), FFTW_FORWARD, FFTW_ESTIMATE);
 
 				fftw_execute(plan);
 				
@@ -113,7 +114,8 @@ namespace solvers {
 				assert(alloc_local == potential_fs.linear().size());
 
 				auto plan = fftw_mpi_plan_dft_3d(potential_fs.basis().sizes()[0], potential_fs.basis().sizes()[1], potential_fs.basis().sizes()[2],
-																				 (fftw_complex *) const_cast<complex *>(potential_fs.linear().data()), (fftw_complex *) potential_rs.linear().data(), &potential_fs.basis_comm(), FFTW_BACKWARD, FFTW_ESTIMATE);
+																				 (fftw_complex *) static_cast<complex *>(potential_fs.linear().data()), (fftw_complex *) static_cast<complex *>(potential_rs.linear().data()),
+																				 &potential_fs.basis_comm(), FFTW_BACKWARD, FFTW_ESTIMATE);
 
 				fftw_execute(plan);
 				
