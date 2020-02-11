@@ -55,6 +55,8 @@ namespace basis {
 			
 			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
 
+			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();
+			
 		}
 
     GPU_FUNCTION const math::vec3d & rspacing() const{
@@ -92,6 +94,10 @@ namespace basis {
 			return nr_;
 		}
 
+		auto & local_sizes() const {
+			return nr_local_;
+		}
+		
 		auto periodic_dimensions() const {
 			return periodic_dimensions_;
 		}
@@ -114,6 +120,9 @@ namespace basis {
 		ions::UnitCell cell_;
 
     std::array<int, 3> nr_;
+
+		std::array<int, 3> nr_local_;
+		
     std::array<int, 3> ng_;
 
     math::vec3d rspacing_;
