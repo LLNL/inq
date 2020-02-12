@@ -77,11 +77,9 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	boost::mpi3::cartesian_communicator cart_comm(comm, boost::mpi3::dims_create(comm.size(), 2), true);  
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
 	
-	REQUIRE(cart_comm.dimension() == 2);
-	
-	auto basis_comm = cart_comm.sub({1, 0});
+	auto basis_comm = cart_comm.axis(1);
 	
 	basis::trivial bas(npoint, basis_comm);
 	

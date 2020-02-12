@@ -47,52 +47,79 @@ namespace solvers {
 
 		auto solve_periodic(const basis::field<basis_type, complex> & density) const {
 			namespace fftw = boost::multi::fftw;
-			
-			basis::fourier_space fourier_basis(density.basis());
+
+			const basis::real_space & real_basis = density.basis();
+			basis::fourier_space fourier_basis(real_basis, density.basis_comm());
 
 			basis::field<basis::fourier_space, complex> potential_fs(fourier_basis, density.basis_comm());
 
-			if(not density.basis().dist().parallel()) {
+			if(not real_basis.dist().parallel()) {
 
 				potential_fs.cubic() = fftw::dft(density.cubic(), fftw::forward);
-
+				
 			} else {
 				
-				ptrdiff_t local_n0, local_0_start;
-				auto alloc_local = fftw_mpi_local_size_3d(density.basis().sizes()[0], density.basis().sizes()[1], density.basis().sizes()[2], &density.basis_comm(), &local_n0, &local_0_start);
-
-				assert(local_n0 == density.basis().cubic_dist(0).local_size());
-				assert(local_0_start == density.basis().cubic_dist(0).start());
-
-				auto buff = fftw_alloc_complex(alloc_local);
-
-				memcpy(buff, static_cast<const complex *>(density.linear().data()), density.linear().size()*sizeof(complex));
+				auto tmp = fftw::dft({false, true, true}, density.cubic(), fftw::forward);
 				
-				auto plan = fftw_mpi_plan_dft_3d(density.basis().sizes()[0], density.basis().sizes()[1], density.basis().sizes()[2], buff, buff, &density.basis_comm(), FFTW_FORWARD, FFTW_ESTIMATE);
+				int xblock = real_basis.cubic_dist(0).block_size();
+				int zblock = fourier_basis.cubic_dist(2).block_size();
 
-				fftw_execute(plan);
+				assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
+				
+				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
+				
+				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
+					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
 
-				memcpy(static_cast<complex *>(potential_fs.linear().data()), buff, potential_fs.linear().size()*sizeof(complex));
-
-				fftw_free(buff);
+						int dest = 0;
+						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
 							
-				fftw_destroy_plan(plan);
+							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
+								send_buffer[dest][ix][iy][iz] = tmp[ix][iy][izb + iz];
+							}
+							dest++;
+						}
+					}
+				}
 
+				math::array<complex, 4> recv_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
+
+				tmp.clear();
+				tmp.reextent(extensions(potential_fs.cubic()), complex{NAN, NAN});
+				
+				density.basis_comm().all_to_all_n(static_cast<complex *>(send_buffer.data()), send_buffer[0].num_elements(), static_cast<complex *>(recv_buffer.data()));
+
+				int src = 0;
+				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
+
+					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
+						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
+								tmp[ixb + ix][iy][iz] = recv_buffer[src][ix][iy][iz];
+							}
+						}
+					}
+					
+					src++;
+				}
+				
+				potential_fs.cubic() = fftw::dft({true, false, false}, tmp, fftw::forward);
+				
 			}
 
-			const double scal = (-4.0*M_PI)/potential_fs.basis().size();
+			const double scal = (-4.0*M_PI)/fourier_basis.size();
 			
-			for(int ix = 0; ix < potential_fs.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < potential_fs.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < potential_fs.basis().local_sizes()[2]; iz++){
+			for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
+				for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+					for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 
-						auto ixg = potential_fs.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = potential_fs.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = potential_fs.basis().cubic_dist(2).local_to_global(iz);
+						auto ixg = fourier_basis.cubic_dist(0).local_to_global(ix);
+						auto iyg = fourier_basis.cubic_dist(1).local_to_global(iy);
+						auto izg = fourier_basis.cubic_dist(2).local_to_global(iz);
 
-						auto g2 = potential_fs.basis().g2(ixg, iyg, izg);
+						auto g2 = fourier_basis.g2(ixg, iyg, izg);
 
-						if(potential_fs.basis().g_is_zero(ixg, iyg, izg) or fourier_basis.outside_sphere(g2)){
+						if(fourier_basis.g_is_zero(ixg, iyg, izg) or fourier_basis.outside_sphere(g2)){
 							potential_fs.cubic()[ix][iy][iz] = 0.0;
 							continue;
 						}
@@ -102,37 +129,61 @@ namespace solvers {
 				}
 			}
 
-			basis::field<basis_type, complex> potential_rs(density.basis(), density.basis_comm());
+			basis::field<basis_type, complex> potential_rs(real_basis, density.basis_comm());
 
-			if(not density.basis().dist().parallel()) {
-
+			if(not real_basis.dist().parallel()) {
+				
 				potential_rs.cubic() = fftw::dft(potential_fs.cubic(), fftw::backward);
 				
 			} else {
-
-				ptrdiff_t local_n0, local_0_start;
-
-				auto alloc_local = fftw_mpi_local_size_3d(potential_fs.basis().sizes()[0], potential_fs.basis().sizes()[1], potential_fs.basis().sizes()[2], &potential_fs.basis_comm(), &local_n0, &local_0_start);
 				
-				assert(local_n0 == potential_fs.basis().cubic_dist(0).local_size());
-				assert(local_0_start == potential_fs.basis().cubic_dist(0).start());
-
-				auto buff = fftw_alloc_complex(alloc_local);
-
-				memcpy(buff, static_cast<complex *>(potential_fs.linear().data()), potential_fs.linear().size()*sizeof(complex));
+				auto tmp = fftw::dft({true, true, false}, potential_fs.cubic(), fftw::backward);
 				
-				auto plan = fftw_mpi_plan_dft_3d(potential_fs.basis().sizes()[0], potential_fs.basis().sizes()[1], potential_fs.basis().sizes()[2], buff, buff, &potential_fs.basis_comm(), FFTW_BACKWARD, FFTW_ESTIMATE);
+				int xblock = real_basis.cubic_dist(0).block_size();
+				int zblock = fourier_basis.cubic_dist(2).block_size();
+					
+				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
 
-				fftw_execute(plan);
-				
-				memcpy(static_cast<complex *>(potential_rs.linear().data()), buff, potential_rs.linear().size()*sizeof(complex));
+				int dest = 0;
+				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
 
-				fftw_free(buff);
+					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
+						
+						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
+								send_buffer[dest][ix][iy][iz] = tmp[ixb + ix][iy][iz];
+							}
+						}
+					}
+
+					dest++;
+				}
+
+				math::array<complex, 4> recv_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
 				
-				fftw_destroy_plan(plan);
+				tmp.clear();
+				tmp.reextent(extensions(potential_rs.cubic()));
+				
+				density.basis_comm().all_to_all_n(static_cast<complex *>(send_buffer.data()), send_buffer[0].num_elements(), static_cast<complex *>(recv_buffer.data()));
+				
+				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
+					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
+
+						int src = 0;
+						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
+							
+							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
+								tmp[ix][iy][izb + iz] = recv_buffer[src][ix][iy][iz];
+							}
+							src++;
+						}
+					}
+				}
+
+				potential_rs.cubic() = fftw::dft({false, false, true}, tmp, fftw::backward);
 
 			}
-
+			
 			return potential_rs;
 			
 		}
