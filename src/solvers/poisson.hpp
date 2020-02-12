@@ -66,7 +66,7 @@ namespace solvers {
 
 				assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
 				
-				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
+				math::array<complex, 4> buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
 				
 				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
 					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
@@ -75,27 +75,25 @@ namespace solvers {
 						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
 							
 							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
-								send_buffer[dest][ix][iy][iz] = tmp[ix][iy][izb + iz];
+								buffer[dest][ix][iy][iz] = tmp[ix][iy][izb + iz];
 							}
 							dest++;
 						}
 					}
 				}
 
-				math::array<complex, 4> recv_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
-
 				tmp.clear();
 				tmp.reextent(extensions(potential_fs.cubic()), complex{NAN, NAN});
 				
-				density.basis_comm().all_to_all_n(static_cast<complex *>(send_buffer.data()), send_buffer[0].num_elements(), static_cast<complex *>(recv_buffer.data()));
-
+				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &density.basis_comm());
+										 
 				int src = 0;
 				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
 
 					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
 						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
 							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-								tmp[ixb + ix][iy][iz] = recv_buffer[src][ix][iy][iz];
+								tmp[ixb + ix][iy][iz] = buffer[src][ix][iy][iz];
 							}
 						}
 					}
@@ -142,7 +140,7 @@ namespace solvers {
 				int xblock = real_basis.cubic_dist(0).block_size();
 				int zblock = fourier_basis.cubic_dist(2).block_size();
 					
-				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
+				math::array<complex, 4> buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
 
 				int dest = 0;
 				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
@@ -151,7 +149,7 @@ namespace solvers {
 						
 						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
 							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-								send_buffer[dest][ix][iy][iz] = tmp[ixb + ix][iy][iz];
+								buffer[dest][ix][iy][iz] = tmp[ixb + ix][iy][iz];
 							}
 						}
 					}
@@ -159,13 +157,11 @@ namespace solvers {
 					dest++;
 				}
 
-				math::array<complex, 4> recv_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
-				
 				tmp.clear();
 				tmp.reextent(extensions(potential_rs.cubic()));
 				
-				density.basis_comm().all_to_all_n(static_cast<complex *>(send_buffer.data()), send_buffer[0].num_elements(), static_cast<complex *>(recv_buffer.data()));
-				
+				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &density.basis_comm());
+								
 				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
 					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
 
@@ -173,7 +169,7 @@ namespace solvers {
 						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
 							
 							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
-								tmp[ix][iy][izb + iz] = recv_buffer[src][ix][iy][iz];
+								tmp[ix][iy][izb + iz] = buffer[src][ix][iy][iz];
 							}
 							src++;
 						}
