@@ -47,12 +47,13 @@ namespace solvers {
 
 		auto solve_periodic(const basis::field<basis_type, complex> & density) const {
 			namespace fftw = boost::multi::fftw;
-			
-			basis::fourier_space fourier_basis(density.basis(), density.basis_comm());
+
+			const basis::real_space & real_basis = density.basis();
+			basis::fourier_space fourier_basis(real_basis, density.basis_comm());
 
 			basis::field<basis::fourier_space, complex> potential_fs(fourier_basis, density.basis_comm());
 
-			if(not density.basis().dist().parallel()) {
+			if(not real_basis.dist().parallel()) {
 
 				assert(0);
 				potential_fs.cubic() = fftw::dft(density.cubic(), fftw::forward);
@@ -61,20 +62,20 @@ namespace solvers {
 				
 				auto tmp = fftw::dft({false, true, true}, density.cubic(), fftw::forward);
 				
-				int xblock = density.basis().cubic_dist(0).block_size();
+				int xblock = real_basis.cubic_dist(0).block_size();
 				int zblock = fourier_basis.cubic_dist(2).block_size();
 
-				assert(density.basis().local_sizes()[1] == fourier_basis.local_sizes()[1]);
+				assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
 				
-				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, density.basis().local_sizes()[1], zblock}, complex{NAN, NAN});
+				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
 				
-				for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
-					for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
+				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
+					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
 
 						int dest = 0;
-						for(int izb = 0; izb < density.basis().local_sizes()[2]; izb += zblock){
+						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
 							
-							for(int iz = 0; iz < std::min(zblock, density.basis().local_sizes()[2] - izb); iz++){
+							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
 								send_buffer[dest][ix][iy][iz] = tmp[ix][iy][izb + iz];
 							}
 							dest++;
@@ -82,19 +83,19 @@ namespace solvers {
 					}
 				}
 
-				math::array<complex, 4> recv_buffer({density.basis_comm().size(), xblock, density.basis().local_sizes()[1], zblock});
+				math::array<complex, 4> recv_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
 
 				tmp.clear();
-				tmp.reextent(extensions(potential_fs.cubic()));
+				tmp.reextent(extensions(potential_fs.cubic()), complex{NAN, NAN});
 				
 				density.basis_comm().all_to_all_n(send_buffer.data(), send_buffer[0].num_elements(), recv_buffer.data());
 
 				int src = 0;
-				for(int ixb = 0; ixb < potential_fs.basis().local_sizes()[0]; ixb += xblock){
+				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
 
-					for(int ix = 0; ix < std::min(xblock, potential_fs.basis().local_sizes()[0] - ixb); ix++){
-						for(int iy = 0; iy < potential_fs.basis().local_sizes()[1]; iy++){
-							for(int iz = 0; iz < potential_fs.basis().local_sizes()[2]; iz++){
+					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
+						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 								tmp[ixb + ix][iy][iz] = recv_buffer[src][ix][iy][iz];
 							}
 						}
@@ -107,19 +108,19 @@ namespace solvers {
 				
 			}
 
-			const double scal = (-4.0*M_PI)/potential_fs.basis().size();
+			const double scal = (-4.0*M_PI)/fourier_basis.size();
 			
-			for(int ix = 0; ix < potential_fs.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < potential_fs.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < potential_fs.basis().local_sizes()[2]; iz++){
+			for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
+				for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+					for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 
-						auto ixg = potential_fs.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = potential_fs.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = potential_fs.basis().cubic_dist(2).local_to_global(iz);
+						auto ixg = fourier_basis.cubic_dist(0).local_to_global(ix);
+						auto iyg = fourier_basis.cubic_dist(1).local_to_global(iy);
+						auto izg = fourier_basis.cubic_dist(2).local_to_global(iz);
 
-						auto g2 = potential_fs.basis().g2(ixg, iyg, izg);
+						auto g2 = fourier_basis.g2(ixg, iyg, izg);
 
-						if(potential_fs.basis().g_is_zero(ixg, iyg, izg) or fourier_basis.outside_sphere(g2)){
+						if(fourier_basis.g_is_zero(ixg, iyg, izg) or fourier_basis.outside_sphere(g2)){
 							potential_fs.cubic()[ix][iy][iz] = 0.0;
 							continue;
 						}
@@ -129,9 +130,9 @@ namespace solvers {
 				}
 			}
 
-			basis::field<basis_type, complex> potential_rs(density.basis(), density.basis_comm());
+			basis::field<basis_type, complex> potential_rs(real_basis, density.basis_comm());
 
-			if(not density.basis().dist().parallel()) {
+			if(not real_basis.dist().parallel()) {
 				
 				potential_rs.cubic() = fftw::dft(potential_fs.cubic(), fftw::backward);
 				
@@ -139,18 +140,18 @@ namespace solvers {
 				
 				auto tmp = fftw::dft({true, true, false}, potential_fs.cubic(), fftw::backward);
 				
-				int xblock = density.basis().cubic_dist(0).block_size();
+				int xblock = real_basis.cubic_dist(0).block_size();
 				int zblock = fourier_basis.cubic_dist(2).block_size();
 					
-				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, density.basis().local_sizes()[1], zblock}, complex{NAN, NAN});
+				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
 
 				int dest = 0;
-				for(int ixb = 0; ixb < potential_fs.basis().local_sizes()[0]; ixb += xblock){
+				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
 
-					for(int ix = 0; ix < std::min(xblock, potential_fs.basis().local_sizes()[0] - ixb); ix++){
+					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
 						
-						for(int iy = 0; iy < potential_fs.basis().local_sizes()[1]; iy++){
-							for(int iz = 0; iz < potential_fs.basis().local_sizes()[2]; iz++){
+						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 								send_buffer[dest][ix][iy][iz] = tmp[ixb + ix][iy][iz];
 							}
 						}
@@ -159,20 +160,20 @@ namespace solvers {
 					dest++;
 				}
 
-				math::array<complex, 4> recv_buffer({density.basis_comm().size(), xblock, density.basis().local_sizes()[1], zblock});
+				math::array<complex, 4> recv_buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
 				
 				tmp.clear();
 				tmp.reextent(extensions(potential_rs.cubic()));
 				
 				density.basis_comm().all_to_all_n(send_buffer.data(), send_buffer[0].num_elements(), recv_buffer.data());
 				
-				for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
-					for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
+				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
+					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
 
 						int src = 0;
-						for(int izb = 0; izb < density.basis().local_sizes()[2]; izb += zblock){
+						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
 							
-							for(int iz = 0; iz < std::min(zblock, density.basis().local_sizes()[2] - izb); iz++){
+							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
 								tmp[ix][iy][izb + iz] = send_buffer[src][ix][iy][iz];
 							}
 							src++;
