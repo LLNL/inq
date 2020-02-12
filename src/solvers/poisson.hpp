@@ -56,7 +56,7 @@ namespace solvers {
 			if(not real_basis.dist().parallel()) {
 
 				potential_fs.cubic() = fftw::dft(density.cubic(), fftw::forward);
-
+				
 			} else {
 				
 				auto tmp = fftw::dft({false, true, true}, density.cubic(), fftw::forward);
@@ -173,7 +173,7 @@ namespace solvers {
 						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
 							
 							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
-								tmp[ix][iy][izb + iz] = send_buffer[src][ix][iy][iz];
+								tmp[ix][iy][izb + iz] = recv_buffer[src][ix][iy][iz];
 							}
 							src++;
 						}
