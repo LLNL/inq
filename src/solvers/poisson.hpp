@@ -87,7 +87,7 @@ namespace solvers {
 				tmp.clear();
 				tmp.reextent(extensions(potential_fs.cubic()), complex{NAN, NAN});
 				
-				density.basis_comm().all_to_all_n(send_buffer.data(), send_buffer[0].num_elements(), recv_buffer.data());
+				density.basis_comm().all_to_all_n(static_cast<complex *>(send_buffer.data()), send_buffer[0].num_elements(), static_cast<complex *>(recv_buffer.data()));
 
 				int src = 0;
 				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
@@ -164,7 +164,7 @@ namespace solvers {
 				tmp.clear();
 				tmp.reextent(extensions(potential_rs.cubic()));
 				
-				density.basis_comm().all_to_all_n(send_buffer.data(), send_buffer[0].num_elements(), recv_buffer.data());
+				density.basis_comm().all_to_all_n(static_cast<complex *>(send_buffer.data()), send_buffer[0].num_elements(), static_cast<complex *>(recv_buffer.data()));
 				
 				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
 					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
