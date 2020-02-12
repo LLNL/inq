@@ -160,8 +160,6 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
 
-	REQUIRE(cart_comm.dimension() == 2);
-
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);	
 

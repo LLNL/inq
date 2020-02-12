@@ -79,8 +79,6 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 	
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
 	
-	REQUIRE(cart_comm.dimension() == 2);
-	
 	auto basis_comm = cart_comm.axis(1);
 	
 	basis::trivial bas(npoint, basis_comm);

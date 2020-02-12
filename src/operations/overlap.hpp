@@ -159,8 +159,6 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
 
-		REQUIRE(cart_comm.dimension() == 2);
-		
 		auto basis_comm = cart_comm.axis(1);
 
 		REQUIRE(basis_comm.size() == comm.size());
