@@ -66,7 +66,7 @@ namespace solvers {
 
 				assert(density.basis().local_sizes()[1] == fourier_basis.local_sizes()[1]);
 				
-				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, density.basis().local_sizes()[1], zblock});
+				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, density.basis().local_sizes()[1], zblock}, complex{NAN, NAN});
 				
 				for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
 					for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
@@ -92,7 +92,7 @@ namespace solvers {
 				int src = 0;
 				for(int ixb = 0; ixb < potential_fs.basis().local_sizes()[0]; ixb += xblock){
 
-					for(int ix = 0; ix < std::min(xblock, density.basis().local_sizes()[0] - ixb); ix++){
+					for(int ix = 0; ix < std::min(xblock, potential_fs.basis().local_sizes()[0] - ixb); ix++){
 						for(int iy = 0; iy < potential_fs.basis().local_sizes()[1]; iy++){
 							for(int iz = 0; iz < potential_fs.basis().local_sizes()[2]; iz++){
 								tmp[ixb + ix][iy][iz] = recv_buffer[src][ix][iy][iz];
@@ -101,7 +101,6 @@ namespace solvers {
 					}
 					
 					src++;
-					
 				}
 				
 				potential_fs.cubic() = fftw::dft({true, false, false}, tmp, fftw::forward);
@@ -143,12 +142,12 @@ namespace solvers {
 				int xblock = density.basis().cubic_dist(0).block_size();
 				int zblock = fourier_basis.cubic_dist(2).block_size();
 					
-				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, density.basis().local_sizes()[1], zblock});
+				math::array<complex, 4> send_buffer({density.basis_comm().size(), xblock, density.basis().local_sizes()[1], zblock}, complex{NAN, NAN});
 
 				int dest = 0;
 				for(int ixb = 0; ixb < potential_fs.basis().local_sizes()[0]; ixb += xblock){
 
-					for(int ix = 0; ix < std::min(xblock, density.basis().local_sizes()[0] - ixb); ix++){
+					for(int ix = 0; ix < std::min(xblock, potential_fs.basis().local_sizes()[0] - ixb); ix++){
 						
 						for(int iy = 0; iy < potential_fs.basis().local_sizes()[1]; iy++){
 							for(int iz = 0; iz < potential_fs.basis().local_sizes()[2]; iz++){
