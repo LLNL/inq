@@ -55,7 +55,6 @@ namespace solvers {
 
 			if(not real_basis.dist().parallel()) {
 
-				assert(0);
 				potential_fs.cubic() = fftw::dft(density.cubic(), fftw::forward);
 
 			} else {
@@ -447,7 +446,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 	}
 
 
-	if(0){
+	{
 
 		const double ll = 8.0;
 		
