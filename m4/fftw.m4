@@ -30,18 +30,6 @@ if test x"$acx_fftw3_ok" == xyes ; then
   AC_DEFINE(HAVE_FFTW3, 1, [Define if you have a FFTW3 library.])
 fi
 
-AC_MSG_CHECKING([whether fftw3 has MPI support])
-
-LIBS="$LIBS_FFTW -lfftw3_mpi -lfftw3 $acx_fftw_save_LIBS"
-AC_CHECK_FUNC(fftw_mpi_init, [acx_fftw_mpi_ok=yes], [acx_fftw_mpi_ok=no])
-
-AC_MSG_RESULT([$acx_fftw_mpi_ok])
-
-if test x"$acx_fftw_mpi_ok" = xyes; then
-  LIBS_FFTW3="-lfftw3_mpi $LIBS_FFTW3"
-  AC_DEFINE(HAVE_FFTW3_MPI, 1,[Define if the distributed version of FFTW3 is available.])
-fi
-
 LIBS="$acx_fftw3_save_LIBS"
 CFLAGS="$acx_fftw3_save_CFLAGS"
 
