@@ -96,9 +96,9 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	boost::mpi3::cartesian_communicator cart_comm(comm, boost::mpi3::dims_create(comm.size(), 2), true);
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
 
-	auto basis_comm = cart_comm.sub({1, 0});
+	auto basis_comm = cart_comm.axis(1);
 	
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space bas(cell, input::basis::cutoff_energy(20.0), basis_comm);

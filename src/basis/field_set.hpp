@@ -30,7 +30,6 @@
 
 #include <mpi3/environment.hpp>
 #include <mpi3/cartesian_communicator.hpp>
-#include <mpi3/dims_create.hpp>
 
 namespace basis {
 	
@@ -43,10 +42,10 @@ namespace basis {
 		typedef math::array<type, 2> internal_array_type;
 		typedef type element_type;
 
-		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator const & comm)
+		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator<2> const & comm)
 			:full_comm_(comm),
-			 basis_comm_(comm.sub({1, 0})),
-			 set_comm_(comm.sub({0, 1})),
+			 basis_comm_(comm.axis(1)),
+			 set_comm_(comm.axis(0)),
 			 set_dist_(num_vectors, set_comm_),
 			 matrix_({basis.dist().local_size(), set_dist_.local_size()}),
 			 num_vectors_(num_vectors),
@@ -56,7 +55,7 @@ namespace basis {
     }
 
 		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance())
-			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator(comm, boost::mpi3::dims_create(comm.size(), 2), true))
+			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(comm))
 		{
 		}
 			
@@ -131,9 +130,9 @@ namespace basis {
 
 	private:
 
-		mutable boost::mpi3::cartesian_communicator full_comm_;
-		mutable boost::mpi3::cartesian_communicator basis_comm_;
-		mutable boost::mpi3::cartesian_communicator set_comm_;
+		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
+		mutable boost::mpi3::cartesian_communicator<1> basis_comm_;
+		mutable boost::mpi3::cartesian_communicator<1> set_comm_;
 		utils::distribution set_dist_;
 		internal_array_type matrix_;
 		int num_vectors_;
@@ -159,13 +158,13 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	boost::mpi3::cartesian_communicator cart_comm(comm, boost::mpi3::dims_create(comm.size(), 2), true);  
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
 
 	REQUIRE(cart_comm.dimension() == 2);
 
-	auto set_comm = cart_comm.sub({0, 1});
-	auto basis_comm = cart_comm.sub({1, 0});	
-	
+	auto set_comm = cart_comm.axis(0);
+	auto basis_comm = cart_comm.axis(1);	
+
   ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
 
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut), basis_comm);
