@@ -29,8 +29,6 @@
 #include <basis/fourier_space.hpp>
 #include <operations/space.hpp>
 
-#include <fftw3-mpi.h>
-
 namespace solvers {
 
 	template<class basis_type>
@@ -76,61 +74,7 @@ namespace solvers {
 				}
 			}
 
-			basis::field<basis_type, complex> potential_rs(real_basis, density.basis_comm());
-
-			if(not real_basis.dist().parallel()) {
-				
-				potential_rs.cubic() = fftw::dft(potential_fs.cubic(), fftw::backward);
-				
-			} else {
-				
-				auto tmp = fftw::dft({true, true, false}, potential_fs.cubic(), fftw::backward);
-				
-				int xblock = real_basis.cubic_dist(0).block_size();
-				int zblock = fourier_basis.cubic_dist(2).block_size();
-					
-				math::array<complex, 4> buffer({density.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
-
-				int dest = 0;
-				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
-
-					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
-						
-						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-								buffer[dest][ix][iy][iz] = tmp[ixb + ix][iy][iz];
-							}
-						}
-					}
-
-					dest++;
-				}
-
-				tmp.clear();
-				tmp.reextent(extensions(potential_rs.cubic()));
-				
-				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &density.basis_comm());
-								
-				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-
-						int src = 0;
-						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
-							
-							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
-								tmp[ix][iy][izb + iz] = buffer[src][ix][iy][iz];
-							}
-							src++;
-						}
-					}
-				}
-
-				potential_rs.cubic() = fftw::dft({false, false, true}, tmp, fftw::backward);
-
-			}
-			
-			return potential_rs;
-			
+			return operations::space::to_real(potential_fs);
 		}
 
 		auto solve_finite(const basis::field<basis_type, complex> & density) const {
@@ -251,8 +195,6 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 	using namespace basis;
 
 	{
-
-		fftw_mpi_init();
 
 		auto comm = boost::mpi3::environment::get_world_instance();
 		

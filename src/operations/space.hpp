@@ -235,11 +235,11 @@ namespace operations {
 				
 		basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi){
 			namespace fftw = boost::multi::fftw;
-			
-			basis::field<basis::real_space, complex> phi(fphi.basis(), fphi.basis_comm());
 
-			auto & real_basis = phi.basis();
 			auto & fourier_basis = fphi.basis();
+			basis::real_space real_basis(fourier_basis, fphi.basis_comm());
+
+			basis::field<basis::real_space, complex> phi(real_basis, fphi.basis_comm());
 		
 			if(not real_basis.dist().parallel()) {
 				
