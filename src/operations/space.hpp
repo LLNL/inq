@@ -188,7 +188,7 @@ namespace operations {
 
 				assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
 				
-				math::array<complex, 4> buffer({phi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
+				math::array<complex, 4> buffer({phi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
 				
 				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
 					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
@@ -205,7 +205,7 @@ namespace operations {
 				}
 
 				tmp.clear();
-				tmp.reextent(extensions(fphi.cubic()), complex{NAN, NAN});
+				tmp.reextent(extensions(fphi.cubic()));
 				
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &phi.basis_comm());
 										 
@@ -252,7 +252,7 @@ namespace operations {
 				int xblock = real_basis.cubic_dist(0).block_size();
 				int zblock = fourier_basis.cubic_dist(2).block_size();
 					
-				math::array<complex, 4> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock}, complex{NAN, NAN});
+				math::array<complex, 4> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
 
 				int dest = 0;
 				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
