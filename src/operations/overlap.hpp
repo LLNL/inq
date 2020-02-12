@@ -157,7 +157,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			
 		auto comm = boost::mpi3::environment::get_world_instance();
 		
-		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
+		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {1, comm.size()});
 
 		auto basis_comm = cart_comm.axis(1);
 
