@@ -196,21 +196,7 @@ namespace operations {
 				
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &phi.basis_comm());
 				
-				int src = 0;
-				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
-
-					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
-						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-								tmp[ixb + ix][iy][iz] = buffer[src][ix][iy][iz];
-							}
-						}
-					}
-					
-					src++;
-				}
-				
-				fphi.cubic() = fftw::dft({true, false, false}, tmp, fftw::forward);
+				fftw::dft({true, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fftw::forward);
 				
 			}
 
