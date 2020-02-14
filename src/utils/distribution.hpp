@@ -53,8 +53,8 @@ namespace utils {
 			assert(end_ >= start_);
 		}
 
-		distribution(const long size, const boost::mpi3::communicator & comm){
-			distribution(size, comm.size(), comm.rank());
+		distribution(const long size, const boost::mpi3::communicator & comm)
+			:distribution(size, comm.size(), comm.rank()){
 		}
 
 		auto operator*=(const long factor) {
