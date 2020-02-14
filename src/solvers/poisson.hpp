@@ -200,7 +200,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		
 		double ll = 10.0;
 		
-		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll});
+		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, 1.37*ll});
 		basis::real_space rs(cell, input::basis::spacing(0.1), comm);
 
 		SECTION("Grid periodic"){
@@ -209,7 +209,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			
 			REQUIRE(rs.sizes()[0] == 100);
 			REQUIRE(rs.sizes()[1] == 100);
-			REQUIRE(rs.sizes()[2] == 100);
+			REQUIRE(rs.sizes()[2] == 137);
 
 		}
 		
@@ -250,10 +250,10 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			// just for consistency. Of course the imaginary part has to be
 			// zero, since the density is real.
 		
-			REQUIRE(sum[0] == 59.7758543176_a);
+			REQUIRE(sum[0] == 82.9383793318_a);
 			REQUIRE(fabs(sum[1]) <= 1e-12);
 		
-			if(rs.cubic_dist(0).start() == 0 and rs.cubic_dist(1).start() == 0 and rs.cubic_dist(2).start() == 0) REQUIRE(real(potential.cubic()[0][0][0]) == -0.0241426581_a);
+			if(rs.cubic_dist(0).start() == 0 and rs.cubic_dist(1).start() == 0 and rs.cubic_dist(2).start() == 0) REQUIRE(real(potential.cubic()[0][0][0]) == -0.0241804443_a);
 		}
 
 		SECTION("Plane wave"){
@@ -290,7 +290,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 
 			diff /= rs.size();
 		
-			REQUIRE(diff < 1.0e-14);
+			REQUIRE(diff < 1.0e-13);
 	
 		}
 
