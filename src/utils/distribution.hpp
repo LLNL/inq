@@ -37,19 +37,24 @@ namespace utils {
       return end_ - start_;
     }
 		
-		distribution(const long size, const boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			comm_size_(comm.size()),
-      size_(size){
+		distribution(const long size, int comm_size = 1, int comm_rank = 0)
+			:comm_size_(comm_size),
+			 size_(size)
+		{
 			
       bsize_ = (size_ + comm_size_ - 1)/comm_size_;
 
 			if(size_ > 0) assert(bsize_ > 0);
 
-      start_ = bsize_*comm.rank();
-      end_ = std::min(bsize_*(comm.rank() + 1), size_);
+      start_ = bsize_*comm_rank;
+      end_ = std::min(bsize_*(comm_rank + 1), size_);
 
       assert(local_size() <= bsize_);
 			assert(end_ >= start_);
+		}
+
+		distribution(const long size, const boost::mpi3::communicator & comm)
+			:distribution(size, comm.size(), comm.rank()){
 		}
 
 		auto operator*=(const long factor) {
