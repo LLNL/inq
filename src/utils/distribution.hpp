@@ -51,6 +51,7 @@ namespace utils {
 
       assert(local_size() <= bsize_);
 			assert(end_ >= start_);
+			assert(end_ <= size);
 		}
 
 		distribution(const long size, const boost::mpi3::communicator & comm)
@@ -61,6 +62,7 @@ namespace utils {
 			size_ *= factor;
 			start_ *= factor;
 			end_ *= factor;
+			bsize_ *= factor;
 			
 			return *this;
 		}
@@ -99,6 +101,10 @@ namespace utils {
 
 		auto block_size() const {
 			return bsize_;
+		}
+
+		auto location(long global_i) const {
+			return global_i/bsize_;
 		}
 		
 	protected:
@@ -170,6 +176,13 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
     }
   }
 
+	SECTION("Location"){
+
+		for(long ig = dist.start(); ig < dist.end(); ig++){
+			REQUIRE(dist.location(ig) == comm.rank());
+		}
+		
+	}
 
 	long factor = 13;
 
@@ -185,6 +198,7 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
     
     REQUIRE(NN*factor == calculated_size);
   }
+	
 
   SECTION("Scaled - Upper bound"){
     auto boundary_value = dist.end();
@@ -209,6 +223,16 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
       REQUIRE(boundary_value == 0);
     }
   }
+	
+	SECTION("Scaled - Location"){
+			
+		for(long ig = dist.start(); ig < dist.end(); ig++){
+			REQUIRE(dist.location(ig) == comm.rank());
+		}
+		
+	}
+
+	
 }
 #endif
 
