@@ -177,53 +177,25 @@ namespace operations {
 			
 			if(not real_basis.dist().parallel()) {
 				
-				fphi.cubic() = fftw::dft(phi.cubic(), fftw::forward);
+				fftw::dft(phi.cubic(), fphi.cubic(),fftw::forward);
 				
 			} else {
-				
-				auto tmp = fftw::dft({false, true, true}, phi.cubic(), fftw::forward);
-				
+
 				int xblock = real_basis.cubic_dist(0).block_size();
 				int zblock = fourier_basis.cubic_dist(2).block_size();
-
 				assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
-				
-				math::array<complex, 4> buffer({phi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
-				
-				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
 
-						int dest = 0;
-						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
-							
-							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
-								buffer[dest][ix][iy][iz] = tmp[ix][iy][izb + iz];
-							}
-							dest++;
-						}
-					}
-				}
+				math::array<complex, 3> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size()});
 
+				fftw::dft({false, true, true}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fftw::forward);
+				
+				math::array<complex, 4> buffer = tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated();
+				
 				tmp.clear();
-				tmp.reextent(extensions(fphi.cubic()));
 				
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &phi.basis_comm());
-										 
-				int src = 0;
-				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
-
-					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
-						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-								tmp[ixb + ix][iy][iz] = buffer[src][ix][iy][iz];
-							}
-						}
-					}
-					
-					src++;
-				}
 				
-				fphi.cubic() = fftw::dft({true, false, false}, tmp, fftw::forward);
+				fftw::dft({true, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fftw::forward);
 				
 			}
 
@@ -243,52 +215,24 @@ namespace operations {
 		
 			if(not real_basis.dist().parallel()) {
 				
-				phi.cubic() = fftw::dft(fphi.cubic(), fftw::backward);
+				fftw::dft(fphi.cubic(), phi.cubic(), fftw::backward);
 				
 			} else {
-				
-				auto tmp = fftw::dft({true, true, false}, fphi.cubic(), fftw::backward);
-				
+
 				int xblock = real_basis.cubic_dist(0).block_size();
 				int zblock = fourier_basis.cubic_dist(2).block_size();
-					
-				math::array<complex, 4> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
-
-				int dest = 0;
-				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
-
-					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
-						
-						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-								buffer[dest][ix][iy][iz] = tmp[ixb + ix][iy][iz];
-							}
-						}
-					}
-
-					dest++;
-				}
-
-				tmp.clear();
-				tmp.reextent(extensions(phi.cubic()));
 				
+				math::array<complex, 4> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
+				
+				fftw::dft({true, true, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fftw::backward);
+									
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &fphi.basis_comm());
-								
-				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
 
-						int src = 0;
-						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
-							
-							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
-								tmp[ix][iy][izb + iz] = buffer[src][ix][iy][iz];
-							}
-							src++;
-						}
-					}
-				}
+				math::array<complex, 3> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size()});
 
-				phi.cubic() = fftw::dft({false, false, true}, tmp, fftw::backward);
+				tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated() = buffer;
+				
+				fftw::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), 	phi.cubic(), fftw::backward);
 
 			}
 			
