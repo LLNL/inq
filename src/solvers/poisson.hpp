@@ -164,7 +164,7 @@ namespace solvers {
 			field<basis::real_space, double> real_potential(density.basis(), density.basis_comm());
 			
 			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(density.basis().dist().local_size(),
+			gpu::run(density.basis().part().local_size(),
 							 [rp = begin(real_potential.linear()), cp = begin(complex_potential.linear())]
 							 GPU_LAMBDA (auto ii){
 								 rp[ii] = real(cp[ii]);

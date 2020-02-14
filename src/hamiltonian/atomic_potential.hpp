@@ -26,7 +26,7 @@
 #include <basis/spherical_grid.hpp>
 #include <math/array.hpp>
 #include <solvers/poisson.hpp>
-#include <utils/distribution.hpp>
+#include <utils/partition.hpp>
 
 #include <unordered_map>
 
@@ -47,7 +47,7 @@ namespace hamiltonian {
 			sep_(0.625), //this is the default from octopus
       pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
 			comm_(comm),
-			dist_(natoms, comm_)
+			part_(natoms, comm_)
 		{
 
       nelectrons_ = 0.0;
@@ -87,7 +87,7 @@ namespace hamiltonian {
 
 			for(long ii = 0; ii < potential.basis().size(); ii++) potential.linear()[ii] = 0.0;
 			
-      for(auto iatom = dist_.start(); iatom < dist_.end(); iatom++){
+      for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
 				
@@ -103,7 +103,7 @@ namespace hamiltonian {
 				
       }
 
-			if(dist_.parallel()){
+			if(part_.parallel()){
 				comm_.all_reduce_in_place_n(static_cast<double *>(potential.linear().data()), potential.linear().size(), std::plus<>{});
 			}
 
@@ -117,7 +117,7 @@ namespace hamiltonian {
 			
 			density = 0.0;
 
-			for(auto iatom = dist_.start(); iatom < dist_.end(); iatom++){
+			for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
 				
@@ -130,9 +130,9 @@ namespace hamiltonian {
 				gpu::run(sphere.size(),
 								 [dns = begin(density.cubic()), pts = begin(sphere.points()),
 									chrg = ps.valence_charge(),
-									sp = sep_, dist = begin(sphere.distance())] __device__
+									sp = sep_, distance = begin(sphere.distance())] __device__
 								 (auto ipoint){
-									 double rr = dist[ipoint];
+									 double rr = distance[ipoint];
 									 dns[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += chrg*sp.long_range_density(rr);
 								 });
 #else
@@ -144,7 +144,7 @@ namespace hamiltonian {
 #endif
       }
 
-			if(dist_.parallel()){
+			if(part_.parallel()){
 				comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
 			}
 			
@@ -170,7 +170,7 @@ namespace hamiltonian {
     pseudo::set pseudo_set_;
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
 		mutable boost::mpi3::communicator comm_;
-		utils::distribution dist_;
+		utils::partition part_;
         
   };
 

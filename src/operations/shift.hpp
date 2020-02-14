@@ -30,10 +30,10 @@ namespace operations {
 	template <class array_1d, class field_set_type>
   void shift(const array_1d & factor, const field_set_type & shift, field_set_type & phi, double scale = 1.0){
     
-    assert(size(factor) == phi.set_dist().local_size());
+    assert(size(factor) == phi.set_part().local_size());
 
 		//DATAOPERATIONS GPU::RUN 2D 
-		gpu::run(phi.set_dist().local_size(), phi.basis().dist().local_size(),
+		gpu::run(phi.set_part().local_size(), phi.basis().part().local_size(),
 						 [factorp = begin(factor), shiftp = begin(shift.matrix()), phip = begin(phi.matrix()), scale]
 						 GPU_LAMBDA (auto ist, auto ipoint){
 							 phip[ipoint][ist] += scale*(factorp[ist]*shiftp[ipoint][ist]);
@@ -64,12 +64,12 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
 
-		math::array<double, 1> factor(aa.set_dist().local_size());
+		math::array<double, 1> factor(aa.set_part().local_size());
 		
-		for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
-			auto jjg = aa.set_dist().local_to_global(jj);
-			for(int ii = 0; ii < bas.dist().local_size(); ii++){
-				auto iig = bas.dist().local_to_global(ii);
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
+			auto jjg = aa.set_part().local_to_global(jj);
+			for(int ii = 0; ii < bas.part().local_size(); ii++){
+				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = 1.0 + 0.765*iig*jjg;
 				bb.matrix()[ii][jj] = iig;
 			}
@@ -78,8 +78,8 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 		operations::shift(factor, bb, aa, -0.5);
 				
-		for(int ii = 0; ii < bas.dist().local_size(); ii++){
-			for(int jj = 0; jj < aa.set_dist().local_size(); jj++) REQUIRE(aa.matrix()[ii][jj] == Approx(1.0));
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) REQUIRE(aa.matrix()[ii][jj] == Approx(1.0));
 		}
 	}
 	
@@ -88,12 +88,12 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
-		math::array<complex, 1> factor(aa.set_dist().local_size());
+		math::array<complex, 1> factor(aa.set_part().local_size());
 		
-		for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
-			auto jjg = aa.set_dist().local_to_global(jj);
-			for(int ii = 0; ii < bas.dist().local_size(); ii++){
-				auto iig = bas.dist().local_to_global(ii);
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
+			auto jjg = aa.set_part().local_to_global(jj);
+			for(int ii = 0; ii < bas.part().local_size(); ii++){
+				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = complex(iig, 1.0 + 0.765*iig*jjg);
 				bb.matrix()[ii][jj] = iig;
 			}
@@ -102,10 +102,10 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 		operations::shift(factor, bb, aa, -0.5);
 				
-		for(int ii = 0; ii < bas.dist().local_size(); ii++){
-			auto iig = bas.dist().local_to_global(ii);
-			for(int jj = 0; jj < aa.set_dist().local_size(); jj++) REQUIRE(real(aa.matrix()[ii][jj]) == Approx(iig));
-			for(int jj = 0; jj < aa.set_dist().local_size(); jj++) REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			auto iig = bas.part().local_to_global(ii);
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) REQUIRE(real(aa.matrix()[ii][jj]) == Approx(iig));
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 		}
 	}	
 	
@@ -114,12 +114,12 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
-		math::array<double, 1> factor(aa.set_dist().local_size());
+		math::array<double, 1> factor(aa.set_part().local_size());
 		
-		for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
-			auto jjg = aa.set_dist().local_to_global(jj);
-			for(int ii = 0; ii < bas.dist().local_size(); ii++){
-				auto iig = bas.dist().local_to_global(ii);
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
+			auto jjg = aa.set_part().local_to_global(jj);
+			for(int ii = 0; ii < bas.part().local_size(); ii++){
+				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = complex(iig, 1.0 + 0.765*iig*jjg);
 				bb.matrix()[ii][jj] = complex(0.0, iig);
 			}
@@ -128,9 +128,9 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 		operations::shift(factor, bb, aa, -0.5);
 				
-		for(int ii = 0; ii < bas.dist().local_size(); ii++){
-			for(int jj = 0; jj < aa.set_dist().local_size(); jj++) {
-				auto iig = bas.dist().local_to_global(ii);
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
+				auto iig = bas.part().local_to_global(ii);
 				REQUIRE(real(aa.matrix()[ii][jj]) == Approx(iig));
 				REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 			}

@@ -40,10 +40,10 @@ namespace basis {
     fourier_space(const grid & grid_basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			grid(grid_basis){
 			
-			cubic_dist_ = {utils::distribution(nr_[0]), utils::distribution(nr_[1]), utils::distribution(nr_[2], comm)};
+			cubic_dist_ = {utils::partition(nr_[0]), utils::partition(nr_[1]), utils::partition(nr_[2], comm)};
 
-			base::dist_ = cubic_dist_[2];
-			base::dist_ *= nr_[0]*long(nr_[1]);
+			base::part_ = cubic_dist_[2];
+			base::part_ *= nr_[0]*long(nr_[1]);
 			
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();			
     }
