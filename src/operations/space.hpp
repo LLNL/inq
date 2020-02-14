@@ -229,22 +229,10 @@ namespace operations {
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &fphi.basis_comm());
 
 				math::array<complex, 3> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size()});
+
+				tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated() = buffer;
 				
-				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-
-						int src = 0;
-						for(int izb = 0; izb < real_basis.local_sizes()[2]; izb += zblock){
-							
-							for(int iz = 0; iz < std::min(zblock, real_basis.local_sizes()[2] - izb); iz++){
-								tmp[ix][iy][izb + iz] = buffer[src][ix][iy][iz];
-							}
-							src++;
-						}
-					}
-				}
-
-				phi.cubic() = fftw::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fftw::backward);
+				fftw::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), 	phi.cubic(), fftw::backward);
 
 			}
 			
