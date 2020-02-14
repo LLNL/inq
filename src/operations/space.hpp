@@ -177,7 +177,7 @@ namespace operations {
 			
 			if(not real_basis.dist().parallel()) {
 				
-				fphi.cubic() = fftw::dft(phi.cubic(), fftw::forward);
+				fftw::dft(phi.cubic(), fphi.cubic(),fftw::forward);
 				
 			} else {
 
@@ -215,37 +215,21 @@ namespace operations {
 		
 			if(not real_basis.dist().parallel()) {
 				
-				phi.cubic() = fftw::dft(fphi.cubic(), fftw::backward);
+				fftw::dft(fphi.cubic(), phi.cubic(), fftw::backward);
 				
 			} else {
-				
-				auto tmp = fftw::dft({true, true, false}, fphi.cubic(), fftw::backward);
-				
+
 				int xblock = real_basis.cubic_dist(0).block_size();
 				int zblock = fourier_basis.cubic_dist(2).block_size();
-					
-				math::array<complex, 4> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
-
-				int dest = 0;
-				for(int ixb = 0; ixb < fourier_basis.local_sizes()[0]; ixb += xblock){
-
-					for(int ix = 0; ix < std::min(xblock, fourier_basis.local_sizes()[0] - ixb); ix++){
-						
-						for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-							for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-								buffer[dest][ix][iy][iz] = tmp[ixb + ix][iy][iz];
-							}
-						}
-					}
-
-					dest++;
-				}
-
-				tmp.clear();
-				tmp.reextent(extensions(phi.cubic()));
 				
+				math::array<complex, 4> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
+				
+				fftw::dft({true, true, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fftw::backward);
+									
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &fphi.basis_comm());
-								
+
+				math::array<complex, 3> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size()});
+				
 				for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){
 					for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
 
@@ -260,7 +244,7 @@ namespace operations {
 					}
 				}
 
-				phi.cubic() = fftw::dft({false, false, true}, tmp, fftw::backward);
+				phi.cubic() = fftw::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fftw::backward);
 
 			}
 			
