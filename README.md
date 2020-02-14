@@ -77,3 +77,6 @@ CP Number: CP02279
 Software Title: Electronic Structure Engine
 Date Submitted: Wednesday, December 11, 2019
 Date Accepted: Wednesday, January 29, 2020
+
+This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344. 
+The work was supported by the U.S. Department of Energy, Office of Science, Materials Sciences and Engineering Division. 
