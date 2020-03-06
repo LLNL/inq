@@ -38,10 +38,10 @@ namespace basis {
 		
     field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			basis_comm_(comm),
-			linear_(basis.dist().local_size()),
+			linear_(basis.part().local_size()),
 			basis_(basis){
 
-			assert(basis_.dist().comm_size() == basis_comm_.size());
+			assert(basis_.part().comm_size() == basis_comm_.size());
     }
 
 		field(const field & coeff) = delete;
@@ -163,7 +163,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	ff = 12.2244;
 
-	for(int ii = 0; ii < rs.dist().local_size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
+	for(int ii = 0; ii < rs.part().local_size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
 
 }
 

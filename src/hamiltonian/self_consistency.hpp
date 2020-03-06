@@ -49,7 +49,7 @@ namespace hamiltonian {
 
 			vexternal_type vks(vexternal.basis());
 
-			solvers::poisson<basis::real_space> poisson_solver;
+			solvers::poisson poisson_solver;
 
 			switch(theory_){
 

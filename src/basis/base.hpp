@@ -24,7 +24,7 @@
 #include <cassert>
 
 #include <mpi3/environment.hpp>
-#include <utils/distribution.hpp>
+#include <utils/partition.hpp>
 
 namespace basis {
 
@@ -37,20 +37,20 @@ namespace basis {
   public:
 		
 		base(const long size, boost::mpi3::communicator & comm):
-			dist_(size, comm){
+			part_(size, comm){
 		}
 
-		auto & dist() {
-			return dist_;
+		auto & part() {
+			return part_;
 		}
 
-		auto & dist() const {
-			return dist_;
+		auto & part() const {
+			return part_;
 		}
     
 	protected:
 
-		utils::distribution dist_;
+		utils::partition part_;
 		
   };
 }

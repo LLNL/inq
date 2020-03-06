@@ -37,7 +37,7 @@ namespace basis {
 		
 		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
 			base(nr[0], comm),
-			cubic_dist_({base::dist_, utils::distribution(nr[1]), utils::distribution(nr[2])}),
+			cubic_dist_({base::part_, utils::partition(nr[1]), utils::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
@@ -51,7 +51,7 @@ namespace basis {
 				gspacing_[idir] = glength_[idir]/ng_[idir];
 			}
 
-			base::dist_ *= nr_[1]*long(nr_[2]);
+			base::part_ *= nr_[1]*long(nr_[2]);
 			
 			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
 
@@ -116,7 +116,7 @@ namespace basis {
 		
 	protected:
 
-		std::array<utils::distribution, 3> cubic_dist_;
+		std::array<utils::partition, 3> cubic_dist_;
 		ions::UnitCell cell_;
 
     std::array<int, 3> nr_;

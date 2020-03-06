@@ -10,6 +10,7 @@ LIBS = @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@
 noinst_HEADERS =                             \
 	gpu/run.hpp                                \
 	utils/merge_optional.hpp                   \
+	utils/partition.hpp                        \
 	input/interaction.hpp                      \
 	input/basis.hpp                            \
 	input/cell.hpp                             \

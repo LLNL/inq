@@ -175,7 +175,7 @@ namespace operations {
 			
 			basis::field<basis::fourier_space, complex> fphi(fourier_basis, phi.basis_comm());
 			
-			if(not real_basis.dist().parallel()) {
+			if(not real_basis.part().parallel()) {
 				
 				fftw::dft(phi.cubic(), fphi.cubic(),fftw::forward);
 				
@@ -213,7 +213,7 @@ namespace operations {
 
 			basis::field<basis::real_space, complex> phi(real_basis, fphi.basis_comm());
 		
-			if(not real_basis.dist().parallel()) {
+			if(not real_basis.part().parallel()) {
 				
 				fftw::dft(fphi.cubic(), phi.cubic(), fftw::backward);
 				

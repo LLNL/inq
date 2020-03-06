@@ -28,7 +28,7 @@
 #include <pseudopod/pseudopotential.hpp>
 #include <pseudopod/spherical_harmonic.hpp>
 
-#include <utils/distribution.hpp>
+#include <utils/partition.hpp>
 
 #include <gpu/run.hpp>
 

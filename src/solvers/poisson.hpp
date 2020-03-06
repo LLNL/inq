@@ -31,24 +31,15 @@
 
 namespace solvers {
 
-	template<class basis_type>
   class poisson {
 
 	public:
 
-		auto operator()(const basis::field<basis_type, complex> & density) const {
-			if(density.basis().periodic_dimensions() == 3){
-				return solve_periodic(density);
-			} else {
-				return solve_finite(density);
-			}
-		}
-
-		auto solve_periodic(const basis::field<basis_type, complex> & density) const {
+		auto solve_periodic(const basis::field<basis::real_space, complex> & density) const {
 			namespace fftw = boost::multi::fftw;
 
-			const basis::real_space & real_basis = density.basis();
-			basis::fourier_space fourier_basis(real_basis, density.basis_comm());
+			const basis::real_space & real_space = density.basis();
+			basis::fourier_space fourier_basis(real_space, density.basis_comm());
 
 			auto potential_fs = operations::space::to_fourier(density);
 			
@@ -77,10 +68,10 @@ namespace solvers {
 			return operations::space::to_real(potential_fs);
 		}
 
-		auto solve_finite(const basis::field<basis_type, complex> & density) const {
+		auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
 			namespace fftw = boost::multi::fftw;
 
-			basis::field<basis_type, complex> potential2x(density.basis().enlarge(2));
+			basis::field<basis::real_space, complex> potential2x(density.basis().enlarge(2));
 
 			potential2x = 0.0;
 			
@@ -130,7 +121,7 @@ namespace solvers {
 
 			fftw::dft_inplace(potential2x.cubic(), fftw::backward);
 			
-			basis::field<basis_type, complex> potential(density.basis());
+			basis::field<basis::real_space, complex> potential(density.basis());
 			
 			potential = 0.0;
 			
@@ -150,22 +141,30 @@ namespace solvers {
 			
 			return potential;
 		}
+
+		auto operator()(const basis::field<basis::real_space, complex> & density) const {
+			if(density.basis().periodic_dimensions() == 3){
+				return solve_periodic(density);
+			} else {
+				return solve_finite(density);
+			}
+		}
 		
-		basis::field<basis_type, double> operator()(const basis::field<basis_type, double> & density) const {
+		basis::field<basis::real_space, double> operator()(const basis::field<basis::real_space, double> & density) const {
 
 			using basis::field;
 			
 			//For the moment we copy to a complex array.
-			field<basis_type, complex> complex_density(density.basis(), density.basis_comm());
+			field<basis::real_space, complex> complex_density(density.basis(), density.basis_comm());
 			
 			complex_density.linear() = density.linear();
 			
 			auto complex_potential = operator()(complex_density);
 			
-			field<basis_type, double> real_potential(density.basis(), density.basis_comm());
+			field<basis::real_space, double> real_potential(density.basis(), density.basis_comm());
 			
 			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(density.basis().dist().local_size(),
+			gpu::run(density.basis().part().local_size(),
 							 [rp = begin(real_potential.linear()), cp = begin(complex_potential.linear())]
 							 GPU_LAMBDA (auto ii){
 								 rp[ii] = real(cp[ii]);
@@ -174,7 +173,7 @@ namespace solvers {
 			return real_potential;
 			
 		}
-		
+
 	private:
 		
   };    
@@ -214,7 +213,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		}
 		
 		field<real_space, complex> density(rs, comm);
-		solvers::poisson<basis::real_space> psolver;
+		solvers::poisson psolver;
 		
 		SECTION("Point charge"){
 		
@@ -340,7 +339,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll}, 0);
 		basis::real_space rs(cell, input::basis::spacing(0.09));
 
-		solvers::poisson<basis::real_space> psolver;
+		solvers::poisson psolver;
 
 		SECTION("Grid finite"){		
 

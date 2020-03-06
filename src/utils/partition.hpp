@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef UTILS__DISTRIBUTION
-#define UTILS__DISTRIBUTION
+#ifndef UTILS__PARTITION
+#define UTILS__PARTITION
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,7 +29,7 @@
 
 namespace utils {
 
-  class distribution {
+  class partition {
 
   public:
 
@@ -37,7 +37,7 @@ namespace utils {
       return end_ - start_;
     }
 		
-		distribution(const long size, int comm_size = 1, int comm_rank = 0)
+		partition(const long size, int comm_size = 1, int comm_rank = 0)
 			:comm_size_(comm_size),
 			 size_(size)
 		{
@@ -51,16 +51,18 @@ namespace utils {
 
       assert(local_size() <= bsize_);
 			assert(end_ >= start_);
+			assert(end_ <= size);
 		}
 
-		distribution(const long size, const boost::mpi3::communicator & comm)
-			:distribution(size, comm.size(), comm.rank()){
+		partition(const long size, const boost::mpi3::communicator & comm)
+			:partition(size, comm.size(), comm.rank()){
 		}
 
 		auto operator*=(const long factor) {
 			size_ *= factor;
 			start_ *= factor;
 			end_ *= factor;
+			bsize_ *= factor;
 			
 			return *this;
 		}
@@ -100,6 +102,10 @@ namespace utils {
 		auto block_size() const {
 			return bsize_;
 		}
+
+		auto location(long global_i) const {
+			return global_i/bsize_;
+		}
 		
 	protected:
 
@@ -118,7 +124,7 @@ namespace utils {
 
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class utils::distribution", "[utils::distribution]") {
+TEST_CASE("class utils::partition", "[utils::partition]") {
   
   using namespace Catch::literals;
   using math::vec3d;
@@ -127,7 +133,7 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
 
   auto comm = boost::mpi3::environment::get_world_instance();
   
-  utils::distribution dist(NN, comm);
+  utils::partition part(NN, comm);
 
   auto next = comm.rank() + 1;
   if(next == comm.size()) next = 0;
@@ -137,9 +143,9 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
 
   SECTION("Total"){
 
-    REQUIRE(NN == dist.size());
+    REQUIRE(NN == part.size());
 
-    auto calculated_size = dist.local_size();
+    auto calculated_size = part.local_size();
     
     comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
     
@@ -147,68 +153,86 @@ TEST_CASE("class utils::distribution", "[utils::distribution]") {
   }
 
   SECTION("Upper bound"){
-    auto boundary_value = dist.end();
+    auto boundary_value = part.end();
     
     comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ next, /* source = */ prev, 0, 0);
     
     if(comm.rank() != 0){
-      REQUIRE(boundary_value == dist.start());
+      REQUIRE(boundary_value == part.start());
     } else {
       REQUIRE(boundary_value == NN);
     }
   }
 
   SECTION("Lower bound"){
-    auto boundary_value = dist.start();
+    auto boundary_value = part.start();
 
     comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ prev, /* source = */ next, 1, 1);
     
     if(comm.rank() != comm.size() - 1){
-      REQUIRE(boundary_value == dist.end());
+      REQUIRE(boundary_value == part.end());
     } else {
       REQUIRE(boundary_value == 0);
     }
   }
 
+	SECTION("Location"){
+
+		for(long ig = part.start(); ig < part.end(); ig++){
+			REQUIRE(part.location(ig) == comm.rank());
+		}
+		
+	}
 
 	long factor = 13;
 
-	dist *= factor;
+	part *= factor;
 	
 	SECTION("Scaled - Total"){
 		
-    REQUIRE(NN*factor == dist.size());
+    REQUIRE(NN*factor == part.size());
 		
-    auto calculated_size = dist.local_size();
+    auto calculated_size = part.local_size();
     
     comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
     
     REQUIRE(NN*factor == calculated_size);
   }
+	
 
   SECTION("Scaled - Upper bound"){
-    auto boundary_value = dist.end();
+    auto boundary_value = part.end();
     
     comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ next, /* source = */ prev, 0, 0);
     
     if(comm.rank() != 0){
-      REQUIRE(boundary_value == dist.start());
+      REQUIRE(boundary_value == part.start());
     } else {
       REQUIRE(boundary_value == NN*factor);
     }
   }
 
   SECTION("Scaled - Lower bound"){
-    auto boundary_value = dist.start();
+    auto boundary_value = part.start();
 
     comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ prev, /* source = */ next, 1, 1);
     
     if(comm.rank() != comm.size() - 1){
-      REQUIRE(boundary_value == dist.end());
+      REQUIRE(boundary_value == part.end());
     } else {
       REQUIRE(boundary_value == 0);
     }
   }
+	
+	SECTION("Scaled - Location"){
+			
+		for(long ig = part.start(); ig < part.end(); ig++){
+			REQUIRE(part.location(ig) == comm.rank());
+		}
+		
+	}
+
+	
 }
 #endif
 

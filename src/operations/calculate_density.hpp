@@ -36,12 +36,12 @@ namespace operations {
     //DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
 
-		const auto nst = phi.set_dist().local_size();
+		const auto nst = phi.set_part().local_size();
 		auto occupationsp = begin(occupations);
 		auto phip = begin(phi.matrix());
 		auto densityp = begin(density.linear());
 		
-		gpu::run(phi.basis().dist().local_size(),
+		gpu::run(phi.basis().part().local_size(),
 						 [=] __device__ (auto ipoint){
 							 densityp[ipoint] = 0.0;
 							 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
@@ -49,14 +49,14 @@ namespace operations {
 		
 #else
 		
-    for(int ipoint = 0; ipoint < phi.basis().dist().local_size(); ipoint++){
+    for(int ipoint = 0; ipoint < phi.basis().part().local_size(); ipoint++){
 			density.linear()[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.set_dist().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
+      for(int ist = 0; ist < phi.set_part().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
     }
 		
 #endif
 
-		if(phi.set_dist().parallel()){
+		if(phi.set_part().parallel()){
 			phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
 		}
 		
@@ -87,19 +87,19 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 		
 		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 
-		math::array<double, 1> occ(aa.set_dist().local_size());
+		math::array<double, 1> occ(aa.set_part().local_size());
 		
-		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++){
-			for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(bas.dist().local_to_global(ii))*(aa.set_dist().local_to_global(jj) + 1);
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
+				aa.matrix()[ii][jj] = sqrt(bas.part().local_to_global(ii))*(aa.set_part().local_to_global(jj) + 1);
 			}
 		}
 
-		for(int jj = 0; jj < aa.set_dist().local_size(); jj++) occ[jj] = 1.0/(aa.set_dist().local_to_global(jj) + 1);
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj) + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
-		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*bas.dist().local_to_global(ii)*nvec*(nvec + 1)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
 		
 	}
 	
@@ -109,17 +109,17 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 		math::array<double, 1> occ(nvec);
 		
-		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++){
-			for(int jj = 0; jj < aa.set_dist().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(bas.dist().local_to_global(ii))*(aa.set_dist().local_to_global(jj) + 1)*exp(complex(0.0, M_PI/65.0*bas.dist().local_to_global(ii)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
+				aa.matrix()[ii][jj] = sqrt(bas.part().local_to_global(ii))*(aa.set_part().local_to_global(jj) + 1)*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii)));
 			}
 		}
 
-		for(int jj = 0; jj < aa.set_dist().local_size(); jj++) occ[jj] = 1.0/(aa.set_dist().local_to_global(jj) + 1);
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj) + 1);
 
 		auto dd = operations::calculate_density(occ, aa);
 		
-		for(int ii = 0; ii < aa.basis().dist().local_size(); ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*bas.dist().local_to_global(ii)*nvec*(nvec + 1)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
 		
 	}
 	

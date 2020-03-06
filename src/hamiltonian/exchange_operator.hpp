@@ -75,7 +75,7 @@ namespace hamiltonian {
 		basis::field_set<basis::real_space, complex> hf_orbitals;
 
 	private:
-		solvers::poisson<basis::real_space> poisson_solver_;
+		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
 
   };
