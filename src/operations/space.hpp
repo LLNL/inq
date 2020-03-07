@@ -73,6 +73,28 @@ namespace operations {
 		
 #endif
 
+		void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
+			//DATAOPERATIONS LOOP 4D
+#ifdef HAVE_CUDA
+			gpu::run(fphi.set_size(), fphi.basis().sizes()[2], fphi.basis().sizes()[1], fphi.basis().sizes()[0],
+							 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] __device__
+							 (auto ist, auto iz, auto iy, auto ix){
+								 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
+							 });
+#else
+			for(int ix = 0; ix < fphi.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < fphi.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < fphi.basis().sizes()[2]; iz++){
+						if(fphi.basis().outside_sphere(fphi.basis().g2(ix, iy, iz))){
+							for(int ist = 0; ist < fphi.set_size(); ist++) fphi.cubic()[ix][iy][iz][ist] = 0.0;
+						}
+					}
+				}
+			}
+#endif
+
+		}
+		
 		///////////////////////////////////////////////////////////////
 		
     basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
@@ -98,31 +120,9 @@ namespace operations {
 			boost::multi::fftw::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fftw::forward);
 #endif
 			
-			if(fphi.basis().spherical()){
-
-				//DATAOPERATIONS LOOP 4D
-#ifdef HAVE_CUDA
-				gpu::run(phi.set_size(), fphi.basis().sizes()[2], fphi.basis().sizes()[1], fphi.basis().sizes()[0],
-								 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] __device__
-								 (auto ist, auto iz, auto iy, auto ix){
-									 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
-								 });
-#else
-				for(int ix = 0; ix < fphi.basis().sizes()[0]; ix++){
-					for(int iy = 0; iy < fphi.basis().sizes()[1]; iy++){
-						for(int iz = 0; iz < fphi.basis().sizes()[2]; iz++){
-							if(fphi.basis().outside_sphere(fphi.basis().g2(ix, iy, iz))){
-								for(int ist = 0; ist < phi.set_size(); ist++) fphi.cubic()[ix][iy][iz][ist] = 0.0;
-							}
-						}
-					}
-				}
-
-#endif
-				
-			}
+			if(fphi.basis().spherical()) zero_outside_sphere(fphi);
       
-      return fphi;    
+      return fphi;
     }
 
 		///////////////////////////////////////////////////////////////
