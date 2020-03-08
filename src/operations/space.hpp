@@ -137,19 +137,12 @@ namespace operations {
 			boost::multi::fftw::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), boost::multi::fftw::backward);
 #endif
 			
-			double norm_factor = phi.basis().size();
-
-			//DATAOPERATIONS LOOP + GPU::RUN 1D
-#ifdef HAVE_CUDA
-			auto phip = raw_pointer_cast(phi.data());
-			
+			//DATAOPERATIONS GPU::RUN 1D
 			gpu::run(fphi.basis().size()*phi.set_part().local_size(),
-							 [=] __device__ (auto ii){
+							 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
 								 phip[ii] = phip[ii]/norm_factor;
 							 });
-#else
-			for(long ii = 0; ii < fphi.basis().size()*phi.set_part().local_size(); ii++) phi.data()[ii] /= norm_factor;
-#endif
+			
 			return phi;
     }
 
