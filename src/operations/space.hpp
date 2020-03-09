@@ -86,27 +86,49 @@ namespace operations {
 		///////////////////////////////////////////////////////////////
 		
     basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
-      
-			basis::field_set<basis::fourier_space, complex> fphi(phi.basis(), phi.set_size(), phi.full_comm());
 
+			namespace fftw = boost::multi::fftw;
+ 
+      auto & real_basis = phi.basis();
+			basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
+			
+			basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
-			//DATAOPERATIONS FFT
+			if(not real_basis.part().parallel()) {
+					
+				//DATAOPERATIONS FFT
 #ifdef HAVE_CUDA
-
-			auto plan = cuda_fft_plan(phi);
-			
-			auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(phi.data()),
-															(cufftDoubleComplex *) raw_pointer_cast(fphi.data()), CUFFT_FORWARD);
-
-			assert(res == CUFFT_SUCCESS);
-			
-			cudaDeviceSynchronize();
-			
-			cufftDestroy(plan);
-						
+				auto plan = cuda_fft_plan(phi);
+				auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(phi.data()),
+																(cufftDoubleComplex *) raw_pointer_cast(fphi.data()), CUFFT_FORWARD);
+				assert(res == CUFFT_SUCCESS);
+				cudaDeviceSynchronize();
+				cufftDestroy(plan);
 #else
-			boost::multi::fftw::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fftw::forward);
+				fftw::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fftw::forward);
 #endif
+				
+			} else {
+
+				int xblock = real_basis.cubic_dist(0).block_size();
+				int zblock = fourier_basis.cubic_dist(2).block_size();
+				assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
+
+				math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size(), phi.set_part().local_size()});
+
+				fftw::dft({false, true, true, false}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fftw::forward);
+				
+				math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(phi.basis_comm().size()).transposed().rotated().transposed().rotated();
+
+				assert(std::get<4>(sizes(buffer)) == phi.set_part().local_size());
+				
+				tmp.clear();
+				
+				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &phi.basis_comm());
+
+				fftw::dft({true, false, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fftw::forward);
+
+			}
 			
 			if(fphi.basis().spherical()) zero_outside_sphere(fphi);
       
@@ -117,28 +139,47 @@ namespace operations {
 		    
 		basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
 
-			basis::field_set<basis::real_space, complex> phi(fphi.basis(), fphi.set_size(), fphi.full_comm());
+			namespace fftw = boost::multi::fftw;
+	
+			auto & fourier_basis = fphi.basis();
+			basis::real_space real_basis(fourier_basis, fphi.basis_comm());
+			
+			basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
+			if(not real_basis.part().parallel()) {
+	
 			//DATAOPERATIONS FFT
 #ifdef HAVE_CUDA
-
-			auto plan = cuda_fft_plan(phi);
-			
-			auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(fphi.data()),
+				auto plan = cuda_fft_plan(phi);
+				auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(fphi.data()),
 															(cufftDoubleComplex *) raw_pointer_cast(phi.data()), CUFFT_INVERSE);
-
-			assert(res == CUFFT_SUCCESS);
-			
-			cudaDeviceSynchronize();
-			
-			cufftDestroy(plan);
-			
+				assert(res == CUFFT_SUCCESS);
+				cudaDeviceSynchronize();
+				cufftDestroy(plan);
 #else
-			boost::multi::fftw::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), boost::multi::fftw::backward);
+				boost::multi::fftw::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), boost::multi::fftw::backward);
 #endif
+			} else {
+
+				int xblock = real_basis.cubic_dist(0).block_size();
+				int zblock = fourier_basis.cubic_dist(2).block_size();
+				
+				math::array<complex, 5> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock, fphi.set_part().local_size()});
+				
+				fftw::dft({true, true, false, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fftw::backward);
+									
+				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &fphi.basis_comm());
+
+				math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size(), fphi.set_part().local_size()});
+
+				tmp.unrotated(2).partitioned(phi.basis_comm().size()).transposed().rotated().transposed().rotated() = buffer;
+				
+				fftw::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), phi.cubic(), fftw::backward);
+
+			}
 			
 			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(fphi.basis().size()*phi.set_part().local_size(),
+			gpu::run(fphi.basis().part().local_size()*phi.set_part().local_size(),
 							 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
 								 phip[ii] = phip[ii]/norm_factor;
 							 });
@@ -246,9 +287,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	
 	SECTION("Zero"){
 		
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++) phi.cubic()[ix][iy][iz][ist] = 0.0;
 				}
 			}
@@ -257,9 +298,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		auto fphi = operations::space::to_fourier(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < fphi.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < fphi.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < fphi.basis().sizes()[2]; iz++){
+		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						diff += fabs(fphi.cubic()[ix][iy][iz][ist]);
 					}
@@ -274,9 +315,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		auto phi2 = operations::space::to_real(fphi);
 
 		diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++)	diff += fabs(phi.cubic()[ix][iy][iz][ist]);
 				}
 			}
@@ -290,9 +331,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	
 	SECTION("Gaussian"){
 		
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					double r2 = rs.r2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
@@ -305,9 +346,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		auto fphi = operations::space::to_fourier(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < fphi.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < fphi.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < fphi.basis().sizes()[2]; iz++){
+		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
 					double g2 = fphi.basis().g2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
@@ -325,9 +366,9 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		auto phi2 = operations::space::to_real(fphi);
 
 		diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						diff += fabs(phi.cubic()[ix][iy][iz][ist] - phi2.cubic()[ix][iy][iz][ist]);
 					}
