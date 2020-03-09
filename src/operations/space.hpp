@@ -273,7 +273,6 @@ TEST_CASE("function operations::space", "[operations::space]") {
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance());
 
-	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);
 	
 	double ecut = 23.0;
