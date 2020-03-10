@@ -306,6 +306,8 @@ TEST_CASE("function operations::space", "[operations::space]") {
 				}
 			}
 		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
 		diff /= fphi.cubic().num_elements();
 
@@ -322,6 +324,8 @@ TEST_CASE("function operations::space", "[operations::space]") {
 			}
 		}
 
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		
 		diff /= phi2.cubic().num_elements();
 
 		REQUIRE(diff < 1e-15);
@@ -356,6 +360,8 @@ TEST_CASE("function operations::space", "[operations::space]") {
 				}
 			}
 		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
 		diff /= fphi.cubic().num_elements();
 
@@ -374,6 +380,8 @@ TEST_CASE("function operations::space", "[operations::space]") {
 				}
 			}
 		}
+		
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});		
 
 		diff /= phi2.cubic().num_elements();
 		
