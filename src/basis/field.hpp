@@ -45,7 +45,8 @@ namespace basis {
 			assert(basis_.part().comm_size() == basis_comm_.size());
     }
 
-		field(skeleton_wrapper<field<b_type, type>> const & skeleton)
+		template <class any_type>
+		field(skeleton_wrapper<field<b_type, any_type>> const & skeleton)
 			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
 		}
 
