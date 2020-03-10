@@ -30,6 +30,7 @@
 
 #include <mpi3/environment.hpp>
 #include <mpi3/cartesian_communicator.hpp>
+#include <utils/skeleton_wrapper.hpp>
 
 namespace basis {
 	
@@ -58,7 +59,15 @@ namespace basis {
 			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(comm))
 		{
 		}
-			
+
+		field_set(skeleton_wrapper<field_set<Basis, type>> const & skeleton)
+			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.basis_comm()){
+		}
+
+		auto skeleton(){
+			return skeleton_wrapper<field_set<Basis, type>>(*this);
+		}
+
 		field_set(const field_set & coeff) = default;
 		field_set(field_set && coeff) = default;
 		field_set & operator=(const field_set & coeff) = default;
