@@ -121,7 +121,7 @@ namespace solvers {
 
 			fftw::dft_inplace(potential2x.cubic(), fftw::backward);
 			
-			basis::field<basis::real_space, complex> potential(density.basis());
+			basis::field<basis::real_space, complex> potential(density.skeleton());
 			
 			potential = 0.0;
 			
@@ -155,13 +155,13 @@ namespace solvers {
 			using basis::field;
 			
 			//For the moment we copy to a complex array.
-			field<basis::real_space, complex> complex_density(density.basis(), density.basis_comm());
+			field<basis::real_space, complex> complex_density(density.skeleton());
 			
 			complex_density.linear() = density.linear();
 			
 			auto complex_potential = operator()(complex_density);
 			
-			field<basis::real_space, double> real_potential(density.basis(), density.basis_comm());
+			field<basis::real_space, double> real_potential(density.skeleton());
 			
 			//DATAOPERATIONS GPU::RUN 1D
 			gpu::run(density.basis().part().local_size(),
