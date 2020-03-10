@@ -55,7 +55,7 @@ namespace hamiltonian {
 		}
 
 		auto non_local(const basis::field_set<basis::real_space, complex> & phi) const {
-			basis::field_set<basis::real_space, complex> vnlphi(phi.basis(), phi.set_size());
+			basis::field_set<basis::real_space, complex> vnlphi(phi.skeleton());
 			vnlphi = 0.0;
 			non_local(phi, vnlphi);
 			return vnlphi;
@@ -163,7 +163,7 @@ namespace hamiltonian {
 
 			auto phi_rs = operations::space::to_real(phi);
 
-			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.basis(), phi.set_size());
+			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.skeleton());
 
 			hphi_rs = 0.0;
 						

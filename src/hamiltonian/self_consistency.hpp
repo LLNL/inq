@@ -47,7 +47,7 @@ namespace hamiltonian {
 
 			energy.external = operations::integral_product(electronic_density, vexternal);
 
-			vexternal_type vks(vexternal.basis());
+			vexternal_type vks(vexternal.skeleton());
 
 			solvers::poisson poisson_solver;
 
@@ -75,13 +75,13 @@ namespace hamiltonian {
 					energy.external += operations::integral_product(electronic_density, vion);					
 					vion = operations::add(vion, vexternal);
 					
-					vexternal_type ex(vexternal.basis());
-					vexternal_type vx(vexternal.basis());
+					vexternal_type ex(vexternal.skeleton());
+					vexternal_type vx(vexternal.skeleton());
 
 					exchange_.unpolarized(electronic_density.basis().size(), electronic_density, ex, vx);
 
-					vexternal_type ec(vexternal.basis());
-					vexternal_type vc(vexternal.basis());
+					vexternal_type ec(vexternal.skeleton());
+					vexternal_type vc(vexternal.skeleton());
 
 					correlation_.unpolarized(electronic_density.basis().size(), electronic_density, ec, vc);
 					

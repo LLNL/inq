@@ -24,6 +24,7 @@
 #include <math/array.hpp>
 #include <tinyformat/tinyformat.h>
 #include <algorithm>
+#include <utils/skeleton_wrapper.hpp>
 
 namespace basis {
 	
@@ -43,6 +44,15 @@ namespace basis {
 
 			assert(basis_.part().comm_size() == basis_comm_.size());
     }
+
+		template <class any_type>
+		field(skeleton_wrapper<field<b_type, any_type>> const & skeleton)
+			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
+		}
+
+		auto skeleton() const {
+			return skeleton_wrapper<field<b_type, type>>(*this);
+		}
 
 		field(const field & coeff) = delete;
 		field(field && coeff) = default;
@@ -115,14 +125,13 @@ namespace basis {
 			return basis_comm_;
 		}
 		
-				
 	private:
 		mutable boost::mpi3::communicator basis_comm_;
 		internal_array_type linear_;
 		basis_type basis_;
 
   };
-
+	
 }
 
 #ifdef UNIT_TEST
@@ -165,6 +174,11 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	for(int ii = 0; ii < rs.part().local_size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
 
+	basis::field<basis::real_space, double> ff_copy(ff.skeleton());
+
+	REQUIRE(std::get<1>(sizes(ff_copy.cubic())) == 11);
+	REQUIRE(std::get<2>(sizes(ff_copy.cubic())) == 20);
+	
 }
 
 #endif

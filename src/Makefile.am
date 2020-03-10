@@ -11,6 +11,7 @@ noinst_HEADERS =                             \
 	gpu/run.hpp                                \
 	utils/merge_optional.hpp                   \
 	utils/partition.hpp                        \
+	utils/skeleton_wrapper.hpp                 \
 	input/interaction.hpp                      \
 	input/basis.hpp                            \
 	input/cell.hpp                             \
