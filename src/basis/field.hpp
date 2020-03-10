@@ -49,7 +49,7 @@ namespace basis {
 			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
 		}
 
-		auto skeleton(){
+		auto skeleton() const {
 			return skeleton_wrapper<field<b_type, type>>(*this);
 		}
 

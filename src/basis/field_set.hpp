@@ -64,7 +64,7 @@ namespace basis {
 			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.basis_comm()){
 		}
 
-		auto skeleton(){
+		auto skeleton() const {
 			return skeleton_wrapper<field_set<Basis, type>>(*this);
 		}
 
