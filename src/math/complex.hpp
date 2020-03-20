@@ -10,6 +10,15 @@
 #include <complex>
 #include <gpu/run.hpp>
 
+/*
+// This is currently disabled since it doesn't work with multi::blas
+
+#ifdef HAVE_CUDA
+#include <thrust/complex.h>
+
+using complex = thrust::complex<double>;
+*/
+
 using complex = std::complex<double>;
 
 //real
@@ -19,7 +28,7 @@ GPU_FUNCTION inline double real(const double & x){
 }
 
 GPU_FUNCTION inline double real(const complex & z){
-	return std::real(z);
+	return z.real();
 }
 
 //imag
@@ -28,8 +37,9 @@ GPU_FUNCTION inline double imag(const double &){
 	return 0.0;
 }
 
+
 GPU_FUNCTION inline auto imag(const complex & z){
-	return std::imag(z);
+	return z.imag();
 }
 
 //norm
@@ -53,7 +63,7 @@ GPU_FUNCTION inline double conj(const double & x){
 }
 
 GPU_FUNCTION inline complex conj(const complex & z){
-	return complex(std::real(z), -std::imag(z));
+	return complex(real(z), -imag(z));
 }
 
 // sum
