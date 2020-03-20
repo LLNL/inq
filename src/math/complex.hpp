@@ -10,16 +10,16 @@
 #include <complex>
 #include <gpu/run.hpp>
 
+/*
+// This is currently disabled since it doesn't work with multi::blas
+
 #ifdef HAVE_CUDA
 #include <thrust/complex.h>
 
 using complex = thrust::complex<double>;
-
-#else
+*/
 
 using complex = std::complex<double>;
-
-#endif
 
 //real
 
