@@ -14,7 +14,7 @@ variables:
 gcc:
     stage: build
     script:
-      - cd external_libs/multi && git checkout master && git pull && cd -
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - time autoreconf -i
       - mkdir build
@@ -30,6 +30,7 @@ gcc:
 clang:
     stage: build
     script:
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - time autoreconf -i
       - mkdir build
@@ -46,6 +47,7 @@ clang:
 nvcc_nocuda:
     stage: build
     script:
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
       - time autoreconf -i
@@ -67,6 +69,7 @@ nvcc_nocuda:
 nvcc:
     stage: build
     script:
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
       - time autoreconf -i
@@ -85,6 +88,7 @@ nvcc:
 clang_cuda:
     stage: build
     script:
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi    
       - export PATH=/usr/local/cuda/bin:$PATH
       - clang++-10 -v
       - time autoreconf -i
