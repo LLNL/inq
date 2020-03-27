@@ -14,6 +14,7 @@ variables:
 gcc:
     stage: build
     script:
+      - cd external_libs/multi && git checkout master && git pull && cd -
       - mpic++ --version
       - time autoreconf -i
       - mkdir build
