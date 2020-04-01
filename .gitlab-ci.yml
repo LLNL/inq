@@ -68,6 +68,8 @@ nvcc_nocuda:
 
 nvcc:
     stage: build
+    tags:
+      - cuda_gpu
     script:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
@@ -87,6 +89,8 @@ nvcc:
 
 clang_cuda:
     stage: build
+    tags:
+      - cuda_gpu
     script:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi    
       - export PATH=/usr/local/cuda/bin:$PATH
