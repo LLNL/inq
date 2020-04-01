@@ -27,7 +27,6 @@
 #include <multi/adaptors/fftw.hpp>
 
 #include <cassert>
-#include <fftw3.h>
 
 #ifdef HAVE_CUDA
 #include <cufft.h>
@@ -87,7 +86,7 @@ namespace operations {
 		
     basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
 
-			namespace fftw = boost::multi::fftw;
+			namespace fft = boost::multi::fft;
  
       auto & real_basis = phi.basis();
 			basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
@@ -105,7 +104,7 @@ namespace operations {
 				cudaDeviceSynchronize();
 				cufftDestroy(plan);
 #else
-				fftw::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fftw::forward);
+				fft::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fft::forward);
 #endif
 				
 			} else {
@@ -116,7 +115,7 @@ namespace operations {
 
 				math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size(), phi.set_part().local_size()});
 
-				fftw::dft({false, true, true, false}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fftw::forward);
+				fft::dft({false, true, true, false}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fft::forward);
 				
 				math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(phi.basis_comm().size()).transposed().rotated().transposed().rotated();
 
@@ -126,7 +125,7 @@ namespace operations {
 				
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &phi.basis_comm());
 
-				fftw::dft({true, false, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fftw::forward);
+				fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fft::forward);
 
 			}
 			
@@ -139,7 +138,7 @@ namespace operations {
 		    
 		basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
 
-			namespace fftw = boost::multi::fftw;
+			namespace fft = boost::multi::fft;
 	
 			auto & fourier_basis = fphi.basis();
 			basis::real_space real_basis(fourier_basis, fphi.basis_comm());
@@ -157,7 +156,7 @@ namespace operations {
 				cudaDeviceSynchronize();
 				cufftDestroy(plan);
 #else
-				boost::multi::fftw::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), boost::multi::fftw::backward);
+				boost::multi::fft::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), boost::multi::fft::backward);
 #endif
 			} else {
 
@@ -166,7 +165,7 @@ namespace operations {
 				
 				math::array<complex, 5> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock, fphi.set_part().local_size()});
 				
-				fftw::dft({true, true, false, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fftw::backward);
+				fft::dft({true, true, false, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
 									
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &fphi.basis_comm());
 
@@ -174,7 +173,7 @@ namespace operations {
 
 				tmp.unrotated(2).partitioned(phi.basis_comm().size()).transposed().rotated().transposed().rotated() = buffer;
 				
-				fftw::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), phi.cubic(), fftw::backward);
+				fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), phi.cubic(), fft::backward);
 
 			}
 			
@@ -190,7 +189,7 @@ namespace operations {
 		///////////////////////////////////////////////////////////////
 
 		basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis::real_space, complex> & phi){
-			namespace fftw = boost::multi::fftw;
+			namespace fft = boost::multi::fft;
 
 			auto & real_basis = phi.basis();
 			basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
@@ -199,7 +198,7 @@ namespace operations {
 			
 			if(not real_basis.part().parallel()) {
 				
-				fftw::dft(phi.cubic(), fphi.cubic(),fftw::forward);
+				fft::dft(phi.cubic(), fphi.cubic(),fft::forward);
 				
 			} else {
 
@@ -209,7 +208,7 @@ namespace operations {
 
 				math::array<complex, 3> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size()});
 
-				fftw::dft({false, true, true}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fftw::forward);
+				fft::dft({false, true, true}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fft::forward);
 				
 				math::array<complex, 4> buffer = tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated();
 				
@@ -217,7 +216,7 @@ namespace operations {
 				
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &phi.basis_comm());
 				
-				fftw::dft({true, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fftw::forward);
+				fft::dft({true, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fft::forward);
 				
 			}
 
@@ -228,7 +227,7 @@ namespace operations {
 		///////////////////////////////////////////////////////////////			
 				
 		basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi){
-			namespace fftw = boost::multi::fftw;
+			namespace fft = boost::multi::fft;
 
 			auto & fourier_basis = fphi.basis();
 			basis::real_space real_basis(fourier_basis, fphi.basis_comm());
@@ -237,7 +236,7 @@ namespace operations {
 		
 			if(not real_basis.part().parallel()) {
 				
-				fftw::dft(fphi.cubic(), phi.cubic(), fftw::backward);
+				fft::dft(fphi.cubic(), phi.cubic(), fft::backward);
 				
 			} else {
 
@@ -246,7 +245,7 @@ namespace operations {
 				
 				math::array<complex, 4> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
 				
-				fftw::dft({true, true, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fftw::backward);
+				fft::dft({true, true, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
 									
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &fphi.basis_comm());
 
@@ -254,7 +253,7 @@ namespace operations {
 
 				tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated() = buffer;
 				
-				fftw::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), 	phi.cubic(), fftw::backward);
+				fft::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), 	phi.cubic(), fft::backward);
 
 			}
 			
