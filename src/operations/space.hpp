@@ -25,6 +25,9 @@
 #include <basis/field_set.hpp>
 
 #include <multi/adaptors/fftw.hpp>
+#ifdef HAVE_CUDA
+#include <multi/adaptors/cufft.hpp>
+#endif
 
 #include <cassert>
 
