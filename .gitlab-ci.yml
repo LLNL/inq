@@ -1,6 +1,6 @@
 #required packages:
 #    - time apt update -qq
-#    - time apt install --no-install-recommends -y -qq git ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+#    - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
 #    - time apt install --no-install-recommends -y -qq nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
 
 image: debian:testing
@@ -15,7 +15,7 @@ gcc:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - time autoreconf -i
@@ -33,7 +33,7 @@ clang:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev    
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - time autoreconf -i
@@ -53,7 +53,7 @@ nvcc_nocuda:
     script:
       - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
