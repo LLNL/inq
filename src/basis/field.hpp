@@ -138,7 +138,6 @@ namespace basis {
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
-#include <multi/adaptors/fftw.hpp>
 
 TEST_CASE("Class basis::field", "[basis::field]"){
 
@@ -153,8 +152,6 @@ TEST_CASE("Class basis::field", "[basis::field]"){
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
 
 	basis::field<basis::real_space, double> ff(rs, comm);
-
-	namespace fftw = boost::multi::fftw;
 
 	REQUIRE(sizes(rs)[0] == 28);
 	REQUIRE(sizes(rs)[1] == 11);
