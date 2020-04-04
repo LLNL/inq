@@ -31,49 +31,9 @@
 
 #include <cassert>
 
-#ifdef HAVE_CUDA
-#include <cufft.h>
-#endif
-
 namespace operations {
 
   namespace space {
-
-#ifdef HAVE_CUDA
-		template <class field_type>
-		auto cuda_fft_plan(const field_type & phi){
-
-			// the information about the layout can be found here:
-			//
-			//   https://docs.nvidia.com/cuda/cufft/index.html#advanced-data-layout
-			//
-			// Essentially the access is:
-			//
-			//   input[b*idist + ((x*inembed[1] + y)*inembed[2] + z)*istride]
-		
-			int nn[3] = {phi.basis().sizes()[0], phi.basis().sizes()[1], phi.basis().sizes()[2]};
-			
-			cufftHandle plan;
-			
-			auto res = cufftPlanMany(/* plan = */ &plan,
-															 /* rank = */ 3,
-															 /* n = */ nn,
-															 /* inembed = */ nn,
-															 /* istride = */ phi.set_part().local_size(),
-															 /* idist = */ 1,
-															 /* onembed = */ nn,
-															 /* ostride = */ phi.set_part().local_size(),
-															 /* odist =*/ 1,
-															 /* type = */ CUFFT_Z2Z,
-															 /* batch = */ phi.set_part().local_size());
-
-			assert(res == CUFFT_SUCCESS);
-
-			return plan;
-			
-		}
-		
-#endif
 
 		void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
 
@@ -99,16 +59,7 @@ namespace operations {
 			if(not real_basis.part().parallel()) {
 					
 				//DATAOPERATIONS FFT
-#ifdef HAVE_CUDA
-				auto plan = cuda_fft_plan(phi);
-				auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(phi.data()),
-																(cufftDoubleComplex *) raw_pointer_cast(fphi.data()), CUFFT_FORWARD);
-				assert(res == CUFFT_SUCCESS);
-				cudaDeviceSynchronize();
-				cufftDestroy(plan);
-#else
 				fft::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fft::forward);
-#endif
 				
 			} else {
 
@@ -150,17 +101,8 @@ namespace operations {
 
 			if(not real_basis.part().parallel()) {
 	
-			//DATAOPERATIONS FFT
-#ifdef HAVE_CUDA
-				auto plan = cuda_fft_plan(phi);
-				auto res = cufftExecZ2Z(plan, (cufftDoubleComplex *) raw_pointer_cast(fphi.data()),
-															(cufftDoubleComplex *) raw_pointer_cast(phi.data()), CUFFT_INVERSE);
-				assert(res == CUFFT_SUCCESS);
-				cudaDeviceSynchronize();
-				cufftDestroy(plan);
-#else
+				//DATAOPERATIONS FFT
 				boost::multi::fft::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), boost::multi::fft::backward);
-#endif
 			} else {
 
 				int xblock = real_basis.cubic_dist(0).block_size();
