@@ -24,10 +24,18 @@
 #include <math/complex.hpp>
 #include <math/vec3d.hpp>
 #include <math/array.hpp>
-#include <multi/adaptors/fftw.hpp>
 #include <basis/field.hpp>
 #include <basis/fourier_space.hpp>
 #include <operations/space.hpp>
+
+#include <multi/adaptors/fftw.hpp>
+#ifdef HAVE_CUDA
+#include <multi/adaptors/cufft.hpp>
+#endif
+
+#ifdef HAVE_CUDA
+#include <cufft.h>
+#endif
 
 namespace solvers {
 
@@ -36,7 +44,7 @@ namespace solvers {
 	public:
 
 		auto solve_periodic(const basis::field<basis::real_space, complex> & density) const {
-			namespace fftw = boost::multi::fftw;
+			namespace fft = boost::multi::fft;
 
 			const basis::real_space & real_space = density.basis();
 			basis::fourier_space fourier_basis(real_space, density.basis_comm());
@@ -69,7 +77,7 @@ namespace solvers {
 		}
 
 		auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
-			namespace fftw = boost::multi::fftw;
+			namespace fft = boost::multi::fft;
 
 			basis::field<basis::real_space, complex> potential2x(density.basis().enlarge(2));
 
@@ -89,9 +97,10 @@ namespace solvers {
 				}
 			}
 			
-			fftw::dft_inplace(potential2x.cubic(), fftw::forward);
 
-			basis::fourier_space fourier_basis(potential2x.basis());
+			auto potential_fs = operations::space::to_fourier(potential2x);
+			
+			auto fourier_basis = potential_fs.basis();
 
 			const auto scal = (-4.0*M_PI)/fourier_basis.size();
 			const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
@@ -102,24 +111,24 @@ namespace solvers {
 						
 						// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
 						if(fourier_basis.g_is_zero(ix, iy, iz)){
-							potential2x.cubic()[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
+							potential_fs.cubic()[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
 							continue;
 						}
 						
 						auto g2 = fourier_basis.g2(ix, iy, iz);
 
 						if(fourier_basis.outside_sphere(g2)){
-							potential2x.cubic()[ix][iy][iz] = 0.0;
+							potential_fs.cubic()[ix][iy][iz] = 0.0;
 							continue;
 						}
 
-						potential2x.cubic()[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
+						potential_fs.cubic()[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
 
 					}
 				}
 			}
 
-			fftw::dft_inplace(potential2x.cubic(), fftw::backward);
+			potential2x = operations::space::to_real(potential_fs);
 			
 			basis::field<basis::real_space, complex> potential(density.skeleton());
 			
@@ -250,7 +259,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			// zero, since the density is real.
 		
 			REQUIRE(sum[0] == 82.9383793318_a);
-			REQUIRE(fabs(sum[1]) <= 1e-12);
+			REQUIRE(fabs(sum[1]) <= 5e-12);
 		
 			if(rs.cubic_dist(0).start() == 0 and rs.cubic_dist(1).start() == 0 and rs.cubic_dist(2).start() == 0) REQUIRE(real(potential.cubic()[0][0][0]) == -0.0241804443_a);
 		}
