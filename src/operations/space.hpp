@@ -24,7 +24,7 @@
 #include <gpu/run.hpp>
 #include <basis/field_set.hpp>
 
-#include <multi/adaptors/fft.hpp>
+#include <multi/adaptors/fftw.hpp>
 
 #ifdef HAVE_CUDA
 #include <multi/adaptors/cufft.hpp>
@@ -59,6 +59,9 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 			
 		//DATAOPERATIONS FFT
 		fft::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fft::forward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 		
 	} else {
 
@@ -74,6 +77,9 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 
 		auto const real_x = real_basis.local_sizes();
 		fft::dft({false, true, true, false}, phi.cubic(), tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 		
 		math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(phi.basis_comm().size()).transposed().rotated().transposed().rotated();
 
@@ -85,7 +91,9 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 
 		auto const fourier_x = fourier_basis.local_sizes();
 		fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), fphi.cubic(), fft::forward);
-
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 	}
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
@@ -107,6 +115,9 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 
 		//DATAOPERATIONS FFT
 		fft::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), fft::backward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 	} else {
 
 		int xblock = real_basis.cubic_dist(0).block_size();
@@ -117,7 +128,10 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 		namespace multi = boost::multi;
 		namespace fft = multi::fft;
 		fft::dft({true, true, false, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
-							
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
+		
 		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &fphi.basis_comm());
 
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size(), fphi.set_part().local_size()});
@@ -125,7 +139,9 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 		tmp.unrotated(2).partitioned(phi.basis_comm().size()).transposed().rotated().transposed().rotated() = buffer;
 		
 		fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), phi.cubic(), fft::backward);
-
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 	}
 	
 	//DATAOPERATIONS GPU::RUN 1D
@@ -151,6 +167,9 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 	if(not real_basis.part().parallel()) {
 		
 		fft::dft(phi.cubic(), fphi.cubic(),fft::forward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 		
 	} else {
 
@@ -163,6 +182,9 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 		namespace multi = boost::multi;
 		namespace fft = multi::fft;
 		fft::dft({false, true, true}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fft::forward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 		
 		math::array<complex, 4> buffer = tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated();
 		
@@ -171,6 +193,9 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &phi.basis_comm());
 		
 		fft::dft({true, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fft::forward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 		
 	}
 
@@ -192,6 +217,9 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 	if(not real_basis.part().parallel()) {
 		
 		fft::dft(fphi.cubic(), phi.cubic(), fft::backward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
 		
 	} else {
 
@@ -203,7 +231,10 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 		namespace multi = boost::multi;
 		namespace fft = multi::fft;				
 		fft::dft({true, true, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
-							
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
+		
 		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, &fphi.basis_comm());
 
 		math::array<complex, 3> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size()});
@@ -211,7 +242,10 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 		tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated() = buffer;
 		
 		fft::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), 	phi.cubic(), fft::backward);
-
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
+		
 	}
 	
 	return phi;
