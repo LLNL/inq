@@ -31,10 +31,6 @@
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
 
-#ifdef HAVE_CUDA
-#include <thrust/fill.h>
-#endif
-
 namespace systems {
 
   class electrons {

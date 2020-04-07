@@ -28,9 +28,6 @@
 #include <cstdlib>
 #include <gpu/run.hpp>
 #include <algorithm>
-#ifdef HAVE_CUDA
-#include <thrust/transform.h>
-#endif
 
 namespace operations {
 
