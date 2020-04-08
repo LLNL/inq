@@ -81,7 +81,7 @@ namespace eigensolver {
         //        std::cout << iter << '\t' << fabs(gg[0]) << std::endl;
 
 				if(sqrt(fabs(gg[0])) < std::numeric_limits<decltype(first_delta_e)>::epsilon()) {
-					std::cout << "zero gg0" << std::endl;
+					//					std::cout << "zero gg0" << std::endl;
 					break;
 				}			
 		
@@ -146,19 +146,19 @@ namespace eigensolver {
 				
 				if(iter > 0){
 					if(fabs(eigenvalue[0] - old_energy) < first_delta_e*energy_change_threshold) {
-						std::cout << "energy_change_threshold" << std::endl;
+						//						std::cout << "energy_change_threshold " << iter << std::endl;
 						break;
 					}
 				}	else {
 					first_delta_e = fabs(eigenvalue[0] - old_energy);
 					if(first_delta_e <= 2.0*std::numeric_limits<decltype(first_delta_e)>::epsilon()) {
-						std::cout << "zero first_delta_e" << std::endl;
+						//						std::cout << "zero first_delta_e" << std::endl;
 						break;
 					}
 				}
 
         if(res < tol or iter == num_iter){
-					std::cout << "res < tol " << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
+					//					std::cout << "res < tol " << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
           break;
         }
 			
