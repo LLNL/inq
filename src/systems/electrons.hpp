@@ -99,8 +99,21 @@ namespace systems {
 
 				{
 					auto fphi = operations::space::to_fourier(std::move(phi_));
-					solvers::steepest_descent(ham, prec, fphi);
-					//eigensolver::conjugate_gradient(ham, prec, fphi);
+
+					switch(solver.eigensolver()){
+
+					case input::scf_solver::scf_eigensolver::STEEPEST_DESCENT:
+						solvers::steepest_descent(ham, prec, fphi);
+						break;
+						
+					case input::scf_solver::scf_eigensolver::CONJUGATE_GRADIENT:
+						eigensolver::conjugate_gradient(ham, prec, fphi);
+						break;
+
+					default:
+						assert(false);
+					}
+					
 					phi_ = operations::space::to_real(std::move(fphi));
 				}
 
