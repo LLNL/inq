@@ -66,11 +66,6 @@ namespace eigensolver {
 
         double res = fabs(operations::overlap_diagonal(g)[0]);
 
-        if(res < tol or iter == num_iter or fabs(gg0) < 1e-14){
-          std::cout << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
-          break;
-        }
-        
         auto g0 = g;
         
 				prec(g0);
@@ -85,6 +80,11 @@ namespace eigensolver {
 
         //        std::cout << iter << '\t' << fabs(gg[0]) << std::endl;
 
+				if(sqrt(fabs(gg[0])) < std::numeric_limits<decltype(first_delta_e)>::epsilon()) {
+					std::cout << "zero gg0" << std::endl;
+					break;
+				}			
+		
         if(iter == 0){
           cg = g0;
           gg0 = gg[0];
@@ -151,6 +151,11 @@ namespace eigensolver {
 					if(first_delta_e <= 2.0*std::numeric_limits<decltype(first_delta_e)>::epsilon()) break;
 				}
 
+        if(res < tol or iter == num_iter){
+					//          std::cout << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
+          break;
+        }
+			
 				old_energy = eigenvalue[0];
 				
       } // end iteration
