@@ -75,7 +75,7 @@ namespace eigensolver {
         
 				prec(g0);
 
-        operations::orthogonalize_single(g0, phi_all);//, ist);
+        operations::orthogonalize_single(g0, phi_all, ist);
 
         auto dot = operations::overlap_diagonal(phi, g0);
 
@@ -155,6 +155,8 @@ namespace eigensolver {
 				
       } // end iteration
 
+			operations::orthogonalize_single(phi, phi_all, ist);
+			
 			// save the newly calculated state
       phi_all.matrix().rotated()[ist] = phi.matrix().rotated()[0];
       
