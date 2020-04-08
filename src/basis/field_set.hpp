@@ -24,9 +24,6 @@
 #include <utils/partition.hpp>
 #include <math/array.hpp>
 #include <algorithm>
-#ifdef HAVE_CUDA
-#include <thrust/fill.h>
-#endif
 
 #include <mpi3/environment.hpp>
 #include <mpi3/cartesian_communicator.hpp>

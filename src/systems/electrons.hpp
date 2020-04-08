@@ -31,10 +31,6 @@
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
 
-#ifdef HAVE_CUDA
-#include <thrust/fill.h>
-#endif
-
 namespace systems {
 
   class electrons {
@@ -89,11 +85,8 @@ namespace systems {
 			energy.ion = ::ions::interaction_energy(ions_.cell(), ions_.geo(), atomic_pot_);
 
 			//DATAOPERATIONS STL FILL
-#ifdef HAVE_CUDA
-			thrust::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
-#else
 			std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
-#endif
+
 			ham.exchange.hf_orbitals = 0.0;
 			
 			int conv_count = 0;
@@ -106,7 +99,7 @@ namespace systems {
 				{
 					auto fphi = operations::space::to_fourier(std::move(phi_));
 					solvers::steepest_descent(ham, prec, fphi);
-					// eigensolver::conjugate_gradient(ham, prec, fphi);
+					//eigensolver::conjugate_gradient(ham, prec, fphi);
 					phi_ = operations::space::to_real(std::move(fphi));
 				}
 

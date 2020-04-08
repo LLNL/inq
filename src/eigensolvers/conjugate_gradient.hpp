@@ -33,8 +33,9 @@ namespace eigensolver {
 	template <class operator_type, class preconditioner_type, class field_set_type>
 	void conjugate_gradient(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::fourier_space, field_set_type> & phi_all){
     
-		const int num_iter = 10;
+		const int num_iter = 30;
     const double tol = 1.0e-8;
+		const double energy_change_threshold = 0.1;
     
     for(int ist = 0; ist < phi_all.set_size(); ist++){
       
@@ -47,8 +48,10 @@ namespace eigensolver {
       auto hphi = ham(phi);
 
       auto eigenvalue = operations::overlap_diagonal(hphi, phi);
-      auto old_energy = eigenvalue;
+      auto old_energy = eigenvalue[0];
 
+			double first_delta_e;
+			
       basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1);
 
       complex gg0 = 1.0;
@@ -63,16 +66,11 @@ namespace eigensolver {
 
         double res = fabs(operations::overlap_diagonal(g)[0]);
 
-        if(res < tol or iter == num_iter or fabs(gg0) < 1e-14){
-          std::cout << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
-          break;
-        }
-        
         auto g0 = g;
         
-        prec(g0);
+				prec(g0);
 
-        operations::orthogonalize_single(g0, phi_all);//, ist);
+        operations::orthogonalize_single(g0, phi_all, ist);
 
         auto dot = operations::overlap_diagonal(phi, g0);
 
@@ -82,6 +80,11 @@ namespace eigensolver {
 
         //        std::cout << iter << '\t' << fabs(gg[0]) << std::endl;
 
+				if(sqrt(fabs(gg[0])) < std::numeric_limits<decltype(first_delta_e)>::epsilon()) {
+					//					std::cout << "zero gg0" << std::endl;
+					break;
+				}			
+		
         if(iter == 0){
           cg = g0;
           gg0 = gg[0];
@@ -131,11 +134,48 @@ namespace eigensolver {
           hphi.matrix()[ip][0] = a0*hphi.matrix()[ip][0] + b0*hcg.matrix()[ip][0];
         }
 
-      }
+				//calculate the eigenvalue, this is duplicated
+				
+				eigenvalue = operations::overlap_diagonal(phi, hphi);
+        
+        basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1);
+				
+        for(long ip = 0; ip < g.basis().size(); ip++) g2.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
+				
+				res = fabs(operations::overlap_diagonal(g2)[0]);
+				
+				if(iter > 0){
+					if(fabs(eigenvalue[0] - old_energy) < first_delta_e*energy_change_threshold) {
+						//						std::cout << "energy_change_threshold " << iter << std::endl;
+						break;
+					}
+				}	else {
+					first_delta_e = fabs(eigenvalue[0] - old_energy);
+					if(first_delta_e <= 2.0*std::numeric_limits<decltype(first_delta_e)>::epsilon()) {
+						//						std::cout << "zero first_delta_e" << std::endl;
+						break;
+					}
+				}
 
+        if(res < tol or iter == num_iter){
+					//					std::cout << "res < tol " << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
+          break;
+        }
+			
+				old_energy = eigenvalue[0];
+				
+      } // end iteration
+
+			operations::orthogonalize_single(phi, phi_all, ist);
+
+			//normalize
+			auto norm = operations::overlap_diagonal(phi)[0];
+			for(long ip = 0; ip < cg.basis().size(); ip++) phi.matrix()[ip][0] /= sqrt(norm);
+
+			// save the newly calculated state
       phi_all.matrix().rotated()[ist] = phi.matrix().rotated()[0];
       
-    }
+    } // end loop over states
 
   }
 }
