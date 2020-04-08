@@ -33,7 +33,7 @@ namespace eigensolver {
 	template <class operator_type, class preconditioner_type, class field_set_type>
 	void conjugate_gradient(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::fourier_space, field_set_type> & phi_all){
     
-		const int num_iter = 10;
+		const int num_iter = 30;
     const double tol = 1.0e-8;
 		const double energy_change_threshold = 0.1;
     
@@ -145,14 +145,20 @@ namespace eigensolver {
 				res = fabs(operations::overlap_diagonal(g2)[0]);
 				
 				if(iter > 0){
-					if(fabs(eigenvalue[0] - old_energy) < first_delta_e*energy_change_threshold) break;
+					if(fabs(eigenvalue[0] - old_energy) < first_delta_e*energy_change_threshold) {
+						std::cout << "energy_change_threshold" << std::endl;
+						break;
+					}
 				}	else {
 					first_delta_e = fabs(eigenvalue[0] - old_energy);
-					if(first_delta_e <= 2.0*std::numeric_limits<decltype(first_delta_e)>::epsilon()) break;
+					if(first_delta_e <= 2.0*std::numeric_limits<decltype(first_delta_e)>::epsilon()) {
+						std::cout << "zero first_delta_e" << std::endl;
+						break;
+					}
 				}
 
         if(res < tol or iter == num_iter){
-					//          std::cout << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
+					std::cout << "res < tol " << ist << '\t' << iter << '\t' << real(eigenvalue[0]) << '\t' << res << std::endl;
           break;
         }
 			
@@ -161,7 +167,11 @@ namespace eigensolver {
       } // end iteration
 
 			operations::orthogonalize_single(phi, phi_all, ist);
-			
+
+			//normalize
+			auto norm = operations::overlap_diagonal(phi)[0];
+			for(long ip = 0; ip < cg.basis().size(); ip++) phi.matrix()[ip][0] /= sqrt(norm);
+
 			// save the newly calculated state
       phi_all.matrix().rotated()[ist] = phi.matrix().rotated()[0];
       
