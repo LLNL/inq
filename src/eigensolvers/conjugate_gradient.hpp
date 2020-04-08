@@ -70,7 +70,7 @@ namespace eigensolver {
         
         auto g0 = g;
         
-        prec(g0);
+				prec(g0);
 
         operations::orthogonalize_single(g0, phi_all);//, ist);
 
@@ -131,11 +131,12 @@ namespace eigensolver {
           hphi.matrix()[ip][0] = a0*hphi.matrix()[ip][0] + b0*hcg.matrix()[ip][0];
         }
 
-      }
+      } // end iteration
 
+			// save the newly calculated state
       phi_all.matrix().rotated()[ist] = phi.matrix().rotated()[0];
       
-    }
+    } // end loop over states
 
   }
 }
