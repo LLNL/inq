@@ -3,8 +3,6 @@
 #ifndef SYSTEMS__ELECTRONS
 #define SYSTEMS__ELECTRONS
 
-#include <cfloat>
-
 #include <systems/ions.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
@@ -30,6 +28,9 @@
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
+#include <input/scf_solver.hpp>
+
+#include <cfloat>
 
 namespace systems {
 
@@ -56,7 +57,7 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-    auto calculate_ground_state(const input::interaction & inter){
+    auto calculate_ground_state(const input::interaction & inter, const input::scf_solver & solver = {}){
 
 			hamiltonian::ks_hamiltonian<basis::real_space> ham(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter.exchange_coefficient());
 
