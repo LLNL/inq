@@ -35,6 +35,7 @@ namespace eigensolver {
     
 		const int num_iter = 10;
     const double tol = 1.0e-8;
+		const double energy_change_threshold = 0.1;
     
     for(int ist = 0; ist < phi_all.set_size(); ist++){
       
@@ -47,8 +48,10 @@ namespace eigensolver {
       auto hphi = ham(phi);
 
       auto eigenvalue = operations::overlap_diagonal(hphi, phi);
-      auto old_energy = eigenvalue;
+      auto old_energy = eigenvalue[0];
 
+			double first_delta_e;
+			
       basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1);
 
       complex gg0 = 1.0;
@@ -131,6 +134,25 @@ namespace eigensolver {
           hphi.matrix()[ip][0] = a0*hphi.matrix()[ip][0] + b0*hcg.matrix()[ip][0];
         }
 
+				//calculate the eigenvalue, this is duplicated
+				
+				eigenvalue = operations::overlap_diagonal(phi, hphi);
+        
+        basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1);
+				
+        for(long ip = 0; ip < g.basis().size(); ip++) g2.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
+				
+				res = fabs(operations::overlap_diagonal(g2)[0]);
+				
+				if(iter > 0){
+					if(fabs(eigenvalue[0] - old_energy) < first_delta_e*energy_change_threshold) break;
+				}	else {
+					first_delta_e = fabs(eigenvalue[0] - old_energy);
+					if(first_delta_e <= 2.0*std::numeric_limits<decltype(first_delta_e)>::epsilon()) break;
+				}
+
+				old_energy = eigenvalue[0];
+				
       } // end iteration
 
 			// save the newly calculated state
