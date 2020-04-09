@@ -48,12 +48,16 @@ namespace solvers {
 		template <class mix_type>
     void operator()(const mix_type & input_value, mix_type & output_value, mix_type & new_value){
 
+			const double residual_coeff = 0.05;
+			
 			assert(input_value.size() == ff_[0].size());
 			assert(output_value.size() == ff_[0].size());
 			assert(new_value.size() == ff_[0].size());
 			
 			int size;
-			
+
+			iter_++;
+
 			if(iter_ <= max_size_){
 				size = iter_;
 			} else {
@@ -72,13 +76,13 @@ namespace solvers {
 				dff_[size - 1][ii] = output_value[ii] - input_value[ii];
 			}
 
-			if(iter_ == 0) {
+			if(iter_ == 1) {
 				//DATAOPERATIONS LOOP 1D
-				for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = (1.0 - mix_factor_)*input_value[ii] - mix_factor_*output_value[ii];
+				for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
 				return;
 			}
 
-			math::array<typename mix_type::value_type, 2> amatrix({size, size});
+			math::array<typename mix_type::value_type, 2> amatrix({size + 1, size + 1});
 
 			//DATAOPERATIONS LOOP 2D (use overlap)
 			for(int ii = 0; ii < size; ii++){
@@ -92,6 +96,13 @@ namespace solvers {
 				}
 			}
 
+			for(int ii = 0; ii < size; ii++){
+				amatrix[ii][size] = -1.0;
+				amatrix[size][ii] = -1.0;
+			}			
+
+			amatrix[size][size] = 0.0;
+			
 			//std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << std::endl;
 			//std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << std::endl;
 
@@ -103,7 +114,8 @@ namespace solvers {
 			
 			// REDUCE GRID amatrix
 
-			math::array<typename mix_type::value_type, 1> alpha(size, 1.0);
+			math::array<typename mix_type::value_type, 1> alpha(size + 1, 0.0);
+			alpha[size] = -1.0;
 
 			//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 			
@@ -121,16 +133,11 @@ namespace solvers {
 			std::fill(new_value.begin(), new_value.end(), 0.0);
 
 			//DATAOPERATIONS LOOP 2D (use gemv)
-			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*dff_[jj][ii];
+			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*(ff_[jj][ii] + residual_coeff*dff_[jj][ii]);
 
 			typename mix_type::value_type aa = 0.0;
 			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
 			std::cout << "norm opt " << aa << std::endl;
-
-			//DATAOPERATIONS LOOP 2D (use gemv)
-			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
-
-			iter_++;
 			
     }
 
@@ -166,7 +173,14 @@ TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
   
 	REQUIRE(vnew[0] == 5.0_a);
   REQUIRE(vnew[1] == 1.1_a);
-   
+
+	vout = {4.0, 5.5};
+
+	lm(vnew, vout, vnew);
+
+	REQUIRE(vnew[0] == -0.0094885448_a);
+  REQUIRE(vnew[1] == -0.0076193817_a);
+
 }
 
 
