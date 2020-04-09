@@ -91,8 +91,6 @@ namespace systems {
 			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
 
-				if(inter.self_consistent()) mixer(ham.scalar_potential.linear());
-
 				operations::subspace_diagonalization(ham, phi_);
 
 				{
@@ -128,6 +126,7 @@ namespace systems {
 
 				auto vks = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 
+				// calculate the new energy and print
 				{
 					
 					auto residual = ham(phi_);
@@ -165,8 +164,8 @@ namespace systems {
 				
 				old_energy = energy.eigenvalues;
 
-				ham.scalar_potential = std::move(vks);
-			
+				if(inter.self_consistent()) mixer(ham.scalar_potential.linear(), vks.linear(), ham.scalar_potential.linear());
+				
       }
 
 			energy.print(std::cout);

@@ -33,31 +33,22 @@ namespace solvers {
   public:
 
     linear_mixer(double arg_mix_factor):
-			first_iter_(true),
       mix_factor_(arg_mix_factor){
     }
 
 		template <class mix_type>
-    void operator()(mix_type & new_value){
+    void operator()(const mix_type & input_value, const mix_type & output_value, mix_type & new_value){
+			//note: arguments might alias here			
 
-			if(first_iter_) {
-				old_ = math::array<type, 1>(new_value.begin(), new_value.end());
-				first_iter_ = false;
-			}
-
-      //DATAOPERATIONS LOOP 1D (one input two outputs)
+      //DATAOPERATIONS LOOP 1D
       for(unsigned ii = 0; ii < new_value.size(); ii++){
-        auto tmp = new_value[ii];
-        new_value[ii] = (1.0 - mix_factor_)*old_[ii] + mix_factor_*tmp;
-        old_[ii] = tmp;
+        new_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
       }
     }
 
   private:
 		
-		bool first_iter_;
     double mix_factor_;
-    math::array<type, 1> old_;
 		
 	};
 
@@ -73,21 +64,16 @@ TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
 
 	using namespace Catch::literals;
 
-  std::vector<double> v(2);
   solvers::linear_mixer<double> lm(0.5);
 
-  v[0] =  10.0;
-  v[1] = -20.0;
-  
-	lm(v);
-	
-  v[0] = 0.0;
-  v[1] = 22.2;
+  std::vector<double> vin({10.0, -20.0});
+	std::vector<double> vout({0.0,  22.2});
+	std::vector<double> vnew(2);  
 
-  lm(v);
+	lm(vin, vout, vnew);
   
-  REQUIRE(v[0] == 5.0_a);
-  REQUIRE(v[1] == 1.1_a);
+  REQUIRE(vnew[0] == 5.0_a);
+  REQUIRE(vnew[1] == 1.1_a);
   
 }
 
