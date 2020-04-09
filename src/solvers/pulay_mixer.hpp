@@ -123,12 +123,13 @@ namespace solvers {
 
 			//			std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 			
-			//DATAOPERATIONS STL ACCUMULATE
-			auto sumalpha = std::accumulate(alpha.begin(), alpha.end(), type{0.0});
+			//DATAOPERATIONS LOOP
+			double sumalpha = 0.0;
+			for(int ii = 0; ii < size; ii++) sumalpha += alpha[ii];
 			
-			//DATAOPERATIONS STL FOR_EACH
-			std::for_each(alpha.begin(), alpha.end(), [sumalpha](auto al){ al /= sumalpha; });
-
+			//DATAOPERATIONS LOOP
+			for(int ii = 0; ii < size; ii++) alpha[ii] /= sumalpha;
+			
 			//DATAOPERATIONS STL FILL 
 			std::fill(new_value.begin(), new_value.end(), 0.0);
 
