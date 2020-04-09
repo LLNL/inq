@@ -28,6 +28,7 @@ gcc:
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - src/inq_hydrogen_local
+      - src/inq_neon
 
 clang:
     stage: build
@@ -46,7 +47,8 @@ clang:
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
-      - src/inq_hydrogen_local      
+      - src/inq_hydrogen_local
+      - src/inq_neon
 
 nvcc_nocuda:
     stage: build
@@ -72,6 +74,7 @@ nvcc_nocuda:
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - src/inq_hydrogen_local
+      - src/inq_neon      
 
 nvcc:
     stage: build
@@ -93,6 +96,7 @@ nvcc:
       - time make -j4
       - time src/inq_unit_tests
       - src/inq_hydrogen_local
+      - src/inq_neon      
 
 clang_cuda:
     stage: build
@@ -114,3 +118,5 @@ clang_cuda:
       - time make -j4
       - time src/inq_unit_tests
       - src/inq_hydrogen_local
+      - src/inq_neon
+      
