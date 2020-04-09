@@ -79,10 +79,10 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		REQUIRE(energy.ion             == -4.52004101_a);
 		REQUIRE(energy.eigenvalues     == -61.740948878692_a);
-		REQUIRE(energy.total()         == -82.051773872674_a);
-		REQUIRE(energy.external        ==  -3.603296578514_a);
-		REQUIRE(energy.nonlocal        == -17.878544893202_a);
-		REQUIRE(energy.kinetic()       ==  35.547251972126_a);
+		REQUIRE(energy.total()         == -66.260996130074_a);
+		REQUIRE(energy.external        == -79.409324932984_a);
+		REQUIRE(energy.nonlocal        == -17.878129932307_a);
+		REQUIRE(energy.kinetic()       ==  35.546499748301_a);
 		
 	}
 
