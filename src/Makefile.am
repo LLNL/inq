@@ -13,11 +13,12 @@ noinst_HEADERS =                             \
 	utils/partition.hpp                        \
 	utils/skeleton_wrapper.hpp                 \
 	input/interaction.hpp                      \
+	input/atom.hpp                             \
 	input/basis.hpp                            \
 	input/cell.hpp                             \
 	input/config.hpp                           \
+	input/scf_solver.hpp                       \
 	input/species.hpp                          \
-	input/atom.hpp                             \
 	math/array.hpp                             \
 	math/vec3d.hpp                             \
 	ions/geometry.hpp                          \

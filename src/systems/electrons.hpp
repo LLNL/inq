@@ -3,8 +3,6 @@
 #ifndef SYSTEMS__ELECTRONS
 #define SYSTEMS__ELECTRONS
 
-#include <cfloat>
-
 #include <systems/ions.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
@@ -30,6 +28,9 @@
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
+#include <input/scf_solver.hpp>
+
+#include <cfloat>
 
 namespace systems {
 
@@ -56,7 +57,7 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-    auto calculate_ground_state(const input::interaction & inter){
+    auto calculate_ground_state(const input::interaction & inter, const input::scf_solver & solver = {}){
 
 			hamiltonian::ks_hamiltonian<basis::real_space> ham(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter.exchange_coefficient());
 
@@ -68,10 +69,8 @@ namespace systems {
 
 			operations::preconditioner prec;
 
-			const double mixing = 0.3;
-			
-			auto mixer = solvers::linear_mixer<double>(mixing);
-			//auto mixer = solvers::pulay_mixer<double>(5, mixing);
+			auto mixer = solvers::linear_mixer<double>(solver.mixing());
+			//auto mixer = solvers::pulay_mixer<double>(5, solver.mixing());
 			
       double old_energy = DBL_MAX;
 
@@ -98,8 +97,21 @@ namespace systems {
 
 				{
 					auto fphi = operations::space::to_fourier(std::move(phi_));
-					solvers::steepest_descent(ham, prec, fphi);
-					//eigensolver::conjugate_gradient(ham, prec, fphi);
+
+					switch(solver.eigensolver()){
+
+					case input::scf_solver::scf_eigensolver::STEEPEST_DESCENT:
+						solvers::steepest_descent(ham, prec, fphi);
+						break;
+						
+					case input::scf_solver::scf_eigensolver::CONJUGATE_GRADIENT:
+						eigensolver::conjugate_gradient(ham, prec, fphi);
+						break;
+
+					default:
+						assert(false);
+					}
+					
 					phi_ = operations::space::to_real(std::move(fphi));
 				}
 
@@ -107,7 +119,7 @@ namespace systems {
 				
 				//DATAOPERATIONS LOOP 1D
 				for(int ii = 0; ii < phi_.num_elements(); ii++){
-					ham.exchange.hf_orbitals.data()[ii] = (1.0 - mixing)*ham.exchange.hf_orbitals.data()[ii] + mixing*phi_.data()[ii];
+					ham.exchange.hf_orbitals.data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.data()[ii] + solver.mixing()*phi_.data()[ii];
 				}
 				//probably the occupations should be mixed too
 				ham.exchange.hf_occupations = states_.occupations();
