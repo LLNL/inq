@@ -37,62 +37,52 @@ namespace solvers {
 		
   public:
 
-    pulay_mixer(const int arg_steps, const double arg_mix_factor):
-			size_(-1),
+    pulay_mixer(const int arg_steps, const double arg_mix_factor, const long long dim):
+			iter_(0),
 			max_size_(arg_steps),
-      mix_factor_(arg_mix_factor){
+      mix_factor_(arg_mix_factor),
+			ff_({max_size_, dim}),
+			dff_({max_size_, dim}){
     }
 
 		template <class mix_type>
-    void operator()(mix_type & new_value){
+    void operator()(const mix_type & input_value, mix_type & output_value, mix_type & new_value){
 
-			auto full = (size_ == max_size_);
-			size_ = std::min(size_ + 1, max_size_);
+			assert(input_value.size() == ff_[0].size());
+			assert(output_value.size() == ff_[0].size());
+			assert(new_value.size() == ff_[0].size());
+			
+			int size;
+			
+			if(iter_ <= max_size_){
+				size = iter_;
+			} else {
+				size = max_size_;
 
-			if(size_ == 0){
-				//the first step we just store
-
-				ff_ = math::array<type, 2>({max_size_, new_value.size()});
-				dff_= math::array<type, 2>({max_size_, new_value.size()});
-				
-				//DATAOPERATIONS STL COPY
-				std::copy(new_value.begin(), new_value.end(), ff_[0].begin());
-
-				return;
-			}
-
-			if(size_ == 1){
-				//the second step we do linear mixing
-				
-				//DATAOPERATIONS LOOP 1D (one input three outputs)
-				for(unsigned ii = 0; ii < new_value.size(); ii++){
-					dff_[0][ii] = new_value[ii] - ff_[0][ii];
-					new_value[ii] = mix_factor_*new_value[ii] + (1.0 - mix_factor_)*ff_[0][ii];
-					ff_[0][ii] = new_value[ii];
-				}
-
-				return;
-			}
-
-			if(full){
 				//move all the stored functions, this could be avoided but we do it for simplicity
-				for(int istep = 1; istep < size_; istep++){
+				for(int istep = 1; istep < max_size_; istep++){
 					ff_[istep - 1] = ff_[istep];
 					dff_[istep - 1] = dff_[istep];
 				}
 			}
-			
-      //DATAOPERATIONS LOOP 1D (one input two outputs)
-      for(unsigned ii = 0; ii < new_value.size(); ii++){
-				ff_[size_ - 1][ii] = new_value[ii];
-				dff_[size_ - 1][ii] = new_value[ii] - ff_[size_ - 2][ii];
+
+			//DATAOPERATIONS LOOP 1D (one input two outputs)
+			for(unsigned ii = 0; ii < input_value.size(); ii++){
+				ff_[size - 1][ii] = input_value[ii];
+				dff_[size - 1][ii] = output_value[ii] - input_value[ii];
 			}
-			
-			math::array<typename mix_type::value_type, 2> amatrix({size_, size_});
+
+			if(iter_ == 0) {
+				//DATAOPERATIONS LOOP 1D
+				for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = (1.0 - mix_factor_)*input_value[ii] - mix_factor_*output_value[ii];
+				return;
+			}
+
+			math::array<typename mix_type::value_type, 2> amatrix({size, size});
 
 			//DATAOPERATIONS LOOP 2D (use overlap)
-			for(int ii = 0; ii < size_; ii++){
-				for(int jj = 0; jj < size_; jj++){
+			for(int ii = 0; ii < size; ii++){
+				for(int jj = 0; jj < size; jj++){
 					typename mix_type::value_type aa = 0.0;
 					for(unsigned kk = 0; kk < new_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
 					amatrix[ii][jj] = aa;
@@ -113,7 +103,7 @@ namespace solvers {
 			
 			// REDUCE GRID amatrix
 
-			math::array<typename mix_type::value_type, 1> alpha(size_, 1.0);
+			math::array<typename mix_type::value_type, 1> alpha(size, 1.0);
 
 			//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 			
@@ -131,20 +121,22 @@ namespace solvers {
 			std::fill(new_value.begin(), new_value.end(), 0.0);
 
 			//DATAOPERATIONS LOOP 2D (use gemv)
-			for(int jj = 0; jj < size_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*dff_[jj][ii];
+			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*dff_[jj][ii];
 
 			typename mix_type::value_type aa = 0.0;
 			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
 			std::cout << "norm opt " << aa << std::endl;
 
 			//DATAOPERATIONS LOOP 2D (use gemv)
-			for(int jj = 0; jj < size_; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
+			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
+
+			iter_++;
 			
     }
 
   private:
 
-		int size_;
+		int iter_;
 		int max_size_;
     double mix_factor_;
     math::array<type, 2> ff_;
@@ -162,18 +154,19 @@ namespace solvers {
 
 TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
 
-  std::vector<double> v(2);
+	using namespace Catch::literals;
+ 
+  solvers::pulay_mixer<double> lm(5, 0.5, 2);
 
-  v[0] =  10.0;
-  v[1] = -20.0;
+  std::vector<double> vin({10.0, -20.0});
+	std::vector<double> vout({0.0,  22.2});
+	std::vector<double> vnew(2);  
+	
+	lm(vin, vout, vnew);
   
-  solvers::pulay_mixer<double> lm(5, 0.5);
-
-  v[0] = 0.0;
-  v[1] = 22.2;
-
-  lm(v);
-  
+	REQUIRE(vnew[0] == 5.0_a);
+  REQUIRE(vnew[1] == 1.1_a);
+   
 }
 
 
