@@ -29,6 +29,7 @@ gcc:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time src/inq_hydrogen_local
       - time src/inq_neon
+      - time make distcheck
 
 clang:
     stage: build
