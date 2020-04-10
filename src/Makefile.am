@@ -100,4 +100,3 @@ bin_PROGRAMS += $(test_programs)
 check: @PACKAGE_NAME@_unit_tests $(test_programs)
 	@PACKAGE_NAME@_unit_tests
 	@PACKAGE_NAME@_hydrogen_local
-	@PACKAGE_NAME@_neon
