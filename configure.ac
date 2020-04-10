@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.63])
 AC_INIT(inq, alpha, xavier@llnl.gov)
-AM_INIT_AUTOMAKE([subdir-objects])
+AM_INIT_AUTOMAKE([subdir-objects tar-ustar])
 AC_CONFIG_SRCDIR([src/hamiltonian/ks_hamiltonian.hpp])
 AC_CONFIG_HEADERS([config.h])
 

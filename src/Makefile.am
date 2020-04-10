@@ -8,6 +8,7 @@ AM_CXXFLAGS =                             \
 LIBS = @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@
 
 noinst_HEADERS =                             \
+	config/path.hpp                            \
 	gpu/run.hpp                                \
 	utils/merge_optional.hpp                   \
 	utils/partition.hpp                        \
@@ -21,14 +22,17 @@ noinst_HEADERS =                             \
 	input/species.hpp                          \
 	math/array.hpp                             \
 	math/vec3d.hpp                             \
+	math/complex.hpp                           \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
+	ions/unitcell.hpp                          \
 	basis/base.hpp                             \
 	basis/grid.hpp                             \
 	basis/real_space.hpp                       \
 	basis/field.hpp                            \
 	basis/field_set.hpp                        \
+	basis/fourier_space.hpp                    \
 	basis/spherical_grid.hpp                   \
 	basis/trivial.hpp                          \
 	states/ks_states.hpp                       \
@@ -50,6 +54,7 @@ noinst_HEADERS =                             \
 	hamiltonian/energy.hpp                     \
 	hamiltonian/exchange_operator.hpp          \
 	hamiltonian/ks_hamiltonian.hpp             \
+	hamiltonian/projector.hpp                  \
 	hamiltonian/self_consistency.hpp           \
 	hamiltonian/xc_functional.hpp              \
 	solvers/poisson.hpp                        \
@@ -93,4 +98,6 @@ test_programs =                                                 \
 bin_PROGRAMS += $(test_programs) 
 
 check: @PACKAGE_NAME@_unit_tests $(test_programs)
-	for test_prog in @PACKAGE_NAME@_unit_tests $(test_programs); do $(top_builddir)/src/$$test_prog; done
+	./@PACKAGE_NAME@_unit_tests
+	./@PACKAGE_NAME@_hydrogen_local
+	./@PACKAGE_NAME@_neon

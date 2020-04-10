@@ -376,7 +376,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			REQUIRE(real(operations::integral(density)) == -1.0_a);
 			
 			auto potential = psolver(density);
-
+			/*
 			std::ofstream ofile("pot.dat");
 			
 			//			double sumreal = 0.0;
@@ -389,6 +389,7 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 					}
 				}
 			}
+			*/
 
 		}
 
