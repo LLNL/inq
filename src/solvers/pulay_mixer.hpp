@@ -46,7 +46,7 @@ namespace solvers {
     }
 
 		template <class mix_type>
-    void operator()(const mix_type & input_value, mix_type & output_value, mix_type & new_value){
+    void operator()(const mix_type & input_value, const mix_type & output_value, mix_type & new_value){
 
 			const double residual_coeff = 0.05;
 			
@@ -76,7 +76,7 @@ namespace solvers {
 				dff_[size - 1][ii] = output_value[ii] - input_value[ii];
 			}
 
-			if(iter_ == 1) {
+			if(iter_ <= max_size_) {
 				//DATAOPERATIONS LOOP 1D
 				for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
 				return;

@@ -69,8 +69,8 @@ namespace systems {
 
 			operations::preconditioner prec;
 
-			//auto mixer = solvers::linear_mixer<double>(solver.mixing());
-			auto mixer = solvers::pulay_mixer<double>(5, solver.mixing(), rs_.part().local_size());
+			auto mixer = solvers::linear_mixer<double>(solver.mixing());
+			//auto mixer = solvers::pulay_mixer<double>(5, solver.mixing(), rs_.part().local_size());
 			
       double old_energy = DBL_MAX;
 
@@ -122,8 +122,12 @@ namespace systems {
 				//probably the occupations should be mixed too
 				ham.exchange.hf_occupations = states_.occupations();
 				
-				density = operations::calculate_density(states_.occupations(), phi_);
-
+				if(inter.self_consistent() and solver.mix_density_requested()) {
+					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear(), density.linear());
+				} else {
+					density = operations::calculate_density(states_.occupations(), phi_);
+				}
+				
 				auto vks = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 
 				// calculate the new energy and print
@@ -164,7 +168,11 @@ namespace systems {
 				
 				old_energy = energy.eigenvalues;
 
-				if(inter.self_consistent()) mixer(ham.scalar_potential.linear(), vks.linear(), ham.scalar_potential.linear());
+				if(inter.self_consistent() and solver.mix_potential_requested()) {
+					mixer(ham.scalar_potential.linear(), vks.linear(), ham.scalar_potential.linear());
+				} else {
+					ham.scalar_potential = std::move(vks);
+				}
 				
       }
 

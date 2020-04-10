@@ -64,13 +64,42 @@ namespace input {
     auto mixing() const {
       return mixing_.value_or(0.3);
     }
+
+    enum class mix_field { DENSITY,
+                           POTENTIAL
+    };
     
+    auto static mix_density() {
+      scf_solver solver;
+      solver.mix_field_ = mix_field::DENSITY;
+      return solver;
+    }
+
+    auto static mix_potential() {
+      scf_solver solver;
+      solver.mix_field_ = mix_field::POTENTIAL;
+      return solver;
+    }
+
+    auto mix_field_requested() const {
+      return mix_field_.value_or(mix_field::POTENTIAL);
+    }
+    
+    auto mix_density_requested() const {
+      return mix_field_requested() == mix_field::DENSITY;
+    }
+
+    auto mix_potential_requested() const {
+      return mix_field_requested() == mix_field::POTENTIAL;
+    }
+        
     friend auto operator|(const scf_solver & solver1, const scf_solver & solver2){
 			using utils::merge_optional;
 
 			scf_solver rsolver;
 			rsolver.eigensolver_	= merge_optional(solver1.eigensolver_, solver2.eigensolver_);
 			rsolver.mixing_	= merge_optional(solver1.mixing_, solver2.mixing_);
+			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);      
 			return rsolver;
 		}
     
@@ -78,6 +107,7 @@ namespace input {
 
     nonstd::optional<scf_eigensolver> eigensolver_;
     nonstd::optional<double> mixing_;
+    nonstd::optional<mix_field> mix_field_;
     
   };
     
