@@ -122,7 +122,7 @@ namespace systems {
 				//probably the occupations should be mixed too
 				ham.exchange.hf_occupations = states_.occupations();
 				
-				if(inter.self_consistent() and solver.mix_density_requested()) {
+				if(inter.self_consistent() and solver.mix_density()) {
 					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear(), density.linear());
 				} else {
 					density = operations::calculate_density(states_.occupations(), phi_);
@@ -168,7 +168,7 @@ namespace systems {
 				
 				old_energy = energy.eigenvalues;
 
-				if(inter.self_consistent() and solver.mix_potential_requested()) {
+				if(inter.self_consistent() and solver.mix_potential()) {
 					mixer(ham.scalar_potential.linear(), vks.linear(), ham.scalar_potential.linear());
 				} else {
 					ham.scalar_potential = std::move(vks);

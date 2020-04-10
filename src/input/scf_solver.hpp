@@ -69,13 +69,13 @@ namespace input {
                            POTENTIAL
     };
     
-    auto static mix_density() {
+    auto static density_mixing() {
       scf_solver solver;
       solver.mix_field_ = mix_field::DENSITY;
       return solver;
     }
 
-    auto static mix_potential() {
+    auto static potential_mixing() {
       scf_solver solver;
       solver.mix_field_ = mix_field::POTENTIAL;
       return solver;
@@ -85,11 +85,11 @@ namespace input {
       return mix_field_.value_or(mix_field::POTENTIAL);
     }
     
-    auto mix_density_requested() const {
+    auto mix_density() const {
       return mix_field_requested() == mix_field::DENSITY;
     }
 
-    auto mix_potential_requested() const {
+    auto mix_potential() const {
       return mix_field_requested() == mix_field::POTENTIAL;
     }
         
@@ -99,7 +99,7 @@ namespace input {
 			scf_solver rsolver;
 			rsolver.eigensolver_	= merge_optional(solver1.eigensolver_, solver2.eigensolver_);
 			rsolver.mixing_	= merge_optional(solver1.mixing_, solver2.mixing_);
-			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);      
+			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);
 			return rsolver;
 		}
     
