@@ -50,7 +50,7 @@ namespace eigensolver {
       auto eigenvalue = operations::overlap_diagonal(hphi, phi);
       auto old_energy = eigenvalue[0];
 
-			double first_delta_e;
+			double first_delta_e = 0.0;
 			
       basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1);
 
