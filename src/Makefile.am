@@ -98,4 +98,6 @@ test_programs =                                                 \
 bin_PROGRAMS += $(test_programs) 
 
 check: @PACKAGE_NAME@_unit_tests $(test_programs)
-	for test_prog in @PACKAGE_NAME@_unit_tests $(test_programs); do $(top_builddir)/src/$$test_prog; done
+	@PACKAGE_NAME@_unit_tests
+	@PACKAGE_NAME@_hydrogen_local
+	@PACKAGE_NAME@_neon
