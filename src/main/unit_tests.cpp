@@ -35,7 +35,7 @@
 #include <input/basis.hpp>
 #include <input/cell.hpp>
 #include <input/species.hpp>
-#include <input/scf_solver.hpp>
+#include <input/scf.hpp>
 
 #include <config/path.hpp>
 

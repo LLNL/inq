@@ -18,7 +18,7 @@ noinst_HEADERS =                             \
 	input/basis.hpp                            \
 	input/cell.hpp                             \
 	input/config.hpp                           \
-	input/scf_solver.hpp                       \
+	input/scf.hpp                              \
 	input/species.hpp                          \
 	math/array.hpp                             \
 	math/vec3d.hpp                             \

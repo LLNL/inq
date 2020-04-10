@@ -28,7 +28,7 @@
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
-#include <input/scf_solver.hpp>
+#include <input/scf.hpp>
 
 #include <cfloat>
 
@@ -57,7 +57,7 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-    auto calculate_ground_state(const input::interaction & inter, const input::scf_solver & solver = {}){
+    auto calculate_ground_state(const input::interaction & inter, const input::scf & solver = {}){
 
 			hamiltonian::ks_hamiltonian<basis::real_space> ham(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter.exchange_coefficient());
 
@@ -98,11 +98,11 @@ namespace systems {
 
 					switch(solver.eigensolver()){
 
-					case input::scf_solver::scf_eigensolver::STEEPEST_DESCENT:
+					case input::scf::scf_eigensolver::STEEPEST_DESCENT:
 						solvers::steepest_descent(ham, prec, fphi);
 						break;
 						
-					case input::scf_solver::scf_eigensolver::CONJUGATE_GRADIENT:
+					case input::scf::scf_eigensolver::CONJUGATE_GRADIENT:
 						eigensolver::conjugate_gradient(ham, prec, fphi);
 						break;
 

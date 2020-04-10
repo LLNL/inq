@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__SCF_SOLVER
-#define INPUT__SCF_SOLVER
+#ifndef INPUT__SCF
+#define INPUT__SCF
 
 /*
  Copyright (C) 2020 Xavier Andrade
@@ -28,11 +28,11 @@
 
 namespace input {
 
-  class scf_solver {
+  class scf {
 
   public:
 
-    scf_solver(){
+    scf(){
 		}
 
     enum class scf_eigensolver { STEEPEST_DESCENT,
@@ -40,13 +40,13 @@ namespace input {
     };
 
     static auto steepest_descent(){
-      scf_solver solver;
+      scf solver;
       solver.eigensolver_ = scf_eigensolver::STEEPEST_DESCENT;
       return solver;
     }
 
     static auto conjugate_gradient(){
-      scf_solver solver;
+      scf solver;
       solver.eigensolver_ = scf_eigensolver::CONJUGATE_GRADIENT;
       return solver;
     }
@@ -56,7 +56,7 @@ namespace input {
     }
 
     static auto mixing(double mixing_factor) {
-      scf_solver solver;
+      scf solver;
       solver.mixing_ = mixing_factor;
       return solver;
     }
@@ -70,13 +70,13 @@ namespace input {
     };
     
     auto static density_mixing() {
-      scf_solver solver;
+      scf solver;
       solver.mix_field_ = mix_field::DENSITY;
       return solver;
     }
 
     auto static potential_mixing() {
-      scf_solver solver;
+      scf solver;
       solver.mix_field_ = mix_field::POTENTIAL;
       return solver;
     }
@@ -93,10 +93,10 @@ namespace input {
       return mix_field_requested() == mix_field::POTENTIAL;
     }
         
-    friend auto operator|(const scf_solver & solver1, const scf_solver & solver2){
+    friend auto operator|(const scf & solver1, const scf & solver2){
 			using utils::merge_optional;
 
-			scf_solver rsolver;
+			scf rsolver;
 			rsolver.eigensolver_	= merge_optional(solver1.eigensolver_, solver2.eigensolver_);
 			rsolver.mixing_	= merge_optional(solver1.mixing_, solver2.mixing_);
 			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);
@@ -118,24 +118,24 @@ namespace input {
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("class input::scf_solver", "[input::scf_solver]") {
+TEST_CASE("class input::scf", "[input::scf]") {
   
   using namespace Catch::literals;
 
 	SECTION("Defaults"){
 
-    input::scf_solver solver;
+    input::scf solver;
 
-    REQUIRE(solver.eigensolver() == input::scf_solver::scf_eigensolver::STEEPEST_DESCENT);
+    REQUIRE(solver.eigensolver() == input::scf::scf_eigensolver::STEEPEST_DESCENT);
     REQUIRE(solver.mixing() == 0.3_a);
     
   }
 
   SECTION("Composition"){
 
-    auto solver = input::scf_solver::conjugate_gradient() | input::scf_solver::mixing(0.05);
+    auto solver = input::scf::conjugate_gradient() | input::scf::mixing(0.05);
     
-    REQUIRE(solver.eigensolver() == input::scf_solver::scf_eigensolver::CONJUGATE_GRADIENT);
+    REQUIRE(solver.eigensolver() == input::scf::scf_eigensolver::CONJUGATE_GRADIENT);
     REQUIRE(solver.mixing() == 0.05_a);
     
   }
