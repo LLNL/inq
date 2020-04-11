@@ -24,7 +24,7 @@
 #include <math/complex.hpp>
 #include <math/vec3d.hpp>
 #include <math/array.hpp>
-#include <solvers/linear.hpp>
+#include <solvers/least_squares.hpp>
 
 namespace solvers {
 
@@ -141,7 +141,7 @@ namespace solvers {
 
 			//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 			
-			solvers::linear_symmetric(amatrix, alpha);
+			solvers::least_squares(amatrix, alpha);
 
 			//			std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 			
@@ -175,11 +175,13 @@ namespace solvers {
 			std::fill(new_value.begin(), new_value.end(), 0.0);
 			
 			//DATAOPERATIONS LOOP 2D (use gemv)
-			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*(ff_[jj][ii] + residual_coeff*dff_[jj][ii]);
+			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
 
 			typename mix_type::value_type aa = 0.0;
+			typename mix_type::value_type bb = 0.0;
 			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += fabs(new_value[kk]);
-			std::cout << "norm opt " << aa << std::endl;
+			for(unsigned kk = 0; kk < new_value.size(); kk++) bb += new_value[kk];
+			std::cout << "norm opt " << aa << " " << bb << std::endl;
 			
     }
 

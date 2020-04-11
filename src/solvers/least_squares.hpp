@@ -43,10 +43,14 @@ namespace solvers {
 		//DATAOPERATIONS RAWLAPACK dgelss
 		dgelss(mm, nn, 1, matrix.data(), mm, rhs.data(), mm, ss.data(), -1.0, rank, &dwork, -1, info);
 
-		double * work = (double *) malloc(int(dwork)*sizeof(double));
+		assert(info == 0);
+		
+		auto work = (double *) malloc(int(dwork)*sizeof(double));
 
 		dgelss(mm, nn, 1, matrix.data(), mm, rhs.data(), mm, ss.data(), -1.0, rank, work, int(dwork), info);
 
+		assert(info == 0);
+		
 		free(work);
 		
   }

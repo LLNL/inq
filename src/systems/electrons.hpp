@@ -125,13 +125,15 @@ namespace systems {
 				if(inter.self_consistent() and solver.mix_density()) {
 					std::cout << "charge = " << operations::integral(density) << " " << operations::integral(operations::calculate_density(states_.occupations(), phi_)) << std::endl;
 
-					double q = 0.0;
-					for(int i = 0; i < density.basis().size(); i++){
-						q += density.linear()[i];
-					}
-					std::cout << q << std::endl;
-					
 					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear(), density.linear());
+
+					std::cout << "output charge = " << operations::integral(density) << std::endl;
+										
+					auto qq = operations::integral(density);
+					for(int i = 0; i < density.basis().size(); i++) density.linear()[i] /= qq;
+
+					std::cout << "normalize charge = " << operations::integral(density) << std::endl;
+					
 				} else {
 					density = operations::calculate_density(states_.occupations(), phi_);
 				}
