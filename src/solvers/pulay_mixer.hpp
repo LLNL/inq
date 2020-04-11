@@ -75,7 +75,17 @@ namespace solvers {
 				ff_[size - 1][ii] = input_value[ii];
 				dff_[size - 1][ii] = output_value[ii] - input_value[ii];
 			}
-
+			
+			for(int ii = 0; ii < size; ii++){
+				typename mix_type::value_type aa = 0.0;
+				typename mix_type::value_type bb = 0.0;
+				for(unsigned kk = 0; kk < new_value.size(); kk++){
+					aa += conj(ff_[ii][kk])*ff_[ii][kk];
+					bb += conj(dff_[ii][kk])*dff_[ii][kk];
+				}
+				std::cout << "norm " << ii << '\t' << aa << '\t' << bb << std::endl;
+			}
+			
 			if(iter_ == 1) {
 				//DATAOPERATIONS LOOP 1D
 				for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
@@ -90,9 +100,6 @@ namespace solvers {
 					typename mix_type::value_type aa = 0.0;
 					for(unsigned kk = 0; kk < new_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
 					amatrix[ii][jj] = aa;
-
-					if(ii == jj) std::cout << "norm " << ii << '\t' << aa << std::endl;
-					
 				}
 			}
 
@@ -129,7 +136,11 @@ namespace solvers {
 			
 			//DATAOPERATIONS LOOP
 			for(int ii = 0; ii < size; ii++) alpha[ii] /= sumalpha;
-			
+
+			sumalpha = 0.0;
+			for(int ii = 0; ii < size; ii++) sumalpha += alpha[ii];
+			std::cout << "sumalpha = " << sumalpha << std::endl;
+
 			//DATAOPERATIONS STL FILL 
 			std::fill(new_value.begin(), new_value.end(), 0.0);
 
