@@ -70,7 +70,7 @@ namespace systems {
 			operations::preconditioner prec;
 
 			//auto mixer = solvers::linear_mixer<double>(solver.mixing());
-			auto mixer = solvers::pulay_mixer<double>(5, solver.mixing(), rs_.part().local_size());
+			auto mixer = solvers::pulay_mixer<double>(6, solver.mixing(), rs_.part().local_size());
 			
       double old_energy = DBL_MAX;
 
@@ -121,8 +121,16 @@ namespace systems {
 				}
 				//probably the occupations should be mixed too
 				ham.exchange.hf_occupations = states_.occupations();
-				
+
 				if(inter.self_consistent() and solver.mix_density()) {
+					std::cout << "charge = " << operations::integral(density) << " " << operations::integral(operations::calculate_density(states_.occupations(), phi_)) << std::endl;
+
+					double q = 0.0;
+					for(int i = 0; i < density.basis().size(); i++){
+						q += density.linear()[i];
+					}
+					std::cout << q << std::endl;
+					
 					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear(), density.linear());
 				} else {
 					density = operations::calculate_density(states_.occupations(), phi_);

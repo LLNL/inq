@@ -41,18 +41,28 @@ namespace solvers {
 			iter_(0),
 			max_size_(arg_steps),
       mix_factor_(arg_mix_factor),
-			ff_({max_size_, dim}),
-			dff_({max_size_, dim}){
+			ff_({max_size_, dim}, NAN),
+			dff_({max_size_, dim}, NAN){
     }
 
 		template <class mix_type>
     void operator()(const mix_type & input_value, const mix_type & output_value, mix_type & new_value){
 
-			const double residual_coeff = 0.05;
+			const double residual_coeff = 0.0;
 			
 			assert((typename math::array<double, 2>::size_type) input_value.size() == ff_[0].size());
 			assert((typename math::array<double, 2>::size_type) output_value.size() == ff_[0].size());
 			assert((typename math::array<double, 2>::size_type) new_value.size() == ff_[0].size());
+
+			{
+				typename mix_type::value_type aa = 0.0;
+				typename mix_type::value_type bb = 0.0;
+				for(unsigned kk = 0; kk < new_value.size(); kk++){
+					aa += fabs(input_value[kk]);
+					bb += fabs(output_value[kk]);
+				}
+				std::cout << "input norm = " << aa << " output norm = " << bb << std::endl;
+			}
 			
 			int size;
 
@@ -80,7 +90,7 @@ namespace solvers {
 				typename mix_type::value_type aa = 0.0;
 				typename mix_type::value_type bb = 0.0;
 				for(unsigned kk = 0; kk < new_value.size(); kk++){
-					aa += conj(ff_[ii][kk])*ff_[ii][kk];
+					aa += fabs(ff_[ii][kk]);
 					bb += conj(dff_[ii][kk])*dff_[ii][kk];
 				}
 				std::cout << "norm " << ii << '\t' << aa << '\t' << bb << std::endl;
@@ -89,6 +99,11 @@ namespace solvers {
 			if(iter_ == 1) {
 				//DATAOPERATIONS LOOP 1D
 				for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
+
+				typename mix_type::value_type aa = 0.0;
+				for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
+				std::cout << "norm opt " << aa << std::endl;
+
 				return;
 			}
 
@@ -138,17 +153,32 @@ namespace solvers {
 			for(int ii = 0; ii < size; ii++) alpha[ii] /= sumalpha;
 
 			sumalpha = 0.0;
-			for(int ii = 0; ii < size; ii++) sumalpha += alpha[ii];
+			std::cout << "alpha = ";
+			for(int ii = 0; ii < size; ii++) {
+				std::cout << alpha[ii] << " "; 
+			 sumalpha += alpha[ii];
+			}
+			std::cout << std::endl;
 			std::cout << "sumalpha = " << sumalpha << std::endl;
 
-			//DATAOPERATIONS STL FILL 
-			std::fill(new_value.begin(), new_value.end(), 0.0);
+			{
+				std::fill(new_value.begin(), new_value.end(), 0.0);
+				
+				for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*dff_[jj][ii];
+				
+				typename mix_type::value_type aa = 0.0;
+				for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
+				std::cout << "res norm " << aa << std::endl;
+			}
 
+			//DATAOPERATIONS STL FILL
+			std::fill(new_value.begin(), new_value.end(), 0.0);
+			
 			//DATAOPERATIONS LOOP 2D (use gemv)
 			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*(ff_[jj][ii] + residual_coeff*dff_[jj][ii]);
 
 			typename mix_type::value_type aa = 0.0;
-			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
+			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += fabs(new_value[kk]);
 			std::cout << "norm opt " << aa << std::endl;
 			
     }
