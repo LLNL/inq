@@ -50,9 +50,9 @@ namespace solvers {
 
 			const double residual_coeff = 0.05;
 			
-			assert(input_value.size() == ff_[0].size());
-			assert(output_value.size() == ff_[0].size());
-			assert(new_value.size() == ff_[0].size());
+			assert((typename math::array<double, 2>::size_type) input_value.size() == ff_[0].size());
+			assert((typename math::array<double, 2>::size_type) output_value.size() == ff_[0].size());
+			assert((typename math::array<double, 2>::size_type) new_value.size() == ff_[0].size());
 			
 			int size;
 
@@ -76,7 +76,7 @@ namespace solvers {
 				dff_[size - 1][ii] = output_value[ii] - input_value[ii];
 			}
 
-			if(iter_ <= max_size_) {
+			if(iter_ == 1) {
 				//DATAOPERATIONS LOOP 1D
 				for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
 				return;
