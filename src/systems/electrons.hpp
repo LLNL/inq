@@ -130,6 +130,8 @@ namespace systems {
 					std::cout << "output charge = " << operations::integral(density) << std::endl;
 										
 					auto qq = operations::integral(density);
+
+					assert(qq > 1e-16);
 					for(int i = 0; i < density.basis().size(); i++) density.linear()[i] /= qq;
 
 					std::cout << "normalize charge = " << operations::integral(density) << std::endl;
