@@ -46,18 +46,17 @@ namespace solvers {
     }
 
 		template <class mix_type>
-    void operator()(const mix_type & input_value, const mix_type & output_value, mix_type & new_value){
+    void operator()(mix_type & input_value, const mix_type & output_value){
 
-			const double residual_coeff = 0.0;
+			const double residual_coeff = 0.05;
 			
 			assert((typename math::array<double, 2>::size_type) input_value.size() == ff_[0].size());
 			assert((typename math::array<double, 2>::size_type) output_value.size() == ff_[0].size());
-			assert((typename math::array<double, 2>::size_type) new_value.size() == ff_[0].size());
 
 			{
 				typename mix_type::value_type aa = 0.0;
 				typename mix_type::value_type bb = 0.0;
-				for(unsigned kk = 0; kk < new_value.size(); kk++){
+				for(unsigned kk = 0; kk < input_value.size(); kk++){
 					aa += fabs(input_value[kk]);
 					bb += fabs(output_value[kk]);
 				}
@@ -89,7 +88,7 @@ namespace solvers {
 			for(int ii = 0; ii < size; ii++){
 				typename mix_type::value_type aa = 0.0;
 				typename mix_type::value_type bb = 0.0;
-				for(unsigned kk = 0; kk < new_value.size(); kk++){
+				for(unsigned kk = 0; kk < input_value.size(); kk++){
 					aa += fabs(ff_[ii][kk]);
 					bb += conj(dff_[ii][kk])*dff_[ii][kk];
 				}
@@ -98,10 +97,10 @@ namespace solvers {
 			
 			if(iter_ == 1) {
 				//DATAOPERATIONS LOOP 1D
-				for(unsigned ii = 0; ii < new_value.size(); ii++)	new_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
+				for(unsigned ii = 0; ii < input_value.size(); ii++)	input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
 
 				typename mix_type::value_type aa = 0.0;
-				for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
+				for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
 				std::cout << "norm opt " << aa << std::endl;
 
 				return;
@@ -113,7 +112,7 @@ namespace solvers {
 			for(int ii = 0; ii < size; ii++){
 				for(int jj = 0; jj < size; jj++){
 					typename mix_type::value_type aa = 0.0;
-					for(unsigned kk = 0; kk < new_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
+					for(unsigned kk = 0; kk < input_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
 					amatrix[ii][jj] = aa;
 				}
 			}
@@ -162,25 +161,25 @@ namespace solvers {
 			std::cout << "sumalpha = " << sumalpha << std::endl;
 
 			{
-				std::fill(new_value.begin(), new_value.end(), 0.0);
+				std::fill(input_value.begin(), input_value.end(), 0.0);
 				
-				for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*dff_[jj][ii];
+				for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < input_value.size(); ii++) input_value[ii] += alpha[jj]*dff_[jj][ii];
 				
 				typename mix_type::value_type aa = 0.0;
-				for(unsigned kk = 0; kk < new_value.size(); kk++) aa += norm(new_value[kk]);
+				for(unsigned kk = 0; kk < input_value.size(); kk++) aa += norm(input_value[kk]);
 				std::cout << "res norm " << aa << std::endl;
 			}
 
 			//DATAOPERATIONS STL FILL
-			std::fill(new_value.begin(), new_value.end(), 0.0);
+			std::fill(input_value.begin(), input_value.end(), 0.0);
 			
 			//DATAOPERATIONS LOOP 2D (use gemv)
-			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < new_value.size(); ii++) new_value[ii] += alpha[jj]*ff_[jj][ii];
+			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < input_value.size(); ii++) input_value[ii] += alpha[jj]*ff_[jj][ii];
 
 			typename mix_type::value_type aa = 0.0;
 			typename mix_type::value_type bb = 0.0;
-			for(unsigned kk = 0; kk < new_value.size(); kk++) aa += fabs(new_value[kk]);
-			for(unsigned kk = 0; kk < new_value.size(); kk++) bb += new_value[kk];
+			for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
+			for(unsigned kk = 0; kk < input_value.size(); kk++) bb += input_value[kk];
 			std::cout << "norm opt " << aa << " " << bb << std::endl;
 			
     }
