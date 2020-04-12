@@ -37,12 +37,12 @@ namespace solvers {
     }
 
 		template <class mix_type>
-    void operator()(const mix_type & input_value, const mix_type & output_value, mix_type & new_value){
+    void operator()(mix_type & input_value, const mix_type & output_value){
 			//note: arguments might alias here			
 
       //DATAOPERATIONS LOOP 1D
-      for(unsigned ii = 0; ii < new_value.size(); ii++){
-        new_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
+      for(unsigned ii = 0; ii < input_value.size(); ii++){
+        input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
       }
     }
 
@@ -68,12 +68,11 @@ TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
 
   std::vector<double> vin({10.0, -20.0});
 	std::vector<double> vout({0.0,  22.2});
-	std::vector<double> vnew(2);  
 
-	lm(vin, vout, vnew);
+	lm(vin, vout);
   
-  REQUIRE(vnew[0] == 5.0_a);
-  REQUIRE(vnew[1] == 1.1_a);
+  REQUIRE(vin[0] == 5.0_a);
+  REQUIRE(vin[1] == 1.1_a);
   
 }
 

@@ -69,8 +69,8 @@ namespace systems {
 
 			operations::preconditioner prec;
 
-			//auto mixer = solvers::linear_mixer<double>(solver.mixing());
-			auto mixer = solvers::pulay_mixer<double>(6, solver.mixing(), rs_.part().local_size());
+			auto mixer = solvers::linear_mixer<double>(solver.mixing());
+			//auto mixer = solvers::pulay_mixer<double>(6, solver.mixing(), rs_.part().local_size());
 			
       double old_energy = DBL_MAX;
 
@@ -125,7 +125,7 @@ namespace systems {
 				if(inter.self_consistent() and solver.mix_density()) {
 					std::cout << "charge = " << operations::integral(density) << " " << operations::integral(operations::calculate_density(states_.occupations(), phi_)) << std::endl;
 
-					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear(), density.linear());
+					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear());
 
 					std::cout << "output charge = " << operations::integral(density) << std::endl;
 										
@@ -179,7 +179,7 @@ namespace systems {
 				old_energy = energy.eigenvalues;
 
 				if(inter.self_consistent() and solver.mix_potential()) {
-					mixer(ham.scalar_potential.linear(), vks.linear(), ham.scalar_potential.linear());
+					mixer(ham.scalar_potential.linear(), vks.linear());
 				} else {
 					ham.scalar_potential = std::move(vks);
 				}
