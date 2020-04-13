@@ -184,10 +184,6 @@ namespace solvers {
 				}
 			}
 
-			for(unsigned ii = 0; ii < input_value.size(); ii++) {
-				if(input_value[ii] < 0.0) input_value[ii] = 0.0;
-			}
-		
 			typename mix_type::value_type aa = 0.0;
 			typename mix_type::value_type bb = 0.0;
 			for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
@@ -222,19 +218,18 @@ TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
 
   std::vector<double> vin({10.0, -20.0});
 	std::vector<double> vout({0.0,  22.2});
-	std::vector<double> vnew(2);  
 	
-	lm(vin, vout, vnew);
+	lm(vin, vout);
   
-	REQUIRE(vnew[0] == 5.0_a);
-  REQUIRE(vnew[1] == 1.1_a);
+	REQUIRE(vin[0] == 5.0_a);
+  REQUIRE(vin[1] == 1.1_a);
 
 	vout = {4.0, 5.5};
 
-	lm(vnew, vout, vnew);
+	lm(vin, vout);
 
-	REQUIRE(vnew[0] == -0.0094885448_a);
-  REQUIRE(vnew[1] == -0.0076193817_a);
+	REQUIRE(vin[0] == 4.4216618979_a);
+  REQUIRE(vin[1] == 3.550631855_a);
 
 }
 
