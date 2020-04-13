@@ -106,7 +106,7 @@ namespace solvers {
 				return;
 			}
 
-			math::array<typename mix_type::value_type, 2> amatrix({size + 1, size + 1});
+			math::array<typename mix_type::value_type, 2> amatrix({size + 1, size + 1}, NAN);
 
 			//DATAOPERATIONS LOOP 2D (use overlap)
 			for(int ii = 0; ii < size; ii++){
@@ -160,6 +160,10 @@ namespace solvers {
 			std::cout << std::endl;
 			std::cout << "sumalpha = " << sumalpha << std::endl;
 
+			//			for(int ii = 0; ii < size; ii++) alpha[ii] = 0.0;
+			/*			alpha[size - 2] = 1.0 - mix_factor_;
+							alpha[size - 1] = mix_factor_;*/
+	
 			{
 				std::fill(input_value.begin(), input_value.end(), 0.0);
 				
@@ -174,8 +178,16 @@ namespace solvers {
 			std::fill(input_value.begin(), input_value.end(), 0.0);
 			
 			//DATAOPERATIONS LOOP 2D (use gemv)
-			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < input_value.size(); ii++) input_value[ii] += alpha[jj]*ff_[jj][ii];
+			for(int jj = 0; jj < size; jj++) {
+				for(unsigned ii = 0; ii < input_value.size(); ii++) {
+					input_value[ii] += alpha[jj]*(ff_[jj][ii] + 0.05*dff_[jj][ii]);
+				}
+			}
 
+			for(unsigned ii = 0; ii < input_value.size(); ii++) {
+				if(input_value[ii] < 0.0) input_value[ii] = 0.0;
+			}
+		
 			typename mix_type::value_type aa = 0.0;
 			typename mix_type::value_type bb = 0.0;
 			for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);

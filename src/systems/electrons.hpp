@@ -69,8 +69,8 @@ namespace systems {
 
 			operations::preconditioner prec;
 
-			//auto mixer = solvers::linear_mixer<double>(solver.mixing());
-			auto mixer = solvers::pulay_mixer<double>(6, solver.mixing(), rs_.part().local_size());
+			auto mixer = solvers::linear_mixer<double>(solver.mixing());
+			//auto mixer = solvers::pulay_mixer<double>(2, solver.mixing(), rs_.part().local_size());
 			
       double old_energy = DBL_MAX;
 
