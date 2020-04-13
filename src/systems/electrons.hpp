@@ -142,6 +142,12 @@ namespace systems {
 				
 				auto vks = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 
+				if(inter.self_consistent() and solver.mix_potential()) {
+					mixer(ham.scalar_potential.linear(), vks.linear());
+				} else {
+					ham.scalar_potential = std::move(vks);
+				}
+				
 				// calculate the new energy and print
 				{
 					
@@ -179,12 +185,6 @@ namespace systems {
 				}
 				
 				old_energy = energy.eigenvalues;
-
-				if(inter.self_consistent() and solver.mix_potential()) {
-					mixer(ham.scalar_potential.linear(), vks.linear());
-				} else {
-					ham.scalar_potential = std::move(vks);
-				}
 				
       }
 
