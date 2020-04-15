@@ -52,6 +52,7 @@ namespace operations {
 
 #ifdef UNIT_TEST
 
+#include <math/complex.hpp>
 #include <basis/field.hpp>
 
 #include <catch2/catch.hpp>
