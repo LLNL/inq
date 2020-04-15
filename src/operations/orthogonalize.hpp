@@ -27,6 +27,8 @@
 #include <cstdlib>
 #include <multi/adaptors/blas/trsm.hpp>
 
+#include <operations/overlap.hpp>
+
 #ifdef HAVE_CUDA
 #include <cusolverDn.h>
 #endif
