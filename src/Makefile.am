@@ -59,9 +59,9 @@ noinst_HEADERS =                             \
 	hamiltonian/xc_functional.hpp              \
 	solvers/poisson.hpp                        \
 	solvers/least_squares.hpp                  \
-	solvers/linear_mixer.hpp                   \
 	solvers/linear.hpp                         \
-	solvers/pulay_mixer.hpp                    \
+	mixers/linear.hpp                          \
+	mixers/pulay.hpp                           \
 	eigensolvers/conjugate_gradient.hpp        \
 	eigensolvers/steepest_descent.hpp          \
 	systems/ions.hpp                           \
