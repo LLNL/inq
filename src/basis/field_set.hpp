@@ -151,6 +151,8 @@ namespace basis {
 
 #ifdef UNIT_TEST
 
+#include <basis/real_space.hpp>
+
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
 
