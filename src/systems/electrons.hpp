@@ -3,6 +3,8 @@
 #ifndef SYSTEMS__ELECTRONS
 #define SYSTEMS__ELECTRONS
 
+#include <cfloat>
+
 #include <systems/ions.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
@@ -19,8 +21,8 @@
 #include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
 #include <operations/subspace_diagonalization.hpp>
-#include <solvers/linear_mixer.hpp>
-#include <solvers/pulay_mixer.hpp>
+#include <mixers/linear.hpp>
+#include <mixers/pulay.hpp>
 #include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
@@ -29,8 +31,6 @@
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
 #include <input/scf.hpp>
-
-#include <cfloat>
 
 namespace systems {
 
