@@ -180,7 +180,7 @@ namespace solvers {
 			//DATAOPERATIONS LOOP 2D (use gemv)
 			for(int jj = 0; jj < size; jj++) {
 				for(unsigned ii = 0; ii < input_value.size(); ii++) {
-					input_value[ii] += alpha[jj]*(ff_[jj][ii] + 0.05*dff_[jj][ii]);
+					input_value[ii] += alpha[jj]*(ff_[jj][ii] + residual_coeff*dff_[jj][ii]);
 				}
 			}
 
