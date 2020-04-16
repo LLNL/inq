@@ -22,7 +22,7 @@ gcc:
       - mkdir build
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra"
-      - time ../configure --prefix=$HOME
+      - time ../configure --prefix=$HOME  || cat config.log
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -126,7 +126,7 @@ clang_cuda:
       - cd clang_cuda
       - export CXX="clang++-10 -x cuda --cuda-gpu-arch=sm_50"
       - export CXXLD="clang++-10"
-      - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -DNEBUG -std=c++14 -Wall -Werror"
+      - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -DNEBUG -std=c++14 -Wall"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
