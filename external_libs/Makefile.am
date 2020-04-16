@@ -147,4 +147,5 @@ noinst_HEADERS =                                      \
 	mpi3/request.hpp                   \
 	mpi3/communicator_iterator.hpp                   \
 	mpi3/message.hpp                   \
-	mpi3/environment.hpp
+	mpi3/environment.hpp                                \
+	mpi3/config/NODISCARD.hpp
