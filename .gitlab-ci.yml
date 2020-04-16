@@ -21,6 +21,7 @@ gcc:
       - time autoreconf -i
       - mkdir build
       - cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror"
       - time ../configure --prefix=$HOME
       - time make -j4 install
       - time src/inq_unit_tests
