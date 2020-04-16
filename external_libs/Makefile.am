@@ -94,7 +94,6 @@ noinst_HEADERS =                                      \
 	mpi3/ostream.hpp                   \
 	mpi3/FILE.hpp                   \
 	mpi3/shared_mutex.hpp                   \
-	mpi3/array.hpp                   \
 	mpi3/communicator_fwd.hpp                   \
 	mpi3/process.hpp                   \
 	mpi3/detail/datatype.hpp                   \
@@ -118,14 +117,12 @@ noinst_HEADERS =                                      \
 	mpi3/shm/pool.hpp                   \
 	mpi3/shm/vector.hpp                   \
 	mpi3/shm/managed_shared_memory.hpp                   \
-	mpi3/shm/pointer.hpp                   \
 	mpi3/shm/allocator.hpp                   \
 	mpi3/shm/memory.hpp                   \
 	mpi3/shm/mutex.hpp                   \
 	mpi3/shm/multi_array.hpp                   \
 	mpi3/stl/inplace_merge.hpp                   \
 	mpi3/generalized_request.hpp                   \
-	mpi3/pointer.hpp                   \
 	mpi3/communicator/operators.hpp                   \
 	mpi3/communicator/operatorators.hpp                   \
 	mpi3/operation.hpp                   \
@@ -150,4 +147,5 @@ noinst_HEADERS =                                      \
 	mpi3/request.hpp                   \
 	mpi3/communicator_iterator.hpp                   \
 	mpi3/message.hpp                   \
-	mpi3/environment.hpp
+	mpi3/environment.hpp                                \
+	mpi3/config/NODISCARD.hpp
