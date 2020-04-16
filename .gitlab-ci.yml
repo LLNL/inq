@@ -21,7 +21,7 @@ gcc:
       - time autoreconf -i
       - mkdir build
       - cd build
-      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type"
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - time ../configure --prefix=$HOME  || cat config.log
       - time make -j4 install
       - time src/inq_unit_tests
