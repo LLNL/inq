@@ -98,6 +98,7 @@ namespace solvers {
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
+#include <operations/matrix_operator.hpp>
 
 TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 

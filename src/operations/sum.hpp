@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+
 #include <cassert>
 #include <numeric>
 
@@ -50,6 +51,10 @@ namespace operations {
 }
 
 #ifdef UNIT_TEST
+
+#include <math/complex.hpp>
+#include <basis/field.hpp>
+
 #include <catch2/catch.hpp>
 #include <basis/trivial.hpp>
 

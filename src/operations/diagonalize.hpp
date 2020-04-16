@@ -25,6 +25,8 @@
 #include <config.h>
 #endif
 
+#include <math/complex.hpp>
+
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
@@ -173,6 +175,7 @@ namespace operations {
 ///////////////////////////////////////////////////////////////////
 
 #ifdef UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 #include <operations/randomize.hpp>

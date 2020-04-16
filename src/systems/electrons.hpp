@@ -3,6 +3,8 @@
 #ifndef SYSTEMS__ELECTRONS
 #define SYSTEMS__ELECTRONS
 
+#include <cfloat>
+
 #include <systems/ions.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
@@ -19,8 +21,8 @@
 #include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
 #include <operations/subspace_diagonalization.hpp>
-#include <solvers/linear_mixer.hpp>
-#include <solvers/pulay_mixer.hpp>
+#include <mixers/linear.hpp>
+#include <mixers/pulay.hpp>
 #include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
@@ -28,9 +30,7 @@
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
-#include <input/scf_solver.hpp>
-
-#include <cfloat>
+#include <input/scf.hpp>
 
 namespace systems {
 
@@ -57,7 +57,7 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-    auto calculate_ground_state(const input::interaction & inter, const input::scf_solver & solver = {}){
+    auto calculate_ground_state(const input::interaction & inter, const input::scf & solver = {}){
 
 			hamiltonian::ks_hamiltonian<basis::real_space> ham(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter.exchange_coefficient());
 
@@ -70,7 +70,7 @@ namespace systems {
 			operations::preconditioner prec;
 
 			auto mixer = solvers::linear_mixer<double>(solver.mixing());
-			//auto mixer = solvers::pulay_mixer<double>(5, solver.mixing());
+			//auto mixer = solvers::pulay_mixer<double>(2, solver.mixing(), rs_.part().local_size());
 			
       double old_energy = DBL_MAX;
 
@@ -91,8 +91,6 @@ namespace systems {
 			int conv_count = 0;
       for(int iiter = 0; iiter < 1000; iiter++){
 
-				if(inter.self_consistent()) mixer(ham.scalar_potential.linear());
-
 				operations::subspace_diagonalization(ham, phi_);
 
 				{
@@ -100,11 +98,11 @@ namespace systems {
 
 					switch(solver.eigensolver()){
 
-					case input::scf_solver::scf_eigensolver::STEEPEST_DESCENT:
+					case input::scf::scf_eigensolver::STEEPEST_DESCENT:
 						solvers::steepest_descent(ham, prec, fphi);
 						break;
 						
-					case input::scf_solver::scf_eigensolver::CONJUGATE_GRADIENT:
+					case input::scf::scf_eigensolver::CONJUGATE_GRADIENT:
 						eigensolver::conjugate_gradient(ham, prec, fphi);
 						break;
 
@@ -123,11 +121,34 @@ namespace systems {
 				}
 				//probably the occupations should be mixed too
 				ham.exchange.hf_occupations = states_.occupations();
-				
-				density = operations::calculate_density(states_.occupations(), phi_);
 
+				if(inter.self_consistent() and solver.mix_density()) {
+					std::cout << "charge = " << operations::integral(density) << " " << operations::integral(operations::calculate_density(states_.occupations(), phi_)) << std::endl;
+
+					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear());
+
+					std::cout << "output charge = " << operations::integral(density) << std::endl;
+										
+					auto qq = operations::integral(density);
+
+					assert(qq > 1e-16);
+					for(int i = 0; i < density.basis().size(); i++) density.linear()[i] /= qq;
+
+					std::cout << "normalize charge = " << operations::integral(density) << std::endl;
+					
+				} else {
+					density = operations::calculate_density(states_.occupations(), phi_);
+				}
+				
 				auto vks = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 
+				if(inter.self_consistent() and solver.mix_potential()) {
+					mixer(ham.scalar_potential.linear(), vks.linear());
+				} else {
+					ham.scalar_potential = std::move(vks);
+				}
+				
+				// calculate the new energy and print
 				{
 					
 					auto residual = ham(phi_);
@@ -164,9 +185,7 @@ namespace systems {
 				}
 				
 				old_energy = energy.eigenvalues;
-
-				ham.scalar_potential = std::move(vks);
-			
+				
       }
 
 			energy.print(std::cout);

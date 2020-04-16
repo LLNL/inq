@@ -1,10 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef SOLVERS_LINEAR_MIXER
-#define SOLVERS_LINEAR_MIXER
+#ifndef MIXERS__LINEAR
+#define MIXERS__LINEAR
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2020 Xavier Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -33,31 +33,22 @@ namespace solvers {
   public:
 
     linear_mixer(double arg_mix_factor):
-			first_iter_(true),
       mix_factor_(arg_mix_factor){
     }
 
 		template <class mix_type>
-    void operator()(mix_type & new_value){
+    void operator()(mix_type & input_value, const mix_type & output_value){
+			//note: arguments might alias here			
 
-			if(first_iter_) {
-				old_ = math::array<type, 1>(new_value.begin(), new_value.end());
-				first_iter_ = false;
-			}
-
-      //DATAOPERATIONS LOOP 1D (one input two outputs)
-      for(unsigned ii = 0; ii < new_value.size(); ii++){
-        auto tmp = new_value[ii];
-        new_value[ii] = (1.0 - mix_factor_)*old_[ii] + mix_factor_*tmp;
-        old_[ii] = tmp;
+      //DATAOPERATIONS LOOP 1D
+      for(unsigned ii = 0; ii < input_value.size(); ii++){
+        input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
       }
     }
 
   private:
 		
-		bool first_iter_;
     double mix_factor_;
-    math::array<type, 1> old_;
 		
 	};
 
@@ -73,21 +64,15 @@ TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
 
 	using namespace Catch::literals;
 
-  std::vector<double> v(2);
   solvers::linear_mixer<double> lm(0.5);
 
-  v[0] =  10.0;
-  v[1] = -20.0;
-  
-	lm(v);
-	
-  v[0] = 0.0;
-  v[1] = 22.2;
+  std::vector<double> vin({10.0, -20.0});
+	std::vector<double> vout({0.0,  22.2});
 
-  lm(v);
+	lm(vin, vout);
   
-  REQUIRE(v[0] == 5.0_a);
-  REQUIRE(v[1] == 1.1_a);
+  REQUIRE(vin[0] == 5.0_a);
+  REQUIRE(vin[1] == 1.1_a);
   
 }
 

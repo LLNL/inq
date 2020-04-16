@@ -22,6 +22,7 @@
 
 #include <catch2/catch.hpp>
 
+#if 0
 #include <pseudopod/spline.hpp>
 #include <pseudopod/erf_range_separation.hpp>
 #include <pseudopod/element.hpp>
@@ -35,7 +36,7 @@
 #include <input/basis.hpp>
 #include <input/cell.hpp>
 #include <input/species.hpp>
-#include <input/scf_solver.hpp>
+#include <input/scf.hpp>
 
 #include <config/path.hpp>
 
@@ -53,27 +54,32 @@
 #include <basis/field_set.hpp>
 
 #include <states/ks_states.hpp>
+#endif
 
-#include <hamiltonian/projector.hpp>
-#include <hamiltonian/atomic_potential.hpp>
-#include <hamiltonian/ks_hamiltonian.hpp>
+//#include <hamiltonian/projector.hpp>
+//#include <hamiltonian/atomic_potential.hpp>
+//#include <hamiltonian/ks_hamiltonian.hpp>
 
-#include <operations/add.hpp>
-#include <operations/calculate_density.hpp>
-#include <operations/sum.hpp>
-#include <operations/overlap.hpp>
-#include <operations/orthogonalize.hpp>
+//#include <operations/add.hpp>
+//#include <operations/calculate_density.hpp>
+//#include <operations/sum.hpp>
+//#include <operations/overlap.hpp>
+//#include <operations/orthogonalize.hpp>
 #include <operations/diagonalize.hpp>
-#include <operations/shift.hpp>
-#include <operations/randomize.hpp>
 
-#include <operations/matrix_operator.hpp>
+#if 0
+#include <operations/shift.hpp>
+//#include <operations/randomize.hpp>
+
+//#include <operations/matrix_operator.hpp>
 
 #include <solvers/poisson.hpp>
-#include <solvers/linear_mixer.hpp>
-#include <solvers/pulay_mixer.hpp>
-#include <solvers/linear.hpp>
+//#include <solvers/linear.hpp>
+#include <solvers/least_squares.hpp>
 
-#include <eigensolvers/conjugate_gradient.hpp>
-#include <eigensolvers/steepest_descent.hpp>
+#include <mixers/linear.hpp>
+#include <mixers/pulay.hpp>
+#endif
 
+//#include <eigensolvers/conjugate_gradient.hpp>
+//#include <eigensolvers/steepest_descent.hpp>
