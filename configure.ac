@@ -130,8 +130,8 @@ AC_CONFIG_FILES([Makefile
                  share/Makefile
                  share/unit_tests_data/Makefile
                  src/Makefile
-                 inc/Makefile
-                 inc/inc++
+                 scripts/Makefile
+                 scripts/inc++.bash
                  ])
 
 AC_OUTPUT
