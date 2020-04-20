@@ -1,4 +1,5 @@
 SUBDIRS =                   \
 	external_libs       \
 	share               \
-	src
+	src                 \
+	inc
