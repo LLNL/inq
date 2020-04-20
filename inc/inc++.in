@@ -8,6 +8,6 @@ compile="@CXX@ @CXXFLAGS@                    \
 	-DPREFIX_DIR=\"@prefix@\"                  \
   $1 -c -o $base.o"
   
-link="@CXXLD@ @LDFLAGS@ $base.o -o $base -L@prefix@/lib -linq @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@"
+link="@CXXLD@ @CXXFLAGS@ @LDFLAGS@ $base.o -o $base -L@prefix@/lib -linq @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@"
 
 echo $compile && $compile && echo $link && $link
