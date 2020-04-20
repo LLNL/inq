@@ -1,13 +1,25 @@
 #!/bin/bash
-base=$(basename "$1" .cpp)
-compile="@CXX@ @CXXFLAGS@                    \
+
+if [[ "$*" == *-c* ]]
+then
+    #we are just compiling
+    cxx="@CXX@"
+    ldflags=""
+    libs=""
+else
+    #we are linking too
+    cxx="@CXXLD@"
+    ldflags="@LDFLAGS@ -L@prefix@/lib"
+    libs="-linq @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@"
+fi
+
+cxxflags="@CXXFLAGS@                         \
 	-I@abs_builddir@/../                       \
 	-I@abs_top_srcdir@/src/                    \
 	-I@abs_top_srcdir@/external_libs/          \
 	-DSHARE_DIR=\"@prefix@/share/inq\"         \
-	-DPREFIX_DIR=\"@prefix@\"                  \
-  $1 -c -o $base.o"
-  
-link="@CXXLD@ @CXXFLAGS@ @LDFLAGS@ $base.o -o $base -L@prefix@/lib -linq @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@"
+	-DPREFIX_DIR=\"@prefix@\""
 
-echo $compile && $compile && echo $link && $link
+command_line="$cxx $cxxflags $ldflags $* $libs"
+
+echo $command_line && $command_line
