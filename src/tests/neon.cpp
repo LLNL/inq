@@ -18,11 +18,17 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <catch2/catch.hpp>
+
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
+
+#ifdef NO_CATCH_MAIN
+#include <catch2/catch.hpp>
+#else
+#include <main/unit_tests_main.cpp>
+#endif
 
 TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 

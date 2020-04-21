@@ -1,4 +1,5 @@
 AM_CXXFLAGS =                             \
+	-DNO_CATCH_MAIN                         \
 	-I$(top_srcdir)/src/                    \
 	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
@@ -69,6 +70,10 @@ noinst_HEADERS =                             \
 
 all_srcs =                                   \
 	ions/unitcell.cpp
+
+lib_LIBRARIES = libinq.a
+
+libinq_a_SOURCES = $(all_srcs)
 
 bin_PROGRAMS  =                              \
 	@PACKAGE_NAME@_unit_tests

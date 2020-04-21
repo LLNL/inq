@@ -129,7 +129,10 @@ AC_CONFIG_FILES([Makefile
                  external_libs/pcg-cpp/Makefile
                  share/Makefile
                  share/unit_tests_data/Makefile
-                 src/Makefile])
+                 src/Makefile
+                 scripts/Makefile
+                 scripts/inc++.bash
+                 ])
 
 AC_OUTPUT
 
