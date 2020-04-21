@@ -7,3 +7,4 @@ edit = sed \
 
 inc++: inc++.bash
 	$(edit) inc++.bash > inc++
+	chmod +x inc++

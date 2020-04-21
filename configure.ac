@@ -132,6 +132,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  scripts/Makefile
                  scripts/inc++.bash
+                 tests/Makefile
                  ])
 
 AC_OUTPUT

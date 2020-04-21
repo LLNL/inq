@@ -9,7 +9,7 @@ then
 else
     #we are linking too
     cxx="@CXXLD@"
-    ldflags="@LDFLAGS@ -L@prefix@/lib"
+    ldflags="@LDFLAGS@ -L@abs_builddir@/../src/"
     libs="-linq @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@"
 fi
 
@@ -17,7 +17,7 @@ cxxflags="@CXXFLAGS@                         \
 	-I@abs_builddir@/../                       \
 	-I@abs_top_srcdir@/src/                    \
 	-I@abs_top_srcdir@/external_libs/          \
-	-DSHARE_DIR=\"@pkgdatadir@\"         \
+	-DSHARE_DIR=\"@abs_top_srcdir@/share/\"         \
 	-DPREFIX_DIR=\"@prefix@\""
 
 command_line="$cxx $cxxflags $ldflags $* $libs"

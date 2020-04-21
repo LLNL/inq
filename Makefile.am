@@ -2,5 +2,6 @@ SUBDIRS =             \
 	scripts             \
 	external_libs       \
 	share               \
-	src
+	src                 \
+	tests
 
