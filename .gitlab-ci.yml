@@ -30,6 +30,26 @@ gcc:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
+
+gcc-fast:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - mpic++ --version
+      - time autoreconf -i
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - time ../configure --prefix=$HOME  || cat config.log
+      - time make -j4 install
+      - time src/inq_unit_tests
+      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
+      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
+      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
+      - time tests/hydrogen_local
+      - time tests/neon
       
 gcc-distcheck:
     stage: build
@@ -56,6 +76,27 @@ clang:
       - cd build
       - export OMPI_CXX=clang++
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - time ../configure --prefix=$HOME
+      - time make -j4 install
+      - time src/inq_unit_tests
+      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
+      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
+      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
+      - time tests/hydrogen_local
+      - time tests/neon
+
+clang-fast:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev    
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - clang++ --version
+      - time autoreconf -i
+      - mkdir build
+      - cd build
+      - export OMPI_CXX=clang++
+      - export CXXFLAGS="-Ofast -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
       - time make -j4 install
       - time src/inq_unit_tests
@@ -126,7 +167,7 @@ clang_cuda:
       - cd clang_cuda
       - export CXX="clang++-10 -x cuda --cuda-gpu-arch=sm_50"
       - export CXXLD="clang++-10"
-      - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -DNEBUG -std=c++14 -Wall"
+      - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -std=c++14 -Wall"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
