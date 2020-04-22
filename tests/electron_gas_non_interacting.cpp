@@ -20,16 +20,13 @@
 
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
+#include <utils/match.hpp>
 
-#ifdef NO_CATCH_MAIN
-#include <catch2/catch.hpp>
-#else
-#include <main/unit_tests_main.cpp>
-#endif
+int main(int argc, char ** argv){
 
-TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_gas]") {
+	boost::mpi3::environment env(argc, argv);
 
-	using namespace Catch::literals;
+	utils::match energy_match(1.0e-7);
 
 	systems::ions ions(input::cell::cubic(10.0, 10.0, 10.0));
 
@@ -44,8 +41,10 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 	//Octopus results are:
 	// Energy: 2.36870506
 	// Eigenvalues: 0.000000 0.197392 0.394784
-	REQUIRE(energy.total() == 2.3687083213_a);
-	REQUIRE(energy.kinetic() == 2.3687083213_a);
-	REQUIRE(energy.eigenvalues == 2.3687083213_a);
-	
+	energy_match.check("total energy",   energy.total(),     2.3687083213);
+	energy_match.check("kinetic energy", energy.kinetic(),   2.3687083213);
+	energy_match.check("eigenvalues",    energy.eigenvalues, 2.3687083213);
+
+	return energy_match.fail();
+
 }

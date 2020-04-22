@@ -82,7 +82,7 @@ int main(int argc, char ** argv){
 		*/
 
 		energy_match.check("ion-ion energy",   energy.ion        , -4.52004101);
-		energy_match.check("eigenvalues",      energy.eigenvalues, -61.740948878692);
+		energy_match.check("eigenvalues",      energy.eigenvalues, -61.740955116964);
 		energy_match.check("total energy",     energy.total()    , -66.260996130074);
 		energy_match.check("external energy",  energy.external   , -79.409324932984);
 		energy_match.check("non-local energy", energy.nonlocal   , -17.878129932307);
