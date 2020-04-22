@@ -22,17 +22,15 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
-
-#ifdef NO_CATCH_MAIN
 #include <catch2/catch.hpp>
-#else
-#include <main/unit_tests_main.cpp>
-#endif
+#include <mpi3/environment.hpp>
 
-TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
+int main(int argc, char ** argv){
 
-	using namespace Catch::literals;
-
+	const double tol = 1e-7;
+	
+	boost::mpi3::environment env(argc, argv);
+	
 	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF"); 
 	
 	std::vector<input::atom> geo;
@@ -45,9 +43,8 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 	
 	systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
 
-#if 1
-	SECTION("Non interacting"){
-		
+	// Non Interacting
+	{
 	
 		auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
 		
@@ -76,21 +73,21 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		*/
 		
-		REQUIRE(energy.ion             == -0.070625640829_a);
-		REQUIRE(energy.eigenvalues     == -0.499985694873_a);
-		REQUIRE(energy.total()         == -0.570611335702_a);
-		REQUIRE(energy.kinetic()       ==  0.487844175357_a);
-		REQUIRE(energy.external        == -0.987829870230_a);
-		REQUIRE(fabs(energy.hartree)   <=  1e-10);
-		REQUIRE(fabs(energy.nonlocal)  <=  1e-10);
-		REQUIRE(fabs(energy.xc)        <=  1e-10);
-		REQUIRE(fabs(energy.nvxc)      <=  1e-10);
-		REQUIRE(fabs(energy.hf_exchange) <=  1e-10);
+		assert(fabs(energy.ion             - -0.070625640829) < tol);
+		assert(fabs(energy.eigenvalues     - -0.499985694873) < tol);
+		assert(fabs(energy.total()         - -0.570611335702) < tol);
+		assert(fabs(energy.kinetic()       -  0.487844175357) < tol);
+		assert(fabs(energy.external        - -0.987829870230) < tol);
+		assert(fabs(energy.hartree)   <=  1e-10);
+		assert(fabs(energy.nonlocal)  <=  1e-10);
+		assert(fabs(energy.xc)        <=  1e-10);
+		assert(fabs(energy.nvxc)      <=  1e-10);
+		assert(fabs(energy.hf_exchange) <=  1e-10);
 		
 	}
-#endif
-#if 1
-	SECTION("LDA"){
+
+	// LDA
+	{
 		
 		auto energy = electrons.calculate_ground_state(input::interaction::dft());
 		
@@ -119,7 +116,7 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		*/
 
-		REQUIRE(energy.ion             == -0.070625640829_a);
+		assert(fabs(energy.ion             - -0.070625640829) < tol);
 
 		/*
 
@@ -128,46 +125,27 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 			seeing.
 
 		//octopus                         -0.23398591
-		REQUIRE(energy.eigenvalues     == -0.234111794026_a);
-		REQUIRE(energy.total()         == -0.516616112180_a);
+		assert(fabs(energy.eigenvalues     - -0.234111794026) < tol);
+		assert(fabs(energy.total()         - -0.516616112180) < tol);
 		
 		//octopus                          0.41903428
-		REQUIRE(energy.kinetic()       ==  0.418334559664_a);
+		assert(fabs(energy.kinetic()       -  0.418334559664) < tol);
 
 		//octopus                          0.28254446
-		REQUIRE(energy.hartree         ==  0.282285933038_a);
+		assert(fabs(energy.hartree         -  0.282285933038) < tol);
 
 		//octopus                         -0.91520434
-		REQUIRE(energy.external        == -0.914352651445_a);
-		REQUIRE(fabs(energy.nonlocal)  <=  1e-10);
+		assert(fabs(energy.external        - -0.914352651445) < tol);
+		assert(fabs(energy.nonlocal)  <=  1e-10);
 
 		//octopus                         -0.23244493
-		REQUIRE(energy.xc              == -0.232258312608_a);
+		assert(fabs(energy.xc              - -0.232258312608) < tol);
 
 		//octopus                         -0.30290955
-		REQUIRE(energy.nvxc            == -0.302665568320_a);
-		REQUIRE(fabs(energy.hf_exchange) <=  1e-10);
+		assert(fabs(energy.nvxc            - -0.302665568320) < tol);
+		assert(fabs(energy.hf_exchange) <=  1e-10);
 		*/
 		
 	}
-#endif
-#if 0
-	SECTION("Hartree-Fock"){
-		
-		auto energy = electrons.calculate_ground_state(input::interaction::hartree_fock());
-
-		REQUIRE(energy.total()         == -0.485932246662_a);
-		REQUIRE(energy.kinetic()       ==  0.352630715248_a);
-		REQUIRE(energy.eigenvalues     == -0.229929375677_a);
-		REQUIRE(energy.hartree         ==  0.123590349097_a);
-		REQUIRE(energy.external        == -0.141980160329_a);
-		REQUIRE(fabs(energy.nonlocal)  <=  1e-10);
-		REQUIRE(energy.xc              == -0.232096508183_a);
-		REQUIRE(energy.nvxc            == -0.302454897648_a);
-		REQUIRE(energy.hf_exchange     ==  1e-10);
-		REQUIRE(fabs(energy.ion)       <=  1e-10);
-
-	}
-#endif
 
 }
