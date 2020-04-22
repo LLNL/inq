@@ -45,7 +45,8 @@ namespace utils {
       auto diff = fabs(reference - value);
       
       if(diff > tol_){
-        std::cout << "Match '" + match_name + "' FAILED" << std::endl;
+        std::cout << std::endl;        
+        std::cout << "Match '" + match_name + "': FAILED" << std::endl;
         std::cout << "  reference value  = " << reference << std::endl;
         std::cout << "  calculated value = " << value << std::endl;
         std::cout << "  difference       = " << diff << std::endl;
@@ -54,14 +55,17 @@ namespace utils {
         ok_ = false;
         return false;
       } else {
-        std::cout << "Match '" + match_name + "' SUCCESS" << std::endl;
-        std::cout << std::endl;        
+        std::cout << "Match '" + match_name + "': SUCCESS" << std::endl;
         return true;
       }
     }
 
     auto ok() const {
       return ok_;
+    }
+
+    auto fail() const {
+      return not ok();
     }
     
 	protected:
@@ -83,14 +87,17 @@ TEST_CASE("class utils::match", "[utils::match]") {
   utils::match mtc(1e-7);
 
   REQUIRE(mtc.ok());
+  REQUIRE(not mtc.fail());  
   
   REQUIRE(mtc.check("test true", 10.0, 10.0 + 1e-8));
 
   REQUIRE(mtc.ok());
+  REQUIRE(not mtc.fail());  
 
   REQUIRE(not mtc.check("test false", 3.0, 4.0));
 
   REQUIRE(not mtc.ok());
+  REQUIRE(mtc.fail());
   
 }
 

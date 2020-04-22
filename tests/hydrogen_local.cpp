@@ -18,17 +18,19 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <mpi3/environment.hpp>
+
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
-#include <catch2/catch.hpp>
-#include <mpi3/environment.hpp>
+
+#include <utils/match.hpp>
 
 int main(int argc, char ** argv){
 
-	const double tol = 1e-7;
-	
+	utils::match energy_match(1.0e-7);
+
 	boost::mpi3::environment env(argc, argv);
 	
 	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF"); 
@@ -72,17 +74,17 @@ int main(int argc, char ** argv){
       Non-local   =         0.00000000
 
 		*/
-		
-		assert(fabs(energy.ion             - -0.070625640829) < tol);
-		assert(fabs(energy.eigenvalues     - -0.499985694873) < tol);
-		assert(fabs(energy.total()         - -0.570611335702) < tol);
-		assert(fabs(energy.kinetic()       -  0.487844175357) < tol);
-		assert(fabs(energy.external        - -0.987829870230) < tol);
-		assert(fabs(energy.hartree)   <=  1e-10);
-		assert(fabs(energy.nonlocal)  <=  1e-10);
-		assert(fabs(energy.xc)        <=  1e-10);
-		assert(fabs(energy.nvxc)      <=  1e-10);
-		assert(fabs(energy.hf_exchange) <=  1e-10);
+
+		energy_match.check("ion-ion energy", energy.ion        , -0.070625640829);
+		energy_match.check("eigenvalues", energy.eigenvalues, -0.499985694873);
+		energy_match.check("total energy", energy.total()    , -0.570611335702);
+		energy_match.check("kinetic energy", energy.kinetic()  ,  0.487844175357);
+		energy_match.check("external energy", energy.external   , -0.987829870230);
+		energy_match.check("Hartree energy", energy.hartree    , 0.0);
+		energy_match.check("non-local energy", energy.nonlocal   , 0.0);
+		energy_match.check("XC energy", energy.xc, 0.0);
+		energy_match.check("XC density integral", energy.nvxc, 0.0);
+		energy_match.check("HF exchange energy", energy.hf_exchange, 0.0);
 		
 	}
 
@@ -116,7 +118,7 @@ int main(int argc, char ** argv){
 
 		*/
 
-		assert(fabs(energy.ion             - -0.070625640829) < tol);
+		energy_match.check("ion-ion energy", energy.ion,-0.070625640829);
 
 		/*
 
@@ -125,27 +127,29 @@ int main(int argc, char ** argv){
 			seeing.
 
 		//octopus                         -0.23398591
-		assert(fabs(energy.eigenvalues     - -0.234111794026) < tol);
-		assert(fabs(energy.total()         - -0.516616112180) < tol);
+		energy_match.check(energy.eigenvalues     ,-0.234111794026);
+		energy_match.check(energy.total()         ,-0.516616112180);
 		
 		//octopus                          0.41903428
-		assert(fabs(energy.kinetic()       -  0.418334559664) < tol);
+		energy_match.check(energy.kinetic()       , 0.418334559664);
 
 		//octopus                          0.28254446
-		assert(fabs(energy.hartree         -  0.282285933038) < tol);
+		energy_match.check(energy.hartree         , 0.282285933038);
 
 		//octopus                         -0.91520434
-		assert(fabs(energy.external        - -0.914352651445) < tol);
-		assert(fabs(energy.nonlocal)  <=  1e-10);
+		energy_match.check(energy.external        ,-0.914352651445);
+		energy_match.check(energy.nonlocal)  <=  1e-10);
 
 		//octopus                         -0.23244493
-		assert(fabs(energy.xc              - -0.232258312608) < tol);
+		energy_match.check(energy.xc              ,-0.232258312608);
 
 		//octopus                         -0.30290955
-		assert(fabs(energy.nvxc            - -0.302665568320) < tol);
-		assert(fabs(energy.hf_exchange) <=  1e-10);
+		energy_match.check(energy.nvxc            ,-0.302665568320);
+		energy_match.check(energy.hf_exchange) <=  1e-10);
 		*/
 		
 	}
 
+	return energy_match.fail();
+	
 }
