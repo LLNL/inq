@@ -26,7 +26,7 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::environment env(argc, argv);
 
-	utils::match energy_match(1.0e-7);
+	utils::match energy_match(1.0e-6);
 		
 	systems::ions ions(input::cell::cubic(10.0, 10.0, 10.0));
 

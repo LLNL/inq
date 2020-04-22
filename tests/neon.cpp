@@ -29,7 +29,7 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::environment env(argc, argv);
 	
-	utils::match energy_match(1.0e-7);
+	utils::match energy_match(1.0e-6);
 
 	std::vector<input::atom> geo;
 
