@@ -24,7 +24,6 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
-
 #include <utils/match.hpp>
 
 int main(int argc, char ** argv){

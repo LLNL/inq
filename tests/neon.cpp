@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2020 Xavier Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -23,16 +23,13 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
+#include <utils/match.hpp>
 
-#ifdef NO_CATCH_MAIN
-#include <catch2/catch.hpp>
-#else
-#include <main/unit_tests_main.cpp>
-#endif
+int main(int argc, char ** argv){
 
-TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
-
-	using namespace Catch::literals;
+	boost::mpi3::environment env(argc, argv);
+	
+	utils::match energy_match(1.0e-7);
 
 	std::vector<input::atom> geo;
 
@@ -40,7 +37,8 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 		
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
 
-	SECTION("Non interacting"){
+	//Non interacting
+	{
 		
 		input::config conf;
 
@@ -83,13 +81,15 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 		*/
 
-		REQUIRE(energy.ion             == -4.52004101_a);
-		REQUIRE(energy.eigenvalues     == -61.740948878692_a);
-		REQUIRE(energy.total()         == -66.260996130074_a);
-		REQUIRE(energy.external        == -79.409324932984_a);
-		REQUIRE(energy.nonlocal        == -17.878129932307_a);
-		REQUIRE(energy.kinetic()       ==  35.546499748301_a);
+		energy_match.check("ion-ion energy",   energy.ion        , -4.52004101);
+		energy_match.check("eigenvalues",      energy.eigenvalues, -61.740948878692);
+		energy_match.check("total energy",     energy.total()    , -66.260996130074);
+		energy_match.check("external energy",  energy.external   , -79.409324932984);
+		energy_match.check("non-local energy", energy.nonlocal   , -17.878129932307);
+		energy_match.check("kinetic energy",   energy.kinetic()  ,  35.546499748301);
 		
 	}
 
+	return energy_match.fail();
+	
 }
