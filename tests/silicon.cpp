@@ -22,16 +22,13 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
+#include <utils/match.hpp>
 
-#ifdef NO_CATCH_MAIN
-#include <catch2/catch.hpp>
-#else
-#include <main/unit_tests_main.cpp>
-#endif
+int main(int argc, char ** argv){
 
-TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
+	boost::mpi3::environment env(argc, argv);
 
-	using namespace Catch::literals;
+	utils::match energy_match(1.0e-6);
 
 	std::vector<input::atom> geo;
 
@@ -47,30 +44,18 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 	geo.push_back( "Si" | a*math::vec3d(0.25, 0.75, 0.75));
 
 	systems::ions ions(input::cell::cubic(a) | input::cell::finite(), geo);
-
-	SECTION("LDA"){
+	
+	input::config conf;
+	
+	conf.extra_states = 4;
+	
+	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
+	
+	[[maybe_unused]] auto energy = electrons.calculate_ground_state(input::interaction::dft());
+	
+	/*
+		OCTOPUS RESULTS: (Spacing 0.286)
+	*/
 		
-		input::config conf;
-
-		conf.extra_states = 4;
-
-		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
-		
-		auto energy = electrons.calculate_ground_state(input::interaction::dft());
-		
-		/*
-			OCTOPUS RESULTS: (Spacing 0.286)
-		*/
-
-		REQUIRE(energy.ion             == -0.232294220410_a);
-		REQUIRE(energy.eigenvalues     == -0.234329528903_a);
-		REQUIRE(energy.xc              == -0.232294220410_a);
-		REQUIRE(energy.nvxc            == -0.302713349819_a);
-		REQUIRE(energy.total()         == -0.446253846698_a);
-		REQUIRE(energy.external        == -0.108660738870_a);
-		REQUIRE(energy.nonlocal        == -0.058633055438_a);
-		REQUIRE(energy.kinetic()       ==  0.416973236003_a);
-		
-	}
-
 }
+

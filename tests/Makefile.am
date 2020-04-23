@@ -1,9 +1,9 @@
 #Override the defaults to use inc++
 CXX=$(top_builddir)/scripts/inc++
 CXXLD=$(CXX)
-CXXFLAGS=""
-LDFLAGS=""
-LIBS=""
+CXXFLAGS=
+LDFLAGS=
+LIBS=
 
 electron_gas_non_interacting_SOURCES = electron_gas_non_interacting.cpp 
 electron_gas_lda_pz_SOURCES = electron_gas_lda_pz.cpp
@@ -16,6 +16,7 @@ silicon_SOURCES = silicon.cpp
 
 noinst_PROGRAMS =                                \
 	electron_gas_non_interacting                   \
+	electron_gas_lda_pz                            \
 	hydrogen_local                                 \
 	hydrogen_non_local                             \
 	neon                                           \

@@ -20,17 +20,14 @@
 
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
+#include <utils/match.hpp>
 
-#ifdef NO_CATCH_MAIN
-#include <catch2/catch.hpp>
-#else
-#include <main/unit_tests_main.cpp>
-#endif
+int main(int argc, char ** argv){
 
-TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_gas]") {
+	boost::mpi3::environment env(argc, argv);
 
-	using namespace Catch::literals;
-
+	utils::match energy_match(1.0e-6);
+		
 	systems::ions ions(input::cell::cubic(10.0, 10.0, 10.0));
 
 	input::config conf;
@@ -73,10 +70,12 @@ TEST_CASE("Test non interacting electron gas", "[test::non_interacting_electron_
 		 Non-local   =         0.00000000
 	*/
 
-	REQUIRE(energy.total()         == -0.6848531681_a);
-	REQUIRE(energy.kinetic()       == 2.368793_a);
-	REQUIRE(energy.eigenvalues     == -1.6053918367_a);
-	REQUIRE(energy.xc              == -3.0536456687_a);
-	REQUIRE(energy.nvxc            == -3.9741843374_a);
+	energy_match.check("total energy",        energy.total()    , -0.6848531681);
+	energy_match.check("kinetic energy",      energy.kinetic()  , 2.368793);
+	energy_match.check("eigenvalues",         energy.eigenvalues, -1.6053918367);
+	energy_match.check("XC energy",           energy.xc         , -3.0536456687);
+	energy_match.check("XC density integral", energy.nvxc       , -3.9741843374);
+
+	return energy_match.fail();
 	
 }

@@ -22,16 +22,13 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
+#include <utils/match.hpp>
 
-#ifdef NO_CATCH_MAIN
-#include <catch2/catch.hpp>
-#else
-#include <main/unit_tests_main.cpp>
-#endif
+int main(int argc, char ** argv){
 
-TEST_CASE("Test kripton", "[test::kripton]") {
+	boost::mpi3::environment env(argc, argv);
 
-	using namespace Catch::literals;
+	utils::match energy_match(1.0e-6);
 
 	std::vector<input::atom> geo;
 
@@ -39,57 +36,47 @@ TEST_CASE("Test kripton", "[test::kripton]") {
 		
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
 
-	SECTION("Non interacting"){
+	input::config conf;
+	
+	conf.extra_states = 3;
+	
+	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
+	
+	[[maybe_unused]] auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
+	
+	/*
+		OCTOPUS RESULTS: (Spacing 0.350877)
 		
-		input::config conf;
-
-		conf.extra_states = 3;
-
-		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
+		Eigenvalues [H]
+		#st  Spin   Eigenvalue      Occupation
+		1   --    -4.509167       2.000000
+		2   --    -3.852590       2.000000
+		3   --    -3.852590       2.000000
+		4   --    -3.852590       2.000000
+		5   --    -2.864000       0.000000
+		6   --    -2.863818       0.000000
+		7   --    -2.863600       0.000000
 		
-		auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
+		Energy [H]:
+		Total       =       -32.13387478
+		Free        =       -32.13387478
+		-----------
+		Ion-ion     =         0.00000000
+		Eigenvalues =       -32.13387478
+		Hartree     =         0.00000000
+		Int[n*v_xc] =         0.00000000
+		Exchange    =         0.00000000
+		Correlation =         0.00000000
+		vanderWaals =         0.00000000
+		Delta XC    =         0.00000000
+		Entropy     =         0.00000000
+		-TS         =        -0.00000000
+		Kinetic     =         9.31957760
+		External    =       -41.45345238
+		Non-local   =         4.84381034
 		
-		/*
-			OCTOPUS RESULTS: (Spacing 0.350877)
+	*/
 
-			Eigenvalues [H]
-			#st  Spin   Eigenvalue      Occupation
-			1   --    -4.509167       2.000000
-			2   --    -3.852590       2.000000
-			3   --    -3.852590       2.000000
-			4   --    -3.852590       2.000000
-			5   --    -2.864000       0.000000
-			6   --    -2.863818       0.000000
-			7   --    -2.863600       0.000000
-			
-			Energy [H]:
-      Total       =       -32.13387478
-      Free        =       -32.13387478
-      -----------
-      Ion-ion     =         0.00000000
-      Eigenvalues =       -32.13387478
-      Hartree     =         0.00000000
-      Int[n*v_xc] =         0.00000000
-      Exchange    =         0.00000000
-      Correlation =         0.00000000
-      vanderWaals =         0.00000000
-      Delta XC    =         0.00000000
-      Entropy     =         0.00000000
-      -TS         =        -0.00000000
-      Kinetic     =         9.31957760
-      External    =       -41.45345238
-      Non-local   =         4.84381034
-
-		*/
-		
-		//THE ION-ION ENERGY IS WRONG, IT SHOULD BE ZERO
-
-		REQUIRE(energy.eigenvalues     == -61.740948878692_a);
-		REQUIRE(energy.total()         == -82.051773872674_a);
-		REQUIRE(energy.external        ==  -3.603296578514_a);
-		REQUIRE(energy.nonlocal        == -17.878544893202_a);
-		REQUIRE(energy.kinetic()       ==  35.547251972126_a);
-		
-	}
-
+	return energy_match.fail();
+	
 }

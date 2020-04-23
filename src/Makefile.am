@@ -11,6 +11,7 @@ LIBS = @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@
 noinst_HEADERS =                             \
 	config/path.hpp                            \
 	gpu/run.hpp                                \
+	utils/match.hpp                            \
 	utils/merge_optional.hpp                   \
 	utils/partition.hpp                        \
 	utils/skeleton_wrapper.hpp                 \

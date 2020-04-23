@@ -22,30 +22,29 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
+#include <utils/match.hpp>
 
-#ifdef NO_CATCH_MAIN
-#include <catch2/catch.hpp>
-#else
-#include <main/unit_tests_main.cpp>
-#endif
+int main(int argc, char ** argv){
 
-TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
+	boost::mpi3::environment env(argc, argv);
 
-	using namespace Catch::literals;
-
+	utils::match energy_match(1.0e-6);
+	
 	std::vector<input::atom> geo;
 	
 	geo.push_back("H" | math::vec3d(0.0, 0.0, 0.0));
     
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
+
 #if 0
-	SECTION("Non interacting"){
+	// Non interacting
+	{
 		
 		input::config conf;
 		
 		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
 		
-		auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
+		[[maybe_unused]] auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -73,24 +72,16 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
       Non-local   =        -0.06871050
 
 		*/
-		REQUIRE(energy.eigenvalues     == -0.500213154797_a);
-		REQUIRE(fabs(energy.xc)        <=  1e-10);
-		REQUIRE(fabs(energy.nvxc)      <=  1e-10);
-		REQUIRE(energy.total()         == -0.500213154797_a);
-		REQUIRE(energy.external        == -0.125329604081_a);
-		REQUIRE(energy.nonlocal        == -0.068186046673_a);
-		REQUIRE(energy.kinetic()       ==  0.487958292140_a);
-
 	}
 #endif
-#if 1
-	SECTION("LDA"){
-		
+
+	//LDA
+	{
 		input::config conf;
 	
 		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
 
-		auto energy = electrons.calculate_ground_state(input::interaction::dft(), input::scf::conjugate_gradient() | input::scf::density_mixing());
+		[[maybe_unused]] auto energy = electrons.calculate_ground_state(input::interaction::dft(), input::scf::conjugate_gradient() | input::scf::density_mixing());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -118,15 +109,8 @@ TEST_CASE("Test hydrogen local pseudopotential", "[test::hydrogen_local]") {
 
 
 		*/
-
-		REQUIRE(energy.eigenvalues     == -0.234329528903_a);
-		REQUIRE(energy.xc              == -0.232294220410_a);
-		REQUIRE(energy.nvxc            == -0.302713349819_a);
-		REQUIRE(energy.total()         == -0.446253846698_a);
-		REQUIRE(energy.external        == -0.108660738870_a);
-		REQUIRE(energy.nonlocal        == -0.058633055438_a);
-		REQUIRE(energy.kinetic()       ==  0.416973236003_a);
-		
 	}
-#endif
+
+	return energy_match.fail();
+ 
 }

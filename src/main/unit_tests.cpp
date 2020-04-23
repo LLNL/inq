@@ -29,6 +29,7 @@
 #include <pseudopod/spherical_harmonic.hpp>
 
 #include <utils/partition.hpp>
+#include <utils/match.hpp>
 
 #include <gpu/run.hpp>
 
