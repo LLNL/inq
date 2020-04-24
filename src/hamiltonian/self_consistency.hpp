@@ -40,14 +40,14 @@ namespace hamiltonian {
 			correlation_(int(interaction.correlation())){
 		}
 		
-		template <class vexternal_type, class density_type, class energy_type>
-		auto ks_potential(const vexternal_type & vexternal, const density_type & electronic_density, const density_type & ionic_density, energy_type & energy){
+		template <class field_type, class energy_type>
+		auto ks_potential(const field_type & vexternal, const field_type & electronic_density, const field_type & nlcc_density, const field_type & ionic_density, energy_type & energy){
 
 			assert(vexternal.basis() == electronic_density.basis()); //for the moment they must be equal
 
 			energy.external = operations::integral_product(electronic_density, vexternal);
 
-			vexternal_type vks(vexternal.skeleton());
+			field_type vks(vexternal.skeleton());
 
 			solvers::poisson poisson_solver;
 
@@ -75,13 +75,13 @@ namespace hamiltonian {
 					energy.external += operations::integral_product(electronic_density, vion);					
 					vion = operations::add(vion, vexternal);
 					
-					vexternal_type ex(vexternal.skeleton());
-					vexternal_type vx(vexternal.skeleton());
+					field_type ex(vexternal.skeleton());
+					field_type vx(vexternal.skeleton());
 
 					exchange_.unpolarized(electronic_density.basis().size(), electronic_density, ex, vx);
 
-					vexternal_type ec(vexternal.skeleton());
-					vexternal_type vc(vexternal.skeleton());
+					field_type ec(vexternal.skeleton());
+					field_type vc(vexternal.skeleton());
 
 					correlation_.unpolarized(electronic_density.basis().size(), electronic_density, ec, vc);
 					
