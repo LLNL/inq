@@ -76,8 +76,8 @@ namespace systems {
 
 			auto vexternal = atomic_pot_.local_potential(rs_, ions_.cell(), ions_.geo());
 
-			auto density = operations::calculate_density(states_.occupations(), phi_);
-
+			auto density = atomic_pot_.atomic_electronic_density(rs_, ions_.cell(), ions_.geo());
+			operations::normalize_density(density, states_.total_charge());
 			std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
 			
 			ham.scalar_potential = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
@@ -123,19 +123,8 @@ namespace systems {
 				ham.exchange.hf_occupations = states_.occupations();
 
 				if(inter.self_consistent() and solver.mix_density()) {
-					std::cout << "charge = " << operations::integral(density) << " " << operations::integral(operations::calculate_density(states_.occupations(), phi_)) << std::endl;
-
 					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear());
-
-					std::cout << "output charge = " << operations::integral(density) << std::endl;
-										
-					auto qq = operations::integral(density);
-
-					assert(qq > 1e-16);
-					for(int i = 0; i < density.basis().size(); i++) density.linear()[i] /= qq;
-
-					std::cout << "normalize charge = " << operations::integral(density) << std::endl;
-					
+					operations::normalize_density(density, states_.total_charge());
 				} else {
 					density = operations::calculate_density(states_.occupations(), phi_);
 				}

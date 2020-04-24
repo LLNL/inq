@@ -151,6 +151,40 @@ namespace hamiltonian {
 			return density;			
     }
     
+    template <class basis_type, class cell_type, class geo_type>
+    auto atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+
+      basis::field<basis_type, double> density(basis);
+
+			for(long ii = 0; ii < density.basis().size(); ii++) density.linear()[ii] = 0.0;
+			
+      for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
+				
+				auto atom_position = geo.coordinates()[iatom];
+				
+				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+
+				//TODO: implement the case when the pseudo does not have the density
+				assert(ps.has_electronic_density());
+
+				basis::spherical_grid sphere(basis, cell, atom_position, ps.electronic_density_radius());
+
+				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
+				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
+					auto rr = sphere.distance()[ipoint];
+					auto density_val = ps.electronic_density().value(rr);
+					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += density_val;
+				}
+				
+      }
+
+			if(part_.parallel()){
+				comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
+			}
+
+			return density;			
+    }
+				
     template <class output_stream>
     void info(output_stream & out) const {
       out << "ATOMIC POTENTIAL:" << std::endl;
@@ -245,11 +279,18 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		REQUIRE(vv.cubic()[5][3][0] == -1.574376555_a);
 		REQUIRE(vv.cubic()[3][1][0] == -0.258229883_a);
 							 
-		auto nn = pot.ionic_density(rs, cell, geo);
+		auto id = pot.ionic_density(rs, cell, geo);
 
-		REQUIRE(operations::integral(nn) == -30.0000000746_a);
-		REQUIRE(nn.cubic()[5][3][0] == -0.9448936487_a);
-		REQUIRE(nn.cubic()[3][1][0] == -0.2074502252_a);
+		REQUIRE(operations::integral(id) == -30.0000000746_a);
+		REQUIRE(id.cubic()[5][3][0] == -0.9448936487_a);
+		REQUIRE(id.cubic()[3][1][0] == -0.2074502252_a);
+
+		auto nn = pot.atomic_electronic_density(rs, cell, geo);
+		
+		REQUIRE(operations::integral(nn) == 29.9562520003_a);
+		REQUIRE(nn.cubic()[5][3][0] == 0.1330589609_a);
+		REQUIRE(nn.cubic()[3][1][0] == 0.1846004508_a);
+		
   }
   
 }
