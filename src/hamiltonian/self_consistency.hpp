@@ -41,7 +41,7 @@ namespace hamiltonian {
 		}
 		
 		template <class field_type, class energy_type>
-		auto ks_potential(const field_type & vexternal, const field_type & electronic_density, const field_type & nlcc_density, const field_type & ionic_density, energy_type & energy){
+		auto ks_potential(const field_type & vexternal, const field_type & electronic_density, const field_type & core_density, const field_type & ionic_density, energy_type & energy){
 
 			assert(vexternal.basis() == electronic_density.basis()); //for the moment they must be equal
 
@@ -75,19 +75,19 @@ namespace hamiltonian {
 					energy.external += operations::integral_product(electronic_density, vion);					
 					vion = operations::add(vion, vexternal);
 					
-					double ex;
+					double ex, ec;
 					field_type vx(vexternal.skeleton());
-					exchange_(electronic_density, ex, vx);
-
-					double ec;
 					field_type vc(vexternal.skeleton());
-					correlation_(electronic_density, ec, vc);
-					
-					energy.xc = ex + ec;
 
+					{
+						auto full_density = operations::add(electronic_density, core_density);
+						exchange_(full_density, ex, vx);
+						correlation_(full_density, ec, vc);
+					}
+
+					energy.xc = ex + ec;
 					auto vxc = operations::add(vx, vc);
-					
-					energy.nvxc = operations::integral_product(electronic_density, vxc);
+					energy.nvxc = operations::integral_product(electronic_density, vxc); //the core correction does not go here
 
 					vks = operations::add(vion, vhartree, vxc);
 
