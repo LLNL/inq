@@ -74,16 +74,16 @@ int main(int argc, char ** argv){
 
 		*/
 
-		energy_match.check("ion-ion energy", energy.ion        , -0.070625640829);
-		energy_match.check("eigenvalues", energy.eigenvalues, -0.499985694873);
-		energy_match.check("total energy", energy.total()    , -0.570611335702);
-		energy_match.check("kinetic energy", energy.kinetic()  ,  0.487844175357);
-		energy_match.check("external energy", energy.external   , -0.987829870230);
-		energy_match.check("Hartree energy", energy.hartree    , 0.0);
-		energy_match.check("non-local energy", energy.nonlocal   , 0.0);
-		energy_match.check("XC energy", energy.xc, 0.0);
-		energy_match.check("XC density integral", energy.nvxc, 0.0);
-		energy_match.check("HF exchange energy", energy.hf_exchange, 0.0);
+		energy_match.check("ion-ion energy",      energy.ion,          -0.070625640829);
+		energy_match.check("eigenvalues",         energy.eigenvalues,  -0.499989664643);
+		energy_match.check("total energy",        energy.total(),      -0.570615305472);
+		energy_match.check("kinetic energy",      energy.kinetic(),     0.491436936083);
+		energy_match.check("external energy",     energy.external,     -0.991426600726);
+		energy_match.check("Hartree energy",      energy.hartree,       0.0);
+		energy_match.check("non-local energy",    energy.nonlocal,      0.0);
+		energy_match.check("XC energy",           energy.xc,            0.0);
+		energy_match.check("XC density integral", energy.nvxc,          0.0);
+		energy_match.check("HF exchange energy",  energy.hf_exchange,   0.0);
 		
 	}
 
