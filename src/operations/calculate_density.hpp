@@ -68,7 +68,7 @@ namespace operations {
 
 		auto qq = operations::integral(density);
 		assert(qq > 1e-16);
-		for(int i = 0; i < density.basis().size(); i++) density.linear()[i] *= total_charge/qq;
+		for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
 
 	}
   
