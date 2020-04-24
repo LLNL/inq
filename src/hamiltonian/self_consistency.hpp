@@ -75,17 +75,15 @@ namespace hamiltonian {
 					energy.external += operations::integral_product(electronic_density, vion);					
 					vion = operations::add(vion, vexternal);
 					
-					field_type ex(vexternal.skeleton());
+					double ex;
 					field_type vx(vexternal.skeleton());
+					exchange_(electronic_density, ex, vx);
 
-					exchange_.unpolarized(electronic_density.basis().size(), electronic_density, ex, vx);
-
-					field_type ec(vexternal.skeleton());
+					double ec;
 					field_type vc(vexternal.skeleton());
-
-					correlation_.unpolarized(electronic_density.basis().size(), electronic_density, ec, vc);
+					correlation_(electronic_density, ec, vc);
 					
-					energy.xc = operations::integral_product(electronic_density, operations::add(ex, ec));
+					energy.xc = ex + ec;
 
 					auto vxc = operations::add(vx, vc);
 					
