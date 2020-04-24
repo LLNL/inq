@@ -38,6 +38,18 @@ namespace hamiltonian {
 		~xc_functional(){
 			xc_func_end(&func_);
 		}
+
+		template <class field_type>
+		void operator()(field_type const & density, double & xc_energy, field_type & vxc){
+
+			field_type exc(vxc.skeleton());
+			unpolarized(density.linear().size(), density, exc, vxc);
+
+			xc_energy = operations::integral_product(density, exc);
+				
+		}
+
+	private:
 		
 		template <class density_type, class exc_type, class vxc_type>
 		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc){
@@ -48,6 +60,7 @@ namespace hamiltonian {
 					break;
 				case XC_FAMILY_GGA:
 				case XC_FAMILY_HYB_GGA:
+					assert(false);
 					break;
 				}
 		}

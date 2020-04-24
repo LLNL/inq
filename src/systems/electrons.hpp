@@ -79,10 +79,12 @@ namespace systems {
 			auto density = atomic_pot_.atomic_electronic_density(rs_, ions_.cell(), ions_.geo());
 			operations::normalize_density(density, states_.total_charge());
 			std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
-			
-			ham.scalar_potential = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
-			energy.ion = ::ions::interaction_energy(ions_.cell(), ions_.geo(), atomic_pot_);
 
+			auto nlcc_density = atomic_pot_.nlcc_density(rs_, ions_.cell(), ions_.geo());
+			
+			ham.scalar_potential = sc.ks_potential(vexternal, density, nlcc_density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
+			energy.ion = ::ions::interaction_energy(ions_.cell(), ions_.geo(), atomic_pot_);
+			
 			//DATAOPERATIONS STL FILL
 			std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
 
@@ -119,6 +121,7 @@ namespace systems {
 				for(int ii = 0; ii < phi_.num_elements(); ii++){
 					ham.exchange.hf_orbitals.data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.data()[ii] + solver.mixing()*phi_.data()[ii];
 				}
+				
 				//probably the occupations should be mixed too
 				ham.exchange.hf_occupations = states_.occupations();
 
@@ -129,7 +132,7 @@ namespace systems {
 					density = operations::calculate_density(states_.occupations(), phi_);
 				}
 				
-				auto vks = sc.ks_potential(vexternal, density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
+				auto vks = sc.ks_potential(vexternal, density, nlcc_density, atomic_pot_.ionic_density(rs_, ions_.cell(), ions_.geo()), energy);
 
 				if(inter.self_consistent() and solver.mix_potential()) {
 					mixer(ham.scalar_potential.linear(), vks.linear());

@@ -50,6 +50,7 @@ namespace hamiltonian {
 			part_(natoms, comm_)
 		{
 
+			has_nlcc_ = false;
       nelectrons_ = 0.0;
       for(int iatom = 0; iatom < natoms; iatom++){
 				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
@@ -62,6 +63,7 @@ namespace hamiltonian {
 				auto & pseudo = insert.first->second;
 				
 				nelectrons_ += pseudo.valence_charge();
+				has_nlcc_ = has_nlcc_ or pseudo.has_nlcc_density();
 				
       }
       
@@ -184,7 +186,46 @@ namespace hamiltonian {
 
 			return density;			
     }
+
+		auto has_nlcc() const {
+			return has_nlcc_;
+		}
+
+		template <class basis_type, class cell_type, class geo_type>
+    auto nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+
+      basis::field<basis_type, double> density(basis);
+
+			for(long ii = 0; ii < density.basis().size(); ii++) density.linear()[ii] = 0.0;
+			
+      for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
+				auto atom_position = geo.coordinates()[iatom];
+				
+				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+
+				if(not ps.has_nlcc_density()) continue;
+
+				assert(has_nlcc());
+				
+				basis::spherical_grid sphere(basis, cell, atom_position, ps.nlcc_density_radius());
+
+				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
+				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
+					auto rr = sphere.distance()[ipoint];
+					auto density_val = ps.nlcc_density().value(rr);
+					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += density_val;
+				}
+				
+      }
+
+			if(part_.parallel()){
+				comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
+			}
+
+			return density;			
+    }
+		
     template <class output_stream>
     void info(output_stream & out) const {
       out << "ATOMIC POTENTIAL:" << std::endl;
@@ -205,6 +246,7 @@ namespace hamiltonian {
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
 		mutable boost::mpi3::communicator comm_;
 		utils::partition part_;
+		bool has_nlcc_;
         
   };
 
@@ -246,6 +288,9 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
     REQUIRE(pot.num_species() == 0);
     REQUIRE(pot.num_electrons() == 0.0_a);
+
+		REQUIRE(not pot.has_nlcc());
+		
   }
 
   SECTION("CNOH"){
@@ -290,6 +335,14 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		REQUIRE(operations::integral(nn) == 29.9562520003_a);
 		REQUIRE(nn.cubic()[5][3][0] == 0.1330589609_a);
 		REQUIRE(nn.cubic()[3][1][0] == 0.1846004508_a);
+
+		REQUIRE(pot.has_nlcc());
+		
+		auto nlcc = pot.nlcc_density(rs, cell, geo);
+		
+		REQUIRE(operations::integral(nlcc) == 3.0083012065_a);
+		REQUIRE(nlcc.cubic()[5][3][0] == 0.6248217151_a);
+		REQUIRE(nlcc.cubic()[3][1][0] == 0.0007040027_a);
 		
   }
   

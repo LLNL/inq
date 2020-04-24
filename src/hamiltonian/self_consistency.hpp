@@ -40,14 +40,14 @@ namespace hamiltonian {
 			correlation_(int(interaction.correlation())){
 		}
 		
-		template <class vexternal_type, class density_type, class energy_type>
-		auto ks_potential(const vexternal_type & vexternal, const density_type & electronic_density, const density_type & ionic_density, energy_type & energy){
+		template <class field_type, class energy_type>
+		auto ks_potential(const field_type & vexternal, const field_type & electronic_density, const field_type & core_density, const field_type & ionic_density, energy_type & energy){
 
 			assert(vexternal.basis() == electronic_density.basis()); //for the moment they must be equal
 
 			energy.external = operations::integral_product(electronic_density, vexternal);
 
-			vexternal_type vks(vexternal.skeleton());
+			field_type vks(vexternal.skeleton());
 
 			solvers::poisson poisson_solver;
 
@@ -75,21 +75,19 @@ namespace hamiltonian {
 					energy.external += operations::integral_product(electronic_density, vion);					
 					vion = operations::add(vion, vexternal);
 					
-					vexternal_type ex(vexternal.skeleton());
-					vexternal_type vx(vexternal.skeleton());
+					double ex, ec;
+					field_type vx(vexternal.skeleton());
+					field_type vc(vexternal.skeleton());
 
-					exchange_.unpolarized(electronic_density.basis().size(), electronic_density, ex, vx);
+					{
+						auto full_density = operations::add(electronic_density, core_density);
+						exchange_(full_density, ex, vx);
+						correlation_(full_density, ec, vc);
+					}
 
-					vexternal_type ec(vexternal.skeleton());
-					vexternal_type vc(vexternal.skeleton());
-
-					correlation_.unpolarized(electronic_density.basis().size(), electronic_density, ec, vc);
-					
-					energy.xc = operations::integral_product(electronic_density, operations::add(ex, ec));
-
+					energy.xc = ex + ec;
 					auto vxc = operations::add(vx, vc);
-					
-					energy.nvxc = operations::integral_product(electronic_density, vxc);
+					energy.nvxc = operations::integral_product(electronic_density, vxc); //the core correction does not go here
 
 					vks = operations::add(vion, vhartree, vxc);
 

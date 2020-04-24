@@ -49,27 +49,6 @@ int main(int argc, char ** argv){
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
-			Eigenvalues [H]
-			#st  Spin   Eigenvalue      Occupation
-			1   --    -0.233880       1.000000
-			
-			Energy [H]:
-      Total      =        -0.44618708
-      Free        =        -0.44618708
-      -----------
-      Ion-ion     =         0.00000000
-      Eigenvalues =        -0.23387966
-      Hartree     =         0.28283087
-      Int[n*v_xc] =        -0.30315816
-      Exchange    =        -0.19299390
-      Correlation =        -0.03964083
-      vanderWaals =         0.00000000
-      Delta XC    =         0.00000000
-      Entropy     =         1.38629436
-      -TS         =        -0.00000000
-      Kinetic     =         0.41796657
-      External    =        -0.91434707
-      Non-local   =        -0.05876129
 
 		*/
 
