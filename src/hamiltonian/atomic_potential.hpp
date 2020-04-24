@@ -187,7 +187,10 @@ namespace hamiltonian {
 			return density;			
     }
 
-		
+		auto has_nlcc() const {
+			return has_nlcc_;
+		}
+
 		template <class basis_type, class cell_type, class geo_type>
     auto nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
@@ -222,10 +225,6 @@ namespace hamiltonian {
 
 			return density;			
     }
-
-		auto has_nlcc() const {
-			return has_nlcc_;
-		}
 		
     template <class output_stream>
     void info(output_stream & out) const {
