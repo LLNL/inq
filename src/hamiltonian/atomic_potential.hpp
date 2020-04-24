@@ -50,6 +50,7 @@ namespace hamiltonian {
 			part_(natoms, comm_)
 		{
 
+			has_nlcc_ = false;
       nelectrons_ = 0.0;
       for(int iatom = 0; iatom < natoms; iatom++){
 				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
@@ -62,6 +63,7 @@ namespace hamiltonian {
 				auto & pseudo = insert.first->second;
 				
 				nelectrons_ += pseudo.valence_charge();
+				has_nlcc_ = has_nlcc_ or pseudo.has_nlcc_density();
 				
       }
       
@@ -199,9 +201,10 @@ namespace hamiltonian {
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 
-				//TODO: implement the case when the pseudo does not have the density
-				assert(ps.has_nlcc_density());
+				if(not ps.has_nlcc_density()) continue;
 
+				assert(has_nlcc());
+				
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.nlcc_density_radius());
 
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
@@ -219,6 +222,10 @@ namespace hamiltonian {
 
 			return density;			
     }
+
+		auto has_nlcc() const {
+			return has_nlcc_;
+		}
 		
     template <class output_stream>
     void info(output_stream & out) const {
@@ -240,6 +247,7 @@ namespace hamiltonian {
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
 		mutable boost::mpi3::communicator comm_;
 		utils::partition part_;
+		bool has_nlcc_;
         
   };
 
@@ -281,6 +289,9 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
     REQUIRE(pot.num_species() == 0);
     REQUIRE(pot.num_electrons() == 0.0_a);
+
+		REQUIRE(not pot.has_nlcc());
+		
   }
 
   SECTION("CNOH"){
@@ -326,6 +337,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		REQUIRE(nn.cubic()[5][3][0] == 0.1330589609_a);
 		REQUIRE(nn.cubic()[3][1][0] == 0.1846004508_a);
 
+		REQUIRE(pot.has_nlcc());
+		
 		auto nlcc = pot.nlcc_density(rs, cell, geo);
 		
 		REQUIRE(operations::integral(nlcc) == 3.0083012065_a);
