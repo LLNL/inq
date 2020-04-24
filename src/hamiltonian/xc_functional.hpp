@@ -48,6 +48,7 @@ namespace hamiltonian {
 					break;
 				case XC_FAMILY_GGA:
 				case XC_FAMILY_HYB_GGA:
+					assert(false);
 					break;
 				}
 		}
