@@ -58,6 +58,8 @@ namespace states {
 				occs_[ist] = std::min(2.0, rem_electrons);
 				rem_electrons -= occs_[ist];
 			}
+
+			total_charge_ = nelectrons;
 			
     }
 
@@ -89,9 +91,14 @@ namespace states {
 		auto & occupations() const {
 			return occs_;
 		}
+
+		auto total_charge() const {
+			return total_charge_;
+		}
 		
   private:
 
+		double total_charge_;
     int nstates_;
     int nquantumnumbers_;
 		math::array<double, 1> occs_;
