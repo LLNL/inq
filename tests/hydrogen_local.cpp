@@ -75,10 +75,10 @@ int main(int argc, char ** argv){
 		*/
 
 		energy_match.check("ion-ion energy",      energy.ion,          -0.070625640829);
-		energy_match.check("eigenvalues",         energy.eigenvalues,  -0.499989664643);
-		energy_match.check("total energy",        energy.total(),      -0.570615305472);
-		energy_match.check("kinetic energy",      energy.kinetic(),     0.491436936083);
-		energy_match.check("external energy",     energy.external,     -0.991426600726);
+		energy_match.check("eigenvalues",         energy.eigenvalues,  -0.500061245817);
+		energy_match.check("total energy",        energy.total(),      -0.570686886647);
+		energy_match.check("kinetic energy",      energy.kinetic(),     0.492389370412);
+		energy_match.check("external energy",     energy.external,     -0.992450616229);
 		energy_match.check("Hartree energy",      energy.hartree,       0.0);
 		energy_match.check("non-local energy",    energy.nonlocal,      0.0);
 		energy_match.check("XC energy",           energy.xc,            0.0);
@@ -119,19 +119,19 @@ int main(int argc, char ** argv){
 
 		energy_match.check("ion-ion energy",      energy.ion,              -0.070625640829);
 		//octopus                                                          -0.23398591
-		energy_match.check("eigenvalues",         energy.eigenvalues,      -0.233936363720);
-		energy_match.check("total energy",        energy.total(),          -0.516581017367);
+		energy_match.check("eigenvalues",         energy.eigenvalues,      -0.233981181583);
+		energy_match.check("total energy",        energy.total(),          -0.516602935768);
 		//octopus                                                           0.41903428
-		energy_match.check("kinetic energy",      energy.kinetic(),         0.418650591529);
+		energy_match.check("kinetic energy",      energy.kinetic(),         0.418582069044);
 		//octopus                                                           0.28254446
-		energy_match.check("Hartree energy",      energy.hartree,           0.282463581247);
+		energy_match.check("Hartree energy",      energy.hartree,           0.282434537158);
 		//octopus                                                          -0.91520434
-		energy_match.check("external energy",     energy.external,         -0.914689067165);
+		energy_match.check("external energy",     energy.external,         -0.914633526858);
 		energy_match.check("non-local energy",    energy.nonlocal,          0.0);
 		//octopus                                                          -0.23244493
-		energy_match.check("XC energy",           energy.xc,               -0.232380482149);
+		energy_match.check("XC energy",           energy.xc,               -0.232360374283);
 		//octopus                                                          -0.30290955
-		energy_match.check("XC density integral", energy.nvxc,             -0.302825050580);
+		energy_match.check("XC density integral", energy.nvxc,             -0.302798798085);
 		energy_match.check("HF exchange energy",  energy.hf_exchange,       0.0);
 		
 	}
