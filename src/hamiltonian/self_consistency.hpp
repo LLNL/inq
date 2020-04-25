@@ -27,6 +27,7 @@
 #include <operations/integral.hpp>
 #include <input/interaction.hpp>
 #include <hamiltonian/xc_functional.hpp>
+#include <hamiltonian/atomic_potential.hpp>
 
 namespace hamiltonian {
 
@@ -34,20 +35,34 @@ namespace hamiltonian {
 
 	public:
 
-		self_consistency(input::interaction interaction):
+		self_consistency(input::interaction interaction, basis::real_space & basis):
 			theory_(interaction.theory()),
 			exchange_(int(interaction.exchange())),
-			correlation_(int(interaction.correlation())){
+			correlation_(int(interaction.correlation())),
+			vion_(basis),
+			core_density_(basis)
+		{
+		}
+
+		template <class ions_type>
+		void update_ionic_fields(basis::real_space & basis, const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
+			solvers::poisson poisson_solver;
+			
+			auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(basis, ions.cell(), ions.geo()));
+			auto ionic_short_range = atomic_pot.local_potential(basis, ions.cell(), ions.geo());
+			vion_ = operations::add(ionic_long_range, ionic_short_range);
+
+			core_density_ = atomic_pot.nlcc_density(basis, ions.cell(), ions.geo());
 		}
 		
 		template <class field_type, class energy_type>
-		auto ks_potential(const field_type & vexternal, const field_type & electronic_density, const field_type & core_density, const field_type & ionic_density, energy_type & energy){
+		auto ks_potential(const field_type & electronic_density, energy_type & energy) const {
 
 			assert(vexternal.basis() == electronic_density.basis()); //for the moment they must be equal
 
-			energy.external = operations::integral_product(electronic_density, vexternal);
+			energy.external = operations::integral_product(electronic_density, vion_);
 
-			field_type vks(vexternal.skeleton());
+			field_type vks(vion_.skeleton());
 
 			solvers::poisson poisson_solver;
 
@@ -56,11 +71,7 @@ namespace hamiltonian {
 			case input::interaction::electronic_theory::HARTREE_FOCK:
 				{
 
-					auto total_density = operations::add(electronic_density, ionic_density);
-					auto vhartree = poisson_solver(total_density);
-					energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
-					
-					vks = operations::add(vexternal, vhartree);
+					vks = vion_;
 					
 					break;
 				}
@@ -69,18 +80,15 @@ namespace hamiltonian {
 				{
 
 					auto vhartree = poisson_solver(electronic_density);
-					auto vion = poisson_solver(ionic_density);
 					
 					energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
-					energy.external += operations::integral_product(electronic_density, vion);					
-					vion = operations::add(vion, vexternal);
 					
 					double ex, ec;
-					field_type vx(vexternal.skeleton());
-					field_type vc(vexternal.skeleton());
+					field_type vx(vion_.skeleton());
+					field_type vc(vion_.skeleton());
 
 					{
-						auto full_density = operations::add(electronic_density, core_density);
+						auto full_density = operations::add(electronic_density, core_density_);
 						exchange_(full_density, ex, vx);
 						correlation_(full_density, ec, vc);
 					}
@@ -89,7 +97,7 @@ namespace hamiltonian {
 					auto vxc = operations::add(vx, vc);
 					energy.nvxc = operations::integral_product(electronic_density, vxc); //the core correction does not go here
 
-					vks = operations::add(vion, vhartree, vxc);
+					vks = operations::add(vion_, vhartree, vxc);
 
 					break;
 				}
@@ -97,10 +105,7 @@ namespace hamiltonian {
 			case input::interaction::electronic_theory::NON_INTERACTING:
 				{
 
-					auto vion = poisson_solver(ionic_density);
-					energy.external += operations::integral_product(electronic_density, vion);
-					vks = operations::add(vexternal, vion);
-					
+					vks = vion_;
 					break;
 				}
 				
@@ -118,7 +123,9 @@ namespace hamiltonian {
 		input::interaction::electronic_theory theory_;
 		hamiltonian::xc_functional exchange_;
 		hamiltonian::xc_functional correlation_;
-
+		basis::field<basis::real_space, double> vion_;
+		basis::field<basis::real_space, double> core_density_;
+		
 	};
 }
 
