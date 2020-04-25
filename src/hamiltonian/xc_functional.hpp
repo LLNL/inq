@@ -40,7 +40,7 @@ namespace hamiltonian {
 		}
 
 		template <class field_type>
-		void operator()(field_type const & density, double & xc_energy, field_type & vxc){
+		void operator()(field_type const & density, double & xc_energy, field_type & vxc) const {
 
 			field_type exc(vxc.skeleton());
 			unpolarized(density.linear().size(), density, exc, vxc);
@@ -52,7 +52,7 @@ namespace hamiltonian {
 	private:
 		
 		template <class density_type, class exc_type, class vxc_type>
-		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc){
+		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc) const{
 			
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:
