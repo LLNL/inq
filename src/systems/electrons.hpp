@@ -168,7 +168,7 @@ namespace systems {
 
 				}
 				
-				if(fabs(energy.eigenvalues - old_energy) < 1e-5){
+				if(fabs(energy.eigenvalues - old_energy) < solver.energy_tolerance()){
 					conv_count++;
 					if(conv_count > 2) break;
 				} else {
