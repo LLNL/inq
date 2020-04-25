@@ -82,11 +82,11 @@ int main(int argc, char ** argv){
 		*/
 
 		energy_match.check("ion-ion energy",   energy.ion        , -4.52004101);
-		energy_match.check("eigenvalues",      energy.eigenvalues, -61.740955116964);
-		energy_match.check("total energy",     energy.total()    , -66.260996130074);
-		energy_match.check("external energy",  energy.external   , -79.409326464062);
-		energy_match.check("non-local energy", energy.nonlocal   , -17.878131936754);
-		energy_match.check("kinetic energy",   energy.kinetic()  ,  35.546503283806);
+		energy_match.check("eigenvalues",      energy.eigenvalues, -61.740955117482);
+		energy_match.check("total energy",     energy.total()    , -66.260996130567);
+		energy_match.check("external energy",  energy.external   , -79.409306170173);
+		energy_match.check("non-local energy", energy.nonlocal   , -17.878114746149);
+		energy_match.check("kinetic energy",   energy.kinetic()  ,  35.546465798840);
 		
 	}
 
