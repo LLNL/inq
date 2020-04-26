@@ -50,7 +50,7 @@ namespace solvers {
 			gpu::run(phi.set_size(),
 							 [lam = begin(lambda), nor = begin(norm)]
 							 GPU_LAMBDA (auto ist){
-								 lam[ist] = lam[ist]/(-1.0*nor[ist]);
+								 lam[ist] = lam[ist]/(-real(nor[ist]));
 							 });
 			
 			operations::shift(lambda, phi, residual);
