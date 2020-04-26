@@ -30,7 +30,7 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::environment env(argc, argv);
 
-	utils::match energy_match(1.0e-6);
+	utils::match energy_match(1.0e-5);
 
 	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF"); 
 	
@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
 	// Non Interacting
 	{
 	
-		auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
+		auto energy = electrons.calculate_ground_state(input::interaction::non_interacting(), input::scf::conjugate_gradient());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -74,16 +74,16 @@ int main(int argc, char ** argv){
 
 		*/
 
-		energy_match.check("ion-ion energy",      energy.ion,          -0.070625640829);
-		energy_match.check("eigenvalues",         energy.eigenvalues,  -0.499989664643);
-		energy_match.check("total energy",        energy.total(),      -0.570615305472);
-		energy_match.check("kinetic energy",      energy.kinetic(),     0.491436936083);
-		energy_match.check("external energy",     energy.external,     -0.991426600726);
-		energy_match.check("Hartree energy",      energy.hartree,       0.0);
+		energy_match.check("total energy",        energy.total(),      -0.570687439533);
+		energy_match.check("kinetic energy",      energy.kinetic(),     0.492500951533);
+		energy_match.check("eigenvalues",         energy.eigenvalues,  -0.500061798704);
+		energy_match.check("Hartree energy",      energy.hartree,       0.0);		
+		energy_match.check("external energy",     energy.external,     -0.992562750237);
 		energy_match.check("non-local energy",    energy.nonlocal,      0.0);
 		energy_match.check("XC energy",           energy.xc,            0.0);
 		energy_match.check("XC density integral", energy.nvxc,          0.0);
 		energy_match.check("HF exchange energy",  energy.hf_exchange,   0.0);
+		energy_match.check("ion-ion energy",      energy.ion,          -0.070625640829);
 		
 	}
 
@@ -117,35 +117,22 @@ int main(int argc, char ** argv){
 
 		*/
 
-		energy_match.check("ion-ion energy", energy.ion,-0.070625640829);
-
-		/*
-
-			Temporarily disable these matches, as they fail with nvcc. It
-			seems this might be an issue with convergence problems we are
-			seeing.
-
-		//octopus                         -0.23398591
-		energy_match.check(energy.eigenvalues     ,-0.234111794026);
-		energy_match.check(energy.total()         ,-0.516616112180);
-		
-		//octopus                          0.41903428
-		energy_match.check(energy.kinetic()       , 0.418334559664);
-
-		//octopus                          0.28254446
-		energy_match.check(energy.hartree         , 0.282285933038);
-
-		//octopus                         -0.91520434
-		energy_match.check(energy.external        ,-0.914352651445);
-		energy_match.check(energy.nonlocal)  <=  1e-10);
-
-		//octopus                         -0.23244493
-		energy_match.check(energy.xc              ,-0.232258312608);
-
-		//octopus                         -0.30290955
-		energy_match.check(energy.nvxc            ,-0.302665568320);
-		energy_match.check(energy.hf_exchange) <=  1e-10);
-		*/
+		energy_match.check("total energy",        energy.total(),          -0.516602958211);
+		//octopus                                                           0.41903428
+		energy_match.check("kinetic energy",      energy.kinetic(),         0.418581442489);
+		//octopus                                                          -0.23398591
+		energy_match.check("eigenvalues",         energy.eigenvalues,      -0.233981484327);
+		//octopus                                                           0.28254446
+		energy_match.check("Hartree energy",      energy.hartree,           0.282434181127);
+		//octopus                                                          -0.91520434
+		energy_match.check("external energy",     energy.external,         -0.914632814228);
+		energy_match.check("non-local energy",    energy.nonlocal,          0.0);
+		//octopus                                                          -0.23244493
+		energy_match.check("XC energy",           energy.xc,               -0.232360126770);
+		//octopus                                                          -0.30290955
+		energy_match.check("XC density integral", energy.nvxc,             -0.302798474842);
+		energy_match.check("HF exchange energy",  energy.hf_exchange,       0.0);
+		energy_match.check("ion-ion energy",      energy.ion,              -0.070625640829);
 		
 	}
 

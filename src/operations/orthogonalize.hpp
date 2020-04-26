@@ -55,7 +55,7 @@ namespace operations {
 		{
 			cusolverDnHandle_t cusolver_handle;
 			
-			auto cusolver_status = cusolverDnCreate(&cusolver_handle);
+			[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
 			assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
 			
 			//query the work size
@@ -66,7 +66,7 @@ namespace operations {
 			
 			//allocate the work array
 			cuDoubleComplex * work;
-			auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
+			[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
 			assert(cudaSuccess == cuda_status);
 
 			//finaly do the decomposition

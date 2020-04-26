@@ -45,12 +45,24 @@ int main(int argc, char ** argv){
 
 		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 		
-		[[maybe_unused]] auto energy = electrons.calculate_ground_state(input::interaction::dft());
+		[[maybe_unused]] auto energy = electrons.calculate_ground_state(input::interaction::dft(), input::scf::conjugate_gradient() | input::scf::density_mixing());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
 
 		*/
+		
+		energy_match.check("ion-ion energy",      energy.ion,               5.020189258245);
+		energy_match.check("eigenvalues",         energy.eigenvalues,      -5.595065831555);
+		energy_match.check("total energy",        energy.total(),         -27.666250041632);
+		energy_match.check("kinetic energy",      energy.kinetic(),        13.458308963383);
+		energy_match.check("Hartree energy",      energy.hartree,          27.748075671835);
+		energy_match.check("external energy",     energy.external,        -66.394506174992);
+		energy_match.check("non-local energy",    energy.nonlocal,         -1.706461598696);
+		energy_match.check("XC energy",           energy.xc,               -5.791856161407);
+		energy_match.check("XC density integral", energy.nvxc,             -6.448558364920);
+		energy_match.check("HF exchange energy",  energy.hf_exchange,       0.0);
 
+		
 	return energy_match.fail();
 }

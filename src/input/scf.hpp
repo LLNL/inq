@@ -92,6 +92,10 @@ namespace input {
     auto mix_potential() const {
       return mix_field_requested() == mix_field::POTENTIAL;
     }
+
+		auto energy_tolerance() const {
+			return 1e-7;
+		}
         
     friend auto operator|(const scf & solver1, const scf & solver2){
 			using utils::merge_optional;
