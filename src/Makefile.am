@@ -67,6 +67,7 @@ noinst_HEADERS =                             \
 	operations/add.hpp                         \
 	operations/subspace_diagonalization.hpp    \
 	operations/sum.hpp                         \
+	operations/transfer.hpp                    \
 	operations/matrix_operator.hpp             \
 	density/calculate.hpp                      \
 	density/normalize.hpp                      \

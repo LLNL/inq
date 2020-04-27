@@ -64,11 +64,10 @@
 #include <operations/overlap.hpp>
 #include <operations/orthogonalize.hpp>
 #include <operations/diagonalize.hpp>
-
 #include <operations/shift.hpp>
 #include <operations/randomize.hpp>
-
 #include <operations/matrix_operator.hpp>
+#include <operations/transfer.hpp>
 
 #include <density/calculate.hpp>
 #include <density/normalize.hpp>
