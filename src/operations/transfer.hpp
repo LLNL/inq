@@ -58,6 +58,31 @@ namespace operations {
 
 			return destination;			
 		}
+
+		
+		template <class FieldType>
+		auto reduce(FieldType const & source, typename FieldType::basis_type const & new_basis) {
+
+			FieldType destination(new_basis);
+			
+			destination = 0.0;
+			
+			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+						auto i2x = ix;
+						auto i2y = iy;
+						auto i2z = iz;
+						if(ix >= destination.basis().sizes()[0]/2) i2x += destination.basis().sizes()[0];
+						if(iy >= destination.basis().sizes()[1]/2) i2y += destination.basis().sizes()[1];
+						if(iz >= destination.basis().sizes()[2]/2) i2z += destination.basis().sizes()[2];
+						destination.cubic()[ix][iy][iz] = source.cubic()[i2x][i2y][i2z];
+					}
+				}
+			}
+
+			return destination;
+		}
 		
 	}
 }
