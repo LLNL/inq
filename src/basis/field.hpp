@@ -157,28 +157,28 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	basis::field<basis::real_space, double> ff(rs, comm);
 
-	REQUIRE(sizes(rs)[0] == 28);
-	REQUIRE(sizes(rs)[1] == 11);
-	REQUIRE(sizes(rs)[2] == 20);	
+	CHECK(sizes(rs)[0] == 28);
+	CHECK(sizes(rs)[1] == 11);
+	CHECK(sizes(rs)[2] == 20);	
 
-	if(comm.size() == 1) REQUIRE(std::get<0>(sizes(ff.linear())) == 6160);
-	if(comm.size() == 2) REQUIRE(std::get<0>(sizes(ff.linear())) == 3080);
-	if(comm.size() == 4) REQUIRE(std::get<0>(sizes(ff.linear())) == 1540);
+	if(comm.size() == 1) CHECK(std::get<0>(sizes(ff.linear())) == 6160);
+	if(comm.size() == 2) CHECK(std::get<0>(sizes(ff.linear())) == 3080);
+	if(comm.size() == 4) CHECK(std::get<0>(sizes(ff.linear())) == 1540);
 
-	if(comm.size() == 1) REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
-	if(comm.size() == 2) REQUIRE(std::get<0>(sizes(ff.cubic())) == 14);
-	if(comm.size() == 4) REQUIRE(std::get<0>(sizes(ff.cubic())) == 7);
-	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
-	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
+	if(comm.size() == 1) CHECK(std::get<0>(sizes(ff.cubic())) == 28);
+	if(comm.size() == 2) CHECK(std::get<0>(sizes(ff.cubic())) == 14);
+	if(comm.size() == 4) CHECK(std::get<0>(sizes(ff.cubic())) == 7);
+	CHECK(std::get<1>(sizes(ff.cubic())) == 11);
+	CHECK(std::get<2>(sizes(ff.cubic())) == 20);
 
 	ff = 12.2244;
 
-	for(int ii = 0; ii < rs.part().local_size(); ii++) REQUIRE(ff.linear()[ii] == 12.2244_a);	
+	for(int ii = 0; ii < rs.part().local_size(); ii++) CHECK(ff.linear()[ii] == 12.2244_a);	
 
 	basis::field<basis::real_space, double> ff_copy(ff.skeleton());
 
-	REQUIRE(std::get<1>(sizes(ff_copy.cubic())) == 11);
-	REQUIRE(std::get<2>(sizes(ff_copy.cubic())) == 20);
+	CHECK(std::get<1>(sizes(ff_copy.cubic())) == 11);
+	CHECK(std::get<2>(sizes(ff_copy.cubic())) == 20);
 	
 }
 

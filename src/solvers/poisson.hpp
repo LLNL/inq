@@ -213,11 +213,11 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 		SECTION("Grid periodic"){
 		
-			REQUIRE(rs.periodic_dimensions() == 3);
+			CHECK(rs.periodic_dimensions() == 3);
 			
-			REQUIRE(rs.sizes()[0] == 100);
-			REQUIRE(rs.sizes()[1] == 100);
-			REQUIRE(rs.sizes()[2] == 137);
+			CHECK(rs.sizes()[0] == 100);
+			CHECK(rs.sizes()[1] == 100);
+			CHECK(rs.sizes()[2] == 137);
 
 		}
 		
@@ -258,10 +258,10 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 			// just for consistency. Of course the imaginary part has to be
 			// zero, since the density is real.
 		
-			REQUIRE(sum[0] == 82.9383793318_a);
-			REQUIRE(fabs(sum[1]) <= 5e-12);
+			CHECK(sum[0] == 82.9383793318_a);
+			CHECK(fabs(sum[1]) <= 5e-12);
 		
-			if(rs.cubic_dist(0).start() == 0 and rs.cubic_dist(1).start() == 0 and rs.cubic_dist(2).start() == 0) REQUIRE(real(potential.cubic()[0][0][0]) == -0.0241804443_a);
+			if(rs.cubic_dist(0).start() == 0 and rs.cubic_dist(1).start() == 0 and rs.cubic_dist(2).start() == 0) CHECK(real(potential.cubic()[0][0][0]) == -0.0241804443_a);
 		}
 
 		SECTION("Plane wave"){
@@ -298,7 +298,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 			diff /= rs.size();
 		
-			REQUIRE(diff < 1.0e-13);
+			CHECK(diff < 1.0e-13);
 	
 		}
 
@@ -335,7 +335,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 			diff /= rs.size();
 		
-			REQUIRE(diff < 1e-8);
+			CHECK(diff < 1e-8);
 
 		}
 	}
@@ -352,11 +352,11 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 		SECTION("Grid finite"){		
 
-			REQUIRE(rs.periodic_dimensions() == 0);
+			CHECK(rs.periodic_dimensions() == 0);
 			
-			REQUIRE(rs.sizes()[0] == 89);
-			REQUIRE(rs.sizes()[1] == 89);
-			REQUIRE(rs.sizes()[2] == 89);
+			CHECK(rs.sizes()[0] == 89);
+			CHECK(rs.sizes()[1] == 89);
+			CHECK(rs.sizes()[2] == 89);
 
 		}
 		
@@ -373,7 +373,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 				}
 			}
 
-			REQUIRE(real(operations::integral(density)) == -1.0_a);
+			CHECK(real(operations::integral(density)) == -1.0_a);
 			
 			auto potential = psolver(density);
 

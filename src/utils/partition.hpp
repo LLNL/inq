@@ -143,13 +143,13 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 
   SECTION("Total"){
 
-    REQUIRE(NN == part.size());
+    CHECK(NN == part.size());
 
     auto calculated_size = part.local_size();
     
     comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
     
-    REQUIRE(NN == calculated_size);
+    CHECK(NN == calculated_size);
   }
 
   SECTION("Upper bound"){
@@ -158,9 +158,9 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
     comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ next, /* source = */ prev, 0, 0);
     
     if(comm.rank() != 0){
-      REQUIRE(boundary_value == part.start());
+      CHECK(boundary_value == part.start());
     } else {
-      REQUIRE(boundary_value == NN);
+      CHECK(boundary_value == NN);
     }
   }
 
@@ -170,16 +170,16 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
     comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ prev, /* source = */ next, 1, 1);
     
     if(comm.rank() != comm.size() - 1){
-      REQUIRE(boundary_value == part.end());
+      CHECK(boundary_value == part.end());
     } else {
-      REQUIRE(boundary_value == 0);
+      CHECK(boundary_value == 0);
     }
   }
 
 	SECTION("Location"){
 
 		for(long ig = part.start(); ig < part.end(); ig++){
-			REQUIRE(part.location(ig) == comm.rank());
+			CHECK(part.location(ig) == comm.rank());
 		}
 		
 	}
@@ -190,13 +190,13 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 	
 	SECTION("Scaled - Total"){
 		
-    REQUIRE(NN*factor == part.size());
+    CHECK(NN*factor == part.size());
 		
     auto calculated_size = part.local_size();
     
     comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
     
-    REQUIRE(NN*factor == calculated_size);
+    CHECK(NN*factor == calculated_size);
   }
 	
 
@@ -206,9 +206,9 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
     comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ next, /* source = */ prev, 0, 0);
     
     if(comm.rank() != 0){
-      REQUIRE(boundary_value == part.start());
+      CHECK(boundary_value == part.start());
     } else {
-      REQUIRE(boundary_value == NN*factor);
+      CHECK(boundary_value == NN*factor);
     }
   }
 
@@ -218,16 +218,16 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
     comm.send_receive_replace_n(&boundary_value, 1, /* dest = */ prev, /* source = */ next, 1, 1);
     
     if(comm.rank() != comm.size() - 1){
-      REQUIRE(boundary_value == part.end());
+      CHECK(boundary_value == part.end());
     } else {
-      REQUIRE(boundary_value == 0);
+      CHECK(boundary_value == 0);
     }
   }
 	
 	SECTION("Scaled - Location"){
 			
 		for(long ig = part.start(); ig < part.end(); ig++){
-			REQUIRE(part.location(ig) == comm.rank());
+			CHECK(part.location(ig) == comm.rank());
 		}
 		
 	}

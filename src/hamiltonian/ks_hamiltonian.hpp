@@ -220,11 +220,11 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 	SECTION("Basis"){
 		
-		REQUIRE(rs.size() == 8000);
-		REQUIRE(rs.rspacing()[0] == 0.5_a);
-		REQUIRE(rs.rspacing()[1] == 0.5_a);	
-		REQUIRE(rs.rspacing()[2] == 0.5_a);
-		REQUIRE(rs.volume_element() == 0.125_a);
+		CHECK(rs.size() == 8000);
+		CHECK(rs.rspacing()[0] == 0.5_a);
+		CHECK(rs.rspacing()[1] == 0.5_a);	
+		CHECK(rs.rspacing()[2] == 0.5_a);
+		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
@@ -263,7 +263,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 		
-		REQUIRE(diff < 1e-14);
+		CHECK(diff < 1e-14);
 		
 	}
 	
@@ -297,7 +297,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff < 1e-14);
+		CHECK(diff < 1e-14);
 		
 	}
 
@@ -335,7 +335,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff == 0.0055687279_a);
+		CHECK(diff == 0.0055687279_a);
 		
 	}
 
@@ -370,7 +370,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff < 1e-14);
+		CHECK(diff < 1e-14);
 		
 	}
 
@@ -408,7 +408,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff == 0.0055687279_a);
+		CHECK(diff == 0.0055687279_a);
 		
 	}
 
@@ -446,7 +446,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		diff /= hphi.cubic().num_elements();
 
-		REQUIRE(diff == 0.0055687279_a);
+		CHECK(diff == 0.0055687279_a);
 		
 	}
 	

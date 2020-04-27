@@ -98,7 +98,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
     
     for(int ip = 0; ip < npoint; ip++){
       for(int ivec = 0; ivec < nvec; ivec++){
-        REQUIRE(bb.matrix()[ip][ivec] == Approx((ip + 2.0)*aa.matrix()[ip][ivec]));
+        CHECK(bb.matrix()[ip][ivec] == Approx((ip + 2.0)*aa.matrix()[ip][ivec]));
       }
     }
 
@@ -130,7 +130,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
     
     for(int ip = 1; ip < npoint - 1; ip++){
       for(int ivec = 0; ivec < nvec; ivec++){
-        REQUIRE(bb.matrix()[ip][ivec] == Approx(2.0*aa.matrix()[ip - 1][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[ip + 1][ivec]));
+        CHECK(bb.matrix()[ip][ivec] == Approx(2.0*aa.matrix()[ip - 1][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[ip + 1][ivec]));
       }
     }
 
@@ -161,8 +161,8 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
     
     for(int ip = 0; ip < npoint; ip++){
       for(int ivec = 0; ivec < nvec; ivec++){
-        REQUIRE(real(bb.matrix()[ip][ivec]) == Approx(real(complex(ip + 2.0, 0.3*ip - 6.7)*aa.matrix()[ip][ivec])));
-        REQUIRE(imag(bb.matrix()[ip][ivec]) == Approx(imag(complex(ip + 2.0, 0.3*ip - 6.7)*aa.matrix()[ip][ivec])));
+        CHECK(real(bb.matrix()[ip][ivec]) == Approx(real(complex(ip + 2.0, 0.3*ip - 6.7)*aa.matrix()[ip][ivec])));
+        CHECK(imag(bb.matrix()[ip][ivec]) == Approx(imag(complex(ip + 2.0, 0.3*ip - 6.7)*aa.matrix()[ip][ivec])));
       }
     }
 
@@ -201,8 +201,8 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
         auto next = ip + 1;
         if(prev == -1) prev = npoint - 1;
         if(next == npoint) next = 0;
-        REQUIRE(real(bb.matrix()[ip][ivec]) == Approx(real(2.0*aa.matrix()[prev][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[next][ivec])));
-        REQUIRE(imag(bb.matrix()[ip][ivec]) == Approx(imag(2.0*aa.matrix()[prev][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[next][ivec])));
+        CHECK(real(bb.matrix()[ip][ivec]) == Approx(real(2.0*aa.matrix()[prev][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[next][ivec])));
+        CHECK(imag(bb.matrix()[ip][ivec]) == Approx(imag(2.0*aa.matrix()[prev][ivec] - 1.0*aa.matrix()[ip][ivec] + 2.0*aa.matrix()[next][ivec])));
       }
     }
 

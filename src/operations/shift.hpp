@@ -79,7 +79,7 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 		operations::shift(factor, bb, aa, -0.5);
 				
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < aa.set_part().local_size(); jj++) REQUIRE(aa.matrix()[ii][jj] == Approx(1.0));
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(aa.matrix()[ii][jj] == Approx(1.0));
 		}
 	}
 	
@@ -104,8 +104,8 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 				
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			auto iig = bas.part().local_to_global(ii);
-			for(int jj = 0; jj < aa.set_part().local_size(); jj++) REQUIRE(real(aa.matrix()[ii][jj]) == Approx(iig));
-			for(int jj = 0; jj < aa.set_part().local_size(); jj++) REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(real(aa.matrix()[ii][jj]) == Approx(iig));
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 		}
 	}	
 	
@@ -131,8 +131,8 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
 				auto iig = bas.part().local_to_global(ii);
-				REQUIRE(real(aa.matrix()[ii][jj]) == Approx(iig));
-				REQUIRE(imag(aa.matrix()[ii][jj]) == Approx(1.0));
+				CHECK(real(aa.matrix()[ii][jj]) == Approx(iig));
+				CHECK(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 			}
 		}
 	}

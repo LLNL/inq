@@ -130,8 +130,8 @@ TEST_CASE("class input::scf", "[input::scf]") {
 
     input::scf solver;
 
-    REQUIRE(solver.eigensolver() == input::scf::scf_eigensolver::STEEPEST_DESCENT);
-    REQUIRE(solver.mixing() == 0.3_a);
+    CHECK(solver.eigensolver() == input::scf::scf_eigensolver::STEEPEST_DESCENT);
+    CHECK(solver.mixing() == 0.3_a);
     
   }
 
@@ -139,8 +139,8 @@ TEST_CASE("class input::scf", "[input::scf]") {
 
     auto solver = input::scf::conjugate_gradient() | input::scf::mixing(0.05);
     
-    REQUIRE(solver.eigensolver() == input::scf::scf_eigensolver::CONJUGATE_GRADIENT);
-    REQUIRE(solver.mixing() == 0.05_a);
+    CHECK(solver.eigensolver() == input::scf::scf_eigensolver::CONJUGATE_GRADIENT);
+    CHECK(solver.mixing() == 0.05_a);
     
   }
 

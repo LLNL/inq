@@ -268,7 +268,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 	SECTION("Non-existing element"){
     std::vector<species> el_list({element("P"), element("X")});
 
-    REQUIRE_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list));
+    CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list));
   }
   
   SECTION("Duplicated element"){
@@ -276,8 +276,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
     hamiltonian::atomic_potential pot(el_list.size(), el_list.begin());
 
-    REQUIRE(pot.num_species() == 1);
-    REQUIRE(pot.num_electrons() == 10.0_a);
+    CHECK(pot.num_species() == 1);
+    CHECK(pot.num_electrons() == 10.0_a);
     
   }
 
@@ -286,10 +286,10 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
     
     hamiltonian::atomic_potential pot(el_list.size(), el_list);
 
-    REQUIRE(pot.num_species() == 0);
-    REQUIRE(pot.num_electrons() == 0.0_a);
+    CHECK(pot.num_species() == 0);
+    CHECK(pot.num_electrons() == 0.0_a);
 
-		REQUIRE(not pot.has_nlcc());
+		CHECK(not pot.has_nlcc());
 		
   }
 
@@ -298,8 +298,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
     hamiltonian::atomic_potential pot(4, el_list);
 
-    REQUIRE(pot.num_species() == 4);
-    REQUIRE(pot.num_electrons() == 16.0_a);
+    CHECK(pot.num_species() == 4);
+    CHECK(pot.num_electrons() == 16.0_a);
   }
 
   SECTION("Construct from a geometry"){
@@ -308,8 +308,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
     hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), comm);
 
-    REQUIRE(pot.num_species() == 2);
-    REQUIRE(pot.num_electrons() == 30.0_a);
+    CHECK(pot.num_species() == 2);
+    CHECK(pot.num_electrons() == 30.0_a);
 
 		double ll = 20.0;
 		auto cell = input::cell::cubic(ll, ll, ll);
@@ -319,30 +319,30 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		
 		auto vv = pot.local_potential(rs, cell, geo);
 
-		REQUIRE(operations::integral(vv) == -45.5544154295_a);
+		CHECK(operations::integral(vv) == -45.5544154295_a);
 
-		REQUIRE(vv.cubic()[5][3][0] == -1.574376555_a);
-		REQUIRE(vv.cubic()[3][1][0] == -0.258229883_a);
+		CHECK(vv.cubic()[5][3][0] == -1.574376555_a);
+		CHECK(vv.cubic()[3][1][0] == -0.258229883_a);
 							 
 		auto id = pot.ionic_density(rs, cell, geo);
 
-		REQUIRE(operations::integral(id) == -30.0000000746_a);
-		REQUIRE(id.cubic()[5][3][0] == -0.9448936487_a);
-		REQUIRE(id.cubic()[3][1][0] == -0.2074502252_a);
+		CHECK(operations::integral(id) == -30.0000000746_a);
+		CHECK(id.cubic()[5][3][0] == -0.9448936487_a);
+		CHECK(id.cubic()[3][1][0] == -0.2074502252_a);
 
 		auto nn = pot.atomic_electronic_density(rs, cell, geo);
 		
-		REQUIRE(operations::integral(nn) == 29.9562520003_a);
-		REQUIRE(nn.cubic()[5][3][0] == 0.1330589609_a);
-		REQUIRE(nn.cubic()[3][1][0] == 0.1846004508_a);
+		CHECK(operations::integral(nn) == 29.9562520003_a);
+		CHECK(nn.cubic()[5][3][0] == 0.1330589609_a);
+		CHECK(nn.cubic()[3][1][0] == 0.1846004508_a);
 
-		REQUIRE(pot.has_nlcc());
+		CHECK(pot.has_nlcc());
 		
 		auto nlcc = pot.nlcc_density(rs, cell, geo);
 		
-		REQUIRE(operations::integral(nlcc) == 3.0083012065_a);
-		REQUIRE(nlcc.cubic()[5][3][0] == 0.6248217151_a);
-		REQUIRE(nlcc.cubic()[3][1][0] == 0.0007040027_a);
+		CHECK(operations::integral(nlcc) == 3.0083012065_a);
+		CHECK(nlcc.cubic()[5][3][0] == 0.6248217151_a);
+		CHECK(nlcc.cubic()[3][1][0] == 0.0007040027_a);
 		
   }
   

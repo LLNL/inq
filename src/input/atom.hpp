@@ -75,20 +75,20 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 	SECTION("Constructor"){
 		input::atom at(pseudo::element("H"), math::vec3d(1.0, 2.0, 3.0));
 
-		REQUIRE(at.species().atomic_number() == 1);
-		REQUIRE(at.position()[0] == 1.0_a);
-		REQUIRE(at.position()[1] == 2.0_a);
-		REQUIRE(at.position()[2] == 3.0_a);
+		CHECK(at.species().atomic_number() == 1);
+		CHECK(at.position()[0] == 1.0_a);
+		CHECK(at.position()[1] == 2.0_a);
+		CHECK(at.position()[2] == 3.0_a);
 		
 	}
 	
 	SECTION("Species composition"){
 		input::atom at = input::species(pseudo::element("C")) | math::vec3d(1.0, 2.0, 3.0);
 
-		REQUIRE(at.species().symbol() == "C");
-		REQUIRE(at.position()[0] == 1.0_a);
-		REQUIRE(at.position()[1] == 2.0_a);
-		REQUIRE(at.position()[2] == 3.0_a);
+		CHECK(at.species().symbol() == "C");
+		CHECK(at.position()[0] == 1.0_a);
+		CHECK(at.position()[1] == 2.0_a);
+		CHECK(at.position()[2] == 3.0_a);
 
 	}
 	
@@ -96,10 +96,10 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 		
 		input::atom at = pseudo::element("C") | input::species::symbol("C1") | math::vec3d(1.0, 2.0, 3.0);
 		
-		REQUIRE(at.species().symbol() == "C1");
-		REQUIRE(at.position()[0] == 1.0_a);
-		REQUIRE(at.position()[1] == 2.0_a);
-		REQUIRE(at.position()[2] == 3.0_a);
+		CHECK(at.species().symbol() == "C1");
+		CHECK(at.position()[0] == 1.0_a);
+		CHECK(at.position()[1] == 2.0_a);
+		CHECK(at.position()[2] == 3.0_a);
 
 	}
 
@@ -107,10 +107,10 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 		
 		input::atom at = pseudo::element("W") | math::vec3d(1.0, 2.0, 3.0);
 		
-		REQUIRE(at.species().symbol() == "W");
-		REQUIRE(at.position()[0] == 1.0_a);
-		REQUIRE(at.position()[1] == 2.0_a);
-		REQUIRE(at.position()[2] == 3.0_a);
+		CHECK(at.species().symbol() == "W");
+		CHECK(at.position()[0] == 1.0_a);
+		CHECK(at.position()[1] == 2.0_a);
+		CHECK(at.position()[2] == 3.0_a);
 
 	}
 
@@ -118,10 +118,10 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 		
 		input::atom at = std::string("Xe") | math::vec3d(1.0, 2.0, 3.0);
 		
-		REQUIRE(at.species().symbol() == "Xe");
-		REQUIRE(at.position()[0] == 1.0_a);
-		REQUIRE(at.position()[1] == 2.0_a);
-		REQUIRE(at.position()[2] == 3.0_a);
+		CHECK(at.species().symbol() == "Xe");
+		CHECK(at.position()[0] == 1.0_a);
+		CHECK(at.position()[1] == 2.0_a);
+		CHECK(at.position()[2] == 3.0_a);
 		
 	}
 	
@@ -129,10 +129,10 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 		
 		input::atom at = "Tc" | math::vec3d(1.0, 2.0, 3.0);
 		
-		REQUIRE(at.species().symbol() == "Tc");
-		REQUIRE(at.position()[0] == 1.0_a);
-		REQUIRE(at.position()[1] == 2.0_a);
-		REQUIRE(at.position()[2] == 3.0_a);
+		CHECK(at.species().symbol() == "Tc");
+		CHECK(at.position()[0] == 1.0_a);
+		CHECK(at.position()[1] == 2.0_a);
+		CHECK(at.position()[2] == 3.0_a);
 		
 	}
 	

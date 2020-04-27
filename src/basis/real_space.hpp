@@ -121,15 +121,15 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       
       basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
-      REQUIRE(rs.size() == 8000);
+      CHECK(rs.size() == 8000);
       
-      REQUIRE(rs.rspacing()[0] == 0.5_a);
-      REQUIRE(rs.rspacing()[1] == 0.5_a);
-      REQUIRE(rs.rspacing()[2] == 0.5_a);
+      CHECK(rs.rspacing()[0] == 0.5_a);
+      CHECK(rs.rspacing()[1] == 0.5_a);
+      CHECK(rs.rspacing()[2] == 0.5_a);
       
-      REQUIRE(rs.sizes()[0] == 20);
-      REQUIRE(rs.sizes()[1] == 20);
-      REQUIRE(rs.sizes()[2] == 20);
+      CHECK(rs.sizes()[0] == 20);
+      CHECK(rs.sizes()[1] == 20);
+      CHECK(rs.sizes()[2] == 20);
 
     }
 
@@ -141,25 +141,25 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       
       basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
-      REQUIRE(rs.size() == 536640);
+      CHECK(rs.size() == 536640);
 	    
-      REQUIRE(rs.rspacing()[0] == 0.3613953488_a);
-      REQUIRE(rs.rspacing()[1] == 0.3625641026_a);
-      REQUIRE(rs.rspacing()[2] == 0.36328125_a);
+      CHECK(rs.rspacing()[0] == 0.3613953488_a);
+      CHECK(rs.rspacing()[1] == 0.3625641026_a);
+      CHECK(rs.rspacing()[2] == 0.36328125_a);
       
-      REQUIRE(rs.sizes()[0] == 215);
-      REQUIRE(rs.sizes()[1] == 39);
-			REQUIRE(rs.sizes()[2] == 64);
+      CHECK(rs.sizes()[0] == 215);
+      CHECK(rs.sizes()[1] == 39);
+			CHECK(rs.sizes()[2] == 64);
 
 			auto rs3x = rs.enlarge(3);
 			
-      REQUIRE(rs3x.rspacing()[0] == 0.3613953488_a);
-      REQUIRE(rs3x.rspacing()[1] == 0.3625641026_a);
-      REQUIRE(rs3x.rspacing()[2] == 0.36328125_a);
+      CHECK(rs3x.rspacing()[0] == 0.3613953488_a);
+      CHECK(rs3x.rspacing()[1] == 0.3625641026_a);
+      CHECK(rs3x.rspacing()[2] == 0.36328125_a);
       
-      REQUIRE(rs3x.sizes()[0] == 3*215);
-      REQUIRE(rs3x.sizes()[1] == 3*39);
-			REQUIRE(rs3x.sizes()[2] == 3*64);
+      CHECK(rs3x.sizes()[0] == 3*215);
+      CHECK(rs3x.sizes()[1] == 3*39);
+			CHECK(rs3x.sizes()[2] == 3*64);
 			
     }
 

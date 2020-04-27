@@ -108,7 +108,7 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 		cc = operations::add(aa, bb);
 		
-		for(int ii = 0; ii < cc.linear().size(); ii++) REQUIRE(cc.linear()[ii] == 3.5_a);
+		for(int ii = 0; ii < cc.linear().size(); ii++) CHECK(cc.linear()[ii] == 3.5_a);
 
 	}
 	
@@ -124,8 +124,8 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		cc = operations::add(aa, bb);
 		
 		for(int ii = 0; ii < cc.linear().size(); ii++){
-			REQUIRE(real(cc.linear()[ii]) == 3.5_a);
-			REQUIRE(imag(cc.linear()[ii]) == -19.0_a);
+			CHECK(real(cc.linear()[ii]) == 3.5_a);
+			CHECK(imag(cc.linear()[ii]) == -19.0_a);
 		}
 
 	}
@@ -143,7 +143,7 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 		dd = operations::add(aa, bb, cc);
 		
-		for(int ii = 0; ii < cc.linear().size(); ii++) REQUIRE(dd.linear()[ii] == -0.5_a);
+		for(int ii = 0; ii < cc.linear().size(); ii++) CHECK(dd.linear()[ii] == -0.5_a);
 
 	}
 	
@@ -161,8 +161,8 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		dd = operations::add(aa, bb, cc);
 		
 		for(int ii = 0; ii < cc.linear().size(); ii++){
-			REQUIRE(real(dd.linear()[ii]) == 0.8_a);
-			REQUIRE(imag(dd.linear()[ii]) == -10.4_a);
+			CHECK(real(dd.linear()[ii]) == 0.8_a);
+			CHECK(imag(dd.linear()[ii]) == -10.4_a);
 		}
 
 	}	

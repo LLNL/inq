@@ -167,66 +167,66 @@ TEST_CASE("function math::vec3d", "[math::vec3d]") {
 	vec3d x1{1.0, 2.0, 3.0};
 	vec3d x2{0.1, 0.2, 0.3};
 	
-	REQUIRE(x1[0] == 1.0_a);
-	REQUIRE(x1[1] == 2.0_a);
-	REQUIRE(x1[2] == 3.0_a);
+	CHECK(x1[0] == 1.0_a);
+	CHECK(x1[1] == 2.0_a);
+	CHECK(x1[2] == 3.0_a);
 
-	REQUIRE(norm(x1) == 14.0_a);
-	REQUIRE(length(x1) == 3.7416573868_a);
+	CHECK(norm(x1) == 14.0_a);
+	CHECK(length(x1) == 3.7416573868_a);
 	
-	REQUIRE((2.4*x1)[0] == 2.4_a);
-	REQUIRE((2.4*x1)[1] == 4.8_a);
-	REQUIRE((2.4*x1)[2] == 7.2_a);
+	CHECK((2.4*x1)[0] == 2.4_a);
+	CHECK((2.4*x1)[1] == 4.8_a);
+	CHECK((2.4*x1)[2] == 7.2_a);
 
-	REQUIRE((x1/0.4166666666667)[0] == 2.4_a);
-	REQUIRE((x1/0.4166666666667)[1] == 4.8_a);
-	REQUIRE((x1/0.4166666666667)[2] == 7.2_a);
+	CHECK((x1/0.4166666666667)[0] == 2.4_a);
+	CHECK((x1/0.4166666666667)[1] == 4.8_a);
+	CHECK((x1/0.4166666666667)[2] == 7.2_a);
 
-	REQUIRE(-x1 == -1.0*x1);
+	CHECK(-x1 == -1.0*x1);
 	
 	vec3d x3 = x1 + x2;
 
-	REQUIRE(x3[0] == 1.1_a);
-	REQUIRE(x3[1] == 2.2_a);
-	REQUIRE(x3[2] == 3.3_a);
+	CHECK(x3[0] == 1.1_a);
+	CHECK(x3[1] == 2.2_a);
+	CHECK(x3[2] == 3.3_a);
 
-	REQUIRE((x3/1.1)[0] == 1.0_a);
-	REQUIRE((x3/1.1)[1] == 2.0_a);
-	REQUIRE((x3/1.1)[2] == 3.0_a);
+	CHECK((x3/1.1)[0] == 1.0_a);
+	CHECK((x3/1.1)[1] == 2.0_a);
+	CHECK((x3/1.1)[2] == 3.0_a);
 
 	x3 /= 2.2;
 
-	REQUIRE(x3[0] == 0.5_a);
-	REQUIRE(x3[1] == 1.0_a);
-	REQUIRE(x3[2] == 1.5_a);
+	CHECK(x3[0] == 0.5_a);
+	CHECK(x3[1] == 1.0_a);
+	CHECK(x3[2] == 1.5_a);
 	
 	x3 = x1 - x2;
 
-	REQUIRE(x3[0] == 0.9_a);
-	REQUIRE(x3[1] == 1.8_a);
-	REQUIRE(x3[2] == 2.7_a);
+	CHECK(x3[0] == 0.9_a);
+	CHECK(x3[1] == 1.8_a);
+	CHECK(x3[2] == 2.7_a);
 	
-	REQUIRE((x1|x2) == 1.4_a);
+	CHECK((x1|x2) == 1.4_a);
 
 	auto cross = x1^vec3d{-1.0, -0.5, 3.33};
 
-	REQUIRE(cross[0] == 8.16_a);
-	REQUIRE(cross[1] == -6.33_a);
-	REQUIRE(cross[2] == 1.5_a);
+	CHECK(cross[0] == 8.16_a);
+	CHECK(cross[1] == -6.33_a);
+	CHECK(cross[2] == 1.5_a);
 
 	vec3d scal(6.66);
 
-	REQUIRE(scal[0] == 6.66_a);
-	REQUIRE(scal[1] == 6.66_a);
-	REQUIRE(scal[2] == 6.66_a);
+	CHECK(scal[0] == 6.66_a);
+	CHECK(scal[1] == 6.66_a);
+	CHECK(scal[2] == 6.66_a);
 
 	double arr[] = {-45.0, 0.2277, 3.1};
 
 	vec3d x4(arr);
 
-	REQUIRE(x4[0] == -45.0_a);
-	REQUIRE(x4[1] == 0.2277_a);
-	REQUIRE(x4[2] == 3.1_a);
+	CHECK(x4[0] == -45.0_a);
+	CHECK(x4[1] == 0.2277_a);
+	CHECK(x4[2] == 3.1_a);
 	
 }
 	

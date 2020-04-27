@@ -141,8 +141,8 @@ TEST_CASE("class input::species", "[input::species]") {
 		
 		input::species s(pseudo::element("Xe"));
 		
-		REQUIRE(s.atomic_number() == 54);
-		REQUIRE(not s.has_file());
+		CHECK(s.atomic_number() == 54);
+		CHECK(not s.has_file());
 
 	}
 
@@ -150,9 +150,9 @@ TEST_CASE("class input::species", "[input::species]") {
 		
 		input::species s(pseudo::element("Xe"), input::species::mass(20));
 		
-		REQUIRE(s.atomic_number() == 54);
-		REQUIRE(not s.has_file());
-		REQUIRE(s.mass() == 20.0_a);
+		CHECK(s.atomic_number() == 54);
+		CHECK(not s.has_file());
+		CHECK(s.mass() == 20.0_a);
 		
 	}
 
@@ -160,8 +160,8 @@ TEST_CASE("class input::species", "[input::species]") {
 		
 		input::species s = pseudo::element("U") | input::species::mass(235);
 		
-		REQUIRE(s.symbol() == "U");
-		REQUIRE(s.mass() == 235.0_a);
+		CHECK(s.symbol() == "U");
+		CHECK(s.mass() == 235.0_a);
 		
 	}
 	
@@ -169,8 +169,8 @@ TEST_CASE("class input::species", "[input::species]") {
 		
 		input::species s = "U" | input::species::symbol("U235") | input::species::mass(235);
 		
-		REQUIRE(s.symbol() == "U235");
-		REQUIRE(s.mass() == 235.0_a);
+		CHECK(s.symbol() == "U235");
+		CHECK(s.mass() == 235.0_a);
 		
 	}
 
@@ -178,9 +178,9 @@ TEST_CASE("class input::species", "[input::species]") {
 		
 		input::species s = "He" | input::species::pseudo("hola");
 		
-		REQUIRE(s.symbol() == "He");
-		REQUIRE(s.has_file());
-		REQUIRE(s.file_path() == "hola");
+		CHECK(s.symbol() == "He");
+		CHECK(s.has_file());
+		CHECK(s.file_path() == "hola");
 		
 	}
 	

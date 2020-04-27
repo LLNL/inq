@@ -161,7 +161,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 		auto basis_comm = cart_comm.axis(1);
 
-		REQUIRE(basis_comm.size() == comm.size());
+		CHECK(basis_comm.size() == comm.size());
 		
 		basis::trivial bas(npoint, basis_comm);
 
@@ -183,14 +183,14 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 				auto cc = operations::overlap(aa, bb);
 
 				for(int ii = 0; ii < nvec; ii++){
-					for(int jj = 0; jj < nvec; jj++) REQUIRE(cc[ii][jj] == Approx(-sqrt(jj)*sqrt(ii)));
+					for(int jj = 0; jj < nvec; jj++) CHECK(cc[ii][jj] == Approx(-sqrt(jj)*sqrt(ii)));
 				}
 			}
 
 			{
 				auto dd = operations::overlap_diagonal(aa, bb);
 				
-				for(int jj = 0; jj < nvec; jj++) REQUIRE(dd[jj] == Approx(-jj));
+				for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(-jj));
 			}
 			
 			for(int ii = 0; ii < bas.part().local_size(); ii++){
@@ -206,11 +206,11 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto cc = operations::overlap(aa);
 
-				REQUIRE(std::get<0>(sizes(cc)) == nvec);
-				REQUIRE(std::get<1>(sizes(cc)) == nvec);
+				CHECK(std::get<0>(sizes(cc)) == nvec);
+				CHECK(std::get<1>(sizes(cc)) == nvec);
 				
 				for(int ii = 0; ii < nvec; ii++){
-					for(int jj = 0; jj < nvec; jj++) REQUIRE(cc[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+					for(int jj = 0; jj < nvec; jj++) CHECK(cc[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
 				}
 			}
 			*/
@@ -218,7 +218,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto dd = operations::overlap_diagonal(aa);
 								
-				for(int jj = 0; jj < nvec; jj++) REQUIRE(dd[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+				for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
 			}
 					
 			
@@ -241,13 +241,13 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto cc = operations::overlap(aa, bb);
 
-				REQUIRE(std::get<0>(sizes(cc)) == nvec);
-				REQUIRE(std::get<1>(sizes(cc)) == nvec);
+				CHECK(std::get<0>(sizes(cc)) == nvec);
+				CHECK(std::get<1>(sizes(cc)) == nvec);
 				
 				for(int ii = 0; ii < nvec; ii++){
 					for(int jj = 0; jj < nvec; jj++) {
-						REQUIRE(fabs(real(cc[ii][jj])) < 1.0e-14);
-						REQUIRE(imag(cc[ii][jj]) == Approx(sqrt(jj)*sqrt(ii)));
+						CHECK(fabs(real(cc[ii][jj])) < 1.0e-14);
+						CHECK(imag(cc[ii][jj]) == Approx(sqrt(jj)*sqrt(ii)));
 					}
 				}
 			}
@@ -255,11 +255,11 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto dd = operations::overlap_diagonal(aa, bb);
 
-				REQUIRE(std::get<0>(sizes(dd)) == nvec);
+				CHECK(std::get<0>(sizes(dd)) == nvec);
 				
 				for(int jj = 0; jj < nvec; jj++){
-					REQUIRE(fabs(real(dd[jj])) < 1.0e-14);
-					REQUIRE(imag(dd[jj]) == Approx(-jj));
+					CHECK(fabs(real(dd[jj])) < 1.0e-14);
+					CHECK(imag(dd[jj]) == Approx(-jj));
 				}
 			}
 			
@@ -274,13 +274,13 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto cc = operations::overlap(aa);
 
-				REQUIRE(std::get<0>(sizes(cc)) == nvec);
-				REQUIRE(std::get<1>(sizes(cc)) == nvec);
+				CHECK(std::get<0>(sizes(cc)) == nvec);
+				CHECK(std::get<1>(sizes(cc)) == nvec);
 				
 				for(int ii = 0; ii < nvec; ii++){
 					for(int jj = 0; jj < nvec; jj++){
-						REQUIRE(real(cc[ii][jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
-						REQUIRE(fabs(imag(cc[ii][jj])) < 1e-13);
+						CHECK(real(cc[ii][jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+						CHECK(fabs(imag(cc[ii][jj])) < 1e-13);
 					}
 				}
 			}
@@ -288,9 +288,9 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto dd = operations::overlap_diagonal(aa);
 
-				REQUIRE(std::get<0>(sizes(dd)) == nvec);
+				CHECK(std::get<0>(sizes(dd)) == nvec);
 				
-				for(int jj = 0; jj < nvec; jj++) REQUIRE(real(dd[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+				for(int jj = 0; jj < nvec; jj++) CHECK(real(dd[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
 			}
 					
 			
@@ -305,7 +305,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			aa = 2.0;
 			bb = 0.8;
 		
-			REQUIRE(operations::overlap_single(aa, bb) == 1.6_a);
+			CHECK(operations::overlap_single(aa, bb) == 1.6_a);
 			
 			for(int ii = 0; ii < bas.part().local_size(); ii++)	{
 				auto iig = bas.part().local_to_global(ii);
@@ -313,7 +313,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 				bb.linear()[ii] = 1.0/(iig + 1);
 			}
 			
-			REQUIRE(operations::overlap_single(aa, bb) == Approx(0.5*npoint*(npoint + 1.0)*bas.volume_element()));
+			CHECK(operations::overlap_single(aa, bb) == Approx(0.5*npoint*(npoint + 1.0)*bas.volume_element()));
 			
 		}
 		
@@ -325,8 +325,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			aa = complex(2.0, -0.3);
 			bb = complex(0.8, 0.01);
 		
-			REQUIRE(real(operations::overlap_single(aa, bb)) == 1.597_a);
-			REQUIRE(imag(operations::overlap_single(aa, bb)) == 0.26_a);
+			CHECK(real(operations::overlap_single(aa, bb)) == 1.597_a);
+			CHECK(imag(operations::overlap_single(aa, bb)) == 0.26_a);
 		
 			for(int ii = 0; ii < bas.part().local_size(); ii++)	{
 				auto iig = bas.part().local_to_global(ii);
@@ -334,8 +334,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 				bb.linear()[ii] = 1.0/(iig + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(iig + 1)));
 			}
 
-			REQUIRE(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
-			REQUIRE(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
+			CHECK(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
+			CHECK(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
 		
 		}
 
@@ -348,13 +348,13 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			{
 				auto cc = operations::overlap(aa);
 
-				REQUIRE(std::get<0>(sizes(cc)) == nvec);
-				REQUIRE(std::get<1>(sizes(cc)) == nvec);
+				CHECK(std::get<0>(sizes(cc)) == nvec);
+				CHECK(std::get<1>(sizes(cc)) == nvec);
 				
 				for(int ii = 0; ii < nvec; ii++){
 					for(int jj = 0; jj < nvec; jj++){
-						REQUIRE(real(cc[ii][jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
-						REQUIRE(fabs(imag(cc[ii][jj])) < 1e-13);
+						CHECK(real(cc[ii][jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+						CHECK(fabs(imag(cc[ii][jj])) < 1e-13);
 					}
 				}
 			}

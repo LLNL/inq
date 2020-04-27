@@ -80,8 +80,8 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 		
 		solvers::linear_symmetric(matrix, vector);
 
-		REQUIRE(vector[0] == 0.0_a);
-		REQUIRE(vector[1] == 0.5_a);
+		CHECK(vector[0] == 0.0_a);
+		CHECK(vector[1] == 0.5_a);
 
   }
 	
@@ -100,8 +100,8 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 		
 		solvers::linear_symmetric(matrix, vector);
 
-		REQUIRE(vector[0] == -0.0327899021_a);
-		REQUIRE(vector[1] == 0.596579_a);
+		CHECK(vector[0] == -0.0327899021_a);
+		CHECK(vector[1] == 0.596579_a);
 		
   }
 	
@@ -120,8 +120,8 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 		
 		solvers::linear_symmetric(matrix, vector);
 
-		REQUIRE(vector[0] == -30.882245351_a);
-		REQUIRE(vector[1] ==  44.1177546523_a);
+		CHECK(vector[0] == -30.882245351_a);
+		CHECK(vector[1] ==  44.1177546523_a);
 		
   }
 }

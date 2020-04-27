@@ -199,7 +199,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
     
-    REQUIRE(energy == -9.99517178_a); //this number comes from Octopus
+    CHECK(energy == -9.99517178_a); //this number comes from Octopus
     
   }
 
@@ -220,7 +220,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
     ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
-    REQUIRE(energy == -10.73490075_a); //this number comes from Octopus
+    CHECK(energy == -10.73490075_a); //this number comes from Octopus
 
   }
 
@@ -239,7 +239,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
     ions::interaction_energy(1, cell, &charge, &position, sep, energy, forces);
 
-    REQUIRE(energy == -78.31680646_a); //this number comes from Octopus
+    CHECK(energy == -78.31680646_a); //this number comes from Octopus
     
   }
     

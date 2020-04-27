@@ -71,8 +71,8 @@ TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
 
 	lm(vin, vout);
   
-  REQUIRE(vin[0] == 5.0_a);
-  REQUIRE(vin[1] == 1.1_a);
+  CHECK(vin[0] == 5.0_a);
+  CHECK(vin[1] == 1.1_a);
   
 }
 

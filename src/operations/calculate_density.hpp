@@ -108,11 +108,11 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 		auto dd = operations::calculate_density(occ, aa);
 		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
 
 		operations::normalize_density(dd, 33.3);
 
-		REQUIRE(operations::integral(dd) == 33.3_a);
+		CHECK(operations::integral(dd) == 33.3_a);
 		
 	}
 	
@@ -132,11 +132,11 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 		auto dd = operations::calculate_density(occ, aa);
 		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) REQUIRE(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
 
 		operations::normalize_density(dd, 33.3);
 
-		REQUIRE(operations::integral(dd) == 33.3_a);
+		CHECK(operations::integral(dd) == 33.3_a);
 		
 	}
 	

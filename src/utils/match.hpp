@@ -86,18 +86,18 @@ TEST_CASE("class utils::match", "[utils::match]") {
 
   utils::match mtc(1e-7);
 
-  REQUIRE(mtc.ok());
-  REQUIRE(not mtc.fail());  
+  CHECK(mtc.ok());
+  CHECK(not mtc.fail());  
   
-  REQUIRE(mtc.check("test true", 10.0, 10.0 + 1e-8));
+  CHECK(mtc.check("test true", 10.0, 10.0 + 1e-8));
 
-  REQUIRE(mtc.ok());
-  REQUIRE(not mtc.fail());  
+  CHECK(mtc.ok());
+  CHECK(not mtc.fail());  
 
-  REQUIRE(not mtc.check("test false", 3.0, 4.0));
+  CHECK(not mtc.check("test false", 3.0, 4.0));
 
-  REQUIRE(not mtc.ok());
-  REQUIRE(mtc.fail());
+  CHECK(not mtc.ok());
+  CHECK(mtc.fail());
   
 }
 

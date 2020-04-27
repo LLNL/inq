@@ -178,34 +178,34 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	basis::field_set<basis::real_space, double> ff(rs, 12, cart_comm);
 
-	REQUIRE(sizes(rs)[0] == 28);
-	REQUIRE(sizes(rs)[1] == 11);
-	REQUIRE(sizes(rs)[2] == 20);
+	CHECK(sizes(rs)[0] == 28);
+	CHECK(sizes(rs)[1] == 11);
+	CHECK(sizes(rs)[2] == 20);
 
 	//std::cout << ff.basis_comm().size() << " x " << ff.set_comm().size() << std::endl;
 	//	std::cout << rs.part().comm_size() << std::endl;
 
-	if(ff.basis_comm().size() == 1) REQUIRE(std::get<0>(sizes(ff.matrix())) == 6160);
-	if(ff.basis_comm().size() == 2) REQUIRE(std::get<0>(sizes(ff.matrix())) == 6160/2);
-	if(ff.set_comm().size() == 1) REQUIRE(std::get<1>(sizes(ff.matrix())) == 12);
-	if(ff.set_comm().size() == 2) REQUIRE(std::get<1>(sizes(ff.matrix())) == 6);
-	if(ff.set_comm().size() == 3) REQUIRE(std::get<1>(sizes(ff.matrix())) == 4);
-	if(ff.set_comm().size() == 4) REQUIRE(std::get<1>(sizes(ff.matrix())) == 3);
-	if(ff.set_comm().size() == 6) REQUIRE(std::get<1>(sizes(ff.matrix())) == 2);
+	if(ff.basis_comm().size() == 1) CHECK(std::get<0>(sizes(ff.matrix())) == 6160);
+	if(ff.basis_comm().size() == 2) CHECK(std::get<0>(sizes(ff.matrix())) == 6160/2);
+	if(ff.set_comm().size() == 1) CHECK(std::get<1>(sizes(ff.matrix())) == 12);
+	if(ff.set_comm().size() == 2) CHECK(std::get<1>(sizes(ff.matrix())) == 6);
+	if(ff.set_comm().size() == 3) CHECK(std::get<1>(sizes(ff.matrix())) == 4);
+	if(ff.set_comm().size() == 4) CHECK(std::get<1>(sizes(ff.matrix())) == 3);
+	if(ff.set_comm().size() == 6) CHECK(std::get<1>(sizes(ff.matrix())) == 2);
 
-	if(ff.basis_comm().size() == 1) REQUIRE(std::get<0>(sizes(ff.cubic())) == 28);
-	if(ff.basis_comm().size() == 2) REQUIRE(std::get<0>(sizes(ff.cubic())) == 14);
-	if(ff.basis_comm().size() == 4) REQUIRE(std::get<0>(sizes(ff.cubic())) == 7);
-	REQUIRE(std::get<1>(sizes(ff.cubic())) == 11);
-	REQUIRE(std::get<2>(sizes(ff.cubic())) == 20);
-	if(ff.set_comm().size() == 1) REQUIRE(std::get<3>(sizes(ff.cubic())) == 12);
-	if(ff.set_comm().size() == 2) REQUIRE(std::get<3>(sizes(ff.cubic())) == 6);
+	if(ff.basis_comm().size() == 1) CHECK(std::get<0>(sizes(ff.cubic())) == 28);
+	if(ff.basis_comm().size() == 2) CHECK(std::get<0>(sizes(ff.cubic())) == 14);
+	if(ff.basis_comm().size() == 4) CHECK(std::get<0>(sizes(ff.cubic())) == 7);
+	CHECK(std::get<1>(sizes(ff.cubic())) == 11);
+	CHECK(std::get<2>(sizes(ff.cubic())) == 20);
+	if(ff.set_comm().size() == 1) CHECK(std::get<3>(sizes(ff.cubic())) == 12);
+	if(ff.set_comm().size() == 2) CHECK(std::get<3>(sizes(ff.cubic())) == 6);
 
 	ff = 12.2244;
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
-			REQUIRE(ff.matrix()[ii][jj] == 12.2244_a);
+			CHECK(ff.matrix()[ii][jj] == 12.2244_a);
 		}
 	}
 	

@@ -34,7 +34,7 @@ namespace config {
 
 TEST_CASE("class config::path", "[path]") {
   SECTION("Share path"){
-    REQUIRE(config::path::share() == SHARE_DIR + std::string("/"));
+    CHECK(config::path::share() == SHARE_DIR + std::string("/"));
   }
 }
 
