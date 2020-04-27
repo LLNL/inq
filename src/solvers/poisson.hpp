@@ -196,7 +196,7 @@ namespace solvers {
 #include <ions/unitcell.hpp>
 #include <operations/integral.hpp>
 
-TEST_CASE("class solvers::poisson", "[poisson]") {
+TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 	using namespace Catch::literals;
 	namespace multi = boost::multi;
@@ -376,18 +376,39 @@ TEST_CASE("class solvers::poisson", "[poisson]") {
 			REQUIRE(real(operations::integral(density)) == -1.0_a);
 			
 			auto potential = psolver(density);
+
+			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+						
+						auto ixg = rs.cubic_dist(0).local_to_global(ix);
+						auto iyg = rs.cubic_dist(1).local_to_global(iy);
+						auto izg = rs.cubic_dist(2).local_to_global(iz);
+						
+						auto rr = length(rs.rvector(ixg, iyg, izg));
+
+						// it should be close to -1/r
+						if(rr > 1) CHECK(fabs(potential.cubic()[ix][iy][iz]*rr + 1.0) < 0.025);
+					
+					}
+				}
+			}
+
+			CHECK(real(potential.cubic()[0][0][0])    == -27.175214167_a);
+			CHECK(real(potential.cubic()[1][2][3])    ==  -2.9731998189_a);
+			CHECK(real(potential.cubic()[88][34][28]) ==  -0.2524115517_a);
+			CHECK(real(potential.cubic()[3][45][80])  ==  -0.2470080223_a);
+			CHECK(real(potential.cubic()[77][33][55]) ==  -0.2275712710_a);
+			CHECK(real(potential.cubic()[46][48][10]) ==  -0.1844298173_a);
+
 			/*
 			std::ofstream ofile("pot.dat");
 			
 			//			double sumreal = 0.0;
 			// double sumimag = 0.0;
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-						auto rr = rs.rvector(ix, iy, iz);
-						if(iz == 0 and iy == 0) ofile << rr[0] << "\t" << real(potential.cubic()[ix][iy][iz]) << std::endl;						
-					}
-				}
+				auto rr = rs.rvector(ix, 0, 0);
+				ofile << rr[0] << "\t" << real(potential.cubic()[ix][0][0]) << std::endl;						
 			}
 			*/
 
