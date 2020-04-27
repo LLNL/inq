@@ -164,18 +164,18 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 
 			if(num_iter - 1 == iter){
 
-				REQUIRE(fabs(eigenvalues[0]) == 1.000000001634_a);
-				REQUIRE(fabs(eigenvalues[1]) == 2.000000003689_a);
-				REQUIRE(fabs(eigenvalues[2]) == 3.000000001955_a);
-				REQUIRE(fabs(eigenvalues[3]) == 4.000000001760_a);
-				REQUIRE(fabs(eigenvalues[4]) == 5.000000002561_a);
-				REQUIRE(fabs(eigenvalues[5]) == 6.000000003127_a);
-				REQUIRE(fabs(eigenvalues[6]) == 7.000000002312_a);
-				REQUIRE(fabs(eigenvalues[7]) == 8.000000000292_a);
-				REQUIRE(fabs(eigenvalues[8]) == 8.999999999033_a);
-				REQUIRE(fabs(eigenvalues[9]) == 9.999999998497_a);
-				REQUIRE(fabs(eigenvalues[10]) == 10.999999998768_a);
-				REQUIRE(fabs(eigenvalues[11]) == 11.999999998422_a);
+				CHECK(fabs(eigenvalues[0]) == 1.000000001634_a);
+				CHECK(fabs(eigenvalues[1]) == 2.000000003689_a);
+				CHECK(fabs(eigenvalues[2]) == 3.000000001955_a);
+				CHECK(fabs(eigenvalues[3]) == 4.000000001760_a);
+				CHECK(fabs(eigenvalues[4]) == 5.000000002561_a);
+				CHECK(fabs(eigenvalues[5]) == 6.000000003127_a);
+				CHECK(fabs(eigenvalues[6]) == 7.000000002312_a);
+				CHECK(fabs(eigenvalues[7]) == 8.000000000292_a);
+				CHECK(fabs(eigenvalues[8]) == 8.999999999033_a);
+				CHECK(fabs(eigenvalues[9]) == 9.999999998497_a);
+				CHECK(fabs(eigenvalues[10]) == 10.999999998768_a);
+				CHECK(fabs(eigenvalues[11]) == 11.999999998422_a);
 
 			}
 			

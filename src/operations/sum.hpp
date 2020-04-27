@@ -72,11 +72,11 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 
 		aa = 1.0;
 
-		REQUIRE(operations::sum(aa.linear()) == Approx(N));
+		CHECK(operations::sum(aa.linear()) == Approx(N));
 
 		for(int ii = 0; ii < N; ii++)	aa.linear()[ii] = ii;
 
-		REQUIRE(operations::sum(aa.linear()) == Approx(0.5*N*(N - 1.0)));
+		CHECK(operations::sum(aa.linear()) == Approx(0.5*N*(N - 1.0)));
 
 	}
 	
@@ -86,13 +86,13 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 
 		aa = complex(1.0, 1.0);
 
-		REQUIRE(real(operations::sum(aa.linear())) == Approx(N));
-		REQUIRE(imag(operations::sum(aa.linear())) == Approx(N));
+		CHECK(real(operations::sum(aa.linear())) == Approx(N));
+		CHECK(imag(operations::sum(aa.linear())) == Approx(N));
 
 		for(int ii = 0; ii < N; ii++)	aa.linear()[ii] = complex(ii, -3.0*ii);
 
-		REQUIRE(real(operations::sum(aa.linear())) == Approx(0.5*N*(N - 1.0)));
-		REQUIRE(imag(operations::sum(aa.linear())) == Approx(-1.5*N*(N - 1.0)));
+		CHECK(real(operations::sum(aa.linear())) == Approx(0.5*N*(N - 1.0)));
+		CHECK(imag(operations::sum(aa.linear())) == Approx(-1.5*N*(N - 1.0)));
 
 	}
 
@@ -104,14 +104,14 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 		aa = 2.0;
 		bb = 0.8;
 		
-		REQUIRE(operations::sum_product(aa.linear(), bb.linear()) == Approx(1.6*N));
+		CHECK(operations::sum_product(aa.linear(), bb.linear()) == Approx(1.6*N));
 		
 		for(int ii = 0; ii < N; ii++)	{
 			aa.linear()[ii] = pow(ii + 1, 2);
 			bb.linear()[ii] = 1.0/(ii + 1);
 		}
 		
-		REQUIRE(operations::sum_product(aa.linear(), bb.linear()) == Approx(0.5*N*(N + 1.0)));
+		CHECK(operations::sum_product(aa.linear(), bb.linear()) == Approx(0.5*N*(N + 1.0)));
 		
 	}
 	
@@ -123,16 +123,16 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 		aa = complex(2.0, -0.3);
 		bb = complex(0.8, 0.01);
 		
-		REQUIRE(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(1.603*N));
-		REQUIRE(imag(operations::sum_product(aa.linear(), bb.linear())) == Approx(-0.22*N));
+		CHECK(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(1.603*N));
+		CHECK(imag(operations::sum_product(aa.linear(), bb.linear())) == Approx(-0.22*N));
 		
 		for(int ii = 0; ii < N; ii++)	{
 			aa.linear()[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
 			bb.linear()[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
 		}
 		
-		REQUIRE(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
-		REQUIRE(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
+		CHECK(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
+		CHECK(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
 		
 	}
 	

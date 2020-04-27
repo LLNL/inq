@@ -196,13 +196,13 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		
 		auto evalues = operations::diagonalize(matrix);
 		
-		REQUIRE(matrix[0][0] == 0.0_a);
-		REQUIRE(matrix[0][1] == 1.0_a);
-		REQUIRE(matrix[1][0] == 1.0_a);
-		REQUIRE(matrix[0][0] == 0.0_a);
+		CHECK(matrix[0][0] == 0.0_a);
+		CHECK(matrix[0][1] == 1.0_a);
+		CHECK(matrix[1][0] == 1.0_a);
+		CHECK(matrix[0][0] == 0.0_a);
 		
-		REQUIRE(evalues[0] == 2.0_a);
-		REQUIRE(evalues[1] == 4.0_a);
+		CHECK(evalues[0] == 2.0_a);
+		CHECK(evalues[1] == 4.0_a);
 
 	}
 	
@@ -219,20 +219,20 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		
 		auto evalues = operations::diagonalize(matrix);
 		
-		REQUIRE(real(matrix[0][0]) == 0.0_a);
-		REQUIRE(imag(matrix[0][0]) == 0.0_a);
+		CHECK(real(matrix[0][0]) == 0.0_a);
+		CHECK(imag(matrix[0][0]) == 0.0_a);
 		
-		REQUIRE(real(matrix[0][1]) == 1.0_a);
-		REQUIRE(imag(matrix[0][1]) == 0.0_a);
+		CHECK(real(matrix[0][1]) == 1.0_a);
+		CHECK(imag(matrix[0][1]) == 0.0_a);
 		
-		REQUIRE(real(matrix[1][0]) == 1.0_a);
-		REQUIRE(imag(matrix[1][0]) == 0.0_a);
+		CHECK(real(matrix[1][0]) == 1.0_a);
+		CHECK(imag(matrix[1][0]) == 0.0_a);
 		
-		REQUIRE(real(matrix[0][0]) == 0.0_a);
-		REQUIRE(imag(matrix[0][0]) == 0.0_a);
+		CHECK(real(matrix[0][0]) == 0.0_a);
+		CHECK(imag(matrix[0][0]) == 0.0_a);
 		
-		REQUIRE(evalues[0] == 2.0_a);
-		REQUIRE(evalues[1] == 4.0_a);
+		CHECK(evalues[0] == 2.0_a);
+		CHECK(evalues[1] == 4.0_a);
 
 	}
 	
@@ -254,9 +254,9 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		
 		auto evalues = operations::diagonalize(matrix);
 		
-		REQUIRE(evalues[0] == -1.0626903983_a);
-		REQUIRE(evalues[1] == 0.1733844724_a);
-		REQUIRE(evalues[2] == 2.7426069258_a);
+		CHECK(evalues[0] == -1.0626903983_a);
+		CHECK(evalues[1] == 0.1733844724_a);
+		CHECK(evalues[2] == 2.7426069258_a);
 	}
 
 	SECTION("Complex dense 3x3"){
@@ -277,9 +277,9 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		
 		auto evalues = operations::diagonalize(matrix);
 		
-		REQUIRE(evalues[0] == -1.0703967402_a);
-		REQUIRE(evalues[1] ==  0.1722879629_a);
-		REQUIRE(evalues[2] ==  2.7514097773_a);
+		CHECK(evalues[0] == -1.0703967402_a);
+		CHECK(evalues[1] ==  0.1722879629_a);
+		CHECK(evalues[2] ==  2.7514097773_a);
 
 	}
 }

@@ -83,11 +83,11 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		aa = 1.0;
 
-		REQUIRE(operations::integral(aa) == 1.0_a);
+		CHECK(operations::integral(aa) == 1.0_a);
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	aa.linear()[ii] = aa.basis().part().local_to_global(ii);
 
-		REQUIRE(operations::integral(aa) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
+		CHECK(operations::integral(aa) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
 
 	}
 
@@ -97,16 +97,16 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		aa = complex(1.0, 1.0);
 
-		REQUIRE(real(operations::integral(aa)) == 1.0_a);
-		REQUIRE(imag(operations::integral(aa)) == 1.0_a);
+		CHECK(real(operations::integral(aa)) == 1.0_a);
+		CHECK(imag(operations::integral(aa)) == 1.0_a);
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) {
 			auto iig = aa.basis().part().local_to_global(ii);
 			aa.linear()[ii] = complex(iig, -3.0*iig);
 		}
 
-		REQUIRE(real(operations::integral(aa)) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
-		REQUIRE(imag(operations::integral(aa)) == Approx(-1.5*N*(N - 1.0)*bas.volume_element()));
+		CHECK(real(operations::integral(aa)) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
+		CHECK(imag(operations::integral(aa)) == Approx(-1.5*N*(N - 1.0)*bas.volume_element()));
 
 	}
 
@@ -118,7 +118,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		aa = 2.0;
 		bb = 0.8;
 		
-		REQUIRE(operations::integral_product(aa, bb) == 1.6_a);
+		CHECK(operations::integral_product(aa, bb) == 1.6_a);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
 			auto iig = aa.basis().part().local_to_global(ii);
@@ -126,7 +126,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 			bb.linear()[ii] = 1.0/(iig + 1);
 		}
 		
-		REQUIRE(operations::integral_product(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		CHECK(operations::integral_product(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
 		
 	}
 	
@@ -138,8 +138,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		aa = complex(2.0, -0.3);
 		bb = complex(0.8, 0.01);
 		
-		REQUIRE(real(operations::integral_product(aa, bb)) == 1.603_a);
-		REQUIRE(imag(operations::integral_product(aa, bb)) == -0.22_a);
+		CHECK(real(operations::integral_product(aa, bb)) == 1.603_a);
+		CHECK(imag(operations::integral_product(aa, bb)) == -0.22_a);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
 			auto iig = aa.basis().part().local_to_global(ii);
@@ -147,8 +147,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 			bb.linear()[ii] = 1.0/(iig + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*iig));
 		}
 		
-		REQUIRE(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
-		REQUIRE(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+		CHECK(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
+		CHECK(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
 		
 	}
 	
@@ -161,7 +161,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		aa = -13.23;
 		bb = -13.23;
 		
-		REQUIRE(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
+		CHECK(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
 
 		double sign = 1.0;
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
@@ -171,7 +171,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 			sign *= -1.0;
 		}
 		
-		REQUIRE(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		CHECK(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
 		
 	}
 	
@@ -183,7 +183,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		aa = -13.23*exp(complex(0.0, M_PI/3.63));
 		bb = -13.23*exp(complex(0.0, M_PI/3.63));
 		
-		REQUIRE(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
+		CHECK(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
 
 		double sign = 1.0;
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
@@ -193,7 +193,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 			sign *= -1.0;
 		}
 		
-		REQUIRE(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
+		CHECK(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
 		
 	}
 		

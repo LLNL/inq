@@ -221,15 +221,15 @@ TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
 	
 	lm(vin, vout);
   
-	REQUIRE(vin[0] == 5.0_a);
-  REQUIRE(vin[1] == 1.1_a);
+	CHECK(vin[0] == 5.0_a);
+  CHECK(vin[1] == 1.1_a);
 
 	vout = {4.0, 5.5};
 
 	lm(vin, vout);
 
-	REQUIRE(vin[0] == 4.4216618979_a);
-  REQUIRE(vin[1] == 3.550631855_a);
+	CHECK(vin[0] == 4.4216618979_a);
+  CHECK(vin[1] == 3.550631855_a);
 
 }
 

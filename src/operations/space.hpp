@@ -301,7 +301,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		
 		diff /= fphi.cubic().num_elements();
 
-		REQUIRE(diff < 1e-15);
+		CHECK(diff < 1e-15);
 		
 		auto phi2 = operations::space::to_real(fphi);
 
@@ -318,7 +318,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		
 		diff /= phi2.cubic().num_elements();
 
-		REQUIRE(diff < 1e-15);
+		CHECK(diff < 1e-15);
 		
 	}
 	
@@ -375,7 +375,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 
 		diff /= phi2.cubic().num_elements();
 		
-		REQUIRE(diff < 1e-15);
+		CHECK(diff < 1e-15);
 		
 	}
 	

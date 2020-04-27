@@ -92,8 +92,8 @@ TEST_CASE("class input::basis", "[basis]") {
 
 		auto bi = input::basis::spacing(0.123);
 
-		REQUIRE(bi.spacing() == 0.123_a);
-		REQUIRE(not bi.spherical_grid());
+		CHECK(bi.spacing() == 0.123_a);
+		CHECK(not bi.spherical_grid());
 				
 	}
 					
@@ -102,7 +102,7 @@ TEST_CASE("class input::basis", "[basis]") {
 
 		auto bi = input::basis::cutoff_energy(493.48);
 
-		REQUIRE(bi.spacing() == 0.1_a);
+		CHECK(bi.spacing() == 0.1_a);
 		
 	}
 			
@@ -110,8 +110,8 @@ TEST_CASE("class input::basis", "[basis]") {
 
 		auto bi = input::basis::cutoff_energy(493.48) | input::basis::spherical_grid(true);
 
-		REQUIRE(bi.spacing() == 0.1_a);
-		REQUIRE(bi.spherical_grid());
+		CHECK(bi.spacing() == 0.1_a);
+		CHECK(bi.spherical_grid());
 		
 	}
 			

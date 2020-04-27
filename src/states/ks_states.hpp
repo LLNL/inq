@@ -126,19 +126,19 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
     
-    REQUIRE(st.num_states() == 6);
-    REQUIRE(st.num_quantum_numbers() == 1);
-		REQUIRE(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
-		REQUIRE(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
-		REQUIRE(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
-		REQUIRE(st.cubic_dims(pw.sizes())[3] == st.num_states());
+    CHECK(st.num_states() == 6);
+    CHECK(st.num_quantum_numbers() == 1);
+		CHECK(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
+		CHECK(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
+		CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
+		CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
 
-		REQUIRE(st.occupations()[0] == 2.0);
-		REQUIRE(st.occupations()[1] == 2.0);
-		REQUIRE(st.occupations()[2] == 2.0);
-		REQUIRE(st.occupations()[3] == 2.0);
-		REQUIRE(st.occupations()[4] == 2.0);
-		REQUIRE(st.occupations()[5] == 1.0);
+		CHECK(st.occupations()[0] == 2.0);
+		CHECK(st.occupations()[1] == 2.0);
+		CHECK(st.occupations()[2] == 2.0);
+		CHECK(st.occupations()[3] == 2.0);
+		CHECK(st.occupations()[4] == 2.0);
+		CHECK(st.occupations()[5] == 1.0);
 		
   }
 
@@ -146,24 +146,24 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     states::ks_states st(states::ks_states::spin_config::POLARIZED, 11.0);
     
-    REQUIRE(st.num_states() == 6);
-    REQUIRE(st.num_quantum_numbers() == 2);
-    REQUIRE(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
-    REQUIRE(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
-    REQUIRE(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
-    REQUIRE(st.cubic_dims(pw.sizes())[3] == st.num_states());
+    CHECK(st.num_states() == 6);
+    CHECK(st.num_quantum_numbers() == 2);
+    CHECK(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
+    CHECK(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
+    CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
+    CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
   }
 
   SECTION("Non-collinear spin"){
     
     states::ks_states st(states::ks_states::spin_config::NON_COLLINEAR, 11.0);
     
-    REQUIRE(st.num_states() == 11);
-    REQUIRE(st.num_quantum_numbers() == 1);
-    REQUIRE(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
-    REQUIRE(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
-    REQUIRE(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
-    REQUIRE(st.cubic_dims(pw.sizes())[3] == st.num_states());
+    CHECK(st.num_states() == 11);
+    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
+    CHECK(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
+    CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
+    CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
   }
 
   

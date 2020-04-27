@@ -173,10 +173,10 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					REQUIRE(real(olap[ii][ii]) == 1.0_a);
-					REQUIRE(fabs(imag(olap[ii][ii])) < 1e-14);
+					CHECK(real(olap[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap[ii][ii])) < 1e-14);
 			} else {
-					REQUIRE(fabs(olap[ii][jj]) < 1e-14);
+					CHECK(fabs(olap[ii][jj]) < 1e-14);
 				}
 			}
 		}
@@ -194,10 +194,10 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					REQUIRE(real(olap[ii][ii]) == 1.0_a);
-					REQUIRE(fabs(imag(olap[ii][ii])) < 1e-14);
+					CHECK(real(olap[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap[ii][ii])) < 1e-14);
 				} else {
-					REQUIRE(fabs(olap[ii][jj]) < 1e-13);
+					CHECK(fabs(olap[ii][jj]) < 1e-13);
 				}
 			}
 		}
@@ -217,10 +217,10 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					REQUIRE(real(olap[ii][ii]) == 1.0_a);
-					REQUIRE(fabs(imag(olap[ii][ii])) < 1e-16);
+					CHECK(real(olap[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap[ii][ii])) < 1e-16);
 				} else {
-					REQUIRE(fabs(olap[ii][jj]) < 5e-16);
+					CHECK(fabs(olap[ii][jj]) < 5e-16);
 				}
 			}
 		}

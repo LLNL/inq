@@ -130,58 +130,58 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   SECTION("Create empty and add an atom"){
     ions::geometry geo;
 
-    REQUIRE(geo.num_atoms() == 0);
+    CHECK(geo.num_atoms() == 0);
 
     geo.add_atom(pseudo::element("Xe"), math::vec3d(1000.0, -200.0, 6.0));
 
-    REQUIRE(geo.num_atoms() == 1);
-    REQUIRE(geo.atoms()[0].atomic_number() == 54);
-    REQUIRE(geo.atoms()[0] == pseudo::element(54));
-    REQUIRE(geo.atoms()[0].charge() == -54.0_a);
-    REQUIRE(geo.atoms()[0].mass() == 131.2936_a);
-    REQUIRE(geo.coordinates()[0][0] == 1000.0_a);
-    REQUIRE(geo.coordinates()[0][1] == -200.0_a);
-    REQUIRE(geo.coordinates()[0][2] == 6.0_a);
+    CHECK(geo.num_atoms() == 1);
+    CHECK(geo.atoms()[0].atomic_number() == 54);
+    CHECK(geo.atoms()[0] == pseudo::element(54));
+    CHECK(geo.atoms()[0].charge() == -54.0_a);
+    CHECK(geo.atoms()[0].mass() == 131.2936_a);
+    CHECK(geo.coordinates()[0][0] == 1000.0_a);
+    CHECK(geo.coordinates()[0][1] == -200.0_a);
+    CHECK(geo.coordinates()[0][2] == 6.0_a);
 
     geo.coordinates()[0][0] += 8;  
     
-    REQUIRE(geo.coordinates()[0][0] == 1008.0_a);
+    CHECK(geo.coordinates()[0][0] == 1008.0_a);
   }    
  
   SECTION("Read an xyz file"){
     ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
 
-    REQUIRE(geo.num_atoms() == 12);
+    CHECK(geo.num_atoms() == 12);
     
-    REQUIRE(geo.atoms()[2] == pseudo::element("C"));
-    REQUIRE(geo.atoms()[2].charge() == -6.0_a);
-    REQUIRE(geo.atoms()[2].mass() == 12.0096_a);
-    REQUIRE(geo.coordinates()[2][0] == 2.2846788549_a);
-    REQUIRE(geo.coordinates()[2][1] == -1.3190288178_a);
-    REQUIRE(geo.coordinates()[2][2] == 0.0_a);
+    CHECK(geo.atoms()[2] == pseudo::element("C"));
+    CHECK(geo.atoms()[2].charge() == -6.0_a);
+    CHECK(geo.atoms()[2].mass() == 12.0096_a);
+    CHECK(geo.coordinates()[2][0] == 2.2846788549_a);
+    CHECK(geo.coordinates()[2][1] == -1.3190288178_a);
+    CHECK(geo.coordinates()[2][2] == 0.0_a);
 
-    REQUIRE(geo.atoms()[11] == pseudo::element("H"));
-    REQUIRE(geo.atoms()[11].charge() == -1.0_a);
-    REQUIRE(geo.atoms()[11].mass() == 1.00784_a);
-    REQUIRE(geo.coordinates()[11][0] == -4.0572419367_a);
-    REQUIRE(geo.coordinates()[11][1] == 2.343260364_a);
-    REQUIRE(geo.coordinates()[11][2] == 0.0_a);
+    CHECK(geo.atoms()[11] == pseudo::element("H"));
+    CHECK(geo.atoms()[11].charge() == -1.0_a);
+    CHECK(geo.atoms()[11].mass() == 1.00784_a);
+    CHECK(geo.coordinates()[11][0] == -4.0572419367_a);
+    CHECK(geo.coordinates()[11][1] == 2.343260364_a);
+    CHECK(geo.coordinates()[11][2] == 0.0_a);
 
     geo.add_atom(pseudo::element("Cl"), math::vec3d(-3.0, 4.0, 5.0));
 
-    REQUIRE(geo.num_atoms() == 13);
-    REQUIRE(geo.atoms()[12].atomic_number() == 17);
-    REQUIRE(geo.atoms()[12] == pseudo::element(17));
-    REQUIRE(geo.atoms()[12].charge() == -17.0_a);
-    REQUIRE(geo.atoms()[12].mass() == 35.446_a);
-    REQUIRE(geo.coordinates()[12][0] == -3.0_a);
-    REQUIRE(geo.coordinates()[12][1] == 4.0_a);
-    REQUIRE(geo.coordinates()[12][2] == 5.0_a);
+    CHECK(geo.num_atoms() == 13);
+    CHECK(geo.atoms()[12].atomic_number() == 17);
+    CHECK(geo.atoms()[12] == pseudo::element(17));
+    CHECK(geo.atoms()[12].charge() == -17.0_a);
+    CHECK(geo.atoms()[12].mass() == 35.446_a);
+    CHECK(geo.coordinates()[12][0] == -3.0_a);
+    CHECK(geo.coordinates()[12][1] == 4.0_a);
+    CHECK(geo.coordinates()[12][2] == 5.0_a);
     
   }
 
   SECTION("Try to read a non-existent file"){
-    REQUIRE_THROWS(ions::geometry("/this_file_should_not_exist,_i_hope_it_doesnt"));
+    CHECK_THROWS(ions::geometry("/this_file_should_not_exist,_i_hope_it_doesnt"));
   }
   
 }
