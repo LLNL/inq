@@ -18,9 +18,9 @@
 #include <operations/scal.hpp>
 #include <operations/orthogonalize.hpp>
 #include <operations/preconditioner.hpp>
-#include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
 #include <operations/subspace_diagonalization.hpp>
+#include <density/calculate.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
 #include <eigensolvers/conjugate_gradient.hpp>

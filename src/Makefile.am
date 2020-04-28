@@ -63,12 +63,12 @@ noinst_HEADERS =                             \
 	operations/shift.hpp                       \
 	operations/preconditioner.hpp              \
 	operations/diagonalize.hpp                 \
-	operations/calculate_density.hpp           \
 	operations/integral.hpp                    \
 	operations/add.hpp                         \
 	operations/subspace_diagonalization.hpp    \
 	operations/sum.hpp                         \
 	operations/matrix_operator.hpp             \
+	density/calculate.hpp                      \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/energy.hpp                     \
 	hamiltonian/exchange_operator.hpp          \
