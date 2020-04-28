@@ -1,10 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef DENSITY__CALCULATE
-#define DENSITY__CALCULATE
+#ifndef DENSITY__NORMALIZE
+#define DENSITY__NORMALIZE
 
 /*
- Copyright (C) 2019-2020 Xavier Andrade
+ Copyright (C) 2019 Xavier Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -28,47 +28,21 @@
 
 namespace density {
 
-  template<class occupations_array_type, class field_set_type>
-  basis::field<typename field_set_type::basis_type, double> calculate(const occupations_array_type & occupations, field_set_type & phi){
+	template <class FieldType>
+	void normalize(FieldType & density, const double & total_charge){
 
-    basis::field<typename field_set_type::basis_type, double> density(phi.basis(), phi.basis_comm());
+		auto qq = operations::integral(density);
+		assert(qq > 1e-16);
+		for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
 
-    //DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
-
-		const auto nst = phi.set_part().local_size();
-		auto occupationsp = begin(occupations);
-		auto phip = begin(phi.matrix());
-		auto densityp = begin(density.linear());
-		
-		gpu::run(phi.basis().part().local_size(),
-						 [=] __device__ (auto ipoint){
-							 densityp[ipoint] = 0.0;
-							 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
-						 });
-		
-#else
-		
-    for(int ipoint = 0; ipoint < phi.basis().part().local_size(); ipoint++){
-			density.linear()[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.set_part().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
-    }
-		
-#endif
-
-		if(phi.set_part().parallel()){
-			phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
-		}
-		
-    return density;
-  }
+	}
   
 }
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("function density::calculate", "[density::calculate]") {
+TEST_CASE("function density::normalize", "[density::normalize]") {
 
 	using namespace Catch::literals;
 
@@ -101,6 +75,10 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
 
+		density::normalize(dd, 33.3);
+
+		CHECK(operations::integral(dd) == 33.3_a);
+		
 	}
 	
 	SECTION("complex"){
@@ -121,6 +99,10 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
 
+		density::normalize(dd, 33.3);
+
+		CHECK(operations::integral(dd) == 33.3_a);
+		
 	}
 	
 }
