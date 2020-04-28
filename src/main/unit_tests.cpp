@@ -71,6 +71,7 @@
 #include <operations/matrix_operator.hpp>
 
 #include <density/calculate.hpp>
+#include <density/normalize.hpp>
 
 #include <solvers/poisson.hpp>
 #include <solvers/linear.hpp>

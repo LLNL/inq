@@ -32,7 +32,7 @@ namespace density {
 	void normalize(FieldType & density, const double & total_charge){
 
 		auto qq = operations::integral(density);
-		assert(qq > 1e-16);
+		assert(fabs(qq) > 1e-16);
 		for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
 
 	}
@@ -59,49 +59,27 @@ TEST_CASE("function density::normalize", "[density::normalize]") {
 	
 	SECTION("double"){
 		
-		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
+		basis::field<basis::trivial, double> aa(bas, cart_comm);
 
-		math::array<double, 1> occ(aa.set_part().local_size());
-		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
-			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(bas.part().local_to_global(ii))*(aa.set_part().local_to_global(jj) + 1);
-			}
-		}
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.linear()[ii] = sqrt(bas.part().local_to_global(ii));
 
-		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj) + 1);
+		density::normalize(aa, 33.3);
 
-		auto dd = density::calculate(occ, aa);
-		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
-
-		density::normalize(dd, 33.3);
-
-		CHECK(operations::integral(dd) == 33.3_a);
+		CHECK(operations::integral(aa) == 33.3_a);
 		
 	}
 	
 	SECTION("complex"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
+		basis::field<basis::trivial, complex> aa(bas, cart_comm);
 
-		math::array<double, 1> occ(nvec);
-		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
-			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(bas.part().local_to_global(ii))*(aa.set_part().local_to_global(jj) + 1)*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii)));
-			}
+			aa.linear()[ii] = sqrt(bas.part().local_to_global(ii))*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii)));
 		}
 
-		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj) + 1);
+		density::normalize(aa, 19.2354);
 
-		auto dd = density::calculate(occ, aa);
-		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
-
-		density::normalize(dd, 33.3);
-
-		CHECK(operations::integral(dd) == 33.3_a);
+		CHECK(real(operations::integral(aa)) == 19.2354_a);
 		
 	}
 	
