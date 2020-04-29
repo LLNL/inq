@@ -53,7 +53,7 @@ namespace basis {
 			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 			//grid from -pi/h to pi/h
 
-			auto ii = this->to_contiguous(ix, iy, iz);
+			auto ii = this->to_symmetric_range(ix, iy, iz);
 			return math::vec3d{ii[0]*gspacing()[0], ii[1]*gspacing()[1], ii[2]*gspacing()[2]};
 		}
 

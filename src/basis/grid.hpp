@@ -114,7 +114,7 @@ namespace basis {
 			return cubic_dist_[dim];
 		}
 
-		GPU_FUNCTION std::array<int, 3> to_contiguous(const int ix, const int iy, const int iz) const {
+		GPU_FUNCTION std::array<int, 3> to_symmetric_range(const int ix, const int iy, const int iz) const {
 			std::array<int, 3> ii{ix, iy, iz};
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] >= (nr_[idir] + 1)/2) ii[idir] -= nr_[idir];
@@ -122,7 +122,7 @@ namespace basis {
 			return ii;
 		}
 
-		GPU_FUNCTION std::array<int, 3> from_contiguous(std::array<int, 3> ii) const {
+		GPU_FUNCTION std::array<int, 3> from_symmetric_range(std::array<int, 3> ii) const {
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] < 0) ii[idir] += nr_[idir];
 			}
@@ -191,7 +191,7 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 		for(int iy = 0; iy < gr.local_sizes()[1]; iy++){
 			for(int iz = 0; iz < gr.local_sizes()[2]; iz++){
 
-				auto ii = gr.from_contiguous(gr.to_contiguous(ix, iy, iz));
+				auto ii = gr.from_symmetric_range(gr.to_symmetric_range(ix, iy, iz));
 
 				CHECK(ii[0] == ix);
 				CHECK(ii[1] == iy);

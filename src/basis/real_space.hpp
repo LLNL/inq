@@ -51,7 +51,7 @@ namespace basis {
     }
 
 		GPU_FUNCTION math::vec3d rvector(const int ix, const int iy, const int iz) const {
-			auto ii = this->to_contiguous(ix, iy, iz);
+			auto ii = this->to_symmetric_range(ix, iy, iz);
 			return math::vec3d{ii[0]*rspacing()[0], ii[1]*rspacing()[1], ii[2]*rspacing()[2]};
 		}
 		
