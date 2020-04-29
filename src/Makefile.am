@@ -69,6 +69,7 @@ noinst_HEADERS =                             \
 	operations/sum.hpp                         \
 	operations/matrix_operator.hpp             \
 	density/calculate.hpp                      \
+	density/normalize.hpp                      \
 	hamiltonian/atomic_potential.hpp           \
 	hamiltonian/energy.hpp                     \
 	hamiltonian/exchange_operator.hpp          \
