@@ -114,7 +114,7 @@ namespace basis {
 			return cubic_dist_[dim];
 		}
 
-		GPU_FUNCTION std::array<int, 3> to_symmetric_range(const int ix, const int iy, const int iz) const {
+		GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
 			std::array<int, 3> ii{ix, iy, iz};
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] >= (nr_[idir] + 1)/2) ii[idir] -= nr_[idir];
@@ -122,13 +122,13 @@ namespace basis {
 			return ii;
 		}
 
-		GPU_FUNCTION std::array<int, 3> from_symmetric_range(std::array<int, 3> ii) const {
+		GPU_FUNCTION auto from_symmetric_range(std::array<int, 3> ii) const {
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] < 0) ii[idir] += nr_[idir];
 			}
 			return ii;
 		}
-		
+
 	protected:
 
 		std::array<utils::partition, 3> cubic_dist_;
