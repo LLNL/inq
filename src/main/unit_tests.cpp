@@ -60,7 +60,6 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 
 #include <operations/add.hpp>
-#include <operations/calculate_density.hpp>
 #include <operations/sum.hpp>
 #include <operations/overlap.hpp>
 #include <operations/orthogonalize.hpp>
@@ -70,6 +69,9 @@
 #include <operations/randomize.hpp>
 
 #include <operations/matrix_operator.hpp>
+
+#include <density/calculate.hpp>
+#include <density/normalize.hpp>
 
 #include <solvers/poisson.hpp>
 #include <solvers/linear.hpp>

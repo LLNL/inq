@@ -18,9 +18,10 @@
 #include <operations/scal.hpp>
 #include <operations/orthogonalize.hpp>
 #include <operations/preconditioner.hpp>
-#include <operations/calculate_density.hpp>
 #include <operations/integral.hpp>
 #include <operations/subspace_diagonalization.hpp>
+#include <density/calculate.hpp>
+#include <density/normalize.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
 #include <eigensolvers/conjugate_gradient.hpp>
@@ -77,7 +78,7 @@ namespace systems {
 			sc.update_ionic_fields(rs_, ions_, atomic_pot_);
 	
 			auto density = atomic_pot_.atomic_electronic_density(rs_, ions_.cell(), ions_.geo());
-			operations::normalize_density(density, states_.total_charge());
+			density::normalize(density, states_.total_charge());
 			std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
 
 			ham.scalar_potential = sc.ks_potential(density, energy);
@@ -125,10 +126,10 @@ namespace systems {
 				ham.exchange.hf_occupations = states_.occupations();
 
 				if(inter.self_consistent() and solver.mix_density()) {
-					mixer(density.linear(), operations::calculate_density(states_.occupations(), phi_).linear());
-					operations::normalize_density(density, states_.total_charge());
+					mixer(density.linear(), density::calculate(states_.occupations(), phi_).linear());
+					density::normalize(density, states_.total_charge());
 				} else {
-					density = operations::calculate_density(states_.occupations(), phi_);
+					density = density::calculate(states_.occupations(), phi_);
 				}
 				
 				auto vks = sc.ks_potential(density, energy);

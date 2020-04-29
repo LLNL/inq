@@ -1,10 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__CALCULATE_DENSITY
-#define OPERATIONS__CALCULATE_DENSITY
+#ifndef DENSITY__CALCULATE
+#define DENSITY__CALCULATE
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2020 Xavier Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -26,10 +26,10 @@
 #include <math/complex.hpp>
 #include <cstdlib>
 
-namespace operations {
+namespace density {
 
   template<class occupations_array_type, class field_set_type>
-  basis::field<typename field_set_type::basis_type, double> calculate_density(const occupations_array_type & occupations, field_set_type & phi){
+  basis::field<typename field_set_type::basis_type, double> calculate(const occupations_array_type & occupations, field_set_type & phi){
 
     basis::field<typename field_set_type::basis_type, double> density(phi.basis(), phi.basis_comm());
 
@@ -62,22 +62,13 @@ namespace operations {
 		
     return density;
   }
-
-	template <class FieldType>
-	void normalize_density(FieldType & density, const double & total_charge){
-
-		auto qq = operations::integral(density);
-		assert(qq > 1e-16);
-		for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
-
-	}
   
 }
 
 #ifdef UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("function operations::calculate_density", "[operations::calculate_density]") {
+TEST_CASE("function density::calculate", "[density::calculate]") {
 
 	using namespace Catch::literals;
 
@@ -106,14 +97,10 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj) + 1);
 
-		auto dd = operations::calculate_density(occ, aa);
+		auto dd = density::calculate(occ, aa);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
 
-		operations::normalize_density(dd, 33.3);
-
-		CHECK(operations::integral(dd) == 33.3_a);
-		
 	}
 	
 	SECTION("complex"){
@@ -130,14 +117,10 @@ TEST_CASE("function operations::calculate_density", "[operations::calculate_dens
 
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj) + 1);
 
-		auto dd = operations::calculate_density(occ, aa);
+		auto dd = density::calculate(occ, aa);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
 
-		operations::normalize_density(dd, 33.3);
-
-		CHECK(operations::integral(dd) == 33.3_a);
-		
 	}
 	
 }
