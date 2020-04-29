@@ -47,7 +47,6 @@ TEST_CASE("function density::normalize", "[density::normalize]") {
 	using namespace Catch::literals;
 
 	const int npoint = 100;
-	const int nvec = 12;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
