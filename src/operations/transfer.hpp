@@ -45,13 +45,11 @@ namespace operations {
 			for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
 				for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
 					for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-						auto i2x = ix;
-						auto i2y = iy;
-						auto i2z = iz;
-						if(ix >= source.basis().sizes()[0]/2) i2x += source.basis().sizes()[0];
-						if(iy >= source.basis().sizes()[1]/2) i2y += source.basis().sizes()[1];
-						if(iz >= source.basis().sizes()[2]/2) i2z += source.basis().sizes()[2];
-						destination.cubic()[i2x][i2y][i2z] = source.cubic()[ix][iy][iz];
+
+						auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+						auto idest = destination.basis().from_symmetric_range(ii);
+						
+						destination.cubic()[idest[0]][idest[1]][idest[2]] = source.cubic()[ix][iy][iz];
 					}
 				}
 			}
@@ -70,13 +68,11 @@ namespace operations {
 			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
 				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
 					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
-						auto i2x = ix;
-						auto i2y = iy;
-						auto i2z = iz;
-						if(ix >= destination.basis().sizes()[0]/2) i2x += destination.basis().sizes()[0];
-						if(iy >= destination.basis().sizes()[1]/2) i2y += destination.basis().sizes()[1];
-						if(iz >= destination.basis().sizes()[2]/2) i2z += destination.basis().sizes()[2];
-						destination.cubic()[ix][iy][iz] = source.cubic()[i2x][i2y][i2z];
+
+						auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
+						auto isource = source.basis().from_symmetric_range(ii);
+						destination.cubic()[ix][iy][iz] = source.cubic()[isource[0]][isource[1]][isource[2]];
+						
 					}
 				}
 			}
@@ -91,13 +87,15 @@ namespace operations {
 #include <catch2/catch.hpp>
 
 namespace transfer_unit_test {
-	auto outside(double xx, double ll){
-		if(xx < 0.0){
-			return xx - -0.5*ll < 1e-10;
+
+	auto outside(int ii, int ll){
+		if(ii < 0.0){
+			return ii < -(ll/2);
 		} else {
-			return xx - 0.5*ll >= -1e-10;
+			return ii >= (ll + 1)/2;
 		}
 	}
+	
 }
 
 TEST_CASE("function operations::transfer", "[operations::transfer]") {
@@ -138,7 +136,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 	CHECK(large.basis().rlength()[0] == Approx(2.0*ll[0]));
 	CHECK(large.basis().rlength()[1] == Approx(2.0*ll[1]));
 	CHECK(large.basis().rlength()[2] == Approx(2.0*ll[2]));
-	/*
+
 	long count_large = 0;
 	long count_small = 0;
 	for(int ix = 0; ix < large.basis().local_sizes()[0]; ix++){
@@ -148,17 +146,15 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 				auto ixg = large.basis().cubic_dist(0).local_to_global(ix);
 				auto iyg = large.basis().cubic_dist(1).local_to_global(iy);
 				auto izg = large.basis().cubic_dist(2).local_to_global(iz);						
-				auto rr = large.basis().rvector(ixg, iyg, izg);
 
-				//				std::cout << rr[0] << '\t' << rr[1] << '\t' << rr[2] << '\t' << ll[0] << '\t' << ll[1] << '\t' << ll[2] << std::endl;
-				//std::cout << rr[0] << '\t' << ll[0] << '\t' << outside(rr[0], ll[0]) << std::endl;
-				
-				if(outside(rr[0], ll[0]) or outside(rr[1], ll[1]) or outside(rr[2], ll[2])){
+				auto ii = large.basis().to_symmetric_range(ixg, iyg, izg);
+
+				if(outside(ii[0], small.basis().sizes()[0]) or outside(ii[1], small.basis().sizes()[1]) or outside(ii[2], small.basis().sizes()[2])){
 					CHECK(large.cubic()[ix][iy][iz] == 0.0_a);
 					count_large++;
 				} else {
-					//std::cout << ix << '\t' << iy << '\t' << iz << '\t' << large.cubic()[ix][iy][iz] << '\t' << exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]) << std::endl;
-					//					CHECK(large.cubic()[ix][iy][iz] == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
+					auto rr = large.basis().rvector(ix, iy, iz);
+					CHECK(large.cubic()[ix][iy][iz] == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
 					count_small++;
 				}
 				
@@ -169,11 +165,17 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 	CHECK(count_small == small.basis().size());
 	CHECK(count_large > count_small);
 	CHECK(count_large == large.basis().size() - count_small);
-	*/
-	std::cout << "SMALL SIZE " << small.basis().sizes()[0] << '\t'  << small.basis().sizes()[1] << '\t' << small.basis().sizes()[2] << std::endl;
-	std::cout << "LARGE SIZE " << large.basis().sizes()[0] << '\t'  << large.basis().sizes()[1] << '\t' << large.basis().sizes()[2] << std::endl;	
 	
 	auto small2 = operations::transfer::reduce(large, small.basis());
+
+	for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
+		for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
+			for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
+				CHECK(small2.cubic()[ix][iy][iz] == small.cubic()[ix][iy][iz]);
+			}
+		}
+	}
+	
 	
 }
 
