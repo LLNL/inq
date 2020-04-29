@@ -21,11 +21,13 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "../math/vec3d.hpp"
-#include <cassert>
-#include <array>
 
 #include <basis/base.hpp>
+#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
+
+#include <cassert>
+#include <array>
 
 namespace basis {
 
@@ -115,14 +117,14 @@ namespace basis {
 		}
 
 		GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
-			std::array<int, 3> ii{ix, iy, iz};
+			math::vector3<int> ii{ix, iy, iz};
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] >= (nr_[idir] + 1)/2) ii[idir] -= nr_[idir];
 			}
 			return ii;
 		}
 
-		GPU_FUNCTION auto from_symmetric_range(std::array<int, 3> ii) const {
+		GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] < 0) ii[idir] += nr_[idir];
 			}
