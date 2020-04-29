@@ -117,7 +117,7 @@ namespace basis {
 		GPU_FUNCTION std::array<int, 3> to_contiguous(const int ix, const int iy, const int iz) const {
 			std::array<int, 3> rr{ix, iy, iz};
 			for(int idir = 0; idir < 3; idir++) {
-				if(rr[idir] >= nr_[idir]/2) rr[idir] -= nr_[idir];
+				if(rr[idir] >= (nr_[idir] + 1)/2) rr[idir] -= nr_[idir];
 			}
 			return rr;
 		}
