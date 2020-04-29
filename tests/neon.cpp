@@ -80,13 +80,13 @@ int main(int argc, char ** argv){
       Non-local   =       -18.00231356
 
 		*/
-
+		
+		energy_match.check("total energy",     energy.total()    , -66.260996130282);
+		energy_match.check("kinetic energy",   energy.kinetic()  ,  35.546509585678);
+		energy_match.check("eigenvalues",      energy.eigenvalues, -61.740955117197);
+		energy_match.check("external energy",  energy.external   , -79.409327530205);
+		energy_match.check("non-local energy", energy.nonlocal   , -17.878137172671);
 		energy_match.check("ion-ion energy",   energy.ion        , -4.52004101);
-		energy_match.check("eigenvalues",      energy.eigenvalues, -61.740955117482);
-		energy_match.check("total energy",     energy.total()    , -66.260996130567);
-		energy_match.check("external energy",  energy.external   , -79.409306170173);
-		energy_match.check("non-local energy", energy.nonlocal   , -17.878114746149);
-		energy_match.check("kinetic energy",   energy.kinetic()  ,  35.546465798840);
 		
 	}
 
