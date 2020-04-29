@@ -27,15 +27,7 @@
 #include <basis/field.hpp>
 #include <basis/fourier_space.hpp>
 #include <operations/space.hpp>
-
-#include <multi/adaptors/fftw.hpp>
-#ifdef HAVE_CUDA
-#include <multi/adaptors/cufft.hpp>
-#endif
-
-#ifdef HAVE_CUDA
-#include <cufft.h>
-#endif
+#include <operations/transfer.hpp>
 
 namespace solvers {
 
@@ -78,26 +70,8 @@ namespace solvers {
 
 		auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
 			namespace fft = boost::multi::fft;
-
-			basis::field<basis::real_space, complex> potential2x(density.basis().enlarge(2));
-
-			potential2x = 0.0;
 			
-			for(int ix = 0; ix < density.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < density.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < density.basis().sizes()[2]; iz++){
-						auto i2x = ix;
-						auto i2y = iy;
-						auto i2z = iz;
-						if(ix >= density.basis().sizes()[0]/2) i2x += density.basis().sizes()[0];
-						if(iy >= density.basis().sizes()[1]/2) i2y += density.basis().sizes()[1];
-						if(iz >= density.basis().sizes()[2]/2) i2z += density.basis().sizes()[2];
-						potential2x.cubic()[i2x][i2y][i2z] = density.cubic()[ix][iy][iz];
-					}
-				}
-			}
-			
-
+			auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
 			auto potential_fs = operations::space::to_fourier(potential2x);
 			
 			auto fourier_basis = potential_fs.basis();
@@ -129,25 +103,8 @@ namespace solvers {
 			}
 
 			potential2x = operations::space::to_real(potential_fs);
-			
-			basis::field<basis::real_space, complex> potential(density.skeleton());
-			
-			potential = 0.0;
-			
-			for(int ix = 0; ix < potential.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < potential.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < potential.basis().sizes()[2]; iz++){	
-						auto i2x = ix;
-						auto i2y = iy;
-						auto i2z = iz;
-						if(ix >= density.basis().sizes()[0]/2) i2x += density.basis().sizes()[0];
-						if(iy >= density.basis().sizes()[1]/2) i2y += density.basis().sizes()[1];
-						if(iz >= density.basis().sizes()[2]/2) i2z += density.basis().sizes()[2];
-						potential.cubic()[ix][iy][iz] = potential2x.cubic()[i2x][i2y][i2z];
-					}
-				}
-			}
-			
+			auto potential = operations::transfer::reduce(potential2x, density.basis());
+
 			return potential;
 		}
 

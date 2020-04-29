@@ -49,15 +49,12 @@ namespace basis {
     }
 
 		GPU_FUNCTION math::vec3d gvector(const int ix, const int iy, const int iz) const {
-
+						
 			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 			//grid from -pi/h to pi/h
-			
-			math::vec3d g{ix*gspacing()[0], iy*gspacing()[1], iz*gspacing()[2]};
-			for(int idir = 0; idir < 3; idir++) {
-				if(g[idir] >= 0.5*glength()[idir]) g[idir] -= glength()[idir];
-			}
-			return g;
+
+			auto ii = this->to_symmetric_range(ix, iy, iz);
+			return math::vec3d{ii[0]*gspacing()[0], ii[1]*gspacing()[1], ii[2]*gspacing()[2]};
 		}
 
     GPU_FUNCTION const math::vec3d & glength() const{

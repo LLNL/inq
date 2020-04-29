@@ -40,8 +40,9 @@ noinst_HEADERS =                             \
 	input/scf.hpp                              \
 	input/species.hpp                          \
 	math/array.hpp                             \
-	math/vec3d.hpp                             \
 	math/complex.hpp                           \
+	math/vec3d.hpp                             \
+	math/vector3.hpp                           \
 	ions/geometry.hpp                          \
 	ions/periodic_replicas.hpp                 \
 	ions/interaction.hpp                       \
@@ -67,6 +68,7 @@ noinst_HEADERS =                             \
 	operations/add.hpp                         \
 	operations/subspace_diagonalization.hpp    \
 	operations/sum.hpp                         \
+	operations/transfer.hpp                    \
 	operations/matrix_operator.hpp             \
 	density/calculate.hpp                      \
 	density/normalize.hpp                      \

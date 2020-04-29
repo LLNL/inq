@@ -21,11 +21,13 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "../math/vec3d.hpp"
-#include <cassert>
-#include <array>
 
 #include <basis/base.hpp>
+#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
+
+#include <cassert>
+#include <array>
 
 namespace basis {
 
@@ -113,7 +115,22 @@ namespace basis {
 		auto & cubic_dist(int dim) const {
 			return cubic_dist_[dim];
 		}
-		
+
+		GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
+			math::vector3<int> ii{ix, iy, iz};
+			for(int idir = 0; idir < 3; idir++) {
+				if(ii[idir] >= (nr_[idir] + 1)/2) ii[idir] -= nr_[idir];
+			}
+			return ii;
+		}
+
+		GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
+			for(int idir = 0; idir < 3; idir++) {
+				if(ii[idir] < 0) ii[idir] += nr_[idir];
+			}
+			return ii;
+		}
+
 	protected:
 
 		std::array<utils::partition, 3> cubic_dist_;
@@ -171,6 +188,20 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 	if(comm.size() == 12) CHECK(gr.cubic_dist(0).local_size() == 10);
 	CHECK(gr.cubic_dist(1).local_size() == 45);
 	CHECK(gr.cubic_dist(2).local_size() == 77);
+
+	for(int ix = 0; ix < gr.local_sizes()[0]; ix++){
+		for(int iy = 0; iy < gr.local_sizes()[1]; iy++){
+			for(int iz = 0; iz < gr.local_sizes()[2]; iz++){
+
+				auto ii = gr.from_symmetric_range(gr.to_symmetric_range(ix, iy, iz));
+
+				CHECK(ii[0] == ix);
+				CHECK(ii[1] == iy);
+				CHECK(ii[2] == iz);
+				
+			}
+		}
+	}
 	
 }
 #endif

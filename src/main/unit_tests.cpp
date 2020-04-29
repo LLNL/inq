@@ -41,6 +41,7 @@
 #include <config/path.hpp>
 
 #include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
@@ -64,11 +65,10 @@
 #include <operations/overlap.hpp>
 #include <operations/orthogonalize.hpp>
 #include <operations/diagonalize.hpp>
-
 #include <operations/shift.hpp>
 #include <operations/randomize.hpp>
-
 #include <operations/matrix_operator.hpp>
+#include <operations/transfer.hpp>
 
 #include <density/calculate.hpp>
 #include <density/normalize.hpp>

@@ -51,11 +51,8 @@ namespace basis {
     }
 
 		GPU_FUNCTION math::vec3d rvector(const int ix, const int iy, const int iz) const {
-			math::vec3d rr{ix*rspacing()[0], iy*rspacing()[1], iz*rspacing()[2]};
-			for(int idir = 0; idir < 3; idir++) {
-				if(rr[idir] >= 0.5*rlength()[idir]) rr[idir] -= rlength()[idir];
-			}
-			return rr;
+			auto ii = this->to_symmetric_range(ix, iy, iz);
+			return math::vec3d{ii[0]*rspacing()[0], ii[1]*rspacing()[1], ii[2]*rspacing()[2]};
 		}
 		
 		template <class int_array>
