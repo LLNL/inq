@@ -51,15 +51,11 @@ TEST_CASE("function density::normalize", "[density::normalize]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
-	
-	auto basis_comm = cart_comm.axis(1);
-	
-	basis::trivial bas(npoint, basis_comm);
+	basis::trivial bas(npoint, comm);
 	
 	SECTION("double"){
 		
-		basis::field<basis::trivial, double> aa(bas, cart_comm);
+		basis::field<basis::trivial, double> aa(bas, comm);
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.linear()[ii] = sqrt(bas.part().local_to_global(ii));
 
@@ -71,7 +67,7 @@ TEST_CASE("function density::normalize", "[density::normalize]") {
 	
 	SECTION("complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas, cart_comm);
+		basis::field<basis::trivial, complex> aa(bas, comm);
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
 			aa.linear()[ii] = sqrt(bas.part().local_to_global(ii))*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii)));
