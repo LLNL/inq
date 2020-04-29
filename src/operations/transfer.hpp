@@ -59,7 +59,7 @@ namespace operations {
 
 		
 		template <class FieldType>
-		auto reduce(FieldType const & source, typename FieldType::basis_type const & new_basis) {
+		auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis) {
 
 			FieldType destination(new_basis);
 			
@@ -166,7 +166,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 	CHECK(count_large > count_small);
 	CHECK(count_large == large.basis().size() - count_small);
 	
-	auto small2 = operations::transfer::reduce(large, small.basis());
+	auto small2 = operations::transfer::shrink(large, small.basis());
 
 	for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
 		for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
