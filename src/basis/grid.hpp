@@ -115,11 +115,18 @@ namespace basis {
 		}
 
 		GPU_FUNCTION std::array<int, 3> to_contiguous(const int ix, const int iy, const int iz) const {
-			std::array<int, 3> rr{ix, iy, iz};
+			std::array<int, 3> ii{ix, iy, iz};
 			for(int idir = 0; idir < 3; idir++) {
-				if(rr[idir] >= (nr_[idir] + 1)/2) rr[idir] -= nr_[idir];
+				if(ii[idir] >= (nr_[idir] + 1)/2) ii[idir] -= nr_[idir];
 			}
-			return rr;
+			return ii;
+		}
+
+		GPU_FUNCTION std::array<int, 3> from_contiguous(std::array<int, 3> ii) const {
+			for(int idir = 0; idir < 3; idir++) {
+				if(ii[idir] < 0) ii[idir] += nr_[idir];
+			}
+			return ii;
 		}
 		
 	protected:
@@ -179,6 +186,20 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 	if(comm.size() == 12) CHECK(gr.cubic_dist(0).local_size() == 10);
 	CHECK(gr.cubic_dist(1).local_size() == 45);
 	CHECK(gr.cubic_dist(2).local_size() == 77);
+
+	for(int ix = 0; ix < gr.local_sizes()[0]; ix++){
+		for(int iy = 0; iy < gr.local_sizes()[1]; iy++){
+			for(int iz = 0; iz < gr.local_sizes()[2]; iz++){
+
+				auto ii = gr.from_contiguous(gr.to_contiguous(ix, iy, iz));
+
+				CHECK(ii[0] == ix);
+				CHECK(ii[1] == iy);
+				CHECK(ii[2] == iz);
+				
+			}
+		}
+	}
 	
 }
 #endif
