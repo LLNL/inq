@@ -57,6 +57,9 @@ namespace operations {
 			return destination;			
 		}
 
+
+		//////////////////////////////////////////////////////////
+
 		
 		template <class FieldType>
 		auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis) {
@@ -78,6 +81,31 @@ namespace operations {
 			}
 
 			return destination;
+		}
+
+
+		//////////////////////////////////////////////////////////
+
+		template <class Type>
+		auto refine(basis::field<basis::real_space, Type> const & source, typename basis::real_space const & new_basis){
+
+			basis::fourier_space new_fourier_basis(new_basis);
+			
+			auto destination_fourier = enlarge(operations::space::to_fourier(source), new_fourier_basis);
+
+			return operations::space::to_real(destination_fourier);
+		}
+		
+		//////////////////////////////////////////////////////////
+		
+		template <class Type>
+		auto coarsen(basis::field<basis::real_space, Type> const & source, typename basis::real_space const & new_basis){
+
+			basis::fourier_space new_fourier_basis(new_basis);
+			
+			auto destination_fourier = shrink(operations::space::to_fourier(source), new_fourier_basis);
+
+			return operations::space::to_real(destination_fourier);
 		}
 		
 	}
