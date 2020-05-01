@@ -205,7 +205,7 @@ namespace operations {
 
 		///////////////////////////////////////////////////////////////			
 	
-		basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi){
+		basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = false){
 			namespace multi = boost::multi;
 			namespace fft = multi::fft;
 
@@ -247,7 +247,14 @@ namespace operations {
 #endif
 		
 			}
-	
+
+			if(normalize){
+				gpu::run(phi.linear().size(),
+								 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ip){
+									 phil[ip] *= factor;
+								 });
+			}
+			
 			return phi;
 		}
 
