@@ -103,7 +103,7 @@ namespace solvers {
 			}
 
 			potential2x = operations::space::to_real(potential_fs);
-			auto potential = operations::transfer::reduce(potential2x, density.basis());
+			auto potential = operations::transfer::shrink(potential2x, density.basis());
 
 			return potential;
 		}
