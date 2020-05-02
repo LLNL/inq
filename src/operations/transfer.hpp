@@ -106,7 +106,7 @@ namespace operations {
 		template <class Type>
 		auto coarsen(basis::field<basis::real_space, Type> const & source, typename basis::real_space const & new_basis){
 
-			assert(new_basis.size() == 8*source.basis().size()); //only a factor of 2 has been tested		
+			assert(8*new_basis.size() == source.basis().size()); //only a factor of 2 has been tested		
 			assert(not source.basis().part().parallel());
 			
 			basis::fourier_space new_fourier_basis(new_basis);
