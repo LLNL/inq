@@ -251,7 +251,7 @@ namespace operations {
 			if(normalize){
 				gpu::run(phi.linear().size(),
 								 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ip){
-									 phil[ip] *= factor;
+									 phil[ip] = factor*phil[ip];
 								 });
 			}
 			
