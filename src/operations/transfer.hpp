@@ -59,9 +59,36 @@ namespace operations {
 			return destination;			
 		}
 
-
 		//////////////////////////////////////////////////////////
 
+		template <class Type, class BasisType>
+		auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
+
+			assert(not source.basis().part().parallel());
+			
+			basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
+
+			destination = 0.0;
+			
+			for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+						for(int ist = 0; ist < source.set_part().local_size(); ist++){
+							
+							auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+							auto idest = destination.basis().from_symmetric_range(ii);
+							
+							destination.cubic()[idest[0]][idest[1]][idest[2]][ist] = factor*source.cubic()[ix][iy][iz][ist];
+						}
+					}
+				}
+			}
+
+			return destination;			
+		}
+
+
+		//////////////////////////////////////////////////////////
 		
 		template <class FieldType>
 		auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
@@ -87,7 +114,34 @@ namespace operations {
 			return destination;
 		}
 
+		//////////////////////////////////////////////////////////
+		
+		template <class Type, class BasisType>
+		auto shrink(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
 
+			assert(not source.basis().part().parallel());
+			
+			basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
+			
+			destination = 0.0;
+			
+			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+						for(int ist = 0; ist < source.set_part().local_size(); ist++){
+							
+							auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
+							auto isource = source.basis().from_symmetric_range(ii);
+							destination.cubic()[ix][iy][iz][ist] = factor*source.cubic()[isource[0]][isource[1]][isource[2]][ist];
+							
+						}
+					}
+				}
+			}
+
+			return destination;
+		}
+		
 		//////////////////////////////////////////////////////////
 
 		template <class Type>
@@ -153,7 +207,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 	ions::UnitCell cell(vec3d(ll[0], 0.0, 0.0), vec3d(0.0, ll[1], 0.0), vec3d(0.0, 0.0, ll[2]));
 	basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 	
-	SECTION("Enlarge and shrink"){
+	SECTION("Enlarge and shrink field"){
 		
 		basis::field<basis::real_space, double> small(grid);
 		
@@ -219,7 +273,81 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 			}
 		}
 	}
+
+	SECTION("Enlarge and shrink field_set"){
+		
+		basis::field_set<basis::real_space, double> small(grid, 5);
+		
+		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
+		CHECK(small.basis().rlength()[1] == Approx(ll[1]));
+		CHECK(small.basis().rlength()[2] == Approx(ll[2]));
+		
+		for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < small.set_part().local_size(); ist++){
+							
+						auto ixg = small.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = small.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = small.basis().cubic_dist(2).local_to_global(iz);						
+						auto rr = small.basis().rvector(ixg, iyg, izg);
+						small.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
+					}
+				}
+			}
+		}
+		
+		auto large = operations::transfer::enlarge(small, grid.enlarge(2));
+
+		CHECK(large.basis().rlength()[0] == Approx(2.0*ll[0]));
+		CHECK(large.basis().rlength()[1] == Approx(2.0*ll[1]));
+		CHECK(large.basis().rlength()[2] == Approx(2.0*ll[2]));
+
+		long count_large = 0;
+		long count_small = 0;
+		for(int ix = 0; ix < large.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < large.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < large.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < large.set_part().local_size(); ist++){
+						
+						auto ixg = large.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = large.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = large.basis().cubic_dist(2).local_to_global(iz);						
+						
+						auto ii = large.basis().to_symmetric_range(ixg, iyg, izg);
+						
+						if(outside(ii[0], small.basis().sizes()[0]) or outside(ii[1], small.basis().sizes()[1]) or outside(ii[2], small.basis().sizes()[2])){
+							CHECK(large.cubic()[ix][iy][iz][ist] == 0.0_a);
+							count_large++;
+						} else {
+							auto rr = large.basis().rvector(ix, iy, iz);
+							CHECK(large.cubic()[ix][iy][iz][ist] == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
+							count_small++;
+						}
+						
+					}
+				}
+			}
+		}
+
+		CHECK(count_small == small.basis().size()*small.set_size());
+		CHECK(count_large > count_small);
+		CHECK(count_large == large.basis().size()*small.set_size() - count_small);
 	
+		auto small2 = operations::transfer::shrink(large, small.basis());
+	
+		for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < small.set_part().local_size(); ist++){
+						CHECK(small2.cubic()[ix][iy][iz][ist] == small.cubic()[ix][iy][iz][ist]);
+					}
+				}
+			}
+		}
+		
+	}
+		
 	SECTION("Mesh refinement"){
 
 		basis::field<basis::real_space, complex> coarse(grid); 
