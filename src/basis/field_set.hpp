@@ -141,9 +141,18 @@ namespace basis {
 			return complex_field;
 		}
 
-		auto real() const {
+		field_set<basis::real_space, double> real() const {
 			field_set<basis::real_space, double> real_field(skeleton());
-			real_field.matrix() = boost::multi::blas::real(matrix());
+
+			// Multi should be able to do this, but it causes a lot of compilation troubles
+			//			real_field.matrix() = boost::multi::blas::real(matrix());
+
+			//DATAOPERATIONS GPU::RUN 1D
+			gpu::run(set_part().local_size(), basis().part().local_size(),
+							 [rp = begin(real_field.matrix()), cp = begin(matrix())] GPU_LAMBDA (auto ist, auto ii){
+								 rp[ii][ist] = ::real(cp[ii][ist]);
+							 });
+			
 			return real_field;
 		}
 		
