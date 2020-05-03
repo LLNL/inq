@@ -155,7 +155,16 @@ namespace operations {
 			auto destination_fourier = enlarge(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
 			return operations::space::to_real(destination_fourier,  /*normalize = */ false);
 		}
-		
+
+		//////////////////////////////////////////////////////////
+
+		template <template<class, class> class FieldType>
+		auto refine(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
+
+			auto complex_refine = refine(source.complex(), new_basis);
+			return complex_refine.real();
+		}
+
 		//////////////////////////////////////////////////////////
 		
 		template <class FieldType>
@@ -168,7 +177,16 @@ namespace operations {
 			auto destination_fourier = shrink(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
 			return operations::space::to_real(destination_fourier, /*normalize = */ false);
 		}
-		
+
+		//////////////////////////////////////////////////////////
+
+		template <template<class, class> class FieldType>		
+		auto coarsen(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
+
+			auto complex_coarsen = coarsen(source.complex(), new_basis);
+			return complex_coarsen.real();
+		}
+
 	}
 }
 
@@ -193,7 +211,7 @@ namespace transfer_unit_test {
 	
 }
 
-TEST_CASE("function operations::transfer", "[operations::transfer]") {
+TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", double, complex) {
 
 	using namespace transfer_unit_test;
 	using namespace Catch::literals;
@@ -210,7 +228,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 	
 	SECTION("Enlarge and shrink -- field"){
 		
-		basis::field<basis::real_space, double> small(grid);
+		basis::field<basis::real_space, TestType> small(grid);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
 		CHECK(small.basis().rlength()[1] == Approx(ll[1]));
@@ -248,11 +266,12 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 					auto ii = large.basis().to_symmetric_range(ixg, iyg, izg);
 
 					if(outside(ii[0], small.basis().sizes()[0]) or outside(ii[1], small.basis().sizes()[1]) or outside(ii[2], small.basis().sizes()[2])){
-						CHECK(large.cubic()[ix][iy][iz] == 0.0_a);
+						CHECK(real(large.cubic()[ix][iy][iz]) == 0.0_a);
+						CHECK(imag(large.cubic()[ix][iy][iz]) == 0.0_a);
 						count_large++;
 					} else {
 						auto rr = large.basis().rvector(ix, iy, iz);
-						CHECK(large.cubic()[ix][iy][iz] == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
+						CHECK(real(large.cubic()[ix][iy][iz]) == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
 						count_small++;
 					}
 				
@@ -277,7 +296,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 
 	SECTION("Enlarge and shrink -- field_set"){
 		
-		basis::field_set<basis::real_space, double> small(grid, 5);
+		basis::field_set<basis::real_space, TestType> small(grid, 5);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
 		CHECK(small.basis().rlength()[1] == Approx(ll[1]));
@@ -318,11 +337,12 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 						auto ii = large.basis().to_symmetric_range(ixg, iyg, izg);
 						
 						if(outside(ii[0], small.basis().sizes()[0]) or outside(ii[1], small.basis().sizes()[1]) or outside(ii[2], small.basis().sizes()[2])){
-							CHECK(large.cubic()[ix][iy][iz][ist] == 0.0_a);
+							CHECK(real(large.cubic()[ix][iy][iz][ist]) == 0.0_a);
+							CHECK(imag(large.cubic()[ix][iy][iz][ist]) == 0.0_a);							
 							count_large++;
 						} else {
 							auto rr = large.basis().rvector(ix, iy, iz);
-							CHECK(large.cubic()[ix][iy][iz][ist] == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
+							CHECK(real(large.cubic()[ix][iy][iz][ist]) == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
 							count_small++;
 						}
 						
@@ -348,10 +368,10 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 		}
 		
 	}
-		
+
 	SECTION("Mesh refinement -- field"){
 
-		basis::field<basis::real_space, complex> coarse(grid); 
+		basis::field<basis::real_space, TestType> coarse(grid); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < coarse.basis().local_sizes()[1]; iy++){
@@ -402,7 +422,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 		
 	SECTION("Mesh refinement -- field_set"){
 
-		basis::field_set<basis::real_space, complex> coarse(grid, 5); 
+		basis::field_set<basis::real_space, TestType> coarse(grid, 5); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < coarse.basis().local_sizes()[1]; iy++){
@@ -441,8 +461,6 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
 						auto rr = fine.basis().rvector(ixg, iyg, izg);
-						//std::cout << real(fine.cubic()[ix][iy][iz][ist]) << '\t' << (exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) << '\t' << (exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]))/real(fine.cubic()[ix][iy][iz][ist]) << std::endl;
-						
 						CHECK(fabs(real(fine.cubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 						CHECK(fabs(imag(fine.cubic()[ix][iy][iz][ist])) < 5e-3);
 						
@@ -457,7 +475,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 
 		auto fine_grid = grid.refine(2);
 		
-		basis::field<basis::real_space, complex> fine(fine_grid); 
+		basis::field<basis::real_space, TestType> fine(fine_grid); 
 
 		for(int ix = 0; ix < fine.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < fine.basis().local_sizes()[1]; iy++){
@@ -510,7 +528,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 
 		auto fine_grid = grid.refine(2);
 		
-		basis::field_set<basis::real_space, complex> fine(fine_grid, 5);
+		basis::field_set<basis::real_space, TestType> fine(fine_grid, 5);
 
 		for(int ix = 0; ix < fine.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < fine.basis().local_sizes()[1]; iy++){
