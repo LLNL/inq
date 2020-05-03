@@ -144,15 +144,16 @@ namespace operations {
 		
 		//////////////////////////////////////////////////////////
 
-		template <class Type>
-		auto refine(basis::field<basis::real_space, Type> const & source, typename basis::real_space const & new_basis){
+		template <class FieldType>
+		auto refine(FieldType const & source, typename basis::real_space const & new_basis){
 
+			static_assert(std::is_same<typename FieldType::basis_type, basis::real_space>::value, "Only implemented for real space");
 			assert(new_basis.size() == 8*source.basis().size()); //only a factor of 2 has been tested
 			assert(not source.basis().part().parallel());
 			
 			basis::fourier_space new_fourier_basis(new_basis);
 			auto destination_fourier = enlarge(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
-			return operations::space::to_real(destination_fourier);
+			return operations::space::to_real(destination_fourier,  /*normalize = */ false);
 		}
 		
 		//////////////////////////////////////////////////////////
@@ -165,7 +166,7 @@ namespace operations {
 			
 			basis::fourier_space new_fourier_basis(new_basis);
 			auto destination_fourier = shrink(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
-			return operations::space::to_real(destination_fourier);
+			return operations::space::to_real(destination_fourier, /*normalize = */ false);
 		}
 		
 	}
@@ -207,7 +208,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 	ions::UnitCell cell(vec3d(ll[0], 0.0, 0.0), vec3d(0.0, ll[1], 0.0), vec3d(0.0, 0.0, ll[2]));
 	basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 	
-	SECTION("Enlarge and shrink field"){
+	SECTION("Enlarge and shrink -- field"){
 		
 		basis::field<basis::real_space, double> small(grid);
 		
@@ -274,7 +275,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 		}
 	}
 
-	SECTION("Enlarge and shrink field_set"){
+	SECTION("Enlarge and shrink -- field_set"){
 		
 		basis::field_set<basis::real_space, double> small(grid, 5);
 		
@@ -348,7 +349,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 		
 	}
 		
-	SECTION("Mesh refinement"){
+	SECTION("Mesh refinement -- field"){
 
 		basis::field<basis::real_space, complex> coarse(grid); 
 
@@ -393,6 +394,59 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 					auto rr = fine.basis().rvector(ixg, iyg, izg);
 					CHECK(fabs(real(fine.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 					CHECK(fabs(imag(fine.cubic()[ix][iy][iz])) < 5e-3);
+				}
+			}
+		}
+		
+	}
+		
+	SECTION("Mesh refinement -- field_set"){
+
+		basis::field_set<basis::real_space, complex> coarse(grid, 5); 
+
+		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < coarse.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < coarse.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < coarse.set_part().local_size(); ist++){
+						
+						auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
+						auto rr = coarse.basis().rvector(ixg, iyg, izg);
+						coarse.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
+
+					}
+				}
+			}
+		}
+
+		auto fine = operations::transfer::refine(coarse, grid.refine(2));
+
+		static_assert(std::is_same<decltype(fine.basis()), basis::real_space const &>::value, "The return value must be in real_space");
+
+		CHECK(not (coarse.basis() == fine.basis()));
+		CHECK(coarse.basis().refine(2) == fine.basis());
+	
+		CHECK(8*coarse.basis().size() == fine.basis().size());
+		CHECK(coarse.basis().rspacing()[0] == 2.0*fine.basis().rspacing()[0]);
+		CHECK(coarse.basis().rspacing()[1] == 2.0*fine.basis().rspacing()[1]);
+		CHECK(coarse.basis().rspacing()[2] == 2.0*fine.basis().rspacing()[2]);
+		
+		for(int ix = 0; ix < fine.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < fine.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < fine.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < fine.set_part().local_size(); ist++){
+							
+						auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
+						auto rr = fine.basis().rvector(ixg, iyg, izg);
+						//std::cout << real(fine.cubic()[ix][iy][iz][ist]) << '\t' << (exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) << '\t' << (exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]))/real(fine.cubic()[ix][iy][iz][ist]) << std::endl;
+						
+						CHECK(fabs(real(fine.cubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
+						CHECK(fabs(imag(fine.cubic()[ix][iy][iz][ist])) < 5e-3);
+						
+					}
 				}
 			}
 		}
