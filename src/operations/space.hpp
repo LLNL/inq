@@ -102,7 +102,7 @@ namespace operations {
 
 		///////////////////////////////////////////////////////////////
 
-		basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
+		basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 			namespace multi = boost::multi;
 			namespace fft = multi::fft;
 
@@ -143,13 +143,14 @@ namespace operations {
 				cudaDeviceSynchronize();
 #endif
 			}
-	
-			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(fphi.basis().part().local_size()*phi.set_part().local_size(),
-							 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
-								 phip[ii] = phip[ii]/norm_factor;
-							 });
-	
+
+			if(normalize){
+				//DATAOPERATIONS GPU::RUN 1D
+				gpu::run(fphi.basis().part().local_size()*phi.set_part().local_size(),
+								 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
+									 phip[ii] = phip[ii]/norm_factor;
+								 });
+			}
 			return phi;
 		}
 
@@ -205,7 +206,7 @@ namespace operations {
 
 		///////////////////////////////////////////////////////////////			
 	
-		basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = false){
+		basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
 			namespace multi = boost::multi;
 			namespace fft = multi::fft;
 

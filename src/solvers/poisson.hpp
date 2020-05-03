@@ -65,7 +65,7 @@ namespace solvers {
 				}
 			}
 
-			return operations::space::to_real(potential_fs);
+			return operations::space::to_real(potential_fs,  /*normalize = */ false);
 		}
 
 		auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
@@ -102,7 +102,7 @@ namespace solvers {
 				}
 			}
 
-			potential2x = operations::space::to_real(potential_fs);
+			potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
 			auto potential = operations::transfer::shrink(potential2x, density.basis());
 
 			return potential;
