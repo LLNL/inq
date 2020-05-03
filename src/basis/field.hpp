@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <utils/skeleton_wrapper.hpp>
 
+#include <multi/adaptors/blas.hpp>
 #include <fstream>
 
 namespace basis {
@@ -119,12 +120,33 @@ namespace basis {
 				if(ip >= size) ip -= size;
 				point[dir] = ip;
 				auto rr = fld.basis().rvector(point);
-				tfm::format(file, "%f %e %e\n", rr[dir], real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
+				tfm::format(file, "%f %e %e\n", rr[dir], ::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
 			}
 		}
 
 		auto & basis_comm() const {
 			return basis_comm_;
+		}
+
+		auto complex() const {
+			field<basis::real_space, ::complex> complex_field(skeleton());
+			complex_field.linear() = linear();
+			return complex_field;
+		}
+
+		field<basis::real_space, double> real() const {
+			field<basis::real_space, double> real_field(skeleton());
+
+			// Multi should be able to do this, but it causes a lot of compilation troubles
+			//			real_field.linear() = boost::multi::blas::real(linear());
+			
+			//DATAOPERATIONS GPU::RUN 1D
+			gpu::run(basis().part().local_size(),
+							 [rp = begin(real_field.linear()), cp = begin(linear())] GPU_LAMBDA (auto ii){
+								 rp[ii] = ::real(cp[ii]);
+							 });
+			
+			return real_field;
 		}
 		
 	private:
@@ -179,7 +201,21 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	CHECK(std::get<1>(sizes(ff_copy.cubic())) == 11);
 	CHECK(std::get<2>(sizes(ff_copy.cubic())) == 20);
+
+	auto zff = ff.complex();
 	
+	static_assert(std::is_same<decltype(zff), basis::field<basis::real_space, complex>>::value, "complex() should return a complex field");
+	
+	CHECK(std::get<1>(sizes(zff.cubic())) == 11);
+	CHECK(std::get<2>(sizes(zff.cubic())) == 20);
+
+	auto dff = zff.real();
+
+	static_assert(std::is_same<decltype(dff), basis::field<basis::real_space, double>>::value, "real() should return a double field");
+
+	CHECK(std::get<1>(sizes(dff.cubic())) == 11);
+	CHECK(std::get<2>(sizes(dff.cubic())) == 20);
+
 }
 
 #endif

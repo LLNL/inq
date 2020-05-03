@@ -35,9 +35,20 @@
 namespace operations {
 	namespace space {
 
+		void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fphi){
+			//DATAOPERATIONS GPU::RUN 4D
+			gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
+							 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] GPU_LAMBDA
+							 (auto iz, auto iy, auto ix){
+								 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz] = complex(0.0);
+							 });
+		}
+
+		///////////////////////////////////////////////////////////////
+		
 		void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
 			//DATAOPERATIONS GPU::RUN 4D
-			gpu::run(fphi.set_part().local_size(), fphi.basis().sizes()[2], fphi.basis().sizes()[1], fphi.basis().sizes()[0],
+			gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 							 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] GPU_LAMBDA
 							 (auto ist, auto iz, auto iy, auto ix){
 								 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
@@ -102,7 +113,7 @@ namespace operations {
 
 		///////////////////////////////////////////////////////////////
 
-		basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi){
+		basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 			namespace multi = boost::multi;
 			namespace fft = multi::fft;
 
@@ -143,13 +154,14 @@ namespace operations {
 				cudaDeviceSynchronize();
 #endif
 			}
-	
-			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(fphi.basis().part().local_size()*phi.set_part().local_size(),
-							 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
-								 phip[ii] = phip[ii]/norm_factor;
-							 });
-	
+
+			if(normalize){
+				//DATAOPERATIONS GPU::RUN 1D
+				gpu::run(fphi.basis().part().local_size()*phi.set_part().local_size(),
+								 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
+									 phip[ii] = phip[ii]/norm_factor;
+								 });
+			}
 			return phi;
 		}
 
@@ -199,13 +211,15 @@ namespace operations {
 		
 			}
 
+			if(fphi.basis().spherical()) zero_outside_sphere(fphi);
+			
 			return fphi;
 	
 		}
 
 		///////////////////////////////////////////////////////////////			
 	
-		basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = false){
+		basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
 			namespace multi = boost::multi;
 			namespace fft = multi::fft;
 

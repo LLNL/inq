@@ -59,7 +59,7 @@ namespace basis {
 
 		template <class any_type>
 		field_set(skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
-			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.basis_comm()){
+			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
 		}
 
 		auto skeleton() const {
@@ -135,6 +135,27 @@ namespace basis {
 			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
+		auto complex() const {
+			field_set<basis::real_space, ::complex> complex_field(skeleton());
+			complex_field.matrix() = matrix();
+			return complex_field;
+		}
+
+		field_set<basis::real_space, double> real() const {
+			field_set<basis::real_space, double> real_field(skeleton());
+
+			// Multi should be able to do this, but it causes a lot of compilation troubles
+			//			real_field.matrix() = boost::multi::blas::real(matrix());
+
+			//DATAOPERATIONS GPU::RUN 1D
+			gpu::run(set_part().local_size(), basis().part().local_size(),
+							 [rp = begin(real_field.matrix()), cp = begin(matrix())] GPU_LAMBDA (auto ist, auto ii){
+								 rp[ii][ist] = ::real(cp[ii][ist]);
+							 });
+			
+			return real_field;
+		}
+		
 	private:
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
@@ -206,6 +227,33 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
 			CHECK(ff.matrix()[ii][jj] == 12.2244_a);
+		}
+	}
+
+	auto zff = ff.complex();
+	
+	static_assert(std::is_same<decltype(zff), basis::field_set<basis::real_space, complex>>::value, "complex() should return a complex field");
+		
+	CHECK(std::get<1>(sizes(zff.cubic())) == 11);
+	CHECK(std::get<2>(sizes(zff.cubic())) == 20);
+
+	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
+		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
+			CHECK(real(zff.matrix()[ii][jj]) == 12.2244_a);
+			CHECK(imag(zff.matrix()[ii][jj]) == 0.0_a);
+		}
+	}
+	
+	auto dff = zff.real();
+
+	static_assert(std::is_same<decltype(dff), basis::field_set<basis::real_space, double>>::value, "real() should return a double field");
+
+	CHECK(std::get<1>(sizes(dff.cubic())) == 11);
+	CHECK(std::get<2>(sizes(dff.cubic())) == 20);
+
+	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
+		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
+			CHECK(dff.matrix()[ii][jj] == 12.2244_a);
 		}
 	}
 	
