@@ -59,7 +59,7 @@ namespace basis {
 
 		template <class any_type>
 		field_set(skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
-			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.basis_comm()){
+			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
 		}
 
 		auto skeleton() const {
