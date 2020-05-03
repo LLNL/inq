@@ -158,8 +158,8 @@ namespace operations {
 		
 		//////////////////////////////////////////////////////////
 		
-		template <class Type>
-		auto coarsen(basis::field<basis::real_space, Type> const & source, typename basis::real_space const & new_basis){
+		template <class FieldType>
+		auto coarsen(FieldType const & source, typename basis::real_space const & new_basis){
 
 			assert(8*new_basis.size() == source.basis().size()); //only a factor of 2 has been tested		
 			assert(not source.basis().part().parallel());
@@ -453,7 +453,7 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 		
 	}
 	
-	SECTION("Mesh coarsening"){
+	SECTION("Mesh coarsening -- field"){
 
 		auto fine_grid = grid.refine(2);
 		
@@ -500,6 +500,57 @@ TEST_CASE("function operations::transfer", "[operations::transfer]") {
 					auto rr = coarse.basis().rvector(ixg, iyg, izg);
 					CHECK(fabs(real(coarse.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 					CHECK(fabs(imag(coarse.cubic()[ix][iy][iz])) < 5e-3);
+				}
+			}
+		}
+		
+	}
+
+		SECTION("Mesh coarsening -- field_set"){
+
+		auto fine_grid = grid.refine(2);
+		
+		basis::field_set<basis::real_space, complex> fine(fine_grid, 5);
+
+		for(int ix = 0; ix < fine.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < fine.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < fine.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < fine.set_part().local_size(); ist++){
+						
+						auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
+						auto rr = fine.basis().rvector(ixg, iyg, izg);
+						fine.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
+					}
+				}
+			}
+		}
+
+		auto coarse = operations::transfer::coarsen(fine, grid);
+
+		static_assert(std::is_same<decltype(fine.basis()), basis::real_space const &>::value, "The return value must be in real_space");
+
+		CHECK(not (coarse.basis() == fine.basis()));
+		CHECK(coarse.basis().refine(2) == fine.basis());
+	
+		CHECK(8*coarse.basis().size() == fine.basis().size());
+		CHECK(coarse.basis().rspacing()[0] == 2.0*fine.basis().rspacing()[0]);
+		CHECK(coarse.basis().rspacing()[1] == 2.0*fine.basis().rspacing()[1]);
+		CHECK(coarse.basis().rspacing()[2] == 2.0*fine.basis().rspacing()[2]);
+		
+		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < coarse.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < coarse.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < fine.set_part().local_size(); ist++){
+						
+						auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
+						auto rr = coarse.basis().rvector(ixg, iyg, izg);
+						CHECK(fabs(real(coarse.cubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
+						CHECK(fabs(imag(coarse.cubic()[ix][iy][iz][ist])) < 5e-3);
+					}
 				}
 			}
 		}
