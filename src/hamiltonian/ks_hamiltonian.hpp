@@ -27,6 +27,7 @@
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/exchange_operator.hpp>
 #include <operations/space.hpp>
+#include <operations/laplacian.hpp>
 
 namespace hamiltonian {
   template <class basis_type>
@@ -62,34 +63,7 @@ namespace hamiltonian {
 		}
 		
 		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
-
-			//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef HAVE_CUDA
-
-			gpu::run(hphi.set_size(), hphi.basis().sizes()[2], hphi.basis().sizes()[1], hphi.basis().sizes()[0],
-							 [basis = hphi.basis(),
-								hphicub = begin(hphi.cubic()),
-								phicub = begin(phi.cubic())]
-							 __device__ (auto ist, auto iz, auto iy, auto ix){
-								 
-								 double lapl = -0.5*(-basis.g2(ix, iy, iz));
-								 hphicub[ix][iy][iz][ist] += lapl*phicub[ix][iy][iz][ist];
-
-							 });
-
-#else
-			
-			for(int ix = 0; ix < hphi.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < hphi.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < hphi.basis().sizes()[2]; iz++){
-						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
-						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] += lapl*phi.cubic()[ix][iy][iz][ist];
-					}
-				}
-			}
-
-#endif
-			
+			operations::laplacian_add(phi, hphi);
 		}
 		
 		void fourier_space_terms(basis::field_set<basis::fourier_space, complex> & hphi) const {
