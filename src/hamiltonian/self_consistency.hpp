@@ -35,12 +35,14 @@ namespace hamiltonian {
 
 	public:
 
-		self_consistency(input::interaction interaction, basis::real_space & basis):
+		self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis):
 			theory_(interaction.theory()),
 			exchange_(int(interaction.exchange())),
 			correlation_(int(interaction.correlation())),
-			vion_(basis),
-			core_density_(basis)
+			vion_(density_basis),
+			core_density_(density_basis),
+			potential_basis_(potential_basis),
+			density_basis_(density_basis)
 		{
 		}
 
@@ -125,6 +127,8 @@ namespace hamiltonian {
 		hamiltonian::xc_functional correlation_;
 		basis::field<basis::real_space, double> vion_;
 		basis::field<basis::real_space, double> core_density_;
+		basis::real_space potential_basis_;
+		basis::real_space density_basis_;
 		
 	};
 }

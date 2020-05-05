@@ -65,7 +65,7 @@ namespace systems {
 
 			ham.info(std::cout);
 
-			hamiltonian::self_consistency sc(inter, states_basis_);
+			hamiltonian::self_consistency sc(inter, states_basis_, density_basis_);
 
 			hamiltonian::energy energy;
 
