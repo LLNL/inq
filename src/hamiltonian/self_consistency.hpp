@@ -60,6 +60,7 @@ namespace hamiltonian {
 		template <class field_type, class energy_type>
 		auto ks_potential(const field_type & electronic_density, energy_type & energy) const {
 
+			assert(electronic_density.basis() == density_basis_);
 			assert(core_density_.basis() == electronic_density.basis());
 			
 			energy.external = operations::integral_product(electronic_density, vion_);
