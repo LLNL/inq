@@ -52,6 +52,12 @@ namespace input {
 			return bs;
 		}
 
+		static auto density_factor(double arg_factor){
+			basis bs;
+			bs.density_factor_ = arg_factor;
+			return bs;
+		}
+		
 		auto spacing() const {
 			return spacing_.value();
 		}
@@ -60,12 +66,17 @@ namespace input {
 			return spherical_grid_.value_or(false);
 		}
 
+		auto density_factor() const {
+			return density_factor_.value_or(1.0);
+		}
+		
 		friend basis operator|(const basis & opt1, const basis & opt2){
 			using utils::merge_optional;
 
 			basis ropt;
 			ropt.spacing_ = merge_optional(opt1.spacing_, opt2.spacing_);
 			ropt.spherical_grid_ = merge_optional(opt1.spherical_grid_, opt2.spherical_grid_);
+			ropt.density_factor_ = merge_optional(opt1.density_factor_, opt2.density_factor_);
 			return ropt;
 		}
 
@@ -76,6 +87,7 @@ namespace input {
 		
 		nonstd::optional<double> spacing_;
 		nonstd::optional<bool> spherical_grid_;
+		nonstd::optional<double> density_factor_;
 		
 	};
 }

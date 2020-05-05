@@ -35,29 +35,32 @@ namespace hamiltonian {
 
 	public:
 
-		self_consistency(input::interaction interaction, basis::real_space & basis):
+		self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis):
 			theory_(interaction.theory()),
 			exchange_(int(interaction.exchange())),
 			correlation_(int(interaction.correlation())),
-			vion_(basis),
-			core_density_(basis)
+			vion_(density_basis),
+			core_density_(density_basis),
+			potential_basis_(potential_basis),
+			density_basis_(density_basis)
 		{
 		}
 
 		template <class ions_type>
-		void update_ionic_fields(basis::real_space & basis, const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
+		void update_ionic_fields(const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
 			solvers::poisson poisson_solver;
 			
-			auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(basis, ions.cell(), ions.geo()));
-			auto ionic_short_range = atomic_pot.local_potential(basis, ions.cell(), ions.geo());
+			auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(density_basis_, ions.cell(), ions.geo()));
+			auto ionic_short_range = atomic_pot.local_potential(density_basis_, ions.cell(), ions.geo());
 			vion_ = operations::add(ionic_long_range, ionic_short_range);
 
-			core_density_ = atomic_pot.nlcc_density(basis, ions.cell(), ions.geo());
+			core_density_ = atomic_pot.nlcc_density(density_basis_, ions.cell(), ions.geo());
 		}
 		
 		template <class field_type, class energy_type>
 		auto ks_potential(const field_type & electronic_density, energy_type & energy) const {
 
+			assert(electronic_density.basis() == density_basis_);
 			assert(core_density_.basis() == electronic_density.basis());
 			
 			energy.external = operations::integral_product(electronic_density, vion_);
@@ -111,7 +114,12 @@ namespace hamiltonian {
 				
 			}
 			
-			return vks;
+			if(potential_basis_ == vks.basis()){
+				return vks;
+			} else {
+				return operations::transfer::coarsen(std::move(vks), potential_basis_);
+			}
+			
 		}
 
 		auto theory() const {
@@ -125,6 +133,8 @@ namespace hamiltonian {
 		hamiltonian::xc_functional correlation_;
 		basis::field<basis::real_space, double> vion_;
 		basis::field<basis::real_space, double> core_density_;
+		basis::real_space potential_basis_;
+		basis::real_space density_basis_;
 		
 	};
 }

@@ -43,12 +43,13 @@ namespace systems {
 		
     electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::config & conf):
       ions_(ions_arg),
-      rs_(ions_.cell(), arg_basis_input),
+      states_basis_(ions_.cell(), arg_basis_input),
+			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
       atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
       states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
-			phi_(rs_, states_.num_states()){
+			phi_(states_basis_, states_.num_states()){
 			
-      rs_.info(std::cout);  
+      states_basis_.info(std::cout);  
       states_.info(std::cout);
 
 			if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
@@ -60,24 +61,24 @@ namespace systems {
 
     auto calculate_ground_state(const input::interaction & inter, const input::scf & solver = {}){
 
-			hamiltonian::ks_hamiltonian<basis::real_space> ham(rs_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter.exchange_coefficient());
+			hamiltonian::ks_hamiltonian<basis::real_space> ham(states_basis_, ions_.cell(), atomic_pot_, ions_.geo(), states_.num_states(), inter.exchange_coefficient());
 
 			ham.info(std::cout);
 
-			hamiltonian::self_consistency sc(inter, rs_);
+			hamiltonian::self_consistency sc(inter, states_basis_, density_basis_);
 
 			hamiltonian::energy energy;
 
 			operations::preconditioner prec;
 
 			auto mixer = solvers::linear_mixer<double>(solver.mixing());
-			//auto mixer = solvers::pulay_mixer<double>(2, solver.mixing(), rs_.part().local_size());
+			//auto mixer = solvers::pulay_mixer<double>(2, solver.mixing(), states_basis.part().local_size());
 			
       double old_energy = DBL_MAX;
 
-			sc.update_ionic_fields(rs_, ions_, atomic_pot_);
+			sc.update_ionic_fields(ions_, atomic_pot_);
 	
-			auto density = atomic_pot_.atomic_electronic_density(rs_, ions_.cell(), ions_.geo());
+			auto density = atomic_pot_.atomic_electronic_density(density_basis_, ions_.cell(), ions_.geo());
 			density::normalize(density, states_.total_charge());
 			std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
 
@@ -126,10 +127,11 @@ namespace systems {
 				ham.exchange.hf_occupations = states_.occupations();
 
 				if(inter.self_consistent() and solver.mix_density()) {
-					mixer(density.linear(), density::calculate(states_.occupations(), phi_).linear());
+					auto new_density = density::calculate(states_.occupations(), phi_, density_basis_);
+					mixer(density.linear(), new_density.linear());
 					density::normalize(density, states_.total_charge());
 				} else {
-					density = density::calculate(states_.occupations(), phi_);
+					density = density::calculate(states_.occupations(), phi_, density_basis_);
 				}
 				
 				auto vks = sc.ks_potential(density, energy);
@@ -188,10 +190,12 @@ namespace systems {
   private:
 
 		const systems::ions & ions_;
-    basis::real_space rs_;
+    basis::real_space states_basis_;
+		basis::real_space density_basis_;
     hamiltonian::atomic_potential atomic_pot_;
     states::ks_states states_;
 		basis::field_set<basis::real_space, complex> phi_;
+
 
   };  
   
