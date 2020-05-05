@@ -78,7 +78,7 @@ namespace systems {
 
 			sc.update_ionic_fields(ions_, atomic_pot_);
 	
-			auto density = atomic_pot_.atomic_electronic_density(states_basis_, ions_.cell(), ions_.geo());
+			auto density = atomic_pot_.atomic_electronic_density(density_basis_, ions_.cell(), ions_.geo());
 			density::normalize(density, states_.total_charge());
 			std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
 
