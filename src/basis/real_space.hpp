@@ -76,9 +76,9 @@ namespace basis {
 			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, comm));
 		}
 
-		auto refine(int factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
-			assert(factor > 0);
-			return real_space(grid(cell_, {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, comm));
+		auto refine(double factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
+			assert(factor > 0.0);
+			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, spherical_g_grid_, periodic_dimensions_, comm));
 		}
 		
 		auto volume_element() const {
@@ -175,6 +175,16 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
 			CHECK(rs == rs.refine(1));
 			
+			auto rs_155 = rs.refine(1.55);
+			
+      CHECK(rs_155.rspacing()[0] == Approx(1.0/1.55*0.3613953488));
+      CHECK(rs_155.rspacing()[1] == Approx(1.0/1.55*0.3625641026));
+      CHECK(rs_155.rspacing()[2] == Approx(1.0/1.55*0.36328125));
+      
+      CHECK(rs_155.sizes()[0] == 1.55*215);
+      CHECK(rs_155.sizes()[1] == 1.55*39);
+			CHECK(rs_155.sizes()[2] == 1.55*64);
+
     }
 
   }
