@@ -177,13 +177,13 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 			
 			auto rs_155 = rs.refine(1.55);
 			
-      CHECK(rs_155.rspacing()[0] == Approx(1.0/1.55*0.3613953488));
-      CHECK(rs_155.rspacing()[1] == Approx(1.0/1.55*0.3625641026));
-      CHECK(rs_155.rspacing()[2] == Approx(1.0/1.55*0.36328125));
+      CHECK(rs_155.rspacing()[0] == Approx(0.2333333333));
+      CHECK(rs_155.rspacing()[1] == Approx(0.2356666667));
+      CHECK(rs_155.rspacing()[2] == Approx(0.2348484848));
       
-      CHECK(rs_155.sizes()[0] == 1.55*215);
-      CHECK(rs_155.sizes()[1] == 1.55*39);
-			CHECK(rs_155.sizes()[2] == 1.55*64);
+      CHECK(rs_155.sizes()[0] == 333);
+      CHECK(rs_155.sizes()[1] == 60);
+			CHECK(rs_155.sizes()[2] == 99);
 
     }
 
