@@ -77,6 +77,7 @@ namespace basis {
 		}
 
 		auto refine(int factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
+			assert(factor > 0);
 			return real_space(grid(cell_, {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, comm));
 		}
 		
@@ -107,7 +108,7 @@ namespace basis {
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("class basis::real_space", "[real_space]") {
+TEST_CASE("class basis::real_space", "[basis::real_space]") {
   
   using namespace Catch::literals;
   using math::vec3d;
@@ -171,6 +172,8 @@ TEST_CASE("class basis::real_space", "[real_space]") {
       CHECK(rs_fine.sizes()[0] == 2*215);
       CHECK(rs_fine.sizes()[1] == 2*39);
 			CHECK(rs_fine.sizes()[2] == 2*64);
+
+			CHECK(rs == rs.refine(1));
 			
     }
 
