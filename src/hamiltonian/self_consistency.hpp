@@ -113,7 +113,12 @@ namespace hamiltonian {
 				
 			}
 			
-			return vks;
+			if(potential_basis_ == vks.basis()){
+				return vks;
+			} else {
+				return operations::transfer::coarsen(std::move(vks), potential_basis_);
+			}
+			
 		}
 
 		auto theory() const {
