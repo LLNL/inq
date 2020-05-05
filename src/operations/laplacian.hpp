@@ -64,6 +64,38 @@ namespace operations {
 #endif
 
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	void laplacian_inplace(basis::field_set<basis::fourier_space, complex> const & ff){
+
+		//DATAOPERATIONS LOOP + GPU::RUN 4D
+#ifdef HAVE_CUDA
+
+		gpu::run(ff.set_size(), ff.basis().sizes()[2], ff.basis().sizes()[1], ff.basis().sizes()[0],
+						 [basis = ff.basis(),
+							ffcub = begin(ff.cubic())]
+						 __device__ (auto ist, auto iz, auto iy, auto ix){
+								 
+							 double lapl = -0.5*(-basis.g2(ix, iy, iz));
+							 ffcub[ix][iy][iz][ist] = ffcub[ix][iy][iz][ist]*lapl;
+								 
+						 });
+
+#else
+
+		for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
+					double lapl = -0.5*(-ff.basis().g2(ix, iy, iz));
+					for(int ist = 0; ist < ff.set_size(); ist++) ff.cubic()[ix][iy][iz][ist] *= lapl;
+				}
+			}
+		}
+			
+#endif
+		
+	}
 	
 }
 
