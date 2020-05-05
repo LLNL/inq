@@ -70,6 +70,7 @@ noinst_HEADERS =                             \
 	operations/sum.hpp                         \
 	operations/transfer.hpp                    \
 	operations/matrix_operator.hpp             \
+	operations/laplacian.hpp                   \
 	density/calculate.hpp                      \
 	density/normalize.hpp                      \
 	hamiltonian/atomic_potential.hpp           \
