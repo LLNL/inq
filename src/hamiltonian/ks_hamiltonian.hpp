@@ -27,6 +27,7 @@
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/exchange_operator.hpp>
 #include <operations/space.hpp>
+#include <operations/laplacian.hpp>
 
 namespace hamiltonian {
   template <class basis_type>
@@ -50,77 +51,34 @@ namespace hamiltonian {
 
     }
 
+		////////////////////////////////////////////////////////////////////////////////////////////
+		
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
 			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](phi, vnlphi);
 		}
 
+		////////////////////////////////////////////////////////////////////////////////////////////
+		
 		auto non_local(const basis::field_set<basis::real_space, complex> & phi) const {
 			basis::field_set<basis::real_space, complex> vnlphi(phi.skeleton());
 			vnlphi = 0.0;
 			non_local(phi, vnlphi);
 			return vnlphi;
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
-
-			//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef HAVE_CUDA
-
-			gpu::run(hphi.set_size(), hphi.basis().sizes()[2], hphi.basis().sizes()[1], hphi.basis().sizes()[0],
-							 [basis = hphi.basis(),
-								hphicub = begin(hphi.cubic()),
-								phicub = begin(phi.cubic())]
-							 __device__ (auto ist, auto iz, auto iy, auto ix){
-								 
-								 double lapl = -0.5*(-basis.g2(ix, iy, iz));
-								 hphicub[ix][iy][iz][ist] += lapl*phicub[ix][iy][iz][ist];
-
-							 });
-
-#else
-			
-			for(int ix = 0; ix < hphi.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < hphi.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < hphi.basis().sizes()[2]; iz++){
-						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
-						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] += lapl*phi.cubic()[ix][iy][iz][ist];
-					}
-				}
-			}
-
-#endif
-			
+			operations::laplacian_add(phi, hphi);
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void fourier_space_terms(basis::field_set<basis::fourier_space, complex> & hphi) const {
-
-			//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef HAVE_CUDA
-
-			gpu::run(hphi.set_size(), hphi.basis().sizes()[2], hphi.basis().sizes()[1], hphi.basis().sizes()[0],
-							 [basis = hphi.basis(),
-								hphicub = begin(hphi.cubic())]
-							 __device__ (auto ist, auto iz, auto iy, auto ix){
-								 
-								 double lapl = -0.5*(-basis.g2(ix, iy, iz));
-								 hphicub[ix][iy][iz][ist] = hphicub[ix][iy][iz][ist]*lapl;
-								 
-							 });
-
-#else
-
-			for(int ix = 0; ix < hphi.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < hphi.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < hphi.basis().sizes()[2]; iz++){
-						double lapl = -0.5*(-hphi.basis().g2(ix, iy, iz));
-						for(int ist = 0; ist < hphi.set_size(); ist++) hphi.cubic()[ix][iy][iz][ist] *= lapl;
-					}
-				}
-			}
-
-#endif
-			
+			operations::laplacian_inplace(hphi);			
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void real_space_terms(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & hphi) const {
 			//the non local potential in real space
@@ -145,6 +103,8 @@ namespace hamiltonian {
 			exchange(phi, hphi);
 		}
 
+		////////////////////////////////////////////////////////////////////////////////////////////
+
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
       
 			auto hphi_fs = operations::space::to_fourier(phi);
@@ -158,6 +118,8 @@ namespace hamiltonian {
 			return hphi;
 			
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 		
     auto operator()(const basis::field_set<basis::fourier_space, complex> & phi) const{
 
@@ -176,6 +138,8 @@ namespace hamiltonian {
 			return hphi;
 			
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		int num_projectors() const {
 			int nn = 0;
@@ -184,6 +148,8 @@ namespace hamiltonian {
 			}
 			return nn;			
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 
     template <class output_stream>
     void info(output_stream & out) const {
@@ -199,6 +165,10 @@ namespace hamiltonian {
   };
 
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef UNIT_TEST
 
