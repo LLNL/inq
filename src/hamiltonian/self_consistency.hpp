@@ -47,14 +47,14 @@ namespace hamiltonian {
 		}
 
 		template <class ions_type>
-		void update_ionic_fields(basis::real_space & basis, const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
+		void update_ionic_fields(const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
 			solvers::poisson poisson_solver;
 			
-			auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(basis, ions.cell(), ions.geo()));
-			auto ionic_short_range = atomic_pot.local_potential(basis, ions.cell(), ions.geo());
+			auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(density_basis_, ions.cell(), ions.geo()));
+			auto ionic_short_range = atomic_pot.local_potential(density_basis_, ions.cell(), ions.geo());
 			vion_ = operations::add(ionic_long_range, ionic_short_range);
 
-			core_density_ = atomic_pot.nlcc_density(basis, ions.cell(), ions.geo());
+			core_density_ = atomic_pot.nlcc_density(density_basis_, ions.cell(), ions.geo());
 		}
 		
 		template <class field_type, class energy_type>

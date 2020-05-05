@@ -76,7 +76,7 @@ namespace systems {
 			
       double old_energy = DBL_MAX;
 
-			sc.update_ionic_fields(states_basis_, ions_, atomic_pot_);
+			sc.update_ionic_fields(ions_, atomic_pot_);
 	
 			auto density = atomic_pot_.atomic_electronic_density(states_basis_, ions_.cell(), ions_.geo());
 			density::normalize(density, states_.total_charge());
