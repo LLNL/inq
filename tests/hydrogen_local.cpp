@@ -91,7 +91,7 @@ int main(int argc, char ** argv){
 	// LDA
 	{
 		
-		auto energy = ground_state::calculate(electrons, input::interaction::dft());
+		auto energy = ground_state::calculate(electrons);
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
