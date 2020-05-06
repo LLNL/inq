@@ -28,7 +28,7 @@
 namespace operations {
 
 	template <class array_1d, class field_set_type>
-  void shift(const array_1d & factor, const field_set_type & shift, field_set_type & phi, double scale = 1.0){
+  void shift(double scale, const array_1d & factor, const field_set_type & shift, field_set_type & phi){
     
     assert(size(factor) == phi.set_part().local_size());
 
@@ -39,7 +39,19 @@ namespace operations {
 							 phip[ipoint][ist] += scale*(factorp[ist]*shiftp[ipoint][ist]);
 						 });
   }
-  
+
+	template <class field_set_type>
+  void shift(typename field_set_type::element_type const & factor, const field_set_type & shift, field_set_type & phi){
+    
+		//this could be done with axpy
+		//DATAOPERATIONS GPU::RUN 2D
+		gpu::run(phi.set_part().local_size(), phi.basis().part().local_size(),
+						 [factor, shiftp = begin(shift.matrix()), phip = begin(phi.matrix())]
+						 GPU_LAMBDA (auto ist, auto ipoint){
+							 phip[ipoint][ist] += factor*shiftp[ipoint][ist];
+						 });
+  }
+	
 }
 
 #ifdef UNIT_TEST
@@ -76,7 +88,7 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 			factor[jj] = 2.0*0.765*jjg;
 		}
 
-		operations::shift(factor, bb, aa, -0.5);
+		operations::shift(-0.5, factor, bb, aa);
 				
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(aa.matrix()[ii][jj] == Approx(1.0));
@@ -100,7 +112,7 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 			factor[jj] = complex(0.0, 2.0*0.765*jjg);
 		}
 
-		operations::shift(factor, bb, aa, -0.5);
+		operations::shift(-0.5, factor, bb, aa);
 				
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			auto iig = bas.part().local_to_global(ii);
@@ -126,7 +138,7 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 			factor[jj] = 2.0*0.765*jjg;
 		}
 
-		operations::shift(factor, bb, aa, -0.5);
+		operations::shift(-0.5, factor, bb, aa);
 				
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {

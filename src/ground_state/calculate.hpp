@@ -124,7 +124,7 @@ namespace ground_state {
 				
 				auto residual = ham(electrons.phi_);
 				auto eigenvalues = operations::overlap_diagonal(electrons.phi_, residual);
-				operations::shift(eigenvalues, electrons.phi_, residual, -1.0);
+				operations::shift(-1.0, eigenvalues, electrons.phi_, residual);
 				
 				auto normres = operations::overlap_diagonal(residual);
 				auto nl_me = operations::overlap_diagonal(ham.non_local(electrons.phi_), electrons.phi_);
