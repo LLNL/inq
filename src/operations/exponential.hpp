@@ -60,36 +60,75 @@ TEST_CASE("operations::exponential", "[operations::exponential]") {
   const int nvec = 12;
   
   basis::trivial bas(npoint);
-	
-	math::array<double, 2> diagonal_matrix({npoint, npoint});
-  
-	for(int ip = 0; ip < npoint; ip++){
-		for(int jp = 0; jp < npoint; jp++){
-			diagonal_matrix[ip][jp] = 0.0;
-			if(ip == jp) diagonal_matrix[ip][jp] = ip;
-		}
-	}
-  
-	operations::matrix_operator<double> diagonal(std::move(diagonal_matrix));
 
-	basis::field_set<basis::trivial, double> phi(bas, nvec);
-
-	phi = 0.0;
-	
-	for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
-
-	auto expphi = operations::exponential(diagonal, -0.1, phi, 16);
-
- 	for(int ivec = 0; ivec < nvec; ivec++) {
+	SECTION("Diagonal double"){
+		
+		math::array<double, 2> diagonal_matrix({npoint, npoint});
+		
 		for(int ip = 0; ip < npoint; ip++){
-			if(ip == ivec){
-				CHECK(expphi.matrix()[ivec][ivec] == Approx(exp(-0.1*ivec)));
-			} else {
-				CHECK(expphi.matrix()[ip][ivec] == 0.0_a);
+			for(int jp = 0; jp < npoint; jp++){
+				diagonal_matrix[ip][jp] = 0.0;
+				if(ip == jp) diagonal_matrix[ip][jp] = ip;
 			}
 		}
-	}
+		
+		operations::matrix_operator<double> diagonal(std::move(diagonal_matrix));
+		
+		basis::field_set<basis::trivial, double> phi(bas, nvec);
+		
+		phi = 0.0;
+		
+		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
+		
+		auto expphi = operations::exponential(diagonal, -0.1, phi, 16);
+		
+		for(int ivec = 0; ivec < nvec; ivec++) {
+			for(int ip = 0; ip < npoint; ip++){
+				if(ip == ivec){
+					CHECK(expphi.matrix()[ivec][ivec] == Approx(exp(-0.1*ivec)));
+				} else {
+					CHECK(expphi.matrix()[ip][ivec] == 0.0_a);
+				}
+			}
+		}
 
+	}
+	
+	SECTION("Diagonal complex"){
+		
+		math::array<complex, 2> diagonal_matrix({npoint, npoint});
+		
+		for(int ip = 0; ip < npoint; ip++){
+			for(int jp = 0; jp < npoint; jp++){
+				diagonal_matrix[ip][jp] = 0.0;
+				if(ip == jp) diagonal_matrix[ip][jp] = ip;
+			}
+		}
+		
+		operations::matrix_operator<complex> diagonal(std::move(diagonal_matrix));
+		
+		basis::field_set<basis::trivial, complex> phi(bas, nvec);
+		
+		phi = 0.0;
+		
+		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
+		
+		auto expphi = operations::exponential(diagonal, complex(0.0, -0.1), phi, 16);
+		
+		for(int ivec = 0; ivec < nvec; ivec++) {
+			for(int ip = 0; ip < npoint; ip++){
+				if(ip == ivec){
+					CHECK(real(expphi.matrix()[ivec][ivec]) == Approx(real(exp(complex(0.0, -0.1*ivec)))));
+					CHECK(imag(expphi.matrix()[ivec][ivec]) == Approx(imag(exp(complex(0.0, -0.1*ivec)))));
+				} else {
+					CHECK(real(expphi.matrix()[ip][ivec]) == 0.0_a);
+					CHECK(imag(expphi.matrix()[ip][ivec]) == 0.0_a);
+				}
+			}
+		}
+		
+	}
+	
 }
 
 #endif
