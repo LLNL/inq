@@ -88,7 +88,8 @@ noinst_HEADERS =                             \
 	eigensolvers/conjugate_gradient.hpp        \
 	eigensolvers/steepest_descent.hpp          \
 	systems/ions.hpp                           \
-	systems/electrons.hpp
+	systems/electrons.hpp                      \
+	ground_state/calculate.hpp
 
 all_srcs =                                   \
 	ions/unitcell.cpp
