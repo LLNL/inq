@@ -84,3 +84,7 @@
 
 #include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
+
+#include <ground_state/calculate.hpp>
+
+#include <real_time/propagate.hpp>
