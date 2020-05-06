@@ -53,7 +53,7 @@ namespace solvers {
 								 lam[ist] = lam[ist]/(-real(nor[ist]));
 							 });
 			
-			operations::shift(lambda, phi, residual);
+			operations::shift(1.0, lambda, phi, residual);
 
 			prec(residual);
 			
@@ -83,7 +83,7 @@ namespace solvers {
 								 lam[ist] = complex(2.0*cc/den, 0.0);
 							 });
 
-			operations::shift(lambda, residual, phi);
+			operations::shift(1.0, lambda, residual, phi);
 
 		}
 
@@ -151,7 +151,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 			
 			auto residual = diagonal_op(phi);
 			auto eigenvalues = operations::overlap_diagonal(phi, residual);
-			operations::shift(eigenvalues, phi, residual, -1.0);
+			operations::shift(-1.0, eigenvalues, phi, residual);
 			auto normres = operations::overlap_diagonal(residual);
 			
 			/*

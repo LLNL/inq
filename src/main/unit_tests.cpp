@@ -70,6 +70,7 @@
 #include <operations/matrix_operator.hpp>
 #include <operations/transfer.hpp>
 #include <operations/laplacian.hpp>
+#include <operations/exponential.hpp>
 
 #include <density/calculate.hpp>
 #include <density/normalize.hpp>
