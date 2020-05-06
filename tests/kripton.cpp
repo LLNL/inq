@@ -23,6 +23,7 @@
 #include <config/path.hpp>
 #include <input/atom.hpp>
 #include <utils/match.hpp>
+#include <ground_state/calculate.hpp>
 
 int main(int argc, char ** argv){
 
@@ -42,7 +43,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 	
-	[[maybe_unused]] auto energy = electrons.calculate_ground_state(input::interaction::non_interacting());
+	[[maybe_unused]] auto energy = ground_state::calculate(electrons, input::interaction::non_interacting());
 	
 	/*
 		OCTOPUS RESULTS: (Spacing 0.350877)

@@ -66,7 +66,6 @@ noinst_HEADERS =                             \
 	operations/diagonalize.hpp                 \
 	operations/integral.hpp                    \
 	operations/add.hpp                         \
-	operations/subspace_diagonalization.hpp    \
 	operations/sum.hpp                         \
 	operations/transfer.hpp                    \
 	operations/matrix_operator.hpp             \
@@ -88,7 +87,10 @@ noinst_HEADERS =                             \
 	eigensolvers/conjugate_gradient.hpp        \
 	eigensolvers/steepest_descent.hpp          \
 	systems/ions.hpp                           \
-	systems/electrons.hpp
+	systems/electrons.hpp                      \
+	ground_state/calculate.hpp                 \
+	ground_state/subspace_diagonalization.hpp
+
 
 all_srcs =                                   \
 	ions/unitcell.cpp

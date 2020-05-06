@@ -21,6 +21,7 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <utils/match.hpp>
+#include <ground_state/calculate.hpp>
 
 int main(int argc, char ** argv){
 
@@ -36,7 +37,7 @@ int main(int argc, char ** argv){
 		
 	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 
-	auto energy = electrons.calculate_ground_state(input::interaction::dft());
+	auto energy = ground_state::calculate(electrons, input::interaction::dft());
 
 	/* OCTOPUS RESULTS (Spacing = 0.2):
 

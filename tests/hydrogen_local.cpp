@@ -18,13 +18,14 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <mpi3/environment.hpp>
-
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
 #include <utils/match.hpp>
+#include <ground_state/calculate.hpp>
+
+#include <mpi3/environment.hpp>
 
 int main(int argc, char ** argv){
 
@@ -47,7 +48,7 @@ int main(int argc, char ** argv){
 	// Non Interacting
 	{
 	
-		auto energy = electrons.calculate_ground_state(input::interaction::non_interacting(), input::scf::conjugate_gradient());
+		auto energy = ground_state::calculate(electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -90,7 +91,7 @@ int main(int argc, char ** argv){
 	// LDA
 	{
 		
-		auto energy = electrons.calculate_ground_state(input::interaction::dft());
+		auto energy = ground_state::calculate(electrons, input::interaction::dft());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
