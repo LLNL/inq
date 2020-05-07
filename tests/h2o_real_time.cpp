@@ -44,8 +44,6 @@ int main(int argc, char ** argv){
   
   input::config conf;
   
-  conf.extra_states = 2;
-  
   systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
   
   auto energy = ground_state::calculate(electrons, input::interaction::dft(), scf_options);

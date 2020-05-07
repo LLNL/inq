@@ -34,7 +34,7 @@ namespace real_time {
 	
 	void propagate(systems::electrons & electrons, const input::interaction & inter){
 		
-		const double dt = 0.01;
+		const double dt = 0.055;
 		
 		const int numsteps = 100;
 		
@@ -48,7 +48,12 @@ namespace real_time {
 		
 		ham.scalar_potential = sc.ks_potential(density, energy);
 
-		for(int istep = 0; istep < numsteps; istep++){
+		auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
+		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
+		
+		tfm::format(std::cout, "step %8d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+		
+		for(int istep = 1; istep <= numsteps; istep++){
 
 			{
 				//propagate half step and full step with H(t)
@@ -65,7 +70,7 @@ namespace real_time {
 			auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 			
-			tfm::format(std::cout, "step %d :  e = %.12f\n", istep, energy.total());
+			tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
 			
 		}
 	}
