@@ -49,11 +49,20 @@ namespace real_time {
 		ham.scalar_potential = sc.ks_potential(density, energy);
 
 		for(int istep = 0; istep < numsteps; istep++){
+
+			{
+				//propagate half step and full step with H(t)
+				auto fullstep_phi = operations::exponential(ham, complex(0.0, dt/2.0), electrons.phi_);
+				electrons.phi_ = operations::exponential(ham, complex(0.0, dt/2.0), electrons.phi_);	
+				
+				//calculate H(t + dt) from the full step propagation
+				density = density::calculate(electrons.states_.occupations(), fullstep_phi, electrons.density_basis_);
+				ham.scalar_potential = sc.ks_potential(density, energy);
+			}
+
+			//propagate the other half step with H(t + dt)
+			electrons.phi_ = operations::exponential(ham, complex(0.0, dt/2.0), electrons.phi_);
 			
-			electrons.phi_ = operations::exponential(ham, complex(0.0, dt), electrons.phi_);	
-
-			ham.scalar_potential = sc.ks_potential(density, energy);
-
 			auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 			
