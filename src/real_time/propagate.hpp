@@ -51,7 +51,7 @@ namespace real_time {
 		auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 		
-		tfm::format(std::cout, "step %8d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+		tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
 		
 		for(int istep = 1; istep <= numsteps; istep++){
 
