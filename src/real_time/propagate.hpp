@@ -29,10 +29,14 @@
 #include <ions/interaction.hpp>
 #include <input/scf.hpp>
 #include <systems/electrons.hpp>
+#include <observables/dipole.hpp>
+#include <real_time/result.hpp>
 
 namespace real_time {
 	
-	void propagate(systems::electrons & electrons, const input::interaction & inter){
+	real_time::result propagate(systems::electrons & electrons, const input::interaction & inter){
+
+		result res;
 		
 		const double dt = 0.055;
 		
@@ -51,7 +55,11 @@ namespace real_time {
 		auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 		
-		tfm::format(std::cout, "step %8d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+		tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+
+		res.time.push_back(0.0);
+		res.energy.push_back(energy.total());
+		res.dipole.push_back(observables::dipole(density));
 		
 		for(int istep = 1; istep <= numsteps; istep++){
 
@@ -71,8 +79,14 @@ namespace real_time {
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 			
 			tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
+
+			res.time.push_back(istep*dt);
+			res.energy.push_back(energy.total());
+			res.dipole.push_back(observables::dipole(density));			
 			
 		}
+
+		return res;
 	}
 }
 
