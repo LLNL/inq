@@ -65,7 +65,6 @@ gcc-distcheck:
       - cd build
       - time ../configure --prefix=$HOME
       - time make distcheck
-      - time tests/h2o_real_time
       
 clang:
     stage: build
