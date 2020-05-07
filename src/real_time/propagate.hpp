@@ -29,10 +29,13 @@
 #include <ions/interaction.hpp>
 #include <input/scf.hpp>
 #include <systems/electrons.hpp>
+#include <real_time/result.hpp>
 
 namespace real_time {
 	
-	void propagate(systems::electrons & electrons, const input::interaction & inter){
+	real_time::result propagate(systems::electrons & electrons, const input::interaction & inter){
+
+		result res;
 		
 		const double dt = 0.055;
 		
@@ -52,6 +55,9 @@ namespace real_time {
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 		
 		tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+
+		res.time.push_back(0.0);
+		res.energy.push_back(energy.total());
 		
 		for(int istep = 1; istep <= numsteps; istep++){
 
@@ -71,8 +77,13 @@ namespace real_time {
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 			
 			tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
+
+			res.time.push_back(istep*dt);
+			res.energy.push_back(energy.total());
 			
 		}
+
+		return res;
 	}
 }
 

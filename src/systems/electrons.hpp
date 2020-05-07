@@ -21,6 +21,7 @@
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
 #include <input/scf.hpp>
+#include <real_time/result.hpp>
 
 namespace systems {
 	class electrons;
@@ -31,7 +32,7 @@ namespace ground_state {
 }
 
 namespace real_time {
-	void propagate(systems::electrons & electrons, const input::interaction & inter = {});
+	real_time::result propagate(systems::electrons & electrons, const input::interaction & inter = {});
 }
 
 namespace systems {
@@ -61,7 +62,7 @@ namespace systems {
     }
 
 		friend hamiltonian::energy ground_state::calculate(systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
-		friend void real_time::propagate(systems::electrons & electrons, const input::interaction & inter);
+		friend real_time::result real_time::propagate(systems::electrons & electrons, const input::interaction & inter);
 		
 	private:
 		

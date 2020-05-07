@@ -91,6 +91,7 @@ noinst_HEADERS =                             \
 	systems/electrons.hpp                      \
 	ground_state/calculate.hpp                 \
 	ground_state/subspace_diagonalization.hpp  \
+	real_time/result.hpp                       \
 	real_time/propagate.hpp
 
 all_srcs =                                   \

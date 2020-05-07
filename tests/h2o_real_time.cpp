@@ -62,7 +62,10 @@ int main(int argc, char ** argv){
   energy_match.check("HF exchange energy",  energy.hf_exchange,       0.0);
   energy_match.check("ion-ion energy",      energy.ion,              -1.047736451449);
   
-  real_time::propagate(electrons);
+  auto result = real_time::propagate(electrons);
+
+  energy_match.check("energy step  0", result.energy[0], -24.837274021088);
+  energy_match.check("energy step 10", result.energy[0], -24.837274020908);
   
 	return energy_match.fail();
 }
