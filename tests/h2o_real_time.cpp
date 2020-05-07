@@ -23,6 +23,7 @@
 #include <config/path.hpp>
 #include <input/atom.hpp>
 #include <utils/match.hpp>
+#include <perturbations/kick.hpp>
 #include <ground_state/calculate.hpp>
 #include <real_time/propagate.hpp>
 
@@ -45,6 +46,8 @@ int main(int argc, char ** argv){
   input::config conf;
   
   systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
+
+  perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
   
   auto energy = ground_state::calculate(electrons, input::interaction::dft(), scf_options);
   

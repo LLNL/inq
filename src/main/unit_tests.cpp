@@ -75,6 +75,8 @@
 #include <density/calculate.hpp>
 #include <density/normalize.hpp>
 
+#include <perturbations/kick.hpp>
+
 #include <solvers/poisson.hpp>
 #include <solvers/linear.hpp>
 #include <solvers/least_squares.hpp>
