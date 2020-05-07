@@ -30,16 +30,43 @@
 namespace operations {
 
 	template <class operator_type, class field_set_type>
-	auto exponential(const operator_type & ham, typename field_set_type::element_type const & factor, field_set_type const & phi, int const order = 4){
+	void exponential_in_place(const operator_type & ham, typename field_set_type::element_type const & factor, field_set_type & phi, int const order = 4){
 
-    field_set_type expphi = phi;
 		field_set_type hnphi = phi;
 		
 		typename field_set_type::element_type coeff = 1.0;
 		for(int iter = 1; iter <= order; iter++){
 			hnphi = ham(hnphi);
 			coeff *= factor/iter;
-			shift(coeff, hnphi, expphi);
+			shift(coeff, hnphi, phi);
+		}
+  }
+
+	///////////////////////////////////////////////////////////////////////////
+	
+	template <class operator_type, class field_set_type>
+	auto exponential(const operator_type & ham, typename field_set_type::element_type const & factor, field_set_type const & phi, int const order = 4){
+    field_set_type expphi = phi;
+		exponential_in_place(ham, factor, expphi, order);
+		return expphi;
+  }
+
+	///////////////////////////////////////////////////////////////////////////
+	
+	template <class operator_type, class field_set_type>
+	auto exponential_2_for_1(const operator_type & ham, typename field_set_type::element_type const & factor1, typename field_set_type::element_type const & factor2, field_set_type & phi, int const order = 4){
+		
+    field_set_type expphi = phi;
+		field_set_type hnphi = phi;
+		
+		typename field_set_type::element_type coeff1 = 1.0;
+		typename field_set_type::element_type coeff2 = 1.0;
+		for(int iter = 1; iter <= order; iter++){
+			hnphi = ham(hnphi);
+			coeff1 *= factor1/iter;
+			coeff2 *= factor2/iter;
+			shift(coeff1, hnphi, expphi);
+			shift(coeff2, hnphi, phi);
 		}
 
 		return expphi;		
@@ -80,18 +107,51 @@ TEST_CASE("operations::exponential", "[operations::exponential]") {
 		
 		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
 		
-		auto expphi = operations::exponential(diagonal, -0.1, phi, 16);
-		
-		for(int ivec = 0; ivec < nvec; ivec++) {
-			for(int ip = 0; ip < npoint; ip++){
-				if(ip == ivec){
-					CHECK(expphi.matrix()[ivec][ivec] == Approx(exp(-0.1*ivec)));
-				} else {
+		{
+			auto expphi = operations::exponential(diagonal, -0.1, phi, 16);
+			
+			for(int ivec = 0; ivec < nvec; ivec++) {
+				for(int ip = 0; ip < npoint; ip++){
+					if(ip == ivec){
+						CHECK(expphi.matrix()[ivec][ivec] == Approx(exp(-0.1*ivec)));
+					} else {
 					CHECK(expphi.matrix()[ip][ivec] == 0.0_a);
+					}
 				}
 			}
 		}
 
+		{
+			auto expphi = phi;
+			operations::exponential_in_place(diagonal, -0.1, expphi, 16);
+			
+			for(int ivec = 0; ivec < nvec; ivec++) {
+				for(int ip = 0; ip < npoint; ip++){
+					if(ip == ivec){
+					CHECK(expphi.matrix()[ivec][ivec] == Approx(exp(-0.1*ivec)));
+					} else {
+						CHECK(expphi.matrix()[ip][ivec] == 0.0_a);
+					}
+				}
+			}
+		}
+
+		{
+			auto expphi = operations::exponential_2_for_1(diagonal, -0.1, -0.2, phi, 16);
+			
+			for(int ivec = 0; ivec < nvec; ivec++) {
+				for(int ip = 0; ip < npoint; ip++){
+					if(ip == ivec){
+						CHECK(phi.matrix()[ivec][ivec] == Approx(exp(-0.2*ivec)));
+						CHECK(expphi.matrix()[ivec][ivec] == Approx(exp(-0.1*ivec)));
+					} else {
+						CHECK(phi.matrix()[ip][ivec] == 0.0_a);
+						CHECK(expphi.matrix()[ip][ivec] == 0.0_a);
+					}
+				}
+			}
+		}
+		
 	}
 	
 	SECTION("Diagonal complex"){
@@ -112,21 +172,61 @@ TEST_CASE("operations::exponential", "[operations::exponential]") {
 		phi = 0.0;
 		
 		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
-		
-		auto expphi = operations::exponential(diagonal, complex(0.0, -0.1), phi, 16);
-		
-		for(int ivec = 0; ivec < nvec; ivec++) {
-			for(int ip = 0; ip < npoint; ip++){
-				if(ip == ivec){
-					CHECK(real(expphi.matrix()[ivec][ivec]) == Approx(real(exp(complex(0.0, -0.1*ivec)))));
-					CHECK(imag(expphi.matrix()[ivec][ivec]) == Approx(imag(exp(complex(0.0, -0.1*ivec)))));
-				} else {
-					CHECK(real(expphi.matrix()[ip][ivec]) == 0.0_a);
-					CHECK(imag(expphi.matrix()[ip][ivec]) == 0.0_a);
+
+		{
+			auto expphi = operations::exponential(diagonal, complex(0.0, -0.1), phi, 16);
+			
+			for(int ivec = 0; ivec < nvec; ivec++) {
+				for(int ip = 0; ip < npoint; ip++){
+					if(ip == ivec){
+						CHECK(real(expphi.matrix()[ivec][ivec]) == Approx(real(exp(complex(0.0, -0.1*ivec)))));
+						CHECK(imag(expphi.matrix()[ivec][ivec]) == Approx(imag(exp(complex(0.0, -0.1*ivec)))));
+					} else {
+						CHECK(real(expphi.matrix()[ip][ivec]) == 0.0_a);
+						CHECK(imag(expphi.matrix()[ip][ivec]) == 0.0_a);
+					}
 				}
 			}
 		}
+
+		{
+			auto expphi = phi;
+			operations::exponential_in_place(diagonal, complex(0.0, -0.1), expphi, 16);
+			
+			for(int ivec = 0; ivec < nvec; ivec++) {
+				for(int ip = 0; ip < npoint; ip++){
+					if(ip == ivec){
+						CHECK(real(expphi.matrix()[ivec][ivec]) == Approx(real(exp(complex(0.0, -0.1*ivec)))));
+						CHECK(imag(expphi.matrix()[ivec][ivec]) == Approx(imag(exp(complex(0.0, -0.1*ivec)))));
+					} else {
+						CHECK(real(expphi.matrix()[ip][ivec]) == 0.0_a);
+						CHECK(imag(expphi.matrix()[ip][ivec]) == 0.0_a);
+					}
+				}
+			}
+			
+		}
 		
+		{
+			auto expphi = operations::exponential_2_for_1(diagonal, complex(0.0, -0.1), complex(0.0, -0.2), phi, 16);
+			
+			for(int ivec = 0; ivec < nvec; ivec++) {
+				for(int ip = 0; ip < npoint; ip++){
+					if(ip == ivec){
+						CHECK(real(phi.matrix()[ivec][ivec]) == Approx(real(exp(complex(0.0, -0.2*ivec)))));
+						CHECK(imag(phi.matrix()[ivec][ivec]) == Approx(imag(exp(complex(0.0, -0.2*ivec)))));
+						CHECK(real(expphi.matrix()[ivec][ivec]) == Approx(real(exp(complex(0.0, -0.1*ivec)))));
+						CHECK(imag(expphi.matrix()[ivec][ivec]) == Approx(imag(exp(complex(0.0, -0.1*ivec)))));
+					} else {
+						CHECK(real(phi.matrix()[ip][ivec]) == 0.0_a);
+						CHECK(imag(phi.matrix()[ip][ivec]) == 0.0_a);
+						CHECK(real(expphi.matrix()[ip][ivec]) == 0.0_a);
+						CHECK(imag(expphi.matrix()[ip][ivec]) == 0.0_a);						
+					}
+				}
+			}
+		}
+
 	}
 	
 }
