@@ -30,7 +30,7 @@ neon_SOURCES = neon.cpp
 kripton_SOURCES = kripton.cpp
 nitrogen_SOURCES = nitrogen.cpp
 silicon_SOURCES = silicon.cpp
-co_real_time_SOURCES = co_real_time.cpp
+h2o_real_time_SOURCES = h2o_real_time.cpp
 
 noinst_PROGRAMS =                                \
 	electron_gas_non_interacting                   \
@@ -41,5 +41,5 @@ noinst_PROGRAMS =                                \
 	kripton                                        \
 	nitrogen                                       \
 	silicon                                        \
-	co_real_time
+	h2o_real_time
 
