@@ -67,7 +67,7 @@ namespace operations {
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void laplacian_inplace(basis::field_set<basis::fourier_space, complex> const & ff){
+	void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & ff){
 
 		//DATAOPERATIONS LOOP + GPU::RUN 4D
 #ifdef HAVE_CUDA
