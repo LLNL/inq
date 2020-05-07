@@ -29,6 +29,7 @@
 #include <ions/interaction.hpp>
 #include <input/scf.hpp>
 #include <systems/electrons.hpp>
+#include <observables/dipole.hpp>
 #include <real_time/result.hpp>
 
 namespace real_time {
@@ -39,7 +40,7 @@ namespace real_time {
 		
 		const double dt = 0.055;
 		
-		const int numsteps = 100;
+		const int numsteps = 3000;
 		
 		auto density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 		
@@ -58,6 +59,7 @@ namespace real_time {
 
 		res.time.push_back(0.0);
 		res.energy.push_back(energy.total());
+		res.dipole.push_back(observables::dipole(density));
 		
 		for(int istep = 1; istep <= numsteps; istep++){
 
@@ -80,6 +82,7 @@ namespace real_time {
 
 			res.time.push_back(istep*dt);
 			res.energy.push_back(energy.total());
+			res.dipole.push_back(observables::dipole(density));			
 			
 		}
 

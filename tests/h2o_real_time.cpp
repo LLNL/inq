@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
   
   systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
 
-  perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
+  perturbations::kick({1.0, 0.0, 0.0}, electrons.phi_);
   
   auto energy = ground_state::calculate(electrons, input::interaction::dft(), scf_options);
   
@@ -66,6 +66,14 @@ int main(int argc, char ** argv){
 
   energy_match.check("energy step  0", result.energy[0], -24.837274021088);
   energy_match.check("energy step 10", result.energy[0], -24.837274020908);
+
+  {
+    auto dipole_file = std::ofstream("dipole.dat");
+
+    for(unsigned ii = 0; ii < result.dipole.size(); ii++){
+      dipole_file << ii << '\t' << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
+    }
+  }
   
 	return energy_match.fail();
 }

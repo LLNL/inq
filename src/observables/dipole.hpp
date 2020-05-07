@@ -90,7 +90,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 					
 					auto rr = density.basis().rvector(ixg, iyg, izg);
 
-					density.cubic()[ix][iy][iz] = rr[0]*exp(-norm(rr));						
+					density.cubic()[ix][iy][iz] = rr[0]*exp(-norm(rr));
 						
 				}
 			}
