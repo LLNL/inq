@@ -40,7 +40,7 @@ namespace real_time {
 		
 		const double dt = 0.055;
 		
-		const int numsteps = 3000;
+		const int numsteps = 100;
 		
 		auto density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 		

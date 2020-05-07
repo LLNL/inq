@@ -69,8 +69,6 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 	using namespace Catch::literals;
 	using math::vec3d;
 	
-  const int nvec = 12;
-
 	double ecut = 31.2;
 
   ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
@@ -99,8 +97,8 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 		auto dipole = observables::dipole(density);
 
 		CHECK(dipole[0] == 2.6692428234_a);
-		CHECK(fabs(dipole[1]) < 1e-16);
-		CHECK(fabs(dipole[2]) < 1e-16);
+		CHECK(fabs(dipole[1]) < 1e-14);
+		CHECK(fabs(dipole[2]) < 1e-14);
 		
 	}
 	
@@ -123,7 +121,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 	
 		auto dipole = observables::dipole(density);
 
-		CHECK(fabs(dipole[0]) < 1e-16);
+		CHECK(fabs(dipole[0]) < 1e-14);
 		CHECK(dipole[1] == 2.496792_a);
 		CHECK(dipole[2] == 5.484786_a);
 		
@@ -150,7 +148,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 
 		CHECK(dipole[0] == -0.0000688417_a);
 		CHECK(dipole[1] == 2.042557045_a);
-		CHECK(fabs(dipole[2]) < 1e-16);
+		CHECK(fabs(dipole[2]) < 1e-14);
 		
 	}
 }
