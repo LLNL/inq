@@ -30,6 +30,7 @@ gcc:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
+      - time tests/h2o_real_time
 
 gcc-fast:
     stage: build
@@ -50,6 +51,7 @@ gcc-fast:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
+      - time tests/h2o_real_time
       
 gcc-distcheck:
     stage: build
@@ -84,7 +86,8 @@ clang:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
-
+      - time tests/h2o_real_time
+      
 clang-fast:
     stage: build
     script:
@@ -105,7 +108,8 @@ clang-fast:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
-
+      - time tests/h2o_real_time
+      
 nvcc_nocuda:
     stage: build
     script:
@@ -131,7 +135,8 @@ nvcc_nocuda:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon      
-
+      - time tests/h2o_real_time
+      
 nvcc:
     stage: build
     tags:
@@ -153,7 +158,8 @@ nvcc:
       - time src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon      
-
+      - time tests/h2o_real_time
+      
 clang_cuda:
     stage: build
     tags:
@@ -175,4 +181,5 @@ clang_cuda:
       - time src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
-     
+      - time tests/h2o_real_time
+      

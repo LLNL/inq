@@ -93,8 +93,14 @@ namespace input {
       return mix_field_requested() == mix_field::POTENTIAL;
     }
 
+		auto static energy_tolerance(double etol) {
+			scf solver;
+      solver.energy_tol_ = etol;
+      return solver;
+    }
+				
 		auto energy_tolerance() const {
-			return 1e-7;
+			return energy_tol_.value_or(1e-7);
 		}
         
     friend auto operator|(const scf & solver1, const scf & solver2){
@@ -104,6 +110,7 @@ namespace input {
 			rsolver.eigensolver_	= merge_optional(solver1.eigensolver_, solver2.eigensolver_);
 			rsolver.mixing_	= merge_optional(solver1.mixing_, solver2.mixing_);
 			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);
+			rsolver.energy_tol_	= merge_optional(solver1.energy_tol_, solver2.energy_tol_);
 			return rsolver;
 		}
     
@@ -112,7 +119,8 @@ namespace input {
     nonstd::optional<scf_eigensolver> eigensolver_;
     nonstd::optional<double> mixing_;
     nonstd::optional<mix_field> mix_field_;
-    
+		nonstd::optional<double> energy_tol_;
+		
   };
     
 }

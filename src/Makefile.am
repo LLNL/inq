@@ -90,8 +90,8 @@ noinst_HEADERS =                             \
 	systems/ions.hpp                           \
 	systems/electrons.hpp                      \
 	ground_state/calculate.hpp                 \
-	ground_state/subspace_diagonalization.hpp
-
+	ground_state/subspace_diagonalization.hpp  \
+	real_time/propagate.hpp
 
 all_srcs =                                   \
 	ions/unitcell.cpp

@@ -26,8 +26,12 @@ namespace systems {
 	class electrons;
 }
 
-namespace ground_state{
-	hamiltonian::energy calculate(systems::electrons & electrons, const input::interaction & inter, const input::scf & solver = {});
+namespace ground_state {
+	hamiltonian::energy calculate(systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
+}
+
+namespace real_time {
+	void propagate(systems::electrons & electrons, const input::interaction & inter = {});
 }
 
 namespace systems {
@@ -57,7 +61,8 @@ namespace systems {
     }
 
 		friend hamiltonian::energy ground_state::calculate(systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
-
+		friend void real_time::propagate(systems::electrons & electrons, const input::interaction & inter);
+	
 	private:
 		
 		const systems::ions & ions_;
