@@ -89,6 +89,8 @@ noinst_HEADERS =                             \
 	eigensolvers/steepest_descent.hpp          \
 	systems/ions.hpp                           \
 	systems/electrons.hpp                      \
+	perturbations/kick.hpp                     \
+	observables/dipole.hpp                     \
 	ground_state/calculate.hpp                 \
 	ground_state/subspace_diagonalization.hpp  \
 	real_time/result.hpp                       \

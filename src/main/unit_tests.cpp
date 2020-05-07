@@ -77,6 +77,8 @@
 
 #include <perturbations/kick.hpp>
 
+#include <observables/dipole.hpp>
+
 #include <solvers/poisson.hpp>
 #include <solvers/linear.hpp>
 #include <solvers/least_squares.hpp>
