@@ -64,6 +64,40 @@ int main(int argc, char ** argv){
 		match.check("energy step  90", result.energy[90],  -25.885010469785);
 		match.check("energy step 100", result.energy[100], -25.885010469605);
 
+		match.check("dipole x step   0", result.dipole[0][0],   -0.00035331);
+		match.check("dipole y step   0", result.dipole[0][1],   -2.812602083171);
+		match.check("dipole z step   0", result.dipole[0][2],   -0.00064554);
+		match.check("dipole x step  10", result.dipole[10][0],  -0.000353744);
+		match.check("dipole y step  10", result.dipole[10][1],  -2.812598839225);
+		match.check("dipole z step  10", result.dipole[10][2],  -0.000645826);
+		match.check("dipole x step  20", result.dipole[20][0],  -0.00035331);
+		match.check("dipole y step  20", result.dipole[20][1],  -2.812591107786);
+		match.check("dipole z step  20", result.dipole[20][2],  -0.00064554);
+		match.check("dipole x step  30", result.dipole[30][0],  -0.000353744);
+		match.check("dipole y step  30", result.dipole[30][1],  -2.812589627003);
+		match.check("dipole z step  30", result.dipole[30][2],  -0.000645826);
+		match.check("dipole x step  40", result.dipole[40][0],  -0.00035331);
+		match.check("dipole y step  40", result.dipole[40][1],  -2.812590006079);
+		match.check("dipole z step  40", result.dipole[40][2],  -0.00064554);
+		match.check("dipole x step  50", result.dipole[50][0],  -0.000353744);
+		match.check("dipole y step  50", result.dipole[50][1],  -2.812591796841);
+		match.check("dipole z step  50", result.dipole[50][2],  -0.000645826);
+		match.check("dipole x step  60", result.dipole[60][0],  -0.00035331);
+		match.check("dipole y step  60", result.dipole[60][1],  -2.812590006079);
+		match.check("dipole z step  60", result.dipole[60][2],  -0.00064554);
+		match.check("dipole x step  70", result.dipole[70][0],  -0.000353744);
+		match.check("dipole y step  70", result.dipole[70][1],  -2.812591042731);
+		match.check("dipole z step  70", result.dipole[70][2],  -0.000645826);
+		match.check("dipole x step  80", result.dipole[80][0],  -0.00035331);
+		match.check("dipole y step  80", result.dipole[80][1],  -2.812591796841);
+		match.check("dipole z step  80", result.dipole[80][2],  -0.00064554);
+		match.check("dipole x step  90", result.dipole[90][0],  -0.00035331);
+		match.check("dipole y step  90", result.dipole[90][1],  -2.812592233053);
+		match.check("dipole z step  90", result.dipole[90][2],  -0.00064554);
+		match.check("dipole x step 100", result.dipole[100][0], -0.000353744);
+		match.check("dipole y step 100", result.dipole[100][1], -2.812592836478);
+		match.check("dipole z step 100", result.dipole[100][2], -0.000645826);
+
 	}
 
 	/*
