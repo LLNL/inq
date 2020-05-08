@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <cstdio>
 
@@ -83,8 +84,8 @@ namespace operations {
 				auto fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 				//error checking here
 				
-				auto data_written = write(fd, buffer.data(), buffer.size()*sizeof(Type));
-				assert(data_written == buffer.size()*sizeof(Type));
+				[[maybe_unused]] auto data_written = write(fd, buffer.data(), buffer.size()*sizeof(Type));
+				assert(data_written == long(buffer.size()*sizeof(Type)));
 
 				close(fd);
 				
@@ -107,8 +108,8 @@ namespace operations {
 				auto fd = open(filename.data(), O_RDONLY);
 				//error checking here
 				
-				auto data_read = read(fd, buffer.data(), buffer.size()*sizeof(Type));
-				assert(data_read == buffer.size()*sizeof(Type));
+				[[maybe_unused]] auto data_read = read(fd, buffer.data(), buffer.size()*sizeof(Type));
+				assert(data_read == long(buffer.size()*sizeof(Type)));
 
 				close(fd);
 
