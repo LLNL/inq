@@ -30,6 +30,7 @@ gcc:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
+      - time tests/h2o_ground_state
       - time tests/h2o_real_time
 
 gcc-fast:
@@ -51,6 +52,7 @@ gcc-fast:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
+      - time tests/h2o_ground_state
       - time tests/h2o_real_time
       
 gcc-distcheck:
@@ -86,6 +88,7 @@ clang:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
+      - time tests/h2o_ground_state
       - time tests/h2o_real_time
       
 clang-fast:
@@ -108,6 +111,7 @@ clang-fast:
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
+      - time tests/h2o_ground_state
       - time tests/h2o_real_time
       
 nvcc_nocuda:
@@ -134,7 +138,8 @@ nvcc_nocuda:
       - time mpirun -np 3 --oversubscribe src/inq_unit_tests
       - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
-      - time tests/neon      
+      - time tests/neon
+      - time tests/h2o_ground_state
       - time tests/h2o_real_time
       
 nvcc:
@@ -157,7 +162,8 @@ nvcc:
       - time make -j4
       - time src/inq_unit_tests
       - time tests/hydrogen_local
-      - time tests/neon      
+      - time tests/neon
+      - time tests/h2o_ground_state
       - time tests/h2o_real_time
       
 clang_cuda:
@@ -181,5 +187,6 @@ clang_cuda:
       - time src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
+      - time tests/h2o_ground_state
       - time tests/h2o_real_time
       
