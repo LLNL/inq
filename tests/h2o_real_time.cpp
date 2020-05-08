@@ -32,7 +32,7 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::environment env(argc, argv);
 
-	utils::match energy_match(2.5e-4);
+	utils::match match(1e-5);
 
 	std::vector<input::atom> geo;
 
@@ -46,22 +46,46 @@ int main(int argc, char ** argv){
   
   systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
 
-	operations::io::load("h2o_restart", electrons.phi_);
+	// Propagation without perturbation
+	{
+		operations::io::load("h2o_restart", electrons.phi_);
+		
+		auto result = real_time::propagate(electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(0.055));
+		
+		match.check("energy step   0", result.energy[0],   -25.885010471387);
+		match.check("energy step  10", result.energy[10],  -25.885010471211);
+		match.check("energy step  20", result.energy[20],  -25.885010471034);
+		match.check("energy step  30", result.energy[30],  -25.885010470857);
+		match.check("energy step  40", result.energy[40],  -25.885010470679);
+		match.check("energy step  50", result.energy[50],  -25.885010470501);
+		match.check("energy step  60", result.energy[60],  -25.885010470322);
+		match.check("energy step  70", result.energy[70],  -25.885010470143);
+		match.check("energy step  80", result.energy[80],  -25.885010469964);
+		match.check("energy step  90", result.energy[90],  -25.885010469785);
+		match.check("energy step 100", result.energy[100], -25.885010469605);
 
-  perturbations::kick({1.0, 0.0, 0.0}, electrons.phi_);
-											 
-  auto result = real_time::propagate(electrons);
+	}
 
-  energy_match.check("energy step  0", result.energy[0], -16.903925978590);
-  energy_match.check("energy step 10", result.energy[10], -16.904635586794);
-
-  {
-    auto dipole_file = std::ofstream("dipole.dat");
-
-    for(unsigned ii = 0; ii < result.dipole.size(); ii++){
-      dipole_file << ii << '\t' << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
-    }
-  }
-  
-	return energy_match.fail();
+	/*
+		
+	{
+		operations::io::load("h2o_restart", electrons.phi_);
+		
+		perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
+		
+		auto result = real_time::propagate(electrons);
+		
+		match.check("energy step  0", result.energy[0], -16.903925978590);
+		match.check("energy step 10", result.energy[10], -16.904635586794);
+		
+		{
+			auto dipole_file = std::ofstream("dipole.dat");
+			
+			for(unsigned ii = 0; ii < result.dipole.size(); ii++){
+				dipole_file << ii << '\t' << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
+			}
+		}
+	}
+	*/
+	return match.fail();
 }
