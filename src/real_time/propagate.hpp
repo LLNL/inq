@@ -27,21 +27,20 @@
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
-#include <input/scf.hpp>
+#include <input/rt.hpp>
 #include <systems/electrons.hpp>
 #include <observables/dipole.hpp>
 #include <real_time/result.hpp>
 
 namespace real_time {
 	
-	real_time::result propagate(systems::electrons & electrons, const input::interaction & inter){
+	real_time::result propagate(systems::electrons & electrons, const input::interaction & inter, const input::rt & options){
+
+		const double dt = options.dt();
+		const int numsteps = options.num_steps();
 
 		result res;
-		
-		const double dt = 0.055;
-		
-		const int numsteps = 100;
-		
+
 		auto density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 		
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.ions_.cell(), electrons.atomic_pot_, electrons.ions_.geo(), electrons.states_.num_states(), inter.exchange_coefficient());

@@ -37,6 +37,7 @@ noinst_HEADERS =                             \
 	input/basis.hpp                            \
 	input/cell.hpp                             \
 	input/config.hpp                           \
+	input/rt.hpp                               \
 	input/scf.hpp                              \
 	input/species.hpp                          \
 	math/array.hpp                             \

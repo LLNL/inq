@@ -37,6 +37,7 @@
 #include <input/cell.hpp>
 #include <input/species.hpp>
 #include <input/scf.hpp>
+#include <input/rt.hpp>
 
 #include <config/path.hpp>
 
