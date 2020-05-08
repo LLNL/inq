@@ -23,6 +23,7 @@
 #include <config/path.hpp>
 #include <input/atom.hpp>
 #include <utils/match.hpp>
+#include <operations/io.hpp>
 #include <perturbations/kick.hpp>
 #include <ground_state/calculate.hpp>
 #include <real_time/propagate.hpp>
@@ -47,8 +48,6 @@ int main(int argc, char ** argv){
   
   systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
 
-  perturbations::kick({1.0, 0.0, 0.0}, electrons.phi_);
-  
   auto energy = ground_state::calculate(electrons, input::interaction::dft(), scf_options);
   
   energy_match.check("total energy",        energy.total(),         -25.885010460377);
@@ -61,11 +60,17 @@ int main(int argc, char ** argv){
   energy_match.check("XC density integral", energy.nvxc,             -5.486978277443);
   energy_match.check("HF exchange energy",  energy.hf_exchange,       0.0);
   energy_match.check("ion-ion energy",      energy.ion,              -1.047736451449);
-  
+
+	operations::io::save("h2o_restart", electrons.phi_);
+
+	operations::io::load("h2o_restart", electrons.phi_);
+
+  perturbations::kick({1.0, 0.0, 0.0}, electrons.phi_);
+											 
   auto result = real_time::propagate(electrons);
 
-  energy_match.check("energy step  0", result.energy[0], -24.837274021088);
-  energy_match.check("energy step 10", result.energy[0], -24.837274020908);
+  energy_match.check("energy step  0", result.energy[0], -16.903925978590);
+  energy_match.check("energy step 10", result.energy[10], -16.904635586794);
 
   {
     auto dipole_file = std::ofstream("dipole.dat");
