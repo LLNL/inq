@@ -30,6 +30,7 @@ neon_SOURCES = neon.cpp
 kripton_SOURCES = kripton.cpp
 nitrogen_SOURCES = nitrogen.cpp
 silicon_SOURCES = silicon.cpp
+h2o_ground_state_SOURCES = h2o_ground_state.cpp
 h2o_real_time_SOURCES = h2o_real_time.cpp
 
 noinst_PROGRAMS =                                \
@@ -41,5 +42,6 @@ noinst_PROGRAMS =                                \
 	kripton                                        \
 	nitrogen                                       \
 	silicon                                        \
+	h2o_ground_state                               \
 	h2o_real_time
 

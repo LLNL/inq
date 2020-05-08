@@ -42,26 +42,26 @@ int main(int argc, char ** argv){
 
 	systems::ions ions(input::cell::cubic(12.0, 11.0, 10.0) | input::cell::finite(), geo);
 
+  auto scf_options = input::scf::conjugate_gradient() | input::scf::energy_tolerance(1.0e-5) | input::scf::density_mixing();
+  
   input::config conf;
   
   systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
 
-	operations::io::load("h2o_restart", electrons.phi_);
+  auto energy = ground_state::calculate(electrons, input::interaction::dft(), scf_options);
+  
+  energy_match.check("total energy",        energy.total(),         -25.885010460377);
+  energy_match.check("kinetic energy",      energy.kinetic(),        12.011756577795);
+  energy_match.check("eigenvalues",         energy.eigenvalues,      -4.247001211716);
+  energy_match.check("Hartree energy",      energy.hartree,          21.211005609920);
+  energy_match.check("external energy",     energy.external,        -50.383959864425);
+  energy_match.check("non-local energy",    energy.nonlocal,         -2.809830867482);
+  energy_match.check("XC energy",           energy.xc,               -4.866245464735);
+  energy_match.check("XC density integral", energy.nvxc,             -5.486978277443);
+  energy_match.check("HF exchange energy",  energy.hf_exchange,       0.0);
+  energy_match.check("ion-ion energy",      energy.ion,              -1.047736451449);
 
-  perturbations::kick({1.0, 0.0, 0.0}, electrons.phi_);
-											 
-  auto result = real_time::propagate(electrons);
-
-  energy_match.check("energy step  0", result.energy[0], -16.903925978590);
-  energy_match.check("energy step 10", result.energy[10], -16.904635586794);
-
-  {
-    auto dipole_file = std::ofstream("dipole.dat");
-
-    for(unsigned ii = 0; ii < result.dipole.size(); ii++){
-      dipole_file << ii << '\t' << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
-    }
-  }
+	operations::io::save("h2o_restart", electrons.phi_);
   
 	return energy_match.fail();
 }
