@@ -82,7 +82,7 @@ namespace operations {
 				buffer = phi.matrix().rotated()[ist];
 
 				auto fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-				//error checking here
+				assert(fd != -1);
 				
 				[[maybe_unused]] auto data_written = write(fd, buffer.data(), buffer.size()*sizeof(Type));
 				assert(data_written == long(buffer.size()*sizeof(Type)));
@@ -106,7 +106,7 @@ namespace operations {
 				auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
 				
 				auto fd = open(filename.data(), O_RDONLY);
-				//error checking here
+				assert(fd != -1);
 				
 				[[maybe_unused]] auto data_read = read(fd, buffer.data(), buffer.size()*sizeof(Type));
 				assert(data_read == long(buffer.size()*sizeof(Type)));
