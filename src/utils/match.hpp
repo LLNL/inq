@@ -40,7 +40,7 @@ namespace utils {
 		}
 
     template <class Type>
-    auto check(const std::string & match_name, const Type & reference, const Type & value){
+    auto check(const std::string & match_name, const Type & value, const Type & reference){
 
       auto diff = fabs(reference - value);
       
