@@ -110,4 +110,4 @@ bin_PROGRAMS  =                              \
 @PACKAGE_NAME@_unit_tests_SOURCES = main/unit_tests.cpp main/unit_tests_main.cpp $(all_srcs)
 
 check: @PACKAGE_NAME@_unit_tests
-	./@PACKAGE_NAME@_unit_tests
+	cd `mktemp -d -t inq-units-test-XXXXXXXXXXX` && @abs_builddir@/@PACKAGE_NAME@_unit_tests
