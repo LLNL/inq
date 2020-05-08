@@ -71,6 +71,7 @@ noinst_HEADERS =                             \
 	operations/matrix_operator.hpp             \
 	operations/laplacian.hpp                   \
 	operations/exponential.hpp                 \
+	operations/io.hpp                          \
 	density/calculate.hpp                      \
 	density/normalize.hpp                      \
 	hamiltonian/atomic_potential.hpp           \
