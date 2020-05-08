@@ -71,8 +71,9 @@ namespace operations {
 
 			boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
 
-			createdir(dirname);
-			
+			if(phi.full_comm().rank() == 0) createdir(dirname);
+			phi.full_comm().barrier();
+				 
 			for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
 				auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
@@ -134,11 +135,11 @@ TEST_CASE("function operations::io", "[operations::io]") {
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {1, comm.size()});
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
 	
 	auto basis_comm = cart_comm.axis(1);
 	
-	CHECK(basis_comm.size() == comm.size());
+	CHECK(basis_comm.size() == 1);
 		
 	basis::trivial bas(npoint, basis_comm);
 
@@ -146,7 +147,7 @@ TEST_CASE("function operations::io", "[operations::io]") {
 	basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
 	
 	for(int ii = 0; ii < bas.part().local_size(); ii++){
-		for(int jj = 0; jj < nvec; jj++){
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			auto jjg = aa.set_part().local_to_global(jj);
 			auto iig = bas.part().local_to_global(ii);
 			aa.matrix()[ii][jj] = 20.0*(iig + 1)*sqrt(jjg);
@@ -158,7 +159,7 @@ TEST_CASE("function operations::io", "[operations::io]") {
 	operations::io::load("restart/", bb);
 	
 	for(int ii = 0; ii < bas.part().local_size(); ii++){
-		for(int jj = 0; jj < nvec; jj++){
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			CHECK(aa.matrix()[ii][jj] == bb.matrix()[ii][jj]);
 		}
 	}
