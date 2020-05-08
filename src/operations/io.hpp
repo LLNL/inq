@@ -46,19 +46,16 @@ namespace operations {
 
 			DIR* dir = opendir(dirname.c_str());
 			if (dir) {
-				// The directory exists
+				// The directory exists, we just use it
 				closedir(dir);
-				return;
-
-			} else if (ENOENT == errno) {
-				// The directory does not exist
-				[[maybe_unused]] auto status = mkdir(dirname.c_str(), 0777);
-				assert(status == 0);			
 
 			} else {
-				// opendir() failed for some other reason
-				assert(false);
-
+				// The directory does not exist
+				auto status = mkdir(dirname.c_str(), 0777);
+				if(status != 0){
+					std::cerr << "Error: cannot create restart directory '" << dirname << "/'." << std::endl;
+					exit(1);
+				}
 			}
 
 		}
@@ -82,7 +79,10 @@ namespace operations {
 				buffer = phi.matrix().rotated()[ist];
 
 				auto fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-				assert(fd != -1);
+				if(fd == -1){
+					std::cerr << "Error: cannot create restart file '" << filename << "'." << std::endl;
+					exit(1);
+				}
 				
 				[[maybe_unused]] auto data_written = write(fd, buffer.data(), buffer.size()*sizeof(Type));
 				assert(data_written == long(buffer.size()*sizeof(Type)));
@@ -101,12 +101,21 @@ namespace operations {
 
 			boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
 
+			DIR* dir = opendir(dirname.c_str());
+			if (!dir) {
+				std::cerr << "Error: cannot open restart directory '" << dirname << "/'." << std::endl;
+				exit(1);
+			}
+			
 			for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
 				auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
 				
-				auto fd = open(filename.data(), O_RDONLY);
-				assert(fd != -1);
+				auto fd = open(filename.c_str(), O_RDONLY);
+				if(fd == -1){
+					std::cerr << "Error: cannot open restart file '" << filename << "'." << std::endl;
+					exit(1);
+				}
 				
 				[[maybe_unused]] auto data_read = read(fd, buffer.data(), buffer.size()*sizeof(Type));
 				assert(data_read == long(buffer.size()*sizeof(Type)));
