@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
 
 		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 		
-		auto energy = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
+		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.350877)
@@ -82,12 +82,12 @@ int main(int argc, char ** argv){
 
 		*/
 		
-		energy_match.check("total energy",     energy.total()    , -66.260996130282);
-		energy_match.check("kinetic energy",   energy.kinetic()  ,  35.546509585678);
-		energy_match.check("eigenvalues",      energy.eigenvalues, -61.740955117197);
-		energy_match.check("external energy",  energy.external   , -79.409327530205);
-		energy_match.check("non-local energy", energy.nonlocal   , -17.878137172671);
-		energy_match.check("ion-ion energy",   energy.ion        , -4.52004101);
+		energy_match.check("total energy",     result.energy.total()    , -66.260996130282);
+		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.546509585678);
+		energy_match.check("eigenvalues",      result.energy.eigenvalues, -61.740955117197);
+		energy_match.check("external energy",  result.energy.external   , -79.409327530205);
+		energy_match.check("non-local energy", result.energy.nonlocal   , -17.878137172671);
+		energy_match.check("ion-ion energy",   result.energy.ion        , -4.52004101);
 		
 	}
 

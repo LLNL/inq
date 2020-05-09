@@ -32,19 +32,20 @@
 #include <ions/interaction.hpp>
 #include <input/scf.hpp>
 #include <systems/electrons.hpp>
+#include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
 namespace ground_state {
 	
-	hamiltonian::energy calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
+	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
 		
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
 		
 		ham.info(std::cout);
 		
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
-		
-		hamiltonian::energy energy;
+
+		ground_state::result res;
 		
 		operations::preconditioner prec;
 		
@@ -59,9 +60,9 @@ namespace ground_state {
 		density::normalize(density, electrons.states_.total_charge());
 		std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
 		
-		ham.scalar_potential = sc.ks_potential(density, energy);
+		ham.scalar_potential = sc.ks_potential(density, res.energy);
 		
-		energy.ion = ::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+		res.energy.ion = ::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 		//DATAOPERATIONS STL FILL
 		std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
@@ -111,7 +112,7 @@ namespace ground_state {
 				density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 			}
 			
-			auto vks = sc.ks_potential(density, energy);
+			auto vks = sc.ks_potential(density, res.energy);
 			
 			if(inter.self_consistent() and solver.mix_potential()) {
 				mixer(ham.scalar_potential.linear(), vks.linear());
@@ -132,14 +133,14 @@ namespace ground_state {
 				
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 				
-				energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, energy_term);
-				energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
-				energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
+				res.energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, energy_term);
+				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
+				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
 				
 				auto potdiff = operations::integral_absdiff(vks, ham.scalar_potential)/fabs(operations::integral(vks));
 				
 				tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e dvks = %5.0e\n",
-										iiter, energy.total(), energy.eigenvalues - old_energy, potdiff);
+										iiter, res.energy.total(), res.energy.eigenvalues - old_energy, potdiff);
 				
 				for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 					tfm::format(std::cout, " state %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
@@ -148,20 +149,20 @@ namespace ground_state {
 				
 			}
 			
-			if(fabs(energy.eigenvalues - old_energy) < solver.energy_tolerance()){
+			if(fabs(res.energy.eigenvalues - old_energy) < solver.energy_tolerance()){
 				conv_count++;
 				if(conv_count > 2) break;
 			} else {
 				conv_count = 0;
 			}
 			
-			old_energy = energy.eigenvalues;
+			old_energy = res.energy.eigenvalues;
 			
 		}
 		
-		energy.print(std::cout);
+		res.energy.print(std::cout);
 		
-		return energy;			
+		return res;			
 	}
 }
 

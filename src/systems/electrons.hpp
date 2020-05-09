@@ -22,6 +22,7 @@
 #include <input/rt.hpp>
 #include <input/scf.hpp>
 #include <ions/interaction.hpp>
+#include <ground_state/result.hpp>
 #include <real_time/result.hpp>
 
 namespace systems {
@@ -29,7 +30,7 @@ namespace systems {
 }
 		
 namespace ground_state {
-	hamiltonian::energy calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
+	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
 }
 
 namespace real_time {
@@ -61,7 +62,7 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-		friend hamiltonian::energy ground_state::calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
+		friend 	ground_state::result ground_state::calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
 		friend real_time::result real_time::propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options);
 		
 	private:

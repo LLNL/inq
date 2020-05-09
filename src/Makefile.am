@@ -94,6 +94,7 @@ noinst_HEADERS =                             \
 	perturbations/kick.hpp                     \
 	observables/dipole.hpp                     \
 	ground_state/calculate.hpp                 \
+	ground_state/result.hpp                    \
 	ground_state/subspace_diagonalization.hpp  \
 	real_time/result.hpp                       \
 	real_time/propagate.hpp
