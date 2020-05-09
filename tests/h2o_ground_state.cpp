@@ -48,7 +48,7 @@ int main(int argc, char ** argv){
   
   systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
 
-  auto energy = ground_state::calculate(electrons, input::interaction::dft(), scf_options);
+  auto energy = ground_state::calculate(ions, electrons, input::interaction::dft(), scf_options);
   
   energy_match.check("total energy",        energy.total(),         -25.885010460377);
   energy_match.check("kinetic energy",      energy.kinetic(),        12.011756577795);

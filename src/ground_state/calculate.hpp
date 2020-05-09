@@ -36,9 +36,9 @@
 
 namespace ground_state {
 	
-	hamiltonian::energy calculate(systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
+	hamiltonian::energy calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
 		
-		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.ions_.cell(), electrons.atomic_pot_, electrons.ions_.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
+		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
 		
 		ham.info(std::cout);
 		
@@ -53,15 +53,15 @@ namespace ground_state {
 		
 		double old_energy = DBL_MAX;
 		
-		sc.update_ionic_fields(electrons.ions_, electrons.atomic_pot_);
+		sc.update_ionic_fields(ions, electrons.atomic_pot_);
 		
-		auto density = electrons.atomic_pot_.atomic_electronic_density(electrons.density_basis_, electrons.ions_.cell(), electrons.ions_.geo());
+		auto density = electrons.atomic_pot_.atomic_electronic_density(electrons.density_basis_, ions.cell(), ions.geo());
 		density::normalize(density, electrons.states_.total_charge());
 		std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
 		
 		ham.scalar_potential = sc.ks_potential(density, energy);
 		
-		energy.ion = ::ions::interaction_energy(electrons.ions_.cell(), electrons.ions_.geo(), electrons.atomic_pot_);
+		energy.ion = ::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 		//DATAOPERATIONS STL FILL
 		std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);

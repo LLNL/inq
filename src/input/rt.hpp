@@ -51,7 +51,7 @@ namespace input {
       return solver;
     }
 				
-		auto num_steps() const {
+ 		auto num_steps() const {
 			return num_steps_.value_or(100);
 		}
         

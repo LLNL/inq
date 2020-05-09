@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
 
 		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 		
-		auto energy = ground_state::calculate(electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
+		auto energy = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.350877)

@@ -50,7 +50,7 @@ int main(int argc, char ** argv){
 	{
 		operations::io::load("h2o_restart", electrons.phi_);
 		
-		auto result = real_time::propagate(electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(0.055));
+		auto result = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(0.055));
 		
 		match.check("energy step   0", result.energy[0],   -25.885010471387);
 		match.check("energy step  10", result.energy[10],  -25.885010471211);
@@ -100,26 +100,24 @@ int main(int argc, char ** argv){
 
 	}
 
-	/*
-		
 	{
 		operations::io::load("h2o_restart", electrons.phi_);
 		
 		perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
 		
-		auto result = real_time::propagate(electrons);
+		auto result = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(1000) | input::rt::dt(0.055));
 		
-		match.check("energy step  0", result.energy[0], -16.903925978590);
+		/*		match.check("energy step  0", result.energy[0], -16.903925978590);
 		match.check("energy step 10", result.energy[10], -16.904635586794);
-		
+		*/
 		{
 			auto dipole_file = std::ofstream("dipole.dat");
 			
 			for(unsigned ii = 0; ii < result.dipole.size(); ii++){
-				dipole_file << ii << '\t' << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
+				dipole_file << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
 			}
 		}
 	}
-	*/
+
 	return match.fail();
 }

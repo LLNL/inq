@@ -48,7 +48,7 @@ int main(int argc, char ** argv){
 	// Non Interacting
 	{
 	
-		auto energy = ground_state::calculate(electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
+		auto energy = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -91,7 +91,7 @@ int main(int argc, char ** argv){
 	// LDA
 	{
 		
-		auto energy = ground_state::calculate(electrons);
+		auto energy = ground_state::calculate(ions, electrons);
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)

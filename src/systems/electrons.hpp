@@ -29,11 +29,11 @@ namespace systems {
 }
 		
 namespace ground_state {
-	hamiltonian::energy calculate(systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
+	hamiltonian::energy calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
 }
 
 namespace real_time {
-	real_time::result propagate(systems::electrons & electrons, const input::interaction & inter = {}, const input::rt & options = {});
+	real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::rt & options = {});
 }
 
 namespace systems {
@@ -44,11 +44,10 @@ namespace systems {
 	
 		enum class error { NO_ELECTRONS };
 		
-		electrons(const systems::ions & ions_arg, const input::basis arg_basis_input, const input::config & conf):
-			ions_(ions_arg),
-			states_basis_(ions_.cell(), arg_basis_input),
+		electrons(const systems::ions & ions, const input::basis arg_basis_input, const input::config & conf):
+			states_basis_(ions.cell(), arg_basis_input),
 			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
-			atomic_pot_(ions_.geo().num_atoms(), ions_.geo().atoms()),
+			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms()),
 			states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
 			phi_(states_basis_, states_.num_states()){
 			
@@ -62,12 +61,11 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-		friend hamiltonian::energy ground_state::calculate(systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
-		friend real_time::result real_time::propagate(systems::electrons & electrons, const input::interaction & inter, const input::rt & options);
+		friend hamiltonian::energy ground_state::calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
+		friend real_time::result real_time::propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options);
 		
 	private:
 		
-		const systems::ions & ions_;
 		basis::real_space states_basis_;
 		basis::real_space density_basis_;
 		hamiltonian::atomic_potential atomic_pot_;

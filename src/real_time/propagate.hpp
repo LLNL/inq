@@ -34,7 +34,7 @@
 
 namespace real_time {
 	
-	real_time::result propagate(systems::electrons & electrons, const input::interaction & inter, const input::rt & options){
+	real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options){
 
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
@@ -43,18 +43,18 @@ namespace real_time {
 
 		auto density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 		
-		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.ions_.cell(), electrons.atomic_pot_, electrons.ions_.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
+		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
 		hamiltonian::energy energy;
 		
-		sc.update_ionic_fields(electrons.ions_, electrons.atomic_pot_);
+		sc.update_ionic_fields(ions, electrons.atomic_pot_);
 		
 		ham.scalar_potential = sc.ks_potential(density, energy);
 
 		auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 
-		energy.ion = ::ions::interaction_energy(electrons.ions_.cell(), electrons.ions_.geo(), electrons.atomic_pot_);
+		energy.ion = ::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 		energy.print(std::cout);
 		
