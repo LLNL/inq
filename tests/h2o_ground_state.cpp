@@ -32,7 +32,7 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::environment env(argc, argv);
 
-	utils::match energy_match(2.5e-4);
+	utils::match match(2.5e-4);
 
 	std::vector<input::atom> geo;
 
@@ -50,18 +50,22 @@ int main(int argc, char ** argv){
 
   auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), scf_options);
   
-  energy_match.check("total energy",        result.energy.total(),         -25.885010460377);
-  energy_match.check("kinetic energy",      result.energy.kinetic(),        12.011756577795);
-  energy_match.check("eigenvalues",         result.energy.eigenvalues,      -4.247001211716);
-  energy_match.check("Hartree energy",      result.energy.hartree,          21.211005609920);
-  energy_match.check("external energy",     result.energy.external,        -50.383959864425);
-  energy_match.check("non-local energy",    result.energy.nonlocal,         -2.809830867482);
-  energy_match.check("XC energy",           result.energy.xc,               -4.866245464735);
-  energy_match.check("XC density integral", result.energy.nvxc,             -5.486978277443);
-  energy_match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
-  energy_match.check("ion-ion energy",      result.energy.ion,              -1.047736451449);
+  match.check("total energy",        result.energy.total(),         -25.885010460377);
+  match.check("kinetic energy",      result.energy.kinetic(),        12.011756577795);
+  match.check("eigenvalues",         result.energy.eigenvalues,      -4.247001211716);
+  match.check("Hartree energy",      result.energy.hartree,          21.211005609920);
+  match.check("external energy",     result.energy.external,        -50.383959864425);
+  match.check("non-local energy",    result.energy.nonlocal,         -2.809830867482);
+  match.check("XC energy",           result.energy.xc,               -4.866245464735);
+  match.check("XC density integral", result.energy.nvxc,             -5.486978277443);
+  match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
+  match.check("ion-ion energy",      result.energy.ion,              -1.047736451449);
 
+	match.check("dipole x", result.dipole[0], -0.000357977762);
+	match.check("dipole y", result.dipole[1], -2.812600825118);
+	match.check("dipole z", result.dipole[2], -0.000653986920);
+	
 	operations::io::save("h2o_restart", electrons.phi_);
   
-	return energy_match.fail();
+	return match.fail();
 }

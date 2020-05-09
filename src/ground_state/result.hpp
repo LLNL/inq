@@ -10,6 +10,7 @@ namespace ground_state {
 	class result {
 	public:
 		hamiltonian::energy energy;
+		math::vec3d dipole;
 	};
 }
 

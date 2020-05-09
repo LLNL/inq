@@ -31,6 +31,7 @@
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
 #include <input/scf.hpp>
+#include <observables/dipole.hpp>
 #include <systems/electrons.hpp>
 #include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
@@ -91,7 +92,8 @@ namespace ground_state {
 					assert(false);
 				}
 				
-					electrons.phi_ = operations::space::to_real(std::move(fphi));
+				electrons.phi_ = operations::space::to_real(std::move(fphi));
+				
 			}
 			
 			//update the Hartree-Fock operator, mixing the new and old orbitals
@@ -161,6 +163,12 @@ namespace ground_state {
 		}
 		
 		res.energy.print(std::cout);
+
+		if(ions.cell().periodic_dimensions() == 0){
+			res.dipole = observables::dipole(density);
+		} else {
+			res.dipole = 0.0;
+		}
 		
 		return res;			
 	}

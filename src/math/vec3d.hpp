@@ -43,6 +43,13 @@ namespace math {
 
 		GPU_FUNCTION explicit vec3d(const double* r) : x_(r[0]), y_(r[1]), z_(r[2]) {}
 
+		GPU_FUNCTION vec3d const & operator =(const double & aa) {
+			x_ = aa;
+			y_ = aa;
+			z_ = aa;
+			return *this;
+		}
+		
 		GPU_FUNCTION double & operator[](int i){
 			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
 			return reinterpret_cast<double*>(this)[i];
@@ -227,6 +234,12 @@ TEST_CASE("function math::vec3d", "[math::vec3d]") {
 	CHECK(x4[0] == -45.0_a);
 	CHECK(x4[1] == 0.2277_a);
 	CHECK(x4[2] == 3.1_a);
+
+	x4 = -3.3;
+	
+	CHECK(x4[0] == -3.3_a);
+	CHECK(x4[1] == -3.3_a);
+	CHECK(x4[2] == -3.3_a);
 	
 }
 	
