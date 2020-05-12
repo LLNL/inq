@@ -5,7 +5,6 @@
 
 #include <cfloat>
 
-#include <systems/ions.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
@@ -24,6 +23,7 @@
 #include <ions/interaction.hpp>
 #include <ground_state/result.hpp>
 #include <real_time/result.hpp>
+#include <systems/ions.hpp>
 
 namespace systems {
 	class electrons;
