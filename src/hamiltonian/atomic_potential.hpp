@@ -58,7 +58,7 @@ namespace hamiltonian {
 				auto file_path = pseudo_set_.file_path(atom_list[iatom]);
 				if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
 
-				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep_));
+				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep_, gcutoff));
 				
 				auto & pseudo = insert.first->second;
 				
