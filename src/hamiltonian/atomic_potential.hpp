@@ -43,7 +43,7 @@ namespace hamiltonian {
     };
 
     template <class atom_array>
-    atomic_potential(const int natoms, const atom_array & atom_list, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+    atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			sep_(0.625), //this is the default from octopus
       pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
 			comm_(comm),
@@ -263,18 +263,20 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 	using pseudo::element;
   using input::species;
 
+	double const gcut = 0.785;
+
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	SECTION("Non-existing element"){
     std::vector<species> el_list({element("P"), element("X")});
 
-    CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list));
+    CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut));
   }
   
   SECTION("Duplicated element"){
     std::vector<species> el_list({element("N"), element("N")});
 
-    hamiltonian::atomic_potential pot(el_list.size(), el_list.begin());
+    hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut);
 
     CHECK(pot.num_species() == 1);
     CHECK(pot.num_electrons() == 10.0_a);
@@ -284,7 +286,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
   SECTION("Empty list"){
     std::vector<species> el_list;
     
-    hamiltonian::atomic_potential pot(el_list.size(), el_list);
+    hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut);
 
     CHECK(pot.num_species() == 0);
     CHECK(pot.num_electrons() == 0.0_a);
@@ -296,7 +298,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
   SECTION("CNOH"){
     species el_list[] = {element("C"), element("N"), element("O"), element("H")};
 
-    hamiltonian::atomic_potential pot(4, el_list);
+    hamiltonian::atomic_potential pot(4, el_list, gcut);
 
     CHECK(pot.num_species() == 4);
     CHECK(pot.num_electrons() == 16.0_a);
@@ -306,14 +308,14 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
     ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
 
-    hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), comm);
-
-    CHECK(pot.num_species() == 2);
-    CHECK(pot.num_electrons() == 30.0_a);
-
 		double ll = 20.0;
 		auto cell = input::cell::cubic(ll, ll, ll);
 		basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
+
+    hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), comm);
+		
+    CHECK(pot.num_species() == 2);
+    CHECK(pot.num_electrons() == 30.0_a);
 
 		rs.info(std::cout);
 		

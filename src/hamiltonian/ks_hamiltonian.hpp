@@ -231,7 +231,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
+	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff());
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
