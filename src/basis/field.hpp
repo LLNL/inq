@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-OMPI_CXX=$CXX /home/correaa/prj/inq.git/blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
+OMPI_CXX=$CXX inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BASIS_FIELD
