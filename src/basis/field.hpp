@@ -197,15 +197,15 @@ int main( int argc, char* argv[] ) {
 
 TEST_CASE("Class basis::field", "[basis::field]"){
 
-  using namespace Catch::literals;
-  using math::vec3d;
-  
-  double ecut = 40.0;
+	using namespace Catch::literals;
+	using math::vec3d;
+
+	double ecut = 40.0;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-  ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
+	ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
+	basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
 
 	basis::field<basis::real_space, double> ff(rs, comm);
 
