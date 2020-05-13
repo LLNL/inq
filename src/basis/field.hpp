@@ -38,21 +38,21 @@ OMPI_CXX=$CXX /home/correaa/prj/inq.git/blds/gcc/scripts/inc++ -x c++ $0 -o $0x&
 namespace basis {
 	
 	template<class b_type, class type>
-  class field {
+	class field {
 
-  public:
+	public:
 
 		typedef math::array<type, 1> internal_array_type;
 		typedef b_type basis_type;
 		typedef type element_type;
 		
-    field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+		field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			basis_comm_(comm),
 			linear_(basis.part().local_size()),
 			basis_(basis){
 
 			assert(basis_.part().comm_size() == basis_comm_.size());
-    }
+		}
 
 		template <class any_type>
 		field(skeleton_wrapper<field<b_type, any_type>> const & skeleton)
@@ -176,7 +176,7 @@ namespace basis {
 		internal_array_type linear_;
 		basis_type basis_;
 
-  };
+	};
 	
 }
 
