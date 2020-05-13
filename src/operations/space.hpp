@@ -24,14 +24,14 @@
 #include <gpu/run.hpp>
 #include <basis/field_set.hpp>
 
-#if 0
+#if 1
 #include <multi/adaptors/fftw.hpp>
 
 #ifdef HAVE_CUDA
 #include <multi/adaptors/cufft.hpp>
 #endif
 #endif
-#include <multi/adaptors/fft.hpp>
+//#include <multi/adaptors/fft.hpp>
 
 #include <cassert>
 
