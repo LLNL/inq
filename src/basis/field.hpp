@@ -78,11 +78,6 @@ namespace basis {
 		//set to a scalar value
 		field& operator=(element_type const& value){ // this makes sense only for zero
 			linear_.fill(value);
-			//DATAOPERATIONS GPU::RUN FILL
-		//	gpu::run(linear_.size(),
-		//					 [lin = begin(linear_), value] GPU_LAMBDA (auto ii){
-		//						 lin[ii] = value;
-		//					 });
 			return *this;
 		}
 
@@ -140,7 +135,7 @@ namespace basis {
 				if(ip >= size) ip -= size;
 				point[dir] = ip;
 				auto rr = fld.basis().rvector(point);
-			//	tfm::format(file, "%f %e %e\n", rr[dir], ::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
+				tfm::format(file, "%f %e %e\n", rr[dir], ::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
 			}
 		}
 
@@ -150,9 +145,6 @@ namespace basis {
 
 
 		auto complex() const {
-		//	field<basis::real_space, std::complex<type>> complex_field(skeleton());
-		//	complex_field.linear() = linear();
-		//	return complex_field;
 			return field<basis::real_space, std::complex<element_type>>(*this);
 		}
 
