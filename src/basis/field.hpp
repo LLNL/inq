@@ -163,14 +163,9 @@ namespace basis {
 	
 }
 
-#if (not __INCLUDE_LEVEL__) or defined(UNIT_TEST) or defined(_TEST_BASIS_FIELD)
+#if (not __INCLUDE_LEVEL__) or defined(UNIT_TEST)
 #if (not __INCLUDE_LEVEL__)
-#define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
-int main( int argc, char* argv[] ) {
-	boost::mpi3::environment env(argc, argv);
-	return Catch::Session().run( argc, argv );
-}
+#include "../main/unit_tests_main.cpp"
 #endif
 
 #include <basis/real_space.hpp>
