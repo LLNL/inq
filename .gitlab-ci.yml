@@ -173,7 +173,7 @@ nvcc:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
-      - time make -j4
+      - time make -j4 install
       - time src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
@@ -197,7 +197,7 @@ clang_cuda:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
-      - time make -j4
+      - time make -j4 install
       - time src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
