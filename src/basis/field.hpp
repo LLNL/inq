@@ -37,14 +37,14 @@ OMPI_CXX=$CXX /home/correaa/prj/inq.git/blds/gcc/scripts/inc++ -x c++ $0 -o $0x&
 
 namespace basis {
 	
-	template<class b_type, class type>
+	template<class Basis, typename T>
 	class field {
 
 	public:
 
-		typedef math::array<type, 1> internal_array_type;
-		typedef b_type basis_type;
-		typedef type element_type;
+		using element_type = T;
+		using basis_type = Basis;
+		using internal_array_type = math::array<element_type, 1>;
 		
 		field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			basis_comm_(comm),
@@ -54,13 +54,20 @@ namespace basis {
 			assert(basis_.part().comm_size() == basis_comm_.size());
 		}
 
-		template <class any_type>
-		field(skeleton_wrapper<field<b_type, any_type>> const & skeleton)
+		template <class OtherT>
+		field(skeleton_wrapper<field<basis_type, OtherT>> const & skeleton)
 			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
 		}
 
+		template<class, class> friend class field;
+		template<typename OtherT>
+		field(field<basis_type, OtherT> const& o) 
+		: basis_comm_(o.basis_comm_), linear_(o.linear_), basis_(o.basis_){
+			static_assert(std::is_constructible<element_type, T>{}, "!");
+		}
+
 		auto skeleton() const {
-			return skeleton_wrapper<field<b_type, type>>(*this);
+			return skeleton_wrapper<field<basis_type, element_type>>(*this);
 		}
 
 		field(const field & coeff) = delete; // TODO make fields copyable
@@ -69,13 +76,21 @@ namespace basis {
 		field & operator=(field && coeff) = default;
 
 		//set to a scalar value
-		field& operator=(type const& value){ // this makes sense only for zero
+		field& operator=(element_type const& value){ // this makes sense only for zero
 			linear_.fill(value);
 			//DATAOPERATIONS GPU::RUN FILL
 		//	gpu::run(linear_.size(),
 		//					 [lin = begin(linear_), value] GPU_LAMBDA (auto ii){
 		//						 lin[ii] = value;
 		//					 });
+			return *this;
+		}
+
+		template<typename OtherT>
+		field& operator=(field<basis_type, OtherT> const& o){
+			static_assert( std::is_assignable<element_type&, OtherT>{}, "!" );
+			assert( o.basis_ == basis_ and o.basis_comm_ == basis_comm_ );
+			linear() = o.linear();
 			return *this;
 		}
 
@@ -138,22 +153,7 @@ namespace basis {
 		//	field<basis::real_space, std::complex<type>> complex_field(skeleton());
 		//	complex_field.linear() = linear();
 		//	return complex_field;
-			return field<basis::real_space, std::complex<type>>(*this);
-		}
-
-		template<class, class> friend class field;
-		template<typename T>
-		field(field<b_type, T> const& o) 
-		: basis_comm_(o.basis_comm_), linear_(o.linear_), basis_(o.basis_){
-			static_assert(std::is_constructible<element_type, T>{}, "!");
-		}
-
-		template<typename T>
-		field& operator=(field<b_type, T> const& o){
-			static_assert( std::is_assignable<element_type&, T>{}, "!" );
-			assert( o.basis_ == basis_ and o.basis_comm_ == basis_comm_ );
-			linear() = o.linear();
-			return *this;
+			return field<basis::real_space, std::complex<element_type>>(*this);
 		}
 
 		field<basis::real_space, double> real() const {
