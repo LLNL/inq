@@ -1,10 +1,12 @@
-/* -*- indent-tabs-mode: t -*- */
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+OMPI_CXX=$CXX /home/correaa/prj/inq.git/blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
+#endif
 
 #ifndef BASIS_FIELD
 #define BASIS_FIELD
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -61,20 +63,19 @@ namespace basis {
 			return skeleton_wrapper<field<b_type, type>>(*this);
 		}
 
-		field(const field & coeff) = delete;
+		field(const field & coeff) = delete; // TODO make fields copyable
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
 
 		//set to a scalar value
-		field & operator=(const type value) {
-
+		field& operator=(type const& value){ // this makes sense only for zero
+			linear_.fill(value);
 			//DATAOPERATIONS GPU::RUN FILL
-			gpu::run(linear_.size(),
-							 [lin = begin(linear_), value] GPU_LAMBDA (auto ii){
-								 lin[ii] = value;
-							 });
-
+		//	gpu::run(linear_.size(),
+		//					 [lin = begin(linear_), value] GPU_LAMBDA (auto ii){
+		//						 lin[ii] = value;
+		//					 });
 			return *this;
 		}
 
@@ -124,7 +125,7 @@ namespace basis {
 				if(ip >= size) ip -= size;
 				point[dir] = ip;
 				auto rr = fld.basis().rvector(point);
-				tfm::format(file, "%f %e %e\n", rr[dir], ::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
+			//	tfm::format(file, "%f %e %e\n", rr[dir], ::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
 			}
 		}
 
@@ -132,24 +133,41 @@ namespace basis {
 			return basis_comm_;
 		}
 
+
 		auto complex() const {
-			field<basis::real_space, ::complex> complex_field(skeleton());
-			complex_field.linear() = linear();
-			return complex_field;
+		//	field<basis::real_space, std::complex<type>> complex_field(skeleton());
+		//	complex_field.linear() = linear();
+		//	return complex_field;
+			return field<basis::real_space, std::complex<type>>(*this);
+		}
+
+		template<class, class> friend class field;
+		template<typename T>
+		field(field<b_type, T> const& o) 
+		: basis_comm_(o.basis_comm_), linear_(o.linear_), basis_(o.basis_){
+			static_assert(std::is_constructible<element_type, T>{}, "!");
+		}
+
+		template<typename T>
+		field& operator=(field<b_type, T> const& o){
+			static_assert( std::is_assignable<element_type&, T>{}, "!" );
+			assert( o.basis_ == basis_ and o.basis_comm_ == basis_comm_ );
+			linear() = o.linear();
+			return *this;
 		}
 
 		field<basis::real_space, double> real() const {
 			field<basis::real_space, double> real_field(skeleton());
 
 			// Multi should be able to do this, but it causes a lot of compilation troubles
-			//			real_field.linear() = boost::multi::blas::real(linear());
+			//			
+			real_field.linear() = boost::multi::blas::real(linear());
 			
 			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(basis().part().local_size(),
-							 [rp = begin(real_field.linear()), cp = begin(linear())] GPU_LAMBDA (auto ii){
-								 rp[ii] = ::real(cp[ii]);
-							 });
-			
+		//	gpu::run(basis().part().local_size(),
+		//					 [rp = begin(real_field.linear()), cp = begin(linear())] GPU_LAMBDA (auto ii){
+		//						 rp[ii] = ::real(cp[ii]);
+		//					 });
 			return real_field;
 		}
 		
@@ -162,12 +180,20 @@ namespace basis {
 	
 }
 
-#ifdef UNIT_TEST
+#if (not __INCLUDE_LEVEL__) or defined(UNIT_TEST) or defined(_TEST_BASIS_FIELD)
+#if (not __INCLUDE_LEVEL__)
+#define CATCH_CONFIG_RUNNER
+#include <catch2/catch.hpp>
+int main( int argc, char* argv[] ) {
+	boost::mpi3::environment env(argc, argv);
+	return Catch::Session().run( argc, argv );
+}
+#endif
 
 #include <basis/real_space.hpp>
 
 #include <ions/unitcell.hpp>
-#include <catch2/catch.hpp>
+
 
 TEST_CASE("Class basis::field", "[basis::field]"){
 
@@ -183,9 +209,12 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	basis::field<basis::real_space, double> ff(rs, comm);
 
-	CHECK(sizes(rs)[0] == 28);
-	CHECK(sizes(rs)[1] == 11);
-	CHECK(sizes(rs)[2] == 20);	
+	basis::field<basis::real_space, std::complex<double> > ff_complex = ff.complex();
+	basis::field<basis::real_space, double> ff2 = ff_complex.real();
+
+	ff2 = 0.;
+
+	CHECK(( sizes(rs) == decltype(sizes(rs)){28, 11, 20} ));
 
 	if(comm.size() == 1) CHECK(std::get<0>(sizes(ff.linear())) == 6160);
 	if(comm.size() == 2) CHECK(std::get<0>(sizes(ff.linear())) == 3080);
@@ -208,7 +237,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	auto zff = ff.complex();
 	
-	static_assert(std::is_same<decltype(zff), basis::field<basis::real_space, complex>>::value, "complex() should return a complex field");
+	static_assert(std::is_same<decltype(zff), basis::field<basis::real_space, std::complex<double>>>::value, "complex() should return a complex field");
 	
 	CHECK(std::get<1>(sizes(zff.cubic())) == 11);
 	CHECK(std::get<2>(sizes(zff.cubic())) == 20);
