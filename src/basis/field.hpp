@@ -76,7 +76,7 @@ namespace basis {
 		field & operator=(field && coeff) = default;
 
 		//set to a scalar value
-		field& operator=(element_type const& value){ // this makes sense only for zero
+		field& operator=(element_type const& value){ // this makes sense only for zero?
 			linear_.fill(value);
 			return *this;
 		}
