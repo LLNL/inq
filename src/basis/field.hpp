@@ -1,10 +1,12 @@
-/* -*- indent-tabs-mode: t -*- */
+#ifdef COMPILATION// -*-indent-tabs-mode:t;-*-
+OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
+#endif
 
 #ifndef BASIS_FIELD
 #define BASIS_FIELD
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -35,46 +37,55 @@
 
 namespace basis {
 	
-	template<class b_type, class type>
-  class field {
+	template<class Basis, typename Type>
+	class field {
 
-  public:
+	public:
 
-		typedef math::array<type, 1> internal_array_type;
-		typedef b_type basis_type;
-		typedef type element_type;
+		using element_type = Type;
+		using basis_type = Basis;
+		using internal_array_type = math::array<element_type, 1>;
 		
-    field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+		field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			basis_comm_(comm),
 			linear_(basis.part().local_size()),
 			basis_(basis){
 
 			assert(basis_.part().comm_size() == basis_comm_.size());
-    }
+		}
 
-		template <class any_type>
-		field(skeleton_wrapper<field<b_type, any_type>> const & skeleton)
+		template <class OtherType>
+		field(skeleton_wrapper<field<basis_type, OtherType>> const & skeleton)
 			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
 		}
 
-		auto skeleton() const {
-			return skeleton_wrapper<field<b_type, type>>(*this);
+		template<class, class> friend class field;
+		template<typename OtherType>
+		field(field<basis_type, OtherType> const& o) 
+		: basis_comm_(o.basis_comm_), linear_(o.linear_), basis_(o.basis_){
+			static_assert(std::is_constructible<element_type, Type>{}, "!");
 		}
 
-		field(const field & coeff) = delete;
+		auto skeleton() const {
+			return skeleton_wrapper<field<basis_type, element_type>>(*this);
+		}
+
+		field(const field & coeff) = delete; 		//avoid unadverted copies
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
 
 		//set to a scalar value
-		field & operator=(const type value) {
+		field& operator=(element_type const& value){
+			linear_.fill(value);
+			return *this;
+		}
 
-			//DATAOPERATIONS GPU::RUN FILL
-			gpu::run(linear_.size(),
-							 [lin = begin(linear_), value] GPU_LAMBDA (auto ii){
-								 lin[ii] = value;
-							 });
-
+		template<typename OtherType>
+		field& operator=(field<basis_type, OtherType> const& o){
+			static_assert( std::is_assignable<element_type&, OtherType>{}, "!" );
+			assert( o.basis_ == basis_ and o.basis_comm_ == basis_comm_ );
+			linear() = o.linear();
 			return *this;
 		}
 
@@ -132,24 +143,14 @@ namespace basis {
 			return basis_comm_;
 		}
 
+
 		auto complex() const {
-			field<basis::real_space, ::complex> complex_field(skeleton());
-			complex_field.linear() = linear();
-			return complex_field;
+			return field<basis::real_space, std::complex<element_type>>(*this);
 		}
 
 		field<basis::real_space, double> real() const {
-			field<basis::real_space, double> real_field(skeleton());
-
-			// Multi should be able to do this, but it causes a lot of compilation troubles
-			//			real_field.linear() = boost::multi::blas::real(linear());
-			
-			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(basis().part().local_size(),
-							 [rp = begin(real_field.linear()), cp = begin(linear())] GPU_LAMBDA (auto ii){
-								 rp[ii] = ::real(cp[ii]);
-							 });
-			
+			field<basis::real_space, double> real_field(skeleton());		
+			real_field.linear() = boost::multi::blas::real(linear());
 			return real_field;
 		}
 		
@@ -158,34 +159,40 @@ namespace basis {
 		internal_array_type linear_;
 		basis_type basis_;
 
-  };
+	};
 	
 }
 
-#ifdef UNIT_TEST
+#if (not __INCLUDE_LEVEL__) or defined(UNIT_TEST)
+#if (not __INCLUDE_LEVEL__)
+#include "../main/unit_tests_main.cpp"
+#endif
 
 #include <basis/real_space.hpp>
 
 #include <ions/unitcell.hpp>
-#include <catch2/catch.hpp>
+
 
 TEST_CASE("Class basis::field", "[basis::field]"){
 
-  using namespace Catch::literals;
-  using math::vec3d;
-  
-  double ecut = 40.0;
+	using namespace Catch::literals;
+	using math::vec3d;
+
+	double ecut = 40.0;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-  ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
+	ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
+	basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
 
 	basis::field<basis::real_space, double> ff(rs, comm);
 
-	CHECK(sizes(rs)[0] == 28);
-	CHECK(sizes(rs)[1] == 11);
-	CHECK(sizes(rs)[2] == 20);	
+	basis::field<basis::real_space, std::complex<double> > ff_complex = ff.complex();
+	basis::field<basis::real_space, double> ff2 = ff_complex.real();
+
+	ff2 = 0.;
+
+	CHECK(( sizes(rs) == decltype(sizes(rs)){28, 11, 20} ));
 
 	if(comm.size() == 1) CHECK(std::get<0>(sizes(ff.linear())) == 6160);
 	if(comm.size() == 2) CHECK(std::get<0>(sizes(ff.linear())) == 3080);
