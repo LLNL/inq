@@ -180,7 +180,6 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 	
   using namespace Catch::literals;
   using math::vec3d;
-	using complex = std::complex<double>;
 
   double ll = 10.0;
   
