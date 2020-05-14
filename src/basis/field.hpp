@@ -37,12 +37,12 @@ OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 
 namespace basis {
 	
-	template<class Basis, typename T>
+	template<class Basis, typename Type>
 	class field {
 
 	public:
 
-		using element_type = T;
+		using element_type = Type;
 		using basis_type = Basis;
 		using internal_array_type = math::array<element_type, 1>;
 		
@@ -54,16 +54,16 @@ namespace basis {
 			assert(basis_.part().comm_size() == basis_comm_.size());
 		}
 
-		template <class OtherT>
-		field(skeleton_wrapper<field<basis_type, OtherT>> const & skeleton)
+		template <class OtherType>
+		field(skeleton_wrapper<field<basis_type, OtherType>> const & skeleton)
 			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
 		}
 
 		template<class, class> friend class field;
-		template<typename OtherT>
-		field(field<basis_type, OtherT> const& o) 
+		template<typename OtherType>
+		field(field<basis_type, OtherType> const& o) 
 		: basis_comm_(o.basis_comm_), linear_(o.linear_), basis_(o.basis_){
-			static_assert(std::is_constructible<element_type, T>{}, "!");
+			static_assert(std::is_constructible<element_type, Type>{}, "!");
 		}
 
 		auto skeleton() const {
@@ -81,9 +81,9 @@ namespace basis {
 			return *this;
 		}
 
-		template<typename OtherT>
-		field& operator=(field<basis_type, OtherT> const& o){
-			static_assert( std::is_assignable<element_type&, OtherT>{}, "!" );
+		template<typename OtherType>
+		field& operator=(field<basis_type, OtherType> const& o){
+			static_assert( std::is_assignable<element_type&, OtherType>{}, "!" );
 			assert( o.basis_ == basis_ and o.basis_comm_ == basis_comm_ );
 			linear() = o.linear();
 			return *this;
@@ -215,7 +215,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	auto zff = ff.complex();
 	
-	static_assert(std::is_same<decltype(zff), basis::field<basis::real_space, std::complex<double>>>::value, "complex() should return a complex field");
+	static_assert(std::is_same<decltype(zff), basis::field<basis::real_space, complex>>::value, "complex() should return a complex field");
 	
 	CHECK(std::get<1>(sizes(zff.cubic())) == 11);
 	CHECK(std::get<2>(sizes(zff.cubic())) == 20);
