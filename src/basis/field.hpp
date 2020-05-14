@@ -70,13 +70,13 @@ namespace basis {
 			return skeleton_wrapper<field<basis_type, element_type>>(*this);
 		}
 
-		field(const field & coeff) = delete; // TODO make fields copyable
+		field(const field & coeff) = delete; 		//avoid unadverted copies
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
 
 		//set to a scalar value
-		field& operator=(element_type const& value){ // this makes sense only for zero?
+		field& operator=(element_type const& value){
 			linear_.fill(value);
 			return *this;
 		}
