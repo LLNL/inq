@@ -24,9 +24,10 @@ SUBDIRS =      \
 
 noinst_HEADERS =                                      \
 	nonstd/optional.hpp                                 \
-	multi/config/NODISCARD.hpp                   \
-	multi/config/no_unique_address.hpp                   \
-	multi/utility.hpp                   \
+	multi/config/NODISCARD.hpp                          \
+	multi/config/MAYBE_UNUSED.hpp                       \
+	multi/config/no_unique_address.hpp                  \
+	multi/utility.hpp                                   \
 	multi/array.hpp                   \
 	multi/detail/layout.hpp                   \
 	multi/detail/types.hpp                   \
@@ -45,6 +46,7 @@ noinst_HEADERS =                                      \
 	multi/memory/instrumented.hpp                   \
 	multi/memory/stack.hpp                   \
 	multi/memory/allocator.hpp                   \
+	multi/memory/pointer_traits.hpp                     \
 	multi/memory/adaptors/cuda/algorithm.hpp                   \
 	multi/memory/adaptors/cuda/cstring.hpp                   \
 	multi/memory/adaptors/cuda/error.hpp                   \
