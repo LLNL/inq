@@ -53,6 +53,8 @@ namespace hamiltonian {
 			std::vector<double> grid(sphere.size()), proj(sphere.size());
 
 			basis::field_set<basis::real_space, complex> beta_rs(basis, nproj_);
+
+			beta_rs = 0.0;
 			
 			int iproj_lm = 0;
       for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
