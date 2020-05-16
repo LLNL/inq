@@ -49,7 +49,7 @@ namespace hamiltonian {
 
 			//For the moment we calculate the projectors in real space, centered at zero, and then move them to Fourier space
 
-			basis::spherical_grid sphere(basis, cell, math::vec3d(0.0, 0.0, 0.0), ps.projector_radius());
+			basis::spherical_grid sphere(basis, cell, math::vec3d(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
 			std::vector<double> grid(sphere.size()), proj(sphere.size());
 
 			basis::field_set<basis::real_space, complex> beta_rs(basis, nproj_);
@@ -115,17 +115,17 @@ namespace hamiltonian {
 				
 				//DATAOPERATIONS GPU::RUN 2D
 				gpu::run(phi.set_part().local_size(), nproj_,
-								 [proj = begin(projections), coeff = begin(kb_coeff_)]
+								 [proj = begin(projections), coeff = begin(kb_coeff_), vol = phi.basis().volume_element()]
 								 GPU_LAMBDA (auto ist, auto iproj){
-									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj]*vol;
 								 });
-				
+
 				//TODO: reduce projections
 				
 				for(int iproj = 0; iproj < nproj_; iproj++){
 					for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
 						for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-							vnlphi.matrix()[ip][ist] += conj(eigr.linear()[ip])*beta_.matrix()[ip][iproj];
+							vnlphi.matrix()[ip][ist] += conj(eigr.linear()[ip])*beta_.matrix()[ip][iproj]*projections[iproj][ist];
 						}
 					}
 				}
