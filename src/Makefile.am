@@ -79,6 +79,7 @@ noinst_HEADERS =                             \
 	hamiltonian/exchange_operator.hpp          \
 	hamiltonian/ks_hamiltonian.hpp             \
 	hamiltonian/projector.hpp                  \
+	hamiltonian/projector_fourier.hpp          \
 	hamiltonian/self_consistency.hpp           \
 	hamiltonian/xc_functional.hpp              \
 	solvers/poisson.hpp                        \
