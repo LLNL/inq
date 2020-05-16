@@ -25,6 +25,7 @@
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <hamiltonian/projector.hpp>
+#include <hamiltonian/projector_fourier.hpp>
 #include <hamiltonian/exchange_operator.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
@@ -48,7 +49,13 @@ namespace hamiltonian {
 			scalar_potential = pot.local_potential(basis, cell, geo);
 			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
-				projectors_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
+				if(non_local_in_fourier_){
+					auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(),
+																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
+					insert.first->second.add_coord(geo.coordinates()[iatom]);
+				} else {
+					projectors_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
+				}
 			}
 
     }
@@ -62,7 +69,9 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void non_local(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
-			
+			for(auto it = projectors_fourier_map_.cbegin(); it != projectors_fourier_map_.cend(); ++it){
+				it->second(phi, vnlphi);
+			}
 		}
 		
 		////////////////////////////////////////////////////////////////////////////////////////////
@@ -169,6 +178,8 @@ namespace hamiltonian {
 
 		std::vector<projector> projectors_;
 		bool non_local_in_fourier_;
+		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
+		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
 		
   };
 
