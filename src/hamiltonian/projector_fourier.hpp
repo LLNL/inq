@@ -79,47 +79,55 @@ namespace hamiltonian {
 			beta_ = operations::space::to_fourier(beta_rs);
 			
     }
+		
+		void add_coord(math::vec3d const & coord){
+			coords_.push_back(coord);
+		}
 
-    void operator()(math::vec3d atomic_pos, basis::field_set<basis::fourier_space, complex> const & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
+    void operator()(basis::field_set<basis::fourier_space, complex> const & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
 
 			if(nproj_ == 0) return;
 
-			math::array<complex, 2> projections({nproj_, phi.set_part().local_size()}, 0.0);
+			for(unsigned icoord = 0; icoord < coords_.size(); icoord++){
 			
-			basis::field<basis::fourier_space, complex> eigr(phi.basis());
-
-			for(int ix = 0; ix < eigr.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < eigr.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < eigr.basis().sizes()[2]; iz++){
-						double gr = ( atomic_pos | eigr.basis().gvector(ix, iy, iz));
-						eigr.cubic()[ix][iy][iz] = exp(complex(0.0, gr));
+				math::array<complex, 2> projections({nproj_, phi.set_part().local_size()}, 0.0);
+			
+				basis::field<basis::fourier_space, complex> eigr(phi.basis());
+				
+				for(int ix = 0; ix < eigr.basis().sizes()[0]; ix++){
+					for(int iy = 0; iy < eigr.basis().sizes()[1]; iy++){
+						for(int iz = 0; iz < eigr.basis().sizes()[2]; iz++){
+							double gr = ( coords_[icoord] | eigr.basis().gvector(ix, iy, iz));
+							eigr.cubic()[ix][iy][iz] = exp(complex(0.0, gr));
+						}
 					}
 				}
-			}
-			
-			for(int iproj = 0; iproj < nproj_; iproj++){
-				for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						projections[iproj][ist] += eigr.linear()[ip]*conj(beta_.matrix()[ip][iproj])*phi.matrix()[ip][ist];
+				
+				for(int iproj = 0; iproj < nproj_; iproj++){
+					for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
+						for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+							projections[iproj][ist] += eigr.linear()[ip]*conj(beta_.matrix()[ip][iproj])*phi.matrix()[ip][ist];
+						}
 					}
 				}
-			}
-
-			//DATAOPERATIONS GPU::RUN 2D
-			gpu::run(phi.set_part().local_size(), nproj_,
-							 [proj = begin(projections), coeff = begin(kb_coeff_)]
-							 GPU_LAMBDA (auto ist, auto iproj){
-								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
-							 });
-			
-			//TODO: reduce projections
-			
-			for(int iproj = 0; iproj < nproj_; iproj++){
-				for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						vnlphi.matrix()[ip][ist] += conj(eigr.linear()[ip])*beta_.matrix()[ip][iproj];
+				
+				//DATAOPERATIONS GPU::RUN 2D
+				gpu::run(phi.set_part().local_size(), nproj_,
+								 [proj = begin(projections), coeff = begin(kb_coeff_)]
+								 GPU_LAMBDA (auto ist, auto iproj){
+									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+								 });
+				
+				//TODO: reduce projections
+				
+				for(int iproj = 0; iproj < nproj_; iproj++){
+					for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
+						for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+							vnlphi.matrix()[ip][ist] += conj(eigr.linear()[ip])*beta_.matrix()[ip][iproj];
+						}
 					}
 				}
+				
 			}
 			
     }
@@ -137,6 +145,8 @@ namespace hamiltonian {
     int nproj_;
 		math::array<double, 1> kb_coeff_;
     basis::field_set<basis::fourier_space, complex> beta_;
+		std::vector<math::vec3d> coords_;
+		
   };
   
 }
