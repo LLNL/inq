@@ -80,34 +80,49 @@ namespace hamiltonian {
 			
     }
 
-		/*
-    template <class field_set_type>
-    void operator()(const field_set_type & phi, field_set_type & vnlphi) const {
+    void operator()(math::vec3d atomic_pos, basis::field_set<basis::fourier_space, complex> const & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
 
 			if(nproj_ == 0) return;
+
+			math::array<complex, 2> projections({nproj_, phi.set_part().local_size()}, 0.0);
 			
-			using boost::multi::blas::gemm;
-			using boost::multi::blas::transposed;
-				
-			auto sphere_phi = sphere.gather(phi.cubic());
+			basis::field<basis::fourier_space, complex> eigr(phi.basis());
+
+			for(int ix = 0; ix < eigr.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < eigr.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < eigr.basis().sizes()[2]; iz++){
+						double gr = ( atomic_pos | eigr.basis().gvector(ix, iy, iz));
+						eigr.cubic()[ix][iy][iz] = exp(complex(0.0, gr));
+					}
+				}
+			}
 			
-			//DATAOPERATIONS BLAS
-			auto projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
-			
+			for(int iproj = 0; iproj < nproj_; iproj++){
+				for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						projections[iproj][ist] += eigr.linear()[ip]*conj(beta_.matrix()[ip][iproj])*phi.matrix()[ip][ist];
+					}
+				}
+			}
+
 			//DATAOPERATIONS GPU::RUN 2D
-			gpu::run(phi.set_size(), nproj_,
+			gpu::run(phi.set_part().local_size(), nproj_,
 							 [proj = begin(projections), coeff = begin(kb_coeff_)]
 							 GPU_LAMBDA (auto ist, auto iproj){
 								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
 							 });
 			
-			//DATAOPERATIONS BLAS
-			sphere_phi = gemm(transposed(matrix_), projections);
+			//TODO: reduce projections
 			
-			sphere_.scatter_add(sphere_phi, vnlphi.cubic());
+			for(int iproj = 0; iproj < nproj_; iproj++){
+				for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						vnlphi.matrix()[ip][ist] += conj(eigr.linear()[ip])*beta_.matrix()[ip][iproj];
+					}
+				}
+			}
 			
     }
-		*/
 		
     int num_projectors() const {
       return nproj_;
