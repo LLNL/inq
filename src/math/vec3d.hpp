@@ -25,7 +25,6 @@
 
 #include <iostream>
 #include <cmath>
-#include <cassert>
 
 namespace math {
 	class vec3d {
