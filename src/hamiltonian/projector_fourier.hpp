@@ -163,8 +163,6 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
 	
 	const math::erf_range_separation sep(0.625);
 	
-	pseudo::pseudopotential ps(config::path::unit_tests_data() + "N.upf", sep);
-
   double ecut = 20.0;
   double ll = 10.0;
 
@@ -172,6 +170,8 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
+	pseudo::pseudopotential ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
+	
 	hamiltonian::projector_fourier proj(rs, cell, ps);
 
 	CHECK(proj.num_projectors() == 8);
