@@ -11,6 +11,20 @@ variables:
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
 
+#check that the configuration fails if fftw is not found
+nofftw:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - mpic++ --version
+      - time autoreconf -i
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - eval ! ../configure --prefix=$HOME
+      
 gcc:
     stage: build
     script:
