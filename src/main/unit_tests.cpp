@@ -56,9 +56,10 @@
 
 #include <states/ks_states.hpp>
 
-#include <hamiltonian/projector.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
+#include <hamiltonian/projector.hpp>
+#include <hamiltonian/projector_fourier.hpp>
 
 #include <operations/add.hpp>
 #include <operations/sum.hpp>
