@@ -1,10 +1,12 @@
-/* -*- indent-tabs-mode: t -*- */
+#ifdef COMPILATION// -*-indent-tabs-mode:t;-*-
+../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x -lboost_serialization&&$0x&&rm $0x;exit
+#endif
 
 #ifndef VEC3D_H
 #define VEC3D_H
 
 /*
- Copyright (C) 2020 Xavier Andrade
+ Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -30,6 +32,9 @@
 #include <cassert>
 
 #include <gpu/run.hpp>
+#if not defined(GPU_FUNCTION)
+#define GPU_FUNCTION
+#endif
 
 namespace math {
 	class vec3d {
@@ -141,6 +146,11 @@ namespace math {
 			return ins;
 		}
 
+		template<class Archive>
+		void serialize(Archive& ar, unsigned const /*version*/){
+			ar & x_ & y_ & z_;
+		}
+
 	private:
 		    
 		double x_;
@@ -153,8 +163,16 @@ namespace math {
 
 ///////////////////////////////////////////////////////////////////
 
-#ifdef UNIT_TEST
+#if defined(UNIT_TEST) or (not __INCLUDE_LEVEL__)
+#if (not __INCLUDE_LEVEL__)
+#define CATCH_CONFIG_MAIN
+#endif
 #include <catch2/catch.hpp>
+
+#if not defined(UNIT_TEST) // workaround over 'double inclusion of header boost/config/abi_prefix.hpp is an error'
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif
 
 #include <math/array.hpp>
 
@@ -166,6 +184,16 @@ TEST_CASE("function math::vec3d", "[math::vec3d]") {
 
 	vec3d x1{1.0, 2.0, 3.0};
 	vec3d x2{0.1, 0.2, 0.3};
+
+#if not defined(UNIT_TEST) // workaround over 'double inclusion of header boost/config/abi_prefix.hpp is an error'
+	{
+		std::stringstream ss;
+		boost::archive::text_oarchive{ss} << x2;
+		std::cout << ss.str() <<'\n';
+		vec3d x3; boost::archive::text_iarchive{ss} >> x3;
+		CHECK( x3 == x2 );
+	}
+#endif
 	
 	CHECK(x1[0] == 1.0_a);
 	CHECK(x1[1] == 2.0_a);
