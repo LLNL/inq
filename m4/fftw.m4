@@ -28,6 +28,8 @@ AC_MSG_RESULT($acx_fftw3_ok ( $CFLAGS_FFTW3 $LIBS_FFTW3 ))
 
 if test x"$acx_fftw3_ok" == xyes ; then
   AC_DEFINE(HAVE_FFTW3, 1, [Define if you have a FFTW3 library.])
+else
+  AC_MSG_ERROR([Could not find required fftw3 library])
 fi
 
 LIBS="$acx_fftw3_save_LIBS"
