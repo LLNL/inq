@@ -49,10 +49,10 @@ namespace hamiltonian {
 
 			//For the moment we calculate the projectors in real space, centered at zero, and then move them to Fourier space
 
-			basis::spherical_grid sphere(basis, cell, math::vec3d(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
-			std::vector<double> grid(sphere.size()), proj(sphere.size());
-
 			basis::field_set<basis::real_space, complex> beta_rs(basis, nproj_);
+			
+			basis::spherical_grid sphere(beta_rs.basis(), cell, math::vec3d(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
+			std::vector<double> grid(sphere.size()), proj(sphere.size());
 
 			beta_rs = 0.0;
 			
