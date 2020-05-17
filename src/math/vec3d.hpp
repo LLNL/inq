@@ -42,7 +42,7 @@ namespace math {
 
 		GPU_FUNCTION vec3d(double xv, double yv, double zv) : x_{xv}, y_{yv}, z_{zv}{}
 		
-		GPU_FUNCTION explicit vec3d() : x_(0.0), y_(0.0), z_(0.0) {}
+		vec3d() = default;
 		
 		GPU_FUNCTION explicit vec3d(const double & vv) : x_(vv), y_(vv), z_(vv) {}    
 
