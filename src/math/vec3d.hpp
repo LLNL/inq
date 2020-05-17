@@ -49,12 +49,14 @@ namespace math {
 		GPU_FUNCTION explicit vec3d(const double* r) : x_(r[0]), y_(r[1]), z_(r[2]) {}
 
 		GPU_FUNCTION double & operator[](int i){
-			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
+			static_assert(sizeof(*this) == sizeof(double)*3, 
+				"must be compatible with double[3]");
 			return reinterpret_cast<double*>(this)[i];
 		}
 		
 		GPU_FUNCTION double const & operator[](int i) const{
-			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
+			static_assert(sizeof(*this) == sizeof(double)*3, 
+				"must be compatible with double[3]");
 			return reinterpret_cast<double const*>(this)[i];
 		}
 		
