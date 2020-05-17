@@ -39,11 +39,11 @@ namespace hamiltonian {
 		basis::field<basis::real_space, double> scalar_potential;
 		exchange_operator exchange;
 		
-    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo,
+    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
 									 const int num_hf_orbitals, const double exchange_coefficient):
 			scalar_potential(basis),
 			exchange(basis, num_hf_orbitals, exchange_coefficient),
-			non_local_in_fourier_(false)
+			non_local_in_fourier_(fourier_pseudo)
 		{
 
 			scalar_potential = pot.local_potential(basis, cell, geo);
@@ -223,7 +223,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
   basis::field_set<basis::real_space, complex> phi(rs, st.num_states());
 	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states());
 	
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, geo, st.num_states(), 0.0);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0);
 
 	SECTION("Constant function"){
 		

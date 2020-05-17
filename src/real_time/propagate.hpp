@@ -44,7 +44,8 @@ namespace real_time {
 		
 		auto density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 		
-		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.ions_.cell(), electrons.atomic_pot_, electrons.ions_.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
+		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.ions_.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(),
+																											 electrons.ions_.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
 		hamiltonian::energy energy;
 		
