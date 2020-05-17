@@ -31,110 +31,105 @@
 #include <cmath>
 #include <cassert>
 
-#include <gpu/run.hpp>
-#if not defined(GPU_FUNCTION)
-#define GPU_FUNCTION
-#endif
-
 namespace math {
 	class vec3d {
 	public:
 
-		GPU_FUNCTION vec3d(double xv, double yv, double zv) : x_{xv}, y_{yv}, z_{zv}{}
+		constexpr vec3d(double xv, double yv, double zv) : x_{xv}, y_{yv}, z_{zv}{}
 		
 		vec3d() = default;
 		
-		GPU_FUNCTION explicit vec3d(const double & vv) : x_(vv), y_(vv), z_(vv) {}    
+		explicit constexpr vec3d(const double & vv) : x_(vv), y_(vv), z_(vv) {}    
 
-		GPU_FUNCTION explicit vec3d(const double* r) : x_(r[0]), y_(r[1]), z_(r[2]) {}
+		explicit constexpr vec3d(const double* r) : x_(r[0]), y_(r[1]), z_(r[2]) {}
 
-		GPU_FUNCTION double & operator[](int i){
+		constexpr double & operator[](int i){
 			static_assert(sizeof(*this) == sizeof(double)*3, 
 				"must be compatible with double[3]");
-			return reinterpret_cast<double*>(this)[i];
+			return (&x_)[i];
 		}
 		
-		GPU_FUNCTION double const & operator[](int i) const{
+		constexpr double const & operator[](int i) const{
 			static_assert(sizeof(*this) == sizeof(double)*3, 
 				"must be compatible with double[3]");
-			return reinterpret_cast<double const*>(this)[i];
+			return (&x_)[i];
 		}
 		
-		GPU_FUNCTION bool operator==(const vec3d & aa) const {
+		constexpr bool operator==(const vec3d & aa) const {
 			return x_ == aa.x_ && y_ == aa.y_ && z_ == aa.z_;
 		}
 
-		GPU_FUNCTION bool operator!=(const vec3d & aa) const {
+		constexpr bool operator!=(const vec3d & aa) const {
 			return x_ != aa.x_ || y_ != aa.y_ || z_ != aa.z_;
 		}
 
-		GPU_FUNCTION vec3d & operator +=(const vec3d & aa) {
+		constexpr vec3d& operator+=(const vec3d & aa) {
 			x_ += aa.x_;
 			y_ += aa.y_;
 			z_ += aa.z_;
 			return *this;
 		}
 
-		GPU_FUNCTION vec3d & operator -=(const vec3d & aa) {
+		constexpr vec3d& operator-=(const vec3d & aa) {
 			x_ -= aa.x_;
 			y_ -= aa.y_;
 			z_ -= aa.z_;
 			return *this;
 		}
 
-		GPU_FUNCTION vec3d & operator *=(const double & aa) {
+		constexpr vec3d& operator*=(const double & aa) {
 			x_ *= aa;
 			y_ *= aa;
 			z_ *= aa;
 			return *this;
 		}
 
-		GPU_FUNCTION vec3d & operator /=(const double & aa) {
+		constexpr vec3d& operator/=(const double & aa) {
 			x_ /= aa;
 			y_ /= aa;
 			z_ /= aa;
 			return *this;
 		}
 
-		GPU_FUNCTION friend const vec3d operator +(const vec3d & aa, const vec3d & bb) {
+		friend constexpr vec3d operator+(const vec3d & aa, const vec3d & bb) {
 			return vec3d(aa) += bb;
 		}
 
-		GPU_FUNCTION friend const vec3d operator -(const vec3d & aa, const vec3d & bb) {
+		friend constexpr vec3d operator-(const vec3d & aa, const vec3d & bb) {
 			return vec3d(aa) -= bb;
 		}
 
-		GPU_FUNCTION friend vec3d operator -(const vec3d & aa) {
+		friend constexpr vec3d operator-(const vec3d & aa) {
 			return vec3d( -aa.x_, -aa.y_, -aa.z_ );
 		}
 
-		GPU_FUNCTION friend vec3d operator *(const double & aa, const vec3d & bb) {
+		friend constexpr vec3d operator*(const double & aa, const vec3d & bb) {
 			return vec3d(bb) *= aa;
 		}
 
-		GPU_FUNCTION friend vec3d operator *(const vec3d & aa, const double & bb) {
+		friend constexpr vec3d operator*(const vec3d & aa, const double & bb) {
 			return vec3d(aa) *= bb;
 		}
 
-		GPU_FUNCTION friend vec3d operator /(const vec3d & aa, const double & bb) {
+		friend constexpr vec3d operator/(const vec3d & aa, const double & bb) {
 			return vec3d(aa) /= bb;
 		}
 
 		//internal product
-		GPU_FUNCTION friend double operator |(const vec3d & aa, const vec3d & bb) {
+		friend constexpr double operator|(const vec3d & aa, const vec3d & bb) {
 			return aa.x_*bb.x_ + aa.y_*bb.y_ + aa.z_*bb.z_;
 		}
 
 		//cross product
-		GPU_FUNCTION friend vec3d operator ^(const vec3d & aa, const vec3d & bb) {
+		friend constexpr vec3d operator^(const vec3d & aa, const vec3d & bb) {
 			return vec3d(aa.y_*bb.z_ - aa.z_*bb.y_, aa.z_*bb.x_ - aa.x_*bb.z_, aa.x_*bb.y_ - aa.y_*bb.x_);
 		}
 
-		GPU_FUNCTION friend double norm(const vec3d& aa) {
+		friend constexpr double norm(const vec3d& aa) {
 			return aa|aa;
 		}
 
-		GPU_FUNCTION friend double length(const vec3d& aa) {
+		friend constexpr double length(const vec3d& aa) {
 			return sqrt(aa|aa);
 		}
 
