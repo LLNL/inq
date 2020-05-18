@@ -22,12 +22,12 @@
 
 #include <catch2/catch.hpp>
 
-#include <pseudopod/spline.hpp>
 #include <pseudopod/erf_range_separation.hpp>
 #include <pseudopod/element.hpp>
 #include <pseudopod/pseudopotential.hpp>
 #include <pseudopod/spherical_harmonic.hpp>
 #include <pseudopod/math/spherical_bessel.hpp>
+#include <pseudopod/math/spline.hpp>
 
 #include <utils/partition.hpp>
 #include <utils/match.hpp>
