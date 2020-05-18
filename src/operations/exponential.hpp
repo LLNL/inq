@@ -74,7 +74,7 @@ namespace operations {
 
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>

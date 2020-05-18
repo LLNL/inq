@@ -72,7 +72,7 @@ namespace math {
  
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
 TEST_CASE("function math::vector3", "[math::vector3]") {

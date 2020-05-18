@@ -174,7 +174,7 @@ namespace operations {
 
 ///////////////////////////////////////////////////////////////////
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 
 #include <catch2/catch.hpp>
 

@@ -170,7 +170,7 @@ namespace basis {
 
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 
 #include <basis/real_space.hpp>
 
