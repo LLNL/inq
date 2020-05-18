@@ -18,9 +18,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#define UNIT_TEST
-
 #include <catch2/catch.hpp>
+
+
+#define PSEUDOPOD_UNIT_TEST
 
 #include <pseudopod/erf_range_separation.hpp>
 #include <pseudopod/element.hpp>
@@ -29,6 +30,8 @@
 #include <pseudopod/math/bessel_transform.hpp>
 #include <pseudopod/math/spherical_bessel.hpp>
 #include <pseudopod/math/spline.hpp>
+
+#define INQ_UNIT_TEST
 
 #include <utils/partition.hpp>
 #include <utils/match.hpp>

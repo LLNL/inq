@@ -163,7 +163,7 @@ namespace basis {
 	
 }
 
-#if (not __INCLUDE_LEVEL__) or defined(UNIT_TEST)
+#if (not __INCLUDE_LEVEL__) or defined(INQ_UNIT_TEST)
 #if (not __INCLUDE_LEVEL__)
 #include "../main/unit_tests_main.cpp"
 #endif
