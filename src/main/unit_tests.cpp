@@ -26,6 +26,7 @@
 #include <pseudopod/element.hpp>
 #include <pseudopod/pseudopotential.hpp>
 #include <pseudopod/spherical_harmonic.hpp>
+#include <pseudopod/math/bessel_transform.hpp>
 #include <pseudopod/math/spherical_bessel.hpp>
 #include <pseudopod/math/spline.hpp>
 
