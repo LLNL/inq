@@ -82,7 +82,7 @@ namespace hamiltonian {
 
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
