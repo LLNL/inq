@@ -284,7 +284,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	using namespace Catch::literals;
 	using math::vec3d;
 
-	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance());
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 
 	auto basis_comm = cart_comm.axis(1);
 	
