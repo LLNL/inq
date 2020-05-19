@@ -4,7 +4,7 @@
 #define OPERATIONS__SHIFT
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -65,7 +65,7 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 
 	auto basis_comm = cart_comm.axis(1);
 	
