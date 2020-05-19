@@ -37,6 +37,12 @@ namespace operations {
 		}
 		return grad;
 	}
+	auto gradient(basis::field<basis::real_space, complex> const & ff){
+		auto ff_fourier = operations::space::to_fourier(ff); 			// To Fourier space
+		auto grad_fourier = gradient(ff_fourier); 				// Computer gradient in Fourier space
+		auto grad_real = operations::space::to_real(grad_fourier, false); 	// To real space
+		return grad_real;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
