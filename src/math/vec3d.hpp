@@ -124,7 +124,7 @@ namespace math {
 			return aa|aa;
 		}
 
-		friend constexpr double length(const vec3d& aa) {
+		friend double length(const vec3d& aa) {
 			return sqrt(aa|aa);
 		}
 
