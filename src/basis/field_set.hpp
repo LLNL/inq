@@ -53,7 +53,7 @@ namespace basis {
     }
 
 		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance())
-			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(comm))
+			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(comm, {}))
 		{
 		}
 
@@ -170,7 +170,7 @@ namespace basis {
 
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 
 #include <basis/real_space.hpp>
 
@@ -188,7 +188,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);	
