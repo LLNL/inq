@@ -124,6 +124,9 @@ namespace math {
 			return aa|aa;
 		}
 
+		// TODO if this function is necessary in the gpu it can be made constexpr 
+		// TODO in that case, when clang complains we can put a warning guard
+		// TODO guard consists in disabling locally the warning -Winvalid-constexpr
 		friend double length(const vec3d& aa) {
 			return sqrt(aa|aa);
 		}
