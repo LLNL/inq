@@ -144,7 +144,7 @@ clang-valgrind:
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../.valgrind_suppressions"
       - time $VALGRIND src/inq_unit_tests
-      - time $VALGRIND test/h2o_ground_state
+      - time $VALGRIND tests/h2o_ground_state
       
 nvcc_nocuda:
     stage: build
