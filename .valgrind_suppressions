@@ -798,23 +798,6 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:memalign
-   fun:fftw_malloc_plain
-   fun:fftw_mkplanner
-   fun:fftw_the_planner
-   fun:fftw_mkapiplan
-   fun:fftw_plan_guru64_dft
-   fun:_ZN5boost5multi4fftw3dftINS0_11basic_arrayISt7complexIdELl3EPS5_NS0_8layout_tILl3ElEEEES9_EEDTcmcltlNS1_4planEfp_fp0_fp1_Eclsr3stdE7forwardIT0_Efp0_EERKT_OSB_i
-   fun:_ZN10operations5space10to_fourierERKN5basis5fieldINS1_10real_spaceESt7complexIdEEE
-   fun:_ZNK7solvers7poisson12solve_finiteERKN5basis5fieldINS1_10real_spaceESt7complexIdEEE
-   fun:_ZNK7solvers7poissonclERKN5basis5fieldINS1_10real_spaceEdEE
-   fun:_ZN11hamiltonian16self_consistency19update_ionic_fieldsIN7systems4ionsEEEvRKT_RKNS_16atomic_potentialE
-   fun:_ZN12ground_state9calculateERN7systems9electronsERKN5input11interactionERKNS3_3scfE
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc
    fun:__alloc_dir
@@ -828,17 +811,4 @@
    fun:*
    fun:main
 
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:memalign
-   fun:fftw_malloc_plain
-   fun:fftw_mkplanner
-   fun:fftw_the_planner
-   fun:fftw_mkapiplan
-   fun:fftw_plan_guru64_dft
-   fun:*
 }
