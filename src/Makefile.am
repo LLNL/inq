@@ -21,9 +21,12 @@ AM_CXXFLAGS =                             \
 	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
 	-DPREFIX_DIR='"$(prefix)"'              \
-	@CFLAGS_CUDA@
+	@CFLAGS_CUDA@                           \
+	@BOOST_CPPFLAGS@
 
-LIBS = @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@
+LDFLAGS += @BOOST_LDFLAGS@
+
+LIBS = @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @BOOST_SERIALIZATION_LIB@ @LIBS@
 
 noinst_HEADERS =                             \
 	config/path.hpp                            \
