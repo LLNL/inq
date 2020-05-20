@@ -139,7 +139,7 @@ clang-valgrind:
       - mkdir build
       - cd build
       - export OMPI_CXX=clang++
-      - export CXXFLAGS="-Ofast -ffast-math -pipe -Wall -Werror -DNDEBUG"
+      - export CXXFLAGS="-g -Ofast -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../.valgrind_suppressions"
