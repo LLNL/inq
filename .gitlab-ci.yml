@@ -142,7 +142,7 @@ clang-valgrind:
       - export CXXFLAGS="-Ofast -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
       - time make -j4 install
-      - time valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all src/inq_unit_tests
+      - time valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../.valgrind_suppressions src/inq_unit_tests
       
 nvcc_nocuda:
     stage: build
