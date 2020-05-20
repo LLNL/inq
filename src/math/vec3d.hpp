@@ -161,10 +161,8 @@ namespace math {
 #endif
 #include <catch2/catch.hpp>
 
-#if not defined(UNIT_TEST) // workaround over 'double inclusion of header boost/config/abi_prefix.hpp is an error'
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#endif
 
 #include <math/array.hpp>
 
@@ -177,7 +175,6 @@ TEST_CASE("function math::vec3d", "[math::vec3d]") {
 	vec3d x1{1.0, 2.0, 3.0};
 	vec3d x2{0.1, 0.2, 0.3};
 
-#if not defined(UNIT_TEST) // workaround over 'double inclusion of header boost/config/abi_prefix.hpp is an error'
 	{
 		std::stringstream ss;
 		boost::archive::text_oarchive{ss} << x2;
@@ -185,7 +182,6 @@ TEST_CASE("function math::vec3d", "[math::vec3d]") {
 		vec3d x3; boost::archive::text_iarchive{ss} >> x3;
 		CHECK( x3 == x2 );
 	}
-#endif
 	
 	CHECK(x1[0] == 1.0_a);
 	CHECK(x1[1] == 2.0_a);
