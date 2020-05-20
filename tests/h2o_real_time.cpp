@@ -52,8 +52,8 @@ int main(int argc, char ** argv){
 											 
   auto result = real_time::propagate(electrons);
 
-  energy_match.check("energy step  0", result.energy[0], -16.903925978590);
-  energy_match.check("energy step 10", result.energy[10], -16.904635586794);
+  energy_match.check("energy step  0", result.energy[0],  -16.678635408562);
+  energy_match.check("energy step 10", result.energy[10], -16.679084303135);
 
   {
     auto dipole_file = std::ofstream("dipole.dat");

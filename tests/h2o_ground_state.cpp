@@ -50,16 +50,16 @@ int main(int argc, char ** argv){
 
   auto energy = ground_state::calculate(electrons, input::interaction::dft(), scf_options);
   
-  energy_match.check("total energy",        energy.total(),         -25.885010460377);
-  energy_match.check("kinetic energy",      energy.kinetic(),        12.011756577795);
-  energy_match.check("eigenvalues",         energy.eigenvalues,      -4.247001211716);
-  energy_match.check("Hartree energy",      energy.hartree,          21.211005609920);
-  energy_match.check("external energy",     energy.external,        -50.383959864425);
-  energy_match.check("non-local energy",    energy.nonlocal,         -2.809830867482);
-  energy_match.check("XC energy",           energy.xc,               -4.866245464735);
-  energy_match.check("XC density integral", energy.nvxc,             -5.486978277443);
-  energy_match.check("HF exchange energy",  energy.hf_exchange,       0.0);
-  energy_match.check("ion-ion energy",      energy.ion,              -1.047736451449);
+  energy_match.check("total energy",        energy.total(),        -25.432869785370);
+  energy_match.check("kinetic energy",      energy.kinetic(),       10.967348957783);
+  energy_match.check("eigenvalues",         energy.eigenvalues,     -4.188349544804);
+  energy_match.check("Hartree energy",      energy.hartree,         20.790025319420);
+  energy_match.check("external energy",     energy.external,       -49.490256236071);
+  energy_match.check("non-local energy",    energy.nonlocal,        -1.881858441757);
+  energy_match.check("XC energy",           energy.xc,              -4.770392933296);
+  energy_match.check("XC density integral", energy.nvxc,            -5.363634463599);
+  energy_match.check("HF exchange energy",  energy.hf_exchange,      0.000000000000);
+  energy_match.check("ion-ion energy",      energy.ion,             -1.047736451449);
 
 	operations::io::save("h2o_restart", electrons.phi_);
   
