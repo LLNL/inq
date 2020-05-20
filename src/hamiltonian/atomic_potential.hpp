@@ -321,10 +321,10 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		
 		auto vv = pot.local_potential(rs, cell, geo);
 
-		CHECK(operations::integral(vv) == -45.5544154295_a);
+		CHECK(operations::integral(vv) == -45.5744357466_a);
 
-		CHECK(vv.cubic()[5][3][0] == -1.574376555_a);
-		CHECK(vv.cubic()[3][1][0] == -0.258229883_a);
+		CHECK(vv.cubic()[5][3][0] == -1.6226427555_a);
+		CHECK(vv.cubic()[3][1][0] == -0.2739253316_a);
 							 
 		auto id = pot.ionic_density(rs, cell, geo);
 
