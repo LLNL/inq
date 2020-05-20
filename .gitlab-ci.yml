@@ -145,6 +145,7 @@ clang-valgrind:
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../.valgrind_suppressions"
       - time $VALGRIND src/inq_unit_tests
       - time $VALGRIND tests/h2o_ground_state
+      - time $VALGRIND tests/h2o_real_time
       
 nvcc_nocuda:
     stage: build
