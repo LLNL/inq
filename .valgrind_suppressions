@@ -812,3 +812,123 @@
    fun:main
 
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:opal_free_list_grow_st
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:opal_free_list_grow_st
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:opal_free_list_grow_st
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:main
+}
