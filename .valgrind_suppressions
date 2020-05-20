@@ -829,3 +829,16 @@
    fun:main
 
 }
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:memalign
+   fun:fftw_malloc_plain
+   fun:fftw_mkplanner
+   fun:fftw_the_planner
+   fun:fftw_mkapiplan
+   fun:fftw_plan_guru64_dft
+   fun:*
+}
