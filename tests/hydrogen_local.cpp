@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 
 	utils::match energy_match(1.0e-5);
 
-	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF"); 
+	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	
 	std::vector<input::atom> geo;
 	
