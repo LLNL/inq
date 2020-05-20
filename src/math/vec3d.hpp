@@ -158,7 +158,7 @@ namespace math {
 
 ///////////////////////////////////////////////////////////////////
 
-#if defined(UNIT_TEST) or (not __INCLUDE_LEVEL__)
+#if defined(INQ_UNIT_TEST) or (not __INCLUDE_LEVEL__)
 #if (not __INCLUDE_LEVEL__)
 #define CATCH_CONFIG_MAIN
 #endif
