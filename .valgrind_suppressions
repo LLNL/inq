@@ -812,3 +812,20 @@
    fun:_ZN11hamiltonian16self_consistency19update_ionic_fieldsIN7systems4ionsEEEvRKT_RKNS_16atomic_potentialE
    fun:_ZN12ground_state9calculateERN7systems9electronsERKN5input11interactionERKNS3_3scfE
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__alloc_dir
+   fun:opendir_tail
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:main
+
+}
