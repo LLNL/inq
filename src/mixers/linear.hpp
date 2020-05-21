@@ -36,8 +36,7 @@ namespace solvers {
       mix_factor_(arg_mix_factor){
     }
 
-		template <class mix_type>
-    void operator()(mix_type & input_value, const mix_type & output_value){
+    void operator()(math::array<type, 1> & input_value, math::array<type, 1>  const & output_value){
 			//note: arguments might alias here			
 
       //DATAOPERATIONS LOOP 1D
@@ -66,8 +65,8 @@ TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
 
   solvers::linear_mixer<double> lm(0.5);
 
-  std::vector<double> vin({10.0, -20.0});
-	std::vector<double> vout({0.0,  22.2});
+  math::array<double, 1> vin({10.0, -20.0});
+	math::array<double, 1> vout({0.0,  22.2});
 
 	lm(vin, vout);
   
