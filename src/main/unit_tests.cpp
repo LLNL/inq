@@ -90,6 +90,8 @@
 #include <solvers/linear.hpp>
 #include <solvers/least_squares.hpp>
 
+#include <mixers/base.hpp>
+#include <mixers/broyden.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
 

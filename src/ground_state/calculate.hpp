@@ -23,6 +23,7 @@
 #include <density/normalize.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
+#include <mixers/broyden.hpp>
 #include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
@@ -56,7 +57,10 @@ namespace ground_state {
 			mixer = new mixers::linear<double>(solver.mixing());
 			break;
 		case input::scf::mixing_algo::PULAY:
-			mixer =  new mixers::pulay<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			mixer = new mixers::pulay<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			break;
+		case input::scf::mixing_algo::BROYDEN:
+			mixer = new mixers::broyden<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
 			break;
 		}
 		
