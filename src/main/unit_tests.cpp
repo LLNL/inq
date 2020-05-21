@@ -20,13 +20,16 @@
 
 #include <catch2/catch.hpp>
 
+
 #define PSEUDOPOD_UNIT_TEST
 
-#include <pseudopod/spline.hpp>
 #include <pseudopod/erf_range_separation.hpp>
 #include <pseudopod/element.hpp>
 #include <pseudopod/pseudopotential.hpp>
 #include <pseudopod/spherical_harmonic.hpp>
+#include <pseudopod/math/bessel_transform.hpp>
+#include <pseudopod/math/spherical_bessel.hpp>
+#include <pseudopod/math/spline.hpp>
 
 #define INQ_UNIT_TEST
 
