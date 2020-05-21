@@ -82,25 +82,62 @@ AC_DEFUN([AX_BOOST_SERIALIZATION],
             if test "x$ax_boost_user_serialization_lib" = "x"; then
                 for libextension in `ls $BOOSTLIBDIR/libboost_serialization*.so* $BOOSTLIBDIR/libboost_serialization*.dylib* $BOOSTLIBDIR/libboost_serialization*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_serialization.*\)\.so.*$;\1;' -e 's;^lib\(boost_serialization.*\)\.dylib.*$;\1;' -e 's;^lib\(boost_serialization.*\)\.a*$;\1;'` ; do
                      ax_lib=${libextension}
-				    AC_CHECK_LIB($ax_lib, sqrt,
-                                 [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break],
-                                 [link_serialization="no"])
+                     
+dnl				    AC_CHECK_LIB($ax_lib, sqrt,
+dnl                                 [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break],
+dnl                                 [link_serialization="no"])
+            AC_LANG_PUSH([C++])
+            SAVED_LIBS=$LIBS
+            LIBS="$LIBS -l$ax_lib"
+        	  AC_LINK_IFELSE([AC_LANG_PROGRAM([[@%:@include <fstream>
+												 @%:@include <boost/archive/text_oarchive.hpp>
+                                                 @%:@include <boost/archive/text_iarchive.hpp>
+												]],
+                                   [[std::ofstream ofs("filename");
+									boost::archive::text_oarchive oa(ofs);
+									 return 0;
+                                   ]])],
+                   [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break], link_serialization=no)
+                   LIBS=$SAVED_LIBS                   
+         AC_LANG_POP([C++])
 				done
                 if test "x$link_serialization" != "xyes"; then
                 for libextension in `ls $BOOSTLIBDIR/boost_serialization*.dll* $BOOSTLIBDIR/boost_serialization*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_serialization.*\)\.dll.*$;\1;' -e 's;^\(boost_serialization.*\)\.a.*$;\1;'` ; do
                      ax_lib=${libextension}
-				    AC_CHECK_LIB($ax_lib, sqrt,
-                                 [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break],
-                                 [link_serialization="no"])
+                                 AC_LANG_PUSH([C++])
+                                 SAVED_LIBS=$LIBS
+                                 LIBS="$LIBS -l$ax_lib"
+        	  AC_LINK_IFELSE([AC_LANG_PROGRAM([[@%:@include <fstream>
+												 @%:@include <boost/archive/text_oarchive.hpp>
+                                                 @%:@include <boost/archive/text_iarchive.hpp>
+												]],
+                                   [[std::ofstream ofs("filename");
+									boost::archive::text_oarchive oa(ofs);
+									 return 0;
+                                   ]])],
+                   [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break], link_serialization=no)
+                   LIBS=$SAVED_LIBS
+         AC_LANG_POP([C++])
 				done
                 fi
 
             else
                for ax_lib in $ax_boost_user_serialization_lib boost_serialization-$ax_boost_user_serialization_lib; do
-				      AC_CHECK_LIB($ax_lib, main,
-                                   [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break],
-                                   [link_serialization="no"])
-                  done
+                                               AC_LANG_PUSH([C++])
+                                               SAVED_LIBS=$LIBS
+                                               LIBS="$LIBS -l$ax_lib"
+        	  AC_LINK_IFELSE([AC_LANG_PROGRAM([[@%:@include <fstream>
+												 @%:@include <boost/archive/text_oarchive.hpp>
+                                                 @%:@include <boost/archive/text_iarchive.hpp>
+												]],
+                                   [[std::ofstream ofs("filename");
+									boost::archive::text_oarchive oa(ofs);
+									 return 0;
+                                   ]])],
+                   [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break], link_serialization=no)
+                   LIBS=$SAVED_LIBS
+         AC_LANG_POP([C++])
+         done
 
             fi
             if test "x$ax_lib" = "x"; then
