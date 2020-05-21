@@ -223,7 +223,7 @@ TEST_CASE("mixers::pulay", "[mixers::pulay]") {
 	CHECK(vin[0] == 5.0_a);
   CHECK(vin[1] == 1.1_a);
 
-	vout = {4.0, 5.5};
+	vout = math::array<double, 1>({4.0, 5.5});
 
 	lm(vin, vout);
 
