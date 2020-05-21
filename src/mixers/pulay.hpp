@@ -29,7 +29,7 @@
 namespace mixers {
 
 	template <class Type>
-  class pulay {
+  class pulay : public base<Type> {
 
 		/*
 			The DIIS mixing of Pulay, as described in Kresse and Furthmueller, Phys. Rev. B, 54 11169 (1996)

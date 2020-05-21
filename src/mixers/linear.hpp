@@ -24,11 +24,12 @@
 #include <math/complex.hpp>
 #include <math/vec3d.hpp>
 #include <math/array.hpp>
+#include <mixers/base.hpp>
 
 namespace mixers {
 
 	template <class Type>
-  class linear {
+  class linear : public base<Type> {
 
   public:
 
