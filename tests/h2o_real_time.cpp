@@ -18,6 +18,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <fftw3.h>
+
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
@@ -62,6 +64,8 @@ int main(int argc, char ** argv){
       dipole_file << ii << '\t' << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
     }
   }
-  
+
+	fftw_cleanup(); //required for valgrid
+	
 	return energy_match.fail();
 }

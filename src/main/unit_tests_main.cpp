@@ -22,6 +22,7 @@
 #include <catch2/catch.hpp>
 
 #include <mpi3/environment.hpp>
+#include <fftw3.h>
 
 int main( int argc, char* argv[] ) {
 
@@ -29,5 +30,7 @@ int main( int argc, char* argv[] ) {
 	
   int result = Catch::Session().run( argc, argv );
 
+	fftw_cleanup();
+	
   return result;
 }
