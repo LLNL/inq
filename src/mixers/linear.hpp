@@ -27,7 +27,7 @@
 
 namespace solvers {
 
-	template <class type>
+	template <class Type>
   class linear_mixer {
 
   public:
@@ -36,7 +36,7 @@ namespace solvers {
       mix_factor_(arg_mix_factor){
     }
 
-    void operator()(math::array<type, 1> & input_value, math::array<type, 1>  const & output_value){
+    void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value){
 			//note: arguments might alias here			
 
       //DATAOPERATIONS LOOP 1D
