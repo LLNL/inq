@@ -49,7 +49,7 @@ namespace ground_state {
 		
 		operations::preconditioner prec;
 
-		mixers::base<double> * mixer;
+		mixers::base<double> * mixer = nullptr;
 
 		switch(solver.mixing_algorithm()){
 		case input::scf::mixing_algo::LINEAR:
