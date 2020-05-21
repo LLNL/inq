@@ -88,6 +88,7 @@ noinst_HEADERS =                             \
 	solvers/poisson.hpp                        \
 	solvers/least_squares.hpp                  \
 	solvers/linear.hpp                         \
+	mixers/base.hpp                            \
 	mixers/linear.hpp                          \
 	mixers/pulay.hpp                           \
 	eigensolvers/conjugate_gradient.hpp        \

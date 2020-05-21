@@ -48,9 +48,17 @@ namespace ground_state {
 		hamiltonian::energy energy;
 		
 		operations::preconditioner prec;
-		
-		auto mixer = solvers::linear_mixer<double>(solver.mixing());
-		//auto mixer = solvers::pulay_mixer<double>(2, solver.mixing(), states_basis.part().local_size());
+
+		mixers::base<double> * mixer = nullptr;
+
+		switch(solver.mixing_algorithm()){
+		case input::scf::mixing_algo::LINEAR:
+			mixer = new mixers::linear<double>(solver.mixing());
+			break;
+		case input::scf::mixing_algo::PULAY:
+			mixer =  new mixers::pulay<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			break;
+		}
 		
 		double old_energy = DBL_MAX;
 		
@@ -106,8 +114,8 @@ namespace ground_state {
 			
 			if(inter.self_consistent() and solver.mix_density()) {
 				auto new_density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
-				mixer(density.linear(), new_density.linear());
-					density::normalize(density, electrons.states_.total_charge());
+				mixer->operator()(density.linear(), new_density.linear());
+				density::normalize(density, electrons.states_.total_charge());
 			} else {
 				density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 			}
@@ -115,7 +123,7 @@ namespace ground_state {
 			auto vks = sc.ks_potential(density, energy);
 			
 			if(inter.self_consistent() and solver.mix_potential()) {
-				mixer(ham.scalar_potential.linear(), vks.linear());
+				mixer->operator()(ham.scalar_potential.linear(), vks.linear());
 			} else {
 				ham.scalar_potential = std::move(vks);
 			}
@@ -159,6 +167,8 @@ namespace ground_state {
 			old_energy = energy.eigenvalues;
 			
 		}
+
+		delete mixer;
 		
 		energy.print(std::cout);
 		
