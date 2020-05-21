@@ -49,8 +49,8 @@ namespace ground_state {
 		
 		operations::preconditioner prec;
 		
-		auto mixer = solvers::linear_mixer<double>(solver.mixing());
-		//auto mixer = solvers::pulay_mixer<double>(2, solver.mixing(), states_basis.part().local_size());
+		auto mixer = mixers::linear<double>(solver.mixing());
+		//auto mixer = mixers::pulay<double>(2, solver.mixing(), states_basis.part().local_size());
 		
 		double old_energy = DBL_MAX;
 		

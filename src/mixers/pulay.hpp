@@ -26,10 +26,10 @@
 #include <math/array.hpp>
 #include <solvers/least_squares.hpp>
 
-namespace solvers {
+namespace mixers {
 
 	template <class Type>
-  class pulay_mixer {
+  class pulay {
 
 		/*
 			The DIIS mixing of Pulay, as described in Kresse and Furthmueller, Phys. Rev. B, 54 11169 (1996)
@@ -37,7 +37,7 @@ namespace solvers {
 		
   public:
 
-    pulay_mixer(const int arg_steps, const double arg_mix_factor, const long long dim):
+    pulay(const int arg_steps, const double arg_mix_factor, const long long dim):
 			iter_(0),
 			max_size_(arg_steps),
       mix_factor_(arg_mix_factor),
@@ -209,11 +209,11 @@ namespace solvers {
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
+TEST_CASE("mixers::pulay", "[mixers::pulay]") {
 
 	using namespace Catch::literals;
  
-  solvers::pulay_mixer<double> lm(5, 0.5, 2);
+  mixers::pulay<double> lm(5, 0.5, 2);
 
 	math::array<double, 1> vin({10.0, -20.0});
 	math::array<double, 1> vout({0.0,  22.2});

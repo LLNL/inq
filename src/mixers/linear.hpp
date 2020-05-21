@@ -25,14 +25,14 @@
 #include <math/vec3d.hpp>
 #include <math/array.hpp>
 
-namespace solvers {
+namespace mixers {
 
 	template <class Type>
-  class linear_mixer {
+  class linear {
 
   public:
 
-    linear_mixer(double arg_mix_factor):
+    linear(double arg_mix_factor):
       mix_factor_(arg_mix_factor){
     }
 
@@ -59,11 +59,11 @@ namespace solvers {
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
+TEST_CASE("mixers::linear", "[mixers::linear]") {
 
 	using namespace Catch::literals;
 
-  solvers::linear_mixer<double> lm(0.5);
+  mixers::linear<double> lm(0.5);
 
   math::array<double, 1> vin({10.0, -20.0});
 	math::array<double, 1> vout({0.0,  22.2});
