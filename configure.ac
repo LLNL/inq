@@ -134,6 +134,17 @@ AC_LANG_POP
 
 AC_MSG_NOTICE([
 ================================================================================
+  CHECKING FOR BOOST LIBRARIES
+================================================================================])
+AC_LANG_PUSH([C++])
+
+AX_BOOST_BASE([], [], [AC_MSG_ERROR([could not find the required Boost library])])
+AX_BOOST_SERIALIZATION([], [], [AC_MSG_ERROR([could not find the required Boost library])])
+
+AC_LANG_POP
+
+AC_MSG_NOTICE([
+================================================================================
   CONFIGURATION DONE, GENERATING MAKEFILES
 ================================================================================])
 

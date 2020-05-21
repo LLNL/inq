@@ -1,10 +1,12 @@
-/* -*- indent-tabs-mode: t -*- */
+#ifdef COMPILATION// -*-indent-tabs-mode:t;-*-
+../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x -lboost_serialization&&$0x&&rm $0x;exit
+#endif
 
 #ifndef VEC3D_H
 #define VEC3D_H
 
 /*
- Copyright (C) 2020 Xavier Andrade
+ Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -21,113 +23,111 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <iostream>
 #include <cmath>
-#include <cassert>
-
-#include <gpu/run.hpp>
 
 namespace math {
 	class vec3d {
 	public:
 
-		GPU_FUNCTION vec3d(double xv, double yv, double zv) : x_{xv}, y_{yv}, z_{zv}{}
+		constexpr vec3d(double xv, double yv, double zv) : x_{xv}, y_{yv}, z_{zv}{}
 		
-		GPU_FUNCTION explicit vec3d() : x_(0.0), y_(0.0), z_(0.0) {}
+		vec3d() = default;
 		
-		GPU_FUNCTION explicit vec3d(const double & vv) : x_(vv), y_(vv), z_(vv) {}    
+		explicit constexpr vec3d(const double & vv) : x_(vv), y_(vv), z_(vv) {}    
 
-		GPU_FUNCTION explicit vec3d(const double* r) : x_(r[0]), y_(r[1]), z_(r[2]) {}
+		explicit constexpr vec3d(const double* r) : x_(r[0]), y_(r[1]), z_(r[2]) {}
 
-		GPU_FUNCTION double & operator[](int i){
-			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
-			return reinterpret_cast<double*>(this)[i];
+		constexpr double & operator[](int i){
+			static_assert(sizeof(*this) == sizeof(double)*3, 
+				"must be compatible with double[3]");
+			return (&x_)[i];
 		}
 		
-		GPU_FUNCTION double const & operator[](int i) const{
-			static_assert(sizeof(*this) == sizeof(double)*3, "must be compatible with double[3]");
-			return reinterpret_cast<double const*>(this)[i];
+		constexpr double const & operator[](int i) const{
+			static_assert(sizeof(*this) == sizeof(double)*3, 
+				"must be compatible with double[3]");
+			return (&x_)[i];
 		}
 		
-		GPU_FUNCTION bool operator==(const vec3d & aa) const {
+		constexpr bool operator==(const vec3d & aa) const {
 			return x_ == aa.x_ && y_ == aa.y_ && z_ == aa.z_;
 		}
 
-		GPU_FUNCTION bool operator!=(const vec3d & aa) const {
+		constexpr bool operator!=(const vec3d & aa) const {
 			return x_ != aa.x_ || y_ != aa.y_ || z_ != aa.z_;
 		}
 
-		GPU_FUNCTION vec3d & operator +=(const vec3d & aa) {
+		constexpr vec3d& operator+=(const vec3d & aa) {
 			x_ += aa.x_;
 			y_ += aa.y_;
 			z_ += aa.z_;
 			return *this;
 		}
 
-		GPU_FUNCTION vec3d & operator -=(const vec3d & aa) {
+		constexpr vec3d& operator-=(const vec3d & aa) {
 			x_ -= aa.x_;
 			y_ -= aa.y_;
 			z_ -= aa.z_;
 			return *this;
 		}
 
-		GPU_FUNCTION vec3d & operator *=(const double & aa) {
+		constexpr vec3d& operator*=(const double & aa) {
 			x_ *= aa;
 			y_ *= aa;
 			z_ *= aa;
 			return *this;
 		}
 
-		GPU_FUNCTION vec3d & operator /=(const double & aa) {
+		constexpr vec3d& operator/=(const double & aa) {
 			x_ /= aa;
 			y_ /= aa;
 			z_ /= aa;
 			return *this;
 		}
 
-		GPU_FUNCTION friend const vec3d operator +(const vec3d & aa, const vec3d & bb) {
+		friend constexpr vec3d operator+(const vec3d & aa, const vec3d & bb) {
 			return vec3d(aa) += bb;
 		}
 
-		GPU_FUNCTION friend const vec3d operator -(const vec3d & aa, const vec3d & bb) {
+		friend constexpr vec3d operator-(const vec3d & aa, const vec3d & bb) {
 			return vec3d(aa) -= bb;
 		}
 
-		GPU_FUNCTION friend vec3d operator -(const vec3d & aa) {
+		friend constexpr vec3d operator-(const vec3d & aa) {
 			return vec3d( -aa.x_, -aa.y_, -aa.z_ );
 		}
 
-		GPU_FUNCTION friend vec3d operator *(const double & aa, const vec3d & bb) {
+		friend constexpr vec3d operator*(const double & aa, const vec3d & bb) {
 			return vec3d(bb) *= aa;
 		}
 
-		GPU_FUNCTION friend vec3d operator *(const vec3d & aa, const double & bb) {
+		friend constexpr vec3d operator*(const vec3d & aa, const double & bb) {
 			return vec3d(aa) *= bb;
 		}
 
-		GPU_FUNCTION friend vec3d operator /(const vec3d & aa, const double & bb) {
+		friend constexpr vec3d operator/(const vec3d & aa, const double & bb) {
 			return vec3d(aa) /= bb;
 		}
 
 		//internal product
-		GPU_FUNCTION friend double operator |(const vec3d & aa, const vec3d & bb) {
+		friend constexpr double operator|(const vec3d & aa, const vec3d & bb) {
 			return aa.x_*bb.x_ + aa.y_*bb.y_ + aa.z_*bb.z_;
 		}
 
 		//cross product
-		GPU_FUNCTION friend vec3d operator ^(const vec3d & aa, const vec3d & bb) {
+		friend constexpr vec3d operator^(const vec3d & aa, const vec3d & bb) {
 			return vec3d(aa.y_*bb.z_ - aa.z_*bb.y_, aa.z_*bb.x_ - aa.x_*bb.z_, aa.x_*bb.y_ - aa.y_*bb.x_);
 		}
 
-		GPU_FUNCTION friend double norm(const vec3d& aa) {
+		friend constexpr double norm(const vec3d& aa) {
 			return aa|aa;
 		}
 
-		GPU_FUNCTION friend double length(const vec3d& aa) {
+		// TODO if this function is necessary in the gpu it can be made constexpr 
+		// TODO in that case, when clang complains we can put a warning guard
+		// TODO guard consists in disabling locally the warning -Winvalid-constexpr
+		friend double length(const vec3d& aa) {
 			return sqrt(aa|aa);
 		}
 
@@ -139,6 +139,11 @@ namespace math {
 		friend std::istream& operator >>(std::istream & ins, vec3d & v) {
 			ins >> v.x_ >> v.y_ >> v.z_ ;
 			return ins;
+		}
+
+		template<class Archive>
+		void serialize(Archive& ar, unsigned const /*version*/){
+			ar & x_ & y_ & z_;
 		}
 
 	private:
@@ -153,8 +158,14 @@ namespace math {
 
 ///////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#if defined(INQ_UNIT_TEST) or (not __INCLUDE_LEVEL__)
+#if (not __INCLUDE_LEVEL__)
+#define CATCH_CONFIG_MAIN
+#endif
 #include <catch2/catch.hpp>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include <math/array.hpp>
 
@@ -166,6 +177,14 @@ TEST_CASE("function math::vec3d", "[math::vec3d]") {
 
 	vec3d x1{1.0, 2.0, 3.0};
 	vec3d x2{0.1, 0.2, 0.3};
+
+	{
+		std::stringstream ss;
+		boost::archive::text_oarchive{ss} << x2;
+		std::cout << ss.str() <<'\n';
+		vec3d x3; boost::archive::text_iarchive{ss} >> x3;
+		CHECK( x3 == x2 );
+	}
 	
 	CHECK(x1[0] == 1.0_a);
 	CHECK(x1[1] == 2.0_a);
