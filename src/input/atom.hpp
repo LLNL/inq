@@ -65,7 +65,7 @@ auto operator|(const std::string & arg_symbol, const math::vec3d & arg_position)
 	return input::atom(pseudo::element(arg_symbol), arg_position);
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
 TEST_CASE("class ions::atom", "[input::atom]") {

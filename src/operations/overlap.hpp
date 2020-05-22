@@ -142,7 +142,7 @@ namespace operations {
 }
 
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
@@ -344,25 +344,23 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			const int nvec = 1;
 			
 			basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
-
-			{
-				auto cc = operations::overlap(aa);
-
-				CHECK(std::get<0>(sizes(cc)) == nvec);
-				CHECK(std::get<1>(sizes(cc)) == nvec);
-				
-				for(int ii = 0; ii < nvec; ii++){
-					for(int jj = 0; jj < nvec; jj++){
-						CHECK(real(cc[ii][jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
-						CHECK(fabs(imag(cc[ii][jj])) < 1e-13);
-					}
-				}
+			
+			for(int ii = 0; ii < bas.part().local_size(); ii++){
+				auto iig = bas.part().local_to_global(ii);
+				aa.matrix()[ii][0] = 20.0*sqrt(iig + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig));
 			}
+			
+			auto cc = operations::overlap(aa);
+			
+			CHECK(std::get<0>(sizes(cc)) == nvec);
+			CHECK(std::get<1>(sizes(cc)) == nvec);
+			
+			CHECK(real(cc[0][0]) == Approx(400.0*0.5*npoint*(npoint + 1.0)*bas.volume_element()));
+			CHECK(fabs(imag(cc[0][0])) < 1e-13);
 
 		}
 
 }
-
 
 #endif
 #endif

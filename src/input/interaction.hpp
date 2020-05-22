@@ -74,7 +74,6 @@ namespace input {
       return inter;
     }
 		
-
     auto theory() const {
       return theory_.value_or(electronic_theory::DENSITY_FUNCTIONAL);
     }
@@ -95,22 +94,75 @@ namespace input {
 		auto self_consistent() const {
 			return theory_ != electronic_theory::NON_INTERACTING;
 		}
+
+		static auto real_space_pseudo(){
+      interaction inter;
+      inter.fourier_pseudo_ = false;
+      return inter;
+    }
 		
+		static auto fourier_pseudo(){
+      interaction inter;
+      inter.fourier_pseudo_ = true;
+      return inter;
+    }
+		
+		auto fourier_pseudo_value() const {
+			return fourier_pseudo_.value_or(false);
+		}
+
+		friend auto operator|(const interaction & inter1, const interaction & inter2){
+			using utils::merge_optional;
+
+			interaction rinter;
+			rinter.theory_	= merge_optional(inter1.theory_, inter2.theory_);
+			rinter.exchange_	= merge_optional(inter1.exchange_, inter2.exchange_);
+			rinter.correlation_	= merge_optional(inter1.correlation_, inter2.correlation_);
+			rinter.fourier_pseudo_	= merge_optional(inter1.fourier_pseudo_, inter2.fourier_pseudo_);
+			return rinter;
+		}
+    
   private:
 
     nonstd::optional<electronic_theory> theory_;
     nonstd::optional<exchange_functional> exchange_;
     nonstd::optional<correlation_functional> correlation_;
-    
+		nonstd::optional<bool> fourier_pseudo_;
+		
   };
     
 }
 
 ////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
-#include <ions/unitcell.hpp>
+
+TEST_CASE("class input::interaction", "[input::interaction]") {
+  
+  using namespace Catch::literals;
+
+	SECTION("Defaults"){
+
+    input::interaction inter;
+
+    CHECK(inter.theory() == input::interaction::electronic_theory::DENSITY_FUNCTIONAL);
+		CHECK(inter.exchange() == input::interaction::exchange_functional::LDA);
+		CHECK(inter.correlation() == input::interaction::correlation_functional::LDA_PZ);
+    CHECK(inter.fourier_pseudo_value() == false);
+  }
+
+  SECTION("Composition"){
+
+    auto inter = input::interaction::non_interacting() | input::interaction::fourier_pseudo();
+    
+		CHECK(not inter.self_consistent());
+		CHECK(inter.fourier_pseudo_value() == true);
+  }
+
+}
 
 #endif
    

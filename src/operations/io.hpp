@@ -106,6 +106,7 @@ namespace operations {
 				std::cerr << "Error: cannot open restart directory '" << dirname << "/'." << std::endl;
 				exit(1);
 			}
+			closedir(dir);
 			
 			for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
@@ -130,7 +131,7 @@ namespace operations {
 	}
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>

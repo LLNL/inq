@@ -84,6 +84,12 @@ namespace basis {
 		auto volume_element() const {
 			return rspacing_[0]*rspacing_[1]*rspacing_[2];
 		}
+
+		auto gcutoff() const {
+			auto max_spacing = std::max({rspacing_[0], rspacing_[1],rspacing_[2]});
+
+			return M_PI/max_spacing;
+		}
 		
 	private:
 
@@ -104,7 +110,7 @@ namespace basis {
   };
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
@@ -112,7 +118,7 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
   
   using namespace Catch::literals;
   using math::vec3d;
-  
+
   {
     
     SECTION("Cubic cell"){

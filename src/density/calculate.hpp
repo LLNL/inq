@@ -78,7 +78,7 @@ namespace density {
 	
 }
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
 TEST_CASE("function density::calculate", "[density::calculate]") {
@@ -90,7 +90,7 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm);
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 	
 	auto basis_comm = cart_comm.axis(1);
 	

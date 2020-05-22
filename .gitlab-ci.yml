@@ -1,6 +1,6 @@
 #required packages:
 #    - time apt update -qq
-#    - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+#    - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
 #    - time apt install --no-install-recommends -y -qq nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
 
 image: debian:testing
@@ -11,11 +11,25 @@ variables:
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
 
+#check that the configuration fails if fftw is not found
+nofftw:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - mpic++ --version
+      - time autoreconf -i
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - eval ! ../configure --prefix=$HOME
+      
 gcc:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - time autoreconf -i
@@ -37,7 +51,7 @@ gcc-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - time autoreconf -i
@@ -59,7 +73,7 @@ gcc-distcheck:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - time autoreconf -i
@@ -72,7 +86,7 @@ clang:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev    
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - time autoreconf -i
@@ -95,7 +109,7 @@ clang-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev    
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - time autoreconf -i
@@ -113,13 +127,32 @@ clang-fast:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+
+clang-valgrind:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev valgrind
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - clang++ --version
+      - time autoreconf -i
+      - mkdir build
+      - cd build
+      - export OMPI_CXX=clang++
+      - export CXXFLAGS="-g -Ofast -ffast-math -pipe -Wall -Werror -DNDEBUG"
+      - time ../configure --prefix=$HOME
+      - time make -j4 install
+      - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../.valgrind_suppressions"
+      - time $VALGRIND src/inq_unit_tests
+      - time $VALGRIND tests/h2o_ground_state
+      - time $VALGRIND tests/h2o_real_time
       
-nvcc_nocuda:
+nvcc-nocuda:
     stage: build
     script:
       - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
@@ -159,14 +192,14 @@ nvcc:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
-      - time make -j4
+      - time make -j4 install
       - time src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       
-clang_cuda:
+clang-cuda:
     stage: build
     tags:
       - cuda_gpu
@@ -183,7 +216,7 @@ clang_cuda:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
-      - time make -j4
+      - time make -j4 install
       - time src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon

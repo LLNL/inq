@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 
 	utils::match energy_match(1.0e-5);
 
-	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF"); 
+	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	
 	std::vector<input::atom> geo;
 	
@@ -75,11 +75,11 @@ int main(int argc, char ** argv){
 
 		*/
 
-		energy_match.check("total energy",        result.energy.total(),      -0.570687439533);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),     0.492500951533);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,  -0.500061798704);
-		energy_match.check("Hartree energy",      result.energy.hartree,       0.0);		
-		energy_match.check("external energy",     result.energy.external,     -0.992562750237);
+		energy_match.check("total energy",        result.energy.total(),      -0.570284890173);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),     0.490828721769);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,  -0.499659249344);
+		energy_match.check("Hartree energy",      result.energy.hartree,       0.000000000000);
+		energy_match.check("external energy",     result.energy.external,     -0.990487971113);
 		energy_match.check("non-local energy",    result.energy.nonlocal,      0.0);
 		energy_match.check("XC energy",           result.energy.xc,            0.0);
 		energy_match.check("XC density integral", result.energy.nvxc,          0.0);
@@ -118,20 +118,20 @@ int main(int argc, char ** argv){
 
 		*/
 
-		energy_match.check("total energy",        result.energy.total(),          -0.516602958211);
+		energy_match.check("total energy",        result.energy.total(),          -0.516258016315);
 		//octopus                                                           0.41903428
-		energy_match.check("kinetic energy",      result.energy.kinetic(),         0.418581442489);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),         0.417164079068);
 		//octopus                                                          -0.23398591
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -0.233981484327);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -0.233824395500);
 		//octopus                                                           0.28254446
-		energy_match.check("Hartree energy",      result.energy.hartree,           0.282434181127);
+		energy_match.check("Hartree energy",      result.energy.hartree,           0.282183808045);
 		//octopus                                                          -0.91520434
-		energy_match.check("external energy",     result.energy.external,         -0.914632814228);
+		energy_match.check("external energy",     result.energy.external,         -0.912820548659);
 		energy_match.check("non-local energy",    result.energy.nonlocal,          0.0);
 		//octopus                                                          -0.23244493
-		energy_match.check("XC energy",           result.energy.xc,               -0.232360126770);
+		energy_match.check("XC energy",           result.energy.xc,               -0.232159713939);
 		//octopus                                                          -0.30290955
-		energy_match.check("XC density integral", result.energy.nvxc,             -0.302798474842);
+		energy_match.check("XC density integral", result.energy.nvxc,             -0.302535541998);
 		energy_match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
 		energy_match.check("ion-ion energy",      result.energy.ion,              -0.070625640829);
 		

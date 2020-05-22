@@ -21,9 +21,12 @@ AM_CXXFLAGS =                             \
 	-I$(top_srcdir)/external_libs/          \
 	-DSHARE_DIR='"$(pkgdatadir)"'           \
 	-DPREFIX_DIR='"$(prefix)"'              \
-	@CFLAGS_CUDA@
+	@CFLAGS_CUDA@                           \
+	@BOOST_CPPFLAGS@
 
-LIBS = @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @LIBS@
+LDFLAGS += @BOOST_LDFLAGS@
+
+LIBS = @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @BOOST_SERIALIZATION_LIB@ @LIBS@
 
 noinst_HEADERS =                             \
 	config/path.hpp                            \
@@ -80,11 +83,14 @@ noinst_HEADERS =                             \
 	hamiltonian/exchange_operator.hpp          \
 	hamiltonian/ks_hamiltonian.hpp             \
 	hamiltonian/projector.hpp                  \
+	hamiltonian/projector_fourier.hpp          \
 	hamiltonian/self_consistency.hpp           \
 	hamiltonian/xc_functional.hpp              \
 	solvers/poisson.hpp                        \
 	solvers/least_squares.hpp                  \
 	solvers/linear.hpp                         \
+	mixers/base.hpp                            \
+	mixers/broyden.hpp                         \
 	mixers/linear.hpp                          \
 	mixers/pulay.hpp                           \
 	eigensolvers/conjugate_gradient.hpp        \

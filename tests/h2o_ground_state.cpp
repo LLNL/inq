@@ -18,6 +18,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <fftw3.h>
+
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
@@ -42,30 +44,33 @@ int main(int argc, char ** argv){
 
 	systems::ions ions(input::cell::cubic(12.0, 11.0, 10.0) | input::cell::finite(), geo);
 
-  auto scf_options = input::scf::conjugate_gradient() | input::scf::energy_tolerance(1.0e-5) | input::scf::density_mixing();
+  auto scf_options = input::scf::conjugate_gradient() | input::scf::energy_tolerance(1.0e-5) | input::scf::density_mixing() | input::scf::broyden_mixing();	
   
   input::config conf;
   
   systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
 
   auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), scf_options);
-  
-  match.check("total energy",        result.energy.total(),         -25.885010460377);
-  match.check("kinetic energy",      result.energy.kinetic(),        12.011756577795);
-  match.check("eigenvalues",         result.energy.eigenvalues,      -4.247001211716);
-  match.check("Hartree energy",      result.energy.hartree,          21.211005609920);
-  match.check("external energy",     result.energy.external,        -50.383959864425);
-  match.check("non-local energy",    result.energy.nonlocal,         -2.809830867482);
-  match.check("XC energy",           result.energy.xc,               -4.866245464735);
-  match.check("XC density integral", result.energy.nvxc,             -5.486978277443);
-  match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
-  match.check("ion-ion energy",      result.energy.ion,              -1.047736451449);
+
+  match.check("total energy",        result.energy.total(),       -25.433028356021);
+  match.check("kinetic energy",      result.energy.kinetic(),      10.967516478208);
+  match.check("eigenvalues",         result.energy.eigenvalues,    -4.188361453155);
+  match.check("Hartree energy",      result.energy.hartree,        20.790186828745);
+  match.check("external energy",     result.energy.external,      -49.490601775205);
+  match.check("non-local energy",    result.energy.nonlocal,       -1.881972776431);
+  match.check("XC energy",           result.energy.xc,             -4.770420659889);
+  match.check("XC density integral", result.energy.nvxc,           -5.363677037218);
+  match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
+  match.check("ion-ion energy",      result.energy.ion,            -1.047736451449);
 
 	match.check("dipole x", result.dipole[0], -0.000357977762);
 	match.check("dipole y", result.dipole[1], -2.812600825118);
 	match.check("dipole z", result.dipole[2], -0.000653986920);
 	
 	operations::io::save("h2o_restart", electrons.phi_);
-  
+
+	fftw_cleanup(); //required for valgrid
+	
 	return match.fail();
+
 }

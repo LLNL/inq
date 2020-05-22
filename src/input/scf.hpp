@@ -32,11 +32,13 @@ namespace input {
 
   public:
 
-    scf(){
-		}
-
     enum class scf_eigensolver { STEEPEST_DESCENT,
                                  CONJUGATE_GRADIENT
+    };
+
+    enum class mixing_algo { LINEAR,
+														 PULAY,
+														 BROYDEN
     };
 
     static auto steepest_descent(){
@@ -102,7 +104,29 @@ namespace input {
 		auto energy_tolerance() const {
 			return energy_tol_.value_or(1e-7);
 		}
-        
+		
+		auto static linear_mixing(){
+			scf solver;
+      solver.mixing_algo_ = mixing_algo::LINEAR;
+      return solver;
+		}
+
+		auto static pulay_mixing(){
+			scf solver;
+      solver.mixing_algo_ = mixing_algo::PULAY;
+      return solver;
+		}
+
+		auto static broyden_mixing(){
+			scf solver;
+      solver.mixing_algo_ = mixing_algo::BROYDEN;
+      return solver;
+		}
+		
+		auto mixing_algorithm() const {
+			return mixing_algo_.value_or(mixing_algo::LINEAR);
+		}
+		
     friend auto operator|(const scf & solver1, const scf & solver2){
 			using utils::merge_optional;
 
@@ -111,6 +135,7 @@ namespace input {
 			rsolver.mixing_	= merge_optional(solver1.mixing_, solver2.mixing_);
 			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);
 			rsolver.energy_tol_	= merge_optional(solver1.energy_tol_, solver2.energy_tol_);
+			rsolver.mixing_algo_	= merge_optional(solver1.mixing_algo_, solver2.mixing_algo_);
 			return rsolver;
 		}
     
@@ -120,6 +145,7 @@ namespace input {
     nonstd::optional<double> mixing_;
     nonstd::optional<mix_field> mix_field_;
 		nonstd::optional<double> energy_tol_;
+		nonstd::optional<mixing_algo> mixing_algo_;
 		
   };
     
@@ -127,7 +153,7 @@ namespace input {
 
 ////////////////////////////////////////////////////////
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
 TEST_CASE("class input::scf", "[input::scf]") {

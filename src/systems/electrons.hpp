@@ -48,7 +48,7 @@ namespace systems {
 		electrons(const systems::ions & ions, const input::basis arg_basis_input, const input::config & conf):
 			states_basis_(ions.cell(), arg_basis_input),
 			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
-			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms()),
+			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 			states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
 			phi_(states_basis_, states_.num_states()){
 			

@@ -93,6 +93,22 @@ namespace input {
 			return opts.mass_.value_or(element::mass());
 		}
 
+		static auto nofilter() {
+			options ropt;
+			ropt.filter_ = false;
+			return ropt;
+		}
+
+		static auto filter() {
+			options ropt;
+			ropt.filter_ = true;
+			return ropt;
+		}
+		
+		auto filter_pseudo() const {
+			return opts.filter_.value_or(true);
+		}
+				
 	private:
 
 		struct options {
@@ -101,6 +117,7 @@ namespace input {
 			nonstd::optional<std::string> symbol_;
 			nonstd::optional<std::string> pseudo_file_;		
 			nonstd::optional<double> mass_;
+			nonstd::optional<bool> filter_;
 			
 			options(){
 			}
@@ -115,6 +132,7 @@ namespace input {
 				ropt.symbol_ = merge_optional(opt1.symbol_, opt2.symbol_);
 				ropt.pseudo_file_ = merge_optional(opt1.pseudo_file_, opt2.pseudo_file_);
 				ropt.mass_ = merge_optional(opt1.mass_, opt2.mass_);
+				ropt.filter_ = merge_optional(opt1.filter_, opt2.filter_);
 				
 				return ropt;
 			}
@@ -130,7 +148,7 @@ namespace input {
 }
 
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
 TEST_CASE("class input::species", "[input::species]") {

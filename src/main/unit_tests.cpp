@@ -18,15 +18,20 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#define UNIT_TEST
-
 #include <catch2/catch.hpp>
 
-#include <pseudopod/spline.hpp>
+
+#define PSEUDOPOD_UNIT_TEST
+
 #include <pseudopod/erf_range_separation.hpp>
 #include <pseudopod/element.hpp>
 #include <pseudopod/pseudopotential.hpp>
 #include <pseudopod/spherical_harmonic.hpp>
+#include <pseudopod/math/bessel_transform.hpp>
+#include <pseudopod/math/spherical_bessel.hpp>
+#include <pseudopod/math/spline.hpp>
+
+#define INQ_UNIT_TEST
 
 #include <utils/partition.hpp>
 #include <utils/match.hpp>
@@ -57,9 +62,10 @@
 
 #include <states/ks_states.hpp>
 
-#include <hamiltonian/projector.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
+#include <hamiltonian/projector.hpp>
+#include <hamiltonian/projector_fourier.hpp>
 
 #include <operations/add.hpp>
 #include <operations/sum.hpp>
@@ -85,6 +91,8 @@
 #include <solvers/linear.hpp>
 #include <solvers/least_squares.hpp>
 
+#include <mixers/base.hpp>
+#include <mixers/broyden.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
 

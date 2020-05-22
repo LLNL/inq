@@ -24,20 +24,20 @@
 #include <math/complex.hpp>
 #include <math/vec3d.hpp>
 #include <math/array.hpp>
+#include <mixers/base.hpp>
 
-namespace solvers {
+namespace mixers {
 
-	template <class type>
-  class linear_mixer {
+	template <class Type>
+  class linear : public base<Type> {
 
   public:
 
-    linear_mixer(double arg_mix_factor):
+    linear(double arg_mix_factor):
       mix_factor_(arg_mix_factor){
     }
 
-		template <class mix_type>
-    void operator()(mix_type & input_value, const mix_type & output_value){
+    void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value){
 			//note: arguments might alias here			
 
       //DATAOPERATIONS LOOP 1D
@@ -55,19 +55,19 @@ namespace solvers {
 }
 
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("solvers::linear_mixer", "[solvers::linear_mixer]") {
+TEST_CASE("mixers::linear", "[mixers::linear]") {
 
 	using namespace Catch::literals;
 
-  solvers::linear_mixer<double> lm(0.5);
+  mixers::linear<double> lm(0.5);
 
-  std::vector<double> vin({10.0, -20.0});
-	std::vector<double> vout({0.0,  22.2});
+  math::array<double, 1> vin({10.0, -20.0});
+	math::array<double, 1> vout({0.0,  22.2});
 
 	lm(vin, vout);
   

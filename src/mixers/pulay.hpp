@@ -26,10 +26,10 @@
 #include <math/array.hpp>
 #include <solvers/least_squares.hpp>
 
-namespace solvers {
+namespace mixers {
 
-	template <class type>
-  class pulay_mixer {
+	template <class Type>
+  class pulay : public base<Type> {
 
 		/*
 			The DIIS mixing of Pulay, as described in Kresse and Furthmueller, Phys. Rev. B, 54 11169 (1996)
@@ -37,7 +37,7 @@ namespace solvers {
 		
   public:
 
-    pulay_mixer(const int arg_steps, const double arg_mix_factor, const long long dim):
+    pulay(const int arg_steps, const double arg_mix_factor, const long long dim):
 			iter_(0),
 			max_size_(arg_steps),
       mix_factor_(arg_mix_factor),
@@ -45,8 +45,7 @@ namespace solvers {
 			dff_({max_size_, dim}, NAN){
     }
 
-		template <class mix_type>
-    void operator()(mix_type & input_value, const mix_type & output_value){
+    void operator()(math::array<Type, 1> & input_value, const math::array<Type, 1> & output_value){
 
 			const double residual_coeff = 0.05;
 			
@@ -54,8 +53,8 @@ namespace solvers {
 			assert((typename math::array<double, 2>::size_type) output_value.size() == ff_[0].size());
 
 			{
-				typename mix_type::value_type aa = 0.0;
-				typename mix_type::value_type bb = 0.0;
+				Type aa = 0.0;
+				Type bb = 0.0;
 				for(unsigned kk = 0; kk < input_value.size(); kk++){
 					aa += fabs(input_value[kk]);
 					bb += fabs(output_value[kk]);
@@ -86,8 +85,8 @@ namespace solvers {
 			}
 			
 			for(int ii = 0; ii < size; ii++){
-				typename mix_type::value_type aa = 0.0;
-				typename mix_type::value_type bb = 0.0;
+				Type aa = 0.0;
+				Type bb = 0.0;
 				for(unsigned kk = 0; kk < input_value.size(); kk++){
 					aa += fabs(ff_[ii][kk]);
 					bb += conj(dff_[ii][kk])*dff_[ii][kk];
@@ -99,19 +98,19 @@ namespace solvers {
 				//DATAOPERATIONS LOOP 1D
 				for(unsigned ii = 0; ii < input_value.size(); ii++)	input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
 
-				typename mix_type::value_type aa = 0.0;
+				Type aa = 0.0;
 				for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
 				std::cout << "norm opt " << aa << std::endl;
 
 				return;
 			}
 
-			math::array<typename mix_type::value_type, 2> amatrix({size + 1, size + 1}, NAN);
+			math::array<Type, 2> amatrix({size + 1, size + 1}, NAN);
 
 			//DATAOPERATIONS LOOP 2D (use overlap)
 			for(int ii = 0; ii < size; ii++){
 				for(int jj = 0; jj < size; jj++){
-					typename mix_type::value_type aa = 0.0;
+					Type aa = 0.0;
 					for(unsigned kk = 0; kk < input_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
 					amatrix[ii][jj] = aa;
 				}
@@ -135,7 +134,7 @@ namespace solvers {
 			
 			// REDUCE GRID amatrix
 
-			math::array<typename mix_type::value_type, 1> alpha(size + 1, 0.0);
+			math::array<Type, 1> alpha(size + 1, 0.0);
 			alpha[size] = -1.0;
 
 			//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
@@ -169,7 +168,7 @@ namespace solvers {
 				
 				for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < input_value.size(); ii++) input_value[ii] += alpha[jj]*dff_[jj][ii];
 				
-				typename mix_type::value_type aa = 0.0;
+				Type aa = 0.0;
 				for(unsigned kk = 0; kk < input_value.size(); kk++) aa += norm(input_value[kk]);
 				std::cout << "res norm " << aa << std::endl;
 			}
@@ -184,8 +183,8 @@ namespace solvers {
 				}
 			}
 
-			typename mix_type::value_type aa = 0.0;
-			typename mix_type::value_type bb = 0.0;
+			Type aa = 0.0;
+			Type bb = 0.0;
 			for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
 			for(unsigned kk = 0; kk < input_value.size(); kk++) bb += input_value[kk];
 			std::cout << "norm opt " << aa << " " << bb << std::endl;
@@ -197,34 +196,34 @@ namespace solvers {
 		int iter_;
 		int max_size_;
     double mix_factor_;
-    math::array<type, 2> ff_;
-		math::array<type, 2> dff_;
+    math::array<Type, 2> ff_;
+		math::array<Type, 2> dff_;
 		
 	};
 
 }
 
 
-#ifdef UNIT_TEST
+#ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("solvers::pulay_mixer", "[solvers::pulay_mixer]") {
+TEST_CASE("mixers::pulay", "[mixers::pulay]") {
 
 	using namespace Catch::literals;
  
-  solvers::pulay_mixer<double> lm(5, 0.5, 2);
+  mixers::pulay<double> lm(5, 0.5, 2);
 
-  std::vector<double> vin({10.0, -20.0});
-	std::vector<double> vout({0.0,  22.2});
+	math::array<double, 1> vin({10.0, -20.0});
+	math::array<double, 1> vout({0.0,  22.2});
 	
 	lm(vin, vout);
   
 	CHECK(vin[0] == 5.0_a);
   CHECK(vin[1] == 1.1_a);
 
-	vout = {4.0, 5.5};
+	vout = math::array<double, 1>({4.0, 5.5});
 
 	lm(vin, vout);
 

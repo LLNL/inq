@@ -1,10 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS__BASE
-#define BASIS__BASE
+#ifndef MIXERS__BASE
+#define MIXERS__BASE
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2020 Xavier Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -21,51 +21,18 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <cassert>
+#include <math/array.hpp>
 
-#include <mpi3/environment.hpp>
-#include <utils/partition.hpp>
+namespace mixers {
 
-namespace basis {
+	template <class Type>
+	class base {
 
-	/*
-		This is a class that implements a very simple basis object. Useful for testing.
-	*/
-	
-  class base {
-
-  public:
+	public:
+		virtual ~base(){};
+		virtual void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value) = 0;
 		
-		base(const long size, boost::mpi3::communicator & comm):
-			part_(size, comm){
-		}
-
-		auto & part() {
-			return part_;
-		}
-
-		auto & part() const {
-			return part_;
-		}
-    
-	protected:
-
-		utils::partition part_;
-		
-  };
+	};
 }
 
-#ifdef INQ_UNIT_TEST
-#include <catch2/catch.hpp>
-#include <ions/unitcell.hpp>
-
-TEST_CASE("class basis::base", "[basis::base]") {
-  
-  using namespace Catch::literals;
-  using math::vec3d;
-  
-}
-#endif
-
-    
 #endif

@@ -18,6 +18,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <fftw3.h>
+
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
@@ -99,7 +101,7 @@ int main(int argc, char ** argv){
 		match.check("dipole z step 100", result.dipole[100][2], -0.000645826);
 
 	}
-
+	
 	{
 		operations::io::load("h2o_restart", electrons.phi_);
 		
@@ -119,5 +121,8 @@ int main(int argc, char ** argv){
 		}
 	}
 
+	fftw_cleanup(); //required for valgrid
+	
 	return match.fail();
+
 }

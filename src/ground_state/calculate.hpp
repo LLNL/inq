@@ -23,6 +23,7 @@
 #include <density/normalize.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
+#include <mixers/broyden.hpp>
 #include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
@@ -40,7 +41,7 @@ namespace ground_state {
 	
 	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
 		
-		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
+		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
 		
 		ham.info(std::cout);
 		
@@ -49,9 +50,20 @@ namespace ground_state {
 		ground_state::result res;
 		
 		operations::preconditioner prec;
-		
-		auto mixer = solvers::linear_mixer<double>(solver.mixing());
-		//auto mixer = solvers::pulay_mixer<double>(2, solver.mixing(), states_basis.part().local_size());
+
+		mixers::base<double> * mixer = nullptr;
+
+		switch(solver.mixing_algorithm()){
+		case input::scf::mixing_algo::LINEAR:
+			mixer = new mixers::linear<double>(solver.mixing());
+			break;
+		case input::scf::mixing_algo::PULAY:
+			mixer = new mixers::pulay<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			break;
+		case input::scf::mixing_algo::BROYDEN:
+			mixer = new mixers::broyden<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			break;
+		}
 		
 		double old_energy = DBL_MAX;
 		
@@ -108,8 +120,8 @@ namespace ground_state {
 			
 			if(inter.self_consistent() and solver.mix_density()) {
 				auto new_density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
-				mixer(density.linear(), new_density.linear());
-					density::normalize(density, electrons.states_.total_charge());
+				mixer->operator()(density.linear(), new_density.linear());
+				density::normalize(density, electrons.states_.total_charge());
 			} else {
 				density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 			}
@@ -117,7 +129,7 @@ namespace ground_state {
 			auto vks = sc.ks_potential(density, res.energy);
 			
 			if(inter.self_consistent() and solver.mix_potential()) {
-				mixer(ham.scalar_potential.linear(), vks.linear());
+				mixer->operator()(ham.scalar_potential.linear(), vks.linear());
 			} else {
 				ham.scalar_potential = std::move(vks);
 			}
@@ -161,6 +173,8 @@ namespace ground_state {
 			old_energy = res.energy.eigenvalues;
 			
 		}
+
+		delete mixer;
 		
 		res.energy.print(std::cout);
 
