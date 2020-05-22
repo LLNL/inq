@@ -37,16 +37,70 @@ namespace mixers {
 			iter_(0),
 			max_size_(arg_steps),
       mix_factor_(arg_mix_factor),
-			ff_({max_size_, dim}, NAN),
-			dff_({max_size_, dim}, NAN){
+			dv_({max_size_, dim}, NAN),
+			df_({max_size_, dim}, NAN),
+			f_old_(dim, NAN),
+			vin_old_(dim, NAN),
+			last_pos_(-1){
     }
 
-    void operator()(math::array<Type, 1> & input_value, const math::array<Type, 1> & output_value){
+		///////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		void broyden_extrapolation(math::array<Type, 1> & input_value, int const iter_used, math::array<Type, 1> const & ff){
 
-			const double residual_coeff = 0.05;
+			double const w0 = 0.01;
+			double const ww = 5.0;
+						
+			if(iter_used == 0){
+				for(long ip = 0; ip < input_value.size(); ip++){
+					input_value[ip] += mix_factor_*ff[ip];
+				}
+
+				return;
+			}
+
+			math::array<Type, 2> beta({iter_used, iter_used}, NAN);
+			math::array<Type, 1> work(iter_used, NAN);
+
+			for(int ii = 0; ii < iter_used; ii++){
+				for(int jj = ii + 1; jj < iter_used; jj++){
+					Type aa = 0.0;
+					for(unsigned kk = 0; kk < input_value.size(); kk++) aa +=  ww*ww*conj(df_[ii][kk])*df_[jj][kk];
+					beta[ii][jj] = aa;
+					beta[jj][ii] = conj(aa);
+				}
+				beta[ii][ii] = w0*w0 + ww*ww;
+			}
+
+			for(int ii = 0; ii < iter_used; ii++){
+				Type aa = 0.0;
+				for(unsigned kk = 0; kk < input_value.size(); kk++) aa += conj(df_[ii][kk])*ff[kk];
+				work[ii] = aa;
+			}
+
+			//REDUCE beta
+			//REDUCE work
+
+			solvers::least_squares(beta, work);
+	
+			for(long ip = 0; ip < input_value.size(); ip++){
+				input_value[ip] += mix_factor_*ff[ip];
+			}
+
+			for(int ii = 0; ii < iter_used; ii++){
+				for(long ip = 0; ip < input_value.size(); ip++){
+					input_value[ip] -= ww*ww*work[ii]*(mix_factor_*df_[ii][ip] + dv_[ii][ip]);
+				}
+			}
 			
-			assert((typename math::array<double, 2>::size_type) input_value.size() == ff_[0].size());
-			assert((typename math::array<double, 2>::size_type) output_value.size() == ff_[0].size());
+		}
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////
+		
+    void operator()(math::array<Type, 1> & input_value, math::array<Type, 1> const & output_value){
+
+			assert((typename math::array<double, 2>::size_type) input_value.size() == dv_[0].size());
+			assert((typename math::array<double, 2>::size_type) output_value.size() == dv_[0].size());
 
 			{
 				Type aa = 0.0;
@@ -58,145 +112,74 @@ namespace mixers {
 				std::cout << "input norm = " << aa << " output norm = " << bb << std::endl;
 			}
 			
-			int size;
-
 			iter_++;
 
-			if(iter_ <= max_size_){
-				size = iter_;
-			} else {
-				size = max_size_;
+			math::array<Type, 1> ff(input_value.size());
+			
+			for(long ip = 0; ip < input_value.size(); ip++){
+				ff[ip] = output_value[ip] - input_value[ip]; 
+			}
 
-				//move all the stored functions, this could be avoided but we do it for simplicity
-				for(int istep = 1; istep < max_size_; istep++){
-					ff_[istep - 1] = ff_[istep];
-					dff_[istep - 1] = dff_[istep];
+			if(iter_ > 1){
+
+				auto pos = (last_pos_ + 1)%max_size_;
+				
+				df_[pos] = ff;
+				dv_[pos] = input_value;
+
+				for(long ip = 0; ip < input_value.size(); ip++){
+					df_[pos][ip] -= f_old_[ip];
+					dv_[pos][ip] -= vin_old_[ip];
 				}
-			}
 
-			//DATAOPERATIONS LOOP 1D (one input two outputs)
-			for(unsigned ii = 0; ii < input_value.size(); ii++){
-				ff_[size - 1][ii] = input_value[ii];
-				dff_[size - 1][ii] = output_value[ii] - input_value[ii];
-			}
-			
-			for(int ii = 0; ii < size; ii++){
-				Type aa = 0.0;
-				Type bb = 0.0;
-				for(unsigned kk = 0; kk < input_value.size(); kk++){
-					aa += fabs(ff_[ii][kk]);
-					bb += conj(dff_[ii][kk])*dff_[ii][kk];
+				gamma_ = 0.0;
+				for(long ip = 0; ip < input_value.size(); ip++){
+					gamma_ += conj(df_[pos][ip])*df_[pos][ip];
 				}
-				std::cout << "norm " << ii << '\t' << aa << '\t' << bb << std::endl;
-			}
-			
-			if(iter_ == 1) {
-				//DATAOPERATIONS LOOP 1D
-				for(unsigned ii = 0; ii < input_value.size(); ii++)	input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
+				//REDUCE gamma
 
-				Type aa = 0.0;
-				for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
-				std::cout << "norm opt " << aa << std::endl;
+				gamma_ = std::max(1e-8, sqrt(gamma_));
 
-				return;
-			}
-
-			math::array<Type, 2> amatrix({size + 1, size + 1}, NAN);
-
-			//DATAOPERATIONS LOOP 2D (use overlap)
-			for(int ii = 0; ii < size; ii++){
-				for(int jj = 0; jj < size; jj++){
-					Type aa = 0.0;
-					for(unsigned kk = 0; kk < input_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
-					amatrix[ii][jj] = aa;
+				for(long ip = 0; ip < input_value.size(); ip++){
+					df_[pos][ip] /= gamma_;
+					dv_[pos][ip] /= gamma_;
 				}
+
+				last_pos_ = pos;
+				
 			}
 
-			for(int ii = 0; ii < size; ii++){
-				amatrix[ii][size] = -1.0;
-				amatrix[size][ii] = -1.0;
-			}			
+			vin_old_ = input_value;
+			f_old_ = ff;
 
-			amatrix[size][size] = 0.0;
-			
-			//std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << std::endl;
-			//std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << std::endl;
+			auto iter_used = std::min(iter_ - 1, max_size_);
 
-			/*
-			std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << '\t' << amatrix[0][2] << std::endl;
-			std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << '\t' << amatrix[1][2] << std::endl;
-			std::cout << amatrix[2][0] << '\t' << amatrix[2][1] << '\t' << amatrix[2][2] << std::endl;
-			*/
-			
-			// REDUCE GRID amatrix
+			broyden_extrapolation(input_value, iter_used, ff);
 
-			math::array<Type, 1> alpha(size + 1, 0.0);
-			alpha[size] = -1.0;
-
-			//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
-			
-			solvers::least_squares(amatrix, alpha);
-
-			//			std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
-			
-			//DATAOPERATIONS LOOP
-			double sumalpha = 0.0;
-			for(int ii = 0; ii < size; ii++) sumalpha += alpha[ii];
-			
-			//DATAOPERATIONS LOOP
-			for(int ii = 0; ii < size; ii++) alpha[ii] /= sumalpha;
-
-			sumalpha = 0.0;
-			std::cout << "alpha = ";
-			for(int ii = 0; ii < size; ii++) {
-				std::cout << alpha[ii] << " "; 
-			 sumalpha += alpha[ii];
-			}
-			std::cout << std::endl;
-			std::cout << "sumalpha = " << sumalpha << std::endl;
-
-			//			for(int ii = 0; ii < size; ii++) alpha[ii] = 0.0;
-			/*			alpha[size - 2] = 1.0 - mix_factor_;
-							alpha[size - 1] = mix_factor_;*/
-	
 			{
-				std::fill(input_value.begin(), input_value.end(), 0.0);
-				
-				for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < input_value.size(); ii++) input_value[ii] += alpha[jj]*dff_[jj][ii];
-				
 				Type aa = 0.0;
-				for(unsigned kk = 0; kk < input_value.size(); kk++) aa += norm(input_value[kk]);
-				std::cout << "res norm " << aa << std::endl;
-			}
-
-			//DATAOPERATIONS STL FILL
-			std::fill(input_value.begin(), input_value.end(), 0.0);
-			
-			//DATAOPERATIONS LOOP 2D (use gemv)
-			for(int jj = 0; jj < size; jj++) {
-				for(unsigned ii = 0; ii < input_value.size(); ii++) {
-					input_value[ii] += alpha[jj]*(ff_[jj][ii] + residual_coeff*dff_[jj][ii]);
+				for(unsigned kk = 0; kk < input_value.size(); kk++){
+					aa += fabs(input_value[kk]);
 				}
+				std::cout << "new norm = " << aa << std::endl;
 			}
-
-			Type aa = 0.0;
-			Type bb = 0.0;
-			for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
-			for(unsigned kk = 0; kk < input_value.size(); kk++) bb += input_value[kk];
-			std::cout << "norm opt " << aa << " " << bb << std::endl;
-			
-    }
+				
+		}
 
   private:
-
+		
 		int iter_;
 		int max_size_;
-    double mix_factor_;
-    math::array<Type, 2> ff_;
-		math::array<Type, 2> dff_;
+		double mix_factor_;
+		math::array<Type, 2> dv_;
+		math::array<Type, 2> df_;
+		math::array<Type, 1> f_old_;
+		math::array<Type, 1> vin_old_;
+		Type gamma_;
+		int last_pos_;
 		
 	};
-
+	
 }
 
 
@@ -223,8 +206,8 @@ TEST_CASE("mixers::broyden", "[mixers::broyden]") {
 
 	lm(vin, vout);
 
-	CHECK(vin[0] == 4.4216618979_a);
-  CHECK(vin[1] == 3.550631855_a);
+	CHECK(vin[0] == 4.4419411001_a);
+  CHECK(vin[1] == 3.5554591594_a);
 
 }
 
