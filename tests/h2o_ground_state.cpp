@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
 
 	systems::ions ions(input::cell::cubic(12.0, 11.0, 10.0) | input::cell::finite(), geo);
 
-  auto scf_options = input::scf::conjugate_gradient() | input::scf::energy_tolerance(1.0e-5) | input::scf::density_mixing();
+  auto scf_options = input::scf::conjugate_gradient() | input::scf::energy_tolerance(1.0e-5) | input::scf::density_mixing() | input::scf::broyden_mixing();	
   
   input::config conf;
   
