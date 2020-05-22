@@ -102,16 +102,6 @@ namespace mixers {
 			assert((typename math::array<double, 2>::size_type) input_value.size() == dv_[0].size());
 			assert((typename math::array<double, 2>::size_type) output_value.size() == dv_[0].size());
 
-			{
-				Type aa = 0.0;
-				Type bb = 0.0;
-				for(unsigned kk = 0; kk < input_value.size(); kk++){
-					aa += fabs(input_value[kk]);
-					bb += fabs(output_value[kk]);
-				}
-				std::cout << "input norm = " << aa << " output norm = " << bb << std::endl;
-			}
-			
 			iter_++;
 
 			math::array<Type, 1> ff(input_value.size());
@@ -155,14 +145,6 @@ namespace mixers {
 			auto iter_used = std::min(iter_ - 1, max_size_);
 
 			broyden_extrapolation(input_value, iter_used, ff);
-
-			{
-				Type aa = 0.0;
-				for(unsigned kk = 0; kk < input_value.size(); kk++){
-					aa += fabs(input_value[kk]);
-				}
-				std::cout << "new norm = " << aa << std::endl;
-			}
 				
 		}
 
@@ -210,7 +192,6 @@ TEST_CASE("mixers::broyden", "[mixers::broyden]") {
   CHECK(vin[1] == 3.5554591594_a);
 
 }
-
 
 #endif
 
