@@ -38,10 +38,16 @@ namespace operations {
 		}
 		return grad;
 	}
-	auto gradient(basis::field<basis::real_space, complex> const & ff){		// Gradient function for the field type defined in the Real space which return a filed-set 'grad_real'
+	auto gradient(basis::field<basis::real_space, complex> const & ff){		// Gradient function for the field type (complex) defined in the Real space which return a filed-set 'grad_real'
 		auto ff_fourier = operations::space::to_fourier(ff); 			// Tranform input field to Fourier space
 		auto grad_fourier = gradient(ff_fourier); 				// To calculate the gradient in Fourier space with the use of the above-defined function 'gradient'
-		auto grad_real = operations::space::to_real(grad_fourier); 	// Transform output field-set to Real space
+		auto grad_real = operations::space::to_real(grad_fourier); 		// Transform output field-set to Real space (complex)
+		return grad_real;
+	}
+	auto gradient(basis::field<basis::real_space, double> const & ff){		// Gradient function for the field type (double) defined in the Real space which return a filed-set 'grad_real'
+		auto ff_fourier = operations::space::to_fourier(ff); 			// Tranform input field to Fourier space
+		auto grad_fourier = gradient(ff_fourier); 				// To calculate the gradient in Fourier space with the use of the above-defined function 'gradient'
+		auto grad_real = operations::space::to_real(grad_fourier); 		// Transform output field-set to Real space (double)
 		return grad_real;
 	}
 }
@@ -136,7 +142,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	
 	SECTION("Real function"){
 
-		basis::field<basis::real_space, complex> f_test2(rs);
+		basis::field<basis::real_space, double> f_test2(rs);
 	
 		//Define k-vector for test function
 		vec3d kvec = 2.0 * M_PI * vec3d(1.0/lx, 1.0/ly, 1.0/lz);
