@@ -131,7 +131,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				}
 			}
 		}
-		std::cout << "The total diffrence N1 is " << diff << "\n";
+		CHECK( diff < 1.0e-10 ); 
 	}
 	
 	SECTION("Real function"){
@@ -162,7 +162,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				}
 			}
 		}
-		std::cout << "The total diffrence N2 is " << diff2 << "\n";
+		CHECK( diff2 < 1.0e-10 ); 
 	}
 }
 
