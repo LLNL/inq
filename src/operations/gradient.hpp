@@ -48,7 +48,7 @@ namespace operations {
 		auto ff_fourier = operations::space::to_fourier(ff); 			// Tranform input field to Fourier space
 		auto grad_fourier = gradient(ff_fourier); 				// To calculate the gradient in Fourier space with the use of the above-defined function 'gradient'
 		auto grad_real = operations::space::to_real(grad_fourier); 		// Transform output field-set to Real space (double)
-		return grad_real;
+		return grad_real.real();
 	}
 }
 
@@ -125,8 +125,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			}
 		}
 
-		basis::field_set<basis::real_space, complex> g_test(rs, 3);
-		g_test = gradient(f_test);
+		auto g_test = gradient(f_test);
 
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field-set 
@@ -156,9 +155,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			}
 		}
 
-		basis::field_set<basis::real_space, complex> g_test2(rs, 3);
-		g_test2 = gradient(f_test2);
-
+		auto g_test2 = gradient(f_test2);
 		double diff2 = 0.0;
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field-set 
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
