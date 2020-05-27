@@ -68,32 +68,28 @@ namespace operations {
 
 #include <catch2/catch.hpp>
 #include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 
-	complex f_analytic (math::vec3d k , math::vec3d r){
-		complex f;
-		f = exp(complex(0.0,1.0)*(k | r ));
-		return f;
-	}
+auto f_analytic (math::vec3d kk, math::vec3d rr){
+	return exp(complex(0.0,1.0)*(kk|rr));
+}
 
-	complex* g_analytic (math::vec3d k , math::vec3d r) {
-		static complex g[3];
-		complex factor = complex(0.0, 1.0)*exp(complex(0.0,1.0)*(k | r ));
-		for(int idir = 0; idir < 3 ; idir++) g[idir] = factor*k[idir] ;
-		return g;
-	}
+auto g_analytic (math::vec3d kk , math::vec3d rr) {
+	math::vector3<complex> gg;
+	complex factor = complex(0.0, 1.0)*exp(complex(0.0, 1.0)*(kk|rr));
+	for(int idir = 0; idir < 3 ; idir++) gg[idir] = factor*kk[idir] ;
+	return gg;
+}
 
-	double f_analytic2 (math::vec3d k , math::vec3d r){
-		using math::vec3d;
-		double f;
-		f = sin(k | r );
-		return f;
-	}
+auto f_analytic2 (math::vec3d kk, math::vec3d rr){
+	return sin(kk|rr);
+}
 
-	double* g_analytic2 (math::vec3d k , math::vec3d r) {
-		static double g[3];
-		for(int idir = 0; idir < 3 ; idir++) g [idir] = k [idir] * cos (k | r);
-		return g;
-	}
+auto g_analytic2 (math::vec3d kk , math::vec3d rr) {
+	math::vec3d gg;
+	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(kk|rr);
+	return gg;
+}
 
 TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
@@ -133,7 +129,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) diff += abs(g_test.cubic()[ix][iy][iz][idir] - g_analytic (kvec, vec)[idir]);
+					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][idir] - g_analytic (kvec, vec)[idir]);
 				}
 			}
 		}
@@ -162,7 +158,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) diff2 += abs(g_test2.cubic()[ix][iy][iz][idir] - g_analytic2 (kvec, vec)[idir]);
+					for(int idir = 0; idir < 3 ; idir++) diff2 += fabs(g_test2.cubic()[ix][iy][iz][idir] - g_analytic2 (kvec, vec)[idir]);
 				}
 			}
 		}
