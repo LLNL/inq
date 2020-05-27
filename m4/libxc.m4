@@ -30,7 +30,9 @@ AC_ARG_WITH(libxc-prefix, [AS_HELP_STRING([--with-libxc-prefix=DIR], [Directory 
 if test x"$CXXFLAGS_LIBXC" = x; then
   case $with_libxc_prefix in
     "") CXXFLAGS_LIBXC="-I/usr/include" ;;
-    *)  CXXFLAGS_LIBXC="-I$with_libxc_prefix/include" ;;
+    *)  CXXFLAGS_LIBXC="-I$with_libxc_prefix/include"
+        LDFLAGS_LIBXC="-L$with_libxc_prefix/lib"    
+    ;;
   esac
 fi
 
@@ -42,9 +44,11 @@ esac
 
 dnl Backup LIBS and FCFLAGS
 acx_libxc_save_LIBS="$LIBS"
+acx_libxc_save_LDFLAGS="$LDFLAGS"
 acx_libxc_save_CXXFLAGS="$CXXFLAGS"
 
 CXXFLAGS="$CXXFLAGS_LIBXC $acx_libxc_save_CXXFLAGS"
+LDFLAGS="$LDFLAGS $LDFLAGS_LIBXC"
 
 AC_CHECK_LIB([xc], [xc_lda_exc])
 
