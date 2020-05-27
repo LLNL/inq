@@ -33,7 +33,7 @@ AC_ARG_ENABLE(cuda, AS_HELP_STRING([--enable-cuda], [Cuda support (experimental)
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_CXX(mpic++)
-AX_CXX_COMPILE_STDCXX([14], [], [])
+AX_CXX_COMPILE_STDCXX([14], [noext], [])
 
 #we may need to set the linker for the cuda case, so pass that to automake
 if test x"$CXXLD" == x ; then
