@@ -34,6 +34,9 @@ namespace math {
 
 	public:
 
+		GPU_FUNCTION vector3(){
+		}
+		
 		GPU_FUNCTION vector3(Type const & v0, Type const & v1, Type const & v2){
 			vec_[0] = v0;
 			vec_[1] = v1;
