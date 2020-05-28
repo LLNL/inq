@@ -26,7 +26,9 @@
 #include <iostream>
 #include <cmath>
 
+namespace inq {
 namespace math {
+
 	class vec3d {
 	public:
 
@@ -155,6 +157,9 @@ namespace math {
 	};
 
 }
+}
+
+using namespace inq;
 
 ///////////////////////////////////////////////////////////////////
 

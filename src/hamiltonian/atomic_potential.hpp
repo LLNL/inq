@@ -240,7 +240,7 @@ namespace hamiltonian {
     
   private:
 
-		const math::erf_range_separation sep_;
+		pseudo::math::erf_range_separation const sep_;
     double nelectrons_;
     pseudo::set pseudo_set_;
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;

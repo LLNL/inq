@@ -58,7 +58,7 @@ namespace hamiltonian {
 				// now construct the projector with the spherical harmonics
 				for(int m = -l; m <= l; m++){
 					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-						matrix_[iproj_lm][ipoint] = proj[ipoint]*math::spherical_harmonic(l, m, sphere_.point_pos()[ipoint]);
+						matrix_[iproj_lm][ipoint] = proj[ipoint]*pseudo::math::spherical_harmonic(l, m, sphere_.point_pos()[ipoint]);
 					}
 					kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
 					iproj_lm++;
@@ -125,7 +125,7 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   using namespace Catch::literals;
   using math::vec3d;
 	
-	const math::erf_range_separation sep(0.625);
+	pseudo::math::erf_range_separation const sep(0.625);
 	
 
   double ecut = 20.0;

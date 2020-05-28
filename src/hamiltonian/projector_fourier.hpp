@@ -67,7 +67,7 @@ namespace hamiltonian {
 				for(int m = -l; m <= l; m++){
 					for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 						auto point = sphere.points()[ipoint];					
-						beta_rs.cubic()[point[0]][point[1]][point[2]][iproj_lm] = proj[ipoint]*math::spherical_harmonic(l, m, sphere.point_pos()[ipoint]);
+						beta_rs.cubic()[point[0]][point[1]][point[2]][iproj_lm] = proj[ipoint]*pseudo::math::spherical_harmonic(l, m, sphere.point_pos()[ipoint]);
 					}
 					
 					kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
@@ -161,7 +161,7 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
   using namespace Catch::literals;
   using math::vec3d;
 	
-	const math::erf_range_separation sep(0.625);
+	pseudo::math::erf_range_separation const sep(0.625);
 	
   double ecut = 20.0;
   double ll = 10.0;

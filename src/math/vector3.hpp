@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef MATH__VECTOR3
-#define MATH__VECTOR3
+#ifndef INQ__MATH__VECTOR3
+#define INQ__MATH__VECTOR3
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
@@ -27,6 +27,7 @@
 #include <config.h>
 #endif
 
+namespace inq {
 namespace math {
 
 	template <class Type>
@@ -73,6 +74,7 @@ namespace math {
 
 	};
  
+}
 }
 
 #ifdef INQ_UNIT_TEST

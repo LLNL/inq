@@ -47,7 +47,7 @@ namespace ions {
 	}
 
 	template <class cell_type, class array_charge, class array_positions, class array_forces>
-  void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, const math::erf_range_separation & sep,
+  void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 													double & energy, array_forces & forces){
 
     using math::vec3d;
@@ -177,7 +177,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
   using namespace Catch::literals;
   using math::vec3d;
-	const math::erf_range_separation sep(0.625);
+	const pseudo::math::erf_range_separation sep(0.625);
  
   SECTION("Aluminum cubic cell"){
   
