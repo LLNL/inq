@@ -1,10 +1,11 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef REAL_TIME__RESULT
-#define REAL_TIME__RESULT
+#ifndef INQ__REAL_TIME__RESULT
+#define INQ__REAL_TIME__RESULT
 
 #include <math/vec3d.hpp>
 
+namespace inq {
 namespace real_time {
 
 	class result {
@@ -13,6 +14,8 @@ namespace real_time {
 		std::vector<double> energy;
 		std::vector<math::vec3d> dipole;
 	};
+
+}
 }
 
 #endif

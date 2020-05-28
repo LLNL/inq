@@ -26,13 +26,15 @@
 namespace systems {
 	class electrons;
 }
-		
+
+namespace inq {
 namespace ground_state {
 	hamiltonian::energy calculate(systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
 }
 
 namespace real_time {
 	real_time::result propagate(systems::electrons & electrons, const input::interaction & inter = {});
+}
 }
 
 namespace systems {

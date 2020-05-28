@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef GROUND_STATE__CALCULATE
-#define GROUND_STATE__CALCULATE
+#ifndef INQ__GROUND_STATE__CALCULATE
+#define INQ__GROUND_STATE__CALCULATE
 
 #include <cfloat>
 
@@ -35,6 +35,7 @@
 #include <systems/electrons.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
+namespace inq {
 namespace ground_state {
 	
 	hamiltonian::energy calculate(systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
@@ -178,6 +179,7 @@ namespace ground_state {
 		
 		return energy;			
 	}
+}
 }
 
 #endif
