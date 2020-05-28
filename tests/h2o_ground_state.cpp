@@ -32,27 +32,28 @@
 
 int main(int argc, char ** argv){
 
-	using namespace inq;
+	using namespace inq::input;
+	using inq::math::vec3d;
 	
 	boost::mpi3::environment env(argc, argv);
 
-	utils::match energy_match(2.5e-4);
+	inq::utils::match energy_match(2.5e-4);
 
-	std::vector<input::atom> geo;
+	std::vector<atom> geo;
 
-	geo.push_back( "O" | math::vec3d( 0.0,      -0.553586, 0.0));
-	geo.push_back( "H" | math::vec3d( 1.429937,  0.553586, 0.0));
-  geo.push_back( "H" | math::vec3d(-1.429937,  0.553586, 0.0));
+	geo.push_back( "O" | vec3d( 0.0,      -0.553586, 0.0));
+	geo.push_back( "H" | vec3d( 1.429937,  0.553586, 0.0));
+  geo.push_back( "H" | vec3d(-1.429937,  0.553586, 0.0));
 
-	systems::ions ions(input::cell::cubic(12.0, 11.0, 10.0) | input::cell::finite(), geo);
+	inq::systems::ions ions(cell::cubic(12.0, 11.0, 10.0) | cell::finite(), geo);
 
-  auto scf_options = input::scf::conjugate_gradient() | input::scf::energy_tolerance(1.0e-5) | input::scf::density_mixing() | input::scf::broyden_mixing();	
+  auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5) | scf::density_mixing() | scf::broyden_mixing();	
   
-  input::config conf;
+  config conf;
   
-  systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
+	inq::systems::electrons electrons(ions, basis::cutoff_energy(20.0), conf);
 
-  auto energy = ground_state::calculate(electrons, input::interaction::dft(), scf_options);
+  auto energy = inq::ground_state::calculate(electrons, interaction::dft(), scf_options);
   
   energy_match.check("total energy",        energy.total(),       -25.433028356021);
   energy_match.check("kinetic energy",      energy.kinetic(),      10.967516478208);
@@ -65,7 +66,7 @@ int main(int argc, char ** argv){
   energy_match.check("HF exchange energy",  energy.hf_exchange,     0.000000000000);
   energy_match.check("ion-ion energy",      energy.ion,            -1.047736451449);
 
-	operations::io::save("h2o_restart", electrons.phi_);
+	inq::operations::io::save("h2o_restart", electrons.phi_);
 
 	fftw_cleanup(); //required for valgrid
 	
