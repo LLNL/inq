@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS_FOURIER_SPACE
-#define BASIS_FOURIER_SPACE
+#ifndef INQ__BASIS__FOURIER_SPACE
+#define INQ__BASIS__FOURIER_SPACE
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -31,6 +31,7 @@
 #include <cassert>
 #include <array>
 
+namespace inq {
 namespace basis {
 
   class fourier_space : public grid{
@@ -93,6 +94,8 @@ namespace basis {
 	private:
 		
   };
+
+}
 }
 
 #ifdef INQ_UNIT_TEST

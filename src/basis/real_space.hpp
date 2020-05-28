@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS_REAL_SPACE
-#define BASIS_REAL_SPACE
+#ifndef INQ__BASIS__REAL_SPACE
+#define INQ__BASIS__REAL_SPACE
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,6 +29,7 @@
 #include <input/basis.hpp>
 #include <gpu/run.hpp>
 
+namespace inq {
 namespace basis {
 
   class real_space : public grid {
@@ -108,6 +109,8 @@ namespace basis {
 		}
 		
   };
+
+}
 }
 
 #ifdef INQ_UNIT_TEST

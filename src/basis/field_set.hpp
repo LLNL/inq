@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS_FIELD_SET
-#define BASIS_FIELD_SET
+#ifndef INQ__BASIS__FIELD_SET
+#define INQ__BASIS__FIELD_SET
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,6 +29,7 @@
 #include <mpi3/cartesian_communicator.hpp>
 #include <utils/skeleton_wrapper.hpp>
 
+namespace inq {
 namespace basis {
 	
 	template<class Basis, class type>
@@ -168,6 +169,7 @@ namespace basis {
 
   };
 
+}
 }
 
 #ifdef INQ_UNIT_TEST

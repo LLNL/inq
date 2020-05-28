@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef PLANE_WAVE_HPP
-#define PLANE_WAVE_HPP
+#ifndef INQ__BASIS__GRID
+#define INQ__BASIS__GRID
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,6 +29,7 @@
 #include <cassert>
 #include <array>
 
+namespace inq {
 namespace basis {
 
   class grid : public base {
@@ -155,6 +156,8 @@ namespace basis {
 		int periodic_dimensions_;
 		
   };
+
+}
 }
 
 #ifdef INQ_UNIT_TEST

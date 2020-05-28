@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS__TRIVIAL
-#define BASIS__TRIVIAL
+#ifndef INQ__BASIS__TRIVIAL
+#define INQ__BASIS__TRIVIAL
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -26,6 +26,7 @@
 
 #include <basis/base.hpp>
 
+namespace inq {
 namespace basis {
 
 	/*
@@ -68,6 +69,8 @@ namespace basis {
     long size_;
 		
   };
+
+}
 }
 
 #ifdef INQ_UNIT_TEST

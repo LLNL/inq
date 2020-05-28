@@ -2,8 +2,8 @@
 OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 
-#ifndef BASIS_FIELD
-#define BASIS_FIELD
+#ifndef INQ__BASIS__FIELD
+#define INQ__BASIS__FIELD
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
@@ -35,6 +35,7 @@ OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 
 #include <fstream>
 
+namespace inq {
 namespace basis {
 	
 	template<class Basis, typename Type>
@@ -161,6 +162,7 @@ namespace basis {
 
 	};
 	
+}
 }
 
 #if (not __INCLUDE_LEVEL__) or defined(INQ_UNIT_TEST)
