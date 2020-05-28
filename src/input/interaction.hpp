@@ -24,6 +24,7 @@
 #include <nonstd/optional.hpp>
 #include <cassert>
 
+namespace inq {
 namespace input {
 
   class interaction {
@@ -131,6 +132,7 @@ namespace input {
 		
   };
     
+}
 }
 
 ////////////////////////////////////////////////////////

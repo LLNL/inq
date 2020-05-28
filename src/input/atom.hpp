@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__ATOM
-#define INPUT__ATOM
+#ifndef INQ__INPUT__ATOM
+#define INQ__INPUT__ATOM
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -26,31 +26,32 @@
 #include <vector>
 #include <cmath>
 
+namespace inq {
 namespace input {
 
-	class atom {
+class atom {
 
-	public:
+public:
 		
-		atom(const input::species & arg_spec, const math::vec3d & arg_position):
-			species_(arg_spec),
-			position_(arg_position){
-		}
+	atom(const input::species & arg_spec, const math::vec3d & arg_position):
+		species_(arg_spec),
+		position_(arg_position){
+	}
 
-		const auto & species() const {
-			return species_;
-		}
+	const auto & species() const {
+		return species_;
+	}
 
-		const auto & position() const {
-			return position_;
-		}
+	const auto & position() const {
+		return position_;
+	}
 		
-	private:
+private:
 
-		input::species species_;
-		math::vec3d position_;
+	input::species species_;
+	math::vec3d position_;
 		
-  };
+};
 }
 
 auto operator|(const input::species & arg_spec, const math::vec3d & arg_position){
@@ -63,6 +64,8 @@ auto operator|(const pseudo::element & arg_element, const math::vec3d & arg_posi
 
 auto operator|(const std::string & arg_symbol, const math::vec3d & arg_position){
 	return input::atom(pseudo::element(arg_symbol), arg_position);
+}
+
 }
 
 #ifdef INQ_UNIT_TEST

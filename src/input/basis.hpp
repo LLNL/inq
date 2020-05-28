@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__BASIS
-#define INPUT__BASIS
+#ifndef INQ__INPUT__BASIS
+#define INQ__INPUT__BASIS
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -28,6 +28,7 @@
 #include <nonstd/optional.hpp>
 #include <utils/merge_optional.hpp>
 
+namespace inq {
 namespace input {
 
   class basis {
@@ -90,6 +91,8 @@ namespace input {
 		nonstd::optional<double> density_factor_;
 		
 	};
+
+}
 }
 
 #ifdef INQ_UNIT_TEST
