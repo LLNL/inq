@@ -245,7 +245,7 @@ namespace hamiltonian {
     pseudo::set pseudo_set_;
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
 		mutable boost::mpi3::communicator comm_;
-		utils::partition part_;
+		inq::utils::partition part_;
 		bool has_nlcc_;
         
   };

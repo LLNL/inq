@@ -128,7 +128,7 @@ namespace input {
 		}
 		
     friend auto operator|(const scf & solver1, const scf & solver2){
-			using utils::merge_optional;
+			using inq::utils::merge_optional;
 
 			scf rsolver;
 			rsolver.eigensolver_	= merge_optional(solver1.eigensolver_, solver2.eigensolver_);

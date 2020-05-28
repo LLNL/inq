@@ -127,7 +127,7 @@ namespace input {
 			friend options operator|(const options & opt1, const options & opt2){
 				options ropt;
 
-				using utils::merge_optional;
+				using inq::utils::merge_optional;
 				
 				ropt.symbol_ = merge_optional(opt1.symbol_, opt2.symbol_);
 				ropt.pseudo_file_ = merge_optional(opt1.pseudo_file_, opt2.pseudo_file_);

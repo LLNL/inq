@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef UTILS__MERGE_OPTIONAL
-#define UTILS__MERGE_OPTIONAL
+#ifndef INQ__UTILS__MERGE_OPTIONAL
+#define INQ__UTILS__MERGE_OPTIONAL
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -21,17 +21,18 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+namespace inq {
 namespace utils {
-	
-	template <class opt_type>
-	opt_type merge_optional(const opt_type & option1, const opt_type & option2){
-		if(option2) return option2;
-		if(option1) return option1;
-		return opt_type{};
-	}
-	
+
+template <class opt_type>
+opt_type merge_optional(const opt_type & option1, const opt_type & option2){
+	if(option2) return option2;
+	if(option1) return option1;
+	return opt_type{};
 }
 
+}
+}
 
 #ifdef INQ_UNIT_TEST
 

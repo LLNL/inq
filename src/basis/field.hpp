@@ -55,7 +55,7 @@ namespace basis {
 		}
 
 		template <class OtherType>
-		field(skeleton_wrapper<field<basis_type, OtherType>> const & skeleton)
+		field(inq::utils::skeleton_wrapper<field<basis_type, OtherType>> const & skeleton)
 			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
 		}
 
@@ -67,7 +67,7 @@ namespace basis {
 		}
 
 		auto skeleton() const {
-			return skeleton_wrapper<field<basis_type, element_type>>(*this);
+			return inq::utils::skeleton_wrapper<field<basis_type, element_type>>(*this);
 		}
 
 		field(const field & coeff) = delete; 		//avoid unadverted copies

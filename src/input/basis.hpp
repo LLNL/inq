@@ -71,7 +71,7 @@ namespace input {
 		}
 		
 		friend basis operator|(const basis & opt1, const basis & opt2){
-			using utils::merge_optional;
+			using inq::utils::merge_optional;
 
 			basis ropt;
 			ropt.spacing_ = merge_optional(opt1.spacing_, opt2.spacing_);

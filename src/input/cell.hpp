@@ -62,7 +62,7 @@ namespace input {
 		}
 
 		friend auto operator|(const cell & cell1, const cell & cell2){
-			using utils::merge_optional;
+			using inq::utils::merge_optional;
 
 			cell rcell;
 			rcell.lattice_vectors_[0]	= merge_optional(cell1.lattice_vectors_[0], cell2.lattice_vectors_[0]);

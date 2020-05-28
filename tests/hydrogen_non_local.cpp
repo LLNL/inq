@@ -27,6 +27,8 @@
 
 int main(int argc, char ** argv){
 
+	using namespace inq;
+	
 	boost::mpi3::environment env(argc, argv);
 
 	utils::match energy_match(1.0e-6);

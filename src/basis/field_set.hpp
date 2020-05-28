@@ -58,12 +58,12 @@ namespace basis {
 		}
 
 		template <class any_type>
-		field_set(skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
+		field_set(inq::utils::skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
 			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
 		}
 
 		auto skeleton() const {
-			return skeleton_wrapper<field_set<Basis, type>>(*this);
+			return inq::utils::skeleton_wrapper<field_set<Basis, type>>(*this);
 		}
 
 		field_set(const field_set & coeff) = default;
@@ -161,7 +161,7 @@ namespace basis {
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
 		mutable boost::mpi3::cartesian_communicator<1> basis_comm_;
 		mutable boost::mpi3::cartesian_communicator<1> set_comm_;
-		utils::partition set_part_;
+		inq::utils::partition set_part_;
 		internal_array_type matrix_;
 		int num_vectors_;
 		basis_type basis_;

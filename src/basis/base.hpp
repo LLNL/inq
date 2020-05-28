@@ -50,7 +50,7 @@ namespace basis {
     
 	protected:
 
-		utils::partition part_;
+		inq::utils::partition part_;
 		
   };
 }
