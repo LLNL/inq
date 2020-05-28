@@ -32,6 +32,7 @@
 
 #include <mpi3/environment.hpp>
 
+namespace inq {
 namespace hamiltonian {
 
   class atomic_potential {
@@ -250,6 +251,7 @@ namespace hamiltonian {
         
   };
 
+}
 }
 
 #ifdef INQ_UNIT_TEST

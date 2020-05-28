@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef HAMILTONIAN_PROJECTOR
-#define HAMILTONIAN_PROJECTOR
+#ifndef INQ__HAMILTONIAN__PROJECTOR
+#define INQ__HAMILTONIAN__PROJECTOR
 
 /*
  Copyright (C) 2019-2020 Xavier Andrade, Alfredo Correa.
@@ -35,6 +35,7 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
+namespace inq {
 namespace hamiltonian {
 
   class projector {
@@ -115,6 +116,7 @@ namespace hamiltonian {
     
   };
   
+}
 }
 
 #ifdef INQ_UNIT_TEST

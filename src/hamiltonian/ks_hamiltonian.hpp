@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef HAMILTONIAN_KS_HAMILTONIAN
-#define HAMILTONIAN_KS_HAMILTONIAN
+#ifndef INQ__HAMILTONIAN__KS_HAMILTONIAN
+#define INQ__HAMILTONIAN__KS_HAMILTONIAN
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -30,6 +30,7 @@
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
 
+namespace inq {
 namespace hamiltonian {
   template <class basis_type>
   class ks_hamiltonian {
@@ -198,6 +199,7 @@ namespace hamiltonian {
 		
   };
 
+}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

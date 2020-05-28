@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef HAMILTONIAN__KS_POTENTIAL
-#define HAMILTONIAN__KS_POTENTIAL
+#ifndef INQ__HAMILTONIAN__KS_POTENTIAL
+#define INQ__HAMILTONIAN__KS_POTENTIAL
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,6 +29,7 @@
 #include <hamiltonian/xc_functional.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 
+namespace inq {
 namespace hamiltonian {
 
 	class self_consistency {
@@ -137,6 +138,7 @@ namespace hamiltonian {
 		basis::real_space density_basis_;
 		
 	};
+}
 }
 
 #ifdef INQ_UNIT_TEST

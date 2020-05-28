@@ -37,6 +37,7 @@
 #include <basis/spherical_grid.hpp>
 #include <operations/space.hpp>
 
+namespace inq {
 namespace hamiltonian {
 
   class projector_fourier {
@@ -151,6 +152,7 @@ namespace hamiltonian {
 		
   };
   
+}
 }
 
 #ifdef INQ_UNIT_TEST

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef HAMILTONIAN__ENERGY
-#define HAMILTONIAN__ENERGY
+#ifndef INQ__HAMILTONIAN__ENERGY
+#define INQ__HAMILTONIAN__ENERGY
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -23,6 +23,7 @@
 
 #include <tinyformat/tinyformat.h>
 
+namespace inq {
 namespace hamiltonian {
 
 	struct energy {
@@ -76,6 +77,7 @@ namespace hamiltonian {
 		
 	};
 
+}
 }
 
 #ifdef INQ_UNIT_TEST
