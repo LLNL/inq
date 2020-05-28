@@ -29,102 +29,104 @@
 #include <operations/space.hpp>
 #include <operations/transfer.hpp>
 
+namespace inq {
 namespace solvers {
 
-  class poisson {
+class poisson {
 
-	public:
+public:
 
-		auto solve_periodic(const basis::field<basis::real_space, complex> & density) const {
-			namespace fft = boost::multi::fft;
+	auto solve_periodic(const basis::field<basis::real_space, complex> & density) const {
+		namespace fft = boost::multi::fft;
 
-			const basis::real_space & real_space = density.basis();
-			basis::fourier_space fourier_basis(real_space, density.basis_comm());
+		const basis::real_space & real_space = density.basis();
+		basis::fourier_space fourier_basis(real_space, density.basis_comm());
 
-			auto potential_fs = operations::space::to_fourier(density);
+		auto potential_fs = operations::space::to_fourier(density);
 			
-			const double scal = (-4.0*M_PI)/fourier_basis.size();
+		const double scal = (-4.0*M_PI)/fourier_basis.size();
 			
-			for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-				for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-					for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
+		for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 
-						auto ixg = fourier_basis.cubic_dist(0).local_to_global(ix);
-						auto iyg = fourier_basis.cubic_dist(1).local_to_global(iy);
-						auto izg = fourier_basis.cubic_dist(2).local_to_global(iz);
+					auto ixg = fourier_basis.cubic_dist(0).local_to_global(ix);
+					auto iyg = fourier_basis.cubic_dist(1).local_to_global(iy);
+					auto izg = fourier_basis.cubic_dist(2).local_to_global(iz);
 
-						auto g2 = fourier_basis.g2(ixg, iyg, izg);
+					auto g2 = fourier_basis.g2(ixg, iyg, izg);
 
-						if(fourier_basis.g_is_zero(ixg, iyg, izg) or fourier_basis.outside_sphere(g2)){
-							potential_fs.cubic()[ix][iy][iz] = 0.0;
-							continue;
-						}
-						
-						potential_fs.cubic()[ix][iy][iz] *= -scal/g2;
+					if(fourier_basis.g_is_zero(ixg, iyg, izg) or fourier_basis.outside_sphere(g2)){
+						potential_fs.cubic()[ix][iy][iz] = 0.0;
+						continue;
 					}
+						
+					potential_fs.cubic()[ix][iy][iz] *= -scal/g2;
 				}
 			}
-
-			return operations::space::to_real(potential_fs,  /*normalize = */ false);
 		}
 
-		auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
-			namespace fft = boost::multi::fft;
+		return operations::space::to_real(potential_fs,  /*normalize = */ false);
+	}
+
+	auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
+		namespace fft = boost::multi::fft;
 			
-			auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
-			auto potential_fs = operations::space::to_fourier(potential2x);
+		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
+		auto potential_fs = operations::space::to_fourier(potential2x);
 			
-			auto fourier_basis = potential_fs.basis();
+		auto fourier_basis = potential_fs.basis();
 
-			const auto scal = (-4.0*M_PI)/fourier_basis.size();
-			const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
+		const auto scal = (-4.0*M_PI)/fourier_basis.size();
+		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 
-			for(int ix = 0; ix < fourier_basis.sizes()[0]; ix++){
-				for(int iy = 0; iy < fourier_basis.sizes()[1]; iy++){
-					for(int iz = 0; iz < fourier_basis.sizes()[2]; iz++){
+		for(int ix = 0; ix < fourier_basis.sizes()[0]; ix++){
+			for(int iy = 0; iy < fourier_basis.sizes()[1]; iy++){
+				for(int iz = 0; iz < fourier_basis.sizes()[2]; iz++){
 						
-						// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
-						if(fourier_basis.g_is_zero(ix, iy, iz)){
-							potential_fs.cubic()[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
-							continue;
-						}
-						
-						auto g2 = fourier_basis.g2(ix, iy, iz);
-
-						if(fourier_basis.outside_sphere(g2)){
-							potential_fs.cubic()[ix][iy][iz] = 0.0;
-							continue;
-						}
-
-						potential_fs.cubic()[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
-
+					// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
+					if(fourier_basis.g_is_zero(ix, iy, iz)){
+						potential_fs.cubic()[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
+						continue;
 					}
+						
+					auto g2 = fourier_basis.g2(ix, iy, iz);
+
+					if(fourier_basis.outside_sphere(g2)){
+						potential_fs.cubic()[ix][iy][iz] = 0.0;
+						continue;
+					}
+
+					potential_fs.cubic()[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
+
 				}
 			}
-
-			potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
-			auto potential = operations::transfer::shrink(potential2x, density.basis());
-
-			return potential;
 		}
 
-		auto operator()(const basis::field<basis::real_space, complex> & density) const {
-			if(density.basis().periodic_dimensions() == 3){
-				return solve_periodic(density);
-			} else {
-				return solve_finite(density);
-			}
+		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
+		auto potential = operations::transfer::shrink(potential2x, density.basis());
+
+		return potential;
+	}
+
+	auto operator()(const basis::field<basis::real_space, complex> & density) const {
+		if(density.basis().periodic_dimensions() == 3){
+			return solve_periodic(density);
+		} else {
+			return solve_finite(density);
 		}
+	}
 		
-		basis::field<basis::real_space, double> operator()(const basis::field<basis::real_space, double> & density) const {
-			auto complex_potential = operator()(density.complex());
-			return complex_potential.real();
-		}
+	basis::field<basis::real_space, double> operator()(const basis::field<basis::real_space, double> & density) const {
+		auto complex_potential = operator()(density.complex());
+		return complex_potential.real();
+	}
 
-	private:
+private:
 		
-  };    
+};    
 	
+}
 }
 
 

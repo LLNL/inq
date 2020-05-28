@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef SOLVERS__LINEAR
-#define SOLVERS__LINEAR
+#ifndef INQ__SOLVERS__LINEAR
+#define INQ__SOLVERS__LINEAR
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,31 +29,33 @@ extern "C" void dpotrf(const char * uplo, const int * n, double * a, const int *
 
 #define dtrsv FC_FUNC(dtrsv, DTRSV) 
 
+namespace inq {
 namespace solvers {
 
   /* This function calculates the inverse of a matrix by
      diagonalization, it is slow but accurate. */
   
-  template <class matrix_type, class vector_type>
-  void linear_symmetric(matrix_type && matrix, vector_type & vector){
+template <class matrix_type, class vector_type>
+void linear_symmetric(matrix_type && matrix, vector_type & vector){
 
-    // the matrix must be square
-    assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
+	// the matrix must be square
+	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
 
-    int nn = std::get<0>(sizes(matrix));
+	int nn = std::get<0>(sizes(matrix));
     
-		//DATAOPERATIONS RAWLAPACK dpotrf
-		int info;
-		dpotrf("U", &nn, matrix.data(), &nn, &info);
+	//DATAOPERATIONS RAWLAPACK dpotrf
+	int info;
+	dpotrf("U", &nn, matrix.data(), &nn, &info);
 		
-		const int one = 1;
-		//DATAOPERATIONS RAWLAPACK dtrsv
-		dtrsv('U', 'T', 'N', nn, matrix.data(), nn, vector.data(), one);
-		//DATAOPERATIONS RAWLAPACK dtrsv
-		dtrsv('U', 'N', 'N', nn, matrix.data(), nn, vector.data(), one);
+	const int one = 1;
+	//DATAOPERATIONS RAWLAPACK dtrsv
+	dtrsv('U', 'T', 'N', nn, matrix.data(), nn, vector.data(), one);
+	//DATAOPERATIONS RAWLAPACK dtrsv
+	dtrsv('U', 'N', 'N', nn, matrix.data(), nn, vector.data(), one);
 		
-  }
+}
 
+}
 }
 
 ///////////////////////////////////////////////////////////////////
