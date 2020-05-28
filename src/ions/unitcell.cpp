@@ -34,6 +34,7 @@
 #include <iostream>
 #include <iomanip>
 
+namespace inq {
 namespace ions {
 
   using math::vec3d;
@@ -536,4 +537,5 @@ namespace ions {
     return os;
   }
 
+}
 }

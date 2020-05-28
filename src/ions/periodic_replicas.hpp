@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef IONS_PERIODIC_REPLICAS
-#define IONS_PERIODIC_REPLICAS
+#ifndef INQ__IONS__PERIODIC_REPLICAS
+#define INQ__IONS__PERIODIC_REPLICAS
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -25,52 +25,55 @@
 #include <vector>
 #include <cmath>
 
+namespace inq {
 namespace ions {
-  class periodic_replicas{
 
-  public:
+class periodic_replicas{
 
-    enum class error {
-      NEGATIVE_RANGE
-    };
-    template <class cell_array>
-    periodic_replicas(const cell_array & cell, const math::vec3d & position, const double range){
+public:
 
-      using math::vec3d;
+	enum class error {
+										NEGATIVE_RANGE
+	};
+	template <class cell_array>
+	periodic_replicas(const cell_array & cell, const math::vec3d & position, const double range){
+
+		using math::vec3d;
       
-      if(range < 0) throw error::NEGATIVE_RANGE;
+		if(range < 0) throw error::NEGATIVE_RANGE;
 
-      std::vector<int> neigh_max(3);
+		std::vector<int> neigh_max(3);
 
-      //we should use floor here, but since we check later, round is more reliable
-      for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell[0]))); 
+		//we should use floor here, but since we check later, round is more reliable
+		for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell[0]))); 
       
-      for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
-        for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
-          for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
-            vec3d reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
+		for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
+			for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
+				for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
+					vec3d reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
             
-            if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
-          }
-        }
-      }
+					if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
+				}
+			}
+		}
       
-    }
+	}
 
-    const auto & operator[](const int i) const {
-      return replicas_[i];
-    }
+	const auto & operator[](const int i) const {
+		return replicas_[i];
+	}
 
-    auto size(){
-      return replicas_.size();
-    }
+	auto size(){
+		return replicas_.size();
+	}
     
-  private:
+private:
 
-    std::vector<math::vec3d> replicas_;
+	std::vector<math::vec3d> replicas_;
 
-  };    
+};    
   
+}
 }
 
 

@@ -28,15 +28,16 @@
 
 //#include <config.h>
 
-#ifndef UNITCELL_H
-#define UNITCELL_H
+#ifndef INQ__IONS__UNITCELL
+#define INQ__IONS__UNITCELL
 
 #include <math/vec3d.hpp>
 #include <valarray>
 #include <array>
 #include <input/cell.hpp>
 
-namespace ions{
+namespace inq {
+namespace ions {
 
   class UnitCell{
 	using vector_type = math::vec3d;
@@ -154,6 +155,7 @@ namespace ions{
   
   std::ostream& operator << (std::ostream& os, const UnitCell& cell);
 
+}
 }
 
 #ifdef INQ_UNIT_TEST
