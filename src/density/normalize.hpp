@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef DENSITY__NORMALIZE
-#define DENSITY__NORMALIZE
+#ifndef INQ__DENSITY__NORMALIZE
+#define INQ__DENSITY__NORMALIZE
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -26,17 +26,19 @@
 #include <math/complex.hpp>
 #include <cstdlib>
 
+namespace inq {
 namespace density {
 
-	template <class FieldType>
-	void normalize(FieldType & density, const double & total_charge){
+template <class FieldType>
+void normalize(FieldType & density, const double & total_charge){
+	
+	auto qq = operations::integral(density);
+	assert(fabs(qq) > 1e-16);
+	for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
+	
+}
 
-		auto qq = operations::integral(density);
-		assert(fabs(qq) > 1e-16);
-		for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
-
-	}
-  
+}
 }
 
 #ifdef INQ_UNIT_TEST

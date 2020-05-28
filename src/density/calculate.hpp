@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef DENSITY__CALCULATE
-#define DENSITY__CALCULATE
+#ifndef INQ__DENSITY__CALCULATE
+#define INQ__DENSITY__CALCULATE
 
 /*
  Copyright (C) 2019-2020 Xavier Andrade
@@ -26,56 +26,58 @@
 #include <math/complex.hpp>
 #include <cstdlib>
 
+namespace inq {
 namespace density {
 
-  template<class occupations_array_type, class field_set_type>
-  basis::field<typename field_set_type::basis_type, double> calculate(const occupations_array_type & occupations, field_set_type & phi){
+template<class occupations_array_type, class field_set_type>
+basis::field<typename field_set_type::basis_type, double> calculate(const occupations_array_type & occupations, field_set_type & phi){
 
-    basis::field<typename field_set_type::basis_type, double> density(phi.basis(), phi.basis_comm());
+	basis::field<typename field_set_type::basis_type, double> density(phi.basis(), phi.basis_comm());
 
-    //DATAOPERATIONS LOOP + GPU::RUN 2D
+	//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
 
-		const auto nst = phi.set_part().local_size();
-		auto occupationsp = begin(occupations);
-		auto phip = begin(phi.matrix());
-		auto densityp = begin(density.linear());
+	const auto nst = phi.set_part().local_size();
+	auto occupationsp = begin(occupations);
+	auto phip = begin(phi.matrix());
+	auto densityp = begin(density.linear());
 		
-		gpu::run(phi.basis().part().local_size(),
-						 [=] __device__ (auto ipoint){
-							 densityp[ipoint] = 0.0;
-							 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
-						 });
+	gpu::run(phi.basis().part().local_size(),
+					 [=] __device__ (auto ipoint){
+						 densityp[ipoint] = 0.0;
+						 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
+					 });
 		
 #else
 		
-    for(int ipoint = 0; ipoint < phi.basis().part().local_size(); ipoint++){
-			density.linear()[ipoint] = 0.0;
-      for(int ist = 0; ist < phi.set_part().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
-    }
+	for(int ipoint = 0; ipoint < phi.basis().part().local_size(); ipoint++){
+		density.linear()[ipoint] = 0.0;
+		for(int ist = 0; ist < phi.set_part().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
+	}
 		
 #endif
 
-		if(phi.set_part().parallel()){
-			phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
-		}
-		
-    return density;
-  }
-
-  template<class occupations_array_type, class field_set_type>
-  auto calculate(const occupations_array_type & occupations, field_set_type & phi, typename field_set_type::basis_type & destination_basis){
-
-		if(destination_basis == phi.basis()){
-			return calculate(occupations, phi);
-		} else {
-			//OPTIMIZATION: This should be done by blocks, to avoid the memory overhead
-			auto phi_fine = operations::transfer::refine(phi, destination_basis);
-			return calculate(occupations, phi_fine);
-		}
-
+	if(phi.set_part().parallel()){
+		phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
 	}
+		
+	return density;
+}
+
+template<class occupations_array_type, class field_set_type>
+auto calculate(const occupations_array_type & occupations, field_set_type & phi, typename field_set_type::basis_type & destination_basis){
+
+	if(destination_basis == phi.basis()){
+		return calculate(occupations, phi);
+	} else {
+		//OPTIMIZATION: This should be done by blocks, to avoid the memory overhead
+		auto phi_fine = operations::transfer::refine(phi, destination_basis);
+		return calculate(occupations, phi_fine);
+	}
+
+}
 	
+}
 }
 
 #ifdef INQ_UNIT_TEST
