@@ -53,31 +53,29 @@ private:
 		
 };
 }
-
-auto operator|(const input::species & arg_spec, const math::vec3d & arg_position){
-	return input::atom(arg_spec, arg_position);
 }
 
-auto operator|(const pseudo::element & arg_element, const math::vec3d & arg_position){
-	return input::atom(arg_element, arg_position);
+auto operator|(const inq::input::species & arg_spec, const inq::math::vec3d & arg_position){
+	return inq::input::atom(arg_spec, arg_position);
 }
 
-auto operator|(const std::string & arg_symbol, const math::vec3d & arg_position){
-	return input::atom(pseudo::element(arg_symbol), arg_position);
+auto operator|(const pseudo::element & arg_element, const inq::math::vec3d & arg_position){
+	return inq::input::atom(arg_element, arg_position);
 }
 
+auto operator|(const std::string & arg_symbol, const inq::math::vec3d & arg_position){
+	return inq::input::atom(pseudo::element(arg_symbol), arg_position);
 }
 
 #ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
-TEST_CASE("class ions::atom", "[input::atom]") {
+TEST_CASE("class ions::atom", "[inq::input::atom]") {
   
-	using namespace inq;
 	using namespace Catch::literals;
 
 	SECTION("Constructor"){
-		input::atom at(pseudo::element("H"), math::vec3d(1.0, 2.0, 3.0));
+		inq::input::atom at(pseudo::element("H"), inq::math::vec3d(1.0, 2.0, 3.0));
 
 		CHECK(at.species().atomic_number() == 1);
 		CHECK(at.position()[0] == 1.0_a);
@@ -87,7 +85,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 	}
 	
 	SECTION("Species composition"){
-		input::atom at = input::species(pseudo::element("C")) | math::vec3d(1.0, 2.0, 3.0);
+		auto at = inq::input::species(pseudo::element("C")) | inq::math::vec3d(1.0, 2.0, 3.0);
 
 		CHECK(at.species().symbol() == "C");
 		CHECK(at.position()[0] == 1.0_a);
@@ -98,7 +96,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 	
 	SECTION("Species option composition"){
 		
-		input::atom at = pseudo::element("C") | input::species::symbol("C1") | math::vec3d(1.0, 2.0, 3.0);
+		auto at = pseudo::element("C") | inq::input::species::symbol("C1") | inq::math::vec3d(1.0, 2.0, 3.0);
 		
 		CHECK(at.species().symbol() == "C1");
 		CHECK(at.position()[0] == 1.0_a);
@@ -109,7 +107,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 
 	SECTION("Element composition"){
 		
-		input::atom at = pseudo::element("W") | math::vec3d(1.0, 2.0, 3.0);
+		auto at = pseudo::element("W") | inq::math::vec3d(1.0, 2.0, 3.0);
 		
 		CHECK(at.species().symbol() == "W");
 		CHECK(at.position()[0] == 1.0_a);
@@ -120,7 +118,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 
 	SECTION("String composition"){
 		
-		input::atom at = std::string("Xe") | math::vec3d(1.0, 2.0, 3.0);
+		auto at = std::string("Xe") | inq::math::vec3d(1.0, 2.0, 3.0);
 		
 		CHECK(at.species().symbol() == "Xe");
 		CHECK(at.position()[0] == 1.0_a);
@@ -131,7 +129,7 @@ TEST_CASE("class ions::atom", "[input::atom]") {
 	
 	SECTION("Char * composition"){
 		
-		input::atom at = "Tc" | math::vec3d(1.0, 2.0, 3.0);
+		inq::input::atom at = "Tc" | inq::math::vec3d(1.0, 2.0, 3.0);
 		
 		CHECK(at.species().symbol() == "Tc");
 		CHECK(at.position()[0] == 1.0_a);
