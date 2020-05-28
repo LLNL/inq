@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__ORTHOGONALIZE
-#define OPERATIONS__ORTHOGONALIZE
+#ifndef INQ__OPERATIONS__ORTHOGONALIZE
+#define INQ__OPERATIONS__ORTHOGONALIZE
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
@@ -40,102 +40,104 @@ extern "C" void zpotrf(const char * uplo, const int * n, complex * a, const int 
 //extern "C" void blas_ztrsm(const char& side, const char& uplo, const char& transa, const char& diag,
 //											const long& m, const long& n, const complex& alpha, const complex * a, const long& lda, complex * B, const long& ldb);
 
-
+namespace inq {
 namespace operations {
 
-	template <class field_set_type>
-  void orthogonalize(field_set_type & phi){
+template <class field_set_type>
+void orthogonalize(field_set_type & phi){
 
-		auto olap = overlap(phi);
+	auto olap = overlap(phi);
 
-		const int nst = phi.set_size();
+	const int nst = phi.set_size();
 		
-		//DATAOPERATIONS RAWLAPACK zpotrf
+	//DATAOPERATIONS RAWLAPACK zpotrf
 #ifdef HAVE_CUDA
-		{
-			cusolverDnHandle_t cusolver_handle;
+	{
+		cusolverDnHandle_t cusolver_handle;
 			
-			[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
-			assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
+		[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
+		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
 			
-			//query the work size
-			int lwork;
-			cusolver_status = cusolverDnZpotrf_bufferSize(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, &lwork);
-			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-			assert(lwork >= 0);
+		//query the work size
+		int lwork;
+		cusolver_status = cusolverDnZpotrf_bufferSize(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, &lwork);
+		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+		assert(lwork >= 0);
 			
-			//allocate the work array
-			cuDoubleComplex * work;
-			[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
-			assert(cudaSuccess == cuda_status);
+		//allocate the work array
+		cuDoubleComplex * work;
+		[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
+		assert(cudaSuccess == cuda_status);
 
-			//finaly do the decomposition
-			int * devInfo;
-			cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
-			assert(cudaSuccess == cuda_status);
+		//finaly do the decomposition
+		int * devInfo;
+		cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
+		assert(cudaSuccess == cuda_status);
 
-			cusolver_status = cusolverDnZpotrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, work, lwork, devInfo);
-			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-			cudaDeviceSynchronize();
-			assert(*devInfo == 0);
+		cusolver_status = cusolverDnZpotrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, work, lwork, devInfo);
+		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+		cudaDeviceSynchronize();
+		assert(*devInfo == 0);
 
-			cudaFree(work);
-			cudaFree(devInfo);
-			cusolverDnDestroy(cusolver_handle);
+		cudaFree(work);
+		cudaFree(devInfo);
+		cusolverDnDestroy(cusolver_handle);
 			
-		}
+	}
 #else
-		int info;
-		zpotrf("U", &nst, olap.data(), &nst, &info);
-		assert(info == 0);
+	int info;
+	zpotrf("U", &nst, olap.data(), &nst, &info);
+	assert(info == 0);
 #endif
 
-		//DATAOPERATIONS trsm
-		using boost::multi::blas::hermitized;
-		using boost::multi::blas::filling;
+	//DATAOPERATIONS trsm
+	using boost::multi::blas::hermitized;
+	using boost::multi::blas::filling;
 		
-		trsm(filling::lower, olap, hermitized(phi.matrix()));
+	trsm(filling::lower, olap, hermitized(phi.matrix()));
 
-  }
+}
 	
-	template <class field_set_type>
-  void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int num_states = -1){
+template <class field_set_type>
+void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int num_states = -1){
 
-		if(num_states == -1) num_states = phi.set_size();
+	if(num_states == -1) num_states = phi.set_size();
 		
-		assert(num_states <= phi.set_size());
+	assert(num_states <= phi.set_size());
 		
-		for(int ist = 0; ist < num_states; ist++){
+	for(int ist = 0; ist < num_states; ist++){
 
 
-			typename field_set_type::element_type olap = 0.0;
-			typename field_set_type::element_type norm = 0.0;
-			for(long ip = 0; ip < phi.basis().size(); ip++){
-				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-				norm += conj(phi.matrix()[ip][ist])*phi.matrix()[ip][ist];
-			}
+		typename field_set_type::element_type olap = 0.0;
+		typename field_set_type::element_type norm = 0.0;
+		for(long ip = 0; ip < phi.basis().size(); ip++){
+			olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+			norm += conj(phi.matrix()[ip][ist])*phi.matrix()[ip][ist];
+		}
 
-			//reduce olap, norm
+		//reduce olap, norm
 
-			for(long ip = 0; ip < phi.basis().size(); ip++)	vec.matrix()[ip][0] -= olap/real(norm)*phi.matrix()[ip][ist];
+		for(long ip = 0; ip < phi.basis().size(); ip++)	vec.matrix()[ip][0] -= olap/real(norm)*phi.matrix()[ip][ist];
 
 #if 0
-			{
-				typename field_set_type::element_type olap = 0.0;
+		{
+			typename field_set_type::element_type olap = 0.0;
 				
-				for(long ip = 0; ip < phi.basis().size(); ip++){
-					olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-				}
-				
-				//reduce olap, norm
-				
-				std::cout << ist << '\t' << num_states << '\t' << fabs(olap) << std::endl;
+			for(long ip = 0; ip < phi.basis().size(); ip++){
+				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
 			}
+				
+			//reduce olap, norm
+				
+			std::cout << ist << '\t' << num_states << '\t' << fabs(olap) << std::endl;
+		}
 #endif
 			
-		}
-		
 	}
+		
+}
+
+}
 }
 
 #ifdef INQ_UNIT_TEST

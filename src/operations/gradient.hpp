@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__GRADIENT
-#define OPERATIONS__GRADIENT
+#ifndef INQ__OPERATIONS__GRADIENT
+#define INQ__OPERATIONS__GRADIENT
 
 /*
  Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa, Alexey Karstev.
@@ -24,6 +24,7 @@
 #include <basis/field.hpp>
 #include <cassert>
 
+namespace inq {
 namespace operations {
 
 	auto gradient(basis::field<basis::fourier_space, complex> const & ff){
@@ -58,6 +59,7 @@ namespace operations {
 		return grad_real.real();
 	}
 	
+}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

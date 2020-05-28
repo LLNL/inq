@@ -24,41 +24,43 @@
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
+namespace inq {
 namespace operations {
 
-  template <class type>
-	class matrix_operator {
-
-	public:
-
-    matrix_operator(math::array<type, 2> && matrix):
-      matrix_(matrix){
-
-      assert(std::get<0>(sizes(matrix_)) == std::get<1>(sizes(matrix_)));
-      
-    }
-      
-    template <class field_set_type>
-		field_set_type operator()(const field_set_type & phi) const {
-      
-      assert(std::get<0>(sizes(matrix_)) == phi.basis().size());
-      assert(std::get<1>(sizes(matrix_)) == phi.basis().size());
-
-      using boost::multi::blas::gemm;
-      using boost::multi::blas::hermitized;
-    
-      field_set_type mphi = phi;
-			gemm(1.0, matrix_, phi.matrix(),	0.0, mphi.matrix());
-
-      return mphi;      
-    }
-
-	private:
-
-    math::array<type, 2> matrix_;
-    
-	};
+template <class type>
+class matrix_operator {
 	
+public:
+
+	matrix_operator(math::array<type, 2> && matrix):
+		matrix_(matrix){
+
+		assert(std::get<0>(sizes(matrix_)) == std::get<1>(sizes(matrix_)));
+      
+	}
+      
+	template <class field_set_type>
+	field_set_type operator()(const field_set_type & phi) const {
+      
+		assert(std::get<0>(sizes(matrix_)) == phi.basis().size());
+		assert(std::get<1>(sizes(matrix_)) == phi.basis().size());
+
+		using boost::multi::blas::gemm;
+		using boost::multi::blas::hermitized;
+    
+		field_set_type mphi = phi;
+		gemm(1.0, matrix_, phi.matrix(),	0.0, mphi.matrix());
+
+		return mphi;      
+	}
+
+private:
+
+	math::array<type, 2> matrix_;
+    
+};
+
+}
 }
 
 #ifdef INQ_UNIT_TEST

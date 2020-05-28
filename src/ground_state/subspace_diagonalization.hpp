@@ -29,13 +29,13 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
-namespace operations {
+namespace ground_state {
 
 	template <class hamiltonian_type, class field_set_type>
   void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
 
-		auto subspace_hamiltonian = overlap(phi, ham(phi));
-		auto eigenvalues = diagonalize(subspace_hamiltonian);
+		auto subspace_hamiltonian = operations::overlap(phi, ham(phi));
+		auto eigenvalues = operations::diagonalize(subspace_hamiltonian);
 		
 		//OPTIMIZATION: here we don't need to make a full copy. We can
 		//divide into blocks over point index (second dimension of phi).

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__INTEGRAL
-#define OPERATIONS__INTEGRAL
+#ifndef INQ__OPERATIONS__INTEGRAL
+#define INQ__OPERATIONS__INTEGRAL
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -25,42 +25,44 @@
 #include <numeric>
 #include <operations/sum.hpp>
 
+namespace inq {
 namespace operations {
 
-  template <class field_type>
-  auto integral(const field_type & phi){
-		auto integral_value = phi.basis().volume_element()*sum(phi.linear());
+template <class field_type>
+auto integral(const field_type & phi){
+	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
 
-		if(phi.basis().part().parallel()){
-			phi.basis_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-		}
-
-		return integral_value;
+	if(phi.basis().part().parallel()){
+		phi.basis_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	}
 
-  template <class field_type, class binary_op>
-  auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
-		assert(phi1.basis() == phi2.basis());
+	return integral_value;
+}
 
-		auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
+template <class field_type, class binary_op>
+auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
+	assert(phi1.basis() == phi2.basis());
+
+	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
 		
-		if(phi1.basis().part().parallel()){
-			phi1.basis_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-		}
+	if(phi1.basis().part().parallel()){
+		phi1.basis_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	}
 
-		return integral_value;
-	}
+	return integral_value;
+}
 	
-  template <class field_type>
-  auto integral_product(const field_type & phi1, const field_type & phi2){
-		return integral(phi1, phi2, std::multiplies<>());
-	}
+template <class field_type>
+auto integral_product(const field_type & phi1, const field_type & phi2){
+	return integral(phi1, phi2, std::multiplies<>());
+}
 	
-  template <class field_type>
-  auto integral_absdiff(const field_type & phi1, const field_type & phi2){
-		return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
-	}
-	
+template <class field_type>
+auto integral_absdiff(const field_type & phi1, const field_type & phi2){
+	return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
+}
+
+}
 }
 
 #ifdef INQ_UNIT_TEST

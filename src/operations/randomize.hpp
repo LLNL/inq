@@ -53,6 +53,7 @@ struct uniform_distribution<std::complex<double>>{
 	static constexpr std::size_t rngs_per_sample = 2;
 };
 
+namespace inq {
 namespace operations {
 
 	template <class field_set_type>
@@ -82,6 +83,7 @@ namespace operations {
 	
   }
 
+}
 }
 
 #ifdef INQ_UNIT_TEST

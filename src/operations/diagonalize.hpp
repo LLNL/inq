@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__DIAGONALIZE
-#define OPERATIONS__DIAGONALIZE
+#ifndef INQ__OPERATIONS__DIAGONALIZE
+#define INQ__OPERATIONS__DIAGONALIZE
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -40,136 +40,137 @@ extern "C" void dsyev(const char * jobz, const char * uplo, const int & n, doubl
 #define zheev FC_FUNC(zheev, ZHEEV) 
 extern "C" void zheev(const char * jobz, const char * uplo, const int & n, complex * a, const int & lda, double * w, complex * work, const int & lwork, double * rwork, int & info);
 
-
+namespace inq {
 namespace operations {
 
-  auto diagonalize(math::array<double, 2> & matrix){
+auto diagonalize(math::array<double, 2> & matrix){
 
-    // the matrix must be square
-    assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
+	// the matrix must be square
+	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
 
-    int nn = std::get<0>(sizes(matrix));
+	int nn = std::get<0>(sizes(matrix));
     
-    math::array<double, 1> eigenvalues(nn);
+	math::array<double, 1> eigenvalues(nn);
 
-		//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
+	//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
 #ifdef HAVE_CUDA
-		{
-			cusolverDnHandle_t cusolver_handle;
+	{
+		cusolverDnHandle_t cusolver_handle;
 			
-			[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
-			assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
+		[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
+		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
 			
-			//query the work size
-			int lwork;
-			cusolver_status = cusolverDnDsyevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																										raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
-			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-			assert(lwork >= 0);
+		//query the work size
+		int lwork;
+		cusolver_status = cusolverDnDsyevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																									raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
+		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+		assert(lwork >= 0);
 
-			//allocate the work array
-		  double * work;
-			[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(double)*lwork);
-			assert(cudaSuccess == cuda_status);
+		//allocate the work array
+		double * work;
+		[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(double)*lwork);
+		assert(cudaSuccess == cuda_status);
 
-			//finally, diagonalize
-			int * devInfo;
-			cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
-			assert(cudaSuccess == cuda_status);
+		//finally, diagonalize
+		int * devInfo;
+		cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
+		assert(cudaSuccess == cuda_status);
 			
-			cusolver_status = cusolverDnDsyevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																				 raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
+		cusolver_status = cusolverDnDsyevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																			 raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
 
-			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-			cudaDeviceSynchronize();
-			assert(*devInfo == 0);
+		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+		cudaDeviceSynchronize();
+		assert(*devInfo == 0);
 
-			cudaFree(work);
-			cudaFree(devInfo);
-			cusolverDnDestroy(cusolver_handle);
-		}
+		cudaFree(work);
+		cudaFree(devInfo);
+		cusolverDnDestroy(cusolver_handle);
+	}
 #else
-    double lwork_query;
+	double lwork_query;
 
-    int info;
-    dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), &lwork_query, -1, info);
+	int info;
+	dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), &lwork_query, -1, info);
 
-    int lwork = int(lwork_query);
-    auto work = (double *) malloc(lwork*sizeof(complex));
+	int lwork = int(lwork_query);
+	auto work = (double *) malloc(lwork*sizeof(complex));
     
-    dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, info);
-		assert(info == 0);
+	dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, info);
+	assert(info == 0);
 		
-    free(work);
+	free(work);
 #endif
 
-    return eigenvalues;
-  }
+	return eigenvalues;
+}
 
-  auto diagonalize(math::array<complex, 2> & matrix){
+auto diagonalize(math::array<complex, 2> & matrix){
 
-    // the matrix must be square
-    assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
+	// the matrix must be square
+	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
 
-    int nn = std::get<0>(sizes(matrix));
+	int nn = std::get<0>(sizes(matrix));
     
-    math::array<double, 1> eigenvalues(nn);
+	math::array<double, 1> eigenvalues(nn);
 
-		//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
+	//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
 #ifdef HAVE_CUDA
-		{
-			cusolverDnHandle_t cusolver_handle;
+	{
+		cusolverDnHandle_t cusolver_handle;
 			
-			[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
-			assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
+		[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
+		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
 			
-			//query the work size
-			int lwork;
-			cusolver_status = cusolverDnZheevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																										(cuDoubleComplex const *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
-			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-			assert(lwork >= 0);
+		//query the work size
+		int lwork;
+		cusolver_status = cusolverDnZheevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																									(cuDoubleComplex const *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
+		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+		assert(lwork >= 0);
 
-			//allocate the work array
-			cuDoubleComplex * work;
-			[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
-			assert(cudaSuccess == cuda_status);
+		//allocate the work array
+		cuDoubleComplex * work;
+		[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
+		assert(cudaSuccess == cuda_status);
 
-			//finally, diagonalize
-			int * devInfo;
-			cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
-			assert(cudaSuccess == cuda_status);
+		//finally, diagonalize
+		int * devInfo;
+		cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
+		assert(cudaSuccess == cuda_status);
 			
-			cusolver_status = cusolverDnZheevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																				 (cuDoubleComplex *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
-			assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-			cudaDeviceSynchronize();
-			assert(*devInfo == 0);
+		cusolver_status = cusolverDnZheevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
+																			 (cuDoubleComplex *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
+		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
+		cudaDeviceSynchronize();
+		assert(*devInfo == 0);
 			
-			cudaFree(devInfo);
-			cusolverDnDestroy(cusolver_handle);
-		}
+		cudaFree(devInfo);
+		cusolverDnDestroy(cusolver_handle);
+	}
 #else
-    complex lwork_query;
+	complex lwork_query;
 
-    auto rwork = (double *) malloc(std::max(1, 3*nn - 2)*sizeof(double));
+	auto rwork = (double *) malloc(std::max(1, 3*nn - 2)*sizeof(double));
     
-    int info;
-    zheev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), &lwork_query, -1, rwork, info);
+	int info;
+	zheev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), &lwork_query, -1, rwork, info);
 
 
-    int lwork = int(real(lwork_query));
-    auto work = (complex *) malloc(lwork*sizeof(complex));
+	int lwork = int(real(lwork_query));
+	auto work = (complex *) malloc(lwork*sizeof(complex));
     
-    zheev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, rwork, info);
+	zheev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, rwork, info);
     
-    free(rwork);
-    free(work);
+	free(rwork);
+	free(work);
 #endif
 		
-    return eigenvalues;
-  }
+	return eigenvalues;
+}
 
+}
 }
 
 ///////////////////////////////////////////////////////////////////

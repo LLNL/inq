@@ -32,164 +32,166 @@
 
 #include <cassert>
 
+namespace inq {
 namespace operations {
-	namespace transfer {
+namespace transfer {
 
-		template <class FieldType>
-		auto enlarge(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
+template <class FieldType>
+auto enlarge(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
-			assert(not source.basis().part().parallel());
+	assert(not source.basis().part().parallel());
 			
-			FieldType destination(new_basis);
+	FieldType destination(new_basis);
 
-			destination = 0.0;
+	destination = 0.0;
 			
-			for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+	for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+		for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+			for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
 
-						auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-						auto idest = destination.basis().from_symmetric_range(ii);
+				auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+				auto idest = destination.basis().from_symmetric_range(ii);
 						
-						destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*source.cubic()[ix][iy][iz];
-					}
-				}
+				destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*source.cubic()[ix][iy][iz];
 			}
-
-			return destination;			
 		}
-
-		//////////////////////////////////////////////////////////
-
-		template <class Type, class BasisType>
-		auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
-
-			assert(not source.basis().part().parallel());
-			
-			basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
-
-			destination = 0.0;
-			
-			for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-						for(int ist = 0; ist < source.set_part().local_size(); ist++){
-							
-							auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-							auto idest = destination.basis().from_symmetric_range(ii);
-							
-							destination.cubic()[idest[0]][idest[1]][idest[2]][ist] = factor*source.cubic()[ix][iy][iz][ist];
-						}
-					}
-				}
-			}
-
-			return destination;			
-		}
-
-
-		//////////////////////////////////////////////////////////
-		
-		template <class FieldType>
-		auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
-
-			assert(not source.basis().part().parallel());
-			
-			FieldType destination(new_basis);
-			
-			destination = 0.0;
-			
-			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
-
-						auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
-						auto isource = source.basis().from_symmetric_range(ii);
-						destination.cubic()[ix][iy][iz] = factor*source.cubic()[isource[0]][isource[1]][isource[2]];
-						
-					}
-				}
-			}
-
-			return destination;
-		}
-
-		//////////////////////////////////////////////////////////
-		
-		template <class Type, class BasisType>
-		auto shrink(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
-
-			assert(not source.basis().part().parallel());
-			
-			basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
-			
-			destination = 0.0;
-			
-			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
-						for(int ist = 0; ist < source.set_part().local_size(); ist++){
-							
-							auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
-							auto isource = source.basis().from_symmetric_range(ii);
-							destination.cubic()[ix][iy][iz][ist] = factor*source.cubic()[isource[0]][isource[1]][isource[2]][ist];
-							
-						}
-					}
-				}
-			}
-
-			return destination;
-		}
-		
-		//////////////////////////////////////////////////////////
-
-		template <class FieldType>
-		auto refine(FieldType const & source, typename basis::real_space const & new_basis){
-
-			static_assert(std::is_same<typename FieldType::basis_type, basis::real_space>::value, "Only implemented for real space");
-			assert(new_basis.size() == 8*source.basis().size()); //only a factor of 2 has been tested
-			assert(not source.basis().part().parallel());
-			
-			basis::fourier_space new_fourier_basis(new_basis);
-			auto destination_fourier = enlarge(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
-			return operations::space::to_real(destination_fourier,  /*normalize = */ false);
-		}
-
-		//////////////////////////////////////////////////////////
-
-		template <template<class, class> class FieldType>
-		auto refine(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
-
-			auto complex_refine = refine(source.complex(), new_basis);
-			return complex_refine.real();
-		}
-
-		//////////////////////////////////////////////////////////
-		
-		template <class FieldType>
-		auto coarsen(FieldType const & source, typename basis::real_space const & new_basis){
-
-			assert(8*new_basis.size() == source.basis().size()); //only a factor of 2 has been tested		
-			assert(not source.basis().part().parallel());
-			
-			basis::fourier_space new_fourier_basis(new_basis);
-			auto destination_fourier = shrink(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
-			return operations::space::to_real(destination_fourier, /*normalize = */ false);
-		}
-
-		//////////////////////////////////////////////////////////
-
-		template <template<class, class> class FieldType>		
-		auto coarsen(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
-
-			auto complex_coarsen = coarsen(source.complex(), new_basis);
-			return complex_coarsen.real();
-		}
-
 	}
+
+	return destination;			
 }
 
+//////////////////////////////////////////////////////////
+
+template <class Type, class BasisType>
+auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
+
+	assert(not source.basis().part().parallel());
+			
+	basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
+
+	destination = 0.0;
+			
+	for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+		for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+			for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+				for(int ist = 0; ist < source.set_part().local_size(); ist++){
+							
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+							
+					destination.cubic()[idest[0]][idest[1]][idest[2]][ist] = factor*source.cubic()[ix][iy][iz][ist];
+				}
+			}
+		}
+	}
+
+	return destination;			
+}
+
+
+//////////////////////////////////////////////////////////
+		
+template <class FieldType>
+auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
+
+	assert(not source.basis().part().parallel());
+			
+	FieldType destination(new_basis);
+			
+	destination = 0.0;
+			
+	for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+		for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+			for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+
+				auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
+				auto isource = source.basis().from_symmetric_range(ii);
+				destination.cubic()[ix][iy][iz] = factor*source.cubic()[isource[0]][isource[1]][isource[2]];
+						
+			}
+		}
+	}
+
+	return destination;
+}
+
+//////////////////////////////////////////////////////////
+		
+template <class Type, class BasisType>
+auto shrink(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
+
+	assert(not source.basis().part().parallel());
+			
+	basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
+			
+	destination = 0.0;
+			
+	for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+		for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+			for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+				for(int ist = 0; ist < source.set_part().local_size(); ist++){
+							
+					auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
+					auto isource = source.basis().from_symmetric_range(ii);
+					destination.cubic()[ix][iy][iz][ist] = factor*source.cubic()[isource[0]][isource[1]][isource[2]][ist];
+							
+				}
+			}
+		}
+	}
+
+	return destination;
+}
+		
+//////////////////////////////////////////////////////////
+
+template <class FieldType>
+auto refine(FieldType const & source, typename basis::real_space const & new_basis){
+
+	static_assert(std::is_same<typename FieldType::basis_type, basis::real_space>::value, "Only implemented for real space");
+	assert(new_basis.size() == 8*source.basis().size()); //only a factor of 2 has been tested
+	assert(not source.basis().part().parallel());
+			
+	basis::fourier_space new_fourier_basis(new_basis);
+	auto destination_fourier = enlarge(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
+	return operations::space::to_real(destination_fourier,  /*normalize = */ false);
+}
+
+//////////////////////////////////////////////////////////
+
+template <template<class, class> class FieldType>
+auto refine(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
+
+	auto complex_refine = refine(source.complex(), new_basis);
+	return complex_refine.real();
+}
+
+//////////////////////////////////////////////////////////
+		
+template <class FieldType>
+auto coarsen(FieldType const & source, typename basis::real_space const & new_basis){
+
+	assert(8*new_basis.size() == source.basis().size()); //only a factor of 2 has been tested		
+	assert(not source.basis().part().parallel());
+			
+	basis::fourier_space new_fourier_basis(new_basis);
+	auto destination_fourier = shrink(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
+	return operations::space::to_real(destination_fourier, /*normalize = */ false);
+}
+
+//////////////////////////////////////////////////////////
+
+template <template<class, class> class FieldType>		
+auto coarsen(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
+
+	auto complex_coarsen = coarsen(source.complex(), new_basis);
+	return complex_coarsen.real();
+}
+
+}
+
+}
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

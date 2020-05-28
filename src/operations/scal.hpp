@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__SCAL
-#define OPERATIONS__SCAL
+#ifndef INQ__OPERATIONS__SCAL
+#define INQ__OPERATIONS__SCAL
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
@@ -24,29 +24,31 @@
 #include <basis/field_set.hpp>
 #include <cassert>
 
+namespace inq {
 namespace operations {
 
-	//TODO: this should receive the operation as argument
-  template <class array_1d, class field_set_type>
-  void scal_invsqrt(const array_1d & factor, field_set_type & phi){
+//TODO: this should receive the operation as argument
+template <class array_1d, class field_set_type>
+void scal_invsqrt(const array_1d & factor, field_set_type & phi){
     
-    assert(size(factor) == phi.set_size());
+	assert(size(factor) == phi.set_size());
 
-    //DATAOPERATIONS LOOP + GPU::RUN 2D
+	//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef HAVE_CUDA
-		gpu::run(phi.set_size(), phi.basis().num_points(),
-						 [factor, phimat = begin(phi.matrix()), fac = begin(factor)] __device__
-						 (auto ist, auto ipoint){
-							 phimat[ist][ipoint] /= sqrt(fac[ist]);
-						 });
+	gpu::run(phi.set_size(), phi.basis().num_points(),
+					 [factor, phimat = begin(phi.matrix()), fac = begin(factor)] __device__
+					 (auto ist, auto ipoint){
+						 phimat[ist][ipoint] /= sqrt(fac[ist]);
+					 });
 #else
-    for(int kk = 0; kk < phi.basis().num_points(); kk++) {
-      for(int ii = 0; ii < phi.set_size(); ii++) phi.matrix()[ii][kk] /= sqrt(factor[ii]);
-    }
+	for(int kk = 0; kk < phi.basis().num_points(); kk++) {
+		for(int ii = 0; ii < phi.set_size(); ii++) phi.matrix()[ii][kk] /= sqrt(factor[ii]);
+	}
 #endif
 		
-  }
+}
   
+}
 }
 
 #ifdef INQ_UNIT_TEST

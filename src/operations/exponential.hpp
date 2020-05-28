@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__EXPONENTIAL
-#define OPERATIONS__EXPONENTIAL
+#ifndef INQ__OPERATIONS__EXPONENTIAL
+#define INQ__OPERATIONS__EXPONENTIAL
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
@@ -27,6 +27,7 @@
 
 #include <operations/shift.hpp>
 
+namespace inq {
 namespace operations {
 
 	template <class operator_type, class field_set_type>
@@ -72,6 +73,7 @@ namespace operations {
 		return expphi;		
   }
 
+}
 }
 
 #ifdef INQ_UNIT_TEST

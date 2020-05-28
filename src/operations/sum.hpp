@@ -25,29 +25,31 @@
 #include <cassert>
 #include <numeric>
 
+namespace inq {
 namespace operations {
 
-  template <class array_type>
-  auto sum(const array_type & phi){
-		//OPTIMIZATION we should use std::reduce here, but it is not available in C++14
-		//DATAOPERATIONS STL ACCUMULATE
-		return std::accumulate(phi.begin(), phi.end(), (typename array_type::element_type) 0.0);
-	}
+template <class array_type>
+auto sum(const array_type & phi){
+	//OPTIMIZATION we should use std::reduce here, but it is not available in C++14
+	//DATAOPERATIONS STL ACCUMULATE
+	return std::accumulate(phi.begin(), phi.end(), (typename array_type::element_type) 0.0);
+}
 
-  template <class array1_type, class array2_type, class binary_op>
-  auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op){
+template <class array1_type, class array2_type, class binary_op>
+auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op){
 
-		const typename array1_type::element_type initial = 0.0;
-		//OPTIMIZATION we should use std::transform_reduce here, but it is not available in C++14
-		//DATAOPERATIONS STL INNER_PRODUCT
-		return std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);
-	}
+	const typename array1_type::element_type initial = 0.0;
+	//OPTIMIZATION we should use std::transform_reduce here, but it is not available in C++14
+	//DATAOPERATIONS STL INNER_PRODUCT
+	return std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);
+}
+
+template <class field_type>
+auto sum_product(const field_type & phi1, const field_type & phi2){
+	return sum(phi1, phi2, std::multiplies<>());
+}
 	
-	template <class field_type>
-  auto sum_product(const field_type & phi1, const field_type & phi2){
-		return sum(phi1, phi2, std::multiplies<>());
-	}
-	
+}
 }
 
 #ifdef INQ_UNIT_TEST

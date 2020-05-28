@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__SPACE
-#define OPERATIONS__SPACE
+#ifndef INQ__OPERATIONS__SPACE
+#define INQ__OPERATIONS__SPACE
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa.
@@ -32,6 +32,7 @@
 
 #include <cassert>
 
+namespace inq {
 namespace operations {
 	namespace space {
 
@@ -274,6 +275,7 @@ namespace operations {
 
 	}
 
+}
 }
 
 #ifdef INQ_UNIT_TEST

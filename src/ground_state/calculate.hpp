@@ -84,7 +84,7 @@ namespace ground_state {
 		int conv_count = 0;
 		for(int iiter = 0; iiter < 1000; iiter++){
 			
-			operations::subspace_diagonalization(ham, electrons.phi_);
+			subspace_diagonalization(ham, electrons.phi_);
 			
 			{
 				auto fphi = operations::space::to_fourier(std::move(electrons.phi_));

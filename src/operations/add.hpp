@@ -29,58 +29,60 @@
 #include <gpu/run.hpp>
 #include <algorithm>
 
+namespace inq {
 namespace operations {
 
-	/*
-
-		Returns a field that has the sum of the values of t1 and t2.
-
-	*/
-	template <class field_type>
-	auto add(const field_type & t1, const field_type & t2){
-		assert(t1.basis() == t2.basis());
-		
-		field_type tadd(t1.basis(), t1.basis_comm());
-
-		using type = typename field_type::element_type;
-
-		//DATAOPERATIONS STL TRANSFORM
-		std::transform(t1.linear().begin(), t1.linear().end(), t2.linear().begin(), tadd.linear().begin(), std::plus<type>());
-		
-		return tadd;
-	}
+/*
 	
-	/*
-
-		Returns a field that has the sum of the values of t1, t2 and t3.
-
-	*/
-	template <class field_type>
-	field_type add(const field_type & t1, const field_type & t2, const field_type & t3){
-		assert(t1.basis() == t2.basis());
-		assert(t1.basis() == t3.basis());
+	Returns a field that has the sum of the values of t1 and t2.
+	
+*/
+template <class field_type>
+auto add(const field_type & t1, const field_type & t2){
+	assert(t1.basis() == t2.basis());
 		
-		field_type tadd(t1.basis(), t1.basis_comm());
+	field_type tadd(t1.basis(), t1.basis_comm());
 
-		//DATAOPERATIONS LOOP + GPU::RUN 1D
+	using type = typename field_type::element_type;
+
+	//DATAOPERATIONS STL TRANSFORM
+	std::transform(t1.linear().begin(), t1.linear().end(), t2.linear().begin(), tadd.linear().begin(), std::plus<type>());
+		
+	return tadd;
+}
+	
+/*
+
+	Returns a field that has the sum of the values of t1, t2 and t3.
+
+*/
+template <class field_type>
+field_type add(const field_type & t1, const field_type & t2, const field_type & t3){
+	assert(t1.basis() == t2.basis());
+	assert(t1.basis() == t3.basis());
+		
+	field_type tadd(t1.basis(), t1.basis_comm());
+
+	//DATAOPERATIONS LOOP + GPU::RUN 1D
 #ifdef HAVE_CUDA
 
-		auto t1p = t1.linear().begin();
-		auto t2p = t2.linear().begin();
-		auto t3p = t3.linear().begin();
-		auto taddp = tadd.linear().begin();
+	auto t1p = t1.linear().begin();
+	auto t2p = t2.linear().begin();
+	auto t3p = t3.linear().begin();
+	auto taddp = tadd.linear().begin();
 		
-		gpu::run(t1.linear().size(),
-						 [=] __device__ (long ii){
-							 taddp[ii] = t1p[ii] + t2p[ii] + t3p[ii];
-						 });
+	gpu::run(t1.linear().size(),
+					 [=] __device__ (long ii){
+						 taddp[ii] = t1p[ii] + t2p[ii] + t3p[ii];
+					 });
 #else
-		for(long ii = 0; ii < t1.linear().size(); ii++) tadd.linear()[ii] = t1.linear()[ii] + t2.linear()[ii] + t3.linear()[ii];
+	for(long ii = 0; ii < t1.linear().size(); ii++) tadd.linear()[ii] = t1.linear()[ii] + t2.linear()[ii] + t3.linear()[ii];
 #endif
 		
-		return tadd;
-	}
+	return tadd;
+}
 
+}
 }
 
 #ifdef INQ_UNIT_TEST

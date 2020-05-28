@@ -146,7 +146,7 @@ namespace basis {
 
 
 		auto complex() const {
-			return field<basis::real_space, std::complex<element_type>>(*this);
+			return field<basis::real_space, inq::complex>(*this);
 		}
 
 		field<basis::real_space, double> real() const {

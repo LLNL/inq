@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__SHIFT
-#define OPERATIONS__SHIFT
+#ifndef INQ__OPERATIONS__SHIFT
+#define INQ__OPERATIONS__SHIFT
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa.
@@ -25,33 +25,35 @@
 #include <basis/field_set.hpp>
 #include <cassert>
 
+namespace inq {
 namespace operations {
 
-	template <class array_1d, class field_set_type>
-  void shift(double scale, const array_1d & factor, const field_set_type & shift, field_set_type & phi){
+template <class array_1d, class field_set_type>
+void shift(double scale, const array_1d & factor, const field_set_type & shift, field_set_type & phi){
     
-    assert(size(factor) == phi.set_part().local_size());
+	assert(size(factor) == phi.set_part().local_size());
 
-		//DATAOPERATIONS GPU::RUN 2D 
-		gpu::run(phi.set_part().local_size(), phi.basis().part().local_size(),
-						 [factorp = begin(factor), shiftp = begin(shift.matrix()), phip = begin(phi.matrix()), scale]
-						 GPU_LAMBDA (auto ist, auto ipoint){
-							 phip[ipoint][ist] += scale*(factorp[ist]*shiftp[ipoint][ist]);
-						 });
-  }
+	//DATAOPERATIONS GPU::RUN 2D 
+	gpu::run(phi.set_part().local_size(), phi.basis().part().local_size(),
+					 [factorp = begin(factor), shiftp = begin(shift.matrix()), phip = begin(phi.matrix()), scale]
+					 GPU_LAMBDA (auto ist, auto ipoint){
+						 phip[ipoint][ist] += scale*(factorp[ist]*shiftp[ipoint][ist]);
+					 });
+}
 
-	template <class field_set_type>
-  void shift(typename field_set_type::element_type const & factor, const field_set_type & shift, field_set_type & phi){
-    
-		//this could be done with axpy
-		//DATAOPERATIONS GPU::RUN 2D
-		gpu::run(phi.set_part().local_size(), phi.basis().part().local_size(),
-						 [factor, shiftp = begin(shift.matrix()), phip = begin(phi.matrix())]
-						 GPU_LAMBDA (auto ist, auto ipoint){
-							 phip[ipoint][ist] += factor*shiftp[ipoint][ist];
-						 });
-  }
+template <class field_set_type>
+void shift(typename field_set_type::element_type const & factor, const field_set_type & shift, field_set_type & phi){
 	
+	//this could be done with axpy
+	//DATAOPERATIONS GPU::RUN 2D
+	gpu::run(phi.set_part().local_size(), phi.basis().part().local_size(),
+					 [factor, shiftp = begin(shift.matrix()), phip = begin(phi.matrix())]
+					 GPU_LAMBDA (auto ist, auto ipoint){
+						 phip[ipoint][ist] += factor*shiftp[ipoint][ist];
+					 });
+}
+
+}
 }
 
 #ifdef INQ_UNIT_TEST
