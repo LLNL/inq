@@ -92,11 +92,11 @@ namespace ground_state {
 				switch(solver.eigensolver()){
 					
 				case input::scf::scf_eigensolver::STEEPEST_DESCENT:
-					solvers::steepest_descent(ham, prec, fphi);
+					eigensolvers::steepest_descent(ham, prec, fphi);
 					break;
 					
 				case input::scf::scf_eigensolver::CONJUGATE_GRADIENT:
-					eigensolver::conjugate_gradient(ham, prec, fphi);
+					eigensolvers::conjugate_gradient(ham, prec, fphi);
 					break;
 					
 				default:

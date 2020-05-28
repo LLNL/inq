@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef SOLVERS_STEEPEST_DESCENT
-#define SOLVERS_STEEPEST_DESCENT
+#ifndef INQ__EIGENSOLVERS__STEEPEST_DESCENT
+#define INQ__EIGENSOLVERS__STEEPEST_DESCENT
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -28,71 +28,72 @@
 #include <operations/shift.hpp>
 #include <operations/orthogonalize.hpp>
 
-namespace solvers {
+namespace inq {
+namespace eigensolvers {
 
-	template <class operator_type, class preconditioner_type, class field_set_type>
-	void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
+template <class operator_type, class preconditioner_type, class field_set_type>
+void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
 
-		const int num_steps = 5;
+	const int num_steps = 5;
 
-		for(int istep = 0; istep < num_steps; istep++){
+	for(int istep = 0; istep < num_steps; istep++){
 			
-			//calculate the residual
+		//calculate the residual
 			
-			auto residual = ham(phi);
+		auto residual = ham(phi);
 			
-			auto eigenvalues = operations::overlap_diagonal(residual, phi);
-			auto norm =	operations::overlap_diagonal(phi);
+		auto eigenvalues = operations::overlap_diagonal(residual, phi);
+		auto norm =	operations::overlap_diagonal(phi);
 			
-			auto lambda = eigenvalues;
+		auto lambda = eigenvalues;
 			
-			//DATAOPERATIONS GPU::RUN TRANSFORM
-			gpu::run(phi.set_size(),
-							 [lam = begin(lambda), nor = begin(norm)]
-							 GPU_LAMBDA (auto ist){
-								 lam[ist] = lam[ist]/(-real(nor[ist]));
-							 });
+		//DATAOPERATIONS GPU::RUN TRANSFORM
+		gpu::run(phi.set_size(),
+						 [lam = begin(lambda), nor = begin(norm)]
+						 GPU_LAMBDA (auto ist){
+							 lam[ist] = lam[ist]/(-real(nor[ist]));
+						 });
 			
-			operations::shift(1.0, lambda, phi, residual);
+		operations::shift(1.0, lambda, phi, residual);
 
-			prec(residual);
+		prec(residual);
 			
-			//now calculate the step size
-			auto hresidual = ham(residual);
+		//now calculate the step size
+		auto hresidual = ham(residual);
 
-			auto mm = math::array<typename field_set_type::element_type, 2>({6, phi.set_size()});
+		auto mm = math::array<typename field_set_type::element_type, 2>({6, phi.set_size()});
 
-			mm[0] = operations::overlap_diagonal(residual, residual);
-			mm[1] = operations::overlap_diagonal(phi, residual);
-			mm[2] = operations::overlap_diagonal(residual, hresidual);
-			mm[3] = operations::overlap_diagonal(phi, hresidual);
-			mm[4] = eigenvalues;
-			mm[5] = norm;
+		mm[0] = operations::overlap_diagonal(residual, residual);
+		mm[1] = operations::overlap_diagonal(phi, residual);
+		mm[2] = operations::overlap_diagonal(residual, hresidual);
+		mm[3] = operations::overlap_diagonal(phi, hresidual);
+		mm[4] = eigenvalues;
+		mm[5] = norm;
 			
-			//DATAOPERATIONS GPU::RUN TRANSFORM
-			gpu::run(phi.set_size(),
-							 [m = begin(mm), lam = begin(lambda)]
-							 GPU_LAMBDA (auto ist){
-								 auto ca = real(m[0][ist]*m[3][ist] - m[2][ist]*m[1][ist]);
-								 auto cb = real(m[5][ist]*m[2][ist] - m[4][ist]*m[0][ist]);
-								 auto cc = real(m[4][ist]*m[1][ist] - m[3][ist]*m[5][ist]);
+		//DATAOPERATIONS GPU::RUN TRANSFORM
+		gpu::run(phi.set_size(),
+						 [m = begin(mm), lam = begin(lambda)]
+						 GPU_LAMBDA (auto ist){
+							 auto ca = real(m[0][ist]*m[3][ist] - m[2][ist]*m[1][ist]);
+							 auto cb = real(m[5][ist]*m[2][ist] - m[4][ist]*m[0][ist]);
+							 auto cc = real(m[4][ist]*m[1][ist] - m[3][ist]*m[5][ist]);
 
-								 auto den = cb + sqrt(cb*cb - 4.0*ca*cc);
+							 auto den = cb + sqrt(cb*cb - 4.0*ca*cc);
 
-								 if(fabs(den) < 1e-15) lam[ist] = complex(0.0, 0.0); //this happens if we are perfectly converged
-								 lam[ist] = complex(2.0*cc/den, 0.0);
-							 });
+							 if(fabs(den) < 1e-15) lam[ist] = complex(0.0, 0.0); //this happens if we are perfectly converged
+							 lam[ist] = complex(2.0*cc/den, 0.0);
+						 });
 
-			operations::shift(1.0, lambda, residual, phi);
+		operations::shift(1.0, lambda, residual, phi);
 
-		}
-
-		operations::orthogonalize(phi);
-		
 	}
 
+	operations::orthogonalize(phi);
+		
 }
 
+}
+}
 
 #ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
@@ -100,7 +101,7 @@ namespace solvers {
 #include <ions/unitcell.hpp>
 #include <operations/matrix_operator.hpp>
 
-TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
+TEST_CASE("eigensolvers::steepest_descent", "[eigensolvers::steepest_descent]") {
 
 	using namespace Catch::literals;
 	
@@ -147,7 +148,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 		
 		for(int iter = 0; iter < num_iter; iter++){
 
-			solvers::steepest_descent(diagonal_op, identity, phi);
+			eigensolvers::steepest_descent(diagonal_op, identity, phi);
 			
 			auto residual = diagonal_op(phi);
 			auto eigenvalues = operations::overlap_diagonal(phi, residual);
@@ -206,7 +207,7 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 
 		for(int iter = 0; iter < 100; iter++){
 			
-			solvers::steepest_descent(laplacian, identity, phi);
+			eigensolvers::steepest_descent(laplacian, identity, phi);
 			
 			auto residual = laplacian(phi);
 			auto eigenvalues = operations::overlap_diagonal(phi, residual);
