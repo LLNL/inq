@@ -75,7 +75,7 @@ namespace ground_state {
 		
 		ham.scalar_potential = sc.ks_potential(density, energy);
 		
-		energy.ion = ::ions::interaction_energy(electrons.ions_.cell(), electrons.ions_.geo(), electrons.atomic_pot_);
+		energy.ion = inq::ions::interaction_energy(electrons.ions_.cell(), electrons.ions_.geo(), electrons.atomic_pot_);
 		
 		//DATAOPERATIONS STL FILL
 		std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);

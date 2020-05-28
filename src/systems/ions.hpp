@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef SYSTEMS__IONS
-#define SYSTEMS__IONS
+#ifndef INQ__SYSTEMS__IONS
+#define INQ__SYSTEMS__IONS
 
 #include <cfloat>
 
@@ -16,7 +16,7 @@ class ions {
 
 public:
 
-	ions(const input::cell & arg_cell_input, const ::ions::geometry & geo_arg = ::ions::geometry()):
+	ions(const input::cell & arg_cell_input, const inq::ions::geometry & geo_arg = inq::ions::geometry()):
 		cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
 		geo_(geo_arg){
       
@@ -35,8 +35,8 @@ public:
     
 private:
     
-	::ions::UnitCell cell_;
-	::ions::geometry geo_;
+	inq::ions::UnitCell cell_;
+	inq::ions::geometry geo_;
 
 };
   

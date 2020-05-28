@@ -213,7 +213,7 @@ namespace transfer_unit_test {
 	
 }
 
-TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", double, complex) {
+TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", double, inq::complex) {
 
 	using namespace transfer_unit_test;
 	using namespace inq;

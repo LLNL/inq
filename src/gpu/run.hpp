@@ -215,8 +215,6 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 }
 }
 
-using namespace inq;
-
 #ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 #include <math/array.hpp>
@@ -231,7 +229,7 @@ GPU_FUNCTION void atomicAdd(Type * address, Type val){
 	
 size_t check_run(size_t size){
 	
-	math::array<size_t, 1> list(size, 0);
+	inq::math::array<size_t, 1> list(size, 0);
 
 	inq::gpu::run(size,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii){
@@ -247,7 +245,7 @@ size_t check_run(size_t size){
 
 size_t check_run(size_t size1, size_t size2){
 	
-	math::array<size_t, 3> list({size1, size2, 2}, 0);
+	inq::math::array<size_t, 3> list({size1, size2, 2}, 0);
 	
 	inq::gpu::run(size1, size2, 
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj){
@@ -268,8 +266,8 @@ size_t check_run(size_t size1, size_t size2){
 }
 
 size_t check_run(size_t size1, size_t size2, size_t size3){
-
-	math::array<size_t, 4> list({size1, size2, size3, 3}, 0);
+	
+	inq::math::array<size_t, 4> list({size1, size2, size3, 3}, 0);
 
 	inq::gpu::run(size1, size2, size3,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk){
@@ -295,7 +293,7 @@ size_t check_run(size_t size1, size_t size2, size_t size3){
 	
 size_t check_run(size_t size1, size_t size2, size_t size3, size_t size4){
 
-	math::array<size_t, 5> list({size1, size2, size3, size4, 4}, 0);
+	inq::math::array<size_t, 5> list({size1, size2, size3, size4, 4}, 0);
 
 	inq::gpu::run(size1, size2, size3, size4,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk, auto ll){

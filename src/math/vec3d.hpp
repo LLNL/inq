@@ -159,8 +159,6 @@ namespace math {
 }
 }
 
-using namespace inq;
-
 ///////////////////////////////////////////////////////////////////
 
 #if defined(INQ_UNIT_TEST) or (not __INCLUDE_LEVEL__)

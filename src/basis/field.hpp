@@ -136,7 +136,7 @@ namespace basis {
 				if(ip >= size) ip -= size;
 				point[dir] = ip;
 				auto rr = fld.basis().rvector(point);
-				tfm::format(file, "%f %e %e\n", rr[dir], ::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
+				tfm::format(file, "%f %e %e\n", rr[dir], inq::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
 			}
 		}
 

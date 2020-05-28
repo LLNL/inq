@@ -29,9 +29,11 @@
 
 int main(int argc, char ** argv){
 
+	using namespace inq;
+	
 	boost::mpi3::environment env(argc, argv);
 
-	inq::utils::match energy_match(1.0e-5);
+	utils::match energy_match(1.0e-5);
 
 	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	

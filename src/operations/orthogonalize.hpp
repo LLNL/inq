@@ -34,7 +34,7 @@
 #endif
 
 #define zpotrf FC_FUNC(zpotrf, ZPOTRF) 
-extern "C" void zpotrf(const char * uplo, const int * n, complex * a, const int * lda, int * info);
+extern "C" void zpotrf(const char * uplo, const int * n, inq::complex * a, const int * lda, int * info);
 
 //#define blas_ztrsm FC_FUNC(ztrsm, ZTRSM) 
 //extern "C" void blas_ztrsm(const char& side, const char& uplo, const char& transa, const char& diag,

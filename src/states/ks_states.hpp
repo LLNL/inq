@@ -117,6 +117,7 @@ private:
 
 TEST_CASE("Class states::ks_states", "[ks_states]"){
 
+	using namespace inq;
   using math::vec3d;
   
   double ecut = 30.0;

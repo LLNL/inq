@@ -27,8 +27,6 @@
 #include <mpi3/communicator.hpp>
 #include <mpi3/environment.hpp>
 
-using namespace inq;
-
 namespace inq {
 namespace utils {
 

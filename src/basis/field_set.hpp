@@ -137,7 +137,7 @@ namespace basis {
 		}
 
 		auto complex() const {
-			field_set<basis::real_space, ::complex> complex_field(skeleton());
+			field_set<basis::real_space, inq::complex> complex_field(skeleton());
 			complex_field.matrix() = matrix();
 			return complex_field;
 		}
@@ -151,7 +151,7 @@ namespace basis {
 			//DATAOPERATIONS GPU::RUN 1D
 			gpu::run(set_part().local_size(), basis().part().local_size(),
 							 [rp = begin(real_field.matrix()), cp = begin(matrix())] GPU_LAMBDA (auto ist, auto ii){
-								 rp[ii][ist] = ::real(cp[ii][ist]);
+								 rp[ii][ist] = inq::real(cp[ii][ist]);
 							 });
 			
 			return real_field;
