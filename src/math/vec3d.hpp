@@ -26,7 +26,9 @@
 #include <iostream>
 #include <cmath>
 
+namespace inq {
 namespace math {
+
 	class vec3d {
 	public:
 
@@ -155,6 +157,7 @@ namespace math {
 	};
 
 }
+}
 
 ///////////////////////////////////////////////////////////////////
 
@@ -171,6 +174,7 @@ namespace math {
 
 TEST_CASE("function math::vec3d", "[math::vec3d]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 	using math::vec3d;

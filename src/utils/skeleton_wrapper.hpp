@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef UTILS__SKELETON_WRAPPER
-#define UTILS__SKELETON_WRAPPER
+#ifndef INQ__UTILS__SKELETON_WRAPPER
+#define INQ__UTILS__SKELETON_WRAPPER
 
 /*
  Copyright (C) 2020 Xavier Andrade
@@ -21,7 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-namespace basis {
+namespace inq {
+namespace utils {
 
 	template <class Base>
 	struct skeleton_wrapper {
@@ -33,7 +34,7 @@ namespace basis {
 	};
 
 }
-
+}
 
 #endif
 

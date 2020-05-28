@@ -24,6 +24,7 @@
 #include <nonstd/optional.hpp>
 #include <cassert>
 
+namespace inq {
 namespace input {
 
   class interaction {
@@ -112,7 +113,7 @@ namespace input {
 		}
 
 		friend auto operator|(const interaction & inter1, const interaction & inter2){
-			using utils::merge_optional;
+			using inq::utils::merge_optional;
 
 			interaction rinter;
 			rinter.theory_	= merge_optional(inter1.theory_, inter2.theory_);
@@ -132,6 +133,7 @@ namespace input {
   };
     
 }
+}
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -142,7 +144,8 @@ namespace input {
 
 TEST_CASE("class input::interaction", "[input::interaction]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
 	SECTION("Defaults"){
 

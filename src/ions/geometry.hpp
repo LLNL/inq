@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef IONS_GEOMETRY
-#define IONS_GEOMETRY
+#ifndef INQ__IONS__GEOMETRY
+#define INQ__IONS__GEOMETRY
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,103 +29,107 @@
 #include <vector>
 #include <cassert>
 
+namespace inq {
 namespace ions {
 
-  class geometry {
+class geometry {
 
-  public:
+public:
     
-    enum class error {
-      FILE_NOT_FOUND
-    };
+	enum class error {
+										FILE_NOT_FOUND
+	};
       
-    geometry(){
-    }
+	geometry(){
+	}
 
-		geometry(const char * xyz_file_name){
-			geometry(std::string(xyz_file_name));
-		}
+	geometry(const char * xyz_file_name){
+		geometry(std::string(xyz_file_name));
+	}
 		
-    // Generates a geometry from an xyz file
-    geometry(const std::string & xyz_file_name){
-      std::ifstream xyz_file(xyz_file_name.c_str());
+	// Generates a geometry from an xyz file
+	geometry(const std::string & xyz_file_name){
+		std::ifstream xyz_file(xyz_file_name.c_str());
 
-      if(!xyz_file.is_open()) throw error::FILE_NOT_FOUND;
+		if(!xyz_file.is_open()) throw error::FILE_NOT_FOUND;
 
-      int natoms;
-      std::string comment_line;
+		int natoms;
+		std::string comment_line;
       
-      xyz_file >> natoms;
+		xyz_file >> natoms;
       
-      std::getline(xyz_file, comment_line);
-      std::getline(xyz_file, comment_line);
+		std::getline(xyz_file, comment_line);
+		std::getline(xyz_file, comment_line);
       
-      std::string atom_name;
-      math::vec3d atom_position;
+		std::string atom_name;
+		math::vec3d atom_position;
       
-      for(int iatom = 0; iatom < natoms; iatom++){
+		for(int iatom = 0; iatom < natoms; iatom++){
       xyz_file >> atom_name >> atom_position;
       add_atom(pseudo::element(atom_name), atom_position*1.8897261);
-      }
+		}
       
-      xyz_file.close();
+		xyz_file.close();
       
-      assert(natoms == num_atoms());
+		assert(natoms == num_atoms());
       
-    }
+	}
 
-		template <class container_type>
-		geometry(const container_type & atom_container){
+	template <class container_type>
+	geometry(const container_type & atom_container){
 
-			atoms_.reserve(atom_container.size());
-			coordinates_.reserve(atom_container.size());
+		atoms_.reserve(atom_container.size());
+		coordinates_.reserve(atom_container.size());
 			
-			for(auto it = atom_container.begin(); it != atom_container.end(); it++){
-				atoms_.push_back(it->species());
-				coordinates_.push_back(it->position());
-			}
+		for(auto it = atom_container.begin(); it != atom_container.end(); it++){
+			atoms_.push_back(it->species());
+			coordinates_.push_back(it->position());
+		}
 			
-    }
+	}
     
-    int num_atoms() const { return coordinates_.size(); }
+	int num_atoms() const { return coordinates_.size(); }
 
-    void add_atom(const input::species & element, const math::vec3d & position){
-      atoms_.push_back(element);
-      coordinates_.push_back(position);
-    }
+	void add_atom(const input::species & element, const math::vec3d & position){
+		atoms_.push_back(element);
+		coordinates_.push_back(position);
+	}
 
-    auto & atoms() const {
-      return atoms_;
-    }
+	auto & atoms() const {
+		return atoms_;
+	}
 
-    auto & coordinates() const {
-      return coordinates_;
-    }
+	auto & coordinates() const {
+		return coordinates_;
+	}
     
-    auto & coordinates() {
-      return coordinates_;
-    }
+	auto & coordinates() {
+		return coordinates_;
+	}
 
-    template <class output_stream>
-    void info(output_stream & out) const {
-      out << "GEOMETRY:" << std::endl;
-      out << "  Number of atoms = " << num_atoms() << std::endl;
-      out << std::endl;
-    }
+	template <class output_stream>
+	void info(output_stream & out) const {
+		out << "GEOMETRY:" << std::endl;
+		out << "  Number of atoms = " << num_atoms() << std::endl;
+		out << std::endl;
+	}
     
-  private:
+private:
 
-    std::vector<input::species> atoms_;
-    std::vector<math::vec3d> coordinates_;
+	std::vector<input::species> atoms_;
+	std::vector<math::vec3d> coordinates_;
     
-  };
+};
+}
+}
   
 #ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
 TEST_CASE("Class ions::geometry", "[geometry]") {
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
   SECTION("Create empty and add an atom"){
     ions::geometry geo;
@@ -186,7 +190,5 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   
 }
 #endif
-
-}
 
 #endif

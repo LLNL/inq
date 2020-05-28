@@ -32,6 +32,7 @@
 
 #include <mpi3/environment.hpp>
 
+namespace inq {
 namespace hamiltonian {
 
   class atomic_potential {
@@ -240,16 +241,17 @@ namespace hamiltonian {
     
   private:
 
-		const math::erf_range_separation sep_;
+		pseudo::math::erf_range_separation const sep_;
     double nelectrons_;
     pseudo::set pseudo_set_;
     std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
 		mutable boost::mpi3::communicator comm_;
-		utils::partition part_;
+		inq::utils::partition part_;
 		bool has_nlcc_;
         
   };
 
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -259,7 +261,8 @@ namespace hamiltonian {
 
 TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential]") {
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 	using pseudo::element;
   using input::species;
 

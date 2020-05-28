@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef HAMILTONIAN__XC_FUNCTIONAL
-#define HAMILTONIAN__XC_FUNCTIONAL
+#ifndef INQ__HAMILTONIAN__XC_FUNCTIONAL
+#define INQ__HAMILTONIAN__XC_FUNCTIONAL
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -23,6 +23,7 @@
 
 #include <xc.h>
 
+namespace inq {
 namespace hamiltonian {
 	class xc_functional {
 
@@ -71,6 +72,7 @@ namespace hamiltonian {
 			
 	};
 
+}
 }
 
 #endif

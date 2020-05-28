@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__GRADIENT
-#define OPERATIONS__GRADIENT
+#ifndef INQ__OPERATIONS__GRADIENT
+#define INQ__OPERATIONS__GRADIENT
 
 /*
  Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa, Alexey Karstev.
@@ -24,6 +24,7 @@
 #include <basis/field.hpp>
 #include <cassert>
 
+namespace inq {
 namespace operations {
 
 	auto gradient(basis::field<basis::fourier_space, complex> const & ff){
@@ -59,6 +60,7 @@ namespace operations {
 	}
 	
 }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,29 +72,30 @@ namespace operations {
 #include <math/vec3d.hpp>
 #include <math/vector3.hpp>
 
-auto f_analytic (math::vec3d kk, math::vec3d rr){
-	return exp(complex(0.0,1.0)*(kk|rr));
+auto f_analytic (inq::math::vec3d kk, inq::math::vec3d rr){
+	return exp(inq::complex(0.0,1.0)*(kk|rr));
 }
 
-auto g_analytic (math::vec3d kk , math::vec3d rr) {
-	math::vector3<complex> gg;
-	complex factor = complex(0.0, 1.0)*exp(complex(0.0, 1.0)*(kk|rr));
+auto g_analytic (inq::math::vec3d kk , inq::math::vec3d rr) {
+	inq::math::vector3<inq::complex> gg;
+	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0, 1.0)*(kk|rr));
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = factor*kk[idir] ;
 	return gg;
 }
 
-auto f_analytic2 (math::vec3d kk, math::vec3d rr){
+auto f_analytic2 (inq::math::vec3d kk, inq::math::vec3d rr){
 	return sin(kk|rr);
 }
 
-auto g_analytic2 (math::vec3d kk , math::vec3d rr) {
-	math::vec3d gg;
+auto g_analytic2 (inq::math::vec3d kk , inq::math::vec3d rr) {
+	inq::math::vec3d gg;
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(kk|rr);
 	return gg;
 }
 
 TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using namespace operations;
 	using math::vec3d;

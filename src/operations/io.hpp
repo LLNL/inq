@@ -32,103 +32,104 @@
 
 #include <cstdio>
 
-
+namespace inq {
 namespace operations {
-	namespace io {
+namespace io {
 
-		auto numstr(long num){
-			char numcstr[12]; 
-			snprintf(numcstr, 11, "%010ld", num);
-			return std::string(numcstr);				
+auto numstr(long num){
+	char numcstr[12]; 
+	snprintf(numcstr, 11, "%010ld", num);
+	return std::string(numcstr);				
+}
+
+auto createdir(std::string const & dirname){
+
+	DIR* dir = opendir(dirname.c_str());
+	if (dir) {
+		// The directory exists, we just use it
+		closedir(dir);
+
+	} else {
+		// The directory does not exist
+		auto status = mkdir(dirname.c_str(), 0777);
+		if(status != 0){
+			std::cerr << "Error: cannot create restart directory '" << dirname << "/'." << std::endl;
+			exit(1);
 		}
-
-		auto createdir(std::string const & dirname){
-
-			DIR* dir = opendir(dirname.c_str());
-			if (dir) {
-				// The directory exists, we just use it
-				closedir(dir);
-
-			} else {
-				// The directory does not exist
-				auto status = mkdir(dirname.c_str(), 0777);
-				if(status != 0){
-					std::cerr << "Error: cannot create restart directory '" << dirname << "/'." << std::endl;
-					exit(1);
-				}
-			}
-
-		}
-		
-		template <class FieldSet>
-		void save(std::string const & dirname, FieldSet const & phi){
-
-			using Type = typename FieldSet::element_type;
-			
-			assert(not phi.basis().part().parallel());
-
-			boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
-
-			if(phi.full_comm().rank() == 0) createdir(dirname);
-			phi.full_comm().barrier();
-				 
-			for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-
-				auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
-
-				buffer = phi.matrix().rotated()[ist];
-
-				auto fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-				if(fd == -1){
-					std::cerr << "Error: cannot create restart file '" << filename << "'." << std::endl;
-					exit(1);
-				}
-				
-				[[maybe_unused]] auto data_written = write(fd, buffer.data(), buffer.size()*sizeof(Type));
-				assert(data_written == long(buffer.size()*sizeof(Type)));
-
-				close(fd);
-				
-			}
-		}
-		
-		template <class FieldSet>
-		void load(std::string const & dirname, FieldSet & phi){
-
-			using Type = typename FieldSet::element_type;
-			
-			assert(not phi.basis().part().parallel());
-
-			boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
-
-			DIR* dir = opendir(dirname.c_str());
-			if (!dir) {
-				std::cerr << "Error: cannot open restart directory '" << dirname << "/'." << std::endl;
-				exit(1);
-			}
-			closedir(dir);
-			
-			for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-
-				auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
-				
-				auto fd = open(filename.c_str(), O_RDONLY);
-				if(fd == -1){
-					std::cerr << "Error: cannot open restart file '" << filename << "'." << std::endl;
-					exit(1);
-				}
-				
-				[[maybe_unused]] auto data_read = read(fd, buffer.data(), buffer.size()*sizeof(Type));
-				assert(data_read == long(buffer.size()*sizeof(Type)));
-
-				close(fd);
-
-				phi.matrix().rotated()[ist] = buffer;
-				
-			}
-		}
-		
 	}
+
+}
+
+template <class FieldSet>
+void save(std::string const & dirname, FieldSet const & phi){
+
+	using Type = typename FieldSet::element_type;
+			
+	assert(not phi.basis().part().parallel());
+
+	boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
+
+	if(phi.full_comm().rank() == 0) createdir(dirname);
+	phi.full_comm().barrier();
+				 
+	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+
+		auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
+
+		buffer = phi.matrix().rotated()[ist];
+
+		auto fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+		if(fd == -1){
+			std::cerr << "Error: cannot create restart file '" << filename << "'." << std::endl;
+			exit(1);
+		}
+				
+		[[maybe_unused]] auto data_written = write(fd, buffer.data(), buffer.size()*sizeof(Type));
+		assert(data_written == long(buffer.size()*sizeof(Type)));
+
+		close(fd);
+				
+	}
+}
+		
+template <class FieldSet>
+void load(std::string const & dirname, FieldSet & phi){
+
+	using Type = typename FieldSet::element_type;
+			
+	assert(not phi.basis().part().parallel());
+
+	boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
+
+	DIR* dir = opendir(dirname.c_str());
+	if (!dir) {
+		std::cerr << "Error: cannot open restart directory '" << dirname << "/'." << std::endl;
+		exit(1);
+	}
+	closedir(dir);
+			
+	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+
+		auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
+				
+		auto fd = open(filename.c_str(), O_RDONLY);
+		if(fd == -1){
+			std::cerr << "Error: cannot open restart file '" << filename << "'." << std::endl;
+			exit(1);
+		}
+				
+		[[maybe_unused]] auto data_read = read(fd, buffer.data(), buffer.size()*sizeof(Type));
+		assert(data_read == long(buffer.size()*sizeof(Type)));
+
+		close(fd);
+
+		phi.matrix().rotated()[ist] = buffer;
+				
+	}
+}
+		
+}
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -139,6 +140,7 @@ namespace operations {
 
 TEST_CASE("function operations::io", "[operations::io]") {
 	
+	using namespace inq;
 	using namespace Catch::literals;
 	
 	const int npoint = 100;

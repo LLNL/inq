@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef IONS__INTERACTION
-#define IONS__INTERACTION
+#ifndef INQ__IONS__INTERACTION
+#define INQ__IONS__INTERACTION
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -30,140 +30,141 @@
 #include <complex>
 #include <hamiltonian/atomic_potential.hpp>
 
+namespace inq {
 namespace ions {
 
+template <class cell_type, class geometry_type>
+auto interaction_energy(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
+	double energy;
+	boost::multi::array<math::vec3d, 1> forces(geo.num_atoms());
+	boost::multi::array<double, 1> charges(geo.num_atoms());
 
-	template <class cell_type, class geometry_type>
-	auto interaction_energy(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
-		double energy;
-		boost::multi::array<math::vec3d, 1> forces(geo.num_atoms());
-		boost::multi::array<double, 1> charges(geo.num_atoms());
+	for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
 
-		for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
+	interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
 
-		interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+	return energy;
+}
 
-		return energy;
+template <class cell_type, class array_charge, class array_positions, class array_forces>
+void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
+												double & energy, array_forces & forces){
+
+	using math::vec3d;
+
+	const double alpha = 0.21;
+		
+	double ers = 0.0;
+	for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vec3d(0.0, 0.0, 0.0);
+
+	double rcut = 6.0/alpha;
+
+	for(int iatom = 0; iatom < natoms; iatom++){
+		double zi = charge[iatom];
+      
+		periodic_replicas rep(cell, positions[iatom], rcut);
+
+		for(unsigned irep = 0; irep < rep.size(); irep++){
+			vec3d xi = rep[irep];
+				
+			for(int jatom = 0; jatom < natoms; jatom++){
+				double zj = charge[jatom];
+					
+				vec3d rij = xi - positions[jatom];
+				double rr = sqrt(norm(rij));
+					
+				if(rr < 1.0e-5) continue;
+					
+				double eor = erfc(alpha*rr)/rr;
+					
+				ers += 0.5*zi*zj*eor;
+				forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*rr, 2))/(rr*rr));
+			}
+		}
+      
 	}
 
-	template <class cell_type, class array_charge, class array_positions, class array_forces>
-  void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, const math::erf_range_separation & sep,
-													double & energy, array_forces & forces){
+	double eself = 0.0;
 
-    using math::vec3d;
+	// self-interaction
+	double total_charge = 0.0;
+	for(int iatom = 0; iatom < natoms; iatom++){
+		double zi = charge[iatom];
 
-		const double alpha = 0.21;
-		
-    double ers = 0.0;
-    for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vec3d(0.0, 0.0, 0.0);
+		total_charge += zi;
+		eself -= alpha*zi*zi/sqrt(M_PI);
+	}
 
-    double rcut = 6.0/alpha;
+	// G = 0 energy
+	auto efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
 
-    for(int iatom = 0; iatom < natoms; iatom++){
-      double zi = charge[iatom];
+	double gcut = std::numeric_limits<double>::max();
+	for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.b(idir)));
+	gcut = sqrt(gcut);
       
-      periodic_replicas rep(cell, positions[iatom], rcut);
+	const int isph = ceil(9.5*alpha/gcut);
 
-      for(unsigned irep = 0; irep < rep.size(); irep++){
-				vec3d xi = rep[irep];
-				
-				for(int jatom = 0; jatom < natoms; jatom++){
-					double zj = charge[jatom];
-					
-					vec3d rij = xi - positions[jatom];
-					double rr = sqrt(norm(rij));
-					
-					if(rr < 1.0e-5) continue;
-					
-					double eor = erfc(alpha*rr)/rr;
-					
-					ers += 0.5*zi*zj*eor;
-					forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*rr, 2))/(rr*rr));
-				}
-      }
-      
-    }
-
-		double eself = 0.0;
-
-    // self-interaction
-    double total_charge = 0.0;
-    for(int iatom = 0; iatom < natoms; iatom++){
-      double zi = charge[iatom];
-
-      total_charge += zi;
-      eself -= alpha*zi*zi/sqrt(M_PI);
-    }
-
-    // G = 0 energy
-    auto efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
-
-    double gcut = std::numeric_limits<double>::max();
-    for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.b(idir)));
-    gcut = sqrt(gcut);
-      
-    const int isph = ceil(9.5*alpha/gcut);
-
-    std::vector<std::complex<double> > phase(natoms);
+	std::vector<std::complex<double> > phase(natoms);
     
-    for(int ix = -isph; ix <= isph; ix++){
-      for(int iy = -isph; iy <= isph; iy++){
-				for(int iz = -isph; iz <= isph; iz++){
+	for(int ix = -isph; ix <= isph; ix++){
+		for(int iy = -isph; iy <= isph; iy++){
+			for(int iz = -isph; iz <= isph; iz++){
 					
-					const int ss = ix*ix + iy*iy + iz*iz;
+				const int ss = ix*ix + iy*iy + iz*iz;
 					
-					if(ss == 0 || ss > isph*isph) continue;
+				if(ss == 0 || ss > isph*isph) continue;
 					
-					vec3d gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
-					double gg2 = norm(gg);
+				vec3d gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
+				double gg2 = norm(gg);
 					
-					double exparg = -0.25*gg2/(alpha*alpha);
+				double exparg = -0.25*gg2/(alpha*alpha);
 					
-					if(exparg < -36.0) continue;
+				if(exparg < -36.0) continue;
 					
-					double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
+				double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
 					
-					std::complex<double> sumatoms = 0.0;
-					for(int iatom = 0; iatom < natoms; iatom++){
-						double gx = (gg|positions[iatom]);
-						auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
-						phase[iatom] = aa;
-						sumatoms += aa;
-					}
-					
-					efs += factor*std::real(sumatoms*std::conj(sumatoms));
-					
-					for(int iatom = 0; iatom < natoms; iatom++){
-						for(int idir = 0; idir < 3; idir++){
-							std::complex<double> tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
-							forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
-						}
-					}
-					
+				std::complex<double> sumatoms = 0.0;
+				for(int iatom = 0; iatom < natoms; iatom++){
+					double gx = (gg|positions[iatom]);
+					auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
+					phase[iatom] = aa;
+					sumatoms += aa;
 				}
-      }
-    }
-
-    //forces are not properly validated right now
-    for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vec3d(0.0, 0.0, 0.0);
-
-		// Previously unaccounted G = 0 term from pseudopotentials. 
-		// See J. Ihm, A. Zunger, M.L. Cohen, J. Phys. C 12, 4409 (1979)
-		double epseudo = 0.0;
-		for(int iatom = 0; iatom < natoms; iatom++){
-			epseudo += M_PI*charge[iatom]*pow(sep.sigma()*sqrt(2.0), 2)/cell.volume()*total_charge;
+					
+				efs += factor*std::real(sumatoms*std::conj(sumatoms));
+					
+				for(int iatom = 0; iatom < natoms; iatom++){
+					for(int idir = 0; idir < 3; idir++){
+						std::complex<double> tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
+						forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
+					}
+				}
+					
+			}
 		}
+	}
 
-		/*
+	//forces are not properly validated right now
+	for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vec3d(0.0, 0.0, 0.0);
+
+	// Previously unaccounted G = 0 term from pseudopotentials. 
+	// See J. Ihm, A. Zunger, M.L. Cohen, J. Phys. C 12, 4409 (1979)
+	double epseudo = 0.0;
+	for(int iatom = 0; iatom < natoms; iatom++){
+		epseudo += M_PI*charge[iatom]*pow(sep.sigma()*sqrt(2.0), 2)/cell.volume()*total_charge;
+	}
+
+	/*
 		std::cout << "ers     = " << ers << std::endl;
 		std::cout << "eself   = " << eself << std::endl;
 		std::cout << "efs     = " << efs << std::endl;
 		std::cout << "epseudo = " << epseudo << std::endl;
-		*/
+	*/
 		
-		energy = ers + eself + efs + epseudo;
+	energy = ers + eself + efs + epseudo;
 
-	}
+}
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -175,9 +176,10 @@ namespace ions {
 
 TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
-	const math::erf_range_separation sep(0.625);
+	const pseudo::math::erf_range_separation sep(0.625);
  
   SECTION("Aluminum cubic cell"){
   

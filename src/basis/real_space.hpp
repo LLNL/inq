@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS_REAL_SPACE
-#define BASIS_REAL_SPACE
+#ifndef INQ__BASIS__REAL_SPACE
+#define INQ__BASIS__REAL_SPACE
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,6 +29,7 @@
 #include <input/basis.hpp>
 #include <gpu/run.hpp>
 
+namespace inq {
 namespace basis {
 
   class real_space : public grid {
@@ -42,7 +43,7 @@ namespace basis {
 		real_space(const grid & grid_basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			grid(grid_basis){
 			
-			cubic_dist_ = {utils::partition(nr_[0], comm), utils::partition(nr_[1]), utils::partition(nr_[2])};
+			cubic_dist_ = {inq::utils::partition(nr_[0], comm), inq::utils::partition(nr_[1]), inq::utils::partition(nr_[2])};
 
 			base::part_ = cubic_dist_[0];
 			base::part_ *= nr_[1]*long(nr_[2]);
@@ -108,6 +109,8 @@ namespace basis {
 		}
 		
   };
+
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -116,7 +119,8 @@ namespace basis {
 
 TEST_CASE("class basis::real_space", "[basis::real_space]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
 
   {

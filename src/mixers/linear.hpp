@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef MIXERS__LINEAR
-#define MIXERS__LINEAR
+#ifndef INQ__MIXERS__LINEAR
+#define INQ__MIXERS__LINEAR
 
 /*
  Copyright (C) 2019-2020 Xavier Andrade
@@ -26,34 +26,35 @@
 #include <math/array.hpp>
 #include <mixers/base.hpp>
 
+namespace inq {
 namespace mixers {
 
-	template <class Type>
-  class linear : public base<Type> {
+template <class Type>
+class linear : public base<Type> {
 
-  public:
+public:
 
-    linear(double arg_mix_factor):
-      mix_factor_(arg_mix_factor){
-    }
+	linear(double arg_mix_factor):
+		mix_factor_(arg_mix_factor){
+	}
 
-    void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value){
-			//note: arguments might alias here			
+	void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value){
+		//note: arguments might alias here			
 
-      //DATAOPERATIONS LOOP 1D
-      for(unsigned ii = 0; ii < input_value.size(); ii++){
-        input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
-      }
-    }
+		//DATAOPERATIONS LOOP 1D
+		for(unsigned ii = 0; ii < input_value.size(); ii++){
+			input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
+		}
+	}
 
-  private:
+private:
 		
-    double mix_factor_;
+	double mix_factor_;
 		
-	};
+};
 
 }
-
+}
 
 #ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
@@ -62,6 +63,7 @@ namespace mixers {
 
 TEST_CASE("mixers::linear", "[mixers::linear]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
   mixers::linear<double> lm(0.5);

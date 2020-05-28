@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef SYSTEMS__IONS
-#define SYSTEMS__IONS
+#ifndef INQ__SYSTEMS__IONS
+#define INQ__SYSTEMS__IONS
 
 #include <cfloat>
 
@@ -9,37 +9,38 @@
 #include <ions/unitcell.hpp>
 #include <input/cell.hpp>
 
+namespace inq {
 namespace systems {
 
-  class ions {
+class ions {
 
-  public:
+public:
 
-    ions(const input::cell & arg_cell_input, const ::ions::geometry & geo_arg = ::ions::geometry()):
-      cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
-      geo_(geo_arg){
+	ions(const input::cell & arg_cell_input, const inq::ions::geometry & geo_arg = inq::ions::geometry()):
+		cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
+		geo_(geo_arg){
       
-      geo_.info(std::cout);
-      cell_.info(std::cout);
+		geo_.info(std::cout);
+		cell_.info(std::cout);
 
-    }
+	}
 
-    auto & geo() const {
-      return geo_;
-    }
+	auto & geo() const {
+		return geo_;
+	}
 
-    auto & cell() const {
-      return cell_;
-    }
+	auto & cell() const {
+		return cell_;
+	}
     
-  private:
+private:
     
-    ::ions::UnitCell cell_;
-    ::ions::geometry geo_;
+	inq::ions::UnitCell cell_;
+	inq::ions::geometry geo_;
 
-  };  
+};
   
 }
-
+}
 #endif
 

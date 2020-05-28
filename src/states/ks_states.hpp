@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef KS_STATES
-#define KS_STATES
+#ifndef INQ__STATES__KS_STATES
+#define INQ__STATES__KS_STATES
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -25,86 +25,89 @@
 #include <math/array.hpp>
 #include <basis/real_space.hpp>
 
+namespace inq {
 namespace states {
-  class ks_states {
 
-  public:
+class ks_states {
 
-    typedef complex coeff_type;
+public:
+
+	typedef complex coeff_type;
     
-    enum class spin_config {
-      UNPOLARIZED,
-      POLARIZED,
-      NON_COLLINEAR
-    };
+	enum class spin_config {
+													UNPOLARIZED,
+													POLARIZED,
+													NON_COLLINEAR
+	};
         
-    ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0){
+	ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0){
 
-      if(spin == spin_config::NON_COLLINEAR){
-				nstates_ = ceil(nelectrons);
-      } else {
-				nstates_ = ceil(0.5*nelectrons);
-      }
+		if(spin == spin_config::NON_COLLINEAR){
+			nstates_ = ceil(nelectrons);
+		} else {
+			nstates_ = ceil(0.5*nelectrons);
+		}
 
-			nstates_ += extra_states;
+		nstates_ += extra_states;
 			
-      nquantumnumbers_ = 1;
-      if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
+		nquantumnumbers_ = 1;
+		if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
 
-			occs_.reextent({nstates_});
+		occs_.reextent({nstates_});
 
-			auto rem_electrons = nelectrons;
-			for(int ist = 0; ist < nstates_; ist++){
-				occs_[ist] = std::min(2.0, rem_electrons);
-				rem_electrons -= occs_[ist];
-			}
+		auto rem_electrons = nelectrons;
+		for(int ist = 0; ist < nstates_; ist++){
+			occs_[ist] = std::min(2.0, rem_electrons);
+			rem_electrons -= occs_[ist];
+		}
 
-			total_charge_ = nelectrons;
+		total_charge_ = nelectrons;
 			
-    }
+	}
 
-    int num_states() const {
-      return nstates_;
-    }
+	int num_states() const {
+		return nstates_;
+	}
 
-    int num_quantum_numbers() const {
-      return nquantumnumbers_;
-    }
+	int num_quantum_numbers() const {
+		return nquantumnumbers_;
+	}
 
-    template <class array_type>
-    std::array<long int, 4> cubic_dims(const array_type & basis_dims) const {
-      return {basis_dims[0], basis_dims[1], basis_dims[2], nstates_};
-    }
+	template <class array_type>
+	std::array<long int, 4> cubic_dims(const array_type & basis_dims) const {
+		return {basis_dims[0], basis_dims[1], basis_dims[2], nstates_};
+	}
 
-    template <class array_type>
-    std::array<long int, 2> linear_dims(const array_type & basis_dims) const {
-      return {basis_dims[0]*basis_dims[1]*basis_dims[2], nstates_};
-    }
+	template <class array_type>
+	std::array<long int, 2> linear_dims(const array_type & basis_dims) const {
+		return {basis_dims[0]*basis_dims[1]*basis_dims[2], nstates_};
+	}
     
-    template <class output_stream>
-    void info(output_stream & out) const {
-      out << "KOHN-SHAM STATES:" << std::endl;
-      out << "  Number of states = " << num_states() << std::endl;
-      out << std::endl;
-    }
+	template <class output_stream>
+	void info(output_stream & out) const {
+		out << "KOHN-SHAM STATES:" << std::endl;
+		out << "  Number of states = " << num_states() << std::endl;
+		out << std::endl;
+	}
 
-		auto & occupations() const {
-			return occs_;
-		}
+	auto & occupations() const {
+		return occs_;
+	}
 
-		auto total_charge() const {
-			return total_charge_;
-		}
+	auto total_charge() const {
+		return total_charge_;
+	}
 		
-  private:
+private:
 
-		double total_charge_;
-    int nstates_;
-    int nquantumnumbers_;
-		math::array<double, 1> occs_;
+	double total_charge_;
+	int nstates_;
+	int nquantumnumbers_;
+	math::array<double, 1> occs_;
 
-  };
+};
 
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -114,6 +117,7 @@ namespace states {
 
 TEST_CASE("Class states::ks_states", "[ks_states]"){
 
+	using namespace inq;
   using math::vec3d;
   
   double ecut = 30.0;
