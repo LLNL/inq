@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OBSERVABLES__DIPOLE
-#define OBSERVABLES__DIPOLE
+#ifndef INQ__OBSERVABLES__DIPOLE
+#define INQ__OBSERVABLES__DIPOLE
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
@@ -29,30 +29,33 @@
 #include <basis/real_space.hpp>
 #include <basis/field.hpp>
 
+namespace inq {
 namespace observables {
 
-	math::vec3d dipole(basis::field<basis::real_space, double> & density){
-
-		math::vec3d dip = {0.0, 0.0, 0.0};
-		
-		//DATAOPERATIONS LOOP 3D
-		for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
-					
-					auto ixg = density.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = density.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = density.basis().cubic_dist(2).local_to_global(iz);
-					
-					dip += density.cubic()[ix][iy][iz]*density.basis().rvector(ixg, iyg, izg);
-					
-				}
+math::vec3d dipole(basis::field<basis::real_space, double> & density){
+	
+	math::vec3d dip = {0.0, 0.0, 0.0};
+	
+	//DATAOPERATIONS LOOP 3D
+	for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
+		for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
+			for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
+				
+				auto ixg = density.basis().cubic_dist(0).local_to_global(ix);
+				auto iyg = density.basis().cubic_dist(1).local_to_global(iy);
+				auto izg = density.basis().cubic_dist(2).local_to_global(iz);
+				
+				dip += density.cubic()[ix][iy][iz]*density.basis().rvector(ixg, iyg, izg);
+				
 			}
 		}
-
-		return dip*density.basis().volume_element();
-		
 	}
+	
+	return dip*density.basis().volume_element();
+	
+}
+
+}
 }
 
 ///////////////////////////////////////////////////////////////////////////
