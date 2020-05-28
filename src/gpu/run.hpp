@@ -223,7 +223,7 @@ using namespace inq;
 
 #ifndef HAVE_CUDA
 template <class Type>
-void atomicAdd(Type * address, Type val){
+GPU_FUNCTION void atomicAdd(Type * address, Type val){
 	*address += val;
 }
 
