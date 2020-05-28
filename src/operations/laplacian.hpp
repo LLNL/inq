@@ -111,6 +111,7 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 
 TEST_CASE("function operations::laplacian", "[operations::laplacian]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 }

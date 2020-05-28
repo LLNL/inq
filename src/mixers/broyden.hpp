@@ -173,6 +173,7 @@ private:
 
 TEST_CASE("mixers::broyden", "[mixers::broyden]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
  
   mixers::broyden<double> lm(5, 0.5, 2);

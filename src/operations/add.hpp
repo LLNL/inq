@@ -91,6 +91,7 @@ field_type add(const field_type & t1, const field_type & t2, const field_type & 
 
 TEST_CASE("function operations::add", "[operations::add]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 	const int N = 100;

@@ -98,7 +98,8 @@ private:
 
 TEST_CASE("class input::cell", "[input::cell]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
 	SECTION("Cubic"){
 

@@ -68,6 +68,7 @@ private:
 
 TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
   const int npoint = 100;

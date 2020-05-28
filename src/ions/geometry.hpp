@@ -128,7 +128,8 @@ private:
 
 TEST_CASE("Class ions::geometry", "[geometry]") {
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
   SECTION("Create empty and add an atom"){
     ions::geometry geo;

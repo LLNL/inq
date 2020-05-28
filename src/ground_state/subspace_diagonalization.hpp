@@ -57,6 +57,7 @@ void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 
 TEST_CASE("function operations::subspace_diagonalization", "[subspace_diagonalization]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	
 }

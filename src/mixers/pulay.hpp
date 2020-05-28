@@ -213,6 +213,7 @@ private:
 
 TEST_CASE("mixers::pulay", "[mixers::pulay]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
  
   mixers::pulay<double> lm(5, 0.5, 2);

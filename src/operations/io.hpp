@@ -140,6 +140,7 @@ void load(std::string const & dirname, FieldSet & phi){
 
 TEST_CASE("function operations::io", "[operations::io]") {
 	
+	using namespace inq;
 	using namespace Catch::literals;
 	
 	const int npoint = 100;

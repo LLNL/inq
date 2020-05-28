@@ -283,6 +283,7 @@ namespace operations {
 
 TEST_CASE("function operations::space", "[operations::space]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 

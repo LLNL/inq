@@ -138,6 +138,7 @@ private:
 
 TEST_CASE("function operations::precondition", "[precondition]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 }

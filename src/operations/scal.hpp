@@ -56,6 +56,7 @@ void scal_invsqrt(const array_1d & factor, field_set_type & phi){
 
 TEST_CASE("function operations::scal", "[scal]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 }
 

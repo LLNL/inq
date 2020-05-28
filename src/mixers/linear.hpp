@@ -63,6 +63,7 @@ private:
 
 TEST_CASE("mixers::linear", "[mixers::linear]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
   mixers::linear<double> lm(0.5);

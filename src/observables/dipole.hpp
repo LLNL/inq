@@ -69,6 +69,7 @@ math::vec3d dipole(basis::field<basis::real_space, double> & density){
 
 TEST_CASE("observables::dipole", "[observables::dipole]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 	

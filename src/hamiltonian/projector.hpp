@@ -124,7 +124,8 @@ namespace hamiltonian {
 
 TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
 	
 	pseudo::math::erf_range_separation const sep(0.625);

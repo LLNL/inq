@@ -85,6 +85,7 @@ auto calculate(const occupations_array_type & occupations, field_set_type & phi,
 
 TEST_CASE("function density::calculate", "[density::calculate]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 	const int npoint = 100;

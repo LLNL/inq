@@ -128,7 +128,8 @@ protected:
 
 TEST_CASE("class utils::partition", "[utils::partition]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
 
   const int NN = 1033;

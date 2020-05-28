@@ -152,6 +152,7 @@ auto overlap_single(field_type & phi){
 
 TEST_CASE("function operations::overlap", "[operations::overlap]") {
 	
+	using namespace inq;
 	using namespace Catch::literals;
 
 	const int npoint = 100;

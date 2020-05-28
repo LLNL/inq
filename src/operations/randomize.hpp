@@ -91,6 +91,7 @@ namespace operations {
 
 TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
   using math::vec3d;
 

@@ -176,7 +176,8 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 
 TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
 	const pseudo::math::erf_range_separation sep(0.625);
  

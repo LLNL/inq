@@ -186,7 +186,8 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 	SECTION("Real diagonal 2x2"){
 	
-		using namespace Catch::literals;
+		using namespace inq;
+	using namespace Catch::literals;
 		
 		math::array<double, 2> matrix({2, 2});
 		
@@ -209,7 +210,8 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	
 	SECTION("Complex diagonal 2x2"){
 	
-		using namespace Catch::literals;
+		using namespace inq;
+	using namespace Catch::literals;
 		
 		math::array<complex, 2> matrix({2, 2});
 		
@@ -239,7 +241,8 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	
 	SECTION("Real dense 3x3"){
 	
-		using namespace Catch::literals;
+		using namespace inq;
+	using namespace Catch::literals;
 		
 		math::array<double, 2> matrix({3, 3});
 		
@@ -262,7 +265,8 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 	SECTION("Complex dense 3x3"){
 	
-		using namespace Catch::literals;
+		using namespace inq;
+	using namespace Catch::literals;
 		
 		math::array<complex, 2> matrix({3, 3});
 		

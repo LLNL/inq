@@ -149,7 +149,8 @@ namespace hamiltonian {
 
 TEST_CASE("Class hamiltonian::self_consistency", "[self_consistency]"){
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 	
 }
 

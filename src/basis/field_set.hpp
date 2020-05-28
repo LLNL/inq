@@ -183,7 +183,8 @@ namespace basis {
 
 TEST_CASE("Class basis::field_set", "[basis::field_set]"){
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
   
   double ecut = 40.0;

@@ -181,7 +181,8 @@ namespace basis {
 
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 	
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
 
   double ll = 10.0;

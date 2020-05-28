@@ -92,7 +92,8 @@ namespace hamiltonian {
 
 TEST_CASE("Class hamiltonian::exchange", "[hamiltonian::exchange]"){
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
   /*
   double ecut = 20.0;

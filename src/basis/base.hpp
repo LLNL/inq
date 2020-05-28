@@ -64,7 +64,8 @@ public:
 
 TEST_CASE("class basis::base", "[basis::base]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
   
 }

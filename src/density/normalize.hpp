@@ -46,6 +46,7 @@ void normalize(FieldType & density, const double & total_charge){
 
 TEST_CASE("function density::normalize", "[density::normalize]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 	const int npoint = 100;

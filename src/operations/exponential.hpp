@@ -83,6 +83,7 @@ namespace operations {
 
 TEST_CASE("operations::exponential", "[operations::exponential]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	
   const int npoint = 100;

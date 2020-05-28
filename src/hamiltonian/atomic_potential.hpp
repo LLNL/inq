@@ -261,7 +261,8 @@ namespace hamiltonian {
 
 TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential]") {
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 	using pseudo::element;
   using input::species;
 

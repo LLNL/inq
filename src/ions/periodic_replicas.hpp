@@ -83,7 +83,8 @@ private:
 
 TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
   
   {

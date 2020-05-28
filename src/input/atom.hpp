@@ -73,7 +73,8 @@ auto operator|(const std::string & arg_symbol, const math::vec3d & arg_position)
 
 TEST_CASE("class ions::atom", "[input::atom]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
 	SECTION("Constructor"){
 		input::atom at(pseudo::element("H"), math::vec3d(1.0, 2.0, 3.0));

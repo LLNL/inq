@@ -154,7 +154,8 @@ private:
 
 TEST_CASE("class input::species", "[input::species]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
 	SECTION("Constructor"){
 		

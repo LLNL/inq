@@ -95,6 +95,7 @@ auto g_analytic2 (math::vec3d kk , math::vec3d rr) {
 
 TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using namespace operations;
 	using math::vec3d;

@@ -144,7 +144,8 @@ namespace input {
 
 TEST_CASE("class input::interaction", "[input::interaction]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
 	SECTION("Defaults"){
 

@@ -103,6 +103,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 
 TEST_CASE("eigensolvers::steepest_descent", "[eigensolvers::steepest_descent]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	
   const int npoint = 100;

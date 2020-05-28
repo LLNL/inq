@@ -101,7 +101,8 @@ namespace input {
 
 TEST_CASE("class input::basis", "[basis]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
 	SECTION("Spacing"){
 

@@ -61,6 +61,7 @@ void shift(typename field_set_type::element_type const & factor, const field_set
 
 TEST_CASE("function operations::shift", "[operations::shift]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	const int npoint = 185193;
 	const int nvec = 7;

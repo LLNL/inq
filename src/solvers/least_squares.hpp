@@ -70,7 +70,8 @@ TEST_CASE("function solvers::least_squares", "[solvers::least_squares]") {
 
 	SECTION("Diagonal real 2x2"){
 	
-		using namespace Catch::literals;
+		using namespace inq;
+	using namespace Catch::literals;
 		
 		math::array<double, 2> matrix({2, 2});
 		
@@ -90,7 +91,8 @@ TEST_CASE("function solvers::least_squares", "[solvers::least_squares]") {
 
 	SECTION("Symmetric real 2x2 -- 1"){
 	
-		using namespace Catch::literals;
+		using namespace inq;
+	using namespace Catch::literals;
 		
 		math::array<double, 2> matrix({2, 2});
 		
@@ -110,7 +112,8 @@ TEST_CASE("function solvers::least_squares", "[solvers::least_squares]") {
 	
 	SECTION("Symmetric real 2x2 -- 2"){
 	
-		using namespace Catch::literals;
+		using namespace inq;
+	using namespace Catch::literals;
 		
 		math::array<double, 2> matrix({2, 2});
 		

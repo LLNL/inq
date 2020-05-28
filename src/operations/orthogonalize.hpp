@@ -147,6 +147,7 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 
 TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 

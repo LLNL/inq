@@ -88,7 +88,8 @@ namespace hamiltonian {
 
 TEST_CASE("Class hamiltonian::energy", "[energy]"){
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 	
 }
 

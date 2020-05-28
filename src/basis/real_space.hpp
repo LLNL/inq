@@ -119,7 +119,8 @@ namespace basis {
 
 TEST_CASE("class basis::real_space", "[basis::real_space]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
 
   {

@@ -177,6 +177,7 @@ namespace basis {
 
 TEST_CASE("Class basis::field", "[basis::field]"){
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 

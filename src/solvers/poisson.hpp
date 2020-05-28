@@ -138,6 +138,7 @@ private:
 
 TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	namespace multi = boost::multi;
 	using namespace basis;

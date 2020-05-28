@@ -325,6 +325,7 @@ size_t check_run(size_t size1, size_t size2, size_t size3, size_t size4){
 
 TEST_CASE("function gpu::run", "[gpu::run]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	
 	SECTION("1D"){

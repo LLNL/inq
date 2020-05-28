@@ -62,6 +62,7 @@ auto sum_product(const field_type & phi1, const field_type & phi2){
 
 TEST_CASE("function operations::sum", "[operations::sum]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	
 	const int N = 1111;

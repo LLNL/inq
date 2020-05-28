@@ -71,6 +71,7 @@ auto integral_absdiff(const field_type & phi1, const field_type & phi2){
 
 TEST_CASE("function operations::integral", "[operations::integral]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	
 	const int N = 1000;

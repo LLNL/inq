@@ -69,6 +69,7 @@ namespace perturbations {
 
 TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 	

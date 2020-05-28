@@ -82,6 +82,7 @@ namespace math {
 
 TEST_CASE("function math::vector3", "[math::vector3]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 	SECTION("Initializer list"){

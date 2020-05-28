@@ -216,6 +216,7 @@ namespace transfer_unit_test {
 TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", double, complex) {
 
 	using namespace transfer_unit_test;
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 	

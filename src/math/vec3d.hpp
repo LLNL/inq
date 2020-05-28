@@ -176,6 +176,7 @@ using namespace inq;
 
 TEST_CASE("function math::vec3d", "[math::vec3d]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 	using math::vec3d;
