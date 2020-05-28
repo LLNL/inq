@@ -1,3 +1,5 @@
+/* -*- indent-tabs-mode: t -*- */
+
 /*
  Copyright (C) 2019 Xavier Andrade
 
@@ -16,17 +18,21 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef PATH_HPP
-#define PATH_HPP
+#ifndef INQ__CONFIG__PATH
+#define INQ__CONFIG__PATH
 
 #include <config.h>
 #include <string>
 
+namespace inq {
 namespace config {
-  struct path {
-    static std::string share(){ return SHARE_DIR + std::string("/") ; }
-    static std::string unit_tests_data(){ return share() + std::string("unit_tests_data/"); }
-  };
+
+struct path {
+  static std::string share(){ return SHARE_DIR + std::string("/") ; }
+  static std::string unit_tests_data(){ return share() + std::string("unit_tests_data/"); }
+};
+
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -34,7 +40,7 @@ namespace config {
 
 TEST_CASE("class config::path", "[path]") {
   SECTION("Share path"){
-    CHECK(config::path::share() == SHARE_DIR + std::string("/"));
+    CHECK(inq::config::path::share() == SHARE_DIR + std::string("/"));
   }
 }
 
