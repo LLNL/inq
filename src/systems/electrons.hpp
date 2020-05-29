@@ -64,8 +64,8 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-		friend ground_state::result ground_state::calculate(const inq::systems::ions & ions, inq::systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
-		friend real_time::result real_time::propagate(inq::systems::ions & ions, inq::systems::electrons & electrons, const input::interaction & inter, const input::rt & options);
+		friend ground_state::result ground_state::calculate(const inq::systems::ions &, inq::systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
+		friend real_time::result real_time::propagate(inq::systems::ions &, inq::systems::electrons & electrons, const input::interaction & inter, const input::rt & options);
 		
 	private:
 		
