@@ -32,11 +32,11 @@ namespace systems {
 }
 
 namespace ground_state {
-	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
+	ground_state::result calculate(const inq::systems::ions & ions, inq::systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
 }
 
 namespace real_time {
-	real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::rt & options = {});
+	real_time::result propagate(inq::systems::ions & ions, inq::systems::electrons & electrons, const input::interaction & inter = {}, const input::rt & options = {});
 }
 
 namespace systems {
@@ -47,7 +47,7 @@ namespace systems {
 	
 		enum class error { NO_ELECTRONS };
 		
-		electrons(const systems::ions & ions, const input::basis arg_basis_input, const input::config & conf):
+		electrons(const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf):
 			states_basis_(ions.cell(), arg_basis_input),
 			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
 			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
@@ -64,8 +64,8 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-		friend 	ground_state::result ground_state::calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
-		friend real_time::result real_time::propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options);
+		friend ground_state::result ground_state::calculate(const inq::systems::ions & ions, inq::systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
+		friend real_time::result real_time::propagate(inq::systems::ions & ions, inq::systems::electrons & electrons, const input::interaction & inter, const input::rt & options);
 		
 	private:
 		
