@@ -55,7 +55,7 @@ namespace real_time {
 		auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 
-		energy.ion = ::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 		energy.print(std::cout);
 		

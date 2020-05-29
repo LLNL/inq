@@ -26,51 +26,53 @@
 #include <nonstd/optional.hpp>
 #include <cassert>
 
+namespace inq {
 namespace input {
 
-  class rt {
+class rt {
 
-  public:
+public:
 
-    rt(){
-		}
+	rt(){
+	}
 
-    static auto dt(double dt) {
-      rt solver;
-      solver.dt_ = dt;
-      return solver;
-    }
+	static auto dt(double dt) {
+		rt solver;
+		solver.dt_ = dt;
+		return solver;
+	}
 
-    auto dt() const {
-      return dt_.value_or(0.01);
-    }
+	auto dt() const {
+		return dt_.value_or(0.01);
+	}
 
-		auto static num_steps(double etol) {
-			rt solver;
-      solver.num_steps_ = etol;
-      return solver;
-    }
+	auto static num_steps(double etol) {
+		rt solver;
+		solver.num_steps_ = etol;
+		return solver;
+	}
 				
- 		auto num_steps() const {
-			return num_steps_.value_or(100);
-		}
+	auto num_steps() const {
+		return num_steps_.value_or(100);
+	}
         
-    friend auto operator|(const rt & solver1, const rt & solver2){
-			using utils::merge_optional;
+	friend auto operator|(const rt & solver1, const rt & solver2){
+		using utils::merge_optional;
 
-			rt rsolver;
-			rsolver.dt_	= merge_optional(solver1.dt_, solver2.dt_);
-			rsolver.num_steps_	= merge_optional(solver1.num_steps_, solver2.num_steps_);
-			return rsolver;
-		}
+		rt rsolver;
+		rsolver.dt_	= merge_optional(solver1.dt_, solver2.dt_);
+		rsolver.num_steps_	= merge_optional(solver1.num_steps_, solver2.num_steps_);
+		return rsolver;
+	}
     
-  private:
+private:
 
-    nonstd::optional<double> dt_;
-		nonstd::optional<int> num_steps_;
+	nonstd::optional<double> dt_;
+	nonstd::optional<int> num_steps_;
 		
-  };
+};
     
+}
 }
 
 ////////////////////////////////////////////////////////
@@ -79,7 +81,8 @@ namespace input {
 #include <catch2/catch.hpp>
 
 TEST_CASE("class input::rt", "[input::rt]") {
-  
+
+  using namespace inq;
   using namespace Catch::literals;
 
 	SECTION("Defaults"){
