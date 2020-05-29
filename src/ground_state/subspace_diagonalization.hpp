@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__SUBSPACE_DIAGONALIZATION
-#define OPERATIONS__SUBSPACE_DIAGONALIZATION
+#ifndef INQ__OPERATIONS__SUBSPACE_DIAGONALIZATION
+#define INQ__OPERATIONS__SUBSPACE_DIAGONALIZATION
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,23 +29,25 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
-namespace operations {
+namespace inq {
+namespace ground_state {
 
-	template <class hamiltonian_type, class field_set_type>
-  void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
+template <class hamiltonian_type, class field_set_type>
+void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
+	
+	auto subspace_hamiltonian = operations::overlap(phi, ham(phi));
+	auto eigenvalues = operations::diagonalize(subspace_hamiltonian);
+	
+	//OPTIMIZATION: here we don't need to make a full copy. We can
+	//divide into blocks over point index (second dimension of phi).
+	using boost::multi::blas::gemm;
+	using boost::multi::blas::transposed;
+	
+	phi.matrix() = gemm(phi.matrix(), transposed(subspace_hamiltonian));
+	
+}
 
-		auto subspace_hamiltonian = overlap(phi, ham(phi));
-		auto eigenvalues = diagonalize(subspace_hamiltonian);
-		
-		//OPTIMIZATION: here we don't need to make a full copy. We can
-		//divide into blocks over point index (second dimension of phi).
-		using boost::multi::blas::gemm;
-		using boost::multi::blas::transposed;
-
-		phi.matrix() = gemm(phi.matrix(), transposed(subspace_hamiltonian));
-		
-  }
-
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -55,6 +57,7 @@ namespace operations {
 
 TEST_CASE("function operations::subspace_diagonalization", "[subspace_diagonalization]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	
 }

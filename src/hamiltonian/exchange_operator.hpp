@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef HAMILTONIAN_EXCHANGE_OPERATOR
-#define HAMILTONIAN_EXCHANGE_OPERATOR
+#ifndef INQ__HAMILTONIAN__EXCHANGE_OPERATOR
+#define INQ__HAMILTONIAN__EXCHANGE_OPERATOR
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -24,6 +24,7 @@
 #include <basis/field_set.hpp>
 #include <basis/real_space.hpp>
 
+namespace inq {
 namespace hamiltonian {
   class exchange_operator {
 		
@@ -81,6 +82,7 @@ namespace hamiltonian {
   };
 
 }
+}
 
 #ifdef INQ_UNIT_TEST
 
@@ -90,7 +92,8 @@ namespace hamiltonian {
 
 TEST_CASE("Class hamiltonian::exchange", "[hamiltonian::exchange]"){
 
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
   /*
   double ecut = 20.0;

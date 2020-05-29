@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__SCF
-#define INPUT__SCF
+#ifndef INQ__INPUT__SCF
+#define INQ__INPUT__SCF
 
 /*
  Copyright (C) 2020 Xavier Andrade
@@ -26,6 +26,7 @@
 #include <nonstd/optional.hpp>
 #include <cassert>
 
+namespace inq {
 namespace input {
 
   class scf {
@@ -128,7 +129,7 @@ namespace input {
 		}
 		
     friend auto operator|(const scf & solver1, const scf & solver2){
-			using utils::merge_optional;
+			using inq::utils::merge_optional;
 
 			scf rsolver;
 			rsolver.eigensolver_	= merge_optional(solver1.eigensolver_, solver2.eigensolver_);
@@ -150,6 +151,7 @@ namespace input {
   };
     
 }
+}
 
 ////////////////////////////////////////////////////////
 
@@ -158,7 +160,8 @@ namespace input {
 
 TEST_CASE("class input::scf", "[input::scf]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
 	SECTION("Defaults"){
 

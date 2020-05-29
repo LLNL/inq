@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef SPHERICAL_GRID_HPP
-#define SPHERICAL_GRID_HPP
+#ifndef INQ__BASIS__SPHERICAL_GRID
+#define INQ__BASIS__SPHERICAL_GRID
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,6 +29,7 @@
 #include <array>
 #include <math/array.hpp>
 
+namespace inq {
 namespace basis {
 
   class spherical_grid {
@@ -168,6 +169,8 @@ namespace basis {
 		double volume_element_;
 		
   };
+
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -178,7 +181,8 @@ namespace basis {
 
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 	
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
 
   double ll = 10.0;

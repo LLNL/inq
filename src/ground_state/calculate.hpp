@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef GROUND_STATE__CALCULATE
-#define GROUND_STATE__CALCULATE
+#ifndef INQ__GROUND_STATE__CALCULATE
+#define INQ__GROUND_STATE__CALCULATE
 
 #include <cfloat>
 
@@ -37,6 +37,7 @@
 #include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
+namespace inq {
 namespace ground_state {
 	
 	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
@@ -75,7 +76,7 @@ namespace ground_state {
 		
 		ham.scalar_potential = sc.ks_potential(density, res.energy);
 		
-		res.energy.ion = ::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+		res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 		//DATAOPERATIONS STL FILL
 		std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
@@ -85,7 +86,7 @@ namespace ground_state {
 		int conv_count = 0;
 		for(int iiter = 0; iiter < 1000; iiter++){
 			
-			operations::subspace_diagonalization(ham, electrons.phi_);
+			subspace_diagonalization(ham, electrons.phi_);
 			
 			{
 				auto fphi = operations::space::to_fourier(std::move(electrons.phi_));
@@ -93,11 +94,11 @@ namespace ground_state {
 				switch(solver.eigensolver()){
 					
 				case input::scf::scf_eigensolver::STEEPEST_DESCENT:
-					solvers::steepest_descent(ham, prec, fphi);
+					eigensolvers::steepest_descent(ham, prec, fphi);
 					break;
 					
 				case input::scf::scf_eigensolver::CONJUGATE_GRADIENT:
-					eigensolver::conjugate_gradient(ham, prec, fphi);
+					eigensolvers::conjugate_gradient(ham, prec, fphi);
 					break;
 					
 				default:
@@ -186,6 +187,7 @@ namespace ground_state {
 		
 		return res;			
 	}
+}
 }
 
 #endif

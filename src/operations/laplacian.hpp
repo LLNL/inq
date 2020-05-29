@@ -32,24 +32,25 @@
 
 #include <cassert>
 
+namespace inq {
 namespace operations {
 	
-	void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex> const & laplff){
+void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex> const & laplff){
 		
-		//DATAOPERATIONS LOOP + GPU::RUN 4D
+	//DATAOPERATIONS LOOP + GPU::RUN 4D
 #ifdef HAVE_CUDA
-
-		gpu::run(laplff.set_size(), laplff.basis().sizes()[2], laplff.basis().sizes()[1], laplff.basis().sizes()[0],
-							 [basis = laplff.basis(),
-								laplffcub = begin(laplff.cubic()),
-								ffcub = begin(ff.cubic())]
-							 __device__ (auto ist, auto iz, auto iy, auto ix){
-								 
-								 double lapl = -0.5*(-basis.g2(ix, iy, iz));
-								 laplffcub[ix][iy][iz][ist] += lapl*ffcub[ix][iy][iz][ist];
-
-							 });
-
+	
+	gpu::run(laplff.set_size(), laplff.basis().sizes()[2], laplff.basis().sizes()[1], laplff.basis().sizes()[0],
+					 [basis = laplff.basis(),
+						laplffcub = begin(laplff.cubic()),
+						ffcub = begin(ff.cubic())]
+					 __device__ (auto ist, auto iz, auto iy, auto ix){
+						 
+						 double lapl = -0.5*(-basis.g2(ix, iy, iz));
+						 laplffcub[ix][iy][iz][ist] += lapl*ffcub[ix][iy][iz][ist];
+						 
+					 });
+	
 #else
 			
 			for(int ix = 0; ix < laplff.basis().sizes()[0]; ix++){
@@ -98,6 +99,7 @@ namespace operations {
 	}
 	
 }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,6 +111,7 @@ namespace operations {
 
 TEST_CASE("function operations::laplacian", "[operations::laplacian]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 
 }

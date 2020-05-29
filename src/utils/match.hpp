@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef UTILS__MATCH
-#define UTILS__MATCH
+#ifndef INQ__UTILS__MATCH
+#define INQ__UTILS__MATCH
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -26,6 +26,7 @@
 
 #include <tinyformat/tinyformat.h>
 
+namespace inq {
 namespace utils {
 
   class match {
@@ -73,13 +74,14 @@ namespace utils {
     
   };
 }
+}
 
 #ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
 TEST_CASE("class utils::match", "[utils::match]") {
 
-  utils::match mtc(1e-7);
+	inq::utils::match mtc(1e-7);
 
   CHECK(mtc.ok());
   CHECK(not mtc.fail());  

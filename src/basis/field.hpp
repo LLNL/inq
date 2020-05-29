@@ -2,8 +2,8 @@
 OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 
-#ifndef BASIS_FIELD
-#define BASIS_FIELD
+#ifndef INQ__BASIS__FIELD
+#define INQ__BASIS__FIELD
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
@@ -35,6 +35,7 @@ OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 
 #include <fstream>
 
+namespace inq {
 namespace basis {
 	
 	template<class Basis, typename Type>
@@ -55,7 +56,7 @@ namespace basis {
 		}
 
 		template <class OtherType>
-		field(skeleton_wrapper<field<basis_type, OtherType>> const & skeleton)
+		field(inq::utils::skeleton_wrapper<field<basis_type, OtherType>> const & skeleton)
 			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
 		}
 
@@ -67,7 +68,7 @@ namespace basis {
 		}
 
 		auto skeleton() const {
-			return skeleton_wrapper<field<basis_type, element_type>>(*this);
+			return inq::utils::skeleton_wrapper<field<basis_type, element_type>>(*this);
 		}
 
 		field(const field & coeff) = delete; 		//avoid unadverted copies
@@ -135,7 +136,7 @@ namespace basis {
 				if(ip >= size) ip -= size;
 				point[dir] = ip;
 				auto rr = fld.basis().rvector(point);
-				tfm::format(file, "%f %e %e\n", rr[dir], ::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
+				tfm::format(file, "%f %e %e\n", rr[dir], inq::real(fld.cubic()[point[0]][point[1]][point[2]]), imag(fld.cubic()[point[0]][point[1]][point[2]]));
 			}
 		}
 
@@ -145,7 +146,7 @@ namespace basis {
 
 
 		auto complex() const {
-			return field<basis::real_space, std::complex<element_type>>(*this);
+			return field<basis::real_space, inq::complex>(*this);
 		}
 
 		field<basis::real_space, double> real() const {
@@ -162,6 +163,7 @@ namespace basis {
 	};
 	
 }
+}
 
 #if (not __INCLUDE_LEVEL__) or defined(INQ_UNIT_TEST)
 #if (not __INCLUDE_LEVEL__)
@@ -175,6 +177,7 @@ namespace basis {
 
 TEST_CASE("Class basis::field", "[basis::field]"){
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef REAL_TIME__PROPAGATE
-#define REAL_TIME__PROPAGATE
+#ifndef INQ__REAL_TIME__PROPAGATE
+#define INQ__REAL_TIME__PROPAGATE
 
 #include <cfloat>
 
@@ -32,6 +32,7 @@
 #include <observables/dipole.hpp>
 #include <real_time/result.hpp>
 
+namespace inq {
 namespace real_time {
 	
 	real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options){
@@ -91,6 +92,7 @@ namespace real_time {
 
 		return res;
 	}
+}
 }
 
 #endif

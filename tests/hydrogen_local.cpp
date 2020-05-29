@@ -31,24 +31,24 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::environment env(argc, argv);
 
-	utils::match energy_match(1.0e-5);
+	inq::utils::match energy_match(1.0e-5);
 
-	input::species local_h = pseudo::element("H") | input::species::symbol("Hloc") | input::species::pseudo(config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	inq::input::species local_h = pseudo::element("H") | inq::input::species::symbol("Hloc") | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	
-	std::vector<input::atom> geo;
+	std::vector<inq::input::atom> geo;
 	
-	geo.push_back(local_h | math::vec3d(0.0, 0.0, 0.0));
+	geo.push_back(local_h | inq::math::vec3d(0.0, 0.0, 0.0));
     
-	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
+	inq::systems::ions ions(inq::input::cell::cubic(20.0, 20.0, 20.0) | inq::input::cell::finite(), geo);
 
-	input::config conf;
+	inq::input::config conf;
 	
-	systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
+	inq::systems::electrons electrons(ions, inq::input::basis::cutoff_energy(60.0), conf);
 
 	// Non Interacting
 	{
 	
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
+		auto result = inq::ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -91,7 +91,7 @@ int main(int argc, char ** argv){
 	// LDA
 	{
 		
-		auto result = ground_state::calculate(ions, electrons);
+		auto result = inq::ground_state::calculate(ions, electrons);
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)

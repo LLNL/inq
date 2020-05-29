@@ -32,27 +32,30 @@
 
 int main(int argc, char ** argv){
 
+	using namespace inq::input;
+	using inq::math::vec3d;
+	
 	boost::mpi3::environment env(argc, argv);
 
-	utils::match match(2.5e-4);
+	inq::utils::match match(2.5e-4);
 
-	std::vector<input::atom> geo;
+	std::vector<atom> geo;
 
-	geo.push_back( "O" | math::vec3d( 0.0,      -0.553586, 0.0));
-	geo.push_back( "H" | math::vec3d( 1.429937,  0.553586, 0.0));
-  geo.push_back( "H" | math::vec3d(-1.429937,  0.553586, 0.0));
+	geo.push_back( "O" | vec3d( 0.0,      -0.553586, 0.0));
+	geo.push_back( "H" | vec3d( 1.429937,  0.553586, 0.0));
+  geo.push_back( "H" | vec3d(-1.429937,  0.553586, 0.0));
 
-	systems::ions ions(input::cell::cubic(12.0, 11.0, 10.0) | input::cell::finite(), geo);
+	inq::systems::ions ions(cell::cubic(12.0, 11.0, 10.0) | cell::finite(), geo);
 
-  auto scf_options = input::scf::conjugate_gradient() | input::scf::energy_tolerance(1.0e-5) | input::scf::density_mixing() | input::scf::broyden_mixing();	
+  auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5) | scf::density_mixing() | scf::broyden_mixing();	
   
-  input::config conf;
+  config conf;
   
-  systems::electrons electrons(ions, input::basis::cutoff_energy(20.0), conf);
+	inq::systems::electrons electrons(ions, basis::cutoff_energy(20.0), conf);
 
-  auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), scf_options);
-
-  match.check("total energy",        result.energy.total(),       -25.433028356021);
+	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);
+	
+	match.check("total energy",        result.energy.total(),       -25.433028356021);
   match.check("kinetic energy",      result.energy.kinetic(),      10.967516478208);
   match.check("eigenvalues",         result.energy.eigenvalues,    -4.188361453155);
   match.check("Hartree energy",      result.energy.hartree,        20.790186828745);
@@ -67,7 +70,7 @@ int main(int argc, char ** argv){
 	match.check("dipole y", result.dipole[1], -2.812600825118);
 	match.check("dipole z", result.dipole[2], -0.000653986920);
 	
-	operations::io::save("h2o_restart", electrons.phi_);
+	inq::operations::io::save("h2o_restart", electrons.phi_);
 
 	fftw_cleanup(); //required for valgrid
 	

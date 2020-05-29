@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef PLANE_WAVE_HPP
-#define PLANE_WAVE_HPP
+#ifndef INQ__BASIS__GRID
+#define INQ__BASIS__GRID
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,6 +29,7 @@
 #include <cassert>
 #include <array>
 
+namespace inq {
 namespace basis {
 
   class grid : public base {
@@ -39,7 +40,7 @@ namespace basis {
 		
 		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
 			base(nr[0], comm),
-			cubic_dist_({base::part_, utils::partition(nr[1]), utils::partition(nr[2])}),
+			cubic_dist_({base::part_, inq::utils::partition(nr[1]), inq::utils::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
@@ -133,7 +134,7 @@ namespace basis {
 
 	protected:
 
-		std::array<utils::partition, 3> cubic_dist_;
+		std::array<inq::utils::partition, 3> cubic_dist_;
 		ions::UnitCell cell_;
 
     std::array<int, 3> nr_;
@@ -155,6 +156,8 @@ namespace basis {
 		int periodic_dimensions_;
 		
   };
+
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -164,7 +167,8 @@ namespace basis {
 
 TEST_CASE("class basis::grid", "[basis::grid]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
 
   ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));

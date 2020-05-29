@@ -32,6 +32,8 @@
 
 int main(int argc, char ** argv){
 
+	using namespace inq;
+	
 	boost::mpi3::environment env(argc, argv);
 
 	utils::match match(1e-5);

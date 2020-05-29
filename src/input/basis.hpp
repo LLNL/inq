@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__BASIS
-#define INPUT__BASIS
+#ifndef INQ__INPUT__BASIS
+#define INQ__INPUT__BASIS
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -28,6 +28,7 @@
 #include <nonstd/optional.hpp>
 #include <utils/merge_optional.hpp>
 
+namespace inq {
 namespace input {
 
   class basis {
@@ -71,7 +72,7 @@ namespace input {
 		}
 		
 		friend basis operator|(const basis & opt1, const basis & opt2){
-			using utils::merge_optional;
+			using inq::utils::merge_optional;
 
 			basis ropt;
 			ropt.spacing_ = merge_optional(opt1.spacing_, opt2.spacing_);
@@ -90,6 +91,8 @@ namespace input {
 		nonstd::optional<double> density_factor_;
 		
 	};
+
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -98,7 +101,8 @@ namespace input {
 
 TEST_CASE("class input::basis", "[basis]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
 
 	SECTION("Spacing"){
 

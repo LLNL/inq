@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef MATH__ARRAY
-#define MATH__ARRAY
+#ifndef INQ__MATH__ARRAY
+#define INQ__MATH__ARRAY
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
@@ -31,17 +31,19 @@
 #include <multi/memory/adaptors/cuda/managed/allocator.hpp>
 #endif
 
+namespace inq {
 namespace math {
 
-  template <class type, size_t dim,
+template <class type, size_t dim,
 #ifdef HAVE_CUDA
-						class allocator = boost::multi::memory::cuda::managed::allocator<type>
+					class allocator = boost::multi::memory::cuda::managed::allocator<type>
 #else
-						class allocator = std::allocator<type>
+					class allocator = std::allocator<type>
 #endif
-						>
-  using array = boost::multi::array<type, dim, allocator>;
- 
+					>
+using array = boost::multi::array<type, dim, allocator>;
+
+}
 }
 
 #endif

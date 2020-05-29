@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS__BASE
-#define BASIS__BASE
+#ifndef INQ__BASIS__BASE
+#define INQ__BASIS__BASE
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -26,33 +26,36 @@
 #include <mpi3/environment.hpp>
 #include <utils/partition.hpp>
 
+namespace inq {
 namespace basis {
 
-	/*
-		This is a class that implements a very simple basis object. Useful for testing.
-	*/
+/*
+	This is a class that implements a very simple basis object. Useful for testing.
+*/
+
+class base {
 	
-  class base {
-
-  public:
-		
-		base(const long size, boost::mpi3::communicator & comm):
-			part_(size, comm){
-		}
-
-		auto & part() {
-			return part_;
-		}
-
-		auto & part() const {
-			return part_;
-		}
-    
+public:
+	
+	base(const long size, boost::mpi3::communicator & comm):
+		part_(size, comm){
+	}
+	
+	auto & part() {
+		return part_;
+	}
+	
+	auto & part() const {
+		return part_;
+	}
+  
 	protected:
+	
+	inq::utils::partition part_;
+	
+};
 
-		utils::partition part_;
-		
-  };
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -61,7 +64,8 @@ namespace basis {
 
 TEST_CASE("class basis::base", "[basis::base]") {
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
   
 }

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef MIXERS__BASE
-#define MIXERS__BASE
+#ifndef INQ__MIXERS__BASE
+#define INQ__MIXERS__BASE
 
 /*
  Copyright (C) 2020 Xavier Andrade
@@ -23,16 +23,19 @@
 
 #include <math/array.hpp>
 
+namespace inq {
 namespace mixers {
 
-	template <class Type>
-	class base {
+template <class Type>
+class base {
+	
+public:
+	virtual ~base(){};
+	virtual void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value) = 0;
+	
+};
 
-	public:
-		virtual ~base(){};
-		virtual void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value) = 0;
-		
-	};
+}
 }
 
 #endif

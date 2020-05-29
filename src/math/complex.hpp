@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef MATH_COMPLEX
-#define MATH_COMPLEX
+#ifndef INQ__MATH__COMPLEX
+#define INQ__MATH__COMPLEX
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -9,6 +9,8 @@
 
 #include <complex>
 #include <gpu/run.hpp>
+
+namespace inq {
 
 /*
 // This is currently disabled since it doesn't work with multi::blas
@@ -123,6 +125,8 @@ GPU_FUNCTION inline auto operator/(const complex & x, const complex & y){
 
   complex quot( ((ars * brs) + (ais * bis)) * oos, ((ais * brs) - (ars * bis)) * oos);
   return quot;
+
+}
 
 }
 #endif

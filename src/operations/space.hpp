@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef OPERATIONS__SPACE
-#define OPERATIONS__SPACE
+#ifndef INQ__OPERATIONS__SPACE
+#define INQ__OPERATIONS__SPACE
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa.
@@ -32,6 +32,7 @@
 
 #include <cassert>
 
+namespace inq {
 namespace operations {
 	namespace space {
 
@@ -275,12 +276,14 @@ namespace operations {
 	}
 
 }
+}
 
 #ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
 
 TEST_CASE("function operations::space", "[operations::space]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 

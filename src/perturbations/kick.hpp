@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef PERTURBATIONS__KICK
-#define PERTURBATIONS__KICK
+#ifndef INQ__PERTURBATIONS__KICK
+#define INQ__PERTURBATIONS__KICK
 
 /*
  Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
@@ -29,6 +29,7 @@
 #include <basis/real_space.hpp>
 #include <basis/field_set.hpp>
 
+namespace inq {
 namespace perturbations {
 
 	void kick(math::vec3d kick_field, basis::field_set<basis::real_space, complex> & phi){
@@ -55,6 +56,7 @@ namespace perturbations {
 		}
 	}
 }
+}
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -67,6 +69,7 @@ namespace perturbations {
 
 TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 
+	using namespace inq;
 	using namespace Catch::literals;
 	using math::vec3d;
 	

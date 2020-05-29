@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef BASIS_FIELD_SET
-#define BASIS_FIELD_SET
+#ifndef INQ__BASIS__FIELD_SET
+#define INQ__BASIS__FIELD_SET
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,6 +29,7 @@
 #include <mpi3/cartesian_communicator.hpp>
 #include <utils/skeleton_wrapper.hpp>
 
+namespace inq {
 namespace basis {
 	
 	template<class Basis, class type>
@@ -58,12 +59,12 @@ namespace basis {
 		}
 
 		template <class any_type>
-		field_set(skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
+		field_set(inq::utils::skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
 			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
 		}
 
 		auto skeleton() const {
-			return skeleton_wrapper<field_set<Basis, type>>(*this);
+			return inq::utils::skeleton_wrapper<field_set<Basis, type>>(*this);
 		}
 
 		field_set(const field_set & coeff) = default;
@@ -136,7 +137,7 @@ namespace basis {
 		}
 
 		auto complex() const {
-			field_set<basis::real_space, ::complex> complex_field(skeleton());
+			field_set<basis::real_space, inq::complex> complex_field(skeleton());
 			complex_field.matrix() = matrix();
 			return complex_field;
 		}
@@ -150,7 +151,7 @@ namespace basis {
 			//DATAOPERATIONS GPU::RUN 1D
 			gpu::run(set_part().local_size(), basis().part().local_size(),
 							 [rp = begin(real_field.matrix()), cp = begin(matrix())] GPU_LAMBDA (auto ist, auto ii){
-								 rp[ii][ist] = ::real(cp[ii][ist]);
+								 rp[ii][ist] = inq::real(cp[ii][ist]);
 							 });
 			
 			return real_field;
@@ -161,13 +162,14 @@ namespace basis {
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
 		mutable boost::mpi3::cartesian_communicator<1> basis_comm_;
 		mutable boost::mpi3::cartesian_communicator<1> set_comm_;
-		utils::partition set_part_;
+		inq::utils::partition set_part_;
 		internal_array_type matrix_;
 		int num_vectors_;
 		basis_type basis_;
 
   };
 
+}
 }
 
 #ifdef INQ_UNIT_TEST
@@ -181,7 +183,8 @@ namespace basis {
 
 TEST_CASE("Class basis::field_set", "[basis::field_set]"){
   
-  using namespace Catch::literals;
+	using namespace inq;
+	using namespace Catch::literals;
   using math::vec3d;
   
   double ecut = 40.0;
