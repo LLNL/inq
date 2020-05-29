@@ -47,9 +47,6 @@ namespace systems {
 	
 		enum class error { NO_ELECTRONS };
 
-		friend ground_state::result ground_state::calculate(const inq::systems::ions &, inq::systems::electrons & electrons, const input::interaction & inter, const input::scf & solver);
-		friend real_time::result real_time::propagate(inq::systems::ions &, inq::systems::electrons & electrons, const input::interaction & inter, const input::rt & options);
-		
 		electrons(const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf):
 			states_basis_(ions.cell(), arg_basis_input),
 			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
@@ -67,15 +64,13 @@ namespace systems {
 			operations::orthogonalize(phi_);
     }
 
-	private:
-		
+
+	public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
+
 		basis::real_space states_basis_;
 		basis::real_space density_basis_;
 		hamiltonian::atomic_potential atomic_pot_;
 		states::ks_states states_;
-
-	public: //temporary hack to be able to apply a kick from main
-		
 		basis::field_set<basis::real_space, complex> phi_;
 
 	};  
