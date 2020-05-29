@@ -56,17 +56,17 @@ int main(int argc, char ** argv){
 		
 		auto result = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(0.055));
 		
-		match.check("energy step   0", result.energy[0],   -25.885010471387);
-		match.check("energy step  10", result.energy[10],  -25.885010471211);
-		match.check("energy step  20", result.energy[20],  -25.885010471034);
-		match.check("energy step  30", result.energy[30],  -25.885010470857);
-		match.check("energy step  40", result.energy[40],  -25.885010470679);
-		match.check("energy step  50", result.energy[50],  -25.885010470501);
-		match.check("energy step  60", result.energy[60],  -25.885010470322);
-		match.check("energy step  70", result.energy[70],  -25.885010470143);
-		match.check("energy step  80", result.energy[80],  -25.885010469964);
-		match.check("energy step  90", result.energy[90],  -25.885010469785);
-		match.check("energy step 100", result.energy[100], -25.885010469605);
+		match.check("energy step   0", result.energy[0],   -25.433028350191);
+		match.check("energy step  10", result.energy[10],  -25.433028349962);
+		match.check("energy step  20", result.energy[20],  -25.433028349732);
+		match.check("energy step  30", result.energy[30],  -25.433028349502);
+		match.check("energy step  40", result.energy[40],  -25.433028349272);
+		match.check("energy step  50", result.energy[50],  -25.433028349042);
+		match.check("energy step  60", result.energy[60],  -25.433028348812);
+		match.check("energy step  70", result.energy[70],  -25.433028348582);
+		match.check("energy step  80", result.energy[80],  -25.433028348352);
+		match.check("energy step  90", result.energy[90],  -25.433028348122);
+		match.check("energy step 100", result.energy[100], -25.433028347891);
 		/*
 		match.check("dipole x step   0", result.dipole[0][0],   -0.00035331);
 		match.check("dipole y step   0", result.dipole[0][1],   -2.812602083171);
