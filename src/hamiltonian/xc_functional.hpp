@@ -22,6 +22,9 @@
 */
 
 #include <xc.h>
+#include <operations/gradient.hpp>
+#include <operations/divergence.hpp>
+#include <basis/field.hpp>
 
 namespace inq {
 namespace hamiltonian {
@@ -59,7 +62,48 @@ namespace hamiltonian {
 				case XC_FAMILY_LDA:
 					xc_lda_exc_vxc(&func_, size, density.data(), exc.data(), vxc.data());
 					break;
-				case XC_FAMILY_GGA:
+                                case XC_FAMILY_GGA:{// How to computer Vxc terms for GGA http://mbpt-domiprod.wikidot.com/calculation-of-gga-kernel
+                                        auto grad_real = operations::gradient(density); // Computer density gradient in the Real space
+                                        // Computer sigma as a square of the gradient in the Real space
+                                        basis::field<basis::real_space, double> sigma(vxc.basis());             // Sigma is a scalar field of the field-type
+                                        sigma = 0.0;                                                            //Initialize sigma for the following summing
+                                        for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){                     // Iterating over x-,y- and z- components of the each gradient field-set
+                                                for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
+                                                        for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
+                                                                // Iterating over each vectorial components of the grad field-set at (ix,iy,iz) point in the space
+                                                                for(int idir = 0; idir < 3 ; idir++) sigma.cubic()[ix][iy][iz] += norm(grad_real.cubic()[ix][iy][iz][idir]);
+                                                        }
+                                                }
+                                        }
+                                        // Initialize derivative of xc energy vsigma = d Exc/d sigma as a scalar field
+                                        basis::field<basis::real_space, double> vsigma(vxc.basis());
+                                        vsigma = 0.0;
+                                        //Call libxc to computer vxc and vsigma
+                                        xc_gga_exc_vxc(&func_, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
+                                        //Computer extra term for Vxc using diverdence: Vxc_extra=2 nabla *[vsigma*grad(n)]
+                                        basis::field_set<basis::real_space, double> vxc_extra(vxc.basis(), 3);
+                                        //Compute field-set as a product between vsigma(0) and gradient field-set
+                                        for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){                     // Iterating over x-,y- and z- components of the each gradient field-set
+                                                for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
+                                                        for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
+                                                                // Iterating over each vectorial components of the grad field-set at each (ix,iy,iz) point in the Real space
+                                                                for(int idir = 0; idir < 3 ; idir++) vxc_extra.cubic()[ix][iy][iz][idir] = vsigma.cubic()[ix][iy][iz] * grad_real.cubic()[ix][iy][iz][idir];
+                                                        }
+                                                }
+                                        }
+                                        //Taking diverdence of [vsigma * Grad(n)]
+                                        auto divvxcextra = operations::divergence(vxc_extra);
+                                        // Add extra component to Vxc
+                                        for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){                     // Iterating over x-,y- and z- components of the each gradient field-set
+                                                for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
+                                                        for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
+                                                                // Iterating over each (ix,iy,iz) point in the Real space
+                                                                vxc.cubic()[ix][iy][iz] += -2.0 * divvxcextra.cubic()[ix][iy][iz];
+                                                        }
+                                                }
+                                        }
+                                        break;
+                                }
 				case XC_FAMILY_HYB_GGA:
 					assert(false);
 					break;
