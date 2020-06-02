@@ -87,6 +87,13 @@ namespace input {
       return correlation_.value_or(correlation_functional::LDA_PZ);
     }
 
+		auto pbe() const {
+			interaction inter;
+			inter.exchange_ = exchange_functional::PBE;
+			inter.correlation_ = correlation_functional::PBE;
+			return inter;
+		}
+
 		auto exchange_coefficient() const {
 			if(theory_ == electronic_theory::HARTREE_FOCK) return 1.0;
 			return 0.0;
@@ -101,6 +108,7 @@ namespace input {
       inter.fourier_pseudo_ = false;
       return inter;
     }
+
 		
 		static auto fourier_pseudo(){
       interaction inter;
