@@ -72,6 +72,7 @@
 #include <operations/orthogonalize.hpp>
 #include <operations/diagonalize.hpp>
 #include <operations/gradient.hpp>
+#include <operations/divergence.hpp>
 #include <operations/shift.hpp>
 #include <operations/randomize.hpp>
 #include <operations/matrix_operator.hpp>
