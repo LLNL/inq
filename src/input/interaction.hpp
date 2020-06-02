@@ -87,7 +87,7 @@ namespace input {
       return correlation_.value_or(correlation_functional::LDA_PZ);
     }
 
-		auto pbe() const {
+		static auto pbe() {
 			interaction inter;
 			inter.exchange_ = exchange_functional::PBE;
 			inter.correlation_ = correlation_functional::PBE;
