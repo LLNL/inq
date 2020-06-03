@@ -47,7 +47,7 @@ namespace systems {
 	
 		enum class error { NO_ELECTRONS };
 
-		electrons(const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf):
+		electrons(const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
 			states_basis_(ions.cell(), arg_basis_input),
 			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
 			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
