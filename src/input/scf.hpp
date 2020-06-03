@@ -125,7 +125,7 @@ namespace input {
 		}
 		
 		auto mixing_algorithm() const {
-			return mixing_algo_.value_or(mixing_algo::LINEAR);
+			return mixing_algo_.value_or(mixing_algo::BROYDEN);
 		}
 		
     friend auto operator|(const scf & solver1, const scf & solver2){
