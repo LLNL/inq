@@ -1,17 +1,18 @@
 /* -*- indent-tabs-mode: t -*- */
 
 #include <iostream>
+
 #include <ground_state/calculate.hpp>
+
+using namespace std;
+using namespace inq;
+using namespace inq::input;
+using namespace inq::math;
 
 int main(){
 
 	boost::mpi3::environment env;
 	
-	using namespace std;
-	using namespace inq;
-	using namespace inq::input;
-	using namespace inq::math;
-
 	double const distance = 2.0;
 	
 	std::vector<atom> geo;
@@ -29,8 +30,6 @@ int main(){
 																							electrons,
 																							input::interaction::dft(),
 																							input::scf::conjugate_gradient() | input::scf::mixing(0.1));
-
-
 	
   cout << "\nCALCULATED ENERGY " << result.energy.total() << "\n\n";
 
