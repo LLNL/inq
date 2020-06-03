@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 		
 	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 
-	auto energy = ground_state::calculate(electrons, input::interaction::dft());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::dft());
 
 	/* OCTOPUS RESULTS (Spacing = 0.2):
 
@@ -73,11 +73,11 @@ int main(int argc, char ** argv){
 		 Non-local   =         0.00000000
 	*/
 
-	energy_match.check("total energy",        energy.total()    , -0.6848531681);
-	energy_match.check("kinetic energy",      energy.kinetic()  , 2.368793);
-	energy_match.check("eigenvalues",         energy.eigenvalues, -1.6053918367);
-	energy_match.check("XC energy",           energy.xc         , -3.0536456687);
-	energy_match.check("XC density integral", energy.nvxc       , -3.9741843374);
+	energy_match.check("total energy",        result.energy.total()    , -0.6848531681);
+	energy_match.check("kinetic energy",      result.energy.kinetic()  , 2.368793);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues, -1.6053918367);
+	energy_match.check("XC energy",           result.energy.xc         , -3.0536456687);
+	energy_match.check("XC density integral", result.energy.nvxc       , -3.9741843374);
 
 	return energy_match.fail();
 	

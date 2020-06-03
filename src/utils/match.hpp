@@ -24,8 +24,7 @@
 #include <cassert>
 #include <array>
 
-#include <mpi3/communicator.hpp>
-#include <mpi3/environment.hpp>
+#include <tinyformat/tinyformat.h>
 
 namespace inq {
 namespace utils {
@@ -41,22 +40,21 @@ namespace utils {
 		}
 
     template <class Type>
-    auto check(const std::string & match_name, const Type & reference, const Type & value){
+    auto check(const std::string & match_name, const Type & value, const Type & reference){
 
       auto diff = fabs(reference - value);
       
-      if(diff > tol_){
-        std::cout << std::endl;        
-        std::cout << "Match '" + match_name + "': FAILED" << std::endl;
-        std::cout << "  reference value  = " << reference << std::endl;
-        std::cout << "  calculated value = " << value << std::endl;
-        std::cout << "  difference       = " << diff << std::endl;
-        std::cout << "  tolerance        = " << tol_ << std::endl;
-        std::cout << std::endl;
+      if(diff > tol_){//tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+				
+        tfm::format(std::cout, "\nMatch '%s': FAILED\n", match_name);
+        tfm::format(std::cout, "  reference value  = %.12f\n", reference);
+        tfm::format(std::cout, "  calculated value = %.12f\n", value);
+        tfm::format(std::cout, "  difference       = %.1e\n", diff);
+				tfm::format(std::cout, "  tolerance        = %.1e\n\n", tol_);
         ok_ = false;
         return false;
       } else {
-        std::cout << "Match '" + match_name + "': SUCCESS" << std::endl;
+        tfm::format(std::cout, "Match '%s': SUCCESS\n", match_name);
         return true;
       }
     }
@@ -80,9 +78,6 @@ namespace utils {
 
 #ifdef INQ_UNIT_TEST
 #include <catch2/catch.hpp>
-#include <ions/unitcell.hpp>
-
-#include <mpi3/environment.hpp>
 
 TEST_CASE("class utils::match", "[utils::match]") {
 

@@ -40,6 +40,7 @@ noinst_HEADERS =                             \
 	input/basis.hpp                            \
 	input/cell.hpp                             \
 	input/config.hpp                           \
+	input/rt.hpp                               \
 	input/scf.hpp                              \
 	input/species.hpp                          \
 	math/array.hpp                             \
@@ -100,6 +101,7 @@ noinst_HEADERS =                             \
 	perturbations/kick.hpp                     \
 	observables/dipole.hpp                     \
 	ground_state/calculate.hpp                 \
+	ground_state/result.hpp                    \
 	ground_state/subspace_diagonalization.hpp  \
 	real_time/result.hpp                       \
 	real_time/propagate.hpp

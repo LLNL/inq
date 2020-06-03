@@ -39,14 +39,14 @@ int main(int argc, char ** argv){
 		
 	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
 
-	auto energy = ground_state::calculate(electrons, input::interaction::non_interacting());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting());
 
 	//Octopus results are:
 	// Energy: 2.36870506
 	// Eigenvalues: 0.000000 0.197392 0.394784
-	energy_match.check("total energy",   energy.total(),     2.3687083213);
-	energy_match.check("kinetic energy", energy.kinetic(),   2.3687083213);
-	energy_match.check("eigenvalues",    energy.eigenvalues, 2.3687083213);
+	energy_match.check("total energy",   result.energy.total(),     2.3687083213);
+	energy_match.check("kinetic energy", result.energy.kinetic(),   2.3687083213);
+	energy_match.check("eigenvalues",    result.energy.eigenvalues, 2.3687083213);
 
 	return energy_match.fail();
 
