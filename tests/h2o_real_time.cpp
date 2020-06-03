@@ -109,7 +109,7 @@ int main(int argc, char ** argv){
 		
 		perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
 		
-		auto result = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(1000) | input::rt::dt(0.055));
+		auto result = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(0.055));
 		
 		/*		match.check("energy step  0", result.energy[0], -16.903925978590);
 		match.check("energy step 10", result.energy[10], -16.904635586794);
