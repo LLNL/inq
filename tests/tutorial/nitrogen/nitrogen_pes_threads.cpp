@@ -23,16 +23,17 @@ auto nitrogen_energy(double distance){
 
 	systems::electrons electrons(ions, input::basis::cutoff_energy(30.0));
 
-  auto const result = ground_state::calculate(ions,
-																							electrons,
-																							interaction::dft(),
-																							scf::conjugate_gradient() | scf::mixing(0.05) | scf::silent());
+    auto const result = ground_state::calculate(
+        ions,
+		electrons,
+		interaction::dft(),
+		scf::conjugate_gradient() | scf::mixing(0.05) | scf::silent()
+	);
 
-	
-  cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
+    cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
 
 	return result.energy.total();
-	
+
 }
 
 
