@@ -20,7 +20,7 @@ auto nitrogen_energy(double distance){
 	systems::ions ions(cell::cubic(hbox, hbox, 2*hbox) | cell::periodic(),
 										 geo);
 
-	systems::electrons const electrons(ions, input::basis::cutoff_energy(30.0));
+    systems::electrons electrons(ions, input::basis::cutoff_energy(30.0));
 
     auto const result = ground_state::calculate(
         ions,
