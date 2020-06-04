@@ -104,7 +104,8 @@ noinst_HEADERS =                             \
 	ground_state/result.hpp                    \
 	ground_state/subspace_diagonalization.hpp  \
 	real_time/result.hpp                       \
-	real_time/propagate.hpp
+	real_time/propagate.hpp                    \
+	inq/inq.hpp
 
 all_srcs =                                   \
 	ions/unitcell.cpp
