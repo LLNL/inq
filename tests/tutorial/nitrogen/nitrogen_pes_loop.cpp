@@ -24,9 +24,9 @@ auto nitrogen_energy(double distance){
 
     auto const result = ground_state::calculate(
         ions,
-	    electrons,
-	    input::interaction::dft(),
-	    input::scf::conjugate_gradient() | input::scf::mixing(0.05)
+        electrons,
+        input::interaction::dft(),
+        input::scf::conjugate_gradient() | input::scf::mixing(0.05)
     );
 
     cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
