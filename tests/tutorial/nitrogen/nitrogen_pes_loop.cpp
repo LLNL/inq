@@ -11,14 +11,16 @@ using namespace inq::math;
 
 auto nitrogen_energy(double distance){
 
-	std::vector<atom> geo;
-	geo.push_back( "N" | vec3d(0.0, 0.0, -0.5*distance));
-	geo.push_back( "N" | vec3d(0.0, 0.0,  0.5*distance));
+    std::vector<atom> geo;
+    geo.push_back( "N" | vec3d(0.0, 0.0, -0.5*distance));
+    geo.push_back( "N" | vec3d(0.0, 0.0,  0.5*distance));
 
-	double const hbox = 3.0;
+    double const hbox = 3.0;
 
-	systems::ions ions(cell::cubic(hbox, hbox, 2*hbox) | cell::periodic(),
-										 geo);
+    systems::ions ions(
+        cell::cubic(hbox, hbox, 2*hbox) | cell::periodic(),
+		geo
+	);
 
     systems::electrons electrons(ions, input::basis::cutoff_energy(30.0));
 
@@ -32,6 +34,7 @@ auto nitrogen_energy(double distance){
     cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
 
 	return result.energy.total();
+
 }
 
 int main(){
