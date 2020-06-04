@@ -20,18 +20,18 @@ auto nitrogen_energy(double distance){
 	systems::ions ions(cell::cubic(hbox, hbox, 2*hbox) | cell::periodic(),
 										 geo);
 
-	systems::electrons electrons(ions, input::basis::cutoff_energy(30.0));
+	systems::electrons const electrons(ions, input::basis::cutoff_energy(30.0));
 
-  auto const result = ground_state::calculate(ions,
-																							electrons,
-																							input::interaction::dft(),
-																							input::scf::conjugate_gradient() | input::scf::mixing(0.05));
+    auto const result = ground_state::calculate(
+        ions,
+	    electrons,
+	    input::interaction::dft(),
+	    input::scf::conjugate_gradient() | input::scf::mixing(0.05)
+    );
 
-	
-  cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
+    cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
 
 	return result.energy.total();
-	
 }
 
 int main(){
