@@ -45,22 +45,13 @@ int main(){
 	double const del   = 0.05;
 	int    const n_max = 20;
 
-	std::vector<std::pair<double, double>> e_vs_d;
-
+	std::ofstream ofs{"nitrogen_e_vs_d.dat"};
+	
 	for(int n = 0; n != n_max; ++n){
 		double const distance = d_0 + n*del;
-		e_vs_d.emplace_back(distance, nitrogen_energy(distance));
+		ofs << distance << '\t' << nitrogen_energy(distance) << '\n';
 	}
 	
-	{
-		std::ofstream ofs{"nitrogen_e_vs_d.dat"};
-		
-		ofs << "#nitrogen energy" << std::endl;
-		for(int n = 0; n != n_max; ++n){
-			ofs<< e_vs_d[n].first <<" "<< e_vs_d[n].second <<'\n';
-		}
-	}
-
 }
 
 
