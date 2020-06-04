@@ -33,7 +33,7 @@ auto nitrogen_energy(double distance){
 
     cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
 
-	return result.energy.total();
+    return result.energy.total();
 
 }
 
