@@ -21,7 +21,7 @@ int main(){
 	geo.push_back( "N" | vec3d(0.0, 0.0, -distance/2.0));
 	geo.push_back( "N" | vec3d(0.0, 0.0,  distance/2.0));
 
-	cell super = cell::cubic(2.5, 2.5, 5.0) | cell::periodic();
+	cell super = cell::cubic(3.0, 3.0, 6.0) | cell::periodic();
 
 	systems::ions ions(super, geo);
 
