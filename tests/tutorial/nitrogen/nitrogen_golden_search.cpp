@@ -84,20 +84,14 @@ std::pair<double, double> golden_search(F f, double a, double m, double b, doubl
 	return fxmin;
 }
 
-double func(double x){return (x - 2.)*(x - 2.);}
-
 int main(){
 
 	mpi3::environment env;
 
-	auto min = golden_search(
-		nitrogen_energy, 
-		1.50, 2.25, 3.50, 
-		1e-3
-	);
+	auto min = golden_search(nitrogen_energy, 1.50, 2.25, 3.50, 1e-3);
 
-	auto x = fx.second;
-	auto f = fx.first;
+	auto x = min.second;
+	auto f = min.first;
 
 	std::cout<< "min found at x = "<< x << " with value f = "<< f <<'\n';
 
