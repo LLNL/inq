@@ -3,8 +3,6 @@
 #ifndef SYSTEMS__ELECTRONS
 #define SYSTEMS__ELECTRONS
 
-#include <cfloat>
-
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
@@ -24,6 +22,10 @@
 #include <ground_state/result.hpp>
 #include <real_time/result.hpp>
 #include <systems/ions.hpp>
+#include <density/calculate.hpp>
+#include <density/normalize.hpp>
+
+#include <cfloat>
 
 namespace inq {
 
@@ -52,7 +54,9 @@ namespace systems {
 			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
 			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 			states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
-			phi_(states_basis_, states_.num_states()){
+			phi_(states_basis_, states_.num_states()),
+			density_(atomic_pot_.atomic_electronic_density(density_basis_, ions.cell(), ions.geo()))
+		{
 			
 			states_basis_.info(std::cout);  
 			states_.info(std::cout);
@@ -62,6 +66,10 @@ namespace systems {
 
 			operations::randomize(phi_);
 			operations::orthogonalize(phi_);
+			
+			density::normalize(density_, states_.total_charge());
+			std::cout << "Integral of the density = " << operations::integral(density_) << std::endl;
+			
     }
 
 
@@ -72,8 +80,9 @@ namespace systems {
 		hamiltonian::atomic_potential atomic_pot_;
 		states::ks_states states_;
 		basis::field_set<basis::real_space, complex> phi_;
+		basis::field<basis::real_space, double> density_;
 
-	};  
+	};
   
 }
 }
