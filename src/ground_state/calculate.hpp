@@ -70,11 +70,7 @@ namespace ground_state {
 		
 		sc.update_ionic_fields(ions, electrons.atomic_pot_);
 		
-		auto density = electrons.atomic_pot_.atomic_electronic_density(electrons.density_basis_, ions.cell(), ions.geo());
-		density::normalize(density, electrons.states_.total_charge());
-		std::cout << "Integral of the density = " << operations::integral(density) << std::endl;
-		
-		ham.scalar_potential = sc.ks_potential(density, res.energy);
+		ham.scalar_potential = sc.ks_potential(electrons.density_, res.energy);
 		
 		res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
@@ -121,13 +117,13 @@ namespace ground_state {
 			
 			if(inter.self_consistent() and solver.mix_density()) {
 				auto new_density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
-				mixer->operator()(density.linear(), new_density.linear());
-				density::normalize(density, electrons.states_.total_charge());
+				mixer->operator()(electrons.density_.linear(), new_density.linear());
+				density::normalize(electrons.density_, electrons.states_.total_charge());
 			} else {
-				density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
+				electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 			}
 			
-			auto vks = sc.ks_potential(density, res.energy);
+			auto vks = sc.ks_potential(electrons.density_, res.energy);
 			
 			if(inter.self_consistent() and solver.mix_potential()) {
 				mixer->operator()(ham.scalar_potential.linear(), vks.linear());
@@ -153,13 +149,16 @@ namespace ground_state {
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
 				
 				auto potdiff = operations::integral_absdiff(vks, ham.scalar_potential)/fabs(operations::integral(vks));
-				
-				tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e dvks = %5.0e\n",
-										iiter, res.energy.total(), res.energy.eigenvalues - old_energy, potdiff);
-				
-				for(int istate = 0; istate < electrons.states_.num_states(); istate++){
-					tfm::format(std::cout, " state %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
-											istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate]));
+
+				if(solver.verbose_output()){
+					
+					tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e dvks = %5.0e\n",
+											iiter, res.energy.total(), res.energy.eigenvalues - old_energy, potdiff);
+					
+					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
+						tfm::format(std::cout, " state %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
+												istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate]));
+					}
 				}
 				
 			}
@@ -176,16 +175,21 @@ namespace ground_state {
 		}
 
 		delete mixer;
-		
-		res.energy.print(std::cout);
+
+		if(solver.verbose_output()){
+			res.energy.print(std::cout);
+		}
 
 		if(ions.cell().periodic_dimensions() == 0){
-			res.dipole = observables::dipole(density);
+			res.dipole = observables::dipole(electrons.density_);
 		} else {
 			res.dipole = 0.0;
 		}
-		
-		return res;			
+
+		//make sure we have a density consistet with phi
+		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
+
+		return res;
 	}
 }
 }
