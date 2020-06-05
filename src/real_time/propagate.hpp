@@ -42,7 +42,7 @@ namespace real_time {
 
 		result res;
 
-		auto density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
+		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 		
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
@@ -50,7 +50,7 @@ namespace real_time {
 		
 		sc.update_ionic_fields(ions, electrons.atomic_pot_);
 		
-		ham.scalar_potential = sc.ks_potential(density, energy);
+		ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 
 		auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
@@ -63,7 +63,7 @@ namespace real_time {
 
 		res.time.push_back(0.0);
 		res.energy.push_back(energy.total());
-		res.dipole.push_back(observables::dipole(density));
+		res.dipole.push_back(observables::dipole(electrons.density_));
 		
 		for(int istep = 1; istep <= numsteps; istep++){
 
@@ -72,8 +72,8 @@ namespace real_time {
 				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), electrons.phi_);
 				
 				//calculate H(t + dt) from the full step propagation
-				density = density::calculate(electrons.states_.occupations(), fullstep_phi, electrons.density_basis_);
-				ham.scalar_potential = sc.ks_potential(density, energy);
+				electrons.density_ = density::calculate(electrons.states_.occupations(), fullstep_phi, electrons.density_basis_);
+				ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 			}
 
 			//propagate the other half step with H(t + dt)
@@ -86,7 +86,7 @@ namespace real_time {
 
 			res.time.push_back(istep*dt);
 			res.energy.push_back(energy.total());
-			res.dipole.push_back(observables::dipole(density));			
+			res.dipole.push_back(observables::dipole(electrons.density_));			
 			
 		}
 
