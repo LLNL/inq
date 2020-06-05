@@ -71,14 +71,14 @@ std::pair<double, double> golden_search(F f, double a, double m, double b, doubl
 	while(b - a > tol*(std::abs(x1)+std::abs(x2))){
 		fxmin = f1<f2?std::make_pair(f1, x1):std::make_pair(f2, x2);
 		ofs<< fxmin.second <<" "<< fxmin.first <<std::endl;
-		if(std::make_tuple(f2, b - m) < std::make_tuple(f1, m - a)){
-			a = x1;
-			x1 = std::exchange(x2, R*x2 + C*b);
-			f1 = std::exchange(f2, f(x2));
+		if(f2 < f1){
+			a = x1; 
+			x1 = x2; x2 = R*x2 + C*b;
+			f1 = f2; f2 = f(x2);
 		}else{
 			b = x2;
-			x2 = std::exchange(x1, R*x1 + C*a);
-			f2 = std::exchange(f1, f(x1));
+			x2 = x1; x1 = R*x1 + C*a;
+			f2 = f1; f1 = f(x1);
 		}
 	}
 	return fxmin;
