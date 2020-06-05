@@ -11,29 +11,29 @@ using namespace inq::math;
 
 auto nitrogen_energy(double distance){
 
-    std::vector<atom> geo;
-    geo.push_back( "N" | vec3d(0.0, 0.0, -0.5*distance));
-    geo.push_back( "N" | vec3d(0.0, 0.0,  0.5*distance));
+	std::vector<atom> geo;
+	geo.push_back( "N" | vec3d(0.0, 0.0, -0.5*distance));
+	geo.push_back( "N" | vec3d(0.0, 0.0,  0.5*distance));
 
-    double const hbox = 3.0;
+	double const hbox = 3.0;
 
-    systems::ions ions(
-        cell::cubic(hbox, hbox, 2*hbox) | cell::periodic(),
+	systems::ions ions(
+        	cell::cubic(hbox, hbox, 2*hbox) | cell::periodic(),
 		geo
 	);
 
-    systems::electrons electrons(ions, input::basis::cutoff_energy(30.0));
+	systems::electrons electrons(ions, input::basis::cutoff_energy(30.0));
 
-    auto const result = ground_state::calculate(
-        ions,
-        electrons,
-        input::interaction::dft(),
-        input::scf::conjugate_gradient() | input::scf::mixing(0.05)
-    );
+	auto const result = ground_state::calculate(
+        	ions,
+        	electrons,
+        	input::interaction::dft(),
+        	input::scf::conjugate_gradient() | input::scf::mixing(0.05)
+    	);
 
-    cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
+	cout << "\nDISTANCE " << distance << " CALCULATED ENERGY " << result.energy.total() << "\n\n";
 
-    return result.energy.total();
+	return result.energy.total();
 
 }
 
