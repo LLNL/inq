@@ -53,6 +53,10 @@ namespace hamiltonian {
 				
 		}
 
+		auto & libxc_func() const {
+			return func_;
+		}
+
 	private:
 		
 		template <class density_type, class exc_type, class vxc_type>
@@ -72,7 +76,7 @@ namespace hamiltonian {
 						for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
 							for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
 								// Iterating over each vectorial components of the grad field-set at (ix,iy,iz) point in the space
-								for(int idir = 0; idir < 3 ; idir++) sigma.cubic()[ix][iy][iz] += norm(grad_real.cubic()[ix][iy][iz][idir]);
+								for(int idir = 0; idir < 3 ; idir++) sigma.cubic()[ix][iy][iz] += grad_real.cubic()[ix][iy][iz][idir]*grad_real.cubic()[ix][iy][iz][idir];
 							}
 						}
 					}
@@ -119,4 +123,76 @@ namespace hamiltonian {
 }
 }
 
+///////////////////////////////////////////////////////////////////
+
+#ifdef INQ_UNIT_TEST
+
+#include <catch2/catch.hpp>
+#include <operations/randomize.hpp>
+#include <math/array.hpp>
+
+	auto gaussian(inq::math::vec3d rr){
+		return pow(M_PI, -1.5)*exp(-norm(rr)); // sigma = 1/sqrt(2)
+	}
+
+	auto dgaussian(inq::math::vec3d rr){
+		inq::math::vec3d ff;
+		for(int idir = 0; idir < 3 ; idir++) ff[idir] = -2.0*rr[idir]*gaussian(rr);
+		return ff;
+	}
+
+TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]") {
+
+	using namespace inq;
+	using namespace Catch::literals;
+	using namespace operations;
+	using math::vec3d;
+
+	//UnitCell size
+	double lx = 9;
+	double ly = 12;
+	double lz = 10;
+
+	ions::geometry geo;
+	ions::UnitCell cell(vec3d(lx, 0.0, 0.0), vec3d(0.0, ly, 0.0), vec3d(0.0, 0.0, lz));
+
+	basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
+
+	SECTION("LDA"){
+		basis::field<basis::real_space, double> gaussian_field(rs);
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					gaussian_field.cubic()[ix][iy][iz] = gaussian(vec);
+				}
+			}
+		}
+	
+		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+		basis::field<basis::real_space, double> gaussianVxc(rs);
+		double gaussianExc;
+
+		ldafunctional(gaussian_field, gaussianExc, gaussianVxc);
+		
+		CHECK(gaussianExc == -0.270646_a);
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					auto local_density = gaussian(vec);
+					double local_exc,local_vxc;
+					xc_lda_exc_vxc(&ldafunctional.libxc_func(), 1, &local_density, &local_exc, &local_vxc);
+					CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
+				}
+			}
+		}
+	}
+	
+//xc_energy = operations::integral_product(density, exc)
+//CHECK(gaussianVxc.linear()[2987] == 110.0_a)
+}
+
+
+#endif
 #endif
