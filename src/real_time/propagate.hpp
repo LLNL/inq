@@ -86,7 +86,7 @@ namespace real_time {
 
 			res.time.push_back(istep*dt);
 			res.energy.push_back(energy.total());
-			res.dipole.push_back(observables::dipole(electrons.density_));			
+			res.dipole.push_back(observables::dipole(ions, electrons));
 			
 		}
 
