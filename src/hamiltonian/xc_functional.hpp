@@ -183,7 +183,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
 					auto local_density = gaussian(vec);
-					double local_exc,local_vxc;
+					double local_exc, local_vxc;
 					xc_lda_exc_vxc(&ldafunctional.libxc_func(), 1, &local_density, &local_exc, &local_vxc);
 					CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
 					int_xc_energy += local_exc*local_density*rs.volume_element();
@@ -203,11 +203,11 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	
-		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
 		basis::field<basis::real_space, double> gaussianVxc(rs);
 		double gaussianExc;
 
-		ldafunctional(gaussian_field, gaussianExc, gaussianVxc);
+		ggafunctional(gaussian_field, gaussianExc, gaussianVxc);
 
 		
 		CHECK(gaussianExc == -0.270646_a);
@@ -217,9 +217,10 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 				for(int iz = 0; iz < rs.sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
 					auto local_density = gaussian(vec);
-					double local_exc,local_vxc;
-					xc_lda_exc_vxc(&ldafunctional.libxc_func(), 1, &local_density, &local_exc, &local_vxc);
-					CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
+					auto local_sigma = dgaussian(vec) | dgaussian(vec);
+					double local_exc,local_vxc, local_vsigma;
+					xc_gga_exc_vxc(&ggafunctional.libxc_func(), 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
+				//	CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
 					int_xc_energy += local_exc*local_density*rs.volume_element();
 				}
 			}
