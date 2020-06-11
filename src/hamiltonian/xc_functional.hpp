@@ -174,8 +174,10 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		double gaussianExc;
 
 		ldafunctional(gaussian_field, gaussianExc, gaussianVxc);
+
 		
 		CHECK(gaussianExc == -0.270646_a);
+		double int_xc_energy = 0.0;
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.sizes()[2]; iz++){
@@ -184,9 +186,45 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					double local_exc,local_vxc;
 					xc_lda_exc_vxc(&ldafunctional.libxc_func(), 1, &local_density, &local_exc, &local_vxc);
 					CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
+					int_xc_energy += local_exc*local_density*rs.volume_element();
 				}
 			}
 		}
+	CHECK(Approx(gaussianExc) == int_xc_energy);
+	}
+	SECTION("GGA"){
+		basis::field<basis::real_space, double> gaussian_field(rs);
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					gaussian_field.cubic()[ix][iy][iz] = gaussian(vec);
+				}
+			}
+		}
+	
+		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+		basis::field<basis::real_space, double> gaussianVxc(rs);
+		double gaussianExc;
+
+		ldafunctional(gaussian_field, gaussianExc, gaussianVxc);
+
+		
+		CHECK(gaussianExc == -0.270646_a);
+		double int_xc_energy = 0.0;
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					auto local_density = gaussian(vec);
+					double local_exc,local_vxc;
+					xc_lda_exc_vxc(&ldafunctional.libxc_func(), 1, &local_density, &local_exc, &local_vxc);
+					CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
+					int_xc_energy += local_exc*local_density*rs.volume_element();
+				}
+			}
+		}
+	CHECK(Approx(gaussianExc) == int_xc_energy);
 	}
 	
 //xc_energy = operations::integral_product(density, exc)
