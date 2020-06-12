@@ -69,6 +69,7 @@ namespace hamiltonian {
 				case XC_FAMILY_GGA:{
 					// How to compute Vxc terms for GGA http://mbpt-domiprod.wikidot.com/calculation-of-gga-kernel
 					auto grad_real = operations::gradient(density);
+					//grad_real = 0.0;
 					// Compute sigma as a square of the gradient in the Real space
 					basis::field<basis::real_space, double> sigma(vxc.basis());
 					sigma = 0.0;
@@ -263,9 +264,34 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	}
-	SECTION("NONUNIFORM"){
+	SECTION("NONUNIFORM"){ //Check LDA==GGA for nonunifrom electronic density in the case grad[n]=0
+			basis::field<basis::real_space, double> gaussian_field(rs);
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					gaussian_field.cubic()[ix][iy][iz] = gaussian(vec);
+				}
+			}
+		}
+	
+		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
+		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+		basis::field<basis::real_space, double> gaussianVxcLDA(rs) , gaussianVxcGGA(rs);
+		double gaussianExcLDA, gaussianExcGGA;
+
+		ggafunctional(gaussian_field, gaussianExcLDA, gaussianVxcLDA);
+		ldafunctional(gaussian_field, gaussianExcGGA, gaussianVxcGGA);
+		//CHECK(gaussianExcLDA == gaussianExcGGA);
+		
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					//CHECK(gaussianVxcLDA.cubic()[ix][iy][iz] == Approx(gaussianVxcGGA.cubic()[ix][iy][iz]));
+				}
+			}
+		}
 	}	
-//CHECK(gaussianVxc.linear()[2987] == 110.0_a)
 }
 
 
