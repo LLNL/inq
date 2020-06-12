@@ -191,6 +191,10 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	CHECK(Approx(gaussianExc) == int_xc_energy);
+	CHECK(gaussianVxc.linear()[1] == -0.5111609291_a);
+	CHECK(gaussianVxc.linear()[333] == -0.0000452004_a);
+	CHECK(gaussianVxc.linear()[rs.size()-1] == -0.4326883849_a);
+	CHECK(gaussianVxc.linear()[rs.size()] == 0.0_a);
 	}
 	SECTION("GGA"){
 		basis::field<basis::real_space, double> gaussian_field(rs);
@@ -209,8 +213,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 		ggafunctional(gaussian_field, gaussianExc, gaussianVxc);
 
-		
-		CHECK(gaussianExc == -0.270646_a);
+		CHECK(gaussianExc == -0.3139862364_a);
 		double int_xc_energy = 0.0;
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
@@ -220,15 +223,23 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					auto local_sigma = dgaussian(vec) | dgaussian(vec);
 					double local_exc,local_vxc, local_vsigma;
 					xc_gga_exc_vxc(&ggafunctional.libxc_func(), 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
-				//	CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
+					//math::vec3d local_vxc_extra = local_vsigma*dgaussian(vec);
+					// Local divergence ???
+					//CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
 					int_xc_energy += local_exc*local_density*rs.volume_element();
 				}
 			}
 		}
 	CHECK(Approx(gaussianExc) == int_xc_energy);
+	CHECK(gaussianVxc.linear()[1] == -0.5931073473_a);
+	CHECK(gaussianVxc.linear()[33] == -0.0166346166_a);
+	CHECK(gaussianVxc.linear()[rs.size()-1] == -0.5021400086_a);
+	CHECK(gaussianVxc.linear()[rs.size()] == 0.0_a);
 	}
-	
-//xc_energy = operations::integral_product(density, exc)
+	SECTION("UNIFORM"){
+	}
+	SECTION("NONUNIFORM"){
+	}	
 //CHECK(gaussianVxc.linear()[2987] == 110.0_a)
 }
 
