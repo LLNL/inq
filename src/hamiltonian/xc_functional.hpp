@@ -72,11 +72,11 @@ namespace hamiltonian {
 					//grad_real = 0.0;
 					// Compute sigma as a square of the gradient in the Real space
 					basis::field<basis::real_space, double> sigma(vxc.basis());
-					sigma = 0.0;
+					
 					for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){
 						for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
 							for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
-								// Iterating over each vectorial components of the grad field-set at (ix,iy,iz) point in the space
+								sigma.cubic()[ix][iy][iz] = 0.0;
 								for(int idir = 0; idir < 3 ; idir++) sigma.cubic()[ix][iy][iz] += grad_real.cubic()[ix][iy][iz][idir]*grad_real.cubic()[ix][iy][iz][idir];
 							}
 						}
@@ -96,6 +96,9 @@ namespace hamiltonian {
 							}
 						}
 					}
+
+					auto grad_vsigma = operations::gradient(vsigma);
+					
 					//Taking diverdence of [vsigma * Grad(n)]
 					auto divvxcextra = operations::divergence(vxc_extra);
 					// Add extra component to Vxc
@@ -104,6 +107,8 @@ namespace hamiltonian {
 							for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
 								// Iterating over each (ix,iy,iz) point in the Real space
 								vxc.cubic()[ix][iy][iz] -= 2.0*divvxcextra.cubic()[ix][iy][iz];
+								//								vxc.cubic()[ix][iy][iz] = vsigma.cubic()[ix][iy][iz];
+								//vxc.cubic()[ix][iy][iz] = grad_vsigma.cubic()[ix][iy][iz][0];
 							}
 						}
 					}
@@ -141,6 +146,27 @@ namespace hamiltonian {
 		for(int idir = 0; idir < 3 ; idir++) ff[idir] = -2.0*rr[idir]*gaussian(rr);
 		return ff;
 	}
+
+auto laplacian_gaussian(inq::math::vec3d rr){
+	return 4.0*(rr|rr)*gaussian(rr) - 2.0*gaussian(rr);
+}
+
+template <class FunctionType, class VecType>
+auto finite_difference_gradient(FunctionType const & function, VecType const & point){
+	double const delta = 0.1;
+
+	VecType gradient = {0.0, 0.0, 0.0};
+						
+	for(int idir = 0; idir < 3; idir++){
+		for(auto isign : {-1, 1}){
+			auto point_plus_delta = point;
+			point_plus_delta[idir] += isign*delta;
+			gradient[idir] += isign*function(point_plus_delta)/(2.0*delta);
+		}
+	}
+
+	return gradient;
+}
 
 TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]") {
 
@@ -223,8 +249,23 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					auto local_sigma = dgaussian(vec) | dgaussian(vec);
 					double local_exc,local_vxc, local_vsigma;
 					xc_gga_exc_vxc(&ggafunctional.libxc_func(), 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
-					math::vec3d local_vxc_extra = local_vsigma*dgaussian(vec);
+
+					auto calc_vsigma = [func = &ggafunctional.libxc_func()] (auto point){
+															 auto local_density = gaussian(point);
+															 auto local_sigma = dgaussian(point) | dgaussian(point);
+															 double local_exc,local_vxc, local_vsigma;
+															 xc_gga_exc_vxc(func, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
+															 return local_vsigma;
+														 };
 					
+					auto grad_vsigma = finite_difference_gradient(calc_vsigma, vec);
+
+					local_vxc -= 2.0*((grad_vsigma|dgaussian(vec)) + local_vsigma*laplacian_gaussian(vec));
+
+
+					std::cout << local_density << '\t' << local_vxc << '\t' << gaussianVxc.cubic()[ix][iy][iz] << std::endl;
+					//std::cout << local_density << '\t' << local_vsigma << '\t' << gaussianVxc.cubic()[ix][iy][iz] << std::endl;
+					//std::cout << local_density << '\t' << grad_vsigma[0] << '\t' << gaussianVxc.cubic()[ix][iy][iz] << std::endl;					
 					// Local divergence ???
 					//CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
 
