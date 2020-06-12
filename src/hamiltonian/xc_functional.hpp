@@ -195,7 +195,6 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(gaussianVxc.linear()[1] == -0.5111609291_a);
 	CHECK(gaussianVxc.linear()[333] == -0.0000452004_a);
 	CHECK(gaussianVxc.linear()[rs.size()-1] == -0.4326883849_a);
-	CHECK(gaussianVxc.linear()[rs.size()] == 0.0_a);
 	}
 	SECTION("GGA"){
 		basis::field<basis::real_space, double> gaussian_field(rs);
@@ -224,9 +223,11 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					auto local_sigma = dgaussian(vec) | dgaussian(vec);
 					double local_exc,local_vxc, local_vsigma;
 					xc_gga_exc_vxc(&ggafunctional.libxc_func(), 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
-					//math::vec3d local_vxc_extra = local_vsigma*dgaussian(vec);
+					math::vec3d local_vxc_extra = local_vsigma*dgaussian(vec);
+					
 					// Local divergence ???
 					//CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
+
 					int_xc_energy += local_exc*local_density*rs.volume_element();
 				}
 			}
@@ -265,7 +266,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		}
 	}
 	SECTION("NONUNIFORM"){ //Check LDA==GGA for nonunifrom electronic density in the case grad[n]=0
-			basis::field<basis::real_space, double> gaussian_field(rs);
+		basis::field<basis::real_space, double> gaussian_field(rs);
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.sizes()[2]; iz++){
@@ -291,7 +292,25 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 				}
 			}
 		}
+	}
+/*
+	SECTION("QE_DENSITY"){
+		std::ifstream cubefile("starting_density.cube");
+		xsize << cubefile;
+		ysize << cubefile;
+		zsize << cubefile;
+
+		//Back reverse engineering for the basis-set and system
+
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					cubefile >> density.cubic()[ix][iy][iz]
+				}
+			}
+		}
 	}	
+*/
 }
 
 
