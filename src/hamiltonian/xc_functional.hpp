@@ -236,7 +236,32 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(gaussianVxc.linear()[rs.size()-1] == -0.5021400086_a);
 	CHECK(gaussianVxc.linear()[rs.size()] == 0.0_a);
 	}
-	SECTION("UNIFORM"){
+	SECTION("UNIFORM"){ //Check LDA==GGA for unifrom electronic density
+			basis::field<basis::real_space, double> gaussian_field(rs);
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					gaussian_field.cubic()[ix][iy][iz] = 0.393;
+				}
+			}
+		}
+	
+		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
+		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+		basis::field<basis::real_space, double> gaussianVxcLDA(rs) , gaussianVxcGGA(rs);
+		double gaussianExcLDA, gaussianExcGGA;
+
+		ggafunctional(gaussian_field, gaussianExcLDA, gaussianVxcLDA);
+		ldafunctional(gaussian_field, gaussianExcGGA, gaussianVxcGGA);
+		CHECK(gaussianExcLDA == gaussianExcGGA);
+		
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					CHECK(Approx(gaussianVxcLDA.cubic()[ix][iy][iz]) == gaussianVxcGGA.cubic()[ix][iy][iz]);
+				}
+			}
+		}
 	}
 	SECTION("NONUNIFORM"){
 	}	
