@@ -78,7 +78,6 @@ namespace operations {
 		auto d_vectorial_complex_plane_wave (inq::math::vec3d k , inq::math::vec3d r) {
 				using inq::math::vec3d;
 				// Some random number 
-				inq::complex g;
 				auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0,1.0)*(k | r ));
 				return factor*(1.0*k[0] - 2.3*k[1] + 3.4*k[2]);
 		}
