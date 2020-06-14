@@ -68,9 +68,9 @@ namespace operations {
 		auto vectorial_complex_plane_wave (inq::math::vec3d k , inq::math::vec3d r ){
 				using inq::math::vec3d;
 				std::array<inq::complex, 3> f;
-				f[0] = 1.0 * exp(inq::complex(0.0, 1.0) * (k | r ));
-				f[1] = -2.3 * exp(inq::complex(0.0, 1.0) * (k | r ));
-				f[2] = 3.4 * exp(inq::complex(0.0, 1.0) * (k | r ));
+				f[0] = 1.0*exp(inq::complex(0.0, 1.0)*(k | r ));
+				f[1] = -2.3*exp(inq::complex(0.0, 1.0)*(k | r ));
+				f[2] = 3.4*exp(inq::complex(0.0, 1.0)*(k | r ));
 				return f;
 				}
 
@@ -80,8 +80,7 @@ namespace operations {
 				// Some random number 
 				inq::complex g;
 				auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0,1.0)*(k | r ));
-				g = factor * (1.0*k[0] - 2.3*k[1] + 3.4*k[2]);
-				return g;
+				return factor*(1.0*k[0] - 2.3*k[1] + 3.4*k[2]);
 		}
 
 		//Define test function 4
@@ -89,18 +88,16 @@ namespace operations {
 				using inq::math::vec3d;
 				std::array<double, 3> f;
 				// Some random number 
-				f[0] = 1.0 * sin(k | r );
-				f[1] = -2.5 * cos(k | r );
-				f[2] = 3.3 * sin(k | r );
+				f[0] = 1.0*sin(k | r );
+				f[1] = -2.5*cos(k | r );
+				f[2] = 3.3*sin(k | r );
 				return f;
 		}
 
 		//Define analytic form of the divergence of the test function 4
 		auto d_vectorial_real_wave (inq::math::vec3d k , inq::math::vec3d r) {
 				using inq::math::vec3d;
-				double g;
-				g = (1.0 * k[0] * cos(k | r)) + (2.5 * k[1] * sin(k | r)) + (3.3 * k[2] * cos(k | r));
-				return g;
+				return (1.0*k[0]*cos(k | r)) + (2.5*k[1]*sin(k | r)) + (3.3*k[2]*cos(k | r));
 		}
 
 
