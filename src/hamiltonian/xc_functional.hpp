@@ -69,7 +69,6 @@ namespace hamiltonian {
 				case XC_FAMILY_GGA:{
 					// How to compute Vxc terms for GGA http://mbpt-domiprod.wikidot.com/calculation-of-gga-kernel
 					auto grad_real = operations::gradient(density);
-					grad_real = 0.0;
 					// Compute sigma as a square of the gradient in the Real space
 					basis::field<basis::real_space, double> sigma(vxc.basis());
 					
