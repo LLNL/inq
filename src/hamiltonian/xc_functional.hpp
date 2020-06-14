@@ -69,7 +69,7 @@ namespace hamiltonian {
 				case XC_FAMILY_GGA:{
 					// How to compute Vxc terms for GGA http://mbpt-domiprod.wikidot.com/calculation-of-gga-kernel
 					auto grad_real = operations::gradient(density);
-					//grad_real = 0.0;
+					grad_real = 0.0;
 					// Compute sigma as a square of the gradient in the Real space
 					basis::field<basis::real_space, double> sigma(vxc.basis());
 					
@@ -263,9 +263,9 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					local_vxc -= 2.0*((grad_vsigma|dgaussian(vec)) + local_vsigma*laplacian_gaussian(vec));
 
 
-					std::cout << local_density << '\t' << local_vxc << '\t' << gaussianVxc.cubic()[ix][iy][iz] << std::endl;
+					//std::cout << local_density << '\t' << local_vxc << '\t' << gaussianVxc.cubic()[ix][iy][iz] << std::endl;
 					//std::cout << local_density << '\t' << local_vsigma << '\t' << gaussianVxc.cubic()[ix][iy][iz] << std::endl;
-					//std::cout << local_density << '\t' << grad_vsigma[0] << '\t' << gaussianVxc.cubic()[ix][iy][iz] << std::endl;					
+					//std::cout << local_density << '\t' << grad_vsigma[0] << '\t' << gaussianVxc.cubic()[ix][iy][iz] << std::endl;
 					// Local divergence ???
 					//CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
 
@@ -306,6 +306,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	}
+/*
 	SECTION("NONUNIFORM"){ //Check LDA==GGA for nonunifrom electronic density in the case grad[n]=0
 		basis::field<basis::real_space, double> gaussian_field(rs);
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){
@@ -324,16 +325,17 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 		ggafunctional(gaussian_field, gaussianExcLDA, gaussianVxcLDA);
 		ldafunctional(gaussian_field, gaussianExcGGA, gaussianVxcGGA);
-		//CHECK(gaussianExcLDA == gaussianExcGGA);
+		std::cout << gaussianExcLDA << "  " << gaussianExcGGA << "\n";
 		
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					//CHECK(gaussianVxcLDA.cubic()[ix][iy][iz] == Approx(gaussianVxcGGA.cubic()[ix][iy][iz]));
+					std::cout << gaussianVxcLDA.cubic()[ix][iy][iz]  << "  " << double(gaussianVxcGGA.cubic()[ix][iy][iz]) << '\n';
 				}
 			}
 		}
 	}
+*/
 /*
 	SECTION("QE_DENSITY"){
 		std::ifstream cubefile("starting_density.cube");
