@@ -35,6 +35,7 @@ noinst_HEADERS =                             \
 	utils/merge_optional.hpp                   \
 	utils/partition.hpp                        \
 	utils/skeleton_wrapper.hpp                 \
+	utils/finite_difference.hpp                \
 	input/interaction.hpp                      \
 	input/atom.hpp                             \
 	input/basis.hpp                            \
