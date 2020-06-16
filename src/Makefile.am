@@ -68,6 +68,7 @@ noinst_HEADERS =                             \
 	operations/shift.hpp                       \
 	operations/preconditioner.hpp              \
 	operations/diagonalize.hpp                 \
+	operations/divergence.hpp                  \
 	operations/integral.hpp                    \
 	operations/add.hpp                         \
 	operations/sum.hpp                         \
@@ -77,7 +78,7 @@ noinst_HEADERS =                             \
 	operations/exponential.hpp                 \
 	operations/io.hpp                          \
 	operations/gradient.hpp                    \
-	operations/divergence.hpp                  \
+	physics/constants.hpp                      \
 	density/calculate.hpp                      \
 	density/normalize.hpp                      \
 	hamiltonian/atomic_potential.hpp           \
