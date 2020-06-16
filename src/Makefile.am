@@ -68,6 +68,7 @@ noinst_HEADERS =                             \
 	operations/shift.hpp                       \
 	operations/preconditioner.hpp              \
 	operations/diagonalize.hpp                 \
+	operations/divergence.hpp                  \
 	operations/integral.hpp                    \
 	operations/add.hpp                         \
 	operations/sum.hpp                         \
