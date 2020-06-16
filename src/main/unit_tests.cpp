@@ -35,6 +35,7 @@
 
 #include <utils/partition.hpp>
 #include <utils/match.hpp>
+#include <utils/finite_difference.hpp>
 
 #include <gpu/run.hpp>
 
