@@ -77,6 +77,7 @@ noinst_HEADERS =                             \
 	operations/exponential.hpp                 \
 	operations/io.hpp                          \
 	operations/gradient.hpp                    \
+	operations/divergence.hpp                  \
 	density/calculate.hpp                      \
 	density/normalize.hpp                      \
 	hamiltonian/atomic_potential.hpp           \
