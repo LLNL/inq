@@ -276,7 +276,6 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(gaussianVxc.linear()[1] == -0.5931073473_a);
 	CHECK(gaussianVxc.linear()[33] == -0.0166346166_a);
 	CHECK(gaussianVxc.linear()[rs.size()-1] == -0.5021400086_a);
-	CHECK(gaussianVxc.linear()[rs.size()] == 0.0_a);
 	}
 	SECTION("UNIFORM"){ //Check LDA==GGA for unifrom electronic density
 			basis::field<basis::real_space, double> gaussian_field(rs);
