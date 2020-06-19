@@ -59,16 +59,50 @@ void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> &
 ///////////////////////////////////////////////////////////////
 
 
-template <class InArray4D, class OutArray4D>
-void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
+template <class Comm, class InArray4D, class OutArray4D>
+void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, Comm & comm, InArray4D const & array_rs, OutArray4D && array_fs) {
 	namespace multi = boost::multi;
 	namespace fft = multi::fft;
-	
-	//DATAOPERATIONS FFT
-	fft::dft({true, true, true, false}, array_rs, array_fs, boost::multi::fft::forward);
+
+	if(not real_basis.part().parallel()) {
+		//DATAOPERATIONS FFT
+		fft::dft({true, true, true, false}, array_rs, array_fs, boost::multi::fft::forward);
 #ifdef HAVE_CUDA
-	cudaDeviceSynchronize();
+		cudaDeviceSynchronize();
 #endif
+	} else {
+		
+		int xblock = real_basis.cubic_dist(0).block_size();
+		int zblock = fourier_basis.cubic_dist(2).block_size();
+		assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
+ 		auto last_dim = std::get<3>(sizes(array_rs));
+
+		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
+
+		namespace multi = boost::multi;
+		namespace fft = multi::fft;
+
+		auto const real_x = real_basis.local_sizes();
+		fft::dft({false, true, true, false}, array_rs, tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
+		
+		math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
+
+		assert(std::get<4>(sizes(buffer)) == last_dim);
+		
+		tmp.clear();
+		
+		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+
+		auto const fourier_x = fourier_basis.local_sizes();
+		fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs, fft::forward);
+#ifdef HAVE_CUDA
+		cudaDeviceSynchronize();
+#endif
+		
+	}
 	
 }
 		
@@ -83,42 +117,10 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 	
 	basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
-	if(not real_basis.part().parallel()) {
-		to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
-	} else {
-
-		int xblock = real_basis.cubic_dist(0).block_size();
-		int zblock = fourier_basis.cubic_dist(2).block_size();
-		assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
-
-
-		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size(), phi.set_part().local_size()});
-
-		namespace multi = boost::multi;
-		namespace fft = multi::fft;
-
-		auto const real_x = real_basis.local_sizes();
-		fft::dft({false, true, true, false}, phi.cubic(), tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-		
-		math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(phi.basis_comm().size()).transposed().rotated().transposed().rotated();
-
-		assert(std::get<4>(sizes(buffer)) == phi.set_part().local_size());
-		
-		tmp.clear();
-		
-		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, phi.basis_comm().get());
-
-		auto const fourier_x = fourier_basis.local_sizes();
-		fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), fphi.cubic(), fft::forward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-	}
+	to_fourier(real_basis, fourier_basis, phi.basis_comm(), phi.cubic(), fphi.cubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
+	
 	return fphi;
 }
 
