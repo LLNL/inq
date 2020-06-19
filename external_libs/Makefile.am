@@ -26,6 +26,7 @@ noinst_HEADERS =                                      \
 	nonstd/optional.hpp                                 \
 	multi/config/NODISCARD.hpp                          \
 	multi/config/MAYBE_UNUSED.hpp                       \
+	multi/config/DELETE.hpp                             \
 	multi/config/no_unique_address.hpp                  \
 	multi/utility.hpp                                   \
 	multi/array.hpp                   \
