@@ -108,7 +108,13 @@ GPU_FUNCTION inline auto operator*(const complex & z1, const complex z2){
 #endif
 
 //division
+
+GPU_FUNCTION inline auto operator/(const complex & z, const int ii){
+	return complex{real(z)/ii, imag(z)/ii};
+}
+
 #ifdef HAVE_CUDA
+
 GPU_FUNCTION inline auto operator/(const complex & z, const double x){
 	return complex{real(z)/x, imag(z)/x};
 }
