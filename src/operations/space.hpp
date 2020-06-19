@@ -55,6 +55,22 @@ void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> &
 						 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
 					 });
 }
+
+///////////////////////////////////////////////////////////////
+
+
+template <class InArray4D, class OutArray4D>
+void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
+	namespace multi = boost::multi;
+	namespace fft = multi::fft;
+	
+	//DATAOPERATIONS FFT
+	fft::dft({true, true, true, false}, array_rs, array_fs, boost::multi::fft::forward);
+#ifdef HAVE_CUDA
+	cudaDeviceSynchronize();
+#endif
+	
+}
 		
 ///////////////////////////////////////////////////////////////
 		
@@ -68,13 +84,7 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 	basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
 	if(not real_basis.part().parallel()) {
-			
-		//DATAOPERATIONS FFT
-		fft::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fft::forward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-		
+		to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
 	} else {
 
 		int xblock = real_basis.cubic_dist(0).block_size();
