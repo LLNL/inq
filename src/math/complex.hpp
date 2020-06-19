@@ -64,10 +64,13 @@ GPU_FUNCTION inline double conj(const double & x){
 	return x;
 }
 
+#ifdef HAVE_CUDA
 GPU_FUNCTION inline complex conj(const complex & z){
 	return complex(real(z), -imag(z));
 }
+#endif
 
+#ifdef HAVE_CUDA
 // sum
 GPU_FUNCTION inline auto operator+(const complex & z1, const complex z2){
 	return complex{real(z1) + real(z2), imag(z1) + imag(z2)};
@@ -76,6 +79,7 @@ GPU_FUNCTION inline auto operator+(const complex & z1, const complex z2){
 GPU_FUNCTION inline auto operator-(const complex & z1, const complex z2){
 	return complex{real(z1) - real(z2), imag(z1) - imag(z2)};
 }
+#endif
 
 GPU_FUNCTION inline auto & operator+=(complex & z1, const complex z2){
 	z1 = z1 + z2;
@@ -89,6 +93,7 @@ GPU_FUNCTION inline auto & operator-=(complex & z1, const complex z2){
 
 // multiplication
 
+#ifdef HAVE_CUDA
 GPU_FUNCTION inline auto operator*(const double x, const complex & z){
 	return complex{x*real(z), x*imag(z)};
 }
@@ -100,9 +105,10 @@ GPU_FUNCTION inline auto operator*(const complex & z, const double x){
 GPU_FUNCTION inline auto operator*(const complex & z1, const complex z2){
 	return complex{real(z1)*real(z2) - imag(z1)*imag(z2), real(z1)*imag(z2) + imag(z1)*real(z2)};
 }
+#endif
 
 //division
-
+#ifdef HAVE_CUDA
 GPU_FUNCTION inline auto operator/(const complex & z, const double x){
 	return complex{real(z)/x, imag(z)/x};
 }
@@ -127,6 +133,7 @@ GPU_FUNCTION inline auto operator/(const complex & x, const complex & y){
   return quot;
 
 }
+#endif
 
 }
 #endif
