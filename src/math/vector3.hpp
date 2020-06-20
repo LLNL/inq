@@ -56,6 +56,14 @@ namespace math {
 		constexpr auto & operator[](std::size_type ii) const {
 			return vec_[ii];
 		}
+
+		constexpr bool operator==(const vector3 & other) const {
+			return vec_[0] == other.vec_[0] && vec_[1] == other.vec_[1] && vec_[2] == other.vec_[2];
+		}
+
+		constexpr bool operator!=(const vector3 & other) const {
+			return ! (*this == other);
+		}
 		
 	private:
 
@@ -105,10 +113,10 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(vv[2] == 700);
 	}
 	
-	SECTION("Copy and assignment"){
+	math::vector3<double> vv({0.1, 0.2, 0.3});
+	math::vector3<double> vv2(vv);
 
-		math::vector3<double> vv({0.1, 0.2, 0.3});
-		math::vector3<double> vv2(vv);
+	SECTION("Copy and assignment"){
 
 		CHECK(vv2[0] == 0.1);
 		CHECK(vv2[1] == 0.2);
@@ -123,6 +131,15 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(vv3[2] == 0.3);
 		
 	}
+
+	CHECK(vv == vv2);
+	CHECK(not (vv != vv2));
+
+	math::vector3<double> vv3({20.1, 0.32, 0.53});
+
+	CHECK(vv != vv2);
+
+	
 	
 }
 
