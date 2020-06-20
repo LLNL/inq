@@ -82,6 +82,30 @@ gcc-distcheck:
       - time ../configure --prefix=$HOME
       - time make distcheck
       
+intel:
+    stage: build
+    tags:
+      - intel_compiler
+    script:
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      -  . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+      - time autoreconf -i
+      - mkdir build
+      - cd build
+      - export OMPI_CC=icc
+      - export OMPI_CXX=icpc
+      - export CXXFLAGS="-Ofast -Wall -Wextra"
+      - time ../configure --prefix=$HOME  || cat config.log
+      - time make -j4 install
+      - time src/inq_unit_tests
+      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
+      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
+      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
+      - time tests/hydrogen_local
+      - time tests/neon
+      - time tests/h2o_ground_state
+      - time tests/h2o_real_time
+    
 clang:
     stage: build
     script:
@@ -222,4 +246,3 @@ clang-cuda:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-      
