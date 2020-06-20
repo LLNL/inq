@@ -44,8 +44,7 @@ namespace math {
 			vec_[2] = v2;
 		}
 		
-		template <class Array>
-		GPU_FUNCTION vector3(Array const & arr){
+		GPU_FUNCTION vector3(std::array<Type, 3> const & arr){
 			vec_[0] = arr[0];
 			vec_[1] = arr[1];
 			vec_[2] = arr[2];
