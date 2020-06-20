@@ -105,6 +105,25 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(vv[2] == 700);
 	}
 	
+	SECTION("Copy and assignment"){
+
+		math::vector3<double> vv({0.1, 0.2, 0.3});
+		math::vector3<double> vv2(vv);
+
+		CHECK(vv2[0] == 0.1);
+		CHECK(vv2[1] == 0.2);
+		CHECK(vv2[2] == 0.3);
+
+		math::vector3<double> vv3;
+
+		vv3 = vv;
+
+		CHECK(vv3[0] == 0.1);
+		CHECK(vv3[1] == 0.2);
+		CHECK(vv3[2] == 0.3);
+		
+	}
+	
 }
 
 #endif
