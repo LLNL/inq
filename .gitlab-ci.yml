@@ -233,8 +233,9 @@ intel:
       - time autoreconf -i
       - mkdir build
       - cd build
+      - export OMPI_CC=icc
       - export OMPI_CXX=icpc
-      - export CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - export CXXFLAGS="-Ofast -fast -axavx -pipe -Wall -Wextra"
       - time ../configure --prefix=$HOME
       - time make -j4 install
       - time src/inq_unit_tests
