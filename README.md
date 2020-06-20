@@ -56,7 +56,7 @@ sudo apt install libblas-dev liblapack-dev libfftw3-dev
 Instructions for compiling with Cuda
 
 ```bash
-git clone ...
+git clone git@gitlab.com:npneq/inq.git
 cd inq
 git submodule init
 git submodule update
@@ -70,7 +70,7 @@ export CXXLD=/usr/lib/cuda/bin/nvcc
 make -j
 ```
 
-This instructions might be incomplete, to see how to have a basic install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npnq/inq/blob/master/.gitlab-ci.yml).
+This instructions might be incomplete, to see how to have an up-to-date install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
 
 ## Release information 
 
