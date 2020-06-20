@@ -189,49 +189,14 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 ///////////////////////////////////////////////////////////////
 
 basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis::real_space, complex> & phi){
-	namespace multi = boost::multi;
-	namespace fft = multi::fft;
 
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
 	
 	basis::field<basis::fourier_space, complex> fphi(fourier_basis, phi.basis_comm());
+
+	to_fourier(real_basis, fourier_basis, phi.basis_comm(), phi.hypercubic(), fphi.hypercubic());
 	
-	if(not real_basis.part().parallel()) {
-		
-		fft::dft(phi.cubic(), fphi.cubic(),fft::forward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-		
-	} else {
-
-		int xblock = real_basis.cubic_dist(0).block_size();
-		int zblock = fourier_basis.cubic_dist(2).block_size();
-		assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
-
-		math::array<complex, 3> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size()});
-
-		namespace multi = boost::multi;
-		namespace fft = multi::fft;
-		fft::dft({false, true, true}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fft::forward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-		
-		math::array<complex, 4> buffer = tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated();
-		
-		tmp.clear();
-		
-		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, phi.basis_comm().get());
-		
-		fft::dft({true, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fft::forward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-		
-	}
-
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 			
 	return fphi;
@@ -241,48 +206,14 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 ///////////////////////////////////////////////////////////////			
 	
 basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
-	namespace multi = boost::multi;
-	namespace fft = multi::fft;
 
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis, fphi.basis_comm());
 
 	basis::field<basis::real_space, complex> phi(real_basis, fphi.basis_comm());
 
-	if(not real_basis.part().parallel()) {
-		
-		fft::dft(fphi.cubic(), phi.cubic(), fft::backward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-		
-	} else {
-
-		int xblock = real_basis.cubic_dist(0).block_size();
-		int zblock = fourier_basis.cubic_dist(2).block_size();
-		
-		math::array<complex, 4> buffer({fphi.basis_comm().size(), xblock, real_basis.local_sizes()[1], zblock});
-
-		namespace multi = boost::multi;
-		namespace fft = multi::fft;				
-		fft::dft({true, true, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-		
-		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, fphi.basis_comm().get());
-
-		math::array<complex, 3> tmp({xblock, real_basis.local_sizes()[1], zblock*phi.basis_comm().size()});
-
-		tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated() = buffer;
-		
-		fft::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), 	phi.cubic(), fft::backward);
-#ifdef HAVE_CUDA
-		cudaDeviceSynchronize();
-#endif
-		
-	}
-
+	to_real(fourier_basis, real_basis, phi.basis_comm(), fphi.hypercubic(), phi.hypercubic());
+ 
 	if(normalize){
 		gpu::run(phi.linear().size(),
 						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ip){
