@@ -235,8 +235,8 @@ intel:
       - cd build
       - export OMPI_CC=icc
       - export OMPI_CXX=icpc
-      - export CXXFLAGS="-Ofast -fast -axavx -pipe -Wall -Wextra"
-      - time ../configure --prefix=$HOME
+      - export CXXFLAGS="-Ofast -Wall -Wextra"
+      - time ../configure --prefix=$HOME  || cat config.log
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
