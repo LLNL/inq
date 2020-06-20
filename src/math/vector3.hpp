@@ -35,22 +35,22 @@ namespace math {
 
 	public:
 
-		GPU_FUNCTION vector3(){
+		constexpr vector3(){
 		}
 		
-		GPU_FUNCTION vector3(Type const & v0, Type const & v1, Type const & v2){
+		constexpr vector3(Type const & v0, Type const & v1, Type const & v2){
 			vec_[0] = v0;
 			vec_[1] = v1;
 			vec_[2] = v2;
 		}
 		
-		GPU_FUNCTION vector3(std::array<Type, 3> const & arr){
+		constexpr vector3(std::array<Type, 3> const & arr){
 			vec_[0] = arr[0];
 			vec_[1] = arr[1];
 			vec_[2] = arr[2];
 		}
 		
-		GPU_FUNCTION vector3(std::initializer_list<Type> list){
+		constexpr vector3(std::initializer_list<Type> list){
 			assert(list.size() == 3);
 			vec_[0] = list.begin()[0];
 			vec_[1] = list.begin()[1];
@@ -58,12 +58,12 @@ namespace math {
 		}
 		
 		template <class IntType>
-		GPU_FUNCTION auto & operator[](IntType ii){
+		constexpr auto & operator[](IntType ii){
 			return vec_[ii];
 		}
 
 		template <class IntType>
-		GPU_FUNCTION auto & operator[](IntType ii) const {
+		constexpr auto & operator[](IntType ii) const {
 			return vec_[ii];
 		}
 		
