@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <config.h>
+#include <inq_config.h>
 #include <math/complex.hpp>
 #include <basis/field_set.hpp>
 #include <cstdlib>

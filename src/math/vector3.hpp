@@ -24,7 +24,7 @@
 #include <gpu/run.hpp>
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <inq_config.h>
 #endif
 
 namespace inq {

@@ -26,7 +26,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-//#include <config.h>
+//#include <inq_config.h>
 
 #ifndef INQ__IONS__UNITCELL
 #define INQ__IONS__UNITCELL

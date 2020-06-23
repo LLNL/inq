@@ -22,7 +22,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <inq_config.h>
 #endif
 
 #ifdef HAVE_CUDA
