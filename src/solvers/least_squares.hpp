@@ -24,7 +24,7 @@
 #include <inq_config.h>
 #include <cstdlib>
 
-#define dgelss FC_FUNC(dgelss, DGELSS) 
+#define dgelss FC_GLOBAL(dgelss, DGELSS) 
 extern "C" void dgelss(const int & m, const int & n, const int & nrhs, double * a, const int & lda, double * b, const int & ldb, double * s, const double & rcond, int & rank, double * work, const int & lwork, int & info);
 
 namespace inq {

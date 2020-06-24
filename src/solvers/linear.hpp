@@ -24,10 +24,10 @@
 #include <inq_config.h>
 #include <cstdlib>
 
-#define dpotrf FC_FUNC(dpotrf, DPOTRF) 
+#define dpotrf FC_GLOBAL(dpotrf, DPOTRF) 
 extern "C" void dpotrf(const char * uplo, const int * n, double * a, const int * lda, int * info);
 
-#define dtrsv FC_FUNC(dtrsv, DTRSV) 
+#define dtrsv FC_GLOBAL(dtrsv, DTRSV) 
 
 namespace inq {
 namespace solvers {

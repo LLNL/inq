@@ -34,10 +34,12 @@
 #include <cusolverDn.h>
 #endif
 
-#define dsyev FC_FUNC(dsyev, DZYEV)
+#include "FC.h"
+
+#define dsyev FC_GLOBAL(dsyev, DZYEV)
 extern "C" void dsyev(const char * jobz, const char * uplo, const int & n, double * a, const int & lda, double * w, double * work, const int & lwork, int & info);
 
-#define zheev FC_FUNC(zheev, ZHEEV) 
+#define zheev FC_GLOBAL(zheev, ZHEEV) 
 extern "C" void zheev(const char * jobz, const char * uplo, const int & n, inq::complex * a, const int & lda, double * w, inq::complex * work, const int & lwork, double * rwork, int & info);
 
 namespace inq {
