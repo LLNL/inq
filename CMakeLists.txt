@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-
+include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(inq VERSION 0.1)
@@ -28,6 +28,9 @@ link_libraries(${Libxc_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS serialization)
 link_libraries(${Boost_LIBRARIES})
+
+find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
+link_libraries(${FFTW_LIBRARIES})
 
 # Required for inq_config.h
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
