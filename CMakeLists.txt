@@ -12,8 +12,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include(FortranCInterface)
-
-
+FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
 #find_package(Boost REQUIRED COMPONENTS boost_serialization)
