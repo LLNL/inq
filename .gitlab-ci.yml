@@ -30,6 +30,7 @@ gcc:
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - time ../configure --prefix=$HOME  || cat config.log
+      - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -51,6 +52,7 @@ gcc-fast:
       - cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - time ../configure --prefix=$HOME  || cat config.log
+      - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -86,6 +88,7 @@ intel:
       - export OMPI_CXX=icpc
       - export CXXFLAGS="-Ofast -Wall -Wextra"
       - time ../configure --prefix=$HOME  || cat config.log
+      - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -109,6 +112,7 @@ clang:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
       - time ../configure --prefix=$HOME
       - ls -l
+      - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -135,6 +139,7 @@ clang-cuda:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
+      - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
       - time tests/hydrogen_local
@@ -154,6 +159,7 @@ clang-fast:
       - export OMPI_CXX=clang++
       - export CXXFLAGS="-Ofast -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
+      - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -176,6 +182,7 @@ clang-valgrind:
       - export OMPI_CXX=clang++
       - export CXXFLAGS="-g -Ofast -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
+      - time make -j4
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../.valgrind_suppressions"
       - time $VALGRIND src/inq_unit_tests
@@ -199,6 +206,7 @@ nvcc-nocuda:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME || cat config.log
+      - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
       - time mpirun -np 2 --oversubscribe src/inq_unit_tests
@@ -225,6 +233,7 @@ nvcc:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
+      - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
       - time tests/hydrogen_local
