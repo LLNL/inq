@@ -37,8 +37,4 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(external_libs)
 add_subdirectory(src)
-
-
-
-
-
+add_subdirectory(tests)
