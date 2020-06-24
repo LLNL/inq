@@ -19,7 +19,6 @@ nofftw:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
-      - time autoreconf -i
       - mkdir build
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
@@ -32,7 +31,6 @@ gcc:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
-      - time autoreconf -i
       - mkdir build
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
@@ -54,7 +52,6 @@ gcc-fast:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
-      - time autoreconf -i
       - mkdir build
       - cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
@@ -76,7 +73,6 @@ gcc-distcheck:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
-      - time autoreconf -i
       - mkdir build
       - cd build
       - time ../configure --prefix=$HOME
@@ -89,7 +85,6 @@ intel:
     script:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       -  . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-      - time autoreconf -i
       - mkdir build
       - cd build
       - export OMPI_CC=icc
@@ -113,7 +108,6 @@ clang:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
-      - time autoreconf -i
       - mkdir build
       - cd build
       - export OMPI_CXX=clang++
@@ -136,7 +130,6 @@ clang-fast:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
-      - time autoreconf -i
       - mkdir build
       - cd build
       - export OMPI_CXX=clang++
@@ -159,7 +152,6 @@ clang-valgrind:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang autoconf make automake libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev valgrind
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
-      - time autoreconf -i
       - mkdir build
       - cd build
       - export OMPI_CXX=clang++
@@ -180,7 +172,6 @@ nvcc-nocuda:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
-      - time autoreconf -i
       - mkdir nvcc
       - cd nvcc
       - export CXX="nvcc -x cu"
@@ -207,7 +198,6 @@ nvcc:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
-      - time autoreconf -i
       - mkdir nvcc
       - cd nvcc
       - export CXX="nvcc -x cu"
@@ -231,7 +221,6 @@ clang-cuda:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi    
       - export PATH=/usr/local/cuda/bin:$PATH
       - clang++-10 -v
-      - time autoreconf -i
       - mkdir clang_cuda
       - cd clang_cuda
       - export CXX="clang++-10 -x cuda --cuda-gpu-arch=sm_50"
