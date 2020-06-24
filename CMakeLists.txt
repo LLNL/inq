@@ -15,6 +15,12 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
+find_package(BLAS REQUIRED)
+link_libraries(${BLAS_LIBRARIES})
+
+find_package(LAPACK REQUIRED)
+link_libraries(${LAPACK_LIBRARIES})
+
 #find_package(Boost REQUIRED COMPONENTS boost_serialization)
 
 # Required for inq_config.h
