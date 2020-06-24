@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+
 project(inq VERSION 0.1)
 enable_language(Fortran)
 
@@ -21,7 +23,11 @@ link_libraries(${BLAS_LIBRARIES})
 find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
 
-#find_package(Boost REQUIRED COMPONENTS boost_serialization)
+find_package(Libxc REQUIRED)
+link_libraries(${Libxc_LIBRARIES})
+
+find_package(Boost REQUIRED COMPONENTS serialization)
+link_libraries(${Boost_LIBRARIES})
 
 # Required for inq_config.h
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
