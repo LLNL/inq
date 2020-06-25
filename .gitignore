@@ -1,5 +1,4 @@
 *~
-Makefile
 *.o
 .deps
 src/inq_unit_tests
