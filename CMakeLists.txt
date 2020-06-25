@@ -3,14 +3,17 @@ include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(inq VERSION 0.1)
+
+
 enable_language(CXX)
 enable_language(Fortran)
 
 if(ENABLE_CUDA)
   enable_language(CUDA)
+  set(SRC_EXT cu)
+else()
+  set(SRC_EXT cpp)
 endif()
-
-configure_file(inq_config.h.in inq_config.h)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -38,7 +41,8 @@ find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
 link_libraries(${FFTW_LIBRARIES})
 
 # Required for inq_config.h
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${PROJECT_BINARY_DIR})
+configure_file(inq_config.h.in inq_config.h)
 
 install(DIRECTORY share/ DESTINATION share/inq)
 

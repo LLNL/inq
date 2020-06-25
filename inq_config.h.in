@@ -1,3 +1,4 @@
 #define inq_VERSION_MAJOR @inq_VERSION_MAJOR@
 #define inq_VERSION_MINOR @inq_VERSION_MINOR@
+#define HAVE_CUDA @ENABLE_CUDA@
 
