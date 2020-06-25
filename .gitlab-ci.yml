@@ -7,23 +7,60 @@ variables:
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
 
 #check that the configuration fails if fftw is not found
-nofftw:
+
+cmake-noblas:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libgsl-dev libblas-dev liblapack-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
+      - time apt update -qq 
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
-      
+
+cmake-noboost:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - mpic++ --version
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - eval ! ../configure --prefix=$HOME
+
+cmake-nofftw:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - mpic++ --version
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - eval ! ../configure --prefix=$HOME
+
+cmake-nolapack:
+    stage: build
+    script:
+      - time apt update -qq 
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - mpic++ --version
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - eval ! ../configure --prefix=$HOME
+
 gcc:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -45,7 +82,7 @@ gcc-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -62,19 +99,7 @@ gcc-fast:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-      
-gcc-distcheck:
-    stage: build
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mpic++ --version
-      - mkdir build
-      - cd build
-      - time ../configure --prefix=$HOME
-      - time make distcheck
-      
+            
 intel:
     stage: build
     tags:
@@ -103,7 +128,7 @@ clang:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev    
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - mkdir build
@@ -123,35 +148,35 @@ clang:
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       
-clang-cuda:
-    stage: build
-    tags:
-      - cuda_gpu
-    script:
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi    
-      - export PATH=/usr/local/cuda/bin:$PATH
-      - clang++-10 -v
-      - mkdir clang_cuda
-      - cd clang_cuda
-      - export CXX="clang++-10 -x cuda --cuda-gpu-arch=sm_50"
-      - export CXXLD="clang++-10"
-      - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -std=c++14 -Wall"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
-      - time make -j4
-      - time make -j4 install
-      - time src/inq_unit_tests
-      - time tests/hydrogen_local
-      - time tests/neon
-      - time tests/h2o_ground_state
-      - time tests/h2o_real_time
+#clang-cuda:
+#    stage: build
+#    tags:
+#      - cuda_gpu
+#    script:
+#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi    
+#      - export PATH=/usr/local/cuda/bin:$PATH
+#      - clang++-10 -v
+#      - mkdir clang_cuda
+#      - cd clang_cuda
+#      - export CXX="clang++-10 -x cuda --cuda-gpu-arch=sm_50"
+#      - export CXXLD="clang++-10"
+#      - export CXXFLAGS=" $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -g -pg -D_DISABLE_CUDA_SLOW -O3 -std=c++14 -Wall"
+#      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+#      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+#      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
+#      - time make -j4
+#      - time make -j4 install
+#      - time src/inq_unit_tests
+#      - time tests/hydrogen_local
+#      - time tests/neon
+#      - time tests/h2o_ground_state
+#      - time tests/h2o_real_time
       
 clang-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev    
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - mkdir build
@@ -174,7 +199,7 @@ clang-valgrind:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev valgrind
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-all-dev valgrind
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - mkdir build
@@ -189,33 +214,33 @@ clang-valgrind:
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
       
-nvcc-nocuda:
-    stage: build
-    script:
-      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libgsl-dev libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - export PATH=/usr/local/cuda/bin:$PATH
-      - nvcc -V
-      - mkdir nvcc
-      - cd nvcc
-      - export CXX="nvcc -x cu"
-      - export CXXLD="nvcc"
-      - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME || cat config.log
-      - time make -j4
-      - time make -j4 install
-      - time src/inq_unit_tests
-      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
-      - time tests/hydrogen_local
-      - time tests/neon
-      - time tests/h2o_ground_state
-      - time tests/h2o_real_time
+#nvcc-nocuda:
+#    stage: build
+#    script:
+#      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
+#      - time apt update -qq
+#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
+#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+#      - export PATH=/usr/local/cuda/bin:$PATH
+#      - nvcc -V
+#      - mkdir nvcc
+#      - cd nvcc
+#      - export CXX="nvcc -x cu"
+#      - export CXXLD="nvcc"
+#      - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
+#      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+#      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+#      - time ../configure --prefix=$HOME || cat config.log
+#      - time make -j4
+#      - time make -j4 install
+#      - time src/inq_unit_tests
+#      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
+#      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
+#      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
+#      - time tests/hydrogen_local
+#      - time tests/neon
+#      - time tests/h2o_ground_state
+#      - time tests/h2o_real_time
       
 nvcc:
     stage: build
