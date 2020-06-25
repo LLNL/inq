@@ -8,7 +8,7 @@ variables:
 
 #check that the configuration fails if fftw is not found
 
-cmake-noblas:
+build-noblas:
     stage: build
     script:
       - time apt update -qq 
@@ -20,7 +20,7 @@ cmake-noblas:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-cmake-noboost:
+build-noboost:
     stage: build
     script:
       - time apt update -qq
@@ -32,7 +32,7 @@ cmake-noboost:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-cmake-nofftw:
+build-nofftw:
     stage: build
     script:
       - time apt update -qq
@@ -44,7 +44,7 @@ cmake-nofftw:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-cmake-nolapack:
+build-nolapack:
     stage: build
     script:
       - time apt update -qq 
