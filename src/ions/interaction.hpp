@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <config.h>
+#include <inq_config.h>
 #include <math/vec3d.hpp>
 #include <cmath>
 #include <ions/periodic_replicas.hpp>

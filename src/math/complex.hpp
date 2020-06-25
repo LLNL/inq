@@ -3,9 +3,7 @@
 #ifndef INQ__MATH__COMPLEX
 #define INQ__MATH__COMPLEX
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <inq_config.h>
 
 #include <complex>
 #include <gpu/run.hpp>
