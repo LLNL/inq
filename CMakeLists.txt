@@ -7,7 +7,7 @@ enable_language(CXX)
 enable_language(Fortran)
 
 if(ENABLE_CUDA)
-  enable_language(Cuda)
+  enable_language(CUDA)
 endif()
 
 configure_file(inq_config.h.in inq_config.h)
