@@ -12,7 +12,7 @@ cmake-noblas:
     stage: build
     script:
       - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config liblapack-dev libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libxc-dev libopenmpi-dev openmpi-bin libboost-serialization-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
