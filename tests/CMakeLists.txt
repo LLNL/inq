@@ -4,9 +4,6 @@ include_directories(../src)
 
 link_libraries(inq)
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DPREFIX_DIR='\"${CMAKE_INSTALL_PREFIX}\"'" )
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DSHARE_DIR='\"${CMAKE_INSTALL_PREFIX}/share/inq\"'" )
-
 add_executable(electron_gas_non_interacting electron_gas_non_interacting.${SRC_EXT}) 
 add_executable(electron_gas_lda_pz electron_gas_lda_pz.${SRC_EXT})
 add_executable(hydrogen_local hydrogen_local.${SRC_EXT})

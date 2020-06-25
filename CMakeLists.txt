@@ -42,6 +42,7 @@ link_libraries(${FFTW_LIBRARIES})
 
 # Required for inq_config.h
 include_directories(${PROJECT_BINARY_DIR})
+include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 configure_file(inq_config.h.in inq_config.h)
 
 install(DIRECTORY share/ DESTINATION share/inq)
