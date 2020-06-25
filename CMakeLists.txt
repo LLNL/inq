@@ -5,15 +5,15 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 project(inq VERSION 0.1)
 
 
-enable_language(CXX)
-enable_language(Fortran)
-
 if(ENABLE_CUDA)
   enable_language(CUDA)
   set(SRC_EXT cu)
 else()
   set(SRC_EXT cpp)
 endif()
+
+enable_language(CXX)
+enable_language(Fortran)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
