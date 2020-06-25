@@ -252,12 +252,10 @@ nvcc:
       - nvcc -V
       - mkdir nvcc
       - cd nvcc
-      - export CXX="nvcc -x cu"
-      - export CXXLD="nvcc"
-      - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
+      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda || cat config.log
+      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
       - time make -j4
       - time make -j4 install
       - time src/inq_unit_tests
