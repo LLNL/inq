@@ -21,9 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifdef HAVE_CONFIG_H
 #include <inq_config.h>
-#endif
 
 #include <math/vec3d.hpp>
 #include <ions/unitcell.hpp>

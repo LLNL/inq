@@ -23,9 +23,7 @@
 
 #include <gpu/run.hpp>
 
-#ifdef HAVE_CONFIG_H
 #include <inq_config.h>
-#endif
 
 namespace inq {
 namespace math {
