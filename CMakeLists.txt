@@ -35,6 +35,8 @@ link_libraries(${FFTW_LIBRARIES})
 # Required for inq_config.h
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+install(DIRECTORY share/ DESTINATION share/inq)
+
 add_subdirectory(external_libs)
 add_subdirectory(src)
 add_subdirectory(tests)
