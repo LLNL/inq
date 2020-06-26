@@ -48,6 +48,11 @@ include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 configure_file(inq_config.h.in inq_config.h)
 
+#Generate inc++
+set(INCXX scripts/inc++)
+configure_file(${INCXX}.bash.in ${INCXX})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin)
+  
 install(DIRECTORY share/ DESTINATION share/inq)
 
 add_subdirectory(external_libs)
