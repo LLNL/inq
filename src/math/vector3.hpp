@@ -49,11 +49,11 @@ namespace math {
 			vec_[2] = arr[2];
 		}
 		
-		constexpr auto & operator[](std::size_type ii){
+		constexpr auto & operator[](int ii){
 			return vec_[ii];
 		}
 
-		constexpr auto & operator[](std::size_type ii) const {
+		constexpr auto & operator[](int ii) const {
 			return vec_[ii];
 		}
 
