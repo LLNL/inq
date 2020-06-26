@@ -6,8 +6,11 @@ project(inq VERSION 0.1)
 
 
 if(ENABLE_CUDA)
-  enable_language(CUDA)
   set(SRC_EXT cu)
+  
+  enable_language(CUDA)
+  find_package(CUDA)
+  link_libraries(${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
 else()
   set(SRC_EXT cpp)
 endif()
