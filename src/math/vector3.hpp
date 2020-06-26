@@ -35,9 +35,8 @@ namespace math {
 
 	public:
 
-		constexpr vector3(){
-		}
-		
+		constexpr vector3() = default;
+
 		constexpr vector3(Type const & v0, Type const & v1, Type const & v2){
 			vec_[0] = v0;
 			vec_[1] = v1;
@@ -50,20 +49,11 @@ namespace math {
 			vec_[2] = arr[2];
 		}
 		
-		constexpr vector3(std::initializer_list<Type> list){
-			assert(list.size() == 3);
-			vec_[0] = list.begin()[0];
-			vec_[1] = list.begin()[1];
-			vec_[2] = list.begin()[2];
-		}
-		
-		template <class IntType>
-		constexpr auto & operator[](IntType ii){
+		constexpr auto & operator[](std::size_type ii){
 			return vec_[ii];
 		}
 
-		template <class IntType>
-		constexpr auto & operator[](IntType ii) const {
+		constexpr auto & operator[](std::size_type ii) const {
 			return vec_[ii];
 		}
 		
