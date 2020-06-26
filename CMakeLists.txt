@@ -10,7 +10,8 @@ if(ENABLE_CUDA)
   
   enable_language(CUDA)
   find_package(CUDA)
-  link_libraries(${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
+  set(INQ_CUDA_LIBRARIES ${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
+  link_libraries(${INQ_CUDA_LIBRARIES})
 else()
   set(SRC_EXT cpp)
 endif()
@@ -50,7 +51,7 @@ configure_file(inq_config.h.in inq_config.h)
 
 #Generate inc++
 set(INCXX scripts/inc++)
-configure_file(${INCXX}.bash.in ${INCXX})
+configure_file(${INCXX}.bash.in ${INCXX} @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin)
   
 install(DIRECTORY share/ DESTINATION share/inq)
