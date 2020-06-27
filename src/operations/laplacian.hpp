@@ -26,7 +26,7 @@
 
 #include <multi/adaptors/fftw.hpp>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <multi/adaptors/cufft.hpp>
 #endif
 
@@ -38,7 +38,7 @@ namespace operations {
 void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex> const & laplff){
 		
 	//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	
 	gpu::run(laplff.set_size(), laplff.basis().sizes()[2], laplff.basis().sizes()[1], laplff.basis().sizes()[0],
 					 [basis = laplff.basis(),
@@ -71,7 +71,7 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 	void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & ff){
 
 		//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 
 		gpu::run(ff.set_size(), ff.basis().sizes()[2], ff.basis().sizes()[1], ff.basis().sizes()[0],
 						 [basis = ff.basis(),

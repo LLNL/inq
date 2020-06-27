@@ -26,7 +26,7 @@
 
 #include <multi/adaptors/fftw.hpp>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <multi/adaptors/cufft.hpp>
 #endif
 
@@ -71,7 +71,7 @@ namespace operations {
 			
 				//DATAOPERATIONS FFT
 				fft::dft({true, true, true, false}, phi.cubic(), fphi.cubic(), boost::multi::fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		
@@ -89,7 +89,7 @@ namespace operations {
 
 				auto const real_x = real_basis.local_sizes();
 				fft::dft({false, true, true, false}, phi.cubic(), tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		
@@ -103,7 +103,7 @@ namespace operations {
 
 				auto const fourier_x = fourier_basis.local_sizes();
 				fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), fphi.cubic(), fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 			}
@@ -127,7 +127,7 @@ namespace operations {
 
 				//DATAOPERATIONS FFT
 				fft::dft({true, true, true, false}, fphi.cubic(), phi.cubic(), fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 			} else {
@@ -140,7 +140,7 @@ namespace operations {
 				namespace multi = boost::multi;
 				namespace fft = multi::fft;
 				fft::dft({true, true, false, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		
@@ -151,7 +151,7 @@ namespace operations {
 				tmp.unrotated(2).partitioned(phi.basis_comm().size()).transposed().rotated().transposed().rotated() = buffer;
 		
 				fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), phi.cubic(), fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 			}
@@ -180,7 +180,7 @@ namespace operations {
 			if(not real_basis.part().parallel()) {
 		
 				fft::dft(phi.cubic(), fphi.cubic(),fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		
@@ -195,7 +195,7 @@ namespace operations {
 				namespace multi = boost::multi;
 				namespace fft = multi::fft;
 				fft::dft({false, true, true}, phi.cubic(), tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		
@@ -206,7 +206,7 @@ namespace operations {
 				MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, phi.basis_comm().get());
 		
 				fft::dft({true, false, false}, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fphi.cubic(), fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		
@@ -232,7 +232,7 @@ namespace operations {
 			if(not real_basis.part().parallel()) {
 		
 				fft::dft(fphi.cubic(), phi.cubic(), fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		
@@ -246,7 +246,7 @@ namespace operations {
 				namespace multi = boost::multi;
 				namespace fft = multi::fft;				
 				fft::dft({true, true, false}, fphi.cubic(), buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		
@@ -257,7 +257,7 @@ namespace operations {
 				tmp.unrotated().partitioned(phi.basis_comm().size()).transposed().rotated() = buffer;
 		
 				fft::dft({false, false, true}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), 	phi.cubic(), fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				cudaDeviceSynchronize();
 #endif
 		

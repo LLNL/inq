@@ -4,9 +4,7 @@
 #define inq_VERSION_MAJOR @inq_VERSION_MAJOR@
 #define inq_VERSION_MINOR @inq_VERSION_MINOR@
 
-#if 1 + @ENABLE_CUDA@ -1
-#define HAVE_CUDA
-#endif
+#cmakedefine ENABLE_CUDA @ENABLE_CUDA@
 
 #define PREFIX_DIR "@CMAKE_INSTALL_PREFIX@"
 #define SHARE_DIR  "@CMAKE_INSTALL_PREFIX@/share/inq"

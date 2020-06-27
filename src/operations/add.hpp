@@ -62,7 +62,7 @@ field_type add(const field_type & t1, const field_type & t2, const field_type & 
 	field_type tadd(t1.basis(), t1.basis_comm());
 
 	//DATAOPERATIONS LOOP + GPU::RUN 1D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 
 	auto t1p = t1.linear().begin();
 	auto t2p = t2.linear().begin();

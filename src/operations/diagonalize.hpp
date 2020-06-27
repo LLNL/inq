@@ -28,7 +28,7 @@
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <cusolverDn.h>
 #endif
 
@@ -53,7 +53,7 @@ auto diagonalize(math::array<double, 2> & matrix){
 	math::array<double, 1> eigenvalues(nn);
 
 	//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	{
 		cusolverDnHandle_t cusolver_handle;
 			
@@ -116,7 +116,7 @@ auto diagonalize(math::array<complex, 2> & matrix){
 	math::array<double, 1> eigenvalues(nn);
 
 	//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	{
 		cusolverDnHandle_t cusolver_handle;
 			

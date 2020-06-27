@@ -26,7 +26,7 @@
 
 #include <multi/adaptors/fftw.hpp>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <multi/adaptors/cufft.hpp>
 #endif
 
