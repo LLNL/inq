@@ -36,12 +36,15 @@ find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
 
 find_package(Libxc REQUIRED)
+include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS serialization)
+include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
 
 find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
+include_directories(${FFTW_INCLUDE_DIRS})
 link_libraries(${FFTW_LIBRARIES})
 
 # Required for inq_config.h
