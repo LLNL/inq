@@ -41,6 +41,12 @@ namespace math {
 			vec_[2] = v2;
 		}
 		
+		constexpr vector3(std::initializer_list<Type> const & list){
+			vec_[0] = list.begin()[0];
+			vec_[1] = list.begin()[1];
+			vec_[2] = list.begin()[2];
+		}
+		
 		constexpr vector3(std::array<Type, 3> const & arr){
 			vec_[0] = arr[0];
 			vec_[1] = arr[1];
