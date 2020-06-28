@@ -24,10 +24,10 @@
 #include <gpu/run.hpp>
 #include <basis/field_set.hpp>
 
-#include <multi/adaptors/fftw.hpp>
-
 #ifdef ENABLE_CUDA
-#include <multi/adaptors/cufft.hpp>
+#include <multi/adaptors/fft.hpp>
+#else
+#include <multi/adaptors/fftw.hpp>
 #endif
 
 #include <cassert>
@@ -61,11 +61,15 @@ void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> &
 template <class Comm, class InArray4D, class OutArray4D>
 void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, Comm & comm, InArray4D const & array_rs, OutArray4D && array_fs) {
 	namespace multi = boost::multi;
+#ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
-
+#else
+	namespace fft = multi::fftw;
+#endif
+	
 	if(not real_basis.part().parallel()) {
 		//DATAOPERATIONS FFT
-		fft::dft({true, true, true, false}, array_rs, array_fs, boost::multi::fft::forward);
+		fft::dft({true, true, true, false}, array_rs, array_fs, fft::forward);
 #ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
@@ -77,9 +81,6 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
  		auto last_dim = std::get<3>(sizes(array_rs));
 
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
-
-		namespace multi = boost::multi;
-		namespace fft = multi::fft;
 
 		auto const real_x = real_basis.local_sizes();
 		fft::dft({false, true, true, false}, array_rs, tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
@@ -110,8 +111,12 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 template <class Comm, class InArray4D, class OutArray4D>
 void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, Comm & comm, InArray4D const & array_fs, OutArray4D && array_rs) {
 	namespace multi = boost::multi;
+#ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
-
+#else
+	namespace fft = multi::fftw;
+#endif
+	
 	if(not real_basis.part().parallel()) {
 
 		//DATAOPERATIONS FFT
@@ -128,8 +133,6 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		
 		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
 		
-		namespace multi = boost::multi;
-		namespace fft = multi::fft;
 		fft::dft({true, true, false, false}, array_fs, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
 #ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();

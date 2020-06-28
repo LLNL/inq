@@ -37,7 +37,6 @@ class poisson {
 public:
 
 	auto solve_periodic(const basis::field<basis::real_space, complex> & density) const {
-		namespace fft = boost::multi::fft;
 
 		const basis::real_space & real_space = density.basis();
 		basis::fourier_space fourier_basis(real_space, density.basis_comm());
@@ -70,7 +69,6 @@ public:
 	}
 
 	auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
-		namespace fft = boost::multi::fft;
 			
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
 		auto potential_fs = operations::space::to_fourier(potential2x);
