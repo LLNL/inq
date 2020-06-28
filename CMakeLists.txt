@@ -10,7 +10,8 @@ if(ENABLE_CUDA)
   
   enable_language(CUDA)
   find_package(CUDA)
-  link_libraries(${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
+  set(INQ_CUDA_LIBRARIES ${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
+  link_libraries(${INQ_CUDA_LIBRARIES})
 else()
   set(SRC_EXT cpp)
 endif()
@@ -35,12 +36,15 @@ find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
 
 find_package(Libxc REQUIRED)
+include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS serialization)
+include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
 
 find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
+include_directories(${FFTW_INCLUDE_DIRS})
 link_libraries(${FFTW_LIBRARIES})
 
 # Required for inq_config.h
@@ -48,6 +52,11 @@ include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 configure_file(inq_config.h.in inq_config.h)
 
+#Generate inc++
+set(INCXX scripts/inc++)
+configure_file(${INCXX}.bash.in ${INCXX} @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin)
+  
 install(DIRECTORY share/ DESTINATION share/inq)
 
 add_subdirectory(external_libs)

@@ -128,7 +128,7 @@ namespace hamiltonian {
 				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
 
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				//OPTIMIZATION: this should be done in parallel for atoms too
 				gpu::run(sphere.size(),
 								 [dns = begin(density.cubic()), pts = begin(sphere.points()),

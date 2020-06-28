@@ -114,7 +114,7 @@ namespace hamiltonian {
 
 			//the scalar local potential in real space
 			//DATAOPERATIONS LOOP + GPU:RUN 2D
-#ifdef HAVE_CUDA2
+#ifdef ENABLE_CUDA2
 			gpu::run(phi.set_size(), phi.basis().size(),
 							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi), it_phi = begin(hphi)] __device__
 							 (auto ist, auto ip){

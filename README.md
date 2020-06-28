@@ -58,9 +58,7 @@ Instructions for compiling with Cuda
 ```bash
 git clone git@gitlab.com:npneq/inq.git
 cd inq
-git submodule init
-git submodule update
-autoreconf -i
+git submodule update --init --recursive
 mkdir build
 cd build
 export CXX="/usr/lib/cuda/bin/nvcc -x cu"

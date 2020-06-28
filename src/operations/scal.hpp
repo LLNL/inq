@@ -34,7 +34,7 @@ void scal_invsqrt(const array_1d & factor, field_set_type & phi){
 	assert(size(factor) == phi.set_size());
 
 	//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	gpu::run(phi.set_size(), phi.basis().num_points(),
 					 [factor, phimat = begin(phi.matrix()), fac = begin(factor)] __device__
 					 (auto ist, auto ipoint){
