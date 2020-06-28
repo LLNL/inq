@@ -29,7 +29,7 @@
 
 #include <operations/overlap.hpp>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <cusolverDn.h>
 #endif
 
@@ -53,7 +53,7 @@ void orthogonalize(field_set_type & phi){
 	const int nst = phi.set_size();
 		
 	//DATAOPERATIONS RAWLAPACK zpotrf
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	{
 		cusolverDnHandle_t cusolver_handle;
 			

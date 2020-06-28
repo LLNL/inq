@@ -105,7 +105,15 @@ namespace basis {
 		auto cubic() {
 			return linear_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
+		
+		auto hypercubic() const {
+			return cubic().partitioned(1).rotated();
+		}
 
+		auto hypercubic() {
+			return cubic().partitioned(1).rotated();
+		}
+		
 		auto data() {
 			return linear_.data();
 		}
@@ -230,6 +238,10 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	CHECK(std::get<1>(sizes(dff.cubic())) == 11);
 	CHECK(std::get<2>(sizes(dff.cubic())) == 20);
 
+	CHECK(std::get<1>(sizes(ff.hypercubic())) == 11);
+	CHECK(std::get<2>(sizes(ff.hypercubic())) == 20);
+	CHECK(std::get<3>(sizes(ff.hypercubic())) == 1);	
+	
 }
 
 #endif

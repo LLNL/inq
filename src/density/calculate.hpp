@@ -35,7 +35,7 @@ basis::field<typename field_set_type::basis_type, double> calculate(const occupa
 	basis::field<typename field_set_type::basis_type, double> density(phi.basis(), phi.basis_comm());
 
 	//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 
 	const auto nst = phi.set_part().local_size();
 	auto occupationsp = begin(occupations);

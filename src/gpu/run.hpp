@@ -23,11 +23,11 @@
 
 #include <inq_config.h>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <cuda.h>
 #endif
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #define GPU_FUNCTION __host__ __device__
 #define GPU_LAMBDA __device__
 #else
@@ -55,7 +55,7 @@ inline static void factorize(const size_t val, const size_t thres, size_t & fact
 	assert(fact1*fact2 >= val);
 }
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 template <class kernel_type>
 __global__ void cuda_run_kernel_1(unsigned size, kernel_type kernel){
 	auto ii = blockIdx.x*blockDim.x + threadIdx.x;
@@ -66,7 +66,7 @@ __global__ void cuda_run_kernel_1(unsigned size, kernel_type kernel){
 template <class kernel_type>
 void run(size_t size, kernel_type kernel){
 	
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	
 	assert(size <= CUDA_MAX_DIM1);
 	
@@ -86,7 +86,7 @@ void run(size_t size, kernel_type kernel){
   
 }
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 template <class kernel_type>
 __global__ void cuda_run_kernel_2(unsigned sizex, unsigned sizey, unsigned dim2, kernel_type kernel){
 	auto i1 = blockIdx.x*blockDim.x + threadIdx.x;
@@ -102,7 +102,7 @@ __global__ void cuda_run_kernel_2(unsigned sizex, unsigned sizey, unsigned dim2,
 template <class kernel_type>
 void run(size_t sizex, size_t sizey, kernel_type kernel){
 	
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
 	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
 	
@@ -127,7 +127,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
   
 }
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 template <class kernel_type>
 __global__ void cuda_run_kernel_3(unsigned sizex, unsigned sizey, unsigned sizez, kernel_type kernel){
 	auto ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -141,7 +141,7 @@ __global__ void cuda_run_kernel_3(unsigned sizex, unsigned sizey, unsigned sizez
 template <class kernel_type>
 void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
 	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
@@ -166,7 +166,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
     
 }
 	
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 template <class kernel_type>
 __global__ void cuda_run_kernel_4(unsigned sizex, unsigned sizey, unsigned sizez, unsigned sizew, kernel_type kernel){
 	auto ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -183,7 +183,7 @@ __global__ void cuda_run_kernel_4(unsigned sizex, unsigned sizey, unsigned sizez
 template <class kernel_type>
 void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type kernel){
 	
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
 	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
@@ -217,7 +217,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 #include <catch2/catch.hpp>
 #include <math/array.hpp>
 
-#ifndef HAVE_CUDA
+#ifndef ENABLE_CUDA
 template <class Type>
 void atomic_add(Type * address, Type val){
 	*address += val;
