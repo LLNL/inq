@@ -19,24 +19,25 @@
 if [[ "$*" == *-c* ]]
 then
     #we are just compiling
-    cxx="@CXX@"
+    cxx="@CMAKE_CXX_COMPILER@"
     ldflags=""
     libs=""
 else
     #we are linking too
-    cxx="@CXXLD@"
-    ldflags="@LDFLAGS@ @BOOST_LDFLAGS@ -L@abs_builddir@/../src/"
-    libs="-linq @LIBS_LAPACK@ @LIBS_BLAS@ @LIBS_CUDA@ @BOOST_SERIALIZATION_LIB@ @LIBS@"
+    cxx="@CMAKE_CXX_COMPILER@"
+    ldflags="@CMAKE_EXE_LINKER_FLAGS@ -L@PROJECT_BINARY_DIR@/src/"
+    libs="-linq @Libxc_LIBRARIES@ @LAPACK_LIBRARIES@ @BLAS_LIBRARIES@ @INQ_CUDA_LIBRARIES@ @Boost_LIBRARIES@ @FFTW_LIBRARIES@ @CMAKE_CXX_STANDARD_LIBRARIES@"
 fi
 
-cxxflags="@CXXFLAGS@                         \
-  @BOOST_CPPFLAGS@                           \
-	-I@abs_builddir@/../                       \
-	-I@abs_top_srcdir@/src/                    \
-	-I@abs_top_srcdir@/external_libs/          \
-	-DSHARE_DIR=\"@abs_top_srcdir@/share/\"         \
-	-DPREFIX_DIR=\"@prefix@\""
+cxxflags="@CMAKE_CXX_FLAGS@                      
+  -I@Libxc_INCLUDE_DIRS@                         \
+  -I@Boost_INCLUDE_DIRS@                         \
+  -I@FFTW_INCLUDE_DIRS@                          \
+	-I@PROJECT_BINARY_DIR@/                        \
+	-I@PROJECT_BINARY_DIR@/external_libs/pseudopod \
+	-I@PROJECT_SOURCE_DIR@/src/                    \
+	-I@PROJECT_SOURCE_DIR@/external_libs/"
 
-command_line="$cxx $cxxflags $ldflags $* $libs"
+command_line="$cxx $cxxflags $ldflags $* ${libs//;/ }"
 
 echo $command_line && $command_line

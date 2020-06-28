@@ -25,7 +25,7 @@
 
 #include <math/array.hpp>
 #include <cassert>
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include "multi/adaptors/blas/cuda.hpp" // must be included before blas.hpp
 #endif
 #include <multi/adaptors/blas.hpp>
@@ -80,7 +80,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 	assert(size(overlap_vector) == phi1.set_part().local_size());
 
 	//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifndef HAVE_CUDA
+#ifndef ENABLE_CUDA
 
 	//OPTIMIZATION: this can be done more efficiently
 	for(int ii = 0; ii < phi1.set_part().local_size(); ii++){

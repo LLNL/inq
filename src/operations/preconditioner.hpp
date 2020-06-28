@@ -61,7 +61,7 @@ public:
 			
 		//calculate the expectation value of the kinetic energy
 		//DATAOPERATIONS LOOP + GPU::RUN 4D REDUCTIONS
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 		gpu::run(phi.set_size(),
 						 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()), bas = phi.basis()]
 						 __device__ (auto ist){
@@ -94,7 +94,7 @@ public:
 		//REDUCE GRID expect norm
 
 		//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 		gpu::run(phi.set_size(), phi.basis().sizes()[2], phi.basis().sizes()[1], phi.basis().sizes()[0], 
 						 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()), bas = phi.basis()] __device__
 						 (auto ist, auto iz, auto iy, auto ix){

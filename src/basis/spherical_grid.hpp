@@ -99,7 +99,7 @@ namespace basis {
 			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
 
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 			gpu::run(nst, size(),
 							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
 							 __device__ (auto ist, auto ipoint){
@@ -117,7 +117,7 @@ namespace basis {
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
 			
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 			gpu::run(std::get<1>(sizes(subgrid)), size(),
 							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
 							 __device__ (auto ist, auto ipoint){
