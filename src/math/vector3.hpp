@@ -33,40 +33,74 @@ namespace math {
 
 	public:
 
-		constexpr vector3() = default;
+		vector3() = default;
 
-		constexpr vector3(Type const & v0, Type const & v1, Type const & v2){
+		GPU_FUNCTION vector3(Type const & v0, Type const & v1, Type const & v2){
 			vec_[0] = v0;
 			vec_[1] = v1;
 			vec_[2] = v2;
 		}
 		
-		constexpr vector3(std::initializer_list<Type> const & list){
+		GPU_FUNCTION vector3(std::initializer_list<Type> const & list){
 			vec_[0] = list.begin()[0];
 			vec_[1] = list.begin()[1];
 			vec_[2] = list.begin()[2];
 		}
 		
-		constexpr vector3(std::array<Type, 3> const & arr){
+		GPU_FUNCTION vector3(std::array<Type, 3> const & arr){
 			vec_[0] = arr[0];
 			vec_[1] = arr[1];
 			vec_[2] = arr[2];
 		}
 		
-		constexpr auto & operator[](int ii){
+		GPU_FUNCTION auto & operator[](int ii){
 			return vec_[ii];
 		}
 
-		constexpr auto & operator[](int ii) const {
+		GPU_FUNCTION auto & operator[](int ii) const {
 			return vec_[ii];
 		}
 
-		constexpr bool operator==(const vector3 & other) const {
+		//COMPARISON
+		
+		GPU_FUNCTION bool operator==(const vector3 & other) const {
 			return vec_[0] == other.vec_[0] && vec_[1] == other.vec_[1] && vec_[2] == other.vec_[2];
 		}
 
-		constexpr bool operator!=(const vector3 & other) const {
+		GPU_FUNCTION bool operator!=(const vector3 & other) const {
 			return ! (*this == other);
+		}
+
+		//ADDITION AND SUBSTRACTION
+		
+		GPU_FUNCTION vector3 & operator+=(const vector3 & other) {
+			vec_[0] += other.vec_[0];
+			vec_[1] += other.vec_[1];
+			vec_[2] += other.vec_[2];
+			return *this;
+		}
+
+		GPU_FUNCTION vector3 operator+(const vector3 & other) const {
+			vector3 result;
+			result.vec_[0] = vec_[0] + other.vec_[0];
+			result.vec_[1] = vec_[1] + other.vec_[1];
+			result.vec_[2] = vec_[2] + other.vec_[2];
+			return result;
+		}
+
+		GPU_FUNCTION vector3 & operator-=(const vector3 & other) {
+			vec_[0] -= other.vec_[0];
+			vec_[1] -= other.vec_[1];
+			vec_[2] -= other.vec_[2];
+			return *this;
+		}
+
+		GPU_FUNCTION vector3 operator-(const vector3 & other) const {
+			vector3 result;
+			result.vec_[0] = vec_[0] - other.vec_[0];
+			result.vec_[1] = vec_[1] - other.vec_[1];
+			result.vec_[2] = vec_[2] - other.vec_[2];
+			return result;
 		}
 		
 	private:
@@ -86,6 +120,10 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	using namespace inq;
 	using namespace Catch::literals;
 
+	SECTION("Default initialization"){
+		[[maybe_unused]] math::vector3<int> vv;
+	}
+	
 	SECTION("Initializer list"){
 		math::vector3<int> vv({10, 20, 30});
 		
@@ -117,11 +155,11 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(vv[2] == 700);
 	}
 	
-	math::vector3<double> vv({0.1, 0.2, 0.3});
-	math::vector3<double> vv2(vv);
+	SECTION("Copy, assignment and comparison"){
 
-	SECTION("Copy and assignment"){
-
+		math::vector3<double> vv({0.1, 0.2, 0.3});
+		math::vector3<double> vv2(vv);
+		
 		CHECK(vv2[0] == 0.1);
 		CHECK(vv2[1] == 0.2);
 		CHECK(vv2[2] == 0.3);
@@ -134,16 +172,34 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(vv3[1] == 0.2);
 		CHECK(vv3[2] == 0.3);
 		
+		CHECK(vv == vv2);
+		CHECK(not (vv != vv2));
+		
+		math::vector3<double> vv4({20.1, 0.32, 0.53});
+		
+		CHECK(vv4 != vv2);
+
+		CHECK(vv4 == math::vector3<double>{20.1, 0.32, 0.53});
+		
 	}
+		
+	SECTION("Addition and substraction"){
+		
+		math::vector3<double> vv1({10.0, 5.0, -3.4});
+		math::vector3<double> vv2({1.0, -7.8, 5.6});
 
-	CHECK(vv == vv2);
-	CHECK(not (vv != vv2));
+		CHECK(vv1 + vv2 == math::vector3<double>{11.0, -2.8, 2.2});
+		CHECK(vv1 - vv2 == math::vector3<double>{9.0, 12.8, -9.0});
 
-	math::vector3<double> vv3({20.1, 0.32, 0.53});
+		math::vector3<double> vv3 = vv1;
 
-	CHECK(vv != vv2);
+		vv3 += vv2;
+		CHECK(vv3 == math::vector3<double>{11.0, -2.8, 2.2});
 
-	
+		vv3 -= vv2;
+		CHECK(vv3 == vv1);
+
+	}
 	
 }
 
