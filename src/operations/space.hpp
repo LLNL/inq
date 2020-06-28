@@ -26,7 +26,7 @@
 
 #include <multi/adaptors/fftw.hpp>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <multi/adaptors/cufft.hpp>
 #endif
 
@@ -66,7 +66,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 	if(not real_basis.part().parallel()) {
 		//DATAOPERATIONS FFT
 		fft::dft({true, true, true, false}, array_rs, array_fs, boost::multi::fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
 	} else {
@@ -83,7 +83,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		auto const real_x = real_basis.local_sizes();
 		fft::dft({false, true, true, false}, array_rs, tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
 		
@@ -97,7 +97,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		auto const fourier_x = fourier_basis.local_sizes();
 		fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs, fft::forward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
 		
@@ -116,7 +116,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		//DATAOPERATIONS FFT
 		fft::dft({true, true, true, false}, array_fs, array_rs, fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
 		
@@ -131,7 +131,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		namespace multi = boost::multi;
 		namespace fft = multi::fft;
 		fft::dft({true, true, false, false}, array_fs, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
 		
@@ -142,7 +142,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer;
 		
 		fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), array_rs, fft::backward);
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
 	}
