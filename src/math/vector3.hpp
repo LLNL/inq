@@ -73,7 +73,7 @@ namespace math {
 
 		//ADDITION AND SUBSTRACTION
 		
-		GPU_FUNCTION vector3 & operator+=(const vector3 & other) {
+		GPU_FUNCTION vector3 & operator+=(const vector3 & other){
 			vec_[0] += other.vec_[0];
 			vec_[1] += other.vec_[1];
 			vec_[2] += other.vec_[2];
@@ -88,7 +88,7 @@ namespace math {
 			return result;
 		}
 
-		GPU_FUNCTION vector3 & operator-=(const vector3 & other) {
+		GPU_FUNCTION vector3 & operator-=(const vector3 & other){
 			vec_[0] -= other.vec_[0];
 			vec_[1] -= other.vec_[1];
 			vec_[2] -= other.vec_[2];
@@ -103,6 +103,16 @@ namespace math {
 			return result;
 		}
 		
+		friend std::ostream& operator <<(std::ostream & out, const vector3 & vv){
+			out << vv.vec_[0] << '\t' << vv.vec_[1] << '\t' << vv.vec_[2];
+			return out;
+		}
+
+		friend std::istream& operator >>(std::istream & in, vector3 & vv){
+			in >> vv.vec_[0] >> vv.vec_[1] >> vv.vec_[2] ;
+			return in;
+		}
+
 	private:
 
 		Type vec_[3];
@@ -188,13 +198,21 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		math::vector3<double> vv1({10.0, 5.0, -3.4});
 		math::vector3<double> vv2({1.0, -7.8, 5.6});
 
-		CHECK(vv1 + vv2 == math::vector3<double>{11.0, -2.8, 2.2});
-		CHECK(vv1 - vv2 == math::vector3<double>{9.0, 12.8, -9.0});
+		CHECK((vv1 + vv2)[0] == 11.0_a);
+		CHECK((vv1 + vv2)[1] == -2.8_a);
+		CHECK((vv1 + vv2)[2] ==  2.2_a);
 
+		CHECK((vv1 - vv2)[0] ==  9.0_a);
+		CHECK((vv1 - vv2)[1] == 12.8_a);
+		CHECK((vv1 - vv2)[2] == -9.0_a);
+		
 		math::vector3<double> vv3 = vv1;
 
 		vv3 += vv2;
-		CHECK(vv3 == math::vector3<double>{11.0, -2.8, 2.2});
+
+		CHECK(vv3[0] == 11.0_a);
+		CHECK(vv3[1] == -2.8_a);
+		CHECK(vv3[2] ==  2.2_a);
 
 		vv3 -= vv2;
 		CHECK(vv3 == vv1);
