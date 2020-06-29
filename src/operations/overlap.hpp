@@ -300,8 +300,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 	SECTION("Overlap single double"){
 			
-		basis::field<basis::trivial, double> aa(bas, basis_comm);
-		basis::field<basis::trivial, double> bb(bas, basis_comm);
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
 			
 		aa = 2.0;
 		bb = 0.8;
@@ -320,8 +320,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 	SECTION("Integral product complex"){
 			
-		basis::field<basis::trivial, complex> aa(bas, basis_comm);
-		basis::field<basis::trivial, complex> bb(bas, basis_comm);
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
 			
 		aa = complex(2.0, -0.3);
 		bb = complex(0.8, 0.01);

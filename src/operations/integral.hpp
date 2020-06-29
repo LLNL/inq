@@ -82,7 +82,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	
 	SECTION("Integral double"){
 		
-		basis::field<basis::trivial, double> aa(bas, comm);
+		basis::field<basis::trivial, double> aa(bas);
 
 		aa = 1.0;
 
@@ -96,7 +96,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	SECTION("Integral complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas, comm);
+		basis::field<basis::trivial, complex> aa(bas);
 
 		aa = complex(1.0, 1.0);
 
@@ -115,8 +115,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	SECTION("Integral product double"){
 		
-		basis::field<basis::trivial, double> aa(bas, comm);
-		basis::field<basis::trivial, double> bb(bas, comm);
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
 		
 		aa = 2.0;
 		bb = 0.8;
@@ -135,8 +135,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	
 	SECTION("Integral product complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas, comm);
-		basis::field<basis::trivial, complex> bb(bas, comm);
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
 		
 		aa = complex(2.0, -0.3);
 		bb = complex(0.8, 0.01);
@@ -158,8 +158,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	
 	SECTION("Integral absdiff double"){
 		
-		basis::field<basis::trivial, double> aa(bas, comm);
-		basis::field<basis::trivial, double> bb(bas, comm);
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
 		
 		aa = -13.23;
 		bb = -13.23;
@@ -180,8 +180,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	
 	SECTION("Integral absdiff complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas, comm);
-		basis::field<basis::trivial, complex> bb(bas, comm);
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
 		
 		aa = -13.23*exp(complex(0.0, M_PI/3.63));
 		bb = -13.23*exp(complex(0.0, M_PI/3.63));

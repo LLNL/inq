@@ -47,7 +47,7 @@ namespace basis {
 		using basis_type = Basis;
 		using internal_array_type = math::array<element_type, 1>;
 		
-		field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+		field(const basis_type & basis):
 			linear_(basis.part().local_size()),
 			basis_(basis){
 		}
@@ -192,7 +192,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
 	basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
 
-	basis::field<basis::real_space, double> ff(rs, comm);
+	basis::field<basis::real_space, double> ff(rs);
 
 	basis::field<basis::real_space, std::complex<double> > ff_complex = ff.complex();
 	basis::field<basis::real_space, double> ff2 = ff_complex.real();

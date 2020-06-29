@@ -39,7 +39,7 @@ template <class field_type>
 auto add(const field_type & t1, const field_type & t2){
 	assert(t1.basis() == t2.basis());
 		
-	field_type tadd(t1.basis(), t1.basis_comm());
+	field_type tadd(t1.basis());
 
 	using type = typename field_type::element_type;
 
@@ -59,7 +59,7 @@ field_type add(const field_type & t1, const field_type & t2, const field_type & 
 	assert(t1.basis() == t2.basis());
 	assert(t1.basis() == t3.basis());
 		
-	field_type tadd(t1.basis(), t1.basis_comm());
+	field_type tadd(t1.basis());
 
 	//DATAOPERATIONS LOOP + GPU::RUN 1D
 #ifdef ENABLE_CUDA
@@ -100,9 +100,9 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 	SECTION("Add 2 double arrays"){
 		
-		basis::field<basis::trivial, double> aa(bas, comm);
-		basis::field<basis::trivial, double> bb(bas, comm);
-		basis::field<basis::trivial, double> cc(bas, comm);
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
+		basis::field<basis::trivial, double> cc(bas);
 
 		aa = 1.0;
 		bb = 2.5;
@@ -115,9 +115,9 @@ TEST_CASE("function operations::add", "[operations::add]") {
 	
 	SECTION("Add 2 complex arrays"){
 		
-		basis::field<basis::trivial, complex> aa(bas, comm);
-		basis::field<basis::trivial, complex> bb(bas, comm);
-		basis::field<basis::trivial, complex> cc(bas, comm);
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
+		basis::field<basis::trivial, complex> cc(bas);
 
 		aa = complex(1.0, -20.2);
 		bb = complex(2.5, 1.2);
@@ -133,10 +133,10 @@ TEST_CASE("function operations::add", "[operations::add]") {
 
 	SECTION("Add 3 double arrays"){
 		
-		basis::field<basis::trivial, double> aa(bas, comm);
-		basis::field<basis::trivial, double> bb(bas, comm);
-		basis::field<basis::trivial, double> cc(bas, comm);
-		basis::field<basis::trivial, double> dd(bas, comm);
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
+		basis::field<basis::trivial, double> cc(bas);
+		basis::field<basis::trivial, double> dd(bas);
 
 		aa = 1.0;
 		bb = 2.5;
@@ -150,10 +150,10 @@ TEST_CASE("function operations::add", "[operations::add]") {
 	
 	SECTION("Add 3 complex arrays"){
 		
-		basis::field<basis::trivial, complex> aa(bas, comm);
-		basis::field<basis::trivial, complex> bb(bas, comm);
-		basis::field<basis::trivial, complex> cc(bas, comm);
-		basis::field<basis::trivial, complex> dd(bas, comm);
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
+		basis::field<basis::trivial, complex> cc(bas);
+		basis::field<basis::trivial, complex> dd(bas);
 
 		aa = complex(1.0, -20.2);
 		bb = complex(2.5, 1.2);

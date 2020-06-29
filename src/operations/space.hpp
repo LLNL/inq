@@ -196,7 +196,7 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
 	
-	basis::field<basis::fourier_space, complex> fphi(fourier_basis, phi.basis_comm());
+	basis::field<basis::fourier_space, complex> fphi(fourier_basis);
 
 	to_fourier(real_basis, fourier_basis, phi.basis_comm(), phi.hypercubic(), fphi.hypercubic());
 	
@@ -213,7 +213,7 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis, fphi.basis_comm());
 
-	basis::field<basis::real_space, complex> phi(real_basis, fphi.basis_comm());
+	basis::field<basis::real_space, complex> phi(real_basis);
 
 	to_real(fourier_basis, real_basis, phi.basis_comm(), fphi.hypercubic(), phi.hypercubic());
  

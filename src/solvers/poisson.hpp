@@ -160,7 +160,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 		}
 		
-		field<real_space, complex> density(rs, comm);
+		field<real_space, complex> density(rs);
 		solvers::poisson psolver;
 		
 		SECTION("Point charge"){
@@ -244,7 +244,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 		SECTION("Real plane wave"){
 
-			field<real_space, double> rdensity(rs, comm);
+			field<real_space, double> rdensity(rs);
 
 			double kk = 8.0*M_PI/rs.rlength()[1];
 		
