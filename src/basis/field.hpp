@@ -48,22 +48,19 @@ namespace basis {
 		using internal_array_type = math::array<element_type, 1>;
 		
 		field(const basis_type & basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			basis_comm_(comm),
 			linear_(basis.part().local_size()),
 			basis_(basis){
-
-			assert(basis_.part().comm_size() == basis_comm_.size());
 		}
 
 		template <class OtherType>
 		field(inq::utils::skeleton_wrapper<field<basis_type, OtherType>> const & skeleton)
-			:field(skeleton.base.basis(), skeleton.base.basis_comm()){
+			:field(skeleton.base.basis()){
 		}
 
 		template<class, class> friend class field;
 		template<typename OtherType>
 		field(field<basis_type, OtherType> const& o) 
-		: basis_comm_(o.basis_comm_), linear_(o.linear_), basis_(o.basis_){
+		: linear_(o.linear_), basis_(o.basis_){
 			static_assert(std::is_constructible<element_type, Type>{}, "!");
 		}
 
@@ -85,7 +82,7 @@ namespace basis {
 		template<typename OtherType>
 		field& operator=(field<basis_type, OtherType> const& o){
 			static_assert( std::is_assignable<element_type&, OtherType>{}, "!" );
-			assert( o.basis_ == basis_ and o.basis_comm_ == basis_comm_ );
+			assert(o.basis_ == basis_);
 			linear() = o.linear();
 			return *this;
 		}
@@ -149,7 +146,7 @@ namespace basis {
 		}
 
 		auto & basis_comm() const {
-			return basis_comm_;
+			return basis().comm();
 		}
 
 
@@ -164,7 +161,6 @@ namespace basis {
 		}
 		
 	private:
-		mutable boost::mpi3::communicator basis_comm_;
 		internal_array_type linear_;
 		basis_type basis_;
 
