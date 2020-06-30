@@ -55,7 +55,7 @@ public:
 
 					auto g2 = fourier_basis.g2(ixg, iyg, izg);
 
-					if(fourier_basis.g_is_zero(ixg, iyg, izg) or fourier_basis.outside_sphere(g2)){
+					if(fourier_basis.g_is_zero(ixg, iyg, izg)){
 						potential_fs.cubic()[ix][iy][iz] = 0.0;
 						continue;
 					}
@@ -89,11 +89,6 @@ public:
 					}
 						
 					auto g2 = fourier_basis.g2(ix, iy, iz);
-
-					if(fourier_basis.outside_sphere(g2)){
-						potential_fs.cubic()[ix][iy][iz] = 0.0;
-						continue;
-					}
 
 					potential_fs.cubic()[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
 

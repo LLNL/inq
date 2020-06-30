@@ -65,7 +65,6 @@ namespace basis {
 		}
 
 		GPU_FUNCTION auto outside_sphere(const double g2) const {
-			if(not spherical_g_grid_) return false;
 			return g2 > radius()*radius();
 		}		
 
@@ -88,7 +87,7 @@ namespace basis {
 		auto volume_element() const {
 			return rspacing_[0]*rspacing_[1]*rspacing_[2]/size();
 		}
-		
+
 	private:
 		
   };

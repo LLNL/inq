@@ -37,7 +37,7 @@ namespace operations {
 namespace space {
 
 void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fphi){
-	//DATAOPERATIONS GPU::RUN 4D
+	//DATAOPERATIONS GPU::RUN 3D
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] GPU_LAMBDA
 					 (auto iz, auto iy, auto ix){
