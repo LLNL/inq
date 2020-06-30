@@ -30,10 +30,12 @@ namespace operations {
 	auto gradient(basis::field<basis::fourier_space, complex> const & ff){
 		basis::field_set<basis::fourier_space, complex> grad(ff.basis(), 3);
 
+		auto point_op = ff.basis().point_op();
+		
 		for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){
 			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
 				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
-					auto gvec = ff.basis().gvector(ix, iy, iz);
+					auto gvec = point_op.gvector(ix, iy, iz);
 					for(int idir = 0; idir < 3 ; idir++) grad.cubic()[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz]; 
 				}
 			}

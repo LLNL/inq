@@ -37,11 +37,11 @@ namespace operations {
 namespace space {
 
 void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fphi){
-	//DATAOPERATIONS GPU::RUN 4D
+	//DATAOPERATIONS GPU::RUN 3D
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
-					 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] GPU_LAMBDA
+					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto iz, auto iy, auto ix){
-						 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz] = complex(0.0);
+						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz] = complex(0.0);
 					 });
 }
 
@@ -50,16 +50,16 @@ void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fph
 void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
 	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
-					 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] GPU_LAMBDA
+					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto ist, auto iz, auto iy, auto ix){
-						 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
+						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
 					 });
 }
 
 ///////////////////////////////////////////////////////////////
 
-template <class Comm, class InArray4D, class OutArray4D>
-void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, Comm & comm, InArray4D const & array_rs, OutArray4D && array_fs) {
+template <class InArray4D, class OutArray4D>
+void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
@@ -74,6 +74,8 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		cudaDeviceSynchronize();
 #endif
 	} else {
+
+		auto & comm = real_basis.comm();
 		
 		int xblock = real_basis.cubic_dist(0).block_size();
 		int zblock = fourier_basis.cubic_dist(2).block_size();
@@ -108,8 +110,8 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		
 ///////////////////////////////////////////////////////////////
 
-template <class Comm, class InArray4D, class OutArray4D>
-void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, Comm & comm, InArray4D const & array_fs, OutArray4D && array_rs) {
+template <class InArray4D, class OutArray4D>
+void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs) {
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
@@ -126,6 +128,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 #endif
 		
 	} else {
+
+		auto & comm = fourier_basis.comm();
 
 		int xblock = real_basis.cubic_dist(0).block_size();
 		int zblock = fourier_basis.cubic_dist(2).block_size();
@@ -157,11 +161,11 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
 
 	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
+	basis::fourier_space fourier_basis(real_basis);
 	
 	basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
-	to_fourier(real_basis, fourier_basis, phi.basis_comm(), phi.cubic(), fphi.cubic());
+	to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
@@ -173,11 +177,11 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 
 	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis, fphi.basis_comm());
+	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
 	
 	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	to_real(fourier_basis, real_basis, phi.basis_comm(), fphi.cubic(), phi.cubic());
+	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic());
  
 	if(normalize){
 		//DATAOPERATIONS GPU::RUN 1D
@@ -194,11 +198,11 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis::real_space, complex> & phi){
 
 	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
+	basis::fourier_space fourier_basis(real_basis);
 	
-	basis::field<basis::fourier_space, complex> fphi(fourier_basis, phi.basis_comm());
+	basis::field<basis::fourier_space, complex> fphi(fourier_basis);
 
-	to_fourier(real_basis, fourier_basis, phi.basis_comm(), phi.hypercubic(), fphi.hypercubic());
+	to_fourier(real_basis, fourier_basis, phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 			
@@ -211,11 +215,11 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
 
 	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis, fphi.basis_comm());
+	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
 
-	basis::field<basis::real_space, complex> phi(real_basis, fphi.basis_comm());
+	basis::field<basis::real_space, complex> phi(real_basis);
 
-	to_real(fourier_basis, real_basis, phi.basis_comm(), fphi.hypercubic(), phi.hypercubic());
+	to_real(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic());
  
 	if(normalize){
 		gpu::run(phi.linear().size(),
@@ -321,7 +325,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
-					double g2 = fphi.basis().g2(ix, iy, iz);
+					double g2 = fphi.basis().point_op().g2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
 						diff += fabs(fphi.cubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)*exp(-0.25*g2/sigma));

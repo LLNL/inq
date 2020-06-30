@@ -46,7 +46,7 @@ auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 	auto overlap_matrix = gemm(phi1.basis().volume_element(), hermitized(phi2.matrix()), phi1.matrix());
 
 	if(phi1.basis().part().parallel()){
-		phi1.basis_comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data()), overlap_matrix.num_elements(), std::plus<>{});
+		phi1.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data()), overlap_matrix.num_elements(), std::plus<>{});
 	}
 		
 	return overlap_matrix;
@@ -64,7 +64,7 @@ auto overlap(const field_set_type & phi){
 	auto overlap_matrix = herk(phi.basis().volume_element(), hermitized(phi.matrix()));
 
 	if(phi.basis().part().parallel()){
-		phi.basis_comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data()), overlap_matrix.num_elements(), std::plus<>{});
+		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data()), overlap_matrix.num_elements(), std::plus<>{});
 	}
 		
 	return overlap_matrix;
@@ -116,7 +116,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 #endif
 
 	if(phi1.basis().part().parallel()){
-		phi1.basis_comm().all_reduce_in_place_n(static_cast<type *>(overlap_vector.data()), overlap_vector.size(), std::plus<>{});
+		phi1.basis().comm().all_reduce_in_place_n(static_cast<type *>(overlap_vector.data()), overlap_vector.size(), std::plus<>{});
 	}
 		
 	return overlap_vector;
@@ -300,8 +300,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 	SECTION("Overlap single double"){
 			
-		basis::field<basis::trivial, double> aa(bas, basis_comm);
-		basis::field<basis::trivial, double> bb(bas, basis_comm);
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
 			
 		aa = 2.0;
 		bb = 0.8;
@@ -320,8 +320,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 	SECTION("Integral product complex"){
 			
-		basis::field<basis::trivial, complex> aa(bas, basis_comm);
-		basis::field<basis::trivial, complex> bb(bas, basis_comm);
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
 			
 		aa = complex(2.0, -0.3);
 		bb = complex(0.8, 0.01);

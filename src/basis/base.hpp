@@ -38,6 +38,7 @@ class base {
 public:
 	
 	base(const long size, boost::mpi3::communicator & comm):
+		comm_(comm),
 		part_(size, comm){
 	}
 	
@@ -48,11 +49,16 @@ public:
 	auto & part() const {
 		return part_;
 	}
-  
+
+	auto & comm() const {
+		return comm_;
+	}
+
 	protected:
 	
+	mutable boost::mpi3::communicator comm_;
 	inq::utils::partition part_;
-	
+		
 };
 
 }
