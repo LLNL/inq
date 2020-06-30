@@ -102,21 +102,18 @@ namespace math {
 			result.vec_[2] = vec_[2] - other.vec_[2];
 			return result;
 		}
-
+		
 		// MULTIPLICATION
-		/*
 		GPU_FUNCTION vector3 & operator*=(const Type & factor){
 			vec_[0] *= factor;
 			vec_[1] *= factor;
 			vec_[2] *= factor;
 			return *this;
 		}
-		*/
 		
 		//element-wise multiplication
-		//		template <class TypeA, class TypeB>
-		friend vector3 operator*(vector3 const & vv1, vector3 const & vv2){
-			//		friend vector3<decltype(TypeA()*TypeB())> operator*(const vector3<TypeA> & vv1, const vector3<TypeB> & vv2){			
+		template <class TypeB>
+		friend vector3<decltype(Type()*TypeB())> operator*(const vector3 & vv1, const vector3<TypeB> & vv2){			
 			return {vv1[0]*vv2[0], vv1[1]*vv2[1], vv1[2]*vv2[2]};
 		}
 		
@@ -250,9 +247,9 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 
 		auto vv3 = vv1*vv2;
 		
-		CHECK((vv1*vv2)[0] == 120.0_a);
-		CHECK((vv1*vv2)[1] == -15.0_a);
-		CHECK((vv1*vv2)[2] ==  -13.6_a);
+		CHECK(vv3[0] == 120.0_a);
+		CHECK(vv3[1] == -15.0_a);
+		CHECK(vv3[2] == -13.6_a);
 
 		/*
 		CHECK((vv1 - vv2)[0] ==  9.0_a);
