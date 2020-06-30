@@ -119,10 +119,6 @@ namespace basis {
 			return set_comm_;
 		}
 				
-		auto & basis_comm() const {
-			return basis().comm();
-		}
-
 		auto & full_comm() const {
 			return full_comm_;
 		}
@@ -204,20 +200,20 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	CHECK(sizes(rs)[1] == 11);
 	CHECK(sizes(rs)[2] == 20);
 
-	//std::cout << ff.basis_comm().size() << " x " << ff.set_comm().size() << std::endl;
+	//std::cout << ff.basis().comm().size() << " x " << ff.set_comm().size() << std::endl;
 	//	std::cout << rs.part().comm_size() << std::endl;
 
-	if(ff.basis_comm().size() == 1) CHECK(std::get<0>(sizes(ff.matrix())) == 6160);
-	if(ff.basis_comm().size() == 2) CHECK(std::get<0>(sizes(ff.matrix())) == 6160/2);
+	if(ff.basis().comm().size() == 1) CHECK(std::get<0>(sizes(ff.matrix())) == 6160);
+	if(ff.basis().comm().size() == 2) CHECK(std::get<0>(sizes(ff.matrix())) == 6160/2);
 	if(ff.set_comm().size() == 1) CHECK(std::get<1>(sizes(ff.matrix())) == 12);
 	if(ff.set_comm().size() == 2) CHECK(std::get<1>(sizes(ff.matrix())) == 6);
 	if(ff.set_comm().size() == 3) CHECK(std::get<1>(sizes(ff.matrix())) == 4);
 	if(ff.set_comm().size() == 4) CHECK(std::get<1>(sizes(ff.matrix())) == 3);
 	if(ff.set_comm().size() == 6) CHECK(std::get<1>(sizes(ff.matrix())) == 2);
 
-	if(ff.basis_comm().size() == 1) CHECK(std::get<0>(sizes(ff.cubic())) == 28);
-	if(ff.basis_comm().size() == 2) CHECK(std::get<0>(sizes(ff.cubic())) == 14);
-	if(ff.basis_comm().size() == 4) CHECK(std::get<0>(sizes(ff.cubic())) == 7);
+	if(ff.basis().comm().size() == 1) CHECK(std::get<0>(sizes(ff.cubic())) == 28);
+	if(ff.basis().comm().size() == 2) CHECK(std::get<0>(sizes(ff.cubic())) == 14);
+	if(ff.basis().comm().size() == 4) CHECK(std::get<0>(sizes(ff.cubic())) == 7);
 	CHECK(std::get<1>(sizes(ff.cubic())) == 11);
 	CHECK(std::get<2>(sizes(ff.cubic())) == 20);
 	if(ff.set_comm().size() == 1) CHECK(std::get<3>(sizes(ff.cubic())) == 12);
