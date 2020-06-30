@@ -145,11 +145,6 @@ namespace basis {
 			}
 		}
 
-		auto & basis_comm() const {
-			return basis().comm();
-		}
-
-
 		auto complex() const {
 			return field<basis::real_space, inq::complex>(*this);
 		}

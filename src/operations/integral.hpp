@@ -33,7 +33,7 @@ auto integral(const field_type & phi){
 	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
 
 	if(phi.basis().part().parallel()){
-		phi.basis_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+		phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	}
 
 	return integral_value;
@@ -46,7 +46,7 @@ auto integral(const field_type & phi1, const field_type & phi2, const binary_op 
 	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
 		
 	if(phi1.basis().part().parallel()){
-		phi1.basis_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+		phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	}
 
 	return integral_value;
