@@ -39,7 +39,7 @@ public:
 	auto solve_periodic(const basis::field<basis::real_space, complex> & density) const {
 
 		const basis::real_space & real_space = density.basis();
-		basis::fourier_space fourier_basis(real_space, density.basis_comm());
+		basis::fourier_space fourier_basis(real_space);
 
 		auto potential_fs = operations::space::to_fourier(density);
 			

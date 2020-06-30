@@ -58,8 +58,8 @@ void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> &
 
 ///////////////////////////////////////////////////////////////
 
-template <class Comm, class InArray4D, class OutArray4D>
-void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, Comm & comm, InArray4D const & array_rs, OutArray4D && array_fs) {
+template <class InArray4D, class OutArray4D>
+void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
@@ -74,6 +74,8 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		cudaDeviceSynchronize();
 #endif
 	} else {
+
+		auto & comm = real_basis.comm();
 		
 		int xblock = real_basis.cubic_dist(0).block_size();
 		int zblock = fourier_basis.cubic_dist(2).block_size();
@@ -108,8 +110,8 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		
 ///////////////////////////////////////////////////////////////
 
-template <class Comm, class InArray4D, class OutArray4D>
-void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, Comm & comm, InArray4D const & array_fs, OutArray4D && array_rs) {
+template <class InArray4D, class OutArray4D>
+void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs) {
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
@@ -126,6 +128,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 #endif
 		
 	} else {
+
+		auto & comm = fourier_basis.comm();
 
 		int xblock = real_basis.cubic_dist(0).block_size();
 		int zblock = fourier_basis.cubic_dist(2).block_size();
@@ -157,11 +161,11 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
 
 	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
+	basis::fourier_space fourier_basis(real_basis);
 	
 	basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
-	to_fourier(real_basis, fourier_basis, phi.basis_comm(), phi.cubic(), fphi.cubic());
+	to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
@@ -177,7 +181,7 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 	
 	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	to_real(fourier_basis, real_basis, phi.basis_comm(), fphi.cubic(), phi.cubic());
+	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic());
  
 	if(normalize){
 		//DATAOPERATIONS GPU::RUN 1D
@@ -194,11 +198,11 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis::real_space, complex> & phi){
 
 	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis, phi.basis_comm());
+	basis::fourier_space fourier_basis(real_basis);
 	
 	basis::field<basis::fourier_space, complex> fphi(fourier_basis);
 
-	to_fourier(real_basis, fourier_basis, phi.basis_comm(), phi.hypercubic(), fphi.hypercubic());
+	to_fourier(real_basis, fourier_basis, phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 			
@@ -215,7 +219,7 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 
 	basis::field<basis::real_space, complex> phi(real_basis);
 
-	to_real(fourier_basis, real_basis, phi.basis_comm(), fphi.hypercubic(), phi.hypercubic());
+	to_real(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic());
  
 	if(normalize){
 		gpu::run(phi.linear().size(),
