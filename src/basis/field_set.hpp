@@ -43,14 +43,13 @@ namespace basis {
 
 		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator<2> const & comm)
 			:full_comm_(comm),
-			 basis_comm_(comm.axis(1)),
 			 set_comm_(comm.axis(0)),
 			 set_part_(num_vectors, set_comm_),
 			 matrix_({basis.part().local_size(), set_part_.local_size()}),
 			 num_vectors_(num_vectors),
 			 basis_(basis)
 		{
-			assert(basis_.part().comm_size() == basis_comm_.size());
+			assert(basis_.part().comm_size() == comm.axis(1).size());
     }
 
 		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance())
@@ -121,7 +120,7 @@ namespace basis {
 		}
 				
 		auto & basis_comm() const {
-			return basis_comm_;
+			return basis().comm();
 		}
 
 		auto & full_comm() const {
@@ -160,7 +159,6 @@ namespace basis {
 	private:
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
-		mutable boost::mpi3::cartesian_communicator<1> basis_comm_;
 		mutable boost::mpi3::cartesian_communicator<1> set_comm_;
 		inq::utils::partition set_part_;
 		internal_array_type matrix_;
