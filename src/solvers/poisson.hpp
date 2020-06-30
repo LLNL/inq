@@ -44,7 +44,9 @@ public:
 		auto potential_fs = operations::space::to_fourier(density);
 			
 		const double scal = (-4.0*M_PI)/fourier_basis.size();
-			
+
+		auto point_op = fourier_basis.point_op();
+		
 		for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
@@ -53,9 +55,9 @@ public:
 					auto iyg = fourier_basis.cubic_dist(1).local_to_global(iy);
 					auto izg = fourier_basis.cubic_dist(2).local_to_global(iz);
 
-					auto g2 = fourier_basis.g2(ixg, iyg, izg);
+					auto g2 = point_op.g2(ixg, iyg, izg);
 
-					if(fourier_basis.g_is_zero(ixg, iyg, izg)){
+					if(point_op.g_is_zero(ixg, iyg, izg)){
 						potential_fs.cubic()[ix][iy][iz] = 0.0;
 						continue;
 					}
@@ -78,17 +80,19 @@ public:
 		const auto scal = (-4.0*M_PI)/fourier_basis.size();
 		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 
+		auto point_op = fourier_basis.point_op();
+	
 		for(int ix = 0; ix < fourier_basis.sizes()[0]; ix++){
 			for(int iy = 0; iy < fourier_basis.sizes()[1]; iy++){
 				for(int iz = 0; iz < fourier_basis.sizes()[2]; iz++){
 						
 					// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
-					if(fourier_basis.g_is_zero(ix, iy, iz)){
+					if(point_op.g_is_zero(ix, iy, iz)){
 						potential_fs.cubic()[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
 						continue;
 					}
 						
-					auto g2 = fourier_basis.g2(ix, iy, iz);
+					auto g2 = point_op.g2(ix, iy, iz);
 
 					potential_fs.cubic()[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
 

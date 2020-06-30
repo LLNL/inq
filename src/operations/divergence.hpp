@@ -29,13 +29,16 @@ namespace operations {
 auto divergence(basis::field_set<basis::fourier_space, complex> const & ff){ // Divergence function for the field-set type defined in the Fourier space which return a filed 'diverg'
 	
 	basis::field<basis::fourier_space, complex> diverg(ff.basis());
+
+	auto point_op = ff.basis().point_op();
 	
-	for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){		// Iterating over x-,y- and z- components of the input field 
+	for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){
 		for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
 			for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
-				auto gvec = ff.basis().gvector(ix, iy, iz);
+
+				auto gvec = point_op.gvector(ix, iy, iz);
 				complex div = 0.0;
-				// Iterating over each vectorial components of input field-set and corresponding G-vector at (ix,iy,iz) point in the space
+
 				for(int idir = 0; idir < 3 ; idir++) div += complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz][idir]; 
 				diverg.cubic()[ix][iy][iz] = div;
 			}

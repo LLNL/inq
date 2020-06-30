@@ -39,9 +39,9 @@ namespace space {
 void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fphi){
 	//DATAOPERATIONS GPU::RUN 3D
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
-					 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] GPU_LAMBDA
+					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto iz, auto iy, auto ix){
-						 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz] = complex(0.0);
+						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz] = complex(0.0);
 					 });
 }
 
@@ -50,9 +50,9 @@ void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fph
 void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
 	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
-					 [fphicub = begin(fphi.cubic()), bas = fphi.basis()] GPU_LAMBDA
+					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto ist, auto iz, auto iy, auto ix){
-						 if(bas.outside_sphere(bas.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
+						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
 					 });
 }
 
@@ -321,7 +321,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
-					double g2 = fphi.basis().g2(ix, iy, iz);
+					double g2 = fphi.basis().point_op().g2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
 						diff += fabs(fphi.cubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)*exp(-0.25*g2/sigma));

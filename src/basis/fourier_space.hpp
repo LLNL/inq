@@ -47,39 +47,6 @@ namespace basis {
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();			
     }
 
-		GPU_FUNCTION math::vec3d gvector(const int ix, const int iy, const int iz) const {
-						
-			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
-			//grid from -pi/h to pi/h
-
-			auto ii = this->to_symmetric_range(ix, iy, iz);
-			return math::vec3d{ii[0]*gspacing()[0], ii[1]*gspacing()[1], ii[2]*gspacing()[2]};
-		}
-
-    GPU_FUNCTION const math::vec3d & glength() const{
-      return glength_;
-    }
-
-		GPU_FUNCTION auto radius() const {
-			return 0.5*std::min({glength_[0], glength_[1], glength_[2]});
-		}
-
-		GPU_FUNCTION auto outside_sphere(const double g2) const {
-			return g2 > radius()*radius();
-		}		
-
-    GPU_FUNCTION const math::vec3d & gspacing() const{
-      return gspacing_;
-    }
-
-		bool g_is_zero(const int ix, const int iy, const int iz) const {
-			return (ix == 0 and iy == 0 and iz == 0);
-		}
-
-		GPU_FUNCTION double g2(const int ix, const int iy, const int iz) const {
-			return norm(gvector(ix, iy, iz));
-		}
-
 		bool spherical() const {
 			return spherical_g_grid_;
 		}
