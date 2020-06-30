@@ -41,22 +41,23 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 #ifdef ENABLE_CUDA
 	
 	gpu::run(laplff.set_size(), laplff.basis().sizes()[2], laplff.basis().sizes()[1], laplff.basis().sizes()[0],
-					 [basis = laplff.basis(),
+					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
 						ffcub = begin(ff.cubic())]
 					 __device__ (auto ist, auto iz, auto iy, auto ix){
 						 
-						 double lapl = -0.5*(-basis.g2(ix, iy, iz));
+						 double lapl = -0.5*(-point_op.g2(ix, iy, iz));
 						 laplffcub[ix][iy][iz][ist] += lapl*ffcub[ix][iy][iz][ist];
 						 
 					 });
 	
 #else
+			auto point_op = ff.basis().point_op();
 			
 			for(int ix = 0; ix < laplff.basis().sizes()[0]; ix++){
 				for(int iy = 0; iy < laplff.basis().sizes()[1]; iy++){
 					for(int iz = 0; iz < laplff.basis().sizes()[2]; iz++){
-						double lapl = -0.5*(-laplff.basis().g2(ix, iy, iz));
+						double lapl = -0.5*(-point_op.g2(ix, iy, iz));
 						for(int ist = 0; ist < laplff.set_size(); ist++) laplff.cubic()[ix][iy][iz][ist] += lapl*ff.cubic()[ix][iy][iz][ist];
 					}
 				}
@@ -70,25 +71,28 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 	
 	void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & ff){
 
+
 		//DATAOPERATIONS LOOP + GPU::RUN 4D
 #ifdef ENABLE_CUDA
 
 		gpu::run(ff.set_size(), ff.basis().sizes()[2], ff.basis().sizes()[1], ff.basis().sizes()[0],
-						 [basis = ff.basis(),
+						 [point_op = ff.basis().point_op(),
 							ffcub = begin(ff.cubic())]
 						 __device__ (auto ist, auto iz, auto iy, auto ix){
 								 
-							 double lapl = -0.5*(-basis.g2(ix, iy, iz));
+							 double lapl = -0.5*(-point_op.g2(ix, iy, iz));
 							 ffcub[ix][iy][iz][ist] = ffcub[ix][iy][iz][ist]*lapl;
 								 
 						 });
 
 #else
 
+		auto point_op = ff.basis().point_op();
+		
 		for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){
 			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
 				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
-					double lapl = -0.5*(-ff.basis().g2(ix, iy, iz));
+					double lapl = -0.5*(-point_op.g2(ix, iy, iz));
 					for(int ist = 0; ist < ff.set_size(); ist++) ff.cubic()[ix][iy][iz][ist] *= lapl;
 				}
 			}

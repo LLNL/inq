@@ -125,15 +125,15 @@ namespace basis {
 			return ii;
 		}
 
-		GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
-			return to_symmetric_range(nr_, ix, iy, iz);
-		}
-
 		GPU_FUNCTION static auto from_symmetric_range(std::array<int, 3> const & nr, math::vector3<int> ii) {
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] < 0) ii[idir] += nr[idir];
 			}
 			return ii;
+		}
+
+		GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
+			return to_symmetric_range(nr_, ix, iy, iz);
 		}
 		
 		GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
