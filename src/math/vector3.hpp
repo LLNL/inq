@@ -26,6 +26,8 @@
 
 #include <inq_config.h>
 
+#include<array>
+
 namespace inq {
 namespace math {
 
@@ -118,11 +120,20 @@ namespace math {
 		}
 
 		//scalar multiplication and division
-		template <class TypeB>
-		friend vector3<decltype(TypeB()*Type())> operator*(const TypeB & scalar, const vector3 & vv){
+		private:
+		template<class   > struct is_vector              : std::false_type{};
+		template<class TT> struct is_vector<vector3<TT>> : std::true_type {};
+		public:
+
+		template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
+		friend vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
 			return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
 		}
-
+		template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
+		friend vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
+			return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
+		}
+		
 		template <class TypeB>
 		friend vector3<decltype(Type()/TypeB())> operator/(const vector3 & vv, const TypeB & scalar){
 			return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
@@ -347,6 +358,30 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(length(vv1) == Approx(sqrt(4.0 + 0.04 + 1.21 + 0.01 + 0.01)));
 		
 		
+	}
+	
+	SECTION("Elementwise Multiplication same type"){
+
+		math::vector3<double> vv1 = {10.0,  5.0, -3.4};
+		math::vector3<double> vv2 = {12.0, -3.0,  4.0};
+
+	//	CHECK( elementwise_multiplication(vv1, vv2)[0] == vv1[0]*vv2[0] );
+	//	CHECK( (vv1*vv2) == elementwise_multiplication(vv1, vv2) );
+		CHECK( (vv1*vv2)[0] == vv1[0]*vv2[0] );
+		CHECK( (2.*vv1)[0] == 2.*vv1[0] );
+		CHECK( 2.*vv1 == vv1*2. );
+	}
+	
+	SECTION("Elementwise Multiplication cross type"){
+		using complex = std::complex<double>;
+
+		math::vector3<double> vv1 = {10.0,  5.0, -3.4};
+		math::vector3<complex> vv2 = {12.0, -3.0,  4.0};
+
+//		CHECK( elementwise_multiplication(vv1, vv2)[0] == vv1[0]*vv2[0] );
+//		CHECK( (vv1*vv2) == elementwise_multiplication(vv1, vv2) );
+		CHECK( (vv1*vv2)[0] == vv1[0]*vv2[0] );
+		CHECK( (complex{2.}*vv1)[0] == complex{2.}*vv1[0] );
 	}
 	
 }
