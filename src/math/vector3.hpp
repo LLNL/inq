@@ -38,6 +38,12 @@ namespace math {
 
 		vector3() = default;
 
+		GPU_FUNCTION vector3(Type const & scal){
+			vec_[0] = scal;
+			vec_[1] = scal;
+			vec_[2] = scal;
+		}
+		
 		GPU_FUNCTION vector3(Type const & v0, Type const & v1, Type const & v2){
 			vec_[0] = v0;
 			vec_[1] = v1;
@@ -48,6 +54,12 @@ namespace math {
 			vec_[0] = list.begin()[0];
 			vec_[1] = list.begin()[1];
 			vec_[2] = list.begin()[2];
+		}
+
+		GPU_FUNCTION vector3(Type const * const arr){
+			vec_[0] = arr[0];
+			vec_[1] = arr[1];
+			vec_[2] = arr[2];
 		}
 		
 		GPU_FUNCTION vector3(std::array<Type, 3> const & arr){

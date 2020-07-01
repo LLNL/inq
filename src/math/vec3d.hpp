@@ -23,145 +23,15 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <math/vector3.hpp>
+
 #include <iostream>
 #include <cmath>
 
 namespace inq {
 namespace math {
 
-	class vec3d {
-	public:
-
-		constexpr vec3d(double xv, double yv, double zv) : x_{xv}, y_{yv}, z_{zv}{}
-		
-		vec3d() = default;
-		
-		explicit constexpr vec3d(const double & vv) : x_(vv), y_(vv), z_(vv) {}    
-
-		explicit constexpr vec3d(const double* r) : x_(r[0]), y_(r[1]), z_(r[2]) {}
-
-		constexpr vec3d const & operator =(const double & aa) {
-			x_ = aa;
-			y_ = aa;
-			z_ = aa;
-			return *this;
-		}
-		
-		constexpr double & operator[](int i){
-			static_assert(sizeof(*this) == sizeof(double)*3, 
-				"must be compatible with double[3]");
-			return (&x_)[i];
-		}
-		
-		constexpr double const & operator[](int i) const{
-			static_assert(sizeof(*this) == sizeof(double)*3, 
-				"must be compatible with double[3]");
-			return (&x_)[i];
-		}
-		
-		constexpr bool operator==(const vec3d & aa) const {
-			return x_ == aa.x_ && y_ == aa.y_ && z_ == aa.z_;
-		}
-
-		constexpr bool operator!=(const vec3d & aa) const {
-			return x_ != aa.x_ || y_ != aa.y_ || z_ != aa.z_;
-		}
-
-		constexpr vec3d& operator+=(const vec3d & aa) {
-			x_ += aa.x_;
-			y_ += aa.y_;
-			z_ += aa.z_;
-			return *this;
-		}
-
-		constexpr vec3d& operator-=(const vec3d & aa) {
-			x_ -= aa.x_;
-			y_ -= aa.y_;
-			z_ -= aa.z_;
-			return *this;
-		}
-
-		constexpr vec3d& operator*=(const double & aa) {
-			x_ *= aa;
-			y_ *= aa;
-			z_ *= aa;
-			return *this;
-		}
-
-		constexpr vec3d& operator/=(const double & aa) {
-			x_ /= aa;
-			y_ /= aa;
-			z_ /= aa;
-			return *this;
-		}
-
-		friend constexpr vec3d operator+(const vec3d & aa, const vec3d & bb) {
-			return vec3d(aa) += bb;
-		}
-
-		friend constexpr vec3d operator-(const vec3d & aa, const vec3d & bb) {
-			return vec3d(aa) -= bb;
-		}
-
-		friend constexpr vec3d operator-(const vec3d & aa) {
-			return vec3d( -aa.x_, -aa.y_, -aa.z_ );
-		}
-
-		friend constexpr vec3d operator*(const double & aa, const vec3d & bb) {
-			return vec3d(bb) *= aa;
-		}
-
-		friend constexpr vec3d operator*(const vec3d & aa, const double & bb) {
-			return vec3d(aa) *= bb;
-		}
-
-		friend constexpr vec3d operator/(const vec3d & aa, const double & bb) {
-			return vec3d(aa) /= bb;
-		}
-
-		//internal product
-		friend constexpr double operator|(const vec3d & aa, const vec3d & bb) {
-			return aa.x_*bb.x_ + aa.y_*bb.y_ + aa.z_*bb.z_;
-		}
-
-		//cross product
-		friend constexpr vec3d operator^(const vec3d & aa, const vec3d & bb) {
-			return vec3d(aa.y_*bb.z_ - aa.z_*bb.y_, aa.z_*bb.x_ - aa.x_*bb.z_, aa.x_*bb.y_ - aa.y_*bb.x_);
-		}
-
-		friend constexpr double norm(const vec3d& aa) {
-			return aa|aa;
-		}
-
-		// TODO if this function is necessary in the gpu it can be made constexpr 
-		// TODO in that case, when clang complains we can put a warning guard
-		// TODO guard consists in disabling locally the warning -Winvalid-constexpr
-		friend double length(const vec3d& aa) {
-			return sqrt(aa|aa);
-		}
-
-		friend std::ostream& operator <<(std::ostream & outs, const vec3d & v) {
-			outs << v.x_ << " " << v.y_ << " " << v.z_;
-			return outs;
-		}
-
-		friend std::istream& operator >>(std::istream & ins, vec3d & v) {
-			ins >> v.x_ >> v.y_ >> v.z_ ;
-			return ins;
-		}
-
-		template<class Archive>
-		void serialize(Archive& ar, unsigned const /*version*/){
-			ar & x_ & y_ & z_;
-		}
-
-	private:
-		    
-		double x_;
-		double y_;
-		double z_;
-
-	};
+using vec3d = vector3<double>;
 
 }
 }
