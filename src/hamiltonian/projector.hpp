@@ -92,7 +92,7 @@ namespace hamiltonian {
 							 });
 
 			if(phi.basis().part().parallel()){
-				phi.basis().comm().all_reduce_in_place_n(projections.data(), projections.num_elements(), std::plus<>{});
+				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
 			}
 			
 			//DATAOPERATIONS BLAS
