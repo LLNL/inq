@@ -27,6 +27,9 @@
 #include <cuda.h>
 #endif
 
+#include<cstddef> // std::size_t
+#include<cassert>
+
 #ifdef ENABLE_CUDA
 #define GPU_FUNCTION __host__ __device__
 #define GPU_LAMBDA __device__
@@ -44,7 +47,7 @@ namespace inq {
 namespace gpu {
 
 //finds fact1, fact2 < thres such that fact1*fact2 >= val
-inline static void factorize(const size_t val, const size_t thres, size_t & fact1, size_t & fact2){
+inline static void factorize(const std::size_t val, const std::size_t thres, std::size_t & fact1, std::size_t & fact2){
 	fact1 = val;
 	fact2 = 1;
 	while (fact1 > thres){
