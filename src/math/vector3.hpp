@@ -122,12 +122,12 @@ namespace math {
 		
 		//element-wise multiplication and division
 		template <class TypeB>
-		friend vector3<decltype(Type()*TypeB())> operator*(const vector3 & vv1, const vector3<TypeB> & vv2){
+		friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(const vector3 & vv1, const vector3<TypeB> & vv2){
 			return {vv1[0]*vv2[0], vv1[1]*vv2[1], vv1[2]*vv2[2]};
 		}
 
 		template <class TypeB>
-		friend vector3<decltype(TypeB()/Type())> operator/(const vector3<TypeB> & vv1, const vector3 & vv2){
+		friend GPU_FUNCTION vector3<decltype(TypeB()/Type())> operator/(const vector3<TypeB> & vv1, const vector3 & vv2){
 			return {vv1[0]/vv2[0], vv1[1]/vv2[1], vv1[2]/vv2[2]};
 		}
 
@@ -138,16 +138,16 @@ namespace math {
 		public:
 
 		template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
-		friend vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
+		friend GPU_FUNCTION vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
 			return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
 		}
 		template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
-		friend vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
+		friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
 			return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
 		}
 		
 		template <class TypeB>
-		friend vector3<decltype(Type()/TypeB())> operator/(const vector3 & vv, const TypeB & scalar){
+		friend GPU_FUNCTION vector3<decltype(Type()/TypeB())> operator/(const vector3 & vv, const TypeB & scalar){
 			return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
 		}
 		
@@ -248,7 +248,15 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	SECTION("Default initialization"){
 		[[maybe_unused]] math::vector3<int> vv;
 	}
-	
+
+	SECTION("Scalar"){
+		math::vector3<int> vv(-45.677);
+		
+		CHECK(vv[0] == -45.677);
+		CHECK(vv[1] == -45.677);
+		CHECK(vv[2] == -45.677);
+	}
+		
 	SECTION("Initializer list"){
 		math::vector3<int> vv({10, 20, 30});
 		
@@ -369,8 +377,17 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	}
 
 	SECTION("Vector operations"){
+		math::vector3<double> dv(3.0, -1.1, 0.1);
+
+		CHECK( (dv|dv) == norm(dv));		
 		
 		math::vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
+		math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
+
+		CHECK((vv1|vv2) == (vv2|vv1));
+		
+		CHECK(real(vv1|vv2) == -54.462);
+		CHECK(imag(vv1|vv2) == -14.9765);
 
 		CHECK(norm(vv1) == Approx(real(conj(vv1)|vv1)));
 		CHECK(imag(conj(vv1)|vv1) == 0.0_a);
@@ -383,13 +400,6 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(imag(vv1)[1] == -1.1_a);
 		CHECK(real(vv1)[2] ==  0.1_a);
 		CHECK(imag(vv1)[2] ==  0.1_a);
-
-		math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
-
-		CHECK((vv1|vv2) == (vv2|vv1));
-		
-		CHECK(real(vv1|vv2) == -54.462);
-		CHECK(imag(vv1|vv2) == -14.9765);
 		
 	}
 	
