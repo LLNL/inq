@@ -104,24 +104,47 @@ namespace math {
 		}
 		
 		// MULTIPLICATION
+		
+		//element-wise multiplication and division
+		template <class TypeB>
+		friend vector3<decltype(Type()*TypeB())> operator*(const vector3 & vv1, const vector3<TypeB> & vv2){
+			return {vv1[0]*vv2[0], vv1[1]*vv2[1], vv1[2]*vv2[2]};
+		}
+
+		template <class TypeB>
+		friend vector3<decltype(TypeB()/Type())> operator/(const vector3<TypeB> & vv1, const vector3 & vv2){
+			return {vv1[0]/vv2[0], vv1[1]/vv2[1], vv1[2]/vv2[2]};
+		}
+
+		//scalar multiplication and division
+		template <class TypeB>
+		friend vector3<decltype(TypeB()*Type())> operator*(const TypeB & scalar, const vector3 & vv){
+			return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
+		}
+
+		template <class TypeB>
+		friend vector3<decltype(Type()/TypeB())> operator/(const vector3 & vv, const TypeB & scalar){
+			return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
+		}
+		
+		friend GPU_FUNCTION vector3 operator-(const vector3 & vv){
+			return -1*vv;
+		}
+
 		GPU_FUNCTION vector3 & operator*=(const Type & factor){
 			vec_[0] *= factor;
 			vec_[1] *= factor;
 			vec_[2] *= factor;
 			return *this;
 		}
-		
-		//element-wise multiplication
-		template <class TypeB>
-		friend vector3<decltype(Type()*TypeB())> operator*(const vector3 & vv1, const vector3<TypeB> & vv2){			
-			return {vv1[0]*vv2[0], vv1[1]*vv2[1], vv1[2]*vv2[2]};
+
+		GPU_FUNCTION vector3 & operator/=(const Type & factor){
+			vec_[0] /= factor;
+			vec_[1] /= factor;
+			vec_[2] /= factor;
+			return *this;
 		}
 		
-		/*
-		friend GPU_FUNCTION vector3 operator-(const vector3 & vv){
-			return -1*vector3;
-		}
-		*/
 		// INPUT OUTPUT
 		
 		friend std::ostream& operator <<(std::ostream & out, const vector3 & vv){
@@ -144,6 +167,9 @@ namespace math {
 }
 
 #ifdef INQ_UNIT_TEST
+
+#include <math/complex.hpp>
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("function math::vector3", "[math::vector3]") {
@@ -243,7 +269,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	SECTION("Multiplication"){
 		
 		math::vector3<double> vv1({10.0, 5.0, -3.4});
-		math::vector3<double> vv2({12, -3, 4});
+		math::vector3<int> vv2({12, -3, 4});
 
 		auto vv3 = vv1*vv2;
 		
@@ -251,6 +277,27 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(vv3[1] == -15.0_a);
 		CHECK(vv3[2] == -13.6_a);
 
+		auto zvv = complex(0.0, 1.0)*vv1;
+
+		CHECK(real(zvv[0]) ==   0.0_a);
+		CHECK(imag(zvv[0]) ==  10.0_a);
+		CHECK(real(zvv[1]) ==   0.0_a);
+		CHECK(imag(zvv[1]) ==   5.0_a);
+		CHECK(real(zvv[2]) ==   0.0_a);
+		CHECK(imag(zvv[2]) ==  -3.4_a);
+
+		auto zvv2 = zvv/complex(0.0, -1.0);
+		zvv /= complex(0.0, -1.0);
+
+		CHECK(real(zvv[0]) == -10.0_a);
+		CHECK(imag(zvv[0]) ==   0.0_a);
+		CHECK(real(zvv[1]) ==  -5.0_a);
+		CHECK(imag(zvv[1]) ==   0.0_a);
+		CHECK(real(zvv[2]) ==   3.4_a);
+		CHECK(imag(zvv[2]) ==   0.0_a);
+	
+		CHECK(zvv == zvv2);
+		
 		/*
 		CHECK((vv1 - vv2)[0] ==  9.0_a);
 		CHECK((vv1 - vv2)[1] == 12.8_a);
