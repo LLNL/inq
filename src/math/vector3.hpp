@@ -22,6 +22,7 @@
 */
 
 #include <gpu/run.hpp>
+#include <math/complex.hpp>
 
 #include <inq_config.h>
 
@@ -127,27 +128,65 @@ namespace math {
 			return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
 		}
 		
-		friend GPU_FUNCTION vector3 operator-(const vector3 & vv){
+		friend GPU_FUNCTION vector3 operator-(vector3 const & vv){
 			return -1*vv;
 		}
 
-		GPU_FUNCTION vector3 & operator*=(const Type & factor){
+		GPU_FUNCTION vector3 & operator*=(Type const & factor){
 			vec_[0] *= factor;
 			vec_[1] *= factor;
 			vec_[2] *= factor;
 			return *this;
 		}
 
-		GPU_FUNCTION vector3 & operator/=(const Type & factor){
+		GPU_FUNCTION vector3 & operator/=(Type const & factor){
 			vec_[0] /= factor;
 			vec_[1] /= factor;
 			vec_[2] /= factor;
 			return *this;
 		}
+
+		// ELEMENTWISE OPERATIONS
+		template <class Function>
+		friend GPU_FUNCTION auto elementwise(Function const & func, vector3 const & vv) -> vector3<decltype(func(Type{}))> {
+			return {func(vv[0]), func(vv[1]), func(vv[2])};
+		}
+
+		friend GPU_FUNCTION auto conj(vector3 const & vv){
+			return elementwise([] (auto x) { return conj(x);}, vv);
+		}
+
+		friend GPU_FUNCTION auto real(vector3 const & vv){
+			return elementwise([] (auto x) { return real(x);}, vv);
+		}
 		
+		friend GPU_FUNCTION auto imag(vector3 const & vv){
+			return elementwise([] (auto x) { return imag(x);}, vv);
+		}
+		
+		// VECTORIAL PRODUCTS
+		
+		//internal product
+		friend GPU_FUNCTION auto operator|(vector3 const & vv1, vector3 const & vv2) {
+			return vv1[0]*vv2[0] + vv1[1]*vv2[1] + vv1[2]*vv2[2];
+		}
+
+		//cross product
+		friend GPU_FUNCTION auto operator^(vector3 const & vv1, vector3 const & vv2) {
+			return vector3(vv1[1]*vv2[2] - vv1[2]*vv2[1], vv1[2]*vv2[0] - vv1[0]*vv2[2], vv1[0]*vv2[1] - vv1[1]*vv2[0]);
+		}
+		
+		friend GPU_FUNCTION auto norm(vector3 const & vv) {
+			return norm(vv[0]) + norm(vv[1]) + norm(vv[2]);
+		}
+
+		friend GPU_FUNCTION auto length(vector3 const & vv) {
+			return sqrt(norm(vv));
+		}
+
 		// INPUT OUTPUT
 		
-		friend std::ostream& operator <<(std::ostream & out, const vector3 & vv){
+		friend std::ostream& operator <<(std::ostream & out, vector3 const & vv){
 			out << vv.vec_[0] << '\t' << vv.vec_[1] << '\t' << vv.vec_[2];
 			return out;
 		}
@@ -167,8 +206,6 @@ namespace math {
 }
 
 #ifdef INQ_UNIT_TEST
-
-#include <math/complex.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -297,24 +334,21 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(imag(zvv[2]) ==   0.0_a);
 	
 		CHECK(zvv == zvv2);
-		
-		/*
-		CHECK((vv1 - vv2)[0] ==  9.0_a);
-		CHECK((vv1 - vv2)[1] == 12.8_a);
-		CHECK((vv1 - vv2)[2] == -9.0_a);
-		
-		math::vector3<double> vv3 = vv1;
 
-		vv3 += vv2;
-
-		CHECK(vv3[0] == 11.0_a);
-		CHECK(vv3[1] == -2.8_a);
-		CHECK(vv3[2] ==  2.2_a);
-
-		vv3 -= vv2;
-		CHECK(vv3 == vv1);
-		*/
 	}
+
+	SECTION("Vector operations"){
+		
+		math::vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
+
+
+		CHECK(norm(vv1) == (conj(vv1)|vv1));
+		CHECK(norm(vv1) == Approx(4.0 + 0.04 + 1.21 + 0.01 + 0.01));
+		CHECK(length(vv1) == Approx(sqrt(4.0 + 0.04 + 1.21 + 0.01 + 0.01)));
+		
+		
+	}
+	
 }
 
 #endif
