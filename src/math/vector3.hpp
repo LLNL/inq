@@ -207,6 +207,11 @@ namespace math {
 			return in;
 		}
 
+		template<class Archive>
+		void serialize(Archive& ar, unsigned const /*version*/){
+			ar & vec_[0] & vec_[1] & vec_[2];
+		}
+
 	private:
 
 		Type vec_[3];
@@ -219,6 +224,9 @@ namespace math {
 #ifdef INQ_UNIT_TEST
 
 #include <catch2/catch.hpp>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 TEST_CASE("function math::vector3", "[math::vector3]") {
 
@@ -352,11 +360,24 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		
 		math::vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
 
-
-		CHECK(norm(vv1) == (conj(vv1)|vv1));
+		CHECK(norm(vv1) == Approx(real(conj(vv1)|vv1)));
+		CHECK(imag(conj(vv1)|vv1) == 0.0_a);
 		CHECK(norm(vv1) == Approx(4.0 + 0.04 + 1.21 + 0.01 + 0.01));
 		CHECK(length(vv1) == Approx(sqrt(4.0 + 0.04 + 1.21 + 0.01 + 0.01)));
+
+		CHECK(real(vv1)[0] ==  0.0_a);
+		CHECK(imag(vv1)[0] ==  2.0_a);
+		CHECK(real(vv1)[1] ==  0.2_a);
+		CHECK(imag(vv1)[1] == -1.1_a);
+		CHECK(real(vv1)[2] ==  0.1_a);
+		CHECK(imag(vv1)[2] ==  0.1_a);
+
+		math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
+
+		CHECK((vv1|vv2) == (vv2|vv1));
 		
+		CHECK(real(vv1|vv2) == -54.462);
+		CHECK(imag(vv1|vv2) == -14.9765);
 		
 	}
 	
@@ -365,8 +386,6 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		math::vector3<double> vv1 = {10.0,  5.0, -3.4};
 		math::vector3<double> vv2 = {12.0, -3.0,  4.0};
 
-	//	CHECK( elementwise_multiplication(vv1, vv2)[0] == vv1[0]*vv2[0] );
-	//	CHECK( (vv1*vv2) == elementwise_multiplication(vv1, vv2) );
 		CHECK( (vv1*vv2)[0] == vv1[0]*vv2[0] );
 		CHECK( (2.*vv1)[0] == 2.*vv1[0] );
 		CHECK( 2.*vv1 == vv1*2. );
@@ -378,10 +397,21 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		math::vector3<double> vv1 = {10.0,  5.0, -3.4};
 		math::vector3<complex> vv2 = {12.0, -3.0,  4.0};
 
-//		CHECK( elementwise_multiplication(vv1, vv2)[0] == vv1[0]*vv2[0] );
-//		CHECK( (vv1*vv2) == elementwise_multiplication(vv1, vv2) );
 		CHECK( (vv1*vv2)[0] == vv1[0]*vv2[0] );
 		CHECK( (complex{2.}*vv1)[0] == complex{2.}*vv1[0] );
+	}
+
+	SECTION("Serialization"){
+		math::vector3<double> x2{0.1, 0.2, 0.3};
+		
+		std::stringstream ss;
+		boost::archive::text_oarchive{ss} << x2;
+		std::cout << ss.str() <<'\n';
+		
+		math::vector3<double> x3;
+		boost::archive::text_iarchive{ss} >> x3;
+		CHECK( x3 == x2 );
+		
 	}
 	
 }
