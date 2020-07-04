@@ -41,9 +41,9 @@ namespace hamiltonian {
 		exchange_operator exchange;
 		
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
-									 const int num_hf_orbitals, const double exchange_coefficient):
+									 const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> const & comm = {boost::mpi3::environment::get_world_instance(), {}}):
 			scalar_potential(basis),
-			exchange(basis, num_hf_orbitals, exchange_coefficient),
+			exchange(basis, num_hf_orbitals, exchange_coefficient, comm),
 			non_local_in_fourier_(fourier_pseudo)
 		{
 
@@ -245,8 +245,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
   basis::field_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
 	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states(), cart_comm);
-	
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0);
+
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0, cart_comm);
 
 	SECTION("Constant function"){
 		
