@@ -72,7 +72,7 @@ auto divergence(basis::field_set<basis::real_space, double> const & ff){
 #ifdef INQ_UNIT_TEST
 
 #include <catch2/catch.hpp>
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 
 		//Define test function 3
 		auto vectorial_complex_plane_wave (inq::math::vec3d k , inq::math::vec3d r ){

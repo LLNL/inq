@@ -3,7 +3,7 @@
 #ifndef INQ__GROUND_STATE__RESULT
 #define INQ__GROUND_STATE__RESULT
 
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 
 namespace inq {
 namespace ground_state {

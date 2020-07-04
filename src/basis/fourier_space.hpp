@@ -23,7 +23,7 @@
 
 #include <inq_config.h>
 
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <ions/unitcell.hpp>
 #include "grid.hpp"
 #include <cassert>

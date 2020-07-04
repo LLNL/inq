@@ -23,7 +23,7 @@
 
 #include <inq_config.h>
 
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <basis/real_space.hpp>
 #include <basis/field_set.hpp>
 
