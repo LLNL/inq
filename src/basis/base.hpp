@@ -54,6 +54,10 @@ public:
 		return comm_;
 	}
 
+	auto local_size() const {
+		return part_.local_size();
+	}
+
 	protected:
 	
 	mutable boost::mpi3::communicator comm_;
