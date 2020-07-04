@@ -22,7 +22,7 @@
 */
 
 #include <inq_config.h>
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <cmath>
 #include <ions/periodic_replicas.hpp>
 #include <multi/array.hpp>

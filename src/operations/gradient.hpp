@@ -69,7 +69,7 @@ namespace operations {
 #ifdef INQ_UNIT_TEST
 
 #include <catch2/catch.hpp>
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <math/vector3.hpp>
 
 auto f_analytic (inq::math::vec3d kk, inq::math::vec3d rr){

@@ -23,7 +23,7 @@
 
 
 #include <basis/base.hpp>
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <math/vector3.hpp>
 
 #include <cassert>

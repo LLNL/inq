@@ -25,7 +25,7 @@
 #include <pseudopod/pseudopotential.hpp>
 
 #include <math/array.hpp>
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
