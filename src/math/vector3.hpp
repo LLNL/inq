@@ -229,7 +229,9 @@ namespace math {
 		Type vec_[3];
 
 	};
- 
+
+using vec3d = vector3<double>;
+
 }
 }
 
