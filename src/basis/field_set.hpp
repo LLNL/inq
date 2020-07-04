@@ -111,6 +111,10 @@ namespace basis {
 			return num_vectors_;
 		}
 
+		auto local_set_size() const {
+			return set_part_.local_size();
+		}
+		
 		auto & set_part() const {
 			return set_part_;
 		}
