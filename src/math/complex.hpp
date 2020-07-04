@@ -8,18 +8,27 @@
 #include <complex>
 #include <gpu/run.hpp>
 
-namespace inq {
-
-/*
-// This is currently disabled since it doesn't work with multi::blas
-
 #ifdef ENABLE_CUDA
 #include <thrust/complex.h>
+#endif
 
+namespace inq {
+
+#ifdef ENABLE_CUDA
 using complex = thrust::complex<double>;
-*/
-
+#else
 using complex = std::complex<double>;
+#endif
+
+template <class Type>
+struct compat_type {
+	using type = Type;
+};
+
+template <>
+struct compat_type<complex> {
+	using type = std::complex<double>;
+};
 
 //real
 
@@ -159,7 +168,20 @@ GPU_FUNCTION inline auto operator/(const complex & x, const complex & y){
 
 #ifdef INQ_MATH_COMPLEX_UNIT_TEST
 #undef INQ_MATH_COMPLEX_UNIT_TEST
-#endif
+
+#include <catch2/catch.hpp>
+
+TEST_CASE("Class math::complex", "[math::complex]"){
+  
+	using namespace inq;
+	using namespace Catch::literals;
+
+	static_assert(std::is_same<compat_type<double>::type, double>::value, "check blas types match");
+	static_assert(std::is_same<compat_type<inq::complex>::type, std::complex<double>>::value, "check blas types match");
+
+}
 
 #endif
+#endif
+
 
