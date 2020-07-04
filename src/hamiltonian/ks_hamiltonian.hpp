@@ -217,13 +217,18 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	using namespace inq;
 	using namespace Catch::literals;
   using math::vec3d;
-  
+
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+
+	auto set_comm = cart_comm.axis(0);
+	auto basis_comm = cart_comm.axis(1);	
+
   double ecut = 20.0;
   double ll = 10.0;
 
 	ions::geometry geo;
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), basis_comm);
 
 	SECTION("Basis"){
 		
@@ -234,12 +239,12 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff());
+	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), set_comm);
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-  basis::field_set<basis::real_space, complex> phi(rs, st.num_states());
-	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states());
+  basis::field_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
+	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states(), cart_comm);
 	
 	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0);
 
