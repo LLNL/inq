@@ -15,6 +15,11 @@ else()
   set(SRC_EXT cpp)
 endif()
 
+#this is a hack to compile libxc
+link_libraries(-lm)
+
+add_subdirectory(external_libs)
+
 enable_language(CXX)
 enable_language(Fortran)
 
@@ -28,8 +33,6 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
-link_libraries(-lm)
-
 find_package(BLAS REQUIRED)
 link_libraries(${BLAS_LIBRARIES})
 
@@ -38,9 +41,9 @@ link_libraries(${LAPACK_LIBRARIES})
 
 set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)
 set(Libxc_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/libxc/libxc.a)
-link_libraries(${Libxc_LIBRARIES})
 include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
+link_libraries(xc)
 
 find_package(Boost REQUIRED COMPONENTS serialization)
 include_directories(${Boost_INCLUDE_DIRS})
@@ -62,6 +65,5 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin)
   
 install(DIRECTORY share/ DESTINATION share/inq)
 
-add_subdirectory(external_libs)
 add_subdirectory(src)
 add_subdirectory(tests)
