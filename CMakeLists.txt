@@ -4,7 +4,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(inq VERSION 0.1)
 
-
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
   
@@ -15,6 +14,11 @@ if(ENABLE_CUDA)
 else()
   set(SRC_EXT cpp)
 endif()
+
+#this is a hack to compile libxc
+link_libraries(-lm)
+
+add_subdirectory(external_libs)
 
 enable_language(CXX)
 enable_language(Fortran)
@@ -35,9 +39,11 @@ link_libraries(${BLAS_LIBRARIES})
 find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
 
-find_package(Libxc REQUIRED)
+set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)
+set(Libxc_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/libxc/libxc.a)
 include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
+link_libraries(xc)
 
 find_package(Boost REQUIRED COMPONENTS serialization)
 include_directories(${Boost_INCLUDE_DIRS})
@@ -59,6 +65,5 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin)
   
 install(DIRECTORY share/ DESTINATION share/inq)
 
-add_subdirectory(external_libs)
 add_subdirectory(src)
 add_subdirectory(tests)
