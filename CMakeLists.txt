@@ -4,7 +4,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(inq VERSION 0.1)
 
-
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
   
@@ -29,13 +28,16 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
+link_libraries(-lm)
+
 find_package(BLAS REQUIRED)
 link_libraries(${BLAS_LIBRARIES})
 
 find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
 
-find_package(Libxc REQUIRED)
+set(Libxc_INCLUDE_DIRS )
+link_libraries(${Libxc_LIBRARIES})
 include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 
