@@ -60,7 +60,6 @@ namespace hamiltonian {
 					xc_lda_exc_vxc(&func_, size, density.data(), exc.data(), vxc.data());
 					break;
 				case XC_FAMILY_GGA:
-				case XC_FAMILY_HYB_GGA:
 					assert(false);
 					break;
 				}
