@@ -273,7 +273,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		diff /= hphi.cubic().num_elements();
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 		
 		CHECK(diff < 1e-14);
 		
@@ -287,8 +288,14 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						double xx = rs.rvector(ix, iy, iz)[0];
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
+
+						auto ixg = rs.cubic_dist(0).local_to_global(ix);
+						auto iyg = rs.cubic_dist(1).local_to_global(iy);
+						auto izg = rs.cubic_dist(2).local_to_global(iz);	
+						auto istg = phi.set_part().local_to_global(ist);
+						
+						double xx = rs.rvector(ixg, iyg, izg)[0];
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg*kk*xx), sin(istg*kk*xx));
 					}
 				}
 			}
@@ -301,13 +308,15 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-							diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic()[ix][iy][iz][ist]);
+						auto istg = phi.set_part().local_to_global(ist);
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg*kk*istg*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
-
-		diff /= hphi.cubic().num_elements();
+		
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 
 		CHECK(diff < 1e-14);
 		
@@ -321,7 +330,12 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					double r2 = rs.r2(ix, iy, iz);
+
+					auto ixg = rs.cubic_dist(0).local_to_global(ix);
+					auto iyg = rs.cubic_dist(1).local_to_global(iy);
+					auto izg = rs.cubic_dist(2).local_to_global(iz);	
+					
+					double r2 = rs.r2(ixg, iyg, izg);
 					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
@@ -345,7 +359,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		diff /= hphi.cubic().num_elements();
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 
 		CHECK(diff == 0.0055687279_a);
 		
@@ -360,8 +375,14 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						double xx = rs.rvector(ix, iy, iz)[0];
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
+
+						auto ixg = rs.cubic_dist(0).local_to_global(ix);
+						auto iyg = rs.cubic_dist(1).local_to_global(iy);
+						auto izg = rs.cubic_dist(2).local_to_global(iz);	
+						auto istg = phi.set_part().local_to_global(ist);
+						
+						double xx = rs.rvector(ixg, iyg, izg)[0];
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg*kk*xx), sin(istg*kk*xx));
 					}
 				}
 			}
@@ -374,56 +395,21 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-							diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic()[ix][iy][iz][ist]);
+
+						auto istg = phi.set_part().local_to_global(ist);
+
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg*kk*istg*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.cubic().num_elements();
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 
 		CHECK(diff < 1e-14);
 		
 	}
-
-
-	SECTION("Harmonic oscillator"){
-
-		double ww = 2.0;
-
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					double r2 = rs.r2(ix, iy, iz);
-					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
-
-					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
-					}
-					
-				}
-			}
-		}
-
-		hphi = ham(phi);
-		
-		double diff = 0.0;
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
-					}
-				}
-			}
-		}
-
-		diff /= hphi.cubic().num_elements();
-
-		CHECK(diff == 0.0055687279_a);
-		
-	}
-
 
 	SECTION("Harmonic oscillator - fourier"){
 
@@ -432,7 +418,12 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					double r2 = rs.r2(ix, iy, iz);
+
+					auto ixg = rs.cubic_dist(0).local_to_global(ix);
+					auto iyg = rs.cubic_dist(1).local_to_global(iy);
+					auto izg = rs.cubic_dist(2).local_to_global(iz);	
+					
+					double r2 = rs.r2(ixg, iyg, izg);
 					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
@@ -456,7 +447,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		diff /= hphi.cubic().num_elements();
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 
 		CHECK(diff == 0.0055687279_a);
 		
