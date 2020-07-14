@@ -46,7 +46,7 @@ namespace hamiltonian {
 			exchange(basis, num_hf_orbitals, exchange_coefficient, comm),
 			non_local_in_fourier_(fourier_pseudo)
 		{
-
+			
 			scalar_potential = pot.local_potential(basis, cell, geo);
 			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
@@ -112,9 +112,11 @@ namespace hamiltonian {
 			//the non local potential in real space
 			if(not non_local_in_fourier_) non_local(phi, hphi);
 
+			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
+			
 			//the scalar local potential in real space
 			//DATAOPERATIONS LOOP + GPU:RUN 2D
-#ifdef ENABLE_CUDA2
+#ifdef ENABLE_CUDA
 			gpu::run(phi.local_set_size(), phi.basis().local_size(),
 							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi), it_phi = begin(hphi)] __device__
 							 (auto ist, auto ip){
@@ -253,6 +255,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.0;
+					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] = 1.0;
 					}
@@ -287,6 +292,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.0;
+					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 
 						auto ixg = rs.cubic_dist(0).local_to_global(ix);
@@ -374,6 +382,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.0;
+					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 
 						auto ixg = rs.cubic_dist(0).local_to_global(ix);
