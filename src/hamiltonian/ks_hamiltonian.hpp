@@ -344,10 +344,10 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 					auto izg = rs.cubic_dist(2).local_to_global(iz);	
 					
 					double r2 = rs.r2(ixg, iyg, izg);
-					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
+						phi.cubic()[ix][iy][iz][ist] = exp(-ww*r2);
 					}
 					
 				}
@@ -361,7 +361,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 1.5*ww*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -370,7 +370,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		diff /= hphi.set_size()*hphi.basis().size();
 
-		CHECK(diff == 0.0055687279_a);
+		CHECK(diff == 0.0051420503_a);
 		
 	}
 
@@ -435,10 +435,10 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 					auto izg = rs.cubic_dist(2).local_to_global(iz);	
 					
 					double r2 = rs.r2(ixg, iyg, izg);
-					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
+						phi.cubic()[ix][iy][iz][ist] = exp(-ww*r2);
 					}
 					
 				}
@@ -452,7 +452,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 1.5*ww*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -461,7 +461,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		diff /= hphi.set_size()*hphi.basis().size();
 
-		CHECK(diff == 0.0055687279_a);
+		CHECK(diff == 0.0051420503_a);
 		
 	}
 	
