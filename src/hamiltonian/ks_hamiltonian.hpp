@@ -113,11 +113,11 @@ namespace hamiltonian {
 			if(not non_local_in_fourier_) non_local(phi, hphi);
 
 			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
-			
+
 			//the scalar local potential in real space
-			//DATAOPERATIONS LOOP + GPU:RUN 2D
+			//DATAOPERATIONS GPU:RUN 2D
 			gpu::run(phi.local_set_size(), phi.basis().local_size(),
-							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(hphi.matrix())] GPU_LAMBDA
+							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
 							 (auto ist, auto ip){
 								 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
 							 });
