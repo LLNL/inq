@@ -41,12 +41,12 @@ namespace hamiltonian {
 		exchange_operator exchange;
 		
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
-									 const int num_hf_orbitals, const double exchange_coefficient):
+									 const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> const & comm = {boost::mpi3::environment::get_world_instance(), {}}):
 			scalar_potential(basis),
-			exchange(basis, num_hf_orbitals, exchange_coefficient),
+			exchange(basis, num_hf_orbitals, exchange_coefficient, comm),
 			non_local_in_fourier_(fourier_pseudo)
 		{
-
+			
 			scalar_potential = pot.local_potential(basis, cell, geo);
 			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
@@ -112,21 +112,15 @@ namespace hamiltonian {
 			//the non local potential in real space
 			if(not non_local_in_fourier_) non_local(phi, hphi);
 
+			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
+
 			//the scalar local potential in real space
-			//DATAOPERATIONS LOOP + GPU:RUN 2D
-#ifdef ENABLE_CUDA2
-			gpu::run(phi.set_size(), phi.basis().size(),
-							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi), it_phi = begin(hphi)] __device__
+			//DATAOPERATIONS GPU:RUN 2D
+			gpu::run(phi.local_set_size(), phi.basis().local_size(),
+							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
 							 (auto ist, auto ip){
 								 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
 							 });
-							 
-#else
-			for(long ip = 0; ip < phi.basis().size(); ip++){
-				double vv  = scalar_potential.linear()[ip];
-				for(int ist = 0; ist < phi.set_size(); ist++) hphi.matrix()[ip][ist] += vv*phi.matrix()[ip][ist];
-			}
-#endif
 			
 			exchange(phi, hphi);
 		}
@@ -217,13 +211,18 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	using namespace inq;
 	using namespace Catch::literals;
   using math::vec3d;
-  
+
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+
+	auto set_comm = cart_comm.axis(0);
+	auto basis_comm = cart_comm.axis(1);	
+
   double ecut = 20.0;
   double ll = 10.0;
 
 	ions::geometry geo;
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), basis_comm);
 
 	SECTION("Basis"){
 		
@@ -234,21 +233,24 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff());
+	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), set_comm);
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-  basis::field_set<basis::real_space, complex> phi(rs, st.num_states());
-	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states());
-	
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0);
+  basis::field_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
+	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states(), cart_comm);
+
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0, cart_comm);
 
 	SECTION("Constant function"){
 		
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.0;
+					
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] = 1.0;
 					}
 				}
@@ -258,17 +260,18 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = ham(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.0);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.cubic().num_elements();
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 		
 		CHECK(diff < 1e-14);
 		
@@ -278,12 +281,21 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		
 		double kk = 2.0*M_PI/rs.rlength()[0];
 		
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
-						double xx = rs.rvector(ix, iy, iz)[0];
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.0;
+					
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+
+						auto ixg = rs.cubic_dist(0).local_to_global(ix);
+						auto iyg = rs.cubic_dist(1).local_to_global(iy);
+						auto izg = rs.cubic_dist(2).local_to_global(iz);	
+						auto istg = phi.set_part().local_to_global(ist);
+						
+						double xx = rs.rvector(ixg, iyg, izg)[0];
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg*kk*xx), sin(istg*kk*xx));
 					}
 				}
 			}
@@ -292,17 +304,19 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = ham(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
-							diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic()[ix][iy][iz][ist]);
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+						auto istg = phi.set_part().local_to_global(ist);
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg*kk*istg*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
-
-		diff /= hphi.cubic().num_elements();
+		
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 
 		CHECK(diff < 1e-14);
 		
@@ -313,14 +327,19 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 		double ww = 2.0;
 
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					double r2 = rs.r2(ix, iy, iz);
-					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					for(int ist = 0; ist < phi.set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
+					auto ixg = rs.cubic_dist(0).local_to_global(ix);
+					auto iyg = rs.cubic_dist(1).local_to_global(iy);
+					auto izg = rs.cubic_dist(2).local_to_global(iz);	
+					
+					double r2 = rs.r2(ixg, iyg, izg);
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
+
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+						phi.cubic()[ix][iy][iz][ist] = exp(-ww*r2);
 					}
 					
 				}
@@ -330,19 +349,20 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = ham(phi);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 1.5*ww*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.cubic().num_elements();
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 
-		CHECK(diff == 0.0055687279_a);
+		CHECK(diff == 0.0051420503_a);
 		
 	}
 
@@ -351,12 +371,21 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		
 		double kk = 2.0*M_PI/rs.rlength()[0];
 		
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
-						double xx = rs.rvector(ix, iy, iz)[0];
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist*kk*xx), sin(ist*kk*xx));
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.0;
+					
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+
+						auto ixg = rs.cubic_dist(0).local_to_global(ix);
+						auto iyg = rs.cubic_dist(1).local_to_global(iy);
+						auto izg = rs.cubic_dist(2).local_to_global(iz);	
+						auto istg = phi.set_part().local_to_global(ist);
+						
+						double xx = rs.rvector(ixg, iyg, izg)[0];
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg*kk*xx), sin(istg*kk*xx));
 					}
 				}
 			}
@@ -365,73 +394,43 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
-							diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*ist*kk*ist*kk*phi.cubic()[ix][iy][iz][ist]);
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+
+						auto istg = phi.set_part().local_to_global(ist);
+
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg*kk*istg*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.cubic().num_elements();
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 
 		CHECK(diff < 1e-14);
 		
 	}
 
-
-	SECTION("Harmonic oscillator"){
-
-		double ww = 2.0;
-
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					double r2 = rs.r2(ix, iy, iz);
-					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
-
-					for(int ist = 0; ist < phi.set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
-					}
-					
-				}
-			}
-		}
-
-		hphi = ham(phi);
-		
-		double diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
-					}
-				}
-			}
-		}
-
-		diff /= hphi.cubic().num_elements();
-
-		CHECK(diff == 0.0055687279_a);
-		
-	}
-
-
 	SECTION("Harmonic oscillator - fourier"){
 
 		double ww = 2.0;
 
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					double r2 = rs.r2(ix, iy, iz);
-					ham.scalar_potential.cubic()[ix][iy][iz] = ww*r2;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					for(int ist = 0; ist < phi.set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = exp(-0.5*ww*r2);
+					auto ixg = rs.cubic_dist(0).local_to_global(ix);
+					auto iyg = rs.cubic_dist(1).local_to_global(iy);
+					auto izg = rs.cubic_dist(2).local_to_global(iz);	
+					
+					double r2 = rs.r2(ixg, iyg, izg);
+					ham.scalar_potential.cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
+
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+						phi.cubic()[ix][iy][iz][ist] = exp(-ww*r2);
 					}
 					
 				}
@@ -441,19 +440,20 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - ww*phi.cubic()[ix][iy][iz][ist]);
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 1.5*ww*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
 		}
 
-		diff /= hphi.cubic().num_elements();
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		diff /= hphi.set_size()*hphi.basis().size();
 
-		CHECK(diff == 0.0055687279_a);
+		CHECK(diff == 0.0051420503_a);
 		
 	}
 	

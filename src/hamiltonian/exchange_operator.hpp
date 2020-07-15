@@ -30,9 +30,9 @@ namespace hamiltonian {
 		
   public:
 
-		exchange_operator(const basis::real_space & basis, const int num_hf_orbitals, const double exchange_coefficient):
+		exchange_operator(const basis::real_space & basis, const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> const & comm):
 			hf_occupations(num_hf_orbitals),
-			hf_orbitals(basis, num_hf_orbitals),
+			hf_orbitals(basis, num_hf_orbitals, comm),
 			exchange_coefficient_(exchange_coefficient){
 
 		}

@@ -88,7 +88,7 @@ namespace hamiltonian {
 
       basis::field<basis_type, double> potential(basis);
 
-			for(long ii = 0; ii < potential.basis().size(); ii++) potential.linear()[ii] = 0.0;
+			for(long ii = 0; ii < potential.linear().size(); ii++) potential.linear()[ii] = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -159,7 +159,7 @@ namespace hamiltonian {
 
       basis::field<basis_type, double> density(basis);
 
-			for(long ii = 0; ii < density.basis().size(); ii++) density.linear()[ii] = 0.0;
+			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -197,7 +197,7 @@ namespace hamiltonian {
 
       basis::field<basis_type, double> density(basis);
 
-			for(long ii = 0; ii < density.basis().size(); ii++) density.linear()[ii] = 0.0;
+			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
