@@ -153,13 +153,6 @@ namespace hamiltonian {
 		return  sin(n*(kvec | rr))*sin(n*(kvec | rr));
 	}
 
-	auto diverdence_sqwave(inq::math::vec3d rr, int n){
-		inq::math::vec3d kvec = 2.0 * M_PI * inq::math::vec3d(1.0/9.0, 1.0/12.0, 1.0/10.0);
-		double ff;
-		for(int idir = 0; idir < 3 ; idir++) ff = 2*n*kvec[idir]*cos(n*(kvec | rr))*sin(n*(kvec | rr));
-		return ff;
-	}
-
 	auto laplacian_sqwave(inq::math::vec3d rr, int n){
 		inq::math::vec3d kvec = 2.0 * M_PI * inq::math::vec3d(1.0/9.0, 1.0/12.0, 1.0/10.0);
 		auto ff = 0.0;
