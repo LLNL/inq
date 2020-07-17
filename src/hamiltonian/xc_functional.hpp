@@ -322,7 +322,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	}
-	CHECK(Approx(diff_ways) == 0.0062220623);
+	CHECK(Approx(diff_ways) == 0.0131560992);
 	CHECK(Approx(diff) == 0.0074855237);
 	CHECK(Approx(Exc) == int_xc_energy);
 	CHECK(Vxc.linear()[1] == -0.4699613109_a);
