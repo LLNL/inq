@@ -127,7 +127,7 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 
 	inq::math::vec3d vec;
 
-	auto grad = [] (auto point){
+	auto grad = [&] (auto point){
 		return finite_difference_gradient5p(gaussian_func, point);
 	};
 
