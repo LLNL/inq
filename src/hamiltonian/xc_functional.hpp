@@ -203,18 +203,29 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	ions::UnitCell cell(vec3d(lx, 0.0, 0.0), vec3d(0.0, ly, 0.0), vec3d(0.0, 0.0, lz));
 
 	SECTION("LDA"){
+<<<<<<< HEAD
 		basis::real_space rslda(cell, input::basis::cutoff_energy(20.0));
 		basis::field<basis::real_space, double> gaussian_field(rslda);
 		for(int ix = 0; ix < rslda.sizes()[0]; ix++){
 			for(int iy = 0; iy < rslda.sizes()[1]; iy++){
 				for(int iz = 0; iz < rslda.sizes()[2]; iz++){
 					auto vec = rslda.rvector(ix, iy, iz);
+=======
+
+		basis::field<basis::real_space, double> gaussian_field(rs);
+
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+>>>>>>> 5205adb84d7aa0880cf84394d9002b6910a37fe5
 					gaussian_field.cubic()[ix][iy][iz] = gaussian(vec);
 				}
 			}
 		}
 
 		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+<<<<<<< HEAD
 		basis::field<basis::real_space, double> gaussianVxc(rslda);
 		double gaussianExc;
 
@@ -250,11 +261,50 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 				for(int iz = 0; iz < rsgga.sizes()[2]; iz++){
 					auto vec = rsgga.rvector(ix, iy, iz);
 					field.cubic()[ix][iy][iz] = sqwave(vec, 3);
+=======
+		basis::field<basis::real_space, double> gaussian_vxc(rs);
+		double gaussian_exc;
+
+		ldafunctional(gaussian_field, gaussian_exc, gaussian_vxc);
+		
+		CHECK(gaussian_exc == -0.270646_a);
+		double int_xc_energy = 0.0;
+
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					auto local_density = gaussian(vec);
+					double local_exc, local_vxc;
+					xc_lda_exc_vxc(&ldafunctional.libxc_func(), 1, &local_density, &local_exc, &local_vxc);
+					CHECK(Approx(local_vxc) == gaussian_vxc.cubic()[ix][iy][iz]);
+					int_xc_energy += local_exc*local_density*rs.volume_element();
 				}
 			}
 		}
-	
+		
+		CHECK(Approx(gaussian_exc) == int_xc_energy);
+		CHECK(gaussian_vxc.linear()[1] == -0.5111609291_a);
+		CHECK(gaussian_vxc.linear()[333] == -0.0000452004_a);
+		CHECK(gaussian_vxc.linear()[rs.size()-1] == -0.4326883849_a);
+
+	}
+
+	SECTION("GGA"){
+		
+		basis::field<basis::real_space, double> gaussian_density(rs);
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					gaussian_density.cubic()[ix][iy][iz] = gaussian(vec);
+>>>>>>> 5205adb84d7aa0880cf84394d9002b6910a37fe5
+				}
+			}
+		}
+		
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
+<<<<<<< HEAD
 		basis::field<basis::real_space, double> Vxc(rsgga);
 		basis::field<basis::real_space, double> local_vsigma_output(rsgga);
 
@@ -322,6 +372,59 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(Vxc.linear()[rsgga.size()] == 0.0_a);
 	}
 
+=======
+		basis::field<basis::real_space, double> gaussian_vxc(rs);
+		double gaussian_exc;
+
+		ggafunctional(gaussian_density, gaussian_exc, gaussian_vxc);
+
+		CHECK(gaussian_exc == -0.3139862364_a);
+
+		double int_xc_energy = 0.0;
+		
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					auto local_density = gaussian(vec);
+					auto local_sigma = dgaussian(vec) | dgaussian(vec);
+					double local_exc,local_vxc, local_vsigma;
+					xc_gga_exc_vxc(&ggafunctional.libxc_func(), 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
+
+					auto calc_vsigma = [func = &ggafunctional.libxc_func()] (auto point){
+															 auto local_density = gaussian(point);
+															 auto local_sigma = dgaussian(point) | dgaussian(point);
+															 double local_exc, local_vxc,  local_vsigma;
+															 
+															 xc_gga_exc_vxc(func, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
+
+															 return local_vsigma;
+														 };
+					
+					auto grad_vsigma = finite_difference_gradient(calc_vsigma, vec);
+
+					local_vxc -= 2.0*((grad_vsigma|dgaussian(vec)) + local_vsigma*laplacian_gaussian(vec));
+
+
+					//std::cout << local_density << '\t' << local_vxc << '\t' << gaussian_vxc.cubic()[ix][iy][iz] << std::endl;
+					//std::cout << local_density << '\t' << local_vsigma << '\t' << gaussian_vxc.cubic()[ix][iy][iz] << std::endl;
+					//std::cout << local_density << '\t' << grad_vsigma[0] << '\t' << gaussian_vxc.cubic()[ix][iy][iz] << std::endl;
+					// Local divergence ???
+					//CHECK(Approx(local_vxc) == gaussian_vxc.cubic()[ix][iy][iz]);
+
+					int_xc_energy += local_exc*local_density*rs.volume_element();
+				}
+			}
+		}
+		
+		CHECK(Approx(gaussian_exc) == int_xc_energy);
+		CHECK(gaussian_vxc.linear()[1] == -0.5931073473_a);
+		CHECK(gaussian_vxc.linear()[33] == -0.0166346166_a);
+		CHECK(gaussian_vxc.linear()[rs.size()-1] == -0.5021400086_a);
+
+	}
+	
+>>>>>>> 5205adb84d7aa0880cf84394d9002b6910a37fe5
 	SECTION("UNIFORM"){ //Check LDA==GGA for unifrom electronic density
 		basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
 		basis::field<basis::real_space, double> gaussian_field(rs);
@@ -335,21 +438,72 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
 		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
-		basis::field<basis::real_space, double> gaussianVxcLDA(rs) , gaussianVxcGGA(rs);
-		double gaussianExcLDA, gaussianExcGGA;
+		basis::field<basis::real_space, double> gaussian_vxcLDA(rs) , gaussian_vxcGGA(rs);
+		double gaussian_excLDA, gaussian_excGGA;
 
-		ggafunctional(gaussian_field, gaussianExcLDA, gaussianVxcLDA);
-		ldafunctional(gaussian_field, gaussianExcGGA, gaussianVxcGGA);
-		CHECK(gaussianExcLDA == gaussianExcGGA);
+		ggafunctional(gaussian_field, gaussian_excLDA, gaussian_vxcLDA);
+		ldafunctional(gaussian_field, gaussian_excGGA, gaussian_vxcGGA);
+		CHECK(gaussian_excLDA == gaussian_excGGA);
 		
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.sizes()[2]; iz++){
-					CHECK(Approx(gaussianVxcLDA.cubic()[ix][iy][iz]) == gaussianVxcGGA.cubic()[ix][iy][iz]);
+					CHECK(Approx(gaussian_vxcLDA.cubic()[ix][iy][iz]) == gaussian_vxcGGA.cubic()[ix][iy][iz]);
 				}
 			}
 		}
 	}
+<<<<<<< HEAD
+=======
+/*
+	SECTION("NONUNIFORM"){ //Check LDA==GGA for nonunifrom electronic density in the case grad[n]=0
+		basis::field<basis::real_space, double> gaussian_field(rs);
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					gaussian_field.cubic()[ix][iy][iz] = gaussian(vec);
+				}
+			}
+		}
+	
+		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
+		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+		basis::field<basis::real_space, double> gaussian_vxcLDA(rs) , gaussian_vxcGGA(rs);
+		double gaussian_excLDA, gaussian_excGGA;
+
+		ggafunctional(gaussian_field, gaussian_excLDA, gaussian_vxcLDA);
+		ldafunctional(gaussian_field, gaussian_excGGA, gaussian_vxcGGA);
+		std::cout << gaussian_excLDA << "  " << gaussian_excGGA << "\n";
+		
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					std::cout << gaussian_vxcLDA.cubic()[ix][iy][iz]  << "  " << double(gaussian_vxcGGA.cubic()[ix][iy][iz]) << '\n';
+				}
+			}
+		}
+	}
+*/
+/*
+	SECTION("QE_DENSITY"){
+		std::ifstream cubefile("starting_density.cube");
+		xsize << cubefile;
+		ysize << cubefile;
+		zsize << cubefile;
+
+		//Back reverse engineering for the basis-set and system
+
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					cubefile >> density.cubic()[ix][iy][iz]
+				}
+			}
+		}
+	}	
+*/
+>>>>>>> 5205adb84d7aa0880cf84394d9002b6910a37fe5
 }
 
 
