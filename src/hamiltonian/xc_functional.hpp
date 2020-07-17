@@ -319,7 +319,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(Vxc.linear()[1] == -0.4699613109_a);
 	CHECK(Vxc.linear()[33] == -1.1551782751_a);
 	CHECK(Vxc.linear()[rsgga.size()-1] == -0.592717454_a);
-	CHECK(Vxc.linear()[rsgga.size()] == 0.0_a);
+	CHECK(Approx(Vxc.linear()[rsgga.size()]).margin(1.0e-10) == 0.0);
 	}
 
 	SECTION("UNIFORM"){ //Check LDA==GGA for unifrom electronic density
