@@ -42,7 +42,7 @@ namespace utils {
 
 	template <class FunctionType, class VecType>
 	auto finite_difference_secondderivative5p(FunctionType const & function, VecType const & point){
-	VecType divergence = {0.0, 0.0, 0.0};
+	VecType secondderiv = {0.0, 0.0, 0.0};
 	double grid[5] = { 2.0,  1.0,   0.0, -1.0, -2.0};
 	double coef[5] = {-1.0, 16.0, -30.0, 16.0, -1.0};
 	auto delta =  0.01;
@@ -50,10 +50,10 @@ namespace utils {
 		for(int idp = 0; idp < 5; idp++ ){
 			auto point_plus_delta = point;
 			point_plus_delta[idir] += grid[idp]*delta;
-			divergence[idir] += coef[idp]*function(point_plus_delta)/(12.0*delta*delta);
+			secondderiv[idir] += coef[idp]*function(point_plus_delta)/(12.0*delta*delta);
 		}
 	}
-	return divergence;
+	return secondderiv;
 	}
 
 	template <class FunctionType, class VecType>
@@ -61,7 +61,7 @@ namespace utils {
 	auto divergence = 0.0;
 	double grid[4] = {2.0, 1.0, -1.0, -2.0};
 	double coef[4] = {-1.0, 8.0, -8.0, 1.0};
-	auto delta =  0.1;
+	auto delta =  0.01;
 	for(int idir = 0; idir < 3; idir++){
 		for(int idp = 0; idp < 4; idp++ ){
 			auto point_plus_delta = point;
@@ -114,6 +114,10 @@ namespace utils {
 		return ff;
 	}
 
+	auto laplacian_gaussian_func(inq::math::vec3d rr){
+		return 4.0*(rr|rr)*gaussian_func(rr) - 6.0*gaussian_func(rr);
+	}
+
 TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 
 	using namespace inq;
@@ -123,8 +127,14 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 
 	inq::math::vec3d vec;
 
+	auto grad = [] (auto point){
+		return finite_difference_gradient5p(gaussian_func, point);
+	};
+
 	vec = {0.0, 0.0, 0.0};
 	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec))).margin(1.0e-5) == 0.0);
+	CHECK(finite_difference_divergence5p(grad, vec) == -1.0775226897_a);
+	CHECK(Approx(laplacian_gaussian_func(vec) - finite_difference_divergence5p(grad, vec)).margin(1.0e-7) == 0.0);
 	
 	vec = {0.0001, -0.0, 0.003};
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
@@ -132,6 +142,8 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec))).margin(1.0e-5) == 0.0);
 	CHECK(Approx(norm(finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec))).margin(1.0e-5) == 0.0);
 	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75_a);
+	CHECK(finite_difference_divergence5p(grad, vec) == -1.077506509_a);
+	CHECK(Approx(laplacian_gaussian_func(vec) - finite_difference_divergence5p(grad, vec)).margin(1.0e-7) == 0.0);
 
 	vec = {1.0, -1.0, 0.3};
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
@@ -139,6 +151,8 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec))).margin(1.0e-5) == 0.0);
 	CHECK(Approx(norm(finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec))).margin(1.0e-5) == 0.0);
 	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75_a);
+	CHECK(finite_difference_divergence5p(grad, vec) == 0.052421771_a);
+	CHECK(Approx(laplacian_gaussian_func(vec) - finite_difference_divergence5p(grad, vec)).margin(1.0e-7) == 0.0);
 
 	vec = {0.0, 0.0, 3.3};
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
@@ -146,6 +160,8 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec))).margin(1.0e-5) == 0.0);
 	CHECK(Approx(norm(finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec))).margin(1.0e-5) == 0.0);
 	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75_a);
+	CHECK(finite_difference_divergence5p(grad, vec) == 0.0001257574_a);
+	CHECK(Approx(laplacian_gaussian_func(vec) - finite_difference_divergence5p(grad, vec)).margin(1.0e-7) == 0.0);
 
 	vec = {1000.0, -0.0020, 3.3};
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
@@ -153,6 +169,8 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec))).margin(1.0e-5) == 0.0);
 	CHECK(Approx(norm(finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec))).margin(1.0e-5) == 0.0);
 	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75_a);
+	CHECK(finite_difference_divergence5p(grad, vec) == 0.0_a);
+	CHECK(Approx(laplacian_gaussian_func(vec) - finite_difference_divergence5p(grad, vec)).margin(1.0e-7) == 0.0);
 
 }
 
