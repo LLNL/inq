@@ -43,7 +43,7 @@ namespace input {
     };
 
     enum class correlation_functional { LDA_PZ = 9,
-                                        PBE = 30,
+                                        PBE = 130,
                                         LYP = 131
     };
 
