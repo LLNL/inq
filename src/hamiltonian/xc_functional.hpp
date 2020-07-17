@@ -168,14 +168,12 @@ namespace hamiltonian {
 	}
 
 	auto gaussiansigma(inq::math::vec3d rr, double sigma){
-		auto f = pow(2*M_PI, -1.5)*pow(sigma, -3.0)*exp(-0.5*norm(rr)*pow(sigma, -2.0));
-		return  f;
+		return  pow(2*M_PI, -1.5)*pow(sigma, -3.0)*exp(-0.5*norm(rr)*pow(sigma, -2.0));
 	}
 	
 
 	auto gaussian(inq::math::vec3d rr){  // sigma = 1/sqrt(2)
-		auto f = pow(M_PI, -1.5)*exp(-norm(rr));
-		return  f;
+		return  pow(M_PI, -1.5)*exp(-norm(rr));
 	}
 
 	auto dgaussian(inq::math::vec3d rr){
@@ -286,7 +284,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 													auto local_density = sqwave(point, 3);
 													auto local_sigma = gradient_sqwave(point, 3) | gradient_sqwave(point, 3);
 													double local_exc, local_vxc, local_vsigma;
-													auto param =func;
+													auto param = func;
 													if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
 													xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
 													xc_gga_exc_vxc(&param, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
@@ -315,8 +313,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	}
-	CHECK(Approx(diff_ways) == 0.0131560992);
-	CHECK(Approx(diff) == 0.0074855237);
+	CHECK(Approx(diff_ways).margin(1.0e-10) == 0.0000013589);
+	CHECK(Approx(diff) == 0.0000805439);
 	CHECK(Approx(Exc) == int_xc_energy);
 	CHECK(Vxc.linear()[1] == -0.4699613109_a);
 	CHECK(Vxc.linear()[33] == -1.1551782751_a);
