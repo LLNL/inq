@@ -4,7 +4,7 @@
 #define INQ__HAMILTONIAN__XC_FUNCTIONAL
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019 Xavier Andrade, Alexey Kartsev
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
