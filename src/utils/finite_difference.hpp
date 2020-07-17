@@ -24,21 +24,12 @@
 namespace inq {
 namespace utils {
 
-	// Returns value of Binomial Coefficient C(n, k)  
-	int binomialCoeff(int n, int k)
-	{
-	if (k == 0 || k == n)
-		return 1;
-	return binomialCoeff(n - 1, k - 1) + binomialCoeff(n - 1, k);
-	}
-
-
 	template <class FunctionType, class VecType>
 	auto finite_difference_gradient5p(FunctionType const & function, VecType const & point){
 	VecType gradient = {0.0, 0.0, 0.0};
 	double grid[4] = {2.0, 1.0, -1.0, -2.0};
 	double coef[4] = {-1.0, 8.0, -8.0, 1.0};
-	auto delta =  0.1;
+	auto delta =  0.01;
 	for(int idir = 0; idir < 3; idir++){
 		for(int idp = 0; idp < 4; idp++ ){
 			auto point_plus_delta = point;
@@ -54,7 +45,7 @@ namespace utils {
 	VecType divergence = {0.0, 0.0, 0.0};
 	double grid[5] = { 2.0,  1.0,   0.0, -1.0, -2.0};
 	double coef[5] = {-1.0, 16.0, -30.0, 16.0, -1.0};
-	auto delta =  0.1;
+	auto delta =  0.01;
 	for(int idir = 0; idir < 3; idir++){
 		for(int idp = 0; idp < 5; idp++ ){
 			auto point_plus_delta = point;
@@ -91,6 +82,7 @@ namespace utils {
 
 #include <catch2/catch.hpp>
 #include <math/vec3d.hpp>
+#include <complex>
 
 	auto gaussian_func(inq::math::vec3d rr){
 		return pow(M_PI, -1.5)*exp(-norm(rr)); // sigma = 1/sqrt(2)
@@ -130,70 +122,37 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 	using math::vec3d;
 
 	inq::math::vec3d vec;
-/*
 
 	vec = {0.0, 0.0, 0.0};
-
-	std::cout << finite_difference_gradient(gaussian_func, vec) << "\n";
-	std::cout << finite_difference_gradient5p(gaussian_func, vec) << "  5 points \n";
-	std::cout << "===============================";
+	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec))).margin(1.0e-5) == 0.0);
+	
 	vec = {0.0001, -0.0, 0.003};
-
-	std::cout << finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient(linear_func, vec) - dlinear_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient(quadratic_func, vec) - dquadratic_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "  5 points \n";
-	std::cout << norm(finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec)) << "\n";
-	CHECK(Approx(norm(finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec))).margin(1.0e-5) == 0.0);
-	std::cout << "===============================";
-	CHECK(norm(finite_difference_gradient(linear_func, vec)) == 60.75);
-	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75);
+	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
+	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(Approx(norm(finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75_a);
 
 	vec = {1.0, -1.0, 0.3};
-	std::cout << finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient(linear_func, vec) - dlinear_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient(quadratic_func, vec) - dquadratic_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "  5 points \n";
-//	CHECK(Approx(norm(finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec))).epsilon(0.001) == 0.0);
-	CHECK(norm(finite_difference_gradient(linear_func, vec)) == 60.75);
-	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75);
-
+	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
+	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(Approx(norm(finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75_a);
 
 	vec = {0.0, 0.0, 3.3};
-	std::cout << finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient(linear_func, vec) - dlinear_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient(quadratic_func, vec) - dquadratic_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "  5 points \n";
-//	CHECK(Approx(norm(finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec))).epsilon(0.001) == 0.0);
-	CHECK(norm(finite_difference_gradient(linear_func, vec)) == 60.75);
-	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75);
+	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
+	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(Approx(norm(finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75_a);
 
 	vec = {1000.0, -0.0020, 3.3};
-	std::cout << finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient(linear_func, vec) - dlinear_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient(quadratic_func, vec) - dquadratic_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "  5 points \n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "\n";
-	std::cout << finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec) << "  5 points \n";
-//	CHECK(Approx(norm(finite_difference_gradient(gaussian_func, vec) - dgaussian_func(vec))).epsilon(0.001) == 0.0);
-	CHECK(norm(finite_difference_gradient(linear_func, vec)) == 60.75);
-	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75);
-	
-	*/
+	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
+	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec) - dlinear_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(Approx(norm(finite_difference_gradient5p(quadratic_func, vec) - dquadratic_func(vec))).margin(1.0e-5) == 0.0);
+	CHECK(norm(finite_difference_gradient5p(linear_func, vec)) == 60.75_a);
 
 }
 
