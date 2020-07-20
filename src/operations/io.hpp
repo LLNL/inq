@@ -86,7 +86,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 		}
 
 		MPI_Status status;
-		mpi_err = MPI_File_write(fh, buffer.data(), buffer.size()*sizeof(Type), MPI_BYTE, &status);
+		mpi_err = MPI_File_write_at_all(fh, phi.basis().part().start()*sizeof(Type), buffer.data(), buffer.size()*sizeof(Type), MPI_BYTE, &status);
 		
 		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot write restart file '" << filename << "'." << std::endl;
@@ -132,7 +132,7 @@ void load(std::string const & dirname, FieldSet & phi){
 		}
 		
 		MPI_Status status;
-		mpi_err = MPI_File_read(fh, buffer.data(), buffer.size()*sizeof(Type), MPI_BYTE, &status);
+		mpi_err = MPI_File_read_at_all(fh, phi.basis().part().start()*sizeof(Type), buffer.data(), buffer.size()*sizeof(Type), MPI_BYTE, &status);
 		
 		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot read restart file '" << filename << "'." << std::endl;
@@ -170,12 +170,10 @@ TEST_CASE("function operations::io", "[operations::io]") {
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 	
 	auto basis_comm = cart_comm.axis(1);
 	
-	CHECK(basis_comm.size() == 1);
-		
 	basis::trivial bas(npoint, basis_comm);
 
 	basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
