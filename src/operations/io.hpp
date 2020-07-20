@@ -62,9 +62,8 @@ template <class FieldSet>
 void save(std::string const & dirname, FieldSet const & phi){
 
 	using Type = typename FieldSet::element_type;
-			
-	assert(not phi.basis().part().parallel());
-
+	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
+	
 	boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	if(phi.full_comm().rank() == 0) createdir(dirname);
@@ -86,7 +85,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 		}
 
 		MPI_Status status;
-		mpi_err = MPI_File_write_at_all(fh, phi.basis().part().start()*sizeof(Type), buffer.data(), buffer.size()*sizeof(Type), MPI_BYTE, &status);
+		mpi_err = MPI_File_write_at_all(fh, phi.basis().part().start(), buffer.data(), buffer.size(), mpi_type, &status);
 		
 		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot write restart file '" << filename << "'." << std::endl;
@@ -94,8 +93,8 @@ void save(std::string const & dirname, FieldSet const & phi){
 		}
 
 		int data_written;
-		MPI_Get_count(&status, MPI_BYTE, &data_written);
-		assert(data_written == long(buffer.size()*sizeof(Type)));
+		MPI_Get_count(&status, mpi_type, &data_written);
+		assert(data_written == long(buffer.size()));
 
 		MPI_File_close(&fh);
 		
@@ -106,9 +105,8 @@ template <class FieldSet>
 void load(std::string const & dirname, FieldSet & phi){
 
 	using Type = typename FieldSet::element_type;
-			
-	assert(not phi.basis().part().parallel());
-
+	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
+	
 	boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	DIR* dir = opendir(dirname.c_str());
@@ -132,7 +130,7 @@ void load(std::string const & dirname, FieldSet & phi){
 		}
 		
 		MPI_Status status;
-		mpi_err = MPI_File_read_at_all(fh, phi.basis().part().start()*sizeof(Type), buffer.data(), buffer.size()*sizeof(Type), MPI_BYTE, &status);
+		mpi_err = MPI_File_read_at_all(fh, phi.basis().part().start(), buffer.data(), buffer.size(), mpi_type, &status);
 		
 		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot read restart file '" << filename << "'." << std::endl;
@@ -140,8 +138,8 @@ void load(std::string const & dirname, FieldSet & phi){
 		}
 
 		int data_read;
-		MPI_Get_count(&status, MPI_BYTE, &data_read);
-		assert(data_read == long(buffer.size()*sizeof(Type)));
+		MPI_Get_count(&status, mpi_type, &data_read);
+		assert(data_read == long(buffer.size()));
 
 		MPI_File_close(&fh);
 
