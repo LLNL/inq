@@ -93,7 +93,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 template <class FieldSet>
 void load(std::string const & dirname, FieldSet & phi){
 
-	using Type = typename FieldSet::element_type;
+		using Type = typename FieldSet::element_type;
 			
 	assert(not phi.basis().part().parallel());
 
@@ -109,17 +109,29 @@ void load(std::string const & dirname, FieldSet & phi){
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
 		auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
-				
-		auto fd = open(filename.c_str(), O_RDONLY);
-		if(fd == -1){
+
+		MPI_File fh;
+
+		auto mpi_err = MPI_File_open(phi.basis().comm().get(), filename.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+
+		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot open restart file '" << filename << "'." << std::endl;
 			exit(1);
 		}
-				
-		[[maybe_unused]] auto data_read = read(fd, buffer.data(), buffer.size()*sizeof(Type));
+		
+		MPI_Status status;
+		mpi_err = MPI_File_read(fh, buffer.data(), buffer.size()*sizeof(Type), MPI_BYTE, &status);
+		
+		if(mpi_err != MPI_SUCCESS){
+			std::cerr << "Error: cannot read restart file '" << filename << "'." << std::endl;
+			exit(1);
+		}
+
+		int data_read;
+		MPI_Get_count(&status, MPI_BYTE, &data_read);
 		assert(data_read == long(buffer.size()*sizeof(Type)));
 
-		close(fd);
+		MPI_File_close(&fh);
 
 		phi.matrix().rotated()[ist] = buffer;
 				
