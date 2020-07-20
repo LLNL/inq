@@ -76,24 +76,36 @@ void save(std::string const & dirname, FieldSet const & phi){
 
 		buffer = phi.matrix().rotated()[ist];
 
-		auto fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-		if(fd == -1){
+		MPI_File fh;
+
+		auto mpi_err = MPI_File_open(phi.basis().comm().get(), filename.c_str(), MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &fh);
+
+		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot create restart file '" << filename << "'." << std::endl;
 			exit(1);
 		}
-				
-		[[maybe_unused]] auto data_written = write(fd, buffer.data(), buffer.size()*sizeof(Type));
+
+		MPI_Status status;
+		mpi_err = MPI_File_write(fh, buffer.data(), buffer.size()*sizeof(Type), MPI_BYTE, &status);
+		
+		if(mpi_err != MPI_SUCCESS){
+			std::cerr << "Error: cannot write restart file '" << filename << "'." << std::endl;
+			exit(1);
+		}
+
+		int data_written;
+		MPI_Get_count(&status, MPI_BYTE, &data_written);
 		assert(data_written == long(buffer.size()*sizeof(Type)));
 
-		close(fd);
-				
+		MPI_File_close(&fh);
+		
 	}
 }
 		
 template <class FieldSet>
 void load(std::string const & dirname, FieldSet & phi){
 
-		using Type = typename FieldSet::element_type;
+	using Type = typename FieldSet::element_type;
 			
 	assert(not phi.basis().part().parallel());
 
