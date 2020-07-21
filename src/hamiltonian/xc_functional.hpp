@@ -33,7 +33,6 @@ namespace inq {
 namespace hamiltonian {
 	class xc_functional {
 
-
 		public:
 			
 		static constexpr double sigma_threshold = 1.0e-17;
@@ -119,10 +118,11 @@ namespace hamiltonian {
 					}
 					break;
 				}
-				case XC_FAMILY_HYB_GGA:
+				default:{
 					assert(false);
 					break;
 				}
+			}
 		}
 
 		private:
@@ -133,6 +133,7 @@ namespace hamiltonian {
 
 }
 }
+
 
 ///////////////////////////////////////////////////////////////////
 
@@ -353,7 +354,6 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	fftw_cleanup();
 	}
 }
-
 
 #endif
 #endif

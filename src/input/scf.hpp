@@ -125,7 +125,17 @@ namespace input {
 		}
 		
 		auto mixing_algorithm() const {
-			return mixing_algo_.value_or(mixing_algo::LINEAR);
+			return mixing_algo_.value_or(mixing_algo::BROYDEN);
+		}
+
+		auto static silent(){
+			scf solver;
+      solver.verbose_ = false;
+      return solver;
+		}
+		
+		auto verbose_output() const {
+			return verbose_.value_or(true);
 		}
 		
     friend auto operator|(const scf & solver1, const scf & solver2){
@@ -137,6 +147,7 @@ namespace input {
 			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);
 			rsolver.energy_tol_	= merge_optional(solver1.energy_tol_, solver2.energy_tol_);
 			rsolver.mixing_algo_	= merge_optional(solver1.mixing_algo_, solver2.mixing_algo_);
+			rsolver.verbose_	= merge_optional(solver1.verbose_, solver2.verbose_);			
 			return rsolver;
 		}
     
@@ -147,6 +158,7 @@ namespace input {
     nonstd::optional<mix_field> mix_field_;
 		nonstd::optional<double> energy_tol_;
 		nonstd::optional<mixing_algo> mixing_algo_;
+		nonstd::optional<bool> verbose_;
 		
   };
     

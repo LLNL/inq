@@ -88,7 +88,7 @@ namespace hamiltonian {
 
       basis::field<basis_type, double> potential(basis);
 
-			for(long ii = 0; ii < potential.basis().size(); ii++) potential.linear()[ii] = 0.0;
+			for(long ii = 0; ii < potential.linear().size(); ii++) potential.linear()[ii] = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -128,7 +128,7 @@ namespace hamiltonian {
 				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
 
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 				//OPTIMIZATION: this should be done in parallel for atoms too
 				gpu::run(sphere.size(),
 								 [dns = begin(density.cubic()), pts = begin(sphere.points()),
@@ -159,7 +159,7 @@ namespace hamiltonian {
 
       basis::field<basis_type, double> density(basis);
 
-			for(long ii = 0; ii < density.basis().size(); ii++) density.linear()[ii] = 0.0;
+			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -197,7 +197,7 @@ namespace hamiltonian {
 
       basis::field<basis_type, double> density(basis);
 
-			for(long ii = 0; ii < density.basis().size(); ii++) density.linear()[ii] = 0.0;
+			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				

@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <config.h>
+#include <inq_config.h>
 #include <math/complex.hpp>
 #include <basis/field_set.hpp>
 #include <cstdlib>
@@ -29,14 +29,16 @@
 
 #include <operations/overlap.hpp>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <cusolverDn.h>
 #endif
 
-#define zpotrf FC_FUNC(zpotrf, ZPOTRF) 
+#include "FC.h"
+
+#define zpotrf FC_GLOBAL(zpotrf, ZPOTRF) 
 extern "C" void zpotrf(const char * uplo, const int * n, inq::complex * a, const int * lda, int * info);
 
-//#define blas_ztrsm FC_FUNC(ztrsm, ZTRSM) 
+//#define blas_ztrsm FC_GLOBAL(ztrsm, ZTRSM) 
 //extern "C" void blas_ztrsm(const char& side, const char& uplo, const char& transa, const char& diag,
 //											const long& m, const long& n, const complex& alpha, const complex * a, const long& lda, complex * B, const long& ldb);
 
@@ -51,7 +53,7 @@ void orthogonalize(field_set_type & phi){
 	const int nst = phi.set_size();
 		
 	//DATAOPERATIONS RAWLAPACK zpotrf
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	{
 		cusolverDnHandle_t cusolver_handle;
 			

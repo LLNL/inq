@@ -33,8 +33,6 @@ public:
 		return cell_;
 	}
     
-private:
-    
 	inq::ions::UnitCell cell_;
 	inq::ions::geometry geo_;
 

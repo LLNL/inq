@@ -21,7 +21,7 @@
 #ifndef INQ__CONFIG__PATH
 #define INQ__CONFIG__PATH
 
-#include <config.h>
+#include <inq_config.h>
 #include <string>
 
 namespace inq {

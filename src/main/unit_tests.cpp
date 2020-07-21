@@ -43,10 +43,11 @@
 #include <input/cell.hpp>
 #include <input/species.hpp>
 #include <input/scf.hpp>
+#include <input/rt.hpp>
 
 #include <config/path.hpp>
 
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <math/vector3.hpp>
 
 #include <ions/geometry.hpp>

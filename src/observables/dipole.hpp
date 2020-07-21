@@ -21,13 +21,14 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <inq_config.h>
 
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <basis/real_space.hpp>
 #include <basis/field.hpp>
+#include <systems/ions.hpp>
+#include <systems/electrons.hpp>
+#include <physics/constants.hpp>
 
 namespace inq {
 namespace observables {
@@ -54,6 +55,25 @@ math::vec3d dipole(basis::field<basis::real_space, double> & density){
 	return dip*density.basis().volume_element();
 	
 }
+
+math::vec3d dipole(ions::geometry const & geo, const hamiltonian::atomic_potential & atomic_pot){
+
+	using physics::constants::proton_charge;
+	
+	math::vec3d dip = {0.0, 0.0, 0.0};
+
+	for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+		auto zval = atomic_pot.pseudo_for_element(geo.atoms()[iatom]).valence_charge();
+		dip += proton_charge*zval*geo.coordinates()[iatom];
+	}
+
+	return dip;
+}
+
+math::vec3d dipole(systems::ions const & ions, systems::electrons & electrons){
+	return dipole(ions.geo_, electrons.atomic_pot_) + dipole(electrons.density_);
+}
+
 
 }
 }

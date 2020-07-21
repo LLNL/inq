@@ -22,7 +22,7 @@
 */
 
 #include <math/complex.hpp>
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <math/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>

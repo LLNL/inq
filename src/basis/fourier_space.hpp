@@ -21,11 +21,9 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <inq_config.h>
 
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <ions/unitcell.hpp>
 #include "grid.hpp"
 #include <cassert>
@@ -38,10 +36,10 @@ namespace basis {
 
   public:
 		
-    fourier_space(const grid & grid_basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+    fourier_space(const grid & grid_basis):
 			grid(grid_basis){
 			
-			cubic_dist_ = {inq::utils::partition(nr_[0]), inq::utils::partition(nr_[1]), inq::utils::partition(nr_[2], comm)};
+			cubic_dist_ = {inq::utils::partition(nr_[0]), inq::utils::partition(nr_[1]), inq::utils::partition(nr_[2], comm())};
 
 			base::part_ = cubic_dist_[2];
 			base::part_ *= nr_[0]*long(nr_[1]);
@@ -49,46 +47,67 @@ namespace basis {
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();			
     }
 
-		GPU_FUNCTION math::vec3d gvector(const int ix, const int iy, const int iz) const {
-						
-			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
-			//grid from -pi/h to pi/h
-
-			auto ii = this->to_symmetric_range(ix, iy, iz);
-			return math::vec3d{ii[0]*gspacing()[0], ii[1]*gspacing()[1], ii[2]*gspacing()[2]};
-		}
-
-    GPU_FUNCTION const math::vec3d & glength() const{
-      return glength_;
-    }
-
-		GPU_FUNCTION auto radius() const {
-			return 0.5*std::min({glength_[0], glength_[1], glength_[2]});
-		}
-
-		GPU_FUNCTION auto outside_sphere(const double g2) const {
-			if(not spherical_g_grid_) return false;
-			return g2 > radius()*radius();
-		}		
-
-    GPU_FUNCTION const math::vec3d & gspacing() const{
-      return gspacing_;
-    }
-
-		bool g_is_zero(const int ix, const int iy, const int iz) const {
-			return (ix == 0 and iy == 0 and iz == 0);
-		}
-
-		GPU_FUNCTION double g2(const int ix, const int iy, const int iz) const {
-			return norm(gvector(ix, iy, iz));
-		}
-
 		bool spherical() const {
 			return spherical_g_grid_;
 		}
 
 		auto volume_element() const {
 			return rspacing_[0]*rspacing_[1]*rspacing_[2]/size();
+		}
+
+		class point_operator {
+
+		public:
+
+			point_operator(std::array<int, 3> const & ng, math::vec3d const & gspacing, math::vec3d const & glength):
+				ng_(ng),
+				gspacing_(gspacing),
+				glength_(glength){
+			}
+
+			GPU_FUNCTION math::vec3d gvector(const int ix, const int iy, const int iz) const {
+				
+				//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
+				//grid from -pi/h to pi/h
+				
+				auto ii = to_symmetric_range(ng_, ix, iy, iz);
+				return math::vec3d{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
+			}
+			
+			GPU_FUNCTION const math::vec3d & glength() const{
+				return glength_;
+			}
+			
+			GPU_FUNCTION auto radius() const {
+				return 0.5*std::min({glength_[0], glength_[1], glength_[2]});
+			}
+			
+			GPU_FUNCTION auto outside_sphere(const double g2) const {
+				return g2 > radius()*radius();
+			}		
+			
+			GPU_FUNCTION const math::vec3d & gspacing() const{
+				return gspacing_;
+			}
+			
+			bool g_is_zero(const int ix, const int iy, const int iz) const {
+				return (ix == 0 and iy == 0 and iz == 0);
+			}
+			
+			GPU_FUNCTION double g2(const int ix, const int iy, const int iz) const {
+				return norm(gvector(ix, iy, iz));
+			}
+			
+		private:
+			
+			std::array<int, 3> ng_;
+			math::vec3d gspacing_;
+			math::vec3d glength_;
+			
+		};
+
+		auto point_op() const {
+			return point_operator(ng_, gspacing_, glength_);
 		}
 		
 	private:

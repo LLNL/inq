@@ -48,24 +48,25 @@ INQ is work in progress, some of the features are not well tested or are not ava
 
 ## Basic installation
 
+Have dependencies ready in your system, for example in a desktop:
 ```
 sudo apt install libblas-dev liblapack-dev libfftw3-dev
 ```
 
-Instructions for compiling with Cuda
+Instructions for compiling
 
 ```bash
-git clone ...
+git clone git@gitlab.com:npneq/inq.git
 cd inq
-autoreconf -i
-cd your_build
-export CXX="/usr/lib/cuda/bin/nvcc -x cu"
-export CXXFLAGS="-D_DISABLE_CUDA_SLOW -O3 -std=c++14 --expt-relaxed-constexpr --compiler-options -std=c++14,-Wall,-Wfatal-errors"
-export CXXLD=/usr/lib/cuda/bin/nvcc
-../../inq/configure -prefix=$HOME --enable-cuda --with-cuda-prefix
+git submodule update --init --recursive
+mkdir build
+cd build
+../configure --prefix=$HOME
+make -j
+make install
 ```
 
-This instructions might be incomplete, to see how to have a basic install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npnq/inq/blob/master/.gitlab-ci.yml).
+This instructions might be incomplete, to see how to have an up-to-date install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
 
 ## Release information 
 

@@ -81,7 +81,7 @@ namespace utils {
 #ifdef INQ_UNIT_TEST
 
 #include <catch2/catch.hpp>
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <complex>
 
 	auto gaussian_func(inq::math::vec3d rr){

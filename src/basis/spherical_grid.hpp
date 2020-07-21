@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
@@ -48,10 +48,15 @@ namespace basis {
 			std::vector<float> tmp_distance;
 					
 			//DATAOPERATIONS LOOP 4D
-      for(int ix = 0; ix < parent_grid.sizes()[0]; ix++){
-				for(int iy = 0; iy < parent_grid.sizes()[1]; iy++){
-					for(int iz = 0; iz < parent_grid.sizes()[2]; iz++){
-						auto rpoint = parent_grid.rvector(ix, iy, iz);
+      for(int ix = 0; ix < parent_grid.local_sizes()[0]; ix++){
+				for(int iy = 0; iy < parent_grid.local_sizes()[1]; iy++){
+					for(int iz = 0; iz < parent_grid.local_sizes()[2]; iz++){
+
+						auto ixg = parent_grid.cubic_dist(0).local_to_global(ix);
+						auto iyg = parent_grid.cubic_dist(1).local_to_global(iy);
+						auto izg = parent_grid.cubic_dist(2).local_to_global(iz);
+						
+						auto rpoint = parent_grid.rvector(ixg, iyg, izg);
 						
 						for(unsigned irep = 0; irep < rep.size(); irep++){
 							auto n2 = norm(rpoint - rep[irep]);
@@ -99,7 +104,7 @@ namespace basis {
 			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
 
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 			gpu::run(nst, size(),
 							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
 							 __device__ (auto ist, auto ipoint){
@@ -117,7 +122,7 @@ namespace basis {
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
 			
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 			gpu::run(std::get<1>(sizes(subgrid)), size(),
 							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
 							 __device__ (auto ist, auto ipoint){
@@ -185,21 +190,25 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 	using namespace Catch::literals;
   using math::vec3d;
 
+	auto comm = boost::mpi3::environment::get_world_instance();
+ 
   double ll = 10.0;
   
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   
   double ecut = 20.0;
   
-  basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
+  basis::real_space pw(cell, input::basis::cutoff_energy(ecut), comm);
   
   SECTION("Point 0 0 0"){
     
     basis::spherical_grid sphere(pw, cell, {0.0, 0.0, 0.0}, 2.0);
-						       
-    CHECK(sphere.size() == 257);
 
-    math::array<complex, 3> grid(pw.sizes());
+		auto size = sphere.size();
+		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
+    CHECK(size == 257);
+
+    math::array<complex, 3> grid(pw.local_sizes());
     std::vector<complex> subgrid(sphere.size());
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;
@@ -212,7 +221,8 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
     double sum = 0.0;
     for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
-
+		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+		
     CHECK(sum == 257.0_a);
     
   }
@@ -220,10 +230,12 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
   SECTION("Point -l/2 0 0"){
     
     basis::spherical_grid sphere(pw, cell, {-ll/2.0, 0.0, 0.0}, 2.0);
+		
+		auto size = sphere.size();
+		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
+    CHECK(size == 257);
     
-    CHECK(sphere.size() == 257);
-    
-    math::array<complex, 4> grid({pw.sizes()[0], pw.sizes()[1], pw.sizes()[2], 20}, 0.0);
+    math::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 20}, 0.0);
     math::array<complex, 2> subgrid({sphere.size(), 20}, 0.0);
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 1.0;
@@ -232,27 +244,31 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
     double sum = 0.0;
     for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data()[ii]);
-
+		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+		
     CHECK(sum == Approx(20.0*257.0));
     
     for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 0.0;
     
-    sphere.scatter(subgrid, grid);
+		sphere.scatter(subgrid, grid);
 
     sum = 0.0;
     for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
+		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
 
-    CHECK(sum == Approx(20.0*(pw.size() - sphere.size())));
-    
+		CHECK(sum == Approx(20.0*(pw.size() - size)));
+
   }
 
   SECTION("Point l/2 0 0"){
     
     basis::spherical_grid sphere(pw, cell, {ll/2.0, 0.0, 0.0}, 2.0);
-    
-    CHECK(sphere.size() == 257);
 
-    math::array<complex, 6> grid({1, pw.sizes()[0], pw.sizes()[1], pw.sizes()[2], 2, 20}, 0.0);
+		auto size = sphere.size();
+		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
+    CHECK(size == 257);
+
+    math::array<complex, 6> grid({1, pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 2, 20}, 0.0);
     math::array<complex, 3> subgrid({sphere.size(), 2, 20}, 0.0);
 
     sphere.gather(grid[0], subgrid);
@@ -264,32 +280,40 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
   SECTION("Point -l/2 -l/2 -l/2"){
     
     basis::spherical_grid sphere(pw, cell, {-ll/2.0, -ll/2.0, -ll/2.0}, 2.0);
-    
-    CHECK(sphere.size() == 257);
+
+		auto size = sphere.size();
+		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
+    CHECK(size == 257);
     
   }
 
   SECTION("Point l/2 l/2 l/2"){
     
     basis::spherical_grid sphere(pw, cell, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
-    
-    CHECK(sphere.size() == 257);
+
+		auto size = sphere.size();
+		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
+    CHECK(size == 257);
     
   }
 
   SECTION("Point l/2 l/2 l/2"){
     
     basis::spherical_grid sphere(pw, cell, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
-    
-    CHECK(sphere.size() == 257);
+
+		auto size = sphere.size();
+		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
+    CHECK(size == 257);
     
   }
 
   SECTION("Point l/4 l/4 l/4"){
     
     basis::spherical_grid sphere(pw, cell, {ll/4.0, ll/4.0, ll/4.0}, 2.0);
-    
-    CHECK(sphere.size() == 257);
+
+		auto size = sphere.size();
+		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
+    CHECK(size == 257);
     
   }
   
