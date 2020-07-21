@@ -240,6 +240,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(gaussianVxc.linear()[8233] == -0.00406881_a);
 	CHECK(gaussianVxc.linear()[233] == 0.0);
 	CHECK(gaussianVxc.linear()[rslda.size()-1] == -0.4326883849_a);
+	fftw_cleanup();
 	}
 
 	SECTION("GGA"){
@@ -319,6 +320,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(Vxc.linear()[1] == -0.4699613109_a);
 	CHECK(Vxc.linear()[33] == -1.1551782751_a);
 	CHECK(Vxc.linear()[rsgga.size()-1] == -0.592717454_a);
+	fftw_cleanup();
 	}
 
 	SECTION("UNIFORM"){ //Check LDA==GGA for unifrom electronic density
@@ -348,6 +350,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 				}
 			}
 		}
+	fftw_cleanup();
 	}
 }
 
