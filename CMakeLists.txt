@@ -15,8 +15,7 @@ else()
   set(SRC_EXT cpp)
 endif()
 
-#this is a hack to compile libxc
-link_libraries(-lm)
+link_libraries(m)
 
 add_subdirectory(external_libs)
 
