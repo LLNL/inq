@@ -112,8 +112,11 @@ public:
 		}
 #endif
 
-		//REDUCE GRID expect norm
-
+		if(phi.basis().part().parallel()){
+			phi.basis().comm().all_reduce_in_place_n(static_cast<double *>(expect.data()), expect.num_elements(), std::plus<>{});
+			phi.basis().comm().all_reduce_in_place_n(static_cast<double *>(norm.data()), norm.num_elements(), std::plus<>{});			
+		}
+		
 		//DATAOPERATIONS GPU::RUN 4D
 		gpu::run(phi.set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 
 						 [expc = begin(expect),
