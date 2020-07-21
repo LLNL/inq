@@ -96,27 +96,13 @@ public:
 
 		//REDUCE GRID expect norm
 
-		//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef ENABLE_CUDA
+		//DATAOPERATIONS GPU::RUN 4D
 		gpu::run(phi.set_size(), phi.basis().sizes()[2], phi.basis().sizes()[1], phi.basis().sizes()[0], 
-						 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()),  point_op = phi.basis().point_op()] __device__
+						 [expc = begin(expect), nrm = begin(norm), phcub = begin(phi.cubic()),  point_op = phi.basis().point_op()] GPU_LAMBDA
 						 (auto ist, auto iz, auto iy, auto ix){
 							 auto lapl = -0.5*(-point_op.g2(ix, iy, iz));
 							 phcub[ix][iy][iz][ist] = k_function(lapl*nrm[ist]/expc[ist])*phcub[ix][iy][iz][ist];
 						 });
-#else
-
-		for(int ix = 0; ix < phi.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < phi.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < phi.basis().sizes()[2]; iz++){
-						
-					auto lapl = -0.5*(-point_op.g2(ix, iy, iz));
-					for(int ist = 0; ist < phi.set_size(); ist++) phi.cubic()[ix][iy][iz][ist] *= k_function(lapl*norm[ist]/expect[ist]);
-						
-				}
-			}
-		}
-#endif
 
 	}
 
