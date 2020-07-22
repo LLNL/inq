@@ -26,12 +26,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-//#include <config.h>
+//#include <inq_config.h>
 
 #ifndef INQ__IONS__UNITCELL
 #define INQ__IONS__UNITCELL
 
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <valarray>
 #include <array>
 #include <input/cell.hpp>

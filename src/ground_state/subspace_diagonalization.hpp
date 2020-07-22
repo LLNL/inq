@@ -21,10 +21,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <config.h>
+#include <inq_config.h>
 #include <operations/overlap.hpp>
 #include <operations/diagonalize.hpp>
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
 #endif
 #include <multi/adaptors/blas.hpp>

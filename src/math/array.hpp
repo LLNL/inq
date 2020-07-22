@@ -21,13 +21,11 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <inq_config.h>
 
 #include <multi/array.hpp>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <multi/memory/adaptors/cuda/managed/allocator.hpp>
 #endif
 
@@ -35,7 +33,7 @@ namespace inq {
 namespace math {
 
 template <class type, size_t dim,
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 					class allocator = boost::multi::memory::cuda::managed::allocator<type>
 #else
 					class allocator = std::allocator<type>

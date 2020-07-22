@@ -88,11 +88,11 @@ public:
 		return start() <= index and index < end();
 	}
 	
-	auto local_to_global(long local_i) const {
+	constexpr auto local_to_global(long local_i) const {
 		return start_ + local_i;
 	}
 	
-	auto global_to_local(long global_i) const {
+	constexpr auto global_to_local(long global_i) const {
 		return global_i - start_;
 	}
 	

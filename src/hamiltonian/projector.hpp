@@ -25,12 +25,12 @@
 #include <pseudopod/pseudopotential.hpp>
 
 #include <math/array.hpp>
-#include <math/vec3d.hpp>
+#include <math/vector3.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
 #endif
 #include <multi/adaptors/blas.hpp>
@@ -90,6 +90,10 @@ namespace hamiltonian {
 							 GPU_LAMBDA (auto ist, auto iproj){
 								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
 							 });
+
+			if(phi.basis().part().parallel()){
+				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
+			}
 			
 			//DATAOPERATIONS BLAS
 			sphere_phi = gemm(transposed(matrix_), projections);
@@ -129,14 +133,15 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   using math::vec3d;
 	
 	pseudo::math::erf_range_separation const sep(0.625);
-	
+
+	auto comm = boost::mpi3::environment::get_world_instance();
 
   double ecut = 20.0;
   double ll = 10.0;
 
 	ions::geometry geo;
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
 
 	pseudo::pseudopotential ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	

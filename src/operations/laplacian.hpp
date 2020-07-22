@@ -26,7 +26,7 @@
 
 #include <multi/adaptors/fftw.hpp>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <multi/adaptors/cufft.hpp>
 #endif
 
@@ -37,67 +37,52 @@ namespace operations {
 	
 void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex> const & laplff){
 		
-	//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef HAVE_CUDA
-	
-	gpu::run(laplff.set_size(), laplff.basis().sizes()[2], laplff.basis().sizes()[1], laplff.basis().sizes()[0],
-					 [basis = laplff.basis(),
+	//DATAOPERATIONS GPU::RUN 4D
+	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
+					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic())]
-					 __device__ (auto ist, auto iz, auto iy, auto ix){
+						ffcub = begin(ff.cubic()),
+						cubic_dist_0 = ff.basis().cubic_dist(0),
+						cubic_dist_1 = ff.basis().cubic_dist(1),
+						cubic_dist_2 = ff.basis().cubic_dist(2)
+						]
+					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+
+						 auto ixg = cubic_dist_0.local_to_global(ix);
+						 auto iyg = cubic_dist_1.local_to_global(iy);
+						 auto izg = cubic_dist_2.local_to_global(iz);
 						 
-						 double lapl = -0.5*(-basis.g2(ix, iy, iz));
+						 double lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
 						 laplffcub[ix][iy][iz][ist] += lapl*ffcub[ix][iy][iz][ist];
 						 
 					 });
 	
-#else
-			
-			for(int ix = 0; ix < laplff.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < laplff.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < laplff.basis().sizes()[2]; iz++){
-						double lapl = -0.5*(-laplff.basis().g2(ix, iy, iz));
-						for(int ist = 0; ist < laplff.set_size(); ist++) laplff.cubic()[ix][iy][iz][ist] += lapl*ff.cubic()[ix][iy][iz][ist];
-					}
-				}
-			}
-			
-#endif
+}
 
-	}
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////
+void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & ff){
 	
-	void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & ff){
+	//DATAOPERATIONS GPU::RUN 4D
+	gpu::run(ff.set_part().local_size(), ff.basis().local_sizes()[2], ff.basis().local_sizes()[1], ff.basis().local_sizes()[0],
+					 [point_op = ff.basis().point_op(),
+						ffcub = begin(ff.cubic()),
+						cubic_dist_0 = ff.basis().cubic_dist(0),
+						cubic_dist_1 = ff.basis().cubic_dist(1),
+						cubic_dist_2 = ff.basis().cubic_dist(2)
+						]
+					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 
-		//DATAOPERATIONS LOOP + GPU::RUN 4D
-#ifdef HAVE_CUDA
+						 auto ixg = cubic_dist_0.local_to_global(ix);
+						 auto iyg = cubic_dist_1.local_to_global(iy);
+						 auto izg = cubic_dist_2.local_to_global(iz);
+						 
+						 double lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
+						 ffcub[ix][iy][iz][ist] = ffcub[ix][iy][iz][ist]*lapl;
+						 
+					 });
+}
 
-		gpu::run(ff.set_size(), ff.basis().sizes()[2], ff.basis().sizes()[1], ff.basis().sizes()[0],
-						 [basis = ff.basis(),
-							ffcub = begin(ff.cubic())]
-						 __device__ (auto ist, auto iz, auto iy, auto ix){
-								 
-							 double lapl = -0.5*(-basis.g2(ix, iy, iz));
-							 ffcub[ix][iy][iz][ist] = ffcub[ix][iy][iz][ist]*lapl;
-								 
-						 });
-
-#else
-
-		for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
-					double lapl = -0.5*(-ff.basis().g2(ix, iy, iz));
-					for(int ist = 0; ist < ff.set_size(); ist++) ff.cubic()[ix][iy][iz][ist] *= lapl;
-				}
-			}
-		}
-			
-#endif
-		
-	}
-	
 }
 }
 
@@ -114,6 +99,8 @@ TEST_CASE("function operations::laplacian", "[operations::laplacian]") {
 	using namespace inq;
 	using namespace Catch::literals;
 
+	
+	
 }
 
 

@@ -32,10 +32,10 @@ namespace density {
 template<class occupations_array_type, class field_set_type>
 basis::field<typename field_set_type::basis_type, double> calculate(const occupations_array_type & occupations, field_set_type & phi){
 
-	basis::field<typename field_set_type::basis_type, double> density(phi.basis(), phi.basis_comm());
+	basis::field<typename field_set_type::basis_type, double> density(phi.basis());
 
 	//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 
 	const auto nst = phi.set_part().local_size();
 	auto occupationsp = begin(occupations);

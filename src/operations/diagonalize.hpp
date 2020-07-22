@@ -21,23 +21,23 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <inq_config.h>
 
 #include <math/complex.hpp>
 
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 #include <cusolverDn.h>
 #endif
 
-#define dsyev FC_FUNC(dsyev, DZYEV)
+#include "FC.h"
+
+#define dsyev FC_GLOBAL(dsyev, DZYEV)
 extern "C" void dsyev(const char * jobz, const char * uplo, const int & n, double * a, const int & lda, double * w, double * work, const int & lwork, int & info);
 
-#define zheev FC_FUNC(zheev, ZHEEV) 
+#define zheev FC_GLOBAL(zheev, ZHEEV) 
 extern "C" void zheev(const char * jobz, const char * uplo, const int & n, inq::complex * a, const int & lda, double * w, inq::complex * work, const int & lwork, double * rwork, int & info);
 
 namespace inq {
@@ -53,7 +53,7 @@ auto diagonalize(math::array<double, 2> & matrix){
 	math::array<double, 1> eigenvalues(nn);
 
 	//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	{
 		cusolverDnHandle_t cusolver_handle;
 			
@@ -116,7 +116,7 @@ auto diagonalize(math::array<complex, 2> & matrix){
 	math::array<double, 1> eigenvalues(nn);
 
 	//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
-#ifdef HAVE_CUDA
+#ifdef ENABLE_CUDA
 	{
 		cusolverDnHandle_t cusolver_handle;
 			

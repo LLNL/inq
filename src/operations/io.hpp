@@ -21,9 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <inq_config.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -64,9 +62,8 @@ template <class FieldSet>
 void save(std::string const & dirname, FieldSet const & phi){
 
 	using Type = typename FieldSet::element_type;
-			
-	assert(not phi.basis().part().parallel());
-
+	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
+	
 	boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	if(phi.full_comm().rank() == 0) createdir(dirname);
@@ -78,27 +75,39 @@ void save(std::string const & dirname, FieldSet const & phi){
 
 		buffer = phi.matrix().rotated()[ist];
 
-		auto fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-		if(fd == -1){
+		MPI_File fh;
+
+		auto mpi_err = MPI_File_open(phi.basis().comm().get(), filename.c_str(), MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &fh);
+
+		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot create restart file '" << filename << "'." << std::endl;
 			exit(1);
 		}
-				
-		[[maybe_unused]] auto data_written = write(fd, buffer.data(), buffer.size()*sizeof(Type));
-		assert(data_written == long(buffer.size()*sizeof(Type)));
 
-		close(fd);
-				
+		MPI_Status status;
+		mpi_err = MPI_File_write_at_all(fh, sizeof(Type)*phi.basis().part().start(), buffer.data(), buffer.size(), mpi_type, &status);
+		
+		if(mpi_err != MPI_SUCCESS){
+			std::cerr << "Error: cannot write restart file '" << filename << "'." << std::endl;
+			exit(1);
+		}
+
+		int data_written;
+		MPI_Get_count(&status, mpi_type, &data_written);
+		assert(data_written == long(buffer.size()));
+
+		MPI_File_close(&fh);
+		
 	}
+
 }
 		
 template <class FieldSet>
 void load(std::string const & dirname, FieldSet & phi){
 
 	using Type = typename FieldSet::element_type;
-			
-	assert(not phi.basis().part().parallel());
-
+	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
+	
 	boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	DIR* dir = opendir(dirname.c_str());
@@ -111,17 +120,29 @@ void load(std::string const & dirname, FieldSet & phi){
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
 		auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
-				
-		auto fd = open(filename.c_str(), O_RDONLY);
-		if(fd == -1){
+
+		MPI_File fh;
+
+		auto mpi_err = MPI_File_open(phi.basis().comm().get(), filename.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+
+		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot open restart file '" << filename << "'." << std::endl;
 			exit(1);
 		}
-				
-		[[maybe_unused]] auto data_read = read(fd, buffer.data(), buffer.size()*sizeof(Type));
-		assert(data_read == long(buffer.size()*sizeof(Type)));
+		
+		MPI_Status status;
+		mpi_err = MPI_File_read_at_all(fh, sizeof(Type)*phi.basis().part().start(), buffer.data(), buffer.size(), mpi_type, &status);
+		
+		if(mpi_err != MPI_SUCCESS){
+			std::cerr << "Error: cannot read restart file '" << filename << "'." << std::endl;
+			exit(1);
+		}
 
-		close(fd);
+		int data_read;
+		MPI_Get_count(&status, mpi_type, &data_read);
+		assert(data_read == long(buffer.size()));
+
+		MPI_File_close(&fh);
 
 		phi.matrix().rotated()[ist] = buffer;
 				
@@ -148,12 +169,10 @@ TEST_CASE("function operations::io", "[operations::io]") {
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 	
 	auto basis_comm = cart_comm.axis(1);
 	
-	CHECK(basis_comm.size() == 1);
-		
 	basis::trivial bas(npoint, basis_comm);
 
 	basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
