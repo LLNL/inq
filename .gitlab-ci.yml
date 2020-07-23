@@ -220,7 +220,6 @@ gcc-mpich-valgrind:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 valgrind libmpich-dev mpich
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++ --version
       - c++ --version
       - mpichversion
       - mkdir build
