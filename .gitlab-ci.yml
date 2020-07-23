@@ -224,6 +224,7 @@ clang-mpich-asan:
       - clang++ --version
       - mkdir build
       - cd build
+      - export CXX=clang++
       - export MPICH_CC=clang++
       - export MPICH_CXX=clang++
       - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
@@ -243,6 +244,7 @@ clang-mpich-msan:
       - clang++ --version
       - mkdir build
       - cd build
+      - export CXX=clang++
       - export MPICH_CC=clang++
       - export MPICH_CXX=clang++
       - export CXXFLAGS="-fsanitize=undefined -fsanitize=memory -g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
