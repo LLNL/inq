@@ -1,3 +1,5 @@
+# Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
+
 image: debian:testing
 
 variables:
@@ -215,46 +217,25 @@ clang-valgrind:
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
       
-clang-mpich-asan:
-    stage: build
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 valgrind libmpich-dev mpich
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++ --version
-      - mkdir build
-      - cd build
-      - export CXX=clang++
-      - export MPICH_CC=clang++
-      - export MPICH_CXX=clang++
-      - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-      - time ../configure --prefix=$HOME
-      - time make -j4
-      - time make -j4 install
-      - time src/inq_unit_tests
-      - time tests/h2o_ground_state
-      - time tests/h2o_real_time
-
-clang-mpich-msan:
-    stage: build
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 valgrind libmpich-dev mpich
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++ --version
-      - mkdir build
-      - cd build
-      - export CXX=clang++
-      - export MPICH_CC=clang++
-      - export MPICH_CXX=clang++
-      - export CXXFLAGS="-fsanitize=undefined -fsanitize=memory -g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-      - time ../configure --prefix=$HOME
-      - time make -j4
-      - time make -j4 install
-      - time src/inq_unit_tests
-      - time tests/h2o_ground_state
-      - time tests/h2o_real_time
-
+#clang-mpich-asan:
+#    stage: build
+#    script:
+#      - time apt update -qq
+#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 valgrind libmpich-dev mpich
+#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+#      - clang++ --version
+#      - mkdir build
+#      - cd build
+#      - export CXX=clang++
+#      - export MPICH_CC=clang++
+#      - export MPICH_CXX=clang++
+#      - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
+#      - time ../configure --prefix=$HOME
+#      - time make -j4
+#      - time make -j4 install
+#      - time src/inq_unit_tests
+#      - time tests/h2o_ground_state
+#      - time tests/h2o_real_time
 
 gcc-mpich-valgrind:
     stage: build
