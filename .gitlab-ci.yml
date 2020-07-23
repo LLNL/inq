@@ -214,7 +214,7 @@ clang-valgrind:
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
 
-clang-mpich-valgrind:
+gcc-mpich-valgrind:
     stage: build
     script:
       - time apt update -qq
@@ -222,6 +222,7 @@ clang-mpich-valgrind:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - c++ --version
+      - mpichversion
       - mkdir build
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
