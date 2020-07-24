@@ -35,8 +35,8 @@ namespace hamiltonian {
 
 		public:
 			
-		static constexpr double sigma_threshold = 1.0e-17;
-		static constexpr double dens_threshold = 1.0e-10;	
+	//	static constexpr double sigma_threshold = 1.0e-15;
+	//	static constexpr double dens_threshold = 1.0e-8;	
 
 		xc_functional(const int functional_id){
 			if(xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
@@ -70,7 +70,7 @@ namespace hamiltonian {
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:{
 					auto param_lda = func_;
-					xc_func_set_dens_threshold(&param_lda, inq::hamiltonian::xc_functional::dens_threshold);
+		//			xc_func_set_dens_threshold(&param_lda, inq::hamiltonian::xc_functional::dens_threshold);
 					xc_lda_exc_vxc(&param_lda, size, density.data(), exc.data(), vxc.data());
 					break;
 				}
@@ -85,14 +85,14 @@ namespace hamiltonian {
 							for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
 								sigma.cubic()[ix][iy][iz] = 0.0;
 								for(int idir = 0; idir < 3 ; idir++) sigma.cubic()[ix][iy][iz] += grad_real.cubic()[ix][iy][iz][idir]*grad_real.cubic()[ix][iy][iz][idir];
-								if (fabs(sigma.cubic()[ix][iy][iz]) < inq::hamiltonian::xc_functional::sigma_threshold) sigma.cubic()[ix][iy][iz] = 0.0;
+					//			if (fabs(sigma.cubic()[ix][iy][iz]) < inq::hamiltonian::xc_functional::sigma_threshold) sigma.cubic()[ix][iy][iz] = 0.0;
 							}
 						}
 					}
 					//Call libxc to computer vxc and vsigma
 					basis::field<basis::real_space, double> vsigma(vxc.basis());
 					auto param = func_;	
-					xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
+	//				xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
 					xc_gga_exc_vxc(&param, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
 					//Compute extra term for Vxc using diverdence: Vxc_extra=2 nabla *[vsigma*grad(n)]
 					basis::field_set<basis::real_space, double> vxc_extra(vxc.basis(), 3);
@@ -229,7 +229,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					auto local_density = gaussian(vec);
 					double local_exc, local_vxc;
 					auto param_lda = ldafunctional.libxc_func();
-					xc_func_set_dens_threshold(&param_lda, inq::hamiltonian::xc_functional::dens_threshold);
+		//			xc_func_set_dens_threshold(&param_lda, inq::hamiltonian::xc_functional::dens_threshold);
 					xc_lda_exc_vxc(&param_lda, 1, &local_density, &local_exc, &local_vxc);
 					CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
 					int_xc_energy += local_exc*local_density*rslda.volume_element();
@@ -239,9 +239,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(Approx(gaussianExc) == int_xc_energy);
 	CHECK(gaussianVxc.linear()[1] == -0.5111609291_a);
 	CHECK(gaussianVxc.linear()[8233] == -0.00406881_a);
-	CHECK(gaussianVxc.linear()[233] == 0.0);
+	CHECK(gaussianVxc.linear()[233] == -0.0004570781_a);
 	CHECK(gaussianVxc.linear()[rslda.size()-1] == -0.4326883849_a);
-	fftw_cleanup();
 	}
 
 	SECTION("GGA"){
@@ -277,9 +276,9 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					double local_vsigma = 0.0;
 					auto local_density = sqwave(vec, 3);
 					auto local_sigma = gradient_sqwave(vec, 3) | gradient_sqwave(vec, 3);
-					if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
+		//			if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
 					auto param = ggafunctional.libxc_func();
-					xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
+		//			xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
 					xc_gga_exc_vxc(&param, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
 
 					auto calc_vsigma = [func = ggafunctional.libxc_func()] (auto point){
@@ -287,8 +286,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 													auto local_sigma = gradient_sqwave(point, 3) | gradient_sqwave(point, 3);
 													double local_exc, local_vxc, local_vsigma;
 													auto param = func;
-													if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
-													xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
+							//						if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
+							//						xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
 													xc_gga_exc_vxc(&param, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
 													return local_vsigma;
 													};
@@ -299,8 +298,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 													auto local_sigma = gradient_sqwave(point, 3) | gradient_sqwave(point, 3);
 													double local_exc, local_vxc, local_vsigma;
 													auto param = func;
-													if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
-													xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
+						//							if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
+						//							xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
 													xc_gga_exc_vxc(&param, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
 													return local_vsigma*gradient_sqwave(point, 3);
 													};
@@ -315,13 +314,12 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	}
-	CHECK(Approx(diff_ways).margin(1.0e-10) == 0.0000013589);
+	CHECK(Approx(diff_ways).margin(1.0e-10) == 10.0000013589);
 	CHECK(Approx(diff) == 0.0000805439);
 	CHECK(Approx(Exc) == int_xc_energy);
 	CHECK(Vxc.linear()[1] == -0.4699613109_a);
 	CHECK(Vxc.linear()[33] == -1.1551782751_a);
 	CHECK(Vxc.linear()[rsgga.size()-1] == -0.592717454_a);
-	fftw_cleanup();
 	}
 
 	SECTION("UNIFORM"){ //Check LDA==GGA for unifrom electronic density
@@ -351,7 +349,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 				}
 			}
 		}
-	fftw_cleanup();
+
 	}
 }
 
