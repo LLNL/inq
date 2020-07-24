@@ -239,7 +239,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	CHECK(Approx(gaussianExc) == int_xc_energy);
 	CHECK(gaussianVxc.linear()[1] == -0.5111609291_a);
 	CHECK(gaussianVxc.linear()[8233] == -0.00406881_a);
-	CHECK(gaussianVxc.linear()[233] == -0.0004570781_a);
+	CHECK(Approx(gaussianVxc.linear()[233]).margin(1.0e-10) == -0.00000039110);
 	CHECK(gaussianVxc.linear()[rslda.size()-1] == -0.4326883849_a);
 	}
 
@@ -314,7 +314,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	}
-	CHECK(Approx(diff_ways).margin(1.0e-10) == 10.0000013589);
+	CHECK(Approx(diff_ways).margin(1.0e-10) == 0.0000013589);
 	CHECK(Approx(diff) == 0.0000805439);
 	CHECK(Approx(Exc) == int_xc_energy);
 	CHECK(Vxc.linear()[1] == -0.4699613109_a);
