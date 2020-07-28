@@ -244,7 +244,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	}
 
 	SECTION("GGA"){
-		basis::real_space rsgga(cell, input::basis::cutoff_energy(900.0));
+		basis::real_space rsgga(cell, input::basis::cutoff_energy(90.0));
 		basis::field<basis::real_space, double> field(rsgga);
 		for(int ix = 0; ix < rsgga.sizes()[0]; ix++){
 			for(int iy = 0; iy < rsgga.sizes()[1]; iy++){
@@ -315,11 +315,11 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		}
 	}
 	CHECK(Approx(diff_ways).margin(1.0e-10) == 0.0000013589);
-	CHECK(Approx(diff) == 0.0000805439);
+	CHECK(Approx(diff) == 0.033132712);
 	CHECK(Approx(Exc) == int_xc_energy);
-	CHECK(Vxc.linear()[1] == -0.4699613109_a);
-	CHECK(Vxc.linear()[33] == -1.1551782751_a);
-	CHECK(Vxc.linear()[rsgga.size()-1] == -0.592717454_a);
+	CHECK(Vxc.linear()[1] == -0.5607887985_a);
+	CHECK(Vxc.linear()[33] == -1.1329131862_a);
+	CHECK(Vxc.linear()[rsgga.size()-1] == -1.1461742979_a);
 	}
 
 	SECTION("UNIFORM"){ //Check LDA==GGA for unifrom electronic density
