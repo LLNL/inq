@@ -30,6 +30,7 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	
 	boost::mpi3::environment env(argc, argv);
+	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 
 	utils::match energy_match(1.0e-6);
 	
@@ -45,7 +46,7 @@ int main(int argc, char ** argv){
 		
 		input::config conf;
 		
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
+		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(60.0), conf);
 		
 		[[maybe_unused]] auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting());
 		
@@ -82,7 +83,7 @@ int main(int argc, char ** argv){
 	{
 		input::config conf;
 	
-		systems::electrons electrons(ions, input::basis::cutoff_energy(60.0), conf);
+		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(60.0), conf);
 
 		[[maybe_unused]] auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::conjugate_gradient() | input::scf::density_mixing());
 		

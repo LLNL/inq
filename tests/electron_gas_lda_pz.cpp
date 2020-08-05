@@ -28,7 +28,8 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	
 	boost::mpi3::environment env(argc, argv);
-
+	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
+	
 	utils::match energy_match(1.0e-6);
 		
 	systems::ions ions(input::cell::cubic(10.0, 10.0, 10.0));
@@ -37,7 +38,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 2;
 	conf.excess_charge = 14.0;
 		
-	systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
 
 	auto result = ground_state::calculate(ions, electrons, input::interaction::dft());
 

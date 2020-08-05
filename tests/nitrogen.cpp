@@ -30,7 +30,8 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	
 	boost::mpi3::environment env(argc, argv);
-
+	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
+	
 	utils::match energy_match(1.0e-6);
 
 	std::vector<input::atom> geo;
@@ -46,7 +47,7 @@ int main(int argc, char ** argv){
 
 		conf.extra_states = 4;
 
-		systems::electrons electrons(ions, input::basis::cutoff_energy(40.0), conf);
+		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
 		
 		[[maybe_unused]] auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::conjugate_gradient() | input::scf::density_mixing());
 		
