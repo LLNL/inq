@@ -49,7 +49,7 @@ namespace systems {
 	
 		enum class error { NO_ELECTRONS };
 
-		electrons(const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
+		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
 			states_basis_(ions.cell(), arg_basis_input),
 			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
 			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
@@ -75,6 +75,7 @@ namespace systems {
 
 	public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
+		
 		basis::real_space states_basis_;
 		basis::real_space density_basis_;
 		hamiltonian::atomic_potential atomic_pot_;
