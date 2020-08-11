@@ -129,7 +129,7 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 
 	auto grad = [&] (auto point){
 		return inq::utils::finite_difference_gradient5p(gaussian_func, point);
-		};
+	};
 
 	vec = {0.0, 0.0, 0.0};
 	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec))).margin(1.0e-5) == 0.0);
