@@ -64,7 +64,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 	using Type = typename FieldSet::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
 	
-	boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
+	math::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	if(phi.full_comm().rank() == 0) createdir(dirname);
 	phi.full_comm().barrier();
@@ -108,7 +108,7 @@ void load(std::string const & dirname, FieldSet & phi){
 	using Type = typename FieldSet::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
 	
-	boost::multi::array<Type, 1> buffer(phi.basis().part().local_size());
+	math::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	DIR* dir = opendir(dirname.c_str());
 	if (!dir) {
