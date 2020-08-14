@@ -64,60 +64,66 @@ namespace hamiltonian {
 		}
 
 	private:
+
+		template <class density_type, class exc_type, class vxc_type>
+		void ggafunctional(long size, density_type const & density, exc_type & exc, vxc_type & vxc) const{ // How to compute Vxc terms for GGA http://mbpt-domiprod.wikidot.com/calculation-of-gga-kernel
+			auto grad_real = operations::gradient(density);
+			// Compute sigma as a square of the gradient in the Real space
+			basis::field<basis::real_space, double> sigma(vxc.basis());
+			//std::ofstream generic("genericvsigma.dat");
+			for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
+						sigma.cubic()[ix][iy][iz] = 0.0;
+						for(int idir = 0; idir < 3 ; idir++) sigma.cubic()[ix][iy][iz] += grad_real.cubic()[ix][iy][iz][idir]*grad_real.cubic()[ix][iy][iz][idir];
+						//if (fabs(sigma.cubic()[ix][iy][iz]) < inq::hamiltonian::xc_functional::sigma_threshold) sigma.cubic()[ix][iy][iz] = 0.0; // <=== Swith that on if you need to use a threshold
+					}
+				}
+			}
+			//Call libxc to computer vxc and vsigma
+			basis::field<basis::real_space, double> vsigma(vxc.basis());
+			auto param = func_;	
+			//xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold); // <=== Swith that on if you need to use a threshold
+			xc_gga_exc_vxc(&param, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
+			//Compute extra term for Vxc using diverdence: Vxc_extra=2 nabla *[vsigma*grad(n)]
+			basis::field_set<basis::real_space, double> vxc_extra(vxc.basis(), 3);
+			//Compute field-set as a product between vsigma(0) and gradient field-set
+			for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){	// Iterating over x-,y- and z- components of the each gradient field-set
+				for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
+					// Iterating over each vectorial components of the grad field-set at each (ix,iy,iz) point in the Real space
+						for(int idir = 0; idir < 3 ; idir++) vxc_extra.cubic()[ix][iy][iz][idir] = vsigma.cubic()[ix][iy][iz]*grad_real.cubic()[ix][iy][iz][idir];
+					}
+				}
+			}
+			//Taking diverdence of [vsigma * Grad(n)]
+			auto divvxcextra = operations::divergence(vxc_extra);
+			// Add extra component to Vxc
+			for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){	// Iterating over x-,y- and z- components of the each gradient field-set
+				for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
+						// Iterating over each (ix,iy,iz) point in the Real space
+						vxc.cubic()[ix][iy][iz] -= 2.0*divvxcextra.cubic()[ix][iy][iz];
+					}
+				}
+			}
+		}
+
+	private:
 		
 		template <class density_type, class exc_type, class vxc_type>
 		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc) const{
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:{
 					auto param_lda = func_;
-		//			xc_func_set_dens_threshold(&param_lda, inq::hamiltonian::xc_functional::dens_threshold);
+				//	xc_func_set_dens_threshold(&param_lda, inq::hamiltonian::xc_functional::dens_threshold); // <=== Swith that on if you need to use a threshold
 					xc_lda_exc_vxc(&param_lda, size, density.data(), exc.data(), vxc.data());
 					break;
 				}
 				case XC_FAMILY_GGA:{
-					// How to compute Vxc terms for GGA http://mbpt-domiprod.wikidot.com/calculation-of-gga-kernel
-					auto grad_real = operations::gradient(density);
-					// Compute sigma as a square of the gradient in the Real space
-					basis::field<basis::real_space, double> sigma(vxc.basis());
-					//std::ofstream generic("genericvsigma.dat");
-					for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){
-						for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
-							for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
-								sigma.cubic()[ix][iy][iz] = 0.0;
-								for(int idir = 0; idir < 3 ; idir++) sigma.cubic()[ix][iy][iz] += grad_real.cubic()[ix][iy][iz][idir]*grad_real.cubic()[ix][iy][iz][idir];
-					//			if (fabs(sigma.cubic()[ix][iy][iz]) < inq::hamiltonian::xc_functional::sigma_threshold) sigma.cubic()[ix][iy][iz] = 0.0;
-							}
-						}
-					}
-					//Call libxc to computer vxc and vsigma
-					basis::field<basis::real_space, double> vsigma(vxc.basis());
-					auto param = func_;	
-	//				xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
-					xc_gga_exc_vxc(&param, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
-					//Compute extra term for Vxc using diverdence: Vxc_extra=2 nabla *[vsigma*grad(n)]
-					basis::field_set<basis::real_space, double> vxc_extra(vxc.basis(), 3);
-					//Compute field-set as a product between vsigma(0) and gradient field-set
-					for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){	// Iterating over x-,y- and z- components of the each gradient field-set
-						for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
-							for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
-								// Iterating over each vectorial components of the grad field-set at each (ix,iy,iz) point in the Real space
-								for(int idir = 0; idir < 3 ; idir++) vxc_extra.cubic()[ix][iy][iz][idir] = vsigma.cubic()[ix][iy][iz]*grad_real.cubic()[ix][iy][iz][idir];
-							}
-						}
-					}
-					//Taking diverdence of [vsigma * Grad(n)]
-					auto divvxcextra = operations::divergence(vxc_extra);
-					// Add extra component to Vxc
-					for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){	// Iterating over x-,y- and z- components of the each gradient field-set
-						for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){
-							for(int iz = 0; iz < vxc.basis().sizes()[2]; iz++){
-								// Iterating over each (ix,iy,iz) point in the Real space
-								vxc.cubic()[ix][iy][iz] -= 2.0*divvxcextra.cubic()[ix][iy][iz];
-							}
-						}
-					}
+					ggafunctional(size, density, exc, vxc);
 					break;
-				}
+				}	
 				default:{
 					assert(false);
 					break;
