@@ -36,7 +36,8 @@ int main(int argc, char ** argv){
 	using inq::math::vec3d;
 	
 	boost::mpi3::environment env(argc, argv);
-
+	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
+	
 	inq::utils::match match(2.5e-4);
 
 	std::vector<atom> geo;
@@ -51,7 +52,7 @@ int main(int argc, char ** argv){
   
   config conf;
   
-	inq::systems::electrons electrons(ions, basis::cutoff_energy(30.0), conf);
+	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0), conf);
 
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);
 	

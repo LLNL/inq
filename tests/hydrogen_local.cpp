@@ -30,7 +30,8 @@
 int main(int argc, char ** argv){
 
 	boost::mpi3::environment env(argc, argv);
-
+	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
+	
 	inq::utils::match energy_match(2.0e-5);
 
 	inq::input::species local_h = pseudo::element("H") | inq::input::species::symbol("Hloc") | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
@@ -43,7 +44,7 @@ int main(int argc, char ** argv){
 
 	inq::input::config conf;
 	
-	inq::systems::electrons electrons(ions, inq::input::basis::cutoff_energy(60.0), conf);
+	inq::systems::electrons electrons(comm_world, ions, inq::input::basis::cutoff_energy(60.0), conf);
 
 	// Non Interacting
 	{

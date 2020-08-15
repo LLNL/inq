@@ -1730,3 +1730,273 @@
    fun:mca_base_component_repository_open
 }
 
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   fun:mca_base_framework_components_register
+   fun:mca_base_framework_register
+   fun:mca_base_framework_open
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:event_config_avoid_method
+   fun:opal_event_init
+   obj:/usr/lib/x86_64-linux-gnu/libopen-pal.so.40.20.4
+   fun:mca_base_framework_open
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:event_get_supported_methods
+   fun:opal_event_init
+   obj:/usr/lib/x86_64-linux-gnu/libopen-pal.so.40.20.4
+   fun:mca_base_framework_open
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.7.0.1
+   fun:event_global_setup_locks_
+   fun:evthread_use_pthreads
+   obj:/usr/lib/x86_64-linux-gnu/libopen-pal.so.40.20.4
+   fun:mca_base_framework_open
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.7.0.1
+   fun:evsig_global_setup_locks_
+   fun:event_global_setup_locks_
+   fun:evthread_use_pthreads
+   obj:/usr/lib/x86_64-linux-gnu/libopen-pal.so.40.20.4
+   fun:mca_base_framework_open
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.7.0.1
+   fun:evutil_secure_rng_global_setup_locks_
+   fun:event_global_setup_locks_
+   fun:evthread_use_pthreads
+   obj:/usr/lib/x86_64-linux-gnu/libopen-pal.so.40.20.4
+   fun:mca_base_framework_open
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:ompi_comm_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:event_config_avoid_method
+   fun:opal_event_init
+   obj:/usr/lib/x86_64-linux-gnu/libopen-pal.so.40.20.4
+   fun:mca_base_framework_open
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:event_config_new
+   fun:opal_event_init
+   obj:/usr/lib/x86_64-linux-gnu/libopen-pal.so.40.20.4
+   fun:mca_base_framework_open
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:ompi_mtl_base_select
+   obj:*
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libopen-pal.so.40.20.4
+   fun:ompi_pml_v_output_open
+   obj:/usr/lib/x86_64-linux-gnu/libmpi.so.40.20.4
+   fun:mca_base_framework_components_open
+   obj:/usr/lib/x86_64-linux-gnu/libmpi.so.40.20.4
+   fun:mca_base_framework_open
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:initialize
+   fun:initialize
+   fun:environment
+   fun:main
+}

@@ -35,7 +35,8 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	
 	boost::mpi3::environment env(argc, argv);
-
+	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
+	
 	utils::match match(1e-5);
 
 	std::vector<input::atom> geo;
@@ -48,7 +49,7 @@ int main(int argc, char ** argv){
 
   input::config conf;
   
-  systems::electrons electrons(ions, input::basis::cutoff_energy(30.0), conf);
+  systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0), conf);
 
 	// Propagation without perturbation
 	{
