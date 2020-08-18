@@ -62,10 +62,114 @@ namespace ions {
 		
   public:
 
-    void set(const math::vec3d& a0, const math::vec3d& a1, const math::vec3d& a2, int arg_periodic_dimensions = 3);
-		
 		enum class error { WRONG_LATTICE };
 
+    void set(const vector_type& a0, const vector_type& a1, const vector_type& a2, int arg_periodic_dimensions = 3){
+			
+			periodic_dimensions_ = arg_periodic_dimensions;
+		
+			a_[0] = a0; a_[1] = a1, a_[2] = a2;
+			amat_[0] = a0[0];
+			amat_[1] = a0[1];
+			amat_[2] = a0[2];
+			amat_[3] = a1[0];
+			amat_[4] = a1[1];
+			amat_[5] = a1[2];
+			amat_[6] = a2[0];
+			amat_[7] = a2[1];
+			amat_[8] = a2[2];
+  
+			// volume = det(A)
+			volume_ = (a0|(a1^a2));
+
+			if(fabs(volume_) < 1e-10) throw error::WRONG_LATTICE;
+		
+			if ( volume_ > 0.0 ){
+				// Compute rows of A-1 (columns of A^-T)
+				double fac = 1.0 / volume_;
+				vector_type amt0 = fac * a1 ^ a2;
+				vector_type amt1 = fac * a2 ^ a0;
+				vector_type amt2 = fac * a0 ^ a1;
+			
+				amat_inv_[0] = amt0[0];
+				amat_inv_[1] = amt1[0];
+				amat_inv_[2] = amt2[0];
+				amat_inv_[3] = amt0[1];
+				amat_inv_[4] = amt1[1];
+				amat_inv_[5] = amt2[1];
+				amat_inv_[6] = amt0[2];
+				amat_inv_[7] = amt1[2];
+				amat_inv_[8] = amt2[2];
+			
+				amat_inv_t_[0] = amt0[0];
+				amat_inv_t_[1] = amt0[1];
+				amat_inv_t_[2] = amt0[2];
+				amat_inv_t_[3] = amt1[0];
+				amat_inv_t_[4] = amt1[1];
+				amat_inv_t_[5] = amt1[2];
+				amat_inv_t_[6] = amt2[0];
+				amat_inv_t_[7] = amt2[1];
+				amat_inv_t_[8] = amt2[2];
+			
+				// B = 2 pi A^-T
+				b_[0] = 2.0 * M_PI * amt0;
+				b_[1] = 2.0 * M_PI * amt1;
+				b_[2] = 2.0 * M_PI * amt2;
+			
+				bmat_[0] = b_[0][0];
+				bmat_[1] = b_[0][1];
+				bmat_[2] = b_[0][2];
+				bmat_[3] = b_[1][0];
+				bmat_[4] = b_[1][1];
+				bmat_[5] = b_[1][2];
+				bmat_[6] = b_[2][0];
+				bmat_[7] = b_[2][1];
+				bmat_[8] = b_[2][2];
+			} else  {
+				b_[0] = b_[1] = b_[2] = vector_type(0.0,0.0,0.0);
+				amat_inv_[0] =  amat_inv_[1] =  amat_inv_[2] = 
+					amat_inv_[3] =  amat_inv_[4] =  amat_inv_[5] = 
+					amat_inv_[6] =  amat_inv_[7] =  amat_inv_[8] = 0.0;
+				bmat_[0] =  bmat_[1] =  bmat_[2] = 
+					bmat_[3] =  bmat_[4] =  bmat_[5] = 
+					bmat_[6] =  bmat_[7] =  bmat_[8] = 0.0;
+			}
+		
+			an_[0]  = a_[0];
+			an_[1]  = a_[1];
+			an_[2]  = a_[2];
+			an_[3]  = a_[0] + a_[1];
+			an_[4]  = a_[0] - a_[1];
+			an_[5]  = a_[1] + a_[2];
+			an_[6]  = a_[1] - a_[2];
+			an_[7]  = a_[2] + a_[0];
+			an_[8]  = a_[2] - a_[0];
+			an_[9]  = a_[0] + a_[1] + a_[2];
+			an_[10] = a_[0] - a_[1] - a_[2];
+			an_[11] = a_[0] + a_[1] - a_[2];
+			an_[12] = a_[0] - a_[1] + a_[2];
+ 
+			bn_[0]  = b_[0];
+			bn_[1]  = b_[1];
+			bn_[2]  = b_[2];
+			bn_[3]  = b_[0] + b_[1];
+			bn_[4]  = b_[0] - b_[1];
+			bn_[5]  = b_[1] + b_[2];
+			bn_[6]  = b_[1] - b_[2];
+			bn_[7]  = b_[2] + b_[0];
+			bn_[8]  = b_[2] - b_[0];
+			bn_[9]  = b_[0] + b_[1] + b_[2];
+			bn_[10] = b_[0] - b_[1] - b_[2];
+			bn_[11] = b_[0] + b_[1] - b_[2];
+			bn_[12] = b_[0] - b_[1] + b_[2];
+ 
+			for(int i = 0; i < 13; i++ ){
+				an2h_[i] = 0.5 * norm(an_[i]);
+				bn2h_[i] = 0.5 * norm(bn_[i]);
+			}
+
+		}
+		
 		vector_type const& operator[](int i) const {return a_[i];}
     
     vector_type const& a(int i) const { return a_[i]; }
@@ -126,9 +230,23 @@ namespace ions {
     void compute_deda(const std::valarray<double>& sigma, std::valarray<double>& deda) const;
   
     void cart_to_crystal(const double* scart, double* scryst) const;
-    math::vec3d cart_to_crystal(const math::vec3d& v) const;
+
+    math::vec3d cart_to_crystal(const math::vec3d& v) const {
+			vector_type vcryst;
+			const double twopiinv = 0.5/M_PI;
+			vcryst[0] = (b_[0]|v)*twopiinv;
+			vcryst[1] = (b_[1]|v)*twopiinv;
+			vcryst[2] = (b_[2]|v)*twopiinv;
+			return vcryst;
+		}
+
     void crystal_to_cart(const double* scryst, double* scart) const;
-    math::vec3d crystal_to_cart(const math::vec3d& v) const;
+
+    math::vec3d crystal_to_cart(const math::vec3d& v) const {
+			vec3d vcart = v[0]*a_[0] + v[1]*a_[1] + v[2]*a_[2];
+			return vcart;
+		}
+		
     bool in_ws(const math::vec3d& v) const;
     double min_wsdist() const;
     void fold_in_ws(math::vec3d& v) const;
