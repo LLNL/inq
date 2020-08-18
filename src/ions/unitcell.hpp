@@ -229,7 +229,37 @@ namespace ions {
     void smatmult3x3(const double* xs, const double* y, double *z) const;
     void compute_deda(const std::valarray<double>& sigma, std::valarray<double>& deda) const;
   
-    void cart_to_crystal(const double* scart, double* scryst) const;
+    void cart_to_crystal(const double* scart, double* scryst) const {
+			// convert symmetric 3x3 matrix scart to crystalline coordinates
+			// scart[0] = s_xx, scart[1] = s_yy, scart[2] = s_zz, scart[3] = s_xy, 
+			// scart[4] = s_yz, scart[5] = s_xz
+			
+			scryst[0] = 
+				a_[0][0]*scart[0]*a_[0][0] + a_[0][0]*scart[3]*a_[0][1] + a_[0][0]*scart[5]*a_[0][2] + 
+				a_[0][1]*scart[3]*a_[0][0] + a_[0][1]*scart[1]*a_[0][1] + a_[0][1]*scart[4]*a_[0][2] + 
+				a_[0][2]*scart[5]*a_[0][0] + a_[0][2]*scart[4]*a_[0][1] + a_[0][2]*scart[2]*a_[0][2];
+			scryst[1] = 
+				a_[1][0]*scart[0]*a_[1][0] + a_[1][0]*scart[3]*a_[1][1] + a_[1][0]*scart[5]*a_[1][2] + 
+				a_[1][1]*scart[3]*a_[1][0] + a_[1][1]*scart[1]*a_[1][1] + a_[1][1]*scart[4]*a_[1][2] + 
+				a_[1][2]*scart[5]*a_[1][0] + a_[1][2]*scart[4]*a_[1][1] + a_[1][2]*scart[2]*a_[1][2];
+			scryst[2] = 
+				a_[2][0]*scart[0]*a_[2][0] + a_[2][0]*scart[3]*a_[2][1] + a_[2][0]*scart[5]*a_[2][2] + 
+				a_[2][1]*scart[3]*a_[2][0] + a_[2][1]*scart[1]*a_[2][1] + a_[2][1]*scart[4]*a_[2][2] + 
+				a_[2][2]*scart[5]*a_[2][0] + a_[2][2]*scart[4]*a_[2][1] + a_[2][2]*scart[2]*a_[2][2];
+			scryst[3] = 
+				a_[0][0]*scart[0]*a_[1][0] + a_[0][0]*scart[3]*a_[1][1] + a_[0][0]*scart[5]*a_[1][2] + 
+				a_[0][1]*scart[3]*a_[1][0] + a_[0][1]*scart[1]*a_[1][1] + a_[0][1]*scart[4]*a_[1][2] + 
+				a_[0][2]*scart[5]*a_[1][0] + a_[0][2]*scart[4]*a_[1][1] + a_[0][2]*scart[2]*a_[1][2];
+			scryst[4] = 
+				a_[1][0]*scart[0]*a_[2][0] + a_[1][0]*scart[3]*a_[2][1] + a_[1][0]*scart[5]*a_[2][2] + 
+				a_[1][1]*scart[3]*a_[2][0] + a_[1][1]*scart[1]*a_[2][1] + a_[1][1]*scart[4]*a_[2][2] + 
+				a_[1][2]*scart[5]*a_[2][0] + a_[1][2]*scart[4]*a_[2][1] + a_[1][2]*scart[2]*a_[2][2];
+			scryst[5] = 
+				a_[0][0]*scart[0]*a_[2][0] + a_[0][0]*scart[3]*a_[2][1] + a_[0][0]*scart[5]*a_[2][2] + 
+				a_[0][1]*scart[3]*a_[2][0] + a_[0][1]*scart[1]*a_[2][1] + a_[0][1]*scart[4]*a_[2][2] + 
+				a_[0][2]*scart[5]*a_[2][0] + a_[0][2]*scart[4]*a_[2][1] + a_[0][2]*scart[2]*a_[2][2];
+
+		}
 
     math::vec3d cart_to_crystal(const math::vec3d& v) const {
 			vector_type vcryst;
@@ -240,10 +270,45 @@ namespace ions {
 			return vcryst;
 		}
 
-    void crystal_to_cart(const double* scryst, double* scart) const;
+    void crystal_to_cart(const double* scryst, double* scart) const {
+			// convert symmetric 3x3 matrix scryst to Cartesian coordinates
+			// scryst[0] = s_xx, scryst[1] = s_yy, scryst[2] = s_zz, scryst[3] = s_xy, 
+			// scryst[4] = s_yz, scryst[5] = s_xz
 
+			const double twopiinv = 0.5/M_PI;
+
+			scart[0] = 
+				b_[0][0]*scryst[0]*b_[0][0] + b_[0][0]*scryst[3]*b_[1][0] + b_[0][0]*scryst[5]*b_[2][0] + 
+				b_[1][0]*scryst[3]*b_[0][0] + b_[1][0]*scryst[1]*b_[1][0] + b_[1][0]*scryst[4]*b_[2][0] + 
+				b_[2][0]*scryst[5]*b_[0][0] + b_[2][0]*scryst[4]*b_[1][0] + b_[2][0]*scryst[2]*b_[2][0];
+			scart[1] = 
+				b_[0][1]*scryst[0]*b_[0][1] + b_[0][1]*scryst[3]*b_[1][1] + b_[0][1]*scryst[5]*b_[2][1] + 
+				b_[1][1]*scryst[3]*b_[0][1] + b_[1][1]*scryst[1]*b_[1][1] + b_[1][1]*scryst[4]*b_[2][1] + 
+				b_[2][1]*scryst[5]*b_[0][1] + b_[2][1]*scryst[4]*b_[1][1] + b_[2][1]*scryst[2]*b_[2][1];
+			scart[2] = 
+				b_[0][2]*scryst[0]*b_[0][2] + b_[0][2]*scryst[3]*b_[1][2] + b_[0][2]*scryst[5]*b_[2][2] + 
+				b_[1][2]*scryst[3]*b_[0][2] + b_[1][2]*scryst[1]*b_[1][2] + b_[1][2]*scryst[4]*b_[2][2] + 
+				b_[2][2]*scryst[5]*b_[0][2] + b_[2][2]*scryst[4]*b_[1][2] + b_[2][2]*scryst[2]*b_[2][2];
+			scart[3] = 
+				b_[0][0]*scryst[0]*b_[0][1] + b_[0][0]*scryst[3]*b_[1][1] + b_[0][0]*scryst[5]*b_[2][1] + 
+				b_[1][0]*scryst[3]*b_[0][1] + b_[1][0]*scryst[1]*b_[1][1] + b_[1][0]*scryst[4]*b_[2][1] + 
+				b_[2][0]*scryst[5]*b_[0][1] + b_[2][0]*scryst[4]*b_[1][1] + b_[2][0]*scryst[2]*b_[2][1];
+			scart[4] = 
+				b_[0][1]*scryst[0]*b_[0][2] + b_[0][1]*scryst[3]*b_[1][2] + b_[0][1]*scryst[5]*b_[2][2] + 
+				b_[1][1]*scryst[3]*b_[0][2] + b_[1][1]*scryst[1]*b_[1][2] + b_[1][1]*scryst[4]*b_[2][2] + 
+				b_[2][1]*scryst[5]*b_[0][2] + b_[2][1]*scryst[4]*b_[1][2] + b_[2][1]*scryst[2]*b_[2][2];
+			scart[5] = 
+				b_[0][0]*scryst[0]*b_[0][2] + b_[0][0]*scryst[3]*b_[1][2] + b_[0][0]*scryst[5]*b_[2][2] + 
+				b_[1][0]*scryst[3]*b_[0][2] + b_[1][0]*scryst[1]*b_[1][2] + b_[1][0]*scryst[4]*b_[2][2] + 
+				b_[2][0]*scryst[5]*b_[0][2] + b_[2][0]*scryst[4]*b_[1][2] + b_[2][0]*scryst[2]*b_[2][2];
+
+			for (int i=0; i<6; i++)
+				scart[i] *= twopiinv*twopiinv;
+
+		}
+		
     math::vec3d crystal_to_cart(const math::vec3d& v) const {
-			vec3d vcart = v[0]*a_[0] + v[1]*a_[1] + v[2]*a_[2];
+			vector_type vcart = v[0]*a_[0] + v[1]*a_[1] + v[2]*a_[2];
 			return vcart;
 		}
 		
