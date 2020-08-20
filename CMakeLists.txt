@@ -17,6 +17,7 @@ endif()
 
 link_libraries(m)
 
+set(DISABLE_FXC ON) #do not compile the fxc in libxc
 add_subdirectory(external_libs)
 
 enable_language(CXX)
