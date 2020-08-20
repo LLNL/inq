@@ -35,6 +35,7 @@
 
 #include <utils/partition.hpp>
 #include <utils/match.hpp>
+#include <utils/finite_difference.hpp>
 
 #include <gpu/run.hpp>
 
@@ -66,6 +67,7 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/projector_fourier.hpp>
+#include <hamiltonian/xc_functional.hpp>
 
 #include <operations/add.hpp>
 #include <operations/sum.hpp>
