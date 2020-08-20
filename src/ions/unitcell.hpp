@@ -214,20 +214,115 @@ namespace ions {
     double amat_inv(int ij) const { return amat_inv_[ij]; }
   
     // 3x3 matrix vector multiply Z = X Y where X is a 3x3 matrix, Y,Z 3-vectors
-    void vecmult3x3(const double* x, const double* y, double *z) const;
+    void vecmult3x3(const double* x, const double* y, double *z) const {
+			//  | z0 |     | x0 x3 x6 |     | y0 |
+			//  | z1 |  =  | x1 x4 x7 |  *  | y1 |
+			//  | z2 |     | x2 x5 x8 |     | y2 |
+			
+			const double z0 = x[0]*y[0]+x[3]*y[1]+x[6]*y[2];
+			const double z1 = x[1]*y[0]+x[4]*y[1]+x[7]*y[2];
+			const double z2 = x[2]*y[0]+x[5]*y[1]+x[8]*y[2];
+			z[0] = z0;
+			z[1] = z1;
+			z[2] = z2;
+		}
 
     // 3x3 sym matrix vector multiply Z = X Y where X is a sym 3x3 matrix,
     // Y,Z 3-vectors
-    void vecsmult3x3(const double* x, const double* y, double *z) const;
+    void vecsmult3x3(const double* xs, const double* y, double *z) const {
+			// multiply a vector by a symmetric 3x3 matrix
+			
+			//  | z0 |     | xs0 xs3 xs5 |     | y0 |
+			//  | z1 |  =  | xs3 xs1 xs4 |  *  | y1 |
+			//  | z2 |     | xs5 xs4 xs2 |     | y2 |
+			
+			z[0] = xs[0]*y[0]+xs[3]*y[1]+xs[5]*y[2];
+			z[1] = xs[3]*y[0]+xs[1]*y[1]+xs[4]*y[2];
+			z[2] = xs[5]*y[0]+xs[4]*y[1]+xs[2]*y[2];
+		}
   
     // 3x3 matrix matrix multiply Z = X Y where X, Y are 3x3 matrices
-    void matmult3x3(const double* x, const double* y, double *z) const;
+    void matmult3x3(const double* x, const double* y, double *z) const {
+
+			//  | z0 z3 z6 |     | x0 x3 x6 |     | y0 y3 y6 |
+			//  | z1 z4 z7 |  =  | x1 x4 x7 |  *  | y1 y4 y7 |
+			//  | z2 z5 z8 |     | x2 x5 x8 |     | y2 y5 y8 |
+  
+			const double z00 = x[0]*y[0]+x[3]*y[1]+x[6]*y[2];
+			const double z10 = x[1]*y[0]+x[4]*y[1]+x[7]*y[2];
+			const double z20 = x[2]*y[0]+x[5]*y[1]+x[8]*y[2];
+  
+			const double z01 = x[0]*y[3]+x[3]*y[4]+x[6]*y[5];
+			const double z11 = x[1]*y[3]+x[4]*y[4]+x[7]*y[5];
+			const double z21 = x[2]*y[3]+x[5]*y[4]+x[8]*y[5];
+  
+			const double z02 = x[0]*y[6]+x[3]*y[7]+x[6]*y[8];
+			const double z12 = x[1]*y[6]+x[4]*y[7]+x[7]*y[8];
+			const double z22 = x[2]*y[6]+x[5]*y[7]+x[8]*y[8];
+  
+			z[0] = z00;
+			z[1] = z10;
+			z[2] = z20;
+  
+			z[3] = z01;
+			z[4] = z11;
+			z[5] = z21;
+  
+			z[6] = z02;
+			z[7] = z12;
+			z[8] = z22;
+
+		}
+		
     // Z = X Y where X is a symmetric 3x3 matrix and Y a general 3x3 matrix
     // uses only the first 6 elements of array xs
     // where xs[0] = x00, xs[1] = x11, xs[2] = x22,
     // xs[3] = x10, xs[4] = x21, xs[5] = x20
-    void smatmult3x3(const double* xs, const double* y, double *z) const;
-    void compute_deda(const std::valarray<double>& sigma, std::valarray<double>& deda) const;
+    void smatmult3x3(const double* xs, const double* y, double *z) const {
+			//  | z0 z3 z6 |     | xs0 xs3 xs5 |     | y0 y3 y6 |
+			//  | z1 z4 z7 |  =  | xs3 xs1 xs4 |  *  | y1 y4 y7 |
+			//  | z2 z5 z8 |     | xs5 xs4 xs2 |     | y2 y5 y8 |
+  
+			const double z00 = xs[0]*y[0]+xs[3]*y[1]+xs[5]*y[2];
+			const double z10 = xs[3]*y[0]+xs[1]*y[1]+xs[4]*y[2];
+			const double z20 = xs[5]*y[0]+xs[4]*y[1]+xs[2]*y[2];
+  
+			const double z01 = xs[0]*y[3]+xs[3]*y[4]+xs[5]*y[5];
+			const double z11 = xs[3]*y[3]+xs[1]*y[4]+xs[4]*y[5];
+			const double z21 = xs[5]*y[3]+xs[4]*y[4]+xs[2]*y[5];
+  
+			const double z02 = xs[0]*y[6]+xs[3]*y[7]+xs[5]*y[8];
+			const double z12 = xs[3]*y[6]+xs[1]*y[7]+xs[4]*y[8];
+			const double z22 = xs[5]*y[6]+xs[4]*y[7]+xs[2]*y[8];
+  
+			z[0] = z00;
+			z[1] = z10;
+			z[2] = z20;
+  
+			z[3] = z01;
+			z[4] = z11;
+			z[5] = z21;
+  
+			z[6] = z02;
+			z[7] = z12;
+			z[8] = z22; 
+
+		}
+
+		void compute_deda(const std::valarray<double>& sigma, std::valarray<double>& deda) const {
+			// Compute energy derivatives dE/da_ij from a symmetric stress tensor
+			assert(sigma.size()==6);
+			assert(deda.size()==9);
+  
+			//!! local copy of sigma to circumvent bug in icc compiler
+			std::valarray<double> sigma_loc(6);
+			sigma_loc = sigma;
+  
+			// deda = - omega * sigma * A^-T
+			smatmult3x3(&sigma_loc[0],&amat_inv_t_[0],&deda[0]);
+  
+			deda *= -volume_;
+		}
 
 		////////////////////////////////////////////////////////////////////////////////
 		
