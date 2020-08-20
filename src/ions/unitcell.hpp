@@ -312,8 +312,25 @@ namespace ions {
 			return vcart;
 		}
 		
-    bool in_ws(const math::vec3d& v) const;
-    double min_wsdist() const;
+    bool in_ws(const math::vec3d& v) const {
+
+			bool in = true;
+			int i = 0;
+			while ( i < 13 && in ) {
+				in = ( abs(v|an_[i]) <= an2h_[i] ) ;
+				i++;
+			}
+			return in;
+		}
+		
+    double min_wsdist() const {
+			double min = sqrt(2.*an2h_[0]);
+			for (int i=1; i<13; i++) 
+				if (sqrt(2.*an2h_[i]) < min) min = sqrt(2.*an2h_[i]);
+			
+			return min;
+		}
+			
     void fold_in_ws(math::vec3d& v) const;
     bool in_bz(const math::vec3d& k) const;
     void fold_in_bz(math::vec3d& k) const;
@@ -321,8 +338,6 @@ namespace ions {
     bool encloses(const UnitCell& c) const;
     bool contains(math::vec3d v) const;
   
-    void print(std::ostream& os) const;  
-    void printsys(std::ostream& os, std::string setcmd) const;  
     bool operator==(const UnitCell& c) const;
     bool operator!=(const UnitCell& c) const;
 
@@ -335,8 +350,6 @@ namespace ions {
 		}
 		
   };
-  
-  std::ostream& operator << (std::ostream& os, const UnitCell& cell);
 
 }
 }

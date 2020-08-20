@@ -40,27 +40,6 @@ namespace ions {
   using math::vec3d;
   using namespace std;
   
-  ////////////////////////////////////////////////////////////////////////////////
-  bool UnitCell::in_ws(const vec3d& v) const
-  {
-    bool in = true;
-    int i = 0;
-    while ( i < 13 && in ) {
-			in = ( abs(v|an_[i]) <= an2h_[i] ) ;
-			i++;
-		}
-    return in;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-  double UnitCell::min_wsdist() const {
-
-    double min = sqrt(2.*an2h_[0]);
-    for (int i=1; i<13; i++) 
-      if (sqrt(2.*an2h_[i]) < min) min = sqrt(2.*an2h_[i]);
-
-    return min;
-  }
  
   ////////////////////////////////////////////////////////////////////////////////
   void UnitCell::fold_in_ws(vec3d& v) const
@@ -146,13 +125,9 @@ namespace ions {
   {
     bool in = true;
     int i = 0;
-    while ( i < 13 && in )
-      {
-	in = ( contains(c.an_[i]) );
-	if ( !in )
-	  cout << "UnitCell::encloses: " << c.an_[i] << " not in cell "
-	       << c << endl;
-	i++;
+    while ( i < 13 && in ) {
+				in = ( contains(c.an_[i]) );
+				i++;
       }
     return in;
   }
@@ -167,55 +142,6 @@ namespace ions {
     return ( (p0 > 0.0) && (p0 <= 1.0) && (p1 > 0.0) && (p1 <= 1.0) && (p2 > 0.0) && (p2 <= 1.0) );
   }
  
-  ////////////////////////////////////////////////////////////////////////////////
-  void UnitCell::print(std::ostream& os) const
-  {
-    os.setf(ios::fixed,ios::floatfield);
-    os << std::setprecision(8);
-    os << "<unit_cell " << endl;
-    os << "    a=\"" << setw(12) << a_[0][0] << " "
-       << setw(12) << a_[0][1] << " "
-       << setw(12) << a_[0][2] << "\"" << endl;
-    os << "    b=\"" << setw(12) << a_[1][0] << " "
-       << setw(12) << a_[1][1] << " "
-       << setw(12) << a_[1][2] << "\"" << endl;
-    os << "    c=\"" << setw(12) << a_[2][0] << " "
-       << setw(12) << a_[2][1] << " "
-       << setw(12) << a_[2][2] << "\"" << " />" << endl;
-    /*
-      os << "    <volume> " << setw(12) << volume_ << " </volume>" << endl;
-      os << "    <a0> " << setw(12) << a_[0][0] << " " 
-      << setw(12) << a_[0][1] << " " 
-      << setw(12) << a_[0][2] << " </a0>" << endl;
-      os << "    <a1> " << setw(12) << a_[1][0] << " " 
-      << setw(12) << a_[1][1] << " " 
-      << setw(12) << a_[1][2] << " </a1>" << endl;
-      os << "    <a2> " << setw(12) << a_[2][0] << " " 
-      << setw(12) << a_[2][1] << " " 
-      << setw(12) << a_[2][2] << " </a2>" << endl;
-      os << "    <b0> " << setw(12) << b_[0][0] << " " 
-      << setw(12) << b_[0][1] << " " 
-      << setw(12) << b_[0][2] << " </b0>" << endl;
-      os << "    <b1> " << setw(12) << b_[1][0] << " " 
-      << setw(12) << b_[1][1] << " " 
-      << setw(12) << b_[1][2] << " </b1>" << endl;
-      os << "    <b2> " << setw(12) << b_[2][0] << " " 
-      << setw(12) << b_[2][1] << " " 
-      << setw(12) << b_[2][2] << " </b2>" << endl;
-    */
-  }
-  
-  ////////////////////////////////////////////////////////////////////////////////
-  void UnitCell::printsys(ostream& os, string setcmd) const {
-    os.setf(ios::fixed,ios::floatfield);
-    os << setprecision(8);
-    os << setcmd.c_str()
-       << setw(12) << a_[0][0] << " " << setw(12) << a_[0][1] << " " << setw(12) << a_[0][2] << " " 
-       << setw(12) << a_[1][0] << " " << setw(12) << a_[1][1] << " " << setw(12) << a_[1][2] << " " 
-       << setw(12) << a_[2][0] << " " << setw(12) << a_[2][1] << " " << setw(12) << a_[2][2]
-       << " bohr" << endl;
-  }
-  
   ////////////////////////////////////////////////////////////////////////////////
   bool UnitCell::operator==(const UnitCell& c) const
   {
@@ -337,13 +263,6 @@ namespace ions {
     smatmult3x3(&sigma_loc[0],&amat_inv_t_[0],&deda[0]);
   
     deda *= -volume_;
-  }
- 
-  ////////////////////////////////////////////////////////////////////////////////
-  ostream& operator<< ( ostream& os, const UnitCell& cell )
-  { 
-    cell.print(os); 
-    return os;
   }
 
 }
