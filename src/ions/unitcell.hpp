@@ -422,7 +422,7 @@ namespace ions {
 			bool in = true;
 			int i = 0;
 			while ( i < 13 && in ) {
-				in = ( abs(v|an_[i]) <= an2h_[i] ) ;
+				in = ( fabs(v|an_[i]) <= an2h_[i] ) ;
 				i++;
 			}
 			return in;
@@ -479,7 +479,7 @@ namespace ions {
 			int i = 0;
 			while ( i < 13 && in )
 				{
-					in = ( abs(k|bn_[i]) <= bn2h_[i] ) ;
+					in = ( fabs(k|bn_[i]) <= bn2h_[i] ) ;
 					i++;
 				}
 			return in;
