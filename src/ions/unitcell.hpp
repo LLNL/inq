@@ -228,7 +228,9 @@ namespace ions {
     // xs[3] = x10, xs[4] = x21, xs[5] = x20
     void smatmult3x3(const double* xs, const double* y, double *z) const;
     void compute_deda(const std::valarray<double>& sigma, std::valarray<double>& deda) const;
-  
+
+		////////////////////////////////////////////////////////////////////////////////
+		
     void cart_to_crystal(const double* scart, double* scryst) const {
 			// convert symmetric 3x3 matrix scart to crystalline coordinates
 			// scart[0] = s_xx, scart[1] = s_yy, scart[2] = s_zz, scart[3] = s_xy, 
@@ -260,7 +262,9 @@ namespace ions {
 				a_[0][2]*scart[5]*a_[2][0] + a_[0][2]*scart[4]*a_[2][1] + a_[0][2]*scart[2]*a_[2][2];
 
 		}
-
+		
+		////////////////////////////////////////////////////////////////////////////////
+		
     math::vec3d cart_to_crystal(const math::vec3d& v) const {
 			vector_type vcryst;
 			const double twopiinv = 0.5/M_PI;
@@ -270,6 +274,8 @@ namespace ions {
 			return vcryst;
 		}
 
+		////////////////////////////////////////////////////////////////////////////////
+		
     void crystal_to_cart(const double* scryst, double* scart) const {
 			// convert symmetric 3x3 matrix scryst to Cartesian coordinates
 			// scryst[0] = s_xx, scryst[1] = s_yy, scryst[2] = s_zz, scryst[3] = s_xy, 
@@ -307,10 +313,14 @@ namespace ions {
 
 		}
 		
+		////////////////////////////////////////////////////////////////////////////////
+		
     math::vec3d crystal_to_cart(const math::vec3d& v) const {
 			vector_type vcart = v[0]*a_[0] + v[1]*a_[1] + v[2]*a_[2];
 			return vcart;
 		}
+
+		////////////////////////////////////////////////////////////////////////////////
 		
     bool in_ws(const math::vec3d& v) const {
 
@@ -330,16 +340,118 @@ namespace ions {
 			
 			return min;
 		}
+
+  ////////////////////////////////////////////////////////////////////////////////
+		
+    void fold_in_ws(math::vec3d& v) const {
+
+			const double epsilon = 1.e-10;
+			bool done = false;
+			const int maxiter = 10;
+			int iter = 0;
+			while ( !done && iter < maxiter )
+				{
+					done = true;
+					for ( int i = 0; (i < 13) && done; i++ )
+						{
+							const double sp = (v|an_[i]);
+							if ( sp > an2h_[i] + epsilon )
+								{
+									done = false;
+									do
+										v -= an_[i];
+									while ( (v|an_[i]) > an2h_[i] + epsilon );
+								}
+							else if ( sp < -an2h_[i] - epsilon )
+								{
+									done = false;
+									do
+										v += an_[i];
+									while ( (v|an_[i]) < -an2h_[i] - epsilon );
+								}
+						}
+					iter++;
+				}
+			assert(iter < maxiter);
+
+		}
+
+  ////////////////////////////////////////////////////////////////////////////////
+		
+    bool in_bz(const math::vec3d& k) const {
 			
-    void fold_in_ws(math::vec3d& v) const;
-    bool in_bz(const math::vec3d& k) const;
-    void fold_in_bz(math::vec3d& k) const;
+			bool in = true;
+			int i = 0;
+			while ( i < 13 && in )
+				{
+					in = ( abs(k|bn_[i]) <= bn2h_[i] ) ;
+					i++;
+				}
+			return in;
+			
+		}
+
+		////////////////////////////////////////////////////////////////////////////////
+			
+    void fold_in_bz(math::vec3d& k) const {
+
+			const double epsilon = 1.e-10;
+			bool done = false;
+			const int maxiter = 10;
+			int iter = 0;
+			while ( !done && iter < maxiter )
+				{
+					done = true;
+					for ( int i = 0; (i < 13) && done; i++ )
+						{
+							double sp = (k|bn_[i]);
+							if ( sp > bn2h_[i] + epsilon )
+								{
+									done = false;
+									do
+										k -= bn_[i];
+									while ( (k|bn_[i]) > bn2h_[i] + epsilon );
+								}
+							else if ( sp < -bn2h_[i] - epsilon )
+								{
+									done = false;
+									do
+										k += bn_[i];
+									while ( (k|bn_[i]) < -bn2h_[i] - epsilon );
+								}
+						}
+					iter++;
+				}
+			assert(iter < maxiter);
+			
+		}
   
-    bool encloses(const UnitCell& c) const;
-    bool contains(math::vec3d v) const;
+    bool encloses(const UnitCell& c) const {
+			bool in = true;
+			int i = 0;
+			while ( i < 13 && in ) {
+				in = ( contains(c.an_[i]) );
+				i++;
+      }
+			return in;
+		}
+		
+    bool contains(math::vec3d v) const {
+			const double fac = 0.5 / ( 2.0 * M_PI );
+			const double p0 = fac*(v|b_[0]);
+			const double p1 = fac*(v|b_[1]);
+			const double p2 = fac*(v|b_[2]);
+			
+			return ( (p0 > 0.0) && (p0 <= 1.0) && (p1 > 0.0) && (p1 <= 1.0) && (p2 > 0.0) && (p2 <= 1.0) );
+		}
   
-    bool operator==(const UnitCell& c) const;
-    bool operator!=(const UnitCell& c) const;
+    bool operator==(const UnitCell& c) const {
+			return ( a_[0]==c.a_[0] && a_[1]==c.a_[1] && a_[2]==c.a_[2] );
+		}
+			
+    bool operator!=(const UnitCell& c) const {
+			return ! ( *this == c );
+		}
 
 		auto diagonal_length() const {
 			return sqrt(norm(a_[0]) + norm(a_[1]) + norm(a_[2]));
