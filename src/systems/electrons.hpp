@@ -52,12 +52,13 @@ namespace systems {
 		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
 			full_comm_(comm, {}),
 			states_comm_(full_comm_.axis(0)),
+			atoms_comm_(states_comm_),
 			basis_comm_(full_comm_.axis(1)),
-			states_basis_(ions.cell(), arg_basis_input),
-			density_basis_(states_basis_.refine(arg_basis_input.density_factor())),
-			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
+			states_basis_(ions.cell(), arg_basis_input, basis_comm_),
+			density_basis_(states_basis_.refine(arg_basis_input.density_factor()), basis_comm_),
+			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 			states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
-			phi_(states_basis_, states_.num_states()),
+			phi_(states_basis_, states_.num_states(), full_comm_),
 			density_(atomic_pot_.atomic_electronic_density(density_basis_, ions.cell(), ions.geo()))
 		{
 
@@ -83,6 +84,7 @@ namespace systems {
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
 		mutable boost::mpi3::cartesian_communicator<1> states_comm_;
+		mutable boost::mpi3::cartesian_communicator<1> atoms_comm_;
 		mutable boost::mpi3::cartesian_communicator<1> basis_comm_;
 		basis::real_space states_basis_;
 		basis::real_space density_basis_;
