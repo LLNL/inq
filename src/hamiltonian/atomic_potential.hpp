@@ -53,21 +53,29 @@ namespace hamiltonian {
 
 			has_nlcc_ = false;
       nelectrons_ = 0.0;
+
       for(int iatom = 0; iatom < natoms; iatom++){
 				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
-
-				auto file_path = pseudo_set_.file_path(atom_list[iatom]);
-				if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
-
-				auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
 				
-				auto & pseudo = insert.first->second;
+				auto map_ref = pseudopotential_list_.find(atom_list[iatom].symbol());
+				
+				if(map_ref == pseudopotential_list_.end()){
+					
+					auto file_path = pseudo_set_.file_path(atom_list[iatom]);
+					if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
+
+					auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
+					map_ref = insert.first;
+					
+				}
+				
+				auto & pseudo = map_ref->second;
 				
 				nelectrons_ += pseudo.valence_charge();
 				has_nlcc_ = has_nlcc_ or pseudo.has_nlcc_density();
 				
-      }
-      
+			}
+
     }
 		
     int num_species() const {
