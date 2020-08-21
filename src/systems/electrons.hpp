@@ -57,10 +57,12 @@ namespace systems {
 			phi_(states_basis_, states_.num_states()),
 			density_(atomic_pot_.atomic_electronic_density(density_basis_, ions.cell(), ions.geo()))
 		{
-			
-			states_basis_.info(std::cout);  
-			states_.info(std::cout);
 
+			if(comm.root()){
+				states_basis_.info(std::cout);  
+				states_.info(std::cout);
+			}
+			
 			if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
  
 
@@ -68,7 +70,8 @@ namespace systems {
 			operations::orthogonalize(phi_);
 			
 			density::normalize(density_, states_.total_charge());
-			std::cout << "Integral of the density = " << operations::integral(density_) << std::endl;
+
+			if(comm.root()) std::cout << "Integral of the density = " << operations::integral(density_) << std::endl;
 			
     }
 
