@@ -48,6 +48,8 @@ namespace operations {
 template <class field_set_type>
 void orthogonalize(field_set_type & phi){
 
+	assert(phi.set_comm().size() == 1);
+	
 	auto olap = overlap(phi);
 
 	const int nst = phi.set_size();
