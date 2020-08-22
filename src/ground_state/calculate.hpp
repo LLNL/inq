@@ -44,7 +44,7 @@ namespace ground_state {
 		
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient(), electrons.full_comm_);
 		
-		ham.info(std::cout);
+		if(electrons.full_comm_.root()) ham.info(std::cout);
 		
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
 
