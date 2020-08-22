@@ -42,7 +42,7 @@ namespace ground_state {
 	
 	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
 		
-		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient());
+		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient(), electrons.full_comm_);
 		
 		ham.info(std::cout);
 		
@@ -65,7 +65,7 @@ namespace ground_state {
 			mixer = new mixers::broyden<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
 			break;
 		}
-		
+
 		double old_energy = DBL_MAX;
 		
 		sc.update_ionic_fields(ions, electrons.atomic_pot_);
@@ -78,7 +78,7 @@ namespace ground_state {
 		std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
 		
 		ham.exchange.hf_orbitals = 0.0;
-		
+
 		int conv_count = 0;
 		for(int iiter = 0; iiter < 1000; iiter++){
 			
