@@ -71,10 +71,8 @@ gcc:
       - time ../configure --prefix=$HOME  || cat config.log
       - time make -j4
       - time make -j4 install
-      - time src/inq_unit_tests
-      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
+      - cd src; ctest -V -j 2; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V -j 2; cd .. 
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -93,10 +91,6 @@ gcc-fast:
       - time ../configure --prefix=$HOME  || cat config.log
       - time make -j4
       - time make -j4 install
-      - time src/inq_unit_tests
-      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -117,10 +111,6 @@ intel:
       - time ../configure --prefix=$HOME  || cat config.log
       - time make -j4
       - time make -j4 install
-      - time src/inq_unit_tests
-#      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
-#      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
-#      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -141,10 +131,6 @@ clang:
       - ls -l
       - time make -j4
       - time make -j4 install
-      - time src/inq_unit_tests
-      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -189,10 +175,6 @@ clang-fast:
       - time ../configure --prefix=$HOME
       - time make -j4
       - time make -j4 install
-      - time src/inq_unit_tests
-      - time mpirun -np 2 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 3 --oversubscribe src/inq_unit_tests
-      - time mpirun -np 4 --oversubscribe src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -270,7 +252,6 @@ gcc-mpich-valgrind:
       - time make -j4
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
-      - time $VALGRIND src/inq_unit_tests
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
 
@@ -318,7 +299,6 @@ nvcc:
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
       - time make -j4
       - time make -j4 install
-      - time src/inq_unit_tests
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
