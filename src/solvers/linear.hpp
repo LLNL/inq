@@ -21,8 +21,12 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <inq_config.h>
-#include <cstdlib>
+#include <FC.h>
+
+#include <multi/adaptors/blas.hpp> //to get dtrsv
+
+#include <tuple> //std::get
+#include <cassert>
 
 #define dpotrf FC_GLOBAL(dpotrf, DPOTRF) 
 extern "C" void dpotrf(const char * uplo, const int * n, double * a, const int * lda, int * info);
@@ -60,7 +64,9 @@ void linear_symmetric(matrix_type && matrix, vector_type & vector){
 
 ///////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_SOLVERS_LINEAR_UNIT_TEST
+#undef INQ_SOLVERS_LINEAR_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 #include <math/array.hpp>
@@ -70,7 +76,7 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 	SECTION("Diagonal real 2x2"){
 	
 		using namespace inq;
-	using namespace Catch::literals;
+		using namespace Catch::literals;
 		
 		math::array<double, 2> matrix({2, 2});
 		

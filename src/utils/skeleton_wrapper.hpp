@@ -36,5 +36,10 @@ namespace utils {
 }
 }
 
+#ifdef INQ_UTILS_SKELETON_WRAPPER_UNIT_TEST
+#undef INQ_UTILS_SKELETON_WRAPPER_UNIT_TEST
+
+
+#endif
 #endif
 

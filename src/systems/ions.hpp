@@ -40,5 +40,10 @@ public:
   
 }
 }
+
+#ifdef INQ_SYSTEMS_IONS_UNIT_TEST
+#undef INQ_SYSTEMS_IONS_UNIT_TEST
+
+#endif
 #endif
 

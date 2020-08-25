@@ -80,8 +80,8 @@ auto calculate(const occupations_array_type & occupations, field_set_type & phi,
 }
 }
 
-#ifdef INQ_density_calculate_UNIT_TEST
-#define INQ_TESTED
+#ifdef INQ_DENSITY_CALCULATE_UNIT_TEST
+#undef INQ_DENSITY_CALCULATE_UNIT_TEST
 
 #include <basis/trivial.hpp>
 #include <math/complex.hpp>

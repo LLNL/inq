@@ -110,7 +110,8 @@ private:
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_STATES_KS_STATES_UNIT_TEST
+#undef INQ_STATES_KS_STATES_UNIT_TEST
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
