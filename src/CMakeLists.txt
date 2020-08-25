@@ -1,7 +1,10 @@
 include_directories(.)
 include_directories(../external_libs)
 
-add_executable(inq_unit_tests main/unit_tests.${SRC_EXT} main/unit_tests_main.${SRC_EXT})
+
+add_library(unit_tests_main OBJECT main/unit_tests_main.${SRC_EXT})
+
+#add_executable(inq_unit_tests main/unit_tests.${SRC_EXT} main/unit_tests_main.${SRC_EXT})
 
 file(GLOB INCLUDE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */*.hpp)
 
@@ -19,6 +22,7 @@ foreach(TEST_FILE ${INCLUDE_FILES})
     COMMAND echo ARGS \\\#error NO TEST INCLUDED, MACRO ${test_macro} STILL DEFINED >> ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SRC}
     COMMAND echo ARGS \\\#endif >> ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SRC}    
     MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE})
-  add_executable(${TEST_EXE} ${TEST_SRC} main/unit_tests_main.${SRC_EXT})
+  add_executable(${TEST_EXE} ${TEST_SRC})
+  target_link_libraries(${TEST_EXE} unit_tests_main)
 endforeach()
 
