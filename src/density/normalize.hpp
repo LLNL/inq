@@ -21,10 +21,11 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <operations/integral.hpp>
+
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <math/complex.hpp>
-#include <cstdlib>
 
 namespace inq {
 namespace density {
@@ -41,7 +42,11 @@ void normalize(FieldType & density, const double & total_charge){
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_density_normalize_UNIT_TEST
+#define INQ_TESTED
+
+#include <basis/trivial.hpp>
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("function density::normalize", "[density::normalize]") {

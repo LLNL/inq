@@ -23,6 +23,7 @@
 
 
 #include <cassert>
+#include <functional> //std::plus
 #include <numeric>
 
 namespace inq {

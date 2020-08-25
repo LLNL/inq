@@ -21,8 +21,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <gpu/run.hpp>
+#include <basis/fourier_space.hpp>
 #include <basis/field_set.hpp>
+#include <gpu/run.hpp>
+#include <operations/space.hpp>
 
 #include <multi/adaptors/fftw.hpp>
 
