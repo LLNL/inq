@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <math/vector3.hpp>
+
 #include <pseudopod/element.hpp>
 #include <input/species.hpp>
 #include <vector>
@@ -67,7 +69,9 @@ auto operator|(const std::string & arg_symbol, const inq::math::vec3d & arg_posi
 	return inq::input::atom(pseudo::element(arg_symbol), arg_position);
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_INPUT_ATOM_UNIT_TEST
+#undef INQ_INPUT_ATOM_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("class ions::atom", "[inq::input::atom]") {

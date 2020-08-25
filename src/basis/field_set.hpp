@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <basis/real_space.hpp>
 #include <utils/partition.hpp>
 #include <math/array.hpp>
 #include <algorithm>

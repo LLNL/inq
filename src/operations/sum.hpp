@@ -53,7 +53,8 @@ auto sum_product(const field_type & phi1, const field_type & phi2){
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_SUM_UNIT_TEST
+#undef INQ_OPERATIONS_SUM_UNIT_TEST
 
 #include <math/complex.hpp>
 #include <basis/field.hpp>

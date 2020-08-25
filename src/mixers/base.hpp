@@ -38,4 +38,8 @@ public:
 }
 }
 
+#ifdef INQ_MIXERS_BASE_UNIT_TEST
+#undef INQ_MIXERS_BASE_UNIT_TEST
+#endif
+
 #endif

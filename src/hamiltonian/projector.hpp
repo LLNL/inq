@@ -123,7 +123,9 @@ namespace hamiltonian {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_HAMILTONIAN_PROJECTOR_UNIT_TEST
+#undef INQ_HAMILTONIAN_PROJECTOR_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {

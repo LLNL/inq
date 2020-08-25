@@ -95,5 +95,10 @@ namespace real_time {
 }
 }
 
+#ifdef INQ_REAL_TIME_PROPAGATE_UNIT_TEST
+#undef INQ_REAL_TIME_PROPAGATE_UNIT_TEST
+
+#endif
+
 #endif
 
