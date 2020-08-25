@@ -8,6 +8,7 @@ add_library(unit_tests_main OBJECT main/unit_tests_main.${SRC_EXT})
 
 file(GLOB INCLUDE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */*.hpp)
 
+
 foreach(TEST_FILE ${INCLUDE_FILES})
   get_filename_component(dir ${TEST_FILE} DIRECTORY)
   get_filename_component(name ${TEST_FILE} NAME_WE)
@@ -27,5 +28,7 @@ foreach(TEST_FILE ${INCLUDE_FILES})
   add_executable(${TEST_EXE})
   target_link_libraries(${TEST_EXE} ${TEST_O})
   target_link_libraries(${TEST_EXE} unit_tests_main)
+
+  add_test(NAME ${dir}_${name} COMMAND ${PROJECT_SOURCE_DIR}/scripts/run_test.sh ./${TEST_EXE})
 endforeach()
 
