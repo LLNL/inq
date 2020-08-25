@@ -68,7 +68,10 @@ public:
 }
 }
 
-#ifdef INQ_UNIT_TEST
+
+#ifdef INQ_BASIS_BASE_UNIT_TEST
+#undef INQ_BASIS_BASE_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
@@ -81,5 +84,4 @@ TEST_CASE("class basis::base", "[basis::base]") {
 }
 #endif
 
-    
 #endif

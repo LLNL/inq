@@ -235,12 +235,15 @@ using vec3d = vector3<double>;
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_MATH_VECTOR3_UNIT_TEST
+#undef INQ_MATH_VECTOR3_UNIT_TEST
 
 #include <catch2/catch.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+
+#include <iostream>
 
 TEST_CASE("function math::vector3", "[math::vector3]") {
 

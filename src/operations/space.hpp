@@ -22,7 +22,9 @@
 */
 
 #include <gpu/run.hpp>
+#include <basis/field.hpp>
 #include <basis/field_set.hpp>
+#include <basis/fourier_space.hpp>
 
 #ifdef ENABLE_CUDA
 #include <multi/adaptors/fft.hpp>
@@ -235,7 +237,9 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_SPACE_UNIT_TEST
+#undef INQ_OPERATIONS_SPACE_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("function operations::space", "[operations::space]") {
@@ -251,7 +255,6 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	double ecut = 23.0;
 	double ll = 6.66;
 	
-	ions::geometry geo;
 	ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
 	basis::real_space rs(cell, input::basis::cutoff_energy(ecut), basis_comm);
 	

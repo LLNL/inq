@@ -23,12 +23,19 @@
 
 #include <inq_config.h>
 
+#include <math/array.hpp>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <dirent.h>
 
+#include <string>
 #include <cstdio>
+#include <iostream>
+
+#include <mpi3/detail/datatype.hpp>
 
 namespace inq {
 namespace operations {
@@ -153,7 +160,9 @@ void load(std::string const & dirname, FieldSet & phi){
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_IO_UNIT_TEST
+#undef INQ_OPERATIONS_IO_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>

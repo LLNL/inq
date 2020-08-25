@@ -44,4 +44,8 @@ using array = boost::multi::array<type, dim, allocator>;
 }
 }
 
+#ifdef INQ_MATH_ARRAY_UNIT_TEST
+#undef INQ_MATH_ARRAY_UNIT_TEST
+#endif
+
 #endif

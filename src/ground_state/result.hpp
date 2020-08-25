@@ -3,6 +3,7 @@
 #ifndef INQ__GROUND_STATE__RESULT
 #define INQ__GROUND_STATE__RESULT
 
+#include <hamiltonian/energy.hpp>
 #include <math/vector3.hpp>
 
 namespace inq {
@@ -16,5 +17,10 @@ public:
 
 }
 }
+
+#ifdef INQ_GROUND_STATE_RESULT_UNIT_TEST
+#undef INQ_GROUND_STATE_RESULT_UNIT_TEST
+#endif
+
 #endif
 

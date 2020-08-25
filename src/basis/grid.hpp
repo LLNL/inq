@@ -24,7 +24,8 @@
 
 #include <basis/base.hpp>
 #include <math/vector3.hpp>
-#include <math/vector3.hpp>
+#include <ions/unitcell.hpp>
+
 
 #include <cassert>
 #include <array>
@@ -168,10 +169,11 @@ namespace basis {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_BASIS_GRID_UNIT_TEST
+#undef INQ_BASIS_GRID_UNIT_TEST
 
+#include <ions/geometry.hpp>
 #include <catch2/catch.hpp>
-#include <ions/unitcell.hpp>
 
 TEST_CASE("class basis::grid", "[basis::grid]") {
   

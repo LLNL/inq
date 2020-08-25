@@ -140,5 +140,10 @@ GPU_FUNCTION inline auto operator/(const complex & x, const complex & y){
 #endif
 
 }
+
+#ifdef INQ_MATH_COMPLEX_UNIT_TEST
+#undef INQ_MATH_COMPLEX_UNIT_TEST
+#endif
+
 #endif
 

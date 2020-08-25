@@ -80,7 +80,8 @@ namespace hamiltonian {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_HAMILTONIAN_ENERGY_UNIT_TEST
+#undef INQ_HAMILTONIAN_ENERGY_UNIT_TEST
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>

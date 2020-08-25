@@ -24,6 +24,7 @@
 #include <cassert>
 #include <numeric>
 #include <operations/sum.hpp>
+#include <math/complex.hpp>
 
 namespace inq {
 namespace operations {
@@ -65,7 +66,10 @@ auto integral_absdiff(const field_type & phi1, const field_type & phi2){
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_INTEGRAL_UNIT_TEST
+#undef INQ_OPERATIONS_INTEGRAL_UNIT_TEST
+
+#include <basis/field.hpp>
 #include <catch2/catch.hpp>
 #include <basis/trivial.hpp>
 

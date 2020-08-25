@@ -21,7 +21,11 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <basis/field.hpp>
 #include <basis/field_set.hpp>
+#include <basis/fourier_space.hpp>
+#include <operations/space.hpp>
+
 #include <cstdlib>
 
 namespace inq {
@@ -155,7 +159,9 @@ private:
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_PRECONDITIONER_UNIT_TEST
+#undef INQ_OPERATIONS_PRECONDITIONER_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("function operations::precondition", "[precondition]") {

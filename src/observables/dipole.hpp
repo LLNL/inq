@@ -82,7 +82,8 @@ math::vec3d dipole(systems::ions const & ions, systems::electrons & electrons){
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OBSERVABLES_DIPOLE_UNIT_TEST
+#undef INQ_OBSERVABLES_DIPOLE_UNIT_TEST
 
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>

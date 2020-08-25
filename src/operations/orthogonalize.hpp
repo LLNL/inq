@@ -142,7 +142,9 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_ORTHOGONALIZE_UNIT_TEST
+#undef INQ_OPERATIONS_ORTHOGONALIZE_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 #include <operations/randomize.hpp>

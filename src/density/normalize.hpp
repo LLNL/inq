@@ -42,8 +42,8 @@ void normalize(FieldType & density, const double & total_charge){
 }
 }
 
-#ifdef INQ_density_normalize_UNIT_TEST
-#define INQ_TESTED
+#ifdef INQ_DENSITY_NORMALIZE_UNIT_TEST
+#undef INQ_DENSITY_NORMALIZE_UNIT_TEST
 
 #include <basis/trivial.hpp>
 

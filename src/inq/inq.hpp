@@ -20,3 +20,7 @@
 
 #include <ground_state/calculate.hpp>
 #include <real_time/propagate.hpp>
+
+#ifdef INQ_INQ_INQ_UNIT_TEST
+#undef INQ_INQ_INQ_UNIT_TEST
+#endif

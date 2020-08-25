@@ -25,6 +25,7 @@
 #include <math/vector3.hpp>
 #include <math/array.hpp>
 #include <solvers/least_squares.hpp>
+#include <mixers/base.hpp>
 
 namespace inq {
 namespace mixers {
@@ -206,7 +207,9 @@ private:
 }
 
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_MIXERS_PULAY_UNIT_TEST
+#undef INQ_MIXERS_PULAY_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>

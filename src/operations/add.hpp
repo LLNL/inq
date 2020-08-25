@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <gpu/run.hpp>
 #include <algorithm>
+#include <functional>
 
 namespace inq {
 namespace operations {
@@ -83,7 +84,11 @@ field_type add(const field_type & t1, const field_type & t2, const field_type & 
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_ADD_UNIT_TEST
+#undef INQ_OPERATIONS_ADD_UNIT_TEST
+
+#include <basis/field.hpp>
+
 #include <catch2/catch.hpp>
 #include <basis/trivial.hpp>
 

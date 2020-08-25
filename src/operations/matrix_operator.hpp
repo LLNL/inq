@@ -21,7 +21,9 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <multi/adaptors/blas.hpp>
 #include <basis/field_set.hpp>
+
 #include <cstdlib>
 
 namespace inq {
@@ -63,7 +65,10 @@ private:
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_MATRIX_OPERATOR_UNIT_TEST
+#undef INQ_OPERATIONS_MATRIX_OPERATOR_UNIT_TEST
+
+#include <basis/trivial.hpp>
 #include <catch2/catch.hpp>
 
 TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]") {

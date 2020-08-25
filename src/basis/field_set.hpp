@@ -171,7 +171,8 @@ namespace basis {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_BASIS_FIELD_SET_UNIT_TEST
+#undef INQ_BASIS_FIELD_SET_UNIT_TEST
 
 #include <basis/real_space.hpp>
 

@@ -74,10 +74,14 @@ namespace operations {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_EXPONENTIAL_UNIT_TEST
+#undef INQ_OPERATIONS_EXPONENTIAL_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
+#include <basis/trivial.hpp>
+#include <operations/matrix_operator.hpp>
 
 TEST_CASE("operations::exponential", "[operations::exponential]") {
 

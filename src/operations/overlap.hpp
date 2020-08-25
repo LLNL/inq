@@ -142,7 +142,9 @@ auto overlap_single(field_type & phi){
 }
 
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_OVERLAP_UNIT_TEST
+#undef INQ_OPERATIONS_OVERLAP_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>

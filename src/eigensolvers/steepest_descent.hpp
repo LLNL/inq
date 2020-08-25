@@ -95,11 +95,14 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 }
 }
 
-#ifdef INQ_UNIT_TEST
-#include <catch2/catch.hpp>
-#include <basis/real_space.hpp>
+#ifdef INQ_EIGENSOLVERS_STEEPEST_DESCENT_UNIT_TEST
+#undef INQ_EIGENSOLVERS_STEEPEST_DESCENT_UNIT_TEST
+
+#include <basis/trivial.hpp>
 #include <ions/unitcell.hpp>
 #include <operations/matrix_operator.hpp>
+
+#include <catch2/catch.hpp>
 
 TEST_CASE("eigensolvers::steepest_descent", "[eigensolvers::steepest_descent]") {
 
