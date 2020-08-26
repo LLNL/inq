@@ -77,7 +77,9 @@ private:
 
 ////////////////////////////////////////////////////////
 
-#ifdef UNIT_TEST
+#ifdef INQ_INPUT_RT_UNIT_TEST
+#undef INQ_INPUT_RT_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("class input::rt", "[input::rt]") {

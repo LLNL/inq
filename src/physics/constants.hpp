@@ -31,6 +31,10 @@ constexpr double proton_charge = -1.0;
 }
 }
 
+#ifdef INQ_PHYSICS_CONSTANTS_UNIT_TEST
+#undef INQ_PHYSICS_CONSTANTS_UNIT_TEST
+#endif
+
 #endif
 
 

@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <basis/real_space.hpp>
 #include <utils/partition.hpp>
 #include <math/array.hpp>
 #include <algorithm>
@@ -170,7 +171,8 @@ namespace basis {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_BASIS_FIELD_SET_UNIT_TEST
+#undef INQ_BASIS_FIELD_SET_UNIT_TEST
 
 #include <basis/real_space.hpp>
 

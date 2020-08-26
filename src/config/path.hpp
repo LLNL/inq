@@ -35,7 +35,9 @@ struct path {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_CONFIG_PATH_UNIT_TEST
+#undef INQ_CONFIG_PATH_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("class config::path", "[path]") {
@@ -47,10 +49,3 @@ TEST_CASE("class config::path", "[path]") {
 #endif
 
 #endif
-
-
-// Local Variables:
-// eval:(setq indent-tabs-mode: t tab-width: 2)
-// mode: c++
-// coding: utf-8
-// End:

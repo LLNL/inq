@@ -23,6 +23,8 @@
 
 #include <gpu/run.hpp>
 #include <basis/field_set.hpp>
+#include <basis/fourier_space.hpp>
+#include <operations/space.hpp>
 
 #include <multi/adaptors/fftw.hpp>
 
@@ -90,7 +92,8 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_LAPLACIAN_UNIT_TEST
+#undef INQ_OPERATIONS_LAPLACIAN_UNIT_TEST
 
 #include <catch2/catch.hpp>
 

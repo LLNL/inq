@@ -21,8 +21,13 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <inq_config.h>
-#include <cstdlib>
+
+#include <math/array.hpp>
+
+#include <FC.h>
+
+#include <tuple> //for get
+
 
 #define dgelss FC_GLOBAL(dgelss, DGELSS) 
 extern "C" void dgelss(const int & m, const int & n, const int & nrhs, double * a, const int & lda, double * b, const int & ldb, double * s, const double & rcond, int & rank, double * work, const int & lwork, int & info);
@@ -61,10 +66,10 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 
 ///////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
-#include <catch2/catch.hpp>
+#ifdef INQ_SOLVERS_LEAST_SQUARES_UNIT_TEST
+#undef INQ_SOLVERS_LEAST_SQUARES_UNIT_TEST
 
-#include <math/array.hpp>
+#include <catch2/catch.hpp>
 
 TEST_CASE("function solvers::least_squares", "[solvers::least_squares]") {
 

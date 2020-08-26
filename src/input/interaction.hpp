@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <utils/merge_optional.hpp>
+
 #include <nonstd/optional.hpp>
 #include <cassert>
 
@@ -146,7 +148,9 @@ namespace input {
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_INPUT_INTERACTION_UNIT_TEST
+#undef INQ_INPUT_INTERACTION_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("class input::interaction", "[input::interaction]") {

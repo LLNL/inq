@@ -23,6 +23,7 @@
 
 #include <basis/field_set.hpp>
 #include <basis/real_space.hpp>
+#include <solvers/poisson.hpp>
 
 namespace inq {
 namespace hamiltonian {
@@ -84,7 +85,8 @@ namespace hamiltonian {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_HAMILTONIAN_EXCHANGE_OPERATOR_UNIT_TEST
+#undef INQ_HAMILTONIAN_EXCHANGE_OPERATOR_UNIT_TEST
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>

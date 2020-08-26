@@ -113,7 +113,9 @@ namespace basis {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_BASIS_REAL_SPACE_UNIT_TEST
+#undef INQ_BASIS_REAL_SPACE_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 

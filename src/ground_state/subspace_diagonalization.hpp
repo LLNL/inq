@@ -50,7 +50,9 @@ void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_GROUND_STATE_SUBSPACE_DIAGONALIZATION_UNIT_TEST
+#undef INQ_GROUND_STATE_SUBSPACE_DIAGONALIZATION_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 #include <operations/randomize.hpp>

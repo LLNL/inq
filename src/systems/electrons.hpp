@@ -100,5 +100,9 @@ namespace systems {
 }
 }
 
+#ifdef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
+#undef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
+#endif
+
 #endif
 

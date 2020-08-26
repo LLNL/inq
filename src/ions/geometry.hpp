@@ -25,6 +25,7 @@
 #include <pseudopod/element.hpp>
 #include <input/species.hpp>
 #include <input/atom.hpp>
+#include <config/path.hpp>
 
 #include <vector>
 #include <cassert>
@@ -123,7 +124,9 @@ private:
 }
 }
   
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_IONS_GEOMETRY_UNIT_TEST
+#undef INQ_IONS_GEOMETRY_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("Class ions::geometry", "[geometry]") {

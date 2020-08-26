@@ -23,6 +23,7 @@
 
 #include <cassert>
 #include <array>
+#include <cmath>
 
 #include <tinyformat/tinyformat.h>
 
@@ -76,7 +77,9 @@ namespace utils {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_UTILS_MATCH_UNIT_TEST
+#undef INQ_UTILS_MATCH_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("class utils::match", "[utils::match]") {

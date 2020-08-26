@@ -21,10 +21,15 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <config/path.hpp>
+
 #include <pseudopod/set.hpp>
 #include <pseudopod/pseudopotential.hpp>
+
+
 #include <basis/spherical_grid.hpp>
 #include <math/array.hpp>
+#include <operations/integral.hpp>
 #include <solvers/poisson.hpp>
 #include <utils/partition.hpp>
 
@@ -262,7 +267,8 @@ namespace hamiltonian {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
+#undef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 #include <catch2/catch.hpp>
 #include <ions/geometry.hpp>
 #include <basis/real_space.hpp>

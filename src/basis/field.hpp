@@ -164,15 +164,13 @@ namespace basis {
 }
 }
 
-#if (not __INCLUDE_LEVEL__) or defined(INQ_UNIT_TEST)
-#if (not __INCLUDE_LEVEL__)
-#include "../main/unit_tests_main.cpp"
-#endif
+#ifdef INQ_BASIS_FIELD_UNIT_TEST
+#undef INQ_BASIS_FIELD_UNIT_TEST
 
 #include <basis/real_space.hpp>
-
 #include <ions/unitcell.hpp>
 
+#include <catch2/catch.hpp>
 
 TEST_CASE("Class basis::field", "[basis::field]"){
 

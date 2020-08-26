@@ -92,7 +92,9 @@ private:
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_INPUT_CELL_UNIT_TEST
+#undef INQ_INPUT_CELL_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 

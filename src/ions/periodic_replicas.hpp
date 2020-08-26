@@ -77,7 +77,9 @@ private:
 }
 
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
+#undef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 

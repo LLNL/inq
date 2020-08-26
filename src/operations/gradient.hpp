@@ -22,6 +22,10 @@
 */
 
 #include <basis/field.hpp>
+#include <basis/field_set.hpp>
+#include <basis/fourier_space.hpp>
+#include <operations/space.hpp>
+
 #include <cassert>
 
 namespace inq {
@@ -68,10 +72,12 @@ namespace operations {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_GRADIENT_UNIT_TEST
+#undef INQ_OPERATIONS_GRADIENT_UNIT_TEST
+
+#include <ions/geometry.hpp>
 
 #include <catch2/catch.hpp>
-#include <math/vector3.hpp>
 #include <math/vector3.hpp>
 
 auto f_analytic (inq::math::vec3d kk, inq::math::vec3d rr){

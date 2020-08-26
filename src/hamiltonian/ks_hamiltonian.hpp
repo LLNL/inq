@@ -24,9 +24,11 @@
 #include <basis/field.hpp>
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
+#include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/projector_fourier.hpp>
 #include <hamiltonian/exchange_operator.hpp>
+#include <ions/geometry.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
 
@@ -200,7 +202,8 @@ namespace hamiltonian {
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_HAMILTONIAN_KS_HAMILTONIAN_UNIT_TEST
+#undef INQ_HAMILTONIAN_KS_HAMILTONIAN_UNIT_TEST
 
 #include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>

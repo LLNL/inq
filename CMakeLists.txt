@@ -4,6 +4,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(inq VERSION 0.1)
 
+enable_testing()
+include(CTest)
+
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
   

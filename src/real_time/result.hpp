@@ -3,7 +3,10 @@
 #ifndef INQ__REAL_TIME__RESULT
 #define INQ__REAL_TIME__RESULT
 
+#include <hamiltonian/energy.hpp>
 #include <math/vector3.hpp>
+
+#include <vector>
 
 namespace inq {
 namespace real_time {
@@ -17,6 +20,10 @@ namespace real_time {
 
 }
 }
+
+#ifdef INQ_REAL_TIME_RESULT_UNIT_TEST
+#undef INQ_REAL_TIME_RESULT_UNIT_TEST
+#endif
 
 #endif
 

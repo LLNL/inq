@@ -34,7 +34,8 @@ opt_type merge_optional(const opt_type & option1, const opt_type & option2){
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_UTILS_MERGE_OPTIONAL_UNIT_TEST
+#undef INQ_UTILS_MERGE_OPTIONAL_UNIT_TEST
 
 #include <catch2/catch.hpp>
 

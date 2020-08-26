@@ -561,7 +561,9 @@ namespace ions {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_IONS_UNITCELL_UNIT_TEST
+#undef INQ_IONS_UNITCELL_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("Class ions::UnitCell", "[UnitCell]") {

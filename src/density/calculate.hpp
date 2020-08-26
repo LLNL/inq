@@ -21,10 +21,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
-#include <math/complex.hpp>
-#include <cstdlib>
+#include <operations/transfer.hpp>
 
 namespace inq {
 namespace density {
@@ -80,7 +80,12 @@ auto calculate(const occupations_array_type & occupations, field_set_type & phi,
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_DENSITY_CALCULATE_UNIT_TEST
+#undef INQ_DENSITY_CALCULATE_UNIT_TEST
+
+#include <basis/trivial.hpp>
+#include <math/complex.hpp>
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("function density::calculate", "[density::calculate]") {

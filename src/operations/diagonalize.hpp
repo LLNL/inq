@@ -175,7 +175,8 @@ auto diagonalize(math::array<complex, 2> & matrix){
 
 ///////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_DIAGONALIZE_UNIT_TEST
+#undef INQ_OPERATIONS_DIAGONALIZE_UNIT_TEST
 
 #include <catch2/catch.hpp>
 

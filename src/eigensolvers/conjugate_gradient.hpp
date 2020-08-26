@@ -182,7 +182,9 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_EIGENSOLVERS_CONJUGATE_GRADIENT_UNIT_TEST
+#undef INQ_EIGENSOLVERS_CONJUGATE_GRADIENT_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>

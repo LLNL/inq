@@ -194,5 +194,9 @@ namespace ground_state {
 }
 }
 
+#ifdef INQ_GROUND_STATE_CALCULATE_UNIT_TEST
+#undef INQ_GROUND_STATE_CALCULATE_UNIT_TEST
+#endif
+
 #endif
 

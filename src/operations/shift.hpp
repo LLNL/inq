@@ -56,7 +56,11 @@ void shift(typename field_set_type::element_type const & factor, const field_set
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_SHIFT_UNIT_TEST
+#undef INQ_OPERATIONS_SHIFT_UNIT_TEST
+
+#include <basis/trivial.hpp>
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("function operations::shift", "[operations::shift]") {

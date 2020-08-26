@@ -22,6 +22,10 @@
 */
 
 #include <basis/field.hpp>
+#include <basis/field_set.hpp>
+#include <basis/fourier_space.hpp>
+#include <operations/space.hpp>
+
 #include <cassert>
 namespace inq {
 namespace operations {
@@ -69,7 +73,8 @@ auto divergence(basis::field_set<basis::real_space, double> const & ff){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_DIVERGENCE_UNIT_TEST
+#undef INQ_OPERATIONS_DIVERGENCE_UNIT_TEST
 
 #include <catch2/catch.hpp>
 #include <math/vector3.hpp>
@@ -122,7 +127,6 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	double ly = 12;
 	double lz = 10;
 
-	ions::geometry geo;
 	ions::UnitCell cell(vec3d(lx, 0.0, 0.0), vec3d(0.0, ly, 0.0), vec3d(0.0, 0.0, lz));
 
 	basis::real_space rs(cell, input::basis::cutoff_energy(20.0));

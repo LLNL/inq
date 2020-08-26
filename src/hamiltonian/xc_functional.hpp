@@ -23,10 +23,10 @@
 
 #include <xc.h>
 #include <operations/gradient.hpp>
+#include <operations/integral.hpp>
 #include <operations/divergence.hpp>
 #include <operations/laplacian.hpp>
 #include <basis/field.hpp>
-
 
 
 namespace inq {
@@ -143,7 +143,8 @@ namespace hamiltonian {
 
 ///////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_HAMILTONIAN_XC_FUNCTIONAL_UNIT_TEST
+#undef INQ_HAMILTONIAN_XC_FUNCTIONAL_UNIT_TEST
 
 #include <catch2/catch.hpp>
 #include <operations/randomize.hpp>
@@ -151,6 +152,8 @@ namespace hamiltonian {
 #include <basis/field.hpp>
 #include <math/array.hpp>
 #include <utils/finite_difference.hpp>
+#include <ions/geometry.hpp>
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>

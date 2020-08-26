@@ -21,8 +21,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <gpu/run.hpp>
+#include <basis/fourier_space.hpp>
 #include <basis/field_set.hpp>
+#include <gpu/run.hpp>
+#include <operations/space.hpp>
 
 #include <multi/adaptors/fftw.hpp>
 
@@ -196,7 +198,9 @@ auto coarsen(FieldType<basis::real_space, double> const & source, typename basis
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_OPERATIONS_TRANSFER_UNIT_TEST
+#undef INQ_OPERATIONS_TRANSFER_UNIT_TEST
+
 #include <operations/integral.hpp>
 
 #include <catch2/catch.hpp>
@@ -224,8 +228,6 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	vec3d ll{6.66, 7.77, 9.99};
 
-	
-	ions::geometry geo;
 	ions::UnitCell cell(vec3d(ll[0], 0.0, 0.0), vec3d(0.0, ll[1], 0.0), vec3d(0.0, 0.0, ll[2]));
 	basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 	

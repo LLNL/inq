@@ -216,7 +216,9 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_GPU_RUN_UNIT_TEST
+#undef INQ_GPU_RUN_UNIT_TEST
+
 #include <catch2/catch.hpp>
 #include <math/array.hpp>
 

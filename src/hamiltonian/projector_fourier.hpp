@@ -26,6 +26,8 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
+#include <config/path.hpp>
+
 #include <pseudopod/spherical_harmonic.hpp>
 #include <pseudopod/pseudopotential.hpp>
 
@@ -157,7 +159,9 @@ namespace hamiltonian {
 }
 }
 
-#ifdef INQ_UNIT_TEST
+#ifdef INQ_HAMILTONIAN_PROJECTOR_FOURIER_UNIT_TEST
+#undef INQ_HAMILTONIAN_PROJECTOR_FOURIER_UNIT_TEST
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fourier]") {
@@ -171,7 +175,6 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
   double ecut = 20.0;
   double ll = 10.0;
 
-	ions::geometry geo;
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
