@@ -4,8 +4,6 @@ include_directories(../external_libs)
 
 add_library(unit_tests_main OBJECT main/unit_tests_main.${SRC_EXT})
 
-#add_executable(inq_unit_tests main/unit_tests.${SRC_EXT} main/unit_tests_main.${SRC_EXT})
-
 file(GLOB INCLUDE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */*.hpp)
 
 
