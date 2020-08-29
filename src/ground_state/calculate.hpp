@@ -148,12 +148,10 @@ namespace ground_state {
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
 				
-				auto potdiff = operations::integral_absdiff(vks, ham.scalar_potential)/fabs(operations::integral(vks));
-
 				if(solver.verbose_output()){
 					
-					tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e dvks = %5.0e\n",
-											iiter, res.energy.total(), res.energy.eigenvalues - old_energy, potdiff);
+					tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e\n",
+											iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
 					
 					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 						tfm::format(std::cout, " state %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
