@@ -79,6 +79,10 @@ gcc:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time tests/silicon  
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
 
 gcc-fast:
     stage: build
@@ -101,7 +105,11 @@ gcc-fast:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-    
+      - time tests/silicon  
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
+
 clang:
     stage: build
     script:
@@ -176,6 +184,10 @@ clang-fast:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time tests/silicon  
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon            
 
 #clang-valgrind:
 #    stage: build
@@ -236,6 +248,10 @@ gcc-mpich:
       - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest -V; cd ..      
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time tests/silicon  
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon      
 
 gcc-mpich-valgrind:
     stage: build
@@ -305,7 +321,7 @@ nvcc:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-
+      - time tests/silicon
             
 intel:
     stage: build
@@ -330,3 +346,4 @@ intel:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time tests/silicon      
