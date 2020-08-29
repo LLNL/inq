@@ -38,8 +38,8 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 	const double energy_change_threshold = 0.1;
     
 	for(int ist = 0; ist < phi_all.set_size(); ist++){
-      
-		basis::field_set<basis::fourier_space, field_set_type> phi(phi_all.basis(), 1);
+
+		basis::field_set<basis::fourier_space, field_set_type> phi(phi_all.basis(), 1, phi_all.full_comm());
       
 		phi.matrix().rotated()[0] = phi_all.matrix().rotated()[ist];
 
@@ -52,7 +52,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 		double first_delta_e = 0.0;
 			
-		basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1);
+		basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1, phi_all.full_comm());
 
 		complex gg0 = 1.0;
       
@@ -60,7 +60,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 			eigenvalue = operations::overlap_diagonal(phi, hphi);
         
-			basis::field_set<basis::fourier_space, field_set_type> g(phi_all.basis(), 1);
+			basis::field_set<basis::fourier_space, field_set_type> g(phi_all.basis(), 1, phi_all.full_comm());
 
 			for(long ip = 0; ip < g.basis().size(); ip++) g.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
 
@@ -138,7 +138,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 				
 			eigenvalue = operations::overlap_diagonal(phi, hphi);
         
-			basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1);
+			basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1, phi_all.full_comm());
 				
 			for(long ip = 0; ip < g.basis().size(); ip++) g2.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
 				
