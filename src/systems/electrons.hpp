@@ -77,8 +77,6 @@ namespace systems {
 			
 			density::normalize(density_, states_.total_charge());
 
-			if(comm.root()) std::cout << "Integral of the density = " << operations::integral(density_) << std::endl;
-			
     }
 
 

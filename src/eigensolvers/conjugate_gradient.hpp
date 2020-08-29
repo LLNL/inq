@@ -38,8 +38,8 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 	const double energy_change_threshold = 0.1;
     
 	for(int ist = 0; ist < phi_all.set_size(); ist++){
-      
-		basis::field_set<basis::fourier_space, field_set_type> phi(phi_all.basis(), 1);
+
+		basis::field_set<basis::fourier_space, field_set_type> phi(phi_all.basis(), 1, phi_all.full_comm());
       
 		phi.matrix().rotated()[0] = phi_all.matrix().rotated()[ist];
 
@@ -52,7 +52,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 		double first_delta_e = 0.0;
 			
-		basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1);
+		basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1, phi_all.full_comm());
 
 		complex gg0 = 1.0;
       
@@ -60,9 +60,9 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 			eigenvalue = operations::overlap_diagonal(phi, hphi);
         
-			basis::field_set<basis::fourier_space, field_set_type> g(phi_all.basis(), 1);
+			basis::field_set<basis::fourier_space, field_set_type> g(phi_all.basis(), 1, phi_all.full_comm());
 
-			for(long ip = 0; ip < g.basis().size(); ip++) g.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
+			for(long ip = 0; ip < g.basis().local_size(); ip++) g.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
 
 			double res = fabs(operations::overlap_diagonal(g)[0]);
 
@@ -74,7 +74,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 			auto dot = operations::overlap_diagonal(phi, g0);
 
-			for(long ip = 0; ip < g.basis().size(); ip++) g0.matrix()[ip][0] = g0.matrix()[ip][0] - dot[0]*phi.matrix()[ip][0];
+			for(long ip = 0; ip < g.basis().local_size(); ip++) g0.matrix()[ip][0] = g0.matrix()[ip][0] - dot[0]*phi.matrix()[ip][0];
 
 			auto gg = operations::overlap_diagonal(g0, g);
 
@@ -91,10 +91,10 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 			} else {
 				auto gamma = gg[0]/gg0;
 				gg0 = gg[0];
-				for(long ip = 0; ip < cg.basis().size(); ip++) cg.matrix()[ip][0] = gamma*cg.matrix()[ip][0] + g0.matrix()[ip][0];
+				for(long ip = 0; ip < cg.basis().local_size(); ip++) cg.matrix()[ip][0] = gamma*cg.matrix()[ip][0] + g0.matrix()[ip][0];
 
 				auto norma = operations::overlap_diagonal(phi, cg);
-				for(long ip = 0; ip < cg.basis().size(); ip++) cg.matrix()[ip][0] = cg.matrix()[ip][0] - norma[0]*phi.matrix()[ip][0];
+				for(long ip = 0; ip < cg.basis().local_size(); ip++) cg.matrix()[ip][0] = cg.matrix()[ip][0] - norma[0]*phi.matrix()[ip][0];
 			}
 
 			//cg now contains the conjugate gradient
@@ -129,7 +129,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 				b0 = stheta/cg0;
 			}
 
-			for(long ip = 0; ip < cg.basis().size(); ip++){
+			for(long ip = 0; ip < cg.basis().local_size(); ip++){
 				phi.matrix()[ip][0] = a0*phi.matrix()[ip][0] + b0*cg.matrix()[ip][0];
 				hphi.matrix()[ip][0] = a0*hphi.matrix()[ip][0] + b0*hcg.matrix()[ip][0];
 			}
@@ -138,9 +138,9 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 				
 			eigenvalue = operations::overlap_diagonal(phi, hphi);
         
-			basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1);
+			basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1, phi_all.full_comm());
 				
-			for(long ip = 0; ip < g.basis().size(); ip++) g2.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
+			for(long ip = 0; ip < g.basis().local_size(); ip++) g2.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue[0]*phi.matrix()[ip][0];
 				
 			res = fabs(operations::overlap_diagonal(g2)[0]);
 				
@@ -170,7 +170,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 		//normalize
 		auto norm = operations::overlap_diagonal(phi)[0];
-		for(long ip = 0; ip < cg.basis().size(); ip++) phi.matrix()[ip][0] /= sqrt(norm);
+		for(long ip = 0; ip < cg.basis().local_size(); ip++) phi.matrix()[ip][0] /= sqrt(norm);
 
 		// save the newly calculated state
 		phi_all.matrix().rotated()[ist] = phi.matrix().rotated()[0];

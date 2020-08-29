@@ -57,9 +57,13 @@ int main(int argc, char ** argv){
 	
 	[[maybe_unused]] auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::conjugate_gradient());
 	
-	/*
-		OCTOPUS RESULTS: (Spacing 0.286)
-	*/
+	energy_match.check("total energy",     result.energy.total()    , -23.695217057747);
+	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.889589049038);
+	energy_match.check("eigenvalues",      result.energy.eigenvalues,   7.788403633709);
+	energy_match.check("external energy",  result.energy.external   , -12.295897883342);
+	energy_match.check("non-local energy", result.energy.nonlocal   ,   5.194712468013);
+	energy_match.check("ion-ion energy",   result.energy.ion        , -31.483620691456);
+	
 		
 }
 

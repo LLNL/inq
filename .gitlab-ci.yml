@@ -79,6 +79,10 @@ gcc:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time tests/silicon  
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
 
 gcc-fast:
     stage: build
@@ -101,7 +105,11 @@ gcc-fast:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-    
+      - time tests/silicon  
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
+
 clang:
     stage: build
     script:
@@ -125,7 +133,10 @@ clang:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-      
+      - time tests/silicon
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
 
 #clang-cuda:
 #    stage: build
@@ -173,6 +184,10 @@ clang-fast:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time tests/silicon  
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon            
 
 #clang-valgrind:
 #    stage: build
@@ -233,6 +248,10 @@ gcc-mpich:
       - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest -V; cd ..      
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time tests/silicon  
+      - time mpirun -np 2 tests/silicon
+      - time mpirun -np 3 tests/silicon
+      - time mpirun -np 5 tests/silicon      
 
 gcc-mpich-valgrind:
     stage: build
@@ -295,14 +314,14 @@ nvcc:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j4
-      - time make -j4 install
-      - cd src; ctest -V -j 4; cd ..      
+      - time make -j32
+      - time make -j32 install
+      - cd src; ctest -V -j 32; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-
+      - time tests/silicon
             
 intel:
     stage: build
@@ -317,13 +336,14 @@ intel:
       - export OMPI_CXX=icpc
       - export CXXFLAGS="-Ofast -Wall -Wextra"
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j4
-      - time make -j4 install
-      - cd src; ctest -V -j 4; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..      
+      - time make -j32
+      - time make -j32 install
+      - cd src; ctest -V -j 32; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j 16; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j 11; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j 8; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time tests/silicon      

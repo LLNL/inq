@@ -67,7 +67,7 @@ namespace hamiltonian {
 		}
 
 		auto operator()(const basis::field_set<basis::real_space, complex> & phi) const {
-			basis::field_set<basis::real_space, complex> exxphi(phi.basis(), phi.set_size());
+			basis::field_set<basis::real_space, complex> exxphi(phi.skeleton());
 			exxphi = 0.0;
 			operator()(phi, exxphi);
 			return exxphi;

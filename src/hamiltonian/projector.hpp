@@ -80,12 +80,14 @@ namespace hamiltonian {
 			using boost::multi::blas::transposed;
 				
 			auto sphere_phi = sphere_.gather(phi.cubic());
-			
+
+			math::array<typename field_set_type::element_type, 2> projections({nproj_, phi.local_set_size()}, 0);
+
 			//DATAOPERATIONS BLAS
-			auto projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
+			if(sphere_.size() > 0) projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
 			
 			//DATAOPERATIONS GPU::RUN 2D
-			gpu::run(phi.set_size(), nproj_,
+			gpu::run(phi.local_set_size(), nproj_,
 							 [proj = begin(projections), coeff = begin(kb_coeff_)]
 							 GPU_LAMBDA (auto ist, auto iproj){
 								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
@@ -94,12 +96,13 @@ namespace hamiltonian {
 			if(phi.basis().part().parallel()){
 				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
 			}
-			
-			//DATAOPERATIONS BLAS
-			sphere_phi = gemm(transposed(matrix_), projections);
-			
-			sphere_.scatter_add(sphere_phi, vnlphi.cubic());
-			
+
+			if(sphere_.size() > 0) {
+				//DATAOPERATIONS BLAS
+				sphere_phi = gemm(transposed(matrix_), projections);
+				
+				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
+			}
     }
 
     int num_projectors() const {
