@@ -148,7 +148,7 @@ namespace ground_state {
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
 				
-				if(solver.verbose_output()){
+				if(solver.verbose_output() and electrons.phi_.full_comm().root()){
 					
 					tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e\n",
 											iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
@@ -174,7 +174,7 @@ namespace ground_state {
 
 		delete mixer;
 
-		if(solver.verbose_output()){
+		if(solver.verbose_output() and electrons.phi_.full_comm().root()){
 			res.energy.print(std::cout);
 		}
 
@@ -184,7 +184,7 @@ namespace ground_state {
 			res.dipole = 0.0;
 		}
 
-		//make sure we have a density consistet with phi
+		//make sure we have a density consistent with phi
 		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 
 		return res;
