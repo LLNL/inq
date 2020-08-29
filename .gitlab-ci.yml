@@ -125,7 +125,10 @@ clang:
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-      
+      - time tests/silicon
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
 
 #clang-cuda:
 #    stage: build
