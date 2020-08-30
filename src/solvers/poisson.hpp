@@ -36,7 +36,7 @@ class poisson {
 
 public:
 
-	auto solve_periodic(const basis::field<basis::real_space, complex> & density) const {
+	basis::field<basis::real_space, complex> solve_periodic(const basis::field<basis::real_space, complex> & density) const {
 
 		const basis::real_space & real_space = density.basis();
 		basis::fourier_space fourier_basis(real_space);
@@ -45,28 +45,29 @@ public:
 			
 		const double scal = (-4.0*M_PI)/fourier_basis.size();
 
-		auto point_op = fourier_basis.point_op();
+		//DATAOPERATIONS GPU::RUN 4D
+		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
+						 [point_op = fourier_basis.point_op(),
+							cubic_dist_0 = potential_fs.basis().cubic_dist(0),
+							cubic_dist_1 = potential_fs.basis().cubic_dist(1),
+							cubic_dist_2 = potential_fs.basis().cubic_dist(2),
+							pfs = begin(potential_fs.cubic()),
+							scal] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 
+							 auto ixg = cubic_dist_0.local_to_global(ix);
+							 auto iyg = cubic_dist_1.local_to_global(iy);
+							 auto izg = cubic_dist_2.local_to_global(iz);
+							 
+							 auto g2 = point_op.g2(ixg, iyg, izg);
+							 
+							 if(point_op.g_is_zero(ixg, iyg, izg)){
+								 pfs[ix][iy][iz] = complex(0.0, 0.0);
+							 } else {
+								 pfs[ix][iy][iz] = pfs[ix][iy][iz]*(-scal/g2);
+							 }
+							 
+						 });
 		
-		for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-
-					auto ixg = fourier_basis.cubic_dist(0).local_to_global(ix);
-					auto iyg = fourier_basis.cubic_dist(1).local_to_global(iy);
-					auto izg = fourier_basis.cubic_dist(2).local_to_global(iz);
-
-					auto g2 = point_op.g2(ixg, iyg, izg);
-
-					if(point_op.g_is_zero(ixg, iyg, izg)){
-						potential_fs.cubic()[ix][iy][iz] = 0.0;
-						continue;
-					}
-						
-					potential_fs.cubic()[ix][iy][iz] *= -scal/g2;
-				}
-			}
-		}
-
 		return operations::space::to_real(potential_fs,  /*normalize = */ false);
 	}
 
