@@ -29,15 +29,14 @@ else
     libs="@Libxc_LIBRARIES@ @LAPACK_LIBRARIES@ @BLAS_LIBRARIES@ @INQ_CUDA_LIBRARIES@ @Boost_LIBRARIES@ @FFTW_LIBRARIES@ @CMAKE_CXX_STANDARD_LIBRARIES@"
 fi
 
-cxxflags="@CMAKE_CXX_FLAGS@                      
-  -I@Libxc_INCLUDE_DIRS@                         \
+includeflags="-I@Libxc_INCLUDE_DIRS@             \
   -I@Boost_INCLUDE_DIRS@                         \
   -I@FFTW_INCLUDE_DIRS@                          \
-	-I@PROJECT_BINARY_DIR@/                        \
-	-I@PROJECT_BINARY_DIR@/external_libs/pseudopod \
-	-I@PROJECT_SOURCE_DIR@/src/                    \
-	-I@PROJECT_SOURCE_DIR@/external_libs/"
+  -I@PROJECT_BINARY_DIR@/                        \
+  -I@PROJECT_BINARY_DIR@/external_libs/pseudopod \
+  -I@PROJECT_SOURCE_DIR@/src/                    \
+  -I@PROJECT_SOURCE_DIR@/external_libs/"
 
-command_line="$cxx $cxxflags $ldflags $* ${libs//;/ }"
+command_line="$cxx @CMAKE_CXX_FLAGS@ ${includeflags//;/ -I} $ldflags $* ${libs//;/ }"
 
 echo $command_line && $command_line
