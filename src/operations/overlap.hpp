@@ -83,7 +83,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 #ifndef ENABLE_CUDA
 
 	//OPTIMIZATION: this can be done more efficiently
-	for(int ii = 0; ii < phi1.set_part().local_size(); ii++){
+	for(int ii = 0; ii < phi1.local_set_size(); ii++){
 		type aa = 0.0;
 		for(int ip = 0; ip < phi1.basis().part().local_size(); ip++) aa += conj(phi1.matrix()[ip][ii])*phi2.matrix()[ip][ii];
 		overlap_vector[ii] = aa*phi1.basis().volume_element();
@@ -99,7 +99,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 		auto overlap = begin(overlap_vector);
 			
 		//OPTIMIZATION: here we should parallelize over points as well 
-		gpu::run(phi1.set_size(),
+		gpu::run(phi1.local_set_size(),
 						 [=] __device__ (auto ist){
 							 type aa = 0.0;
 							 for(int ip = 0; ip < npoints; ip++){
