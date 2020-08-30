@@ -91,8 +91,23 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 #ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
+
+		// we should do
+		//   math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
+		// but it is impossibly slow
+		// so for the moment we do:
 		
-		math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
+		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
+
+		for(int i4 = 0; i4 < comm.size(); i4++){
+			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
+							 [i4,
+								buf = begin(buffer),
+								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
+							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
+								 buf[i4][i3][i2][i1][i0] = rot[i4][i3][i2][i1][i0];
+							 });
+		}
 
 		assert(std::get<4>(sizes(buffer)) == last_dim);
 		
@@ -148,7 +163,20 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
 
-		tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer;
+		// we should do
+		//   tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer;
+		// but it is impossibly slow
+		// so we do
+		
+		for(int i4 = 0; i4 < comm.size(); i4++){
+			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
+							 [i4,
+								buf = begin(buffer),
+								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
+							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
+								 rot[i4][i3][i2][i1][i0] = buf[i4][i3][i2][i1][i0];
+							 });
+		}
 		
 		fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), array_rs, fft::backward);
 #ifdef ENABLE_CUDA
