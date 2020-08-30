@@ -317,9 +317,9 @@ nvcc:
       - time make -j32
       - time make -j32 install
       - cd src; ctest -V -j 32; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..   
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j8; cd ..   
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
