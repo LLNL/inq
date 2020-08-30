@@ -90,7 +90,7 @@ namespace basis {
 				return gspacing_;
 			}
 			
-			bool g_is_zero(const int ix, const int iy, const int iz) const {
+			GPU_FUNCTION bool g_is_zero(const int ix, const int iy, const int iz) const {
 				return (ix == 0 and iy == 0 and iz == 0);
 			}
 			
