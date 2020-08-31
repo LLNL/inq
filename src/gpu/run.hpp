@@ -47,6 +47,7 @@
 namespace inq {
 namespace gpu {
 
+#ifdef ENABLE_CUDA
 template <class ErrorType>
 void check_error(ErrorType const & error){
 	if(error != cudaError_t(CUDA_SUCCESS)){
@@ -56,6 +57,7 @@ void check_error(ErrorType const & error){
 		exit(1);
 	}
 }
+#endif
 
 //finds fact1, fact2 < thres such that fact1*fact2 >= val
 inline static void factorize(const std::size_t val, const std::size_t thres, std::size_t & fact1, std::size_t & fact2){
