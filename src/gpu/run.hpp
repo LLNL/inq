@@ -81,7 +81,8 @@ template <class kernel_type>
 void run(size_t size, kernel_type kernel){
 	
 #ifdef ENABLE_CUDA
-	
+	if(size == 0) return;
+		
 	assert(size <= CUDA_MAX_DIM1);
 	
 	unsigned nblock = (size + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
@@ -114,8 +115,10 @@ __global__ void cuda_run_kernel_2(unsigned sizex, unsigned sizey, unsigned dim2,
 
 template <class kernel_type>
 void run(size_t sizex, size_t sizey, kernel_type kernel){
-	
+
 #ifdef ENABLE_CUDA
+	if(sizex == 0 or sizey == 0) return;
+
 	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
 	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
 	
@@ -154,6 +157,8 @@ template <class kernel_type>
 void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	
 #ifdef ENABLE_CUDA
+	if(sizex == 0 or sizey == 0 or sizez == 0) return;
+	
 	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
 	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
@@ -195,6 +200,8 @@ template <class kernel_type>
 void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type kernel){
 	
 #ifdef ENABLE_CUDA
+	if(sizex == 0 or sizey == 0 or sizez == 0 or sizew == 0) return;
+	
 	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
 	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
