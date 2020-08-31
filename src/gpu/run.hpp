@@ -29,6 +29,7 @@
 
 #include<cstddef> // std::size_t
 #include<cassert>
+#include <iostream>
 
 #ifdef ENABLE_CUDA
 #define GPU_FUNCTION __host__ __device__
@@ -45,6 +46,16 @@
 
 namespace inq {
 namespace gpu {
+
+template <class ErrorType>
+void check_error(ErrorType const & error){
+	if(error != cudaError_t(CUDA_SUCCESS)){
+		std::cout << "**************************************************************************\n\n";
+		std::cout << "  CUDA ERROR: '" << cudaGetErrorString(error) << "'.\n";
+		std::cout << "\n**************************************************************************\n" << std::endl;		
+		exit(1);
+	}
+}
 
 //finds fact1, fact2 < thres such that fact1*fact2 >= val
 inline static void factorize(const std::size_t val, const std::size_t thres, std::size_t & fact1, std::size_t & fact2){
@@ -76,8 +87,7 @@ void run(size_t size, kernel_type kernel){
 	unsigned nblock = (size + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
   
 	cuda_run_kernel_1<<<nblock, CUDA_BLOCK_SIZE>>>(size, kernel);
-	
-	assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
+	check_error(cudaGetLastError());
 	
 	cudaDeviceSynchronize();
 	
@@ -115,8 +125,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 	struct dim3 dg{nblock, unsigned(dim2), unsigned(dim3)};
 	struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
 	cuda_run_kernel_2<<<dg, db>>>(sizex, sizey, dim2, kernel);
-    
-	assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
+	check_error(cudaGetLastError());    
 		
 	cudaDeviceSynchronize();
 	
@@ -150,8 +159,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
 	struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
 	cuda_run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
-	
-	assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
+	check_error(cudaGetLastError());
 	
 	cudaDeviceSynchronize();
 	
@@ -192,8 +200,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
 	struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
 	cuda_run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);
-	
-	assert(cudaGetLastError() == cudaError_t(CUDA_SUCCESS));
+	check_error(cudaGetLastError());
 	
 	cudaDeviceSynchronize();
 
