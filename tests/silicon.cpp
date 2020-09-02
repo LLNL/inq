@@ -22,6 +22,7 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
+#include <operations/io.hpp>
 #include <utils/match.hpp>
 #include <ground_state/calculate.hpp>
 
@@ -64,6 +65,11 @@ int main(int argc, char ** argv){
 	energy_match.check("non-local energy", result.energy.nonlocal   ,   5.194712468013);
 	energy_match.check("ion-ion energy",   result.energy.ion        , -31.483620691456);
 	
-		
+	inq::operations::io::save("silicon_restart", electrons.phi_);
+
+	fftw_cleanup(); //required for valgrid
+	
+	return energy_match.fail();
+	
 }
 
