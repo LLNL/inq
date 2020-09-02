@@ -39,8 +39,6 @@
 #define GPU_LAMBDA
 #endif
 
-#define CUDA_BLOCK_SIZE 1024
-
 #define CUDA_MAX_DIM1 2147483647ULL
 #define CUDA_MAX_DIM23 65535
 
@@ -86,10 +84,14 @@ void run(size_t size, kernel_type kernel){
 	if(size == 0) return;
 		
 	assert(size <= CUDA_MAX_DIM1);
-	
-	unsigned nblock = (size + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
+
+	int mingridsize = 0;
+	int blocksize = 0;
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  cuda_run_kernel_1<kernel_type>));
+
+	unsigned nblock = (size + blocksize - 1)/blocksize;
   
-	cuda_run_kernel_1<<<nblock, CUDA_BLOCK_SIZE>>>(size, kernel);
+	cuda_run_kernel_1<<<nblock, blocksize>>>(size, kernel);
 	check_error(cudaGetLastError());
 	
 	cudaDeviceSynchronize();
@@ -121,14 +123,18 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 #ifdef ENABLE_CUDA
 	if(sizex == 0 or sizey == 0) return;
 
-	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
-	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
+	int mingridsize = 0;
+	int blocksize = 0;
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  cuda_run_kernel_2<kernel_type>));
+
+	//OPTIMIZATION, this is not ideal if sizex < blocksize
+	unsigned nblock = (sizex + blocksize - 1)/blocksize;
 	
 	size_t dim2, dim3;
 	factorize(sizey, CUDA_MAX_DIM23, dim2, dim3);
 	
 	struct dim3 dg{nblock, unsigned(dim2), unsigned(dim3)};
-	struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
+	struct dim3 db{unsigned(blocksize), 1, 1};
 	cuda_run_kernel_2<<<dg, db>>>(sizex, sizey, dim2, kernel);
 	check_error(cudaGetLastError());    
 		
@@ -160,11 +166,15 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	
 #ifdef ENABLE_CUDA
 	if(sizex == 0 or sizey == 0 or sizez == 0) return;
+
+	int mingridsize = 0;
+	int blocksize = 0;
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  cuda_run_kernel_3<kernel_type>));
 	
-	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
-	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
+	//OPTIMIZATION, this is not ideal if sizex < blocksize
+	unsigned nblock = (sizex + blocksize - 1)/blocksize;
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
-	struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
+	struct dim3 db{unsigned(blocksize), 1, 1};
 	cuda_run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
 	check_error(cudaGetLastError());
 	
@@ -203,11 +213,15 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 	
 #ifdef ENABLE_CUDA
 	if(sizex == 0 or sizey == 0 or sizez == 0 or sizew == 0) return;
+
+	int mingridsize = 0;
+	int blocksize = 0;
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  cuda_run_kernel_4<kernel_type>));
 	
-	//OPTIMIZATION, this is not ideal if sizex < CUDA_BLOCK_SIZE
-	unsigned nblock = (sizex + CUDA_BLOCK_SIZE - 1)/CUDA_BLOCK_SIZE;
+	//OPTIMIZATION, this is not ideal if sizex < blocksize
+	unsigned nblock = (sizex + blocksize - 1)/blocksize;
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
-	struct dim3 db{CUDA_BLOCK_SIZE, 1, 1};
+	struct dim3 db{unsigned(blocksize), 1, 1};
 	cuda_run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);
 	check_error(cudaGetLastError());
 	
