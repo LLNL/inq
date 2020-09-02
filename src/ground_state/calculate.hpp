@@ -37,6 +37,8 @@
 #include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
+#include<tinyformat/tinyformat.h>
+
 namespace inq {
 namespace ground_state {
 	
