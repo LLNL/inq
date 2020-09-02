@@ -310,7 +310,36 @@ nvcc:
       - nvcc -V
       - mkdir nvcc
       - cd nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
+      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
+      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
+      - time make -j32
+      - time make -j32 install
+      - cd src; ctest -V -j 32; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j8; cd ..   
+      - time tests/hydrogen_local
+      - time tests/neon
+      - time tests/h2o_ground_state
+      - time tests/h2o_real_time
+      - time tests/silicon
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
+
+nvcc-fast:
+    stage: build
+    tags:
+      - cuda_gpu
+    script:
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - export PATH=/usr/local/cuda/bin:$PATH
+      - nvcc -V
+      - mkdir nvcc
+      - cd nvcc
+      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DNDEBUG -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
