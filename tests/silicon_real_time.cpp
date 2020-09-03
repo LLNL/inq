@@ -24,7 +24,7 @@
 #include <input/atom.hpp>
 #include <operations/io.hpp>
 #include <utils/match.hpp>
-#include <ground_state/calculate.hpp>
+#include <real_time/propagate.hpp>
 
 int main(int argc, char ** argv){
 
@@ -55,17 +55,10 @@ int main(int argc, char ** argv){
 	conf.extra_states = 4;
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
+
+	auto result = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055));
 	
-	[[maybe_unused]] auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::conjugate_gradient());
-	
-	energy_match.check("total energy",     result.energy.total()    , -23.695217057747);
-	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.889589049038);
-	energy_match.check("eigenvalues",      result.energy.eigenvalues,   7.788403633709);
-	energy_match.check("external energy",  result.energy.external   , -12.295897883342);
-	energy_match.check("non-local energy", result.energy.nonlocal   ,   5.194712468013);
-	energy_match.check("ion-ion energy",   result.energy.ion        , -31.483620691456);
-	
-	inq::operations::io::save("silicon_restart", electrons.phi_);
+	operations::io::load("silicon_restart", electrons.phi_);
 
 	fftw_cleanup(); //required for valgrid
 	
