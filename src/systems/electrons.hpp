@@ -75,14 +75,7 @@ namespace systems {
 			assert(density_basis_.comm().size() == states_basis_.comm().size());
 
 			if(full_comm_.root()){ // init logger
-				auto uuid = boost::uuids::random_generator{}(); static_assert( sizeof(uuid) == sizeof(__int128) );
-				uint32_t tiny_uuid = reinterpret_cast<__int128&>(uuid) % std::numeric_limits<uint32_t>::max();
-				auto to_base64 = [](uint32_t c){
-					using namespace boost::archive::iterators;
-					using It = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
-					return std::string(It((unsigned char*)&c), It((unsigned char*)&c + sizeof(c)));//.append((3 - n % 3) % 3, '=');
-				};
-				logger_ = spdlog::stdout_color_mt("electrons:"+ to_base64(tiny_uuid));
+				logger_ = spdlog::stdout_color_mt("electrons:"+ generate_tiny_uuid());
 				logger_->set_level(spdlog::level::trace);
 			}
 
@@ -103,7 +96,15 @@ namespace systems {
 				logger()->info("constructed with cell {}", ions.cell_);
 			}
 		}
-
+		
+	private:
+		static std::string generate_tiny_uuid(){
+			auto uuid = boost::uuids::random_generator{}();
+			uint32_t tiny = hash_value(uuid) % std::numeric_limits<uint32_t>::max();
+			using namespace boost::archive::iterators;
+			using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
+			return std::string(it((unsigned char*)&tiny), it((unsigned char*)&tiny+sizeof(tiny)));//.append((3-sizeof(tiny)%3)%3,'=');
+		}
 
 	public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
