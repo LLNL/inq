@@ -49,7 +49,7 @@ namespace ground_state {
 	
 	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
 	
-		auto console = electrons.get_full_communicator().root()?spdlog::stdout_color_mt("calculate"):nullptr;
+		auto console = electrons.logger();
 		if(console) console->info("calculate started");
 		
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient(), electrons.full_comm_);
@@ -160,12 +160,12 @@ namespace ground_state {
 				
 				if(solver.verbose_output() and electrons.phi_.full_comm().root()){
 					if(console){
-						console->info("SFC iter {} : e = {:.12f} de = {:5.0e}", 
-						iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
+						console->debug("SFC iter {} : e = {:.12f} de = {:5.0e}", 
+								iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
 					
 						for(int istate = 0; istate < electrons.states_.num_states(); istate++){
-							console->info("\tstate {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-											istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
+							console->trace("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
+									istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
 							);
 						}
 					}
