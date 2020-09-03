@@ -10,6 +10,10 @@
 #include <input/cell.hpp>
 #include <mpi3/environment.hpp>
 
+#include<spdlog/spdlog.h>
+#include<spdlog/sinks/stdout_color_sinks.h>
+#include "spdlog/fmt/ostr.h" // print user defined types
+
 namespace inq {
 namespace systems {
 
@@ -22,8 +26,9 @@ public:
 		geo_(geo_arg){
 
 		if(boost::mpi3::environment::get_world_instance().root()){
-			geo_.info(std::cout);
-			cell_.info(std::cout);
+			auto console = spdlog::stdout_color_mt("ions");
+			console->info("geometry {}", geo_);
+			console->info("cell {}", cell_);
 		}
 	}
 
