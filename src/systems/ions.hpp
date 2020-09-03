@@ -1,5 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
+//  Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
+
 #ifndef INQ__SYSTEMS__IONS
 #define INQ__SYSTEMS__IONS
 
@@ -12,7 +14,7 @@
 
 #include<spdlog/spdlog.h>
 #include<spdlog/sinks/stdout_color_sinks.h>
-#include "spdlog/fmt/ostr.h" // print user defined types
+#include<spdlog/fmt/ostr.h> // print user defined types
 
 namespace inq {
 namespace systems {
