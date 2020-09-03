@@ -74,7 +74,7 @@ namespace systems {
 
 			assert(density_basis_.comm().size() == states_basis_.comm().size());
 
-			if(full_comm_.root()){ // init logger
+			if(full_comm_.root()){
 				logger_ = spdlog::stdout_color_mt("electrons:"+ generate_tiny_uuid());
 				logger_->set_level(spdlog::level::trace);
 			}
