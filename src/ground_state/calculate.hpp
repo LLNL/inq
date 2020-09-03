@@ -1,5 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
+//  Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
+
 #ifndef INQ__GROUND_STATE__CALCULATE
 #define INQ__GROUND_STATE__CALCULATE
 
