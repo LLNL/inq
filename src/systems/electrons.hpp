@@ -25,7 +25,17 @@
 #include <density/calculate.hpp>
 #include <density/normalize.hpp>
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp> // uuids::random_generator
+
 #include <cfloat>
+
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+
+#include<spdlog/spdlog.h>
+#include<spdlog/sinks/stdout_color_sinks.h>
+#include<spdlog/fmt/ostr.h> // print user defined types
 
 namespace inq {
 
@@ -64,20 +74,35 @@ namespace systems {
 
 			assert(density_basis_.comm().size() == states_basis_.comm().size());
 
-			if(comm.root()){
-				states_basis_.info(std::cout);  
-				states_.info(std::cout);
+			if(full_comm_.root()){ // init logger
+				auto uuid = boost::uuids::random_generator{}(); static_assert( sizeof(uuid) == sizeof(__int128) );
+				uint32_t tiny_uuid = reinterpret_cast<__int128&>(uuid) % std::numeric_limits<uint32_t>::max();
+				auto to_base64 = [](uint32_t c){
+					using namespace boost::archive::iterators;
+					using It = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
+					return std::string(It((unsigned char*)&c), It((unsigned char*)&c + sizeof(c)));//.append((3 - n % 3) % 3, '=');
+				};
+				logger_ = spdlog::stdout_color_mt("electrons:"+ to_base64(tiny_uuid));
+				logger_->set_level(spdlog::level::trace);
+			}
+
+			if(logger()){
+				logger()->info("constructed with basis {}", states_basis_);
+				logger()->info("constructed with states {}", states_);
 			}
 			
 			if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
- 
 
 			operations::randomize(phi_);
 			operations::orthogonalize(phi_);
 			
 			density::normalize(density_, states_.total_charge());
 
-    }
+			if(logger()){
+				logger()->info("constructed with geometry {}", ions.geo_);
+				logger()->info("constructed with cell {}", ions.cell_);
+			}
+		}
 
 
 	public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
@@ -93,10 +118,11 @@ namespace systems {
 		basis::field_set<basis::real_space, complex> phi_;
 		basis::field<basis::real_space, double> density_;
 		
-		boost::mpi3::cartesian_communicator<2>& get_full_communicator() const{return full_comm_;}
-
+		std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
+	private:
+		std::shared_ptr<spdlog::logger> logger_;
 	};
-  
+
 }
 }
 
