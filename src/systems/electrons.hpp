@@ -59,7 +59,7 @@ namespace systems {
 			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 			states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
 			phi_(states_basis_, states_.num_states(), full_comm_),
-			density_(atomic_pot_.atomic_electronic_density(density_basis_, ions.cell(), ions.geo()))
+			density_(density_basis_)
 		{
 
 			assert(density_basis_.comm().size() == states_basis_.comm().size());
@@ -70,12 +70,6 @@ namespace systems {
 			}
 			
 			if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
- 
-
-			operations::randomize(phi_);
-			operations::orthogonalize(phi_);
-			
-			density::normalize(density_, states_.total_charge());
 
     }
 		
