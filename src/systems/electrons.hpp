@@ -92,6 +92,8 @@ namespace systems {
 		states::ks_states states_;
 		basis::field_set<basis::real_space, complex> phi_;
 		basis::field<basis::real_space, double> density_;
+		
+		boost::mpi3::cartesian_communicator<2>& get_full_communicator() const{return full_comm_;}
 
 	};
   
