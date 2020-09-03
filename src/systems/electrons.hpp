@@ -49,8 +49,8 @@ namespace systems {
 	
 		enum class error { NO_ELECTRONS };
 
-		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
-			full_comm_(comm, {1, boost::mpi3::fill}),
+		electrons(boost::mpi3::cartesian_communicator<2> && cart_comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
+			full_comm_(cart_comm),
 			states_comm_(full_comm_.axis(0)),
 			atoms_comm_(states_comm_),
 			basis_comm_(full_comm_.axis(1)),
@@ -64,7 +64,7 @@ namespace systems {
 
 			assert(density_basis_.comm().size() == states_basis_.comm().size());
 
-			if(comm.root()){
+			if(full_comm_.root()){
 				states_basis_.info(std::cout);  
 				states_.info(std::cout);
 			}
@@ -78,8 +78,11 @@ namespace systems {
 			density::normalize(density_, states_.total_charge());
 
     }
-
-
+		
+		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
+			electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, arg_basis_input, conf){
+		}
+		
 	public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
