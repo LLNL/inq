@@ -4,6 +4,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(inq VERSION 0.1)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 enable_testing()
 include(CTest)
 
@@ -24,8 +26,6 @@ add_subdirectory(external_libs)
 
 enable_language(CXX)
 enable_language(Fortran)
-
-set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_COMPILER mpic++)
 set(CMAKE_CXX_STANDARD 14)
