@@ -50,7 +50,8 @@ int main(int argc, char ** argv){
 		conf.extra_states = 3;
 
 		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
-		
+
+		ground_state::initialize(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
 		
 		/*
