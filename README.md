@@ -35,6 +35,7 @@ This is a list of libraries INQ depends on:
 * blas/lapack: for linear algebra
 * slate: for parallel linear algebra (work in progress)
 * spglib: for symmetries and k-point generation (work in progress)
+* spdlog: Logging messages (different systems can have different log sinks)
 
 INQ is work in progress, some of the features are not well tested or are not available at the moment.
 
