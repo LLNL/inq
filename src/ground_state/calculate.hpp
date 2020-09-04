@@ -158,16 +158,14 @@ namespace ground_state {
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
 				
-				if(solver.verbose_output() and electrons.phi_.full_comm().root()){
-					if(console){
-						console->debug("SFC iter {} : e = {:.12f} de = {:5.0e}", 
-								iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
-					
-						for(int istate = 0; istate < electrons.states_.num_states(); istate++){
-							console->trace("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-									istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
-							);
-						}
+				if(solver.verbose_output() and console){
+					console->debug("SCF iter {} : e = {:.12f} de = {:5.0e}", 
+							iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
+				
+					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
+						console->trace("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
+								istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
+						);
 					}
 				}
 				
