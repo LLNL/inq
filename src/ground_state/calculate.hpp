@@ -50,7 +50,7 @@ namespace ground_state {
 	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
 	
 		auto console = electrons.logger();
-		if(console) console->info("calculate started");
+		if(console) console->trace("calculate started");
 		
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient(), electrons.full_comm_);
 		
@@ -159,11 +159,11 @@ namespace ground_state {
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
 				
 				if(solver.verbose_output() and console){
-					console->debug("SCF iter {} : e = {:.12f} de = {:5.0e}", 
+					console->info("SCF iter {} : e = {:.12f} de = {:5.0e}", 
 							iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
 				
 					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
-						console->trace("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
+						console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
 								istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
 						);
 					}
@@ -197,7 +197,7 @@ namespace ground_state {
 		//make sure we have a density consistent with phi
 		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 
-		if(console) console->info("calculate ended normally");
+		if(console) console->trace("calculate ended normally");
 		return res;
 	}
 }
