@@ -75,6 +75,12 @@ namespace hamiltonian {
 
 		}
 		
+		template<class OStream>
+		friend OStream& operator<<(OStream& os, energy const& self){
+			print(os);
+			return os;
+		}
+		
 	};
 
 }
