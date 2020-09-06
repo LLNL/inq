@@ -314,8 +314,8 @@ nvcc:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j1
-      - time make -j1 install
+      - time make -j32
+      - time make -j32 install
       - cd src; ctest -V -j 32; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
@@ -343,8 +343,8 @@ nvcc-fast:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j1
-      - time make -j1 install
+      - time make -j32
+      - time make -j32 install
       - cd src; ctest -V -j 32; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
