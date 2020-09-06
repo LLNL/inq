@@ -95,7 +95,7 @@ gcc-fast:
       - cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j4
+      - time make
       - time make -j4 install
       - cd src; ctest -V; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
@@ -240,7 +240,7 @@ gcc-mpich:
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
-      - time make -j4
+      - time make
       - time make -j4 install
       - cd src; ctest -V; cd ..
       - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V; cd ..
@@ -265,7 +265,7 @@ gcc-mpich-valgrind:
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
-      - time make -j4
+      - time make
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest -V; cd ..
