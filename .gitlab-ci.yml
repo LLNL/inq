@@ -69,7 +69,7 @@ gcc:
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j4
+      - time make
       - time make -j4 install
       - cd src; ctest -V; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
@@ -95,7 +95,7 @@ gcc-fast:
       - cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j4
+      - time make
       - time make -j4 install
       - cd src; ctest -V; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
@@ -240,7 +240,7 @@ gcc-mpich:
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
-      - time make -j4
+      - time make
       - time make -j4 install
       - cd src; ctest -V; cd ..
       - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V; cd ..
@@ -265,7 +265,7 @@ gcc-mpich-valgrind:
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
-      - time make -j4
+      - time make
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest -V; cd ..
@@ -310,12 +310,12 @@ nvcc:
       - nvcc -V
       - mkdir nvcc
       - cd nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
+      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j32
-      - time make -j32 install
+      - time make -j16
+      - time make -j16 install
       - cd src; ctest -V -j 32; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
@@ -339,12 +339,12 @@ nvcc-fast:
       - nvcc -V
       - mkdir nvcc
       - cd nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DNDEBUG -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
+      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DFMT_USE_UDL_TEMPLATE=0 -DNDEBUG -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j32
-      - time make -j32 install
+      - time make -j16
+      - time make -j16 install
       - cd src; ctest -V -j 32; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
