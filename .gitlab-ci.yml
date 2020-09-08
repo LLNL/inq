@@ -314,12 +314,12 @@ nvcc:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j16
-      - time make -j16 install
-      - cd src; ctest -V --timeout 60 -j 32; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j11; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j8; cd ..   
+      - time make -j8
+      - time make -j8 install
+      - cd src; ctest -V --timeout 60 -j 16; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j8; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j5; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j4; cd ..   
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -343,12 +343,12 @@ nvcc-fast:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j16
-      - time make -j16 install
-      - cd src; ctest -V --timeout 60 -j 32; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j11; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j8; cd ..   
+      - time make -j8
+      - time make -j8 install
+      - cd src; ctest -V --timeout 60 -j 16; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j8; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j4; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j4; cd ..   
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -371,12 +371,12 @@ intel:
       - export OMPI_CXX=icpc
       - export CXXFLAGS="-Ofast -Wall -Wextra"
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j32
-      - time make -j32 install
-      - cd src; ctest -V --timeout 60 -j 32; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j 16; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j 11; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j 8; cd ..      
+      - time make -j8
+      - time make -j8 install
+      - cd src; ctest -V --timeout 60 -j 16; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j 8; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j 5; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j 4; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
