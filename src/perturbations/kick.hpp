@@ -43,7 +43,7 @@ namespace perturbations {
 					
 					auto rr = phi.basis().rvector(ixg, iyg, izg);
 
-					auto kick_factor = complex(0.0, (kick_field|rr));
+					auto kick_factor = exp(complex(0.0, (kick_field|rr)));
 					
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] *= kick_factor;
@@ -73,13 +73,13 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	using namespace Catch::literals;
 	using math::vec3d;
 	
-  const int nvec = 12;
+	const int nvec = 12;
 
 	double ecut = 31.2;
 
-  ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
+	ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
 
-  basis::real_space bas(cell, input::basis::cutoff_energy(ecut));
+	basis::real_space bas(cell, input::basis::cutoff_energy(ecut));
 
 	basis::field_set<basis::real_space, complex> phi(bas, nvec);
 
