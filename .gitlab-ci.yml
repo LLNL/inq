@@ -71,10 +71,10 @@ gcc:
       - time ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..
+      - cd src; ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60; cd ..
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -97,10 +97,10 @@ gcc-fast:
       - time ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..      
+      - cd src; ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -125,10 +125,10 @@ clang:
       - ls -l
       - time make -j4
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..      
+      - cd src; ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -176,10 +176,10 @@ clang-fast:
       - time ../configure --prefix=$HOME
       - time make -j4
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..      
+      - cd src; ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -242,10 +242,10 @@ gcc-mpich:
       - time ../configure --prefix=$HOME
       - time make
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest -V; cd ..      
+      - cd src; ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest -V --timeout 60; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest -V --timeout 60; cd ..      
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       - time tests/silicon  
@@ -268,7 +268,7 @@ gcc-mpich-valgrind:
       - time make
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
-      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest -V; cd ..
+      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest -V --timeout 60; cd ..
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
 
@@ -316,10 +316,10 @@ nvcc:
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
       - time make -j16
       - time make -j16 install
-      - cd src; ctest -V -j 32; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j8; cd ..   
+      - cd src; ctest -V --timeout 60 -j 32; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j16; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j11; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j8; cd ..   
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -345,10 +345,10 @@ nvcc-fast:
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
       - time make -j16
       - time make -j16 install
-      - cd src; ctest -V -j 32; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j8; cd ..   
+      - cd src; ctest -V --timeout 60 -j 32; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j16; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j11; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j8; cd ..   
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -373,10 +373,10 @@ intel:
       - time ../configure --prefix=$HOME  || cat config.log
       - time make -j32
       - time make -j32 install
-      - cd src; ctest -V -j 32; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j 16; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j 11; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j 8; cd ..      
+      - cd src; ctest -V --timeout 60 -j 32; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 60 -j 16; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 60 -j 11; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 60 -j 8; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
