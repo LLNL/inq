@@ -251,7 +251,7 @@ gcc-mpich:
       - time tests/silicon  
       - time mpirun -np 2 tests/silicon
       - time mpirun -np 3 tests/silicon
-      - time mpirun -np 5 tests/silicon      
+#      - time mpirun -np 5 tests/silicon      
 
 gcc-mpich-valgrind:
     stage: build
