@@ -4,6 +4,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(inq VERSION 0.1)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 enable_testing()
 include(CTest)
 
@@ -20,13 +22,10 @@ endif()
 
 link_libraries(m)
 
-set(DISABLE_FXC ON) #do not compile the fxc in libxc
 add_subdirectory(external_libs)
 
 enable_language(CXX)
 enable_language(Fortran)
-
-set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_COMPILER mpic++)
 set(CMAKE_CXX_STANDARD 14)
@@ -47,6 +46,12 @@ set(Libxc_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/libxc/libxc.a)
 include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
+
+set(CALIPER_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/caliper/include/ ${PROJECT_BINARY_DIR}/external_libs/caliper/include)
+#set(CALIPER_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/caliper/src/libcaliper.a)
+include_directories(${CALIPER_INCLUDE_DIRS})
+#link_libraries(${CALIPER_LIBRARIES})
+link_libraries(caliper)
 
 find_package(Boost REQUIRED COMPONENTS serialization)
 include_directories(${Boost_INCLUDE_DIRS})
