@@ -268,7 +268,7 @@ gcc-mpich-valgrind:
       - time make
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
-      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest -V --timeout 1200; cd ..
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
 
