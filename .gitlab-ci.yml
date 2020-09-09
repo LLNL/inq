@@ -299,7 +299,32 @@ gcc-mpich-valgrind:
 #      - time tests/neon
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
-      
+
+intel:
+    stage: build
+    tags:
+      - intel_compiler
+    script:
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      -  . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+      - mkdir build
+      - cd build
+      - export OMPI_CC=icc
+      - export OMPI_CXX=icpc
+      - export CXXFLAGS="-Ofast -Wall -Wextra"
+      - time ../configure --prefix=$HOME  || cat config.log
+      - time make -j8
+      - time make -j8 install
+      - cd src; ctest -V --timeout 180 -j 16; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180 -j 8; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180 -j 5; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180 -j 4; cd ..      
+      - time tests/hydrogen_local
+      - time tests/neon
+      - time tests/h2o_ground_state
+      - time tests/h2o_real_time
+      - time tests/silicon
+
 nvcc:
     stage: build
     tags:
@@ -329,56 +354,3 @@ nvcc:
       - time mpirun --oversubscribe -np 3 tests/silicon
       - time mpirun --oversubscribe -np 5 tests/silicon
 
-nvcc-fast:
-    stage: build
-    tags:
-      - cuda_gpu
-    script:
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - export PATH=/usr/local/cuda/bin:$PATH
-      - nvcc -V
-      - mkdir nvcc
-      - cd nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DFMT_USE_UDL_TEMPLATE=0 -DNDEBUG -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j8
-      - time make -j8 install
-      - cd src; ctest -V --timeout 180 -j 16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180 -j8; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180 -j4; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180 -j4; cd ..   
-      - time tests/hydrogen_local
-      - time tests/neon
-      - time tests/h2o_ground_state
-      - time tests/h2o_real_time
-      - time tests/silicon
-      - time mpirun --oversubscribe -np 2 tests/silicon
-      - time mpirun --oversubscribe -np 3 tests/silicon
-      - time mpirun --oversubscribe -np 5 tests/silicon
-      
-intel:
-    stage: build
-    tags:
-      - intel_compiler
-    script:
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      -  . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-      - mkdir build
-      - cd build
-      - export OMPI_CC=icc
-      - export OMPI_CXX=icpc
-      - export CXXFLAGS="-Ofast -Wall -Wextra"
-      - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j8
-      - time make -j8 install
-      - cd src; ctest -V --timeout 180 -j 16; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180 -j 8; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180 -j 5; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180 -j 4; cd ..      
-      - time tests/hydrogen_local
-      - time tests/neon
-      - time tests/h2o_ground_state
-      - time tests/h2o_real_time
-      - time tests/silicon      
