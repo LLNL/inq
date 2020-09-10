@@ -76,6 +76,7 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	const int nvec = 12;
 
 	double ecut = 31.2;
+	double phi_dif = 0.0;
 
 	ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
 
@@ -84,6 +85,20 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	basis::field_set<basis::real_space, complex> phi(bas, nvec);
 
 	perturbations::kick({0.1, 0.0, 0.0}, phi);
+
+	auto phi_old = phi;
+	for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
+		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
+			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+					phi_dif = fabs(phi.cubic()[ix][iy][iz][ist]) - fabs(phi_old.cubic()[ix][iy][iz][ist]);
+				}
+			}
+		}
+	}
+
+	//Kick should not change the phi absolute value - kick pulse change only the phase of a wave fucntion in the frame of TDDFT
+	CHECK(phi_dif == Approx(0));
 	
 }
 
