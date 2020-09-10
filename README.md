@@ -49,7 +49,7 @@ INQ is work in progress, some of the features are not well tested or are not ava
 
 ## Basic installation
 
-Have dependencies ready in your system, for example in a desktop:
+Have dependencies and the environment ready in your system, for example in a desktop:
 ```
 sudo apt install libblas-dev liblapack-dev libfftw3-dev
 ```
@@ -67,7 +67,16 @@ make -j
 make install
 ```
 
-This instructions might be incomplete, to see how to have an up-to-date install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
+This instructions might be incomplete for your particular, to see how to have an up-to-date install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
+
+Some systems require detailed environment variables set up before running `configure`, for example:
+```bash
+export CUDACXX=/usr/local/cuda/bin/nvcc
+export CXXFLAGS="-O3"
+export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
+export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+```
 
 ## Release information 
 
