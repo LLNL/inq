@@ -44,6 +44,8 @@
 #include<spdlog/spdlog.h>
 #include<spdlog/sinks/stdout_color_sinks.h>
 
+#include<memory>
+
 namespace inq {
 namespace ground_state {
 	
@@ -61,22 +63,16 @@ namespace ground_state {
 		ground_state::result res;
 		
 		operations::preconditioner prec;
-
-		mixers::base<double> * mixer = nullptr;
-
-		switch(solver.mixing_algorithm()){
-		case input::scf::mixing_algo::LINEAR:
-			mixer = new mixers::linear<double>(solver.mixing());
-			break;
-		case input::scf::mixing_algo::PULAY:
-			mixer = new mixers::pulay<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
-			break;
-		case input::scf::mixing_algo::BROYDEN:
-			mixer = new mixers::broyden<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
-			break;
-		}
-
-		double old_energy = DBL_MAX;
+		
+		auto mixer = [&]()->std::unique_ptr<mixers::base<double>>{
+			switch(solver.mixing_algorithm()){
+			case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <double>>(solver.mixing());
+			case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <double>>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<double>>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			} __builtin_unreachable();
+		}();
+		
+		auto old_energy = std::numeric_limits<double>::max();
 		
 		sc.update_ionic_fields(ions, electrons.atomic_pot_);
 		
@@ -181,8 +177,6 @@ namespace ground_state {
 			old_energy = res.energy.eigenvalues;
 			
 		}
-
-		delete mixer;
 
 		if(solver.verbose_output() and console)
 			console->info("SCF iters ended with result energies {}", res.energy);
