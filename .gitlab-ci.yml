@@ -361,7 +361,7 @@ nvcc11:
       - cuda_gpu
     script:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - export PATH=/usr/local/cuda/bin:$PATH
+      - export PATH=/usr/local/cuda-11.0/bin:$PATH
       - nvcc -V
       - mkdir nvcc
       - cd nvcc
