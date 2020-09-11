@@ -46,11 +46,15 @@
 
 #include<memory>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace ground_state {
 	
 	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
-	
+
+		CALI_CXX_MARK_FUNCTION;
+
 		auto console = electrons.logger();
 		if(console) console->trace("calculate started");
 		
@@ -86,6 +90,9 @@ namespace ground_state {
 		ham.exchange.hf_orbitals = 0.0;
 
 		int conv_count = 0;
+
+		CALI_CXX_MARK_LOOP_BEGIN(scfloop, "scf loop");
+
 		for(int iiter = 0; iiter < 1000; iiter++){
 			
 			subspace_diagonalization(ham, electrons.phi_);
@@ -178,6 +185,8 @@ namespace ground_state {
 			
 		}
 
+		CALI_CXX_MARK_LOOP_END(scfloop);
+ 
 		if(solver.verbose_output() and console)
 			console->info("SCF iters ended with result energies {}", res.energy);
 

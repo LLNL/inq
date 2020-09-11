@@ -28,6 +28,8 @@
 
 #include <cstdlib>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace operations {
 
@@ -60,6 +62,8 @@ public:
 	template <class type>
 	void operator()(basis::field_set<basis::fourier_space, type> & phi) const {
 
+		CALI_MARK_BEGIN("preconditioner");
+	
 		math::array<double, 1> expect(phi.set_size(), 0.0);
 		math::array<double, 1> norm(phi.set_size(), 0.0);
 
@@ -140,6 +144,8 @@ public:
 							 phcub[ix][iy][iz][ist] = k_function(lapl*nrm[ist]/expc[ist])*phcub[ix][iy][iz][ist];
 						 });
 
+		CALI_MARK_END("preconditioner");
+		
 	}
 
 	template <class type>

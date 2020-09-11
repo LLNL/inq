@@ -32,6 +32,8 @@
 #include <multi/adaptors/fftw.hpp>
 #endif
 
+#include <caliper/cali.h>
+
 #include <cassert>
 
 namespace inq {
@@ -39,6 +41,8 @@ namespace operations {
 namespace space {
 
 void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fphi){
+		CALI_CXX_MARK_FUNCTION;
+		
 	//DATAOPERATIONS GPU::RUN 3D
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
@@ -50,6 +54,8 @@ void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fph
 ///////////////////////////////////////////////////////////////
 		
 void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
+	CALI_CXX_MARK_FUNCTION;
+	
 	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
@@ -62,6 +68,9 @@ void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> &
 
 template <class InArray4D, class OutArray4D>
 void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
+
+	CALI_CXX_MARK_FUNCTION;
+	
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
@@ -129,6 +138,9 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 template <class InArray4D, class OutArray4D>
 void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs) {
+
+	CALI_CXX_MARK_FUNCTION;
+		
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
 	namespace fft = multi::fft;

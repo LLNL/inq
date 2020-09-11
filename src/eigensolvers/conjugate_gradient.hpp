@@ -27,12 +27,16 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/orthogonalize.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace eigensolvers {
 
 template <class operator_type, class preconditioner_type, class field_set_type>
 void conjugate_gradient(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::fourier_space, field_set_type> & phi_all){
-    
+
+	CALI_CXX_MARK_FUNCTION;
+		
 	const int num_iter = 30;
 	const double tol = 1.0e-8;
 	const double energy_change_threshold = 0.1;
