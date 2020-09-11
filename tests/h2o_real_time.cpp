@@ -30,7 +30,11 @@
 #include <ground_state/calculate.hpp>
 #include <real_time/propagate.hpp>
 
+#include <caliper/cali.h>
+
 int main(int argc, char ** argv){
+
+	CALI_CXX_MARK_FUNCTION;
 
 	using namespace inq;
 	

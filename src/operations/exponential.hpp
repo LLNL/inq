@@ -25,11 +25,15 @@
 
 #include <operations/shift.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace operations {
 
 	template <class operator_type, class field_set_type>
 	void exponential_in_place(const operator_type & ham, typename field_set_type::element_type const & factor, field_set_type & phi, int const order = 4){
+
+    CALI_CXX_MARK_FUNCTION;
 
 		field_set_type hnphi = phi;
 		
@@ -45,6 +49,9 @@ namespace operations {
 	
 	template <class operator_type, class field_set_type>
 	auto exponential(const operator_type & ham, typename field_set_type::element_type const & factor, field_set_type const & phi, int const order = 4){
+
+		CALI_CXX_MARK_FUNCTION;
+		
     field_set_type expphi = phi;
 		exponential_in_place(ham, factor, expphi, order);
 		return expphi;
@@ -54,7 +61,9 @@ namespace operations {
 	
 	template <class operator_type, class field_set_type>
 	auto exponential_2_for_1(const operator_type & ham, typename field_set_type::element_type const & factor1, typename field_set_type::element_type const & factor2, field_set_type & phi, int const order = 4){
-		
+
+		CALI_CXX_MARK_FUNCTION;
+
     field_set_type expphi = phi;
 		field_set_type hnphi = phi;
 		

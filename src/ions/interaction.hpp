@@ -30,11 +30,16 @@
 #include <complex>
 #include <hamiltonian/atomic_potential.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace ions {
 
 template <class cell_type, class geometry_type>
 auto interaction_energy(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
+
+	CALI_CXX_MARK_FUNCTION;
+
 	double energy;
 	boost::multi::array<math::vec3d, 1> forces(geo.num_atoms());
 	boost::multi::array<double, 1> charges(geo.num_atoms());
@@ -49,7 +54,7 @@ auto interaction_energy(const cell_type & cell, const geometry_type & geo, const
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 												double & energy, array_forces & forces){
-
+	
 	using math::vec3d;
 
 	const double alpha = 0.21;

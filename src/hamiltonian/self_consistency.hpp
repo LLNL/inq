@@ -29,6 +29,8 @@
 #include <hamiltonian/xc_functional.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace hamiltonian {
 
@@ -49,6 +51,9 @@ namespace hamiltonian {
 
 		template <class ions_type>
 		void update_ionic_fields(const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
+
+			CALI_CXX_MARK_FUNCTION;
+			
 			solvers::poisson poisson_solver;
 			
 			auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(density_basis_, ions.cell(), ions.geo()));
@@ -60,6 +65,8 @@ namespace hamiltonian {
 		
 		template <class field_type, class energy_type>
 		auto ks_potential(const field_type & electronic_density, energy_type & energy) const {
+
+			CALI_CXX_MARK_FUNCTION;
 
 			assert(electronic_density.basis() == density_basis_);
 			assert(core_density_.basis() == electronic_density.basis());
