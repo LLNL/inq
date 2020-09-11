@@ -206,6 +206,12 @@ namespace ions {
       out << std::endl;
     }
     
+	template<class OStream>
+	friend OStream& operator<<(OStream& os, UnitCell const& self){
+		self.info(os);
+		return os;
+	}
+    
     const double* amat() const { return &amat_[0]; }
     const double* bmat() const { return &bmat_[0]; }
     const double* amat_inv() const { return &amat_inv_[0]; }

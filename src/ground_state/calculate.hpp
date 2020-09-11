@@ -1,5 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
+//  Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
+
 #ifndef INQ__GROUND_STATE__CALCULATE
 #define INQ__GROUND_STATE__CALCULATE
 
@@ -37,10 +39,20 @@
 #include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
+#include<tinyformat/tinyformat.h>
+
+#include<spdlog/spdlog.h>
+#include<spdlog/sinks/stdout_color_sinks.h>
+
+#include<memory>
+
 namespace inq {
 namespace ground_state {
 	
 	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
+	
+		auto console = electrons.logger();
+		if(console) console->trace("calculate started");
 		
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient(), electrons.full_comm_);
 		
@@ -51,22 +63,16 @@ namespace ground_state {
 		ground_state::result res;
 		
 		operations::preconditioner prec;
-
-		mixers::base<double> * mixer = nullptr;
-
-		switch(solver.mixing_algorithm()){
-		case input::scf::mixing_algo::LINEAR:
-			mixer = new mixers::linear<double>(solver.mixing());
-			break;
-		case input::scf::mixing_algo::PULAY:
-			mixer = new mixers::pulay<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
-			break;
-		case input::scf::mixing_algo::BROYDEN:
-			mixer = new mixers::broyden<double>(4, solver.mixing(), electrons.states_basis_.part().local_size());
-			break;
-		}
-
-		double old_energy = DBL_MAX;
+		
+		auto mixer = [&]()->std::unique_ptr<mixers::base<double>>{
+			switch(solver.mixing_algorithm()){
+			case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <double>>(solver.mixing());
+			case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <double>>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<double>>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			} __builtin_unreachable();
+		}();
+		
+		auto old_energy = std::numeric_limits<double>::max();
 		
 		sc.update_ionic_fields(ions, electrons.atomic_pot_);
 		
@@ -148,14 +154,14 @@ namespace ground_state {
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
 				
-				if(solver.verbose_output() and electrons.phi_.full_comm().root()){
-					
-					tfm::format(std::cout, "SCF iter %d :  e = %.12f  de = %5.0e\n",
-											iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
-					
+				if(solver.verbose_output() and console){
+					console->info("SCF iter {} : e = {:.12f} de = {:5.0e}", 
+							iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
+				
 					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
-						tfm::format(std::cout, " state %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
-												istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate]));
+						console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
+								istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
+						);
 					}
 				}
 				
@@ -172,11 +178,8 @@ namespace ground_state {
 			
 		}
 
-		delete mixer;
-
-		if(solver.verbose_output() and electrons.phi_.full_comm().root()){
-			res.energy.print(std::cout);
-		}
+		if(solver.verbose_output() and console)
+			console->info("SCF iters ended with result energies {}", res.energy);
 
 		if(ions.cell().periodic_dimensions() == 0){
 			res.dipole = observables::dipole(ions, electrons);
@@ -187,6 +190,7 @@ namespace ground_state {
 		//make sure we have a density consistent with phi
 		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 
+		if(console) console->trace("calculate ended normally");
 		return res;
 	}
 }

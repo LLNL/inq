@@ -32,10 +32,14 @@
 #include <observables/dipole.hpp>
 #include <real_time/result.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace real_time {
 	
 	real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options){
+
+    CALI_CXX_MARK_FUNCTION;
 
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();

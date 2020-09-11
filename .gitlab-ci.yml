@@ -14,7 +14,7 @@ build-noblas:
     stage: build
     script:
       - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -26,7 +26,7 @@ build-noboost:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin python
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -38,7 +38,7 @@ build-nofftw:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -50,7 +50,7 @@ build-nolapack:
     stage: build
     script:
       - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -62,19 +62,19 @@ gcc:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j4
+      - time make
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..
+      - cd src; ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180; cd ..
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -88,19 +88,19 @@ gcc-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
       - cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j4
+      - time make
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..      
+      - cd src; ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -114,7 +114,7 @@ clang:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2    
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - mkdir build
@@ -125,10 +125,10 @@ clang:
       - ls -l
       - time make -j4
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..      
+      - cd src; ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -166,7 +166,7 @@ clang-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2    
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - mkdir build
@@ -176,10 +176,10 @@ clang-fast:
       - time ../configure --prefix=$HOME
       - time make -j4
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V; cd ..      
+      - cd src; ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -193,7 +193,7 @@ clang-fast:
 #    stage: build
 #    script:
 #      - time apt update -qq
-#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 valgrind
+#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python valgrind
 #      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
 #      - clang++ --version
 #      - mkdir build
@@ -212,7 +212,7 @@ clang-fast:
 #    stage: build
 #    script:
 #      - time apt update -qq
-#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 valgrind libmpich-dev mpich
+#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 python valgrind libmpich-dev mpich
 #      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
 #      - clang++ --version
 #      - mkdir build
@@ -232,7 +232,7 @@ gcc-mpich:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 valgrind libmpich-dev mpich
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 python valgrind libmpich-dev mpich
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - c++ --version
       - mpichversion
@@ -240,24 +240,24 @@ gcc-mpich:
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
-      - time make -j4
+      - time make
       - time make -j4 install
-      - cd src; ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest -V; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest -V; cd ..      
+      - cd src; ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest -V --timeout 180; cd ..      
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       - time tests/silicon  
       - time mpirun -np 2 tests/silicon
       - time mpirun -np 3 tests/silicon
-      - time mpirun -np 5 tests/silicon      
+#      - time mpirun -np 5 tests/silicon      
 
 gcc-mpich-valgrind:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 valgrind libmpich-dev mpich
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 python valgrind libmpich-dev mpich
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - c++ --version
       - mpichversion
@@ -265,10 +265,10 @@ gcc-mpich-valgrind:
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - time ../configure --prefix=$HOME
-      - time make -j4
+      - time make
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
-      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest -V; cd ..
+      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest -V --timeout 1200; cd ..
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
 
@@ -277,7 +277,7 @@ gcc-mpich-valgrind:
 #    script:
 #      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
 #      - time apt update -qq
-#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
+#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
 #      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
 #      - export PATH=/usr/local/cuda/bin:$PATH
 #      - nvcc -V
@@ -299,65 +299,7 @@ gcc-mpich-valgrind:
 #      - time tests/neon
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
-      
-nvcc:
-    stage: build
-    tags:
-      - cuda_gpu
-    script:
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - export PATH=/usr/local/cuda/bin:$PATH
-      - nvcc -V
-      - mkdir nvcc
-      - cd nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j32
-      - time make -j32 install
-      - cd src; ctest -V -j 32; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j8; cd ..   
-      - time tests/hydrogen_local
-      - time tests/neon
-      - time tests/h2o_ground_state
-      - time tests/h2o_real_time
-      - time tests/silicon
-      - time mpirun --oversubscribe -np 2 tests/silicon
-      - time mpirun --oversubscribe -np 3 tests/silicon
-      - time mpirun --oversubscribe -np 5 tests/silicon
 
-nvcc-fast:
-    stage: build
-    tags:
-      - cuda_gpu
-    script:
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - export PATH=/usr/local/cuda/bin:$PATH
-      - nvcc -V
-      - mkdir nvcc
-      - cd nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DNDEBUG -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - time make -j32
-      - time make -j32 install
-      - cd src; ctest -V -j 32; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j11; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j8; cd ..   
-      - time tests/hydrogen_local
-      - time tests/neon
-      - time tests/h2o_ground_state
-      - time tests/h2o_real_time
-      - time tests/silicon
-      - time mpirun --oversubscribe -np 2 tests/silicon
-      - time mpirun --oversubscribe -np 3 tests/silicon
-      - time mpirun --oversubscribe -np 5 tests/silicon
-      
 intel:
     stage: build
     tags:
@@ -371,14 +313,45 @@ intel:
       - export OMPI_CXX=icpc
       - export CXXFLAGS="-Ofast -Wall -Wextra"
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j32
-      - time make -j32 install
-      - cd src; ctest -V -j 32; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V -j 16; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V -j 11; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V -j 8; cd ..      
+      - time make -j8
+      - time make -j8 install
+      - cd src; ctest -V --timeout 180 -j 16; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180 -j 8; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180 -j 5; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180 -j 4; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
-      - time tests/silicon      
+      - time tests/silicon
+
+nvcc:
+    stage: build
+    tags:
+      - cuda_gpu
+    script:
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - export PATH=/usr/local/cuda/bin:$PATH
+      - nvcc -V
+      - mkdir nvcc
+      - cd nvcc
+      - export CUDACXX=/usr/local/cuda/bin/nvcc
+      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++14,-Wall,-Wfatal-errors"
+      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
+      - time make -j8
+      - time make -j8 install
+      - cd src; ctest -V --timeout 270 -j 16; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 270 -j8; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 270 -j5; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 270 -j4; cd ..   
+      - time tests/hydrogen_local
+      - time tests/neon
+      - time tests/h2o_ground_state
+      - time tests/h2o_real_time
+      - time tests/silicon
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
+

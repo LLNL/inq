@@ -25,7 +25,17 @@
 #include <density/calculate.hpp>
 #include <density/normalize.hpp>
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp> // uuids::random_generator
+
 #include <cfloat>
+
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+
+#include<spdlog/spdlog.h>
+#include<spdlog/sinks/stdout_color_sinks.h>
+#include<spdlog/fmt/ostr.h> // print user defined types
 
 namespace inq {
 
@@ -65,18 +75,43 @@ namespace systems {
 			assert(density_basis_.comm().size() == states_basis_.comm().size());
 
 			if(full_comm_.root()){
-				states_basis_.info(std::cout);  
-				states_.info(std::cout);
+				logger_ = spdlog::stdout_color_mt("electrons:"+ generate_tiny_uuid());
+				logger_->set_level(spdlog::level::trace);
+			}
+
+			if(logger()){
+				logger()->info("constructed with basis {}", states_basis_);
+				logger()->info("constructed with states {}", states_);
 			}
 			
 			if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 
-    }
-		
+			operations::randomize(phi_);
+			operations::orthogonalize(phi_);
+			
+			density::normalize(density_, states_.total_charge());
+
+			if(logger()){
+				logger()->info("constructed with geometry {}", ions.geo_);
+				logger()->info("constructed with cell {}", ions.cell_);
+			}
+		}
+
 		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
 			electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, arg_basis_input, conf){
 		}
+
 		
+	private:
+		static std::string generate_tiny_uuid(){
+			auto uuid = boost::uuids::random_generator{}();
+			uint32_t tiny = hash_value(uuid) % std::numeric_limits<uint32_t>::max();
+			using namespace boost::archive::iterators;
+			using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
+			return std::string(it((unsigned char*)&tiny), it((unsigned char*)&tiny+sizeof(tiny)));//.append((3-sizeof(tiny)%3)%3,'=');
+		}
+
+>>>>>>> master
 	public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
@@ -89,9 +124,12 @@ namespace systems {
 		states::ks_states states_;
 		basis::field_set<basis::real_space, complex> phi_;
 		basis::field<basis::real_space, double> density_;
-
+		
+		std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
+	private:
+		std::shared_ptr<spdlog::logger> logger_;
 	};
-  
+
 }
 }
 

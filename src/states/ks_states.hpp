@@ -4,7 +4,7 @@
 #define INQ__STATES__KS_STATES
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -89,7 +89,13 @@ public:
 		out << "  Number of states = " << num_states() << std::endl;
 		out << std::endl;
 	}
-
+	
+	template<class OStream>
+	friend OStream& operator<<(OStream& os, ks_states const& self){
+		self.info(os);
+		return os;
+	}
+	
 	auto & occupations() const {
 		return occs_;
 	}
