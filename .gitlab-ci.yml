@@ -334,7 +334,7 @@ intel:
       - cd build
       - export OMPI_CC=icc
       - export OMPI_CXX=icpc
-      - export CXXFLAGS="-Ofast -Wall -Wextra -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror " #-diag-error:3846
+      - export CXXFLAGS="-Ofast -Wall -Wextra -Warray-bounds -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror " #-diag-error:3846
       - time ../configure --prefix=$HOME  || cat config.log
       - time make -j8
       - time make -j8 install
