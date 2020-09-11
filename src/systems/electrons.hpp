@@ -111,7 +111,6 @@ namespace systems {
 			return std::string(it((unsigned char*)&tiny), it((unsigned char*)&tiny+sizeof(tiny)));//.append((3-sizeof(tiny)%3)%3,'=');
 		}
 
->>>>>>> master
 	public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
