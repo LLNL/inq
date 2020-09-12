@@ -37,6 +37,8 @@
 #include<spdlog/sinks/stdout_color_sinks.h>
 #include<spdlog/fmt/ostr.h> // print user defined types
 
+#include <caliper/cali.h>
+
 namespace inq {
 
 namespace systems {
@@ -72,6 +74,8 @@ namespace systems {
 			density_(atomic_pot_.atomic_electronic_density(density_basis_, ions.cell(), ions.geo()))
 		{
 
+			CALI_CXX_MARK_FUNCTION;
+			
 			assert(density_basis_.comm().size() == states_basis_.comm().size());
 
 			if(full_comm_.root()){

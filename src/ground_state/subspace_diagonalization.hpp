@@ -29,11 +29,15 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace ground_state {
 
 template <class hamiltonian_type, class field_set_type>
 void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
+
+	CALI_CXX_MARK_FUNCTION;
 	
 	auto subspace_hamiltonian = operations::overlap(phi, ham(phi));
 	auto eigenvalues = operations::diagonalize(subspace_hamiltonian);

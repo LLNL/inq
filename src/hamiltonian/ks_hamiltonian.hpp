@@ -32,6 +32,8 @@
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace hamiltonian {
   template <class basis_type>
@@ -81,6 +83,8 @@ namespace hamiltonian {
 		
 		auto non_local(const basis::field_set<basis::real_space, complex> & phi) const {
 
+			CALI_CXX_MARK_FUNCTION;
+ 
 			if(non_local_in_fourier_) {
 
 				auto phi_fs = operations::space::to_fourier(phi);
@@ -104,6 +108,9 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
+
+			CALI_CXX_MARK_FUNCTION;
+			
 			operations::laplacian_add(phi, hphi);
 			if(non_local_in_fourier_) non_local(phi, hphi);
 		}
@@ -111,6 +118,9 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void real_space_terms(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & hphi) const {
+
+			CALI_CXX_MARK_FUNCTION;
+			
 			//the non local potential in real space
 			if(not non_local_in_fourier_) non_local(phi, hphi);
 
@@ -130,7 +140,9 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
-      
+
+			CALI_CXX_MARK_SCOPE("hamiltonian real");
+				
 			auto phi_fs = operations::space::to_fourier(phi);
 			
 			basis::field_set<basis::fourier_space, complex> hphi_fs(phi_fs.skeleton());
@@ -151,6 +163,8 @@ namespace hamiltonian {
 		
     auto operator()(const basis::field_set<basis::fourier_space, complex> & phi) const{
 
+			CALI_CXX_MARK_SCOPE("hamiltonian fourier");
+			
 			auto phi_rs = operations::space::to_real(phi);
 
 			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.skeleton());

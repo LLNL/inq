@@ -37,6 +37,8 @@
 
 #include <mpi3/detail/datatype.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace operations {
 namespace io {
@@ -67,6 +69,8 @@ auto createdir(std::string const & dirname){
 
 template <class FieldSet>
 void save(std::string const & dirname, FieldSet const & phi){
+
+	CALI_CXX_MARK_FUNCTION;
 
 	using Type = typename FieldSet::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
@@ -111,6 +115,8 @@ void save(std::string const & dirname, FieldSet const & phi){
 		
 template <class FieldSet>
 void load(std::string const & dirname, FieldSet & phi){
+
+	CALI_CXX_MARK_FUNCTION;
 
 	using Type = typename FieldSet::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();

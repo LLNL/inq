@@ -27,11 +27,15 @@
 #include <basis/field_set.hpp>
 #include <math/complex.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace density {
 
 template <class FieldType>
 void normalize(FieldType & density, const double & total_charge){
+
+	CALI_CXX_MARK_FUNCTION;
 	
 	auto qq = operations::integral(density);
 	assert(fabs(qq) > 1e-16);
