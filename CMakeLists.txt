@@ -27,7 +27,7 @@ add_subdirectory(external_libs)
 enable_language(CXX)
 enable_language(Fortran)
 
-if(${CMAKE_CXX_COMPILER} MATCHES "/usr/bin/c++")
+if(${CMAKE_CXX_COMPILER} STREQUAL /usr/bin/c++)
 	set(CMAKE_CXX_COMPILER mpic++)
 endif()
 
