@@ -1,10 +1,4 @@
 . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-#export OMPI_CC=icc
-#export OMPI_CXX=icpc
-#export CXXFLAGS=" "
-#export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-#export LDFLAGS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-#export LIBS=`mpicxx.mp
 rm -rf ./intel.dir.build ./intel.dir.install 
 mkdir ./intel.dir.build
 mkdir ./intel.dir.install
@@ -13,7 +7,8 @@ rm -f CMakeCache.txt
 cmake ../.. \
 	-DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_C_COMPILER=/opt/intel/system_studio_2020/bin/icc \
-	-DCMAKE_CXX_COMPILER=/opt/intel/system_studio_2020/bin/icpc -DCMAKE_LINKER=/opt/intel/system_studio_2020/bin/icpc \
+	-DCMAKE_CXX_COMPILER=/opt/intel/system_studio_2020/bin/icpc \
+	-DCMAKE_LINKER=/opt/intel/system_studio_2020/bin/icpc \
 	-DCMAKE_INSTALL_PREFIX=`pwd`/../intel.dir.install \
 	-DCMAKE_C_COMPILE_FLAGS="$(mpicxx -showme:compile || mpicxx -cxx= -compile_info)" \
 	-DCMAKE_CXX_COMPILE_FLAGS="$(mpicxx -showme:compile || mpicxx -cxx= -compile_info)" \
