@@ -323,6 +323,13 @@ gcc-runner:
       - time tests/h2o_real_time
       - time tests/silicon
 
+intel-ci:
+    stage: build
+    tags:
+      - intel_compiler
+    script:
+      - sh ./cmake_intel.sh
+
 intel:
     stage: build
     tags:
@@ -337,7 +344,7 @@ intel:
       - export CXXFLAGS="-O3 -Wall -Wextra -Warray-bounds -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror " #-diag-error:3846
       - icpc --version
       - time ../configure --prefix=$HOME  || cat config.log
-      - time make -j8
+      - time make -j $(($(nproc)/4))
       - time make -j8 install
       - cd src; ctest -V --timeout 180 -j 16; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 270 -j8; cd ..
@@ -378,4 +385,6 @@ nvcc:
       - time mpirun --oversubscribe -np 2 tests/silicon
       - time mpirun --oversubscribe -np 3 tests/silicon
       - time mpirun --oversubscribe -np 5 tests/silicon
+
+# vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
