@@ -328,6 +328,7 @@ intel-ci:
     tags:
       - intel_compiler
     script:
+      - cd ci
       - sh ./cmake_intel.sh
 
 intel:
