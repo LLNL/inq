@@ -331,6 +331,7 @@ intel:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - cd ci
       - sh ./cmake_intel.sh
+      - cd intel.dir.build
       - make -j $(($(nproc)/2 + 1))  && make install
       - cd src
       - ctest -j $(($(nproc)/2 + 1)) --output-on-failure

@@ -19,16 +19,5 @@ cmake ../.. \
 	-DCMAKE_CXX_COMPILE_FLAGS="$(mpicxx -showme:compile || mpicxx -cxx= -compile_info)" \
 	-DCMAKE_CXX_FLAGS="-I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread -O3 -Wall -Wextra -Warray-bounds -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Wno-unused-parameter -Werror -Wl,-rpath,/opt/intel/system_studio_2020/lib/intel64" \
 	-DCMAKE_EXE_LINKER_FLAGS="$(mpicxx -showme:link || mpicxx -cxx= -link_info)" \
-	$*
-make -j $(($(nproc)/2 + 1))  && make install
-
-cd src; (ctest -j $(($(nproc)/2 + 1)) --output-on-failure || exit 1); cd ..
-
-cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 270 -j8 || exit 1) ; cd ..
-cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 270 -j5 || exit 1) ; cd ..
-cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 270 -j4 || exit 1) ; cd ..
-
-#	-DCMAKE_CXX_COMPILE_FLAGS="-I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread" \
-#	-DCMAKE_COMPILE_FLAGS="-I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread" \
-#	-DCMAKE_C_FLAGS="-I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread" \
+	$* || exit 1
 
