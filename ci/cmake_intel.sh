@@ -1,4 +1,4 @@
-source /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+. /opt/intel/system_studio_2020/bin/compilervars.sh intel64
 #export OMPI_CC=icc
 #export OMPI_CXX=icpc
 #export CXXFLAGS=" "
