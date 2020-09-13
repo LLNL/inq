@@ -329,12 +329,12 @@ intel:
       - intel_compiler
     script:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      -  . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
       - mkdir build
       - cd build
       - export OMPI_CC=icc
       - export OMPI_CXX=icpc
-      - export CXXFLAGS="-O2 -Wall -Wextra -Warray-bounds -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror " #-diag-error:3846
+      - export CXXFLAGS="-O3 -Wall -Wextra -Warray-bounds -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror " #-diag-error:3846
       - icpc --version
       - time ../configure --prefix=$HOME  || cat config.log
       - time make -j8
