@@ -21,9 +21,9 @@ cmake ../.. \
 	$*
 make -j $(($(nproc)/2 + 1))  && make install && ctest -j $(($(nproc)/2 + 1)) --output-on-failure
 
-cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 270 -j $(($(nproc)/2 + 1)) || exit) ; cd ..
-cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 270 -j $(($(nproc)/3 + 1)) || exit) ; cd ..
-cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 270 -j $(($(nproc)/4 + 1)) || exit) ; cd ..
+cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 270 -j8 || exit) ; cd ..
+cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 270 -j5 || exit) ; cd ..
+cd src; (INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 270 -j4 || exit) ; cd ..
 
 #	-DCMAKE_CXX_COMPILE_FLAGS="-I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread" \
 #	-DCMAKE_COMPILE_FLAGS="-I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread" \
