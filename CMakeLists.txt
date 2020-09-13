@@ -27,7 +27,7 @@ add_subdirectory(external_libs)
 enable_language(CXX)
 enable_language(Fortran)
 
-if(not defined CMAKE_CXX_COMPILER)
+if(NOT DEFINED CMAKE_CXX_COMPILER)
 	set(CMAKE_CXX_COMPILER mpic++)
 endif()
 
