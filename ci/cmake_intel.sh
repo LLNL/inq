@@ -17,5 +17,5 @@ cmake ../.. \
     $*  \
   && make -j $(($(nproc)/2 + 1)) \
   && make install \
-  && ctest -j $(nproc) --output-on-failure || exit 1
+  && cd src && ctest -j $(nproc) --output-on-failure || exit 1
 
