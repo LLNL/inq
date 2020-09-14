@@ -27,8 +27,6 @@ add_subdirectory(external_libs)
 enable_language(CXX)
 enable_language(Fortran)
 
-find_package(MPI REQUIRED)
-
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
