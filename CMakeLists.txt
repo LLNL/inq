@@ -27,7 +27,7 @@ add_subdirectory(external_libs)
 enable_language(CXX)
 enable_language(Fortran)
 
-set(CMAKE_CXX_COMPILER mpic++) # TODO this could be being overwritten by env CXX and it is not the recommended way
+find_package(MPI REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
