@@ -68,7 +68,7 @@ gcc:
       - mkdir build
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
-      - time ../configure --prefix=$HOME  || cat config.log
+      - CXX=mpic++ time ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
       - cd src; ctest -V --timeout 180; cd ..
@@ -94,7 +94,7 @@ gcc-fast:
       - mkdir build
       - cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
-      - time ../configure --prefix=$HOME  || cat config.log
+      - CXX=mpic++ time ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
       - cd src; ctest -V --timeout 180; cd ..
@@ -121,7 +121,7 @@ clang:
       - cd build
       - export OMPI_CXX=clang++
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - time ../configure --prefix=$HOME
+      - CXX=mpic++ time ../configure --prefix=$HOME
       - ls -l
       - time make -j4
       - time make -j4 install
@@ -173,7 +173,7 @@ clang-fast:
       - cd build
       - export OMPI_CXX=clang++
       - export CXXFLAGS="-Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-      - time ../configure --prefix=$HOME
+      - CXX=mpic++ time ../configure --prefix=$HOME
       - time make -j4
       - time make -j4 install
       - cd src; ctest -V --timeout 180; cd ..
@@ -239,7 +239,7 @@ gcc-mpich:
       - mkdir build
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-      - time ../configure --prefix=$HOME
+      - CXX=mpic++ time ../configure --prefix=$HOME
       - time make
       - time make -j4 install
       - cd src; ctest -V --timeout 180; cd ..
@@ -264,7 +264,7 @@ gcc-mpich-valgrind:
       - mkdir build
       - cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-      - time ../configure --prefix=$HOME
+      - CXX=mpic++ time ../configure --prefix=$HOME
       - time make
       - time make -j4 install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
@@ -310,7 +310,7 @@ gcc-runner:
       - mkdir build
       - cd build
       - export CXXFLAGS="-Ofast -Wall -Wextra"
-      - time ../configure --prefix=$HOME  || cat config.log
+      - CXX=mpic++ time ../configure --prefix=$HOME  || cat config.log
       - time make -j8
       - time make -j8 install
       - cd src; ctest -V --timeout 180 -j 16; cd ..
