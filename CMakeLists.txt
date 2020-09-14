@@ -27,9 +27,7 @@ add_subdirectory(external_libs)
 enable_language(CXX)
 enable_language(Fortran)
 
-if(${CMAKE_CXX_COMPILER} STREQUAL /usr/bin/c++)
-	set(CMAKE_CXX_COMPILER mpic++)
-endif()
+set(CMAKE_CXX_COMPILER mpic++) # TODO this could be being overwritten by env CXX and it is not the recommended way
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
