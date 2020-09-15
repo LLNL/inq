@@ -39,7 +39,7 @@ namespace operations {
 template <class field_set_type>
 auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 
-	CALI_CXX_MARK_FUNCTION;
+	CALI_CXX_MARK_SCOPE("overlap 1 arg");
 	
 	// no state parallelization for now
 	assert(not phi1.set_part().parallel());
@@ -59,7 +59,7 @@ auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 template <class field_set_type>
 auto overlap(const field_set_type & phi){
 
-	CALI_CXX_MARK_FUNCTION;
+	CALI_CXX_MARK_SCOPE("overlap 1 arg");
  
 	// no state parallelization for now
 	assert(not phi.set_part().parallel());
@@ -79,7 +79,7 @@ auto overlap(const field_set_type & phi){
 template <class field_set_type>
 math::array<typename field_set_type::element_type, 1> overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
 
-	CALI_CXX_MARK_FUNCTION;
+	CALI_CXX_MARK_SCOPE("overlap_diagonal 2 arg");
 	
 	using type = typename field_set_type::element_type;
 		
@@ -132,20 +132,22 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 	
 template <class field_set_type>
 auto overlap_diagonal(const field_set_type & phi){
-	CALI_CXX_MARK_FUNCTION;
+	CALI_CXX_MARK_SCOPE("overlap_diagonal 1 arg");
 	
 	return overlap_diagonal(phi, phi);
 }
 	
 template <class field_type>
 auto overlap_single(const field_type & phi1, const field_type & phi2){
-	CALI_CXX_MARK_FUNCTION;
+	CALI_CXX_MARK_SCOPE("overlap_single 2 arg");
 	
 	return integral(phi1, phi2, [](auto t1, auto t2){ return conj(t1)*t2; });
 }
 	
 template <class field_type>
 auto overlap_single(field_type & phi){
+	CALI_CXX_MARK_SCOPE("overlap_single 1 arg");
+			
 	return overlap_single(phi, phi);
 }
 	
