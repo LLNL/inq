@@ -76,8 +76,8 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	const int nvec = 12;
 
 	double ecut = 31.2;
+	double phi_absdif = 0.0;
 	double phi_dif = 0.0;
-	double phi_dif2 = 0.0;
 
 	ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
 
@@ -90,7 +90,7 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
 			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
 				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-					phi.cubic()[ix][iy][iz][ist] = complex(cos(ix+iy+iz), 1.3*sin(cos(ix-iy-iz)));
+					phi.cubic()[ix][iy][iz][ist] = complex(cos(ist+(ix+iy+iz)), 1.3*sin(ist+(cos(ix-iy-iz))));
 				}
 			}
 		}
@@ -104,17 +104,17 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
 			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
 				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-					phi_dif += fabs(phi.cubic()[ix][iy][iz][ist]) - fabs(phi_old.cubic()[ix][iy][iz][ist]);
-					phi_dif2 += fabs(phi.cubic()[ix][iy][iz][ist] - phi_old.cubic()[ix][iy][iz][ist]);
+					phi_absdif += fabs(phi.cubic()[ix][iy][iz][ist]) - fabs(phi_old.cubic()[ix][iy][iz][ist]);
+					phi_dif += fabs(phi.cubic()[ix][iy][iz][ist] - phi_old.cubic()[ix][iy][iz][ist]);
 				}
 			}
 		}
 	}
 
-	//Kick should not change the phi absolute value - kick pulse change only the phase of a wave fucntion in the frame of TDDFT
-	CHECK(phi_dif == Approx(0).margin(1.0e-9));
-	//However the phi should changes
-	CHECK(phi_dif2 > 0 );
+	//Kick should not change the phi absolute value - kick pulse change only the phase of a wave fucntion in the frame of TDDFTThe kick should not change the phi absolute value - kick pulse change only the phase of a wave function in the frame of TDDFT
+	CHECK(phi_absdif == Approx(0).margin(1.0e-9));
+	//However, the phi should changes
+	CHECK(phi_dif == Approx(2196.746022055).margin(1.0e-9));
 	
 }
 
