@@ -39,7 +39,7 @@ namespace operations {
 template <class field_set_type>
 auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 
-	CALI_CXX_MARK_SCOPE("overlap 1 arg");
+	CALI_CXX_MARK_SCOPE("overlap 2 arg");
 	
 	// no state parallelization for now
 	assert(not phi1.set_part().parallel());
@@ -85,44 +85,70 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 		
 	math::array<type, 1> overlap_vector(phi1.set_part().local_size());
 
-	assert(size(overlap_vector) == phi1.set_part().local_size());
+	assert(size(overlap_vector) == phi2.set_part().local_size());
 
-	//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifndef ENABLE_CUDA
-
-	//OPTIMIZATION: this can be done more efficiently
-	for(int ii = 0; ii < phi1.local_set_size(); ii++){
-		type aa = 0.0;
-		for(int ip = 0; ip < phi1.basis().part().local_size(); ip++) aa += conj(phi1.matrix()[ip][ii])*phi2.matrix()[ip][ii];
-		overlap_vector[ii] = aa*phi1.basis().volume_element();
-	}
-
+	if(phi2.set_part().local_size() == 1){
+#ifdef ENABLE_CUDA
+		cublasHandle_t handle;
+		cublasCreate(&handle);
+		if(typeid(typename field_set_type::element_type) == typeid(complex)) {
+			cublasZdotc(handle, phi1.basis().part().local_size(),
+									(const cuDoubleComplex *) raw_pointer_cast(phi1.matrix().data_elements()), 1, (const cuDoubleComplex *)  raw_pointer_cast(phi2.matrix().data_elements()), 1,
+									(cuDoubleComplex *) raw_pointer_cast(overlap_vector.data_elements()));
+		} else {
+			cublasDdot(handle, phi1.basis().part().local_size(),
+								 (const double *) raw_pointer_cast(phi1.matrix().data_elements()), 1, (const double *) raw_pointer_cast(phi2.matrix().data_elements()), 1,
+								 (double *) raw_pointer_cast(overlap_vector.data_elements()));
+		}
+		cublasDestroy(handle);
 #else
 
-	{
-		auto npoints = phi1.basis().part().local_size();
-		auto vol_element = phi1.basis().volume_element();
-		auto phi1p = begin(phi1.matrix());
-		auto phi2p = begin(phi2.matrix());
-		auto overlap = begin(overlap_vector);
+		using boost::multi::blas::gemm;
+		using boost::multi::blas::hermitized;
+		
+		overlap_vector[0] = dot(boost::multi::blas::hermitized(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
+#endif
+		overlap_vector[0] *= phi1.basis().volume_element();
+	} else {
+		
+		//DATAOPERATIONS LOOP + GPU::RUN 2D
+#ifndef ENABLE_CUDA
+		
+		//OPTIMIZATION: this can be done more efficiently
+		for(int ii = 0; ii < phi1.local_set_size(); ii++){
+			type aa = 0.0;
+			for(int ip = 0; ip < phi1.basis().part().local_size(); ip++) aa += conj(phi1.matrix()[ip][ii])*phi2.matrix()[ip][ii];
+			overlap_vector[ii] = aa*phi1.basis().volume_element();
+		}
+		
+#else
+		
+		{
+			auto npoints = phi1.basis().part().local_size();
+			auto vol_element = phi1.basis().volume_element();
+			auto phi1p = begin(phi1.matrix());
+			auto phi2p = begin(phi2.matrix());
+			auto overlap = begin(overlap_vector);
 			
-		//OPTIMIZATION: here we should parallelize over points as well 
-		gpu::run(phi1.local_set_size(),
-						 [=] __device__ (auto ist){
-							 type aa = 0.0;
-							 for(int ip = 0; ip < npoints; ip++){
-								 auto p1 = phi1p[ip][ist];
-								 auto p2 = phi2p[ip][ist];
-								 aa += conj(p1)*p2;
+			//OPTIMIZATION: here we should parallelize over points as well 
+			gpu::run(phi1.local_set_size(),
+							 [=] __device__ (auto ist){
+								 type aa = 0.0;
+								 for(int ip = 0; ip < npoints; ip++){
+									 auto p1 = phi1p[ip][ist];
+									 auto p2 = phi2p[ip][ist];
+									 aa += conj(p1)*p2;
 									 
-							 }
+								 }
 								 
-							 overlap[ist] = vol_element*aa;
-						 });
-	}
+								 overlap[ist] = vol_element*aa;
+							 });
+		}
 		
 #endif
 
+	}
+	
 	if(phi1.basis().part().parallel()){
 		phi1.basis().comm().all_reduce_in_place_n(static_cast<type *>(overlap_vector.data()), overlap_vector.size(), std::plus<>{});
 	}
