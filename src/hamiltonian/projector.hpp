@@ -35,6 +35,8 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace hamiltonian {
 
