@@ -103,7 +103,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 		cublasDestroy(handle);
 #else
 
-		using boost::multi::blas::gemm;
+		using boost::multi::blas::dot;
 		using boost::multi::blas::hermitized;
 		
 		overlap_vector[0] = dot(boost::multi::blas::hermitized(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
