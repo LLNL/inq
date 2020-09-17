@@ -37,6 +37,8 @@
 
 #include <mpi3/environment.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace hamiltonian {
 
@@ -56,6 +58,8 @@ namespace hamiltonian {
 			part_(natoms, comm_)
 		{
 
+			CALI_CXX_MARK_FUNCTION;
+			
 			has_nlcc_ = false;
       nelectrons_ = 0.0;
 
@@ -99,6 +103,8 @@ namespace hamiltonian {
     template <class basis_type, class cell_type, class geo_type>
     auto local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+			CALI_CXX_MARK_FUNCTION;
+			
       basis::field<basis_type, double> potential(basis);
 
 			for(long ii = 0; ii < potential.linear().size(); ii++) potential.linear()[ii] = 0.0;
@@ -129,6 +135,8 @@ namespace hamiltonian {
     template <class basis_type, class cell_type, class geo_type>
     basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+			CALI_CXX_MARK_FUNCTION;
+	
       basis::field<basis_type, double> density(basis);
 			
 			density = 0.0;
@@ -170,6 +178,8 @@ namespace hamiltonian {
     template <class basis_type, class cell_type, class geo_type>
     auto atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+			CALI_CXX_MARK_FUNCTION;
+	
       basis::field<basis_type, double> density(basis);
 
 			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
@@ -208,6 +218,8 @@ namespace hamiltonian {
 		template <class basis_type, class cell_type, class geo_type>
     auto nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+			CALI_CXX_MARK_FUNCTION;
+	
       basis::field<basis_type, double> density(basis);
 
 			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;

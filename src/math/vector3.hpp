@@ -4,7 +4,7 @@
 #define INQ__MATH__VECTOR3
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -251,7 +251,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	using namespace Catch::literals;
 
 	SECTION("Default initialization"){
-		[[maybe_unused]] math::vector3<int> vv;
+		math::vector3<int> vv; (void)vv;
 	}
 
 	SECTION("Scalar"){

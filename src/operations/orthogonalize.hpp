@@ -29,6 +29,8 @@
 
 #include <operations/overlap.hpp>
 
+#include <caliper/cali.h>
+
 #ifdef ENABLE_CUDA
 #include <cusolverDn.h>
 #endif
@@ -47,6 +49,8 @@ namespace operations {
 
 template <class field_set_type>
 void orthogonalize(field_set_type & phi){
+
+	CALI_CXX_MARK_FUNCTION;
 
 	assert(phi.set_comm().size() == 1);
 	
@@ -104,6 +108,8 @@ void orthogonalize(field_set_type & phi){
 	
 template <class field_set_type>
 void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int num_states = -1){
+
+	CALI_CXX_MARK_FUNCTION;
 
 	if(num_states == -1) num_states = phi.set_size();
 		

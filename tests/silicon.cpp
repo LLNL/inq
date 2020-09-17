@@ -29,6 +29,8 @@
 
 int main(int argc, char ** argv){
 
+	CALI_CXX_MARK_FUNCTION;
+
 	using namespace inq;
 	
 	boost::mpi3::environment env(argc, argv);
@@ -58,7 +60,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
 	
 	ground_state::initialize(ions, electrons);
-	[[maybe_unused]] auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::conjugate_gradient());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::conjugate_gradient());
 	
 	energy_match.check("total energy",     result.energy.total()    , -23.695217057747);
 	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.889589049038);

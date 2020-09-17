@@ -34,10 +34,14 @@
 
 #include <cassert>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace operations {
 	
 void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex> const & laplff){
+
+	CALI_CXX_MARK_FUNCTION;
 		
 	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
@@ -64,7 +68,9 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & ff){
-	
+
+	CALI_CXX_MARK_FUNCTION;
+		
 	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(ff.set_part().local_size(), ff.basis().local_sizes()[2], ff.basis().local_sizes()[1], ff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
