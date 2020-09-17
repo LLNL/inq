@@ -90,11 +90,6 @@ namespace systems {
 			
 			if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 
-			operations::randomize(phi_);
-			operations::orthogonalize(phi_);
-			
-			density::normalize(density_, states_.total_charge());
-
 			if(logger()){
 				logger()->info("constructed with geometry {}", ions.geo_);
 				logger()->info("constructed with cell {}", ions.cell_);
