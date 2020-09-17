@@ -104,9 +104,9 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 #else
 
 		using boost::multi::blas::dot;
-		using boost::multi::blas::hermitized;
+		using boost::multi::blas::conj;
 		
-		overlap_vector[0] = dot(boost::multi::blas::hermitized(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
+		overlap_vector[0] = dot(boost::multi::blas::conj(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
 #endif
 		overlap_vector[0] *= phi1.basis().volume_element();
 	} else {
