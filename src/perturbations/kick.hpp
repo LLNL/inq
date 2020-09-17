@@ -43,7 +43,7 @@ namespace perturbations {
 					
 					auto rr = phi.basis().rvector(ixg, iyg, izg);
 
-					auto kick_factor = complex(0.0, (kick_field|rr));
+					auto kick_factor = exp(complex(0.0, (kick_field|rr)));
 					
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] *= kick_factor;
@@ -73,18 +73,49 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	using namespace Catch::literals;
 	using math::vec3d;
 	
-  const int nvec = 12;
+	const int nvec = 12;
 
 	double ecut = 31.2;
+	double phi_absdif = 0.0;
+	double phi_dif = 0.0;
 
-  ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
+	ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
 
-  basis::real_space bas(cell, input::basis::cutoff_energy(ecut));
+	basis::real_space bas(cell, input::basis::cutoff_energy(ecut));
 
 	basis::field_set<basis::real_space, complex> phi(bas, nvec);
 
+	//Construct a field
+	for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
+		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
+			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+					phi.cubic()[ix][iy][iz][ist] = complex(cos(ist+(ix+iy+iz)), 1.3*sin(ist+(cos(ix-iy-iz))));
+				}
+			}
+		}
+	}
+
+	auto phi_old = phi;
+
 	perturbations::kick({0.1, 0.0, 0.0}, phi);
-	
+
+	for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
+		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
+			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+					phi_absdif += std::norm(phi.cubic()[ix][iy][iz][ist]) - std::norm(phi_old.cubic()[ix][iy][iz][ist]);
+					phi_dif += std::norm(phi.cubic()[ix][iy][iz][ist] - phi_old.cubic()[ix][iy][iz][ist]);
+				}
+			}
+		}
+	}
+
+	//Kick should not change the phi absolute value - kick pulse change only the phase of a wave fucntion in the frame of TDDFTThe kick should not change the phi absolute value - kick pulse change only the phase of a wave function in the frame of TDDFT
+	CHECK(phi_absdif == Approx(0).margin(1.0e-9));
+	//The wave function should changes after applying a kick potetntial
+	CHECK(phi_dif > 1.0e-9);
+
 }
 
 #endif
