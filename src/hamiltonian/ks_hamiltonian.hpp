@@ -126,13 +126,16 @@ namespace hamiltonian {
 
 			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
 
+			{
+				CALI_CXX_MARK_SCOPE("local potential");
 			//the scalar local potential in real space
 			//DATAOPERATIONS GPU:RUN 2D
-			gpu::run(phi.local_set_size(), phi.basis().local_size(),
-							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
-							 (auto ist, auto ip){
-								 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
-							 });
+				gpu::run(phi.local_set_size(), phi.basis().local_size(),
+								 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
+								 (auto ist, auto ip){
+									 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
+								 });
+			}
 			
 			exchange(phi, hphi);
 		}

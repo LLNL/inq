@@ -35,6 +35,8 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace hamiltonian {
 
@@ -75,7 +77,9 @@ namespace hamiltonian {
     void operator()(const field_set_type & phi, field_set_type & vnlphi) const {
 
 			if(nproj_ == 0) return;
-			
+
+			CALI_CXX_MARK_SCOPE("projector");
+				
 			using boost::multi::blas::gemm;
 			using boost::multi::blas::transposed;
 				
