@@ -115,21 +115,24 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 		
 	assert(num_states <= phi.set_size());
 
+	math::array<typename field_set_type::element_type, 1> olap({num_states}, 0.0);
+	
 	for(int ist = 0; ist < num_states; ist++){
 
-		typename field_set_type::element_type olap = 0.0;
 		for(long ip = 0; ip < phi.basis().local_size(); ip++){
-			olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+			olap[ist] += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
 		}
 
-		olap *= phi.basis().volume_element();
-		
-		if(phi.basis().part().parallel()){
-			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-		}
+		olap[ist] *= phi.basis().volume_element();
 
-		for(long ip = 0; ip < phi.basis().local_size(); ip++)	vec.matrix()[ip][0] -= olap*phi.matrix()[ip][ist];
-
+	}
+	
+	if(phi.basis().part().parallel()){
+		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(olap.data()), olap.num_elements(), std::plus<>{});
+	}
+	
+	for(int ist = 0; ist < num_states; ist++){
+		for(long ip = 0; ip < phi.basis().local_size(); ip++)	vec.matrix()[ip][0] -= olap[ist]*phi.matrix()[ip][ist];
 	}
 		
 }
