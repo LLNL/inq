@@ -313,10 +313,10 @@ gcc-runner:
       - CXX=mpic++ ../configure --prefix=$HOME  || cat config.log
       - time make -j8
       - time make -j8 install
-      - cd src; ctest -V --timeout 180 -j 16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 270 -j8; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 270 -j5; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 270 -j4; cd ..
+      - cd src; ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 270; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 270; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 270; cd ..
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -335,10 +335,10 @@ intel:
       - make -j $(($(nproc)/2 + 1))
       - make install
       - cd src
-      - ctest -j $(($(nproc)/2 + 1)) --output-on-failure
-      - INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 270 -j8
-      - INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 270 -j5
-      - INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 270 -j4
+      - ctest --output-on-failure
+      - INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 270
+      - INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 270
+      - INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 270
       - time ../tests/hydrogen_local
       - time ../tests/neon
       - time ../tests/h2o_ground_state
@@ -361,10 +361,10 @@ intel:
 #      - time ../configure --prefix=$HOME  || cat config.log
 #      - time make -j $(($(nproc)/4))
 #      - time make -j8 install
-#      - cd src; ctest -V --timeout 180 -j 16; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 270 -j8; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 270 -j5; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 270 -j4; cd ..
+#      - cd src; ctest -V --timeout 180; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 270; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 270; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 270; cd ..
 #      - time tests/hydrogen_local
 #      - time tests/neon
 #      - time tests/h2o_ground_state
@@ -388,10 +388,10 @@ nvcc:
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
       - time make -j8
       - time make -j8 install
-      - cd src; ctest -V --timeout 360 -j 16; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 360 -j8; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 360 -j5; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 360 -j4; cd ..   
+      - cd src; ctest -V --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 360; cd ..   
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
