@@ -131,20 +131,6 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 
 		for(long ip = 0; ip < phi.basis().local_size(); ip++)	vec.matrix()[ip][0] -= olap/real(norm)*phi.matrix()[ip][ist];
 
-#if 0
-		{
-			typename field_set_type::element_type olap = 0.0;
-				
-			for(long ip = 0; ip < phi.basis().local_size(); ip++){
-				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-			}
-				
-			//reduce olap, norm
-				
-			std::cout << ist << '\t' << num_states << '\t' << fabs(olap) << std::endl;
-		}
-#endif
-			
 	}
 		
 }
@@ -253,10 +239,41 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		operations::randomize(vec);
 
 		operations::orthogonalize_single(vec, phi, 2);
+
+		for(int ist = 0; ist < 2; ist++){
+			
+			complex olap = 0.0;
+			
+			for(long ip = 0; ip < phi.basis().local_size(); ip++){
+				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+			}
+
+			if(phi.basis().part().parallel()){
+				phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
+			}
+	
+			CHECK(fabs(olap) < 5e-14);
+		}
 		
 		operations::randomize(vec);
 		
 		operations::orthogonalize_single(vec, phi);
+
+		for(int ist = 0; ist < 3; ist++){
+			
+			complex olap = 0.0;
+			
+			for(long ip = 0; ip < phi.basis().local_size(); ip++){
+				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+			}
+
+			if(phi.basis().part().parallel()){
+				phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
+			}
+	
+			CHECK(fabs(olap) < 5e-14);
+		}
+
 		
 	}
 }
