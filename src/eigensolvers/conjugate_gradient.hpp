@@ -190,16 +190,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 #undef INQ_EIGENSOLVERS_CONJUGATE_GRADIENT_UNIT_TEST
 
 #include <catch2/catch.hpp>
-#include <basis/real_space.hpp>
-#include <ions/unitcell.hpp>
-
-TEST_CASE("eigensolver::conjugate_gradient", "[conjugate_gradient]") {
-
-
-}
-
 
 #endif
-
 
 #endif
