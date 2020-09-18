@@ -114,22 +114,21 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 	if(num_states == -1) num_states = phi.set_size();
 		
 	assert(num_states <= phi.set_size());
-		
+
 	for(int ist = 0; ist < num_states; ist++){
 
 		typename field_set_type::element_type olap = 0.0;
-		typename field_set_type::element_type norm = 0.0;
 		for(long ip = 0; ip < phi.basis().local_size(); ip++){
 			olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-			norm += conj(phi.matrix()[ip][ist])*phi.matrix()[ip][ist];
 		}
+
+		olap *= phi.basis().volume_element();
 		
 		if(phi.basis().part().parallel()){
 			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-			phi.basis().comm().all_reduce_in_place_n(&norm, 1, std::plus<>{});
 		}
 
-		for(long ip = 0; ip < phi.basis().local_size(); ip++)	vec.matrix()[ip][0] -= olap/real(norm)*phi.matrix()[ip][ist];
+		for(long ip = 0; ip < phi.basis().local_size(); ip++)	vec.matrix()[ip][0] -= olap*phi.matrix()[ip][ist];
 
 	}
 		
