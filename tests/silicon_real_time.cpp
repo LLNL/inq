@@ -54,7 +54,7 @@ int main(int argc, char ** argv){
 	
 	conf.extra_states = 4;
 	
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
+	systems::electrons electrons({comm_world, {}}, ions, input::basis::cutoff_energy(25.0), conf);
 
 	auto result = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055));
 	

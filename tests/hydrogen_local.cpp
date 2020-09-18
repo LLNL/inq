@@ -23,6 +23,7 @@
 #include <config/path.hpp>
 #include <input/atom.hpp>
 #include <utils/match.hpp>
+#include <ground_state/initialize.hpp>
 #include <ground_state/calculate.hpp>
 
 #include <mpi3/environment.hpp>
@@ -45,7 +46,8 @@ int main(int argc, char ** argv){
 	inq::input::config conf;
 	
 	inq::systems::electrons electrons(comm_world, ions, inq::input::basis::cutoff_energy(60.0), conf);
-
+	inq::ground_state::initialize(ions, electrons);
+	
 	// Non Interacting
 	{
 	

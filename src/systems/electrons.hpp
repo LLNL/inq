@@ -61,8 +61,8 @@ namespace systems {
 	
 		enum class error { NO_ELECTRONS };
 
-		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
-			full_comm_(comm, {1, boost::mpi3::fill}),
+		electrons(boost::mpi3::cartesian_communicator<2> && cart_comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
+			full_comm_(cart_comm),
 			states_comm_(full_comm_.axis(0)),
 			atoms_comm_(states_comm_),
 			basis_comm_(full_comm_.axis(1)),
@@ -71,7 +71,7 @@ namespace systems {
 			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 			states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states),
 			phi_(states_basis_, states_.num_states(), full_comm_),
-			density_(atomic_pot_.atomic_electronic_density(density_basis_, ions.cell(), ions.geo()))
+			density_(density_basis_)
 		{
 
 			CALI_CXX_MARK_FUNCTION;
@@ -90,16 +90,16 @@ namespace systems {
 			
 			if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 
-			operations::randomize(phi_);
-			operations::orthogonalize(phi_);
-			
-			density::normalize(density_, states_.total_charge());
-
 			if(logger()){
 				logger()->info("constructed with geometry {}", ions.geo_);
 				logger()->info("constructed with cell {}", ions.cell_);
 			}
 		}
+
+		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
+			electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, arg_basis_input, conf){
+		}
+
 		
 	private:
 		static std::string generate_tiny_uuid(){

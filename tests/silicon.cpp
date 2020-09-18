@@ -24,6 +24,7 @@
 #include <input/atom.hpp>
 #include <operations/io.hpp>
 #include <utils/match.hpp>
+#include <ground_state/initialize.hpp>
 #include <ground_state/calculate.hpp>
 
 int main(int argc, char ** argv){
@@ -58,6 +59,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
 	
+	ground_state::initialize(ions, electrons);
 	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::conjugate_gradient());
 	
 	energy_match.check("total energy",     result.energy.total()    , -23.695217057747);
