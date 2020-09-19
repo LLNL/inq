@@ -66,8 +66,15 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
         
 			basis::field_set<basis::fourier_space, field_set_type> g(phi_all.basis(), 1, phi_all.full_comm());
 
-			for(long ip = 0; ip < g.basis().local_size(); ip++) g.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue*phi.matrix()[ip][0];
-
+			auto gm = begin(g.matrix());
+			auto phim = begin(phi.matrix());
+			auto hphim = begin(hphi.matrix());
+				
+			gpu::run(g.basis().local_size(),
+							 [=] GPU_LAMBDA (auto ip){
+								 gm[ip][0] = hphim[ip][0] - eigenvalue*phim[ip][0];
+							 });
+			
 			double res = fabs(operations::overlap_diagonal(g)[0]);
 
 			auto g0 = g;
@@ -81,7 +88,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 			gpu::run(g.basis().local_size(),
 							 [dd = dot[0],
 								g0m = begin(g0.matrix()),
-								phim = begin(phi.matrix())] GPU_LAMBDA (auto ip){
+								phim] GPU_LAMBDA (auto ip){
 								 g0m[ip][0] = g0m[ip][0] - dd*phim[ip][0];
 							 });
 
@@ -162,20 +169,19 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 								 hphim[ip][0] = a0*hphim[ip][0] + b0*hcgm[ip][0];
 							 });
 
-			/*
-			for(long ip = 0; ip < cg.basis().local_size(); ip++){
-				phi.matrix()[ip][0] = a0*phi.matrix()[ip][0] + b0*cg.matrix()[ip][0];
-				hphi.matrix()[ip][0] = a0*hphi.matrix()[ip][0] + b0*hcg.matrix()[ip][0];
-			}
-			*/
-			
 			//calculate the eigenvalue, this is duplicated
 			eigenvalue = operations::overlap_diagonal(phi, hphi)[0];
         
 			basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1, phi_all.full_comm());
-				
-			for(long ip = 0; ip < g.basis().local_size(); ip++) g2.matrix()[ip][0] = hphi.matrix()[ip][0] - eigenvalue*phi.matrix()[ip][0];
-				
+
+			gpu::run(g.basis().local_size(),
+							 [eigenvalue,
+								g2m = begin(g2.matrix()),
+								hphim = begin(hphi.matrix()),
+								phim = begin(phi.matrix())] GPU_LAMBDA (auto ip){
+								 g2m[ip][0] = hphim[ip][0] - eigenvalue*phim[ip][0];
+							 });
+
 			res = fabs(operations::overlap_diagonal(g2)[0]);
 				
 			if(iter > 0){
@@ -204,8 +210,12 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 		//normalize
 		auto norm = operations::overlap_diagonal(phi)[0];
-		for(long ip = 0; ip < cg.basis().local_size(); ip++) phi.matrix()[ip][0] /= sqrt(norm);
 
+		gpu::run(cg.basis().local_size(),
+						 [norm, phim = begin(phi.matrix())] GPU_LAMBDA (auto ip) {
+							 phim[ip][0] /= sqrt(norm);
+						 });
+		
 		// save the newly calculated state
 		phi_all.matrix().rotated()[ist] = phi.matrix().rotated()[0];
       
