@@ -103,7 +103,7 @@ namespace hamiltonian {
     template <class basis_type, class cell_type, class geo_type>
     auto local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
-			CALI_CXX_MARK_FUNCTION;
+			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
       basis::field<basis_type, double> potential(basis);
 
