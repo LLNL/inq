@@ -46,6 +46,8 @@ namespace hamiltonian {
 
   public:
 
+		using pseudopotential_type = pseudo::pseudopotential<math::array<double, 1>>;
+		
     enum class error {
       PSEUDOPOTENTIAL_NOT_FOUND
     };
@@ -73,7 +75,7 @@ namespace hamiltonian {
 					auto file_path = pseudo_set_.file_path(atom_list[iatom]);
 					if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
 
-					auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
+					auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudopotential_type(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
 					map_ref = insert.first;
 					
 				}
@@ -96,7 +98,7 @@ namespace hamiltonian {
     }
 		
 		template <class element_type>
-    const pseudo::pseudopotential & pseudo_for_element(const element_type & el) const {
+    const pseudopotential_type & pseudo_for_element(const element_type & el) const {
       return pseudopotential_list_.at(el.symbol());
     }
 
@@ -262,7 +264,7 @@ namespace hamiltonian {
 		pseudo::math::erf_range_separation const sep_;
     double nelectrons_;
     pseudo::set pseudo_set_;
-    std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
+    std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		mutable boost::mpi3::communicator comm_;
 		inq::utils::partition part_;
 		bool has_nlcc_;

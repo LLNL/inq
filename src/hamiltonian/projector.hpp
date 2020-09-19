@@ -22,7 +22,6 @@
 */
 
 #include <pseudopod/spherical_harmonic.hpp>
-#include <pseudopod/pseudopotential.hpp>
 
 #include <math/array.hpp>
 #include <math/vector3.hpp>
@@ -30,6 +29,8 @@
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
+#include <hamiltonian/atomic_potential.hpp>
+
 #ifdef ENABLE_CUDA
 #include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
 #endif
@@ -43,7 +44,7 @@ namespace hamiltonian {
   class projector {
 
   public:
-    projector(const basis::real_space & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps, math::vec3d atom_position):
+    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type ps, math::vec3d atom_position):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),
@@ -155,7 +156,7 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
 
-	pseudo::pseudopotential ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
+	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
 	hamiltonian::projector proj(rs, cell, ps, vec3d(0.0, 0.0, 0.0));
 
