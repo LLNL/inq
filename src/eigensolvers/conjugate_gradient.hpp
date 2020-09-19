@@ -209,11 +209,11 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 		operations::orthogonalize_single(phi, phi_all, ist);
 
 		//normalize
-		auto norm = operations::overlap_diagonal(phi)[0];
+		auto nrm = sqrt(operations::overlap_diagonal(phi)[0]);
 
 		gpu::run(cg.basis().local_size(),
-						 [norm, phim = begin(phi.matrix())] GPU_LAMBDA (auto ip) {
-							 phim[ip][0] /= sqrt(norm);
+						 [nrm, phim = begin(phi.matrix())] GPU_LAMBDA (auto ip) {
+							 phim[ip][0] = phim[ip][0]/nrm;
 						 });
 		
 		// save the newly calculated state
