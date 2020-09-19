@@ -78,7 +78,12 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 			auto dot = operations::overlap_diagonal(phi, g0);
 
-			for(long ip = 0; ip < g.basis().local_size(); ip++) g0.matrix()[ip][0] = g0.matrix()[ip][0] - dot[0]*phi.matrix()[ip][0];
+			gpu::run(g.basis().local_size(),
+							 [dd = dot[0],
+								g0m = begin(g0.matrix()),
+								phim = begin(phi.matrix())] GPU_LAMBDA (auto ip){
+								 g0m[ip][0] = g0m[ip][0] - dd*phim[ip][0];
+							 });
 
 			auto gg = operations::overlap_diagonal(g0, g);
 
@@ -95,10 +100,24 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 			} else {
 				auto gamma = gg[0]/gg0;
 				gg0 = gg[0];
-				for(long ip = 0; ip < cg.basis().local_size(); ip++) cg.matrix()[ip][0] = gamma*cg.matrix()[ip][0] + g0.matrix()[ip][0];
 
-				auto norma = operations::overlap_diagonal(phi, cg);
-				for(long ip = 0; ip < cg.basis().local_size(); ip++) cg.matrix()[ip][0] = cg.matrix()[ip][0] - norma[0]*phi.matrix()[ip][0];
+				auto cgm = begin(cg.matrix());
+				auto g0m = begin(g0.matrix());
+				
+				gpu::run(cg.basis().local_size(),
+								 [=] GPU_LAMBDA (auto ip){
+									 cgm[ip][0] = gamma*cgm[ip][0] + g0m[ip][0];
+								 });
+				
+				auto norma = operations::overlap_diagonal(phi, cg)[0];
+
+				auto phim = begin(phi.matrix());
+				
+				gpu::run(cg.basis().local_size(),
+								 [=] GPU_LAMBDA (auto ip){
+									 cgm[ip][0] = cgm[ip][0] - norma*phim[ip][0];
+								 });
+									 
 			}
 
 			//cg now contains the conjugate gradient
@@ -133,13 +152,24 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 				b0 = stheta/cg0;
 			}
 
+			gpu::run(cg.basis().local_size(),
+							 [a0, b0,
+								phim = begin(phi.matrix()),
+								cgm = begin(cg.matrix()),
+								hphim = begin(hphi.matrix()),
+								hcgm = begin(hcg.matrix())] GPU_LAMBDA (auto ip){
+								 phim[ip][0] = a0*phim[ip][0] + b0*cgm[ip][0];
+								 hphim[ip][0] = a0*hphim[ip][0] + b0*hcgm[ip][0];
+							 });
+
+			/*
 			for(long ip = 0; ip < cg.basis().local_size(); ip++){
 				phi.matrix()[ip][0] = a0*phi.matrix()[ip][0] + b0*cg.matrix()[ip][0];
 				hphi.matrix()[ip][0] = a0*hphi.matrix()[ip][0] + b0*hcg.matrix()[ip][0];
 			}
-
+			*/
+			
 			//calculate the eigenvalue, this is duplicated
-				
 			eigenvalue = operations::overlap_diagonal(phi, hphi);
         
 			basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1, phi_all.full_comm());
