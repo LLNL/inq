@@ -149,23 +149,16 @@ namespace hamiltonian {
 				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
 
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-#ifdef ENABLE_CUDA
 				//OPTIMIZATION: this should be done in parallel for atoms too
 				gpu::run(sphere.size(),
-								 [dns = begin(density.cubic()), pts = begin(sphere.points()),
+								 [dns = begin(density.cubic()),
+									pts = begin(sphere.points()),
 									chrg = ps.valence_charge(),
-									sp = sep_, distance = begin(sphere.distance())] __device__
-								 (auto ipoint){
+									sp = sep_,
+									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
 									 double rr = distance[ipoint];
 									 dns[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += chrg*sp.long_range_density(rr);
 								 });
-#else
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = sphere.distance()[ipoint];
-					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]]
-						+= ps.valence_charge()*sep_.long_range_density(rr);
-				}
-#endif
       }
 
 			if(part_.parallel()){
