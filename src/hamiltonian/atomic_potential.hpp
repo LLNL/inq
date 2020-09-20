@@ -103,13 +103,13 @@ namespace hamiltonian {
     }
 
     template <class basis_type, class cell_type, class geo_type>
-    auto local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
       basis::field<basis_type, double> potential(basis);
 
-			for(long ii = 0; ii < potential.linear().size(); ii++) potential.linear()[ii] = 0.0;
+			potential = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -118,17 +118,18 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 
-				auto spline = ps.short_range_potential().cbegin();
- 
-				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = sphere.distance()[ipoint];
-					auto sr_potential = spline.value(rr);
-					potential.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
-				}
+ 				gpu::run(sphere.size(),
+								 [pot = begin(potential.cubic()),
+									pts = begin(sphere.points()),
+									spline = ps.short_range_potential().cbegin(),
+									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
+									 auto rr = distance[ipoint];
+									 auto potential_val = spline.value(rr);
+									 pot[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += potential_val;
+								 });
 				
       }
-
+			
 			if(part_.parallel()){
 				comm_.all_reduce_in_place_n(static_cast<double *>(potential.linear().data()), potential.linear().size(), std::plus<>{});
 			}
@@ -215,7 +216,7 @@ namespace hamiltonian {
 		}
 
 		template <class basis_type, class cell_type, class geo_type>
-    auto nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 	
@@ -235,14 +236,15 @@ namespace hamiltonian {
 				
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.nlcc_density_radius());
 
-				auto spline = ps.nlcc_density().cbegin();
-				
-				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = sphere.distance()[ipoint];
-					auto density_val = spline.value(rr);
-					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += density_val;
-				}
+				gpu::run(sphere.size(),
+								 [dens = begin(density.cubic()),
+									pts = begin(sphere.points()),
+									spline = ps.nlcc_density().cbegin(),
+									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
+									 auto rr = distance[ipoint];
+									 auto density_val = spline.value(rr);
+									 dens[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += density_val;
+								 });
 				
       }
 
