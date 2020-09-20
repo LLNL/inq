@@ -118,10 +118,12 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 
+				auto spline = ps.short_range_potential().cbegin();
+ 
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					auto rr = sphere.distance()[ipoint];
-					auto sr_potential = ps.short_range_potential().value(rr);
+					auto sr_potential = spline.value(rr);
 					potential.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
 				}
 				
@@ -190,10 +192,12 @@ namespace hamiltonian {
 
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.electronic_density_radius());
 
+				auto spline = ps.electronic_density().cbegin();
+				
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					auto rr = sphere.distance()[ipoint];
-					auto density_val = ps.electronic_density().value(rr);
+					auto density_val = spline.value(rr);
 					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += density_val;
 				}
 				
@@ -231,10 +235,12 @@ namespace hamiltonian {
 				
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.nlcc_density_radius());
 
+				auto spline = ps.nlcc_density().cbegin();
+				
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
 				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 					auto rr = sphere.distance()[ipoint];
-					auto density_val = ps.nlcc_density().value(rr);
+					auto density_val = spline.value(rr);
 					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += density_val;
 				}
 				
