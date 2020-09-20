@@ -173,13 +173,13 @@ namespace hamiltonian {
     }
     
     template <class basis_type, class cell_type, class geo_type>
-    auto atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 	
       basis::field<basis_type, double> density(basis);
 
-			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
+			density = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -192,15 +192,15 @@ namespace hamiltonian {
 
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.electronic_density_radius());
 
-				auto spline = ps.electronic_density().cbegin();
-				
-				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = sphere.distance()[ipoint];
-					auto density_val = spline.value(rr);
-					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += density_val;
-				}
-				
+				gpu::run(sphere.size(),
+								 [dens = begin(density.cubic()),
+									pts = begin(sphere.points()),
+									spline = ps.electronic_density().cbegin(), 
+									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
+									 auto rr = distance[ipoint];
+									 auto density_val = spline.value(rr);
+									 dens[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += density_val;
+								 });
       }
 
 			if(part_.parallel()){
@@ -221,7 +221,7 @@ namespace hamiltonian {
 	
       basis::field<basis_type, double> density(basis);
 
-			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
+			density = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
