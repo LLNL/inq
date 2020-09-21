@@ -59,7 +59,7 @@ namespace hamiltonian {
 																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(geo.coordinates()[iatom]);
 				} else {
-					projectors_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
+					projectors_.emplace_back(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]);
 				}
 			}
 
