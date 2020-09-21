@@ -75,7 +75,8 @@ namespace hamiltonian {
 					auto file_path = pseudo_set_.file_path(atom_list[iatom]);
 					if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
 
-					auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudopotential_type(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
+					//sorry for this, emplace has a super ugly syntax
+					auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple(atom_list[iatom].symbol()), std::make_tuple(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
 					map_ref = insert.first;
 					
 				}
