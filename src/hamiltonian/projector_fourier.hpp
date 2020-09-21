@@ -29,7 +29,6 @@
 #include <config/path.hpp>
 
 #include <pseudopod/spherical_harmonic.hpp>
-#include <pseudopod/pseudopotential.hpp>
 
 #include <math/array.hpp>
 #include <math/vector3.hpp>
@@ -38,6 +37,9 @@
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
 #include <operations/space.hpp>
+#include <hamiltonian/atomic_potential.hpp>
+
+#include <caliper/cali.h>
 
 namespace inq {
 namespace hamiltonian {
@@ -45,7 +47,7 @@ namespace hamiltonian {
   class projector_fourier {
 
   public:
-    projector_fourier(const basis::real_space & basis, const ions::UnitCell & cell, pseudo::pseudopotential ps):
+    projector_fourier(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps):
       nproj_(ps.num_projectors_lm()),
 			kb_coeff_(nproj_),
 			beta_(basis::fourier_space(basis), nproj_){
@@ -90,6 +92,8 @@ namespace hamiltonian {
 		}
 
     void operator()(basis::field_set<basis::fourier_space, complex> const & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
+
+			CALI_CXX_MARK_SCOPE("projector_fourier");
 
 			if(nproj_ == 0) return;
 
@@ -178,7 +182,7 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
   ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
-	pseudo::pseudopotential ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
+	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
 	hamiltonian::projector_fourier proj(rs, cell, ps);
 

@@ -71,7 +71,7 @@ template<class occupations_array_type, class field_set_type>
 basis::field<typename field_set_type::basis_type, double> 
 calculate(const occupations_array_type & occupations, field_set_type & phi, typename field_set_type::basis_type & destination_basis){
 
-	CALI_CXX_MARK_SCOPE("calculate density");
+	CALI_CXX_MARK_SCOPE("density::calculate");
 	
 	if(destination_basis == phi.basis()){
 		return calculate(occupations, phi);

@@ -29,6 +29,8 @@
 #include <array>
 #include <math/array.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace basis {
 
@@ -42,6 +44,8 @@ namespace basis {
     spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vec3d & center_point, const double radius):
 			volume_element_(parent_grid.volume_element()){
 
+			CALI_CXX_MARK_FUNCTION;
+	
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
 			std::vector<std::array<int, 3> > tmp_points;
@@ -90,7 +94,9 @@ namespace basis {
     
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
-			
+
+			CALI_CXX_MARK_SCOPE("spherical_grid::gather 3d");
+				
 			//DATAOPERATIONS STL TRANSFORM
 			std::transform(points_.begin(), points_.end(), subgrid.begin(),
 										 [& grid](auto point){
@@ -100,6 +106,9 @@ namespace basis {
 
 		template <class array_4d>
     math::array<typename array_4d::element_type, 2> gather(const array_4d & grid) const {
+
+			CALI_CXX_MARK_SCOPE("spherical_grid::gather 4d");
+			
 			const int nst = std::get<3>(sizes(grid));
 			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
 
@@ -120,6 +129,8 @@ namespace basis {
 
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
+
+			CALI_CXX_MARK_SCOPE("spherical_grid::scatter_add");
 			
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef ENABLE_CUDA
@@ -140,6 +151,8 @@ namespace basis {
     template <class array_1d, class array_3d>
     void scatter(const array_1d & subgrid, array_3d && grid) const{
 
+			CALI_CXX_MARK_SCOPE("spherical_grid::scatter");
+			
 			//DATAOPERATIONS LOOP 1D (random access output)
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
