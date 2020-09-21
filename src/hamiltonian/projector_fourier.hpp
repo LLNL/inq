@@ -39,6 +39,8 @@
 #include <operations/space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace hamiltonian {
 
@@ -90,6 +92,8 @@ namespace hamiltonian {
 		}
 
     void operator()(basis::field_set<basis::fourier_space, complex> const & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
+
+			CALI_CXX_MARK_SCOPE("projector_fourier");
 
 			if(nproj_ == 0) return;
 
