@@ -44,7 +44,7 @@ namespace hamiltonian {
   class projector {
 
   public:
-    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type ps, math::vec3d atom_position):
+    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vec3d atom_position):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),

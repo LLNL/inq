@@ -47,7 +47,7 @@ namespace hamiltonian {
   class projector_fourier {
 
   public:
-    projector_fourier(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type ps):
+    projector_fourier(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps):
       nproj_(ps.num_projectors_lm()),
 			kb_coeff_(nproj_),
 			beta_(basis::fourier_space(basis), nproj_){
