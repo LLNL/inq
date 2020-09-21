@@ -23,6 +23,8 @@
 
 #include <inq_config.h>
 
+#include <caliper/cali.h>
+
 #include <multi/array.hpp>
 
 #ifdef ENABLE_CUDA

@@ -31,12 +31,12 @@
 #include <basis/spherical_grid.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 
+#include <caliper/cali.h>
+
 #ifdef ENABLE_CUDA
 #include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
 #endif
 #include <multi/adaptors/blas.hpp>
-
-#include <caliper/cali.h>
 
 namespace inq {
 namespace hamiltonian {
