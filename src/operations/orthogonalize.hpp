@@ -25,11 +25,15 @@
 #include <math/complex.hpp>
 #include <basis/field_set.hpp>
 #include <cstdlib>
-#include <multi/adaptors/blas/trsm.hpp>
-
-#include <operations/overlap.hpp>
 
 #include <caliper/cali.h>
+
+#ifdef ENABLE_CUDA
+#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
+#endif
+#include <multi/adaptors/blas.hpp>
+
+#include <operations/overlap.hpp>
 
 #ifdef ENABLE_CUDA
 #include <cusolverDn.h>

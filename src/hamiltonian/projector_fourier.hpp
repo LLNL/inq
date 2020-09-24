@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <caliper/cali.h>
+
 #ifdef ENABLE_CUDA
 #include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
 #endif
@@ -38,8 +40,6 @@
 #include <basis/spherical_grid.hpp>
 #include <operations/space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
-
-#include <caliper/cali.h>
 
 namespace inq {
 namespace hamiltonian {

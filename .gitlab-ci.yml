@@ -314,9 +314,9 @@ gcc-runner:
       - time make -j8
       - time make -j8 install
       - cd src; ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 270; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 270; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 270; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 360; cd ..
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -336,9 +336,9 @@ intel:
       - make install
       - cd src
       - ctest --output-on-failure
-      - INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 270
-      - INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 270
-      - INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 270
+      - INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 360
+      - INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 360
+      - INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 360
       - time ../tests/hydrogen_local
       - time ../tests/neon
       - time ../tests/h2o_ground_state
@@ -362,9 +362,9 @@ intel:
 #      - time make -j $(($(nproc)/4))
 #      - time make -j8 install
 #      - cd src; ctest -V --timeout 180; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 270; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 270; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 270; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 360; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 360; cd ..
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 360; cd ..
 #      - time tests/hydrogen_local
 #      - time tests/neon
 #      - time tests/h2o_ground_state

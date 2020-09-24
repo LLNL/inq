@@ -89,18 +89,15 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 
 	if(phi2.set_part().local_size() == 1){
 #ifdef ENABLE_CUDA
-		cublasHandle_t handle;
-		cublasCreate(&handle);
 		if(typeid(typename field_set_type::element_type) == typeid(complex)) {
-			cublasZdotc(handle, phi1.basis().part().local_size(),
+			cublasZdotc(boost::multi::cublas::global_context().get(), phi1.basis().part().local_size(),
 									(const cuDoubleComplex *) raw_pointer_cast(phi1.matrix().data_elements()), 1, (const cuDoubleComplex *)  raw_pointer_cast(phi2.matrix().data_elements()), 1,
 									(cuDoubleComplex *) raw_pointer_cast(overlap_vector.data_elements()));
 		} else {
-			cublasDdot(handle, phi1.basis().part().local_size(),
+			cublasDdot(boost::multi::cublas::global_context().get(), phi1.basis().part().local_size(),
 								 (const double *) raw_pointer_cast(phi1.matrix().data_elements()), 1, (const double *) raw_pointer_cast(phi2.matrix().data_elements()), 1,
 								 (double *) raw_pointer_cast(overlap_vector.data_elements()));
 		}
-		cublasDestroy(handle);
 #else
 
 		using boost::multi::blas::dot;
