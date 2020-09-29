@@ -21,12 +21,12 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch.hpp>
 
-#include <mpi3/environment.hpp>
+#include <input/environment.hpp>
 #include <fftw3.h>
 
 int main( int argc, char* argv[] ) {
 
-	boost::mpi3::environment env(argc, argv);
+	inq::input::environment env(argc, argv);
 	
   int result = Catch::Session().run( argc, argv );
 
