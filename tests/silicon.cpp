@@ -26,6 +26,7 @@
 #include <utils/match.hpp>
 #include <ground_state/initialize.hpp>
 #include <ground_state/calculate.hpp>
+#include <input/environment.hpp>
 
 int main(int argc, char ** argv){
 
@@ -33,7 +34,8 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	
-	boost::mpi3::environment env(argc, argv);
+	input::environment env(argc, argv);
+
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
 	utils::match energy_match(1.0e-6);

@@ -30,6 +30,8 @@
 #include <ground_state/initialize.hpp>
 #include <ground_state/calculate.hpp>
 
+#include <input/environment.hpp>
+
 #include <caliper/cali.h>
 
 int main(int argc, char ** argv){
@@ -39,7 +41,7 @@ int main(int argc, char ** argv){
 	using namespace inq::input;
 	using inq::math::vec3d;
 	
-	boost::mpi3::environment env(argc, argv);
+	inq::input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
 	inq::utils::match match(2.5e-4);
