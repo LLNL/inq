@@ -3,3 +3,4 @@
 .deps
 src/inq_unit_tests
 blds
+build

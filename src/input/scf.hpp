@@ -34,12 +34,13 @@ namespace input {
   public:
 
     enum class scf_eigensolver { STEEPEST_DESCENT,
-                                 CONJUGATE_GRADIENT
+                                 CONJUGATE_GRADIENT,
+				 DAVIDSON
     };
 
     enum class mixing_algo { LINEAR,
-														 PULAY,
-														 BROYDEN
+			     PULAY,
+			     BROYDEN
     };
 
     static auto steepest_descent(){
@@ -51,6 +52,12 @@ namespace input {
     static auto conjugate_gradient(){
       scf solver;
       solver.eigensolver_ = scf_eigensolver::CONJUGATE_GRADIENT;
+      return solver;
+    }
+
+    static auto davidson(){
+      scf solver;
+      solver.eigensolver_ = scf_eigensolver::DAVIDSON;
       return solver;
     }
 		
