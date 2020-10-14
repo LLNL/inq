@@ -78,7 +78,9 @@ public:
 	auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
-			
+
+		assert(not density.basis().part().parallel());
+		
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
 		auto potential_fs = operations::space::to_fourier(potential2x);
 			
