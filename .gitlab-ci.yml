@@ -1,6 +1,6 @@
 # Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
-image: debian:testing
+image: debian:stable
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
