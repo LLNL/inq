@@ -116,10 +116,10 @@ clang:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-8 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++ --version
+      - clang++-8 --version
       - mkdir build
       - cd build
-      - export OMPI_CXX=clang++
+      - export OMPI_CXX=clang++-8
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
       - CXX=mpic++ ../configure --prefix=$HOME
       - ls -l
@@ -168,10 +168,10 @@ clang-fast:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-8 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++ --version
+      - clang++-8 --version
       - mkdir build
       - cd build
-      - export OMPI_CXX=clang++
+      - export OMPI_CXX=clang++-8
       - export CXXFLAGS="-Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - CXX=mpic++ ../configure --prefix=$HOME
       - time make -j4
