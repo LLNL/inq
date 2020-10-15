@@ -1,6 +1,6 @@
 # Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
-image: debian:testing
+image: debian:stable-backports
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -62,7 +62,7 @@ gcc:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -72,23 +72,23 @@ gcc:
       - time make
       - time make -j4 install
       - cd src; ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 180; cd ..
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       - time tests/silicon  
-      - time mpirun --oversubscribe -np 2 tests/silicon
-      - time mpirun --oversubscribe -np 3 tests/silicon
-      - time mpirun --oversubscribe -np 5 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
 
 gcc-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran  make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -98,45 +98,45 @@ gcc-fast:
       - time make
       - time make -j4 install
       - cd src; ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       - time tests/silicon  
-      - time mpirun --oversubscribe -np 2 tests/silicon
-      - time mpirun --oversubscribe -np 3 tests/silicon
-      - time mpirun --oversubscribe -np 5 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
 
 clang:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-8 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++ --version
+      - clang++-8 --version
       - mkdir build
       - cd build
-      - export OMPI_CXX=clang++
+      - export OMPI_CXX=clang++-8
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
       - CXX=mpic++ ../configure --prefix=$HOME
       - ls -l
       - time make -j4
       - time make -j4 install
       - cd src; ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       - time tests/silicon
-      - time mpirun --oversubscribe -np 2 tests/silicon
-      - time mpirun --oversubscribe -np 3 tests/silicon
-      - time mpirun --oversubscribe -np 5 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
 
 #clang-cuda:
 #    stage: build
@@ -166,28 +166,28 @@ clang-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-8 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++ --version
+      - clang++-8 --version
       - mkdir build
       - cd build
-      - export OMPI_CXX=clang++
+      - export OMPI_CXX=clang++-8
       - export CXXFLAGS="-Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
       - CXX=mpic++ ../configure --prefix=$HOME
       - time make -j4
       - time make -j4 install
       - cd src; ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 180; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 180; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 180; cd ..      
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       - time tests/silicon  
-      - time mpirun --oversubscribe -np 2 tests/silicon
-      - time mpirun --oversubscribe -np 3 tests/silicon
-      - time mpirun --oversubscribe -np 5 tests/silicon            
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon            
 
 #clang-valgrind:
 #    stage: build
@@ -388,10 +388,10 @@ nvcc:
       - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
       - time make -j8
       - time make -j8 install
-      - cd src; ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 360; cd ..   
+      - cd src; ctest -V --timeout 600; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 600; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 600; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 600; cd ..   
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
