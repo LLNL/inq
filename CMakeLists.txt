@@ -34,6 +34,11 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
+#FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
+find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
+include_directories(${FFTW_INCLUDE_DIRS})
+link_libraries(${FFTW_LIBRARIES})
+
 find_package(BLAS REQUIRED)
 link_libraries(${BLAS_LIBRARIES})
 
@@ -55,10 +60,6 @@ link_libraries(caliper)
 find_package(Boost REQUIRED COMPONENTS serialization)
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
-
-find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
-include_directories(${FFTW_INCLUDE_DIRS})
-link_libraries(${FFTW_LIBRARIES})
 
 # Required for inq_config.h
 include_directories(${PROJECT_BINARY_DIR})
