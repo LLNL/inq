@@ -80,8 +80,12 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 
 							 auto den = cb + sqrt(cb*cb - 4.0*ca*cc);
 
-							 if(fabs(den) < 1e-15) lam[ist] = complex(0.0, 0.0); //this happens if we are perfectly converged
-							 lam[ist] = complex(2.0*cc/den, 0.0);
+							 if(fabs(den) < 1e-15) { //this happens if we are perfectly converged
+								 lam[ist] = complex(0.0, 0.0);
+							 } else {
+								 lam[ist] = complex(2.0*cc/den, 0.0);
+							 }
+							 
 						 });
 
 		operations::shift(1.0, lambda, residual, phi);
