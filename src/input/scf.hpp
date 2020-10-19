@@ -137,6 +137,16 @@ namespace input {
 		auto verbose_output() const {
 			return verbose_.value_or(true);
 		}
+
+		auto static no_subspace_diag() {
+			scf solver;
+      solver.subspace_diag_ = false;
+      return solver;
+		}
+		
+		auto subspace_diag() const {
+			return subspace_diag_.value_or(true);
+		}		
 		
     friend auto operator|(const scf & solver1, const scf & solver2){
 			using inq::utils::merge_optional;
@@ -147,7 +157,8 @@ namespace input {
 			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);
 			rsolver.energy_tol_	= merge_optional(solver1.energy_tol_, solver2.energy_tol_);
 			rsolver.mixing_algo_	= merge_optional(solver1.mixing_algo_, solver2.mixing_algo_);
-			rsolver.verbose_	= merge_optional(solver1.verbose_, solver2.verbose_);			
+			rsolver.verbose_	= merge_optional(solver1.verbose_, solver2.verbose_);
+			rsolver.subspace_diag_ = merge_optional(solver1.subspace_diag_, solver2.subspace_diag_);		
 			return rsolver;
 		}
     
@@ -159,6 +170,7 @@ namespace input {
 		nonstd::optional<double> energy_tol_;
 		nonstd::optional<mixing_algo> mixing_algo_;
 		nonstd::optional<bool> verbose_;
+		nonstd::optional<bool> subspace_diag_;
 		
   };
     
