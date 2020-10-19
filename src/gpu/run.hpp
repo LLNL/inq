@@ -71,6 +71,31 @@ inline static void factorize(const std::size_t val, const std::size_t thres, std
 
 #ifdef ENABLE_CUDA
 template <class kernel_type>
+__global__ void cuda_run_kernel_0(kernel_type kernel){
+	kernel();
+}
+#endif
+
+template <class kernel_type>
+void run(kernel_type kernel){
+	
+#ifdef ENABLE_CUDA
+
+	cuda_run_kernel_0<<<1, 1>>>(kernel);
+	check_error(cudaGetLastError());
+	
+	cudaDeviceSynchronize();
+	
+#else
+	
+	kernel();
+	
+#endif
+  
+}
+
+#ifdef ENABLE_CUDA
+template <class kernel_type>
 __global__ void cuda_run_kernel_1(unsigned size, kernel_type kernel){
 	auto ii = blockIdx.x*blockDim.x + threadIdx.x;
 	if(ii < size) kernel(ii);
