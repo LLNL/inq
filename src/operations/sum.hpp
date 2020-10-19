@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <gpu/run.hpp>
+#include <math/array.hpp>
 
 #include <cassert>
 #include <functional> //std::plus
@@ -32,13 +34,27 @@ namespace inq {
 namespace operations {
 
 template <class array_type>
-auto sum(const array_type & phi){
+typename array_type::element_type sum(const array_type & phi){
 
 	CALI_CXX_MARK_SCOPE("sum 1 arg");
-	
+#ifndef ENABLE_CUDA
 	//OPTIMIZATION we should use std::reduce here, but it is not available in C++14
 	//DATAOPERATIONS STL ACCUMULATE
 	return std::accumulate(phi.begin(), phi.end(), (typename array_type::element_type) 0.0);
+#else
+
+	//	typename array_type::element_type result = 0.0;
+
+	math::array<typename array_type::element_type, 1> result({0.0});
+	
+	gpu::run([ph = begin(phi), np = phi.size(), res = begin(result)] GPU_LAMBDA (){
+						 for(long ip = 0; ip < np; ip++) res[0] += ph[ip];
+					 });
+
+	return result[0];
+	
+#endif
+	
 }
 
 template <class array1_type, class array2_type, class binary_op>
