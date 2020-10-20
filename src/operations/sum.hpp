@@ -90,7 +90,7 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 	using namespace inq;
 	using namespace Catch::literals;
 	
-	const int N = 1111;
+	const int N = 21111;
 	
 	basis::trivial bas(N);
 	
