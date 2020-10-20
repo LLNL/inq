@@ -33,8 +33,29 @@
 
 #include <caliper/cali.h>
 
+#include <gpu/run.hpp>
+
 namespace inq {
 namespace operations {
+
+template <class phi1p_type, class phi2p_type, class overlap_type>
+__global__ void overlap_diagonal_kernel(const long npoints, const long nst, const double vol_element, const phi1p_type phi1p, const phi2p_type phi2p, overlap_type overlap){
+
+	unsigned int ist = blockIdx.x*blockDim.x + threadIdx.x;
+
+	if(ist >= nst) return;
+	
+	typename overlap_type::element aa = 0.0;
+	
+	for(int ip = 0; ip < npoints; ip++){
+		auto p1 = phi1p[ip][ist];
+		auto p2 = phi2p[ip][ist];
+		aa += conj(p1)*p2;
+	}
+
+	overlap[ist] = vol_element*aa;
+
+}
 
 template <class field_set_type>
 math::array<typename field_set_type::element_type, 1> overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
@@ -79,28 +100,19 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 		}
 		
 #else
+
+		int mingridsize = 0;
+		int blocksize = 0;
+		gpu::check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  overlap_diagonal_kernel<decltype(begin(phi1.matrix())), decltype(begin(phi2.matrix())), decltype(begin(overlap_vector))>));
+	
+		auto size = phi1.local_set_size();
+		unsigned nblock = (size + blocksize - 1)/blocksize;
 		
-		{
-			auto npoints = phi1.basis().part().local_size();
-			auto vol_element = phi1.basis().volume_element();
-			auto phi1p = begin(phi1.matrix());
-			auto phi2p = begin(phi2.matrix());
-			auto overlap = begin(overlap_vector);
-			
-			//OPTIMIZATION: here we should parallelize over points as well 
-			gpu::run(phi1.local_set_size(),
-							 [=] __device__ (auto ist){
-								 type aa = 0.0;
-								 for(int ip = 0; ip < npoints; ip++){
-									 auto p1 = phi1p[ip][ist];
-									 auto p2 = phi2p[ip][ist];
-									 aa += conj(p1)*p2;
-									 
-								 }
-								 
-								 overlap[ist] = vol_element*aa;
-							 });
-		}
+		overlap_diagonal_kernel<<<nblock, blocksize>>>(phi1.basis().part().local_size(), phi1.local_set_size(), phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix()), begin(overlap_vector));
+
+		gpu::check_error(cudaGetLastError());    
+		
+		cudaDeviceSynchronize();
 		
 #endif
 
