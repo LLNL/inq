@@ -90,6 +90,7 @@ namespace operations {
 #undef INQ_OPERATIONS_RANDOMIZE_UNIT_TEST
 
 #include <catch2/catch.hpp>
+#include <operations/overlap_diagonal.hpp>
 
 TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
