@@ -33,6 +33,7 @@
 namespace inq {
 namespace operations {
 
+#ifdef ENABLE_CUDA
 template <class array_type1, class array_type2>
 __global__ void reduce_kernel(long size, const array_type1 idata, array_type2 odata) {
 
@@ -63,7 +64,7 @@ __global__ void reduce_kernel(long size, const array_type1 idata, array_type2 od
 	if (tid == 0) odata[blockIdx.x] = reduction_buffer[0];
 
 }
-
+#endif
 
 template <class array_type>
 typename array_type::element_type sum(const array_type & phi){

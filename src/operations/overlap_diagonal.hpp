@@ -38,6 +38,8 @@
 namespace inq {
 namespace operations {
 
+#ifdef ENABLE_CUDA
+
 template <class phi1p_type, class phi2p_type, class overlap_type>
 __global__ void overlap_diagonal_kernel(const long npoints, const long nst, const double vol_element, const phi1p_type phi1p, const phi2p_type phi2p, overlap_type overlap){
 
@@ -115,6 +117,8 @@ __global__ void overlap_diagonal_reduction_kernel(const long npoints, const long
 	}
 	
 }
+
+#endif
 
 template <typename Dim1, typename Dim2>
 void get_dimensions(int blocksize, int actual_dim1, Dim1 & dim1, Dim2 & dim2){
