@@ -41,20 +41,90 @@ namespace operations {
 template <class phi1p_type, class phi2p_type, class overlap_type>
 __global__ void overlap_diagonal_kernel(const long npoints, const long nst, const double vol_element, const phi1p_type phi1p, const phi2p_type phi2p, overlap_type overlap){
 
+	using type = typename overlap_type::element;
+	
+	extern __shared__ char shared_mem[];
+	auto reduction_buffer = (type *) shared_mem;
+	
 	unsigned int ist = blockIdx.x*blockDim.x + threadIdx.x;
-
+	unsigned int list = threadIdx.x;	
+	unsigned int ip = blockIdx.y*blockDim.y + threadIdx.y;
+	unsigned int lip = threadIdx.y;
+	
 	if(ist >= nst) return;
 	
-	typename overlap_type::element aa = 0.0;
-	
-	for(int ip = 0; ip < npoints; ip++){
+	if(ip < npoints) {
 		auto p1 = phi1p[ip][ist];
 		auto p2 = phi2p[ip][ist];
-		aa += conj(p1)*p2;
+		reduction_buffer[list + lip*nst] = conj(p1)*p2;
+	} else {
+		reduction_buffer[list + lip*nst] = (type) 0.0;
 	}
 
-	overlap[ist] = vol_element*aa;
+	// do reduction in shared mem
+	for (unsigned int s = blockDim.y/2; s > 0; s >>= 1){
+		if (lip < s) {
+			reduction_buffer[list + lip*nst] += reduction_buffer[list + (lip + s)*nst];
+		}
+		__syncthreads();
+	}
+	
+	// write result for this block to global mem
+	if (lip == 0) {
+		overlap[blockIdx.y][ist] = vol_element*reduction_buffer[list];
+		//		printf("psum1 %d %f %f\n", ist, real(overlap[blockIdx.y][ist]), imag(overlap[blockIdx.y][ist]));
+	}
 
+}
+
+template <class input_type, class overlap_type>
+__global__ void overlap_diagonal_reduction_kernel(const long npoints, const long nst, const input_type input, overlap_type overlap){
+
+	using type = typename overlap_type::element;
+	
+	extern __shared__ char shared_mem[];
+	auto reduction_buffer = (type *) shared_mem;
+	
+	unsigned int ist = blockIdx.x*blockDim.x + threadIdx.x;
+	unsigned int list = threadIdx.x;	
+	unsigned int ip = blockIdx.y*blockDim.y + threadIdx.y;
+	unsigned int lip = threadIdx.y;
+	
+	if(ist >= nst) return;
+	
+	if(ip < npoints) {
+		reduction_buffer[list + lip*nst] = input[ip][ist];
+	} else {
+		reduction_buffer[list + lip*nst] = (type) 0.0;
+	}
+
+	//	printf("val %d %d %f %f\n", ist, ip, real(input[ip][ist]), imag(input[ip][ist]));
+
+	// do reduction in shared mem
+	for (unsigned int s = blockDim.y/2; s > 0; s >>= 1){
+		if (lip < s) {
+			reduction_buffer[list + lip*nst] += reduction_buffer[list + (lip + s)*nst];
+		}
+		__syncthreads();
+	}
+	
+	// write result for this block to global mem
+	if (lip == 0) {
+		overlap[blockIdx.y][ist] = reduction_buffer[list];
+		//		printf("psum2 %d %f %f\n", ist, real(overlap[blockIdx.y][ist]), imag(overlap[blockIdx.y][ist]));
+	}
+	
+}
+
+template <typename Dim1, typename Dim2>
+void get_dimensions(int blocksize, int actual_dim1, Dim1 & dim1, Dim2 & dim2){
+
+	dim1 = actual_dim1;
+	while(blocksize%dim1 != 0) dim1++;
+
+	dim2 = blocksize/dim1;
+
+	assert(dim1*dim2 == blocksize);
 }
 
 template <class field_set_type>
@@ -103,17 +173,55 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 
 		int mingridsize = 0;
 		int blocksize = 0;
-		gpu::check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  overlap_diagonal_kernel<decltype(begin(phi1.matrix())), decltype(begin(phi2.matrix())), decltype(begin(overlap_vector))>));
-	
-		auto size = phi1.local_set_size();
-		unsigned nblock = (size + blocksize - 1)/blocksize;
-		
-		overlap_diagonal_kernel<<<nblock, blocksize>>>(phi1.basis().part().local_size(), phi1.local_set_size(), phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix()), begin(overlap_vector));
+		gpu::check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, overlap_diagonal_kernel<decltype(begin(phi1.matrix())), decltype(begin(phi2.matrix())), math::array<type, 2>>));
 
-		gpu::check_error(cudaGetLastError());    
+		unsigned dim1, dim2;
+
+		get_dimensions(blocksize, phi1.local_set_size(), dim1, dim2);
+
+		assert(dim2 > 1);
+		
+		auto size = phi1.basis().part().local_size();
+		
+		unsigned nblock1 = (phi1.local_set_size() + dim1 - 1)/dim1;
+		unsigned nblock2 = (size + dim2 - 1)/dim2;
+
+		struct dim3 dg{nblock1, nblock2};
+		struct dim3 db{dim1, dim2};
+
+		math::array<type, 2> overlap_tmp({nblock2, phi1.set_part().local_size()});
+
+		auto shared_mem_size = phi1.local_set_size()*dim2*sizeof(type);
+		
+		overlap_diagonal_kernel<<<dg, db, shared_mem_size>>>(phi1.basis().part().local_size(), phi1.local_set_size(), phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix()), begin(overlap_tmp));
+		gpu::check_error(cudaGetLastError());
+
+		size = nblock2;
+		nblock2 = (size + dim2 - 1)/dim2;
+		
+		math::array<type, 2> input({size, phi1.set_part().local_size()});
+		
+		while(size != 1){
+			
+			std::cout << "SSSIZE " << size << std::endl;			
+			
+			input({0, size}) = overlap_tmp({0, size});
+
+			struct dim3 dg{nblock1, nblock2};
+			struct dim3 db{dim1, dim2};
+
+			overlap_diagonal_reduction_kernel<<<dg, db, shared_mem_size>>>(size, phi1.local_set_size(), begin(input), begin(overlap_tmp));
+			gpu::check_error(cudaGetLastError()); 
+			
+			size = nblock2;
+			nblock2 = (size + dim2 - 1)/dim2;
+
+		}
 		
 		cudaDeviceSynchronize();
 		
+		overlap_vector = overlap_tmp[0];
+				
 #endif
 
 	}
@@ -149,7 +257,7 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 	using namespace inq;
 	using namespace Catch::literals;
 
-	const int npoint = 100;
+	const int npoint = 800;
 	const int nvec = 12;
 			
 	auto comm = boost::mpi3::environment::get_world_instance();
