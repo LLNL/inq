@@ -178,9 +178,11 @@ auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<declt
 	struct dim3 dg{1, nblock};
   struct dim3 db{1, blocksize};
 
-  std::cout << "LLLL " << sizey*blocksize*sizeof(type) << std::endl;
+  auto shared_mem_size = sizex*blocksize*sizeof(type);
+
+  assert(shared_mem_size <= 48*1024);
   
-  reduce_kernel_2d<<<dg, db, sizey*blocksize*sizeof(type)>>>(sizex, sizey, kernel, begin(result));	
+  reduce_kernel_2d<<<dg, db, shared_mem_size>>>(sizex, sizey, kernel, begin(result));	
   check_error(cudaGetLastError());
 	
   if(nblock == 1) {
