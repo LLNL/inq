@@ -112,6 +112,23 @@ auto reduce(size_t size, kernel_type kernel) -> decltype(kernel(0)) {
 #endif
 }
 
+
+template <class kernel_type>
+auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<decltype(kernel(0, 0)), 1> {
+
+  using type = decltype(kernel(0, 0));
+
+  math::array<type, 1> accumulator(sizex, 0.0);
+  
+  for(size_t iy = 0; iy < sizey; iy++){
+    for(size_t ix = 0; ix < sizex; ix++){
+      accumulator[ix] += kernel(ix, iy);
+    }
+  }
+
+  return accumulator;
+}
+
 }
 }
 
@@ -126,16 +143,41 @@ struct ident {
   }
 };
 
+struct prod {
+  GPU_FUNCTION auto operator()(size_t ix, size_t iy){
+    return double(ix)*double(iy);
+  }
+};
+
 TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
 
-  const size_t maxsize = 387420490;
+  SECTION("1D"){
+    const size_t maxsize = 387420490;
+    
+    for(size_t nn = 1; nn < maxsize; nn *= 3){
+      CHECK(gpu::reduce(nn, ident{}) == (nn*(nn - 1.0)/2.0));    
+    }
+  }
 
-  
-  for(size_t nn = 1; nn < maxsize; nn *= 3){
-    CHECK(gpu::reduce(nn, ident{}) == (nn*(nn - 1.0)/2.0));    
+  SECTION("2D"){
+    
+    const size_t maxsize = 390625;
+    
+    for(size_t nx = 1; nx <= 10000; nx *= 10){
+      for(size_t ny = 1; ny <= maxsize; ny *= 5){
+        
+        std::cout << "NNNNNNXXXXX " << nx << '\t' << ny << std::endl;
+        
+        
+        auto res = gpu::reduce(nx, ny, prod{});
+        
+        CHECK(res.size() == nx);
+        for(size_t ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
+      }
+    }
   }
   
 }
