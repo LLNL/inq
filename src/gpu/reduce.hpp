@@ -121,7 +121,7 @@ template <class kernel_type, class array_type>
 __global__ void reduce_kernel_2d(size_t sizex, size_t sizey, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename array_type::element *) shared_mem;
+	auto reduction_buffer = (typename array_type::element *) shared_mem; // {blockDim.x, blockDim.y}
 	
 	// each thread loads one element from global to shared mem
   unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -129,9 +129,9 @@ __global__ void reduce_kernel_2d(size_t sizex, size_t sizey, kernel_type kernel,
 	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;
 
 	if(iy < sizey){
-		reduction_buffer[ix + sizex*tid] = kernel(ix, iy);
+		reduction_buffer[threadIdx.x + blockDim.x*tid] = kernel(ix, iy);
 	} else {
-		reduction_buffer[ix + sizex*tid] = (typename array_type::element) 0.0;
+		reduction_buffer[threadIdx.x + blockDim.x*tid] = (typename array_type::element) 0.0;
 	}
 
 	__syncthreads();
@@ -139,13 +139,13 @@ __global__ void reduce_kernel_2d(size_t sizex, size_t sizey, kernel_type kernel,
 	// do reduction in shared mem
 	for (unsigned int s = blockDim.y/2; s > 0; s >>= 1){
 		if (tid < s) {
-			reduction_buffer[ix + sizex*tid] += reduction_buffer[ix + sizex*(tid + s)];
+			reduction_buffer[threadIdx.x + blockDim.x*tid] += reduction_buffer[threadIdx.x + blockDim.x*(tid + s)];
 		}
 		__syncthreads();
 	}
 	
 	// write result for this block to global mem
-	if (tid == 0) odata[ix][blockIdx.y] = reduction_buffer[ix];
+	if (tid == 0) odata[blockIdx.y][ix] = reduction_buffer[threadIdx.x];
 
 }
 #endif
@@ -173,12 +173,12 @@ auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<declt
   const int blocksize = 1024;
 
 	unsigned nblock = (sizey + blocksize - 1)/blocksize;
-	math::array<type, 2> result({sizey, nblock}, 666.0);
+	math::array<type, 2> result({nblock, sizex}, 666.0);
 
-	struct dim3 dg{1, nblock};
+	struct dim3 dg{sizex, nblock};
   struct dim3 db{1, blocksize};
 
-  auto shared_mem_size = sizex*blocksize*sizeof(type);
+  auto shared_mem_size = blocksize*sizeof(type);
 
   assert(shared_mem_size <= 48*1024);
   
@@ -187,9 +187,12 @@ auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<declt
 	
   if(nblock == 1) {
     cudaDeviceSynchronize();
+
+		assert(result[0].size() == sizex);
+		
     return result[0];
   } else {
-    return reduce(sizex, nblock, array_access<decltype(begin(result))>{begin(result)});
+    return reduce(sizex, nblock, array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});		
   }
   
 #endif
@@ -205,13 +208,13 @@ auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<declt
 #include <catch2/catch.hpp>
 
 struct ident {
-  GPU_FUNCTION auto operator()(size_t ii){
+  GPU_FUNCTION auto operator()(size_t ii) const {
     return double(ii);
   }
 };
 
 struct prod {
-  GPU_FUNCTION auto operator()(size_t ix, size_t iy){
+  GPU_FUNCTION auto operator()(size_t ix, size_t iy) const {
     return double(ix)*double(iy);
   }
 };
@@ -225,7 +228,7 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
     const size_t maxsize = 387420490;
     
     for(size_t nn = 1; nn < maxsize; nn *= 3){
-      CHECK(gpu::reduce(nn, ident{}) == (nn*(nn - 1.0)/2.0));    
+			CHECK(gpu::reduce(nn, ident{}) == (nn*(nn - 1.0)/2.0));    
     }
   }
 
@@ -235,9 +238,6 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
     
     for(size_t nx = 1; nx <= 10000; nx *= 10){
       for(size_t ny = 1; ny <= maxsize; ny *= 5){
-        
-        std::cout << "NNNNNNXXXXX " << nx << '\t' << ny << std::endl;
-        
         
         auto res = gpu::reduce(nx, ny, prod{});
         
