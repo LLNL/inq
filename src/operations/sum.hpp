@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <gpu/run.hpp>
+#include <gpu/reduce.hpp>
 #include <math/array.hpp>
 
 #include <cassert>
@@ -33,79 +33,12 @@
 namespace inq {
 namespace operations {
 
-#ifdef ENABLE_CUDA
-template <class array_type1, class array_type2>
-__global__ void reduce_kernel(long size, const array_type1 idata, array_type2 odata) {
-
-	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename array_type2::element *) shared_mem;
-	
-	// each thread loads one element from global to shared mem
-	unsigned int tid = threadIdx.x;
-	unsigned int ii = blockIdx.x*blockDim.x + threadIdx.x;
-
-	if(ii < size){
-		reduction_buffer[tid] = idata[ii];
-	} else {
-		reduction_buffer[tid] = (typename array_type2::element) 0.0;
-	}
-	
-	__syncthreads();
-
-	// do reduction in shared mem
-	for (unsigned int s = blockDim.x/2; s > 0; s >>= 1){
-		if (tid < s) {
-			reduction_buffer[tid] += reduction_buffer[tid + s];
-		}
-		__syncthreads();
-	}
-	
-	// write result for this block to global mem
-	if (tid == 0) odata[blockIdx.x] = reduction_buffer[0];
-
-}
-#endif
-
 template <class array_type>
 typename array_type::element_type sum(const array_type & phi){
 
 	CALI_CXX_MARK_SCOPE("sum 1 arg");
-#ifndef ENABLE_CUDA
-	//OPTIMIZATION we should use std::reduce here, but it is not available in C++14
-	//DATAOPERATIONS STL ACCUMULATE
-	return std::accumulate(phi.begin(), phi.end(), (typename array_type::element_type) 0.0);
-#else
 
-	const int blocksize = 1024;
-
-	int size = phi.size();
-	unsigned nblock = (size + blocksize - 1)/blocksize;
-	math::array<typename array_type::element_type, 1> result(nblock);
-
-	reduce_kernel<<<nblock, blocksize, blocksize*sizeof(typename array_type::element_type)>>>(size, begin(phi), begin(result));	
-	
-	size = nblock;
-	nblock = (size + blocksize - 1)/blocksize;
-	
-	math::array<typename array_type::element_type, 1> input(size);
-
-	while(size != 1){
-
-		input({0, size}) = result({0, size});
-		
-		reduce_kernel<<<nblock, blocksize, blocksize*sizeof(typename array_type::element_type)>>>(size, begin(input), begin(result));	
-		
-		size = nblock;
-		nblock = (size + blocksize - 1)/blocksize;
-		
-	}
-
-	cudaDeviceSynchronize();
-		
-	return result[0];
-	
-#endif
-	
+	return gpu::reduce(phi.size(), gpu::array_access<decltype(begin(phi))>{begin(phi)});
 }
 
 template <class array1_type, class array2_type, class binary_op>
