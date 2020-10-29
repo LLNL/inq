@@ -52,7 +52,7 @@ __global__ void reduce_kernel_1d(size_t size, kernel_type kernel, array_type oda
 	} else {
 		reduction_buffer[tid] = (typename array_type::element) 0.0;
 	}
-	
+
 	__syncthreads();
 
 	// do reduction in shared mem
@@ -97,31 +97,17 @@ auto reduce(size_t size, kernel_type kernel) -> decltype(kernel(0)) {
 	const int blocksize = 1024;
 
 	unsigned nblock = (size + blocksize - 1)/blocksize;
-	math::array<type, 1> result(nblock);
+	math::array<type, 1> result(nblock, 666.0);
 
   reduce_kernel_1d<<<nblock, blocksize, blocksize*sizeof(type)>>>(size, kernel, begin(result));	
-
-	size = nblock;
-	nblock = (size + blocksize - 1)/blocksize;
-
-	math::array<type, 1> input(size);
-
-	while(size != 1){
-
-    std::cout << size << std::endl;
-    
-    input({0, size}) = result({0, size});
-
-    reduce_kernel_1d<<<nblock, blocksize, blocksize*sizeof(type)>>>(size, array_access<decltype(begin(input))>{begin(input)}, begin(result));
-    
-		size = nblock;
-		nblock = (size + blocksize - 1)/blocksize;
-		
-	}
-
-	cudaDeviceSynchronize();
-		
-	return result[0];
+  check_error(cudaGetLastError());
+	
+  if(nblock == 1) {
+    cudaDeviceSynchronize();
+    return result[0];
+  } else {
+    return reduce(nblock, array_access<decltype(begin(result))>{begin(result)});
+  }
   
 #endif
 }
@@ -134,6 +120,12 @@ auto reduce(size_t size, kernel_type kernel) -> decltype(kernel(0)) {
 
 #include <catch2/catch.hpp>
 
+struct ident {
+  GPU_FUNCTION auto operator()(size_t ii){
+    return double(ii);
+  }
+};
+
 TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
   
 	using namespace inq;
@@ -141,8 +133,9 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 
   const size_t maxsize = 387420490;
 
+  
   for(size_t nn = 1; nn < maxsize; nn *= 3){
-    CHECK(gpu::reduce(nn, [] GPU_LAMBDA (auto ii){ return double(ii); }) == (nn*(nn - 1.0)/2.0));
+    CHECK(gpu::reduce(nn, ident{}) == (nn*(nn - 1.0)/2.0));    
   }
   
 }
