@@ -76,6 +76,10 @@ struct array_access {
   GPU_FUNCTION auto operator()(size_t ii) const {
     return array[ii];
   }
+
+  GPU_FUNCTION auto operator()(size_t ix, size_t iy) const {
+    return array[ix][iy];
+  }
   
 };
 
@@ -97,7 +101,7 @@ auto reduce(size_t size, kernel_type kernel) -> decltype(kernel(0)) {
 	const int blocksize = 1024;
 
 	unsigned nblock = (size + blocksize - 1)/blocksize;
-	math::array<type, 1> result(nblock, 666.0);
+	math::array<type, 1> result(nblock);
 
   reduce_kernel_1d<<<nblock, blocksize, blocksize*sizeof(type)>>>(size, kernel, begin(result));	
   check_error(cudaGetLastError());
@@ -112,21 +116,82 @@ auto reduce(size_t size, kernel_type kernel) -> decltype(kernel(0)) {
 #endif
 }
 
+#ifdef ENABLE_CUDA
+template <class kernel_type, class array_type>
+__global__ void reduce_kernel_2d(size_t sizex, size_t sizey, kernel_type kernel, array_type odata) {
+
+	extern __shared__ char shared_mem[];
+	auto reduction_buffer = (typename array_type::element *) shared_mem;
+	
+	// each thread loads one element from global to shared mem
+  unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
+	unsigned int tid = threadIdx.y;
+	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;
+
+	if(iy < sizey){
+		reduction_buffer[ix + sizex*tid] = kernel(ix, iy);
+	} else {
+		reduction_buffer[ix + sizex*tid] = (typename array_type::element) 0.0;
+	}
+
+	__syncthreads();
+
+	// do reduction in shared mem
+	for (unsigned int s = blockDim.y/2; s > 0; s >>= 1){
+		if (tid < s) {
+			reduction_buffer[ix + sizex*tid] += reduction_buffer[ix + sizex*(tid + s)];
+		}
+		__syncthreads();
+	}
+	
+	// write result for this block to global mem
+	if (tid == 0) odata[ix][blockIdx.y] = reduction_buffer[ix];
+
+}
+#endif
+
 
 template <class kernel_type>
 auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<decltype(kernel(0, 0)), 1> {
 
   using type = decltype(kernel(0, 0));
 
+#ifndef ENABLE_CUDA
+
   math::array<type, 1> accumulator(sizex, 0.0);
-  
+
   for(size_t iy = 0; iy < sizey; iy++){
     for(size_t ix = 0; ix < sizex; ix++){
       accumulator[ix] += kernel(ix, iy);
     }
   }
-
+  
   return accumulator;
+  
+#else
+
+  const int blocksize = 1024;
+
+	unsigned nblock = (sizey + blocksize - 1)/blocksize;
+	math::array<type, 2> result({sizey, nblock}, 666.0);
+
+	struct dim3 dg{1, nblock};
+  struct dim3 db{1, blocksize};
+
+  std::cout << "LLLL " << sizey*blocksize*sizeof(type) << std::endl;
+  
+  reduce_kernel_2d<<<dg, db, sizey*blocksize*sizeof(type)>>>(sizex, sizey, kernel, begin(result));	
+  check_error(cudaGetLastError());
+	
+  if(nblock == 1) {
+    cudaDeviceSynchronize();
+    return result[0];
+  } else {
+    return reduce(sizex, nblock, array_access<decltype(begin(result))>{begin(result)});
+  }
+  
+#endif
+
 }
 
 }
