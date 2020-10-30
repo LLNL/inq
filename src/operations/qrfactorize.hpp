@@ -141,6 +141,8 @@ namespace inq {
 	}
 	//std::printf("\n");
       }
+      free(tphi);
+      
       
 #endif
 

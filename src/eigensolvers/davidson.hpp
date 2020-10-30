@@ -85,6 +85,7 @@ namespace inq {
       	auto Wk = ham(wphi);
       	auto Yk = operations::overlap(wphi, Wk);  //subspace hamiltonian
       	auto lk = operations::diagonalize(Yk);
+	//print_vec(lk);
       	//Ritz vectors
       	auto Xk = boost::multi::blas::gemm(wphi.matrix(), boost::multi::blas::hermitized(Yk)); //Yk now contains subspace eigenvectors
       	//Rotated hphi
@@ -99,28 +100,28 @@ namespace inq {
 	
       	//Deflate here
       	int nc=0;
-      	double rtol = 1.0e-16;
+      	// double rtol = 1.0e-16;
       	int notconv = 0;
-	auto resnrm = operations::overlap_diagonal(wphi,wphi);
+	// auto resnrm = operations::overlap_diagonal(wphi,wphi);
       	for(int i=0; i<nleft ; i++){
-      	  if(abs(resnrm[i]) < rtol){
-      	    phi.matrix().rotated()[nevf] = Xk.rotated()[i];
-      	    eigW(nevf) = lk[i];
-      	    nc = nc + 1;
-      	    nevf = nevf + 1;
-      	  }else{
-      	    wphi.matrix().rotated()[notconv] = wphi.matrix().rotated()[i];
-      	    Yk.rotated()[notconv] = Yk.rotated()[i];
-      	    Xk.rotated()[notconv] = Xk.rotated()[i];
-      	    lk[notconv] = lk[i];
+      	  // if(abs(resnrm[i]) < rtol){
+      	  //   phi.matrix().rotated()[nevf] = Xk.rotated()[i];
+      	  //   eigW(nevf) = lk[i];
+      	  //   nc = nc + 1;
+      	  //   nevf = nevf + 1;
+      	  // }else{
+      	    // wphi.matrix().rotated()[notconv] = wphi.matrix().rotated()[i];
+      	    // Yk.rotated()[notconv] = Yk.rotated()[i];
+      	    // Xk.rotated()[notconv] = Xk.rotated()[i];
+      	    // lk[notconv] = lk[i];
       	    notconv =  notconv + 1;
-      	  }
+      	  // }
       	}
 
       	if(notconv < 0.25*nvec){
       	  std::printf("(%10i,%10i) system converged in %10i steps.\n", nbasis, int(nvec-notconv), istep);
 	  std::printf("=======================Final eigenvalues=================\n");
-	  print_vec(eigW);
+	  //print_vec(eigW);
       	  return ;
       	}
 	else if( istep == num_steps -1 ){
@@ -128,6 +129,7 @@ namespace inq {
       	    		phi.matrix().rotated()[nevf+i] = Xk.rotated()[i];
       	    		eigW(nevf+i) = lk[i];
 		}
+		//print_vec(eigW);
 		return ;
 	} 
       	//correction vectors

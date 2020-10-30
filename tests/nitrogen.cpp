@@ -49,7 +49,7 @@ int main(int argc, char ** argv){
 
 		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
 		
-		[[maybe_unused]] auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::conjugate_gradient() | input::scf::density_mixing());
+		[[maybe_unused]] auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::density_mixing() | input::scf::pulay_mixing());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)

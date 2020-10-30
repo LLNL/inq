@@ -31,7 +31,7 @@
 #include <basis/trivial.hpp>
 #include <operations/matrix_operator.hpp>
 #include <operations/diag_prec.hpp>
-#include <multi/adaptors/totalview.hpp> 
+//#include <multi/adaptors/totalview.hpp> 
 #include <multi/adaptors/blas.hpp>
 #include <operations/qrfactorize.hpp>
 #include <operations/overlap.hpp>

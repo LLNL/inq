@@ -50,22 +50,7 @@ int main(int argc, char ** argv){
 
 		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson());
-
-		std::printf("total energy:%20.16f\n",     result.energy.total() );
-	       
-	}
-
-	//Real space pseudo
-	{
-		
-		input::config conf;
-
-		conf.extra_states = 3;
-
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
-		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::conjugate_gradient());
+		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::energy_tolerance(1E-7));
 
 		std::printf("total energy:%20.16f\n",     result.energy.total() );
 	       
