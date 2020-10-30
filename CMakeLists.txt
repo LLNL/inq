@@ -1,8 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(inq VERSION 0.1)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 enable_testing()
 include(CTest)
@@ -20,21 +22,22 @@ endif()
 
 link_libraries(m)
 
-set(DISABLE_FXC ON) #do not compile the fxc in libxc
 add_subdirectory(external_libs)
 
 enable_language(CXX)
 enable_language(Fortran)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
-set(CMAKE_CXX_COMPILER mpic++)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
+
+#FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
+find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
+include_directories(${FFTW_INCLUDE_DIRS})
+link_libraries(${FFTW_LIBRARIES})
 
 find_package(BLAS REQUIRED)
 link_libraries(${BLAS_LIBRARIES})
@@ -48,13 +51,15 @@ include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
+set(CALIPER_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/caliper/include/ ${PROJECT_BINARY_DIR}/external_libs/caliper/include)
+#set(CALIPER_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/caliper/src/libcaliper.a)
+include_directories(${CALIPER_INCLUDE_DIRS})
+#link_libraries(${CALIPER_LIBRARIES})
+link_libraries(caliper)
+
 find_package(Boost REQUIRED COMPONENTS serialization)
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
-
-find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
-include_directories(${FFTW_INCLUDE_DIRS})
-link_libraries(${FFTW_LIBRARIES})
 
 # Required for inq_config.h
 include_directories(${PROJECT_BINARY_DIR})

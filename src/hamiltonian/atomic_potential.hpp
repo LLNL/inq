@@ -37,6 +37,8 @@
 
 #include <mpi3/environment.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace hamiltonian {
 
@@ -44,6 +46,8 @@ namespace hamiltonian {
 
   public:
 
+		using pseudopotential_type = pseudo::pseudopotential<math::array<double, 1>>;
+		
     enum class error {
       PSEUDOPOTENTIAL_NOT_FOUND
     };
@@ -56,6 +60,8 @@ namespace hamiltonian {
 			part_(natoms, comm_)
 		{
 
+			CALI_CXX_MARK_FUNCTION;
+			
 			has_nlcc_ = false;
       nelectrons_ = 0.0;
 
@@ -69,7 +75,8 @@ namespace hamiltonian {
 					auto file_path = pseudo_set_.file_path(atom_list[iatom]);
 					if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
 
-					auto insert = pseudopotential_list_.emplace(atom_list[iatom].symbol(), pseudo::pseudopotential(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
+					//sorry for this, emplace has a super ugly syntax
+					auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple(atom_list[iatom].symbol()), std::make_tuple(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
 					map_ref = insert.first;
 					
 				}
@@ -92,16 +99,18 @@ namespace hamiltonian {
     }
 		
 		template <class element_type>
-    const pseudo::pseudopotential & pseudo_for_element(const element_type & el) const {
+    const pseudopotential_type & pseudo_for_element(const element_type & el) const {
       return pseudopotential_list_.at(el.symbol());
     }
 
     template <class basis_type, class cell_type, class geo_type>
-    auto local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
+			
       basis::field<basis_type, double> potential(basis);
 
-			for(long ii = 0; ii < potential.linear().size(); ii++) potential.linear()[ii] = 0.0;
+			potential = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -110,15 +119,18 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 
-				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = sphere.distance()[ipoint];
-					auto sr_potential = ps.short_range_potential().value(rr);
-					potential.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += sr_potential;
-				}
+ 				gpu::run(sphere.size(),
+								 [pot = begin(potential.cubic()),
+									pts = begin(sphere.points()),
+									spline = ps.short_range_potential().cbegin(),
+									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
+									 auto rr = distance[ipoint];
+									 auto potential_val = spline.value(rr);
+									 pot[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += potential_val;
+								 });
 				
       }
-
+			
 			if(part_.parallel()){
 				comm_.all_reduce_in_place_n(static_cast<double *>(potential.linear().data()), potential.linear().size(), std::plus<>{});
 			}
@@ -129,6 +141,8 @@ namespace hamiltonian {
     template <class basis_type, class cell_type, class geo_type>
     basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+			CALI_CXX_MARK_FUNCTION;
+	
       basis::field<basis_type, double> density(basis);
 			
 			density = 0.0;
@@ -141,23 +155,16 @@ namespace hamiltonian {
 				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
 
 				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-#ifdef ENABLE_CUDA
 				//OPTIMIZATION: this should be done in parallel for atoms too
 				gpu::run(sphere.size(),
-								 [dns = begin(density.cubic()), pts = begin(sphere.points()),
+								 [dns = begin(density.cubic()),
+									pts = begin(sphere.points()),
 									chrg = ps.valence_charge(),
-									sp = sep_, distance = begin(sphere.distance())] __device__
-								 (auto ipoint){
+									sp = sep_,
+									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
 									 double rr = distance[ipoint];
 									 dns[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += chrg*sp.long_range_density(rr);
 								 });
-#else
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = sphere.distance()[ipoint];
-					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]]
-						+= ps.valence_charge()*sep_.long_range_density(rr);
-				}
-#endif
       }
 
 			if(part_.parallel()){
@@ -168,11 +175,13 @@ namespace hamiltonian {
     }
     
     template <class basis_type, class cell_type, class geo_type>
-    auto atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+			CALI_CXX_MARK_FUNCTION;
+	
       basis::field<basis_type, double> density(basis);
 
-			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
+			density = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -185,13 +194,15 @@ namespace hamiltonian {
 
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.electronic_density_radius());
 
-				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = sphere.distance()[ipoint];
-					auto density_val = ps.electronic_density().value(rr);
-					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += density_val;
-				}
-				
+				gpu::run(sphere.size(),
+								 [dens = begin(density.cubic()),
+									pts = begin(sphere.points()),
+									spline = ps.electronic_density().cbegin(), 
+									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
+									 auto rr = distance[ipoint];
+									 auto density_val = spline.value(rr);
+									 dens[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += density_val;
+								 });
       }
 
 			if(part_.parallel()){
@@ -206,11 +217,13 @@ namespace hamiltonian {
 		}
 
 		template <class basis_type, class cell_type, class geo_type>
-    auto nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
+			CALI_CXX_MARK_FUNCTION;
+	
       basis::field<basis_type, double> density(basis);
 
-			for(long ii = 0; ii < density.linear().size(); ii++) density.linear()[ii] = 0.0;
+			density = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
@@ -224,12 +237,15 @@ namespace hamiltonian {
 				
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.nlcc_density_radius());
 
-				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
-				for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-					auto rr = sphere.distance()[ipoint];
-					auto density_val = ps.nlcc_density().value(rr);
-					density.cubic()[sphere.points()[ipoint][0]][sphere.points()[ipoint][1]][sphere.points()[ipoint][2]] += density_val;
-				}
+				gpu::run(sphere.size(),
+								 [dens = begin(density.cubic()),
+									pts = begin(sphere.points()),
+									spline = ps.nlcc_density().cbegin(),
+									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
+									 auto rr = distance[ipoint];
+									 auto density_val = spline.value(rr);
+									 dens[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += density_val;
+								 });
 				
       }
 
@@ -257,7 +273,7 @@ namespace hamiltonian {
 		pseudo::math::erf_range_separation const sep_;
     double nelectrons_;
     pseudo::set pseudo_set_;
-    std::unordered_map<std::string, pseudo::pseudopotential> pseudopotential_list_;
+    std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		mutable boost::mpi3::communicator comm_;
 		inq::utils::partition part_;
 		bool has_nlcc_;

@@ -27,10 +27,14 @@
 #include <utils/match.hpp>
 #include <operations/io.hpp>
 #include <perturbations/kick.hpp>
+#include <ground_state/initialize.hpp>
 #include <ground_state/calculate.hpp>
-#include <real_time/propagate.hpp>
+
+#include <caliper/cali.h>
 
 int main(int argc, char ** argv){
+
+	CALI_CXX_MARK_FUNCTION;
 
 	using namespace inq::input;
 	using inq::math::vec3d;
@@ -54,6 +58,7 @@ int main(int argc, char ** argv){
   
 	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0), conf);
 
+	inq::ground_state::initialize(ions, electrons);
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);
 	
 	match.check("total energy",        result.energy.total(),       -25.637012688764);

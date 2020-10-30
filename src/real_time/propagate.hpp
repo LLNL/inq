@@ -32,10 +32,14 @@
 #include <observables/dipole.hpp>
 #include <real_time/result.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace real_time {
 	
 	real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options){
+
+    CALI_CXX_MARK_FUNCTION;
 
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
@@ -57,9 +61,7 @@ namespace real_time {
 
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
-		energy.print(std::cout);
-		
-		tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+		if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
 
 		res.time.push_back(0.0);
 		res.energy.push_back(energy.total());
@@ -82,7 +84,7 @@ namespace real_time {
 			auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 																			
-			tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
+			if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
 
 			res.time.push_back(istep*dt);
 			res.energy.push_back(energy.total());

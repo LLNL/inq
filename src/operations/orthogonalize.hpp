@@ -25,7 +25,13 @@
 #include <math/complex.hpp>
 #include <basis/field_set.hpp>
 #include <cstdlib>
-#include <multi/adaptors/blas/trsm.hpp>
+
+#include <caliper/cali.h>
+
+#ifdef ENABLE_CUDA
+#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
+#endif
+#include <multi/adaptors/blas.hpp>
 
 #include <operations/overlap.hpp>
 
@@ -47,6 +53,8 @@ namespace operations {
 
 template <class field_set_type>
 void orthogonalize(field_set_type & phi){
+
+	CALI_CXX_MARK_FUNCTION;
 
 	assert(phi.set_comm().size() == 1);
 	
@@ -105,42 +113,38 @@ void orthogonalize(field_set_type & phi){
 template <class field_set_type>
 void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int num_states = -1){
 
+	if(num_states == 0) return;
+	
+	CALI_CXX_MARK_FUNCTION;
+
 	if(num_states == -1) num_states = phi.set_size();
 		
 	assert(num_states <= phi.set_size());
-		
-	for(int ist = 0; ist < num_states; ist++){
 
-		typename field_set_type::element_type olap = 0.0;
-		typename field_set_type::element_type norm = 0.0;
-		for(long ip = 0; ip < phi.basis().local_size(); ip++){
-			olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-			norm += conj(phi.matrix()[ip][ist])*phi.matrix()[ip][ist];
-		}
-		
-		if(phi.basis().part().parallel()){
-			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-			phi.basis().comm().all_reduce_in_place_n(&norm, 1, std::plus<>{});
-		}
+ 
+	using boost::multi::blas::hermitized;
 
-		for(long ip = 0; ip < phi.basis().local_size(); ip++)	vec.matrix()[ip][0] -= olap/real(norm)*phi.matrix()[ip][ist];
+	//the matrix of phi restricted to the vectors we are going to use
+	auto phi_restricted = phi.matrix()({0, phi.basis().local_size()}, {0, num_states});
 
-#if 0
-		{
-			typename field_set_type::element_type olap = 0.0;
-				
-			for(long ip = 0; ip < phi.basis().local_size(); ip++){
-				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-			}
-				
-			//reduce olap, norm
-				
-			std::cout << ist << '\t' << num_states << '\t' << fabs(olap) << std::endl;
-		}
-#endif
-			
+	math::array<typename field_set_type::element_type, 2> olap;
+
+	if(num_states == 1){
+		// avoid a bug in multi by making an explicit copy
+		//   https://gitlab.com/correaa/boost-multi/-/issues/97
+		math::array<typename field_set_type::element_type, 2> phi_restricted_copy = phi_restricted;
+		olap = boost::multi::blas::gemm(phi.basis().volume_element(), hermitized(phi_restricted_copy), vec.matrix());
+	} else {
+		//this should be done by gemv, but while multi gets better gemv support we use gemm
+		olap = boost::multi::blas::gemm(phi.basis().volume_element(), hermitized(phi_restricted), vec.matrix());
 	}
-		
+	
+	if(phi.basis().part().parallel()){
+		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(olap.data()), olap.num_elements(), std::plus<>{});
+	}
+
+	boost::multi::blas::gemm(-1.0, phi_restricted, olap, 1.0, vec.matrix());
+	
 }
 
 }
@@ -243,14 +247,60 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		
 		operations::randomize(phi);
 		operations::orthogonalize(phi);
-		
-		operations::randomize(vec);
 
-		operations::orthogonalize_single(vec, phi, 2);
+		operations::randomize(vec);
+		operations::orthogonalize_single(vec, phi, 1);
+
+		for(int ist = 0; ist < 1; ist++){
+			
+			complex olap = 0.0;
+			
+			for(long ip = 0; ip < phi.basis().local_size(); ip++){
+				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+			}
+
+			if(phi.basis().part().parallel()){
+				phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
+			}
+	
+			CHECK(fabs(olap) < 5e-14);
+		}
 		
 		operations::randomize(vec);
+		operations::orthogonalize_single(vec, phi, 2);
+
+		for(int ist = 0; ist < 2; ist++){
+			
+			complex olap = 0.0;
+			
+			for(long ip = 0; ip < phi.basis().local_size(); ip++){
+				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+			}
+
+			if(phi.basis().part().parallel()){
+				phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
+			}
+	
+			CHECK(fabs(olap) < 5e-14);
+		}
 		
+		operations::randomize(vec);
 		operations::orthogonalize_single(vec, phi);
+
+		for(int ist = 0; ist < 3; ist++){
+			
+			complex olap = 0.0;
+			
+			for(long ip = 0; ip < phi.basis().local_size(); ip++){
+				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
+			}
+
+			if(phi.basis().part().parallel()){
+				phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
+			}
+	
+			CHECK(fabs(olap) < 5e-14);
+		}
 		
 	}
 }

@@ -4,7 +4,7 @@
 #define INQ__DENSITY__CALCULATE
 
 /*
- Copyright (C) 2019-2020 Xavier Andrade
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -26,11 +26,14 @@
 #include <basis/field_set.hpp>
 #include <operations/transfer.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace density {
 
 template<class occupations_array_type, class field_set_type>
-basis::field<typename field_set_type::basis_type, double> calculate(const occupations_array_type & occupations, field_set_type & phi){
+basis::field<typename field_set_type::basis_type, double> 
+calculate(const occupations_array_type & occupations, field_set_type & phi){
 
 	basis::field<typename field_set_type::basis_type, double> density(phi.basis());
 
@@ -65,8 +68,11 @@ basis::field<typename field_set_type::basis_type, double> calculate(const occupa
 }
 
 template<class occupations_array_type, class field_set_type>
-auto calculate(const occupations_array_type & occupations, field_set_type & phi, typename field_set_type::basis_type & destination_basis){
+basis::field<typename field_set_type::basis_type, double> 
+calculate(const occupations_array_type & occupations, field_set_type & phi, typename field_set_type::basis_type & destination_basis){
 
+	CALI_CXX_MARK_SCOPE("density::calculate");
+	
 	if(destination_basis == phi.basis()){
 		return calculate(occupations, phi);
 	} else {

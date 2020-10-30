@@ -32,6 +32,8 @@
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace hamiltonian {
   template <class basis_type>
@@ -57,7 +59,7 @@ namespace hamiltonian {
 																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(geo.coordinates()[iatom]);
 				} else {
-					projectors_.push_back(projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
+					projectors_.emplace_back(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]);
 				}
 			}
 
@@ -81,6 +83,8 @@ namespace hamiltonian {
 		
 		auto non_local(const basis::field_set<basis::real_space, complex> & phi) const {
 
+			CALI_CXX_MARK_FUNCTION;
+ 
 			if(non_local_in_fourier_) {
 
 				auto phi_fs = operations::space::to_fourier(phi);
@@ -104,6 +108,9 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
+
+			CALI_CXX_MARK_FUNCTION;
+			
 			operations::laplacian_add(phi, hphi);
 			if(non_local_in_fourier_) non_local(phi, hphi);
 		}
@@ -111,18 +118,24 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void real_space_terms(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & hphi) const {
+
+			CALI_CXX_MARK_FUNCTION;
+			
 			//the non local potential in real space
 			if(not non_local_in_fourier_) non_local(phi, hphi);
 
 			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
 
+			{
+				CALI_CXX_MARK_SCOPE("local potential");
 			//the scalar local potential in real space
 			//DATAOPERATIONS GPU:RUN 2D
-			gpu::run(phi.local_set_size(), phi.basis().local_size(),
-							 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
-							 (auto ist, auto ip){
-								 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
-							 });
+				gpu::run(phi.local_set_size(), phi.basis().local_size(),
+								 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
+								 (auto ist, auto ip){
+									 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
+								 });
+			}
 			
 			exchange(phi, hphi);
 		}
@@ -130,7 +143,9 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
-      
+
+			CALI_CXX_MARK_SCOPE("hamiltonian real");
+				
 			auto phi_fs = operations::space::to_fourier(phi);
 			
 			basis::field_set<basis::fourier_space, complex> hphi_fs(phi_fs.skeleton());
@@ -151,6 +166,8 @@ namespace hamiltonian {
 		
     auto operator()(const basis::field_set<basis::fourier_space, complex> & phi) const{
 
+			CALI_CXX_MARK_SCOPE("hamiltonian fourier");
+			
 			auto phi_rs = operations::space::to_real(phi);
 
 			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.skeleton());

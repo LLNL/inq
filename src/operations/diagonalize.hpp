@@ -34,6 +34,8 @@
 
 #include "FC.h"
 
+#include <caliper/cali.h>
+
 #define dsyev FC_GLOBAL(dsyev, DZYEV)
 extern "C" void dsyev(const char * jobz, const char * uplo, const int & n, double * a, const int & lda, double * w, double * work, const int & lwork, int & info);
 
@@ -44,6 +46,8 @@ namespace inq {
 namespace operations {
 
 auto diagonalize(math::array<double, 2> & matrix){
+
+	CALI_CXX_MARK_FUNCTION;
 
 	// the matrix must be square
 	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));

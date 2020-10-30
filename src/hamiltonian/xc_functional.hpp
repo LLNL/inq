@@ -28,6 +28,7 @@
 #include <operations/laplacian.hpp>
 #include <basis/field.hpp>
 
+#include <caliper/cali.h>
 
 namespace inq {
 namespace hamiltonian {
@@ -52,11 +53,14 @@ namespace hamiltonian {
 		template <class field_type>
 		void operator()(field_type const & density, double & xc_energy, field_type & vxc) const {
 
+			CALI_MARK_BEGIN("xc functional");
+			
 			field_type exc(vxc.skeleton());
 			unpolarized(density.linear().size(), density, exc, vxc);
 
 			xc_energy = operations::integral_product(density, exc);
-				
+
+			CALI_MARK_END("xc functional");
 		}
 
 		auto & libxc_func() const {
@@ -67,6 +71,9 @@ namespace hamiltonian {
 
 		template <class density_type, class exc_type, class vxc_type>
 		void ggafunctional(long size, density_type const & density, exc_type & exc, vxc_type & vxc) const{ // How to compute Vxc terms for GGA http://mbpt-domiprod.wikidot.com/calculation-of-gga-kernel
+
+			CALI_CXX_MARK_FUNCTION;
+
 			auto grad_real = operations::gradient(density);
 			// Compute sigma as a square of the gradient in the Real space
 			basis::field<basis::real_space, double> sigma(vxc.basis());
@@ -113,6 +120,9 @@ namespace hamiltonian {
 		
 		template <class density_type, class exc_type, class vxc_type>
 		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc) const{
+
+			CALI_CXX_MARK_FUNCTION;
+			
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:{
 					auto param_lda = func_;

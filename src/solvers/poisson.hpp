@@ -29,6 +29,8 @@
 #include <operations/space.hpp>
 #include <operations/transfer.hpp>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace solvers {
 
@@ -38,6 +40,8 @@ public:
 
 	basis::field<basis::real_space, complex> solve_periodic(const basis::field<basis::real_space, complex> & density) const {
 
+		CALI_CXX_MARK_FUNCTION;
+		
 		const basis::real_space & real_space = density.basis();
 		basis::fourier_space fourier_basis(real_space);
 
@@ -72,7 +76,11 @@ public:
 	}
 
 	auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
-			
+
+		CALI_CXX_MARK_FUNCTION;
+
+		assert(not density.basis().part().parallel());
+		
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
 		auto potential_fs = operations::space::to_fourier(potential2x);
 			
@@ -108,6 +116,9 @@ public:
 	}
 
 	auto operator()(const basis::field<basis::real_space, complex> & density) const {
+
+		CALI_CXX_MARK_SCOPE("poisson complex");
+		
 		if(density.basis().periodic_dimensions() == 3){
 			return solve_periodic(density);
 		} else {
@@ -116,6 +127,9 @@ public:
 	}
 		
 	basis::field<basis::real_space, double> operator()(const basis::field<basis::real_space, double> & density) const {
+
+		CALI_CXX_MARK_SCOPE("poisson real");
+		
 		auto complex_potential = operator()(density.complex());
 		return complex_potential.real();
 	}
