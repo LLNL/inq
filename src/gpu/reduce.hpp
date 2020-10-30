@@ -27,7 +27,6 @@
 #include <cuda.h>
 #endif
 
-#include <cstddef> // std::size_t
 #include <cassert>
 
 #include <gpu/run.hpp>
@@ -38,7 +37,7 @@ namespace gpu {
 
 #ifdef ENABLE_CUDA
 template <class kernel_type, class array_type>
-__global__ void reduce_kernel_1d(size_t size, kernel_type kernel, array_type odata) {
+__global__ void reduce_kernel_1d(long size, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem;
@@ -73,25 +72,25 @@ template <typename array_type>
 struct array_access {
   array_type array;
 
-  GPU_FUNCTION auto operator()(size_t ii) const {
+  GPU_FUNCTION auto operator()(long ii) const {
     return array[ii];
   }
 
-  GPU_FUNCTION auto operator()(size_t ix, size_t iy) const {
+  GPU_FUNCTION auto operator()(long ix, long iy) const {
     return array[ix][iy];
   }
   
 };
 
 template <class kernel_type>
-auto reduce(size_t size, kernel_type kernel) -> decltype(kernel(0)) {
+auto reduce(long size, kernel_type kernel) -> decltype(kernel(0)) {
 
   using type = decltype(kernel(0));
   
 #ifndef ENABLE_CUDA
 
   type accumulator = 0.0;
-  for(size_t ii = 0; ii < size; ii++){
+  for(long ii = 0; ii < size; ii++){
     accumulator += kernel(ii);
   }
   return accumulator;
@@ -118,7 +117,7 @@ auto reduce(size_t size, kernel_type kernel) -> decltype(kernel(0)) {
 
 #ifdef ENABLE_CUDA
 template <class kernel_type, class array_type>
-__global__ void reduce_kernel_2d(size_t sizex, size_t sizey, kernel_type kernel, array_type odata) {
+__global__ void reduce_kernel_2d(long sizex, long sizey, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem; // {blockDim.x, blockDim.y}
@@ -152,7 +151,7 @@ __global__ void reduce_kernel_2d(size_t sizex, size_t sizey, kernel_type kernel,
 
 
 template <class kernel_type>
-auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<decltype(kernel(0, 0)), 1> {
+auto reduce(long sizex, long sizey, kernel_type kernel) -> math::array<decltype(kernel(0, 0)), 1> {
 
   using type = decltype(kernel(0, 0));
 
@@ -160,8 +159,8 @@ auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<declt
 
   math::array<type, 1> accumulator(sizex, 0.0);
 
-  for(size_t iy = 0; iy < sizey; iy++){
-    for(size_t ix = 0; ix < sizex; ix++){
+  for(long iy = 0; iy < sizey; iy++){
+    for(long ix = 0; ix < sizex; ix++){
       accumulator[ix] += kernel(ix, iy);
     }
   }
@@ -175,7 +174,7 @@ auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<declt
 	unsigned nblock = (sizey + blocksize - 1)/blocksize;
 	math::array<type, 2> result({nblock, sizex}, 666.0);
 
-	struct dim3 dg{sizex, nblock};
+	struct dim3 dg{(unsigned) sizex, nblock};
   struct dim3 db{1, blocksize};
 
   auto shared_mem_size = blocksize*sizeof(type);
@@ -208,13 +207,13 @@ auto reduce(size_t sizex, size_t sizey, kernel_type kernel) -> math::array<declt
 #include <catch2/catch.hpp>
 
 struct ident {
-  GPU_FUNCTION auto operator()(size_t ii) const {
+  GPU_FUNCTION auto operator()(long ii) const {
     return double(ii);
   }
 };
 
 struct prod {
-  GPU_FUNCTION auto operator()(size_t ix, size_t iy) const {
+  GPU_FUNCTION auto operator()(long ix, long iy) const {
     return double(ix)*double(iy);
   }
 };
@@ -225,24 +224,24 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 	using namespace Catch::literals;
 
   SECTION("1D"){
-    const size_t maxsize = 387420490;
+    const long maxsize = 387420490;
     
-    for(size_t nn = 1; nn < maxsize; nn *= 3){
+    for(long nn = 1; nn < maxsize; nn *= 3){
 			CHECK(gpu::reduce(nn, ident{}) == (nn*(nn - 1.0)/2.0));    
     }
   }
 
   SECTION("2D"){
     
-    const size_t maxsize = 390625;
+    const long maxsize = 390625;
     
-    for(size_t nx = 1; nx <= 10000; nx *= 10){
-      for(size_t ny = 1; ny <= maxsize; ny *= 5){
+    for(long nx = 1; nx <= 10000; nx *= 10){
+      for(long ny = 1; ny <= maxsize; ny *= 5){
         
         auto res = gpu::reduce(nx, ny, prod{});
         
         CHECK(res.size() == nx);
-        for(size_t ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
+        for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
       }
     }
   }
