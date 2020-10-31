@@ -150,6 +150,8 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 
 		{
 			auto dd = operations::overlap_diagonal(aa, bb);
+
+			CHECK(typeid(decltype(dd)) == typeid(math::array<double, 1>));
 				
 			for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(-jj));
 		}
@@ -164,6 +166,8 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 
 		{
 			auto dd = operations::overlap_diagonal(aa);
+
+			CHECK(typeid(decltype(dd)) == typeid(math::array<double, 1>));
 								
 			for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
 		}
@@ -188,6 +192,8 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 		{
 			auto dd = operations::overlap_diagonal(aa, bb);
 
+			CHECK(typeid(decltype(dd)) == typeid(math::array<complex, 1>));
+
 			CHECK(std::get<0>(sizes(dd)) == nvec);
 				
 			for(int jj = 0; jj < nvec; jj++){
@@ -207,6 +213,8 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 		{
 			auto dd = operations::overlap_diagonal(aa);
 
+			CHECK(typeid(decltype(dd)) == typeid(math::array<complex, 1>));
+			
 			CHECK(std::get<0>(sizes(dd)) == nvec);
 				
 			for(int jj = 0; jj < nvec; jj++) CHECK(real(dd[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
