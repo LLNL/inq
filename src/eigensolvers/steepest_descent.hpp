@@ -27,6 +27,7 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
 #include <operations/orthogonalize.hpp>
+#include <operations/overlap_diagonal.hpp>
 
 namespace inq {
 namespace eigensolvers {
