@@ -239,7 +239,9 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
       for(long ny = 1; ny <= maxsize; ny *= 5){
         
         auto res = gpu::reduce(nx, ny, prod{});
-        
+
+				CHECK(typeid(decltype(res)) == typeid(math::array<double, 1>));
+				
         CHECK(res.size() == nx);
         for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
       }
