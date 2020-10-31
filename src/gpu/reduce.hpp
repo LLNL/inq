@@ -224,9 +224,9 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 	using namespace Catch::literals;
 
   SECTION("1D"){
-    const long maxsize = 387420490;
+    const long maxsize = 129140163;
     
-    for(long nn = 1; nn < maxsize; nn *= 3){
+    for(long nn = 1; nn <= maxsize; nn *= 3){
 			CHECK(gpu::reduce(nn, ident{}) == (nn*(nn - 1.0)/2.0));    
     }
   }
