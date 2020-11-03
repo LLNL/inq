@@ -34,7 +34,7 @@ int main(int argc, char ** argv){
 	boost::mpi3::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 		
-	utils::match energy_match(1.0e-6);
+	utils::match energy_match(2.0e-5);
 
 	std::vector<input::atom> geo;
 
