@@ -30,6 +30,8 @@
 
 #include <caliper/cali.h>
 
+#include <operations/overlap_diagonal.hpp>
+
 namespace inq {
 namespace operations {
 
@@ -91,7 +93,7 @@ public:
 											 auto izg = cubic_dist_2.local_to_global(iz);
 											 
 											 auto lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
-											 auto phiphi = fabs(phcub[ix][iy][iz][ist]);
+											 auto phiphi = real(conj(phcub[ix][iy][iz][ist])*phcub[ix][iy][iz][ist]);
 											 expc[ist] += lapl*phiphi;
 											 nrm[ist] += phiphi;
 										 }
@@ -112,7 +114,7 @@ public:
 					
 						auto lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
 						for(int ist = 0; ist < phi.local_set_size(); ist++){
-							auto phiphi = fabs(phi.cubic()[ix][iy][iz][ist]);
+							auto phiphi = real(conj(phi.cubic()[ix][iy][iz][ist])*phi.cubic()[ix][iy][iz][ist]);
 							expect[ist] += lapl*phiphi;
 							norm[ist] += phiphi;
 						}
@@ -126,7 +128,7 @@ public:
 				phi.basis().comm().all_reduce_in_place_n(static_cast<double *>(expect.data()), expect.num_elements(), std::plus<>{});
 				phi.basis().comm().all_reduce_in_place_n(static_cast<double *>(norm.data()), norm.num_elements(), std::plus<>{});			
 			}
-
+			
 		}
 
 		{
