@@ -28,6 +28,7 @@
 #include <mixers/broyden.hpp>
 #include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
+#include <eigensolvers/davidson.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
 #include <input/config.hpp>
@@ -109,6 +110,11 @@ namespace ground_state {
 				case input::scf::scf_eigensolver::CONJUGATE_GRADIENT:
 					eigensolvers::conjugate_gradient(ham, prec, fphi);
 					break;
+					
+				case input::scf::scf_eigensolver::DAVIDSON:
+					eigensolvers::davidson(ham, prec, fphi);
+					//exit(0);
+				 	break;
 					
 				default:
 					assert(false);

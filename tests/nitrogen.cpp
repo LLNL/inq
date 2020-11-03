@@ -49,9 +49,10 @@ int main(int argc, char ** argv){
 		conf.extra_states = 4;
 
 		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
-
 		ground_state::initialize(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::conjugate_gradient() | input::scf::density_mixing());
+		
+		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::density_mixing() | input::scf::pulay_mixing());
+		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
 
