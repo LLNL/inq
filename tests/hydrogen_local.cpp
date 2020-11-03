@@ -26,11 +26,11 @@
 #include <ground_state/initialize.hpp>
 #include <ground_state/calculate.hpp>
 
-#include <mpi3/environment.hpp>
+#include <input/environment.hpp>
 
 int main(int argc, char ** argv){
 
-	boost::mpi3::environment env(argc, argv);
+	inq::input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
 	inq::utils::match energy_match(2.0e-5);

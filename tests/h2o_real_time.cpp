@@ -30,6 +30,8 @@
 #include <ground_state/calculate.hpp>
 #include <real_time/propagate.hpp>
 
+#include <input/environment.hpp>
+
 #include <caliper/cali.h>
 
 int main(int argc, char ** argv){
@@ -38,7 +40,7 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	
-	boost::mpi3::environment env(argc, argv);
+	input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
 	utils::match match(1e-5);

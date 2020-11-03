@@ -1,7 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
+#ifndef INQ__INPUT__ENVIRONMENT
+#define INQ__INPUT__ENVIRONMENT
+
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2020 Xavier Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -18,19 +21,39 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
+#include <utils/merge_optional.hpp>
 
-#include <input/environment.hpp>
-#include <fftw3.h>
+#include <mpi3/environment.hpp>
 
-int main( int argc, char* argv[] ) {
+#include <nonstd/optional.hpp>
+#include <cassert>
 
-	inq::input::environment env(argc, argv);
-	
-  int result = Catch::Session().run( argc, argv );
+namespace inq {
+namespace input {
 
-	fftw_cleanup();
-	
-  return result;
+  class environment {
+
+  public:
+    
+    environment(int argc, char** argv):
+      mpi_env_(argc, argv)
+    {
+    }
+      
+
+  private:
+    boost::mpi3::environment mpi_env_;
+    
+  };
+    
 }
+}
+
+////////////////////////////////////////////////////////
+
+#ifdef INQ_INPUT_ENVIRONMENT_UNIT_TEST
+#undef INQ_INPUT_ENVIRONMENT_UNIT_TEST
+
+#endif
+   
+#endif
