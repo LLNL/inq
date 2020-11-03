@@ -91,6 +91,38 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & 
 					 });
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff){
+
+	basis::field_set<basis::fourier_space, complex> laplff(ff.skeleton());
+
+	CALI_CXX_MARK_FUNCTION;
+		
+	//DATAOPERATIONS GPU::RUN 4D
+	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
+					 [point_op = ff.basis().point_op(),
+						laplffcub = begin(laplff.cubic()),
+						ffcub = begin(ff.cubic()),
+						cubic_dist_0 = ff.basis().cubic_dist(0),
+						cubic_dist_1 = ff.basis().cubic_dist(1),
+						cubic_dist_2 = ff.basis().cubic_dist(2)
+						]
+					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+
+						 auto ixg = cubic_dist_0.local_to_global(ix);
+						 auto iyg = cubic_dist_1.local_to_global(iy);
+						 auto izg = cubic_dist_2.local_to_global(iz);
+						 
+						 double lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
+						 laplffcub[ix][iy][iz][ist] = lapl*ffcub[ix][iy][iz][ist];
+						 
+					 });
+
+	return laplff;
+
+}
+
 }
 }
 
