@@ -26,6 +26,7 @@
 #include <math/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/orthogonalize.hpp>
+#include <operations/overlap_diagonal.hpp>
 
 #include <caliper/cali.h>
 

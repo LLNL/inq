@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
-	utils::match energy_match(1.0e-6);
+	utils::match energy_match(3.0e-6);
 
 	std::vector<input::atom> geo;
 
@@ -57,18 +57,18 @@ int main(int argc, char ** argv){
 	
 	input::config conf;
 	
-	conf.extra_states = 4;
+	conf.extra_states = 0;
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
 	
 	ground_state::initialize(ions, electrons);
-	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::conjugate_gradient());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::no_subspace_diag());
 	
-	energy_match.check("total energy",     result.energy.total()    , -23.695217057747);
-	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.889589049038);
-	energy_match.check("eigenvalues",      result.energy.eigenvalues,   7.788403633709);
-	energy_match.check("external energy",  result.energy.external   , -12.295897883342);
-	energy_match.check("non-local energy", result.energy.nonlocal   ,   5.194712468013);
+	energy_match.check("total energy",     result.energy.total()    , -23.695217119917);
+	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.889578471466);
+	energy_match.check("eigenvalues",      result.energy.eigenvalues,   7.788403571539);
+	energy_match.check("external energy",  result.energy.external   , -12.295872226537);
+	energy_match.check("non-local energy", result.energy.nonlocal   ,   5.194697326610);
 	energy_match.check("ion-ion energy",   result.energy.ion        , -31.483620691456);
 	
 	inq::operations::io::save("silicon_restart", electrons.phi_);

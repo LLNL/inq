@@ -21,24 +21,31 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <gpu/reduce.hpp>
+#include <math/array.hpp>
 
 #include <cassert>
 #include <functional> //std::plus
 #include <numeric>
 
+#include <caliper/cali.h>
+
 namespace inq {
 namespace operations {
 
 template <class array_type>
-auto sum(const array_type & phi){
-	//OPTIMIZATION we should use std::reduce here, but it is not available in C++14
-	//DATAOPERATIONS STL ACCUMULATE
-	return std::accumulate(phi.begin(), phi.end(), (typename array_type::element_type) 0.0);
+typename array_type::element_type sum(const array_type & phi){
+
+	CALI_CXX_MARK_SCOPE("sum 1 arg");
+
+	return gpu::reduce(phi.size(), gpu::array_access<decltype(begin(phi))>{begin(phi)});
 }
 
 template <class array1_type, class array2_type, class binary_op>
 auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op){
 
+	CALI_CXX_MARK_SCOPE("sum 2 arg");
+	
 	const typename array1_type::element_type initial = 0.0;
 	//OPTIMIZATION we should use std::transform_reduce here, but it is not available in C++14
 	//DATAOPERATIONS STL INNER_PRODUCT
@@ -67,7 +74,7 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 	using namespace inq;
 	using namespace Catch::literals;
 	
-	const int N = 1111;
+	const int N = 21111;
 	
 	basis::trivial bas(N);
 	
