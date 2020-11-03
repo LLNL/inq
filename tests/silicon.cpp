@@ -62,7 +62,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
 	
 	ground_state::initialize(ions, electrons);
-	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::no_subspace_diag());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent());
 	
 	energy_match.check("total energy",     result.energy.total()    , -23.695217119917);
 	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.889578471466);

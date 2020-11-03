@@ -45,9 +45,9 @@ void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 	//OPTIMIZATION: here we don't need to make a full copy. We can
 	//divide into blocks over point index (second dimension of phi).
 	using boost::multi::blas::gemm;
-	using boost::multi::blas::transposed;
+	using boost::multi::blas::hermitized;
 	
-	phi.matrix() = gemm(phi.matrix(), transposed(subspace_hamiltonian));
+	phi.matrix() = gemm(phi.matrix(), hermitized(subspace_hamiltonian));
 	
 }
 
