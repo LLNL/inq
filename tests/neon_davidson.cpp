@@ -30,7 +30,7 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	
-	boost::mpi3::environment env(argc, argv);
+	inq::input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 		
 	utils::match energy_match(1.0e-6);
