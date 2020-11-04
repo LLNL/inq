@@ -23,7 +23,7 @@
 
 #include <utils/merge_optional.hpp>
 
-#include <nonstd/optional.hpp>
+#include <optional>
 #include <cassert>
 
 namespace inq {
@@ -134,10 +134,10 @@ namespace input {
 
 	private:
 
-	nonstd::optional<electronic_theory> theory_;
-	nonstd::optional<exchange_functional> exchange_;
-	nonstd::optional<correlation_functional> correlation_;
-	nonstd::optional<bool> fourier_pseudo_;
+	std::optional<electronic_theory> theory_;
+	std::optional<exchange_functional> exchange_;
+	std::optional<correlation_functional> correlation_;
+	std::optional<bool> fourier_pseudo_;
 		
   };
     

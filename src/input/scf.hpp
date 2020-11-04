@@ -23,7 +23,7 @@
 
 #include <utils/merge_optional.hpp>
 
-#include <nonstd/optional.hpp>
+#include <optional>
 #include <cassert>
 
 namespace inq {
@@ -171,13 +171,13 @@ namespace input {
     
   private:
 
-    nonstd::optional<scf_eigensolver> eigensolver_;
-    nonstd::optional<double> mixing_;
-    nonstd::optional<mix_field> mix_field_;
-		nonstd::optional<double> energy_tol_;
-		nonstd::optional<mixing_algo> mixing_algo_;
-		nonstd::optional<bool> verbose_;
-		nonstd::optional<bool> subspace_diag_;
+    std::optional<scf_eigensolver> eigensolver_;
+    std::optional<double> mixing_;
+    std::optional<mix_field> mix_field_;
+		std::optional<double> energy_tol_;
+		std::optional<mixing_algo> mixing_algo_;
+		std::optional<bool> verbose_;
+		std::optional<bool> subspace_diag_;
 		
   };
     

@@ -25,7 +25,7 @@
 #include <cassert>
 #include <array>
 #include <utils/merge_optional.hpp>
-#include <nonstd/optional.hpp>
+#include <optional>
 
 namespace inq {
 namespace input {
@@ -84,8 +84,8 @@ private:
 	cell(){
 	}
 
-	std::array<nonstd::optional<math::vec3d>, 3> lattice_vectors_;
-	nonstd::optional<int> periodic_dimensions_;
+	std::array<std::optional<math::vec3d>, 3> lattice_vectors_;
+	std::optional<int> periodic_dimensions_;
 		
 };
 
