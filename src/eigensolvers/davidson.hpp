@@ -29,7 +29,11 @@
 #include <operations/qrfactorize.hpp>
 #include <operations/diagonalize.hpp>
 #include <operations/overlap.hpp>
-//#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
+#include <operations/overlap_diagonal.hpp>
+
+#ifdef ENABLE_CUDA
+#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
+#endif
 #include <multi/adaptors/blas.hpp>
 template <class array_type>
 auto print_matrix(array_type & A){
