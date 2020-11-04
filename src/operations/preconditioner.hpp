@@ -30,6 +30,8 @@
 
 #include <caliper/cali.h>
 
+#include <operations/overlap_diagonal.hpp>
+
 namespace inq {
 namespace operations {
 
@@ -62,87 +64,36 @@ public:
 	template <class type>
 	void operator()(basis::field_set<basis::fourier_space, type> & phi) const {
 
-		CALI_CXX_MARK_SCOPE("preconditioner");
-	
-		math::array<double, 1> expect(phi.set_size(), 0.0);
-		math::array<double, 1> norm(phi.set_size(), 0.0);
-
-		//calculate the expectation value of the kinetic energy
-		//DATAOPERATIONS LOOP + GPU::RUN 4D REDUCTIONS
-#ifdef ENABLE_CUDA
-		gpu::run(phi.local_set_size(),
-						 [expc = begin(expect),
-							nrm = begin(norm),
-							phcub = begin(phi.cubic()),
-							sizes = phi.basis().local_sizes(),
-							point_op = phi.basis().point_op(),
-							cubic_dist_0 = phi.basis().cubic_dist(0),
-							cubic_dist_1 = phi.basis().cubic_dist(1),
-							cubic_dist_2 = phi.basis().cubic_dist(2)]
-						 
-						 __device__ (auto ist){
-							 for(int ix = 0; ix < sizes[0]; ix++){
-								 for(int iy = 0; iy < sizes[1]; iy++){
-									 for(int iz = 0; iz < sizes[2]; iz++){
-
-										 auto ixg = cubic_dist_0.local_to_global(ix);
-										 auto iyg = cubic_dist_1.local_to_global(iy);
-										 auto izg = cubic_dist_2.local_to_global(iz);
-										 
-										 auto lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
-										 auto phiphi = fabs(phcub[ix][iy][iz][ist]);
-										 expc[ist] += lapl*phiphi;
-										 nrm[ist] += phiphi;
-									 }
-								 }
-							 }
-						 });
-#else
-
-		auto point_op = phi.basis().point_op();
-
-		for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
-					
-					auto ixg = phi.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = phi.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = phi.basis().cubic_dist(2).local_to_global(iz);
-					
-					auto lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
-					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						auto phiphi = fabs(phi.cubic()[ix][iy][iz][ist]);
-						expect[ist] += lapl*phiphi;
-						norm[ist] += phiphi;
-					}
-				}
-			}
-		}
-#endif
-
-		if(phi.basis().part().parallel()){
-			phi.basis().comm().all_reduce_in_place_n(static_cast<double *>(expect.data()), expect.num_elements(), std::plus<>{});
-			phi.basis().comm().all_reduce_in_place_n(static_cast<double *>(norm.data()), norm.num_elements(), std::plus<>{});			
-		}
+		CALI_MARK_BEGIN("preconditioner reduction");
 		
-		//DATAOPERATIONS GPU::RUN 4D
-		gpu::run(phi.set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 
-						 [expc = begin(expect),
-							nrm = begin(norm),
-							phcub = begin(phi.cubic()),
-							point_op = phi.basis().point_op(),
-							cubic_dist_0 = phi.basis().cubic_dist(0),
-							cubic_dist_1 = phi.basis().cubic_dist(1),
-							cubic_dist_2 = phi.basis().cubic_dist(2)] GPU_LAMBDA
-						 (auto ist, auto iz, auto iy, auto ix){
+		auto expect = operations::overlap_diagonal(laplacian(phi), phi);
+		auto norm = operations::overlap_diagonal(phi);
 
-							 auto ixg = cubic_dist_0.local_to_global(ix);
-							 auto iyg = cubic_dist_1.local_to_global(iy);
-							 auto izg = cubic_dist_2.local_to_global(iz);
+		CALI_MARK_END("preconditioner reduction");
+		
+		{
+
+			CALI_CXX_MARK_SCOPE("preconditioner apply");
+			
+			//DATAOPERATIONS GPU::RUN 4D
+			gpu::run(phi.set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 
+							 [expc = begin(expect),
+								nrm = begin(norm),
+								phcub = begin(phi.cubic()),
+								point_op = phi.basis().point_op(),
+								cubic_dist_0 = phi.basis().cubic_dist(0),
+								cubic_dist_1 = phi.basis().cubic_dist(1),
+								cubic_dist_2 = phi.basis().cubic_dist(2)] GPU_LAMBDA
+							 (auto ist, auto iz, auto iy, auto ix){
+
+								 auto ixg = cubic_dist_0.local_to_global(ix);
+								 auto iyg = cubic_dist_1.local_to_global(iy);
+								 auto izg = cubic_dist_2.local_to_global(iz);
 							 
-							 auto lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
-							 phcub[ix][iy][iz][ist] = k_function(lapl*nrm[ist]/expc[ist])*phcub[ix][iy][iz][ist];
-						 });
+								 auto lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
+								 phcub[ix][iy][iz][ist] = k_function(lapl*real(nrm[ist])/real(expc[ist]))*phcub[ix][iy][iz][ist];
+							 });
+		}
 
 	}
 
