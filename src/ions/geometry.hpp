@@ -135,6 +135,8 @@ private:
 
 #include <catch2/catch.hpp>
 
+#include <input/parse_xyz.hpp>
+
 TEST_CASE("Class ions::geometry", "[geometry]") {
 
 	using namespace inq;
@@ -162,7 +164,10 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   }    
  
   SECTION("Read an xyz file"){
-    ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
+
+    auto xyz = input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz");
+		
+    ions::geometry geo(xyz);
 
     CHECK(geo.num_atoms() == 12);
     
