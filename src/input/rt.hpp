@@ -23,7 +23,7 @@
 
 #include <utils/merge_optional.hpp>
 
-#include <nonstd/optional.hpp>
+#include <optional>
 #include <cassert>
 
 namespace inq {
@@ -67,8 +67,8 @@ public:
     
 private:
 
-	nonstd::optional<double> dt_;
-	nonstd::optional<int> num_steps_;
+	std::optional<double> dt_;
+	std::optional<int> num_steps_;
 		
 };
     

@@ -25,7 +25,7 @@
 #include <utils/merge_optional.hpp>
 #include <vector>
 #include <cmath>
-#include <nonstd/optional.hpp>
+#include <optional>
 
 namespace inq {
 namespace input {
@@ -115,10 +115,10 @@ private:
 	struct options {
 	private:
 			
-		nonstd::optional<std::string> symbol_;
-		nonstd::optional<std::string> pseudo_file_;		
-		nonstd::optional<double> mass_;
-		nonstd::optional<bool> filter_;
+		std::optional<std::string> symbol_;
+		std::optional<std::string> pseudo_file_;		
+		std::optional<double> mass_;
+		std::optional<bool> filter_;
 			
 		options(){
 		}

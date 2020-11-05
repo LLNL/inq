@@ -25,7 +25,7 @@
 
 #include <mpi3/environment.hpp>
 
-#include <nonstd/optional.hpp>
+#include <optional>
 #include <cassert>
 
 namespace inq {

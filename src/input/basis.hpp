@@ -25,7 +25,7 @@
 #include <utils/merge_optional.hpp>
 #include <cassert>
 #include <array>
-#include <nonstd/optional.hpp>
+#include <optional>
 #include <utils/merge_optional.hpp>
 
 namespace inq {
@@ -86,9 +86,9 @@ namespace input {
 		basis(){
 		}
 		
-		nonstd::optional<double> spacing_;
-		nonstd::optional<bool> spherical_grid_;
-		nonstd::optional<double> density_factor_;
+		std::optional<double> spacing_;
+		std::optional<bool> spherical_grid_;
+		std::optional<double> density_factor_;
 		
 	};
 
