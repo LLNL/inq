@@ -94,7 +94,7 @@ namespace ground_state {
 
 		CALI_CXX_MARK_LOOP_BEGIN(scfloop, "scf loop");
 
-		for(int iiter = 0; iiter < 1000; iiter++){
+		for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
 			
 			if(solver.subspace_diag()) subspace_diagonalization(ham, electrons.phi_);
 			

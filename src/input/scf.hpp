@@ -153,6 +153,16 @@ namespace input {
 		
 		auto subspace_diag() const {
 			return subspace_diag_.value_or(true);
+		}
+
+		auto static scf_steps(int val) {
+			scf solver;
+			solver.scf_steps_ = val;
+      return solver;
+		}
+
+		auto scf_steps() const {
+			return scf_steps_.value_or(200);
 		}		
 		
     friend auto operator|(const scf & solver1, const scf & solver2){
@@ -165,7 +175,8 @@ namespace input {
 			rsolver.energy_tol_	= merge_optional(solver1.energy_tol_, solver2.energy_tol_);
 			rsolver.mixing_algo_	= merge_optional(solver1.mixing_algo_, solver2.mixing_algo_);
 			rsolver.verbose_	= merge_optional(solver1.verbose_, solver2.verbose_);
-			rsolver.subspace_diag_ = merge_optional(solver1.subspace_diag_, solver2.subspace_diag_);		
+			rsolver.subspace_diag_ = merge_optional(solver1.subspace_diag_, solver2.subspace_diag_);
+			rsolver.scf_steps_ = merge_optional(solver1.scf_steps_, solver2.scf_steps_);
 			return rsolver;
 		}
     
@@ -178,6 +189,7 @@ namespace input {
 		std::optional<mixing_algo> mixing_algo_;
 		std::optional<bool> verbose_;
 		std::optional<bool> subspace_diag_;
+		std::optional<int> scf_steps_;
 		
   };
     
