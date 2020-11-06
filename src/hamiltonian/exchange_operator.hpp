@@ -72,6 +72,10 @@ namespace hamiltonian {
 			operator()(phi, exxphi);
 			return exxphi;
 		}
+
+		auto enabled() const {
+			return exchange_coefficient_ != 0.0;
+		}
 		
 		math::array<double, 1> hf_occupations;
 		basis::field_set<basis::real_space, complex> hf_orbitals;

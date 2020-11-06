@@ -147,6 +147,14 @@ namespace basis {
 			return from_symmetric_range(nr_, ii);
 		}
 
+		auto symmetric_range_begin(int idir) const {
+			return -nr_[idir]/2;
+		}
+
+		auto symmetric_range_end(int idir) const {
+			return nr_[idir]/2 + nr_[idir]%2;
+		}
+		
 	protected:
 
 		std::array<inq::utils::partition, 3> cubic_dist_;
@@ -222,7 +230,16 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 			}
 		}
 	}
+
+	CHECK(gr.symmetric_range_begin(0) == -60);
+	CHECK(gr.symmetric_range_end(0) == 60);
+
+	CHECK(gr.symmetric_range_begin(1) == -22);
+	CHECK(gr.symmetric_range_end(1) == 23);
 	
+	CHECK(gr.symmetric_range_begin(2) == -38);
+	CHECK(gr.symmetric_range_end(2) == 39);	
+
 }
 #endif
 
