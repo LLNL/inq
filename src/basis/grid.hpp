@@ -147,11 +147,11 @@ namespace basis {
 			return from_symmetric_range(nr_, ii);
 		}
 
-		auto symmetric_range_begin(int idir){
+		auto symmetric_range_begin(int idir) const {
 			return -nr_[idir]/2;
 		}
 
-		auto symmetric_range_end(int idir){
+		auto symmetric_range_end(int idir) const {
 			return nr_[idir]/2 + nr_[idir]%2;
 		}
 		

@@ -62,11 +62,11 @@ namespace basis {
 					lo[idir] = floor((rep[irep][idir] - radius)/parent_grid.rspacing()[idir]) - 1;
 					hi[idir] = ceil((rep[irep][idir] + radius)/parent_grid.rspacing()[idir]) + 1;
 
-					lo[idir] = std::max<int>(-parent_grid.local_sizes()[idir]/2, lo[idir]);
-					hi[idir] = std::max<int>(-parent_grid.local_sizes()[idir]/2, hi[idir]);
+					lo[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), lo[idir]);
+					hi[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), hi[idir]);
 
-					lo[idir] = std::min<int>(parent_grid.local_sizes()[idir]/2, lo[idir]);
-					hi[idir] = std::min<int>(parent_grid.local_sizes()[idir]/2, hi[idir]);
+					lo[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), lo[idir]);
+					hi[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), hi[idir]);
 				}
 				
 			
