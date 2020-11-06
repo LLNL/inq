@@ -125,14 +125,18 @@ namespace ground_state {
 			}
 			
 			//update the Hartree-Fock operator, mixing the new and old orbitals
-			
-			//DATAOPERATIONS LOOP 1D
-			for(int ii = 0; ii < electrons.phi_.num_elements(); ii++){
-				ham.exchange.hf_orbitals.data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.data()[ii] + solver.mixing()*electrons.phi_.data()[ii];
+
+			if(ham.exchange.enabled()) {
+				CALI_CXX_MARK_SCOPE("HF mixing");
+				
+				//DATAOPERATIONS LOOP 1D
+				for(int ii = 0; ii < electrons.phi_.num_elements(); ii++){
+					ham.exchange.hf_orbitals.data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.data()[ii] + solver.mixing()*electrons.phi_.data()[ii];
+				}
+				
+				//probably the occupations should be mixed too
+				ham.exchange.hf_occupations = electrons.states_.occupations();
 			}
-			
-			//probably the occupations should be mixed too
-			ham.exchange.hf_occupations = electrons.states_.occupations();
 			
 			if(inter.self_consistent() and solver.mix_density()) {
 				auto new_density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
