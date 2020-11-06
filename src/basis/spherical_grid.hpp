@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <algorithm> //max, min
+
 #include <math/vector3.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
@@ -50,31 +52,49 @@ namespace basis {
 
 			std::vector<std::array<int, 3> > tmp_points;
 			std::vector<float> tmp_distance;
-					
-			//DATAOPERATIONS LOOP 4D
-      for(int ix = 0; ix < parent_grid.local_sizes()[0]; ix++){
-				for(int iy = 0; iy < parent_grid.local_sizes()[1]; iy++){
-					for(int iz = 0; iz < parent_grid.local_sizes()[2]; iz++){
 
-						auto ixg = parent_grid.cubic_dist(0).local_to_global(ix);
-						auto iyg = parent_grid.cubic_dist(1).local_to_global(iy);
-						auto izg = parent_grid.cubic_dist(2).local_to_global(iz);
-						
-						auto rpoint = parent_grid.rvector(ixg, iyg, izg);
-						
-						for(unsigned irep = 0; irep < rep.size(); irep++){
+			for(unsigned irep = 0; irep < rep.size(); irep++){
+
+				math::vector3<int> lo, hi;
+
+				//get the cubic grid that contains the sphere, this makes the initialization O(1) instead of O(N)
+				for(int idir = 0; idir < 3; idir++){
+					lo[idir] = floor((rep[irep][idir] - radius)/parent_grid.rspacing()[idir]) - 1;
+					hi[idir] = ceil((rep[irep][idir] + radius)/parent_grid.rspacing()[idir]) + 1;
+
+					lo[idir] = std::max<int>(-parent_grid.local_sizes()[idir]/2, lo[idir]);
+					hi[idir] = std::max<int>(-parent_grid.local_sizes()[idir]/2, hi[idir]);
+
+					lo[idir] = std::min<int>(parent_grid.local_sizes()[idir]/2, lo[idir]);
+					hi[idir] = std::min<int>(parent_grid.local_sizes()[idir]/2, hi[idir]);
+				}
+				
+			
+				//DATAOPERATIONS LOOP 4D
+				for(int ix = lo[0]; ix < hi[0]; ix++){
+					for(int iy = lo[1]; iy < hi[1]; iy++){
+						for(int iz = lo[2]; iz < hi[2]; iz++){
+
+							auto ii =  parent_grid.from_symmetric_range({ix, iy, iz});						
+
+							auto ixg = parent_grid.cubic_dist(0).local_to_global(ii[0]);
+							auto iyg = parent_grid.cubic_dist(1).local_to_global(ii[1]);
+							auto izg = parent_grid.cubic_dist(2).local_to_global(ii[2]);
+							
+							auto rpoint = parent_grid.rvector(ixg, iyg, izg);
+							
 							auto n2 = norm(rpoint - rep[irep]);
 							if(n2 > radius*radius) continue;
 							
-							tmp_points.push_back({ix, iy, iz});
+							tmp_points.push_back({ii[0], ii[1], ii[2]});
 							tmp_distance.push_back(sqrt(n2));
 							relative_pos_.push_back(rpoint - rep[irep]);
+							
 						}
-						
 					}
 				}
-      }
-
+				
+			}
 
 			points_.reextent({tmp_points.size()});
 			distance_.reextent({tmp_points.size()});
