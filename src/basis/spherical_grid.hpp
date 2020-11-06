@@ -75,18 +75,22 @@ namespace basis {
 					for(int iy = lo[1]; iy < hi[1]; iy++){
 						for(int iz = lo[2]; iz < hi[2]; iz++){
 
-							auto ii =  parent_grid.from_symmetric_range({ix, iy, iz});						
+							auto ii =  parent_grid.from_symmetric_range({ix, iy, iz});
 
-							auto ixg = parent_grid.cubic_dist(0).local_to_global(ii[0]);
-							auto iyg = parent_grid.cubic_dist(1).local_to_global(ii[1]);
-							auto izg = parent_grid.cubic_dist(2).local_to_global(ii[2]);
+							int ixl = parent_grid.cubic_dist(0).global_to_local(ii[0]);
+							int iyl = parent_grid.cubic_dist(1).global_to_local(ii[1]);
+							int izl = parent_grid.cubic_dist(2).global_to_local(ii[2]);
 							
-							auto rpoint = parent_grid.rvector(ixg, iyg, izg);
+							if(ixl < 0 or ixl >= parent_grid.local_sizes()[0]) continue;
+							if(iyl < 0 or iyl >= parent_grid.local_sizes()[1]) continue;
+							if(izl < 0 or izl >= parent_grid.local_sizes()[2]) continue;
+
+							auto rpoint = parent_grid.rvector(ii[0], ii[1], ii[2]);
 							
 							auto n2 = norm(rpoint - rep[irep]);
 							if(n2 > radius*radius) continue;
 							
-							tmp_points.push_back({ii[0], ii[1], ii[2]});
+							tmp_points.push_back({ixl, iyl, izl});
 							tmp_distance.push_back(sqrt(n2));
 							relative_pos_.push_back(rpoint - rep[irep]);
 							
