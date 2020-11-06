@@ -44,38 +44,6 @@ public:
 	geometry(){
 	}
 
-	geometry(const char * xyz_file_name){
-		geometry(std::string(xyz_file_name));
-	}
-		
-	// Generates a geometry from an xyz file
-	geometry(const std::string & xyz_file_name){
-		std::ifstream xyz_file(xyz_file_name.c_str());
-
-		if(!xyz_file.is_open()) throw error::FILE_NOT_FOUND;
-
-		int natoms;
-		std::string comment_line;
-      
-		xyz_file >> natoms;
-      
-		std::getline(xyz_file, comment_line);
-		std::getline(xyz_file, comment_line);
-      
-		std::string atom_name;
-		math::vec3d atom_position;
-      
-		for(int iatom = 0; iatom < natoms; iatom++){
-      xyz_file >> atom_name >> atom_position;
-      add_atom(pseudo::element(atom_name), atom_position*1.8897261);
-		}
-      
-		xyz_file.close();
-      
-		assert(natoms == num_atoms());
-      
-	}
-
 	template <class container_type>
 	geometry(const container_type & atom_container){
 
@@ -135,6 +103,8 @@ private:
 
 #include <catch2/catch.hpp>
 
+#include <input/parse_xyz.hpp>
+
 TEST_CASE("Class ions::geometry", "[geometry]") {
 
 	using namespace inq;
@@ -162,7 +132,8 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   }    
  
   SECTION("Read an xyz file"){
-    ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
+
+    ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 
     CHECK(geo.num_atoms() == 12);
     
@@ -190,13 +161,9 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     CHECK(geo.coordinates()[12][0] == -3.0_a);
     CHECK(geo.coordinates()[12][1] == 4.0_a);
     CHECK(geo.coordinates()[12][2] == 5.0_a);
-    
+		
   }
 
-  SECTION("Try to read a non-existent file"){
-    CHECK_THROWS(ions::geometry("/this_file_should_not_exist,_i_hope_it_doesnt"));
-  }
-  
 }
 #endif
 
