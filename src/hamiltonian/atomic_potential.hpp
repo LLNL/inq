@@ -285,6 +285,8 @@ namespace hamiltonian {
 
 #ifdef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
+
+#include <input/parse_xyz.hpp>
 #include <catch2/catch.hpp>
 #include <ions/geometry.hpp>
 #include <basis/real_space.hpp>
@@ -339,8 +341,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
   SECTION("Construct from a geometry"){
 
-    ions::geometry geo(config::path::unit_tests_data() + "benzene.xyz");
-
+    ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
+		
 		double ll = 20.0;
 		auto cell = input::cell::cubic(ll, ll, ll);
 		basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
