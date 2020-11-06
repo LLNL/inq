@@ -69,8 +69,10 @@ namespace basis {
 					hi[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), hi[idir]);
 				}
 				
-			
-				//DATAOPERATIONS LOOP 4D
+
+				//OPTIMIZATION: this iteration should be done only over the local points
+				
+				//DATAOPERATIONS LOOP 3D
 				for(int ix = lo[0]; ix < hi[0]; ix++){
 					for(int iy = lo[1]; iy < hi[1]; iy++){
 						for(int iz = lo[2]; iz < hi[2]; iz++){
@@ -100,6 +102,8 @@ namespace basis {
 				
 			}
 
+			//OPTIMIZATION: order the points for better memory access
+			
 			points_.reextent({tmp_points.size()});
 			distance_.reextent({tmp_points.size()});
 			
