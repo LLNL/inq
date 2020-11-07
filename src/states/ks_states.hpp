@@ -23,7 +23,6 @@
 
 #include <math/complex.hpp>
 #include <math/array.hpp>
-#include <basis/real_space.hpp>
 #include <operations/sum.hpp>
 
 namespace inq {
@@ -79,16 +78,6 @@ public:
 		return nquantumnumbers_;
 	}
 
-	template <class array_type>
-	std::array<long int, 4> cubic_dims(const array_type & basis_dims) const {
-		return {basis_dims[0], basis_dims[1], basis_dims[2], nstates_};
-	}
-
-	template <class array_type>
-	std::array<long int, 2> linear_dims(const array_type & basis_dims) const {
-		return {basis_dims[0]*basis_dims[1]*basis_dims[2], nstates_};
-	}
-    
 	template <class output_stream>
 	void info(output_stream & out) const {
 		out << "KOHN-SHAM STATES:" << std::endl;
@@ -199,21 +188,12 @@ private:
 #ifdef INQ_STATES_KS_STATES_UNIT_TEST
 #undef INQ_STATES_KS_STATES_UNIT_TEST
 
-#include <ions/unitcell.hpp>
 #include <catch2/catch.hpp>
 
 TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 	using namespace Catch::literals;
-	
 	using namespace inq;
-  using math::vec3d;
-  
-  double ecut = 30.0;
-  double ll = 10.0;
-  
-  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
-  basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
   
   SECTION("Spin unpolarized"){
     
@@ -221,10 +201,6 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
-		CHECK(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
-		CHECK(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
-		CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
-		CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
 
 		st.update_occupations(math::array<double, 1>{0.1, 0.2, 0.3, 0.3, 0.4, 1.0});
 		
@@ -243,10 +219,6 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
-		CHECK(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
-		CHECK(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
-		CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
-		CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
 
 		st.update_occupations(math::array<double, 1>{0.0, 0.2, 0.3, 0.3, 0.4, 1.0});
 
@@ -265,10 +237,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 2);
-    CHECK(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
-    CHECK(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
-    CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
-    CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
+
   }
 
   SECTION("Non-collinear spin"){
@@ -277,10 +246,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     
     CHECK(st.num_states() == 11);
     CHECK(st.num_quantum_numbers() == 1);
-    CHECK(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
-    CHECK(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
-    CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
-    CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
+
   }
 
   
