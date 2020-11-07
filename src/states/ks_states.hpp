@@ -42,10 +42,12 @@ public:
 	};
         
 	ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0, double temperature = 0.0):
-		temperature_(temperature),
-		el_per_state_(2)		
+		temperature_(temperature)
 	{
-
+		
+		max_occ_ = 1.0;
+		if(spin == spin_config::UNPOLARIZED) max_occ_ = 2.0;
+			
 		if(spin == spin_config::NON_COLLINEAR){
 			nstates_ = ceil(nelectrons);
 		} else {
@@ -66,7 +68,7 @@ public:
 		}
 
 		total_charge_ = nelectrons;
-			
+
 	}
 
 	int num_states() const {
@@ -160,7 +162,7 @@ public:
 
 				for(int ist = 0; ist < nstates_; ist++){
 					auto xx = (efermi - real(eigenval[ist]))/dsmear;
-					sumq = sumq + el_per_state_*smear_function(xx);
+					sumq = sumq + max_occ_*smear_function(xx);
 				}
 
 				if(fabs(sumq - total_charge_) <= tol) break;
@@ -171,7 +173,7 @@ public:
 
 			for(int ist = 0; ist < nstates_; ist++){
 				auto xx = (efermi - real(eigenval[ist]))/dsmear;
-				occs_[ist] = el_per_state_*smear_function(xx);
+				occs_[ist] = max_occ_*smear_function(xx);
 			}
 
 			assert(fabs(operations::sum(occs_) - total_charge_) <= tol);
@@ -187,7 +189,7 @@ private:
 	int nquantumnumbers_;
 	math::array<double, 1> occs_;
 	double temperature_;
-	double el_per_state_;
+	double max_occ_;
 
 };
 
