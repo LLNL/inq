@@ -49,6 +49,7 @@ int main(int argc, char ** argv){
 	input::config conf;
 	
 	conf.extra_states = 8;
+	conf.temperature = 0.00095004347; //300 K
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
 	
