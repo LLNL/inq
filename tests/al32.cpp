@@ -57,15 +57,15 @@ int main(int argc, char ** argv){
 
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
 	
-	energy_match.check("total energy",        result.energy.total(),         -1920.807756665174);
-	energy_match.check("kinetic energy",      result.energy.kinetic(),         327.618032246892);
-	energy_match.check("eigenvalues",         result.energy.eigenvalues,       424.360184739629);
-	energy_match.check("Hartree energy",      result.energy.hartree,          1580.487552779374);
-	energy_match.check("external energy",     result.energy.external,        -2730.886670303735);
-	energy_match.check("non-local energy",    result.energy.nonlocal,           49.326855481987);
-	energy_match.check("XC energy",           result.energy.xc,               -356.597956355480);
-	energy_match.check("XC density integral", result.energy.nvxc,             -382.673138244262);
-	energy_match.check("ion-ion energy",      result.energy.ion,              -790.755570514212);
+	energy_match.check("total energy",        result.energy.total(),        -73.533747057250);
+	energy_match.check("kinetic energy",      result.energy.kinetic(),       28.023995211588);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues,      6.501664582729);
+	energy_match.check("Hartree energy",      result.energy.hartree,          0.122273970540);
+	energy_match.check("external energy",     result.energy.external,         1.593742691403);
+	energy_match.check("non-local energy",    result.energy.nonlocal,        11.261163563655);
+	energy_match.check("XC energy",           result.energy.xc,             -34.568675453999);
+	energy_match.check("XC density integral", result.energy.nvxc,           -34.621784824997);
+	energy_match.check("ion-ion energy",      result.energy.ion,            -79.966247040437);
 	
 	fftw_cleanup(); //required for valgrid
 	
