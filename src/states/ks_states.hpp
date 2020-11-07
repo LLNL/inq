@@ -204,6 +204,8 @@ private:
 
 TEST_CASE("Class states::ks_states", "[ks_states]"){
 
+	using namespace Catch::literals;
+	
 	using namespace inq;
   using math::vec3d;
   
@@ -224,13 +226,37 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
 		CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
 
+		st.update_occupations(math::array<double, 1>{0.1, 0.2, 0.3, 0.3, 0.4, 1.0});
+		
 		CHECK(st.occupations()[0] == 2.0);
 		CHECK(st.occupations()[1] == 2.0);
 		CHECK(st.occupations()[2] == 2.0);
 		CHECK(st.occupations()[3] == 2.0);
 		CHECK(st.occupations()[4] == 2.0);
 		CHECK(st.occupations()[5] == 1.0);
-		
+
+  }
+	
+  SECTION("Spin unpolarized with temperature"){
+    
+    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 4.0, 4, 0.01);
+    
+    CHECK(st.num_states() == 6);
+    CHECK(st.num_quantum_numbers() == 1);
+		CHECK(st.cubic_dims(pw.sizes())[0] == pw.sizes()[0]);
+		CHECK(st.cubic_dims(pw.sizes())[1] == pw.sizes()[1]);
+		CHECK(st.cubic_dims(pw.sizes())[2] == pw.sizes()[2]);
+		CHECK(st.cubic_dims(pw.sizes())[3] == st.num_states());
+
+		st.update_occupations(math::array<double, 1>{0.0, 0.2, 0.3, 0.3, 0.4, 1.0});
+
+		CHECK(st.occupations()[0] == 2.0_a);
+		CHECK(st.occupations()[1] == 1.9810772793_a);
+		CHECK(st.occupations()[2] == 0.0094611446_a);
+		CHECK(st.occupations()[3] == 0.0094611446_a);
+		CHECK(st.occupations()[4] == 4.315768121820668e-07_a);
+		CHECK(st.occupations()[5] == 3.779107816290222e-33_a);
+
   }
 
   SECTION("Spin polarized"){
