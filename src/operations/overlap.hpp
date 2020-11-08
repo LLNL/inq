@@ -39,7 +39,7 @@ namespace operations {
 template <class field_set_type>
 auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 
-	CALI_CXX_MARK_SCOPE("overlap 2 arg");
+	CALI_CXX_MARK_SCOPE("overlap(2arg)");
 	
 	// no state parallelization for now
 	assert(not phi1.set_part().parallel());
@@ -59,7 +59,7 @@ auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 template <class field_set_type>
 auto overlap(const field_set_type & phi){
 
-	CALI_CXX_MARK_SCOPE("overlap 1 arg");
+	CALI_CXX_MARK_SCOPE("overlap(1arg)");
  
 	// no state parallelization for now
 	assert(not phi.set_part().parallel());
@@ -78,14 +78,14 @@ auto overlap(const field_set_type & phi){
 
 template <class field_type>
 auto overlap_single(const field_type & phi1, const field_type & phi2){
-	CALI_CXX_MARK_SCOPE("overlap_single 2 arg");
+	CALI_CXX_MARK_SCOPE("overlap_single(2arg)");
 	
 	return integral(phi1, phi2, [](auto t1, auto t2){ return conj(t1)*t2; });
 }
 	
 template <class field_type>
 auto overlap_single(field_type & phi){
-	CALI_CXX_MARK_SCOPE("overlap_single 1 arg");
+	CALI_CXX_MARK_SCOPE("overlap_single(1arg)");
 			
 	return overlap_single(phi, phi);
 }

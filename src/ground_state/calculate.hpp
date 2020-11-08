@@ -92,7 +92,7 @@ namespace ground_state {
 
 		int conv_count = 0;
 
-		CALI_CXX_MARK_LOOP_BEGIN(scfloop, "scf loop");
+		CALI_CXX_MARK_LOOP_BEGIN(scfloop, "scf_loop");
 
 		for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
 			
@@ -133,7 +133,7 @@ namespace ground_state {
 			//update the Hartree-Fock operator, mixing the new and old orbitals
 
 			if(ham.exchange.enabled()) {
-				CALI_CXX_MARK_SCOPE("HF mixing");
+				CALI_CXX_MARK_SCOPE("hf_mixing");
 				
 				//DATAOPERATIONS LOOP 1D
 				for(int ii = 0; ii < electrons.phi_.num_elements(); ii++){

@@ -38,7 +38,7 @@ class poisson {
 
 public:
 
-	basis::field<basis::real_space, complex> solve_periodic(const basis::field<basis::real_space, complex> & density) const {
+	basis::field<basis::real_space, complex> poisson_solve_periodic(const basis::field<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -75,7 +75,7 @@ public:
 		return operations::space::to_real(potential_fs,  /*normalize = */ false);
 	}
 
-	auto solve_finite(const basis::field<basis::real_space, complex> & density) const {
+	auto poisson_solve_finite(const basis::field<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -117,18 +117,18 @@ public:
 
 	auto operator()(const basis::field<basis::real_space, complex> & density) const {
 
-		CALI_CXX_MARK_SCOPE("poisson complex");
+		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
 		if(density.basis().periodic_dimensions() == 3){
-			return solve_periodic(density);
+			return poisson_solve_periodic(density);
 		} else {
-			return solve_finite(density);
+			return poisson_solve_finite(density);
 		}
 	}
 		
 	basis::field<basis::real_space, double> operator()(const basis::field<basis::real_space, double> & density) const {
 
-		CALI_CXX_MARK_SCOPE("poisson real");
+		CALI_CXX_MARK_SCOPE("poisson(real)");
 		
 		auto complex_potential = operator()(density.complex());
 		return complex_potential.real();

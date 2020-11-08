@@ -64,16 +64,16 @@ public:
 	template <class type>
 	void operator()(basis::field_set<basis::fourier_space, type> & phi) const {
 
-		CALI_MARK_BEGIN("preconditioner reduction");
+		CALI_MARK_BEGIN("preconditioner_reduction");
 		
 		auto expect = operations::overlap_diagonal(laplacian(phi), phi);
 		auto norm = operations::overlap_diagonal(phi);
 
-		CALI_MARK_END("preconditioner reduction");
+		CALI_MARK_END("preconditioner_reduction");
 		
 		{
 
-			CALI_CXX_MARK_SCOPE("preconditioner apply");
+			CALI_CXX_MARK_SCOPE("preconditioner_apply");
 			
 			//DATAOPERATIONS GPU::RUN 4D
 			gpu::run(phi.set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 

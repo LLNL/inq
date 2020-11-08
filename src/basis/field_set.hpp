@@ -95,7 +95,7 @@ namespace basis {
 		//set to a scalar value
 		field_set & operator=(const type value) {
 
-			CALI_CXX_MARK_SCOPE("field_set = scalar");
+			CALI_CXX_MARK_SCOPE("field_set=scalar");
 				
 			//DATAOPERATIONS GPU::RUN FILL
 			gpu::run(matrix_.num_elements(),

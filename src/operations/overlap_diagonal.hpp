@@ -54,7 +54,7 @@ struct overlap_diagonal_mult {
 template <class field_set_type>
 math::array<typename field_set_type::element_type, 1> overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
 
-	CALI_CXX_MARK_SCOPE("overlap_diagonal 2 arg");
+	CALI_CXX_MARK_SCOPE("overlap_diagonal(2arg)");
 	
 	using type = typename field_set_type::element_type;
 		
@@ -99,7 +99,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 	
 template <class field_set_type>
 auto overlap_diagonal(const field_set_type & phi){
-	CALI_CXX_MARK_SCOPE("overlap_diagonal 1 arg");
+	CALI_CXX_MARK_SCOPE("overlap_diagonal(1arg)");
 	
 	return overlap_diagonal(phi, phi);
 }

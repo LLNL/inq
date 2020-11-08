@@ -36,7 +36,7 @@ namespace operations {
 template <class array_type>
 typename array_type::element_type sum(const array_type & phi){
 
-	CALI_CXX_MARK_SCOPE("sum 1 arg");
+	CALI_CXX_MARK_SCOPE("sum(1arg)");
 
 	return gpu::reduce(phi.size(), gpu::array_access<decltype(begin(phi))>{begin(phi)});
 }
@@ -44,7 +44,7 @@ typename array_type::element_type sum(const array_type & phi){
 template <class array1_type, class array2_type, class binary_op>
 auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op){
 
-	CALI_CXX_MARK_SCOPE("sum 2 arg");
+	CALI_CXX_MARK_SCOPE("sum(2arg)");
 	
 	const typename array1_type::element_type initial = 0.0;
 	//OPTIMIZATION we should use std::transform_reduce here, but it is not available in C++14
