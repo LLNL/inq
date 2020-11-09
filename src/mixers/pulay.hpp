@@ -49,6 +49,8 @@ public:
 
 	void operator()(math::array<Type, 1> & input_value, const math::array<Type, 1> & output_value){
 
+		CALI_CXX_MARK_SCOPE("pulay_mixing");
+		
 		const double residual_coeff = 0.05;
 			
 		assert((typename math::array<double, 2>::size_type) input_value.size() == ff_[0].size());

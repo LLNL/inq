@@ -39,7 +39,9 @@ public:
 	}
 
 	void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value){
-		//note: arguments might alias here			
+		//note: arguments might alias here
+
+		CALI_CXX_MARK_SCOPE("linear_mixing");
 
 		//DATAOPERATIONS LOOP 1D
 		for(unsigned ii = 0; ii < input_value.size(); ii++){
