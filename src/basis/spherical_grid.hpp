@@ -123,7 +123,7 @@ namespace basis {
     template <class array_3d, class array_1d>
     void gather(const array_3d & grid, array_1d && subgrid) const {
 
-			CALI_CXX_MARK_SCOPE("spherical_grid::gather 3d");
+			CALI_CXX_MARK_SCOPE("spherical_grid::gather(3d)");
 				
 			//DATAOPERATIONS STL TRANSFORM
 			std::transform(points_.begin(), points_.end(), subgrid.begin(),
@@ -135,7 +135,7 @@ namespace basis {
 		template <class array_4d>
     math::array<typename array_4d::element_type, 2> gather(const array_4d & grid) const {
 
-			CALI_CXX_MARK_SCOPE("spherical_grid::gather 4d");
+			CALI_CXX_MARK_SCOPE("spherical_grid::gather(4d)");
 			
 			const int nst = std::get<3>(sizes(grid));
 			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});

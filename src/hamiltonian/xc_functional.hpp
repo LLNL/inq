@@ -53,14 +53,13 @@ namespace hamiltonian {
 		template <class field_type>
 		void operator()(field_type const & density, double & xc_energy, field_type & vxc) const {
 
-			CALI_MARK_BEGIN("xc functional");
+			CALI_CXX_MARK_SCOPE("xc_functional");
 			
 			field_type exc(vxc.skeleton());
 			unpolarized(density.linear().size(), density, exc, vxc);
 
 			xc_energy = operations::integral_product(density, exc);
 
-			CALI_MARK_END("xc functional");
 		}
 
 		auto & libxc_func() const {

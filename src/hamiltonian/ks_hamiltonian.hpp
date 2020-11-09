@@ -127,7 +127,7 @@ namespace hamiltonian {
 			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
 
 			{
-				CALI_CXX_MARK_SCOPE("local potential");
+				CALI_CXX_MARK_SCOPE("local_potential");
 			//the scalar local potential in real space
 			//DATAOPERATIONS GPU:RUN 2D
 				gpu::run(phi.local_set_size(), phi.basis().local_size(),
@@ -144,7 +144,7 @@ namespace hamiltonian {
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
 
-			CALI_CXX_MARK_SCOPE("hamiltonian real");
+			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 				
 			auto phi_fs = operations::space::to_fourier(phi);
 			
@@ -166,7 +166,7 @@ namespace hamiltonian {
 		
     auto operator()(const basis::field_set<basis::fourier_space, complex> & phi) const{
 
-			CALI_CXX_MARK_SCOPE("hamiltonian fourier");
+			CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
 			
 			auto phi_rs = operations::space::to_real(phi);
 
