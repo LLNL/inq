@@ -50,6 +50,8 @@ public:
 		
 	void broyden_extrapolation(math::array<Type, 1> & input_value, int const iter_used, math::array<Type, 1> const & ff){
 
+		CALI_CXX_MARK_SCOPE("broyden_extrapolation");
+		
 		double const w0 = 0.01;
 		double const ww = 5.0;
 						
@@ -101,6 +103,8 @@ public:
 		
 	void operator()(math::array<Type, 1> & input_value, math::array<Type, 1> const & output_value){
 
+		CALI_CXX_MARK_SCOPE("broyden_mixing");
+		
 		assert((typename math::array<double, 2>::size_type) input_value.size() == dv_[0].size());
 		assert((typename math::array<double, 2>::size_type) output_value.size() == dv_[0].size());
 

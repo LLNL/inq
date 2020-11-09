@@ -96,13 +96,13 @@ namespace basis {
 		field_set & operator=(const type value) {
 
 			CALI_CXX_MARK_SCOPE("field_set=scalar");
-				
-			//DATAOPERATIONS GPU::RUN FILL
+
+			//DATAOPERATIONS GPU::RUN
 			gpu::run(matrix_.num_elements(),
 							 [lin = (element_type *) matrix_.data(), value] GPU_LAMBDA (auto ii){
 								 lin[ii] = value;
 							 });
-			
+		
 			return *this;
 		}
 		
@@ -248,7 +248,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 			CHECK(imag(zff.matrix()[ii][jj]) == 0.0_a);
 		}
 	}
-	
+
 	auto dff = zff.real();
 
 	static_assert(std::is_same<decltype(dff), basis::field_set<basis::real_space, double>>::value, "real() should return a double field");
@@ -259,6 +259,23 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
 			CHECK(dff.matrix()[ii][jj] == 12.2244_a);
+		}
+	}
+
+	dff = 0.0;
+
+	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
+		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
+			CHECK(dff.matrix()[ii][jj] == 0.0_a);
+		}
+	}
+	
+	zff = 0.0;
+	
+	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
+		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
+			CHECK(real(zff.matrix()[ii][jj]) == 0.0_a);
+			CHECK(imag(zff.matrix()[ii][jj]) == 0.0_a);
 		}
 	}
 	
