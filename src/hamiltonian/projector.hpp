@@ -86,7 +86,11 @@ namespace hamiltonian {
 				
 			auto sphere_phi = sphere_.gather(phi.cubic());
 
+			CALI_MARK_BEGIN("projector_allocation");
+
 			math::array<typename field_set_type::element_type, 2> projections({nproj_, phi.local_set_size()});
+
+			CALI_MARK_END("projector_allocation");
 			
 			//DATAOPERATIONS BLAS
 			if(sphere_.size() > 0) projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);

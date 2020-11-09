@@ -138,8 +138,11 @@ namespace basis {
 			CALI_CXX_MARK_SCOPE("spherical_grid::gather(4d)");
 			
 			const int nst = std::get<3>(sizes(grid));
-			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
 
+			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
+			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
+			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
+			
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
 #ifdef ENABLE_CUDA
 			gpu::run(nst, size(),
