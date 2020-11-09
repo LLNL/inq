@@ -172,7 +172,7 @@ auto reduce(long sizex, long sizey, kernel_type kernel) -> math::array<decltype(
   const int blocksize = 1024;
 
 	unsigned nblock = (sizey + blocksize - 1)/blocksize;
-	math::array<type, 2> result({nblock, sizex}, 666.0);
+	math::array<type, 2> result({nblock, sizex});
 
 	struct dim3 dg{(unsigned) sizex, nblock};
   struct dim3 db{1, blocksize};
