@@ -93,17 +93,23 @@ namespace hamiltonian {
 			CALI_MARK_END("projector_allocation");
 			
 			//DATAOPERATIONS BLAS
-			if(sphere_.size() > 0) projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
+			if(sphere_.size() > 0) {
+				
+				projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
 
-			{
-				CALI_CXX_MARK_SCOPE("projector_scal");
-
-				//DATAOPERATIONS GPU::RUN 2D
-				gpu::run(phi.local_set_size(), nproj_,
-								 [proj = begin(projections), coeff = begin(kb_coeff_)]
-								 GPU_LAMBDA (auto ist, auto iproj){
-									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
-								 });
+				{
+					CALI_CXX_MARK_SCOPE("projector_scal");
+					
+					//DATAOPERATIONS GPU::RUN 2D
+					gpu::run(phi.local_set_size(), nproj_,
+									 [proj = begin(projections), coeff = begin(kb_coeff_)]
+									 GPU_LAMBDA (auto ist, auto iproj){
+										 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+									 });
+				}
+				
+			} else {
+				projections.elements().fill(0.0);
 			}
 
 			if(phi.basis().part().parallel()){
