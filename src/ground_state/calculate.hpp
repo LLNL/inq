@@ -140,6 +140,8 @@ namespace ground_state {
 				//probably the occupations should be mixed too
 				ham.exchange.hf_occupations = electrons.states_.occupations();
 			}
+
+			CALI_MARK_BEGIN("mixing");
 			
 			if(inter.self_consistent() and solver.mix_density()) {
 				auto new_density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
@@ -156,9 +158,13 @@ namespace ground_state {
 			} else {
 				ham.scalar_potential = std::move(vks);
 			}
-			
+
+			CALI_MARK_END("mixing");
+						
 			// calculate the new energy and print
 			{
+
+				CALI_CXX_MARK_SCOPE("energy calculation");
 				
 				auto residual = ham(electrons.phi_);
 				auto eigenvalues = operations::overlap_diagonal(electrons.phi_, residual);
