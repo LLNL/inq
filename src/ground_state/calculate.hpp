@@ -96,14 +96,11 @@ namespace ground_state {
 
 		for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
 			
-			if(solver.subspace_diag()) subspace_diagonalization(ham, electrons.phi_);
-
-			{
-				auto residual = ham(electrons.phi_);
-				auto eigenvalues = operations::overlap_diagonal(electrons.phi_, residual);
+			if(solver.subspace_diag()) {
+				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_);
 				electrons.states_.update_occupations(eigenvalues);
 			}
-			
+
 			{
 				auto fphi = operations::space::to_fourier(std::move(electrons.phi_));
 				

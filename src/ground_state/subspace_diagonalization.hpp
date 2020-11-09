@@ -35,7 +35,7 @@ namespace inq {
 namespace ground_state {
 
 template <class hamiltonian_type, class field_set_type>
-void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
+auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -48,7 +48,8 @@ void subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 	using boost::multi::blas::hermitized;
 	
 	phi.matrix() = gemm(phi.matrix(), hermitized(subspace_hamiltonian));
-	
+
+	return eigenvalues;	
 }
 
 }
