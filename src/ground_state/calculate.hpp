@@ -164,7 +164,7 @@ namespace ground_state {
 			// calculate the new energy and print
 			{
 
-				CALI_CXX_MARK_SCOPE("energy calculation");
+				CALI_CXX_MARK_SCOPE("energy_calculation");
 				
 				auto residual = ham(electrons.phi_);
 				auto eigenvalues = operations::overlap_diagonal(electrons.phi_, residual);
