@@ -50,13 +50,13 @@ int main(int argc, char ** argv){
 
 	geo.push_back( "O" | vec3d( 0.0,      -0.553586, 0.0));
 	geo.push_back( "H" | vec3d( 1.429937,  0.553586, 0.0));
-  geo.push_back( "H" | vec3d(-1.429937,  0.553586, 0.0));
+	geo.push_back( "H" | vec3d(-1.429937,  0.553586, 0.0));
 
 	inq::systems::ions ions(cell::cubic(12.0, 11.0, 10.0) | cell::finite(), geo);
 
-  auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5) | scf::density_mixing() | scf::broyden_mixing();	
+	auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5) | scf::density_mixing() | scf::broyden_mixing();	
   
-  config conf;
+	config conf;
   
 	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0), conf);
 
@@ -64,15 +64,15 @@ int main(int argc, char ** argv){
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);
 	
 	match.check("total energy",        result.energy.total(),       -25.637012688764);
-  match.check("kinetic energy",      result.energy.kinetic(),      12.055655438508);
-  match.check("eigenvalues",         result.energy.eigenvalues,    -4.066598396189);
-  match.check("Hartree energy",      result.energy.hartree,        21.255019237963);
-  match.check("external energy",     result.energy.external,      -50.404984581658);
-  match.check("non-local energy",    result.energy.nonlocal,       -2.732670183975);
-  match.check("XC energy",           result.energy.xc,             -4.762296148152);
-  match.check("XC density integral", result.energy.nvxc,           -5.494637544989);
-  match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
-  match.check("ion-ion energy",      result.energy.ion,            -1.047736451449);
+	match.check("kinetic energy",      result.energy.kinetic(),      12.055655438508);
+	match.check("eigenvalues",         result.energy.eigenvalues,    -4.066598396189);
+	match.check("Hartree energy",      result.energy.hartree,        21.255019237963);
+	match.check("external energy",     result.energy.external,      -50.404984581658);
+	match.check("non-local energy",    result.energy.nonlocal,       -2.732670183975);
+	match.check("XC energy",           result.energy.xc,             -4.762296148152);
+	match.check("XC density integral", result.energy.nvxc,           -5.494637544989);
+	match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
+	match.check("ion-ion energy",      result.energy.ion,            -1.047736451449);
 
 	match.check("dipole x", result.dipole[0], -0.000301716434);
 	match.check("dipole y", result.dipole[1], -0.724131351204);
