@@ -1,4 +1,4 @@
-ENABLE_VARS="cuda|1|ENABLE_CUDA"
+ENABLE_VARS="cuda|ON|ENABLE_CUDA"
 WITH_VARS="cuda-prefix"
 
 ENABLE_CUDA_DOC="Compile with GPU support through Nvidia Cuda"
