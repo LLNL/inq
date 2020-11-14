@@ -35,6 +35,14 @@
 namespace inq {
 namespace gpu {
 
+struct reduce {
+	explicit reduce(long arg_size):
+		size(arg_size){		
+	}
+	long size;
+};
+
+
 #ifdef ENABLE_CUDA
 template <class kernel_type, class array_type>
 __global__ void reduce_kernel_1d(long size, kernel_type kernel, array_type odata) {
@@ -83,8 +91,10 @@ struct array_access {
 };
 
 template <class kernel_type>
-auto reduce(long size, kernel_type kernel) -> decltype(kernel(0)) {
+auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
 
+	auto const size = red.size;
+	
   using type = decltype(kernel(0));
   
 #ifndef ENABLE_CUDA
@@ -109,7 +119,7 @@ auto reduce(long size, kernel_type kernel) -> decltype(kernel(0)) {
     cudaDeviceSynchronize();
     return result[0];
   } else {
-    return reduce(nblock, array_access<decltype(begin(result))>{begin(result)});
+    return run(gpu::reduce(nblock), array_access<decltype(begin(result))>{begin(result)});
   }
   
 #endif
@@ -153,8 +163,10 @@ __global__ void reduce_kernel_2d(long sizex, long sizey, kernel_type kernel, arr
 
 
 template <class kernel_type>
-auto reduce(long sizex, long sizey, kernel_type kernel) -> math::array<decltype(kernel(0, 0)), 1> {
+auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<decltype(kernel(0, 0)), 1> {
 
+	auto const sizey = redy.size;	
+	
   using type = decltype(kernel(0, 0));
 
 #ifndef ENABLE_CUDA
@@ -206,7 +218,7 @@ auto reduce(long sizex, long sizey, kernel_type kernel) -> math::array<decltype(
 		
     return result[0];
   } else {
-    return reduce(sizex, nblocky, array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});		
+    return run(sizex, reduce(nblocky), array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});
   }
   
 #endif
@@ -242,7 +254,7 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
     const long maxsize = 129140163;
     
     for(long nn = 1; nn <= maxsize; nn *= 3){
-			CHECK(gpu::reduce(nn, ident{}) == (nn*(nn - 1.0)/2.0));    
+			CHECK(gpu::run(gpu::reduce(nn), ident{}) == (nn*(nn - 1.0)/2.0));    
     }
   }
 
@@ -253,7 +265,7 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
     for(long nx = 1; nx <= 10000; nx *= 10){
       for(long ny = 1; ny <= maxsize; ny *= 5){
         
-        auto res = gpu::reduce(nx, ny, prod{});
+        auto res = gpu::run(nx, gpu::reduce(ny), prod{});
 
 				CHECK(typeid(decltype(res)) == typeid(math::array<double, 1>));
 				
