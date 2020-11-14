@@ -127,6 +127,8 @@ __global__ void reduce_kernel_2d(long sizex, long sizey, kernel_type kernel, arr
 	unsigned int tid = threadIdx.y;
 	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;
 
+	if(ix >= sizex) return;
+	
 	if(iy < sizey){
 		reduction_buffer[threadIdx.x + blockDim.x*tid] = kernel(ix, iy);
 	} else {
@@ -169,13 +171,26 @@ auto reduce(long sizex, long sizey, kernel_type kernel) -> math::array<decltype(
   
 #else
 
-  const int blocksize = 1024;
+	math::array<type, 2> result;
+	
+	int mingridsize = 0;
+	int blocksize = 0;
 
-	unsigned nblock = (sizey + blocksize - 1)/blocksize;
-	math::array<type, 2> result({nblock, sizex});
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_2d<kernel_type, decltype(begin(result))>));
+	
+	unsigned bsizex = 4; //this seems to be the optimal value
+	if(sizex <= 2) bsizex = sizex;
+	unsigned bsizey = blocksize/bsizex;
 
-	struct dim3 dg{(unsigned) sizex, nblock};
-  struct dim3 db{1, blocksize};
+	assert(bsizey > 1);
+	
+	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
+	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
+		
+	result.reextent({nblocky, sizex});
+
+	struct dim3 dg{nblockx, nblocky};
+  struct dim3 db{bsizex, bsizey};
 
   auto shared_mem_size = blocksize*sizeof(type);
 
@@ -184,14 +199,14 @@ auto reduce(long sizex, long sizey, kernel_type kernel) -> math::array<decltype(
   reduce_kernel_2d<<<dg, db, shared_mem_size>>>(sizex, sizey, kernel, begin(result));	
   check_error(cudaGetLastError());
 	
-  if(nblock == 1) {
+  if(nblocky == 1) {
     cudaDeviceSynchronize();
 
 		assert(result[0].size() == sizex);
 		
     return result[0];
   } else {
-    return reduce(sizex, nblock, array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});		
+    return reduce(sizex, nblocky, array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});		
   }
   
 #endif
