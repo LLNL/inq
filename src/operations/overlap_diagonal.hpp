@@ -83,7 +83,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 		overlap_vector[0] *= phi1.basis().volume_element();
 	} else {
 		
-		overlap_vector = gpu::reduce(phi1.local_set_size(), phi1.basis().part().local_size(), overlap_diagonal_mult<decltype(begin(phi1.matrix()))>{begin(phi1.matrix()), begin(phi2.matrix())});
+		overlap_vector = gpu::run(phi1.local_set_size(), gpu::reduce(phi1.basis().part().local_size()), overlap_diagonal_mult<decltype(begin(phi1.matrix()))>{begin(phi1.matrix()), begin(phi2.matrix())});
 
 		gpu::run(phi1.local_set_size(), [ov = begin(overlap_vector), vol_element = phi1.basis().volume_element()] GPU_LAMBDA (auto ist) {
 																			ov[ist] = ov[ist]*vol_element;
