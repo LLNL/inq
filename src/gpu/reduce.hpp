@@ -119,7 +119,7 @@ auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
     cudaDeviceSynchronize();
     return result[0];
   } else {
-    return reduce(nblock, array_access<decltype(begin(result))>{begin(result)});
+    return run(gpu::reduce(nblock), array_access<decltype(begin(result))>{begin(result)});
   }
   
 #endif
@@ -218,7 +218,7 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<dec
 		
     return result[0];
   } else {
-    return reduce(sizex, nblocky, array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});		
+    return run(sizex, reduce(nblocky), array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});
   }
   
 #endif
