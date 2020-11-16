@@ -101,33 +101,12 @@ namespace inq {
       	for(int i=0; i<nleft ; i++){
       	  wphi.matrix().rotated()[i] = blas::axpy(lk[i],Xk.rotated()[i],(blas::scal(-1.0,Tk.rotated()[i])));   //wphi=l*psi+(-1.0)H*psi
       	}
-	//std::printf("residual wphi:\n");
-	//print_matrix(wphi.matrix());
 	
       	//Deflate here
       	int nc=0;
-      	// double rtol = 1.0e-16;
-      	//int notconv = 0;
-	// auto resnrm = operations::overlap_diagonal(wphi,wphi);
-      	//for(int i=0; i<nleft ; i++){
-      	  // if(abs(resnrm[i]) < rtol){
-      	  //   phi.matrix().rotated()[nevf] = Xk.rotated()[i];
-      	  //   eigW(nevf) = lk[i];
-      	  //   nc = nc + 1;
-      	  //   nevf = nevf + 1;
-      	  // }else{
-      	    // wphi.matrix().rotated()[notconv] = wphi.matrix().rotated()[i];
-      	    // Yk.rotated()[notconv] = Yk.rotated()[i];
-      	    // Xk.rotated()[notconv] = Xk.rotated()[i];
-      	    // lk[notconv] = lk[i];
-      	    //notconv =  notconv + 1;
-      	  // }
-      	//}
 	int notconv = nleft;
 
       	if(notconv < 0.25*nvec){
-      	  //std::printf("(%10i,%10i) system converged in %10i steps.\n", nbasis, int(nvec-notconv), istep);
-	  //std::printf("=======================Final eigenvalues=================\n");
 	  //print_vec(eigW);
       	  return ;
       	}
@@ -169,7 +148,6 @@ namespace inq {
       	}
 	
       	if(nbase + notconv > naux || nc > 0 || nkeep == nbase){
-      	  //std::printf("Restart\n");
       	  if(nevf > 0){
       	    aux_phi.matrix()({0,nbasis},{0,nevf}) = phi.matrix()({0,nbasis},{0,nevf});
       	  }
