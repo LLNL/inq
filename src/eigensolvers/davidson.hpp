@@ -26,7 +26,8 @@
 #include <math/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
-#include <operations/qrfactorize.hpp>
+//#include <operations/qrfactorize.hpp>
+#include <operations/orthogonalize.hpp>
 #include <operations/diagonalize.hpp>
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
@@ -61,11 +62,11 @@ namespace inq {
     template <class operator_type, class preconditioner_type, class field_set_type>
     void davidson(const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
       //Get some sizes
-      int nbasis  = std::get<0>(sizes(phi.matrix()));
-      int nvec = std::get<1>(sizes(phi.matrix()));
+      const int nbasis  = std::get<0>(sizes(phi.matrix()));
+      const int nvec = std::get<1>(sizes(phi.matrix()));
 
-      int naux = 4 * nvec ; //naux is maximum subspace size
-      int nsize = naux + 2* nvec ; //nsize is maximum size of work wavefunction
+      const int naux = 4 * nvec ; //naux is maximum subspace size
+      const int nsize = naux + 2* nvec ; //nsize is maximum size of work wavefunction
 
       //Initialze some book-keeping variables
       int nbase = nvec ; //current subspace size
@@ -92,13 +93,13 @@ namespace inq {
 	//print_vec(lk);
 		namespace blas = boost::multi::blas;
       	//Ritz vectors
-		auto const Xk =+ blas::gemm(1., wphi.matrix(), blas::H(Yk)); //Yk now contains subspace eigenvectors
+      	auto Xk = blas::gemm(wphi.matrix(), blas::hermitized(Yk)); //Yk now contains subspace eigenvectors
       	//Rotated hphi
-		auto Tk =+ blas::gemm(1., Wk.matrix(), blas::H(Yk));
+      	auto Tk = blas::gemm(Wk.matrix(), blas::hermitized(Yk));
       	//Residuals
       	nleft = nvec - nevf; //update nleft
       	for(int i=0; i<nleft ; i++){
-			wphi.matrix().rotated()[i] = blas::axpy(lk[i], Xk.rotated()[i], blas::scal(-1.0, Tk.rotated()[i]));   //wphi=l*psi+(-1.0)H*psi
+      	  wphi.matrix().rotated()[i] = blas::axpy(lk[i],Xk.rotated()[i],(blas::scal(-1.0,Tk.rotated()[i])));   //wphi=l*psi+(-1.0)H*psi
       	}
 	//std::printf("residual wphi:\n");
 	//print_matrix(wphi.matrix());
@@ -106,9 +107,9 @@ namespace inq {
       	//Deflate here
       	int nc=0;
       	// double rtol = 1.0e-16;
-      	int notconv = 0;
+      	//int notconv = 0;
 	// auto resnrm = operations::overlap_diagonal(wphi,wphi);
-      	for(int i=0; i<nleft ; i++){
+      	//for(int i=0; i<nleft ; i++){
       	  // if(abs(resnrm[i]) < rtol){
       	  //   phi.matrix().rotated()[nevf] = Xk.rotated()[i];
       	  //   eigW(nevf) = lk[i];
@@ -119,13 +120,14 @@ namespace inq {
       	    // Yk.rotated()[notconv] = Yk.rotated()[i];
       	    // Xk.rotated()[notconv] = Xk.rotated()[i];
       	    // lk[notconv] = lk[i];
-      	    notconv =  notconv + 1;
+      	    //notconv =  notconv + 1;
       	  // }
-      	}
+      	//}
+	int notconv = nleft;
 
       	if(notconv < 0.25*nvec){
-      	  std::printf("(%10i,%10i) system converged in %10i steps.\n", nbasis, int(nvec-notconv), istep);
-	  std::printf("=======================Final eigenvalues=================\n");
+      	  //std::printf("(%10i,%10i) system converged in %10i steps.\n", nbasis, int(nvec-notconv), istep);
+	  //std::printf("=======================Final eigenvalues=================\n");
 	  //print_vec(eigW);
       	  return ;
       	}
@@ -151,7 +153,9 @@ namespace inq {
       	//orthogonalize everything   //allocate work wave funcs 
         field_set_type ophi(phi.basis(), nevf+nbase+notconv, phi.full_comm());
       	ophi.matrix()({0,nbasis},{0,nevf+nbase+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nbase+notconv});
-	operations::qrfactorize(ophi);
+	//operations::qrfactorize(ophi);
+	operations::orthogonalize(ophi);
+	
 	auto qrfnrm = operations::overlap_diagonal(ophi,ophi);
 
       	double droptol=1.0e-4;
@@ -178,7 +182,8 @@ namespace inq {
       	  }
       	  field_set_type qphi(phi.basis(), nevf+nleft+notconv, phi.full_comm());
       	  qphi.matrix()({0,nbasis},{0,nevf+nleft+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nleft+notconv});
-      	  operations::qrfactorize(qphi);
+      	  //operations::qrfactorize(qphi);
+	  operations::orthogonalize(qphi);
 	  auto qrfnrm = operations::overlap_diagonal(qphi,qphi);
       	  double droptol=1.0e-4;
       	  int nkeep = 0;
@@ -202,134 +207,134 @@ namespace inq {
 #ifdef INQ_EIGENSOLVERS_DAVIDSON_UNIT_TEST
 #undef INQ_EIGENSOLVERS_DAVIDSON_UNIT_TEST
 
-// #include <basis/trivial.hpp>
-// #include <ions/unitcell.hpp>
-// #include <operations/matrix_operator.hpp>
+#include <basis/trivial.hpp>
+#include <ions/unitcell.hpp>
+#include <operations/matrix_operator.hpp>
 
-// #include <catch2/catch.hpp>
+#include <catch2/catch.hpp>
 
-// TEST_CASE("eigensolvers::davidson", "[eigensolvers::davidson]") {
+TEST_CASE("eigensolvers::davidson", "[eigensolvers::davidson]") {
 
-//   using namespace inq;
-//   using namespace Catch::literals;
+  using namespace inq;
+  using namespace Catch::literals;
 	
-//   const int npoint = 100;
-//   const int nvec = 12;
+  const int npoint = 100;
+  const int nvec = 12;
   
-//   basis::trivial bas(npoint);
+  basis::trivial bas(npoint);
 	
-//   math::array<complex, 2> identity_matrix({npoint, npoint});
+  math::array<complex, 2> identity_matrix({npoint, npoint});
   
-//   for(int ip = 0; ip < npoint; ip++){
-//     for(int jp = 0; jp < npoint; jp++){
-//       identity_matrix[ip][jp] = 0.0;
-//       if(ip == jp) identity_matrix[ip][jp] = 1.0;
-//     }
-//   }
+  for(int ip = 0; ip < npoint; ip++){
+    for(int jp = 0; jp < npoint; jp++){
+      identity_matrix[ip][jp] = 0.0;
+      if(ip == jp) identity_matrix[ip][jp] = 1.0;
+    }
+  }
   
-//   operations::matrix_operator<complex> identity(std::move(identity_matrix));
+  operations::matrix_operator<complex> identity(std::move(identity_matrix));
 
-//   SECTION("Diagonal matrix complex"){
+  SECTION("Diagonal matrix complex"){
   
-//     math::array<complex, 2> diagonal_matrix({npoint, npoint});
+    math::array<complex, 2> diagonal_matrix({npoint, npoint});
     
-//     for(int ip = 0; ip < npoint; ip++){
-//       for(int jp = 0; jp < npoint; jp++){
-//         diagonal_matrix[ip][jp] = 0.0;
-//         if(ip == jp) diagonal_matrix[ip][jp] = ip + 1.0;
-//       }
-//     }
+    for(int ip = 0; ip < npoint; ip++){
+      for(int jp = 0; jp < npoint; jp++){
+        diagonal_matrix[ip][jp] = 0.0;
+        if(ip == jp) diagonal_matrix[ip][jp] = ip + 1.0;
+      }
+    }
     
-//     operations::matrix_operator<complex> diagonal_op(std::move(diagonal_matrix));
+    operations::matrix_operator<complex> diagonal_op(std::move(diagonal_matrix));
     
-//     basis::field_set<basis::trivial, complex> phi(bas, nvec);
+    basis::field_set<basis::trivial, complex> phi(bas, nvec);
 
-//     for(int ip = 0; ip < npoint; ip++){
-//       for(int ivec = 0; ivec < nvec; ivec++){
-//         phi.matrix()[ip][ivec] = exp(complex(0.0, (ip*ivec)*0.1));
-//       }
-//     }
+    for(int ip = 0; ip < npoint; ip++){
+      for(int ivec = 0; ivec < nvec; ivec++){
+        phi.matrix()[ip][ivec] = exp(complex(0.0, (ip*ivec)*0.1));
+      }
+    }
 
-//     operations::orthogonalize(phi);
+    operations::orthogonalize(phi);
 
-//     const int num_iter = 100;
+    const int num_iter = 100;
 		
-//     for(int iter = 0; iter < num_iter; iter++){
+    for(int iter = 0; iter < num_iter; iter++){
 
-//       eigensolvers::davidson(diagonal_op, identity, phi);
+      eigensolvers::davidson(diagonal_op, identity, phi);
 			
-//       auto residual = diagonal_op(phi);
-//       auto eigenvalues = operations::overlap_diagonal(phi, residual);
-//       operations::shift(-1.0, eigenvalues, phi, residual);
-//       auto normres = operations::overlap_diagonal(residual);
+      auto residual = diagonal_op(phi);
+      auto eigenvalues = operations::overlap_diagonal(phi, residual);
+      operations::shift(-1.0, eigenvalues, phi, residual);
+      auto normres = operations::overlap_diagonal(residual);
 			
-//       /*
-// 	tfm::format(std::cout, "  Iteration %4d:\n", iter);
+      /*
+	tfm::format(std::cout, "  Iteration %4d:\n", iter);
 				
-// 	for(int ivec = 0; ivec < phi.set_size(); ivec++){
-// 	tfm::format(std::cout, "    state %4d  evalue = %18.12f  res = %15.10e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
-// 	}
-//       */
+	for(int ivec = 0; ivec < phi.set_size(); ivec++){
+	tfm::format(std::cout, "    state %4d  evalue = %18.12f  res = %15.10e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
+	}
+      */
 
-//       if(num_iter - 1 == iter){
+      if(num_iter - 1 == iter){
 
-// 	CHECK(fabs(eigenvalues[0]) == 1.000000001634_a);
-// 	CHECK(fabs(eigenvalues[1]) == 2.000000003689_a);
-// 	CHECK(fabs(eigenvalues[2]) == 3.000000001955_a);
-// 	CHECK(fabs(eigenvalues[3]) == 4.000000001760_a);
-// 	CHECK(fabs(eigenvalues[4]) == 5.000000002561_a);
-// 	CHECK(fabs(eigenvalues[5]) == 6.000000003127_a);
-// 	CHECK(fabs(eigenvalues[6]) == 7.000000002312_a);
-// 	CHECK(fabs(eigenvalues[7]) == 8.000000000292_a);
-// 	CHECK(fabs(eigenvalues[8]) == 8.999999999033_a);
-// 	CHECK(fabs(eigenvalues[9]) == 9.999999998497_a);
-// 	CHECK(fabs(eigenvalues[10]) == 10.999999998768_a);
-// 	CHECK(fabs(eigenvalues[11]) == 11.999999998422_a);
+	CHECK(fabs(eigenvalues[0]) == 1.000000001634_a);
+	CHECK(fabs(eigenvalues[1]) == 2.000000003689_a);
+	CHECK(fabs(eigenvalues[2]) == 3.000000001955_a);
+	CHECK(fabs(eigenvalues[3]) == 4.000000001760_a);
+	CHECK(fabs(eigenvalues[4]) == 5.000000002561_a);
+	CHECK(fabs(eigenvalues[5]) == 6.000000003127_a);
+	CHECK(fabs(eigenvalues[6]) == 7.000000002312_a);
+	CHECK(fabs(eigenvalues[7]) == 8.000000000292_a);
+	CHECK(fabs(eigenvalues[8]) == 8.999999999033_a);
+	CHECK(fabs(eigenvalues[9]) == 9.999999998497_a);
+	CHECK(fabs(eigenvalues[10]) == 10.999999998768_a);
+	CHECK(fabs(eigenvalues[11]) == 11.999999998422_a);
 
-//       }
+      }
 			
-//     }
+    }
  	
-//   }
+  }
 
-// #if 0
-//   SECTION("Periodic Laplacian matrix complex"){
+#if 0
+  SECTION("Periodic Laplacian matrix complex"){
 		
-//     math::array<complex, 2> laplacian_matrix({npoint, npoint});
+    math::array<complex, 2> laplacian_matrix({npoint, npoint});
     
-//     for(int ip = 0; ip < npoint; ip++){
-//       for(int jp = 0; jp < npoint; jp++){
-//         laplacian_matrix[ip][jp] = 0.0;
-// 	identity_matrix[ip][jp] = 0.0;
-//         if(ip == jp) laplacian_matrix[ip][jp] = -1.0;
-//         if(ip == jp + 1 or ip == jp - 1) laplacian_matrix[ip][jp] = 2.0;
-//       }
-//     }
+    for(int ip = 0; ip < npoint; ip++){
+      for(int jp = 0; jp < npoint; jp++){
+        laplacian_matrix[ip][jp] = 0.0;
+	identity_matrix[ip][jp] = 0.0;
+        if(ip == jp) laplacian_matrix[ip][jp] = -1.0;
+        if(ip == jp + 1 or ip == jp - 1) laplacian_matrix[ip][jp] = 2.0;
+      }
+    }
 		
-//     operations::matrix_operator<complex> laplacian(std::move(laplacian_matrix));
+    operations::matrix_operator<complex> laplacian(std::move(laplacian_matrix));
     
-//     basis::field_set<basis::trivial, complex> phi(bas, nvec);
+    basis::field_set<basis::trivial, complex> phi(bas, nvec);
 
-//     phi = 0.0;
-//     for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
+    phi = 0.0;
+    for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
 
-//     for(int iter = 0; iter < 100; iter++){
+    for(int iter = 0; iter < 100; iter++){
 			
-//       eigensolvers::davidson(laplacian, identity, phi);
+      eigensolvers::davidson(laplacian, identity, phi);
 			
-//       auto residual = laplacian(phi);
-//       auto eigenvalues = operations::overlap_diagonal(phi, residual);
-//       operations::shift(eigenvalues, phi, residual, -1.0);
-//       auto normres = operations::overlap_diagonal(residual);
+      auto residual = laplacian(phi);
+      auto eigenvalues = operations::overlap_diagonal(phi, residual);
+      operations::shift(eigenvalues, phi, residual, -1.0);
+      auto normres = operations::overlap_diagonal(residual);
 			
-//       for(int ivec = 0; ivec < phi.set_size(); ivec++){
-// 	tfm::format(std::cout, " state %4d  evalue = %18.12f  res = %5.0e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
-//       }
-//     }
-//   }
-// #endif 	
+      for(int ivec = 0; ivec < phi.set_size(); ivec++){
+	tfm::format(std::cout, " state %4d  evalue = %18.12f  res = %5.0e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
+      }
+    }
+  }
+#endif 	
 
-// }
+}
 
 
 #endif
