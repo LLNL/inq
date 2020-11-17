@@ -76,7 +76,7 @@ namespace inq {
       //allocate auxiliary wave-functions storage
       field_set_type aux_phi(phi.basis(), nsize, phi.full_comm());
       aux_phi.matrix()({0,nbasis},{0,nvec})=phi.matrix()({0,nbasis},{0,nvec});
-      math::array<double, 1> eigW(nvec); //eigenvalues saved here
+      math::array<double, 1> eigW(nvec,0); //eigenvalues saved here
       
       const int num_steps = 20;
       namespace blas = boost::multi::blas ;
@@ -133,7 +133,10 @@ namespace inq {
         field_set_type ophi(phi.basis(), nevf+nbase+notconv, phi.full_comm());
       	ophi.matrix()({0,nbasis},{0,nevf+nbase+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nbase+notconv});
 	//operations::qrfactorize(ophi);
-	operations::orthogonalize(ophi);
+	int info = operations::orthogonalize(ophi);
+	if(info > 0) {
+	  std::printf("Warning: info is %10i \n",info);
+	}
 	
 	auto qrfnrm = operations::overlap_diagonal(ophi,ophi);
 
@@ -161,7 +164,10 @@ namespace inq {
       	  field_set_type qphi(phi.basis(), nevf+nleft+notconv, phi.full_comm());
       	  qphi.matrix()({0,nbasis},{0,nevf+nleft+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nleft+notconv});
       	  //operations::qrfactorize(qphi);
-	  operations::orthogonalize(qphi);
+	  info=operations::orthogonalize(qphi);
+	  if(info > 0) {
+	    std::printf("Warning: info is %10i \n",info);
+	  }
 	  auto qrfnrm = operations::overlap_diagonal(qphi,qphi);
       	  double droptol=1.0e-4;
       	  int nkeep = 0;

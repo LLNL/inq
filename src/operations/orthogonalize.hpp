@@ -52,7 +52,7 @@ namespace inq {
 namespace operations {
 
 template <class field_set_type>
-void orthogonalize(field_set_type & phi){
+int orthogonalize(field_set_type & phi){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -89,7 +89,7 @@ void orthogonalize(field_set_type & phi){
 		cusolver_status = cusolverDnZpotrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, work, lwork, devInfo);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		cudaDeviceSynchronize();
-		assert(*devInfo == 0);
+		assert(*devInfo >= 0);
 
 		cudaFree(work);
 		cudaFree(devInfo);
@@ -99,12 +99,20 @@ void orthogonalize(field_set_type & phi){
 #else
 	int info;
 	zpotrf("U", &nst, olap.data(), &nst, &info);
-	assert(info == 0);
+	assert(info >= 0);
 #endif
 
 	//DATAOPERATIONS trsm
-	namespace blas = boost::multi::blas;
-	blas::trsm(blas::side::right, blas::filling::upper, 1., blas::H(olap), phi.matrix());
+	using boost::multi::blas::hermitized;
+	using boost::multi::blas::filling;
+		
+	trsm(filling::lower, olap, hermitized(phi.matrix()));
+#ifdef ENABLE_CUDA
+	return devInfo;
+#else
+	return info;
+#endif
+
 }
 
 template <class field_set_type>
