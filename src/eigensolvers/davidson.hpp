@@ -133,10 +133,7 @@ namespace inq {
         field_set_type ophi(phi.basis(), nevf+nbase+notconv, phi.full_comm());
       	ophi.matrix()({0,nbasis},{0,nevf+nbase+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nbase+notconv});
 	//operations::qrfactorize(ophi);
-	int info = operations::orthogonalize(ophi);
-	if(info > 0) {
-	  std::printf("Warning: info is %10i \n",info);
-	}
+	operations::orthogonalize(ophi);
 	
 	auto qrfnrm = operations::overlap_diagonal(ophi,ophi);
 
@@ -164,10 +161,7 @@ namespace inq {
       	  field_set_type qphi(phi.basis(), nevf+nleft+notconv, phi.full_comm());
       	  qphi.matrix()({0,nbasis},{0,nevf+nleft+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nleft+notconv});
       	  //operations::qrfactorize(qphi);
-	  info=operations::orthogonalize(qphi);
-	  if(info > 0) {
-	    std::printf("Warning: info is %10i \n",info);
-	  }
+	  operations::orthogonalize(qphi);
 	  auto qrfnrm = operations::overlap_diagonal(qphi,qphi);
       	  double droptol=1.0e-4;
       	  int nkeep = 0;
@@ -203,7 +197,7 @@ TEST_CASE("eigensolvers::davidson", "[eigensolvers::davidson]") {
   using namespace Catch::literals;
 	
   const int npoint = 100;
-  const int nvec = 12;
+  const int nvec = 4;
   
   basis::trivial bas(npoint);
 	
@@ -266,14 +260,14 @@ TEST_CASE("eigensolvers::davidson", "[eigensolvers::davidson]") {
 	CHECK(fabs(eigenvalues[1]) == 2.000000003689_a);
 	CHECK(fabs(eigenvalues[2]) == 3.000000001955_a);
 	CHECK(fabs(eigenvalues[3]) == 4.000000001760_a);
-	CHECK(fabs(eigenvalues[4]) == 5.000000002561_a);
-	CHECK(fabs(eigenvalues[5]) == 6.000000003127_a);
-	CHECK(fabs(eigenvalues[6]) == 7.000000002312_a);
-	CHECK(fabs(eigenvalues[7]) == 8.000000000292_a);
-	CHECK(fabs(eigenvalues[8]) == 8.999999999033_a);
-	CHECK(fabs(eigenvalues[9]) == 9.999999998497_a);
-	CHECK(fabs(eigenvalues[10]) == 10.999999998768_a);
-	CHECK(fabs(eigenvalues[11]) == 11.999999998422_a);
+//	CHECK(fabs(eigenvalues[4]) == 5.000000002561_a);
+//	CHECK(fabs(eigenvalues[5]) == 6.000000003127_a);
+//	CHECK(fabs(eigenvalues[6]) == 7.000000002312_a);
+//	CHECK(fabs(eigenvalues[7]) == 8.000000000292_a);
+//	CHECK(fabs(eigenvalues[8]) == 8.999999999033_a);
+//	CHECK(fabs(eigenvalues[9]) == 9.999999998497_a);
+//	CHECK(fabs(eigenvalues[10]) == 10.999999998768_a);
+//	CHECK(fabs(eigenvalues[11]) == 11.999999998422_a);
 
       }
 			
