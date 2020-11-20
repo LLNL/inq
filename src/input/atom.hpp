@@ -4,7 +4,7 @@
 #define INQ__INPUT__ATOM
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -47,12 +47,16 @@ public:
 	const auto & position() const {
 		return position_;
 	}
-		
+
+	auto & position(){
+		return position_;
+	}
+
 private:
 
 	input::species species_;
 	math::vec3d position_;
-		
+
 };
 }
 }
