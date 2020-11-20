@@ -47,12 +47,16 @@ public:
 	const auto & position() const {
 		return position_;
 	}
-		
+
+	auto & position(){
+		return position_;
+	}
+
 private:
 
 	input::species species_;
 	math::vec3d position_;
-		
+
 };
 }
 }
