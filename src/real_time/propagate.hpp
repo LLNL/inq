@@ -38,7 +38,7 @@
 namespace inq {
 namespace real_time {
 
-struct fix_ions {
+struct fix_ions{
 
 	static constexpr bool static_ions = true;
 
@@ -49,11 +49,26 @@ struct fix_ions {
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){
 	}
-	
+
 };
 
-template <typename IonPropagator = fix_ions>
-real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonPropagator const& ion_propagator = {}){
+struct impulsive_ions{
+
+	static constexpr bool static_ions = false;
+
+	template <typename TypeIons = systems::ions>
+	static void propagate_positions(double dt, TypeIons& ions){
+		for(int i = 0; i != ions.geo().num_atoms(); ++i)
+			ions.geo().coordinates()[i] += dt*ions.velocities()[i];
+	}
+
+	template <typename TypeIons, typename TypeForces>
+	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){}
+
+};
+
+template<typename IonSubPropagator = fix_ions>
+real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
 
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -82,6 +97,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		res.time.push_back(0.0);
 		res.energy.push_back(energy.total());
 		res.dipole.push_back(observables::dipole(electrons.density_));
+		res.ions.push_back(ions);
 		
 		for(int istep = 1; istep <= numsteps; istep++){
 
