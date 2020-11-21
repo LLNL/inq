@@ -138,12 +138,14 @@ namespace basis {
 			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
+		template<typename T_ = type, std::enable_if_t<std::is_same<T_, double>::value>* = nullptr>
 		auto complex() const {
 			field_set<basis::real_space, inq::complex> complex_field(skeleton());
 			complex_field.matrix() = matrix();
 			return complex_field;
 		}
 
+		template<typename T_ = type, std::enable_if_t<std::is_same<T_, inq::complex>::value>* = nullptr>
 		field_set<basis::real_space, double> real() const {
 			field_set<basis::real_space, double> real_field(skeleton());
 
