@@ -9,6 +9,8 @@
 #include <ions/unitcell.hpp>
 #include <input/cell.hpp>
 
+#include <math/array.hpp>
+
 namespace inq {
 namespace systems {
 
@@ -18,22 +20,27 @@ public:
 
 	ions(const input::cell & arg_cell_input, const inq::ions::geometry & geo_arg = inq::ions::geometry()):
 		cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
-		geo_(geo_arg)
+		geo_(geo_arg), velocities_(geo_arg.num_atoms(), math::vec3d{0., 0., 0.})
 	{}
 
 	auto & geo() const {
 		return geo_;
 	}
-
+	auto & geo() {
+		return geo_;
+	}
+	auto& velocities() const{return velocities_;}
+	auto& velocities()      {return velocities_;}
+	
 	auto & cell() const {
 		return cell_;
 	}
-    
+
 	inq::ions::UnitCell cell_;
 	inq::ions::geometry geo_;
-
+	math::array<math::vec3d, 1> velocities_;
 };
-  
+
 }
 }
 
