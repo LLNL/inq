@@ -6,6 +6,8 @@
 #include <hamiltonian/energy.hpp>
 #include <math/vector3.hpp>
 
+#include <systems/ions.hpp>
+
 #include <vector>
 
 namespace inq {
@@ -16,6 +18,7 @@ namespace real_time {
 		std::vector<double> time;
 		std::vector<double> energy;
 		std::vector<math::vec3d> dipole;
+		std::vector<systems::ions> ions;
 	};
 
 }
