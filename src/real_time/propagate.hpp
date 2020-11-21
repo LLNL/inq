@@ -38,26 +38,24 @@
 namespace inq {
 namespace real_time {
 
-class fix_ions {
+struct fix_ions {
 
 	static constexpr bool static_ions = true;
 
 	template <typename TypeIons>
-	static void propagate_positions(double dt, TypeIons &) {
+	static void propagate_positions(double dt, TypeIons &){
 	}
 
 	template <typename TypeIons, typename TypeForces>
-	static void propagate_velocities(double dt, TypeIons &, TypeForces const &) {
+	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){
 	}
 	
 };
 
 template <typename IonPropagator = fix_ions>
-	real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options){
+real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonPropagator const& ion_propagator = {}){
 
-	  CALI_CXX_MARK_FUNCTION;
-	
-		IonPropagator ion_propagator;
+		CALI_CXX_MARK_FUNCTION;
 		
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
