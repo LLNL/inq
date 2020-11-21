@@ -83,7 +83,7 @@ int main(int argc, char ** argv){
 		H.position() += velocity*dt;
 		systems::ions ions(input::cell::cubic(2*7.6524459), geo);
 
-		auto result = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(1) | input::rt::dt(dt));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(1) | input::rt::dt(dt));
 		ofs<<H.position()[0] <<'\t'<< result.energy.back() <<std::endl;
 	}
 

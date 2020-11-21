@@ -58,7 +58,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons({comm_world, {}}, ions, input::basis::cutoff_energy(25.0), conf);
 
-	auto result = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055));
+	auto result = real_time::propagate<>(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055));
 	
 	operations::io::load("silicon_restart", electrons.phi_);
 
