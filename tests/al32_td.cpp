@@ -48,7 +48,7 @@ int main(int argc, char ** argv){
 
 	std::vector<input::atom> geo = input::parse_xyz(config::path::unit_tests_data() + "al32.xyz");
 
-	auto& H = geo.emplace_back("H" | math::vec3d(0.00000, 1.91325, 1.91325));
+	geo.emplace_back("H" | math::vec3d(0.00000, 1.91325, 1.91325));
 
 	systems::ions ions(input::cell::cubic(2*7.6524459), geo);
 	
@@ -88,6 +88,7 @@ int main(int argc, char ** argv){
 		);
 
 		auto ofs = std::ofstream{"al32_v0.1.dat"}; ofs<<"# distance (au), energy (au)\n";
+
 		for(std::size_t i = 0; i != propagation.ions.size(); ++i)
 			ofs<< propagation.ions[i].geo().coordinates()[ions.geo().num_atoms()-1][0] <<'\t'<< propagation.energy[i] <<'\n';
 	}
