@@ -76,17 +76,21 @@ int main(int argc, char ** argv){
 
 	inq::operations::io::save("al32_restart", electrons.phi_);
 
-	auto velocity = math::vec3d(0.1, 0.0, 0.0);
 	auto dt = 0.055;
-	auto ofs = std::ofstream{"al32_v0.1.dat"}; ofs<<"# distance (au), energy (au)\n";
-	for(int n = 0; n != 10000; ++n){
-		H.position() += velocity*dt;
-		systems::ions ions(input::cell::cubic(2*7.6524459), geo);
 
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(1) | input::rt::dt(dt));
-		ofs<<H.position()[0] <<'\t'<< result.energy.back() <<std::endl;
+	ions.velocities()[ions.geo().num_atoms() - 1] = math::vec3d(0.1, 0.0, 0.0);
+
+	{
+		auto propagation = real_time::propagate(
+			ions, electrons, 
+			input::interaction::non_interacting(), input::rt::num_steps(1000) | input::rt::dt(dt), 
+			real_time::impulsive_ions{}
+		);
+
+		auto ofs = std::ofstream{"al32_v0.1.dat"}; ofs<<"# distance (au), energy (au)\n";
+		for(std::size_t i = 0; i != propagation.ions.size(); ++i)
+			ofs<< propagation.ions[i].geo().coordinates()[ions.geo().num_atoms()-1][0] <<'\t'<< propagation.energy[i] <<'\n';
 	}
-
 	fftw_cleanup(); //required for valgrid
 	
 	return energy_match.fail();
