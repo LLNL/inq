@@ -1,5 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
+//  Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa
+
 #ifndef INQ__REAL_TIME__PROPAGATE
 #define INQ__REAL_TIME__PROPAGATE
 
