@@ -149,10 +149,12 @@ namespace basis {
 			}
 		}
 
+		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, double>::value>* = nullptr>
 		auto complex() const {
 			return field<basis::real_space, inq::complex>(*this);
 		}
 
+		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, inq::complex>::value>* = nullptr>
 		field<basis::real_space, double> real() const {
 			field<basis::real_space, double> real_field(skeleton());		
 			real_field.linear() = boost::multi::blas::real(linear());
