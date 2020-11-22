@@ -160,6 +160,19 @@ namespace basis {
 			real_field.linear() = boost::multi::blas::real(linear());
 			return real_field;
 		}
+
+		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, math::vector3<inq::complex>>::value>* = nullptr>
+		field<basis::real_space, math::vector3<double>> real() const {
+			field<basis::real_space, math::vector3<double>> real_field(skeleton());		
+
+			//DATAOPERATIONS GPU::RUN 1D
+			gpu::run(3, basis().part().local_size(),
+							 [rp = begin(real_field.linear()), cp = begin(linear())] GPU_LAMBDA (auto idir, auto ip){
+								 rp[ip][idir] = inq::real(cp[ip][idir]);
+							 });
+			
+			return real_field;
+		}
 		
 	private:
 		internal_array_type linear_;
