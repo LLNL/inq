@@ -92,7 +92,8 @@ namespace hamiltonian {
 			//xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold); // <=== Swith that on if you need to use a threshold
 			xc_gga_exc_vxc(&param, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
 			//Compute extra term for Vxc using diverdence: Vxc_extra=2 nabla *[vsigma*grad(n)]
-			basis::field_set<basis::real_space, double> vxc_extra(vxc.basis(), 3);
+
+			basis::field<basis::real_space, math::vector3<double>> vxc_extra(vxc.basis());
 			//Compute field-set as a product between vsigma(0) and gradient field-set
 			for(int ix = 0; ix < vxc.basis().sizes()[0]; ix++){	// Iterating over x-,y- and z- components of the each gradient field-set
 				for(int iy = 0; iy < vxc.basis().sizes()[1]; iy++){

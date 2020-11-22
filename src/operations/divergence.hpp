@@ -30,7 +30,7 @@
 namespace inq {
 namespace operations {
 
-auto divergence(basis::field_set<basis::fourier_space, complex> const & ff){ // Divergence function for the field-set type defined in the Fourier space which return a filed 'diverg'
+auto divergence(basis::field<basis::fourier_space, math::vector3<complex>> const & ff){ // Divergence function for the field-set type defined in the Fourier space which return a filed 'diverg'
 	
 	basis::field<basis::fourier_space, complex> diverg(ff.basis());
 
@@ -52,14 +52,14 @@ auto divergence(basis::field_set<basis::fourier_space, complex> const & ff){ // 
 	return diverg;
 }
 
-auto divergence(basis::field_set<basis::real_space, complex> const & ff){
+auto divergence(basis::field<basis::real_space, math::vector3<complex>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(ff); 			
 	auto diverg_fourier = divergence(ff_fourier); 				
 	auto diverg_real = operations::space::to_real(diverg_fourier);
 	return diverg_real;
 }
 
-auto divergence(basis::field_set<basis::real_space, double> const & ff){
+auto divergence(basis::field<basis::real_space, math::vector3<double>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(ff.complex());	
 	auto diverg_fourier = divergence(ff_fourier); 
 	auto diverg_real = operations::space::to_real(diverg_fourier);
@@ -132,7 +132,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
 
 	SECTION("Vectored plane-wave"){ 
-		basis::field_set<basis::real_space, complex> vectorial_complex_field(rs, 3);
+		basis::field<basis::real_space, math::vector3<complex>> vectorial_complex_field(rs);
 	
 		//Define k-vector for test function
 		vec3d kvec = 2.0 * M_PI * vec3d(1.0/lx, 1.0/ly, 1.0/lz);
@@ -162,7 +162,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 
 	SECTION("Vectored real function"){
 
-		basis::field_set<basis::real_space, double> vectorial_real_field(rs , 3);
+		basis::field<basis::real_space, math::vector3<double>> vectorial_real_field(rs);
 
 		//Define k-vector for test function
 
