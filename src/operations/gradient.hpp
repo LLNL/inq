@@ -58,10 +58,10 @@ namespace operations {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto gradient(basis::field<basis::real_space, double> const & ff){
-		auto ff_fourier = operations::space::to_fourier(ff.complex());
+		auto ff_fourier = operations::space::to_fourier(complex_field(ff));
 		auto grad_fourier = gradient(ff_fourier);
 		auto grad_real = operations::space::to_real(grad_fourier);
-		return grad_real.real();
+		return real_field(grad_real);
 	}
 	
 }

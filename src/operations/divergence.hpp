@@ -60,10 +60,10 @@ auto divergence(basis::field<basis::real_space, math::vector3<complex>> const & 
 }
 
 auto divergence(basis::field<basis::real_space, math::vector3<double>> const & ff){
-	auto ff_fourier = operations::space::to_fourier(ff.complex());	
+	auto ff_fourier = operations::space::to_fourier(complex_field(ff));
 	auto diverg_fourier = divergence(ff_fourier); 
 	auto diverg_real = operations::space::to_real(diverg_fourier);
-	return diverg_real.real();
+	return real_field(diverg_real);
 }
 
 }

@@ -337,8 +337,6 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
-	using complex_ptr = math::array<complex, 4>::element_ptr;		
-	
 	auto sz = sizes(phi.cubic());
 	
 	math::array<complex, 4> tmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});
