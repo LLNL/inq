@@ -169,20 +169,20 @@ namespace hamiltonian {
 
 	auto sqwave(inq::math::vec3d rr, int n){
 		inq::math::vec3d kvec = 2.0 * M_PI * inq::math::vec3d(1.0/9.0, 1.0/12.0, 1.0/10.0);
-		return  sin(n*(kvec | rr))*sin(n*(kvec | rr));
+		return  sin(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
 	}
 
 	auto laplacian_sqwave(inq::math::vec3d rr, int n){
 		inq::math::vec3d kvec = 2.0 * M_PI * inq::math::vec3d(1.0/9.0, 1.0/12.0, 1.0/10.0);
 		auto ff = 0.0;
-		for(int idir = 0; idir < 3 ; idir++) ff += 2*n*n*kvec[idir]*kvec[idir]*cos(2*n*(kvec|rr));
+		for(int idir = 0; idir < 3 ; idir++) ff += 2*n*n*kvec[idir]*kvec[idir]*cos(2*n*dot(kvec, rr));
 		return ff;
 	}
 
 	auto gradient_sqwave(inq::math::vec3d rr, int n){
 		inq::math::vec3d kvec = 2.0 * M_PI * inq::math::vec3d(1.0/9.0, 1.0/12.0, 1.0/10.0);
 		inq::math::vec3d ff;
-		for(int idir = 0; idir < 3 ; idir++) ff[idir] = 2*n*kvec[idir]*cos(n*(kvec | rr))*sin(n*(kvec | rr));
+		for(int idir = 0; idir < 3 ; idir++) ff[idir] = 2*n*kvec[idir]*cos(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
 		return ff;
 	}
 
@@ -202,7 +202,7 @@ namespace hamiltonian {
 	}
 
 	auto laplacian_gaussian(inq::math::vec3d rr){
-		return 4.0*(rr|rr)*gaussian(rr) - 6.0*gaussian(rr);
+		return 4.0*dot(rr, rr)*gaussian(rr) - 6.0*gaussian(rr);
 	}
 
 TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]") {
@@ -293,7 +293,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					double local_vxc = 0.0;
 					double local_vsigma = 0.0;
 					auto local_density = sqwave(vec, 3);
-					auto local_sigma = gradient_sqwave(vec, 3) | gradient_sqwave(vec, 3);
+					auto local_sigma = dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3));
 		//			if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
 					auto param = ggafunctional.libxc_func();
 		//			xc_func_set_dens_threshold(&param, inq::hamiltonian::xc_functional::dens_threshold);
@@ -301,7 +301,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 					auto calc_vsigma = [func = ggafunctional.libxc_func()] (auto point){
 													auto local_density = sqwave(point, 3);
-													auto local_sigma = gradient_sqwave(point, 3) | gradient_sqwave(point, 3);
+													auto local_sigma = dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3));
 													double local_exc, local_vxc, local_vsigma;
 													auto param = func;
 							//						if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
@@ -313,7 +313,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 					auto calc_vsigmadn = [func = ggafunctional.libxc_func()] (auto point){
 													auto local_density = sqwave(point, 3);
-													auto local_sigma = gradient_sqwave(point, 3) | gradient_sqwave(point, 3);
+													auto local_sigma = dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3));
 													double local_exc, local_vxc, local_vsigma;
 													auto param = func;
 						//							if (fabs(local_sigma) < inq::hamiltonian::xc_functional::sigma_threshold) local_sigma = inq::hamiltonian::xc_functional::sigma_threshold*1.1e0;
@@ -323,7 +323,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 													};
 					auto vxc_extra = finite_difference_divergence5p(calc_vsigmadn, vec);
 
-					diff_ways = std::max(diff_ways, fabs((grad_vsigma | gradient_sqwave(vec, 3)) + local_vsigma*laplacian_sqwave(vec, 3) - vxc_extra));
+					diff_ways = std::max(diff_ways, fabs(dot(grad_vsigma, gradient_sqwave(vec, 3)) + local_vsigma*laplacian_sqwave(vec, 3) - vxc_extra));
 
 					local_vxc -= 2.0*vxc_extra;
 					int_xc_energy += local_exc*local_density*rsgga.volume_element();

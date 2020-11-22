@@ -190,12 +190,12 @@ namespace math {
 		// VECTORIAL PRODUCTS
 		
 		//internal product
-		friend GPU_FUNCTION auto operator|(vector3 const & vv1, vector3 const & vv2) {
+		friend GPU_FUNCTION auto dot(vector3 const & vv1, vector3 const & vv2) {
 			return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];			
 		}
 
 		//cross product
-		friend GPU_FUNCTION auto operator^(vector3 const & vv1, vector3 const & vv2) {
+		friend GPU_FUNCTION auto cross(vector3 const & vv1, vector3 const & vv2) {
 			return vector3(vv1[1]*vv2[2] - vv1[2]*vv2[1], vv1[2]*vv2[0] - vv1[0]*vv2[2], vv1[0]*vv2[1] - vv1[1]*vv2[0]);
 		}
 		
@@ -388,7 +388,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	SECTION("Vector operations"){
 		math::vector3<double> dv(3.0, -1.1, 0.1);
 
-		CHECK( (dv|dv) == norm(dv));		
+		CHECK( dot(dv, dv) == norm(dv));		
 		/*
 
 				Disabled because std::complex causes problems on the GPU
@@ -506,13 +506,13 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(x3[1] == 1.8_a);
 		CHECK(x3[2] == 2.7_a);
 	
-		CHECK((x1|x2) == 1.4_a);
+		CHECK(dot(x1, x2) == 1.4_a);
 
-		auto cross = x1^math::vector3<double>{-1.0, -0.5, 3.33};
+		auto crss = cross(x1, math::vector3<double>{-1.0, -0.5, 3.33});
 
-		CHECK(cross[0] == 8.16_a);
-		CHECK(cross[1] == -6.33_a);
-		CHECK(cross[2] == 1.5_a);
+		CHECK(crss[0] == 8.16_a);
+		CHECK(crss[1] == -6.33_a);
+		CHECK(crss[2] == 1.5_a);
 
 		math::vector3<double> scal(6.66);
 

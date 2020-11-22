@@ -108,7 +108,7 @@ namespace hamiltonian {
 				for(int ix = 0; ix < eigr.basis().sizes()[0]; ix++){
 					for(int iy = 0; iy < eigr.basis().sizes()[1]; iy++){
 						for(int iz = 0; iz < eigr.basis().sizes()[2]; iz++){
-							double gr = ( coords_[icoord] | point_op.gvector(ix, iy, iz));
+							double gr = dot(coords_[icoord], point_op.gvector(ix, iy, iz));
 							eigr.cubic()[ix][iy][iz] = exp(complex(0.0, gr));
 						}
 					}

@@ -80,23 +80,23 @@ namespace operations {
 #include <math/vector3.hpp>
 
 auto f_analytic (inq::math::vec3d kk, inq::math::vec3d rr){
-	return exp(inq::complex(0.0,1.0)*(kk|rr));
+	return exp(inq::complex(0.0,1.0)*dot(kk, rr));
 }
 
 auto g_analytic (inq::math::vec3d kk , inq::math::vec3d rr) {
 	inq::math::vector3<inq::complex> gg;
-	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0, 1.0)*(kk|rr));
+	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0, 1.0)*dot(kk, rr));
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = factor*kk[idir] ;
 	return gg;
 }
 
 auto f_analytic2 (inq::math::vec3d kk, inq::math::vec3d rr){
-	return sin(kk|rr);
+	return sin(dot(kk, rr));
 }
 
 auto g_analytic2 (inq::math::vec3d kk , inq::math::vec3d rr) {
 	inq::math::vec3d gg;
-	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(kk|rr);
+	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(dot(kk, rr));
 	return gg;
 }
 

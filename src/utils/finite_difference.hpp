@@ -116,7 +116,7 @@ namespace utils {
 	}
 
 	auto laplacian_gaussian_func(inq::math::vec3d rr){
-		return 4.0*(rr|rr)*gaussian_func(rr) - 6.0*gaussian_func(rr);
+		return 4.0*dot(rr, rr)*gaussian_func(rr) - 6.0*gaussian_func(rr);
 	}
 
 TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {

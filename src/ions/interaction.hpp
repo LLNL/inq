@@ -130,7 +130,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 					
 				std::complex<double> sumatoms = 0.0;
 				for(int iatom = 0; iatom < natoms; iatom++){
-					double gx = (gg|positions[iatom]);
+					double gx = dot(gg, positions[iatom]);
 					auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
 					phase[iatom] = aa;
 					sumatoms += aa;
