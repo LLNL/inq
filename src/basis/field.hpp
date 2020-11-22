@@ -154,7 +154,7 @@ namespace basis {
 			return field<basis::real_space, inq::complex>(*this);
 		}
 
-		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, math::vector3<double>>::value>* = nullptr>
+		template<typename Type_ = Type, std::enable_if_t<std::is_same<Type_, math::vector3<double>>::value>* = nullptr>
 			field<basis::real_space, math::vector3<inq::complex>> complex() const {
 			field<basis::real_space, math::vector3<inq::complex>> complex_field(skeleton());
 			
@@ -167,14 +167,14 @@ namespace basis {
 			return complex_field;
 		}
 
-		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, inq::complex>::value>* = nullptr>
+		template<typename Type_ = Type, std::enable_if_t<std::is_same<Type_, inq::complex>::value>* = nullptr>
 		field<basis::real_space, double> real() const {
 			field<basis::real_space, double> real_field(skeleton());		
 			real_field.linear() = boost::multi::blas::real(linear());
 			return real_field;
 		}
 
-		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, math::vector3<inq::complex>>::value>* = nullptr>
+		template<typename Type_ = Type, std::enable_if_t<std::is_same<Type_, math::vector3<inq::complex>>::value>* = nullptr>
 		field<basis::real_space, math::vector3<double>> real() const {
 			field<basis::real_space, math::vector3<double>> real_field(skeleton());		
 
