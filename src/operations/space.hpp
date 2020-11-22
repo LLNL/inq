@@ -287,6 +287,47 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 }
 
 ///////////////////////////////////////////////////////////////
+
+auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & phi){
+
+	auto & real_basis = phi.basis();
+	basis::fourier_space fourier_basis(real_basis);
+	
+	basis::field<basis::fourier_space, math::vector3<complex>> fphi(fourier_basis);
+
+	auto sz = sizes(phi.cubic());
+	
+	math::array<complex, 4> tmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});
+	math::array<complex, 4> ftmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});	
+
+	for(long ix = 0; ix < std::get<0>(sz); ix++){
+		for(long iy = 0; iy < std::get<1>(sz); iy++){
+			for(long iz = 0; iz < std::get<2>(sz); iz++){
+				for(int idir = 0; idir < 3; idir++){
+					tmp[ix][iy][iz][idir] = phi.cubic()[ix][iy][iz][idir];
+				}
+			}
+		}
+	}
+	
+	to_fourier(real_basis, fourier_basis, tmp, ftmp);
+
+	for(long ix = 0; ix < std::get<0>(sz); ix++){
+		for(long iy = 0; iy < std::get<1>(sz); iy++){
+			for(long iz = 0; iz < std::get<2>(sz); iz++){
+				for(int idir = 0; idir < 3; idir++){
+					fphi.cubic()[ix][iy][iz][idir] = ftmp[ix][iy][iz][idir];
+				}
+			}
+		}
+	}
+	
+	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
+			
+	return fphi;
+	
+}
+///////////////////////////////////////////////////////////////
 	
 auto to_real(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
