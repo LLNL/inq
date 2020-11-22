@@ -369,9 +369,9 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 
 	
 	if(normalize){
-		gpu::run(phi.linear().size(),
-						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ip){
-							 phil[ip] = factor*phil[ip];
+		gpu::run(3, phi.linear().size(),
+						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto idir, auto ip){
+							 phil[ip][idir] = factor*phil[ip][idir];
 						 });
 	}
 			

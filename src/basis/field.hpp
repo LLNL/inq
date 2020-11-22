@@ -155,7 +155,7 @@ namespace basis {
 		}
 
 		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, math::vector3<double>>::value>* = nullptr>
-		field<basis::real_space, math::vector3<inq::complex>> complex() const {
+			field<basis::real_space, math::vector3<inq::complex>> complex() const {
 			field<basis::real_space, math::vector3<inq::complex>> complex_field(skeleton());
 			
 			//DATAOPERATIONS GPU::RUN 1D
