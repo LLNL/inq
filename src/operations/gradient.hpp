@@ -22,7 +22,6 @@
 */
 
 #include <basis/field.hpp>
-#include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
 #include <operations/space.hpp>
 
@@ -32,7 +31,7 @@ namespace inq {
 namespace operations {
 
 	auto gradient(basis::field<basis::fourier_space, complex> const & ff){
-		basis::field_set<basis::fourier_space, complex> grad(ff.basis(), 3);
+		basis::field<basis::fourier_space, math::vector3<complex>> grad(ff.basis());
 
 		auto point_op = ff.basis().point_op();
 		
@@ -40,7 +39,7 @@ namespace operations {
 			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
 				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
 					auto gvec = point_op.gvector(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) grad.cubic()[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz]; 
+					grad.cubic()[ix][iy][iz] = complex(0.0, 1.0)*gvec*ff.cubic()[ix][iy][iz]; 
 				}
 			}
 		}
@@ -59,7 +58,7 @@ namespace operations {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto gradient(basis::field<basis::real_space, double> const & ff){
-		auto ff_fourier = operations::space::to_fourier(ff);
+		auto ff_fourier = operations::space::to_fourier(ff.complex());
 		auto grad_fourier = gradient(ff_fourier);
 		auto grad_real = operations::space::to_real(grad_fourier);
 		return grad_real.real();
