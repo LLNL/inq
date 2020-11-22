@@ -39,7 +39,9 @@ namespace operations {
 			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
 				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
 					auto gvec = point_op.gvector(ix, iy, iz);
-					grad.cubic()[ix][iy][iz] = complex(0.0, 1.0)*gvec*ff.cubic()[ix][iy][iz]; 
+					for(int idir = 0; idir < 3; idir++){
+						grad.cubic()[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz];
+					}
 				}
 			}
 		}
