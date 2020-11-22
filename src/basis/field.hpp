@@ -154,6 +154,19 @@ namespace basis {
 			return field<basis::real_space, inq::complex>(*this);
 		}
 
+		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, math::vector3<double>>::value>* = nullptr>
+		auto complex() const {
+			field<basis::real_space, math::vector3<inq::complex>> complex_field(skeleton());
+			
+			//DATAOPERATIONS GPU::RUN 1D
+			gpu::run(3, basis().part().local_size(),
+							 [cp = begin(complex_field.linear()), rp = begin(linear())] GPU_LAMBDA (auto idir, auto ip){
+								 cp[ip][idir] = inq::complex(rp[ip][idir], 0.0);
+							 });
+			
+			return complex_field;
+		}
+
 		template<typename T_ = Type, std::enable_if_t<std::is_same<T_, inq::complex>::value>* = nullptr>
 		field<basis::real_space, double> real() const {
 			field<basis::real_space, double> real_field(skeleton());		
