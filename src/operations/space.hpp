@@ -53,6 +53,19 @@ void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fph
 
 ///////////////////////////////////////////////////////////////
 		
+void zero_outside_sphere(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi){
+		CALI_CXX_MARK_FUNCTION;
+		
+	//DATAOPERATIONS GPU::RUN 3D
+	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
+					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
+					 (auto iz, auto iy, auto ix){
+						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz] = {0.0, 0.0, 0.0};
+					 });
+}
+
+///////////////////////////////////////////////////////////////
+
 void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -272,6 +285,56 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 			
 	return phi;
 }
+
+///////////////////////////////////////////////////////////////
+	
+auto to_real(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
+
+	auto & fourier_basis = fphi.basis();
+	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
+
+	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
+
+	auto sz = sizes(phi.cubic());
+	
+	math::array<complex, 4> tmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});
+	math::array<complex, 4> ftmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});	
+
+	for(long ix = 0; ix < std::get<0>(sz); ix++){
+		for(long iy = 0; iy < std::get<1>(sz); iy++){
+			for(long iz = 0; iz < std::get<2>(sz); iz++){
+				for(int idir = 0; idir < 3; idir++){
+					ftmp[ix][iy][iz][idir] = fphi.cubic()[ix][iy][iz][idir];
+				}
+			}
+		}
+	}
+
+	//	to_real(fourier_basis, real_basis, fphi.cubic().template reinterpret_array_cast<complex>(), phi.cubic().template reinterpret_array_cast<complex>());
+	to_real(fourier_basis, real_basis, ftmp, tmp);
+	
+	for(long ix = 0; ix < std::get<0>(sz); ix++){
+		for(long iy = 0; iy < std::get<1>(sz); iy++){
+			for(long iz = 0; iz < std::get<2>(sz); iz++){
+				for(int idir = 0; idir < 3; idir++){
+					phi.cubic()[ix][iy][iz][idir] = tmp[ix][iy][iz][idir];
+				}
+			}
+		}
+	}
+
+	
+	if(normalize){
+		gpu::run(phi.linear().size(),
+						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ip){
+							 phil[ip] = factor*phil[ip];
+						 });
+	}
+			
+	return phi;
+}
+
+///////////////////////////////////////////////////////////////
 
 }
 }
