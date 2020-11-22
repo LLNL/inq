@@ -327,15 +327,18 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & 
 	return fphi;
 	
 }
+
 ///////////////////////////////////////////////////////////////
 	
-auto to_real(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
+basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
+	using complex_ptr = math::array<complex, 4>::element_ptr;		
+	
 	auto sz = sizes(phi.cubic());
 	
 	math::array<complex, 4> tmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});
