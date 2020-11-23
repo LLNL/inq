@@ -80,16 +80,16 @@ namespace ions {
 			amat_[8] = a2[2];
   
 			// volume = det(A)
-			volume_ = (a0|(a1^a2));
+			volume_ = dot(a0, cross(a1, a2));
 
 			if(fabs(volume_) < 1e-10) throw error::WRONG_LATTICE;
 		
 			if ( volume_ > 0.0 ){
 				// Compute rows of A-1 (columns of A^-T)
 				double fac = 1.0 / volume_;
-				vector_type amt0 = fac * a1 ^ a2;
-				vector_type amt1 = fac * a2 ^ a0;
-				vector_type amt2 = fac * a0 ^ a1;
+				vector_type amt0 = fac*cross(a1, a2);
+				vector_type amt1 = fac*cross(a2, a0);
+				vector_type amt2 = fac*cross(a0, a1);
 			
 				amat_inv_[0] = amt0[0];
 				amat_inv_[1] = amt1[0];
@@ -369,9 +369,9 @@ namespace ions {
     math::vec3d cart_to_crystal(const math::vec3d& v) const {
 			vector_type vcryst;
 			const double twopiinv = 0.5/M_PI;
-			vcryst[0] = (b_[0]|v)*twopiinv;
-			vcryst[1] = (b_[1]|v)*twopiinv;
-			vcryst[2] = (b_[2]|v)*twopiinv;
+			vcryst[0] = dot(b_[0], v)*twopiinv;
+			vcryst[1] = dot(b_[1], v)*twopiinv;
+			vcryst[2] = dot(b_[2], v)*twopiinv;
 			return vcryst;
 		}
 
@@ -428,7 +428,7 @@ namespace ions {
 			bool in = true;
 			int i = 0;
 			while ( i < 13 && in ) {
-				in = ( fabs(v|an_[i]) <= an2h_[i] ) ;
+				in = ( fabs(dot(v, an_[i])) <= an2h_[i] ) ;
 				i++;
 			}
 			return in;
@@ -455,20 +455,20 @@ namespace ions {
 					done = true;
 					for ( int i = 0; (i < 13) && done; i++ )
 						{
-							const double sp = (v|an_[i]);
+							const double sp = dot(v, an_[i]);
 							if ( sp > an2h_[i] + epsilon )
 								{
 									done = false;
 									do
 										v -= an_[i];
-									while ( (v|an_[i]) > an2h_[i] + epsilon );
+									while ( dot(v, an_[i]) > an2h_[i] + epsilon );
 								}
 							else if ( sp < -an2h_[i] - epsilon )
 								{
 									done = false;
 									do
 										v += an_[i];
-									while ( (v|an_[i]) < -an2h_[i] - epsilon );
+									while ( dot(v, an_[i]) < -an2h_[i] - epsilon );
 								}
 						}
 					iter++;
@@ -485,7 +485,7 @@ namespace ions {
 			int i = 0;
 			while ( i < 13 && in )
 				{
-					in = ( fabs(k|bn_[i]) <= bn2h_[i] ) ;
+					in = ( fabs(dot(k, bn_[i])) <= bn2h_[i] ) ;
 					i++;
 				}
 			return in;
@@ -505,20 +505,20 @@ namespace ions {
 					done = true;
 					for ( int i = 0; (i < 13) && done; i++ )
 						{
-							double sp = (k|bn_[i]);
+							double sp = dot(k, bn_[i]);
 							if ( sp > bn2h_[i] + epsilon )
 								{
 									done = false;
 									do
 										k -= bn_[i];
-									while ( (k|bn_[i]) > bn2h_[i] + epsilon );
+									while ( dot(k, bn_[i]) > bn2h_[i] + epsilon );
 								}
 							else if ( sp < -bn2h_[i] - epsilon )
 								{
 									done = false;
 									do
 										k += bn_[i];
-									while ( (k|bn_[i]) < -bn2h_[i] - epsilon );
+									while ( dot(k, bn_[i]) < -bn2h_[i] - epsilon );
 								}
 						}
 					iter++;
@@ -539,9 +539,9 @@ namespace ions {
 		
     bool contains(math::vec3d v) const {
 			const double fac = 0.5 / ( 2.0 * M_PI );
-			const double p0 = fac*(v|b_[0]);
-			const double p1 = fac*(v|b_[1]);
-			const double p2 = fac*(v|b_[2]);
+			const double p0 = fac*dot(v, b_[0]);
+			const double p1 = fac*dot(v, b_[1]);
+			const double p2 = fac*dot(v, b_[2]);
 			
 			return ( (p0 > 0.0) && (p0 <= 1.0) && (p1 > 0.0) && (p1 <= 1.0) && (p2 > 0.0) && (p2 <= 1.0) );
 		}

@@ -149,22 +149,55 @@ namespace basis {
 			}
 		}
 
-		auto complex() const {
-			return field<basis::real_space, inq::complex>(*this);
-		}
 
-		field<basis::real_space, double> real() const {
-			field<basis::real_space, double> real_field(skeleton());		
-			real_field.linear() = boost::multi::blas::real(linear());
-			return real_field;
-		}
-		
 	private:
 		internal_array_type linear_;
 		basis_type basis_;
 
 	};
+
+
+field<basis::real_space, complex> complex_field(field<basis::real_space, double> const & rfield) {
+	field<basis::real_space, complex> cfield(rfield.skeleton());		
+
+	gpu::run(rfield.basis().part().local_size(),
+					 [cp = begin(cfield.linear()), rp = begin(rfield.linear())] GPU_LAMBDA (auto ip){
+						 cp[ip] = inq::complex(rp[ip], 0.0);
+					 });
 	
+	return cfield;
+}
+
+field<basis::real_space, math::vector3<inq::complex>> complex_field(field<basis::real_space, math::vector3<double>> const & rfield) {
+	field<basis::real_space, math::vector3<inq::complex>> cfield(rfield.skeleton());
+	
+	gpu::run(3, rfield.basis().part().local_size(),
+					 [cp = begin(cfield.linear()), rp = begin(rfield.linear())] GPU_LAMBDA (auto idir, auto ip){
+						 cp[ip][idir] = inq::complex(rp[ip][idir], 0.0);
+					 });
+	
+	return cfield;
+}
+
+field<basis::real_space, double> real_field(field<basis::real_space, complex> const & cfield) {
+	field<basis::real_space, double> rfield(cfield.skeleton());		
+	rfield.linear() = boost::multi::blas::real(cfield.linear());
+	return rfield;
+}
+
+field<basis::real_space, math::vector3<double>> real_field(field<basis::real_space, math::vector3<complex>> const & cfield) {
+	field<basis::real_space, math::vector3<double>> rfield(cfield.skeleton());		
+	
+	//DATAOPERATIONS GPU::RUN 1D
+	gpu::run(3, cfield.basis().part().local_size(),
+					 [rp = begin(rfield.linear()), cp = begin(cfield.linear())] GPU_LAMBDA (auto idir, auto ip){
+						 rp[ip][idir] = inq::real(cp[ip][idir]);
+					 });
+	
+	return rfield;
+}
+
+
 }
 }
 
@@ -191,8 +224,8 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	basis::field<basis::real_space, double> ff(rs);
 
-	basis::field<basis::real_space, std::complex<double> > ff_complex = ff.complex();
-	basis::field<basis::real_space, double> ff2 = ff_complex.real();
+	basis::field<basis::real_space, std::complex<double> > ff_complex = complex_field(ff);
+	basis::field<basis::real_space, double> ff2 = real_field(ff_complex);
 
 	ff2 = 0.;
 
@@ -217,14 +250,14 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	CHECK(std::get<1>(sizes(ff_copy.cubic())) == 11);
 	CHECK(std::get<2>(sizes(ff_copy.cubic())) == 20);
 
-	auto zff = ff.complex();
+	auto zff = complex_field(ff);
 	
 	static_assert(std::is_same<decltype(zff), basis::field<basis::real_space, complex>>::value, "complex() should return a complex field");
 	
 	CHECK(std::get<1>(sizes(zff.cubic())) == 11);
 	CHECK(std::get<2>(sizes(zff.cubic())) == 20);
 
-	auto dff = zff.real();
+	auto dff = real_field(zff);
 
 	static_assert(std::is_same<decltype(dff), basis::field<basis::real_space, double>>::value, "real() should return a double field");
 

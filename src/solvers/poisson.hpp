@@ -130,8 +130,8 @@ public:
 
 		CALI_CXX_MARK_SCOPE("poisson(real)");
 		
-		auto complex_potential = operator()(density.complex());
-		return complex_potential.real();
+		auto complex_potential = operator()(complex_field(density));
+		return real_field(complex_potential);
 	}
 
 private:

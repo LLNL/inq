@@ -43,7 +43,7 @@ namespace perturbations {
 					
 					auto rr = phi.basis().rvector(ixg, iyg, izg);
 
-					auto kick_factor = exp(complex(0.0, (kick_field|rr)));
+					auto kick_factor = exp(complex(0.0, dot(kick_field, rr)));
 					
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] *= kick_factor;

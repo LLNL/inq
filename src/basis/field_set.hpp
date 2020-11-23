@@ -138,27 +138,6 @@ namespace basis {
 			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
-		auto complex() const {
-			field_set<basis::real_space, inq::complex> complex_field(skeleton());
-			complex_field.matrix() = matrix();
-			return complex_field;
-		}
-
-		field_set<basis::real_space, double> real() const {
-			field_set<basis::real_space, double> real_field(skeleton());
-
-			// Multi should be able to do this, but it causes a lot of compilation troubles
-			//			real_field.matrix() = boost::multi::blas::real(matrix());
-
-			//DATAOPERATIONS GPU::RUN 1D
-			gpu::run(set_part().local_size(), basis().part().local_size(),
-							 [rp = begin(real_field.matrix()), cp = begin(matrix())] GPU_LAMBDA (auto ist, auto ii){
-								 rp[ii][ist] = inq::real(cp[ii][ist]);
-							 });
-			
-			return real_field;
-		}
-		
 	private:
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
@@ -169,6 +148,28 @@ namespace basis {
 		basis_type basis_;
 
   };
+
+auto complex_field(field_set<basis::real_space, double> const & field) {
+	field_set<basis::real_space, inq::complex> cfield(field.skeleton());
+	cfield.matrix() = field.matrix();
+	return cfield;
+}
+
+field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq::complex> const & field) {
+	
+	field_set<basis::real_space, double> rfield(field.skeleton());
+	
+	// Multi should be able to do this, but it causes a lot of compilation troubles
+	//			rfield.matrix() = boost::multi::blas::real(matrix());
+	
+	//DATAOPERATIONS GPU::RUN 1D
+	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
+					 [rp = begin(rfield.matrix()), cp = begin(field.matrix())] GPU_LAMBDA (auto ist, auto ii){
+						 rp[ii][ist] = inq::real(cp[ii][ist]);
+					 });
+	
+	return rfield;
+}
 
 }
 }
@@ -235,7 +236,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 		}
 	}
 
-	auto zff = ff.complex();
+	auto zff = complex_field(ff);
 	
 	static_assert(std::is_same<decltype(zff), basis::field_set<basis::real_space, complex>>::value, "complex() should return a complex field");
 		
@@ -249,7 +250,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 		}
 	}
 
-	auto dff = zff.real();
+	auto dff = real_field(zff);
 
 	static_assert(std::is_same<decltype(dff), basis::field_set<basis::real_space, double>>::value, "real() should return a double field");
 

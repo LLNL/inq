@@ -164,8 +164,8 @@ auto refine(FieldType const & source, typename basis::real_space const & new_bas
 template <template<class, class> class FieldType>
 auto refine(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
 
-	auto complex_refine = refine(source.complex(), new_basis);
-	return complex_refine.real();
+	auto complex_refine = refine(complex_field(source), new_basis);
+	return real_field(complex_refine);
 }
 
 //////////////////////////////////////////////////////////
@@ -186,8 +186,8 @@ auto coarsen(FieldType const & source, typename basis::real_space const & new_ba
 template <template<class, class> class FieldType>		
 auto coarsen(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
 
-	auto complex_coarsen = coarsen(source.complex(), new_basis);
-	return complex_coarsen.real();
+	auto complex_coarsen = coarsen(complex_field(source), new_basis);
+	return real_field(complex_coarsen);
 }
 
 }
