@@ -3,9 +3,6 @@
 #ifndef INQ__HAMILTONIAN__FORCES
 #define INQ__HAMILTONIAN__FORCES
 
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-
 /*
  Copyright (C) 2019 Xavier Andrade
 
@@ -24,12 +21,32 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <systems/ions.hpp>
+#include <systems/electrons.hpp>
+#include <operations/gradient.hpp>
+
 namespace inq {
 namespace hamiltonian {
 
 auto calculate_forces(const systems::ions & ions, systems::electrons & electrons){
   math::array<math::vector3<double>, 1> forces(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
+
+  basis::field<basis::real_space, math::vector3<double>> gdensity(electrons.phi_.basis());
+
+  //calculate the gradient of the density from the gradient of the orbitals  
+  auto gphi = operations::gradient(electrons.phi_);
   
+  gpu::run(3, electrons.phi_.basis().part().local_size(),
+					 [nst = electrons.phi_.set_part().local_size(), occs = begin(electrons.states_.occupations()),
+            phip = begin(electrons.phi_.matrix()), gphip = begin(gphi.matrix()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto idir, auto ip){
+						 gdensityp[ip][idir] = 0.0;
+						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
+					 });
+  
+	if(gphi.set_part().parallel()){
+		gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(gdensity.linear().data()), gdensity.linear().size()*3, std::plus<>{});
+	}
+		
   return forces;
 }
 
