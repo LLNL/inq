@@ -1,5 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
+//  Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa
+
 #ifndef INQ__REAL_TIME__PROPAGATE
 #define INQ__REAL_TIME__PROPAGATE
 
@@ -37,11 +39,41 @@
 
 namespace inq {
 namespace real_time {
-	
-	real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options){
 
-    CALI_CXX_MARK_FUNCTION;
+struct fix_ions{
 
+	static constexpr bool static_ions = true;
+
+	template <typename TypeIons>
+	static void propagate_positions(double dt, TypeIons &){
+	}
+
+	template <typename TypeIons, typename TypeForces>
+	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){
+	}
+
+};
+
+struct impulsive_ions{
+
+	static constexpr bool static_ions = false;
+
+	template <typename TypeIons = systems::ions>
+	static void propagate_positions(double dt, TypeIons& ions){
+		for(int i = 0; i != ions.geo().num_atoms(); ++i)
+			ions.geo().coordinates()[i] += dt*ions.velocities()[i];
+	}
+
+	template <typename TypeIons, typename TypeForces>
+	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){}
+
+};
+
+template<typename IonSubPropagator = fix_ions>
+real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
+
+		CALI_CXX_MARK_FUNCTION;
+		
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
 
@@ -67,6 +99,7 @@ namespace real_time {
 		res.time.push_back(0.0);
 		res.energy.push_back(energy.total());
 		res.dipole.push_back(observables::dipole(electrons.density_));
+		res.ions.push_back(ions);
 		
 		for(int istep = 1; istep <= numsteps; istep++){
 
@@ -77,14 +110,23 @@ namespace real_time {
 				//calculate H(t + dt) from the full step propagation
 				electrons.density_ = density::calculate(electrons.states_.occupations(), fullstep_phi, electrons.density_basis_);
 				ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+
+				//propagate ionic positions to t + dt
+				ion_propagator.propagate_positions(dt, ions);
+				if(not ion_propagator.static_ions) sc.update_ionic_fields(ions, electrons.atomic_pot_);
 			}
 
 			//propagate the other half step with H(t + dt)
 			operations::exponential_in_place(ham, complex(0.0, dt/2.0), electrons.phi_);
-
+			
 			auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
-																			
+
+			//calculate forces, force variance
+			double forces = 0.0;
+			
+			//propagate ionic velocities to t + dt
+			ion_propagator.propagate_velocities(dt, ions, forces);
 			if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
 
 			res.time.push_back(istep*dt);
