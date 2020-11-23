@@ -377,6 +377,56 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 }
 
 ///////////////////////////////////////////////////////////////
+	
+basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis::field_set<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
+
+	auto & fourier_basis = fphi.basis();
+	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
+
+	basis::field_set<basis::real_space, math::vector3<complex>> phi(real_basis, fphi.set_size(), fphi.full_comm());
+
+	auto sz = sizes(phi.cubic());
+	
+	math::array<complex, 4> tmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3*std::get<3>(sz)});
+	math::array<complex, 4> ftmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3*std::get<3>(sz)});	
+
+	for(long ix = 0; ix < std::get<0>(sz); ix++){
+		for(long iy = 0; iy < std::get<1>(sz); iy++){
+			for(long iz = 0; iz < std::get<2>(sz); iz++){
+				for(long ist = 0; ist < std::get<3>(sz); ist++){
+					for(int idir = 0; idir < 3; idir++){
+						ftmp[ix][iy][iz][idir + 3*ist] = fphi.cubic()[ix][iy][iz][ist][idir];
+					}
+				}
+			}
+		}
+	}
+
+	to_real(fourier_basis, real_basis, ftmp, tmp);
+	
+	for(long ix = 0; ix < std::get<0>(sz); ix++){
+		for(long iy = 0; iy < std::get<1>(sz); iy++){
+			for(long iz = 0; iz < std::get<2>(sz); iz++){
+				for(long ist = 0; ist < std::get<3>(sz); ist++){				
+					for(int idir = 0; idir < 3; idir++){
+						phi.cubic()[ix][iy][iz][ist][idir] = tmp[ix][iy][iz][idir + 3*ist];
+					}
+				}
+			}
+		}
+	}
+	
+	if(normalize){
+		gpu::run(3, phi.local_set_size(), phi.basis().local_size(),
+			[phil = begin(phi.matrix()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto idir, auto ist, auto ip){
+							 phil[ip][ist][idir] = factor*phil[ip][ist][idir];
+						 });
+	}
+			
+	return phi;
+}
+
+///////////////////////////////////////////////////////////////
 
 }
 }

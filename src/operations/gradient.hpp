@@ -50,6 +50,28 @@ namespace operations {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	auto gradient(basis::field_set<basis::fourier_space, complex> const & ff){
+		basis::field_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
+
+		auto point_op = ff.basis().point_op();
+		
+		for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
+					auto gvec = point_op.gvector(ix, iy, iz);
+					for(int ist = 0; ist < ff.local_set_size(); ist++){
+						for(int idir = 0; idir < 3; idir++){
+							grad.cubic()[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz][ist];
+						}
+					}
+				}
+			}
+		}
+		return grad;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	auto gradient(basis::field<basis::real_space, complex> const & ff){
 		auto ff_fourier = operations::space::to_fourier(ff);
 		auto grad_fourier = gradient(ff_fourier);
@@ -65,6 +87,17 @@ namespace operations {
 		auto grad_real = operations::space::to_real(grad_fourier);
 		return real_field(grad_real);
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	auto gradient(basis::field_set<basis::real_space, complex> const & ff){
+		auto ff_fourier = operations::space::to_fourier(ff);
+		auto grad_fourier = gradient(ff_fourier);
+		auto grad_real = operations::space::to_real(grad_fourier);
+		return grad_real;
+	}
+
+
 	
 }
 }
@@ -114,12 +147,11 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	double ly = 12;
 	double lz = 10;
 
-	ions::geometry geo;
  	ions::UnitCell cell(vec3d(lx, 0.0, 0.0), vec3d(0.0, ly, 0.0), vec3d(0.0, 0.0, lz));
 
 	basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
 
-	SECTION("Plane-wave"){ 
+	SECTION("Plane-wave -- field"){ 
 		basis::field<basis::real_space, complex> f_test(rs);
 	
 		//Define k-vector for test function
@@ -148,7 +180,41 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		
 		CHECK( diff < 1.0e-10 ); 
 	}
+
+	SECTION("Plane-wave -- field_set"){ 
+		basis::field_set<basis::real_space, complex> f_test(rs, 13);
 	
+		//Define k-vector for test function
+		vec3d kvec = 2.0*M_PI*vec3d(1.0/lx, 1.0/ly, 1.0/lz);
+
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					for(int ist = 0; ist < f_test.local_set_size(); ist++){					
+						f_test.cubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
+					}
+				}
+			}
+		}
+
+		auto g_test = gradient(f_test);
+
+		double diff = 0.0;
+		for(int ix = 0; ix < rs.sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+					auto vec = rs.rvector(ix, iy, iz);
+					for(int ist = 0; ist < f_test.local_set_size(); ist++){
+						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][ist][idir] - double(ist)*g_analytic(kvec, vec)[idir]);
+					}
+				}
+			}
+		}
+		
+		CHECK( diff < 1.0e-8 ); 
+	}
+		
 	SECTION("Real function"){
 
 		basis::field<basis::real_space, double> f_test2(rs);
