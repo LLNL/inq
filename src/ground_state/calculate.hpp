@@ -14,6 +14,7 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/energy.hpp>
+#include <hamiltonian/forces.hpp>
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
@@ -203,6 +204,8 @@ namespace ground_state {
 			old_energy = res.energy.eigenvalues;
 			
 		}
+
+		auto forces = hamiltonian::calculate_forces(ions, electrons);
 
 		CALI_CXX_MARK_LOOP_END(scfloop);
  
