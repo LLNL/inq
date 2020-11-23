@@ -104,7 +104,7 @@ namespace hamiltonian {
     }
 
     template <class basis_type, class cell_type, class geo_type>
-    basis::field<basis_type, double> local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
@@ -113,6 +113,8 @@ namespace hamiltonian {
 			potential = 0.0;
 			
       for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
+
+				if(single_atom >= 0 and single_atom != iatom) continue;
 				
 				auto atom_position = geo.coordinates()[iatom];
 				
@@ -139,7 +141,7 @@ namespace hamiltonian {
     }
 		
     template <class basis_type, class cell_type, class geo_type>
-    basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+    basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
 	
@@ -148,6 +150,8 @@ namespace hamiltonian {
 			density = 0.0;
 
 			for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
+
+				if(single_atom >= 0 and single_atom != iatom) continue;
 				
 				auto atom_position = geo.coordinates()[iatom];
 				

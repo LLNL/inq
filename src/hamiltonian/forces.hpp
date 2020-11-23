@@ -24,11 +24,14 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <operations/gradient.hpp>
+#include <solvers/poisson.hpp>
 
 namespace inq {
 namespace hamiltonian {
 
 auto calculate_forces(const systems::ions & ions, systems::electrons & electrons){
+  solvers::poisson poisson_solver;
+  
   math::array<math::vector3<double>, 1> forces(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 
   basis::field<basis::real_space, math::vector3<double>> gdensity(electrons.phi_.basis());
@@ -46,7 +49,17 @@ auto calculate_forces(const systems::ions & ions, systems::electrons & electrons
 	if(gphi.set_part().parallel()){
 		gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(gdensity.linear().data()), gdensity.linear().size()*3, std::plus<>{});
 	}
-		
+
+  for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
+    auto ionic_long_range = poisson_solver(electrons.atomic_pot_.ionic_density(electrons.density_basis_, ions.cell(), ions.geo(), iatom));
+    auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.density_basis_, ions.cell(), ions.geo(), iatom);
+
+    forces[iatom] = gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
+                             [v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
+      return (v1[ip] + v2[ip])*gdensityp[ip];
+    });
+  }
+  		
   return forces;
 }
 
