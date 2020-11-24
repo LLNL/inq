@@ -50,6 +50,7 @@ namespace hamiltonian {
     gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vec3d *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
 	}
 
+  //the force from the local potential  
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
     auto ionic_long_range = poisson_solver(electrons.atomic_pot_.ionic_density(electrons.density_basis_, ions.cell(), ions.geo(), iatom));
     auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.density_basis_, ions.cell(), ions.geo(), iatom);
@@ -59,7 +60,11 @@ namespace hamiltonian {
       return (v1[ip] + v2[ip])*gdensityp[ip];
     });
   }
-  		
+
+  //the non-local potential term
+  
+  //the non-linear core correction term
+  
   return forces;
 }
 
