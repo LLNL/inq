@@ -204,13 +204,12 @@ namespace ground_state {
 			old_energy = res.energy.eigenvalues;
 			
 		}
+		
+		CALI_CXX_MARK_LOOP_END(scfloop);
 
 		auto forces = hamiltonian::calculate_forces(ions, electrons);
 
-		CALI_CXX_MARK_LOOP_END(scfloop);
- 
-		if(solver.verbose_output() and console)
-			console->info("SCF iters ended with result energies {}", res.energy);
+		if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
 
 		if(ions.cell().periodic_dimensions() == 0){
 			res.dipole = observables::dipole(ions, electrons);

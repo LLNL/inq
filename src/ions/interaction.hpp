@@ -51,10 +51,25 @@ auto interaction_energy(const cell_type & cell, const geometry_type & geo, const
 	return energy;
 }
 
+template <class cell_type, class geometry_type>
+auto interaction_forces(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	double energy;
+	boost::multi::array<math::vec3d, 1> forces(geo.num_atoms());
+	boost::multi::array<double, 1> charges(geo.num_atoms());
+
+	for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
+
+	interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+
+	return forces;
+}
+
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 												double & energy, array_forces & forces){
-	
 	using math::vec3d;
 
 	const double alpha = 0.21;
@@ -148,9 +163,6 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 			}
 		}
 	}
-
-	//forces are not properly validated right now
-	for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vec3d(0.0, 0.0, 0.0);
 
 	// Previously unaccounted G = 0 term from pseudopotentials. 
 	// See J. Ihm, A. Zunger, M.L. Cohen, J. Phys. C 12, 4409 (1979)

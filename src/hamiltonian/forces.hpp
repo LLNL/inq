@@ -48,19 +48,33 @@ namespace hamiltonian {
   
 	if(gphi.set_part().parallel()){
     gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vec3d *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
-	}
+  }
 
+  //ionic force
+  auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot_);
+  
   //the force from the local potential  
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
     auto ionic_long_range = poisson_solver(electrons.atomic_pot_.ionic_density(electrons.density_basis_, ions.cell(), ions.geo(), iatom));
     auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.density_basis_, ions.cell(), ions.geo(), iatom);
 
-    forces[iatom] = gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
-                             [v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
-      return (v1[ip] + v2[ip])*gdensityp[ip];
-    });
+    forces[iatom] -= gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
+                              [v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
+                                return (v1[ip] + v2[ip])*gdensityp[ip];
+                              });
+    
   }
 
+  for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
+    std::cout << "Force " << iatom << '\t' << forces[iatom][2] << '\t' << ionic_forces[iatom][2] << '\t' << forces[iatom][2] + ionic_forces[iatom][2] << std::endl;
+  }
+
+  for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
+    forces[iatom] += ionic_forces[iatom];
+  }
+  
+  //MISSING: REDUCE FORCES
+  
   //the non-local potential term
   
   //the non-linear core correction term
