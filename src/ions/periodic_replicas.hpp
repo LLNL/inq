@@ -22,6 +22,9 @@
 */
 
 #include <math/vector3.hpp>
+
+#include <caliper/cali.h>
+
 #include <vector>
 #include <cmath>
 
@@ -32,17 +35,14 @@ class periodic_replicas{
 
 public:
 
-	enum class error {
-										NEGATIVE_RANGE
-	};
 	template <class cell_array>
 	periodic_replicas(const cell_array & cell, const math::vec3d & position, const double range){
 
-		using math::vec3d;
+		CALI_CXX_MARK_FUNCTION;
       
-		if(range < 0) throw error::NEGATIVE_RANGE;
+		assert(range >= 0.0);
 
-		std::vector<int> neigh_max(3);
+		math::vector3<int> neigh_max(3);
 
 		//we should use floor here, but since we check later, round is more reliable
 		for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell[0]))); 
@@ -50,7 +50,7 @@ public:
 		for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
 			for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
 				for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
-					vec3d reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
+					math::vec3d reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
             
 					if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
 				}
@@ -92,10 +92,6 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
   {
     ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
 
-    SECTION("Negative range"){
-      CHECK_THROWS(ions::periodic_replicas(cell, vec3d(0.0, 0.0, 0.0), -1.0));
-    }
-    
     SECTION("Cubic cell 0"){
       ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 9.5);
       
