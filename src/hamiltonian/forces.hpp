@@ -29,7 +29,7 @@
 namespace inq {
 namespace hamiltonian {
 
-auto calculate_forces(const systems::ions & ions, systems::electrons & electrons){
+ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons){
   solvers::poisson poisson_solver;
   
   math::array<math::vector3<double>, 1> forces(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
@@ -47,7 +47,7 @@ auto calculate_forces(const systems::ions & ions, systems::electrons & electrons
 					 });
   
 	if(gphi.set_part().parallel()){
-		gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(gdensity.linear().data()), gdensity.linear().size()*3, std::plus<>{});
+    gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vec3d *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
 	}
 
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
