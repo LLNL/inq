@@ -91,14 +91,15 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 				double zj = charge[jatom];
 					
 				vec3d rij = xi - positions[jatom];
-				double rr = sqrt(norm(rij));
+				double rr = length(rij);
 					
 				if(rr < 1.0e-5) continue;
 					
-				double eor = erfc(alpha*rr)/rr;
+				auto eor = erfc(alpha*rr)/rr;
 					
 				ers += 0.5*zi*zj*eor;
-				forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*rr, 2))/(rr*rr));
+
+				forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-alpha*alpha*rr*rr))/(rr*rr);
 			}
 		}
       
@@ -155,7 +156,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 					
 				for(int iatom = 0; iatom < natoms; iatom++){
 					for(int idir = 0; idir < 3; idir++){
-						std::complex<double> tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
+						auto tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
 						forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
 					}
 				}
@@ -171,13 +172,6 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 		epseudo += M_PI*charge[iatom]*pow(sep.sigma()*sqrt(2.0), 2)/cell.volume()*total_charge;
 	}
 
-	/*
-		std::cout << "ers     = " << ers << std::endl;
-		std::cout << "eself   = " << eself << std::endl;
-		std::cout << "efs     = " << efs << std::endl;
-		std::cout << "epseudo = " << epseudo << std::endl;
-	*/
-		
 	energy = ers + eself + efs + epseudo;
 
 }
@@ -263,7 +257,38 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     CHECK(energy == -78.31680646_a); //this number comes from Octopus
     
   }
+  
+  SECTION("N2 supercell"){
     
+    double aa = 20.0;
+    
+    ions::UnitCell cell(vec3d(aa, 0.0, 0.0), vec3d(0.0, aa, 0.0), vec3d(0.0, 0.0, aa));
+
+		const double charge[2] = {5.0, 5.0};
+
+    double distance = 2.0739744;
+
+    std::vector<vec3d> positions(2);
+    positions[0] = vec3d(0.0, 0.0, -distance/2.0);
+    positions[1] = vec3d(0.0, 0.0,  distance/2.0);
+    
+    double energy;
+    std::vector<vec3d> forces(2);
+
+    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+
+		//these numbers come from Octopus
+    CHECK(energy == 5.02018926_a); 
+
+		CHECK(fabs(forces[0][0]) < 1.0e-16);
+		CHECK(fabs(forces[0][1]) < 1.0e-16);
+		CHECK(forces[0][2] == -5.7840844208_a);
+		CHECK(fabs(forces[1][0]) < 1.0e-16);
+		CHECK(fabs(forces[1][1]) < 1.0e-16);
+		CHECK(forces[1][2] == 5.7840844208_a);
+    
+  }
+	
 }
 #endif
 
