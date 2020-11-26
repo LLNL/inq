@@ -207,7 +207,7 @@ namespace ground_state {
 		
 		CALI_CXX_MARK_LOOP_END(scfloop);
 
-		auto forces = hamiltonian::calculate_forces(ions, electrons);
+		auto forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 		if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
 

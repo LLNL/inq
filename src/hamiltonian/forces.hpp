@@ -21,19 +21,19 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
 #include <operations/gradient.hpp>
 #include <solvers/poisson.hpp>
+#include <systems/ions.hpp>
+#include <systems/electrons.hpp>
+
 
 namespace inq {
 namespace hamiltonian {
 
- math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons){
+template <typename HamiltonianType>
+math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
   solvers::poisson poisson_solver;
   
-  math::array<math::vector3<double>, 1> forces(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
-
   basis::field<basis::real_space, math::vector3<double>> gdensity(electrons.phi_.basis());
 
   //calculate the gradient of the density from the gradient of the orbitals  
@@ -46,10 +46,28 @@ namespace hamiltonian {
 						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
 					 });
 
+
+  //the non-local potential term
+  math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
+	
 	for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-		
+		auto proj = ham.projectors().find(iatom);
+		if(proj == ham.projectors().end()) continue; //there is no projector for this atom
+
+		decltype(electrons.phi_) vnlphi(electrons.phi_.skeleton());
+		vnlphi = 0.0;
+		proj->second(electrons.phi_, vnlphi);
+
+		for(int ip = 0; ip < electrons.phi_.basis().part().local_size(); ip++){
+			for(int ist = 0; ist < electrons.phi_.set_part().local_size(); ist++){ 
+				forces_non_local[iatom] -= electrons.states_.occupations()[ist]*2.0*real(conj(gphi.matrix()[ip][ist])*vnlphi.matrix()[ip][ist]);
+			}
+		}
+
+		forces_non_local[iatom] *= electrons.density_basis_.volume_element();
 	}
 	
+	//REDUCE forces_non_local over space and states
 	
 	if(gphi.set_part().parallel()){
     gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vec3d *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
@@ -57,30 +75,30 @@ namespace hamiltonian {
 
   //ionic force
   auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot_);
-  
-  //the force from the local potential  
+
+	//the force from the local potential
+  math::array<math::vector3<double>, 1> forces_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
     auto ionic_long_range = poisson_solver(electrons.atomic_pot_.ionic_density(electrons.density_basis_, ions.cell(), ions.geo(), iatom));
     auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.density_basis_, ions.cell(), ions.geo(), iatom);
 
-    forces[iatom] -= electrons.density_basis_.volume_element()
-			*gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
-								[v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
-									return (v1[ip] + v2[ip])*gdensityp[ip];
-								});
+    forces_local[iatom] = -gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
+																		[v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
+																			return (v1[ip] + v2[ip])*gdensityp[ip];
+																		});
+		forces_local[iatom] *= electrons.density_basis_.volume_element();
   }
 
-  for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-    std::cout << "Force " << iatom << '\t' << forces[iatom][2] << '\t' << ionic_forces[iatom][2] << '\t' << forces[iatom][2] + ionic_forces[iatom][2] << std::endl;
-  }
+	//REDUCE forces_local over points
 
+	math::array<math::vector3<double>, 1> forces(ions.geo().num_atoms());
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-    forces[iatom] += ionic_forces[iatom];
+    forces[iatom] = ionic_forces[iatom] + forces_local[iatom] + forces_non_local[iatom];
   }
-  
-  //MISSING: REDUCE FORCES
-  
-  //the non-local potential term
+	
+  for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
+    std::cout << "Force " << iatom << '\t' << forces_local[iatom][2] << '\t' << ionic_forces[iatom][2] << '\t' << forces_non_local[iatom][2] << '\t' << forces[iatom][2] << std::endl;
+  }
   
   //the non-linear core correction term
   
