@@ -417,9 +417,9 @@ basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis:
 	}
 	
 	if(normalize){
-		gpu::run(3, phi.local_set_size(), phi.basis().local_size(),
-			[phil = begin(phi.matrix()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto idir, auto ist, auto ip){
-							 phil[ip][ist][idir] = factor*phil[ip][ist][idir];
+		gpu::run(phi.local_set_size(), phi.basis().local_size(),
+						 [phil = begin(phi.matrix()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ist, auto ip){
+							 for(int idir = 0; idir < 3; idir++) phil[ip][ist][idir] = factor*phil[ip][ist][idir];
 						 });
 	}
 			
