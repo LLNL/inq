@@ -45,7 +45,12 @@ namespace hamiltonian {
 						 gdensityp[ip][idir] = 0.0;
 						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
 					 });
-  
+
+	for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
+		
+	}
+	
+	
 	if(gphi.set_part().parallel()){
     gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vec3d *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
   }

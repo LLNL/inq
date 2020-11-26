@@ -59,7 +59,7 @@ namespace hamiltonian {
 																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(geo.coordinates()[iatom]);
 				} else {
-					projectors_.emplace_back(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]);
+					projectors_.emplace(iatom, projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
 				}
 			}
 
@@ -68,7 +68,9 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
-			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++) projectors_[iproj](phi, vnlphi);
+			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+				it->second(phi, vnlphi);
+			}
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,10 +190,16 @@ namespace hamiltonian {
 		
 		int num_projectors() const {
 			int nn = 0;
-			for(unsigned iproj = 0; iproj < projectors_.size(); iproj++){
-				nn += projectors_[iproj].num_projectors();
+			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+				nn += it->second.num_projectors();
 			}
 			return nn;			
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
+		
+		auto & projectors() const {
+			return projectors_;			
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +213,7 @@ namespace hamiltonian {
 		
   private:
 
-		std::vector<projector> projectors_;
+		std::unordered_map<int, projector> projectors_;
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
