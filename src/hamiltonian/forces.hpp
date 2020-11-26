@@ -58,11 +58,11 @@ namespace hamiltonian {
     auto ionic_long_range = poisson_solver(electrons.atomic_pot_.ionic_density(electrons.density_basis_, ions.cell(), ions.geo(), iatom));
     auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.density_basis_, ions.cell(), ions.geo(), iatom);
 
-    forces[iatom] -= gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
-                              [v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
-                                return (v1[ip] + v2[ip])*gdensityp[ip];
-                              });
-    
+    forces[iatom] -= electrons.density_basis_.volume_element()
+			*gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
+								[v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
+									return (v1[ip] + v2[ip])*gdensityp[ip];
+								});
   }
 
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
