@@ -7,8 +7,10 @@ variables:
   CXXFLAGS: "-O3 -pipe"
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+  
+# avoid the annoying messages from openmpi over docker, https://github.com/open-mpi/ompi/issues/4948
+  OMPI_MCA_btl_vader_single_copy_mechanism=none
 
-#check that the configuration fails if fftw is not found
 
 build-noblas:
     stage: build
