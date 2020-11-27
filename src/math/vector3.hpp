@@ -76,6 +76,18 @@ namespace math {
 			return vec_[ii];
 		}
 
+		auto data() {
+			return vec_;
+		}
+
+		auto data() const {
+			return vec_;
+		}
+
+		constexpr auto size() const {
+			return 3;
+		}
+		
 		//COMPARISON
 		
 		GPU_FUNCTION bool operator==(const vector3 & other) const {

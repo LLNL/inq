@@ -70,6 +70,8 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 
 		forces_non_local[iatom] = proj->second.force(electrons.phi_, gphi, electrons.states_.occupations());
 	}
+
+	
 	
 	//REDUCE forces_non_local over space and states
 	
@@ -99,11 +101,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
     forces[iatom] = ionic_forces[iatom] + forces_local[iatom] + forces_non_local[iatom];
   }
 	
-  for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-    std::cout << "Force " << iatom << '\t' << forces_local[iatom][2] << '\t' << ionic_forces[iatom][2] << '\t' << forces_non_local[iatom][2] << '\t' << forces[iatom][2] << std::endl;
-  }
-  
-  //the non-linear core correction term
+  // MISSING: the non-linear core correction term
   
   return forces;
 }
