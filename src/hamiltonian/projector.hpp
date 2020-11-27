@@ -124,6 +124,61 @@ namespace hamiltonian {
 			}
     }
 
+    template <class PhiType, typename GPhiType, typename OccsType>
+    auto force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
+
+			math::vector3<double> force{0.0, 0.0, 0.0};
+
+			if(nproj_ == 0) return force;
+
+			CALI_CXX_MARK_SCOPE("projector::force");
+				
+			using boost::multi::blas::gemm;
+			using boost::multi::blas::transposed;
+				
+			auto sphere_phi = sphere_.gather(phi.cubic());
+			auto sphere_gphi = sphere_.gather(gphi.cubic());			
+
+			math::array<typename PhiType::element_type, 2> projections({nproj_, phi.local_set_size()});
+
+			if(sphere_.size() > 0) {
+				
+				projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
+				
+				{
+					CALI_CXX_MARK_SCOPE("projector_scal");
+					
+					//DATAOPERATIONS GPU::RUN 2D
+					gpu::run(phi.local_set_size(), nproj_,
+									 [proj = begin(projections), coeff = begin(kb_coeff_)]
+									 GPU_LAMBDA (auto ist, auto iproj){
+										 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+									 });
+				}
+				
+			} else {
+				projections.elements().fill(0.0);
+			}
+
+			if(phi.basis().part().parallel()){
+				phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
+			}
+
+			//			if(sphere_.size() > 0) {
+			sphere_phi = gemm(transposed(matrix_), projections);
+				//			}
+			
+			for(int ip = 0; ip < sphere_.size(); ip++){
+				for(int ist = 0; ist < phi.local_set_size(); ist++){
+					force -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist])*sphere_phi[ip][ist]);
+				}
+			}
+
+			force *= phi.basis().volume_element();
+			
+			return force;
+    }
+		
     int num_projectors() const {
       return nproj_;
     }

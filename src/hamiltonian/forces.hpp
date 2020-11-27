@@ -54,17 +54,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		auto proj = ham.projectors().find(iatom);
 		if(proj == ham.projectors().end()) continue; //there is no projector for this atom
 
-		decltype(electrons.phi_) vnlphi(electrons.phi_.skeleton());
-		vnlphi = 0.0;
-		proj->second(electrons.phi_, vnlphi);
-
-		for(int ip = 0; ip < electrons.phi_.basis().part().local_size(); ip++){
-			for(int ist = 0; ist < electrons.phi_.set_part().local_size(); ist++){ 
-				forces_non_local[iatom] -= electrons.states_.occupations()[ist]*2.0*real(conj(gphi.matrix()[ip][ist])*vnlphi.matrix()[ip][ist]);
-			}
-		}
-
-		forces_non_local[iatom] *= electrons.density_basis_.volume_element();
+		forces_non_local[iatom] = proj->second.force(electrons.phi_, gphi, electrons.states_.occupations());
 	}
 	
 	//REDUCE forces_non_local over space and states
