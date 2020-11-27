@@ -204,10 +204,12 @@ namespace ground_state {
 			old_energy = res.energy.eigenvalues;
 			
 		}
-		
 		CALI_CXX_MARK_LOOP_END(scfloop);
 
-		auto forces = hamiltonian::calculate_forces(ions, electrons, ham);
+		//make sure we have a density consistent with phi
+		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
+		
+		res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 		if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
 
@@ -217,8 +219,6 @@ namespace ground_state {
 			res.dipole = 0.0;
 		}
 
-		//make sure we have a density consistent with phi
-		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 
 		if(console) console->trace("calculate ended normally");
 		return res;

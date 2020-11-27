@@ -4,6 +4,7 @@
 #define INQ__GROUND_STATE__RESULT
 
 #include <hamiltonian/energy.hpp>
+#include <math/array.hpp>
 #include <math/vector3.hpp>
 
 namespace inq {
@@ -13,6 +14,7 @@ class result {
 public:
 	hamiltonian::energy energy;
 	math::vec3d dipole;
+	math::array<math::vector3<double>, 1> forces;
 };
 
 }
