@@ -164,19 +164,17 @@ namespace hamiltonian {
 				phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
 			}
 
-			//			if(sphere_.size() > 0) {
-			sphere_phi = gemm(transposed(matrix_), projections);
-				//			}
-			
-			for(int ip = 0; ip < sphere_.size(); ip++){
-				for(int ist = 0; ist < phi.local_set_size(); ist++){
-					force -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist])*sphere_phi[ip][ist]);
+			if(sphere_.size() > 0) {
+				sphere_phi = gemm(transposed(matrix_), projections);
+				
+				for(int ip = 0; ip < sphere_.size(); ip++){
+					for(int ist = 0; ist < phi.local_set_size(); ist++){
+						force -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist])*sphere_phi[ip][ist]);
+					}
 				}
 			}
-
-			force *= phi.basis().volume_element();
 			
-			return force;
+			return phi.basis().volume_element()*force;
     }
 		
     int num_projectors() const {
