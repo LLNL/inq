@@ -60,6 +60,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
 					 });
 
+	gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vec3d *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
 
   //the non-local potential term
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
@@ -71,14 +72,8 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		forces_non_local[iatom] = proj->second.force(electrons.phi_, gphi, electrons.states_.occupations());
 	}
 
+	gphi.full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(forces_non_local.data())), 3*forces_non_local.size(), std::plus<>{});
 	
-	
-	//REDUCE forces_non_local over space and states
-	
-	if(gphi.set_part().parallel()){
-    gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vec3d *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
-  }
-
   //ionic force
   auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
@@ -94,7 +89,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		forces_local[iatom] *= electrons.density_basis_.volume_element();
   }
 
-	//REDUCE forces_local over points
+	gphi.basis().comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(forces_local.data())), 3*forces_local.size(), std::plus<>{});
 
 	math::array<math::vector3<double>, 1> forces(ions.geo().num_atoms());
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
