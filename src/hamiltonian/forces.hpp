@@ -30,6 +30,20 @@
 namespace inq {
 namespace hamiltonian {
 
+template <typename LongRangeType, typename ShortRangeType, typename GDensityType>
+struct loc_pot {
+	
+	LongRangeType v1;
+	ShortRangeType v2;
+	GDensityType gdensityp;
+	
+	GPU_FUNCTION auto operator()(long ip) const {
+		return (v1[ip] + v2[ip])*gdensityp[ip];
+	}
+
+};
+
+
 template <typename HamiltonianType>
 math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
   solvers::poisson poisson_solver;
@@ -73,9 +87,8 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
     auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.density_basis_, ions.cell(), ions.geo(), iatom);
 
     forces_local[iatom] = -gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
-																		[v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
-																			return (v1[ip] + v2[ip])*gdensityp[ip];
-																		});
+																		loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>
+																		{begin(ionic_long_range.linear()), begin(ionic_short_range.linear()), begin(gdensity.linear())});
 		forces_local[iatom] *= electrons.density_basis_.volume_element();
   }
 
