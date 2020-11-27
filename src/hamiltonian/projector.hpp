@@ -125,7 +125,7 @@ namespace hamiltonian {
     }
 
     template <class PhiType, typename GPhiType, typename OccsType>
-    auto force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
+    math::vector3<double> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
 
 			math::vector3<double> force{0.0, 0.0, 0.0};
 
@@ -169,7 +169,9 @@ namespace hamiltonian {
 				
 				for(int ip = 0; ip < sphere_.size(); ip++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						force -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist])*sphere_phi[ip][ist]);
+						for(int idir = 0; idir < 3; idir++){
+							force[idir] -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist][idir])*sphere_phi[ip][ist]);
+						}
 					}
 				}
 			}
