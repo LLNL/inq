@@ -14,6 +14,7 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/energy.hpp>
+#include <hamiltonian/forces.hpp>
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
@@ -203,11 +204,14 @@ namespace ground_state {
 			old_energy = res.energy.eigenvalues;
 			
 		}
-
 		CALI_CXX_MARK_LOOP_END(scfloop);
- 
-		if(solver.verbose_output() and console)
-			console->info("SCF iters ended with result energies {}", res.energy);
+
+		//make sure we have a density consistent with phi
+		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
+		
+		res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
+
+		if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
 
 		if(ions.cell().periodic_dimensions() == 0){
 			res.dipole = observables::dipole(ions, electrons);
@@ -215,8 +219,6 @@ namespace ground_state {
 			res.dipole = 0.0;
 		}
 
-		//make sure we have a density consistent with phi
-		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 
 		if(console) console->trace("calculate ended normally");
 		return res;

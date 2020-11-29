@@ -52,7 +52,7 @@ void check_error(ErrorType const & error){
 		std::cout << "**************************************************************************\n\n";
 		std::cout << "  CUDA ERROR: '" << cudaGetErrorString(error) << "'.\n";
 		std::cout << "\n**************************************************************************\n" << std::endl;		
-		exit(1);
+		abort();
 	}
 }
 #endif

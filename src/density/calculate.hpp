@@ -37,28 +37,16 @@ calculate(const occupations_array_type & occupations, field_set_type & phi){
 
 	basis::field<typename field_set_type::basis_type, double> density(phi.basis());
 
-	//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef ENABLE_CUDA
-
 	const auto nst = phi.set_part().local_size();
 	auto occupationsp = begin(occupations);
 	auto phip = begin(phi.matrix());
 	auto densityp = begin(density.linear());
 		
 	gpu::run(phi.basis().part().local_size(),
-					 [=] __device__ (auto ipoint){
+					 [=] GPU_LAMBDA (auto ipoint){
 						 densityp[ipoint] = 0.0;
 						 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
 					 });
-		
-#else
-		
-	for(int ipoint = 0; ipoint < phi.basis().part().local_size(); ipoint++){
-		density.linear()[ipoint] = 0.0;
-		for(int ist = 0; ist < phi.set_part().local_size(); ist++) density.linear()[ipoint] += occupations[ist]*norm(phi.matrix()[ipoint][ist]);
-	}
-		
-#endif
 
 	if(phi.set_part().parallel()){
 		phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
