@@ -96,7 +96,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 
 	const int nst = 12;
 
@@ -108,7 +108,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
 	auto basis_comm = cart_comm.axis(1);
 	
-  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
+  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
   basis::real_space bas(cell, input::basis::cutoff_energy(20.0), basis_comm);
 	
 	SECTION("double"){

@@ -132,7 +132,7 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 
   const int NN = 1033;
 

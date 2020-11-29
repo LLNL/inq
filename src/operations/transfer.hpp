@@ -222,13 +222,13 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	using namespace transfer_unit_test;
 	using namespace inq;
 	using namespace Catch::literals;
-	using math::vec3d;
+	using math::vector3;
 	
 	double ecut = 23.0;
 
-	vec3d ll{6.66, 7.77, 9.99};
+	vector3<double> ll{6.66, 7.77, 9.99};
 
-	ions::UnitCell cell(vec3d(ll[0], 0.0, 0.0), vec3d(0.0, ll[1], 0.0), vec3d(0.0, 0.0, ll[2]));
+	ions::UnitCell cell(vector3<double>(ll[0], 0.0, 0.0), vector3<double>(0.0, ll[1], 0.0), vector3<double>(0.0, 0.0, ll[2]));
 	basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 	
 	SECTION("Enlarge and shrink -- field"){

@@ -41,8 +41,8 @@ int main(int argc, char ** argv){
 
 	auto distance = 2.2; //a bit larger than experiment to check the force
 	
-	geo.push_back( "N" | math::vec3d(0.0, 0.0, -0.5*distance));
-	geo.push_back( "N" | math::vec3d(0.0, 0.0,  0.5*distance));
+	geo.push_back( "N" | math::vector3<double>(0.0, 0.0, -0.5*distance));
+	geo.push_back( "N" | math::vector3<double>(0.0, 0.0,  0.5*distance));
 		
 	systems::ions ions(input::cell::cubic(10.0, 10.0, 12.0), geo);
 

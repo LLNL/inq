@@ -41,7 +41,7 @@ auto interaction_energy(const cell_type & cell, const geometry_type & geo, const
 	CALI_CXX_MARK_FUNCTION;
 
 	double energy;
-	boost::multi::array<math::vec3d, 1> forces(geo.num_atoms());
+	boost::multi::array<math::vector3<double>, 1> forces(geo.num_atoms());
 	boost::multi::array<double, 1> charges(geo.num_atoms());
 
 	for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
@@ -57,7 +57,7 @@ auto interaction_forces(const cell_type & cell, const geometry_type & geo, const
 	CALI_CXX_MARK_FUNCTION;
 
 	double energy;
-	boost::multi::array<math::vec3d, 1> forces(geo.num_atoms());
+	boost::multi::array<math::vector3<double>, 1> forces(geo.num_atoms());
 	boost::multi::array<double, 1> charges(geo.num_atoms());
 
 	for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
@@ -70,12 +70,12 @@ auto interaction_forces(const cell_type & cell, const geometry_type & geo, const
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 												double & energy, array_forces & forces){
-	using math::vec3d;
+	using math::vector3;
 
 	const double alpha = 0.21;
 		
 	double ers = 0.0;
-	for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vec3d(0.0, 0.0, 0.0);
+	for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vector3<double>(0.0, 0.0, 0.0);
 
 	double rcut = 6.0/alpha;
 
@@ -85,12 +85,12 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 		periodic_replicas rep(cell, positions[iatom], rcut);
 
 		for(unsigned irep = 0; irep < rep.size(); irep++){
-			vec3d xi = rep[irep];
+			vector3<double> xi = rep[irep];
 				
 			for(int jatom = 0; jatom < natoms; jatom++){
 				double zj = charge[jatom];
 					
-				vec3d rij = xi - positions[jatom];
+				vector3<double> rij = xi - positions[jatom];
 				double rr = length(rij);
 					
 				if(rr < 1.0e-5) continue;
@@ -135,7 +135,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 					
 				if(ss == 0 || ss > isph*isph) continue;
 					
-				vec3d gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
+				vector3<double> gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
 				double gg2 = norm(gg);
 					
 				double exparg = -0.25*gg2/(alpha*alpha);
@@ -191,26 +191,26 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 	const pseudo::math::erf_range_separation sep(0.625);
  
   SECTION("Aluminum cubic cell"){
   
     double aa = 7.653;
     
-    ions::UnitCell cell(vec3d(aa, 0.0, 0.0), vec3d(0.0, aa, 0.0), vec3d(0.0, 0.0, aa));
+    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
     
     std::valarray<double> charge(4);
     charge = 3.0;
     
-    std::vector<vec3d> positions(4);
-    positions[0] = vec3d(0.0,    0.0,    0.0);
-    positions[1] = vec3d(aa/2.0, aa/2.0, 0.0);
-    positions[2] = vec3d(aa/2.0, 0.0,    aa/2.0);
-    positions[3] = vec3d(0.0,    aa/2.0, aa/2.0);
+    std::vector<vector3<double>> positions(4);
+    positions[0] = vector3<double>(0.0,    0.0,    0.0);
+    positions[1] = vector3<double>(aa/2.0, aa/2.0, 0.0);
+    positions[2] = vector3<double>(aa/2.0, 0.0,    aa/2.0);
+    positions[3] = vector3<double>(0.0,    aa/2.0, aa/2.0);
     
     double energy;
-    std::vector<vec3d> forces(4);
+    std::vector<vector3<double>> forces(4);
     
     ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
     
@@ -222,16 +222,16 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
     double aa = 6.74065308785213;
     
-    ions::UnitCell cell(vec3d(0.0, aa/2.0, aa/2.0), vec3d(aa/2.0, 0.0, aa/2.0), vec3d(aa/2.0, aa/2.0, 0.0));
+    ions::UnitCell cell(vector3<double>(0.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, 0.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, 0.0));
 
     const double charge[2] = {4.0, 4.0};
     
-    std::vector<vec3d> positions(2);
-    positions[0] = cell.crystal_to_cart(vec3d(0.0,  0.0,  0.0 ));
-    positions[1] = cell.crystal_to_cart(vec3d(0.25, 0.25, 0.25));
+    std::vector<vector3<double>> positions(2);
+    positions[0] = cell.crystal_to_cart(vector3<double>(0.0,  0.0,  0.0 ));
+    positions[1] = cell.crystal_to_cart(vector3<double>(0.25, 0.25, 0.25));
     
     double energy;
-    std::vector<vec3d> forces(2);
+    std::vector<vector3<double>> forces(2);
 
     ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
@@ -243,14 +243,14 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 5.3970578;
     
-    ions::UnitCell cell(vec3d(-aa/2.0, aa/2.0, aa/2.0), vec3d(aa/2.0, -aa/2.0, aa/2.0), vec3d(aa/2.0, aa/2.0, -aa/2.0));
+    ions::UnitCell cell(vector3<double>(-aa/2.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, -aa/2.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, -aa/2.0));
 
     const double charge = 16.0;
     
-    const vec3d position(0.0, 0.0, 0.0);
+    const vector3<double> position(0.0, 0.0, 0.0);
     
     double energy;
-    std::vector<vec3d> forces(1);
+    std::vector<vector3<double>> forces(1);
 
     ions::interaction_energy(1, cell, &charge, &position, sep, energy, forces);
 
@@ -262,18 +262,18 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 20.0;
     
-    ions::UnitCell cell(vec3d(aa, 0.0, 0.0), vec3d(0.0, aa, 0.0), vec3d(0.0, 0.0, aa));
+    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
 
 		const double charge[2] = {5.0, 5.0};
 
     double distance = 2.0739744;
 
-    std::vector<vec3d> positions(2);
-    positions[0] = vec3d(0.0, 0.0, -distance/2.0);
-    positions[1] = vec3d(0.0, 0.0,  distance/2.0);
+    std::vector<vector3<double>> positions(2);
+    positions[0] = vector3<double>(0.0, 0.0, -distance/2.0);
+    positions[1] = vector3<double>(0.0, 0.0,  distance/2.0);
     
     double energy;
-    std::vector<vec3d> forces(2);
+    std::vector<vector3<double>> forces(2);
 
     ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 

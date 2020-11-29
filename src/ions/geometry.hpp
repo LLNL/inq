@@ -59,7 +59,7 @@ public:
     
 	int num_atoms() const { return coordinates_.size(); }
 
-	void add_atom(const input::species & element, const math::vec3d & position){
+	void add_atom(const input::species & element, const math::vector3<double> & position){
 		atoms_.push_back(element);
 		coordinates_.push_back(position);
 	}
@@ -92,7 +92,7 @@ public:
 private:
 
 	std::vector<input::species> atoms_;
-	std::vector<math::vec3d> coordinates_;
+	std::vector<math::vector3<double>> coordinates_;
     
 };
 }
@@ -115,7 +115,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
 
     CHECK(geo.num_atoms() == 0);
 
-    geo.add_atom(pseudo::element("Xe"), math::vec3d(1000.0, -200.0, 6.0));
+    geo.add_atom(pseudo::element("Xe"), math::vector3<double>(1000.0, -200.0, 6.0));
 
     CHECK(geo.num_atoms() == 1);
     CHECK(geo.atoms()[0].atomic_number() == 54);
@@ -151,7 +151,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     CHECK(geo.coordinates()[11][1] == 2.343260364_a);
     CHECK(geo.coordinates()[11][2] == 0.0_a);
 
-    geo.add_atom(pseudo::element("Cl"), math::vec3d(-3.0, 4.0, 5.0));
+    geo.add_atom(pseudo::element("Cl"), math::vector3<double>(-3.0, 4.0, 5.0));
 
     CHECK(geo.num_atoms() == 13);
     CHECK(geo.atoms()[12].atomic_number() == 17);

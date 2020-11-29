@@ -161,12 +161,12 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-	using math::vec3d;
+	using math::vector3;
 
 	double ecut = 25.0;
 	double ll = 6.3;
 
-	ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
+	ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
 	basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
 
 	SECTION("Dimension 3"){

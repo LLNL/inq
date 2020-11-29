@@ -168,41 +168,41 @@ namespace hamiltonian {
 #include <iomanip>
 #include <fstream>
 
-	auto sqwave(inq::math::vec3d rr, int n){
-		inq::math::vec3d kvec = 2.0 * M_PI * inq::math::vec3d(1.0/9.0, 1.0/12.0, 1.0/10.0);
+	auto sqwave(inq::math::vector3<double> rr, int n){
+		inq::math::vector3<double> kvec = 2.0 * M_PI * inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
 		return  sin(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
 	}
 
-	auto laplacian_sqwave(inq::math::vec3d rr, int n){
-		inq::math::vec3d kvec = 2.0 * M_PI * inq::math::vec3d(1.0/9.0, 1.0/12.0, 1.0/10.0);
+	auto laplacian_sqwave(inq::math::vector3<double> rr, int n){
+		inq::math::vector3<double> kvec = 2.0 * M_PI * inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
 		auto ff = 0.0;
 		for(int idir = 0; idir < 3 ; idir++) ff += 2*n*n*kvec[idir]*kvec[idir]*cos(2*n*dot(kvec, rr));
 		return ff;
 	}
 
-	auto gradient_sqwave(inq::math::vec3d rr, int n){
-		inq::math::vec3d kvec = 2.0 * M_PI * inq::math::vec3d(1.0/9.0, 1.0/12.0, 1.0/10.0);
-		inq::math::vec3d ff;
+	auto gradient_sqwave(inq::math::vector3<double> rr, int n){
+		inq::math::vector3<double> kvec = 2.0 * M_PI * inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
+		inq::math::vector3<double> ff;
 		for(int idir = 0; idir < 3 ; idir++) ff[idir] = 2*n*kvec[idir]*cos(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
 		return ff;
 	}
 
-	auto gaussiansigma(inq::math::vec3d rr, double sigma){
+	auto gaussiansigma(inq::math::vector3<double> rr, double sigma){
 		return  pow(2*M_PI, -1.5)*pow(sigma, -3.0)*exp(-0.5*norm(rr)*pow(sigma, -2.0));
 	}
 	
 
-	auto gaussian(inq::math::vec3d rr){  // sigma = 1/sqrt(2)
+	auto gaussian(inq::math::vector3<double> rr){  // sigma = 1/sqrt(2)
 		return  pow(M_PI, -1.5)*exp(-norm(rr));
 	}
 
-	auto dgaussian(inq::math::vec3d rr){
-		inq::math::vec3d ff;
+	auto dgaussian(inq::math::vector3<double> rr){
+		inq::math::vector3<double> ff;
 		for(int idir = 0; idir < 3 ; idir++) ff[idir] = -2.0*rr[idir]*gaussian(rr);
 		return ff;
 	}
 
-	auto laplacian_gaussian(inq::math::vec3d rr){
+	auto laplacian_gaussian(inq::math::vector3<double> rr){
 		return 4.0*dot(rr, rr)*gaussian(rr) - 6.0*gaussian(rr);
 	}
 
@@ -212,7 +212,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	using namespace Catch::literals;
 	using namespace operations;
 	using namespace inq::utils;
-	using math::vec3d;
+	using math::vector3;
 
 	//UnitCell size
 	double lx = 9;
@@ -220,7 +220,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	double lz = 10;
 
 	ions::geometry geo;
-	ions::UnitCell cell(vec3d(lx, 0.0, 0.0), vec3d(0.0, ly, 0.0), vec3d(0.0, 0.0, lz));
+	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
 
 	SECTION("LDA"){
 		basis::real_space rslda(cell, input::basis::cutoff_energy(20.0));

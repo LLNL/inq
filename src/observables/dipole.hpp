@@ -33,9 +33,9 @@
 namespace inq {
 namespace observables {
 
-math::vec3d dipole(basis::field<basis::real_space, double> & density){
+math::vector3<double> dipole(basis::field<basis::real_space, double> & density){
 	
-	math::vec3d dip = {0.0, 0.0, 0.0};
+	math::vector3<double> dip = {0.0, 0.0, 0.0};
 	
 	//DATAOPERATIONS LOOP 3D
 	for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
@@ -56,11 +56,11 @@ math::vec3d dipole(basis::field<basis::real_space, double> & density){
 	
 }
 
-math::vec3d dipole(ions::geometry const & geo, const hamiltonian::atomic_potential & atomic_pot){
+math::vector3<double> dipole(ions::geometry const & geo, const hamiltonian::atomic_potential & atomic_pot){
 
 	using physics::constants::proton_charge;
 	
-	math::vec3d dip = {0.0, 0.0, 0.0};
+	math::vector3<double> dip = {0.0, 0.0, 0.0};
 
 	for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 		auto zval = atomic_pot.pseudo_for_element(geo.atoms()[iatom]).valence_charge();
@@ -70,7 +70,7 @@ math::vec3d dipole(ions::geometry const & geo, const hamiltonian::atomic_potenti
 	return dip;
 }
 
-math::vec3d dipole(systems::ions const & ions, systems::electrons & electrons){
+math::vector3<double> dipole(systems::ions const & ions, systems::electrons & electrons){
 	return dipole(ions.geo_, electrons.atomic_pot_) + dipole(electrons.density_);
 }
 
@@ -92,11 +92,11 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-	using math::vec3d;
+	using math::vector3;
 	
 	double ecut = 31.2;
 
-  ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
+  ions::UnitCell cell(vector3<double>(4.2, 0.0, 0.0), vector3<double>(0.0, 3.5, 0.0), vector3<double>(0.0, 0.0, 6.4));
 
   basis::real_space bas(cell, input::basis::cutoff_energy(ecut));
 

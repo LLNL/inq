@@ -51,13 +51,13 @@ namespace basis {
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();		
     }
 
-		GPU_FUNCTION math::vec3d rvector(const int ix, const int iy, const int iz) const {
+		GPU_FUNCTION math::vector3<double> rvector(const int ix, const int iy, const int iz) const {
 			auto ii = this->to_symmetric_range(ix, iy, iz);
-			return math::vec3d{ii[0]*rspacing()[0], ii[1]*rspacing()[1], ii[2]*rspacing()[2]};
+			return math::vector3<double>{ii[0]*rspacing()[0], ii[1]*rspacing()[1], ii[2]*rspacing()[2]};
 		}
 		
 		template <class int_array>
-		GPU_FUNCTION math::vec3d rvector(const int_array & indices) const {
+		GPU_FUNCTION math::vector3<double> rvector(const int_array & indices) const {
 			return rvector(indices[0], indices[1], indices[2]);
 		}
 		
@@ -123,13 +123,13 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 
   {
     
     SECTION("Cubic cell"){
 
-      ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
+      ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
       double ecut = 20.0;
       
@@ -149,7 +149,7 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
     SECTION("Parallelepipedic cell"){
 
-      ions::UnitCell cell(vec3d(77.7, 0.0, 0.0), vec3d(0.0, 14.14, 0.0), vec3d(0.0, 0.0, 23.25));
+      ions::UnitCell cell(vector3<double>(77.7, 0.0, 0.0), vector3<double>(0.0, 14.14, 0.0), vector3<double>(0.0, 0.0, 23.25));
 
       double ecut = 37.9423091;
       

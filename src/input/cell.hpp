@@ -35,11 +35,11 @@ class cell {
 public:
 
 	static auto cubic(double aa){
-		return cell(math::vec3d(aa, 0.0, 0.0), math::vec3d(0.0, aa, 0.0), math::vec3d(0.0, 0.0, aa));
+		return cell(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, aa, 0.0), math::vector3<double>(0.0, 0.0, aa));
 	}
 
 	static auto cubic(double aa, double bb, double cc){
-		return cell(math::vec3d(aa, 0.0, 0.0), math::vec3d(0.0, bb, 0.0), math::vec3d(0.0, 0.0, cc));
+		return cell(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, bb, 0.0), math::vector3<double>(0.0, 0.0, cc));
 	}
 
 	static auto periodic() {
@@ -75,7 +75,7 @@ public:
 	
 private:
 
-	cell(const math::vec3d & a0, const math::vec3d & a1, const math::vec3d & a2){
+	cell(const math::vector3<double> & a0, const math::vector3<double> & a1, const math::vector3<double> & a2){
 		lattice_vectors_[0] = a0;
 		lattice_vectors_[1] = a1;
 		lattice_vectors_[2] = a2;
@@ -84,7 +84,7 @@ private:
 	cell(){
 	}
 
-	std::array<std::optional<math::vec3d>, 3> lattice_vectors_;
+	std::array<std::optional<math::vector3<double>>, 3> lattice_vectors_;
 	std::optional<int> periodic_dimensions_;
 		
 };

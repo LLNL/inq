@@ -80,26 +80,23 @@ auto divergence(basis::field<basis::real_space, math::vector3<double>> const & f
 #include <math/vector3.hpp>
 
 		//Define test function 3
-		auto vectorial_complex_plane_wave (inq::math::vec3d k , inq::math::vec3d r ){
-				using inq::math::vec3d;
+		auto vectorial_complex_plane_wave (inq::math::vector3<double> k , inq::math::vector3<double> r ){
 				std::array<inq::complex, 3> f;
 				f[0] = 1.0*exp(inq::complex(0.0, 1.0)*dot(k, r));
 				f[1] = -2.3*exp(inq::complex(0.0, 1.0)*dot(k, r));
 				f[2] = 3.4*exp(inq::complex(0.0, 1.0)*dot(k, r));
 				return f;
-				}
+		}
 
 		//Define analytic form of the divergence of the test vectorial_complex_plane_wave
-		auto d_vectorial_complex_plane_wave (inq::math::vec3d k , inq::math::vec3d r) {
-				using inq::math::vec3d;
+		auto d_vectorial_complex_plane_wave (inq::math::vector3<double> k , inq::math::vector3<double> r) {
 				// Some random number 
 				auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0,1.0)*dot(k, r));
 				return factor*(1.0*k[0] - 2.3*k[1] + 3.4*k[2]);
 		}
 
 		//Define test function 4
-		auto vectorial_real_wave (inq::math::vec3d k , inq::math::vec3d r){
-				using inq::math::vec3d;
+		auto vectorial_real_wave (inq::math::vector3<double> k , inq::math::vector3<double> r){
 				std::array<double, 3> f;
 				// Some random number 
 				f[0] = 1.0*sin(dot(k, r));
@@ -109,8 +106,7 @@ auto divergence(basis::field<basis::real_space, math::vector3<double>> const & f
 		}
 
 		//Define analytic form of the divergence of the test function 4
-		auto d_vectorial_real_wave (inq::math::vec3d k , inq::math::vec3d r) {
-				using inq::math::vec3d;
+		auto d_vectorial_real_wave (inq::math::vector3<double> k , inq::math::vector3<double> r) {
 				return 1.0*k[0]*cos(dot(k, r)) + 2.5*k[1]*sin(dot(k, r)) + 3.3*k[2]*cos(dot(k, r));
 		}
 
@@ -120,14 +116,14 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	using namespace inq;
 	using namespace Catch::literals;
 	using namespace operations;
-	using math::vec3d;
+	using math::vector3;
 
 	//UnitCell size
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;
 
-	ions::UnitCell cell(vec3d(lx, 0.0, 0.0), vec3d(0.0, ly, 0.0), vec3d(0.0, 0.0, lz));
+	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
 
 	basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
 
@@ -135,7 +131,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		basis::field<basis::real_space, math::vector3<complex>> vectorial_complex_field(rs);
 	
 		//Define k-vector for test function
-		vec3d kvec = 2.0 * M_PI * vec3d(1.0/lx, 1.0/ly, 1.0/lz);
+		vector3<double> kvec = 2.0 * M_PI * vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field 
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){
@@ -166,7 +162,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 
 		//Define k-vector for test function
 
-		vec3d kvec = 2.0 * M_PI * vec3d(1.0/lx, 1.0/ly, 1.0/lz);
+		vector3<double> kvec = 2.0 * M_PI * vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 
 		for(int ix = 0; ix < rs.sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field 
 			for(int iy = 0; iy < rs.sizes()[1]; iy++){

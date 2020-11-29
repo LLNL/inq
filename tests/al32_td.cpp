@@ -48,7 +48,7 @@ int main(int argc, char ** argv){
 
 	std::vector<input::atom> geo = input::parse_xyz(config::path::unit_tests_data() + "al32.xyz");
 
-	geo.emplace_back("H" | math::vec3d(0.00000, 1.91325, 1.91325));
+	geo.emplace_back("H" | math::vector3<double>(0.00000, 1.91325, 1.91325));
 
 	systems::ions ions(input::cell::cubic(2*7.6524459), geo);
 	
@@ -78,7 +78,7 @@ int main(int argc, char ** argv){
 
 	auto dt = 0.055;
 
-	ions.velocities()[ions.geo().num_atoms() - 1] = math::vec3d(0.1, 0.0, 0.0);
+	ions.velocities()[ions.geo().num_atoms() - 1] = math::vector3<double>(0.1, 0.0, 0.0);
 
 	{
 		auto propagation = real_time::propagate(

@@ -20,7 +20,7 @@ public:
 
 	ions(const input::cell & arg_cell_input, const inq::ions::geometry & geo_arg = inq::ions::geometry()):
 		cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
-		geo_(geo_arg), velocities_(geo_arg.num_atoms(), math::vec3d{0., 0., 0.})
+		geo_(geo_arg), velocities_(geo_arg.num_atoms(), math::vector3<double>{0., 0., 0.})
 	{}
 
 	auto & geo() const {
@@ -38,7 +38,7 @@ public:
 
 	inq::ions::UnitCell cell_;
 	inq::ions::geometry geo_;
-	math::array<math::vec3d, 1> velocities_;
+	math::array<math::vector3<double>, 1> velocities_;
 };
 
 }
