@@ -63,7 +63,7 @@ namespace basis {
 			
 		}
 
-    GPU_FUNCTION const math::vec3d & rspacing() const{
+    GPU_FUNCTION const math::vector3<double> & rspacing() const{
       return rspacing_;
     }
 
@@ -71,7 +71,7 @@ namespace basis {
 			return length(rlength_);
 		}
 		
-    GPU_FUNCTION const math::vec3d & rlength() const{
+    GPU_FUNCTION const math::vector3<double> & rlength() const{
       return rlength_;
     }
 
@@ -166,11 +166,11 @@ namespace basis {
 		
     std::array<int, 3> ng_;
 
-    math::vec3d rspacing_;
-    math::vec3d gspacing_;
+    math::vector3<double> rspacing_;
+    math::vector3<double> gspacing_;
     
-    math::vec3d rlength_;
-    math::vec3d glength_;
+    math::vector3<double> rlength_;
+    math::vector3<double> glength_;
 
 		long npoints_;
 
@@ -193,9 +193,9 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 
-  ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 4.0, 0.0), vec3d(0.0, 0.0, 7.0));
+  ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	

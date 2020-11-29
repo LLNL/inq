@@ -36,7 +36,7 @@ class periodic_replicas{
 public:
 
 	template <class cell_array>
-	periodic_replicas(const cell_array & cell, const math::vec3d & position, const double range){
+	periodic_replicas(const cell_array & cell, const math::vector3<double> & position, const double range){
 
 		CALI_CXX_MARK_FUNCTION;
       
@@ -50,7 +50,7 @@ public:
 		for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
 			for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
 				for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
-					math::vec3d reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
+					math::vector3<double> reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
             
 					if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
 				}
@@ -69,7 +69,7 @@ public:
     
 private:
 
-	std::vector<math::vec3d> replicas_;
+	std::vector<math::vector3<double>> replicas_;
 
 };    
   
@@ -87,13 +87,13 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
   
   {
-    ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
+    ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
     SECTION("Cubic cell 0"){
-      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 9.5);
+      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 9.5);
       
       CHECK(rep.size() == 1);
       
@@ -104,7 +104,7 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
     }
     
     SECTION("Cubic cell 1"){
-      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 10.0);
+      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 10.0);
       
       CHECK(rep.size() == 7);
       
@@ -139,7 +139,7 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
     }
     
     SECTION("Cubic cell 2"){
-      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 11.0);
+      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 11.0);
       
       CHECK(rep.size() == 7);
       
@@ -174,13 +174,13 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
     }
 
     SECTION("Cubic cell 3"){
-      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 15.0);
+      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 15.0);
       
       CHECK(rep.size() == 19);
     }
 
     SECTION("Cubic cell 4"){
-      ions::periodic_replicas rep(cell, vec3d(5.0, 5.0, 5.0), 18.0);
+      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 18.0);
       
       CHECK(rep.size() == 27);
     }

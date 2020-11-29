@@ -41,14 +41,14 @@ int main(int argc, char ** argv){
 
 	double a = 10.18;
 	
-	geo.push_back( "Si" | a*math::vec3d(0.0,  0.0,  0.0 ));
-	geo.push_back( "Si" | a*math::vec3d(0.25, 0.25, 0.25));
-	geo.push_back( "Si" | a*math::vec3d(0.5,  0.5,  0.0 ));
-	geo.push_back( "Si" | a*math::vec3d(0.75, 0.75, 0.25));
-	geo.push_back( "Si" | a*math::vec3d(0.5,  0.0,  0.5 ));
-	geo.push_back( "Si" | a*math::vec3d(0.75, 0.25, 0.75));
-	geo.push_back( "Si" | a*math::vec3d(0.0,  0.5,  0.5 ));
-	geo.push_back( "Si" | a*math::vec3d(0.25, 0.75, 0.75));
+	geo.push_back( "Si" | a*math::vector3<double>(0.0,  0.0,  0.0 ));
+	geo.push_back( "Si" | a*math::vector3<double>(0.25, 0.25, 0.25));
+	geo.push_back( "Si" | a*math::vector3<double>(0.5,  0.5,  0.0 ));
+	geo.push_back( "Si" | a*math::vector3<double>(0.75, 0.75, 0.25));
+	geo.push_back( "Si" | a*math::vector3<double>(0.5,  0.0,  0.5 ));
+	geo.push_back( "Si" | a*math::vector3<double>(0.75, 0.25, 0.75));
+	geo.push_back( "Si" | a*math::vector3<double>(0.0,  0.5,  0.5 ));
+	geo.push_back( "Si" | a*math::vector3<double>(0.25, 0.75, 0.75));
 
 	systems::ions ions(input::cell::cubic(a), geo);
 	

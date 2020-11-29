@@ -60,7 +60,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
 					 });
 
-	gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vec3d *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
+	gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(gdensity.linear().data())), 3*gdensity.linear().size(), std::plus<>{});
 
   //the non-local potential term
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});

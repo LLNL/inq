@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 	CALI_CXX_MARK_FUNCTION;
 
 	using namespace inq::input;
-	using inq::math::vec3d;
+	using inq::math::vector3;
 	
 	inq::input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
@@ -48,9 +48,9 @@ int main(int argc, char ** argv){
 
 	std::vector<atom> geo;
 
-	geo.push_back( "O" | vec3d( 0.0,      -0.553586, 0.0));
-	geo.push_back( "H" | vec3d( 1.429937,  0.553586, 0.0));
-	geo.push_back( "H" | vec3d(-1.429937,  0.553586, 0.0));
+	geo.push_back( "O" | vector3<double>( 0.0,      -0.553586, 0.0));
+	geo.push_back( "H" | vector3<double>( 1.429937,  0.553586, 0.0));
+	geo.push_back( "H" | vector3<double>(-1.429937,  0.553586, 0.0));
 
 	inq::systems::ions ions(cell::cubic(12.0, 11.0, 10.0) | cell::finite(), geo);
 

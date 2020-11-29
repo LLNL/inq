@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 	
 	std::vector<inq::input::atom> geo;
 	
-	geo.push_back(local_h | inq::math::vec3d(0.0, 0.0, 0.0));
+	geo.push_back(local_h | inq::math::vector3<double>(0.0, 0.0, 0.0));
     
 	inq::systems::ions ions(inq::input::cell::cubic(20.0, 20.0, 20.0) | inq::input::cell::finite(), geo);
 

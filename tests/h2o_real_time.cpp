@@ -47,9 +47,9 @@ int main(int argc, char ** argv){
 
 	std::vector<input::atom> geo;
 
-	geo.push_back( "O" | math::vec3d( 0.0,      -0.553586, 0.0));
-	geo.push_back( "H" | math::vec3d( 1.429937,  0.553586, 0.0));
-  geo.push_back( "H" | math::vec3d(-1.429937,  0.553586, 0.0));
+	geo.push_back( "O" | math::vector3<double>( 0.0,      -0.553586, 0.0));
+	geo.push_back( "H" | math::vector3<double>( 1.429937,  0.553586, 0.0));
+  geo.push_back( "H" | math::vector3<double>(-1.429937,  0.553586, 0.0));
 
 	systems::ions ions(input::cell::cubic(12.0, 11.0, 10.0) | input::cell::finite(), geo);
 

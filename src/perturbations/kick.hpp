@@ -30,7 +30,7 @@
 namespace inq {
 namespace perturbations {
 
-	void kick(math::vec3d kick_field, basis::field_set<basis::real_space, complex> & phi){
+	void kick(math::vector3<double> kick_field, basis::field_set<basis::real_space, complex> & phi){
 
 		//DATAOPERATIONS LOOP 4D
 		for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
@@ -71,7 +71,7 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-	using math::vec3d;
+	using math::vector3;
 	
 	const int nvec = 12;
 
@@ -79,7 +79,7 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	double phi_absdif = 0.0;
 	double phi_dif = 0.0;
 
-	ions::UnitCell cell(vec3d(4.2, 0.0, 0.0), vec3d(0.0, 3.5, 0.0), vec3d(0.0, 0.0, 6.4));
+	ions::UnitCell cell(vector3<double>(4.2, 0.0, 0.0), vector3<double>(0.0, 3.5, 0.0), vector3<double>(0.0, 0.0, 6.4));
 
 	basis::real_space bas(cell, input::basis::cutoff_energy(ecut));
 

@@ -44,7 +44,7 @@ namespace hamiltonian {
   class projector {
 
   public:
-    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vec3d atom_position):
+    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),
@@ -216,7 +216,7 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 
@@ -226,12 +226,12 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   double ll = 10.0;
 
 	ions::geometry geo;
-  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
+  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector proj(rs, cell, ps, vec3d(0.0, 0.0, 0.0));
+	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0));
 
 	CHECK(proj.num_projectors() == 8);
 	

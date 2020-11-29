@@ -40,7 +40,7 @@ namespace inq {
 namespace ions {
 
   class UnitCell{
-	using vector_type = math::vec3d;
+	using vector_type = math::vector3<double>;
   private:
     vector_type a_[3];
     vector_type b_[3];
@@ -179,14 +179,14 @@ namespace ions {
 
 		template<class lattice_vectors_type>
 		UnitCell(const lattice_vectors_type & lattice_vectors, int periodic_dimensions = 3){
-			std::array<math::vec3d, 3> lvectors;
+			std::array<math::vector3<double>, 3> lvectors;
 			for(int ii = 0; ii < 3; ii++){
 				for(int jj = 0; jj < 3; jj++) lvectors[ii][jj] = lattice_vectors[ii][jj];
 			}
 			set(lvectors[0], lvectors[1], lvectors[2], periodic_dimensions);
 		}
 		
-    UnitCell(math::vec3d const& a0, math::vec3d const& a1, math::vec3d const& a2, int periodic_dimensions = 3){
+    UnitCell(math::vector3<double> const& a0, math::vector3<double> const& a1, math::vector3<double> const& a2, int periodic_dimensions = 3){
       set(a0, a1, a2, periodic_dimensions);
     }
 
@@ -366,7 +366,7 @@ namespace ions {
 		
 		////////////////////////////////////////////////////////////////////////////////
 		
-    math::vec3d cart_to_crystal(const math::vec3d& v) const {
+    math::vector3<double> cart_to_crystal(const math::vector3<double>& v) const {
 			vector_type vcryst;
 			const double twopiinv = 0.5/M_PI;
 			vcryst[0] = dot(b_[0], v)*twopiinv;
@@ -416,14 +416,14 @@ namespace ions {
 		
 		////////////////////////////////////////////////////////////////////////////////
 		
-    math::vec3d crystal_to_cart(const math::vec3d& v) const {
+    math::vector3<double> crystal_to_cart(const math::vector3<double>& v) const {
 			vector_type vcart = v[0]*a_[0] + v[1]*a_[1] + v[2]*a_[2];
 			return vcart;
 		}
 
 		////////////////////////////////////////////////////////////////////////////////
 		
-    bool in_ws(const math::vec3d& v) const {
+    bool in_ws(const math::vector3<double>& v) const {
 
 			bool in = true;
 			int i = 0;
@@ -444,7 +444,7 @@ namespace ions {
 
   ////////////////////////////////////////////////////////////////////////////////
 		
-    void fold_in_ws(math::vec3d& v) const {
+    void fold_in_ws(math::vector3<double>& v) const {
 
 			const double epsilon = 1.e-10;
 			bool done = false;
@@ -479,7 +479,7 @@ namespace ions {
 
   ////////////////////////////////////////////////////////////////////////////////
 		
-    bool in_bz(const math::vec3d& k) const {
+    bool in_bz(const math::vector3<double>& k) const {
 			
 			bool in = true;
 			int i = 0;
@@ -494,7 +494,7 @@ namespace ions {
 
 		////////////////////////////////////////////////////////////////////////////////
 			
-    void fold_in_bz(math::vec3d& k) const {
+    void fold_in_bz(math::vector3<double>& k) const {
 
 			const double epsilon = 1.e-10;
 			bool done = false;
@@ -537,7 +537,7 @@ namespace ions {
 			return in;
 		}
 		
-    bool contains(math::vec3d v) const {
+    bool contains(math::vector3<double> v) const {
 			const double fac = 0.5 / ( 2.0 * M_PI );
 			const double p0 = fac*dot(v, b_[0]);
 			const double p1 = fac*dot(v, b_[1]);
@@ -576,13 +576,13 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 
   {
     
     SECTION("Cubic cell"){
     
-      ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
+      ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
       CHECK(cell[0][0] == 10.0_a);
       CHECK(cell[0][1] ==  0.0_a);
@@ -676,26 +676,26 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat_inv(7) == 0.0_a);
       CHECK(cell.amat_inv(8) == 0.1_a);
 
-      CHECK(cell.contains(vec3d(5.0, 5.0, 5.0)));
-      CHECK(!cell.contains(vec3d(-5.0, 5.0, 5.0)));
-      CHECK(!cell.contains(vec3d(5.0, -5.0, 5.0)));
-      CHECK(!cell.contains(vec3d(5.0, 5.0, -5.0)));
+      CHECK(cell.contains(vector3<double>(5.0, 5.0, 5.0)));
+      CHECK(!cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
+      CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
+      CHECK(!cell.contains(vector3<double>(5.0, 5.0, -5.0)));
 
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[0] == 2.0_a);
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[1] == -5.0_a);
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[2] == 8.67_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[0] == 2.0_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[1] == -5.0_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[2] == 8.67_a);
 
-      CHECK(cell.cart_to_crystal(vec3d(6.66, -3.77, 27.2))[0] == 0.666_a);
-      CHECK(cell.cart_to_crystal(vec3d(6.66, -3.77, 27.2))[1] == -0.377_a);
-      CHECK(cell.cart_to_crystal(vec3d(6.66, -3.77, 27.2))[2] == 2.72_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[0] == 0.666_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[1] == -0.377_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[2] == 2.72_a);
     
     }
 
     SECTION("Parallelepipedic cell"){
 
-			ions::UnitCell cell(vec3d(10.0, 0.0, 0.0), vec3d(0.0, 10.0, 0.0), vec3d(0.0, 0.0, 10.0));
+			ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
    
-      cell.set(vec3d(28.62, 0.0, 0.0), vec3d(0.0, 90.14, 0.0), vec3d(0.0, 0.0, 12.31));
+      cell.set(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
 
 
       CHECK(cell.a(0)[0] == 28.62_a);
@@ -780,18 +780,18 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat_inv(7) == 0.0_a);
       CHECK(cell.amat_inv(8) == 0.0812347685_a);
 
-      CHECK(cell.contains(vec3d(5.0, 5.0, 5.0)));
-      CHECK(!cell.contains(vec3d(-5.0, 5.0, 5.0)));
-      CHECK(!cell.contains(vec3d(5.0, -5.0, 5.0)));
-      CHECK(!cell.contains(vec3d(5.0, 5.0, -5.0)));
+      CHECK(cell.contains(vector3<double>(5.0, 5.0, 5.0)));
+      CHECK(!cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
+      CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
+      CHECK(!cell.contains(vector3<double>(5.0, 5.0, -5.0)));
 
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[0] == 5.724_a);
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[1] == -45.07_a);
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[2] == 10.67277_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[0] == 5.724_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[1] == -45.07_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[2] == 10.67277_a);
 
-      CHECK(cell.cart_to_crystal(vec3d(6.66, -203.77, 927.2))[0] == 0.2327044025_a);
-      CHECK(cell.cart_to_crystal(vec3d(6.66, -203.77, 927.2))[1] == -2.2605946306_a);
-      CHECK(cell.cart_to_crystal(vec3d(6.66, -203.77, 927.2))[2] == 75.3208773355_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[0] == 0.2327044025_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[1] == -2.2605946306_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[2] == 75.3208773355_a);
           
     }
 
@@ -882,19 +882,19 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat_inv(7) == 4.2423219287_a); 
       CHECK(cell.amat_inv(8) == -4.8560911922_a);
 
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[0] == 0.121797_a);
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[1] == -1.161093_a);
-      CHECK(cell.crystal_to_cart(vec3d(0.2, -0.5, 0.867))[2] == -0.553419_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[0] == 0.121797_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[1] == -1.161093_a);
+      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[2] == -0.553419_a);
 
-      CHECK(cell.cart_to_crystal(vec3d(0.66, -23.77, 2.72))[0] == -39.3396165136_a);
-      CHECK(cell.cart_to_crystal(vec3d(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
-      CHECK(cell.cart_to_crystal(vec3d(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(0.66, -23.77, 2.72))[0] == -39.3396165136_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
+      CHECK(cell.cart_to_crystal(vector3<double>(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
 
-      CHECK(cell.contains(cell.crystal_to_cart(vec3d(0.5, 0.5, 0.5))));
+      CHECK(cell.contains(cell.crystal_to_cart(vector3<double>(0.5, 0.5, 0.5))));
       //This next one fails, this has to be checked.
-      //CHECK(!cell.contains(cell.crystal_to_cart(vec3d(1.5, 0.5, 0.5))));
-      CHECK(!cell.contains(cell.crystal_to_cart(vec3d(0.5, -0.1, 0.0))));
-      CHECK(!cell.contains(cell.crystal_to_cart(vec3d(0.5, 0.5, -1.0))));
+      //CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(1.5, 0.5, 0.5))));
+      CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(0.5, -0.1, 0.0))));
+      CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(0.5, 0.5, -1.0))));
       
     }
   }

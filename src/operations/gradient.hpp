@@ -132,23 +132,23 @@ namespace operations {
 #include <catch2/catch.hpp>
 #include <math/vector3.hpp>
 
-auto f_analytic (inq::math::vec3d kk, inq::math::vec3d rr){
+auto f_analytic (inq::math::vector3<double> kk, inq::math::vector3<double> rr){
 	return exp(inq::complex(0.0,1.0)*dot(kk, rr));
 }
 
-auto g_analytic (inq::math::vec3d kk , inq::math::vec3d rr) {
+auto g_analytic (inq::math::vector3<double> kk , inq::math::vector3<double> rr) {
 	inq::math::vector3<inq::complex> gg;
 	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0, 1.0)*dot(kk, rr));
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = factor*kk[idir] ;
 	return gg;
 }
 
-auto f_analytic2 (inq::math::vec3d kk, inq::math::vec3d rr){
+auto f_analytic2 (inq::math::vector3<double> kk, inq::math::vector3<double> rr){
 	return sin(dot(kk, rr));
 }
 
-auto g_analytic2 (inq::math::vec3d kk , inq::math::vec3d rr) {
-	inq::math::vec3d gg;
+auto g_analytic2 (inq::math::vector3<double> kk , inq::math::vector3<double> rr) {
+	inq::math::vector3<double> gg;
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(dot(kk, rr));
 	return gg;
 }
@@ -158,14 +158,14 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	using namespace inq;
 	using namespace Catch::literals;
 	using namespace operations;
-	using math::vec3d;
+	using math::vector3;
 
 	//UnitCell size
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;
 
- 	ions::UnitCell cell(vec3d(lx, 0.0, 0.0), vec3d(0.0, ly, 0.0), vec3d(0.0, 0.0, lz));
+ 	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
 
 	basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
 
@@ -173,7 +173,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		basis::field<basis::real_space, complex> f_test(rs);
 	
 		//Define k-vector for test function
-		vec3d kvec = 2.0 * M_PI * vec3d(1.0/lx, 1.0/ly, 1.0/lz);
+		vector3<double> kvec = 2.0 * M_PI * vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -203,7 +203,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		basis::field_set<basis::real_space, complex> f_test(rs, 13);
 	
 		//Define k-vector for test function
-		vec3d kvec = 2.0*M_PI*vec3d(1.0/lx, 1.0/ly, 1.0/lz);
+		vector3<double> kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -237,7 +237,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
 		basis::field<basis::real_space, double> f_test2(rs);
 	
-		vec3d kvec = 2.0 * M_PI * vec3d(1.0/lx, 1.0/ly, 1.0/lz);
+		vector3<double> kvec = 2.0 * M_PI * vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){

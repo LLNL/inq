@@ -43,7 +43,7 @@ namespace basis {
 		const static int dimension = 1;
 		
 		template <class basis>
-    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vec3d & center_point, const double radius):
+    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius):
 			volume_element_(parent_grid.volume_element()){
 
 			CALI_CXX_MARK_FUNCTION;
@@ -214,7 +214,7 @@ namespace basis {
 
 		math::array<std::array<int, 3>, 1> points_;
 		math::array<float, 1> distance_; //I don't think we need additional precision for this. XA
-		std::vector<math::vec3d> relative_pos_;
+		std::vector<math::vector3<double>> relative_pos_;
 		double volume_element_;
 		
   };
@@ -234,13 +234,13 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 	
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
  
   double ll = 10.0;
   
-  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
+  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
   
   double ecut = 20.0;
   

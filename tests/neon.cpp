@@ -40,7 +40,7 @@ int main(int argc, char ** argv){
 
 	std::vector<input::atom> geo;
 
-	geo.push_back("Ne" | input::species::nofilter() | math::vec3d(0.0, 0.0, 0.0));
+	geo.push_back("Ne" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
 		
 	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
 

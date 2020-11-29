@@ -59,22 +59,22 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, math::vec3d const & gspacing, math::vec3d const & glength):
+			point_operator(std::array<int, 3> const & ng, math::vector3<double> const & gspacing, math::vector3<double> const & glength):
 				ng_(ng),
 				gspacing_(gspacing),
 				glength_(glength){
 			}
 
-			GPU_FUNCTION math::vec3d gvector(const int ix, const int iy, const int iz) const {
+			GPU_FUNCTION math::vector3<double> gvector(const int ix, const int iy, const int iz) const {
 				
 				//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 				//grid from -pi/h to pi/h
 				
 				auto ii = to_symmetric_range(ng_, ix, iy, iz);
-				return math::vec3d{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
+				return math::vector3<double>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
 			}
 			
-			GPU_FUNCTION const math::vec3d & glength() const{
+			GPU_FUNCTION const math::vector3<double> & glength() const{
 				return glength_;
 			}
 			
@@ -86,7 +86,7 @@ namespace basis {
 				return g2 > radius()*radius();
 			}		
 			
-			GPU_FUNCTION const math::vec3d & gspacing() const{
+			GPU_FUNCTION const math::vector3<double> & gspacing() const{
 				return gspacing_;
 			}
 			
@@ -101,8 +101,8 @@ namespace basis {
 		private:
 			
 			std::array<int, 3> ng_;
-			math::vec3d gspacing_;
-			math::vec3d glength_;
+			math::vector3<double> gspacing_;
+			math::vector3<double> glength_;
 			
 		};
 

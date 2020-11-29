@@ -56,7 +56,7 @@ namespace hamiltonian {
 
 			basis::field_set<basis::real_space, complex> beta_rs(basis, nproj_);
 			
-			basis::spherical_grid sphere(beta_rs.basis(), cell, math::vec3d(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
+			basis::spherical_grid sphere(beta_rs.basis(), cell, math::vector3<double>(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
 			std::vector<double> grid(sphere.size()), proj(sphere.size());
 
 			beta_rs = 0.0;
@@ -87,7 +87,7 @@ namespace hamiltonian {
 			
     }
 		
-		void add_coord(math::vec3d const & coord){
+		void add_coord(math::vector3<double> const & coord){
 			coords_.push_back(coord);
 		}
 
@@ -156,7 +156,7 @@ namespace hamiltonian {
     int nproj_;
 		math::array<double, 1> kb_coeff_;
     basis::field_set<basis::fourier_space, complex> beta_;
-		std::vector<math::vec3d> coords_;
+		std::vector<math::vector3<double>> coords_;
 		
   };
   
@@ -172,14 +172,14 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vec3d;
+  using math::vector3;
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 	
   double ecut = 20.0;
   double ll = 10.0;
 
-  ions::UnitCell cell(vec3d(ll, 0.0, 0.0), vec3d(0.0, ll, 0.0), vec3d(0.0, 0.0, ll));
+  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());

@@ -242,8 +242,6 @@ namespace math {
 
 	};
 
-using vec3d = vector3<double>;
-
 }
 }
 
@@ -466,7 +464,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		
 	}
 
-	SECTION("Old vec3d tests"){
+	SECTION("Old vector3<double> tests"){
 	
 		math::vector3<double> x1{1.0, 2.0, 3.0};
 		math::vector3<double> x2{0.1, 0.2, 0.3};
