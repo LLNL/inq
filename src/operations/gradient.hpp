@@ -34,11 +34,20 @@ namespace operations {
 		basis::field<basis::fourier_space, math::vector3<complex>> grad(ff.basis());
 
 		auto point_op = ff.basis().point_op();
-		
-		for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
-					auto gvec = point_op.gvector(ix, iy, iz);
+		auto cubic_dist_0 = ff.basis().cubic_dist(0);
+		auto cubic_dist_1 = ff.basis().cubic_dist(1);
+		auto cubic_dist_2 = ff.basis().cubic_dist(2);
+			
+		for(int ix = 0; ix < ff.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < ff.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < ff.basis().local_sizes()[2]; iz++){
+
+					auto ixg = cubic_dist_0.local_to_global(ix);
+					auto iyg = cubic_dist_1.local_to_global(iy);
+					auto izg = cubic_dist_2.local_to_global(iz);
+
+					auto gvec = point_op.gvector(ixg, iyg, izg);
+					
 					for(int idir = 0; idir < 3; idir++){
 						grad.cubic()[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz];
 					}
@@ -54,11 +63,20 @@ namespace operations {
 		basis::field_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
 
 		auto point_op = ff.basis().point_op();
+		auto cubic_dist_0 = ff.basis().cubic_dist(0);
+		auto cubic_dist_1 = ff.basis().cubic_dist(1);
+		auto cubic_dist_2 = ff.basis().cubic_dist(2);
 		
-		for(int ix = 0; ix < ff.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < ff.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < ff.basis().sizes()[2]; iz++){
-					auto gvec = point_op.gvector(ix, iy, iz);
+		for(int ix = 0; ix < ff.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < ff.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < ff.basis().local_sizes()[2]; iz++){
+
+					auto ixg = cubic_dist_0.local_to_global(ix);
+					auto iyg = cubic_dist_1.local_to_global(iy);
+					auto izg = cubic_dist_2.local_to_global(iz);
+
+					auto gvec = point_op.gvector(ixg, iyg, izg);
+					
 					for(int ist = 0; ist < ff.local_set_size(); ist++){
 						for(int idir = 0; idir < 3; idir++){
 							grad.cubic()[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz][ist];
@@ -157,9 +175,9 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		//Define k-vector for test function
 		vec3d kvec = 2.0 * M_PI * vec3d(1.0/lx, 1.0/ly, 1.0/lz);
 
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
 					f_test.cubic()[ix][iy][iz] = f_analytic(kvec, vec);
 				}
@@ -169,9 +187,9 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		auto g_test = gradient(f_test);
 
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
 					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][idir] - g_analytic (kvec, vec)[idir]);
 				}
@@ -187,9 +205,9 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		//Define k-vector for test function
 		vec3d kvec = 2.0*M_PI*vec3d(1.0/lx, 1.0/ly, 1.0/lz);
 
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){					
 						f_test.cubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
@@ -201,9 +219,9 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		auto g_test = gradient(f_test);
 
 		double diff = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){
 						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][ist][idir] - double(ist)*g_analytic(kvec, vec)[idir]);
@@ -221,9 +239,9 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	
 		vec3d kvec = 2.0 * M_PI * vec3d(1.0/lx, 1.0/ly, 1.0/lz);
 
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
 					f_test2.cubic()[ix][iy][iz] = f_analytic2(kvec, vec);
 				}
@@ -232,11 +250,11 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
 		auto g_test2 = gradient(f_test2);
 		double diff2 = 0.0;
-		for(int ix = 0; ix < rs.sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.sizes()[2]; iz++){
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) diff2 += fabs(g_test2.cubic()[ix][iy][iz][idir] - g_analytic2 (kvec, vec)[idir]);
+					for(int idir = 0; idir < 3 ; idir++) diff2 += fabs(g_test2.cubic()[ix][iy][iz][idir] - g_analytic2(kvec, vec)[idir]);
 				}
 			}
 		}
