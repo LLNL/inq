@@ -160,16 +160,20 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	using namespace operations;
 	using math::vector3;
 
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+	auto set_comm = cart_comm.axis(0);
+	auto basis_comm = cart_comm.axis(1);	
+
 	//UnitCell size
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;
-
  	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
 
-	basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
-
 	SECTION("Plane-wave -- field"){ 
+
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0), cart_comm);
+	
 		basis::field<basis::real_space, complex> f_test(rs);
 	
 		//Define k-vector for test function
@@ -195,12 +199,17 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				}
 			}
 		}
-		
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+				
 		CHECK( diff < 1.0e-10 ); 
 	}
 
-	SECTION("Plane-wave -- field_set"){ 
-		basis::field_set<basis::real_space, complex> f_test(rs, 13);
+	SECTION("Plane-wave -- field_set"){
+
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0), basis_comm);
+		
+		basis::field_set<basis::real_space, complex> f_test(rs, 13, cart_comm);
 	
 		//Define k-vector for test function
 		vector3<double> kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
@@ -229,12 +238,16 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				}
 			}
 		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
 		CHECK( diff < 1.0e-8 ); 
 	}
 		
 	SECTION("Real function"){
 
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0), cart_comm);
+		
 		basis::field<basis::real_space, double> f_test2(rs);
 	
 		vector3<double> kvec = 2.0 * M_PI * vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
@@ -249,17 +262,19 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		}
 
 		auto g_test2 = gradient(f_test2);
-		double diff2 = 0.0;
+		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) diff2 += fabs(g_test2.cubic()[ix][iy][iz][idir] - g_analytic2(kvec, vec)[idir]);
+					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.cubic()[ix][iy][iz][idir] - g_analytic2(kvec, vec)[idir]);
 				}
 			}
 		}
-		
-		CHECK( diff2 < 1.0e-10 ); 
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+				
+		CHECK( diff < 1.0e-10 ); 
 	}
 }
 
