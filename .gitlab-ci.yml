@@ -244,7 +244,7 @@ clang-ompi-fast-parallel:
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
 
-gcc-mpich:
+gcc-mpich-serial:
     stage: build
     script:
       - time apt update -qq
@@ -259,15 +259,30 @@ gcc-mpich:
       - time make
       - time make -j4 install
       - cd src; ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest -V --timeout 360; cd ..      
       - time tests/h2o_ground_state
       - time tests/h2o_real_time
       - time tests/silicon  
+
+gcc-mpich-parallel:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev bzip2 python2 valgrind libmpich-dev mpich
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - c++ --version
+      - mpichversion
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
+      - CXX=mpic++ ../configure --prefix=$HOME
+      - time make
+      - time make -j4 install
+      - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest -V --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest -V --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest -V --timeout 360; cd ..      
       - time mpirun -np 2 tests/silicon
       - time mpirun -np 3 tests/silicon
-#      - time mpirun -np 5 tests/silicon      
+      - time mpirun -np 5 tests/silicon
 
 gcc-mpich-valgrind:
     stage: build
