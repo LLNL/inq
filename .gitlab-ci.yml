@@ -58,7 +58,7 @@ build-nolapack:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-gcc-openmpi:
+gcc-ompi:
     stage: build
     script:
       - time apt update -qq
@@ -84,7 +84,7 @@ gcc-openmpi:
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
 
-gcc-openmpi-fast:
+gcc-ompi-fast:
     stage: build
     script:
       - time apt update -qq
@@ -110,7 +110,7 @@ gcc-openmpi-fast:
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
 
-clang-openmpi:
+clang-ompi:
     stage: build
     script:
       - time apt update -qq
@@ -162,7 +162,7 @@ clang-openmpi:
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
       
-clang-openmpi-fast-serial:
+clang-ompi-fast-serial:
     stage: build
     script:
       - time apt update -qq
@@ -183,7 +183,7 @@ clang-openmpi-fast-serial:
       - time tests/h2o_real_time
       - time tests/silicon
 
-clang-openmpi-fast-parallel:
+clang-ompi-fast-parallel:
     stage: build
     script:
       - time apt update -qq
@@ -317,7 +317,7 @@ gcc-mpich-valgrind:
 #      - time tests/h2o_real_time
 
 
-gcc-openmpi-runner:
+gcc-ompi-runner:
     stage: build
     tags:
       - intel_compiler
@@ -339,7 +339,7 @@ gcc-openmpi-runner:
       - time tests/h2o_real_time
       - time tests/silicon
 
-intel-openmpi:
+intel-ompi:
     stage: build
     tags:
       - intel_compiler
@@ -361,7 +361,7 @@ intel-openmpi:
       - time ../tests/h2o_real_time
       - time ../tests/silicon
 
-nvcc-openmpi:
+nvcc-ompi:
     stage: build
     tags:
       - cuda_gpu
