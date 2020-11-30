@@ -58,7 +58,7 @@ build-nolapack:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-gcc:
+gcc-openmpi:
     stage: build
     script:
       - time apt update -qq
@@ -84,7 +84,7 @@ gcc:
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
 
-gcc-fast:
+gcc-openmpi-fast:
     stage: build
     script:
       - time apt update -qq
@@ -110,7 +110,7 @@ gcc-fast:
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
 
-clang:
+clang-openmpi:
     stage: build
     script:
       - time apt update -qq
@@ -162,7 +162,7 @@ clang:
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
       
-clang-fast:
+clang-openmpi-fast:
     stage: build
     script:
       - time apt update -qq
@@ -301,7 +301,7 @@ gcc-mpich-valgrind:
 #      - time tests/h2o_real_time
 
 
-gcc-runner:
+gcc-openmpi-runner:
     stage: build
     tags:
       - intel_compiler
@@ -323,7 +323,7 @@ gcc-runner:
       - time tests/h2o_real_time
       - time tests/silicon
 
-intel:
+intel-openmpi:
     stage: build
     tags:
       - intel_compiler
@@ -345,33 +345,7 @@ intel:
       - time ../tests/h2o_real_time
       - time ../tests/silicon
 
-#intel-old:
-#    stage: build
-#    tags:
-#      - intel_compiler
-#    script:
-#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-#      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-#      - mkdir build
-#      - cd build
-#      - export OMPI_CC=icc
-#      - export OMPI_CXX=icpc
-#      - export CXXFLAGS="-O3 -Wall -Wextra -Warray-bounds -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror " #-diag-error:3846
-#      - icpc --version
-#      - time ../configure --prefix=$HOME  || cat config.log
-#      - time make -j $(($(nproc)/4))
-#      - time make -j8 install
-#      - cd src; ctest -V --timeout 360; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 360; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 360; cd ..
-#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 360; cd ..
-#      - time tests/hydrogen_local
-#      - time tests/neon
-#      - time tests/h2o_ground_state
-#      - time tests/h2o_real_time
-#      - time tests/silicon
-
-nvcc:
+nvcc-openmpi:
     stage: build
     tags:
       - cuda_gpu
