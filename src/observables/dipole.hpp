@@ -41,13 +41,7 @@ math::vector3<double> dipole(basis::field<basis::real_space, double> & density){
 	for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
 		for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
 			for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
-				
-				auto ixg = density.basis().cubic_dist(0).local_to_global(ix);
-				auto iyg = density.basis().cubic_dist(1).local_to_global(iy);
-				auto izg = density.basis().cubic_dist(2).local_to_global(iz);
-				
-				dip += density.cubic()[ix][iy][iz]*density.basis().rvector(ixg, iyg, izg);
-				
+				dip += density.cubic()[ix][iy][iz]*density.basis().rvector(ix, iy, iz);
 			}
 		}
 	}
@@ -107,12 +101,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 			for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
 					
-					auto ixg = density.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = density.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = density.basis().cubic_dist(2).local_to_global(iz);
-					
-					auto rr = density.basis().rvector(ixg, iyg, izg);
-
+					auto rr = density.basis().rvector(ix, iy, iz);
 					density.cubic()[ix][iy][iz] = rr[0]*exp(-norm(rr));
 						
 				}
@@ -132,12 +121,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 			for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
 					
-					auto ixg = density.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = density.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = density.basis().cubic_dist(2).local_to_global(iz);
-					
-					auto rr = density.basis().rvector(ixg, iyg, izg);
-
+					auto rr = density.basis().rvector(ix, iy, iz);
 					density.cubic()[ix][iy][iz] = (rr[1] + 2.0*rr[2])*exp(-norm(rr));
 						
 				}
@@ -157,12 +141,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 			for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
 					
-					auto ixg = density.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = density.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = density.basis().cubic_dist(2).local_to_global(iz);
-					
-					auto rr = density.basis().rvector(ixg, iyg, izg);
-
+					auto rr = density.basis().rvector(ix, iy, iz);
 					density.cubic()[ix][iy][iz] = (sin(rr[1]) + rr[0]*rr[2])*exp(-norm(rr));
 						
 				}

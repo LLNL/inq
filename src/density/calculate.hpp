@@ -106,15 +106,15 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(bas.part().local_to_global(ii))*(aa.set_part().local_to_global(jj) + 1);
+				aa.matrix()[ii][jj] = sqrt(bas.part().local_to_global(ii).value())*(aa.set_part().local_to_global(jj).value() + 1);
 			}
 		}
 
-		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj) + 1);
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
 
 		auto dd = density::calculate(occ, aa);
 		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
 	}
 	
@@ -126,15 +126,15 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
-				aa.matrix()[ii][jj] = sqrt(bas.part().local_to_global(ii))*(aa.set_part().local_to_global(jj) + 1)*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii)));
+				aa.matrix()[ii][jj] = sqrt(bas.part().local_to_global(ii).value())*(aa.set_part().local_to_global(jj).value() + 1)*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));
 			}
 		}
 
-		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj) + 1);
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
 
 		auto dd = density::calculate(occ, aa);
 		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii)*nvec*(nvec + 1)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
 	}
 	

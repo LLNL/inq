@@ -295,14 +295,12 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & 
 	
 	basis::field<basis::fourier_space, math::vector3<complex>> fphi(fourier_basis);
 
-	auto sz = sizes(phi.cubic());
-	
-	math::array<complex, 4> tmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});
-	math::array<complex, 4> ftmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});	
+	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3});
+	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3});
 
-	for(long ix = 0; ix < std::get<0>(sz); ix++){
-		for(long iy = 0; iy < std::get<1>(sz); iy++){
-			for(long iz = 0; iz < std::get<2>(sz); iz++){
+	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
+		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
+			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
 				for(int idir = 0; idir < 3; idir++){
 					tmp[ix][iy][iz][idir] = phi.cubic()[ix][iy][iz][idir];
 				}
@@ -312,9 +310,9 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & 
 	
 	to_fourier(real_basis, fourier_basis, tmp, ftmp);
 
-	for(long ix = 0; ix < std::get<0>(sz); ix++){
-		for(long iy = 0; iy < std::get<1>(sz); iy++){
-			for(long iz = 0; iz < std::get<2>(sz); iz++){
+	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
+		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 				for(int idir = 0; idir < 3; idir++){
 					fphi.cubic()[ix][iy][iz][idir] = ftmp[ix][iy][iz][idir];
 				}
@@ -337,14 +335,12 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
-	auto sz = sizes(phi.cubic());
+	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3});
+	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3});
 	
-	math::array<complex, 4> tmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});
-	math::array<complex, 4> ftmp({std::get<0>(sz), std::get<1>(sz), std::get<2>(sz), 3});	
-
-	for(long ix = 0; ix < std::get<0>(sz); ix++){
-		for(long iy = 0; iy < std::get<1>(sz); iy++){
-			for(long iz = 0; iz < std::get<2>(sz); iz++){
+	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
+		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 				for(int idir = 0; idir < 3; idir++){
 					ftmp[ix][iy][iz][idir] = fphi.cubic()[ix][iy][iz][idir];
 				}
@@ -352,12 +348,12 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 		}
 	}
 
-	//	to_real(fourier_basis, real_basis, fphi.cubic().template reinterpret_array_cast<complex>(), phi.cubic().template reinterpret_array_cast<complex>());
+	//	to_real(fourier_basis, real_basis, fphi.cubic().template reinterpret_array_cast<complex>(3), phi.cubic().template reinterpret_array_cast<complex>(3));
 	to_real(fourier_basis, real_basis, ftmp, tmp);
 	
-	for(long ix = 0; ix < std::get<0>(sz); ix++){
-		for(long iy = 0; iy < std::get<1>(sz); iy++){
-			for(long iz = 0; iz < std::get<2>(sz); iz++){
+	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
+		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
+			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
 				for(int idir = 0; idir < 3; idir++){
 					phi.cubic()[ix][iy][iz][idir] = tmp[ix][iy][iz][idir];
 				}

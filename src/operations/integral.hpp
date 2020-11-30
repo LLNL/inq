@@ -92,7 +92,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		CHECK(operations::integral(aa) == 1.0_a);
 
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	aa.linear()[ii] = aa.basis().part().local_to_global(ii);
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	aa.linear()[ii] = aa.basis().part().local_to_global(ii).value();
 
 		CHECK(operations::integral(aa) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
 
@@ -109,7 +109,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) {
 			auto iig = aa.basis().part().local_to_global(ii);
-			aa.linear()[ii] = complex(iig, -3.0*iig);
+			aa.linear()[ii] = complex(iig.value(), -3.0*iig.value());
 		}
 
 		CHECK(real(operations::integral(aa)) == Approx(0.5*N*(N - 1.0)*bas.volume_element()));
@@ -129,8 +129,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
 			auto iig = aa.basis().part().local_to_global(ii);
-			aa.linear()[ii] = pow(iig + 1, 2);
-			bb.linear()[ii] = 1.0/(iig + 1);
+			aa.linear()[ii] = pow(iig.value() + 1, 2);
+			bb.linear()[ii] = 1.0/(iig.value() + 1);
 		}
 		
 		CHECK(operations::integral_product(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
@@ -150,8 +150,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
 			auto iig = aa.basis().part().local_to_global(ii);
-			aa.linear()[ii] = pow(iig + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*iig));
-			bb.linear()[ii] = 1.0/(iig + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*iig));
+			aa.linear()[ii] = pow(iig.value() + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*iig.value()));
+			bb.linear()[ii] = 1.0/(iig.value() + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*iig.value()));
 		}
 		
 		CHECK(real(operations::integral_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)*bas.volume_element()));
@@ -173,8 +173,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		double sign = 1.0;
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
 			auto iig = aa.basis().part().local_to_global(ii);
-			aa.linear()[ii] = sign*2.0*(iig + 1);
-			bb.linear()[ii] = sign*1.0*(iig + 1);
+			aa.linear()[ii] = sign*2.0*(iig.value() + 1);
+			bb.linear()[ii] = sign*1.0*(iig.value() + 1);
 			sign *= -1.0;
 		}
 		
@@ -195,8 +195,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		double sign = 1.0;
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
 			auto iig = aa.basis().part().local_to_global(ii);
-			aa.linear()[ii] = sign*2.0*(iig + 1)*exp(complex(0.0, 0.123*iig));
-			bb.linear()[ii] = sign*1.0*(iig + 1)*exp(complex(0.0, 0.123*iig));
+			aa.linear()[ii] = sign*2.0*(iig.value() + 1)*exp(complex(0.0, 0.123*iig.value()));
+			bb.linear()[ii] = sign*1.0*(iig.value() + 1)*exp(complex(0.0, 0.123*iig.value()));
 			sign *= -1.0;
 		}
 		

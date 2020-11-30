@@ -68,7 +68,7 @@ TEST_CASE("function density::normalize", "[density::normalize]") {
 		
 		basis::field<basis::trivial, double> aa(bas);
 
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.linear()[ii] = sqrt(bas.part().local_to_global(ii));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value());
 
 		density::normalize(aa, 33.3);
 
@@ -81,7 +81,7 @@ TEST_CASE("function density::normalize", "[density::normalize]") {
 		basis::field<basis::trivial, complex> aa(bas);
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
-			aa.linear()[ii] = sqrt(bas.part().local_to_global(ii))*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii)));
+			aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value())*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));
 		}
 
 		density::normalize(aa, 19.2354);

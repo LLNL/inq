@@ -323,7 +323,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 						auto istg = phi.set_part().local_to_global(ist);
 						
 						double xx = rs.rvector(ixg, iyg, izg)[0];
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg*kk*xx), sin(istg*kk*xx));
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg.value()*kk*xx), sin(istg.value()*kk*xx));
 					}
 				}
 			}
@@ -337,7 +337,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						auto istg = phi.set_part().local_to_global(ist);
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg*kk*istg*kk*phi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg.value()*kk*istg.value()*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -413,7 +413,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 						auto istg = phi.set_part().local_to_global(ist);
 						
 						double xx = rs.rvector(ixg, iyg, izg)[0];
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg*kk*xx), sin(istg*kk*xx));
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg.value()*kk*xx), sin(istg.value()*kk*xx));
 					}
 				}
 			}
@@ -429,7 +429,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 						auto istg = phi.set_part().local_to_global(ist);
 
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg*kk*istg*kk*phi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg.value()*kk*istg.value()*kk*phi.cubic()[ix][iy][iz][ist]);
 					}
 				}
 			}

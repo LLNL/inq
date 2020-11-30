@@ -120,7 +120,7 @@ namespace basis {
 			return os;
 		}
 
-		auto & cubic_dist(int dim) const {
+		constexpr auto & cubic_dist(int dim) const {
 			return cubic_dist_[dim];
 		}
 
@@ -130,6 +130,10 @@ namespace basis {
 				if(ii[idir] >= (nr[idir] + 1)/2) ii[idir] -= nr[idir];
 			}
 			return ii;
+		}
+
+		GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, utils::global_index ix, utils::global_index iy, utils::global_index iz) {
+			return to_symmetric_range(nr, ix.value(), iy.value(), iz.value());
 		}
 
 		GPU_FUNCTION static auto from_symmetric_range(std::array<int, 3> const & nr, math::vector3<int> ii) {
@@ -142,7 +146,11 @@ namespace basis {
 		GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
 			return to_symmetric_range(nr_, ix, iy, iz);
 		}
-		
+
+		GPU_FUNCTION auto to_symmetric_range(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+			return to_symmetric_range(nr_, ix.value(), iy.value(), iz.value());
+		}
+			
 		GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
 			return from_symmetric_range(nr_, ii);
 		}
