@@ -47,20 +47,10 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic()),
-						cubic_dist_0 = ff.basis().cubic_dist(0),
-						cubic_dist_1 = ff.basis().cubic_dist(1),
-						cubic_dist_2 = ff.basis().cubic_dist(2)
-						]
+						ffcub = begin(ff.cubic())]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-
-						 auto ixg = cubic_dist_0.local_to_global(ix);
-						 auto iyg = cubic_dist_1.local_to_global(iy);
-						 auto izg = cubic_dist_2.local_to_global(iz);
-						 
-						 double lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
+						 double lapl = -0.5*(-point_op.g2(ix, iy, iz));
 						 laplffcub[ix][iy][iz][ist] += lapl*ffcub[ix][iy][iz][ist];
-						 
 					 });
 	
 }
@@ -74,20 +64,9 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & 
 	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(ff.set_part().local_size(), ff.basis().local_sizes()[2], ff.basis().local_sizes()[1], ff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
-						ffcub = begin(ff.cubic()),
-						cubic_dist_0 = ff.basis().cubic_dist(0),
-						cubic_dist_1 = ff.basis().cubic_dist(1),
-						cubic_dist_2 = ff.basis().cubic_dist(2)
-						]
-					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-
-						 auto ixg = cubic_dist_0.local_to_global(ix);
-						 auto iyg = cubic_dist_1.local_to_global(iy);
-						 auto izg = cubic_dist_2.local_to_global(iz);
-						 
-						 double lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
+						ffcub = begin(ff.cubic())] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+						 double lapl = -0.5*(-point_op.g2(ix, iy, iz));
 						 ffcub[ix][iy][iz][ist] = ffcub[ix][iy][iz][ist]*lapl;
-						 
 					 });
 }
 
@@ -103,20 +82,10 @@ basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic()),
-						cubic_dist_0 = ff.basis().cubic_dist(0),
-						cubic_dist_1 = ff.basis().cubic_dist(1),
-						cubic_dist_2 = ff.basis().cubic_dist(2)
-						]
+						ffcub = begin(ff.cubic())]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-
-						 auto ixg = cubic_dist_0.local_to_global(ix);
-						 auto iyg = cubic_dist_1.local_to_global(iy);
-						 auto izg = cubic_dist_2.local_to_global(iz);
-						 
-						 double lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
+						 double lapl = -0.5*(-point_op.g2(ix, iy, iz));
 						 laplffcub[ix][iy][iz][ist] = lapl*ffcub[ix][iy][iz][ist];
-						 
 					 });
 
 	return laplff;

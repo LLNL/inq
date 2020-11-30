@@ -80,17 +80,9 @@ public:
 							 [expc = begin(expect),
 								nrm = begin(norm),
 								phcub = begin(phi.cubic()),
-								point_op = phi.basis().point_op(),
-								cubic_dist_0 = phi.basis().cubic_dist(0),
-								cubic_dist_1 = phi.basis().cubic_dist(1),
-								cubic_dist_2 = phi.basis().cubic_dist(2)] GPU_LAMBDA
+								point_op = phi.basis().point_op()] GPU_LAMBDA
 							 (auto ist, auto iz, auto iy, auto ix){
-
-								 auto ixg = cubic_dist_0.local_to_global(ix);
-								 auto iyg = cubic_dist_1.local_to_global(iy);
-								 auto izg = cubic_dist_2.local_to_global(iz);
-							 
-								 auto lapl = -0.5*(-point_op.g2(ixg, iyg, izg));
+								 auto lapl = -0.5*(-point_op.g2(ix, iy, iz));
 								 phcub[ix][iy][iz][ist] = k_function(lapl*real(nrm[ist])/real(expc[ist]))*phcub[ix][iy][iz][ist];
 							 });
 		}

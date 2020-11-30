@@ -51,20 +51,11 @@ public:
 
 		//DATAOPERATIONS GPU::RUN 4D
 		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-						 [point_op = fourier_basis.point_op(),
-							cubic_dist_0 = potential_fs.basis().cubic_dist(0),
-							cubic_dist_1 = potential_fs.basis().cubic_dist(1),
-							cubic_dist_2 = potential_fs.basis().cubic_dist(2),
-							pfs = begin(potential_fs.cubic()),
-							scal] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), scal] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 
-							 auto ixg = cubic_dist_0.local_to_global(ix);
-							 auto iyg = cubic_dist_1.local_to_global(iy);
-							 auto izg = cubic_dist_2.local_to_global(iz);
+							 auto g2 = point_op.g2(ix, iy, iz);
 							 
-							 auto g2 = point_op.g2(ixg, iyg, izg);
-							 
-							 if(point_op.g_is_zero(ixg, iyg, izg)){
+							 if(point_op.g_is_zero(ix, iy, iz)){
 								 pfs[ix][iy][iz] = complex(0.0, 0.0);
 							 } else {
 								 pfs[ix][iy][iz] = pfs[ix][iy][iz]*(-scal/g2);

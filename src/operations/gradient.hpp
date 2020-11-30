@@ -34,19 +34,12 @@ namespace operations {
 		basis::field<basis::fourier_space, math::vector3<complex>> grad(ff.basis());
 
 		auto point_op = ff.basis().point_op();
-		auto cubic_dist_0 = ff.basis().cubic_dist(0);
-		auto cubic_dist_1 = ff.basis().cubic_dist(1);
-		auto cubic_dist_2 = ff.basis().cubic_dist(2);
 			
 		for(int ix = 0; ix < ff.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < ff.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < ff.basis().local_sizes()[2]; iz++){
 
-					auto ixg = cubic_dist_0.local_to_global(ix);
-					auto iyg = cubic_dist_1.local_to_global(iy);
-					auto izg = cubic_dist_2.local_to_global(iz);
-
-					auto gvec = point_op.gvector(ixg, iyg, izg);
+					auto gvec = point_op.gvector(ix, iy, iz);
 					
 					for(int idir = 0; idir < 3; idir++){
 						grad.cubic()[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz];
@@ -63,19 +56,12 @@ namespace operations {
 		basis::field_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
 
 		auto point_op = ff.basis().point_op();
-		auto cubic_dist_0 = ff.basis().cubic_dist(0);
-		auto cubic_dist_1 = ff.basis().cubic_dist(1);
-		auto cubic_dist_2 = ff.basis().cubic_dist(2);
 		
 		for(int ix = 0; ix < ff.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < ff.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < ff.basis().local_sizes()[2]; iz++){
 
-					auto ixg = cubic_dist_0.local_to_global(ix);
-					auto iyg = cubic_dist_1.local_to_global(iy);
-					auto izg = cubic_dist_2.local_to_global(iz);
-
-					auto gvec = point_op.gvector(ixg, iyg, izg);
+					auto gvec = point_op.gvector(ix, iy, iz);
 					
 					for(int ist = 0; ist < ff.local_set_size(); ist++){
 						for(int idir = 0; idir < 3; idir++){
