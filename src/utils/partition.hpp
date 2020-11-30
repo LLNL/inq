@@ -21,11 +21,16 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <cassert>
-#include <array>
+
+#include <utils/global_index.hpp>
 
 #include <mpi3/communicator.hpp>
 #include <mpi3/environment.hpp>
+
+#include <boost/serialization/strong_typedef.hpp>
+
+#include <cassert>
+#include <array>
 
 namespace inq{
 namespace utils {
@@ -89,11 +94,11 @@ public:
 	}
 	
 	constexpr auto local_to_global(long local_i) const {
-		return start_ + local_i;
+		return global_index(start_ + local_i);
 	}
 	
-	constexpr auto global_to_local(long global_i) const {
-		return global_i - start_;
+	constexpr auto global_to_local(global_index global_i) const {
+		return global_i.value() - start_;
 	}
 	
 	auto comm_size() const {

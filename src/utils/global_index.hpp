@@ -42,7 +42,7 @@ class global_index {
 		value_(val){
 		}
 
-	auto & value() const {
+	constexpr auto & value() const {
 		return value_;
 	}
 	

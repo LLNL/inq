@@ -143,8 +143,8 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = 20.0*(iig + 1)*sqrt(jjg);
-				bb.matrix()[ii][jj] = -0.05/(iig + 1)*sqrt(jjg);
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value());
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value());
 			}
 		}
 
@@ -160,7 +160,7 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = sqrt(iig)*sqrt(jjg);
+				aa.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value());
 			}
 		}
 
@@ -184,8 +184,8 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = 20.0*(iig + 1)*sqrt(jjg)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig));
-				bb.matrix()[ii][jj] = -0.05/(iig + 1)*sqrt(jjg)*exp(complex(0.0, M_PI/4 + M_PI/7*iig));
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
 			}
 		}
 
@@ -206,7 +206,7 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = sqrt(iig)*sqrt(jjg)*exp(complex(0.0, M_PI/65.0*iig));
+				aa.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
 			}
 		}
 

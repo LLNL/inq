@@ -89,10 +89,10 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 			auto jjg = aa.set_part().local_to_global(jj);
 			for(int ii = 0; ii < bas.part().local_size(); ii++){
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = 1.0 + 0.765*iig*jjg;
-				bb.matrix()[ii][jj] = iig;
+				aa.matrix()[ii][jj] = 1.0 + 0.765*iig.value()*jjg.value();
+				bb.matrix()[ii][jj] = iig.value();
 			}
-			factor[jj] = 2.0*0.765*jjg;
+			factor[jj] = 2.0*0.765*jjg.value();
 		}
 
 		operations::shift(-0.5, factor, bb, aa);
@@ -113,17 +113,17 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 			auto jjg = aa.set_part().local_to_global(jj);
 			for(int ii = 0; ii < bas.part().local_size(); ii++){
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = complex(iig, 1.0 + 0.765*iig*jjg);
-				bb.matrix()[ii][jj] = iig;
+				aa.matrix()[ii][jj] = complex(iig.value(), 1.0 + 0.765*iig.value()*jjg.value());
+				bb.matrix()[ii][jj] = iig.value();
 			}
-			factor[jj] = complex(0.0, 2.0*0.765*jjg);
+			factor[jj] = complex(0.0, 2.0*0.765*jjg.value());
 		}
 
 		operations::shift(-0.5, factor, bb, aa);
 				
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			auto iig = bas.part().local_to_global(ii);
-			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(real(aa.matrix()[ii][jj]) == Approx(iig));
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(real(aa.matrix()[ii][jj]) == Approx(iig.value()));
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 		}
 	}	
@@ -139,10 +139,10 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 			auto jjg = aa.set_part().local_to_global(jj);
 			for(int ii = 0; ii < bas.part().local_size(); ii++){
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = complex(iig, 1.0 + 0.765*iig*jjg);
-				bb.matrix()[ii][jj] = complex(0.0, iig);
+				aa.matrix()[ii][jj] = complex(iig.value(), 1.0 + 0.765*iig.value()*jjg.value());
+				bb.matrix()[ii][jj] = complex(0.0, iig.value());
 			}
-			factor[jj] = 2.0*0.765*jjg;
+			factor[jj] = 2.0*0.765*jjg.value();
 		}
 
 		operations::shift(-0.5, factor, bb, aa);
@@ -150,7 +150,7 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
 				auto iig = bas.part().local_to_global(ii);
-				CHECK(real(aa.matrix()[ii][jj]) == Approx(iig));
+				CHECK(real(aa.matrix()[ii][jj]) == Approx(iig.value()));
 				CHECK(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 			}
 		}

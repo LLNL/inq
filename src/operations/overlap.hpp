@@ -129,8 +129,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = 20.0*(iig + 1)*sqrt(jjg);
-				bb.matrix()[ii][jj] = -0.05/(iig + 1)*sqrt(jjg);
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value());
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value());
 			}
 		}
 
@@ -146,7 +146,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = sqrt(iig)*sqrt(jjg);
+				aa.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value());
 			}
 		}
 
@@ -175,8 +175,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = 20.0*(iig + 1)*sqrt(jjg)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig));
-				bb.matrix()[ii][jj] = -0.05/(iig + 1)*sqrt(jjg)*exp(complex(0.0, M_PI/4 + M_PI/7*iig));
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
 			}
 		}
 
@@ -198,7 +198,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = sqrt(iig)*sqrt(jjg)*exp(complex(0.0, M_PI/65.0*iig));
+				aa.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
 			}
 		}
 
@@ -231,8 +231,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			
 		for(int ii = 0; ii < bas.part().local_size(); ii++)	{
 			auto iig = bas.part().local_to_global(ii);
-			aa.linear()[ii] = pow(iig + 1, 2);
-			bb.linear()[ii] = 1.0/(iig + 1);
+			aa.linear()[ii] = pow(iig.value() + 1, 2);
+			bb.linear()[ii] = 1.0/(iig.value() + 1);
 		}
 			
 		CHECK(operations::overlap_single(aa, bb) == Approx(0.5*npoint*(npoint + 1.0)*bas.volume_element()));
@@ -252,8 +252,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++)	{
 			auto iig = bas.part().local_to_global(ii);
-			aa.linear()[ii] = pow(iig + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(iig + 1)));
-			bb.linear()[ii] = 1.0/(iig + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(iig + 1)));
+			aa.linear()[ii] = pow(iig.value() + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(iig.value() + 1)));
+			bb.linear()[ii] = 1.0/(iig.value() + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(iig.value() + 1)));
 		}
 
 		CHECK(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
@@ -269,7 +269,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			auto iig = bas.part().local_to_global(ii);
-			aa.matrix()[ii][0] = 20.0*sqrt(iig + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig));
+			aa.matrix()[ii][0] = 20.0*sqrt(iig.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
 		}
 			
 		auto cc = operations::overlap(aa);

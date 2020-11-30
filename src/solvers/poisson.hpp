@@ -190,7 +190,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 						density.cubic()[ix][iy][iz] = 0.0;
 
-						if(ixg == 0 and iyg == 0 and izg == 0) density.cubic()[ix][iy][iz] = -1.0;
+						if(ixg.value() == 0 and iyg.value() == 0 and izg.value() == 0) density.cubic()[ix][iy][iz] = -1.0;
 					}
 				}
 			}

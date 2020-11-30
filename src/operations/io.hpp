@@ -197,7 +197,7 @@ TEST_CASE("function operations::io", "[operations::io]") {
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			auto jjg = aa.set_part().local_to_global(jj);
 			auto iig = bas.part().local_to_global(ii);
-			aa.matrix()[ii][jj] = 20.0*(iig + 1)*sqrt(jjg);
+			aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value());
 		}
 	}
 

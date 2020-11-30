@@ -59,13 +59,15 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, math::vector3<double> const & gspacing, math::vector3<double> const & glength):
+			point_operator(std::array<int, 3> const & ng, math::vector3<double> const & gspacing, math::vector3<double> const & glength, std::array<inq::utils::partition, 3> const & dist):
 				ng_(ng),
 				gspacing_(gspacing),
-				glength_(glength){
+				glength_(glength),
+				cubic_dist_(dist)
+			{
 			}
 
-			GPU_FUNCTION math::vector3<double> gvector(const int ix, const int iy, const int iz) const {
+			GPU_FUNCTION math::vector3<double> gvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
 				
 				//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 				//grid from -pi/h to pi/h
@@ -73,7 +75,15 @@ namespace basis {
 				auto ii = to_symmetric_range(ng_, ix, iy, iz);
 				return math::vector3<double>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
 			}
-			
+
+			GPU_FUNCTION math::vector3<double> gvector(int ix, int iy, int iz) const {
+				auto ixg = cubic_dist_[0].local_to_global(ix);
+				auto iyg = cubic_dist_[1].local_to_global(iy);
+				auto izg = cubic_dist_[2].local_to_global(iz);
+				
+				return gvector(ixg, iyg, izg);
+			}
+		
 			GPU_FUNCTION const math::vector3<double> & glength() const{
 				return glength_;
 			}
@@ -89,12 +99,21 @@ namespace basis {
 			GPU_FUNCTION const math::vector3<double> & gspacing() const{
 				return gspacing_;
 			}
-			
-			GPU_FUNCTION bool g_is_zero(const int ix, const int iy, const int iz) const {
-				return (ix == 0 and iy == 0 and iz == 0);
+
+			GPU_FUNCTION bool g_is_zero(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+				return (ix.value() == 0 and iy.value() == 0 and iz.value() == 0);
+			}
+
+			GPU_FUNCTION bool g_is_zero(int ix, int iy, int iz) const {
+				auto ixg = cubic_dist_[0].local_to_global(ix);
+				auto iyg = cubic_dist_[1].local_to_global(iy);
+				auto izg = cubic_dist_[2].local_to_global(iz);
+				
+				return g_is_zero(ixg, iyg, izg);
 			}
 			
-			GPU_FUNCTION double g2(const int ix, const int iy, const int iz) const {
+			template <typename IndexType>
+			GPU_FUNCTION double g2(IndexType ix, IndexType iy, IndexType iz) const {
 				return norm(gvector(ix, iy, iz));
 			}
 			
@@ -103,11 +122,12 @@ namespace basis {
 			std::array<int, 3> ng_;
 			math::vector3<double> gspacing_;
 			math::vector3<double> glength_;
+			std::array<inq::utils::partition, 3> cubic_dist_;
 			
 		};
 
 		auto point_op() const {
-			return point_operator(ng_, gspacing_, glength_);
+			return point_operator(ng_, gspacing_, glength_, cubic_dist_);
 		}
 		
 	private:

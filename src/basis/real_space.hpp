@@ -51,17 +51,26 @@ namespace basis {
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();		
     }
 
-		GPU_FUNCTION math::vector3<double> rvector(const int ix, const int iy, const int iz) const {
+		GPU_FUNCTION math::vector3<double> rvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
 			auto ii = this->to_symmetric_range(ix, iy, iz);
 			return math::vector3<double>{ii[0]*rspacing()[0], ii[1]*rspacing()[1], ii[2]*rspacing()[2]};
+		}
+
+		GPU_FUNCTION math::vector3<double> rvector(int ix, int iy, int iz) const {
+			auto ixg = cubic_dist(0).local_to_global(ix);
+			auto iyg = cubic_dist(1).local_to_global(iy);
+			auto izg = cubic_dist(2).local_to_global(iz);
+
+			return rvector(ixg, iyg, izg);
 		}
 		
 		template <class int_array>
 		GPU_FUNCTION math::vector3<double> rvector(const int_array & indices) const {
 			return rvector(indices[0], indices[1], indices[2]);
 		}
-		
-		double r2(const int ix, const int iy, const int iz) const {
+
+		template <typename IndexType>
+		double r2(IndexType ix, IndexType iy, IndexType iz) const {
 			return norm(rvector(ix, iy, iz));
 		}
 
