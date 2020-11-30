@@ -43,7 +43,6 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 
 	CALI_CXX_MARK_FUNCTION;
 		
-	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
@@ -61,7 +60,6 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & 
 
 	CALI_CXX_MARK_FUNCTION;
 		
-	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(ff.set_part().local_size(), ff.basis().local_sizes()[2], ff.basis().local_sizes()[1], ff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						ffcub = begin(ff.cubic())] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
@@ -78,7 +76,6 @@ basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis
 
 	CALI_CXX_MARK_FUNCTION;
 		
-	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),

@@ -30,24 +30,19 @@
 namespace inq {
 namespace operations {
 
-auto divergence(basis::field<basis::fourier_space, math::vector3<complex>> const & ff){ // Divergence function for the field-set type defined in the Fourier space which return a filed 'diverg'
+basis::field<basis::fourier_space, complex> divergence(basis::field<basis::fourier_space, math::vector3<complex>> const & ff){ // Divergence function for the field-set type defined in the Fourier space which return a filed 'diverg'
 	
 	basis::field<basis::fourier_space, complex> diverg(ff.basis());
 
-	auto point_op = ff.basis().point_op();
-	
-	for(int ix = 0; ix < ff.basis().local_sizes()[0]; ix++){
-		for(int iy = 0; iy < ff.basis().local_sizes()[1]; iy++){
-			for(int iz = 0; iz < ff.basis().local_sizes()[2]; iz++){
+	gpu::run(diverg.basis().local_sizes()[2], diverg.basis().local_sizes()[1], diverg.basis().local_sizes()[0],
+					 [point_op = ff.basis().point_op(), divergcub = begin(diverg.cubic()), ffcub = begin(ff.cubic())]
+					 GPU_LAMBDA (auto iz, auto iy, auto ix){
 
-				auto gvec = point_op.gvector(ix, iy, iz);
-				complex div = 0.0;
-
-				for(int idir = 0; idir < 3 ; idir++) div += complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz][idir]; 
-				diverg.cubic()[ix][iy][iz] = div;
-			}
-		}
-	}
+						 auto gvec = point_op.gvector(ix, iy, iz);
+						 complex div = 0.0;
+						 for(int idir = 0; idir < 3 ; idir++) div += complex(0.0, 1.0)*gvec[idir]*ffcub[ix][iy][iz][idir]; 
+						 divergcub[ix][iy][iz] = div;
+					 });
 	
 	return diverg;
 }
@@ -79,37 +74,31 @@ auto divergence(basis::field<basis::real_space, math::vector3<double>> const & f
 #include <catch2/catch.hpp>
 #include <math/vector3.hpp>
 
-		//Define test function 3
-		auto vectorial_complex_plane_wave (inq::math::vector3<double> k , inq::math::vector3<double> r ){
-				std::array<inq::complex, 3> f;
-				f[0] = 1.0*exp(inq::complex(0.0, 1.0)*dot(k, r));
-				f[1] = -2.3*exp(inq::complex(0.0, 1.0)*dot(k, r));
-				f[2] = 3.4*exp(inq::complex(0.0, 1.0)*dot(k, r));
-				return f;
-		}
+auto vectorial_complex_plane_wave (inq::math::vector3<double> k , inq::math::vector3<double> r ){
+	std::array<inq::complex, 3> f;
+	f[0] = 1.0*exp(inq::complex(0.0, 1.0)*dot(k, r));
+	f[1] = -2.3*exp(inq::complex(0.0, 1.0)*dot(k, r));
+	f[2] = 3.4*exp(inq::complex(0.0, 1.0)*dot(k, r));
+	return f;
+}
 
-		//Define analytic form of the divergence of the test vectorial_complex_plane_wave
-		auto d_vectorial_complex_plane_wave (inq::math::vector3<double> k , inq::math::vector3<double> r) {
-				// Some random number 
-				auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0,1.0)*dot(k, r));
-				return factor*(1.0*k[0] - 2.3*k[1] + 3.4*k[2]);
-		}
+auto d_vectorial_complex_plane_wave (inq::math::vector3<double> k , inq::math::vector3<double> r) {
+	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0,1.0)*dot(k, r));
+	return factor*(1.0*k[0] - 2.3*k[1] + 3.4*k[2]);
+}
 
-		//Define test function 4
-		auto vectorial_real_wave (inq::math::vector3<double> k , inq::math::vector3<double> r){
-				std::array<double, 3> f;
-				// Some random number 
-				f[0] = 1.0*sin(dot(k, r));
-				f[1] = -2.5*cos(dot(k, r));
-				f[2] = 3.3*sin(dot(k,r));
-				return f;
-		}
+auto vectorial_real_wave (inq::math::vector3<double> k , inq::math::vector3<double> r){
+	std::array<double, 3> f;
 
-		//Define analytic form of the divergence of the test function 4
-		auto d_vectorial_real_wave (inq::math::vector3<double> k , inq::math::vector3<double> r) {
-				return 1.0*k[0]*cos(dot(k, r)) + 2.5*k[1]*sin(dot(k, r)) + 3.3*k[2]*cos(dot(k, r));
-		}
+	f[0] = 1.0*sin(dot(k, r));
+	f[1] = -2.5*cos(dot(k, r));
+	f[2] = 3.3*sin(dot(k,r));
+	return f;
+}
 
+auto d_vectorial_real_wave (inq::math::vector3<double> k , inq::math::vector3<double> r) {
+	return 1.0*k[0]*cos(dot(k, r)) + 2.5*k[1]*sin(dot(k, r)) + 3.3*k[2]*cos(dot(k, r));
+}
 
 TEST_CASE("function operations::divergence", "[operations::divergence]") {
 

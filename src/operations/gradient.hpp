@@ -30,47 +30,33 @@
 namespace inq {
 namespace operations {
 
-	auto gradient(basis::field<basis::fourier_space, complex> const & ff){
-		basis::field<basis::fourier_space, math::vector3<complex>> grad(ff.basis());
+	basis::field<basis::fourier_space, math::vector3<complex>> gradient(basis::field<basis::fourier_space, complex> const & ff){
+		basis::field<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
 
-		auto point_op = ff.basis().point_op();
-			
-		for(int ix = 0; ix < ff.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < ff.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < ff.basis().local_sizes()[2]; iz++){
+		gpu::run(grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
+						 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic())]
+						 GPU_LAMBDA (auto iz, auto iy, auto ix){
 
-					auto gvec = point_op.gvector(ix, iy, iz);
-					
-					for(int idir = 0; idir < 3; idir++){
-						grad.cubic()[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz];
-					}
-				}
-			}
-		}
+							 auto gvec = point_op.gvector(ix, iy, iz);
+							 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ffcub[ix][iy][iz];
+						 });
+
 		return grad;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	auto gradient(basis::field_set<basis::fourier_space, complex> const & ff){
+	basis::field_set<basis::fourier_space, math::vector3<complex>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
 		basis::field_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
 
-		auto point_op = ff.basis().point_op();
-		
-		for(int ix = 0; ix < ff.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < ff.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < ff.basis().local_sizes()[2]; iz++){
+		gpu::run(grad.set_part().local_size(), grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
+						 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic())]
+						 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+							 
+							 auto gvec = point_op.gvector(ix, iy, iz);
+							 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*gvec[idir]*ffcub[ix][iy][iz][ist];
+						 });
 
-					auto gvec = point_op.gvector(ix, iy, iz);
-					
-					for(int ist = 0; ist < ff.local_set_size(); ist++){
-						for(int idir = 0; idir < 3; idir++){
-							grad.cubic()[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*gvec[idir]*ff.cubic()[ix][iy][iz][ist];
-						}
-					}
-				}
-			}
-		}
 		return grad;
 	}
 
