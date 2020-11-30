@@ -63,8 +63,7 @@ namespace hamiltonian {
 			return func_;
 		}
 
-	private:
-
+		//this function has to be public because of cuda limitations
 		template <class density_type, class exc_type, class vxc_type>
 		void ggafunctional(long size, density_type const & density, exc_type & exc, vxc_type & vxc) const { 
 
@@ -73,38 +72,30 @@ namespace hamiltonian {
 			auto grad_real = operations::gradient(density);
 			basis::field<basis::real_space, double> sigma(vxc.basis());
 
-			for(int ix = 0; ix < vxc.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < vxc.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < vxc.basis().local_sizes()[2]; iz++){
-						sigma.cubic()[ix][iy][iz] = 0.0;
-						for(int idir = 0; idir < 3 ; idir++) sigma.cubic()[ix][iy][iz] += grad_real.cubic()[ix][iy][iz][idir]*grad_real.cubic()[ix][iy][iz][idir];
-					}
-				}
-			}
+			gpu::run(vxc.basis().local_size(),
+							 [sig = begin(sigma.linear()), grad = begin(grad_real.linear())] GPU_LAMBDA (auto ip){
+								 sig[ip] = norm(grad[ip]);
+							 });
 
 			basis::field<basis::real_space, double> vsigma(vxc.basis());
-			auto param = func_;	
-			xc_gga_exc_vxc(&param, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
+			
+			xc_gga_exc_vxc(&func_, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
 
 			basis::field<basis::real_space, math::vector3<double>> vxc_extra(vxc.basis());
 
-			for(int ix = 0; ix < vxc.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < vxc.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < vxc.basis().local_sizes()[2]; iz++){
-						for(int idir = 0; idir < 3 ; idir++) vxc_extra.cubic()[ix][iy][iz][idir] = vsigma.cubic()[ix][iy][iz]*grad_real.cubic()[ix][iy][iz][idir];
-					}
-				}
-			}
+			gpu::run(vxc.basis().local_size(),
+							 [vex = begin(vxc_extra.linear()), vsig = begin(vsigma.linear()), grad = begin(grad_real.linear())] GPU_LAMBDA (auto ip){
+								 vex[ip][0] = vsig[ip]*grad[ip][0];
+								 vex[ip][1] = vsig[ip]*grad[ip][1];
+								 vex[ip][2] = vsig[ip]*grad[ip][2];
+							 });
 
 			auto divvxcextra = operations::divergence(vxc_extra);
-			for(int ix = 0; ix < vxc.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < vxc.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < vxc.basis().local_sizes()[2]; iz++){
-						vxc.cubic()[ix][iy][iz] -= 2.0*divvxcextra.cubic()[ix][iy][iz];
-					}
-				}
-			}
-			
+
+			gpu::run(vxc.basis().local_size(),
+							 [vv = begin(vxc.linear()), div = begin(divvxcextra.linear())] GPU_LAMBDA (auto ip){
+								 vv[ip] -= 2.0*div[ip];
+							 });
 		}
 
 	private:
@@ -116,8 +107,7 @@ namespace hamiltonian {
 			
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:{
-					auto param_lda = func_;
-					xc_lda_exc_vxc(&param_lda, size, density.data(), exc.data(), vxc.data());
+					xc_lda_exc_vxc(&func_, size, density.data(), exc.data(), vxc.data());
 					break;
 				}
 				case XC_FAMILY_GGA:{
