@@ -112,8 +112,11 @@ namespace basis {
 				return g_is_zero(ixg, iyg, izg);
 			}
 			
-			template <typename IndexType>
-			GPU_FUNCTION double g2(IndexType ix, IndexType iy, IndexType iz) const {
+			GPU_FUNCTION double g2(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+				return norm(gvector(ix, iy, iz));
+			}
+			
+			GPU_FUNCTION double g2(int ix, int iy, int iz) const {
 				return norm(gvector(ix, iy, iz));
 			}
 			
