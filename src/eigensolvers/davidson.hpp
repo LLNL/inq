@@ -99,7 +99,7 @@ namespace inq {
       	//Residuals
       	nleft = nvec - nevf; //update nleft
       	for(int i=0; i<nleft ; i++){
-      	  wphi.matrix().rotated()[i] = blas::axpy(lk[i],Xk.rotated()[i],(blas::scal(-1.0,Tk.rotated()[i])));   //wphi=l*psi+(-1.0)H*psi
+      	  wphi.matrix().rotated()[i] = blas::axpy(lk[i],Xk.rotated()[i], blas::scal(-1.0,Tk.rotated()[i]));   //wphi=l*psi+(-1.0)H*psi
       	}
 	
       	//Deflate here
@@ -133,7 +133,7 @@ namespace inq {
         field_set_type ophi(phi.basis(), nevf+nbase+notconv, phi.full_comm());
       	ophi.matrix()({0,nbasis},{0,nevf+nbase+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nbase+notconv});
 	//operations::qrfactorize(ophi);
-	operations::orthogonalize(ophi);
+	operations::orthogonalize(ophi, /* nocheck = */ true);
 	
 	auto qrfnrm = operations::overlap_diagonal(ophi,ophi);
 
@@ -161,7 +161,7 @@ namespace inq {
       	  field_set_type qphi(phi.basis(), nevf+nleft+notconv, phi.full_comm());
       	  qphi.matrix()({0,nbasis},{0,nevf+nleft+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nleft+notconv});
       	  //operations::qrfactorize(qphi);
-	  operations::orthogonalize(qphi);
+	  operations::orthogonalize(qphi, /* nocheck = */ true);
 	  auto qrfnrm = operations::overlap_diagonal(qphi,qphi);
       	  double droptol=1.0e-4;
       	  int nkeep = 0;
@@ -230,6 +230,7 @@ TEST_CASE("eigensolvers::davidson", "[eigensolvers::davidson]") {
     for(int ip = 0; ip < npoint; ip++){
       for(int ivec = 0; ivec < nvec; ivec++){
         phi.matrix()[ip][ivec] = exp(complex(0.0, (ip*ivec)*0.1));
+	//phi.matrix()[ip][ivec] = complex(exp(-abs(ivec-ip)*4.0),0.0);
       }
     }
 
