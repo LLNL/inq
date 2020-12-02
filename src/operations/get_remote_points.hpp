@@ -37,6 +37,8 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 		long point;
 		long position;
 	};
+
+	std::cout << "ACAA 1" << std::endl;
 	
 	auto const num_proc = source.basis().comm().size();
 
@@ -49,9 +51,11 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 		points_needed[src_proc].push_back(point_position{point_list[ilist], ilist});
 	}
 
+	std::cout << "ACAA 2" << std::endl;
+	
 	// find out how many points each processor requests from us
-	std::vector<int> list_sizes_needed(num_proc);
-	std::vector<int> list_sizes_requested(num_proc);	
+	math::array<int, 1> list_sizes_needed(num_proc);
+	math::array<int, 1> list_sizes_requested(num_proc);	
 	
 	int total_needed = 0;
 	for(int iproc = 0; iproc < num_proc; iproc++){
@@ -60,13 +64,21 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 	}
 
 	assert(total_needed == point_list.size());
-	
+
 	MPI_Alltoall(list_sizes_needed.data(), 1, MPI_INT, list_sizes_requested.data(), 1, MPI_INT, source.basis().comm().get());
 
+	std::cout << "NEEDED " << source.basis().comm().rank() << '\t' << list_sizes_needed[0] << std::endl;
+	std::cout << "REQUES " << source.basis().comm().rank() << '\t' << list_sizes_requested[0] << std::endl;	
+	
+	//	std::cout << "NEEDED " << source.basis().comm().rank() << '\t' << list_sizes_needed[0] << '\t' << list_sizes_needed[1] << std::endl;
+	//	std::cout << "REQUES " << source.basis().comm().rank() << '\t' << list_sizes_requested[0] << '\t' << list_sizes_requested[1] << std::endl;	
+	
+	std::cout << "ACAA 3" << std::endl;
+	
 	// get the list of points each processor requests from us and send a list of the points we need
-	std::vector<int> list_needed(total_needed);
-	std::vector<int> list_displs_needed(num_proc);
-	std::vector<int> list_displs_requested(num_proc);
+	math::array<int, 1> list_needed(total_needed);
+	math::array<int, 1> list_displs_needed(num_proc);
+	math::array<int, 1> list_displs_requested(num_proc);
 	
 	int total_requested = 0;
 	for(int iproc = 0; iproc < num_proc; iproc++){
@@ -84,17 +96,23 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 		for(long ip = 0; ip < list_sizes_needed[iproc]; ip++) list_needed[list_displs_needed[iproc] + ip] = points_needed[iproc][ip].point;
 	}
 
-	std::vector<int> list_points_requested(total_requested);
+	std::cout << source.basis().comm().rank() << '\t' << total_requested << '\t' << total_needed << std::endl;
+	
+	math::array<int, 1> list_points_requested(total_requested);
 	
 	MPI_Alltoallv(list_needed.data(), list_sizes_needed.data(), list_displs_needed.data(), MPI_INT, list_points_requested.data(), list_sizes_requested.data(), list_displs_requested.data(), MPI_INT, source.basis().comm().get());
 
+	std::cout << "ACAA 4" << std::endl;
+
+	std::cout << list_points_requested[0] << std::endl;
+	
 	// send the value of the request points
 	math::array<ElementType, 1> value_points_requested(total_requested);
 	math::array<ElementType, 1> value_points_needed(total_needed);
 	
 	for(long ip = 0; ip < total_requested; ip++){
 		assert(source.basis().part().contains(ip));
-		auto iplocal = source.basis().part().global_to_local(utils::global_index(ip));
+		auto iplocal = source.basis().part().global_to_local(utils::global_index(list_points_requested[ip]));
 		assert(iplocal < source.basis().size());
 		value_points_requested[ip] = source.linear()[iplocal];
 	}
@@ -104,6 +122,8 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 	MPI_Alltoallv(value_points_requested.data(), list_sizes_requested.data(), list_displs_requested.data(), mpi_type,
 								value_points_needed.data(), list_sizes_needed.data(), list_displs_needed.data(), mpi_type, source.basis().comm().get());
 
+	std::cout << "ACAA 5" << std::endl;
+	
 	// Finally copy the values to the return array in the proper order
 	math::array<ElementType, 1> remote_points(point_list.size());
 
@@ -149,7 +169,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 
   basis::field<basis::real_space, complex> test_field(rs);
 
-  for(long ip = 0; ip < rs.size(); ip++){
+  for(long ip = 0; ip < rs.local_size(); ip++){
     auto ipg = rs.part().local_to_global(ip);
     test_field.linear()[ip] = complex(ipg.value(), 0.1*ipg.value());
   }
@@ -158,6 +178,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 	
 	long const npoints = drand48()*rs.size();
 
+	std::cout << "SIZE    " << rs.size()<< std::endl;	
 	std::cout << "NPOINTS " << npoints << std::endl;
 	
 	math::array<long, 1> list(npoints);
@@ -167,11 +188,13 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 		assert(list[ip] < rs.size());
 	}
 
+	std::cout << "LIST " << list[0] << std::endl;
+	
 	auto remote_points = operations::get_remote_points(test_field, list);
 
 	for(long ip = 0; ip < npoints; ip++){
 		CHECK(double(list[ip]) == real(remote_points[ip]));
-		CHECK(double(list[ip]) == imag(0.1*remote_points[ip]));
+		CHECK(0.1*double(list[ip]) == imag(remote_points[ip]));
 	}
 
 	
