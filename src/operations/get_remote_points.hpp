@@ -25,6 +25,8 @@
 
 #include <mpi3/communicator.hpp>
 
+#include <cstdlib> //drand48
+
 namespace inq {
 namespace operations {
 
@@ -168,7 +170,6 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 
 	srand48(500 + 34895783*cart_comm.rank());
 	
-	//	long const npoints = 1;//drand48()*rs.size();
 	long const npoints = drand48()*rs.size();
 
 	math::array<long, 1> list(npoints);
