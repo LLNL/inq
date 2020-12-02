@@ -162,6 +162,10 @@ namespace basis {
 		auto symmetric_range_end(int idir) const {
 			return nr_[idir]/2 + nr_[idir]%2;
 		}
+
+		auto linear_index(int const ix, int const iy, const int iz) const {
+			return (ix*nr_[1] + iy)*nr_[2] + iz;
+		}
 		
 	protected:
 
