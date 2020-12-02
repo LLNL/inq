@@ -51,7 +51,7 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 		points_needed[src_proc].push_back(point_position{point_list[ilist], ilist});
 	}
 
-	std::cout << "ACAA 2" << std::endl;
+	std::cout << "ACAA 2" << source.basis().comm().rank() << std::endl;
 	
 	// find out how many points each processor requests from us
 	math::array<int, 1> list_sizes_needed(num_proc);
@@ -67,13 +67,13 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 
 	MPI_Alltoall(list_sizes_needed.data(), 1, MPI_INT, list_sizes_requested.data(), 1, MPI_INT, source.basis().comm().get());
 
-	std::cout << "NEEDED " << source.basis().comm().rank() << '\t' << list_sizes_needed[0] << std::endl;
-	std::cout << "REQUES " << source.basis().comm().rank() << '\t' << list_sizes_requested[0] << std::endl;	
+	//	std::cout << "NEEDED " << source.basis().comm().rank() << '\t' << list_sizes_needed[0] << std::endl;
+	//	std::cout << "REQUES " << source.basis().comm().rank() << '\t' << list_sizes_requested[0] << std::endl;	
 	
 	//	std::cout << "NEEDED " << source.basis().comm().rank() << '\t' << list_sizes_needed[0] << '\t' << list_sizes_needed[1] << std::endl;
 	//	std::cout << "REQUES " << source.basis().comm().rank() << '\t' << list_sizes_requested[0] << '\t' << list_sizes_requested[1] << std::endl;	
 	
-	std::cout << "ACAA 3" << std::endl;
+	std::cout << "ACAA 3 " << source.basis().comm().rank() << std::endl;
 	
 	// get the list of points each processor requests from us and send a list of the points we need
 	math::array<int, 1> list_needed(total_needed);
@@ -81,48 +81,73 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 	math::array<int, 1> list_displs_requested(num_proc);
 	
 	int total_requested = 0;
+
+	source.basis().comm().barrier();
+	
 	for(int iproc = 0; iproc < num_proc; iproc++){
-		
+
+		//		std::cout << "ACAA 3.1 " << source.basis().comm().rank() << '\t' << iproc << std::endl;
+			
 		total_requested += list_sizes_requested[iproc];
 		
 		if(iproc > 0){
 			list_displs_needed[iproc] = list_displs_needed[iproc - 1] + list_sizes_needed[iproc - 1];
-			list_displs_needed[iproc] = list_displs_requested[iproc - 1] + list_sizes_requested[iproc - 1];			
+			list_displs_requested[iproc] = list_displs_requested[iproc - 1] + list_sizes_requested[iproc - 1];			
 		} else {
 			list_displs_needed[iproc] = 0;
 			list_displs_requested[iproc] = 0;
 		}
-		
-		for(long ip = 0; ip < list_sizes_needed[iproc]; ip++) list_needed[list_displs_needed[iproc] + ip] = points_needed[iproc][ip].point;
+
 	}
 
+	std::cout << "LIST_SIZES_NEEDED " << source.basis().comm().rank() << '\t' << list_sizes_needed[0] << '\t' <<  list_sizes_needed[1] << std::endl;
+	std::cout << "LIST_DISPLS_NEEDED " << source.basis().comm().rank() << '\t' << list_displs_needed[0] << '\t' <<  list_displs_needed[1] << std::endl;	
+
+	
+	source.basis().comm().barrier();
+	
+	for(int iproc = 0; iproc < num_proc; iproc++){
+
+		source.basis().comm().barrier();
+		
+		std::cout << "ACAA 3.2 " << source.basis().comm().rank() << '\t' << iproc << std::endl;
+		for(long ip = 0; ip < list_sizes_needed[iproc]; ip++) {
+			std::cout << "ACAA 3.3 " << source.basis().comm().rank() << '\t' << iproc << '\t' << ip << '\t' << list_displs_needed[iproc] + ip << std::endl;
+			list_needed[list_displs_needed[iproc] + ip] = points_needed[iproc][ip].point;
+		}
+		std::cout << "ACAA 3.4 " << source.basis().comm().rank() << '\t' << iproc << std::endl;
+	}
+
+	std::cout << "ACAA 3.5 " << source.basis().comm().rank() << std::endl;
+	
 	std::cout << source.basis().comm().rank() << '\t' << total_requested << '\t' << total_needed << std::endl;
 	
 	math::array<int, 1> list_points_requested(total_requested);
 	
 	MPI_Alltoallv(list_needed.data(), list_sizes_needed.data(), list_displs_needed.data(), MPI_INT, list_points_requested.data(), list_sizes_requested.data(), list_displs_requested.data(), MPI_INT, source.basis().comm().get());
 
-	std::cout << "ACAA 4" << std::endl;
+	std::cout << "ACAA 4 " << source.basis().comm().rank() << std::endl;
 
-	std::cout << list_points_requested[0] << std::endl;
+	//	std::cout << list_points_requested[0] << std::endl;
 	
 	// send the value of the request points
 	math::array<ElementType, 1> value_points_requested(total_requested);
 	math::array<ElementType, 1> value_points_needed(total_needed);
 	
 	for(long ip = 0; ip < total_requested; ip++){
-		assert(source.basis().part().contains(ip));
 		auto iplocal = source.basis().part().global_to_local(utils::global_index(list_points_requested[ip]));
 		assert(iplocal < source.basis().size());
 		value_points_requested[ip] = source.linear()[iplocal];
 	}
 
+	std::cout << "ACAA 4.5 " << source.basis().comm().rank() << std::endl;
+	
 	auto mpi_type = boost::mpi3::detail::basic_datatype<ElementType>();
 	
 	MPI_Alltoallv(value_points_requested.data(), list_sizes_requested.data(), list_displs_requested.data(), mpi_type,
 								value_points_needed.data(), list_sizes_needed.data(), list_displs_needed.data(), mpi_type, source.basis().comm().get());
 
-	std::cout << "ACAA 5" << std::endl;
+	std::cout << "ACAA 5 " << source.basis().comm().rank() << std::endl;
 	
 	// Finally copy the values to the return array in the proper order
 	math::array<ElementType, 1> remote_points(point_list.size());
@@ -176,6 +201,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 
 	srand48(500 + 34895783*cart_comm.rank());
 	
+	//	long const npoints = 1;//drand48()*rs.size();
 	long const npoints = drand48()*rs.size();
 
 	std::cout << "SIZE    " << rs.size()<< std::endl;	
