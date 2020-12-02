@@ -31,7 +31,91 @@ namespace operations {
 template <class BasisType, class ElementType, class ArrayType>
 auto get_remote_points(basis::field<BasisType, ElementType> const & source, ArrayType const & point_list){
 
+	CALI_CXX_MARK_FUNCTION;
+
+	struct point_position {
+		long point;
+		long position;
+	};
+	
+	auto const num_proc = source.basis().comm().size();
+
+	// create a list per processor of the points we need
+	std::vector<std::vector<point_position>> points_needed(num_proc);
+		
+	for(long ilist = 0; ilist < point_list.size(); ilist++){
+		auto src_proc = source.basis().part().location(point_list[ilist]);
+		assert(src_proc >= 0 and src_proc < num_proc); 
+		points_needed[src_proc].push_back(point_position{point_list[ilist], ilist});
+	}
+
+	// find out how many points each processor requests from us
+	std::vector<int> list_sizes_needed(num_proc);
+	std::vector<int> list_sizes_requested(num_proc);	
+	
+	int total_needed = 0;
+	for(int iproc = 0; iproc < num_proc; iproc++){
+		list_sizes_needed[iproc] = points_needed[iproc].size();
+		total_needed += list_sizes_needed[iproc];
+	}
+
+	assert(total_needed == point_list.size());
+	
+	MPI_Alltoall(list_sizes_needed.data(), 1, MPI_INT, list_sizes_requested.data(), 1, MPI_INT, source.basis().comm().get());
+
+	// get the list of points each processor requests from us and send a list of the points we need
+	std::vector<int> list_needed(total_needed);
+	std::vector<int> list_displs_needed(num_proc);
+	std::vector<int> list_displs_requested(num_proc);
+	
+	int total_requested = 0;
+	for(int iproc = 0; iproc < num_proc; iproc++){
+		
+		total_requested += list_sizes_requested[iproc];
+		
+		if(iproc > 0){
+			list_displs_needed[iproc] = list_displs_needed[iproc - 1] + list_sizes_needed[iproc - 1];
+			list_displs_needed[iproc] = list_displs_requested[iproc - 1] + list_sizes_requested[iproc - 1];			
+		} else {
+			list_displs_needed[iproc] = 0;
+			list_displs_requested[iproc] = 0;
+		}
+		
+		for(long ip = 0; ip < list_sizes_needed[iproc]; ip++) list_needed[list_displs_needed[iproc] + ip] = points_needed[iproc][ip].point;
+	}
+
+	std::vector<int> list_points_requested(total_requested);
+	
+	MPI_Alltoallv(list_needed.data(), list_sizes_needed.data(), list_displs_needed.data(), MPI_INT, list_points_requested.data(), list_sizes_requested.data(), list_displs_requested.data(), MPI_INT, source.basis().comm().get());
+
+	// send the value of the request points
+	math::array<ElementType, 1> value_points_requested(total_requested);
+	math::array<ElementType, 1> value_points_needed(total_needed);
+	
+	for(long ip = 0; ip < total_requested; ip++){
+		assert(source.basis().part().contains(ip));
+		auto iplocal = source.basis().part().global_to_local(utils::global_index(ip));
+		assert(iplocal < source.basis().size());
+		value_points_requested[ip] = source.linear()[iplocal];
+	}
+
+	auto mpi_type = boost::mpi3::detail::basic_datatype<ElementType>();
+	
+	MPI_Alltoallv(value_points_requested.data(), list_sizes_requested.data(), list_displs_requested.data(), mpi_type,
+								value_points_needed.data(), list_sizes_needed.data(), list_displs_needed.data(), mpi_type, source.basis().comm().get());
+
+	// Finally copy the values to the return array in the proper order
 	math::array<ElementType, 1> remote_points(point_list.size());
+
+	long ip = 0;
+	for(int iproc = 0; iproc < num_proc; iproc++){
+		for(long jp = 0; jp < long(points_needed[iproc].size()); jp++) {
+			remote_points[points_needed[iproc][jp].position] = value_points_needed[ip];
+			ip++;
+		}
+	}
+
+	assert(ip == point_list.size());
 	
   return remote_points;
 }
@@ -76,7 +160,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 
 	std::cout << "NPOINTS " << npoints << std::endl;
 	
-	std::vector<long> list(npoints);
+	math::array<long, 1> list(npoints);
 	
 	for(long ip = 0; ip < npoints; ip++){
 		list[ip] = drand48()*(rs.size() - 1);
