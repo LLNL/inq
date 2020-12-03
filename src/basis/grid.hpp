@@ -166,6 +166,14 @@ namespace basis {
 		auto linear_index(int const ix, int const iy, const int iz) const {
 			return (ix*nr_[1] + iy)*nr_[2] + iz;
 		}
+
+		auto local_contains(math::vector3<int> const & ii) const {
+			bool contains = true;
+			for(int idir = 0; idir < 3; idir++){
+				contains = contains and cubic_dist_[idir].contains(ii[idir]);
+			}
+			return contains;
+		}
 		
 	protected:
 
