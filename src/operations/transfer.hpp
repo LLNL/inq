@@ -45,8 +45,7 @@ auto enlarge(FieldType const & source, typename FieldType::basis_type const & ne
 	FieldType destination(new_basis);
 	destination = 0.0;
 	
-	//	if(not source.basis().part().parallel()){
-	if(false){	
+	if(not source.basis().part().parallel()){
 		
 		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
 			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
@@ -97,7 +96,7 @@ auto enlarge(FieldType const & source, typename FieldType::basis_type const & ne
 				}
 			}
 		}
-					
+
 	}
 
 	return destination;
@@ -138,14 +137,11 @@ auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const &
 template <class FieldType>
 auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
-	assert(not source.basis().part().parallel());
-			
 	FieldType destination(new_basis);
 			
 	destination = 0.0;
-
-	//	if(not source.basis().part().parallel()) {
-	if(false) {
+		
+	if(not new_basis.part().parallel()) {
 	
 		for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
 			for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
@@ -165,11 +161,15 @@ auto shrink(FieldType const & source, typename FieldType::basis_type const & new
 
 		{
 			long ip = 0;
-			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
+
+						auto ixg = destination.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = destination.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = destination.basis().cubic_dist(2).local_to_global(iz);						
 						
-						auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
+						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
 						auto isource = source.basis().from_symmetric_range(ii);
 						
 						point_list[ip] = source.basis().linear_index(isource[0], isource[1], isource[2]);
@@ -177,15 +177,17 @@ auto shrink(FieldType const & source, typename FieldType::basis_type const & new
 					}
 				}
 			}
+
+			assert(ip == point_list.size());
 		}
-		
+
 		auto points = operations::get_remote_points(source, point_list);
-		
+
 		{
 			long ip = 0;
-			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
 						
 						destination.cubic()[ix][iy][iz] = factor*points[ip];
 						ip++;
@@ -193,7 +195,7 @@ auto shrink(FieldType const & source, typename FieldType::basis_type const & new
 				}
 			}
 		}
-				
+		
 	}
 
 	return destination;
@@ -317,7 +319,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	ions::UnitCell cell(vector3<double>(ll[0], 0.0, 0.0), vector3<double>(0.0, ll[1], 0.0), vector3<double>(0.0, 0.0, ll[2]));
 	
 	SECTION("Enlarge and shrink -- field"){
-
+		
 		basis::real_space grid(cell, input::basis::cutoff_energy(ecut), cart_comm);
 		basis::field<basis::real_space, TestType> small(grid);
 		
@@ -369,9 +371,9 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		CHECK(count_small == small.basis().size());
 		CHECK(count_large > count_small);
 		CHECK(count_large == large.basis().size() - count_small);
-	
+
 		auto small2 = operations::transfer::shrink(large, small.basis());
-	
+
 		for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
@@ -379,6 +381,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 				}
 			}
 		}
+
 	}
 
 	SECTION("Enlarge and shrink -- field_set"){
