@@ -305,16 +305,20 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	using namespace inq;
 	using namespace Catch::literals;
 	using math::vector3;
+
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+	auto set_comm = cart_comm.axis(0);
+	auto basis_comm = cart_comm.axis(1);
 	
 	double ecut = 23.0;
 
 	vector3<double> ll{6.66, 7.77, 9.99};
 
 	ions::UnitCell cell(vector3<double>(ll[0], 0.0, 0.0), vector3<double>(0.0, ll[1], 0.0), vector3<double>(0.0, 0.0, ll[2]));
-	basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 	
 	SECTION("Enlarge and shrink -- field"){
-		
+
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut), cart_comm);
 		basis::field<basis::real_space, TestType> small(grid);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -324,11 +328,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
-					
-					auto ixg = small.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = small.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = small.basis().cubic_dist(2).local_to_global(iz);						
-					auto rr = small.basis().rvector(ixg, iyg, izg);
+					auto rr = small.basis().rvector(ix, iy, iz);
 					small.cubic()[ix][iy][iz] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 				}
 			}
@@ -382,7 +382,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	}
 
 	SECTION("Enlarge and shrink -- field_set"){
-		
+
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 		basis::field_set<basis::real_space, TestType> small(grid, 5);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -458,6 +459,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	SECTION("Mesh refinement -- field"){
 
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 		basis::field<basis::real_space, TestType> coarse(grid); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -509,6 +511,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		
 	SECTION("Mesh refinement -- field_set"){
 
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 		basis::field_set<basis::real_space, TestType> coarse(grid, 5); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -560,6 +563,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	
 	SECTION("Mesh coarsening -- field"){
 
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
+		
 		auto fine_grid = grid.refine(2);
 		
 		basis::field<basis::real_space, TestType> fine(fine_grid); 
@@ -611,8 +616,9 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		
 	}
 
-		SECTION("Mesh coarsening -- field_set"){
-
+	SECTION("Mesh coarsening -- field_set"){
+			
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 		auto fine_grid = grid.refine(2);
 		
 		basis::field_set<basis::real_space, TestType> fine(fine_grid, 5);
