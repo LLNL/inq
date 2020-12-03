@@ -65,7 +65,7 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 		total_needed += list_sizes_needed[iproc];
 	}
 
-	assert(total_needed == point_list.size());
+	assert(total_needed == long(point_list.size()));
 
 	MPI_Alltoall(list_sizes_needed.data(), 1, MPI_INT, list_sizes_requested.data(), 1, MPI_INT, source.basis().comm().get());
 
@@ -133,7 +133,7 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 		}
 	}
 
-	assert(ip == point_list.size());
+	assert(ip == long(point_list.size()));
 	
   return remote_points;
 }

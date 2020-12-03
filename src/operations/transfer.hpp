@@ -143,17 +143,57 @@ auto shrink(FieldType const & source, typename FieldType::basis_type const & new
 	FieldType destination(new_basis);
 			
 	destination = 0.0;
-			
-	for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-		for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-			for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
 
-				auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
-				auto isource = source.basis().from_symmetric_range(ii);
-				destination.cubic()[ix][iy][iz] = factor*source.cubic()[isource[0]][isource[1]][isource[2]];
-						
+	//	if(not source.basis().part().parallel()) {
+	if(false) {
+	
+		for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+					
+					auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
+					auto isource = source.basis().from_symmetric_range(ii);
+					destination.cubic()[ix][iy][iz] = factor*source.cubic()[isource[0]][isource[1]][isource[2]];
+					
+				}
 			}
 		}
+
+	} else {
+
+		math::array<long, 1> point_list(destination.basis().local_size());
+
+		{
+			long ip = 0;
+			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+						
+						auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
+						auto isource = source.basis().from_symmetric_range(ii);
+						
+						point_list[ip] = source.basis().linear_index(isource[0], isource[1], isource[2]);
+						ip++;
+					}
+				}
+			}
+		}
+		
+		auto points = operations::get_remote_points(source, point_list);
+		
+		{
+			long ip = 0;
+			for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+						
+						destination.cubic()[ix][iy][iz] = factor*points[ip];
+						ip++;
+					}
+				}
+			}
+		}
+				
 	}
 
 	return destination;
