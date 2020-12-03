@@ -45,7 +45,7 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 	// create a list per processor of the points we need
 	std::vector<std::vector<point_position>> points_needed(num_proc);
 		
-	for(long ilist = 0; ilist < point_list.size(); ilist++){
+	for(long ilist = 0; ilist < long(point_list.size()); ilist++){
 		auto point = point_list[ilist];
 		assert(point >= 0);
 		assert(point < source.basis().size());

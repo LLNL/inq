@@ -24,6 +24,7 @@
 #include <basis/fourier_space.hpp>
 #include <basis/field_set.hpp>
 #include <gpu/run.hpp>
+#include <operations/get_remote_points.hpp>
 #include <operations/space.hpp>
 
 #include <multi/adaptors/fftw.hpp>
@@ -41,25 +42,66 @@ namespace transfer {
 template <class FieldType>
 auto enlarge(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
-	assert(not source.basis().part().parallel());
-			
 	FieldType destination(new_basis);
-
 	destination = 0.0;
-			
-	for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-		for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-			for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-
-				auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-				auto idest = destination.basis().from_symmetric_range(ii);
-						
-				destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*source.cubic()[ix][iy][iz];
+	
+	//	if(not source.basis().part().parallel()){
+	if(false){	
+		
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+					
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+					
+					destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*source.cubic()[ix][iy][iz];
+				}
 			}
 		}
+		
+	} else {
+
+		std::vector<long> point_list;
+
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+					
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+
+					if(not destination.basis().local_contains(idest)) continue;
+
+					point_list.push_back(source.basis().linear_index(ix, iy, iz));
+					
+				}
+			}
+		}
+
+		auto points = operations::get_remote_points(source, point_list);
+
+		long ip = 0;
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+					
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+
+					if(not destination.basis().local_contains(idest)) continue;
+					
+					destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*points[ip];
+					ip++;
+					
+				}
+			}
+		}
+					
 	}
 
-	return destination;			
+	return destination;
+
 }
 
 //////////////////////////////////////////////////////////
