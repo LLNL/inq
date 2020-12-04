@@ -23,8 +23,10 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
+#include <input/environment.hpp>
 #include <utils/match.hpp>
 #include <ground_state/calculate.hpp>
+
 
 int main(int argc, char ** argv){
 
