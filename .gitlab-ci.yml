@@ -136,6 +136,9 @@ clang-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_ground_state
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_real_time      
       - time tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
@@ -203,10 +206,13 @@ clang-ompi-fast-parallel:
       - cd src; ctest -V --timeout 360; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 360; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 360; cd ..      
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_ground_state
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_ground_state
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_ground_state
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_real_time      
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
@@ -403,13 +409,16 @@ nvcc-ompi:
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest -V --timeout 600; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -V --timeout 600; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest -V --timeout 600; cd ..
-      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_ground_state
-      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_ground_state
-      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_ground_state
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_ground_state
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_ground_state
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_ground_state
       - time tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_real_time      
       - time tests/silicon
       - time mpirun --oversubscribe -np 2 tests/silicon
       - time mpirun --oversubscribe -np 3 tests/silicon
