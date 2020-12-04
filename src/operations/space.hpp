@@ -232,7 +232,7 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 
 	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
+	basis::real_space real_basis(fourier_basis);
 	
 	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
@@ -270,7 +270,7 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
 
 	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
+	basis::real_space real_basis(fourier_basis);
 
 	basis::field<basis::real_space, complex> phi(real_basis);
 
@@ -331,7 +331,7 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & 
 basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
 	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
+	basis::real_space real_basis(fourier_basis);
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
@@ -377,7 +377,7 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis::field_set<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
 	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis, fphi.basis().comm());
+	basis::real_space real_basis(fourier_basis);
 
 	basis::field_set<basis::real_space, math::vector3<complex>> phi(real_basis, fphi.set_size(), fphi.full_comm());
 

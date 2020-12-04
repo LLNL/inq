@@ -40,10 +40,10 @@ namespace basis {
 			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid(), cell.periodic_dimensions(), comm){
     }
 
-		real_space(const grid & grid_basis, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+		real_space(const grid & grid_basis):
 			grid(grid_basis){
 			
-			cubic_dist_ = {inq::utils::partition(nr_[0], comm), inq::utils::partition(nr_[1]), inq::utils::partition(nr_[2])};
+			cubic_dist_ = {inq::utils::partition(nr_[0], grid_basis.comm()), inq::utils::partition(nr_[1]), inq::utils::partition(nr_[2])};
 
 			base::part_ = cubic_dist_[0];
 			base::part_ *= nr_[1]*long(nr_[2]);
@@ -82,8 +82,8 @@ namespace basis {
 			return equal;
 		}
 
-		auto enlarge(int factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
-			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, comm));
+		auto enlarge(int factor) const {
+			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, this->comm()));
 		}
 
 		auto refine(double factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {

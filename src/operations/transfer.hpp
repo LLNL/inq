@@ -24,6 +24,7 @@
 #include <basis/fourier_space.hpp>
 #include <basis/field_set.hpp>
 #include <gpu/run.hpp>
+#include <operations/get_remote_points.hpp>
 #include <operations/space.hpp>
 
 #include <multi/adaptors/fftw.hpp>
@@ -41,25 +42,69 @@ namespace transfer {
 template <class FieldType>
 auto enlarge(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
-	assert(not source.basis().part().parallel());
-			
 	FieldType destination(new_basis);
-
 	destination = 0.0;
-			
-	for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-		for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-			for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-
-				auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-				auto idest = destination.basis().from_symmetric_range(ii);
-						
-				destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*source.cubic()[ix][iy][iz];
+	
+	if(not source.basis().part().parallel()){
+		
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+					
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+					
+					destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*source.cubic()[ix][iy][iz];
+				}
 			}
 		}
+		
+	} else {
+
+		std::vector<long> point_list;
+
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+					
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+
+					if(not destination.basis().local_contains(idest)) continue;
+
+					point_list.push_back(source.basis().linear_index(ix, iy, iz));
+					
+				}
+			}
+		}
+
+		auto points = operations::get_remote_points(source, point_list);
+		
+		long ip = 0;
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+
+					if(not destination.basis().local_contains(idest)) continue;
+
+					auto il0 = destination.basis().cubic_dist(0).global_to_local(utils::global_index(idest[0]));
+					auto il1 = destination.basis().cubic_dist(1).global_to_local(utils::global_index(idest[1]));
+					auto il2 = destination.basis().cubic_dist(2).global_to_local(utils::global_index(idest[2]));
+
+					destination.cubic()[il0][il1][il2] = factor*points[ip];
+					ip++;
+					
+				}
+			}
+		}
+
 	}
 
-	return destination;			
+	return destination;
+
 }
 
 //////////////////////////////////////////////////////////
@@ -72,12 +117,12 @@ auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const &
 	basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
 
 	destination = 0.0;
-			
+
 	for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
 		for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
 			for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
 				for(int ist = 0; ist < source.set_part().local_size(); ist++){
-							
+
 					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
 					auto idest = destination.basis().from_symmetric_range(ii);
 							
@@ -96,22 +141,65 @@ auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const &
 template <class FieldType>
 auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
-	assert(not source.basis().part().parallel());
-			
 	FieldType destination(new_basis);
 			
 	destination = 0.0;
-			
-	for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-		for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-			for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
-
-				auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
-				auto isource = source.basis().from_symmetric_range(ii);
-				destination.cubic()[ix][iy][iz] = factor*source.cubic()[isource[0]][isource[1]][isource[2]];
-						
+		
+	if(not new_basis.part().parallel()) {
+	
+		for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+					
+					auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
+					auto isource = source.basis().from_symmetric_range(ii);
+					destination.cubic()[ix][iy][iz] = factor*source.cubic()[isource[0]][isource[1]][isource[2]];
+					
+				}
 			}
 		}
+
+	} else {
+
+		math::array<long, 1> point_list(destination.basis().local_size());
+
+		{
+			long ip = 0;
+			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
+
+						auto ixg = destination.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = destination.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = destination.basis().cubic_dist(2).local_to_global(iz);						
+						
+						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
+						auto isource = source.basis().from_symmetric_range(ii);
+						
+						point_list[ip] = source.basis().linear_index(isource[0], isource[1], isource[2]);
+						ip++;
+					}
+				}
+			}
+
+			assert(ip == point_list.size());
+		}
+
+		auto points = operations::get_remote_points(source, point_list);
+
+		{
+			long ip = 0;
+			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
+						
+						destination.cubic()[ix][iy][iz] = factor*points[ip];
+						ip++;
+					}
+				}
+			}
+		}
+		
 	}
 
 	return destination;
@@ -223,16 +311,20 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	using namespace inq;
 	using namespace Catch::literals;
 	using math::vector3;
+
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+	auto set_comm = cart_comm.axis(0);
+	auto basis_comm = cart_comm.axis(1);
 	
 	double ecut = 23.0;
 
 	vector3<double> ll{6.66, 7.77, 9.99};
 
 	ions::UnitCell cell(vector3<double>(ll[0], 0.0, 0.0), vector3<double>(0.0, ll[1], 0.0), vector3<double>(0.0, 0.0, ll[2]));
-	basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 	
 	SECTION("Enlarge and shrink -- field"){
 		
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut), cart_comm);
 		basis::field<basis::real_space, TestType> small(grid);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -242,18 +334,15 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
-					
-					auto ixg = small.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = small.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = small.basis().cubic_dist(2).local_to_global(iz);						
-					auto rr = small.basis().rvector(ixg, iyg, izg);
+					auto rr = small.basis().rvector(ix, iy, iz);
 					small.cubic()[ix][iy][iz] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 				}
 			}
 		}
-		
+
 		auto large = operations::transfer::enlarge(small, grid.enlarge(2));
 
+		CHECK(grid.part().parallel() == large.basis().part().parallel());
 		CHECK(large.basis().rlength()[0] == Approx(2.0*ll[0]));
 		CHECK(large.basis().rlength()[1] == Approx(2.0*ll[1]));
 		CHECK(large.basis().rlength()[2] == Approx(2.0*ll[2]));
@@ -284,12 +373,15 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 			}
 		}
 
+		cart_comm.all_reduce_in_place_n(&count_small, 1, std::plus<>{});
+		cart_comm.all_reduce_in_place_n(&count_large, 1, std::plus<>{});		
+				
 		CHECK(count_small == small.basis().size());
 		CHECK(count_large > count_small);
 		CHECK(count_large == large.basis().size() - count_small);
-	
+
 		auto small2 = operations::transfer::shrink(large, small.basis());
-	
+
 		for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
@@ -297,10 +389,12 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 				}
 			}
 		}
+
 	}
 
 	SECTION("Enlarge and shrink -- field_set"){
-		
+
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 		basis::field_set<basis::real_space, TestType> small(grid, 5);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -376,6 +470,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	SECTION("Mesh refinement -- field"){
 
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 		basis::field<basis::real_space, TestType> coarse(grid); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -427,6 +522,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		
 	SECTION("Mesh refinement -- field_set"){
 
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 		basis::field_set<basis::real_space, TestType> coarse(grid, 5); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -478,6 +574,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	
 	SECTION("Mesh coarsening -- field"){
 
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
+		
 		auto fine_grid = grid.refine(2);
 		
 		basis::field<basis::real_space, TestType> fine(fine_grid); 
@@ -529,8 +627,9 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		
 	}
 
-		SECTION("Mesh coarsening -- field_set"){
-
+	SECTION("Mesh coarsening -- field_set"){
+			
+		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
 		auto fine_grid = grid.refine(2);
 		
 		basis::field_set<basis::real_space, TestType> fine(fine_grid, 5);
@@ -579,6 +678,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		}
 		
 	}
+
 }
 
 

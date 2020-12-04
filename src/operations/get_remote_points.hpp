@@ -45,10 +45,14 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 	// create a list per processor of the points we need
 	std::vector<std::vector<point_position>> points_needed(num_proc);
 		
-	for(long ilist = 0; ilist < point_list.size(); ilist++){
-		auto src_proc = source.basis().part().location(point_list[ilist]);
+	for(long ilist = 0; ilist < long(point_list.size()); ilist++){
+		auto point = point_list[ilist];
+		assert(point >= 0);
+		assert(point < source.basis().size());
+
+		auto src_proc = source.basis().part().location(point);
 		assert(src_proc >= 0 and src_proc < num_proc); 
-		points_needed[src_proc].push_back(point_position{point_list[ilist], ilist});
+		points_needed[src_proc].push_back(point_position{point, ilist});
 	}
 
 	// find out how many points each processor requests from us
@@ -61,7 +65,7 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 		total_needed += list_sizes_needed[iproc];
 	}
 
-	assert(total_needed == point_list.size());
+	assert(total_needed == long(point_list.size()));
 
 	MPI_Alltoall(list_sizes_needed.data(), 1, MPI_INT, list_sizes_requested.data(), 1, MPI_INT, source.basis().comm().get());
 
@@ -129,7 +133,7 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 		}
 	}
 
-	assert(ip == point_list.size());
+	assert(ip == long(point_list.size()));
 	
   return remote_points;
 }
