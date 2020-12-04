@@ -70,8 +70,6 @@ public:
 
 		CALI_CXX_MARK_FUNCTION;
 
-		assert(not density.basis().part().parallel());
-		
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
 		auto potential_fs = operations::space::to_fourier(potential2x);
 			
@@ -82,9 +80,9 @@ public:
 
 		auto point_op = fourier_basis.point_op();
 	
-		for(int ix = 0; ix < fourier_basis.sizes()[0]; ix++){
-			for(int iy = 0; iy < fourier_basis.sizes()[1]; iy++){
-				for(int iz = 0; iz < fourier_basis.sizes()[2]; iz++){
+		for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 						
 					// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
 					if(point_op.g_is_zero(ix, iy, iz)){
@@ -143,15 +141,16 @@ private:
 
 TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
+
 	using namespace inq;
 	using namespace Catch::literals;
 	namespace multi = boost::multi;
 	using namespace basis;
 
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
 	{
 
-		auto comm = boost::mpi3::environment::get_world_instance();
-		
 		double ll = 10.0;
 		
 		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, 1.37*ll});
@@ -279,6 +278,8 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 				}
 			}
 
+			comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+
 			diff /= rs.size();
 		
 			CHECK(diff < 1e-8);
@@ -292,7 +293,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 		const double ll = 8.0;
 		
 		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll}, 0);
-		basis::real_space rs(cell, input::basis::spacing(0.09));
+		basis::real_space rs(cell, input::basis::spacing(0.09), comm);
 
 		solvers::poisson psolver;
 
@@ -339,14 +340,15 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 					}
 				}
 			}
-
-			CHECK(real(potential.cubic()[0][0][0])    == -27.175214167_a);
-			CHECK(real(potential.cubic()[1][2][3])    ==  -2.9731998189_a);
-			CHECK(real(potential.cubic()[88][34][28]) ==  -0.2524115517_a);
-			CHECK(real(potential.cubic()[3][45][80])  ==  -0.2470080223_a);
-			CHECK(real(potential.cubic()[77][33][55]) ==  -0.2275712710_a);
-			CHECK(real(potential.cubic()[46][48][10]) ==  -0.1844298173_a);
-
+			
+			auto & part = potential.basis().part();
+			if(part.contains(0))      CHECK(real(potential.linear()[part.global_to_local(utils::global_index(0))])      == -27.175214167_a);
+			if(part.contains(8102))   CHECK(real(potential.linear()[part.global_to_local(utils::global_index(8102))])   ==  -2.9731998189_a);
+			if(part.contains(700102)) CHECK(real(potential.linear()[part.global_to_local(utils::global_index(700102))]) ==  -0.2524115517_a);
+			if(part.contains(27848))  CHECK(real(potential.linear()[part.global_to_local(utils::global_index(27848))])  ==  -0.2470080223_a);
+			if(part.contains(612909)) CHECK(real(potential.linear()[part.global_to_local(utils::global_index(612909))]) ==  -0.2275712710_a);
+			if(part.contains(368648)) CHECK(real(potential.linear()[part.global_to_local(utils::global_index(368648))]) ==  -0.1844298173_a);
+			
 			/*
 			std::ofstream ofile("pot.dat");
 			
