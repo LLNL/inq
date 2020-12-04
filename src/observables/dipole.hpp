@@ -46,6 +46,8 @@ math::vector3<double> dipole(basis::field<basis::real_space, double> & density){
 		}
 	}
 	
+	density.basis().comm().all_reduce_in_place_n(dip.data(), dip.size(), std::plus<>{});
+	
 	return dip*density.basis().volume_element();
 	
 }
