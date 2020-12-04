@@ -79,18 +79,22 @@ auto enlarge(FieldType const & source, typename FieldType::basis_type const & ne
 		}
 
 		auto points = operations::get_remote_points(source, point_list);
-
+		
 		long ip = 0;
 		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
 			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
 				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-					
+
 					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
 					auto idest = destination.basis().from_symmetric_range(ii);
 
 					if(not destination.basis().local_contains(idest)) continue;
-					
-					destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*points[ip];
+
+					auto il0 = destination.basis().cubic_dist(0).global_to_local(utils::global_index(idest[0]));
+					auto il1 = destination.basis().cubic_dist(1).global_to_local(utils::global_index(idest[1]));
+					auto il2 = destination.basis().cubic_dist(2).global_to_local(utils::global_index(idest[2]));
+
+					destination.cubic()[il0][il1][il2] = factor*points[ip];
 					ip++;
 					
 				}
@@ -113,12 +117,12 @@ auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const &
 	basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
 
 	destination = 0.0;
-			
+
 	for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
 		for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
 			for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
 				for(int ist = 0; ist < source.set_part().local_size(); ist++){
-							
+
 					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
 					auto idest = destination.basis().from_symmetric_range(ii);
 							
@@ -335,9 +339,10 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 				}
 			}
 		}
-		
+
 		auto large = operations::transfer::enlarge(small, grid.enlarge(2));
 
+		CHECK(grid.part().parallel() == large.basis().part().parallel());
 		CHECK(large.basis().rlength()[0] == Approx(2.0*ll[0]));
 		CHECK(large.basis().rlength()[1] == Approx(2.0*ll[1]));
 		CHECK(large.basis().rlength()[2] == Approx(2.0*ll[2]));
@@ -368,6 +373,9 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 			}
 		}
 
+		cart_comm.all_reduce_in_place_n(&count_small, 1, std::plus<>{});
+		cart_comm.all_reduce_in_place_n(&count_large, 1, std::plus<>{});		
+				
 		CHECK(count_small == small.basis().size());
 		CHECK(count_large > count_small);
 		CHECK(count_large == large.basis().size() - count_small);
@@ -670,6 +678,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		}
 		
 	}
+
 }
 
 
