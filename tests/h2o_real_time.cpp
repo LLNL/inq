@@ -61,19 +61,13 @@ int main(int argc, char ** argv){
 	{
 		operations::io::load("h2o_restart", electrons.phi_);
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(0.055));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055));
 		
 		match.check("energy step   0", result.energy[0],   -25.637012688816);
 		match.check("energy step  10", result.energy[10],  -25.637012688717);
 		match.check("energy step  20", result.energy[20],  -25.637012688605);
 		match.check("energy step  30", result.energy[30],  -25.637012688485);
-		match.check("energy step  40", result.energy[40],  -25.637012688359);
-		match.check("energy step  50", result.energy[50],  -25.637012688229);
-		match.check("energy step  60", result.energy[60],  -25.637012688095);
-		match.check("energy step  70", result.energy[70],  -25.637012687958);
-		match.check("energy step  80", result.energy[80],  -25.637012687819);
-		match.check("energy step  90", result.energy[90],  -25.637012687679);
-		match.check("energy step 100", result.energy[100], -25.637012687536);
+
 		/*
 		match.check("dipole x step   0", result.dipole[0][0],   -0.00035331);
 		match.check("dipole y step   0", result.dipole[0][1],   -2.812602083171);
@@ -87,27 +81,6 @@ int main(int argc, char ** argv){
 		match.check("dipole x step  30", result.dipole[30][0],  -0.000353744);
 		match.check("dipole y step  30", result.dipole[30][1],  -2.812589627003);
 		match.check("dipole z step  30", result.dipole[30][2],  -0.000645826);
-		match.check("dipole x step  40", result.dipole[40][0],  -0.00035331);
-		match.check("dipole y step  40", result.dipole[40][1],  -2.812590006079);
-		match.check("dipole z step  40", result.dipole[40][2],  -0.00064554);
-		match.check("dipole x step  50", result.dipole[50][0],  -0.000353744);
-		match.check("dipole y step  50", result.dipole[50][1],  -2.812591796841);
-		match.check("dipole z step  50", result.dipole[50][2],  -0.000645826);
-		match.check("dipole x step  60", result.dipole[60][0],  -0.00035331);
-		match.check("dipole y step  60", result.dipole[60][1],  -2.812590006079);
-		match.check("dipole z step  60", result.dipole[60][2],  -0.00064554);
-		match.check("dipole x step  70", result.dipole[70][0],  -0.000353744);
-		match.check("dipole y step  70", result.dipole[70][1],  -2.812591042731);
-		match.check("dipole z step  70", result.dipole[70][2],  -0.000645826);
-		match.check("dipole x step  80", result.dipole[80][0],  -0.00035331);
-		match.check("dipole y step  80", result.dipole[80][1],  -2.812591796841);
-		match.check("dipole z step  80", result.dipole[80][2],  -0.00064554);
-		match.check("dipole x step  90", result.dipole[90][0],  -0.00035331);
-		match.check("dipole y step  90", result.dipole[90][1],  -2.812592233053);
-		match.check("dipole z step  90", result.dipole[90][2],  -0.00064554);
-		match.check("dipole x step 100", result.dipole[100][0], -0.000353744);
-		match.check("dipole y step 100", result.dipole[100][1], -2.812592836478);
-		match.check("dipole z step 100", result.dipole[100][2], -0.000645826);
 		*/
 	}
 	
@@ -116,7 +89,7 @@ int main(int argc, char ** argv){
 		
 		perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(0.055));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055));
 		
 		/*		match.check("energy step  0", result.energy[0], -16.903925978590);
 		match.check("energy step 10", result.energy[10], -16.904635586794);
@@ -130,7 +103,7 @@ int main(int argc, char ** argv){
 		}
 	}
 
-	fftw_cleanup(); //required for valgrid
+	fftw_cleanup(); //required for valgrind
 	
 	return match.fail();
 
