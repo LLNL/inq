@@ -38,12 +38,14 @@ template <class hamiltonian_type, class field_set_type>
 auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
 
 	CALI_CXX_MARK_FUNCTION;
+
+	assert(not phi.set_part().parallel());
 	
 	auto subspace_hamiltonian = operations::overlap(phi, ham(phi));
 	auto eigenvalues = operations::diagonalize(subspace_hamiltonian);
 	
 	//OPTIMIZATION: here we don't need to make a full copy. We can
-	//divide into blocks over point index (second dimension of phi).
+	//divide into blocks over point index (first dimension of phi).
 	using boost::multi::blas::gemm;
 	using boost::multi::blas::hermitized;
 	

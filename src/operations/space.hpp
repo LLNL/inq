@@ -240,7 +240,7 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
  
 	if(normalize){
 		//DATAOPERATIONS GPU::RUN 1D
-		gpu::run(fphi.basis().part().local_size()*phi.set_part().local_size(),
+		gpu::run(phi.basis().part().local_size()*phi.set_part().local_size(),
 						 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
 							 phip[ii] = phip[ii]/norm_factor;
 						 });
