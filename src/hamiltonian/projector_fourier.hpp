@@ -122,14 +122,15 @@ namespace hamiltonian {
 					}
 				}
 				
-				//DATAOPERATIONS GPU::RUN 2D
 				gpu::run(phi.set_part().local_size(), nproj_,
 								 [proj = begin(projections), coeff = begin(kb_coeff_), vol = phi.basis().volume_element()]
 								 GPU_LAMBDA (auto ist, auto iproj){
 									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj]*vol;
 								 });
 
-				//TODO: reduce projections
+				if(phi.basis().part().parallel()){
+					phi.basis().comm().all_reduce_in_place_n(static_cast<complex *>(projections.data()), projections.num_elements(), std::plus<>{});
+				}
 				
 				for(int iproj = 0; iproj < nproj_; iproj++){
 					for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
