@@ -67,7 +67,7 @@ gcc-ompi:
       - mpic++ --version
       - mkdir build
       - cd build
-      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - export CXXFLAGS="--coverage -O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - CXX=mpic++ ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
@@ -83,6 +83,7 @@ gcc-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - find -name \*gcov
 
 gcc-ompi-fast:
     stage: build
