@@ -231,6 +231,8 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<dec
 #ifdef INQ_GPU_REDUCE_UNIT_TEST
 #undef INQ_GPU_REDUCE_UNIT_TEST
 
+#include <mpi3/environment.hpp>
+
 #include <catch2/catch.hpp>
 
 struct ident {
@@ -250,31 +252,40 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 	using namespace inq;
 	using namespace Catch::literals;
 
-  SECTION("1D"){
-    const long maxsize = 129140163;
-    
-    for(long nn = 1; nn <= maxsize; nn *= 3){
-			CHECK(gpu::run(gpu::reduce(nn), ident{}) == (nn*(nn - 1.0)/2.0));    
-    }
-  }
+	auto comm = boost::mpi3::environment::get_world_instance();
 
-  SECTION("2D"){
-    
-    const long maxsize = 390625;
-    
-    for(long nx = 1; nx <= 10000; nx *= 10){
-      for(long ny = 1; ny <= maxsize; ny *= 5){
-        
-        auto res = gpu::run(nx, gpu::reduce(ny), prod{});
+	SECTION("1D"){
+		const long maxsize = 129140163;
 
-				CHECK(typeid(decltype(res)) == typeid(math::array<double, 1>));
+		int rank = 0;
+		for(long nn = 1; nn <= maxsize; nn *= 3){
+			if(comm.rank() == rank%comm.size()) CHECK(gpu::run(gpu::reduce(nn), ident{}) == (nn*(nn - 1.0)/2.0));
+			rank++;
+		}
+	}
+
+	SECTION("2D"){
+
+		const long maxsize = 390625;
+
+		int rank = 0;
+		for(long nx = 1; nx <= 10000; nx *= 10){
+			for(long ny = 1; ny <= maxsize; ny *= 5){
+
+				if(comm.rank() == rank%comm.size()){
+					auto res = gpu::run(nx, gpu::reduce(ny), prod{});
+					
+					CHECK(typeid(decltype(res)) == typeid(math::array<double, 1>));
+					
+					CHECK(res.size() == nx);
+					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
+				}
 				
-        CHECK(res.size() == nx);
-        for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
-      }
-    }
+				rank++;
+			}
+		}
+		
   }
-  
 }
 
 #endif

@@ -53,8 +53,9 @@ namespace basis {
 			assert(basis_.part().comm_size() == comm.axis(1).size());
     }
 
-		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance())
-			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(comm, {}))
+		//when no communicator is given, use the basis communicator
+		field_set(const basis_type & basis, const int num_vectors)			
+			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(basis.comm(), {1}))
 		{
 		}
 

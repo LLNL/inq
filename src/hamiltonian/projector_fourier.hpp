@@ -105,9 +105,9 @@ namespace hamiltonian {
 
 				auto point_op = eigr.basis().point_op();
 				
-				for(int ix = 0; ix < eigr.basis().sizes()[0]; ix++){
-					for(int iy = 0; iy < eigr.basis().sizes()[1]; iy++){
-						for(int iz = 0; iz < eigr.basis().sizes()[2]; iz++){
+				for(int ix = 0; ix < eigr.basis().local_sizes()[0]; ix++){
+					for(int iy = 0; iy < eigr.basis().local_sizes()[1]; iy++){
+						for(int iz = 0; iz < eigr.basis().local_sizes()[2]; iz++){
 							double gr = dot(coords_[icoord], point_op.gvector(ix, iy, iz));
 							eigr.cubic()[ix][iy][iz] = exp(complex(0.0, gr));
 						}
@@ -122,14 +122,15 @@ namespace hamiltonian {
 					}
 				}
 				
-				//DATAOPERATIONS GPU::RUN 2D
 				gpu::run(phi.set_part().local_size(), nproj_,
 								 [proj = begin(projections), coeff = begin(kb_coeff_), vol = phi.basis().volume_element()]
 								 GPU_LAMBDA (auto ist, auto iproj){
 									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj]*vol;
 								 });
 
-				//TODO: reduce projections
+				if(phi.basis().part().parallel()){
+					phi.basis().comm().all_reduce_in_place_n(static_cast<complex *>(projections.data()), projections.num_elements(), std::plus<>{});
+				}
 				
 				for(int iproj = 0; iproj < nproj_; iproj++){
 					for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
@@ -140,7 +141,7 @@ namespace hamiltonian {
 				}
 				
 			}
-			
+
     }
 		
     int num_projectors() const {

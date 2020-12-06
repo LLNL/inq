@@ -42,113 +42,39 @@ int main(int argc, char ** argv){
 
 	geo.push_back("Ne" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
 		
-	systems::ions ions(input::cell::cubic(20.0, 20.0, 20.0) | input::cell::finite(), geo);
+	systems::ions ions(input::cell::cubic(15.0, 15.0, 15.0) | input::cell::finite(), geo);
 
-	//Real space pseudo
+	input::config conf;
+	
+	conf.extra_states = 3;
+	
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0), conf);
+	
+	ground_state::initialize(ions, electrons);
+	
+	//REAL SPACE PSEUDO
 	{
-		
-		input::config conf;
-
-		conf.extra_states = 3;
-
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
-
-		ground_state::initialize(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
 		
-		/*
-			OCTOPUS RESULTS: (Spacing 0.350877)
+		energy_match.check("total energy",     result.energy.total()    , -67.771731167338);
+		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.606535224997);
+		energy_match.check("eigenvalues",      result.energy.eigenvalues, -61.765371991153);
+		energy_match.check("external energy",  result.energy.external   , -79.444978433236);
+		energy_match.check("non-local energy", result.energy.nonlocal   , -17.926928782914);
+		energy_match.check("ion-ion energy",   result.energy.ion        , -6.006359176186);
 
-			Eigenvalues [H]
-			#st  Spin   Eigenvalue      Occupation
-			1   --    -8.537419       2.000000
-			2   --    -7.457549       2.000000
-			3   --    -7.457549       2.000000
-			4   --    -7.457549       2.000000
-			5   --    -3.733537       0.000000
-			6   --    -3.508765       0.000000
-			7   --    -3.508765       0.000000
-			
-			Energy [H]:
-      Total       =       -61.82012973
-      Free        =       -61.82012973
-      -----------
-      Ion-ion     =         0.00000000
-      Eigenvalues =       -61.82012973
-      Hartree     =         0.00000000
-      Int[n*v_xc] =         0.00000000
-      Exchange    =         0.00000000
-      Correlation =         0.00000000
-      vanderWaals =         0.00000000
-      Delta XC    =         0.00000000
-      Entropy     =         0.00000000
-      -TS         =        -0.00000000
-      Kinetic     =        35.71136464
-      External    =       -97.53149437
-      Non-local   =       -18.00231356
-
-		*/
-		
-		energy_match.check("total energy",     result.energy.total()    , -66.260996131073);
-		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.546488765843);
-		energy_match.check("eigenvalues",      result.energy.eigenvalues, -61.740955117988);
-		energy_match.check("external energy",  result.energy.external   , -79.409315995073);
-		energy_match.check("non-local energy", result.energy.nonlocal   , -17.878127888758);
-		energy_match.check("ion-ion energy",   result.energy.ion        , -4.520041013085);
-		
 	}
 
-	//Fourier space pseudo
-	{
-		
-		input::config conf;
-
-		conf.extra_states = 3;
-
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
-
-		ground_state::initialize(ions, electrons);
+	//FOURIER SPACE PSEUDO
+	{	
 		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting() | input::interaction::fourier_pseudo(), input::scf::conjugate_gradient());
 		
-		/*
-			OCTOPUS RESULTS: (Spacing 0.350877)
-
-			Eigenvalues [H]
-			#st  Spin   Eigenvalue      Occupation
-			1   --    -8.537419       2.000000
-			2   --    -7.457549       2.000000
-			3   --    -7.457549       2.000000
-			4   --    -7.457549       2.000000
-			5   --    -3.733537       0.000000
-			6   --    -3.508765       0.000000
-			7   --    -3.508765       0.000000
-			
-			Energy [H]:
-      Total       =       -61.82012973
-      Free        =       -61.82012973
-      -----------
-      Ion-ion     =         0.00000000
-      Eigenvalues =       -61.82012973
-      Hartree     =         0.00000000
-      Int[n*v_xc] =         0.00000000
-      Exchange    =         0.00000000
-      Correlation =         0.00000000
-      vanderWaals =         0.00000000
-      Delta XC    =         0.00000000
-      Entropy     =         0.00000000
-      -TS         =        -0.00000000
-      Kinetic     =        35.71136464
-      External    =       -97.53149437
-      Non-local   =       -18.00231356
-
-		*/
-		
-		energy_match.check("total energy",     result.energy.total()    , -66.260998366598);
-		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.546473395356);
-		energy_match.check("eigenvalues",      result.energy.eigenvalues, -61.740957353513);
-		energy_match.check("external energy",  result.energy.external   , -79.409308401592);
-		energy_match.check("non-local energy", result.energy.nonlocal   , -17.878122347276);
-		energy_match.check("ion-ion energy",   result.energy.ion        ,  -4.520041013085);
+		energy_match.check("total energy",     result.energy.total()    , -67.771735282066);
+		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.606511739929);
+		energy_match.check("eigenvalues",      result.energy.eigenvalues, -61.765376105880);
+		energy_match.check("external energy",  result.energy.external   , -79.444966794608);
+		energy_match.check("non-local energy", result.energy.nonlocal   , -17.926921051201);
+		energy_match.check("ion-ion energy",   result.energy.ion        ,  -6.006359176186);
 		
 	}
 
