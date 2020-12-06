@@ -72,10 +72,10 @@ gcc-ompi:
       - CXX=mpic++ ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
-      - cd src; ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 360; cd ..
+      - cd src; ctest -V --timeout 1000; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 1000; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 1000; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 1000; cd ..
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
