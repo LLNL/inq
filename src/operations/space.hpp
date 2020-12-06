@@ -92,6 +92,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 #endif
 	
 	if(not real_basis.part().parallel()) {
+		CALI_CXX_MARK_SCOPE("fft_forward_3d");
 		//DATAOPERATIONS FFT
 		fft::dft({true, true, true, false}, array_rs, array_fs, fft::forward);
 #ifdef ENABLE_CUDA
@@ -108,12 +109,16 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
 
-		auto const real_x = real_basis.local_sizes();
-		fft::dft({false, true, true, false}, array_rs, tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
-#ifdef ENABLE_CUDA
-		cudaDeviceSynchronize();
-#endif
+		{
+			CALI_CXX_MARK_SCOPE("fft_forward_2d");
 
+			auto const real_x = real_basis.local_sizes();
+			fft::dft({false, true, true, false}, array_rs, tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
+#ifdef ENABLE_CUDA
+			cudaDeviceSynchronize();
+#endif
+		}
+		
 		// we should do
 		//   math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
 		// but it is impossibly slow
@@ -142,11 +147,15 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 
-		auto const fourier_x = fourier_basis.local_sizes();
-		fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs, fft::forward);
+		{
+			CALI_CXX_MARK_SCOPE("fft_forward_1d");
+			
+			auto const fourier_x = fourier_basis.local_sizes();
+			fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs, fft::forward);
 #ifdef ENABLE_CUDA
-		cudaDeviceSynchronize();
+			cudaDeviceSynchronize();
 #endif
+		}
 		
 	}
 	
@@ -167,7 +176,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 #endif
 	
 	if(not real_basis.part().parallel()) {
-
+		CALI_CXX_MARK_SCOPE("fft_backward_3d");
+		
 		//DATAOPERATIONS FFT
 		fft::dft({true, true, true, false}, array_fs, array_rs, fft::backward);
 #ifdef ENABLE_CUDA
@@ -183,11 +193,15 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		auto last_dim = std::get<3>(sizes(array_fs));
 		
 		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
-		
-		fft::dft({true, true, false, false}, array_fs, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
+
+		{
+			CALI_CXX_MARK_SCOPE("fft_backward_2d");
+			
+			fft::dft({true, true, false, false}, array_fs, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
 #ifdef ENABLE_CUDA
-		cudaDeviceSynchronize();
+			cudaDeviceSynchronize();
 #endif
+		}
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_alltoall");
@@ -212,11 +226,14 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 								 rot[i4][i3][i2][i1][i0] = buf[i4][i3][i2][i1][i0];
 							 });
 		}
-		
-		fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), array_rs, fft::backward);
+
+		{
+			CALI_CXX_MARK_SCOPE("fft_backward_1d");
+			fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), array_rs, fft::backward);
 #ifdef ENABLE_CUDA
-		cudaDeviceSynchronize();
+			cudaDeviceSynchronize();
 #endif
+		}
 	}
 
 }
