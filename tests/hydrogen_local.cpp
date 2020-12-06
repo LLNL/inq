@@ -41,11 +41,11 @@ int main(int argc, char ** argv){
 	
 	geo.push_back(local_h | inq::math::vector3<double>(0.0, 0.0, 0.0));
     
-	inq::systems::ions ions(inq::input::cell::cubic(20.0, 20.0, 20.0) | inq::input::cell::finite(), geo);
+	inq::systems::ions ions(inq::input::cell::cubic(15.0, 15.0, 15.0) | inq::input::cell::finite(), geo);
 
 	inq::input::config conf;
 	
-	inq::systems::electrons electrons(comm_world, ions, inq::input::basis::cutoff_energy(60.0), conf);
+	inq::systems::electrons electrons(comm_world, ions, inq::input::basis::cutoff_energy(40.0), conf);
 	inq::ground_state::initialize(ions, electrons);
 	
 	// Non Interacting
@@ -78,16 +78,16 @@ int main(int argc, char ** argv){
 
 		*/
 
-		energy_match.check("total energy",        result.energy.total(),      -0.570284890173);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),     0.490828721769);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,  -0.499659249344);
+		energy_match.check("total energy",        result.energy.total(),      -0.592872082610);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),     0.488258772361);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,  -0.499022720482);
 		energy_match.check("Hartree energy",      result.energy.hartree,       0.000000000000);
-		energy_match.check("external energy",     result.energy.external,     -0.990487971113);
+		energy_match.check("external energy",     result.energy.external,     -0.987281492843);
 		energy_match.check("non-local energy",    result.energy.nonlocal,      0.0);
 		energy_match.check("XC energy",           result.energy.xc,            0.0);
 		energy_match.check("XC density integral", result.energy.nvxc,          0.0);
 		energy_match.check("HF exchange energy",  result.energy.hf_exchange,   0.0);
-		energy_match.check("ion-ion energy",      result.energy.ion,          -0.070625640829);
+		energy_match.check("ion-ion energy",      result.energy.ion,          -0.093849362128);
 		
 	}
 
@@ -121,22 +121,16 @@ int main(int argc, char ** argv){
 
 		*/
 
-		energy_match.check("total energy",        result.energy.total(),          -0.516258122698);
-		//octopus                                                           0.41903428
-		energy_match.check("kinetic energy",      result.energy.kinetic(),         0.417164577918);
-		//octopus                                                          -0.23398591
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -0.233824205648);
-		//octopus                                                           0.28254446
-		energy_match.check("Hartree energy",      result.energy.hartree,           0.282184183399);
-		//octopus                                                          -0.91520434
-		energy_match.check("external energy",     result.energy.external,         -0.912821270218);
+		energy_match.check("total energy",        result.energy.total(),          -0.539009468676);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),         0.414315443844);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -0.234029067654);
+		energy_match.check("Hartree energy",      result.energy.hartree,           0.281309135254);
+		energy_match.check("external energy",     result.energy.external,         -0.909266396237);
 		energy_match.check("non-local energy",    result.energy.nonlocal,          0.0);
-		//octopus                                                          -0.23244493
-		energy_match.check("XC energy",           result.energy.xc,               -0.232159972968);
-		//octopus                                                          -0.30290955
-		energy_match.check("XC density integral", result.energy.nvxc,             -0.302535880146);
+		energy_match.check("XC energy",           result.energy.xc,               -0.231518289408);
+		energy_match.check("XC density integral", result.energy.nvxc,             -0.301696385768);
 		energy_match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
-		energy_match.check("ion-ion energy",      result.energy.ion,              -0.070625640829);
+		energy_match.check("ion-ion energy",      result.energy.ion,              -0.093849362128);
 		
 	}
 
