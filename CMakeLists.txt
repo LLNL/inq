@@ -52,7 +52,7 @@ include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
-set(CALIPER_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/caliper/include/ ${PROJECT_BINARY_DIR}/external_libs/caliper/include)
+set(CALIPER_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/caliper/include/ ${PROJECT_SOURCE_DIR}/external_libs/caliper/src/interface/c_fortran/ ${PROJECT_BINARY_DIR}/external_libs/caliper/include)
 #set(CALIPER_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/caliper/src/libcaliper.a)
 include_directories(${CALIPER_INCLUDE_DIRS})
 #link_libraries(${CALIPER_LIBRARIES})
