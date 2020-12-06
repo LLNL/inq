@@ -9,6 +9,7 @@ variables:
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
 # avoid the annoying messages from openmpi over docker, https://github.com/open-mpi/ompi/issues/4948  
   OMPI_MCA_btl_vader_single_copy_mechanism: none
+  CODECOV_TOKEN: "5855e536-b784-400e-b0b2-b1d01c2287a9"
 
 build-noblas:
     stage: build
@@ -62,19 +63,19 @@ gcc-ompi:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
       - cd build
-      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - export CXXFLAGS="--coverage -O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - CXX=mpic++ ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
-      - cd src; ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 360; cd ..
+      - cd src; ctest -V --timeout 1000; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest -V --timeout 1000; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 3" ctest -V --timeout 1000; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 4" ctest -V --timeout 1000; cd ..
       - time tests/hydrogen_local
       - time tests/neon
       - time tests/h2o_ground_state
@@ -83,6 +84,7 @@ gcc-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
 
 gcc-ompi-fast:
     stage: build
