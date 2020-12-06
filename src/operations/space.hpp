@@ -122,6 +122,8 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
 
 		for(int i4 = 0; i4 < comm.size(); i4++){
+			CALI_CXX_MARK_SCOPE("fft_transpose");
+			
 			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
 							 [i4,
 								buf = begin(buffer),
@@ -134,8 +136,11 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		assert(std::get<4>(sizes(buffer)) == last_dim);
 		
 		tmp.clear();
-		
-		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+
+		{
+			CALI_CXX_MARK_SCOPE("fft_alltoall");
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+		}
 
 		auto const fourier_x = fourier_basis.local_sizes();
 		fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs, fft::forward);
@@ -183,9 +188,12 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 #ifdef ENABLE_CUDA
 		cudaDeviceSynchronize();
 #endif
-		
-		MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 
+		{
+			CALI_CXX_MARK_SCOPE("fft_alltoall");
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+		}
+		
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
 
 		// we should do
@@ -194,6 +202,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		// so we do
 		
 		for(int i4 = 0; i4 < comm.size(); i4++){
+			CALI_CXX_MARK_SCOPE("fft_transpose");
+				
 			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
 							 [i4,
 								buf = begin(buffer),

@@ -42,6 +42,8 @@ namespace transfer {
 template <class FieldType>
 auto enlarge(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
+	CALI_CXX_MARK_FUNCTION;
+	
 	FieldType destination(new_basis);
 	destination = 0.0;
 	
@@ -112,6 +114,8 @@ auto enlarge(FieldType const & source, typename FieldType::basis_type const & ne
 template <class Type, class BasisType>
 auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
 
+	CALI_CXX_MARK_FUNCTION;
+	
 	assert(not source.basis().part().parallel());
 			
 	basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
@@ -141,6 +145,8 @@ auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const &
 template <class FieldType>
 auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
+	CALI_CXX_MARK_FUNCTION;
+	
 	FieldType destination(new_basis);
 			
 	destination = 0.0;
@@ -210,6 +216,8 @@ auto shrink(FieldType const & source, typename FieldType::basis_type const & new
 template <class Type, class BasisType>
 auto shrink(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
 
+	CALI_CXX_MARK_FUNCTION;
+	
 	assert(not source.basis().part().parallel());
 			
 	basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
