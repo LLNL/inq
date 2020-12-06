@@ -25,6 +25,7 @@
 
 #include <mpi3/environment.hpp>
 
+#include <caliper/cali.h>
 #include <caliper/cali-manager.h>
 
 #include <optional>
@@ -44,10 +45,15 @@ namespace input {
 				calimgr_.add("runtime-report");
 				calimgr_.start();
 			}
+
+			CALI_MARK_BEGIN("inq_environment");
 			
     }
 
 		~environment(){
+
+			CALI_MARK_END("inq_environment");
+			
 			if(mpi_env_.get_world_instance().rank() == 0){
 				calimgr_.flush(); // write performance results
 			}
