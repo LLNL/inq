@@ -93,11 +93,10 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 	
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_forward_3d");
-		//DATAOPERATIONS FFT
+
 		fft::dft({true, true, true, false}, array_rs, array_fs, fft::forward);
-#ifdef ENABLE_CUDA
-		cudaDeviceSynchronize();
-#endif
+		gpu::sync();		
+
 	} else {
 
 		auto & comm = real_basis.comm();
@@ -114,9 +113,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 			auto const real_x = real_basis.local_sizes();
 			fft::dft({false, true, true, false}, array_rs, tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}), fft::forward);
-#ifdef ENABLE_CUDA
-			cudaDeviceSynchronize();
-#endif
+			gpu::sync();
 		}
 		
 		// we should do
@@ -152,9 +149,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 			
 			auto const fourier_x = fourier_basis.local_sizes();
 			fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs, fft::forward);
-#ifdef ENABLE_CUDA
-			cudaDeviceSynchronize();
-#endif
+			gpu::sync();
 		}
 		
 	}
@@ -178,11 +173,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
 		
-		//DATAOPERATIONS FFT
 		fft::dft({true, true, true, false}, array_fs, array_rs, fft::backward);
-#ifdef ENABLE_CUDA
-		cudaDeviceSynchronize();
-#endif
+		gpu::sync();
 		
 	} else {
 
@@ -198,9 +190,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 			CALI_CXX_MARK_SCOPE("fft_backward_2d");
 			
 			fft::dft({true, true, false, false}, array_fs, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}), fft::backward);
-#ifdef ENABLE_CUDA
-			cudaDeviceSynchronize();
-#endif
+			gpu::sync();
 		}
 
 		{
@@ -229,10 +219,10 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_1d");
+
 			fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), array_rs, fft::backward);
-#ifdef ENABLE_CUDA
-			cudaDeviceSynchronize();
-#endif
+			gpu::sync();			
+
 		}
 	}
 
