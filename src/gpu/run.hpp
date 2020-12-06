@@ -45,6 +45,12 @@
 namespace inq {
 namespace gpu {
 
+void sync(){
+#ifdef ENABLE_CUDA
+	cudaDeviceSynchronize();
+#endif
+}
+
 #ifdef ENABLE_CUDA
 template <class ErrorType>
 void check_error(ErrorType const & error){

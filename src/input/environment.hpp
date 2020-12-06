@@ -25,6 +25,9 @@
 
 #include <mpi3/environment.hpp>
 
+#include <caliper/cali.h>
+#include <caliper/cali-manager.h>
+
 #include <optional>
 #include <cassert>
 
@@ -38,12 +41,29 @@ namespace input {
     environment(int argc, char** argv):
       mpi_env_(argc, argv)
     {
+			if(mpi_env_.get_world_instance().rank() == 0){
+				calimgr_.add("runtime-report");
+				calimgr_.start();
+			}
+
+			CALI_MARK_BEGIN("inq_environment");
+			
     }
+
+		~environment(){
+
+			CALI_MARK_END("inq_environment");
+			
+			if(mpi_env_.get_world_instance().rank() == 0){
+				calimgr_.flush(); // write performance results
+			}
+		}
       
 
   private:
     boost::mpi3::environment mpi_env_;
-    
+		cali::ConfigManager calimgr_;
+		
   };
     
 }
