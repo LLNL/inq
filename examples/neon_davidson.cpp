@@ -23,8 +23,10 @@
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
 #include <input/atom.hpp>
+#include <input/environment.hpp>
 #include <utils/match.hpp>
 #include <ground_state/calculate.hpp>
+
 
 int main(int argc, char ** argv){
 
@@ -37,7 +39,7 @@ int main(int argc, char ** argv){
 
 	std::vector<input::atom> geo;
 
-	geo.push_back("He" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
+	geo.push_back("Ne" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
 		
 	systems::ions ions(input::cell::cubic(10.0, 10.0, 10.0) | input::cell::finite(), geo);
 
@@ -48,24 +50,9 @@ int main(int argc, char ** argv){
 
 		conf.extra_states = 3;
 
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
+		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::davidson());
-
-		std::printf("total energy:%20.16f\n",     result.energy.total() );
-	       
-	}
-
-	//Real space pseudo
-	{
-		
-		input::config conf;
-
-		conf.extra_states = 3;
-
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
-		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
+		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::energy_tolerance(1E-7));
 
 		std::printf("total energy:%20.16f\n",     result.energy.total() );
 	       

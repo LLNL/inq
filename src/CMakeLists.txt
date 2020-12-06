@@ -27,6 +27,6 @@ foreach(TEST_FILE ${INCLUDE_FILES})
   target_link_libraries(${TEST_EXE} ${TEST_O})
   target_link_libraries(${TEST_EXE} unit_tests_main)
 
-  add_test(NAME ${dir}_${name} COMMAND ${PROJECT_SOURCE_DIR}/scripts/run_test.sh ./${TEST_EXE})
+  add_test(NAME unit_test_${dir}_${name} COMMAND ${PROJECT_SOURCE_DIR}/scripts/run_test.sh ./${TEST_EXE})
 endforeach()
 

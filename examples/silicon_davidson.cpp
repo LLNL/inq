@@ -21,6 +21,7 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
+#include <input/environment.hpp>
 #include <input/atom.hpp>
 #include <operations/io.hpp>
 #include <utils/match.hpp>

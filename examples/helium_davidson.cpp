@@ -22,6 +22,7 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
+#include <input/environment.hpp>
 #include <input/atom.hpp>
 #include <utils/match.hpp>
 #include <ground_state/calculate.hpp>
@@ -37,7 +38,7 @@ int main(int argc, char ** argv){
 
 	std::vector<input::atom> geo;
 
-	geo.push_back("H" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
+	geo.push_back("He" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
 		
 	systems::ions ions(input::cell::cubic(10.0, 10.0, 10.0) | input::cell::finite(), geo);
 
@@ -56,7 +57,7 @@ int main(int argc, char ** argv){
 	       
 	}
 
-	//Fourier space pseudo
+	//Real space pseudo
 	{
 		
 		input::config conf;
@@ -65,11 +66,12 @@ int main(int argc, char ** argv){
 
 		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting() | input::interaction::fourier_pseudo(), input::scf::conjugate_gradient());
+		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
 
 		std::printf("total energy:%20.16f\n",     result.energy.total() );
-		
+	       
 	}
+
 
 	return 0;
 	
