@@ -105,11 +105,12 @@ void orthogonalize(field_set_type & phi){
 	//DATAOPERATIONS trsm
 	using boost::multi::blas::hermitized;
 	using boost::multi::blas::filling;
-		
-	trsm(filling::lower, olap, hermitized(phi.matrix()));
-
-}
 	
+	namespace blas = boost::multi::blas;
+//	blas::trsm(blas::side::left, filling::lower, 1., olap, blas::H(phi.matrix()));
+	blas::trsm(blas::side::right, filling::upper, 1., blas::H(olap), phi.matrix());
+}
+
 template <class field_set_type>
 void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int num_states = -1){
 
