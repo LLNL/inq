@@ -49,7 +49,8 @@ auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 	using boost::multi::blas::gemm;
 	using boost::multi::blas::hermitized;
 	
-	phi.matrix() = gemm(phi.matrix(), hermitized(subspace_hamiltonian));
+	namespace blas = boost::multi::blas;
+	phi.matrix() = blas::gemm(1., phi.matrix(), blas::H(subspace_hamiltonian));
 
 	return eigenvalues;	
 }
