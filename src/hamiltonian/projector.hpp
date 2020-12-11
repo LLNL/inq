@@ -118,7 +118,8 @@ namespace hamiltonian {
 
 			if(sphere_.size() > 0) {
 				//DATAOPERATIONS BLAS
-				sphere_phi = gemm(transposed(matrix_), projections);
+				namespace blas = boost::multi::blas;
+				sphere_phi = blas::gemm(1., blas::T(matrix_), projections);
 				
 				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			}
@@ -165,7 +166,8 @@ namespace hamiltonian {
 			}
 
 			if(sphere_.size() > 0) {
-				sphere_phi = gemm(transposed(matrix_), projections);
+				namespace blas = boost::multi::blas;
+				sphere_phi = blas::gemm(1., transposed(matrix_), projections);
 				
 				for(int ip = 0; ip < sphere_.size(); ip++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
