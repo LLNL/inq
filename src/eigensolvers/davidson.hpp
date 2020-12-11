@@ -90,14 +90,15 @@ namespace inq {
       	auto Yk = operations::overlap(wphi, Wk);  //subspace hamiltonian
       	auto lk = operations::diagonalize(Yk);
 	//print_vec(lk);
+		namespace blas = boost::multi::blas;
       	//Ritz vectors
-      	auto Xk = boost::multi::blas::gemm(wphi.matrix(), boost::multi::blas::hermitized(Yk)); //Yk now contains subspace eigenvectors
+		auto const Xk =+ blas::gemm(1., wphi.matrix(), blas::H(Yk)); //Yk now contains subspace eigenvectors
       	//Rotated hphi
-      	auto Tk = boost::multi::blas::gemm(Wk.matrix(), boost::multi::blas::hermitized(Yk));
+		auto Tk =+ blas::gemm(1., Wk.matrix(), blas::H(Yk));
       	//Residuals
       	nleft = nvec - nevf; //update nleft
       	for(int i=0; i<nleft ; i++){
-      	  wphi.matrix().rotated()[i] = boost::multi::blas::axpy(lk[i],Xk.rotated()[i],(boost::multi::blas::scal(-1.0,Tk.rotated()[i])));   //wphi=l*psi+(-1.0)H*psi
+			wphi.matrix().rotated()[i] = blas::axpy(lk[i], Xk.rotated()[i], blas::scal(-1.0, Tk.rotated()[i]));   //wphi=l*psi+(-1.0)H*psi
       	}
 	//std::printf("residual wphi:\n");
 	//print_matrix(wphi.matrix());
