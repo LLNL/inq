@@ -45,7 +45,7 @@ extern "C" void zheev(const char * jobz, const char * uplo, const int & n, inq::
 namespace inq {
 namespace operations {
 
-auto diagonalize(math::array<double, 2> & matrix){
+math::array<double, 1> real_diagonalize(math::array<double, 2> & matrix){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -110,7 +110,7 @@ auto diagonalize(math::array<double, 2> & matrix){
 	return eigenvalues;
 }
 
-auto diagonalize(math::array<complex, 2> & matrix){
+math::array<double, 1> diagonalize(math::array<complex, 2> & matrix){
 
 	// the matrix must be square
 	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
@@ -201,7 +201,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		matrix[1][0] = 0.0;
 		matrix[1][1] = 2.0;
 		
-		auto evalues = operations::diagonalize(matrix);
+		auto evalues = operations::real_diagonalize(matrix);
 		
 		CHECK(matrix[0][0] == 0.0_a);
 		CHECK(matrix[0][1] == 1.0_a);
@@ -261,7 +261,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		matrix[2][1] = 0.705297;
 		matrix[2][2] = 0.392459;
 		
-		auto evalues = operations::diagonalize(matrix);
+		auto evalues = operations::real_diagonalize(matrix);
 		
 		CHECK(evalues[0] == -1.0626903983_a);
 		CHECK(evalues[1] == 0.1733844724_a);
