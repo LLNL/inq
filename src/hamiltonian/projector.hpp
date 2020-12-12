@@ -81,9 +81,6 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("projector");
 				
-			using boost::multi::blas::gemm;
-			using boost::multi::blas::transposed;
-				
 			auto sphere_phi = sphere_.gather(phi.cubic());
 
 			CALI_MARK_BEGIN("projector_allocation");
@@ -95,7 +92,8 @@ namespace hamiltonian {
 			//DATAOPERATIONS BLAS
 			if(sphere_.size() > 0) {
 				
-				projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
+				namespace blas = boost::multi::blas;
+				projections = blas::gemm(sphere_.volume_element(), matrix_, sphere_phi);
 
 				{
 					CALI_CXX_MARK_SCOPE("projector_scal");
