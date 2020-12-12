@@ -4,7 +4,7 @@
 #define INQ__OPERATIONS__SUBSPACE_DIAGONALIZATION
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
