@@ -4,7 +4,7 @@
 #define INQ__OPERATIONS__ORTHOGONALIZE
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -103,13 +103,10 @@ void orthogonalize(field_set_type & phi){
 #endif
 
 	//DATAOPERATIONS trsm
-	using boost::multi::blas::hermitized;
-	using boost::multi::blas::filling;
-		
-	trsm(filling::lower, olap, hermitized(phi.matrix()));
-
+	namespace blas = boost::multi::blas;
+	blas::trsm(blas::side::right, blas::filling::upper, 1., blas::H(olap), phi.matrix());
 }
-	
+
 template <class field_set_type>
 void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int num_states = -1){
 

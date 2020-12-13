@@ -4,7 +4,7 @@
 #define OPERATIONS__OVERLAP_DIAGONAL
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -27,6 +27,7 @@
 #include <cassert>
 #ifdef ENABLE_CUDA
 #include "multi/adaptors/blas/cuda.hpp" // must be included before blas.hpp
+#include "multi/adaptors/cuda/cublas/context.hpp" // must be included before blas.hpp
 #endif
 #include <multi/adaptors/blas.hpp>
 #include <operations/integral.hpp>
@@ -65,11 +66,11 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 	if(phi2.set_part().local_size() == 1){
 #ifdef ENABLE_CUDA
 		if(typeid(typename field_set_type::element_type) == typeid(complex)) {
-			cublasZdotc(boost::multi::cublas::global_context().get(), phi1.basis().part().local_size(),
+			cublasZdotc(boost::multi::cuda::cublas::context::get_instance().get(), phi1.basis().part().local_size(),
 									(const cuDoubleComplex *) raw_pointer_cast(phi1.matrix().data_elements()), 1, (const cuDoubleComplex *)  raw_pointer_cast(phi2.matrix().data_elements()), 1,
 									(cuDoubleComplex *) raw_pointer_cast(overlap_vector.data_elements()));
 		} else {
-			cublasDdot(boost::multi::cublas::global_context().get(), phi1.basis().part().local_size(),
+			cublasDdot(boost::multi::cuda::cublas::context::get_instance().get(), phi1.basis().part().local_size(),
 								 (const double *) raw_pointer_cast(phi1.matrix().data_elements()), 1, (const double *) raw_pointer_cast(phi2.matrix().data_elements()), 1,
 								 (double *) raw_pointer_cast(overlap_vector.data_elements()));
 		}

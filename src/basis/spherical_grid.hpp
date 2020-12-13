@@ -4,7 +4,7 @@
 #define INQ__BASIS__SPHERICAL_GRID
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -258,7 +258,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
     CHECK(size == 257);
 
-    math::array<complex, 3> grid(pw.local_sizes());
+    math::array<complex, 3> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2]});
     std::vector<complex> subgrid(sphere.size());
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;

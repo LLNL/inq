@@ -4,7 +4,7 @@
 #define OPERATIONS__OVERLAP
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -27,6 +27,7 @@
 #include <cassert>
 #ifdef ENABLE_CUDA
 #include "multi/adaptors/blas/cuda.hpp" // must be included before blas.hpp
+#include "multi/adaptors/cuda/cublas/context.hpp" // must be included before blas.hpp
 #endif
 #include <multi/adaptors/blas.hpp>
 #include <operations/integral.hpp>
@@ -43,11 +44,9 @@ auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 	
 	// no state parallelization for now
 	assert(not phi1.set_part().parallel());
-		
-	using boost::multi::blas::gemm;
-	using boost::multi::blas::hermitized;
-
-	auto overlap_matrix = gemm(phi1.basis().volume_element(), hermitized(phi2.matrix()), phi1.matrix());
+	
+	namespace blas = boost::multi::blas;
+	auto overlap_matrix =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
 
 	if(phi1.basis().part().parallel()){
 		phi1.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data()), overlap_matrix.num_elements(), std::plus<>{});
@@ -63,12 +62,10 @@ auto overlap(const field_set_type & phi){
  
 	// no state parallelization for now
 	assert(not phi.set_part().parallel());
-
-	using boost::multi::blas::herk;
-	using boost::multi::blas::hermitized;
-		
-	auto overlap_matrix = herk(phi.basis().volume_element(), hermitized(phi.matrix()));
-
+	
+	namespace blas = boost::multi::blas;
+	auto overlap_matrix = blas::herk(phi.basis().volume_element(), blas::H(phi.matrix()));
+	
 	if(phi.basis().part().parallel()){
 		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data()), overlap_matrix.num_elements(), std::plus<>{});
 	}
@@ -182,6 +179,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 		{
 			auto cc = operations::overlap(aa, bb);
+			
 
 			CHECK(std::get<0>(sizes(cc)) == nvec);
 			CHECK(std::get<1>(sizes(cc)) == nvec);

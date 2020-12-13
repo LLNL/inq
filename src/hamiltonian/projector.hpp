@@ -4,7 +4,7 @@
 #define INQ__HAMILTONIAN__PROJECTOR
 
 /*
- Copyright (C) 2019-2020 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -81,9 +81,6 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("projector");
 				
-			using boost::multi::blas::gemm;
-			using boost::multi::blas::transposed;
-				
 			auto sphere_phi = sphere_.gather(phi.cubic());
 
 			CALI_MARK_BEGIN("projector_allocation");
@@ -95,7 +92,8 @@ namespace hamiltonian {
 			//DATAOPERATIONS BLAS
 			if(sphere_.size() > 0) {
 				
-				projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
+				namespace blas = boost::multi::blas;
+				projections = blas::gemm(sphere_.volume_element(), matrix_, sphere_phi);
 
 				{
 					CALI_CXX_MARK_SCOPE("projector_scal");
@@ -118,7 +116,8 @@ namespace hamiltonian {
 
 			if(sphere_.size() > 0) {
 				//DATAOPERATIONS BLAS
-				sphere_phi = gemm(transposed(matrix_), projections);
+				namespace blas = boost::multi::blas;
+				sphere_phi = blas::gemm(1., blas::T(matrix_), projections);
 				
 				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			}
@@ -165,7 +164,8 @@ namespace hamiltonian {
 			}
 
 			if(sphere_.size() > 0) {
-				sphere_phi = gemm(transposed(matrix_), projections);
+				namespace blas = boost::multi::blas;
+				sphere_phi = blas::gemm(1., transposed(matrix_), projections);
 				
 				for(int ip = 0; ip < sphere_.size(); ip++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
