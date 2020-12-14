@@ -26,7 +26,7 @@
 #include <basis/field_set.hpp>
 #include <cstdlib>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 #ifdef ENABLE_CUDA
 #include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp

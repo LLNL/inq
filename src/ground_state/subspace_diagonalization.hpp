@@ -29,7 +29,7 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace ground_state {

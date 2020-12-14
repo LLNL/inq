@@ -31,7 +31,7 @@
 #include <array>
 #include <math/array.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace basis {

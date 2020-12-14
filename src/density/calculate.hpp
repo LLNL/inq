@@ -26,7 +26,7 @@
 #include <basis/field_set.hpp>
 #include <operations/transfer.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace density {

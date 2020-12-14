@@ -32,7 +32,7 @@
 #include <multi/adaptors/fftw.hpp>
 #endif
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 #include <cassert>
 

@@ -32,7 +32,7 @@
 #include <multi/adaptors/blas.hpp>
 #include <operations/integral.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace operations {

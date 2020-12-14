@@ -25,7 +25,7 @@
 
 #include <operations/shift.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace operations {
