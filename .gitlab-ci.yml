@@ -334,7 +334,7 @@ gcc-ompi-runner:
       - CXX=mpic++ ../configure --prefix=$HOME  || cat config.log
       - time make -j8
       - time make -j8 install
-      - ctest --output-on-failure --timeout 600
+      - ctest -j 6 --output-on-failure --timeout 600
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 600; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 600; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
@@ -350,7 +350,7 @@ intel-ompi:
       - cd intel.build
       - make -j $(($(nproc)/2 + 1))
       - make install
-      - ctest --output-on-failure
+      - ctest -j 6 --output-on-failure
       - cd src
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 360
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 360

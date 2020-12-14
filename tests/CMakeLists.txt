@@ -9,3 +9,5 @@ foreach(TEST_FILE ${TEST_SRCS})
   add_executable(${TEST_EXE} ${TEST_FILE})
   add_test(NAME ${TEST_EXE} COMMAND ${PROJECT_SOURCE_DIR}/scripts/run_test.sh ./${TEST_EXE})
 endforeach()
+
+set_tests_properties(h2o_real_time PROPERTIES DEPENDS h2o_ground_state)
