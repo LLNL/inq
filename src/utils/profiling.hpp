@@ -21,7 +21,12 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#ifdef ENABLE_CALIPER
 #include <caliper/cali.h>
+#include <caliper/cali-manager.h>
+#else
+#include <kalimotxo/cali.h>
+#endif
 
 #ifdef INQ_UTILS_PROFILING_UNIT_TEST
 #undef INQ_UTILS_PROFILING_UNIT_TEST
