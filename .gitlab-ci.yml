@@ -96,8 +96,8 @@ nvcc-ompi-build:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - time ../configure --prefix=$HOME --enable-cuda
-      - time make -j 8
-      - time make -j 8 install
+      - time make #-j 5 # parallel compilation can take too much memory
+      - time make install
 #      - ctest --output-on-failure --timeout 600 # this virtual gitlab CI runner cannot execute in gpu
 
 gcc-ompi-fast:
