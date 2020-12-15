@@ -98,7 +98,7 @@ nvcc-ompi-build:
       - time ../configure --prefix=$HOME --enable-cuda
       - time make -j 8
       - time make -j 8 install
-#      - ctest --output-on-failure --timeout 600
+#      - ctest --output-on-failure --timeout 600 # this virtual gitlab CI runner cannot execute in gpu
 
 gcc-ompi-fast:
     stage: build
