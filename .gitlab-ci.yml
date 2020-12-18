@@ -364,6 +364,7 @@ intel-ompi:
       - intel_compiler
     script:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - source /opt/intel/system_studio_2020/bin/compilervars.sh intel64
       - cd ci
       - sh ./cmake_intel.sh
       - cd intel.build
