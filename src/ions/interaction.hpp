@@ -30,7 +30,7 @@
 #include <complex>
 #include <hamiltonian/atomic_potential.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace ions {

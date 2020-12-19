@@ -34,7 +34,7 @@
 
 #include "FC.h"
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 #define dsyev FC_GLOBAL(dsyev, DZYEV)
 extern "C" void dsyev(const char * jobz, const char * uplo, const int & n, double * a, const int & lda, double * w, double * work, const int & lwork, int & info);

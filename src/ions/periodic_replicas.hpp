@@ -23,7 +23,7 @@
 
 #include <math/vector3.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 #include <vector>
 #include <cmath>

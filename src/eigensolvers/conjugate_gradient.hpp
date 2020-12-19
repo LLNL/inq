@@ -28,7 +28,7 @@
 #include <operations/orthogonalize.hpp>
 #include <operations/overlap_diagonal.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace eigensolvers {

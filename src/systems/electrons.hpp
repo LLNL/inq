@@ -37,7 +37,7 @@
 #include<spdlog/sinks/stdout_color_sinks.h>
 #include<spdlog/fmt/ostr.h> // print user defined types
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 

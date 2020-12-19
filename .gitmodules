@@ -11,6 +11,6 @@
 [submodule "external_libs/libxc"]
 	path = external_libs/libxc
 	url = ../libxc.git
-[submodule "external_libs/caliper"]
-	path = external_libs/caliper
-	url = ../caliper.git
+[submodule "external_libs/kalimotxo"]
+	path = external_libs/kalimotxo
+	url = ../kalimotxo.git

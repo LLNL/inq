@@ -35,7 +35,7 @@
 #include <observables/dipole.hpp>
 #include <real_time/result.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace real_time {

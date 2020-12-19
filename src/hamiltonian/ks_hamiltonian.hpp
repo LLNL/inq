@@ -32,7 +32,7 @@
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace hamiltonian {

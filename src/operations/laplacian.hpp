@@ -34,7 +34,7 @@
 
 #include <cassert>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace operations {

@@ -32,7 +32,7 @@
 
 #include <input/environment.hpp>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 int main(int argc, char ** argv){
 

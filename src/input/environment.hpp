@@ -25,8 +25,7 @@
 
 #include <mpi3/environment.hpp>
 
-#include <caliper/cali.h>
-#include <caliper/cali-manager.h>
+#include <utils/profiling.hpp>
 
 #include <optional>
 #include <cassert>

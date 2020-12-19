@@ -28,7 +28,7 @@
 #include <functional> //std::plus
 #include <numeric>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace operations {

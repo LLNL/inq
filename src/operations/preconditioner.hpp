@@ -28,7 +28,7 @@
 
 #include <cstdlib>
 
-#include <caliper/cali.h>
+#include <utils/profiling.hpp>
 
 #include <operations/overlap_diagonal.hpp>
 
