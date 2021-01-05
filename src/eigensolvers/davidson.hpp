@@ -131,7 +131,15 @@ namespace inq {
       	aux_phi.matrix()({0,nbasis},{nevf+nbase,nevf+nbase+notconv})=tphi.matrix()({0,nbasis},{0,notconv});
       	//orthogonalize everything   //allocate work wave funcs 
         field_set_type ophi(phi.basis(), nevf+nbase+notconv, phi.full_comm());
-      	ophi.matrix()({0,nbasis},{0,nevf+nbase+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nbase+notconv});
+#ifdef CUDA_ENABLED
+	cudaDeviceSynchronize();
+#endif
+      	ophi.matrix() = aux_phi.matrix()({0, nbasis},{0, nevf+nbase+notconv});
+#assert(size(ophi.matrix()) == nbasis);
+#assert(size(~ophi.matrix()) == nevf+nbase+notconv);
+#assert( ophi.matrix() == ophi.matrix() );
+#assert( ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) == ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) );
+#assert( ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) == ophi.matrix() );
 	//operations::qrfactorize(ophi);
 	operations::orthogonalize(ophi, /* nocheck = */ true);
 	
@@ -159,7 +167,7 @@ namespace inq {
       	    aux_phi.matrix().rotated()[nevf+nleft+i]=tphi.matrix().rotated()[i];
       	  }
       	  field_set_type qphi(phi.basis(), nevf+nleft+notconv, phi.full_comm());
-      	  qphi.matrix()({0,nbasis},{0,nevf+nleft+notconv})=aux_phi.matrix()({0,nbasis},{0,nevf+nleft+notconv});
+      	  qphi.matrix() = aux_phi.matrix()({0,nbasis},{0,nevf+nleft+notconv});
       	  //operations::qrfactorize(qphi);
 	  operations::orthogonalize(qphi, /* nocheck = */ true);
 	  auto qrfnrm = operations::overlap_diagonal(qphi,qphi);
