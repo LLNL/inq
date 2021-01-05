@@ -135,11 +135,11 @@ namespace inq {
 	cudaDeviceSynchronize();
 #endif
       	ophi.matrix() = aux_phi.matrix()({0, nbasis},{0, nevf+nbase+notconv});
-#assert(size(ophi.matrix()) == nbasis);
-#assert(size(~ophi.matrix()) == nevf+nbase+notconv);
-#assert( ophi.matrix() == ophi.matrix() );
-#assert( ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) == ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) );
-#assert( ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) == ophi.matrix() );
+//assert(size(ophi.matrix()) == nbasis);
+//assert(size(~ophi.matrix()) == nevf+nbase+notconv);
+//assert( ophi.matrix() == ophi.matrix() );
+//assert( ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) == ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) );
+//assert( ophi.matrix()({0, nbasis}, {0, nevf+nbase+notconv}) == ophi.matrix() );
 	//operations::qrfactorize(ophi);
 	operations::orthogonalize(ophi, /* nocheck = */ true);
 	
