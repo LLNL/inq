@@ -79,7 +79,7 @@ gcc-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
-      - $HOME/bin/inc++ tests/silicon.cpp -o tests/silicon2
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
       
@@ -359,6 +359,8 @@ gcc-ompi-runner:
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 600; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 600; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 intel-ompi:
     stage: build
