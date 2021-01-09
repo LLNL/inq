@@ -100,6 +100,7 @@ nvcc-ompi-build:
       - time ../configure --prefix=$HOME --enable-cuda
       - time make #-j 5 # parallel compilation can take too much memory
       - time make install
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
 #      - ctest --output-on-failure --timeout 600 # this virtual gitlab CI runner cannot execute in gpu
 
 gcc-ompi-fast:
@@ -122,6 +123,8 @@ gcc-ompi-fast:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 clang-ompi:
     stage: build
@@ -151,6 +154,8 @@ clang-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
 
 #clang-cuda:
 #    stage: build
@@ -191,6 +196,8 @@ clang-ompi-fast-serial:
       - time make -j4
       - time make -j4 install
       - ctest --output-on-failure --timeout 360
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
 
 clang-ompi-fast-parallel:
     stage: build
@@ -273,6 +280,8 @@ gcc-mpich-serial:
       - time make
       - time make -j4 install
       - ctest --output-on-failure --timeout 360
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
 
 gcc-mpich-parallel:
     stage: build
@@ -294,6 +303,8 @@ gcc-mpich-parallel:
       - time mpirun -np 2 tests/silicon
       - time mpirun -np 3 tests/silicon
       - time mpirun -np 5 tests/silicon
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 gcc-mpich-valgrind:
     stage: build
@@ -313,6 +324,8 @@ gcc-mpich-valgrind:
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 1200; cd ..
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 #nvcc-nocuda:
 #    stage: build
@@ -384,6 +397,8 @@ intel-ompi:
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 360
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 360
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 360
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 nvcc-ompi:
     stage: build
@@ -415,6 +430,9 @@ nvcc-ompi:
       - time mpirun --oversubscribe -np 2 tests/silicon
       - time mpirun --oversubscribe -np 3 tests/silicon
       - time mpirun --oversubscribe -np 5 tests/silicon
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
+     
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
