@@ -100,7 +100,6 @@ nvcc-ompi-build:
       - time ../configure --prefix=$HOME --enable-cuda
       - time make #-j 5 # parallel compilation can take too much memory
       - time make install
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
 #      - ctest --output-on-failure --timeout 600 # this virtual gitlab CI runner cannot execute in gpu
 
 gcc-ompi-fast:
@@ -434,8 +433,7 @@ nvcc-ompi:
       - time mpirun --oversubscribe -np 2 tests/silicon
       - time mpirun --oversubscribe -np 3 tests/silicon
       - time mpirun --oversubscribe -np 5 tests/silicon
-      - $PREFIX/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
-      - tests/silicon2      
+
      
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
