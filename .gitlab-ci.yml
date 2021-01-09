@@ -79,6 +79,8 @@ gcc-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - $HOME/bin/inc++ tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
       
 nvcc-ompi-build:
