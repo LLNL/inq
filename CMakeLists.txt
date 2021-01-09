@@ -64,7 +64,7 @@ configure_file(inq_config.h.in inq_config.h)
 #Generate inc++
 set(INCXX scripts/inc++)
 configure_file(${INCXX}.bash.in ${INCXX} @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
   
 install(DIRECTORY share/ DESTINATION share/inq)
 
