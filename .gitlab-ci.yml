@@ -79,6 +79,8 @@ gcc-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
       
 nvcc-ompi-build:
@@ -120,6 +122,8 @@ gcc-ompi-fast:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 clang-ompi:
     stage: build
@@ -149,6 +153,8 @@ clang-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
 
 #clang-cuda:
 #    stage: build
@@ -189,6 +195,8 @@ clang-ompi-fast-serial:
       - time make -j4
       - time make -j4 install
       - ctest --output-on-failure --timeout 360
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
 
 clang-ompi-fast-parallel:
     stage: build
@@ -271,6 +279,8 @@ gcc-mpich-serial:
       - time make
       - time make -j4 install
       - ctest --output-on-failure --timeout 360
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
 
 gcc-mpich-parallel:
     stage: build
@@ -292,6 +302,8 @@ gcc-mpich-parallel:
       - time mpirun -np 2 tests/silicon
       - time mpirun -np 3 tests/silicon
       - time mpirun -np 5 tests/silicon
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 gcc-mpich-valgrind:
     stage: build
@@ -311,6 +323,8 @@ gcc-mpich-valgrind:
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 1200; cd ..
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 #nvcc-nocuda:
 #    stage: build
@@ -346,23 +360,27 @@ gcc-ompi-runner:
     tags:
       - intel_compiler
     script:
+      - export PREFIX=`mktemp -d`
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir build
       - cd build
       - export CXXFLAGS="-Ofast -Wall -Wextra"
-      - CXX=mpic++ ../configure --prefix=$HOME  || cat config.log
+      - CXX=mpic++ ../configure --prefix=$PREFIX || cat config.log
       - time make -j8
       - time make -j8 install
       - ctest -j 6 --output-on-failure --timeout 600
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 600; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 600; cd ..
       - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
+      - $PREFIX/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 intel-ompi:
     stage: build
     tags:
       - intel_compiler
     script:
+      - export PREFIX=`mktemp -d`    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir build
       - cd build
@@ -371,7 +389,7 @@ intel-ompi:
       - export CXXFLAGS="-O3 -Wall -Wextra -Wl,-rpath,/opt/intel/system_studio_2020/lib/intel64 $(mpicxx -showme:compile || mpicxx -cxx= -compile_info)"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME
+      - time ../configure --prefix=$PREFIX
       - make -j $(($(nproc)/2 + 1))
       - make install
       - source /opt/intel/system_studio_2020/bin/compilervars.sh intel64
@@ -380,12 +398,16 @@ intel-ompi:
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 360
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 360
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 360
+      - cd ..
+      - $PREFIX/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2      
 
 nvcc-ompi:
     stage: build
     tags:
       - cuda_gpu
     script:
+      - export PREFIX=`mktemp -d`    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
@@ -395,7 +417,7 @@ nvcc-ompi:
       - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++17,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda
+      - time ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda
       - time make -j8
       - time make -j8 install
       - ctest --output-on-failure --timeout 600
@@ -411,6 +433,8 @@ nvcc-ompi:
       - time mpirun --oversubscribe -np 2 tests/silicon
       - time mpirun --oversubscribe -np 3 tests/silicon
       - time mpirun --oversubscribe -np 5 tests/silicon
+
+     
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
