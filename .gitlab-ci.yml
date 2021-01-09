@@ -361,7 +361,7 @@ gcc-ompi-runner:
     tags:
       - intel_compiler
     script:
-      - export PREFIX=`mktemp`
+      - export PREFIX=`mktemp -d`
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir build
       - cd build
@@ -381,7 +381,7 @@ intel-ompi:
     tags:
       - intel_compiler
     script:
-      - export PREFIX=`mktemp`    
+      - export PREFIX=`mktemp -d`    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir build
       - cd build
@@ -408,7 +408,7 @@ nvcc-ompi:
     tags:
       - cuda_gpu
     script:
-      - export PREFIX=`mktemp`    
+      - export PREFIX=`mktemp -d`    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
