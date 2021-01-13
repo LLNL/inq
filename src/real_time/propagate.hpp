@@ -14,6 +14,7 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/energy.hpp>
+#include <hamiltonian/forces.hpp>
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
@@ -44,8 +45,8 @@ struct fix_ions{
 
 	static constexpr bool static_ions = true;
 
-	template <typename TypeIons>
-	static void propagate_positions(double dt, TypeIons &){
+	template <typename TypeIons, typename TypeForces>
+	static void propagate_positions(double dt, TypeIons &, TypeForces const &){
 	}
 
 	template <typename TypeIons, typename TypeForces>
@@ -58,8 +59,8 @@ struct impulsive_ions{
 
 	static constexpr bool static_ions = false;
 
-	template <typename TypeIons = systems::ions>
-	static void propagate_positions(double dt, TypeIons& ions){
+	template <typename TypeIons, typename TypeForces>
+	static void propagate_positions(double dt, TypeIons& ions, TypeForces const &){
 		for(int i = 0; i != ions.geo().num_atoms(); ++i)
 			ions.geo().coordinates()[i] += dt*ions.velocities()[i];
 	}
@@ -100,6 +101,8 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		res.energy.push_back(energy.total());
 		res.dipole.push_back(observables::dipole(electrons.density_));
 		res.ions.push_back(ions);
+
+		auto forces = hamiltonian::calculate_forces(ions, electrons, ham);
 		
 		for(int istep = 1; istep <= numsteps; istep++){
 
@@ -112,7 +115,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 				ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 
 				//propagate ionic positions to t + dt
-				ion_propagator.propagate_positions(dt, ions);
+				ion_propagator.propagate_positions(dt, ions, forces);
 				if(not ion_propagator.static_ions) sc.update_ionic_fields(ions, electrons.atomic_pot_);
 			}
 
@@ -123,7 +126,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 
 			//calculate forces, force variance
-			double forces = 0.0;
+			forces = hamiltonian::calculate_forces(ions, electrons, ham);
 			
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
