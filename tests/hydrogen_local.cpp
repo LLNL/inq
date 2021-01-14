@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 	
 	std::vector<inq::input::atom> geo;
 	
-	geo.push_back(local_h | inq::math::vector3<double>(0.0, 0.0, 0.0));
+	geo.push_back(local_h | inq::math::vector3<double>(150.0, -30.0, 0.0));
     
 	inq::systems::ions ions(inq::input::cell::cubic(15.0, 15.0, 15.0) | inq::input::cell::finite(), geo);
 
@@ -133,7 +133,7 @@ int main(int argc, char ** argv){
 		energy_match.check("ion-ion energy",      result.energy.ion,              -0.093849362128);
 		
 	}
-
+	
 	return energy_match.fail();
 	
 }
