@@ -53,6 +53,7 @@ public:
 		for(auto it = atom_container.begin(); it != atom_container.end(); it++){
 			atoms_.push_back(it->species());
 			coordinates_.push_back(it->position());
+			velocities_.push_back(math::vector3<double>(0.0, 0.0, 0.0));			
 		}
 			
 	}
@@ -62,6 +63,7 @@ public:
 	void add_atom(const input::species & element, const math::vector3<double> & position){
 		atoms_.push_back(element);
 		coordinates_.push_back(position);
+		velocities_.push_back(math::vector3<double>(0.0, 0.0, 0.0));					
 	}
 
 	auto & atoms() const {
@@ -76,6 +78,14 @@ public:
 		return coordinates_;
 	}
 
+	auto & velocities() const {
+		return velocities_;
+	}
+    
+	auto & velocities() {
+		return velocities_;
+	}
+	
 	template <class output_stream>
 	void info(output_stream & out) const {
 		out << "GEOMETRY:" << std::endl;
@@ -93,6 +103,7 @@ private:
 
 	std::vector<input::species> atoms_;
 	std::vector<math::vector3<double>> coordinates_;
+	std::vector<math::vector3<double>> velocities_;	
     
 };
 }
@@ -125,10 +136,16 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     CHECK(geo.coordinates()[0][0] == 1000.0_a);
     CHECK(geo.coordinates()[0][1] == -200.0_a);
     CHECK(geo.coordinates()[0][2] == 6.0_a);
-
+		CHECK(geo.velocities()[0][0] == 0.0_a);
+    CHECK(geo.velocities()[0][1] == 0.0_a);
+    CHECK(geo.velocities()[0][2] == 0.0_a);
+		
     geo.coordinates()[0][0] += 8;  
     
     CHECK(geo.coordinates()[0][0] == 1008.0_a);
+
+		assert(geo.velocities().size() == geo.coordinates().size());
+				
   }    
  
   SECTION("Read an xyz file"){
@@ -150,7 +167,12 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     CHECK(geo.coordinates()[11][0] == -4.0572419367_a);
     CHECK(geo.coordinates()[11][1] == 2.343260364_a);
     CHECK(geo.coordinates()[11][2] == 0.0_a);
+		CHECK(geo.velocities()[11][0] == 0.0_a);
+    CHECK(geo.velocities()[11][1] == 0.0_a);
+    CHECK(geo.velocities()[11][2] == 0.0_a);
 
+		assert(geo.velocities().size() == geo.coordinates().size());
+		
     geo.add_atom(pseudo::element("Cl"), math::vector3<double>(-3.0, 4.0, 5.0));
 
     CHECK(geo.num_atoms() == 13);
@@ -161,6 +183,11 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     CHECK(geo.coordinates()[12][0] == -3.0_a);
     CHECK(geo.coordinates()[12][1] == 4.0_a);
     CHECK(geo.coordinates()[12][2] == 5.0_a);
+		CHECK(geo.velocities()[12][0] == 0.0_a);
+    CHECK(geo.velocities()[12][1] == 0.0_a);
+    CHECK(geo.velocities()[12][2] == 0.0_a);
+
+		assert(geo.velocities().size() == geo.coordinates().size());
 		
   }
 
