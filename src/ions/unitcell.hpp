@@ -561,6 +561,12 @@ namespace ions {
 		auto periodic_dimensions() const {
 			return periodic_dimensions_;
 		}
+
+		auto position_in_cell(math::vector3<double> const & pos) const {
+			auto crystal_pos = cart_to_crystal(pos);
+			for(int idir = 0; idir < 3; idir++) crystal_pos[idir] -= floor(crystal_pos[idir]);
+			return crystal_to_cart(crystal_pos);
+		}
 		
   };
 
@@ -688,7 +694,13 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[0] == 0.666_a);
       CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[1] == -0.377_a);
       CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[2] == 2.72_a);
-    
+
+			auto in_cell = cell.position_in_cell(vector3<double>(6.66, 25.0, -18.33));
+
+			CHECK(in_cell[0] == 6.66_a);
+			CHECK(in_cell[1] == 5.00_a);
+			CHECK(in_cell[2] == 1.67_a);
+			
     }
 
     SECTION("Parallelepipedic cell"){
@@ -696,7 +708,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 			ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
    
       cell.set(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
-
 
       CHECK(cell.a(0)[0] == 28.62_a);
       CHECK(cell.a(0)[1] ==  0.0_a);
@@ -792,7 +803,13 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[0] == 0.2327044025_a);
       CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[1] == -2.2605946306_a);
       CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[2] == 75.3208773355_a);
-          
+
+			auto in_cell = cell.position_in_cell(vector3<double>(6.66, 225.0, -18.33));
+
+			CHECK(in_cell[0] == 6.66_a);
+			CHECK(in_cell[1] == 44.72_a);
+			CHECK(in_cell[2] == 6.29_a);
+			
     }
 
     SECTION("Non-orthogonal cell"){
@@ -895,7 +912,7 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       //CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(1.5, 0.5, 0.5))));
       CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(0.5, -0.1, 0.0))));
       CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(0.5, 0.5, -1.0))));
-      
+		
     }
   }
 }

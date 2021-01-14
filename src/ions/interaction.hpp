@@ -90,7 +90,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 			for(int jatom = 0; jatom < natoms; jatom++){
 				double zj = charge[jatom];
 					
-				vector3<double> rij = xi - positions[jatom];
+				vector3<double> rij = xi - cell.position_in_cell(positions[jatom]);
 				double rr = length(rij);
 					
 				if(rr < 1.0e-5) continue;
@@ -271,6 +271,38 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     std::vector<vector3<double>> positions(2);
     positions[0] = vector3<double>(0.0, 0.0, -distance/2.0);
     positions[1] = vector3<double>(0.0, 0.0,  distance/2.0);
+    
+    double energy;
+    std::vector<vector3<double>> forces(2);
+
+    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+
+		//these numbers come from Octopus
+    CHECK(energy == 5.02018926_a); 
+
+		CHECK(fabs(forces[0][0]) < 1.0e-16);
+		CHECK(fabs(forces[0][1]) < 1.0e-16);
+		CHECK(forces[0][2] == -5.7840844208_a);
+		CHECK(fabs(forces[1][0]) < 1.0e-16);
+		CHECK(fabs(forces[1][1]) < 1.0e-16);
+		CHECK(forces[1][2] == 5.7840844208_a);
+    
+  }
+
+	
+	SECTION("N2 supercell shifted"){
+    
+    double aa = 20.0;
+    
+    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+
+		const double charge[2] = {5.0, 5.0};
+
+    double distance = 2.0739744;
+
+    std::vector<vector3<double>> positions(2);
+    positions[0] = vector3<double>(0.0, 0.0, 293.9 -distance/2.0);
+    positions[1] = vector3<double>(0.0, 0.0, 293.9 + distance/2.0);
     
     double energy;
     std::vector<vector3<double>> forces(2);
