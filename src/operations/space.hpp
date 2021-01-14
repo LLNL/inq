@@ -40,7 +40,7 @@ namespace inq {
 namespace operations {
 namespace space {
 
-void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fphi){
+void zero_outside_sphere(basis::field<basis::fourier_space, complex> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
 	//DATAOPERATIONS GPU::RUN 3D
@@ -53,7 +53,7 @@ void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fph
 
 ///////////////////////////////////////////////////////////////
 		
-void zero_outside_sphere(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi){
+void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<complex>> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
 	//DATAOPERATIONS GPU::RUN 3D
@@ -141,7 +141,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 
 		{
@@ -195,7 +195,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 		
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});

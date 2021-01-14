@@ -72,7 +72,7 @@ void orthogonalize(field_set_type & phi){
 			
 		//query the work size
 		int lwork;
-		cusolver_status = cusolverDnZpotrf_bufferSize(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, &lwork);
+		cusolver_status = cusolverDnZpotrf_bufferSize(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data_elements()), nst, &lwork);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		assert(lwork >= 0);
 			
@@ -86,7 +86,7 @@ void orthogonalize(field_set_type & phi){
 		cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
 		assert(cudaSuccess == cuda_status);
 
-		cusolver_status = cusolverDnZpotrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data()), nst, work, lwork, devInfo);
+		cusolver_status = cusolverDnZpotrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data_elements()), nst, work, lwork, devInfo);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		cudaDeviceSynchronize();
 		assert(*devInfo == 0);
@@ -98,7 +98,7 @@ void orthogonalize(field_set_type & phi){
 	}
 #else
 	int info;
-	zpotrf("U", &nst, olap.data(), &nst, &info);
+	zpotrf("U", &nst, olap.data_elements(), &nst, &info);
 	assert(info == 0);
 #endif
 
@@ -137,7 +137,7 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 	}
 	
 	if(phi.basis().part().parallel()){
-		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(olap.data()), olap.num_elements(), std::plus<>{});
+		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(olap.data_elements()), olap.num_elements(), std::plus<>{});
 	}
 
 	boost::multi::blas::gemm(-1.0, phi_restricted, olap, 1.0, vec.matrix());

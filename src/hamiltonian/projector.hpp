@@ -111,7 +111,7 @@ namespace hamiltonian {
 			}
 
 			if(phi.basis().part().parallel()){
-				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
+				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 
 			if(sphere_.size() > 0) {
@@ -145,7 +145,7 @@ namespace hamiltonian {
 				projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
 				
 				{
-					CALI_CXX_MARK_SCOPE("projector_scal");
+					CALI_CXX_MARK_SCOPE("projector_scal"); 
 					
 					//DATAOPERATIONS GPU::RUN 2D
 					gpu::run(phi.local_set_size(), nproj_,
@@ -160,7 +160,7 @@ namespace hamiltonian {
 			}
 
 			if(phi.basis().part().parallel()){
-				phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
+				phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 
 			if(sphere_.size() > 0) {
