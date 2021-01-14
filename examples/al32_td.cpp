@@ -84,7 +84,7 @@ int main(int argc, char ** argv){
 		auto propagation = real_time::propagate(
 			ions, electrons, 
 			input::interaction::non_interacting(), input::rt::num_steps(1000) | input::rt::dt(dt), 
-			real_time::impulsive_ions{}
+			ions::propagator::impulsive{}
 		);
 
 		auto ofs = std::ofstream{"al32_v0.1.dat"}; ofs<<"# distance (au), energy (au)\n";

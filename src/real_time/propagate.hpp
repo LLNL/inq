@@ -31,6 +31,7 @@
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
+#include <ions/propagator.hpp>
 #include <input/rt.hpp>
 #include <systems/electrons.hpp>
 #include <observables/dipole.hpp>
@@ -41,36 +42,7 @@
 namespace inq {
 namespace real_time {
 
-struct fix_ions{
-
-	static constexpr bool static_ions = true;
-
-	template <typename TypeIons, typename TypeForces>
-	static void propagate_positions(double dt, TypeIons &, TypeForces const &){
-	}
-
-	template <typename TypeIons, typename TypeForces>
-	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){
-	}
-
-};
-
-struct impulsive_ions{
-
-	static constexpr bool static_ions = false;
-
-	template <typename TypeIons, typename TypeForces>
-	static void propagate_positions(double dt, TypeIons& ions, TypeForces const &){
-		for(int i = 0; i != ions.geo().num_atoms(); ++i)
-			ions.geo().coordinates()[i] += dt*ions.velocities()[i];
-	}
-
-	template <typename TypeIons, typename TypeForces>
-	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){}
-
-};
-
-template<typename IonSubPropagator = fix_ions>
+template<typename IonSubPropagator = ions::propagator::fixed>
 real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
 
 		CALI_CXX_MARK_FUNCTION;
