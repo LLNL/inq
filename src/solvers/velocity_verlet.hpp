@@ -27,11 +27,11 @@ namespace inq {
 namespace solvers {
 namespace velocity_verlet { 
 
-template <typename ArrayType>
-void propagate_positions(double dt, ArrayType const & accel, ArrayType & velocities, ArrayType & positions){
+template <typename AccelType, typename VelType, typename PosType>
+void propagate_positions(double dt, AccelType const & accel, VelType & velocities, PosType & positions){
 
-	assert(accel.size() == velocities.size());
-	assert(accel.size() == positions.size());	
+	assert(long(accel.size()) == long(velocities.size()));
+	assert(long(accel.size()) == long(positions.size()));	
 
 	for(long ii = 0; ii < long(accel.size()); ii++){
 		velocities[ii] += 0.5*dt*accel[ii];		
@@ -40,10 +40,10 @@ void propagate_positions(double dt, ArrayType const & accel, ArrayType & velocit
 	
 }
 
-template <typename ArrayType>
-void propagate_velocities(double dt, ArrayType const & accel, ArrayType & velocities){
+template <typename AccelType, typename VelType>
+void propagate_velocities(double dt, AccelType const & accel, VelType & velocities){
 
-	assert(accel.size() == velocities.size());
+	assert(long(accel.size()) == long(velocities.size()));
 
 	for(long ii = 0; ii < long(accel.size()); ii++){
 		velocities[ii] += 0.5*dt*accel[ii];
