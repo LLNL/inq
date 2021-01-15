@@ -73,8 +73,14 @@ int main(int argc, char ** argv){
 	
 	auto dt = 0.055;
 	
-	auto propagation = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(1000) | input::rt::dt(dt), ions::propagator::impulsive{});
+	auto propagation = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(1000) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
 
+	auto ofs = std::ofstream{"td_coordinates.dat"};
+
+	for(unsigned long ii = 0; ii < propagation.coordinates.size(); ii++){
+		ofs << propagation.time[ii] << '\t' << propagation.coordinates[ii][0][2] << '\t' << propagation.coordinates[ii][1][2] << std::endl;
+	}
+	
 	return energy_match.fail();
 
 }
