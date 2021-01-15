@@ -174,7 +174,7 @@ TEST_CASE("class input::species", "[input::species]") {
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
-		CHECK(s.mass() == 20.0_a);
+		CHECK(s.mass() == 36457.77_a);
 		
 	}
 
@@ -183,7 +183,7 @@ TEST_CASE("class input::species", "[input::species]") {
 		input::species s = pseudo::element("U") | input::species::mass(235);
 		
 		CHECK(s.symbol() == "U");
-		CHECK(s.mass() == 235.0_a);
+		CHECK(s.mass() == 428378.7975_a);
 		
 	}
 	
@@ -192,7 +192,7 @@ TEST_CASE("class input::species", "[input::species]") {
 		input::species s = "U" | input::species::symbol("U235") | input::species::mass(235);
 		
 		CHECK(s.symbol() == "U235");
-		CHECK(s.mass() == 235.0_a);
+		CHECK(s.mass() == 428378.7975_a);
 		
 	}
 

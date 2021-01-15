@@ -132,7 +132,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     CHECK(geo.atoms()[0].atomic_number() == 54);
     CHECK(geo.atoms()[0] == pseudo::element(54));
     CHECK(geo.atoms()[0].charge() == -54.0_a);
-    CHECK(geo.atoms()[0].mass() == 131.2936_a);
+    CHECK(geo.atoms()[0].mass() == 239333.5935636_a);
     CHECK(geo.coordinates()[0][0] == 1000.0_a);
     CHECK(geo.coordinates()[0][1] == -200.0_a);
     CHECK(geo.coordinates()[0][2] == 6.0_a);
@@ -156,14 +156,14 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     
     CHECK(geo.atoms()[2] == pseudo::element("C"));
     CHECK(geo.atoms()[2].charge() == -6.0_a);
-    CHECK(geo.atoms()[2].mass() == 12.0096_a);
+    CHECK(geo.atoms()[2].mass() == 21892.1617296_a);
     CHECK(geo.coordinates()[2][0] == 2.2846788549_a);
     CHECK(geo.coordinates()[2][1] == -1.3190288178_a);
     CHECK(geo.coordinates()[2][2] == 0.0_a);
 
     CHECK(geo.atoms()[11] == pseudo::element("H"));
     CHECK(geo.atoms()[11].charge() == -1.0_a);
-    CHECK(geo.atoms()[11].mass() == 1.00784_a);
+    CHECK(geo.atoms()[11].mass() == 1837.17994584_a);
     CHECK(geo.coordinates()[11][0] == -4.0572419367_a);
     CHECK(geo.coordinates()[11][1] == 2.343260364_a);
     CHECK(geo.coordinates()[11][2] == 0.0_a);
@@ -179,7 +179,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
     CHECK(geo.atoms()[12].atomic_number() == 17);
     CHECK(geo.atoms()[12] == pseudo::element(17));
     CHECK(geo.atoms()[12].charge() == -17.0_a);
-    CHECK(geo.atoms()[12].mass() == 35.446_a);
+    CHECK(geo.atoms()[12].mass() == 64614.105771_a);
     CHECK(geo.coordinates()[12][0] == -3.0_a);
     CHECK(geo.coordinates()[12][1] == 4.0_a);
     CHECK(geo.coordinates()[12][2] == 5.0_a);
