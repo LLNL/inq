@@ -36,14 +36,15 @@ class periodic_replicas{
 public:
 
 	template <class cell_array>
-	periodic_replicas(const cell_array & cell, const math::vector3<double> & position, const double range){
+	periodic_replicas(const cell_array & cell, math::vector3<double> position, const double range){
 
 		CALI_CXX_MARK_FUNCTION;
-      
+		
 		assert(range >= 0.0);
+		
+		position = cell.position_in_cell(position);
 
 		math::vector3<int> neigh_max(3);
-
 		//we should use floor here, but since we check later, round is more reliable
 		for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell[0]))); 
       
@@ -184,7 +185,43 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
       
       CHECK(rep.size() == 27);
     }
+    
+    SECTION("Cubic cell 5"){
+			
+      ions::periodic_replicas rep(cell, vector3<double>(35.0, -205.0, 2035.0), 10.0);
+      
+      CHECK(rep.size() == 7);
+      
+      CHECK(rep[0][0] == -5.0_a);
+      CHECK(rep[0][1] == 5.0_a);
+      CHECK(rep[0][2] == 5.0_a);
+      
+      CHECK(rep[1][0] == 5.0_a);
+      CHECK(rep[1][1] == -5.0_a);
+      CHECK(rep[1][2] == 5.0_a);
+      
+      CHECK(rep[2][0] == 5.0_a);
+      CHECK(rep[2][1] == 5.0_a);
+      CHECK(rep[2][2] == -5.0_a);
+      
+      CHECK(rep[3][0] == 5.0_a);
+      CHECK(rep[3][1] == 5.0_a);
+      CHECK(rep[3][2] == 5.0_a);
+      
+      CHECK(rep[4][0] == 5.0_a);
+      CHECK(rep[4][1] == 5.0_a);
+      CHECK(rep[4][2] == 15.0_a);
+      
+      CHECK(rep[5][0] == 5.0_a);
+      CHECK(rep[5][1] == 15.0_a);
+      CHECK(rep[5][2] == 5.0_a);
 
+      CHECK(rep[6][0] == 15.0_a);
+      CHECK(rep[6][1] == 5.0_a);
+      CHECK(rep[6][2] == 5.0_a);
+
+    }
+		
   }
 
 }
