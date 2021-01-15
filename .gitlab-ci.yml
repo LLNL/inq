@@ -84,7 +84,7 @@ gcc-ompi:
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
       
 nvcc-ompi-build:
-    image: nvidia/cuda
+    image: nvidia/cuda:11.2.0-devel
     stage: build
     script:
       - time apt update -qq
