@@ -91,7 +91,7 @@ public:
 
 	auto mass() const {
 		using pseudo::element;
-		return opts.mass_.value_or(element::mass());
+		return 1822.8885*opts.mass_.value_or(element::mass());
 	}
 
 	static auto nofilter() {
