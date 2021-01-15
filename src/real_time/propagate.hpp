@@ -107,7 +107,8 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			res.time.push_back(istep*dt);
 			res.energy.push_back(energy.total());
 			res.dipole.push_back(observables::dipole(ions, electrons));
-			
+			res.coordinates.push_back(ions.geo().coordinates());															
+															
 		}
 
 		return res;
