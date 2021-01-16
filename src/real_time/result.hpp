@@ -7,7 +7,6 @@
 
 #include <hamiltonian/energy.hpp>
 #include <math/vector3.hpp>
-
 #include <systems/ions.hpp>
 
 #include <vector>
@@ -21,6 +20,9 @@ namespace real_time {
 		std::vector<double> energy;
 		std::vector<math::vector3<double>> dipole;
 		std::vector<systems::ions> ions;
+		std::vector<std::vector<math::vector3<double>>> coordinates;
+		std::vector<std::vector<math::vector3<double>>> velocities;		
+		std::vector<math::array<math::vector3<double>, 1>> forces;
 	};
 
 }
