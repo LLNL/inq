@@ -45,9 +45,9 @@ int main(int argc, char ** argv){
 	geo.push_back( "N" | math::vector3<double>(0.0, 0.0, -0.5*distance));
 	geo.push_back( "N" | math::vector3<double>(0.0, 0.0,  0.5*distance));
 		
-	systems::ions ions(input::cell::cubic(10.0, 10.0, 12.0) | input::cell::finite(), geo);
+	systems::ions ions(input::cell::cubic(10.0, 10.0, 12.0) /* | input::cell::finite() */, geo);
 
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), input::config{});
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), input::config{});
 	ground_state::initialize(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::steepest_descent() | input::scf::density_mixing());
@@ -70,17 +70,20 @@ int main(int argc, char ** argv){
 	energy_match.check("force 2 x",           result.forces[1][0],             0.000000035122);
 	energy_match.check("force 2 y",           result.forces[1][1],            -0.000000025695);
 	energy_match.check("force 2 z",           result.forces[1][2],            -0.145731033675);
-	
-	auto dt = 0.08;
+
+	auto dt = 0.025;
 	
 	auto propagation = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(1000) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
 
 	auto ofs = std::ofstream{"td_coordinates.dat"};
 
 	for(unsigned long ii = 0; ii < propagation.coordinates.size(); ii++){
-		ofs << propagation.time[ii] << '\t' << propagation.coordinates[ii][0][2] << '\t' << propagation.coordinates[ii][1][2] << std::endl;
+		ofs << propagation.time[ii]
+				<< '\t' << propagation.coordinates[ii][0]
+				<< '\t' << propagation.velocities[ii][0]
+				<< '\t' << propagation.forces[ii][0] << std::endl;		
 	}
-	
+ 
 	return energy_match.fail();
 
 }
