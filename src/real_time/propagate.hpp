@@ -75,7 +75,18 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		res.ions.push_back(ions);
 
 		auto forces = hamiltonian::calculate_forces(ions, electrons, ham);
-		
+
+		auto save_iteration_results = [&](auto time){
+			res.time.push_back(time);
+			res.energy.push_back(energy.total());
+			res.dipole.push_back(observables::dipole(ions, electrons));
+			res.coordinates.push_back(ions.geo().coordinates());
+			res.velocities.push_back(ions.geo().velocities());
+			res.forces.push_back(forces);
+		};
+
+		save_iteration_results(0.0);
+			
 		for(int istep = 1; istep <= numsteps; istep++){
 
 			{
@@ -104,12 +115,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			ion_propagator.propagate_velocities(dt, ions, forces);
 			if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
 
-			res.time.push_back(istep*dt);
-			res.energy.push_back(energy.total());
-			res.dipole.push_back(observables::dipole(ions, electrons));
-			res.coordinates.push_back(ions.geo().coordinates());
-			res.velocities.push_back(ions.geo().velocities());
-			res.forces.push_back(forces);			
+			save_iteration_results((istep + 1)*dt);
 
 		}
 
