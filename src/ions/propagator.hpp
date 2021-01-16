@@ -32,7 +32,7 @@ struct impulsive {
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_positions(double dt, TypeIons& ions, TypeForces const &){
 		for(int i = 0; i != ions.geo().num_atoms(); ++i)
-			ions.geo().coordinates()[i] += dt*ions.velocities()[i];
+			ions.geo().coordinates()[i] += dt*ions.geo().velocities()[i];
 	}
 
 	template <typename TypeIons, typename TypeForces>

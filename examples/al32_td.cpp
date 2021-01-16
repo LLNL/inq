@@ -78,7 +78,7 @@ int main(int argc, char ** argv){
 
 	auto dt = 0.055;
 
-	ions.velocities()[ions.geo().num_atoms() - 1] = math::vector3<double>(0.1, 0.0, 0.0);
+	ions.geo().velocities()[ions.geo().num_atoms() - 1] = math::vector3<double>(0.1, 0.0, 0.0);
 
 	{
 		auto propagation = real_time::propagate(
