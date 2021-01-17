@@ -198,6 +198,10 @@ namespace math {
 		friend GPU_FUNCTION auto imag(vector3 const & vv){
 			return elementwise([] (auto x) { return imag(x);}, vv);
 		}
+
+		friend GPU_FUNCTION auto fabs(vector3 const & vv){
+			return elementwise([] (auto x) { return fabs(x);}, vv);
+		}
 		
 		// VECTORIAL PRODUCTS
 		
