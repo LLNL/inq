@@ -18,6 +18,7 @@ namespace real_time {
 	public:
 		std::vector<double> time;
 		std::vector<double> energy;
+		std::vector<double> electron_number;		
 		std::vector<math::vector3<double>> dipole;
 		std::vector<systems::ions> ions;
 		std::vector<std::vector<math::vector3<double>>> coordinates;

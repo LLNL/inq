@@ -79,6 +79,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		auto save_iteration_results = [&](auto time){
 			res.time.push_back(time);
 			res.energy.push_back(energy.total());
+			res.electron_number.push_back(operations::integral(electrons.density_));
 			res.dipole.push_back(observables::dipole(ions, electrons));
 			res.coordinates.push_back(ions.geo().coordinates());
 			res.velocities.push_back(ions.geo().velocities());
