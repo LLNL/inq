@@ -96,19 +96,22 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 				//calculate H(t + dt) from the full step propagation
 				electrons.density_ = density::calculate(electrons.states_.occupations(), fullstep_phi, electrons.density_basis_);
 				ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
-
-				//propagate ionic positions to t + dt
-				ion_propagator.propagate_positions(dt, ions, forces);
-				if(not ion_propagator.static_ions) sc.update_ionic_fields(ions, electrons.atomic_pot_);
 			}
-
+			
+			//propagate ionic positions to t + dt
+			ion_propagator.propagate_positions(dt, ions, forces);
+			if(not ion_propagator.static_ions) sc.update_ionic_fields(ions, electrons.atomic_pot_);
+			
 			//propagate the other half step with H(t + dt)
 			operations::exponential_in_place(ham, complex(0.0, dt/2.0), electrons.phi_);
+
+			//calculate the new density, energy, forces
+			electrons.density_ = density::calculate(electrons.states_.occupations(),  electrons.phi_, electrons.density_basis_);
+			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 			
 			auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 
-			//calculate forces, force variance
 			forces = hamiltonian::calculate_forces(ions, electrons, ham);
 			
 			//propagate ionic velocities to t + dt
