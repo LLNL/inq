@@ -19,8 +19,6 @@
 #include <input/rt.hpp>
 #include <input/scf.hpp>
 #include <ions/interaction.hpp>
-#include <ground_state/result.hpp>
-#include <real_time/result.hpp>
 #include <systems/ions.hpp>
 #include <density/calculate.hpp>
 #include <density/normalize.hpp>
@@ -40,19 +38,6 @@
 #include <utils/profiling.hpp>
 
 namespace inq {
-
-namespace systems {
-	class electrons;
-}
-
-namespace ground_state {
-	ground_state::result calculate(const inq::systems::ions & ions, inq::systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {});
-}
-
-namespace real_time {
-	real_time::result propagate(inq::systems::ions & ions, inq::systems::electrons & electrons, const input::interaction & inter = {}, const input::rt & options = {});
-}
-
 namespace systems {
 
 	class electrons {

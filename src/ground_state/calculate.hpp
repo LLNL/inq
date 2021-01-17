@@ -52,8 +52,8 @@
 
 namespace inq {
 namespace ground_state {
-	
-	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
+
+	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {}){
 
 		CALI_CXX_MARK_FUNCTION;
 
