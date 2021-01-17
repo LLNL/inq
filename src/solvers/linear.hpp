@@ -52,13 +52,13 @@ void linear_symmetric(matrix_type && matrix, vector_type & vector){
     
 	//DATAOPERATIONS RAWLAPACK dpotrf
 	int info;
-	dpotrf("U", &nn, matrix.data(), &nn, &info);
+	dpotrf("U", &nn, matrix.data_elements(), &nn, &info);
 		
 	const int one = 1;
 	//DATAOPERATIONS RAWLAPACK dtrsv
-	dtrsv('U', 'T', 'N', nn, matrix.data(), nn, vector.data(), one);
+	dtrsv('U', 'T', 'N', nn, matrix.data_elements(), nn, vector.data_elements(), one);
 	//DATAOPERATIONS RAWLAPACK dtrsv
-	dtrsv('U', 'N', 'N', nn, matrix.data(), nn, vector.data(), one);
+	dtrsv('U', 'N', 'N', nn, matrix.data_elements(), nn, vector.data_elements(), one);
 		
 }
 

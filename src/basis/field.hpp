@@ -116,11 +116,11 @@ namespace basis {
 		}
 		
 		auto data() {
-			return linear_.data();
+			return linear_.data_elements();
 		}
 
 		auto data() const {
-			return linear_.data();
+			return linear_.data_elements();
 		}
 
 		auto & linear() const {

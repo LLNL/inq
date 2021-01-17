@@ -40,7 +40,7 @@ namespace inq {
 namespace operations {
 namespace space {
 
-void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fphi){
+void zero_outside_sphere(basis::field<basis::fourier_space, complex> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
 	//DATAOPERATIONS GPU::RUN 3D
@@ -53,7 +53,7 @@ void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fph
 
 ///////////////////////////////////////////////////////////////
 		
-void zero_outside_sphere(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi){
+void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<complex>> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
 	//DATAOPERATIONS GPU::RUN 3D
@@ -117,23 +117,23 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		}
 		
 		// we should do
-		//   math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
+		math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
 		// but it is impossibly slow
 		// so for the moment we do:
 		
-		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
+//		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
 
-		for(int i4 = 0; i4 < comm.size(); i4++){
-			CALI_CXX_MARK_SCOPE("fft_transpose");
-			
-			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
-							 [i4,
-								buf = begin(buffer),
-								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
-							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
-								 buf[i4][i3][i2][i1][i0] = rot[i4][i3][i2][i1][i0];
-							 });
-		}
+//		for(int i4 = 0; i4 < comm.size(); i4++){
+//			CALI_CXX_MARK_SCOPE("fft_transpose");
+//			
+//			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
+//							 [i4,
+//								buf = begin(buffer),
+//								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
+//							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
+//								 buf[i4][i3][i2][i1][i0] = rot[i4][i3][i2][i1][i0];
+//							 });
+//		}
 
 		assert(std::get<4>(sizes(buffer)) == last_dim);
 		
@@ -141,7 +141,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 
 		{
@@ -195,7 +195,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 		
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});

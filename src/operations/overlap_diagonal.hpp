@@ -92,7 +92,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 	}
 
 	if(phi1.basis().part().parallel()){
-		phi1.basis().comm().all_reduce_in_place_n(static_cast<type *>(overlap_vector.data()), overlap_vector.size(), std::plus<>{});
+		phi1.basis().comm().all_reduce_in_place_n(static_cast<type *>(overlap_vector.data_elements()), overlap_vector.size(), std::plus<>{});
 	}
 		
 	return overlap_vector;

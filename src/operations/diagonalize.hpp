@@ -67,7 +67,7 @@ math::array<double, 1> diagonalize(math::array<double, 2> & matrix){
 		//query the work size
 		int lwork;
 		cusolver_status = cusolverDnDsyevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																									raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
+																									raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(eigenvalues.data_elements()), &lwork);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		assert(lwork >= 0);
 
@@ -82,7 +82,7 @@ math::array<double, 1> diagonalize(math::array<double, 2> & matrix){
 		assert(cudaSuccess == cuda_status);
 			
 		cusolver_status = cusolverDnDsyevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																			 raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
+																			 raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(eigenvalues.data_elements()), work, lwork, devInfo);
 
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		cudaDeviceSynchronize();
@@ -96,12 +96,12 @@ math::array<double, 1> diagonalize(math::array<double, 2> & matrix){
 	double lwork_query;
 
 	int info;
-	dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), &lwork_query, -1, info);
+	dsyev("V", "U", nn, matrix.data_elements(), nn, eigenvalues.data_elements(), &lwork_query, -1, info);
 
 	int lwork = int(lwork_query);
 	auto work = (double *) malloc(lwork*sizeof(complex));
     
-	dsyev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, info);
+	dsyev("V", "U", nn, matrix.data_elements(), nn, eigenvalues.data_elements(), work, lwork, info);
 	assert(info == 0);
 		
 	free(work);
@@ -130,7 +130,7 @@ math::array<double, 1> diagonalize(math::array<complex, 2> & matrix){
 		//query the work size
 		int lwork;
 		cusolver_status = cusolverDnZheevd_bufferSize(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																									(cuDoubleComplex const *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), &lwork);
+																									(cuDoubleComplex const *) raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(eigenvalues.data_elements()), &lwork);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		assert(lwork >= 0);
 
@@ -145,7 +145,7 @@ math::array<double, 1> diagonalize(math::array<complex, 2> & matrix){
 		assert(cudaSuccess == cuda_status);
 			
 		cusolver_status = cusolverDnZheevd(cusolver_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, nn,
-																			 (cuDoubleComplex *) raw_pointer_cast(matrix.data()), nn, raw_pointer_cast(eigenvalues.data()), work, lwork, devInfo);
+																			 (cuDoubleComplex *) raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(eigenvalues.data_elements()), work, lwork, devInfo);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		cudaDeviceSynchronize();
 		assert(*devInfo == 0);
@@ -159,13 +159,13 @@ math::array<double, 1> diagonalize(math::array<complex, 2> & matrix){
 	auto rwork = (double *) malloc(std::max(1, 3*nn - 2)*sizeof(double));
     
 	int info;
-	zheev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), &lwork_query, -1, rwork, info);
+	zheev("V", "U", nn, matrix.data_elements(), nn, eigenvalues.data_elements(), &lwork_query, -1, rwork, info);
 
 
 	int lwork = int(real(lwork_query));
 	auto work = (complex *) malloc(lwork*sizeof(complex));
     
-	zheev("V", "U", nn, matrix.data(), nn, eigenvalues.data(), work, lwork, rwork, info);
+	zheev("V", "U", nn, matrix.data_elements(), nn, eigenvalues.data_elements(), work, lwork, rwork, info);
     
 	free(rwork);
 	free(work);

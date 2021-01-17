@@ -49,7 +49,7 @@ calculate(const occupations_array_type & occupations, field_set_type & phi){
 					 });
 
 	if(phi.set_part().parallel()){
-		phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
+		phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 	}
 		
 	return density;

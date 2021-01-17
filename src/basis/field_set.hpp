@@ -86,7 +86,7 @@ namespace basis {
 		}
 
 		auto data() {
-			return matrix_.data();
+			return matrix_.data_elements();
 		}
 
 		auto num_elements() const {
@@ -100,7 +100,7 @@ namespace basis {
 
 			//DATAOPERATIONS GPU::RUN
 			gpu::run(matrix_.num_elements(),
-							 [lin = (element_type *) matrix_.data(), value] GPU_LAMBDA (auto ii){
+							 [lin = (element_type *) matrix_.data_elements(), value] GPU_LAMBDA (auto ii){
 								 lin[ii] = value;
 							 });
 		

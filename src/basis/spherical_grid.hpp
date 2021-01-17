@@ -137,14 +137,14 @@ namespace basis {
 		}
 
 		template <class array_4d>
-    math::array<typename array_4d::element_type, 2> gather(const array_4d & grid) const {
+		math::array<typename array_4d::element, 2> gather(const array_4d & grid) const {
 
 			CALI_CXX_MARK_SCOPE("spherical_grid::gather(4d)");
 			
 			const int nst = std::get<3>(sizes(grid));
 
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
-			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
+			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 			
 			//DATAOPERATIONS LOOP + GPU::RUN 2D
@@ -261,7 +261,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     math::array<complex, 3> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2]});
     std::vector<complex> subgrid(sphere.size());
 
-    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;
+    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data_elements()[ii] = 0.0;
     
     sphere.gather(grid, subgrid);
 
@@ -270,9 +270,9 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     sphere.scatter(subgrid, grid);
 
     double sum = 0.0;
-    for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
-		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
-		
+	for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
+	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+	
     CHECK(sum == 257.0_a);
     
   }
@@ -288,25 +288,25 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     math::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 20}, 0.0);
     math::array<complex, 2> subgrid({sphere.size(), 20}, 0.0);
 
-    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 1.0;
+    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data_elements()[ii] = 1.0;
     
     sphere.gather(grid, subgrid);
 
     double sum = 0.0;
-    for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data()[ii]);
-		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
-		
+	for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data_elements()[ii]);
+	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+
     CHECK(sum == Approx(20.0*257.0));
     
-    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 0.0;
+    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data_elements()[ii] = 0.0;
     
-		sphere.scatter(subgrid, grid);
+	sphere.scatter(subgrid, grid);
 
     sum = 0.0;
-    for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
-		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+	for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
+	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
 
-		CHECK(sum == Approx(20.0*(pw.size() - size)));
+	CHECK(sum == Approx(20.0*(pw.size() - size)));
 
   }
 

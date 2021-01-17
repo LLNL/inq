@@ -129,7 +129,7 @@ namespace hamiltonian {
 								 });
 
 				if(phi.basis().part().parallel()){
-					phi.basis().comm().all_reduce_in_place_n(static_cast<complex *>(projections.data()), projections.num_elements(), std::plus<>{});
+					phi.basis().comm().all_reduce_in_place_n(static_cast<complex *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 				}
 				
 				for(int iproj = 0; iproj < nproj_; iproj++){

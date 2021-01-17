@@ -47,13 +47,13 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 	double dwork;
 		
 	//DATAOPERATIONS RAWLAPACK dgelss
-	dgelss(mm, nn, 1, matrix.data(), mm, rhs.data(), mm, ss.data(), -1.0, rank, &dwork, -1, info);
+	dgelss(mm, nn, 1, matrix.data_elements(), mm, rhs.data_elements(), mm, ss.base(), -1.0, rank, &dwork, -1, info);
 
 	assert(info == 0);
 		
 	auto work = (double *) malloc(int(dwork)*sizeof(double));
 
-	dgelss(mm, nn, 1, matrix.data(), mm, rhs.data(), mm, ss.data(), -1.0, rank, work, int(dwork), info);
+	dgelss(mm, nn, 1, matrix.data_elements(), mm, rhs.data_elements(), mm, ss.data_elements(), -1.0, rank, work, int(dwork), info);
 
 	assert(info == 0);
 		
