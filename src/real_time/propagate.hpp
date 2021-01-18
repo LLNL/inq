@@ -73,7 +73,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 
 		res.save_iteration_results(0.0, ions, electrons, energy, forces);
 			
-		for(int istep = 1; istep <= numsteps; istep++){
+		for(int istep = 0; istep < numsteps; istep++){
 
 			{
 				//propagate half step and full step with H(t)
