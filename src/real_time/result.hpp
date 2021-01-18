@@ -23,20 +23,19 @@ namespace real_time {
 		std::vector<double> energy;
 		std::vector<double> electron_number;		
 		std::vector<math::vector3<double>> dipole;
-		std::vector<systems::ions> ions;
 		std::vector<std::vector<math::vector3<double>>> coordinates;
 		std::vector<std::vector<math::vector3<double>>> velocities;		
 		std::vector<math::array<math::vector3<double>, 1>> forces;
 
 		template <class ForcesType>
-		void save_iteration_results(double iter_time, systems::ions const & ions, systems::electrons const & electrons, hamiltonian::energy const & iter_energy, ForcesType const & forces){
+		void save_iteration_results(double iter_time, systems::ions const & ions, systems::electrons const & electrons, hamiltonian::energy const & iter_energy, ForcesType const & iter_forces){
 			time.push_back(iter_time);
 			energy.push_back(iter_energy.total());
 			electron_number.push_back(operations::integral(electrons.density_));
 			dipole.push_back(observables::dipole(ions, electrons));
 			coordinates.push_back(ions.geo().coordinates());
 			velocities.push_back(ions.geo().velocities());
-			forces.push_back(forces);
+			forces.push_back(iter_forces);
 		}
 
 	};
