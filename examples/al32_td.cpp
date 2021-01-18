@@ -89,8 +89,8 @@ int main(int argc, char ** argv){
 
 		auto ofs = std::ofstream{"al32_v0.1.dat"}; ofs<<"# distance (au), energy (au)\n";
 
-		for(std::size_t i = 0; i != propagation.ions.size(); ++i)
-			ofs<< propagation.ions[i].geo().coordinates()[ions.geo().num_atoms()-1][0] <<'\t'<< propagation.energy[i] <<'\n';
+		for(std::size_t i = 0; i != propagation.time.size(); ++i)
+			ofs << propagation.coordinates[i][ions.geo().num_atoms() - 1][0] <<'\t'<< propagation.energy[i] <<'\n';
 	}
 	fftw_cleanup(); //required for valgrid
 	
