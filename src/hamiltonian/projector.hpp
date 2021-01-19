@@ -93,7 +93,7 @@ namespace hamiltonian {
 			if(sphere_.size() > 0) {
 				
 				namespace blas = boost::multi::blas;
-				projections = blas::gemm(sphere_.volume_element(), matrix_, sphere_phi);
+				blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
 
 				{
 					CALI_CXX_MARK_SCOPE("projector_scal");
@@ -117,7 +117,7 @@ namespace hamiltonian {
 			if(sphere_.size() > 0) {
 				//DATAOPERATIONS BLAS
 				namespace blas = boost::multi::blas;
-				sphere_phi = blas::gemm(1., blas::T(matrix_), projections);
+				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
 				
 				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			}
@@ -134,6 +134,7 @@ namespace hamiltonian {
 				
 			using boost::multi::blas::gemm;
 			using boost::multi::blas::transposed;
+			namespace blas = boost::multi::blas;
 				
 			auto sphere_phi = sphere_.gather(phi.cubic());
 			auto sphere_gphi = sphere_.gather(gphi.cubic());			
@@ -142,7 +143,7 @@ namespace hamiltonian {
 
 			if(sphere_.size() > 0) {
 				
-				projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
+				blas::real_doubled(projections) = gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
 				
 				{
 					CALI_CXX_MARK_SCOPE("projector_scal"); 
@@ -165,7 +166,7 @@ namespace hamiltonian {
 
 			if(sphere_.size() > 0) {
 				namespace blas = boost::multi::blas;
-				sphere_phi = blas::gemm(1., transposed(matrix_), projections);
+				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(matrix_), blas::real_doubled(projections));
 				
 				for(int ip = 0; ip < sphere_.size(); ip++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
@@ -195,8 +196,7 @@ namespace hamiltonian {
 
     basis::spherical_grid sphere_;
     int nproj_;
-		//OPTIMIZATION: make this matrix real
-    math::array<complex, 2> matrix_;
+    math::array<double, 2> matrix_;
 		math::array<double, 1> kb_coeff_;
     
   };
