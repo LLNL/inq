@@ -1,11 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
-//  Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa
+//  Copyright (C) 2020-2021 Xavier Andrade, Alfredo A. Correa
 
 #ifndef INQ__REAL_TIME__RESULT
 #define INQ__REAL_TIME__RESULT
 
-#include <hamiltonian/energy.hpp>
 #include <math/vector3.hpp>
 #include <operations/integral.hpp>
 #include <systems/electrons.hpp>
@@ -24,7 +23,7 @@ namespace real_time {
 		std::vector<double> electron_number;		
 		std::vector<math::vector3<double>> dipole;
 		std::vector<std::vector<math::vector3<double>>> coordinates;
-		std::vector<std::vector<math::vector3<double>>> velocities;		
+		std::vector<std::vector<math::vector3<double>>> velocities;
 		std::vector<math::array<math::vector3<double>, 1>> forces;
 
 		template <class ForcesType>
