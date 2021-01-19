@@ -49,20 +49,9 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 
 	CALI_CXX_MARK_FUNCTION;
 	
-  basis::field<basis::real_space, math::vector3<double>> gdensity(electrons.phi_.basis());
-
-  //calculate the gradient of the density from the gradient of the orbitals  
   auto gphi = operations::gradient(electrons.phi_);
-  
-  gpu::run(3, electrons.phi_.basis().part().local_size(),
-					 [nst = electrons.phi_.set_part().local_size(), occs = begin(electrons.states_.occupations()),
-            phip = begin(electrons.phi_.matrix()), gphip = begin(gphi.matrix()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto idir, auto ip){
-						 gdensityp[ip][idir] = 0.0;
-						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
-					 });
-
-	gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(gdensity.linear().data_elements())), 3*gdensity.linear().size(), std::plus<>{});
-
+	auto gdensity = density::calculate_gradient(electrons.states_.occupations(), electrons.phi_, gphi);
+	
   //the non-local potential term
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 	
