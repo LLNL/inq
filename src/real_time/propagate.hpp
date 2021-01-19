@@ -1,40 +1,18 @@
 /* -*- indent-tabs-mode: t -*- */
 
-//  Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa
+//  Copyright (C) 2020-2021 Xavier Andrade, Alfredo A. Correa
 
 #ifndef INQ__REAL_TIME__PROPAGATE
 #define INQ__REAL_TIME__PROPAGATE
 
-#include <cfloat>
-
-#include <basis/real_space.hpp>
-#include <hamiltonian/atomic_potential.hpp>
-#include <states/ks_states.hpp>
-#include <hamiltonian/ks_hamiltonian.hpp>
-#include <hamiltonian/self_consistency.hpp>
-#include <hamiltonian/energy.hpp>
-#include <hamiltonian/forces.hpp>
-#include <basis/field_set.hpp>
-#include <operations/randomize.hpp>
-#include <operations/overlap.hpp>
-#include <operations/overlap_diagonal.hpp>
-#include <operations/scal.hpp>
-#include <operations/orthogonalize.hpp>
-#include <operations/preconditioner.hpp>
-#include <operations/integral.hpp>
-#include <operations/exponential.hpp>
-#include <density/calculate.hpp>
-#include <density/normalize.hpp>
-#include <math/complex.hpp>
-#include <input/basis.hpp>
-#include <input/config.hpp>
-#include <input/interaction.hpp>
-#include <ions/interaction.hpp>
-#include <ions/propagator.hpp>
-#include <input/rt.hpp>
 #include <systems/ions.hpp>
-#include <systems/electrons.hpp>
+#include <hamiltonian/self_consistency.hpp>
+#include <hamiltonian/forces.hpp>
+#include <operations/overlap_diagonal.hpp>
+#include <operations/exponential.hpp>
 #include <observables/dipole.hpp>
+#include <ions/propagator.hpp>
+#include <systems/electrons.hpp>
 #include <real_time/result.hpp>
 
 #include <utils/profiling.hpp>
