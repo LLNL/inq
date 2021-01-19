@@ -20,6 +20,16 @@
 namespace inq {
 namespace real_time {
 
+template<class IonSubPropagator = ions::propagator::fixed>
+class ehrenfest_propagator{
+	systems::ions& ions_;
+	systems::electrons& electrons_;
+	input::rt options_;
+	IonSubPropagator ion_propagator_;
+	ehrenfest_propagator(systems::ions& ions, systems::electrons& electrons, input::rt const& options, IonSubPropagator const& ion_propagator = {}) 
+		: ions_{ions}, electrons_{electrons}, options_{options}, ion_propagator_{ion_propagator}{}
+};
+
 template<typename IonSubPropagator = ions::propagator::fixed>
 real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
 
