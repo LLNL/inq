@@ -392,7 +392,9 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 ///////////////////////////////////////////////////////////////
 	
 basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis::field_set<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
-
+	
+	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
