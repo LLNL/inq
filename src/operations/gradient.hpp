@@ -33,7 +33,7 @@ namespace operations {
 	basis::field<basis::fourier_space, math::vector3<complex>> gradient(basis::field<basis::fourier_space, complex> const & ff){
 		basis::field<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
 
-		CALI_CXX_MARK_SCOPE("gradient(field)");
+		CALI_CXX_MARK_SCOPE("gradient_fourier(field)");
  
 		gpu::run(grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
 						 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic())]
@@ -51,7 +51,7 @@ namespace operations {
 	basis::field_set<basis::fourier_space, math::vector3<complex>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
 		basis::field_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
 
-		CALI_CXX_MARK_SCOPE("gradient(field_set)");
+		CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
 		gpu::run(grad.set_part().local_size(), grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
 						 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic())]
@@ -67,6 +67,9 @@ namespace operations {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto gradient(basis::field<basis::real_space, complex> const & ff){
+
+		CALI_CXX_MARK_SCOPE("gradient_real_space(field)");
+		
 		auto ff_fourier = operations::space::to_fourier(ff);
 		auto grad_fourier = gradient(ff_fourier);
 		auto grad_real = operations::space::to_real(grad_fourier);
@@ -76,6 +79,9 @@ namespace operations {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto gradient(basis::field<basis::real_space, double> const & ff){
+
+		CALI_CXX_MARK_SCOPE("gradient_real_space(field,double)");
+		
 		auto ff_fourier = operations::space::to_fourier(complex_field(ff));
 		auto grad_fourier = gradient(ff_fourier);
 		auto grad_real = operations::space::to_real(grad_fourier);
@@ -85,13 +91,13 @@ namespace operations {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto gradient(basis::field_set<basis::real_space, complex> const & ff){
+
+		CALI_CXX_MARK_SCOPE("gradient_real_space(field_set)");
+		
 		auto ff_fourier = operations::space::to_fourier(ff);
 		auto grad_fourier = gradient(ff_fourier);
-		auto grad_real = operations::space::to_real(grad_fourier);
-		return grad_real;
+		return operations::space::to_real(grad_fourier);
 	}
-
-
 	
 }
 }
