@@ -46,8 +46,9 @@ struct loc_pot {
 
 template <typename HamiltonianType>
 math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
-  solvers::poisson poisson_solver;
-  
+
+	CALI_CXX_MARK_FUNCTION;
+	
   basis::field<basis::real_space, math::vector3<double>> gdensity(electrons.phi_.basis());
 
   //calculate the gradient of the density from the gradient of the orbitals  
@@ -77,6 +78,8 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
   //ionic force
   auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
+  solvers::poisson poisson_solver;
+	
 	//the force from the local potential
   math::array<math::vector3<double>, 1> forces_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){

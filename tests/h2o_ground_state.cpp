@@ -36,8 +36,6 @@
 
 int main(int argc, char ** argv){
 
-	CALI_CXX_MARK_FUNCTION;
-
 	using namespace inq::input;
 	using inq::math::vector3;
 	
