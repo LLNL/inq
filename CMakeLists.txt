@@ -11,8 +11,8 @@ include(CTest)
 
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
-  
   enable_language(CUDA)
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"") #nvcc
   find_package(CUDA)
   set(INQ_CUDA_LIBRARIES ${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
   link_libraries(${INQ_CUDA_LIBRARIES})
@@ -65,9 +65,10 @@ configure_file(inq_config.h.in inq_config.h)
 set(INCXX scripts/inc++)
 configure_file(${INCXX}.bash.in ${INCXX} @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-  
+
 install(DIRECTORY share/ DESTINATION share/inq)
 
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(examples)
+
