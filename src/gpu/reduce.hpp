@@ -45,7 +45,7 @@ struct reduce {
 
 #ifdef ENABLE_CUDA
 template <class kernel_type, class array_type>
-__global__ void reduce_kernel_1d(long size, kernel_type kernel, array_type odata) {
+__global__ void reduce_kernel_r(long size, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem;
@@ -112,7 +112,7 @@ auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
 	unsigned nblock = (size + blocksize - 1)/blocksize;
 	math::array<type, 1> result(nblock);
 
-  reduce_kernel_1d<<<nblock, blocksize, blocksize*sizeof(type)>>>(size, kernel, begin(result));	
+  reduce_kernel_r<<<nblock, blocksize, blocksize*sizeof(type)>>>(size, kernel, begin(result));	
   check_error(cudaGetLastError());
 	
   if(nblock == 1) {
@@ -202,7 +202,7 @@ auto run(reduce const & redx, reduce const & redy, kernel_type kernel) -> declty
 
 #ifdef ENABLE_CUDA
 template <class kernel_type, class array_type>
-__global__ void reduce_kernel_2d(long sizex, long sizey, kernel_type kernel, array_type odata) {
+__global__ void reduce_kernel_vr(long sizex, long sizey, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem; // {blockDim.x, blockDim.y}
@@ -263,7 +263,7 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<dec
 	int mingridsize = 0;
 	int blocksize = 0;
 
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_2d<kernel_type, decltype(begin(result))>));
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_vr<kernel_type, decltype(begin(result))>));
 	
 	unsigned bsizex = 4; //this seems to be the optimal value
 	if(sizex <= 2) bsizex = sizex;
@@ -283,7 +283,7 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<dec
 
   assert(shared_mem_size <= 48*1024);
   
-  reduce_kernel_2d<<<dg, db, shared_mem_size>>>(sizex, sizey, kernel, begin(result));	
+  reduce_kernel_vr<<<dg, db, shared_mem_size>>>(sizex, sizey, kernel, begin(result));	
   check_error(cudaGetLastError());
 	
   if(nblocky == 1) {
@@ -302,7 +302,7 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<dec
 
 #ifdef ENABLE_CUDA
 template <class kernel_type, class array_type>
-__global__ void reduce_kernel_3d(long sizex, long sizey,long sizez, kernel_type kernel, array_type odata) {
+__global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem; // {blockDim.x, blockDim.y}
@@ -365,7 +365,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 	int mingridsize = 0;
 	int blocksize = 0;
 
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_3d<kernel_type, decltype(begin(result))>));
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_vrr<kernel_type, decltype(begin(result))>));
 	
 	unsigned bsizex = 4; //this seems to be the optimal value
 	if(sizex <= 2) bsizex = sizex;
@@ -388,7 +388,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 
   assert(shared_mem_size <= 48*1024);
   
-  reduce_kernel_3d<<<dg, db, shared_mem_size>>>(sizex, sizey, sizez, kernel, begin(result));	
+  reduce_kernel_vrr<<<dg, db, shared_mem_size>>>(sizex, sizey, sizez, kernel, begin(result));	
   check_error(cudaGetLastError());
 	
   if(nblocky*nblockz == 1) {
