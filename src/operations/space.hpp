@@ -321,32 +321,9 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & 
 	basis::fourier_space fourier_basis(real_basis);
 	
 	basis::field<basis::fourier_space, math::vector3<complex>> fphi(fourier_basis);
-
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3});
-
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					tmp[ix][iy][iz][idir] = phi.cubic()[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
 	
-	to_fourier(real_basis, fourier_basis, tmp, ftmp);
+	to_fourier(real_basis, fourier_basis, phi.cubic().reinterpret_array_cast<complex>(3), fphi.cubic().reinterpret_array_cast<complex>(3));
 
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					fphi.cubic()[ix][iy][iz][idir] = ftmp[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
-	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 			
 	return fphi;
@@ -364,7 +341,7 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
-	to_real(fourier_basis, real_basis, fphi.cubic().template reinterpret_array_cast<complex>(3), phi.cubic().template reinterpret_array_cast<complex>(3));
+	to_real(fourier_basis, real_basis, fphi.cubic().reinterpret_array_cast<complex>(3), phi.cubic().reinterpret_array_cast<complex>(3));
 
 	if(normalize){
 		gpu::run(3, phi.linear().size(),
