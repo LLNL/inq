@@ -147,40 +147,22 @@ namespace basis {
 			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 			
-			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef ENABLE_CUDA
 			gpu::run(nst, size(),
-							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
-							 __device__ (auto ist, auto ipoint){
+							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 sgr[ipoint][ist] = gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist];
 							 });
-#else
-      for(int ipoint = 0; ipoint < size(); ipoint++){
-				for(int ist = 0; ist < nst; ist++) subgrid[ipoint][ist] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][ist];
-      }
-#endif
+			
 			return subgrid;
     }
 
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
-
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter_add");
-			
-			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef ENABLE_CUDA
+
 			gpu::run(std::get<1>(sizes(subgrid)), size(),
-							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
-							 __device__ (auto ist, auto ipoint){
+							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist] += sgr[ipoint][ist];
 							 });
-#else
-      for(int ipoint = 0; ipoint < size(); ipoint++){
-				for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
-					grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][i1] += subgrid[ipoint][i1];
-				}
-      }
-#endif
     }
     
     template <class array_1d, class array_3d>
@@ -188,7 +170,6 @@ namespace basis {
 
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter");
 			
-			//DATAOPERATIONS LOOP 1D (random access output)
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }
