@@ -55,10 +55,13 @@ void orthogonalize(field_set_type & phi){
 	auto olap = overlap(phi);
 
 	const int nst = phi.set_size();
-		
+
 	//DATAOPERATIONS RAWLAPACK zpotrf
 #ifdef ENABLE_CUDA
 	{
+
+		CALI_CXX_MARK_SCOPE("cuda_zpotrf");
+		
 		cusolverDnHandle_t cusolver_handle;
 			
 		[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
@@ -91,14 +94,19 @@ void orthogonalize(field_set_type & phi){
 			
 	}
 #else
-	int info;
-	zpotrf("U", &nst, olap.data_elements(), &nst, &info);
-	assert(info == 0);
+	{
+		CALI_CXX_MARK_SCOPE("cuda_zpotrf");
+		int info;
+		zpotrf("U", &nst, olap.data_elements(), &nst, &info);
+		assert(info == 0);
+	}
 #endif
 
-	//DATAOPERATIONS trsm
-	namespace blas = boost::multi::blas;
-	blas::trsm(blas::side::right, blas::filling::upper, 1., blas::H(olap), phi.matrix());
+	{
+		CALI_CXX_MARK_SCOPE("orthogonalize_trsm");
+		namespace blas = boost::multi::blas;
+		blas::trsm(blas::side::right, blas::filling::upper, 1., blas::H(olap), phi.matrix());
+	}
 }
 
 template <class field_set_type>
