@@ -127,6 +127,81 @@ auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
 
 #ifdef ENABLE_CUDA
 template <class kernel_type, class array_type>
+__global__ void reduce_kernel_rr(long sizex, long sizey, kernel_type kernel, array_type odata) {
+
+	extern __shared__ char shared_mem[];
+	auto reduction_buffer = (typename array_type::element *) shared_mem;
+	
+	// each thread loads one element from global to shared mem
+	unsigned int tid = threadIdx.x;
+	unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
+	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;	
+
+	if(ix < sizex and iy < sizey){
+		reduction_buffer[tid] = kernel(ix, iy);
+	} else {
+		reduction_buffer[tid] = (typename array_type::element) 0.0;
+	}
+
+	__syncthreads();
+
+	// do reduction in shared mem
+	for (unsigned int s = blockDim.x/2; s > 0; s >>= 1){
+		if (tid < s) {
+			reduction_buffer[tid] += reduction_buffer[tid + s];
+		}
+		__syncthreads();
+	}
+	
+	// write result for this block to global mem
+	if (tid == 0) odata[blockIdx.x][blockIdx.y] = reduction_buffer[0];
+
+}
+#endif
+
+template <class kernel_type>
+auto run(reduce const & redx, reduce const & redy, kernel_type kernel) -> decltype(kernel(0, 0)) {
+
+	auto const sizex = redx.size;	
+	auto const sizey = redy.size;	
+	
+  using type = decltype(kernel(0, 0));
+  
+#ifndef ENABLE_CUDA
+
+  type accumulator = 0.0;
+	for(long iy = 0; iy < sizey; iy++){
+		for(long ix = 0; ix < sizex; ix++){
+			accumulator += kernel(ix, iy);
+		}
+	}
+  return accumulator;
+
+#else
+
+	const int bsizex = 1024;
+	const int bsizey = 1;
+
+	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
+	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
+	
+	math::array<type, 2> result({nblockx, nblocky});
+
+  reduce_kernel_rr<<<{nblockx, nblocky}, {bsizex, bsizey}, bsizex*bsizey*sizeof(type)>>>(sizex, sizey, kernel, begin(result));	
+  check_error(cudaGetLastError());
+	
+  if(nblockx*nblocky == 1) {
+    cudaDeviceSynchronize();
+    return result[0][0];
+  } else {
+    return run(gpu::reduce(nblockx*nblocky), array_access<decltype(begin(result.flatted()))>{begin(result.flatted())});
+  }
+  
+#endif
+}
+
+#ifdef ENABLE_CUDA
+template <class kernel_type, class array_type>
 __global__ void reduce_kernel_2d(long sizex, long sizey, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
@@ -366,7 +441,7 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	SECTION("1D"){
+	SECTION("r"){
 		const long maxsize = 129140163;
 
 		int rank = 0;
@@ -376,7 +451,28 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 		}
 	}
 
-	SECTION("2D"){
+	SECTION("rr"){
+
+		const long maxsize = 2*625;
+
+		int rank = 0;
+		for(long nx = 1; nx <= maxsize; nx *= 5){
+			for(long ny = 1; ny <= maxsize; ny *= 5){
+
+				if(comm.rank() == rank%comm.size()){
+					auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), prod{});
+					
+					CHECK(typeid(decltype(res)) == typeid(double));
+					CHECK(res == nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0);
+				}
+				
+				rank++;
+			}
+		}
+		
+  }
+	
+	SECTION("vr"){
 
 		const long maxsize = 390625;
 
@@ -399,7 +495,7 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 		
   }
 
-	SECTION("3D"){
+	SECTION("vrr"){
 
 		const long maxsize = 625;
 
