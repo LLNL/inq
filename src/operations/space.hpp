@@ -232,6 +232,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		
 basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(field_set)");
+		
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
@@ -248,6 +250,8 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 
 basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(field_set)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 	
@@ -269,6 +273,8 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 
 basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis::real_space, complex> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(field)");
+	
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
@@ -286,6 +292,8 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 	
 basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(field)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
@@ -307,6 +315,8 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 
 auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
+	
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
