@@ -4,7 +4,7 @@
 #define INQ__OPERATIONS__ORTHOGONALIZE
 
 /*
- Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -120,8 +120,7 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 		
 	assert(num_states <= phi.set_size());
 
- 
-	using boost::multi::blas::hermitized;
+	namespace blas = boost::multi::blas;
 
 	//the matrix of phi restricted to the vectors we are going to use
 	auto phi_restricted = phi.matrix()({0, phi.basis().local_size()}, {0, num_states});
@@ -132,18 +131,18 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 		// avoid a bug in multi by making an explicit copy
 		//   https://gitlab.com/correaa/boost-multi/-/issues/97
 		math::array<typename field_set_type::element_type, 2> phi_restricted_copy = phi_restricted;
-		olap = boost::multi::blas::gemm(phi.basis().volume_element(), hermitized(phi_restricted_copy), vec.matrix());
+		olap = blas::gemm(phi.basis().volume_element(), blas::H(phi_restricted_copy), vec.matrix());
 	} else {
 		//this should be done by gemv, but while multi gets better gemv support we use gemm
-		olap = boost::multi::blas::gemm(phi.basis().volume_element(), hermitized(phi_restricted), vec.matrix());
+		olap = blas::gemm(phi.basis().volume_element(), blas::H(phi_restricted), vec.matrix());
 	}
 	
 	if(phi.basis().part().parallel()){
 		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(olap.data_elements()), olap.num_elements(), std::plus<>{});
 	}
 
-	boost::multi::blas::gemm(-1.0, phi_restricted, olap, 1.0, vec.matrix());
-	
+	vec.matrix() += blas::gemm(-1.0, phi_restricted, olap);
+
 }
 
 }

@@ -4,7 +4,7 @@
 #define OPERATIONS__MATRIX_OPERATOR
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -42,17 +42,16 @@ public:
       
 	template <class field_set_type>
 	field_set_type operator()(const field_set_type & phi) const {
-      
+
 		assert(std::get<0>(sizes(matrix_)) == phi.basis().size());
 		assert(std::get<1>(sizes(matrix_)) == phi.basis().size());
 
-		using boost::multi::blas::gemm;
-		using boost::multi::blas::hermitized;
-    
-		field_set_type mphi = phi;
-		gemm(1.0, matrix_, phi.matrix(),	0.0, mphi.matrix());
+		namespace blas = boost::multi::blas;
 
-		return mphi;      
+		field_set_type mphi = phi;
+		mphi.matrix() = blas::gemm(1.0, matrix_, phi.matrix());
+
+		return mphi;
 	}
 
 private:

@@ -90,7 +90,7 @@ namespace hamiltonian {
 				{
 					CALI_CXX_MARK_SCOPE("projector_gemm_1");
 					namespace blas = boost::multi::blas;
-					blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi), 0.0, blas::real_doubled(projections));
+					blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
 				}
 
 				{
@@ -117,12 +117,12 @@ namespace hamiltonian {
 				{
 					CALI_CXX_MARK_SCOPE("projector_gemm_2");
 					namespace blas = boost::multi::blas;
-					blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections), 0.0, blas::real_doubled(sphere_phi));
+					blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
 				}
 				
 				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			}
-    }
+	}
 
     template <class PhiType, typename GPhiType, typename OccsType>
     math::vector3<double> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
