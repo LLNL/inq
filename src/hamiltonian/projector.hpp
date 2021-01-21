@@ -147,7 +147,7 @@ namespace hamiltonian {
 				blas::real_doubled(projections) = gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
 				
 				{
-					CALI_CXX_MARK_SCOPE("projector_scal"); 
+					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
 					
 					//DATAOPERATIONS GPU::RUN 2D
 					gpu::run(phi.local_set_size(), nproj_,
@@ -168,14 +168,21 @@ namespace hamiltonian {
 			if(sphere_.size() > 0) {
 				namespace blas = boost::multi::blas;
 				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(matrix_), blas::real_doubled(projections));
-				
-				for(int ip = 0; ip < sphere_.size(); ip++){
-					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						for(int idir = 0; idir < 3; idir++){
-							force[idir] -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist][idir])*sphere_phi[ip][ist]);
+
+
+				{
+
+					CALI_CXX_MARK_SCOPE("projector_force_sum");
+					
+					for(int ip = 0; ip < sphere_.size(); ip++){
+						for(int ist = 0; ist < phi.local_set_size(); ist++){
+							for(int idir = 0; idir < 3; idir++){
+								force[idir] -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist][idir])*sphere_phi[ip][ist]);
+							}
 						}
 					}
 				}
+
 			}
 
 			if(phi.full_comm().size() > 0){
