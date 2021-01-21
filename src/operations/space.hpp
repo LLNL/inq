@@ -347,38 +347,15 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & 
 	
 basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(vector_field)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3});
-	
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					ftmp[ix][iy][iz][idir] = fphi.cubic()[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
+	to_real(fourier_basis, real_basis, fphi.cubic().template reinterpret_array_cast<complex>(3), phi.cubic().template reinterpret_array_cast<complex>(3));
 
-	//	to_real(fourier_basis, real_basis, fphi.cubic().template reinterpret_array_cast<complex>(3), phi.cubic().template reinterpret_array_cast<complex>(3));
-	to_real(fourier_basis, real_basis, ftmp, tmp);
-	
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					phi.cubic()[ix][iy][iz][idir] = tmp[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
-
-	
 	if(normalize){
 		gpu::run(3, phi.linear().size(),
 						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto idir, auto ip){
