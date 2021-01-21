@@ -23,13 +23,9 @@
 
 #include <FC.h>
 
-#ifdef ENABLE_CUDA
-#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
-#endif
-#include <multi/adaptors/blas.hpp> //to get dtrsv
-
 #include <tuple> //std::get
 #include <cassert>
+#include <math/array.hpp>
 
 #define dpotrf FC_GLOBAL(dpotrf, DPOTRF) 
 extern "C" void dpotrf(const char * uplo, const int * n, double * a, const int * lda, int * info);

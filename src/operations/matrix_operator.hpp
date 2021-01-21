@@ -21,11 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifdef ENABLE_CUDA
-#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
-#endif
-#include <multi/adaptors/blas.hpp>
-#include <basis/field_set.hpp>
+#include <math/array.hpp>
 
 #include <cstdlib>
 
@@ -72,6 +68,7 @@ private:
 #undef INQ_OPERATIONS_MATRIX_OPERATOR_UNIT_TEST
 
 #include <basis/trivial.hpp>
+#include <basis/field_set.hpp>
 #include <catch2/catch.hpp>
 
 TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]") {
