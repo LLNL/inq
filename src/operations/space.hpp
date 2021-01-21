@@ -390,7 +390,7 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 }
 
 ///////////////////////////////////////////////////////////////
-	
+
 basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis::field_set<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 	
 	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
@@ -400,17 +400,10 @@ basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis:
 
 	basis::field_set<basis::real_space, math::vector3<complex>> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3*fphi.local_set_size()});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3*fphi.local_set_size()});	
-
-	ftmp = fphi.cubic().template reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
-	
-	to_real(fourier_basis, real_basis, ftmp, tmp);
-
-	gpu::run(fphi.local_set_size(), real_basis.local_size(),
-					 [phip = begin(phi.matrix()), tmpp = begin(tmp.flatted().flatted())] GPU_LAMBDA (auto ist, auto ip){
-						 for(int idir = 0; idir < 3; idir++) phip[ip][ist][idir] = tmpp[ip][idir + 3*ist];
-					 });
+	auto const & fphi_as_scalar = fphi.cubic().reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
+	auto && phi_as_scalar = phi.cubic().reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
+		
+	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar);
 
 	if(normalize){
 		gpu::run(phi.local_set_size(), phi.basis().local_size(),
