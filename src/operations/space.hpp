@@ -403,31 +403,14 @@ basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis:
 	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3*fphi.local_set_size()});
 	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3*fphi.local_set_size()});	
 
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(long ist = 0; ist < fphi.local_set_size(); ist++){
-					for(int idir = 0; idir < 3; idir++){
-						ftmp[ix][iy][iz][idir + 3*ist] = fphi.cubic()[ix][iy][iz][ist][idir];
-					}
-				}
-			}
-		}
-	}
-
-	to_real(fourier_basis, real_basis, ftmp, tmp);
+	ftmp = fphi.cubic().template reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
 	
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(long ist = 0; ist < fphi.local_set_size(); ist++){				
-					for(int idir = 0; idir < 3; idir++){
-						phi.cubic()[ix][iy][iz][ist][idir] = tmp[ix][iy][iz][idir + 3*ist];
-					}
-				}
-			}
-		}
-	}
+	to_real(fourier_basis, real_basis, ftmp, tmp);
+
+	gpu::run(fphi.local_set_size(), real_basis.local_size(),
+					 [phip = begin(phi.matrix()), tmpp = begin(tmp.flatted().flatted())] GPU_LAMBDA (auto ist, auto ip){
+						 for(int idir = 0; idir < 3; idir++) phip[ip][ist][idir] = tmpp[ip][idir + 3*ist];
+					 });
 
 	if(normalize){
 		gpu::run(phi.local_set_size(), phi.basis().local_size(),
