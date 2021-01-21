@@ -91,9 +91,12 @@ namespace hamiltonian {
 			
 			//DATAOPERATIONS BLAS
 			if(sphere_.size() > 0) {
-				
-				namespace blas = boost::multi::blas;
-				blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi), 0.0, blas::real_doubled(projections));
+
+				{
+					CALI_CXX_MARK_SCOPE("projector_gemm_1");
+					namespace blas = boost::multi::blas;
+					blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi), 0.0, blas::real_doubled(projections));
+				}
 
 				{
 					CALI_CXX_MARK_SCOPE("projector_scal");
@@ -115,9 +118,12 @@ namespace hamiltonian {
 			}
 
 			if(sphere_.size() > 0) {
-				//DATAOPERATIONS BLAS
-				namespace blas = boost::multi::blas;
-				blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections), 0.0, blas::real_doubled(sphere_phi));
+
+				{
+					CALI_CXX_MARK_SCOPE("projector_gemm_2");
+					namespace blas = boost::multi::blas;
+					blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections), 0.0, blas::real_doubled(sphere_phi));
+				}
 				
 				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			}
