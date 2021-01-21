@@ -232,6 +232,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		
 basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(field_set)");
+		
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
@@ -248,6 +250,8 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 
 basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(field_set)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 	
@@ -269,6 +273,8 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 
 basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis::real_space, complex> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(field)");
+	
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
@@ -286,6 +292,8 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 	
 basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(field)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
@@ -307,36 +315,15 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 
 auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
+	
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
 	basis::field<basis::fourier_space, math::vector3<complex>> fphi(fourier_basis);
-
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3});
-
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					tmp[ix][iy][iz][idir] = phi.cubic()[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
 	
-	to_fourier(real_basis, fourier_basis, tmp, ftmp);
+	to_fourier(real_basis, fourier_basis, phi.cubic().reinterpret_array_cast<complex>(3), fphi.cubic().reinterpret_array_cast<complex>(3));
 
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					fphi.cubic()[ix][iy][iz][idir] = ftmp[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
-	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 			
 	return fphi;
@@ -347,38 +334,15 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & 
 	
 basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(vector_field)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3});
-	
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					ftmp[ix][iy][iz][idir] = fphi.cubic()[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
+	to_real(fourier_basis, real_basis, fphi.cubic().reinterpret_array_cast<complex>(3), phi.cubic().reinterpret_array_cast<complex>(3));
 
-	//	to_real(fourier_basis, real_basis, fphi.cubic().template reinterpret_array_cast<complex>(3), phi.cubic().template reinterpret_array_cast<complex>(3));
-	to_real(fourier_basis, real_basis, ftmp, tmp);
-	
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					phi.cubic()[ix][iy][iz][idir] = tmp[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
-
-	
 	if(normalize){
 		gpu::run(3, phi.linear().size(),
 						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto idir, auto ip){
@@ -390,42 +354,20 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 }
 
 ///////////////////////////////////////////////////////////////
-	
-basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis::field_set<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
+basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis::field_set<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
+	
+	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
 	basis::field_set<basis::real_space, math::vector3<complex>> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3*fphi.local_set_size()});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3*fphi.local_set_size()});	
-
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(long ist = 0; ist < fphi.local_set_size(); ist++){
-					for(int idir = 0; idir < 3; idir++){
-						ftmp[ix][iy][iz][idir + 3*ist] = fphi.cubic()[ix][iy][iz][ist][idir];
-					}
-				}
-			}
-		}
-	}
-
-	to_real(fourier_basis, real_basis, ftmp, tmp);
-	
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(long ist = 0; ist < fphi.local_set_size(); ist++){				
-					for(int idir = 0; idir < 3; idir++){
-						phi.cubic()[ix][iy][iz][ist][idir] = tmp[ix][iy][iz][idir + 3*ist];
-					}
-				}
-			}
-		}
-	}
+	auto const & fphi_as_scalar = fphi.cubic().reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
+	auto && phi_as_scalar = phi.cubic().reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
+		
+	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar);
 
 	if(normalize){
 		gpu::run(phi.local_set_size(), phi.basis().local_size(),
