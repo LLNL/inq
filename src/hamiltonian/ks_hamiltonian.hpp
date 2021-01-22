@@ -119,22 +119,6 @@ namespace hamiltonian {
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
-		
-		void real_space_terms(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & hphi) const {
-
-			CALI_CXX_MARK_FUNCTION;
-			
-			//the non local potential in real space
-			if(not non_local_in_fourier_) non_local(phi, hphi);
-
-			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
-
-			scalar_potential_add(scalar_potential, phi, hphi);
-
-			exchange(phi, hphi);
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
 
@@ -150,7 +134,9 @@ namespace hamiltonian {
 	
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			real_space_terms(phi, hphi);
+			scalar_potential_add(scalar_potential, phi, hphi);
+			if(not non_local_in_fourier_) non_local(phi, hphi);
+			exchange(phi, hphi);
 
 			return hphi;
 			
@@ -167,8 +153,10 @@ namespace hamiltonian {
 			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.skeleton());
 
 			hphi_rs = 0.0;
-						
-			real_space_terms(phi_rs, hphi_rs);
+
+			scalar_potential_add(scalar_potential, phi_rs, hphi_rs);
+			if(not non_local_in_fourier_) non_local(phi_rs, hphi_rs);
+			exchange(phi_rs, hphi_rs);
 		
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
