@@ -25,9 +25,10 @@
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <hamiltonian/atomic_potential.hpp>
+#include <hamiltonian/exchange_operator.hpp>
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/projector_fourier.hpp>
-#include <hamiltonian/exchange_operator.hpp>
+#include <hamiltonian/scalar_potential.hpp>
 #include <ions/geometry.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
@@ -128,17 +129,8 @@ namespace hamiltonian {
 
 			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
 
-			{
-				CALI_CXX_MARK_SCOPE("local_potential");
-			//the scalar local potential in real space
-			//DATAOPERATIONS GPU:RUN 2D
-				gpu::run(phi.local_set_size(), phi.basis().local_size(),
-								 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
-								 (auto ist, auto ip){
-									 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
-								 });
-			}
-			
+			scalar_potential_add(scalar_potential, phi, hphi);
+
 			exchange(phi, hphi);
 		}
 
