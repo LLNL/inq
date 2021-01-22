@@ -60,24 +60,13 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 	assert(size(overlap_vector) == phi2.set_part().local_size());
 
 	if(phi2.set_part().local_size() == 1){
-#ifdef ENABLE_CUDA
-		if(typeid(typename field_set_type::element_type) == typeid(complex)) {
-			cublasZdotc(boost::multi::cuda::cublas::context::get_instance().get(), phi1.basis().part().local_size(),
-									(const cuDoubleComplex *) raw_pointer_cast(phi1.matrix().data_elements()), 1, (const cuDoubleComplex *)  raw_pointer_cast(phi2.matrix().data_elements()), 1,
-									(cuDoubleComplex *) raw_pointer_cast(overlap_vector.data_elements()));
-		} else {
-			cublasDdot(boost::multi::cuda::cublas::context::get_instance().get(), phi1.basis().part().local_size(),
-								 (const double *) raw_pointer_cast(phi1.matrix().data_elements()), 1, (const double *) raw_pointer_cast(phi2.matrix().data_elements()), 1,
-								 (double *) raw_pointer_cast(overlap_vector.data_elements()));
-		}
-#else
 
 		using boost::multi::blas::dot;
 		using boost::multi::blas::conj;
 		
 		overlap_vector[0] = dot(boost::multi::blas::conj(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
-#endif
 		overlap_vector[0] *= phi1.basis().volume_element();
+
 	} else {
 		
 		overlap_vector = gpu::run(phi1.local_set_size(), gpu::reduce(phi1.basis().part().local_size()), overlap_diagonal_mult<decltype(begin(phi1.matrix()))>{phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix())});
