@@ -151,11 +151,12 @@ namespace math {
 
 		template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
 		friend GPU_FUNCTION vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
-			return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
+			return {mul(scalar, vv[0]), mul(scalar, vv[1]), mul(scalar, vv[2])};
 		}
+		
 		template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
 		friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
-			return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
+			return {mul(vv[0], scalar), mul(vv[1], scalar), mul(vv[2],scalar)};
 		}
 		
 		template <class TypeB>
@@ -188,11 +189,11 @@ namespace math {
 		}
 
 		friend GPU_FUNCTION auto conj(vector3 const & vv){
-			return elementwise([] (auto x) { return conj(x);}, vv);
+			return vector3{conj(vv[0]), conj(vv[1]), conj(vv[2])};
 		}
 
 		friend GPU_FUNCTION auto real(vector3 const & vv){
-			return elementwise([] (auto x) { return real(x);}, vv);
+			return vector3<double>{real(vv[0]), real(vv[1]), real(vv[2])};
 		}
 		
 		friend GPU_FUNCTION auto imag(vector3 const & vv){

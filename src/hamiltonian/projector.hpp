@@ -122,8 +122,18 @@ namespace hamiltonian {
 				
 				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			}
-	}
+		}
 
+		template <typename OcType, typename PhiType, typename GPhiType>
+		struct force_term {
+			OcType oc;
+			PhiType phi;
+			GPhiType gphi;
+			constexpr auto operator()(int ist, int ip) const {
+				return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
+			}
+		};
+		
     template <class PhiType, typename GPhiType, typename OccsType>
     math::vector3<double> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
 
@@ -149,7 +159,6 @@ namespace hamiltonian {
 				{
 					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
 					
-					//DATAOPERATIONS GPU::RUN 2D
 					gpu::run(phi.local_set_size(), nproj_,
 									 [proj = begin(projections), coeff = begin(kb_coeff_)]
 									 GPU_LAMBDA (auto ist, auto iproj){
@@ -171,18 +180,11 @@ namespace hamiltonian {
 
 
 				{
-
 					CALI_CXX_MARK_SCOPE("projector_force_sum");
-					
-					for(int ip = 0; ip < sphere_.size(); ip++){
-						for(int ist = 0; ist < phi.local_set_size(); ist++){
-							for(int idir = 0; idir < 3; idir++){
-								force[idir] -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist][idir])*sphere_phi[ip][ist]);
-							}
-						}
-					}
+					force = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(sphere_.size()),
+													 force_term<decltype(begin(occs)), decltype(begin(sphere_phi)), decltype(begin(sphere_gphi))>{begin(occs), begin(sphere_phi), begin(sphere_gphi)});
 				}
-
+				
 			}
 
 			if(phi.full_comm().size() > 0){
