@@ -25,9 +25,10 @@
 #include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <hamiltonian/atomic_potential.hpp>
+#include <hamiltonian/exchange_operator.hpp>
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/projector_fourier.hpp>
-#include <hamiltonian/exchange_operator.hpp>
+#include <hamiltonian/scalar_potential.hpp>
 #include <ions/geometry.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
@@ -108,57 +109,21 @@ namespace hamiltonian {
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
-		
-		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
-
-			CALI_CXX_MARK_FUNCTION;
-			
-			operations::laplacian_add(phi, hphi);
-			if(non_local_in_fourier_) non_local(phi, hphi);
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
-		void real_space_terms(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & hphi) const {
-
-			CALI_CXX_MARK_FUNCTION;
-			
-			//the non local potential in real space
-			if(not non_local_in_fourier_) non_local(phi, hphi);
-
-			assert(scalar_potential.linear().num_elements() == phi.basis().local_size());
-
-			{
-				CALI_CXX_MARK_SCOPE("local_potential");
-			//the scalar local potential in real space
-			//DATAOPERATIONS GPU:RUN 2D
-				gpu::run(phi.local_set_size(), phi.basis().local_size(),
-								 [pot = begin(scalar_potential.linear()), it_hphi = begin(hphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
-								 (auto ist, auto ip){
-									 it_hphi[ip][ist] += pot[ip]*it_phi[ip][ist];
-								 });
-			}
-			
-			exchange(phi, hphi);
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 				
 			auto phi_fs = operations::space::to_fourier(phi);
+		
+			auto hphi_fs = operations::laplacian(phi_fs);
+			if(non_local_in_fourier_) non_local(phi_fs, hphi_fs);
 			
-			basis::field_set<basis::fourier_space, complex> hphi_fs(phi_fs.skeleton());
-			
-			hphi_fs = 0.0;
-			
-			fourier_space_terms(phi_fs, hphi_fs);
-	
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			real_space_terms(phi, hphi);
+			hamiltonian::scalar_potential_add(scalar_potential, phi, hphi);
+			if(not non_local_in_fourier_) non_local(phi, hphi);
+			exchange(phi, hphi);
 
 			return hphi;
 			
@@ -172,16 +137,15 @@ namespace hamiltonian {
 			
 			auto phi_rs = operations::space::to_real(phi);
 
-			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.skeleton());
-
-			hphi_rs = 0.0;
-						
-			real_space_terms(phi_rs, hphi_rs);
+			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, phi_rs);
+			if(not non_local_in_fourier_) non_local(phi_rs, hphi_rs);
+			exchange(phi_rs, hphi_rs);
 		
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
-			fourier_space_terms(phi, hphi);
-
+			operations::laplacian_add(phi, hphi);
+			if(non_local_in_fourier_) non_local(phi, hphi);
+			
 			return hphi;
 			
 		}

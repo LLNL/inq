@@ -72,10 +72,10 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & 
 
 basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff){
 
-	basis::field_set<basis::fourier_space, complex> laplff(ff.skeleton());
-
 	CALI_CXX_MARK_FUNCTION;
-		
+	
+	basis::field_set<basis::fourier_space, complex> laplff(ff.skeleton());
+	
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
