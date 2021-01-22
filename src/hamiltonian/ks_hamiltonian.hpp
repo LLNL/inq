@@ -137,9 +137,7 @@ namespace hamiltonian {
 			
 			auto phi_rs = operations::space::to_real(phi);
 
-			basis::field_set<basis::real_space, complex> hphi_rs(phi_rs.skeleton());
-
-			hamiltonian::scalar_potential(scalar_potential, phi_rs, hphi_rs);
+			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, phi_rs);
 			if(not non_local_in_fourier_) non_local(phi_rs, hphi_rs);
 			exchange(phi_rs, hphi_rs);
 		
