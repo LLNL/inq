@@ -109,16 +109,6 @@ namespace hamiltonian {
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
-		
-		void fourier_space_terms(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & hphi) const {
-
-			CALI_CXX_MARK_FUNCTION;
-			
-			operations::laplacian_add(phi, hphi);
-			if(non_local_in_fourier_) non_local(phi, hphi);
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
 
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
 
@@ -130,8 +120,9 @@ namespace hamiltonian {
 			
 			hphi_fs = 0.0;
 			
-			fourier_space_terms(phi_fs, hphi_fs);
-	
+			operations::laplacian_add(phi_fs, hphi_fs);
+			if(non_local_in_fourier_) non_local(phi_fs, hphi_fs);
+			
 			auto hphi = operations::space::to_real(hphi_fs);
 
 			hamiltonian::scalar_potential_add(scalar_potential, phi, hphi);
@@ -158,8 +149,9 @@ namespace hamiltonian {
 		
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
-			fourier_space_terms(phi, hphi);
-
+			operations::laplacian_add(phi, hphi);
+			if(non_local_in_fourier_) non_local(phi, hphi);
+			
 			return hphi;
 			
 		}
