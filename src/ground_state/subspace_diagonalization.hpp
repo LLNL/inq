@@ -24,11 +24,6 @@
 #include <inq_config.h>
 #include <operations/overlap.hpp>
 #include <operations/diagonalize.hpp>
-#ifdef ENABLE_CUDA
-#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
-#endif
-#include <multi/adaptors/blas.hpp>
-
 #include <utils/profiling.hpp>
 
 namespace inq {
@@ -44,14 +39,13 @@ auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 	auto subspace_hamiltonian = operations::overlap(phi, ham(phi));
 	auto eigenvalues = operations::diagonalize(subspace_hamiltonian);
 	
-	//OPTIMIZATION: here we don't need to make a full copy. We can
-	//divide into blocks over point index (first dimension of phi).
-	using boost::multi::blas::gemm;
-	using boost::multi::blas::hermitized;
+	//OPTIMIZATION: here we don't need to make a full copy.
+	{
+		CALI_CXX_MARK_SCOPE("subspace_diagonalization_gemm");
+		namespace blas = boost::multi::blas;
+		phi.matrix() = blas::gemm(1., phi.matrix(), blas::H(subspace_hamiltonian));
+	}
 	
-	namespace blas = boost::multi::blas;
-	phi.matrix() = blas::gemm(1., phi.matrix(), blas::H(subspace_hamiltonian));
-
 	return eigenvalues;	
 }
 

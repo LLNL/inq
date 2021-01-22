@@ -93,10 +93,10 @@ namespace ground_state {
 
 		int conv_count = 0;
 
-		CALI_CXX_MARK_LOOP_BEGIN(scfloop, "scf_loop");
-
 		for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
-			
+
+			CALI_CXX_MARK_SCOPE("scf_iteration");
+
 			if(solver.subspace_diag()) {
 				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_);
 				electrons.states_.update_occupations(eigenvalues);
@@ -204,7 +204,6 @@ namespace ground_state {
 			old_energy = res.energy.eigenvalues;
 			
 		}
-		CALI_CXX_MARK_LOOP_END(scfloop);
 
 		//make sure we have a density consistent with phi
 		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);

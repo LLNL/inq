@@ -33,11 +33,6 @@
 
 #include <utils/profiling.hpp>
 
-#ifdef ENABLE_CUDA
-#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
-#endif
-#include <multi/adaptors/blas.hpp>
-
 namespace inq {
 namespace hamiltonian {
 
@@ -91,9 +86,12 @@ namespace hamiltonian {
 			
 			//DATAOPERATIONS BLAS
 			if(sphere_.size() > 0) {
-				
-				namespace blas = boost::multi::blas;
-				blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi), 0.0, blas::real_doubled(projections));
+
+				{
+					CALI_CXX_MARK_SCOPE("projector_gemm_1");
+					namespace blas = boost::multi::blas;
+					blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
+				}
 
 				{
 					CALI_CXX_MARK_SCOPE("projector_scal");
@@ -115,13 +113,16 @@ namespace hamiltonian {
 			}
 
 			if(sphere_.size() > 0) {
-				//DATAOPERATIONS BLAS
-				namespace blas = boost::multi::blas;
-				blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections), 0.0, blas::real_doubled(sphere_phi));
+
+				{
+					CALI_CXX_MARK_SCOPE("projector_gemm_2");
+					namespace blas = boost::multi::blas;
+					blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
+				}
 				
 				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
 			}
-    }
+	}
 
     template <class PhiType, typename GPhiType, typename OccsType>
     math::vector3<double> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
@@ -146,7 +147,7 @@ namespace hamiltonian {
 				blas::real_doubled(projections) = gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
 				
 				{
-					CALI_CXX_MARK_SCOPE("projector_scal"); 
+					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
 					
 					//DATAOPERATIONS GPU::RUN 2D
 					gpu::run(phi.local_set_size(), nproj_,
@@ -167,14 +168,21 @@ namespace hamiltonian {
 			if(sphere_.size() > 0) {
 				namespace blas = boost::multi::blas;
 				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(matrix_), blas::real_doubled(projections));
-				
-				for(int ip = 0; ip < sphere_.size(); ip++){
-					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						for(int idir = 0; idir < 3; idir++){
-							force[idir] -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist][idir])*sphere_phi[ip][ist]);
+
+
+				{
+
+					CALI_CXX_MARK_SCOPE("projector_force_sum");
+					
+					for(int ip = 0; ip < sphere_.size(); ip++){
+						for(int ist = 0; ist < phi.local_set_size(); ist++){
+							for(int idir = 0; idir < 3; idir++){
+								force[idir] -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist][idir])*sphere_phi[ip][ist]);
+							}
 						}
 					}
 				}
+
 			}
 
 			if(phi.full_comm().size() > 0){
