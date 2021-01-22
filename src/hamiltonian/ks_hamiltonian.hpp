@@ -115,12 +115,8 @@ namespace hamiltonian {
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 				
 			auto phi_fs = operations::space::to_fourier(phi);
-			
-			basis::field_set<basis::fourier_space, complex> hphi_fs(phi_fs.skeleton());
-			
-			hphi_fs = 0.0;
-			
-			operations::laplacian_add(phi_fs, hphi_fs);
+		
+			auto hphi_fs = operations::laplacian(phi_fs);
 			if(non_local_in_fourier_) non_local(phi_fs, hphi_fs);
 			
 			auto hphi = operations::space::to_real(hphi_fs);
