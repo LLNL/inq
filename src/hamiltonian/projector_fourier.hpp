@@ -122,9 +122,7 @@ namespace hamiltonian {
 									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj]*vol;
 								 });
 
-				if(phi.basis().part().parallel()){
-					phi.basis().comm().all_reduce_in_place_n(static_cast<complex *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
-				}
+				phi.basis().comm().all_reduce_in_place_n(static_cast<complex *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 				
 				for(int iproj = 0; iproj < nproj_; iproj++){
 					for(long ip = 0; ip < phi.basis().part().local_size(); ip++){

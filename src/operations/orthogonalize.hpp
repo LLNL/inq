@@ -137,9 +137,7 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 		olap = blas::gemm(phi.basis().volume_element(), blas::H(phi_restricted), vec.matrix());
 	}
 	
-	if(phi.basis().part().parallel()){
-		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(olap.data_elements()), olap.num_elements(), std::plus<>{});
-	}
+	phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(olap.data_elements()), olap.num_elements(), std::plus<>{});
 
 	vec.matrix() += blas::gemm(-1.0, phi_restricted, olap);
 
@@ -257,9 +255,7 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
 			}
 
-			if(phi.basis().part().parallel()){
-				phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-			}
+			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
 	
 			CHECK(fabs(olap) < 5e-14);
 		}
@@ -275,9 +271,7 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
 			}
 
-			if(phi.basis().part().parallel()){
-				phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-			}
+			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
 	
 			CHECK(fabs(olap) < 5e-14);
 		}
@@ -293,9 +287,7 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
 			}
 
-			if(phi.basis().part().parallel()){
-				phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-			}
+			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
 	
 			CHECK(fabs(olap) < 5e-14);
 		}
