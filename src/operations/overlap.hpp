@@ -43,9 +43,7 @@ auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 	namespace blas = boost::multi::blas;
 	auto overlap_matrix =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
 
-	if(phi1.basis().part().parallel()){
-		phi1.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
-	}
+	phi1.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
 		
 	return overlap_matrix;
 }
@@ -61,9 +59,7 @@ auto overlap(const field_set_type & phi){
 	namespace blas = boost::multi::blas;
 	auto overlap_matrix = +blas::herk(phi.basis().volume_element(), blas::H(phi.matrix()));
 	
-	if(phi.basis().part().parallel()){
-		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
-	}
+	phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
 		
 	return overlap_matrix;
 }
