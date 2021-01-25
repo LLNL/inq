@@ -30,10 +30,11 @@ namespace operations {
 
 template <class array_1d, class field_set_type>
 void shift(double scale, const array_1d & factor, const field_set_type & shift, field_set_type & phi){
-    
+
+	CALI_CXX_MARK_SCOPE("shift");
+	
 	assert(size(factor) == phi.set_part().local_size());
 
-	//DATAOPERATIONS GPU::RUN 2D 
 	gpu::run(phi.set_part().local_size(), phi.basis().part().local_size(),
 					 [factorp = begin(factor), shiftp = begin(shift.matrix()), phip = begin(phi.matrix()), scale]
 					 GPU_LAMBDA (auto ist, auto ipoint){
@@ -43,9 +44,10 @@ void shift(double scale, const array_1d & factor, const field_set_type & shift, 
 
 template <class field_set_type>
 void shift(typename field_set_type::element_type const & factor, const field_set_type & shift, field_set_type & phi){
+
+	CALI_CXX_MARK_SCOPE("shift_const_factor");
 	
 	//this could be done with axpy
-	//DATAOPERATIONS GPU::RUN 2D
 	gpu::run(phi.set_part().local_size(), phi.basis().part().local_size(),
 					 [factor, shiftp = begin(shift.matrix()), phip = begin(phi.matrix())]
 					 GPU_LAMBDA (auto ist, auto ipoint){

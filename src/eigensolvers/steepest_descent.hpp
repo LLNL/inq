@@ -35,6 +35,8 @@ namespace eigensolvers {
 template <class operator_type, class preconditioner_type, class field_set_type>
 void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
 
+	CALI_CXX_MARK_FUNCTION;
+	
 	const int num_steps = 5;
 
 	for(int istep = 0; istep < num_steps; istep++){
@@ -48,7 +50,6 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 			
 		auto lambda = eigenvalues;
 			
-		//DATAOPERATIONS GPU::RUN TRANSFORM
 		gpu::run(phi.set_size(),
 						 [lam = begin(lambda), nor = begin(norm)]
 						 GPU_LAMBDA (auto ist){
@@ -63,15 +64,14 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 		auto hresidual = ham(residual);
 
 		auto mm = math::array<typename field_set_type::element_type, 2>({6, phi.set_size()});
-
+			
 		mm[0] = operations::overlap_diagonal(residual, residual);
 		mm[1] = operations::overlap_diagonal(phi, residual);
 		mm[2] = operations::overlap_diagonal(residual, hresidual);
 		mm[3] = operations::overlap_diagonal(phi, hresidual);
 		mm[4] = eigenvalues;
 		mm[5] = norm;
-			
-		//DATAOPERATIONS GPU::RUN TRANSFORM
+		
 		gpu::run(phi.set_size(),
 						 [m = begin(mm), lam = begin(lambda)]
 						 GPU_LAMBDA (auto ist){
@@ -88,7 +88,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 							 }
 							 
 						 });
-
+		
 		operations::shift(1.0, lambda, residual, phi);
 
 	}
