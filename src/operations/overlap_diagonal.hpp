@@ -116,12 +116,11 @@ struct value_and_norm {
 template <class mat_type>
 struct overlap_diagonal_normalized_mult {
 
-	double factor;
 	mat_type mat1;
 	mat_type mat2;
 	
 	GPU_FUNCTION auto operator()(long ist, long ip) const {
-		return value_and_norm<decltype(mat1[0][0]*mat2[0][0])>{factor*conj(mat1[ip][ist])*mat2[ip][ist], factor*conj(mat2[ip][ist])*mat2[ip][ist]};
+		return value_and_norm<decltype(conj(mat1[0][0])*mat2[0][0])>{conj(mat1[ip][ist])*mat2[ip][ist], conj(mat2[ip][ist])*mat2[ip][ist]};
 	}
 	
 };
@@ -132,9 +131,9 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal_normalize
 	CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized");
 
 	using type = typename field_set_type::element_type;
-	
+
 	auto overlap_and_norm = gpu::run(phi1.local_set_size(), gpu::reduce(phi1.basis().part().local_size()),
-															overlap_diagonal_normalized_mult<decltype(begin(phi1.matrix()))>{phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix())});
+																	 overlap_diagonal_normalized_mult<decltype(begin(phi1.matrix()))>{begin(phi1.matrix()), begin(phi2.matrix())});
 	
 	phi1.basis().comm().all_reduce_in_place_n(reinterpret_cast<type *>(static_cast<value_and_norm<type> *>(overlap_and_norm.data_elements())), 2*overlap_and_norm.size(), std::plus<>{});
 
