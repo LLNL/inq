@@ -77,12 +77,28 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 		
 	return overlap_vector;
 }
-	
+
 template <class field_set_type>
 auto overlap_diagonal(const field_set_type & phi){
 	CALI_CXX_MARK_SCOPE("overlap_diagonal(1arg)");
 	
 	return overlap_diagonal(phi, phi);
+}
+
+template <class field_set_type>
+math::array<typename field_set_type::element_type, 1> overlap_diagonal_normalized(const field_set_type & phi1, const field_set_type & phi2){
+
+	CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized");
+
+	auto overlap_vector = overlap_diagonal(phi1, phi2);
+	auto norm_vector = overlap_diagonal(phi2);
+
+	gpu::run(overlap_vector.size(),
+					 [olp = begin(overlap_vector), nrm = begin(norm_vector)] GPU_LAMBDA (auto ii){
+						 olp[ii] = olp[ii]/nrm[ii];
+					 });
+	
+	return overlap_vector;
 }
 	
 }
@@ -124,36 +140,46 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value());
-				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value());
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value() + 1);
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value() + 1);
 			}
 		}
 
-		{
-			auto dd = operations::overlap_diagonal(aa, bb);
+		auto dd = operations::overlap_diagonal(aa, bb);
+		
+		CHECK(typeid(decltype(dd)) == typeid(math::array<double, 1>));
+		
+		for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(-jj - 1));
 
-			CHECK(typeid(decltype(dd)) == typeid(math::array<double, 1>));
-				
-			for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(-jj));
-		}
-			
+		basis::field_set<basis::trivial, double> cc(bas, nvec, cart_comm);
+		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < nvec; jj++){
-				auto jjg = aa.set_part().local_to_global(jj);
+				auto jjg = cc.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value());
+				cc.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value());
 			}
 		}
 
 		{
-			auto dd = operations::overlap_diagonal(aa);
+			auto ee = operations::overlap_diagonal(cc);
 
-			CHECK(typeid(decltype(dd)) == typeid(math::array<double, 1>));
+			CHECK(typeid(decltype(ee)) == typeid(math::array<double, 1>));
 								
-			for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+			for(int jj = 0; jj < nvec; jj++) CHECK(ee[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
 		}
-					
+
+		{
+			auto ff = operations::overlap_diagonal_normalized(aa, bb);
+			auto gg = operations::overlap_diagonal(bb);
 			
+			CHECK(typeid(decltype(ff)) == typeid(math::array<double, 1>));
+			
+			CHECK(std::get<0>(sizes(ff)) == nvec);
+			
+			for(int jj = 0; jj < nvec; jj++) CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
+ 
+		}
 	}
 
 	SECTION("complex"){
@@ -165,42 +191,56 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 			for(int jj = 0; jj < nvec; jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
-				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
 			}
 		}
 
-		{
-			auto dd = operations::overlap_diagonal(aa, bb);
-
-			CHECK(typeid(decltype(dd)) == typeid(math::array<complex, 1>));
-
-			CHECK(std::get<0>(sizes(dd)) == nvec);
-				
-			for(int jj = 0; jj < nvec; jj++){
-				CHECK(fabs(real(dd[jj])) < 1.0e-12);
-				CHECK(imag(dd[jj]) == Approx(-jj));
-			}
+		auto dd = operations::overlap_diagonal(aa, bb);
+		
+		CHECK(typeid(decltype(dd)) == typeid(math::array<complex, 1>));
+		
+		CHECK(std::get<0>(sizes(dd)) == nvec);
+		
+		for(int jj = 0; jj < nvec; jj++){
+			CHECK(fabs(real(dd[jj])) < 1.0e-12);
+			CHECK(imag(dd[jj]) == Approx(-jj - 1));
 		}
-			
+
+		basis::field_set<basis::trivial, complex> cc(bas, nvec, cart_comm);
+		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < nvec; jj++){
-				auto jjg = aa.set_part().local_to_global(jj);
+				auto jjg = cc.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+				cc.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
 			}
 		}
 
 		{
-			auto dd = operations::overlap_diagonal(aa);
+			auto ee = operations::overlap_diagonal(cc);
 
-			CHECK(typeid(decltype(dd)) == typeid(math::array<complex, 1>));
+			CHECK(typeid(decltype(ee)) == typeid(math::array<complex, 1>));
 			
-			CHECK(std::get<0>(sizes(dd)) == nvec);
+			CHECK(std::get<0>(sizes(ee)) == nvec);
 				
-			for(int jj = 0; jj < nvec; jj++) CHECK(real(dd[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+			for(int jj = 0; jj < nvec; jj++) CHECK(real(ee[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
 		}
-					
+
+		{
+			auto ff = operations::overlap_diagonal_normalized(aa, bb);
+			auto gg = operations::overlap_diagonal(bb);
+
+			CHECK(typeid(decltype(ff)) == typeid(math::array<complex, 1>));
+			
+			CHECK(std::get<0>(sizes(ff)) == nvec);
+				
+			for(int jj = 0; jj < nvec; jj++) {
+				CHECK(real(ff[jj]) == Approx(real(dd[jj]/gg[jj])));
+				CHECK(imag(ff[jj]) == Approx(imag(dd[jj]/gg[jj])));
+			}
+		}
+
 	}
 
 }
