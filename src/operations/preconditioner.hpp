@@ -66,8 +66,7 @@ public:
 
 		CALI_MARK_BEGIN("preconditioner_reduction");
 		
-		auto expect = operations::overlap_diagonal(laplacian(phi), phi);
-		auto norm = operations::overlap_diagonal(phi);
+		auto kinetic = operations::overlap_diagonal_normalized(laplacian(phi), phi);
 
 		CALI_MARK_END("preconditioner_reduction");
 		
@@ -77,13 +76,12 @@ public:
 			
 			//DATAOPERATIONS GPU::RUN 4D
 			gpu::run(phi.set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 
-							 [expc = begin(expect),
-								nrm = begin(norm),
+							 [kine = begin(kinetic),
 								phcub = begin(phi.cubic()),
 								point_op = phi.basis().point_op()] GPU_LAMBDA
 							 (auto ist, auto iz, auto iy, auto ix){
 								 auto lapl = -0.5*(-point_op.g2(ix, iy, iz));
-								 phcub[ix][iy][iz][ist] = k_function(lapl*real(nrm[ist])/real(expc[ist]))*phcub[ix][iy][iz][ist];
+								 phcub[ix][iy][iz][ist] = k_function(lapl/real(kine[ist]))*phcub[ix][iy][iz][ist];
 							 });
 		}
 
