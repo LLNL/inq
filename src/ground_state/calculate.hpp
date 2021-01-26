@@ -168,12 +168,12 @@ namespace ground_state {
 				CALI_CXX_MARK_SCOPE("energy_calculation");
 				
 				auto residual = ham(electrons.phi_);
-				auto eigenvalues = operations::overlap_diagonal(electrons.phi_, residual);
+				auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi_);
 				operations::shift(-1.0, eigenvalues, electrons.phi_, residual);
 				
 				auto normres = operations::overlap_diagonal(residual);
-				auto nl_me = operations::overlap_diagonal(ham.non_local(electrons.phi_), electrons.phi_);
-				auto exchange_me = operations::overlap_diagonal(ham.exchange(electrons.phi_), electrons.phi_);
+				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(electrons.phi_), electrons.phi_);
+				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(electrons.phi_), electrons.phi_);
 				
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 				

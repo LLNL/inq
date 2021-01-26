@@ -62,7 +62,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		
 		ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 
-		auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
+		auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_), electrons.phi_);;
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
@@ -95,7 +95,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			electrons.density_ = density::calculate(electrons.states_.occupations(),  electrons.phi_, electrons.density_basis_);
 			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 			
-			auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
+			auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_), electrons.phi_);;
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 
 			forces = hamiltonian::calculate_forces(ions, electrons, ham);
