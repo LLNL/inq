@@ -64,7 +64,8 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 
 		auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_), electrons.phi_);;
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
-
+		electrons.phi_.set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
+		
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 		if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
@@ -97,7 +98,8 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			
 			auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_), electrons.phi_);;
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
-
+			electrons.phi_.set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
+			
 			forces = hamiltonian::calculate_forces(ions, electrons, ham);
 			
 			//propagate ionic velocities to t + dt

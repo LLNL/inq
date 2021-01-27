@@ -79,6 +79,9 @@ gcc-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/nitrogen      
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
@@ -157,6 +160,9 @@ gcc-ompi-fast:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/nitrogen
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2      
 
@@ -206,6 +212,9 @@ clang-ompi-parallel:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/nitrogen      
 
 
 #clang-cuda:
@@ -276,6 +285,9 @@ clang-ompi-fast-parallel:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/nitrogen      
 
 #clang-valgrind:
 #    stage: build
@@ -354,6 +366,9 @@ gcc-mpich-parallel:
       - time mpirun -np 2 tests/silicon
       - time mpirun -np 3 tests/silicon
       - time mpirun -np 5 tests/silicon
+      - time mpirun -np 2 tests/nitrogen
+      - time mpirun -np 3 tests/nitrogen
+      - time mpirun -np 5 tests/nitrogen      
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2      
 
@@ -485,6 +500,9 @@ nvcc-ompi:
       - time mpirun --oversubscribe -np 2 tests/silicon
       - time mpirun --oversubscribe -np 3 tests/silicon
       - time mpirun --oversubscribe -np 5 tests/silicon
+      - time mpirun --oversubscribe -np 2 tests/nitrogen
+      - time mpirun --oversubscribe -np 3 tests/nitrogen
+      - time mpirun --oversubscribe -np 5 tests/nitrogen      
 
      
 
