@@ -95,10 +95,12 @@ namespace basis {
 		}
 
 		auto cubic() const {
+			assert(basis_.local_size() > 0);
 			return linear_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
 		auto cubic() {
+			assert(basis_.local_size() > 0);
 			return linear_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 		
