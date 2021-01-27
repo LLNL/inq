@@ -39,12 +39,14 @@ class pulay : public base<Type> {
 		
 public:
 
-	pulay(const int arg_steps, const double arg_mix_factor, const long long dim):
+	pulay(const int arg_steps, const double arg_mix_factor, const long long dim, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 		iter_(0),
 		max_size_(arg_steps),
 		mix_factor_(arg_mix_factor),
 		ff_({max_size_, dim}, NAN),
 		dff_({max_size_, dim}, NAN){
+
+		assert(comm.size() == 1);
 	}
 
 	void operator()(math::array<Type, 1> & input_value, const math::array<Type, 1> & output_value){
