@@ -27,6 +27,9 @@
 #include <solvers/least_squares.hpp>
 #include <mixers/base.hpp>
 
+#include <mpi3/communicator.hpp>
+#include <mpi3/environment.hpp>
+
 namespace inq {
 namespace mixers {
 
