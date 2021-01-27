@@ -181,7 +181,9 @@ namespace ground_state {
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
 
-				//reduce over states
+				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.eigenvalues, 1, std::plus<>{});
+				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.nonlocal, 1, std::plus<>{});
+				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.hf_exchange, 1, std::plus<>{});
 				
 				if(solver.verbose_output() and console){
 					console->info("SCF iter {} : e = {:.12f} de = {:5.0e}", 
