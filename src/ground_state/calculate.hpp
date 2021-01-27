@@ -74,7 +74,7 @@ namespace ground_state {
 			switch(solver.mixing_algorithm()){
 			case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <double>>(solver.mixing());
 			case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <double>>(4, solver.mixing(), electrons.states_basis_.part().local_size());
-			case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<double>>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<double>>(4, solver.mixing(), electrons.states_basis_.part().local_size(), electrons.density_basis_.comm());
 			} __builtin_unreachable();
 		}();
 		
@@ -180,6 +180,8 @@ namespace ground_state {
 				res.energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, energy_term);
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
+
+				//reduce over states
 				
 				if(solver.verbose_output() and console){
 					console->info("SCF iter {} : e = {:.12f} de = {:5.0e}", 
