@@ -34,6 +34,10 @@
 
 #include <utils/profiling.hpp>
 
+#ifdef Heffte_FOUND
+#include <heffte.h>
+#endif
+
 #include <cassert>
 
 namespace inq {
@@ -83,6 +87,47 @@ template <class InArray4D, class OutArray4D>
 void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 
 	CALI_CXX_MARK_FUNCTION;
+
+#ifdef Heffte_FOUND
+
+	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(0).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(2).start())},
+																	{int(real_basis.cubic_dist(0).end()) - 1, int(real_basis.cubic_dist(1).end()) - 1, int(real_basis.cubic_dist(2).end()) - 1}};
+	
+	heffte::box3d<> const fs_box = {{int(fourier_basis.cubic_dist(0).start()), int(fourier_basis.cubic_dist(1).start()), int(fourier_basis.cubic_dist(2).start())},
+																	{int(fourier_basis.cubic_dist(0).end()) - 1, int(fourier_basis.cubic_dist(1).end()) - 1, int(fourier_basis.cubic_dist(2).end()) - 1}};
+
+	heffte::fft3d<heffte::backend::fftw> fft(rs_box, fs_box, real_basis.comm().get());
+
+	math::array<complex, 1> in(fft.size_inbox());
+	math::array<complex, 1> out(fft.size_outbox());	
+
+	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
+
+		long ip = 0;
+		for(int iz = 0; iz < real_basis.local_sizes()[2]; iz++){
+			for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
+					for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){					
+					in[ip] = array_rs[ix][iy][iz][ist];
+					ip++;
+				}
+			}
+		}
+		
+		fft.forward(in.data_elements(), out.data_elements());
+
+		ip = 0;
+		for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
+			for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
+				for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
+					array_fs[ix][iy][iz][ist] = out[ip];
+					ip++;
+				}
+			}
+		}
+
+	}
+	
+#else
 	
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
@@ -151,8 +196,10 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 			fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs, fft::forward);
 			gpu::sync();
 		}
-		
+
 	}
+	
+#endif
 	
 }
 		
