@@ -52,7 +52,15 @@ template <class field_set_type>
 auto overlap(const field_set_type & phi){
 
 	CALI_CXX_MARK_SCOPE("overlap(1arg)");
- 
+
+#ifdef ENABLE_CUDA
+
+	//call the 2 argument version, since there is a bug in multi that
+	//doesn't dispatch herk to the gpu
+	return overlap(phi, phi);
+	
+#else
+	
 	// no state parallelization for now
 	assert(not phi.set_part().parallel());
 	
@@ -62,6 +70,7 @@ auto overlap(const field_set_type & phi){
 	phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
 		
 	return overlap_matrix;
+#endif
 }
 
 template <class field_type>
@@ -138,19 +147,17 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			}
 		}
 
-		/* This is disabled because it causes problems with nvcc and multi.
-				 
-			 {
-			 auto cc = operations::overlap(aa);
+		{
+			auto cc = operations::overlap(aa);
 
-			 CHECK(std::get<0>(sizes(cc)) == nvec);
-			 CHECK(std::get<1>(sizes(cc)) == nvec);
-				
-			 for(int ii = 0; ii < nvec; ii++){
-			 for(int jj = 0; jj < nvec; jj++) CHECK(cc[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
-			 }
-			 }
-		*/
+			CHECK(typeid(decltype(cc[0][0])) == typeid(double));
+			CHECK(std::get<0>(sizes(cc)) == nvec);
+			CHECK(std::get<1>(sizes(cc)) == nvec);
+			
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++) CHECK(cc[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+			}
+		}
 
 	}
 
@@ -194,6 +201,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		{
 			auto cc = operations::overlap(aa);
 
+			CHECK(typeid(decltype(cc[0][0])) == typeid(complex));
 			CHECK(std::get<0>(sizes(cc)) == nvec);
 			CHECK(std::get<1>(sizes(cc)) == nvec);
 				
