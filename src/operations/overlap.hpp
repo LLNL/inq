@@ -138,19 +138,17 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			}
 		}
 
-		/* This is disabled because it causes problems with nvcc and multi.
-				 
-			 {
-			 auto cc = operations::overlap(aa);
+		{
+			auto cc = operations::overlap(aa);
 
-			 CHECK(std::get<0>(sizes(cc)) == nvec);
-			 CHECK(std::get<1>(sizes(cc)) == nvec);
-				
-			 for(int ii = 0; ii < nvec; ii++){
-			 for(int jj = 0; jj < nvec; jj++) CHECK(cc[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
-			 }
-			 }
-		*/
+			CHECK(typeid(decltype(cc[0][0])) == typeid(double));
+			CHECK(std::get<0>(sizes(cc)) == nvec);
+			CHECK(std::get<1>(sizes(cc)) == nvec);
+			
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++) CHECK(cc[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+			}
+		}
 
 	}
 
@@ -194,6 +192,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		{
 			auto cc = operations::overlap(aa);
 
+			CHECK(typeid(decltype(cc[0][0])) == typeid(complex));
 			CHECK(std::get<0>(sizes(cc)) == nvec);
 			CHECK(std::get<1>(sizes(cc)) == nvec);
 				
