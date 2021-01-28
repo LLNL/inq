@@ -52,7 +52,15 @@ template <class field_set_type>
 auto overlap(const field_set_type & phi){
 
 	CALI_CXX_MARK_SCOPE("overlap(1arg)");
- 
+
+#ifdef ENABLE_CUDA
+
+	//call the 2 argument version, since there is a bug in multi that
+	//doesn't dispatch herk to the gpu
+	return overlap(phi, phi);
+	
+#else
+	
 	// no state parallelization for now
 	assert(not phi.set_part().parallel());
 	
@@ -62,6 +70,7 @@ auto overlap(const field_set_type & phi){
 	phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
 		
 	return overlap_matrix;
+#endif
 }
 
 template <class field_type>
