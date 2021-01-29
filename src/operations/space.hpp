@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <inq_config.h> //for Heffte_FOUND
+
 #include <gpu/run.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
