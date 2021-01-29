@@ -98,33 +98,26 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 	heffte::fft3d<heffte::backend::fftw> fft(rs_box, fs_box, real_basis.comm().get());
 
-	math::array<complex, 1> in(fft.size_inbox());
-	math::array<complex, 1> out(fft.size_outbox());	
+	math::array<complex, 1> input(fft.size_inbox());
+	math::array<complex, 1> output(fft.size_outbox());	
 
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
-		for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){					
-			for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-					auto ip = iz + real_basis.local_sizes()[2]*(iy + real_basis.local_sizes()[1]*ix);
-					in[ip] = array_rs[ix][iy][iz][ist];
-				}
-			}
-		}
+		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
+						 [in = begin(input), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto ip = iz + dz*(iy + dy*ix);
+							 in[ip] = ar[ix][iy][iz][ist];
+						 });
 		
-		fft.forward(in.data_elements(), out.data_elements());
+		fft.forward(input.data_elements(), output.data_elements());
 
-		for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-					auto ip = iz + fourier_basis.local_sizes()[2]*(iy + fourier_basis.local_sizes()[1]*ix);					
-					array_fs[ix][iy][iz][ist] = out[ip];
-				}
-			}
-		}
-
+		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
+						 [out = begin(output), ar = begin(array_fs), dz = fourier_basis.local_sizes()[2], dy = fourier_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto ip = iz + dz*(iy + dy*ix);
+							 ar[ix][iy][iz][ist] = out[ip];
+						 });
 	}
-	
+		
 #else
 	
 	namespace multi = boost::multi;
