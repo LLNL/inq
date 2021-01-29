@@ -42,7 +42,9 @@ link_libraries(${FFTW_LIBRARIES})
 
 find_package(Heffte)
 #get_target_property(HEFFTE_INCLUDE_DIRS Heffte::Heffte INTERFACE_INCLUDE_DIRECTORIES)
-link_libraries(Heffte::Heffte)
+if(Heffte_FOUND)
+  link_libraries(Heffte::Heffte)
+endif()
 
 find_package(BLAS REQUIRED)
 link_libraries(${BLAS_LIBRARIES})
