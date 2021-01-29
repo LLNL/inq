@@ -92,14 +92,23 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 #ifdef Heffte_FOUND
 
+	CALI_MARK_BEGIN("heffte_initialization");
+ 
 	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(2).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(0).start())},
 																	{int(real_basis.cubic_dist(2).end()) - 1, int(real_basis.cubic_dist(1).end()) - 1, int(real_basis.cubic_dist(0).end()) - 1}};
 	
 	heffte::box3d<> const fs_box = {{int(fourier_basis.cubic_dist(2).start()), int(fourier_basis.cubic_dist(1).start()), int(fourier_basis.cubic_dist(0).start())},
 																	{int(fourier_basis.cubic_dist(2).end()) - 1, int(fourier_basis.cubic_dist(1).end()) - 1, int(fourier_basis.cubic_dist(0).end()) - 1}};
 
-	heffte::fft3d<heffte::backend::fftw> fft(rs_box, fs_box, real_basis.comm().get());
+#ifdef ENABLE_CUDA
+	heffte::fft3d<heffte::backend::cufft>
+#else
+	heffte::fft3d<heffte::backend::fftw>
+#endif
+		fft(rs_box, fs_box, real_basis.comm().get());
 
+	CALI_MARK_END("heffte_initialization");
+	
 	math::array<complex, 1> input(fft.size_inbox());
 	math::array<complex, 1> output(fft.size_outbox());	
 
