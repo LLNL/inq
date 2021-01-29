@@ -103,24 +103,22 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
-		long ip = 0;
 		for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){					
 			for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < real_basis.local_sizes()[2]; iz++){
+					auto ip = iz + real_basis.local_sizes()[2]*(iy + real_basis.local_sizes()[1]*ix);
 					in[ip] = array_rs[ix][iy][iz][ist];
-					ip++;
 				}
 			}
 		}
 		
 		fft.forward(in.data_elements(), out.data_elements());
 
-		ip = 0;
 		for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
+					auto ip = iz + fourier_basis.local_sizes()[2]*(iy + fourier_basis.local_sizes()[1]*ix);					
 					array_fs[ix][iy][iz][ist] = out[ip];
-					ip++;
 				}
 			}
 		}
