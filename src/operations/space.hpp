@@ -90,11 +90,11 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 #ifdef Heffte_FOUND
 
-	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(0).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(2).start())},
-																	{int(real_basis.cubic_dist(0).end()) - 1, int(real_basis.cubic_dist(1).end()) - 1, int(real_basis.cubic_dist(2).end()) - 1}};
+	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(2).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(0).start())},
+																	{int(real_basis.cubic_dist(2).end()) - 1, int(real_basis.cubic_dist(1).end()) - 1, int(real_basis.cubic_dist(0).end()) - 1}};
 	
-	heffte::box3d<> const fs_box = {{int(fourier_basis.cubic_dist(0).start()), int(fourier_basis.cubic_dist(1).start()), int(fourier_basis.cubic_dist(2).start())},
-																	{int(fourier_basis.cubic_dist(0).end()) - 1, int(fourier_basis.cubic_dist(1).end()) - 1, int(fourier_basis.cubic_dist(2).end()) - 1}};
+	heffte::box3d<> const fs_box = {{int(fourier_basis.cubic_dist(2).start()), int(fourier_basis.cubic_dist(1).start()), int(fourier_basis.cubic_dist(0).start())},
+																	{int(fourier_basis.cubic_dist(2).end()) - 1, int(fourier_basis.cubic_dist(1).end()) - 1, int(fourier_basis.cubic_dist(0).end()) - 1}};
 
 	heffte::fft3d<heffte::backend::fftw> fft(rs_box, fs_box, real_basis.comm().get());
 
@@ -104,9 +104,9 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
 		long ip = 0;
-		for(int iz = 0; iz < real_basis.local_sizes()[2]; iz++){
+		for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){					
 			for(int iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-					for(int ix = 0; ix < real_basis.local_sizes()[0]; ix++){					
+				for(int iz = 0; iz < real_basis.local_sizes()[2]; iz++){
 					in[ip] = array_rs[ix][iy][iz][ist];
 					ip++;
 				}
@@ -116,9 +116,9 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		fft.forward(in.data_elements(), out.data_elements());
 
 		ip = 0;
-		for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
+		for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-				for(int ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
+				for(int iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
 					array_fs[ix][iy][iz][ist] = out[ip];
 					ip++;
 				}
