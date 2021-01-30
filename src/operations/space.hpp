@@ -211,7 +211,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 ///////////////////////////////////////////////////////////////
 
 template <class InArray4D, class OutArray4D>
-void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs) {
+void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs, bool normalize) {
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -324,6 +324,14 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 #endif
 
+	if(normalize){
+		CALI_CXX_MARK_SCOPE("fft_normalize");
+		gpu::run(size(array_rs[0][0][0]), real_basis.local_size(), 
+						 [ar = begin(array_rs.flatted().flatted()), factor = 1.0/real_basis.size()] GPU_LAMBDA (auto ist, auto ip){
+							 ar[ip][ist] = factor*ar[ip][ist];
+						 });
+	}
+
 }
 
 ///////////////////////////////////////////////////////////////
@@ -355,15 +363,8 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 	
 	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic());
- 
-	if(normalize){
-		//DATAOPERATIONS GPU::RUN 1D
-		gpu::run(phi.basis().part().local_size()*phi.set_part().local_size(),
-						 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
-							 phip[ii] = phip[ii]/norm_factor;
-						 });
-	}
+	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
+
 	return phi;
 }
 
@@ -397,14 +398,7 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 
 	basis::field<basis::real_space, complex> phi(real_basis);
 
-	to_real(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic());
- 
-	if(normalize){
-		gpu::run(phi.linear().size(),
-						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ip){
-							 phil[ip] = factor*phil[ip];
-						 });
-	}
+	to_real(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
 			
 	return phi;
 }
@@ -439,15 +433,8 @@ basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::fie
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
-	to_real(fourier_basis, real_basis, fphi.cubic().reinterpret_array_cast<complex>(3), phi.cubic().reinterpret_array_cast<complex>(3));
+	to_real(fourier_basis, real_basis, fphi.cubic().reinterpret_array_cast<complex>(3), phi.cubic().reinterpret_array_cast<complex>(3), normalize);
 
-	if(normalize){
-		gpu::run(3, phi.linear().size(),
-						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto idir, auto ip){
-							 phil[ip][idir] = factor*phil[ip][idir];
-						 });
-	}
-			
 	return phi;
 }
 
@@ -465,15 +452,8 @@ basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis:
 	auto const & fphi_as_scalar = fphi.cubic().reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
 	auto && phi_as_scalar = phi.cubic().reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
 		
-	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar);
+	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
 
-	if(normalize){
-		gpu::run(phi.local_set_size(), phi.basis().local_size(),
-						 [phil = begin(phi.matrix()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ist, auto ip){
-							 for(int idir = 0; idir < 3; idir++) phil[ip][ist][idir] = factor*phil[ip][ist][idir];
-						 });
-	}
-	
 	return phi;
 }
 
