@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <inq_config.h> //for Heffte_FOUND
+#include <inq_config.h> //for ENABLE_HEFFTE
 
 #include <gpu/run.hpp>
 #include <basis/field.hpp>
@@ -36,7 +36,7 @@
 
 #include <utils/profiling.hpp>
 
-#ifdef Heffte_FOUND
+#ifdef ENABLE_HEFFTE
 #include <heffte.h>
 #endif
 
@@ -90,7 +90,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 	CALI_CXX_MARK_FUNCTION;
 
-#ifdef Heffte_FOUND
+#ifdef ENABLE_HEFFTE
 
 	CALI_MARK_BEGIN("heffte_initialization");
  
@@ -215,7 +215,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 	CALI_CXX_MARK_FUNCTION;
 
-#ifdef Heffte_FOUND
+#ifdef ENABLE_HEFFTE
 	
 	CALI_MARK_BEGIN("heffte_initialization");
 	

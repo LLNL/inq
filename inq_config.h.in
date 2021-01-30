@@ -5,7 +5,7 @@
 #define inq_VERSION_MINOR @inq_VERSION_MINOR@
 
 #cmakedefine ENABLE_CUDA @ENABLE_CUDA@
-#cmakedefine Heffte_FOUND @Heffte_FOUND@
+#cmakedefine ENABLE_HEFFTE @ENABLE_HEFFTE@
 
 #define PREFIX_DIR "@CMAKE_INSTALL_PREFIX@"
 #define SHARE_DIR  "@CMAKE_INSTALL_PREFIX@/share/inq"

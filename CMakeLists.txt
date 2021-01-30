@@ -40,9 +40,9 @@ find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
 include_directories(${FFTW_INCLUDE_DIRS})
 link_libraries(${FFTW_LIBRARIES})
 
-find_package(Heffte)
-#get_target_property(HEFFTE_INCLUDE_DIRS Heffte::Heffte INTERFACE_INCLUDE_DIRECTORIES)
-if(Heffte_FOUND)
+if(ENABLE_HEFFTE)
+  find_package(Heffte)
+  #get_target_property(HEFFTE_INCLUDE_DIRS Heffte::Heffte INTERFACE_INCLUDE_DIRECTORIES)
   link_libraries(Heffte::Heffte)
 endif()
 
