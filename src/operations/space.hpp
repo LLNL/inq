@@ -214,7 +214,51 @@ template <class InArray4D, class OutArray4D>
 void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs) {
 
 	CALI_CXX_MARK_FUNCTION;
+
+#ifdef Heffte_FOUND
+	
+	CALI_MARK_BEGIN("heffte_initialization");
+	
+	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(2).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(0).start())},
+																	{int(real_basis.cubic_dist(2).end()) - 1, int(real_basis.cubic_dist(1).end()) - 1, int(real_basis.cubic_dist(0).end()) - 1}};
+	
+	heffte::box3d<> const fs_box = {{int(fourier_basis.cubic_dist(2).start()), int(fourier_basis.cubic_dist(1).start()), int(fourier_basis.cubic_dist(0).start())},
+																	{int(fourier_basis.cubic_dist(2).end()) - 1, int(fourier_basis.cubic_dist(1).end()) - 1, int(fourier_basis.cubic_dist(0).end()) - 1}};
+
+#ifdef ENABLE_CUDA
+	heffte::fft3d<heffte::backend::cufft>
+#else
+	heffte::fft3d<heffte::backend::fftw>
+#endif
+		fft(rs_box, fs_box, real_basis.comm().get());
+
+	CALI_MARK_END("heffte_initialization");
+	
+	math::array<complex, 1> input(fft.size_inbox());
+	math::array<complex, 1> output(fft.size_outbox());	
+
+	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
+
+		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
+						 [in = begin(input), ar = begin(array_fs), dz = fourier_basis.local_sizes()[2], dy = fourier_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto ip = iz + dz*(iy + dy*ix);
+							 in[ip] = ar[ix][iy][iz][ist];
+						 });
+
+		{
+			CALI_CXX_MARK_SCOPE("heffte_backward");
+			fft.backward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()));
+		}
 		
+		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
+						 [out = begin(output), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto ip = iz + dz*(iy + dy*ix);
+							 ar[ix][iy][iz][ist] = out[ip];
+						 });
+	}
+		
+#else
+	
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
@@ -277,6 +321,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		}
 	}
+
+#endif
 
 }
 
