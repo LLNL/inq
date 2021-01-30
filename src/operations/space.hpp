@@ -233,6 +233,9 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		fft(rs_box, fs_box, real_basis.comm().get());
 
 	CALI_MARK_END("heffte_initialization");
+
+	auto scaling = heffte::scale::none;
+	if(normalize) scaling = heffte::scale::full;
 	
 	math::array<complex, 1> input(fft.size_inbox());
 	math::array<complex, 1> output(fft.size_outbox());	
@@ -247,7 +250,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("heffte_backward");
-			fft.backward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()));
+			fft.backward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()), scaling);
 		}
 		
 		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
@@ -257,7 +260,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 						 });
 	}
 		
-#else
+#else //Heftte_FOUND
 	
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
@@ -322,8 +325,6 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		}
 	}
 
-#endif
-
 	if(normalize){
 		CALI_CXX_MARK_SCOPE("fft_normalize");
 		gpu::run(size(array_rs[0][0][0]), real_basis.local_size(), 
@@ -331,6 +332,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 							 ar[ip][ist] = factor*ar[ip][ist];
 						 });
 	}
+
+#endif //Heftte_FOUND
 
 }
 
