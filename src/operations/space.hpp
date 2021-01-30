@@ -119,9 +119,12 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 							 auto ip = iz + dz*(iy + dy*ix);
 							 in[ip] = ar[ix][iy][iz][ist];
 						 });
-		
-		fft.forward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()));
 
+		{
+			CALI_CXX_MARK_SCOPE("heffte_forward");
+			fft.forward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()));
+		}
+		
 		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
 						 [out = begin(output), ar = begin(array_fs), dz = fourier_basis.local_sizes()[2], dy = fourier_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 auto ip = iz + dz*(iy + dy*ix);
