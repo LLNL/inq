@@ -31,6 +31,8 @@ namespace operations {
 
 template <class field_type>
 auto integral(const field_type & phi){
+	CALI_CXX_MARK_FUNCTION;
+	
 	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
 	phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	return integral_value;
@@ -38,6 +40,8 @@ auto integral(const field_type & phi){
 
 template <class field_type, class binary_op>
 auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
+	CALI_CXX_MARK_FUNCTION;
+	
 	assert(phi1.basis() == phi2.basis());
 
 	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);

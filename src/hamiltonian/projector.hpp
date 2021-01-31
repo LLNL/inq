@@ -107,9 +107,11 @@ namespace hamiltonian {
 			} else {
 				projections.elements().fill(0.0);
 			}
-
-			phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
-
+			
+			{	CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
+				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+			}
+			
 			if(sphere_.size() > 0) {
 
 				{
@@ -168,7 +170,9 @@ namespace hamiltonian {
 				projections.elements().fill(0.0);
 			}
 
-			phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
+				phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+			}
 
 			if(sphere_.size() > 0) {
 				namespace blas = boost::multi::blas;
@@ -182,8 +186,10 @@ namespace hamiltonian {
 				}
 				
 			}
-
-			phi.full_comm().all_reduce_in_place_n(force.data(), force.size(), std::plus<>{});
+			
+			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_2");
+				phi.full_comm().all_reduce_in_place_n(force.data(), force.size(), std::plus<>{});
+			}
 			
 			return phi.basis().volume_element()*force;
     }
