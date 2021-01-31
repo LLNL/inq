@@ -469,7 +469,7 @@ intel-ompi:
       - $PREFIX/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2      
 
-nvcc-ompi-ndebug:
+nvcc-ompi-fast:
     stage: build
     tags:
       - cuda_gpu
