@@ -5,6 +5,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
+cmake_policy(SET CMP0074 NEW)
 
 enable_testing()
 include(CTest)
