@@ -6,6 +6,7 @@ project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0104 NEW)
 
 enable_testing()
 include(CTest)
