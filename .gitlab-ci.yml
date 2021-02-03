@@ -469,6 +469,38 @@ intel-ompi:
       - $PREFIX/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2      
 
+nvcc-ompi-ndebug:
+    stage: build
+    tags:
+      - cuda_gpu
+    script:
+      - export PREFIX=`mktemp -d`    
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - export PATH=/usr/local/cuda/bin:$PATH
+      - nvcc -V
+      - mkdir nvcc
+      - cd nvcc
+      - export CUDACXX=/usr/local/cuda/bin/nvcc
+      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -DNDEBUG -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++17,-Wall,-Wfatal-errors"
+      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+      - time ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda
+      - time make -j8
+      - time make -j8 install
+      - ctest --output-on-failure --timeout 600
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 600; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest --output-on-failure --timeout 600; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_ground_state
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_ground_state
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_ground_state
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_real_time
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_real_time
+      - time mpirun --oversubscribe -np 2 tests/silicon
+      - time mpirun --oversubscribe -np 3 tests/silicon
+      - time mpirun --oversubscribe -np 5 tests/silicon
+
 nvcc-ompi:
     stage: build
     tags:
@@ -496,15 +528,13 @@ nvcc-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_ground_state
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_real_time
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/h2o_real_time
-      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_real_time      
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_real_time
       - time mpirun --oversubscribe -np 2 tests/silicon
       - time mpirun --oversubscribe -np 3 tests/silicon
       - time mpirun --oversubscribe -np 5 tests/silicon
       - time mpirun --oversubscribe -np 2 tests/nitrogen
       - time mpirun --oversubscribe -np 3 tests/nitrogen
       - time mpirun --oversubscribe -np 5 tests/nitrogen      
-
-     
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
