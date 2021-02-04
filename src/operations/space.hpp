@@ -292,8 +292,18 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_1d");
 
-			fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), array_rs, fft::backward);
-			gpu::sync();			
+			auto tmp2 = tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]});
+
+#ifdef ENABLE_CUDA
+			//when using cuda, do a loop explicitly over the last dimension (n1), otherwise multi makes a loop ove the 2 first ones (n0 and n1). And we know that n3 << n0*n1.
+			for(auto ii : extension(tmp2.unrotated())){
+				fft::dft({false, false, true}, tmp2.unrotated()[ii], array_rs.unrotated()[ii], fft::backward);
+			}
+#else
+			fft::dft({false, false, true, false}, tmp2, array_rs, fft::backward);
+#endif
+			
+			gpu::sync();
 
 		}
 	}
