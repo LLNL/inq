@@ -166,31 +166,16 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 			gpu::sync();
 		}
 		
-		// we should do
+		CALI_MARK_BEGIN("fft_forward_transpose");		
 		math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
-		// but it is impossibly slow
-		// so for the moment we do:
-		
-//		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
-
-//		for(int i4 = 0; i4 < comm.size(); i4++){
-//			CALI_CXX_MARK_SCOPE("fft_transpose");
-//			
-//			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
-//							 [i4,
-//								buf = begin(buffer),
-//								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
-//							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
-//								 buf[i4][i3][i2][i1][i0] = rot[i4][i3][i2][i1][i0];
-//							 });
-//		}
+		CALI_MARK_END("fft_forward_transpose");
 
 		assert(std::get<4>(sizes(buffer)) == last_dim);
 		
 		tmp.clear();
 
 		{
-			CALI_CXX_MARK_SCOPE("fft_alltoall");
+			CALI_CXX_MARK_SCOPE("fft_forward_alltoall");
 			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 
@@ -293,27 +278,15 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		}
 
 		{
-			CALI_CXX_MARK_SCOPE("fft_alltoall");
+			CALI_CXX_MARK_SCOPE("fft_backward_alltoall");
 			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 		
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
 
-		// we should do
-		//   tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer;
-		// but it is impossibly slow
-		// so we do
-		
-		for(int i4 = 0; i4 < comm.size(); i4++){
-			CALI_CXX_MARK_SCOPE("fft_transpose");
-				
-			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
-							 [i4,
-								buf = begin(buffer),
-								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
-							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
-								 rot[i4][i3][i2][i1][i0] = buf[i4][i3][i2][i1][i0];
-							 });
+		{
+			CALI_CXX_MARK_SCOPE("fft_backward_transpose");
+			tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer;
 		}
 
 		{
