@@ -105,11 +105,11 @@ namespace basis {
 		}
 		
 		auto hypercubic() const {
-			return cubic().partitioned(1).rotated();
+			return cubic().template reinterpret_array_cast<Type>(1);
 		}
-
+		
 		auto hypercubic() {
-			return cubic().partitioned(1).rotated();
+			return cubic().template reinterpret_array_cast<Type>(1);
 		}
 		
 		auto data() {
@@ -264,6 +264,12 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	CHECK(std::get<1>(sizes(ff.hypercubic())) == 11);
 	CHECK(std::get<2>(sizes(ff.hypercubic())) == 20);
 	CHECK(std::get<3>(sizes(ff.hypercubic())) == 1);	
+
+	//Make sure the hypercubic array is correctly ordered, so it can be flattened
+	auto strd = strides(ff.hypercubic());
+	CHECK(std::get<0>(strd) >= std::get<1>(strd));
+	CHECK(std::get<1>(strd) >= std::get<2>(strd));
+	CHECK(std::get<2>(strd) >= std::get<3>(strd));
 	
 }
 
