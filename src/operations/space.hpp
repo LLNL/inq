@@ -167,7 +167,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		}
 		
 		CALI_MARK_BEGIN("fft_forward_transpose");		
-		math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
+		auto buffer = +tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
 		CALI_MARK_END("fft_forward_transpose");
 
 		assert(std::get<4>(sizes(buffer)) == last_dim);
@@ -282,25 +282,25 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 		
-		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
+		math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_transpose");
-			tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer;
+			tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer({0, comm.size()}, {0, real_basis.local_sizes()[0]});
 		}
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_1d");
 
-			auto tmp2 = tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]});
+			auto tmpsub = tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]});
 
 #ifdef ENABLE_CUDA
-			//when using cuda, do a loop explicitly over the last dimension (n1), otherwise multi makes a loop ove the 2 first ones (n0 and n1). And we know that n3 << n0*n1.
-			for(auto ii : extension(tmp2.unrotated())){
-				fft::dft({false, false, true}, tmp2.unrotated()[ii], array_rs.unrotated()[ii], fft::backward);
+			//when using cuda, do a loop explicitly over the last dimension (n1), otherwise multi makes a loop over the 2 first ones (n0 and n1). And we know that n3 << n0*n1.
+			for(auto ii : extension(tmpsub.unrotated())) {
+				fft::dft({false, false, true}, tmpsub.unrotated()[ii], array_rs.unrotated()[ii], fft::backward);
 			}
 #else
-			fft::dft({false, false, true, false}, tmp2, array_rs, fft::backward);
+			fft::dft({false, false, true, false}, tmpsub, array_rs, fft::backward);
 #endif
 			
 			gpu::sync();
