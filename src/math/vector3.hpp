@@ -236,11 +236,6 @@ namespace math {
 			return in;
 		}
 
-		template<class Archive>
-		void serialize(Archive& ar, unsigned const /*version*/){
-			ar & vec_[0] & vec_[1] & vec_[2];
-		}
-
 	private:
 
 		Type vec_[3];
@@ -254,9 +249,6 @@ namespace math {
 #undef INQ_MATH_VECTOR3_UNIT_TEST
 
 #include <catch2/catch.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 #include <iostream>
 
@@ -456,32 +448,11 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		*/
 	}
 
-	SECTION("Serialization"){
-		math::vector3<double> x2{0.1, 0.2, 0.3};
-		
-		std::stringstream ss;
-		boost::archive::text_oarchive{ss} << x2;
-		std::cout << ss.str() <<'\n';
-		
-		math::vector3<double> x3;
-		boost::archive::text_iarchive{ss} >> x3;
-		CHECK( x3 == x2 );
-		
-	}
-
 	SECTION("Old vector3<double> tests"){
 	
 		math::vector3<double> x1{1.0, 2.0, 3.0};
 		math::vector3<double> x2{0.1, 0.2, 0.3};
 
-		{
-			std::stringstream ss;
-			boost::archive::text_oarchive{ss} << x2;
-			std::cout << ss.str() <<'\n';
-			math::vector3<double> x3; boost::archive::text_iarchive{ss} >> x3;
-			CHECK( x3 == x2 );
-		}
-	
 		CHECK(x1[0] == 1.0_a);
 		CHECK(x1[1] == 2.0_a);
 		CHECK(x1[2] == 3.0_a);
