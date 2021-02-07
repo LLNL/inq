@@ -29,12 +29,14 @@
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/projector_fourier.hpp>
 #include <hamiltonian/scalar_potential.hpp>
+#include <input/environment.hpp>
 #include <ions/geometry.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
 
 #include <utils/profiling.hpp>
 
+#include <future>
 #include <map>
 #include <unordered_map>
 
@@ -75,18 +77,39 @@ namespace hamiltonian {
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
 
 			CALI_CXX_MARK_FUNCTION;
+
+			using proj_type = decltype(projectors_.cbegin()->second.project(phi));
+
+			if(input::environment::threaded()){
+				
+				std::vector<std::future<proj_type>> projections;
+				
+				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+					projections.push_back(std::async(std::launch::async, [it, &phi]{ return it->second.project(phi);}));
+				}
+				
+				auto projit = projections.begin();
+				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+					it->second.apply(projit->get(), vnlphi);
+					++projit;
+				}
+
+			} else {
+				
+				std::vector<proj_type> projections;
+				
+				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+					projections.push_back(it->second.project(phi));
+				}
+				
+				auto projit = projections.cbegin();
+				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+					it->second.apply(*projit, vnlphi);
+					++projit;
+				}
+
+			}
 			
-			std::vector<decltype(projectors_.cbegin()->second.project(phi))> projections;
-
-			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				projections.push_back(it->second.project(phi));
-			}
-
-			auto projit = projections.cbegin();
-			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				it->second.apply(*projit, vnlphi);
-				++projit;
-			}
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
