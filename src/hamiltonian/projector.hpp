@@ -190,10 +190,6 @@ namespace hamiltonian {
 				
 			}
 			
-			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_2");
-				phi.full_comm().all_reduce_in_place_n(force.data(), force.size(), std::plus<>{});
-			}
-			
 			return phi.basis().volume_element()*force;
     }
 		
