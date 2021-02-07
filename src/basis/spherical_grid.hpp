@@ -44,7 +44,8 @@ namespace basis {
 		
 		template <class basis>
     spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius):
-			volume_element_(parent_grid.volume_element()){
+			volume_element_(parent_grid.volume_element()),
+			center_(center_point){
 
 			CALI_CXX_MARK_FUNCTION;
 	
@@ -120,6 +121,12 @@ namespace basis {
 			
     }
 
+		auto create_comm(boost::mpi3::communicator & comm) const {
+			auto color = MPI_UNDEFINED;
+			if(size() != 0) color = 1;
+			return comm.split(color, 0);
+		}
+		
     long size() const {
       return points_.size();
     }
@@ -195,12 +202,17 @@ namespace basis {
 			return std::array<long, dimension>{sphere.size()};
 		}
 
+		auto & center() const {
+			return center_;
+		}
+
   private:
 
 		math::array<std::array<int, 3>, 1> points_;
 		math::array<float, 1> distance_; //I don't think we need additional precision for this. XA
 		std::vector<math::vector3<double>> relative_pos_;
 		double volume_element_;
+		math::vector3<double> center_;
 		
   };
 

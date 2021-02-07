@@ -58,11 +58,11 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
 		auto proj = ham.projectors().find(iatom);
 		if(proj == ham.projectors().end()) continue; //there is no projector for this atom
-
+		
 		forces_non_local[iatom] = proj->second.force(electrons.phi_, gphi, electrons.states_.occupations());
 	}
 
-	gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
+	electrons.phi_.full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
 
 	//ionic force
 	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot_);

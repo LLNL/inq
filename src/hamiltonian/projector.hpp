@@ -43,7 +43,8 @@ namespace hamiltonian {
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),
-			kb_coeff_(nproj_) {
+			kb_coeff_(nproj_),
+			comm_(sphere_.create_comm(basis.comm())){
 
 			std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 
@@ -69,11 +70,15 @@ namespace hamiltonian {
 			
     }
 
+		auto empty() const {
+			return nproj_ == 0 or sphere_.size() == 0;
+		}
+
     template <class field_set_type>
-    void operator()(const field_set_type & phi, field_set_type & vnlphi) const {
+    math::array<typename field_set_type::element_type, 2> project(const field_set_type & phi) const {
 
-			if(nproj_ == 0) return;
-
+			assert(not empty());
+			
 			CALI_CXX_MARK_SCOPE("projector");
 				
 			auto sphere_phi = sphere_.gather(phi.cubic());
@@ -84,44 +89,42 @@ namespace hamiltonian {
 
 			CALI_MARK_END("projector_allocation");
 			
-			//DATAOPERATIONS BLAS
-			if(sphere_.size() > 0) {
-
-				{
-					CALI_CXX_MARK_SCOPE("projector_gemm_1");
-					namespace blas = boost::multi::blas;
-					blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
-				}
-
-				{
-					CALI_CXX_MARK_SCOPE("projector_scal");
-					
-					//DATAOPERATIONS GPU::RUN 2D
-					gpu::run(phi.local_set_size(), nproj_,
-									 [proj = begin(projections), coeff = begin(kb_coeff_)]
-									 GPU_LAMBDA (auto ist, auto iproj){
-										 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
-									 });
-				}
+			{ CALI_CXX_MARK_SCOPE("projector_gemm_1");
+				namespace blas = boost::multi::blas;
+				blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
+			}
+			
+			{	CALI_CXX_MARK_SCOPE("projector_scal");
 				
-			} else {
-				projections.elements().fill(0.0);
+				//DATAOPERATIONS GPU::RUN 2D
+				gpu::run(phi.local_set_size(), nproj_,
+								 [proj = begin(projections), coeff = begin(kb_coeff_)]
+								 GPU_LAMBDA (auto ist, auto iproj){
+									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+								 });
 			}
 			
 			{	CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comm_.all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 			
-			if(sphere_.size() > 0) {
+			return projections;
+		}
+			
+		template <class field_set_type>
+    void apply(math::array<typename field_set_type::element_type, 2> const & projections, field_set_type & vnlphi) const {
 
-				{
-					CALI_CXX_MARK_SCOPE("projector_gemm_2");
-					namespace blas = boost::multi::blas;
-					blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
-				}
-				
-				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
+			assert(not empty());
+
+			math::array<typename field_set_type::element_type, 2> sphere_vnlphi({sphere_.size(), vnlphi.local_set_size()});
+
+			{
+				CALI_CXX_MARK_SCOPE("projector_gemm_2");
+				namespace blas = boost::multi::blas;
+				blas::real_doubled(sphere_vnlphi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
 			}
+			
+			sphere_.scatter_add(sphere_vnlphi, vnlphi.cubic());
 		}
 
 		template <typename OcType, typename PhiType, typename GPhiType>
@@ -171,7 +174,7 @@ namespace hamiltonian {
 			}
 
 			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comm_.all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 
 			if(sphere_.size() > 0) {
@@ -187,10 +190,6 @@ namespace hamiltonian {
 				
 			}
 			
-			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_2");
-				phi.full_comm().all_reduce_in_place_n(force.data(), force.size(), std::plus<>{});
-			}
-			
 			return phi.basis().volume_element()*force;
     }
 		
@@ -201,13 +200,14 @@ namespace hamiltonian {
     auto kb_coeff(int iproj){
       return kb_coeff_[iproj];
     }
-		
+
   private:
 
     basis::spherical_grid sphere_;
     int nproj_;
     math::array<double, 2> matrix_;
 		math::array<double, 1> kb_coeff_;
+		mutable boost::mpi3::communicator comm_;
     
   };
   

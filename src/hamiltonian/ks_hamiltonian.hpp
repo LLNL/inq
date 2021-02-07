@@ -35,6 +35,9 @@
 
 #include <utils/profiling.hpp>
 
+#include <map>
+#include <unordered_map>
+
 namespace inq {
 namespace hamiltonian {
   template <class basis_type>
@@ -60,7 +63,8 @@ namespace hamiltonian {
 																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(geo.coordinates()[iatom]);
 				} else {
-					projectors_.emplace(iatom, projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
+					projector proj(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]);
+					if(not proj.empty()) projectors_.emplace(iatom, std::move(proj));
 				}
 			}
 
@@ -69,8 +73,19 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
+
+			CALI_CXX_MARK_FUNCTION;
+			
+			std::vector<decltype(projectors_.cbegin()->second.project(phi))> projections;
+
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				it->second(phi, vnlphi);
+				projections.push_back(it->second.project(phi));
+			}
+
+			auto projit = projections.cbegin();
+			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+				it->second.apply(*projit, vnlphi);
+				++projit;
 			}
 		}
 
@@ -177,7 +192,7 @@ namespace hamiltonian {
 		
   private:
 
-		std::unordered_map<int, projector> projectors_;
+		std::map<int, projector> projectors_;
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
