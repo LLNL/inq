@@ -52,9 +52,12 @@ namespace input {
 		}
 		
     environment(int argc, char** argv, bool use_threads = false):
-      mpi_env_(argc, argv)
+      mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single)
     {
-
+			if(use_threads){
+				assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
+			}
+			
 			threaded_impl() = use_threads;
 			
 			if(not use_threads and mpi_env_.get_world_instance().rank() == 0){
