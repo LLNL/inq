@@ -181,7 +181,7 @@ namespace hamiltonian {
 			}
 
 			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comm_.all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 
 			if(sphere_.size() > 0) {
