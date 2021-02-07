@@ -120,6 +120,10 @@ namespace basis {
 			
     }
 
+		auto create_comm(boost::mpi3::communicator & comm) const {
+			return comm.split(int(size() != 0));
+		}
+		
     long size() const {
       return points_.size();
     }

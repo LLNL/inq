@@ -43,7 +43,8 @@ namespace hamiltonian {
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),
-			kb_coeff_(nproj_) {
+			kb_coeff_(nproj_),
+			comm_(sphere_.create_comm(basis.comm())){
 
 			std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 
@@ -108,7 +109,7 @@ namespace hamiltonian {
 
 			
 			{	CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comm_.all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 			
 			return projections;
@@ -221,6 +222,7 @@ namespace hamiltonian {
     int nproj_;
     math::array<double, 2> matrix_;
 		math::array<double, 1> kb_coeff_;
+		mutable boost::mpi3::communicator comm_;
     
   };
   
