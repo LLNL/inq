@@ -35,6 +35,9 @@
 
 #include <utils/profiling.hpp>
 
+#include <map>
+#include <unordered_map>
+
 namespace inq {
 namespace hamiltonian {
   template <class basis_type>
@@ -189,7 +192,7 @@ namespace hamiltonian {
 		
   private:
 
-		std::unordered_map<int, projector> projectors_;
+		std::map<int, projector> projectors_;
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
