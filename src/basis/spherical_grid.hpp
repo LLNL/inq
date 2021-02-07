@@ -121,7 +121,9 @@ namespace basis {
     }
 
 		auto create_comm(boost::mpi3::communicator & comm) const {
-			return comm.split(int(size() != 0));
+			auto color = MPI_UNDEFINED;
+			if(size() != 0) color = 1;
+			return comm.split(color);
 		}
 		
     long size() const {
