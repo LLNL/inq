@@ -70,9 +70,7 @@ namespace hamiltonian {
     }
 
     template <class field_set_type>
-    void operator()(const field_set_type & phi, field_set_type & vnlphi) const {
-
-			if(nproj_ == 0) return;
+    math::array<typename field_set_type::element_type, 2> project(const field_set_type & phi) const {
 
 			CALI_CXX_MARK_SCOPE("projector");
 				
@@ -85,7 +83,7 @@ namespace hamiltonian {
 			CALI_MARK_END("projector_allocation");
 			
 			//DATAOPERATIONS BLAS
-			if(sphere_.size() > 0) {
+			if(nproj_ == 0 or sphere_.size() > 0) {
 
 				{
 					CALI_CXX_MARK_SCOPE("projector_gemm_1");
@@ -107,20 +105,31 @@ namespace hamiltonian {
 			} else {
 				projections.elements().fill(0.0);
 			}
+
 			
 			{	CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
 				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 			
-			if(sphere_.size() > 0) {
+			return projections;
+		}
+			
+		template <class field_set_type>
+    void apply(math::array<typename field_set_type::element_type, 2> const & projections, field_set_type & vnlphi) const {
 
+			if(nproj_ == 0) return;
+
+			math::array<typename field_set_type::element_type, 2> sphere_vnlphi({sphere_.size(), vnlphi.local_set_size()});
+			
+			if(sphere_.size() > 0) {
+				
 				{
 					CALI_CXX_MARK_SCOPE("projector_gemm_2");
 					namespace blas = boost::multi::blas;
-					blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
+					blas::real_doubled(sphere_vnlphi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
 				}
 				
-				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
+				sphere_.scatter_add(sphere_vnlphi, vnlphi.cubic());
 			}
 		}
 
