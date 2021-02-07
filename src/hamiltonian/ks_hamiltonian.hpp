@@ -60,7 +60,8 @@ namespace hamiltonian {
 																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(geo.coordinates()[iatom]);
 				} else {
-					projectors_.emplace(iatom, projector(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]));
+					projector proj(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]);
+					if(not proj.empty()) projectors_.emplace(iatom, std::move(proj));
 				}
 			}
 
@@ -69,11 +70,19 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
+
+			CALI_CXX_MARK_FUNCTION;
+			
+			std::vector<decltype(projectors_.cbegin()->second.project(phi))> projections;
+
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				if(it->second.empty()) continue;
-				
-				auto projection = it->second.project(phi);
-				it->second.apply(projection, vnlphi);				
+				projections.push_back(it->second.project(phi));
+			}
+
+			auto projit = projections.cbegin();
+			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+				it->second.apply(*projit, vnlphi);
+				++projit;
 			}
 		}
 
