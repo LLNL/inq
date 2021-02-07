@@ -70,6 +70,8 @@ namespace hamiltonian {
 		
 		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+				if(it->second.empty()) continue;
+				
 				auto projection = it->second.project(phi);
 				it->second.apply(projection, vnlphi);				
 			}

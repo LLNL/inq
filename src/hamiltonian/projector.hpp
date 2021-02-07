@@ -210,6 +210,10 @@ namespace hamiltonian {
     auto kb_coeff(int iproj){
       return kb_coeff_[iproj];
     }
+
+		auto empty() const {
+			return nproj_ == 0;
+		}
 		
   private:
 
