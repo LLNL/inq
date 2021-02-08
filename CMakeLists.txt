@@ -43,6 +43,10 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+link_libraries(Threads::Threads)
+
 #FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
 find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
 include_directories(${FFTW_INCLUDE_DIRS})

@@ -36,11 +36,31 @@ namespace input {
   class environment {
 
   public:
-    
-    environment(int argc, char** argv):
-      mpi_env_(argc, argv)
+
+	private:
+		
+		static auto & threaded_impl() {
+			static bool threaded_;
+
+			return threaded_;
+		}
+
+	public:
+
+		static auto const & threaded() {
+			return threaded_impl();
+		}
+		
+    environment(int argc, char** argv, bool use_threads = false):
+      mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single)
     {
-			if(mpi_env_.get_world_instance().rank() == 0){
+			if(use_threads){
+				assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
+			}
+			
+			threaded_impl() = use_threads;
+			
+			if(not use_threads and mpi_env_.get_world_instance().rank() == 0){
 				calimgr_.add("runtime-report");
 				calimgr_.start();
 			}
@@ -53,16 +73,16 @@ namespace input {
 
 			CALI_MARK_END("inq_environment");
 			
-			if(mpi_env_.get_world_instance().rank() == 0){
+			if(not threaded() and mpi_env_.get_world_instance().rank() == 0){
 				calimgr_.flush(); // write performance results
 			}
 		}
-      
-
+		
   private:
+		
     boost::mpi3::environment mpi_env_;
 		cali::ConfigManager calimgr_;
-		
+
   };
     
 }

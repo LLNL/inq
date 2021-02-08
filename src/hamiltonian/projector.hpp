@@ -104,7 +104,8 @@ namespace hamiltonian {
 								 });
 			}
 			
-			{	CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
+			if(comm_.size() > 1){
+				CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
 				comm_.all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 			
