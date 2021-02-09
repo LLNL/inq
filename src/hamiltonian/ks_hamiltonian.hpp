@@ -113,12 +113,6 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-		auto non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
-			non_local_apply(non_local_projection(phi), vnlphi);
-		}
-		
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
 		void non_local(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
 
 			if(not non_local_in_fourier_) return;
@@ -145,9 +139,13 @@ namespace hamiltonian {
 					
 			} else {
 
+				auto && proj = non_local_projection(phi);
+				
 				basis::field_set<basis::real_space, complex> vnlphi(phi.skeleton());
 				vnlphi = 0.0;
-				non_local(phi, vnlphi);
+
+				non_local_apply(std::move(proj), vnlphi);
+			
 				return vnlphi;
 							
 			}
@@ -165,7 +163,8 @@ namespace hamiltonian {
 			auto phi_fs = operations::space::to_fourier(phi);
 		
 			auto hphi_fs = operations::laplacian(phi_fs);
-			if(non_local_in_fourier_) non_local(phi_fs, hphi_fs);
+
+			non_local(phi_fs, hphi_fs);
 			
 			auto hphi = operations::space::to_real(hphi_fs);
 
@@ -197,7 +196,7 @@ namespace hamiltonian {
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
 			operations::laplacian_add(phi, hphi);
-			if(non_local_in_fourier_) non_local(phi, hphi);
+			non_local(phi, hphi);
 			
 			return hphi;
 			
