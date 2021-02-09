@@ -84,9 +84,11 @@ namespace hamiltonian {
 			if(input::environment::threaded()) policy = std::launch::async;
 				
 			std::vector<std::future<proj_type>> projections;
-			
-			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				projections.emplace_back(std::async(policy, [it, &phi]{ return it->second.project(phi);}));
+
+			if(not non_local_in_fourier_) {
+				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+					projections.emplace_back(std::async(policy, [it, &phi]{ return it->second.project(phi);}));
+				}
 			}
 
 			return projections;
@@ -98,6 +100,8 @@ namespace hamiltonian {
 		template <typename ProjType>
 		void non_local_apply(ProjType && projections, basis::field_set<basis::real_space, complex> & vnlphi) const {
 
+			if(non_local_in_fourier_) return;
+				
 			CALI_CXX_MARK_FUNCTION;
 			
 			auto projit = projections.begin();
@@ -116,6 +120,9 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void non_local(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
+
+			if(not non_local_in_fourier_) return;
+			
 			for(auto it = projectors_fourier_map_.cbegin(); it != projectors_fourier_map_.cend(); ++it){
 				it->second(phi, vnlphi);
 			}
@@ -152,7 +159,9 @@ namespace hamiltonian {
     auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
-				
+
+			auto && proj = non_local_projection(phi);
+			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
 			auto hphi_fs = operations::laplacian(phi_fs);
@@ -161,8 +170,9 @@ namespace hamiltonian {
 			auto hphi = operations::space::to_real(hphi_fs);
 
 			hamiltonian::scalar_potential_add(scalar_potential, phi, hphi);
-			if(not non_local_in_fourier_) non_local(phi, hphi);
 			exchange(phi, hphi);
+
+			non_local_apply(std::move(proj), hphi);
 
 			return hphi;
 			
@@ -176,10 +186,14 @@ namespace hamiltonian {
 			
 			auto phi_rs = operations::space::to_real(phi);
 
+			auto && proj = non_local_projection(phi_rs);
+			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, phi_rs);
-			if(not non_local_in_fourier_) non_local(phi_rs, hphi_rs);
-			exchange(phi_rs, hphi_rs);
 		
+			exchange(phi_rs, hphi_rs);
+
+			non_local_apply(std::move(proj), hphi_rs);
+			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
 			operations::laplacian_add(phi, hphi);
