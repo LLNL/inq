@@ -40,7 +40,7 @@ namespace input {
 	private:
 		
 		static auto & threaded_impl() {
-			static bool threaded_;
+			static bool threaded_ = false;
 
 			return threaded_;
 		}
