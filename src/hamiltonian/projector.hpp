@@ -79,7 +79,7 @@ namespace hamiltonian {
 
 			assert(not empty());
 			
-			CALI_CXX_MARK_SCOPE("projector");
+			CALI_CXX_MARK_SCOPE("projector::project");
 				
 			auto sphere_phi = sphere_.gather(phi.cubic());
 
@@ -109,21 +109,22 @@ namespace hamiltonian {
 				comm_.all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 			
-			return projections;
-		}
-			
-		template <class field_set_type>
-    void apply(math::array<typename field_set_type::element_type, 2> const & projections, field_set_type & vnlphi) const {
-
-			assert(not empty());
-
-			math::array<typename field_set_type::element_type, 2> sphere_vnlphi({sphere_.size(), vnlphi.local_set_size()});
-
 			{
 				CALI_CXX_MARK_SCOPE("projector_gemm_2");
 				namespace blas = boost::multi::blas;
-				blas::real_doubled(sphere_vnlphi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
+				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
 			}
+
+			
+			return sphere_phi;
+		}
+			
+		template <class SpherePhiType, class field_set_type>
+    void apply(SpherePhiType const & sphere_vnlphi, field_set_type & vnlphi) const {
+
+			CALI_CXX_MARK_SCOPE("projector::apply");
+			
+			assert(not empty());
 			
 			sphere_.scatter_add(sphere_vnlphi, vnlphi.cubic());
 		}
