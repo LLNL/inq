@@ -74,12 +74,12 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-		void non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
+		auto non_local_projection(const basis::field_set<basis::real_space, complex> & phi) const {
 
 			CALI_CXX_MARK_FUNCTION;
-
+			
 			using proj_type = decltype(projectors_.cbegin()->second.project(phi));
-
+			
 			auto policy = std::launch::deferred;
 			if(input::environment::threaded()) policy = std::launch::async;
 				
@@ -88,6 +88,17 @@ namespace hamiltonian {
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
 				projections.emplace_back(std::async(policy, [it, &phi]{ return it->second.project(phi);}));
 			}
+
+			return projections;
+			
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////		
+
+		template <typename ProjType>
+		void non_local_apply(ProjType && projections, basis::field_set<basis::real_space, complex> & vnlphi) const {
+
+			CALI_CXX_MARK_FUNCTION;
 			
 			auto projit = projections.begin();
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
@@ -96,6 +107,12 @@ namespace hamiltonian {
 			}
 		}
 
+		////////////////////////////////////////////////////////////////////////////////////////////
+		
+		auto non_local(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & vnlphi) const {
+			non_local_apply(non_local_projection(phi), vnlphi);
+		}
+		
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		void non_local(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
