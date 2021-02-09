@@ -80,36 +80,20 @@ namespace hamiltonian {
 
 			using proj_type = decltype(projectors_.cbegin()->second.project(phi));
 
-			if(input::environment::threaded()){
+			auto policy = std::launch::deferred;
+			if(input::environment::threaded()) policy = std::launch::async;
 				
-				std::vector<std::future<proj_type>> projections;
-				
-				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-					projections.emplace_back(std::async(std::launch::async, [it, &phi]{ return it->second.project(phi);}));
-				}
-				
-				auto projit = projections.begin();
-				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-					it->second.apply(projit->get(), vnlphi);
-					++projit;
-				}
-
-			} else {
-				
-				std::vector<proj_type> projections;
-				
-				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-					projections.push_back(it->second.project(phi));
-				}
-				
-				auto projit = projections.cbegin();
-				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-					it->second.apply(*projit, vnlphi);
-					++projit;
-				}
-
+			std::vector<std::future<proj_type>> projections;
+			
+			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+				projections.emplace_back(std::async(policy, [it, &phi]{ return it->second.project(phi);}));
 			}
 			
+			auto projit = projections.begin();
+			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
+				it->second.apply(projit->get(), vnlphi);
+				++projit;
+			}
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
