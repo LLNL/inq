@@ -85,7 +85,7 @@ namespace hamiltonian {
 				std::vector<std::future<proj_type>> projections;
 				
 				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-					projections.push_back(std::async(std::launch::async, [it, &phi]{ return it->second.project(phi);}));
+					projections.emplace_back(std::async(std::launch::async, [it, &phi]{ return it->second.project(phi);}));
 				}
 				
 				auto projit = projections.begin();
