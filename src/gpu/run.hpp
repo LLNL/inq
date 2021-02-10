@@ -90,7 +90,7 @@ void run(kernel_type kernel){
 	cuda_run_kernel_0<<<1, 1>>>(kernel);
 	check_error(cudaGetLastError());
 	
-	cudaDeviceSynchronize();
+	sync();
 	
 #else
 	
@@ -125,7 +125,7 @@ void run(size_t size, kernel_type kernel){
 	cuda_run_kernel_1<<<nblock, blocksize>>>(size, kernel);
 	check_error(cudaGetLastError());
 	
-	cudaDeviceSynchronize();
+	sync();
 	
 #else
 	
@@ -169,7 +169,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 	cuda_run_kernel_2<<<dg, db>>>(sizex, sizey, dim2, kernel);
 	check_error(cudaGetLastError());    
 		
-	cudaDeviceSynchronize();
+	sync();
 	
 #else
 	for(size_t iy = 0; iy < sizey; iy++){
@@ -209,7 +209,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	cuda_run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
 	check_error(cudaGetLastError());
 	
-	cudaDeviceSynchronize();
+	sync();
 	
 #else
 
@@ -256,7 +256,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 	cuda_run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);
 	check_error(cudaGetLastError());
 	
-	cudaDeviceSynchronize();
+	sync();
 
 #else
 	
