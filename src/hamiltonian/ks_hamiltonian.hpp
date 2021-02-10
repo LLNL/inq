@@ -73,17 +73,6 @@ namespace hamiltonian {
     }
 
 		////////////////////////////////////////////////////////////////////////////////////////////
-
-    ~ks_hamiltonian(){
-			
-			//we have to empty the map by hand, to preserve the order of the destruction
-			while(not projectors_.empty()){
-				projectors_.erase(projectors_.begin());
-			}
-
-    }
-
-		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		auto non_local_projection(const basis::field_set<basis::real_space, complex> & phi) const {
 
