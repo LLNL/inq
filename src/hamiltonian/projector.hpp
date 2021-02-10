@@ -251,7 +251,7 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0));
+	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
 	CHECK(proj.num_projectors() == 8);
 	
@@ -263,6 +263,8 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 	CHECK(proj.kb_coeff(5) == -1.0069878791_a);
 	CHECK(proj.kb_coeff(6) == -1.0069878791_a);
 	CHECK(proj.kb_coeff(7) == -1.0069878791_a);
+
+	CHECK(proj.iatom() == 77);
 	
 }
 #endif
