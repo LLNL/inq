@@ -55,11 +55,9 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
   //the non-local potential term
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 	
-	for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-		auto proj = ham.projectors().find(iatom);
-		if(proj == ham.projectors().end()) continue; //there is no projector for this atom
+	for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
 		
-		forces_non_local[iatom] = proj->second.force(electrons.phi_, gphi, electrons.states_.occupations());
+		forces_non_local[proj->second.iatom()] = proj->second.force(electrons.phi_, gphi, electrons.states_.occupations());
 	}
 
 	electrons.phi_.full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});

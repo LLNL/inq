@@ -39,12 +39,13 @@ namespace hamiltonian {
   class projector {
 
   public:
-    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position):
+    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),
 			kb_coeff_(nproj_),
-			comm_(sphere_.create_comm(basis.comm())){
+			comm_(sphere_.create_comm(basis.comm())),
+			iatom_(iatom){
 
 			std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 
@@ -203,6 +204,10 @@ namespace hamiltonian {
       return kb_coeff_[iproj];
     }
 
+		auto iatom() const {
+			return iatom_;
+		}
+
   private:
 
     basis::spherical_grid sphere_;
@@ -210,6 +215,7 @@ namespace hamiltonian {
     math::array<double, 2> matrix_;
 		math::array<double, 1> kb_coeff_;
 		mutable boost::mpi3::communicator comm_;
+		int iatom_;
     
   };
   
