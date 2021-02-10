@@ -66,8 +66,19 @@ namespace hamiltonian {
 					insert.first->second.add_coord(geo.coordinates()[iatom]);
 				} else {
 					projector proj(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]);
-					if(not proj.empty()) projectors_.emplace(iatom, std::move(proj));
+					if(not proj.empty()) projectors_.try_emplace(iatom, std::move(proj));
 				}
+			}
+
+    }
+
+		////////////////////////////////////////////////////////////////////////////////////////////
+
+    ~ks_hamiltonian(){
+
+			//we have to empty the map by hand, to preserve the order of the destruction
+			while(not projectors_.empty()){
+				projectors_.erase(projectors_.begin());
 			}
 
     }
