@@ -57,7 +57,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	
 	for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
 		
-		forces_non_local[proj->second.iatom()] = proj->second.force(electrons.phi_, gphi, electrons.states_.occupations());
+		forces_non_local[proj->iatom()] = proj->force(electrons.phi_, gphi, electrons.states_.occupations());
 	}
 
 	electrons.phi_.full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});

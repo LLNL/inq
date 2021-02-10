@@ -37,7 +37,7 @@
 #include <utils/profiling.hpp>
 
 #include <future>
-#include <map>
+#include <list>
 #include <unordered_map>
 
 namespace inq {
@@ -66,7 +66,7 @@ namespace hamiltonian {
 					insert.first->second.add_coord(geo.coordinates()[iatom]);
 				} else {
 					projector proj(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
-					if(not proj.empty()) projectors_.try_emplace(iatom, std::move(proj));
+					if(not proj.empty()) projectors_.emplace_back(std::move(proj));
 				}
 			}
 
@@ -75,7 +75,7 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////////////
 
     ~ks_hamiltonian(){
-
+			
 			//we have to empty the map by hand, to preserve the order of the destruction
 			while(not projectors_.empty()){
 				projectors_.erase(projectors_.begin());
@@ -89,7 +89,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 			
-			using proj_type = decltype(projectors_.cbegin()->second.project(phi));
+			using proj_type = decltype(projectors_.cbegin()->project(phi));
 			
 			auto policy = std::launch::deferred;
 			if(input::environment::threaded()) policy = std::launch::async;
@@ -98,7 +98,7 @@ namespace hamiltonian {
 
 			if(not non_local_in_fourier_) {
 				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-					projections.emplace_back(std::async(policy, [it, &phi]{ return it->second.project(phi);}));
+					projections.emplace_back(std::async(policy, [it, &phi]{ return it->project(phi);}));
 				}
 			}
 
@@ -117,7 +117,7 @@ namespace hamiltonian {
 			
 			auto projit = projections.begin();
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				it->second.apply(projit->get(), vnlphi);
+				it->apply(projit->get(), vnlphi);
 				++projit;
 			}
 		}
@@ -218,7 +218,7 @@ namespace hamiltonian {
 		int num_projectors() const {
 			int nn = 0;
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				nn += it->second.num_projectors();
+				nn += it->num_projectors();
 			}
 			return nn;			
 		}
@@ -240,7 +240,7 @@ namespace hamiltonian {
 		
   private:
 
-		std::map<int, projector> projectors_;
+		std::list<projector> projectors_;
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
