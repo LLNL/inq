@@ -39,12 +39,13 @@ namespace hamiltonian {
   class projector {
 
   public:
-    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position):
+    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),
 			kb_coeff_(nproj_),
-			comm_(sphere_.create_comm(basis.comm())){
+			comm_(sphere_.create_comm(basis.comm())),
+			iatom_(iatom){
 
 			std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 
@@ -69,6 +70,8 @@ namespace hamiltonian {
 			assert(iproj_lm == ps.num_projectors_lm());
 			
     }
+
+		projector(projector const &) = delete;		
 
 		auto empty() const {
 			return nproj_ == 0 or sphere_.size() == 0;
@@ -203,6 +206,10 @@ namespace hamiltonian {
       return kb_coeff_[iproj];
     }
 
+		auto iatom() const {
+			return iatom_;
+		}
+
   private:
 
     basis::spherical_grid sphere_;
@@ -210,6 +217,7 @@ namespace hamiltonian {
     math::array<double, 2> matrix_;
 		math::array<double, 1> kb_coeff_;
 		mutable boost::mpi3::communicator comm_;
+		int iatom_;
     
   };
   
@@ -243,7 +251,7 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0));
+	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
 	CHECK(proj.num_projectors() == 8);
 	
@@ -255,6 +263,8 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 	CHECK(proj.kb_coeff(5) == -1.0069878791_a);
 	CHECK(proj.kb_coeff(6) == -1.0069878791_a);
 	CHECK(proj.kb_coeff(7) == -1.0069878791_a);
+
+	CHECK(proj.iatom() == 77);
 	
 }
 #endif

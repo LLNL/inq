@@ -37,7 +37,7 @@
 #include <utils/profiling.hpp>
 
 #include <future>
-#include <map>
+#include <list>
 #include <unordered_map>
 
 namespace inq {
@@ -65,8 +65,8 @@ namespace hamiltonian {
 																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(geo.coordinates()[iatom]);
 				} else {
-					projector proj(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom]);
-					if(not proj.empty()) projectors_.emplace(iatom, std::move(proj));
+					projectors_.emplace_back(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
+					if(projectors_.back().empty()) projectors_.pop_back(); 
 				}
 			}
 
@@ -78,7 +78,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 			
-			using proj_type = decltype(projectors_.cbegin()->second.project(phi));
+			using proj_type = decltype(projectors_.cbegin()->project(phi));
 			
 			auto policy = std::launch::deferred;
 			if(input::environment::threaded()) policy = std::launch::async;
@@ -87,7 +87,7 @@ namespace hamiltonian {
 
 			if(not non_local_in_fourier_) {
 				for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-					projections.emplace_back(std::async(policy, [it, &phi]{ return it->second.project(phi);}));
+					projections.emplace_back(std::async(policy, [it, &phi]{ return it->project(phi);}));
 				}
 			}
 
@@ -106,7 +106,7 @@ namespace hamiltonian {
 			
 			auto projit = projections.begin();
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				it->second.apply(projit->get(), vnlphi);
+				it->apply(projit->get(), vnlphi);
 				++projit;
 			}
 		}
@@ -207,7 +207,7 @@ namespace hamiltonian {
 		int num_projectors() const {
 			int nn = 0;
 			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				nn += it->second.num_projectors();
+				nn += it->num_projectors();
 			}
 			return nn;			
 		}
@@ -229,7 +229,7 @@ namespace hamiltonian {
 		
   private:
 
-		std::map<int, projector> projectors_;
+		std::list<projector> projectors_;
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
