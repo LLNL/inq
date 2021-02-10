@@ -71,6 +71,8 @@ namespace hamiltonian {
 			
     }
 
+		projector(projector const &) = delete;		
+
 		auto empty() const {
 			return nproj_ == 0 or sphere_.size() == 0;
 		}
