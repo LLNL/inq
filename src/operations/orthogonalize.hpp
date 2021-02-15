@@ -55,7 +55,8 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	auto olap = overlap(phi);
 
 	const int nst = phi.set_size();
-
+	int info;
+	
 	//DATAOPERATIONS RAWLAPACK zpotrf
 #ifdef ENABLE_CUDA
 	{
@@ -96,17 +97,15 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 #else
 	{
 		CALI_CXX_MARK_SCOPE("cuda_zpotrf");
-		int info;
 		zpotrf("U", &nst, olap.data_elements(), &nst, &info);
-		assert(info >= 0);
-
-		if(not nocheck){
-			assert(info == 0);
-		} else if(info > 0) {
-			std::printf("Warning: Imperfect orthogonalization in ZPOTRF! info is %10i, subspace size is %10i\n", info, nst); 
-		}	
 	}
 #endif
+
+	if(not nocheck or info < 0){
+		std::printf("Error: Failed orthogonalization in ZPOTRF! info is %10i.\n", info);
+	} else if(info > 0) {
+		std::printf("Warning: Imperfect orthogonalization in ZPOTRF! info is %10i, subspace size is %10i\n", info, nst); 
+	}
 
 	{
 		CALI_CXX_MARK_SCOPE("orthogonalize_trsm");
