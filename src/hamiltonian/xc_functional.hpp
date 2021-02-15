@@ -245,7 +245,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 		if(rs.part().contains(1)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(1))] == -0.5111609291_a);
 		if(rs.part().contains(8233)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(8233))] == -0.00406881_a);
-		if(rs.part().contains(233)) CHECK(Approx(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(233))]).margin(1.0e-10) == -0.00000039110);
+		if(rs.part().contains(233)) CHECK(fabs(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(233))]) < 1e-10);
 		if(rs.part().contains(rs.size() - 1)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(rs.size() - 1))] == -0.4326883849_a);
 
 	}
