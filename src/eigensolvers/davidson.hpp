@@ -89,13 +89,13 @@ namespace inq {
 	//print_vec(lk);
 		namespace blas = boost::multi::blas;
       	//Ritz vectors
-      	auto Xk = blas::gemm(wphi.matrix(), blas::hermitized(Yk)); //Yk now contains subspace eigenvectors
-      	//Rotated hphi
-      	auto Tk = blas::gemm(Wk.matrix(), blas::hermitized(Yk));
-      	//Residuals
+		auto Xk = +blas::gemm(1.0,wphi.matrix(), blas::hermitized(Yk)); //Yk now contains subspace eigenvectors
+		//Rotated hphi
+		auto Tk = +blas::gemm(1.0, Wk.matrix(), blas::hermitized(Yk));
+		//Residuals
       	nleft = nvec - nevf; //update nleft
       	for(int i=0; i<nleft ; i++){
-      	  wphi.matrix().rotated()[i] = blas::axpy(lk[i],Xk.rotated()[i], blas::scal(-1.0,Tk.rotated()[i]));   //wphi=l*psi+(-1.0)H*psi
+      	  wphi.matrix().rotated()[i] = blas::axpy(lk[i], Xk.rotated()[i], blas::scal(-1.0, Tk.rotated()[i]));   //wphi=l*psi+(-1.0)H*psi
       	}
 	
       	//Deflate here
