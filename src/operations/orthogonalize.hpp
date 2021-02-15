@@ -98,15 +98,15 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 		CALI_CXX_MARK_SCOPE("cuda_zpotrf");
 		int info;
 		zpotrf("U", &nst, olap.data_elements(), &nst, &info);
-		assert(info == 0);
+		assert(info >= 0);
+
+		if(not nocheck){
+			assert(info == 0);
+		} else if(info > 0) {
+			std::printf("Warning: Imperfect orthogonalization in ZPOTRF! info is %10i, subspace size is %10i\n", info, nst); 
+		}	
 	}
 #endif
-	assert(info >= 0);
-	if(not nocheck){
-	  assert(info == 0);
-	} else if(info > 0) {
-	  std::printf("Warning: Imperfect orthogonalization in ZPOTRF! info is %10i, subspace size is %10i\n", info, nst); 
-	}
 
 	{
 		CALI_CXX_MARK_SCOPE("orthogonalize_trsm");
