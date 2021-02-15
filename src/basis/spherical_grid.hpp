@@ -44,7 +44,8 @@ namespace basis {
 		
 		template <class basis>
     spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius):
-			volume_element_(parent_grid.volume_element()){
+			volume_element_(parent_grid.volume_element()),
+			center_(center_point){
 
 			CALI_CXX_MARK_FUNCTION;
 	
@@ -120,6 +121,12 @@ namespace basis {
 			
     }
 
+		auto create_comm(boost::mpi3::communicator & comm) const {
+			auto color = MPI_UNDEFINED;
+			if(size() != 0) color = 1;
+			return comm.split(color, 0);
+		}
+		
     long size() const {
       return points_.size();
     }
@@ -137,50 +144,32 @@ namespace basis {
 		}
 
 		template <class array_4d>
-    math::array<typename array_4d::element_type, 2> gather(const array_4d & grid) const {
+		math::array<typename array_4d::element, 2> gather(const array_4d & grid) const {
 
 			CALI_CXX_MARK_SCOPE("spherical_grid::gather(4d)");
 			
 			const int nst = std::get<3>(sizes(grid));
 
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
-			math::array<typename array_4d::element_type, 2> subgrid({this->size(), nst});
+			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 			
-			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef ENABLE_CUDA
 			gpu::run(nst, size(),
-							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
-							 __device__ (auto ist, auto ipoint){
+							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 sgr[ipoint][ist] = gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist];
 							 });
-#else
-      for(int ipoint = 0; ipoint < size(); ipoint++){
-				for(int ist = 0; ist < nst; ist++) subgrid[ipoint][ist] = grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][ist];
-      }
-#endif
+			
 			return subgrid;
     }
 
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
-
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter_add");
-			
-			//DATAOPERATIONS LOOP + GPU::RUN 2D
-#ifdef ENABLE_CUDA
+
 			gpu::run(std::get<1>(sizes(subgrid)), size(),
-							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)]
-							 __device__ (auto ist, auto ipoint){
+							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist] += sgr[ipoint][ist];
 							 });
-#else
-      for(int ipoint = 0; ipoint < size(); ipoint++){
-				for(int i1 = 0; i1 < std::get<1>(sizes(subgrid)); i1++){
-					grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]][i1] += subgrid[ipoint][i1];
-				}
-      }
-#endif
     }
     
     template <class array_1d, class array_3d>
@@ -188,7 +177,6 @@ namespace basis {
 
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter");
 			
-			//DATAOPERATIONS LOOP 1D (random access output)
       for(int ipoint = 0; ipoint < size(); ipoint++){
 				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
       }
@@ -214,12 +202,17 @@ namespace basis {
 			return std::array<long, dimension>{sphere.size()};
 		}
 
+		auto & center() const {
+			return center_;
+		}
+
   private:
 
 		math::array<std::array<int, 3>, 1> points_;
 		math::array<float, 1> distance_; //I don't think we need additional precision for this. XA
 		std::vector<math::vector3<double>> relative_pos_;
 		double volume_element_;
+		math::vector3<double> center_;
 		
   };
 
@@ -261,7 +254,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     math::array<complex, 3> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2]});
     std::vector<complex> subgrid(sphere.size());
 
-    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 0.0;
+    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data_elements()[ii] = 0.0;
     
     sphere.gather(grid, subgrid);
 
@@ -270,9 +263,9 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     sphere.scatter(subgrid, grid);
 
     double sum = 0.0;
-    for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
-		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
-		
+	for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
+	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+	
     CHECK(sum == 257.0_a);
     
   }
@@ -288,25 +281,25 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     math::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 20}, 0.0);
     math::array<complex, 2> subgrid({sphere.size(), 20}, 0.0);
 
-    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data()[ii] = 1.0;
+    for(long ii = 0; ii < grid.num_elements(); ii++) grid.data_elements()[ii] = 1.0;
     
     sphere.gather(grid, subgrid);
 
     double sum = 0.0;
-    for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data()[ii]);
-		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
-		
+	for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data_elements()[ii]);
+	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+
     CHECK(sum == Approx(20.0*257.0));
     
-    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data()[ii] = 0.0;
+    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data_elements()[ii] = 0.0;
     
-		sphere.scatter(subgrid, grid);
+	sphere.scatter(subgrid, grid);
 
     sum = 0.0;
-    for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data()[ii]);
-		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+	for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
+	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
 
-		CHECK(sum == Approx(20.0*(pw.size() - size)));
+	CHECK(sum == Approx(20.0*(pw.size() - size)));
 
   }
 

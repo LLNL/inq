@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <inq_config.h> //for ENABLE_HEFFTE
+
 #include <gpu/run.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
@@ -34,13 +36,17 @@
 
 #include <utils/profiling.hpp>
 
+#ifdef ENABLE_HEFFTE
+#include <heffte.h>
+#endif
+
 #include <cassert>
 
 namespace inq {
 namespace operations {
 namespace space {
 
-void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fphi){
+void zero_outside_sphere(basis::field<basis::fourier_space, complex> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
 	//DATAOPERATIONS GPU::RUN 3D
@@ -53,7 +59,7 @@ void zero_outside_sphere(const basis::field<basis::fourier_space, complex> & fph
 
 ///////////////////////////////////////////////////////////////
 		
-void zero_outside_sphere(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi){
+void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<complex>> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
 	//DATAOPERATIONS GPU::RUN 3D
@@ -83,6 +89,50 @@ template <class InArray4D, class OutArray4D>
 void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 
 	CALI_CXX_MARK_FUNCTION;
+
+#ifdef ENABLE_HEFFTE
+
+	CALI_MARK_BEGIN("heffte_initialization");
+ 
+	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(2).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(0).start())},
+																	{int(real_basis.cubic_dist(2).end()) - 1, int(real_basis.cubic_dist(1).end()) - 1, int(real_basis.cubic_dist(0).end()) - 1}};
+	
+	heffte::box3d<> const fs_box = {{int(fourier_basis.cubic_dist(2).start()), int(fourier_basis.cubic_dist(1).start()), int(fourier_basis.cubic_dist(0).start())},
+																	{int(fourier_basis.cubic_dist(2).end()) - 1, int(fourier_basis.cubic_dist(1).end()) - 1, int(fourier_basis.cubic_dist(0).end()) - 1}};
+
+#ifdef ENABLE_CUDA
+	heffte::fft3d<heffte::backend::cufft>
+#else
+	heffte::fft3d<heffte::backend::fftw>
+#endif
+		fft(rs_box, fs_box, real_basis.comm().get());
+
+	CALI_MARK_END("heffte_initialization");
+	
+	math::array<complex, 1> input(fft.size_inbox());
+	math::array<complex, 1> output(fft.size_outbox());	
+
+	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
+
+		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
+						 [in = begin(input), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto ip = iz + dz*(iy + dy*ix);
+							 in[ip] = ar[ix][iy][iz][ist];
+						 });
+
+		{
+			CALI_CXX_MARK_SCOPE("heffte_forward");
+			fft.forward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()));
+		}
+		
+		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
+						 [out = begin(output), ar = begin(array_fs), dz = fourier_basis.local_sizes()[2], dy = fourier_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto ip = iz + dz*(iy + dy*ix);
+							 ar[ix][iy][iz][ist] = out[ip];
+						 });
+	}
+		
+#else
 	
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
@@ -116,32 +166,17 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 			gpu::sync();
 		}
 		
-		// we should do
-		//   math::array<complex, 5> buffer = tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
-		// but it is impossibly slow
-		// so for the moment we do:
-		
-		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
-
-		for(int i4 = 0; i4 < comm.size(); i4++){
-			CALI_CXX_MARK_SCOPE("fft_transpose");
-			
-			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
-							 [i4,
-								buf = begin(buffer),
-								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
-							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
-								 buf[i4][i3][i2][i1][i0] = rot[i4][i3][i2][i1][i0];
-							 });
-		}
+		CALI_MARK_BEGIN("fft_forward_transpose");		
+		auto buffer = +tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
+		CALI_MARK_END("fft_forward_transpose");
 
 		assert(std::get<4>(sizes(buffer)) == last_dim);
 		
 		tmp.clear();
 
 		{
-			CALI_CXX_MARK_SCOPE("fft_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			CALI_CXX_MARK_SCOPE("fft_forward_alltoall");
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 
 		{
@@ -151,18 +186,67 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 			fft::dft({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs, fft::forward);
 			gpu::sync();
 		}
-		
+
 	}
+	
+#endif
 	
 }
 		
 ///////////////////////////////////////////////////////////////
 
 template <class InArray4D, class OutArray4D>
-void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs) {
+void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs, bool normalize) {
 
 	CALI_CXX_MARK_FUNCTION;
+
+#ifdef ENABLE_HEFFTE
+	
+	CALI_MARK_BEGIN("heffte_initialization");
+	
+	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(2).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(0).start())},
+																	{int(real_basis.cubic_dist(2).end()) - 1, int(real_basis.cubic_dist(1).end()) - 1, int(real_basis.cubic_dist(0).end()) - 1}};
+	
+	heffte::box3d<> const fs_box = {{int(fourier_basis.cubic_dist(2).start()), int(fourier_basis.cubic_dist(1).start()), int(fourier_basis.cubic_dist(0).start())},
+																	{int(fourier_basis.cubic_dist(2).end()) - 1, int(fourier_basis.cubic_dist(1).end()) - 1, int(fourier_basis.cubic_dist(0).end()) - 1}};
+
+#ifdef ENABLE_CUDA
+	heffte::fft3d<heffte::backend::cufft>
+#else
+	heffte::fft3d<heffte::backend::fftw>
+#endif
+		fft(rs_box, fs_box, real_basis.comm().get());
+
+	CALI_MARK_END("heffte_initialization");
+
+	auto scaling = heffte::scale::none;
+	if(normalize) scaling = heffte::scale::full;
+	
+	math::array<complex, 1> input(fft.size_inbox());
+	math::array<complex, 1> output(fft.size_outbox());	
+
+	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
+
+		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
+						 [in = begin(input), ar = begin(array_fs), dz = fourier_basis.local_sizes()[2], dy = fourier_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto ip = iz + dz*(iy + dy*ix);
+							 in[ip] = ar[ix][iy][iz][ist];
+						 });
+
+		{
+			CALI_CXX_MARK_SCOPE("heffte_backward");
+			fft.backward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()), scaling);
+		}
 		
+		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
+						 [out = begin(output), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto ip = iz + dz*(iy + dy*ix);
+							 ar[ix][iy][iz][ist] = out[ip];
+						 });
+	}
+		
+#else //Heftte_FOUND
+	
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
 	namespace fft = multi::fft;
@@ -194,37 +278,45 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		}
 
 		{
-			CALI_CXX_MARK_SCOPE("fft_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			CALI_CXX_MARK_SCOPE("fft_backward_alltoall");
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 		
-		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
+		math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
 
-		// we should do
-		//   tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer;
-		// but it is impossibly slow
-		// so we do
-		
-		for(int i4 = 0; i4 < comm.size(); i4++){
-			CALI_CXX_MARK_SCOPE("fft_transpose");
-				
-			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
-							 [i4,
-								buf = begin(buffer),
-								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
-							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
-								 rot[i4][i3][i2][i1][i0] = buf[i4][i3][i2][i1][i0];
-							 });
+		{
+			CALI_CXX_MARK_SCOPE("fft_backward_transpose");
+			tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer({0, comm.size()}, {0, real_basis.local_sizes()[0]});
 		}
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_1d");
 
-			fft::dft({false, false, true, false}, tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]}), array_rs, fft::backward);
-			gpu::sync();			
+			auto tmpsub = tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]});
+
+#ifdef ENABLE_CUDA
+			//when using cuda, do a loop explicitly over the last dimension (n1), otherwise multi makes a loop over the 2 first ones (n0 and n1). And we know that n3 << n0*n1.
+			for(auto ii : extension(tmpsub.unrotated())) {
+				fft::dft({false, false, true}, tmpsub.unrotated()[ii], array_rs.unrotated()[ii], fft::backward);
+			}
+#else
+			fft::dft({false, false, true, false}, tmpsub, array_rs, fft::backward);
+#endif
+			
+			gpu::sync();
 
 		}
 	}
+
+	if(normalize){
+		CALI_CXX_MARK_SCOPE("fft_normalize");
+		gpu::run(size(array_rs[0][0][0]), real_basis.local_size(), 
+						 [ar = begin(array_rs.flatted().flatted()), factor = 1.0/real_basis.size()] GPU_LAMBDA (auto ist, auto ip){
+							 ar[ip][ist] = factor*ar[ip][ist];
+						 });
+	}
+
+#endif //Heftte_FOUND
 
 }
 
@@ -232,6 +324,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		
 basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(field_set)");
+		
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
@@ -248,20 +342,15 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 
 basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(field_set)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 	
 	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic());
- 
-	if(normalize){
-		//DATAOPERATIONS GPU::RUN 1D
-		gpu::run(phi.basis().part().local_size()*phi.set_part().local_size(),
-						 [phip = (complex *) phi.data(), norm_factor = (double) phi.basis().size()] GPU_LAMBDA (auto ii){
-							 phip[ii] = phip[ii]/norm_factor;
-						 });
-	}
+	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
+
 	return phi;
 }
 
@@ -269,6 +358,8 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 
 basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis::real_space, complex> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(field)");
+	
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
@@ -286,19 +377,14 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 	
 basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(field)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
 	basis::field<basis::real_space, complex> phi(real_basis);
 
-	to_real(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic());
- 
-	if(normalize){
-		gpu::run(phi.linear().size(),
-						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ip){
-							 phil[ip] = factor*phil[ip];
-						 });
-	}
+	to_real(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
 			
 	return phi;
 }
@@ -307,36 +393,15 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 
 auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & phi){
 
+	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
+	
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
 	basis::field<basis::fourier_space, math::vector3<complex>> fphi(fourier_basis);
-
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3});
-
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					tmp[ix][iy][iz][idir] = phi.cubic()[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
 	
-	to_fourier(real_basis, fourier_basis, tmp, ftmp);
+	to_fourier(real_basis, fourier_basis, phi.cubic().reinterpret_array_cast<complex>(3), fphi.cubic().reinterpret_array_cast<complex>(3));
 
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					fphi.cubic()[ix][iy][iz][idir] = ftmp[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
-	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 			
 	return fphi;
@@ -347,93 +412,34 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex>> & 
 	
 basis::field<basis::real_space, math::vector3<complex>> to_real(const basis::field<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
+	CALI_CXX_MARK_SCOPE("to_real(vector_field)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
 	basis::field<basis::real_space, math::vector3<complex>> phi(real_basis);
 
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3});
-	
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					ftmp[ix][iy][iz][idir] = fphi.cubic()[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
+	to_real(fourier_basis, real_basis, fphi.cubic().reinterpret_array_cast<complex>(3), phi.cubic().reinterpret_array_cast<complex>(3), normalize);
 
-	//	to_real(fourier_basis, real_basis, fphi.cubic().template reinterpret_array_cast<complex>(3), phi.cubic().template reinterpret_array_cast<complex>(3));
-	to_real(fourier_basis, real_basis, ftmp, tmp);
-	
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(int idir = 0; idir < 3; idir++){
-					phi.cubic()[ix][iy][iz][idir] = tmp[ix][iy][iz][idir];
-				}
-			}
-		}
-	}
-
-	
-	if(normalize){
-		gpu::run(3, phi.linear().size(),
-						 [phil = begin(phi.linear()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto idir, auto ip){
-							 phil[ip][idir] = factor*phil[ip][idir];
-						 });
-	}
-			
 	return phi;
 }
 
 ///////////////////////////////////////////////////////////////
-	
-basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis::field_set<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
 
+basis::field_set<basis::real_space, math::vector3<complex>> to_real(const basis::field_set<basis::fourier_space, math::vector3<complex>> & fphi, bool normalize = true){
+	
+	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
+	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
 	basis::field_set<basis::real_space, math::vector3<complex>> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], real_basis.local_sizes()[2], 3*fphi.local_set_size()});
-	math::array<complex, 4> ftmp({fourier_basis.local_sizes()[0], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[2], 3*fphi.local_set_size()});	
+	auto const & fphi_as_scalar = fphi.cubic().reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
+	auto && phi_as_scalar = phi.cubic().reinterpret_array_cast<complex>(3).rotated(3).flatted().rotated();
+		
+	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
 
-	for(long ix = 0; ix < fourier_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < fourier_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < fourier_basis.local_sizes()[2]; iz++){
-				for(long ist = 0; ist < fphi.local_set_size(); ist++){
-					for(int idir = 0; idir < 3; idir++){
-						ftmp[ix][iy][iz][idir + 3*ist] = fphi.cubic()[ix][iy][iz][ist][idir];
-					}
-				}
-			}
-		}
-	}
-
-	to_real(fourier_basis, real_basis, ftmp, tmp);
-	
-	for(long ix = 0; ix < real_basis.local_sizes()[0]; ix++){
-		for(long iy = 0; iy < real_basis.local_sizes()[1]; iy++){
-			for(long iz = 0; iz < real_basis.local_sizes()[2]; iz++){
-				for(long ist = 0; ist < fphi.local_set_size(); ist++){				
-					for(int idir = 0; idir < 3; idir++){
-						phi.cubic()[ix][iy][iz][ist][idir] = tmp[ix][iy][iz][idir + 3*ist];
-					}
-				}
-			}
-		}
-	}
-
-	if(normalize){
-		gpu::run(phi.local_set_size(), phi.basis().local_size(),
-						 [phil = begin(phi.matrix()), factor = 1.0/phi.basis().size()] GPU_LAMBDA (auto ist, auto ip){
-							 for(int idir = 0; idir < 3; idir++) phil[ip][ist][idir] = factor*phil[ip][ist][idir];
-						 });
-	}
-	
 	return phi;
 }
 

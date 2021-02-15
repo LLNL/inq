@@ -133,9 +133,7 @@ namespace hamiltonian {
 				
       }
 			
-			if(part_.parallel()){
-				comm_.all_reduce_in_place_n(static_cast<double *>(potential.linear().data()), potential.linear().size(), std::plus<>{});
-			}
+			comm_.all_reduce_in_place_n(static_cast<double *>(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
 
 			return potential;			
     }
@@ -171,9 +169,7 @@ namespace hamiltonian {
 								 });
       }
 
-			if(part_.parallel()){
-				comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
-			}
+			comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 			
 			return density;			
     }
@@ -209,9 +205,7 @@ namespace hamiltonian {
 								 });
       }
 
-			if(part_.parallel()){
-				comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
-			}
+			comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 
 			return density;			
     }
@@ -253,9 +247,7 @@ namespace hamiltonian {
 				
       }
 
-			if(part_.parallel()){
-				comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data()), density.linear().size(), std::plus<>{});
-			}
+			comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 
 			return density;			
     }

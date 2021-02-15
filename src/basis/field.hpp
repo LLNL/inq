@@ -32,11 +32,6 @@ OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 
 #include <mpi3/environment.hpp>
 
-#ifdef ENABLE_CUDA
-#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
-#endif
-#include <multi/adaptors/blas.hpp>
-
 #include <fstream>
 
 namespace inq {
@@ -100,27 +95,29 @@ namespace basis {
 		}
 
 		auto cubic() const {
+			assert(basis_.local_size() > 0);
 			return linear_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
 		auto cubic() {
+			assert(basis_.local_size() > 0);
 			return linear_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 		
 		auto hypercubic() const {
-			return cubic().partitioned(1).rotated();
+			return cubic().template reinterpret_array_cast<Type>(1);
 		}
-
+		
 		auto hypercubic() {
-			return cubic().partitioned(1).rotated();
+			return cubic().template reinterpret_array_cast<Type>(1);
 		}
 		
 		auto data() {
-			return linear_.data();
+			return linear_.data_elements();
 		}
 
 		auto data() const {
-			return linear_.data();
+			return linear_.data_elements();
 		}
 
 		auto & linear() const {
@@ -267,6 +264,12 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	CHECK(std::get<1>(sizes(ff.hypercubic())) == 11);
 	CHECK(std::get<2>(sizes(ff.hypercubic())) == 20);
 	CHECK(std::get<3>(sizes(ff.hypercubic())) == 1);	
+
+	//Make sure the hypercubic array is correctly ordered, so it can be flattened
+	auto strd = strides(ff.hypercubic());
+	CHECK(std::get<0>(strd) >= std::get<1>(strd));
+	CHECK(std::get<1>(strd) >= std::get<2>(strd));
+	CHECK(std::get<2>(strd) >= std::get<3>(strd));
 	
 }
 

@@ -7,13 +7,13 @@
 
 #include <cfloat>
 
-#include <systems/ions.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/energy.hpp>
+#include <hamiltonian/forces.hpp>
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
@@ -30,7 +30,9 @@
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
+#include <ions/propagator.hpp>
 #include <input/rt.hpp>
+#include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <observables/dipole.hpp>
 #include <real_time/result.hpp>
@@ -40,36 +42,7 @@
 namespace inq {
 namespace real_time {
 
-struct fix_ions{
-
-	static constexpr bool static_ions = true;
-
-	template <typename TypeIons>
-	static void propagate_positions(double dt, TypeIons &){
-	}
-
-	template <typename TypeIons, typename TypeForces>
-	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){
-	}
-
-};
-
-struct impulsive_ions{
-
-	static constexpr bool static_ions = false;
-
-	template <typename TypeIons = systems::ions>
-	static void propagate_positions(double dt, TypeIons& ions){
-		for(int i = 0; i != ions.geo().num_atoms(); ++i)
-			ions.geo().coordinates()[i] += dt*ions.velocities()[i];
-	}
-
-	template <typename TypeIons, typename TypeForces>
-	static void propagate_velocities(double dt, TypeIons &, TypeForces const &){}
-
-};
-
-template<typename IonSubPropagator = fix_ions>
+template<typename IonSubPropagator = ions::propagator::fixed>
 real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
 
 		CALI_CXX_MARK_FUNCTION;
@@ -89,19 +62,19 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		
 		ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 
-		auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
+		auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_), electrons.phi_);;
 		energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
-
+		electrons.phi_.set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
+		
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 		if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
 
-		res.time.push_back(0.0);
-		res.energy.push_back(energy.total());
-		res.dipole.push_back(observables::dipole(electrons.density_));
-		res.ions.push_back(ions);
-		
-		for(int istep = 1; istep <= numsteps; istep++){
+		auto forces = hamiltonian::calculate_forces(ions, electrons, ham);
+
+		res.save_iteration_results(0.0, ions, electrons, energy, forces);
+			
+		for(int istep = 0; istep < numsteps; istep++){
 
 			{
 				//propagate half step and full step with H(t)
@@ -110,29 +83,31 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 				//calculate H(t + dt) from the full step propagation
 				electrons.density_ = density::calculate(electrons.states_.occupations(), fullstep_phi, electrons.density_basis_);
 				ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
-
-				//propagate ionic positions to t + dt
-				ion_propagator.propagate_positions(dt, ions);
-				if(not ion_propagator.static_ions) sc.update_ionic_fields(ions, electrons.atomic_pot_);
 			}
-
+			
+			//propagate ionic positions to t + dt
+			ion_propagator.propagate_positions(dt, ions, forces);
+			if(not ion_propagator.static_ions) sc.update_ionic_fields(ions, electrons.atomic_pot_);
+			
 			//propagate the other half step with H(t + dt)
 			operations::exponential_in_place(ham, complex(0.0, dt/2.0), electrons.phi_);
-			
-			auto eigenvalues = operations::overlap_diagonal(electrons.phi_, ham(electrons.phi_));;
-			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 
-			//calculate forces, force variance
-			double forces = 0.0;
+			//calculate the new density, energy, forces
+			electrons.density_ = density::calculate(electrons.states_.occupations(),  electrons.phi_, electrons.density_basis_);
+			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+			
+			auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_), electrons.phi_);;
+			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
+			electrons.phi_.set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
+			
+			forces = hamiltonian::calculate_forces(ions, electrons, ham);
 			
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
 			if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
 
-			res.time.push_back(istep*dt);
-			res.energy.push_back(energy.total());
-			res.dipole.push_back(observables::dipole(ions, electrons));
-			
+			res.save_iteration_results((istep + 1.0)*dt, ions, electrons, energy, forces);
+
 		}
 
 		return res;

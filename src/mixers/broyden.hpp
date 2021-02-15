@@ -27,6 +27,9 @@
 #include <solvers/least_squares.hpp>
 #include <mixers/base.hpp>
 
+#include <mpi3/communicator.hpp>
+#include <mpi3/environment.hpp>
+
 namespace inq {
 namespace mixers {
 
@@ -35,7 +38,7 @@ class broyden : public base<Type> {
 	
 public:
 
-	broyden(const int arg_steps, const double arg_mix_factor, const long long dim):
+	broyden(const int arg_steps, const double arg_mix_factor, const long long dim, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 		iter_(0),
 		max_size_(arg_steps),
 		mix_factor_(arg_mix_factor),
@@ -43,7 +46,8 @@ public:
 		df_({max_size_, dim}, NAN),
 		f_old_(dim, NAN),
 		vin_old_(dim, NAN),
-		last_pos_(-1){
+		last_pos_(-1),
+		comm_(comm){
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,8 +86,8 @@ public:
 			work[ii] = aa;
 		}
 
-		//REDUCE beta
-		//REDUCE work
+		comm_.all_reduce_in_place_n(static_cast<Type *>(beta.data_elements()), beta.num_elements(), std::plus<>{});
+		comm_.all_reduce_in_place_n(static_cast<Type *>(work.data_elements()), work.num_elements(), std::plus<>{});		
 
 		solvers::least_squares(beta, work);
 	
@@ -132,7 +136,8 @@ public:
 			for(long ip = 0; ip < input_value.size(); ip++){
 				gamma_ += conj(df_[pos][ip])*df_[pos][ip];
 			}
-			//REDUCE gamma
+
+			comm_.all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
 
 			gamma_ = std::max(1e-8, sqrt(gamma_));
 
@@ -165,7 +170,8 @@ private:
 	math::array<Type, 1> vin_old_;
 	Type gamma_;
 	int last_pos_;
-		
+	mutable boost::mpi3::communicator comm_;
+	
 };
 	
 }

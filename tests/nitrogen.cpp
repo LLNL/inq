@@ -25,6 +25,7 @@
 #include <utils/match.hpp>
 #include <ground_state/initialize.hpp>
 #include <ground_state/calculate.hpp>
+#include <real_time/propagate.hpp>
 
 #include <input/environment.hpp>
 
@@ -35,7 +36,7 @@ int main(int argc, char ** argv){
 	input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
-	utils::match energy_match(1.0e-6);
+	utils::match energy_match(5.0e-6);
 
 	std::vector<input::atom> geo;
 
@@ -44,12 +45,16 @@ int main(int argc, char ** argv){
 	geo.push_back( "N" | math::vector3<double>(0.0, 0.0, -0.5*distance));
 	geo.push_back( "N" | math::vector3<double>(0.0, 0.0,  0.5*distance));
 		
-	systems::ions ions(input::cell::cubic(10.0, 10.0, 12.0), geo);
+	systems::ions ions(input::cell::cubic(10.0, 10.0, 12.0) /* | input::cell::finite() */, geo);
 
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), input::config{});
 	ground_state::initialize(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::steepest_descent() | input::scf::density_mixing());
+
+	for(int iatom = 0; iatom < result.forces.size(); iatom++){
+		printf("Force atom %d = %20.14f %20.14f %20.14f\n", iatom, result.forces[iatom][0], result.forces[iatom][1], result.forces[iatom][2]);
+	}
 	
 	energy_match.check("ion-ion energy",      result.energy.ion,             -1.517434464849);
 
@@ -69,7 +74,26 @@ int main(int argc, char ** argv){
 	energy_match.check("force 2 x",           result.forces[1][0],             0.000000035122);
 	energy_match.check("force 2 y",           result.forces[1][1],            -0.000000025695);
 	energy_match.check("force 2 z",           result.forces[1][2],            -0.145731033675);
+
+	/*
+
+	//		EHRENFEST HASN'T BEEN TESTED YET
 	
+	auto dt = 0.025;
+	
+	auto propagation = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(1000) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
+		
+	auto ofs = std::ofstream{"td_coordinates.dat"};
+	
+	for(unsigned long ii = 0; ii < propagation.coordinates.size(); ii++){
+		ofs << propagation.time[ii]
+				<< '\t' << propagation.coordinates[ii][0]
+				<< '\t' << propagation.velocities[ii][0]
+				<< '\t' << propagation.forces[ii][0] << std::endl;		
+	}
+	
+	*/
+
 	return energy_match.fail();
 
 }

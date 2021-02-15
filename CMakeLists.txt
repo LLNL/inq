@@ -6,13 +6,21 @@ project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
+if(POLICY CMP0104)
+  cmake_policy(SET CMP0104 NEW)
+endif()
+
 enable_testing()
 include(CTest)
 
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
-  
   enable_language(CUDA)
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"") #nvcc
   find_package(CUDA)
   set(INQ_CUDA_LIBRARIES ${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
   link_libraries(${INQ_CUDA_LIBRARIES})
@@ -35,10 +43,20 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+link_libraries(Threads::Threads)
+
 #FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
 find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
 include_directories(${FFTW_INCLUDE_DIRS})
 link_libraries(${FFTW_LIBRARIES})
+
+if(ENABLE_HEFFTE)
+  find_package(Heffte)
+  #get_target_property(HEFFTE_INCLUDE_DIRS Heffte::Heffte INTERFACE_INCLUDE_DIRECTORIES)
+  link_libraries(Heffte::Heffte)
+endif()
 
 find_package(BLAS REQUIRED)
 link_libraries(${BLAS_LIBRARIES})
@@ -64,10 +82,11 @@ configure_file(inq_config.h.in inq_config.h)
 #Generate inc++
 set(INCXX scripts/inc++)
 configure_file(${INCXX}.bash.in ${INCXX} @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin)
-  
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
 install(DIRECTORY share/ DESTINATION share/inq)
 
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(examples)
+

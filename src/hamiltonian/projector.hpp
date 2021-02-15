@@ -33,22 +33,19 @@
 
 #include <utils/profiling.hpp>
 
-#ifdef ENABLE_CUDA
-#include <multi/adaptors/blas/cuda.hpp> // must be included before blas.hpp
-#endif
-#include <multi/adaptors/blas.hpp>
-
 namespace inq {
 namespace hamiltonian {
 
   class projector {
 
   public:
-    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position):
+    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
       sphere_(basis, cell, atom_position, ps.projector_radius()),
       nproj_(ps.num_projectors_lm()),
       matrix_({nproj_, sphere_.size()}),
-			kb_coeff_(nproj_) {
+			kb_coeff_(nproj_),
+			comm_(sphere_.create_comm(basis.comm())),
+			iatom_(iatom){
 
 			std::vector<double> grid(sphere_.size()), proj(sphere_.size());
 
@@ -74,12 +71,18 @@ namespace hamiltonian {
 			
     }
 
+		projector(projector const &) = delete;		
+
+		auto empty() const {
+			return nproj_ == 0 or sphere_.size() == 0;
+		}
+
     template <class field_set_type>
-    void operator()(const field_set_type & phi, field_set_type & vnlphi) const {
+    math::array<typename field_set_type::element_type, 2> project(const field_set_type & phi) const {
 
-			if(nproj_ == 0) return;
-
-			CALI_CXX_MARK_SCOPE("projector");
+			assert(not empty());
+			
+			CALI_CXX_MARK_SCOPE("projector::project");
 				
 			auto sphere_phi = sphere_.gather(phi.cubic());
 
@@ -89,40 +92,56 @@ namespace hamiltonian {
 
 			CALI_MARK_END("projector_allocation");
 			
-			//DATAOPERATIONS BLAS
-			if(sphere_.size() > 0) {
-				
+			{ CALI_CXX_MARK_SCOPE("projector_gemm_1");
 				namespace blas = boost::multi::blas;
-				projections = blas::gemm(sphere_.volume_element(), matrix_, sphere_phi);
-
-				{
-					CALI_CXX_MARK_SCOPE("projector_scal");
-					
-					//DATAOPERATIONS GPU::RUN 2D
-					gpu::run(phi.local_set_size(), nproj_,
-									 [proj = begin(projections), coeff = begin(kb_coeff_)]
-									 GPU_LAMBDA (auto ist, auto iproj){
-										 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
-									 });
-				}
+				blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
+			}
+			
+			{	CALI_CXX_MARK_SCOPE("projector_scal");
 				
-			} else {
-				projections.elements().fill(0.0);
+				//DATAOPERATIONS GPU::RUN 2D
+				gpu::run(phi.local_set_size(), nproj_,
+								 [proj = begin(projections), coeff = begin(kb_coeff_)]
+								 GPU_LAMBDA (auto ist, auto iproj){
+									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+								 });
 			}
-
-			if(phi.basis().part().parallel()){
-				phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
+			
+			if(comm_.size() > 1){
+				CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
+				comm_.all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
-
-			if(sphere_.size() > 0) {
-				//DATAOPERATIONS BLAS
+			
+			{
+				CALI_CXX_MARK_SCOPE("projector_gemm_2");
 				namespace blas = boost::multi::blas;
-				sphere_phi = blas::gemm(1., blas::T(matrix_), projections);
-				
-				sphere_.scatter_add(sphere_phi, vnlphi.cubic());
+				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
 			}
-    }
 
+			
+			return sphere_phi;
+		}
+			
+		template <class SpherePhiType, class field_set_type>
+    void apply(SpherePhiType const & sphere_vnlphi, field_set_type & vnlphi) const {
+
+			CALI_CXX_MARK_SCOPE("projector::apply");
+			
+			assert(not empty());
+			
+			sphere_.scatter_add(sphere_vnlphi, vnlphi.cubic());
+		}
+
+		template <typename OcType, typename PhiType, typename GPhiType>
+		struct force_term {
+			OcType oc;
+			PhiType phi;
+			GPhiType gphi;
+			constexpr auto operator()(int ist, int ip) const {
+				return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
+			}
+		};
+		
     template <class PhiType, typename GPhiType, typename OccsType>
     math::vector3<double> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
 
@@ -134,6 +153,7 @@ namespace hamiltonian {
 				
 			using boost::multi::blas::gemm;
 			using boost::multi::blas::transposed;
+			namespace blas = boost::multi::blas;
 				
 			auto sphere_phi = sphere_.gather(phi.cubic());
 			auto sphere_gphi = sphere_.gather(gphi.cubic());			
@@ -142,12 +162,11 @@ namespace hamiltonian {
 
 			if(sphere_.size() > 0) {
 				
-				projections = gemm(sphere_.volume_element(), matrix_, sphere_phi);
+				blas::real_doubled(projections) = gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
 				
 				{
-					CALI_CXX_MARK_SCOPE("projector_scal");
+					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
 					
-					//DATAOPERATIONS GPU::RUN 2D
 					gpu::run(phi.local_set_size(), nproj_,
 									 [proj = begin(projections), coeff = begin(kb_coeff_)]
 									 GPU_LAMBDA (auto ist, auto iproj){
@@ -159,25 +178,21 @@ namespace hamiltonian {
 				projections.elements().fill(0.0);
 			}
 
-			if(phi.basis().part().parallel()){
-				phi.basis().comm().all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data()), projections.num_elements(), std::plus<>{});
+			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
+				comm_.all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 
 			if(sphere_.size() > 0) {
 				namespace blas = boost::multi::blas;
-				sphere_phi = blas::gemm(1., transposed(matrix_), projections);
-				
-				for(int ip = 0; ip < sphere_.size(); ip++){
-					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						for(int idir = 0; idir < 3; idir++){
-							force[idir] -= 2.0*occs[ist]*real(conj(sphere_gphi[ip][ist][idir])*sphere_phi[ip][ist]);
-						}
-					}
-				}
-			}
+				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(matrix_), blas::real_doubled(projections));
 
-			if(phi.full_comm().size() > 0){
-				phi.full_comm().all_reduce_in_place_n(force.data(), force.size(), std::plus<>{});
+
+				{
+					CALI_CXX_MARK_SCOPE("projector_force_sum");
+					force = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(sphere_.size()),
+													 force_term<decltype(begin(occs)), decltype(begin(sphere_phi)), decltype(begin(sphere_gphi))>{begin(occs), begin(sphere_phi), begin(sphere_gphi)});
+				}
+				
 			}
 			
 			return phi.basis().volume_element()*force;
@@ -190,14 +205,19 @@ namespace hamiltonian {
     auto kb_coeff(int iproj){
       return kb_coeff_[iproj];
     }
-		
+
+		auto iatom() const {
+			return iatom_;
+		}
+
   private:
 
     basis::spherical_grid sphere_;
     int nproj_;
-		//OPTIMIZATION: make this matrix real
-    math::array<complex, 2> matrix_;
+    math::array<double, 2> matrix_;
 		math::array<double, 1> kb_coeff_;
+		mutable boost::mpi3::communicator comm_;
+		int iatom_;
     
   };
   
@@ -231,7 +251,7 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0));
+	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
 	CHECK(proj.num_projectors() == 8);
 	
@@ -243,6 +263,8 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 	CHECK(proj.kb_coeff(5) == -1.0069878791_a);
 	CHECK(proj.kb_coeff(6) == -1.0069878791_a);
 	CHECK(proj.kb_coeff(7) == -1.0069878791_a);
+
+	CHECK(proj.iatom() == 77);
 	
 }
 #endif

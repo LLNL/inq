@@ -34,7 +34,7 @@ namespace inq {
 namespace operations {
 
 template <class array_type>
-typename array_type::element_type sum(const array_type & phi){
+typename array_type::element sum(const array_type & phi){
 
 	CALI_CXX_MARK_SCOPE("sum(1arg)");
 
@@ -46,7 +46,7 @@ auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op)
 
 	CALI_CXX_MARK_SCOPE("sum(2arg)");
 	
-	const typename array1_type::element_type initial = 0.0;
+	const typename array1_type::element initial = 0.0;
 	//OPTIMIZATION we should use std::transform_reduce here, but it is not available in C++14
 	//DATAOPERATIONS STL INNER_PRODUCT
 	return std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);

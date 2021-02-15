@@ -151,11 +151,12 @@ namespace math {
 
 		template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
 		friend GPU_FUNCTION vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
-			return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
+			return {mul(scalar, vv[0]), mul(scalar, vv[1]), mul(scalar, vv[2])};
 		}
+		
 		template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
 		friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
-			return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
+			return {mul(vv[0], scalar), mul(vv[1], scalar), mul(vv[2],scalar)};
 		}
 		
 		template <class TypeB>
@@ -188,15 +189,19 @@ namespace math {
 		}
 
 		friend GPU_FUNCTION auto conj(vector3 const & vv){
-			return elementwise([] (auto x) { return conj(x);}, vv);
+			return vector3{conj(vv[0]), conj(vv[1]), conj(vv[2])};
 		}
 
 		friend GPU_FUNCTION auto real(vector3 const & vv){
-			return elementwise([] (auto x) { return real(x);}, vv);
+			return vector3<double>{real(vv[0]), real(vv[1]), real(vv[2])};
 		}
 		
 		friend GPU_FUNCTION auto imag(vector3 const & vv){
 			return elementwise([] (auto x) { return imag(x);}, vv);
+		}
+
+		friend GPU_FUNCTION auto fabs(vector3 const & vv){
+			return elementwise([] (auto x) { return fabs(x);}, vv);
 		}
 		
 		// VECTORIAL PRODUCTS
@@ -231,11 +236,6 @@ namespace math {
 			return in;
 		}
 
-		template<class Archive>
-		void serialize(Archive& ar, unsigned const /*version*/){
-			ar & vec_[0] & vec_[1] & vec_[2];
-		}
-
 	private:
 
 		Type vec_[3];
@@ -249,9 +249,6 @@ namespace math {
 #undef INQ_MATH_VECTOR3_UNIT_TEST
 
 #include <catch2/catch.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 #include <iostream>
 
@@ -451,32 +448,11 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		*/
 	}
 
-	SECTION("Serialization"){
-		math::vector3<double> x2{0.1, 0.2, 0.3};
-		
-		std::stringstream ss;
-		boost::archive::text_oarchive{ss} << x2;
-		std::cout << ss.str() <<'\n';
-		
-		math::vector3<double> x3;
-		boost::archive::text_iarchive{ss} >> x3;
-		CHECK( x3 == x2 );
-		
-	}
-
 	SECTION("Old vector3<double> tests"){
 	
 		math::vector3<double> x1{1.0, 2.0, 3.0};
 		math::vector3<double> x2{0.1, 0.2, 0.3};
 
-		{
-			std::stringstream ss;
-			boost::archive::text_oarchive{ss} << x2;
-			std::cout << ss.str() <<'\n';
-			math::vector3<double> x3; boost::archive::text_iarchive{ss} >> x3;
-			CHECK( x3 == x2 );
-		}
-	
 		CHECK(x1[0] == 1.0_a);
 		CHECK(x1[1] == 2.0_a);
 		CHECK(x1[2] == 3.0_a);

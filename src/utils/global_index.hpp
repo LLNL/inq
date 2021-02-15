@@ -25,9 +25,6 @@
 #include <mpi3/communicator.hpp>
 #include <mpi3/environment.hpp>
 
-
-#include <boost/serialization/strong_typedef.hpp>
-
 #include <cassert>
 #include <array>
 

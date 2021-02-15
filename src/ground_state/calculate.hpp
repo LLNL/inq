@@ -52,8 +52,8 @@
 
 namespace inq {
 namespace ground_state {
-	
-	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::scf & solver){
+
+	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {}){
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -73,8 +73,8 @@ namespace ground_state {
 		auto mixer = [&]()->std::unique_ptr<mixers::base<double>>{
 			switch(solver.mixing_algorithm()){
 			case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <double>>(solver.mixing());
-			case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <double>>(4, solver.mixing(), electrons.states_basis_.part().local_size());
-			case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<double>>(4, solver.mixing(), electrons.states_basis_.part().local_size());
+			case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <double>>(4, solver.mixing(), electrons.states_basis_.part().local_size(), electrons.density_basis_.comm());
+			case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<double>>(4, solver.mixing(), electrons.states_basis_.part().local_size(), electrons.density_basis_.comm());
 			} __builtin_unreachable();
 		}();
 		
@@ -93,10 +93,10 @@ namespace ground_state {
 
 		int conv_count = 0;
 
-		CALI_CXX_MARK_LOOP_BEGIN(scfloop, "scf_loop");
-
 		for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
-			
+
+			CALI_CXX_MARK_SCOPE("scf_iteration");
+
 			if(solver.subspace_diag()) {
 				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_);
 				electrons.states_.update_occupations(eigenvalues);
@@ -168,18 +168,22 @@ namespace ground_state {
 				CALI_CXX_MARK_SCOPE("energy_calculation");
 				
 				auto residual = ham(electrons.phi_);
-				auto eigenvalues = operations::overlap_diagonal(electrons.phi_, residual);
+				auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi_);
 				operations::shift(-1.0, eigenvalues, electrons.phi_, residual);
 				
 				auto normres = operations::overlap_diagonal(residual);
-				auto nl_me = operations::overlap_diagonal(ham.non_local(electrons.phi_), electrons.phi_);
-				auto exchange_me = operations::overlap_diagonal(ham.exchange(electrons.phi_), electrons.phi_);
+				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(electrons.phi_), electrons.phi_);
+				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(electrons.phi_), electrons.phi_);
 				
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 				
 				res.energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, energy_term);
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
+
+				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.eigenvalues, 1, std::plus<>{});
+				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.nonlocal, 1, std::plus<>{});
+				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.hf_exchange, 1, std::plus<>{});
 				
 				if(solver.verbose_output() and console){
 					console->info("SCF iter {} : e = {:.12f} de = {:5.0e}", 
@@ -204,7 +208,6 @@ namespace ground_state {
 			old_energy = res.energy.eigenvalues;
 			
 		}
-		CALI_CXX_MARK_LOOP_END(scfloop);
 
 		//make sure we have a density consistent with phi
 		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
