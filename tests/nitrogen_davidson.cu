@@ -1,1 +1,0 @@
-nitrogen_davidson.cpp
