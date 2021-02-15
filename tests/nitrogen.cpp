@@ -50,7 +50,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), input::config{});
 	ground_state::initialize(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::steepest_descent() | input::scf::density_mixing());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::density_mixing());
 
 	for(int iatom = 0; iatom < result.forces.size(); iatom++){
 		printf("Force atom %d = %20.14f %20.14f %20.14f\n", iatom, result.forces[iatom][0], result.forces[iatom][1], result.forces[iatom][2]);

@@ -46,7 +46,7 @@ namespace inq {
 namespace operations {
 
 template <class field_set_type>
-void orthogonalize(field_set_type & phi){
+void orthogonalize(field_set_type & phi, bool nocheck = false){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -55,7 +55,8 @@ void orthogonalize(field_set_type & phi){
 	auto olap = overlap(phi);
 
 	const int nst = phi.set_size();
-
+	int info;
+	
 	//DATAOPERATIONS RAWLAPACK zpotrf
 #ifdef ENABLE_CUDA
 	{
@@ -86,8 +87,8 @@ void orthogonalize(field_set_type & phi){
 		cusolver_status = cusolverDnZpotrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data_elements()), nst, work, lwork, devInfo);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		cudaDeviceSynchronize();
-		assert(*devInfo == 0);
-
+		info = *devInfo ;
+		
 		cudaFree(work);
 		cudaFree(devInfo);
 		cusolverDnDestroy(cusolver_handle);
@@ -96,11 +97,15 @@ void orthogonalize(field_set_type & phi){
 #else
 	{
 		CALI_CXX_MARK_SCOPE("cuda_zpotrf");
-		int info;
 		zpotrf("U", &nst, olap.data_elements(), &nst, &info);
-		assert(info == 0);
 	}
 #endif
+
+	if(not nocheck or info < 0){
+		std::printf("Error: Failed orthogonalization in ZPOTRF! info is %10i.\n", info);
+	} else if(info > 0) {
+		std::printf("Warning: Imperfect orthogonalization in ZPOTRF! info is %10i, subspace size is %10i\n", info, nst); 
+	}
 
 	{
 		CALI_CXX_MARK_SCOPE("orthogonalize_trsm");
@@ -191,6 +196,31 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 				}
 			}
 		}
+	}
+	
+	SECTION("Dimension 2, warning test"){
+		basis::field_set<basis::real_space, complex> phi(pw, 2);
+
+		operations::randomize(phi);
+		
+		int nbasis = std::get<0>(sizes(phi.matrix()));
+		
+	        for(int ii = 0 ; ii < phi.set_size(); ii++){
+		  for(int jj = 0; jj < nbasis; jj++){
+		    phi.matrix().transposed()[ii][jj]=0.0;
+		    //if(ii == jj) phi.matrix().transposed()[ii][jj] = 1.0;
+		  }
+		}
+		phi.matrix().transposed()[0][0] = 1.0;
+		phi.matrix().transposed()[1][0] = 1.0;
+		
+		operations::orthogonalize(phi, /* ncheck = */ true);
+		
+		//auto olap = operations::overlap(phi);
+		
+		std::cout << "------" << std::endl;
+		
+		
 	}
 
 	SECTION("Dimension 100"){

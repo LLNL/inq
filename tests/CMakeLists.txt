@@ -14,4 +14,3 @@ foreach(TEST_FILE ${TEST_SRCS})
 endforeach()
 
 set_tests_properties(h2o_real_time PROPERTIES DEPENDS h2o_ground_state)
-
