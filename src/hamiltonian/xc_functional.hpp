@@ -80,7 +80,8 @@ namespace hamiltonian {
 			basis::field<basis::real_space, double> vsigma(vxc.basis());
 			
 			xc_gga_exc_vxc(&func_, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
-
+			gpu::sync();
+					
 			basis::field<basis::real_space, math::vector3<double>> vxc_extra(vxc.basis());
 
 			gpu::run(vxc.basis().local_size(),
@@ -108,6 +109,7 @@ namespace hamiltonian {
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:{
 					xc_lda_exc_vxc(&func_, size, density.data(), exc.data(), vxc.data());
+					gpu::sync();
 					break;
 				}
 				case XC_FAMILY_GGA:{
@@ -222,19 +224,23 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 		ldafunctional(gaussian_field, gaussianExc, gaussianVxc);
 		CHECK(gaussianExc == -0.270646_a);
+
+		auto param_lda = ldafunctional.libxc_func();
+		
 		double int_xc_energy = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
-					auto local_density = gaussian(vec);
-					double local_exc, local_vxc;
-					auto param_lda = ldafunctional.libxc_func();
-					xc_lda_exc_vxc(&param_lda, 1, &local_density, &local_exc, &local_vxc);
+					math::array<double, 1> local_density{{gaussian(vec)}};
+					math::array<double, 1> local_exc{1};
+					math::array<double, 1> local_vxc{1};
+					xc_lda_exc_vxc(&param_lda, 1, static_cast<double *>(local_density.data_elements()), static_cast<double *>(local_exc.data_elements()), static_cast<double *>(local_vxc.data_elements()));
+					gpu::sync();
+					
+					CHECK(Approx(local_vxc[0]) == gaussianVxc.cubic()[ix][iy][iz]);
 
-					CHECK(Approx(local_vxc) == gaussianVxc.cubic()[ix][iy][iz]);
-
-					int_xc_energy += local_exc*local_density*rs.volume_element();
+					int_xc_energy += local_exc[0]*local_density[0]*rs.volume_element();
 				}
 			}
 		}
@@ -280,43 +286,45 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.rvector(ix, iy, iz);
-					double local_exc = 0.0;
-					double local_vxc = 0.0;
-					double local_vsigma = 0.0;
-					auto local_density = sqwave(vec, 3);
-					auto local_sigma = dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3));
-					auto param = ggafunctional.libxc_func();
-					xc_gga_exc_vxc(&param, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
 
+					auto vec = rs.rvector(ix, iy, iz);
+					math::array<double, 1> local_exc{1};
+					math::array<double, 1> local_vxc{1};
+					math::array<double, 1> local_vsigma{1};
+					math::array<double, 1> local_density{{sqwave(vec, 3)}};
+					math::array<double, 1> local_sigma{{dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3))}};
+					auto param = ggafunctional.libxc_func();
+					xc_gga_exc_vxc(&param, 1, static_cast<double *>(local_density.data_elements()), static_cast<double *>(local_sigma.data_elements()),
+												 static_cast<double *>(local_exc.data_elements()), static_cast<double *>(local_vxc.data_elements()), static_cast<double *>(local_vsigma.data_elements()));
+					gpu::sync();
+					
 					auto calc_vsigma = [func = ggafunctional.libxc_func()] (auto point){
-						auto local_density = sqwave(point, 3);
-						auto local_sigma = dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3));
-						double local_exc, local_vxc, local_vsigma;
+						math::array<double, 1> local_density{{sqwave(point, 3)}};
+						math::array<double, 1> local_sigma{{dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3))}};
+						math::array<double, 1> local_exc{1};
+						math::array<double, 1> local_vxc{1};
+						math::array<double, 1> local_vsigma{1};
 						auto param = func;
-						xc_gga_exc_vxc(&param, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
-						return local_vsigma;
+						xc_gga_exc_vxc(&param, 1, static_cast<double *>(local_density.data_elements()), static_cast<double *>(local_sigma.data_elements()),
+													 static_cast<double *>(local_exc.data_elements()), static_cast<double *>(local_vxc.data_elements()), static_cast<double *>(local_vsigma.data_elements()));
+						gpu::sync();
+						return local_vsigma[0];
 					};
 					
 					auto grad_vsigma = finite_difference_gradient5p(calc_vsigma, vec);
 
-					auto calc_vsigmadn = [func = ggafunctional.libxc_func()] (auto point){
-						auto local_density = sqwave(point, 3);
-						auto local_sigma = dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3));
-						double local_exc, local_vxc, local_vsigma;
-						auto param = func;
-						xc_gga_exc_vxc(&param, 1, &local_density, &local_sigma, &local_exc, &local_vxc, &local_vsigma);
-						return local_vsigma*gradient_sqwave(point, 3);
+					auto calc_vsigmadn = [func = ggafunctional.libxc_func(), calc_vsigma] (auto point){
+						return gradient_sqwave(point, 3)*calc_vsigma(point);
 					};
 					
 					auto vxc_extra = finite_difference_divergence5p(calc_vsigmadn, vec);
 
-					diff_ways = std::max(diff_ways, fabs(dot(grad_vsigma, gradient_sqwave(vec, 3)) + local_vsigma*laplacian_sqwave(vec, 3) - vxc_extra));
+					diff_ways = std::max(diff_ways, fabs(dot(grad_vsigma, gradient_sqwave(vec, 3)) + local_vsigma[0]*laplacian_sqwave(vec, 3) - vxc_extra));
 
-					local_vxc -= 2.0*vxc_extra;
-					int_xc_energy += local_exc*local_density*rs.volume_element();
+					local_vxc[0] -= 2.0*vxc_extra;
+					int_xc_energy += local_exc[0]*local_density[0]*rs.volume_element();
 					
-					diff = std::max(diff, fabs(local_vxc - Vxc.cubic()[ix][iy][iz])*local_density);
+					diff = std::max(diff, fabs(local_vxc[0] - Vxc.cubic()[ix][iy][iz])*local_density[0]);
 				}
 			}
 		}
