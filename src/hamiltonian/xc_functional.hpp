@@ -234,7 +234,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.rvector(ix, iy, iz);
-					math::array<double, 1> local_density{{gaussian(vec)}};
+					math::array<double, 1> local_density{gaussian(vec)};
 					math::array<double, 1> local_exc{1};
 					math::array<double, 1> local_vxc{1};
 					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, static_cast<double *>(local_density.data_elements()), static_cast<double *>(local_exc.data_elements()), static_cast<double *>(local_vxc.data_elements()));
@@ -293,16 +293,16 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					math::array<double, 1> local_exc{1};
 					math::array<double, 1> local_vxc{1};
 					math::array<double, 1> local_vsigma{1};
-					math::array<double, 1> local_density{{sqwave(vec, 3)}};
-					math::array<double, 1> local_sigma{{dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3))}};
+					math::array<double, 1> local_density{sqwave(vec, 3)};
+					math::array<double, 1> local_sigma{dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3))};
 					
 					xc_gga_exc_vxc(ggafunctional.libxc_func_ptr(), 1, static_cast<double *>(local_density.data_elements()), static_cast<double *>(local_sigma.data_elements()),
 												 static_cast<double *>(local_exc.data_elements()), static_cast<double *>(local_vxc.data_elements()), static_cast<double *>(local_vsigma.data_elements()));
 					gpu::sync();
 					
 					auto calc_vsigma = [func = ggafunctional.libxc_func_ptr()] (auto point){
-						math::array<double, 1> local_density{{sqwave(point, 3)}};
-						math::array<double, 1> local_sigma{{dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3))}};
+						math::array<double, 1> local_density{sqwave(point, 3)};
+						math::array<double, 1> local_sigma{dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3))};
 						math::array<double, 1> local_exc{1};
 						math::array<double, 1> local_vxc{1};
 						math::array<double, 1> local_vsigma{1};
