@@ -148,9 +148,7 @@ namespace basis {
 		}
 
 		void prefetch() const {
-#ifdef ENABLE_CUDA
-			cudaMemPrefetchAsync(raw_pointer_cast(linear_.data_elements()), linear_.num_elements()*sizeof(element_type), 0);
-#endif
+			math::prefetch(linear_);
 		}
 
 	private:

@@ -49,6 +49,14 @@ template <class type, size_t dim,
 					>
 using array = boost::multi::array<type, dim, allocator>;
 
+template <typename ArrayType>
+void prefetch(ArrayType const & array){
+#ifdef ENABLE_CUDA
+	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), 0);
+#endif
+}
+
+
 }
 }
 
