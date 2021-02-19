@@ -33,20 +33,20 @@ template <class Type>
 class linear : public base<Type> {
 
 public:
-
+	
 	linear(double arg_mix_factor):
 		mix_factor_(arg_mix_factor){
 	}
-
+	
 	void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value){
 		//note: arguments might alias here
-
+		
 		CALI_CXX_MARK_SCOPE("linear_mixing");
-
-		//DATAOPERATIONS LOOP 1D
-		for(unsigned ii = 0; ii < input_value.size(); ii++){
-			input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
-		}
+		
+		gpu::run(input_value.size(),
+						 [iv = begin(input_value), ov = begin(output_value), mix = mix_factor_] GPU_LAMBDA (auto ii){
+							 iv[ii] = (1.0 - mix)*iv[ii] + mix*ov[ii];
+						 });
 	}
 
 private:
