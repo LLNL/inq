@@ -104,23 +104,23 @@ nvcc11.0-ompi-compileonly:
       - time make #-j 5 # parallel compilation can take too much memory
       - time make install
 
-nvcc11.1-ompi-compileonly:
-    image: nvidia/cuda:11.1-devel
-    stage: build
-    script:
-      - time apt update -qq
-      - DEBIAN_FRONTEND="noninteractive" apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - nvcc --version
-      - mkdir nvcc
-      - cd nvcc
-      - export CUDACXX=nvcc
-      - export CUDAFLAGS="-DNDEBUG $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++17,-Wall,-Wfatal-errors,-s,-Os"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$HOME --enable-cuda
-      - time make #-j 5 # parallel compilation can take too much memory
-      - time make install
+#nvcc11.1-ompi-compileonly:
+#    image: nvidia/cuda:11.1-devel
+#    stage: build
+#    script:
+#      - time apt update -qq
+#      - DEBIAN_FRONTEND="noninteractive" apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
+#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+#      - nvcc --version
+#      - mkdir nvcc
+#      - cd nvcc
+#      - export CUDACXX=nvcc
+#      - export CUDAFLAGS="-DNDEBUG $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++17,-Wall,-Wfatal-errors,-s,-Os"
+#      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+#      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+#      - time ../configure --prefix=$HOME --enable-cuda
+#      - time make #-j 5 # parallel compilation can take too much memory
+#      - time make install
 
 nvcc11.2-ompi-compileonly:
     image: nvidia/cuda:11.2.0-devel
