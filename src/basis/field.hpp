@@ -49,6 +49,7 @@ namespace basis {
 		field(const basis_type & basis):
 			linear_(basis.part().local_size()),
 			basis_(basis){
+			prefetch();
 		}
 
 		template <class OtherType>
@@ -146,6 +147,9 @@ namespace basis {
 			}
 		}
 
+		void prefetch() const {
+			math::prefetch(linear_);
+		}
 
 	private:
 		internal_array_type linear_;

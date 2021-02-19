@@ -153,6 +153,8 @@ namespace basis {
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
 			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
+
+			math::prefetch(subgrid);
 			
 			gpu::run(nst, size(),
 							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
