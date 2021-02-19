@@ -287,10 +287,13 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		double int_xc_energy = 0.0;
 
 		//This is slow, so jump by 2 in each dimension
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix += 2){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy += 2){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz += 2){
-
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					if(rs.cubic_dist(0).local_to_global(ix).value()%2 == 1) continue;
+					if(rs.cubic_dist(1).local_to_global(iy).value()%2 == 1) continue;
+					if(rs.cubic_dist(2).local_to_global(iz).value()%2 == 1) continue;
+					
 					auto vec = rs.rvector(ix, iy, iz);
 					math::array<double, 1> local_exc{1};
 					math::array<double, 1> local_vxc{1};
