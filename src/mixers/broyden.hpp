@@ -60,13 +60,14 @@ public:
 		double const ww = 5.0;
 						
 		if(iter_used == 0){
-			for(long ip = 0; ip < input_value.size(); ip++){
-				input_value[ip] += mix_factor_*ff[ip];
-			}
+			gpu::run(input_value.size(),
+							 [iv = begin(input_value), ffp = begin(ff),  mix = mix_factor_] GPU_LAMBDA (auto ip){
+								 iv[ip] += mix*ffp[ip];
+							 });
 
 			return;
 		}
-
+		
 		math::array<Type, 2> beta({iter_used, iter_used}, NAN);
 		math::array<Type, 1> work(iter_used, NAN);
 
@@ -115,11 +116,12 @@ public:
 		iter_++;
 
 		math::array<Type, 1> ff(input_value.size());
-			
-		for(long ip = 0; ip < input_value.size(); ip++){
-			ff[ip] = output_value[ip] - input_value[ip]; 
-		}
 
+		gpu::run(input_value.size(),
+						 [iv = begin(input_value), ov = begin(output_value), ffp = begin(ff)] GPU_LAMBDA (auto ip){
+								 ffp[ip] = ov[ip] - iv[ip]; 
+						 });
+		
 		if(iter_ > 1){
 
 			auto pos = (last_pos_ + 1)%max_size_;
