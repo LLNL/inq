@@ -49,6 +49,7 @@ namespace basis {
 		field(const basis_type & basis):
 			linear_(basis.part().local_size()),
 			basis_(basis){
+			prefetch();
 		}
 
 		template <class OtherType>
@@ -146,6 +147,11 @@ namespace basis {
 			}
 		}
 
+		void prefetch() const {
+#ifdef ENABLE_CUDA
+			cudaMemPrefetchAsync(raw_pointer_cast(linear_.data_elements()), linear_.num_elements()*sizeof(element_type), 0);
+#endif
+		}
 
 	private:
 		internal_array_type linear_;

@@ -50,6 +50,7 @@ namespace basis {
 			 num_vectors_(num_vectors),
 			 basis_(basis)
 		{
+			prefetch();
 			assert(basis_.part().comm_size() == comm.axis(1).size());
     }
 
@@ -139,6 +140,12 @@ namespace basis {
 			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
+		void prefetch() const {
+#ifdef ENABLE_CUDA
+			cudaMemPrefetchAsync(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements()*sizeof(element_type), 0);
+#endif
+		}
+		
 	private:
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
