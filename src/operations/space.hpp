@@ -110,8 +110,10 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 	CALI_MARK_END("heffte_initialization");
 	
 	math::array<complex, 1> input(fft.size_inbox());
+	math::prefetch(input);
 	math::array<complex, 1> output(fft.size_outbox());	
-
+	math::prefetch(output);
+	
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
 		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
@@ -157,7 +159,9 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
  		auto last_dim = std::get<3>(sizes(array_rs));
 
 		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
-
+		
+		math::prefetch(tmp);
+		
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_2d");
 
@@ -223,8 +227,10 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 	if(normalize) scaling = heffte::scale::full;
 	
 	math::array<complex, 1> input(fft.size_inbox());
+	math::prefetch(input);	
 	math::array<complex, 1> output(fft.size_outbox());	
-
+	math::prefetch(output);
+	
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
 		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
@@ -269,7 +275,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		auto last_dim = std::get<3>(sizes(array_fs));
 		
 		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
-
+		math::prefetch(buffer);
+		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_2d");
 			
@@ -283,7 +290,8 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		}
 		
 		math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
-
+		math::prefetch(tmp);
+		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_transpose");
 			tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer({0, comm.size()}, {0, real_basis.local_sizes()[0]});
