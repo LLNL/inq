@@ -101,8 +101,9 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	}
 #endif
 
-	if(not nocheck or info < 0){
+	if(not nocheck and info < 0){
 		std::printf("Error: Failed orthogonalization in ZPOTRF! info is %10i.\n", info);
+		abort();
 	} else if(info > 0) {
 		std::printf("Warning: Imperfect orthogonalization in ZPOTRF! info is %10i, subspace size is %10i\n", info, nst); 
 	}
