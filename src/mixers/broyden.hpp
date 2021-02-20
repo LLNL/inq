@@ -135,10 +135,10 @@ public:
 								 dv[pos][ip] -= vin_old[ip];
 							 });
 
-			gamma_ = 0.0;
-			for(long ip = 0; ip < input_value.size(); ip++){
-				gamma_ += conj(df_[pos][ip])*df_[pos][ip];
-			}
+			using boost::multi::blas::dot;
+			using boost::multi::blas::conj;
+			
+			gamma_ = dot(conj(df_[pos]), df_[pos]);
 
 			comm_.all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
 
