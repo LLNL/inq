@@ -58,11 +58,12 @@ public:
 		
 		double const w0 = 0.01;
 		double const ww = 5.0;
-						
+
 		if(iter_used == 0){
-			for(long ip = 0; ip < input_value.size(); ip++){
-				input_value[ip] += mix_factor_*ff[ip];
-			}
+			gpu::run(input_value.size(),
+							 [iv = begin(input_value), ffp = begin(ff),  mix = mix_factor_] GPU_LAMBDA (auto ip){
+								 iv[ip] += mix*ffp[ip];
+							 });
 
 			return;
 		}
@@ -70,36 +71,36 @@ public:
 		math::array<Type, 2> beta({iter_used, iter_used}, NAN);
 		math::array<Type, 1> work(iter_used, NAN);
 
-		for(int ii = 0; ii < iter_used; ii++){
-			for(int jj = ii + 1; jj < iter_used; jj++){
-				Type aa = 0.0;
-				for(unsigned kk = 0; kk < input_value.size(); kk++) aa +=  ww*ww*conj(df_[ii][kk])*df_[jj][kk];
-				beta[ii][jj] = aa;
-				beta[jj][ii] = conj(aa);
-			}
-			beta[ii][ii] = w0*w0 + ww*ww;
-		}
+		//OPTIMIZATION: this should be done by gemm/gemv
+		gpu::run(iter_used,
+						 [iter_used, ivsize = input_value.size(), w0, ww, be = begin(beta), df = begin(df_), ffp = begin(ff), wo = begin(work)] GPU_LAMBDA (auto ii){
+							 for(int jj = ii + 1; jj < iter_used; jj++){
+								 Type aa = 0.0;
+								 for(unsigned kk = 0; kk < ivsize; kk++) aa +=  ww*ww*conj(df[ii][kk])*df[jj][kk];
+								 be[ii][jj] = aa;
+								 be[jj][ii] = conj(aa);
+							 }
+							 be[ii][ii] = w0*w0 + ww*ww;
 
-		for(int ii = 0; ii < iter_used; ii++){
-			Type aa = 0.0;
-			for(unsigned kk = 0; kk < input_value.size(); kk++) aa += conj(df_[ii][kk])*ff[kk];
-			work[ii] = aa;
-		}
+							 Type aa = 0.0;
+							 for(unsigned kk = 0; kk < ivsize; kk++) aa += conj(df[ii][kk])*ffp[kk];
+							 wo[ii] = aa;
+						 });
 
 		comm_.all_reduce_in_place_n(static_cast<Type *>(beta.data_elements()), beta.num_elements(), std::plus<>{});
 		comm_.all_reduce_in_place_n(static_cast<Type *>(work.data_elements()), work.num_elements(), std::plus<>{});		
 
 		solvers::least_squares(beta, work);
-	
-		for(long ip = 0; ip < input_value.size(); ip++){
-			input_value[ip] += mix_factor_*ff[ip];
-		}
 
-		for(int ii = 0; ii < iter_used; ii++){
-			for(long ip = 0; ip < input_value.size(); ip++){
-				input_value[ip] -= ww*ww*work[ii]*(mix_factor_*df_[ii][ip] + dv_[ii][ip]);
-			}
-		}
+		gpu::run(input_value.size(),
+						 [iv = begin(input_value), ffp = begin(ff),  mix = mix_factor_] GPU_LAMBDA (auto ip){
+							 iv[ip] += mix*ffp[ip];
+						 });
+
+		gpu::run(input_value.size(), iter_used,
+						 [iv = begin(input_value), ww, wo = begin(work), mix = mix_factor_, df = begin(df_), dv = begin(dv_)] GPU_LAMBDA (auto ip, auto ii){ 
+							 iv[ip] -= ww*ww*wo[ii]*(mix*df[ii][ip] + dv[ii][ip]);
+						 });
 			
 	}
 
@@ -115,11 +116,12 @@ public:
 		iter_++;
 
 		math::array<Type, 1> ff(input_value.size());
-			
-		for(long ip = 0; ip < input_value.size(); ip++){
-			ff[ip] = output_value[ip] - input_value[ip]; 
-		}
 
+		gpu::run(input_value.size(),
+						 [iv = begin(input_value), ov = begin(output_value), ffp = begin(ff)] GPU_LAMBDA (auto ip){
+								 ffp[ip] = ov[ip] - iv[ip]; 
+						 });
+		
 		if(iter_ > 1){
 
 			auto pos = (last_pos_ + 1)%max_size_;
@@ -127,24 +129,26 @@ public:
 			df_[pos] = ff;
 			dv_[pos] = input_value;
 
-			for(long ip = 0; ip < input_value.size(); ip++){
-				df_[pos][ip] -= f_old_[ip];
-				dv_[pos][ip] -= vin_old_[ip];
-			}
+			gpu::run(input_value.size(),
+							 [pos, df = begin(df_), f_old = begin(f_old_), dv = begin(dv_), vin_old = begin(vin_old_)] GPU_LAMBDA (auto ip){
+								 df[pos][ip] -= f_old[ip];
+								 dv[pos][ip] -= vin_old[ip];
+							 });
 
-			gamma_ = 0.0;
-			for(long ip = 0; ip < input_value.size(); ip++){
-				gamma_ += conj(df_[pos][ip])*df_[pos][ip];
-			}
+			using boost::multi::blas::dot;
+			using boost::multi::blas::conj;
+			
+			gamma_ = dot(conj(df_[pos]), df_[pos]);
 
 			comm_.all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
 
 			gamma_ = std::max(1e-8, sqrt(gamma_));
 
-			for(long ip = 0; ip < input_value.size(); ip++){
-				df_[pos][ip] /= gamma_;
-				dv_[pos][ip] /= gamma_;
-			}
+			gpu::run(input_value.size(),
+							 [pos, df = begin(df_), dv = begin(dv_), gamma = gamma_] GPU_LAMBDA (auto ip){
+								 df[pos][ip] /= gamma;
+								 dv[pos][ip] /= gamma;
+							 });
 
 			last_pos_ = pos;
 				
