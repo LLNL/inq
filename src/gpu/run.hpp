@@ -313,7 +313,7 @@ size_t check_run(size_t size){
 
 size_t check_run(size_t size1, size_t size2){
 	
-	inq::math::array<size_t, 3> list({size1, size2, 2}, 0);
+	inq::math::array<size_t, 3> list({size1, size2, 2}, size_t{0});
 	
 	inq::gpu::run(size1, size2, 
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj){
@@ -335,7 +335,7 @@ size_t check_run(size_t size1, size_t size2){
 
 size_t check_run(size_t size1, size_t size2, size_t size3){
 	
-	inq::math::array<size_t, 4> list({size1, size2, size3, 3}, 0);
+	inq::math::array<size_t, 4> list({size1, size2, size3, 3}, size_t{0});
 
 	inq::gpu::run(size1, size2, size3,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk){
@@ -361,7 +361,7 @@ size_t check_run(size_t size1, size_t size2, size_t size3){
 	
 size_t check_run(size_t size1, size_t size2, size_t size3, size_t size4){
 
-	inq::math::array<size_t, 5> list({size1, size2, size3, size4, 4}, 0);
+	inq::math::array<size_t, 5> list({size1, size2, size3, size4, 4}, size_t{0});
 
 	inq::gpu::run(size1, size2, size3, size4,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk, auto ll){
