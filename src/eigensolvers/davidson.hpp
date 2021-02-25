@@ -68,12 +68,12 @@ void davidson(const operator_type & ham, const preconditioner_type & prec, field
 	int nbase = nvec ; //current subspace size
 	int nevf  = 0 ; //number of eigenvectors found
 	int nleft = nvec ; // number of eigenvectors left to converge
-      
+
 	//allocate auxiliary wave-functions storage
 	field_set_type aux_phi(phi.basis(), nsize, phi.full_comm());
 	aux_phi.matrix()({0,nbasis},{0,nvec})=phi.matrix()({0,nbasis},{0,nvec});
-	math::array<double, 1> eigW(nvec,0); //eigenvalues saved here
-      
+	math::array<double, 1> eigW(nvec, 0.); //eigenvalues saved here
+
 	const int num_steps = 20;
 	namespace blas = boost::multi::blas ;
 
