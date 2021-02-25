@@ -62,6 +62,10 @@ namespace basis {
 			{
 			}
 
+			GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
+				return grid::from_symmetric_range(nr_, ii);
+			}
+
 			GPU_FUNCTION math::vector3<double> rvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
 				auto ii = to_symmetric_range(nr_, ix, iy, iz);
 				return math::vector3<double>{ii[0]*rspacing_[0], ii[1]*rspacing_[1], ii[2]*rspacing_[2]};
@@ -83,6 +87,10 @@ namespace basis {
 			template <typename IndexType>
 			double r2(IndexType ix, IndexType iy, IndexType iz) const {
 				return norm(rvector(ix, iy, iz));
+			}
+
+			auto & cubic_dist() const {
+				return cubic_dist_;
 			}
 			
 		private:
