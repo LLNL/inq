@@ -297,7 +297,7 @@ void atomic_add(Type * address, Type val){
 
 size_t check_run(size_t size){
 	
-	inq::math::array<size_t, 1> list(size, 0);
+	inq::math::array<size_t, 1> list(size, size_t{0});
 
 	inq::gpu::run(size,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii){
