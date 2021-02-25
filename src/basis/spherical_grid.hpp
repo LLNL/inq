@@ -208,7 +208,7 @@ namespace basis {
 
   private:
 
-		math::array<std::array<int, 3>, 1> points_;
+		math::array<math::vector3<int>, 1> points_;
 		math::array<float, 1> distance_; //I don't think we need additional precision for this. XA
 		std::vector<math::vector3<double>> relative_pos_;
 		double volume_element_;
