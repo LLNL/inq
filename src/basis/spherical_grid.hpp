@@ -24,6 +24,8 @@
 #include <algorithm> //max, min
 
 #include <math/vector3.hpp>
+#include <gpu/run.hpp>
+#include <gpu/reduce.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
@@ -38,6 +40,21 @@ namespace basis {
 
   class spherical_grid {
 
+		//returns the cube that contains the sphere, this makes the initialization O(1) instead of O(N)
+		template <class BasisType, typename PosType>
+		void static cube(const BasisType & parent_grid, PosType const & pos, double radius, math::vector3<int> & hi, math::vector3<int> & lo){
+			for(int idir = 0; idir < 3; idir++){
+				lo[idir] = floor((pos[idir] - radius)/parent_grid.rspacing()[idir]) - 1;
+				hi[idir] = ceil((pos[idir] + radius)/parent_grid.rspacing()[idir]) + 1;
+				
+				lo[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), lo[idir]);
+				hi[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), hi[idir]);
+				
+				lo[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), lo[idir]);
+				hi[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), hi[idir]);
+			}
+		}
+		
   public:
 
 		const static int dimension = 1;
@@ -54,26 +71,48 @@ namespace basis {
 			std::vector<std::array<int, 3> > tmp_points;
 			std::vector<float> tmp_distance;
 
+			long count = 0;
+			
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
 				math::vector3<int> lo, hi;
-
-				//get the cubic grid that contains the sphere, this makes the initialization O(1) instead of O(N)
-				for(int idir = 0; idir < 3; idir++){
-					lo[idir] = floor((rep[irep][idir] - radius)/parent_grid.rspacing()[idir]) - 1;
-					hi[idir] = ceil((rep[irep][idir] + radius)/parent_grid.rspacing()[idir]) + 1;
-
-					lo[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), lo[idir]);
-					hi[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), hi[idir]);
-
-					lo[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), lo[idir]);
-					hi[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), hi[idir]);
-				}
+				cube(parent_grid, rep[irep], radius, hi, lo);
 				
-
 				//OPTIMIZATION: this iteration should be done only over the local points
+				math::vector3<int> local_sizes = parent_grid.local_sizes();
+
+				count += gpu::run(gpu::reduce(hi[2] - lo[2]), gpu::reduce(hi[1] - lo[1]), gpu::reduce(hi[0] - lo[0]),
+													[lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
+														
+														auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
+														
+														utils::global_index ii0(ii[0]);
+														utils::global_index ii1(ii[1]);
+														utils::global_index ii2(ii[2]);
+														
+														int ixl = point_op.cubic_dist()[0].global_to_local(ii0);
+														int iyl = point_op.cubic_dist()[1].global_to_local(ii1);
+														int izl = point_op.cubic_dist()[2].global_to_local(ii2);
+														
+														if(ixl < 0 or ixl >= local_sizes[0]) return 0;
+														if(iyl < 0 or iyl >= local_sizes[1]) return 0;
+														if(izl < 0 or izl >= local_sizes[2]) return 0;
+														
+														auto rpoint = point_op.rvector(ii0, ii1, ii2);
+														
+														auto n2 = norm(rpoint - re);
+														if(n2 > radius*radius) return 0;
+														
+														return 1;
+													});
 				
-				//DATAOPERATIONS LOOP 3D
+			}
+
+			for(unsigned irep = 0; irep < rep.size(); irep++){
+
+				math::vector3<int> lo, hi;
+				cube(parent_grid, rep[irep], radius, hi, lo);
+
 				for(int ix = lo[0]; ix < hi[0]; ix++){
 					for(int iy = lo[1]; iy < hi[1]; iy++){
 						for(int iz = lo[2]; iz < hi[2]; iz++){
@@ -107,6 +146,8 @@ namespace basis {
 				
 			}
 
+			assert(tmp_points.size() == (unsigned) count);
+			
 			//OPTIMIZATION: order the points for better memory access
 			
 			points_.reextent({tmp_points.size()});
