@@ -129,7 +129,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector(ix, iy, iz);
 					for(int idir = 0; idir < 3 ; idir++) vectorial_complex_field.cubic()[ix][iy][iz][idir] = vectorial_complex_plane_wave (kvec, vec)[idir];
 				}
 			}
@@ -141,7 +141,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field-set 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector(ix, iy, iz);
 					diff3 += fabs(d_vectorial_complex_field.cubic()[ix][iy][iz] - d_vectorial_complex_plane_wave (kvec, vec));
 				}
 			}
@@ -160,7 +160,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector(ix, iy, iz);
 					for(int idir = 0; idir < 3 ; idir++) vectorial_real_field.cubic()[ix][iy][iz][idir] = vectorial_real_wave (kvec, vec)[idir];
 				}
 			}
@@ -172,7 +172,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field-set 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector(ix, iy, iz);
 					diff4 += fabs(d_vectorial_real_field.cubic()[ix][iy][iz] - d_vectorial_real_wave (kvec, vec));
 				}
 			}

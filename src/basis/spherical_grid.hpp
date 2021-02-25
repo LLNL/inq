@@ -92,7 +92,7 @@ namespace basis {
 							if(iyl < 0 or iyl >= parent_grid.local_sizes()[1]) continue;
 							if(izl < 0 or izl >= parent_grid.local_sizes()[2]) continue;
 
-							auto rpoint = parent_grid.rvector(ii0, ii1, ii2);
+							auto rpoint = parent_grid.point_op().rvector(ii0, ii1, ii2);
 							
 							auto n2 = norm(rpoint - rep[irep]);
 							if(n2 > radius*radius) continue;

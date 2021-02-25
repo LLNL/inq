@@ -245,7 +245,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		}
 		
 		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
-						 [out = begin(output), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [out = gpubegin(output), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 auto ip = iz + dz*(iy + dy*ix);
 							 ar[ix][iy][iz][ist] = out[ip];
 						 });
@@ -533,7 +533,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					double r2 = rs.r2(ix, iy, iz);
+					double r2 = rs.point_op().r2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
 						phi.cubic()[ix][iy][iz][ist] = exp(-sigma*r2);

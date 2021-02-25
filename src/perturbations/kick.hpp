@@ -41,7 +41,7 @@ namespace perturbations {
 					auto iyg = phi.basis().cubic_dist(1).local_to_global(iy);
 					auto izg = phi.basis().cubic_dist(2).local_to_global(iz);
 					
-					auto rr = phi.basis().rvector(ixg, iyg, izg);
+					auto rr = phi.basis().point_op().rvector(ixg, iyg, izg);
 
 					auto kick_factor = exp(complex(0.0, dot(kick_field, rr)));
 					
