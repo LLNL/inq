@@ -245,6 +245,12 @@ namespace math {
 }
 }
 
+namespace std{
+	template<class T> // workaround for types that recursively have a TDC workaround
+	struct is_trivially_default_constructible<inq::math::vector3<T>> : 
+		is_trivially_default_constructible<T>{};
+}
+
 #ifdef INQ_MATH_VECTOR3_UNIT_TEST
 #undef INQ_MATH_VECTOR3_UNIT_TEST
 
