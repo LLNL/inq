@@ -85,11 +85,11 @@ namespace basis {
 			}
 			
 			template <typename IndexType>
-			double r2(IndexType ix, IndexType iy, IndexType iz) const {
+			GPU_FUNCTION double r2(IndexType ix, IndexType iy, IndexType iz) const {
 				return norm(rvector(ix, iy, iz));
 			}
 
-			auto & cubic_dist() const {
+			GPU_FUNCTION auto & cubic_dist() const {
 				return cubic_dist_;
 			}
 			

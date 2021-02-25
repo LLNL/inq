@@ -54,17 +54,13 @@ namespace basis {
 				hi[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), hi[idir]);
 			}
 		}
-		
+
   public:
 
-		const static int dimension = 1;
-		
+		//we need to make an additional public function to make cuda happy
 		template <class basis>
-    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius):
-			volume_element_(parent_grid.volume_element()),
-			center_(center_point){
-
-			CALI_CXX_MARK_FUNCTION;
+		void initialize(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius){
+					CALI_CXX_MARK_FUNCTION;
 	
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
@@ -160,6 +156,17 @@ namespace basis {
 				}
 			}
 			
+		}
+		
+		
+		const static int dimension = 1;
+		
+		template <class basis>
+    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius):
+			volume_element_(parent_grid.volume_element()),
+			center_(center_point){
+
+			initialize(parent_grid, cell, center_point, radius);
     }
 
 		auto create_comm(boost::mpi3::communicator & comm) const {
