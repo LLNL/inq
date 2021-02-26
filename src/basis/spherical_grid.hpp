@@ -151,7 +151,7 @@ namespace basis {
 			const int nst = std::get<3>(sizes(grid));
 
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
-			math::array<typename array_4d::element, 2> subgrid({this->size(), nst}, grid.cbase());
+			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 
 			gpu::run(nst, size(),
