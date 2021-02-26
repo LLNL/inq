@@ -255,6 +255,31 @@ namespace basis {
 			return center_;
 		}
 
+		template <typename PointsType, typename DistanceType, typename RelativePosType>
+		struct sphere_ref {
+
+			PointsType points_;
+			DistanceType distance_;
+			RelativePosType relative_pos_;
+
+			GPU_FUNCTION auto & points(int ii) const {
+				return points_[ii];
+			}
+
+			GPU_FUNCTION auto & distance(int ii) const {
+				return distance_[ii];
+			}
+
+			GPU_FUNCTION auto & point_pos(int ii) const {
+				return relative_pos_[ii];
+			}
+			
+		};
+
+		auto ref() const {
+			return sphere_ref<decltype(cbegin(points_)), decltype(cbegin(distance_)), decltype(cbegin(relative_pos_))>{cbegin(points_), cbegin(distance_), cbegin(relative_pos_)};
+		}		
+		
   private:
 
 		math::array<math::vector3<int>, 1> points_;
