@@ -21,7 +21,12 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <algorithm> //max, min
+#include <inq_config.h>
+
+#ifdef ENABLE_CUDA
+#include <thrust/sort.h>
+#endif 
+#include <algorithm> //max, min, sort
 
 #include <math/vector3.hpp>
 #include <gpu/atomic.hpp>
@@ -70,8 +75,8 @@ namespace basis {
 		//we need to make an additional public function to make cuda happy
 		template <class basis>
 		void initialize(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius){
-					CALI_CXX_MARK_FUNCTION;
-	
+			CALI_CXX_MARK_SCOPE("spherical_grid::initialize");
+					
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
 			long count = 0;
@@ -160,10 +165,25 @@ namespace basis {
 								 });
 			}
 
-			//OPTIMIZATION: order the points for better memory access
+			// Now sort the points, for memory locality and determinism
+			{
+				CALI_CXX_MARK_SCOPE("spherical_grid::sort");
+			
+				auto comp = [] GPU_LAMBDA (auto aa, auto bb){
+					if(aa.coords_[0] < bb.coords_[0]) return true;
+					if(aa.coords_[0] > bb.coords_[0]) return false;
+					if(aa.coords_[1] < bb.coords_[1]) return true;
+					if(aa.coords_[1] > bb.coords_[1]) return false;
+					return (aa.coords_[2] < bb.coords_[2]);
+				};
 
+#ifdef ENABLE_CUDA
+				thrust::sort(thrust::device, begin(points_), end(points_), comp);
+#else
+				std::sort(begin(points_), end(points_), comp);
+#endif
+			}
 		}
-		
 		
 		const static int dimension = 1;
 		
