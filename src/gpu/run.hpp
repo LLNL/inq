@@ -286,14 +286,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 
 #include <catch2/catch.hpp>
 
-#ifndef ENABLE_CUDA
-template <class Type>
-void atomic_add(Type * address, Type val){
-	*address += val;
-}
-#else
-#define atomic_add atomicAdd
-#endif
+#include <gpu/atomic.hpp>
 
 size_t check_run(size_t size){
 	
@@ -301,7 +294,7 @@ size_t check_run(size_t size){
 
 	inq::gpu::run(size,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii){
-						 atomic_add((unsigned long long int*) &(itlist[ii]), (unsigned long long int) ii + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii]), (unsigned long long int) ii + 1);
 					 });
 	
 	size_t diff = 0;
@@ -317,8 +310,8 @@ size_t check_run(size_t size1, size_t size2){
 	
 	inq::gpu::run(size1, size2, 
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj){
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][0]), (unsigned long long int) ii + 1);
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][1]), (unsigned long long int) jj + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][0]), (unsigned long long int) ii + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][1]), (unsigned long long int) jj + 1);
 					 });
 	
 	size_t diff = 0;
@@ -339,9 +332,9 @@ size_t check_run(size_t size1, size_t size2, size_t size3){
 
 	inq::gpu::run(size1, size2, size3,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk){
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][kk][0]), (unsigned long long int) ii + 1);
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][kk][1]), (unsigned long long int) jj + 1);
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][kk][2]), (unsigned long long int) kk + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][kk][0]), (unsigned long long int) ii + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][kk][1]), (unsigned long long int) jj + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][kk][2]), (unsigned long long int) kk + 1);
 					 });
 		
 	size_t diff = 0;
@@ -365,10 +358,10 @@ size_t check_run(size_t size1, size_t size2, size_t size3, size_t size4){
 
 	inq::gpu::run(size1, size2, size3, size4,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk, auto ll){
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][kk][ll][0]), (unsigned long long int) ii + 1);
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][kk][ll][1]), (unsigned long long int) jj + 1);
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][kk][ll][2]), (unsigned long long int) kk + 1);
-						 atomic_add((unsigned long long int*) &(itlist[ii][jj][kk][ll][3]), (unsigned long long int) ll + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][kk][ll][0]), (unsigned long long int) ii + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][kk][ll][1]), (unsigned long long int) jj + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][kk][ll][2]), (unsigned long long int) kk + 1);
+						 inq::gpu::atomic::add((unsigned long long int*) &(itlist[ii][jj][kk][ll][3]), (unsigned long long int) ll + 1);
 					 });
 		
 	size_t diff = 0;
