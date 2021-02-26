@@ -24,6 +24,7 @@
 #include <algorithm> //max, min
 
 #include <math/vector3.hpp>
+#include <gpu/atomic.hpp>
 #include <gpu/run.hpp>
 #include <gpu/reduce.hpp>
 #include <ions/unitcell.hpp>
@@ -64,11 +65,11 @@ namespace basis {
 	
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
-			std::vector<std::array<int, 3> > tmp_points;
+			/*			std::vector<std::array<int, 3> > tmp_points;
 			std::vector<float> tmp_distance;
-
+			*/
 			long count = 0;
-			
+
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
 				math::vector3<int> lo, hi;
@@ -104,6 +105,16 @@ namespace basis {
 				
 			}
 
+			
+			points_.reextent({count});
+			distance_.reextent({count});
+			relative_pos_.reextent({count});
+
+			if(count == 0) return;
+
+			math::array<long, 1> destination_count(1, long(0));
+			assert(destination_count[0] == 0);
+			
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
 				math::vector3<int> lo, hi;
@@ -131,31 +142,22 @@ namespace basis {
 							
 							auto n2 = norm(rpoint - rep[irep]);
 							if(n2 > radius*radius) continue;
+
+							auto dest = gpu::atomic::add(&destination_count[0], 1);
+							assert(dest < count);
 							
-							tmp_points.push_back({ixl, iyl, izl});
-							tmp_distance.push_back(sqrt(n2));
-							relative_pos_.push_back(rpoint - rep[irep]);
-							
+							points_[dest] = {ixl, iyl, izl};
+							distance_[dest] = sqrt(n2);
+							relative_pos_[dest] = rpoint - rep[irep];
+								
 						}
 					}
 				}
 				
 			}
 
-			assert(tmp_points.size() == (unsigned) count);
-			
 			//OPTIMIZATION: order the points for better memory access
-			
-			points_.reextent({tmp_points.size()});
-			distance_.reextent({tmp_points.size()});
-			
-			for(unsigned ii = 0; ii < tmp_points.size(); ii++){
-				distance_[ii] = tmp_distance[ii];
-				for(int jj = 0; jj < 3; jj++){
-					points_[ii][jj] = tmp_points[ii][jj];
-				}
-			}
-			
+
 		}
 		
 		
@@ -260,7 +262,7 @@ namespace basis {
 
 		math::array<math::vector3<int>, 1> points_;
 		math::array<float, 1> distance_; //I don't think we need additional precision for this. XA
-		std::vector<math::vector3<double>> relative_pos_;
+		math::array<math::vector3<double>, 1> relative_pos_;
 		double volume_element_;
 		math::vector3<double> center_;
 		
