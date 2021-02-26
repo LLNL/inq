@@ -68,6 +68,15 @@ namespace basis {
 			math::vector3<int> coords_;
 			float distance_; //I don't think we need additional precision for this, and we get aligned memory
 			math::vector3<double> relative_pos_;
+
+			friend auto operator<(point_data const & aa, point_data const & bb){
+				if(aa.coords_[0] < bb.coords_[0]) return true;
+				if(aa.coords_[0] > bb.coords_[0]) return false;
+				if(aa.coords_[1] < bb.coords_[1]) return true;
+				if(aa.coords_[1] > bb.coords_[1]) return false;
+				return (aa.coords_[2] < bb.coords_[2]);
+			};
+			
 		};
 		
   public:
@@ -168,19 +177,11 @@ namespace basis {
 			// Now sort the points, for memory locality and determinism
 			{
 				CALI_CXX_MARK_SCOPE("spherical_grid::sort");
-			
-				auto comp = [] GPU_LAMBDA (auto aa, auto bb){
-					if(aa.coords_[0] < bb.coords_[0]) return true;
-					if(aa.coords_[0] > bb.coords_[0]) return false;
-					if(aa.coords_[1] < bb.coords_[1]) return true;
-					if(aa.coords_[1] > bb.coords_[1]) return false;
-					return (aa.coords_[2] < bb.coords_[2]);
-				};
 
 #ifdef ENABLE_CUDA
-				thrust::sort(thrust::device, begin(points_), end(points_), comp);
+				thrust::sort(thrust::device, begin(points_), end(points_));
 #else
-				std::sort(begin(points_), end(points_), comp);
+				std::sort(begin(points_), end(points_));
 #endif
 			}
 		}
