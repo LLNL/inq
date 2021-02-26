@@ -65,11 +65,9 @@ namespace basis {
 	
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
-			/*			std::vector<std::array<int, 3> > tmp_points;
-			std::vector<float> tmp_distance;
-			*/
 			long count = 0;
 
+			//FIRST PASS: we count the number of points for allocation
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
 				math::vector3<int> lo, hi;
@@ -114,46 +112,45 @@ namespace basis {
 
 			math::array<long, 1> destination_count(1, long(0));
 			assert(destination_count[0] == 0);
-			
+
+			//SECOND PASS: we generate the list of points
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
 				math::vector3<int> lo, hi;
 				cube(parent_grid, rep[irep], radius, hi, lo);
 
-				for(int ix = lo[0]; ix < hi[0]; ix++){
-					for(int iy = lo[1]; iy < hi[1]; iy++){
-						for(int iz = lo[2]; iz < hi[2]; iz++){
-
-							auto ii = parent_grid.from_symmetric_range({ix, iy, iz});
-
-							utils::global_index ii0(ii[0]);
-							utils::global_index ii1(ii[1]);
-							utils::global_index ii2(ii[2]);
-							
-							int ixl = parent_grid.cubic_dist(0).global_to_local(ii0);
-							int iyl = parent_grid.cubic_dist(1).global_to_local(ii1);
-							int izl = parent_grid.cubic_dist(2).global_to_local(ii2);
-							
-							if(ixl < 0 or ixl >= parent_grid.local_sizes()[0]) continue;
-							if(iyl < 0 or iyl >= parent_grid.local_sizes()[1]) continue;
-							if(izl < 0 or izl >= parent_grid.local_sizes()[2]) continue;
-
-							auto rpoint = parent_grid.point_op().rvector(ii0, ii1, ii2);
-							
-							auto n2 = norm(rpoint - rep[irep]);
-							if(n2 > radius*radius) continue;
-
-							auto dest = gpu::atomic::add(&destination_count[0], 1);
-							assert(dest < count);
-							
-							points_[dest] = {ixl, iyl, izl};
-							distance_[dest] = sqrt(n2);
-							relative_pos_[dest] = rpoint - rep[irep];
-								
-						}
-					}
-				}
+				math::vector3<int> local_sizes = parent_grid.local_sizes();
 				
+				gpu::run(hi[2] - lo[2], hi[1] - lo[1], hi[0] - lo[0],
+								 [lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], radius,
+									des = begin(destination_count), poi = begin(points_), dis = begin(distance_), rel = begin(relative_pos_)] GPU_LAMBDA (auto iz, auto iy, auto ix){
+									 
+									 auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
+									 
+									 utils::global_index ii0(ii[0]);
+									 utils::global_index ii1(ii[1]);
+									 utils::global_index ii2(ii[2]);
+									 
+									 int ixl = point_op.cubic_dist()[0].global_to_local(ii0);
+									 int iyl = point_op.cubic_dist()[1].global_to_local(ii1);
+									 int izl = point_op.cubic_dist()[2].global_to_local(ii2);
+									 
+									 if(ixl < 0 or ixl >= local_sizes[0]) return;
+									 if(iyl < 0 or iyl >= local_sizes[1]) return;
+									 if(izl < 0 or izl >= local_sizes[2]) return;
+									 
+									 auto rpoint = point_op.rvector(ii0, ii1, ii2);
+									 
+									 auto n2 = norm(rpoint - re);
+									 if(n2 > radius*radius) return;
+									 
+									 auto dest = gpu::atomic::add(&des[0], 1);
+									 
+									 poi[dest] = {ixl, iyl, izl};
+									 dis[dest] = sqrt(n2);
+									 rel[dest] = rpoint - re;
+									 
+								 });
 			}
 
 			//OPTIMIZATION: order the points for better memory access
