@@ -51,22 +51,19 @@ namespace hamiltonian {
 			basis::field_set<basis::real_space, complex> beta_rs(basis, nproj_);
 			
 			basis::spherical_grid sphere(beta_rs.basis(), cell, math::vector3<double>(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
-			std::vector<double> grid(sphere.size()), proj(sphere.size());
 
 			beta_rs = 0.0;
 			
 			int iproj_lm = 0;
       for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
-				// interpolate the value of the radial part of the projectors to the sphere points
-				ps.projector(iproj_l).value(sphere.size(), sphere.distance(), proj);
-				
+
 				int l = ps.projector_l(iproj_l);
 				
 				// now construct the projector with the spherical harmonics
 				for(int m = -l; m <= l; m++){
 					for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-						auto point = sphere.points()[ipoint];					
-						beta_rs.cubic()[point[0]][point[1]][point[2]][iproj_lm] = proj[ipoint]*pseudo::math::spherical_harmonic(l, m, sphere.point_pos()[ipoint]);
+						auto point = sphere.points(ipoint);					
+						beta_rs.cubic()[point[0]][point[1]][point[2]][iproj_lm] = ps.projector(iproj_l).value(sphere.distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sphere.point_pos(ipoint));
 					}
 					
 					kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 

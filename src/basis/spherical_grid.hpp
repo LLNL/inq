@@ -231,21 +231,21 @@ namespace basis {
       }
     }
 
-    auto points() const {
-      return points_;
-    }
-
 		const double & volume_element() const {
 			return volume_element_;
 		}
 
-		const auto & distance() const {
-			return distance_;
+		auto & points(int ii) const {
+				return points_[ii];
 		}
-
-		const auto & point_pos() const {
-			return relative_pos_;
-		}		
+		
+		auto & distance(int ii) const {
+			return distance_[ii];
+		}
+		
+		auto & point_pos(int ii) const {
+			return relative_pos_[ii];
+		}
 		
 		friend auto sizes(const spherical_grid & sphere){
 			return std::array<long, dimension>{sphere.size()};
