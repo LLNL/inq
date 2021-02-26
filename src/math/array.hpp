@@ -42,7 +42,7 @@ namespace math {
 
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = boost::multi::memory::cuda::managed::allocator<type>
+					class allocator = boost::multi::memory::cuda::managed::allocator<type, std::integral_constant<int, 0> >
 #else
 					class allocator = std::allocator<type>
 #endif
