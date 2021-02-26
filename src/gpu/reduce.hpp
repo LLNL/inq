@@ -235,18 +235,20 @@ __global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, kernel_typ
 }
 #endif
 
-template <class kernel_type>
-auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_type kernel) -> decltype(kernel(0, 0, 0)) {
+template <typename kernel_type>
+auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_type kernel, decltype(kernel(0, 0, 0)) initial_value = {0} ) -> decltype(kernel(0, 0, 0)) {
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;
 	auto const sizez = redz.size;
 	
   using type = decltype(kernel(0, 0, 0));
-  
+
+	if(sizex == 0 or sizey == 0 or sizez == 0) return initial_value;
+	
 #ifndef ENABLE_CUDA
 
-  type accumulator = 0.0;
+  type accumulator = initial_value;
 	for(long iy = 0; iy < sizey; iy++){
 		for(long ix = 0; ix < sizex; ix++){
 			for(long iz = 0; iz < sizez; iz++){
@@ -258,9 +260,12 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 	
 #else
 
-	const int bsizex = 1024;
-	const int bsizey = 1;
-	const int bsizez = 1;	
+	int mingridsize, blocksize;
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_rrr<kernel_type, decltype(begin(math::array<type, 3>{}))>));
+	
+	const unsigned bsizex = blocksize;
+	const unsigned bsizey = 1;
+	const unsigned bsizez = 1;	
 
 	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
 	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
@@ -273,7 +278,7 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 	
   if(nblockx*nblocky*nblockz == 1) {
     cudaDeviceSynchronize();
-    return result[0][0][0];
+    return initial_value + result[0][0][0];
   } else {
     return run(gpu::reduce(nblockx*nblocky*nblockz), array_access<decltype(begin(result.flatted().flatted()))>{begin(result.flatted().flatted())});
   }
