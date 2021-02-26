@@ -56,6 +56,15 @@ namespace basis {
 			}
 		}
 
+#ifdef ENABLE_CUDA
+	public:
+#endif
+		struct point_data {
+			math::vector3<int> coords_;
+			float distance_; //I don't think we need additional precision for this, and we get aligned memory
+			math::vector3<double> relative_pos_;
+		};
+		
   public:
 
 		//we need to make an additional public function to make cuda happy
@@ -105,8 +114,6 @@ namespace basis {
 
 			
 			points_.reextent({count});
-			distance_.reextent({count});
-			relative_pos_.reextent({count});
 
 			if(count == 0) return;
 
@@ -123,7 +130,7 @@ namespace basis {
 				
 				gpu::run(hi[2] - lo[2], hi[1] - lo[1], hi[0] - lo[0],
 								 [lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], radius,
-									des = begin(destination_count), poi = begin(points_), dis = begin(distance_), rel = begin(relative_pos_)] GPU_LAMBDA (auto iz, auto iy, auto ix){
+									des = begin(destination_count), poi = begin(points_)] GPU_LAMBDA (auto iz, auto iy, auto ix){
 									 
 									 auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
 									 
@@ -146,9 +153,9 @@ namespace basis {
 									 
 									 auto dest = gpu::atomic::add(&des[0], 1);
 									 
-									 poi[dest] = {ixl, iyl, izl};
-									 dis[dest] = sqrt(n2);
-									 rel[dest] = rpoint - re;
+									 poi[dest].coords_ = {ixl, iyl, izl};
+									 poi[dest].distance_ = sqrt(n2);
+									 poi[dest].relative_pos_ = rpoint - re;
 									 
 								 });
 			}
@@ -186,7 +193,7 @@ namespace basis {
 			//DATAOPERATIONS STL TRANSFORM
 			std::transform(points_.begin(), points_.end(), subgrid.begin(),
 										 [& grid](auto point){
-											 return grid[point[0]][point[1]][point[2]];
+											 return grid[point.coords_[0]][point.coords_[1]][point.coords_[2]];
 										 });
 		}
 
@@ -204,8 +211,8 @@ namespace basis {
 			math::prefetch(subgrid);
 			
 			gpu::run(nst, size(),
-							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
-								 sgr[ipoint][ist] = gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist];
+							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
+								 sgr[ipoint][ist] = gr[poi[ipoint].coords_[0]][poi[ipoint].coords_[1]][poi[ipoint].coords_[2]][ist];
 							 });
 			
 			return subgrid;
@@ -216,8 +223,8 @@ namespace basis {
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter_add");
 
 			gpu::run(std::get<1>(sizes(subgrid)), size(),
-							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
-								 gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist] += sgr[ipoint][ist];
+							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
+								 gr[poi[ipoint].coords_[0]][poi[ipoint].coords_[1]][poi[ipoint].coords_[2]][ist] += sgr[ipoint][ist];
 							 });
     }
     
@@ -227,7 +234,7 @@ namespace basis {
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter");
 			
       for(int ipoint = 0; ipoint < size(); ipoint++){
-				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
+				grid[points_[ipoint].coords_[0]][points_[ipoint].coords_[1]][points_[ipoint].coords_[2]] = subgrid[ipoint];
       }
     }
 
@@ -236,15 +243,15 @@ namespace basis {
 		}
 
 		auto & points(int ii) const {
-				return points_[ii];
+			return points_[ii].coords_;
 		}
 		
 		auto & distance(int ii) const {
-			return distance_[ii];
+			return points_[ii].distance_;
 		}
 		
 		auto & point_pos(int ii) const {
-			return relative_pos_[ii];
+			return points_[ii].relative_pos_;
 		}
 		
 		friend auto sizes(const spherical_grid & sphere){
@@ -255,36 +262,32 @@ namespace basis {
 			return center_;
 		}
 
-		template <typename PointsType, typename DistanceType, typename RelativePosType>
+		template <typename PointsType>
 		struct sphere_ref {
 
 			PointsType points_;
-			DistanceType distance_;
-			RelativePosType relative_pos_;
 
 			GPU_FUNCTION auto & points(int ii) const {
-				return points_[ii];
+				return points_[ii].coords_;
 			}
 
 			GPU_FUNCTION auto & distance(int ii) const {
-				return distance_[ii];
+				return points_[ii].distance_;
 			}
 
 			GPU_FUNCTION auto & point_pos(int ii) const {
-				return relative_pos_[ii];
+				return points_[ii].relative_pos_;
 			}
 			
 		};
 
 		auto ref() const {
-			return sphere_ref<decltype(cbegin(points_)), decltype(cbegin(distance_)), decltype(cbegin(relative_pos_))>{cbegin(points_), cbegin(distance_), cbegin(relative_pos_)};
+			return sphere_ref<decltype(cbegin(points_))>{cbegin(points_)};
 		}		
 		
   private:
 
-		math::array<math::vector3<int>, 1> points_;
-		math::array<float, 1> distance_; //I don't think we need additional precision for this. XA
-		math::array<math::vector3<double>, 1> relative_pos_;
+		math::array<point_data, 1> points_;
 		double volume_element_;
 		math::vector3<double> center_;
 		
