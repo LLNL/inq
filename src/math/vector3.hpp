@@ -56,7 +56,7 @@ namespace math {
 			vec_[2] = list.begin()[2];
 		}
 
-		GPU_FUNCTION vector3(Type const * const arr){
+		explicit GPU_FUNCTION vector3(Type const * const arr){
 			vec_[0] = arr[0];
 			vec_[1] = arr[1];
 			vec_[2] = arr[2];
