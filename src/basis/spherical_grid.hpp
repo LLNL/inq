@@ -199,9 +199,11 @@ namespace basis {
 			const int nst = std::get<3>(sizes(grid));
 
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
-			math::array<typename array_4d::element, 2> subgrid({this->size(), nst}, grid.cbase());
+			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 
+			math::prefetch(subgrid);
+			
 			gpu::run(nst, size(),
 							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 sgr[ipoint][ist] = gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist];
