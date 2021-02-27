@@ -78,7 +78,7 @@ namespace basis {
 			};
 			
 		};
-		
+
   public:
 
 		//we need to make an additional public function to make cuda happy
@@ -89,7 +89,7 @@ namespace basis {
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
 			long count = 0;
-
+			
 			//FIRST PASS: we count the number of points for allocation
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
@@ -99,85 +99,68 @@ namespace basis {
 				//OPTIMIZATION: this iteration should be done only over the local points
 				math::vector3<int> local_sizes = parent_grid.local_sizes();
 
-				count += gpu::run(gpu::reduce(hi[2] - lo[2]), gpu::reduce(hi[1] - lo[1]), gpu::reduce(hi[0] - lo[0]),
-													[lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
-														
-														auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
-														
-														utils::global_index ii0(ii[0]);
-														utils::global_index ii1(ii[1]);
-														utils::global_index ii2(ii[2]);
-														
-														int ixl = point_op.cubic_dist()[0].global_to_local(ii0);
-														int iyl = point_op.cubic_dist()[1].global_to_local(ii1);
-														int izl = point_op.cubic_dist()[2].global_to_local(ii2);
-														
-														if(ixl < 0 or ixl >= local_sizes[0]) return 0;
-														if(iyl < 0 or iyl >= local_sizes[1]) return 0;
-														if(izl < 0 or izl >= local_sizes[2]) return 0;
-														
-														auto rpoint = point_op.rvector(ii0, ii1, ii2);
-														
-														auto n2 = norm(rpoint - re);
-														if(n2 > radius*radius) return 0;
-														
-														return 1;
-													});
+				math::array<point_data, 3> buffer({hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]});
 				
+				auto local_count = gpu::run(gpu::reduce(hi[2] - lo[2]), gpu::reduce(hi[1] - lo[1]), gpu::reduce(hi[0] - lo[0]),
+																		[lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
+
+																			buf[ix][iy][iz].coords_ = local_sizes;
+																			buf[ix][iy][iz].distance_ = -1.0;
+																			
+																			auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
+																			
+																			utils::global_index ii0(ii[0]);
+																			utils::global_index ii1(ii[1]);
+																			utils::global_index ii2(ii[2]);
+																			
+																			int ixl = point_op.cubic_dist()[0].global_to_local(ii0);
+																			int iyl = point_op.cubic_dist()[1].global_to_local(ii1);
+																			int izl = point_op.cubic_dist()[2].global_to_local(ii2);
+																			
+																			if(ixl < 0 or ixl >= local_sizes[0]) return 0;
+																			if(iyl < 0 or iyl >= local_sizes[1]) return 0;
+																			if(izl < 0 or izl >= local_sizes[2]) return 0;
+																			
+																			auto rpoint = point_op.rvector(ii0, ii1, ii2);
+																			
+																			auto n2 = norm(rpoint - re);
+																			if(n2 > radius*radius) return 0;
+																			
+																			buf[ix][iy][iz].coords_ = {ixl, iyl, izl};
+																			buf[ix][iy][iz].distance_ = sqrt(n2);
+																			buf[ix][iy][iz].relative_pos_ = rpoint - re;
+																			
+																			return 1;
+																		});
+				
+				if(local_count == 0) continue;
+
+			  auto flatbuffer = buffer.flatted().flatted();
+
+				{
+					CALI_CXX_MARK_SCOPE("spherical_grid::sort_local");				
+#ifdef ENABLE_CUDA
+					thrust::sort(thrust::device, begin(flatbuffer), end(flatbuffer));
+#else
+					std::sort(begin(flatbuffer), end(flatbuffer));
+#endif
+				}
+				
+				assert(flatbuffer[local_count - 1].distance_ >= 0.0);
+				assert(flatbuffer[local_count].distance_ < 0.0);				
+				
+				assert(points_.size() == count);
+				
+				points_.reextent({count + local_count});
+				points_({count,  count + local_count}) = flatbuffer({0, local_count});
+				count += local_count;
 			}
 
-			
-			points_.reextent({count});
-
-			if(count == 0) return;
-
-			math::array<long, 1> destination_count(1, long(0));
-			assert(destination_count[0] == 0);
-
-			//SECOND PASS: we generate the list of points
-			for(unsigned irep = 0; irep < rep.size(); irep++){
-
-				math::vector3<int> lo, hi;
-				cube(parent_grid, rep[irep], radius, hi, lo);
-
-				math::vector3<int> local_sizes = parent_grid.local_sizes();
-				
-				gpu::run(hi[2] - lo[2], hi[1] - lo[1], hi[0] - lo[0],
-								 [lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], radius,
-									des = begin(destination_count), poi = begin(points_)] GPU_LAMBDA (auto iz, auto iy, auto ix){
-									 
-									 auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
-									 
-									 utils::global_index ii0(ii[0]);
-									 utils::global_index ii1(ii[1]);
-									 utils::global_index ii2(ii[2]);
-									 
-									 int ixl = point_op.cubic_dist()[0].global_to_local(ii0);
-									 int iyl = point_op.cubic_dist()[1].global_to_local(ii1);
-									 int izl = point_op.cubic_dist()[2].global_to_local(ii2);
-									 
-									 if(ixl < 0 or ixl >= local_sizes[0]) return;
-									 if(iyl < 0 or iyl >= local_sizes[1]) return;
-									 if(izl < 0 or izl >= local_sizes[2]) return;
-									 
-									 auto rpoint = point_op.rvector(ii0, ii1, ii2);
-									 
-									 auto n2 = norm(rpoint - re);
-									 if(n2 > radius*radius) return;
-									 
-									 auto dest = gpu::atomic::add(&des[0], 1);
-									 
-									 poi[dest].coords_ = {ixl, iyl, izl};
-									 poi[dest].distance_ = sqrt(n2);
-									 poi[dest].relative_pos_ = rpoint - re;
-									 
-								 });
-			}
-
-			// Now sort the points, for memory locality and determinism
+			assert(points_.size() == count);
+	
+			// Now sort all the points, for memory locality
 			{
-				CALI_CXX_MARK_SCOPE("spherical_grid::sort");
-
+				CALI_CXX_MARK_SCOPE("spherical_grid::sort_global");
 #ifdef ENABLE_CUDA
 				thrust::sort(thrust::device, begin(points_), end(points_));
 #else
