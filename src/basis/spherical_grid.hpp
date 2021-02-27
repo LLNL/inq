@@ -69,7 +69,7 @@ namespace basis {
 			float distance_; //I don't think we need additional precision for this, and we get aligned memory
 			math::vector3<double> relative_pos_;
 
-			friend auto operator<(point_data const & aa, point_data const & bb){
+			GPU_FUNCTION friend auto operator<(point_data const & aa, point_data const & bb){
 				if(aa.coords_[0] < bb.coords_[0]) return true;
 				if(aa.coords_[0] > bb.coords_[0]) return false;
 				if(aa.coords_[1] < bb.coords_[1]) return true;
@@ -142,7 +142,7 @@ namespace basis {
 #ifdef ENABLE_CUDA
 					thrust::sort(thrust::device, begin(flatbuffer), end(flatbuffer));
 #else
-					std::sort(begin(flatbuffer), end(flatbuffer));
+					std::partial_sort(begin(flatbuffer), begin(flatbuffer) + local_count, end(flatbuffer));
 #endif
 				}
 				
