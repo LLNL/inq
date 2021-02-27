@@ -51,29 +51,56 @@ namespace basis {
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();		
     }
 
-		GPU_FUNCTION math::vector3<double> rvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
-			auto ii = this->to_symmetric_range(ix, iy, iz);
-			return math::vector3<double>{ii[0]*rspacing()[0], ii[1]*rspacing()[1], ii[2]*rspacing()[2]};
-		}
+		class point_operator {
 
-		GPU_FUNCTION math::vector3<double> rvector(int ix, int iy, int iz) const {
-			auto ixg = cubic_dist(0).local_to_global(ix);
-			auto iyg = cubic_dist(1).local_to_global(iy);
-			auto izg = cubic_dist(2).local_to_global(iz);
+		public:
 
-			return rvector(ixg, iyg, izg);
-		}
-		
-		template <class int_array>
-		GPU_FUNCTION math::vector3<double> rvector(const int_array & indices) const {
-			return rvector(indices[0], indices[1], indices[2]);
-		}
+			point_operator(std::array<int, 3> const & nr, math::vector3<double> const & rspacing, std::array<inq::utils::partition, 3> const & dist):
+				nr_(nr),
+				rspacing_(rspacing),
+				cubic_dist_(dist)
+			{
+			}
 
-		template <typename IndexType>
-		double r2(IndexType ix, IndexType iy, IndexType iz) const {
-			return norm(rvector(ix, iy, iz));
-		}
+			GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
+				return grid::from_symmetric_range(nr_, ii);
+			}
 
+			GPU_FUNCTION math::vector3<double> rvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+				auto ii = to_symmetric_range(nr_, ix, iy, iz);
+				return math::vector3<double>{ii[0]*rspacing_[0], ii[1]*rspacing_[1], ii[2]*rspacing_[2]};
+			}
+			
+			GPU_FUNCTION math::vector3<double> rvector(int ix, int iy, int iz) const {
+				auto ixg = cubic_dist_[0].local_to_global(ix);
+				auto iyg = cubic_dist_[1].local_to_global(iy);
+				auto izg = cubic_dist_[2].local_to_global(iz);
+				
+				return rvector(ixg, iyg, izg);
+			}
+			
+			template <class int_array>
+			GPU_FUNCTION math::vector3<double> rvector(const int_array & indices) const {
+				return rvector(indices[0], indices[1], indices[2]);
+			}
+			
+			template <typename IndexType>
+			GPU_FUNCTION double r2(IndexType ix, IndexType iy, IndexType iz) const {
+				return norm(rvector(ix, iy, iz));
+			}
+
+			GPU_FUNCTION auto & cubic_dist() const {
+				return cubic_dist_;
+			}
+			
+		private:
+			
+			std::array<int, 3> nr_;
+			math::vector3<double> rspacing_;
+			std::array<inq::utils::partition, 3> cubic_dist_;
+			
+		};
+			
 		friend auto operator==(const real_space & rs1, const real_space & rs2){
 			bool equal = rs1.nr_[0] == rs2.nr_[0] and rs1.nr_[1] == rs2.nr_[1] and rs1.nr_[2] == rs2.nr_[2];
 			equal = equal and rs1.rspacing()[0] == rs2.rspacing()[0];
@@ -99,6 +126,10 @@ namespace basis {
 			auto max_spacing = std::max({rspacing_[0], rspacing_[1],rspacing_[2]});
 
 			return M_PI/max_spacing;
+		}
+
+		auto point_op() const {
+			return point_operator(nr_, rspacing_, cubic_dist_);
 		}
 		
 	private:

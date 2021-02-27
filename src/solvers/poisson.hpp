@@ -222,7 +222,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						auto iyg = rs.cubic_dist(1).local_to_global(iy);
 						auto izg = rs.cubic_dist(2).local_to_global(iz);
 						
-						double xx = rs.rvector(ixg, iyg, izg)[0];
+						double xx = rs.point_op().rvector(ixg, iyg, izg)[0];
 						density.cubic()[ix][iy][iz] = complex(cos(kk*xx), sin(kk*xx));
 					
 					}
@@ -262,7 +262,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						auto ixg = rs.cubic_dist(0).local_to_global(ix);
 						auto iyg = rs.cubic_dist(1).local_to_global(iy);
 						auto izg = rs.cubic_dist(2).local_to_global(iz);						
-						double yy = rs.rvector(ixg, iyg, izg)[1];
+						double yy = rs.point_op().rvector(ixg, iyg, izg)[1];
 						rdensity.cubic()[ix][iy][iz] = cos(kk*yy);
 					}
 				}
@@ -316,7 +316,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 						density.cubic()[ix][iy][iz] = 0.0;
-						if(norm(rs.rvector(ix, iy, iz)) < 1e-10) density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
+						if(norm(rs.point_op().rvector(ix, iy, iz)) < 1e-10) density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
 					}
 				}
 			}
@@ -333,7 +333,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						auto iyg = rs.cubic_dist(1).local_to_global(iy);
 						auto izg = rs.cubic_dist(2).local_to_global(iz);
 						
-						auto rr = length(rs.rvector(ixg, iyg, izg));
+						auto rr = length(rs.point_op().rvector(ixg, iyg, izg));
 
 						// it should be close to -1/r
 						if(rr > 1) CHECK(fabs(potential.cubic()[ix][iy][iz]*rr + 1.0) < 0.025);

@@ -21,9 +21,17 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <algorithm> //max, min
+#include <inq_config.h>
+
+#ifdef ENABLE_CUDA
+#include <thrust/sort.h>
+#endif 
+#include <algorithm> //max, min, sort
 
 #include <math/vector3.hpp>
+#include <gpu/atomic.hpp>
+#include <gpu/run.hpp>
+#include <gpu/reduce.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
@@ -38,8 +46,129 @@ namespace basis {
 
   class spherical_grid {
 
+		//returns the cube that contains the sphere, this makes the initialization O(1) instead of O(N)
+		template <class BasisType, typename PosType>
+		void static cube(const BasisType & parent_grid, PosType const & pos, double radius, math::vector3<int> & hi, math::vector3<int> & lo){
+			for(int idir = 0; idir < 3; idir++){
+				lo[idir] = floor((pos[idir] - radius)/parent_grid.rspacing()[idir]) - 1;
+				hi[idir] = ceil((pos[idir] + radius)/parent_grid.rspacing()[idir]) + 1;
+				
+				lo[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), lo[idir]);
+				hi[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), hi[idir]);
+				
+				lo[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), lo[idir]);
+				hi[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), hi[idir]);
+			}
+		}
+
+#ifdef ENABLE_CUDA
+	public:
+#endif
+		struct point_data {
+			math::vector3<int> coords_;
+			float distance_; //I don't think we need additional precision for this, and we get aligned memory
+			math::vector3<double> relative_pos_;
+
+			GPU_FUNCTION friend auto operator<(point_data const & aa, point_data const & bb){
+				if(aa.coords_[0] < bb.coords_[0]) return true;
+				if(aa.coords_[0] > bb.coords_[0]) return false;
+				if(aa.coords_[1] < bb.coords_[1]) return true;
+				if(aa.coords_[1] > bb.coords_[1]) return false;
+				return (aa.coords_[2] < bb.coords_[2]);
+			};
+			
+		};
+
   public:
 
+		//we need to make an additional public function to make cuda happy
+		template <class basis>
+		void initialize(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius){
+			CALI_CXX_MARK_SCOPE("spherical_grid::initialize");
+					
+      ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
+
+			long count = 0;
+			
+			//FIRST PASS: we count the number of points for allocation
+			for(unsigned irep = 0; irep < rep.size(); irep++){
+
+				math::vector3<int> lo, hi;
+				cube(parent_grid, rep[irep], radius, hi, lo);
+				
+				//OPTIMIZATION: this iteration should be done only over the local points
+				math::vector3<int> local_sizes = parent_grid.local_sizes();
+
+				math::array<point_data, 3> buffer({hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]});
+				
+				auto local_count = gpu::run(gpu::reduce(hi[2] - lo[2]), gpu::reduce(hi[1] - lo[1]), gpu::reduce(hi[0] - lo[0]),
+																		[lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
+
+																			buf[ix][iy][iz].coords_ = local_sizes;
+																			buf[ix][iy][iz].distance_ = -1.0;
+																			
+																			auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
+																			
+																			utils::global_index ii0(ii[0]);
+																			utils::global_index ii1(ii[1]);
+																			utils::global_index ii2(ii[2]);
+																			
+																			int ixl = point_op.cubic_dist()[0].global_to_local(ii0);
+																			int iyl = point_op.cubic_dist()[1].global_to_local(ii1);
+																			int izl = point_op.cubic_dist()[2].global_to_local(ii2);
+																			
+																			if(ixl < 0 or ixl >= local_sizes[0]) return 0;
+																			if(iyl < 0 or iyl >= local_sizes[1]) return 0;
+																			if(izl < 0 or izl >= local_sizes[2]) return 0;
+																			
+																			auto rpoint = point_op.rvector(ii0, ii1, ii2);
+																			
+																			auto n2 = norm(rpoint - re);
+																			if(n2 > radius*radius) return 0;
+																			
+																			buf[ix][iy][iz].coords_ = {ixl, iyl, izl};
+																			buf[ix][iy][iz].distance_ = sqrt(n2);
+																			buf[ix][iy][iz].relative_pos_ = rpoint - re;
+																			
+																			return 1;
+																		});
+				
+				if(local_count == 0) continue;
+
+			  auto flatbuffer = buffer.flatted().flatted();
+
+				{
+					CALI_CXX_MARK_SCOPE("spherical_grid::sort_local");				
+#ifdef ENABLE_CUDA
+					thrust::sort(thrust::device, begin(flatbuffer), end(flatbuffer));
+#else
+					std::partial_sort(begin(flatbuffer), begin(flatbuffer) + local_count, end(flatbuffer));
+#endif
+				}
+				
+				assert(flatbuffer[local_count - 1].distance_ >= 0.0);
+				assert(flatbuffer[local_count].distance_ < 0.0);				
+				
+				assert(points_.size() == count);
+				
+				points_.reextent({count + local_count});
+				points_({count,  count + local_count}) = flatbuffer({0, local_count});
+				count += local_count;
+			}
+
+			assert(points_.size() == count);
+	
+			// Now sort all the points, for memory locality
+			{
+				CALI_CXX_MARK_SCOPE("spherical_grid::sort_global");
+#ifdef ENABLE_CUDA
+				thrust::sort(thrust::device, begin(points_), end(points_));
+#else
+				std::sort(begin(points_), end(points_));
+#endif
+			}
+		}
+		
 		const static int dimension = 1;
 		
 		template <class basis>
@@ -47,78 +176,7 @@ namespace basis {
 			volume_element_(parent_grid.volume_element()),
 			center_(center_point){
 
-			CALI_CXX_MARK_FUNCTION;
-	
-      ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
-
-			std::vector<std::array<int, 3> > tmp_points;
-			std::vector<float> tmp_distance;
-
-			for(unsigned irep = 0; irep < rep.size(); irep++){
-
-				math::vector3<int> lo, hi;
-
-				//get the cubic grid that contains the sphere, this makes the initialization O(1) instead of O(N)
-				for(int idir = 0; idir < 3; idir++){
-					lo[idir] = floor((rep[irep][idir] - radius)/parent_grid.rspacing()[idir]) - 1;
-					hi[idir] = ceil((rep[irep][idir] + radius)/parent_grid.rspacing()[idir]) + 1;
-
-					lo[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), lo[idir]);
-					hi[idir] = std::max<int>(parent_grid.symmetric_range_begin(idir), hi[idir]);
-
-					lo[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), lo[idir]);
-					hi[idir] = std::min<int>(parent_grid.symmetric_range_end(idir), hi[idir]);
-				}
-				
-
-				//OPTIMIZATION: this iteration should be done only over the local points
-				
-				//DATAOPERATIONS LOOP 3D
-				for(int ix = lo[0]; ix < hi[0]; ix++){
-					for(int iy = lo[1]; iy < hi[1]; iy++){
-						for(int iz = lo[2]; iz < hi[2]; iz++){
-
-							auto ii = parent_grid.from_symmetric_range({ix, iy, iz});
-
-							utils::global_index ii0(ii[0]);
-							utils::global_index ii1(ii[1]);
-							utils::global_index ii2(ii[2]);
-							
-							int ixl = parent_grid.cubic_dist(0).global_to_local(ii0);
-							int iyl = parent_grid.cubic_dist(1).global_to_local(ii1);
-							int izl = parent_grid.cubic_dist(2).global_to_local(ii2);
-							
-							if(ixl < 0 or ixl >= parent_grid.local_sizes()[0]) continue;
-							if(iyl < 0 or iyl >= parent_grid.local_sizes()[1]) continue;
-							if(izl < 0 or izl >= parent_grid.local_sizes()[2]) continue;
-
-							auto rpoint = parent_grid.rvector(ii0, ii1, ii2);
-							
-							auto n2 = norm(rpoint - rep[irep]);
-							if(n2 > radius*radius) continue;
-							
-							tmp_points.push_back({ixl, iyl, izl});
-							tmp_distance.push_back(sqrt(n2));
-							relative_pos_.push_back(rpoint - rep[irep]);
-							
-						}
-					}
-				}
-				
-			}
-
-			//OPTIMIZATION: order the points for better memory access
-			
-			points_.reextent({tmp_points.size()});
-			distance_.reextent({tmp_points.size()});
-			
-			for(unsigned ii = 0; ii < tmp_points.size(); ii++){
-				distance_[ii] = tmp_distance[ii];
-				for(int jj = 0; jj < 3; jj++){
-					points_[ii][jj] = tmp_points[ii][jj];
-				}
-			}
-			
+			initialize(parent_grid, cell, center_point, radius);
     }
 
 		auto create_comm(boost::mpi3::communicator & comm) const {
@@ -139,7 +197,7 @@ namespace basis {
 			//DATAOPERATIONS STL TRANSFORM
 			std::transform(points_.begin(), points_.end(), subgrid.begin(),
 										 [& grid](auto point){
-											 return grid[point[0]][point[1]][point[2]];
+											 return grid[point.coords_[0]][point.coords_[1]][point.coords_[2]];
 										 });
 		}
 
@@ -151,12 +209,14 @@ namespace basis {
 			const int nst = std::get<3>(sizes(grid));
 
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
-			math::array<typename array_4d::element, 2> subgrid({this->size(), nst}, grid.cbase());
+			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 
+			math::prefetch(subgrid);
+			
 			gpu::run(nst, size(),
-							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
-								 sgr[ipoint][ist] = gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist];
+							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
+								 sgr[ipoint][ist] = gr[poi[ipoint].coords_[0]][poi[ipoint].coords_[1]][poi[ipoint].coords_[2]][ist];
 							 });
 			
 			return subgrid;
@@ -167,8 +227,8 @@ namespace basis {
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter_add");
 
 			gpu::run(std::get<1>(sizes(subgrid)), size(),
-							 [sgr = begin(subgrid), gr = begin(grid), pts = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
-								 gr[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]][ist] += sgr[ipoint][ist];
+							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
+								 gr[poi[ipoint].coords_[0]][poi[ipoint].coords_[1]][poi[ipoint].coords_[2]][ist] += sgr[ipoint][ist];
 							 });
     }
     
@@ -178,25 +238,25 @@ namespace basis {
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter");
 			
       for(int ipoint = 0; ipoint < size(); ipoint++){
-				grid[points_[ipoint][0]][points_[ipoint][1]][points_[ipoint][2]] = subgrid[ipoint];
+				grid[points_[ipoint].coords_[0]][points_[ipoint].coords_[1]][points_[ipoint].coords_[2]] = subgrid[ipoint];
       }
-    }
-
-    auto points() const {
-      return points_;
     }
 
 		const double & volume_element() const {
 			return volume_element_;
 		}
 
-		const auto & distance() const {
-			return distance_;
+		auto & points(int ii) const {
+			return points_[ii].coords_;
 		}
-
-		const auto & point_pos() const {
-			return relative_pos_;
-		}		
+		
+		auto & distance(int ii) const {
+			return points_[ii].distance_;
+		}
+		
+		auto & point_pos(int ii) const {
+			return points_[ii].relative_pos_;
+		}
 		
 		friend auto sizes(const spherical_grid & sphere){
 			return std::array<long, dimension>{sphere.size()};
@@ -206,11 +266,32 @@ namespace basis {
 			return center_;
 		}
 
+		template <typename PointsType>
+		struct sphere_ref {
+
+			PointsType points_;
+
+			GPU_FUNCTION auto & points(int ii) const {
+				return points_[ii].coords_;
+			}
+
+			GPU_FUNCTION auto & distance(int ii) const {
+				return points_[ii].distance_;
+			}
+
+			GPU_FUNCTION auto & point_pos(int ii) const {
+				return points_[ii].relative_pos_;
+			}
+			
+		};
+
+		auto ref() const {
+			return sphere_ref<decltype(cbegin(points_))>{cbegin(points_)};
+		}		
+		
   private:
 
-		math::array<std::array<int, 3>, 1> points_;
-		math::array<float, 1> distance_; //I don't think we need additional precision for this. XA
-		std::vector<math::vector3<double>> relative_pos_;
+		math::array<point_data, 1> points_;
 		double volume_element_;
 		math::vector3<double> center_;
 		

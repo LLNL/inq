@@ -123,12 +123,11 @@ namespace hamiltonian {
 
  				gpu::run(sphere.size(),
 								 [pot = begin(potential.cubic()),
-									pts = begin(sphere.points()),
-									spline = ps.short_range_potential().cbegin(),
-									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
-									 auto rr = distance[ipoint];
+									sph = sphere.ref(),
+									spline = ps.short_range_potential().cbegin()] GPU_LAMBDA (auto ipoint){
+									 auto rr = sph.distance(ipoint);
 									 auto potential_val = spline.value(rr);
-									 pot[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += potential_val;
+									 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += potential_val;
 								 });
 				
       }
@@ -156,16 +155,14 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
 
-				//DATAOPERATIONS LOOP + GPU::RUN 1D (random access output)
 				//OPTIMIZATION: this should be done in parallel for atoms too
 				gpu::run(sphere.size(),
 								 [dns = begin(density.cubic()),
-									pts = begin(sphere.points()),
+									sph = sphere.ref(),
 									chrg = ps.valence_charge(),
-									sp = sep_,
-									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
-									 double rr = distance[ipoint];
-									 dns[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += chrg*sp.long_range_density(rr);
+									sp = sep_] GPU_LAMBDA (auto ipoint){
+									 double rr = sph.distance(ipoint);
+									 dns[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += chrg*sp.long_range_density(rr);
 								 });
       }
 
@@ -196,12 +193,11 @@ namespace hamiltonian {
 
 				gpu::run(sphere.size(),
 								 [dens = begin(density.cubic()),
-									pts = begin(sphere.points()),
-									spline = ps.electronic_density().cbegin(), 
-									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
-									 auto rr = distance[ipoint];
+									sph = sphere.ref(),
+									spline = ps.electronic_density().cbegin()] GPU_LAMBDA (auto ipoint){
+									 auto rr = sph.distance(ipoint);
 									 auto density_val = spline.value(rr);
-									 dens[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += density_val;
+									 dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += density_val;
 								 });
       }
 
@@ -237,12 +233,11 @@ namespace hamiltonian {
 
 				gpu::run(sphere.size(),
 								 [dens = begin(density.cubic()),
-									pts = begin(sphere.points()),
-									spline = ps.nlcc_density().cbegin(),
-									distance = begin(sphere.distance())] GPU_LAMBDA (auto ipoint){
-									 auto rr = distance[ipoint];
+									sph = sphere.ref(),
+									spline = ps.nlcc_density().cbegin()] GPU_LAMBDA (auto ipoint){
+									 auto rr = sph.distance(ipoint);
 									 auto density_val = spline.value(rr);
-									 dens[pts[ipoint][0]][pts[ipoint][1]][pts[ipoint][2]] += density_val;
+									 dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += density_val;
 								 });
 				
       }
