@@ -106,12 +106,20 @@ namespace basis {
 				math::vector3<int> lo, hi;
 				cube(parent_grid, rep[irep], radius, hi, lo);
 
+				auto cubesize = hi - lo;
+
 				auto upper_local = (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);			
+
+				if(upper_local == 0) continue;
 				
 				//OPTIMIZATION: this iteration should be done only over the local points
 				math::vector3<int> local_sizes = parent_grid.local_sizes();
 
-				math::array<point_data, 3> buffer({hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]});
+				auto buffer = points_({upper_count, upper_count + upper_local}).partitioned(cubesize[0]*cubesize[1]).partitioned(cubesize[0]);
+																																										
+				assert(std::get<0>(sizes(buffer)) == cubesize[0]);
+				assert(std::get<1>(sizes(buffer)) == cubesize[1]);
+				assert(std::get<2>(sizes(buffer)) == cubesize[2]);
 				
 				auto local_count = gpu::run(gpu::reduce(hi[2] - lo[2]), gpu::reduce(hi[1] - lo[1]), gpu::reduce(hi[0] - lo[0]),
 																		[lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
@@ -144,9 +152,6 @@ namespace basis {
 																			
 																			return 1;
 																		});
-				
-				auto flatbuffer = buffer.flatted().flatted();
-				points_({upper_count,  upper_count + upper_local}) = flatbuffer;
 				
 				count += local_count;
 				upper_count += upper_local;
