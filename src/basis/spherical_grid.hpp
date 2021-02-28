@@ -120,7 +120,7 @@ namespace basis {
 				assert(std::get<0>(sizes(buffer)) == cubesize[0]);
 				assert(std::get<1>(sizes(buffer)) == cubesize[1]);
 				assert(std::get<2>(sizes(buffer)) == cubesize[2]);
-				
+
 				auto local_count = gpu::run(gpu::reduce(hi[2] - lo[2]), gpu::reduce(hi[1] - lo[1]), gpu::reduce(hi[0] - lo[0]),
 																		[lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
 
@@ -168,9 +168,13 @@ namespace basis {
 			
 			assert(points_[count - 1].distance_ >= 0.0);
 			assert(points_[count].distance_ < 0.0);				
-			
-			points_.reextent({count});
-			assert(points_.size() == count);
+
+			{
+				CALI_CXX_MARK_SCOPE("spherical_grid::reextent");
+				auto points2 = +points_({0, count});
+				points_ = std::move(points2);
+				assert(points_.size() == count);
+			}
 
 		}
 		
