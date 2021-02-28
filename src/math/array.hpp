@@ -4,7 +4,7 @@
 #define INQ__MATH__ARRAY
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -42,7 +42,7 @@ namespace math {
 
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = boost::multi::memory::cuda::managed::allocator<type>
+					class allocator = boost::multi::memory::cuda::managed::allocator<type, std::integral_constant<int, 0> >
 #else
 					class allocator = std::allocator<type>
 #endif
