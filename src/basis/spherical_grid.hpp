@@ -156,6 +156,12 @@ namespace basis {
 				count += local_count;
 				upper_count += upper_local;
 			}
+
+			if(count == 0) {
+				points_.clear();
+				assert(points_.size() == 0);				
+				return;
+			}
 			
 			{
 				CALI_CXX_MARK_SCOPE("spherical_grid::sort_local");				
@@ -166,7 +172,7 @@ namespace basis {
 #endif
 			}
 			
-			assert(points_[count - 1].distance_ >= 0.0);
+			assert(count == 0 or points_[count - 1].distance_ >= 0.0);
 			assert(points_[count].distance_ < 0.0);				
 
 			{
