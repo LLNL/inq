@@ -88,13 +88,25 @@ namespace basis {
 					
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
 
-			long count = 0;
+			long upper_count = 0;
+
+			//FIRST PASS: we count the cubes, this gives us an upper bound for the memory allocation
+			for(unsigned irep = 0; irep < rep.size(); irep++){
+				math::vector3<int> lo, hi;
+				cube(parent_grid, rep[irep], radius, hi, lo);
+				upper_count += (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);
+			}
+
+			points_.reextent({upper_count});
 			
-			//FIRST PASS: we count the number of points for allocation
+			long count = 0;
+			upper_count = 0;
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
 				math::vector3<int> lo, hi;
 				cube(parent_grid, rep[irep], radius, hi, lo);
+
+				auto upper_local = (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);			
 				
 				//OPTIMIZATION: this iteration should be done only over the local points
 				math::vector3<int> local_sizes = parent_grid.local_sizes();
@@ -133,40 +145,28 @@ namespace basis {
 																			return 1;
 																		});
 				
-				if(local_count == 0) continue;
-
-			  auto flatbuffer = buffer.flatted().flatted();
-
-				{
-					CALI_CXX_MARK_SCOPE("spherical_grid::sort_local");				
-#ifdef ENABLE_CUDA
-					thrust::sort(thrust::device, begin(flatbuffer), end(flatbuffer));
-#else
-					std::partial_sort(begin(flatbuffer), begin(flatbuffer) + local_count, end(flatbuffer));
-#endif
-				}
+				auto flatbuffer = buffer.flatted().flatted();
+				points_({upper_count,  upper_count + upper_local}) = flatbuffer;
 				
-				assert(flatbuffer[local_count - 1].distance_ >= 0.0);
-				assert(flatbuffer[local_count].distance_ < 0.0);				
-				
-				assert(points_.size() == count);
-				
-				points_.reextent({count + local_count});
-				points_({count,  count + local_count}) = flatbuffer({0, local_count});
 				count += local_count;
+				upper_count += upper_local;
 			}
-
-			assert(points_.size() == count);
-	
-			// Now sort all the points, for memory locality
+			
 			{
-				CALI_CXX_MARK_SCOPE("spherical_grid::sort_global");
+				CALI_CXX_MARK_SCOPE("spherical_grid::sort_local");				
 #ifdef ENABLE_CUDA
 				thrust::sort(thrust::device, begin(points_), end(points_));
 #else
-				std::sort(begin(points_), end(points_));
+				std::partial_sort(begin(points_), begin(points_) + count, end(points_));
 #endif
 			}
+			
+			assert(points_[count - 1].distance_ >= 0.0);
+			assert(points_[count].distance_ < 0.0);				
+			
+			points_.reextent({count});
+			assert(points_.size() == count);
+
 		}
 		
 		const static int dimension = 1;
