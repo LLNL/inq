@@ -4,7 +4,7 @@
 #define INQ__OPERATIONS__DIAGONALIZE
 
 /*
- Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa.
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -45,7 +45,8 @@ extern "C" void zheev(const char * jobz, const char * uplo, const int & n, inq::
 namespace inq {
 namespace operations {
 
-math::array<double, 1> diagonalize(math::array<double, 2> & matrix){
+template<class Alloc>
+auto diagonalize(math::array<double, 2, Alloc>& matrix){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -110,7 +111,8 @@ math::array<double, 1> diagonalize(math::array<double, 2> & matrix){
 	return eigenvalues;
 }
 
-math::array<double, 1> diagonalize(math::array<complex, 2> & matrix){
+template<class Alloc>
+auto diagonalize(math::array<complex, 2, Alloc>& matrix){
 
 	// the matrix must be square
 	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
