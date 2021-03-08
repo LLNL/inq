@@ -39,7 +39,7 @@
 namespace inq {
 namespace operations {
 	
-void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex> const & laplff){
+void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -56,7 +56,7 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void laplacian_in_place(basis::field_set<basis::fourier_space, complex> const & ff){
+void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff){
 
 	CALI_CXX_MARK_FUNCTION;
 		

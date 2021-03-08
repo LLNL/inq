@@ -72,7 +72,7 @@ void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<comple
 
 ///////////////////////////////////////////////////////////////
 
-void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
+void zero_outside_sphere(basis::field_set<basis::fourier_space, complex>& fphi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	//DATAOPERATIONS GPU::RUN 4D
