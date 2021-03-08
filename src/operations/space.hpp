@@ -4,7 +4,7 @@
 #define INQ__OPERATIONS__SPACE
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa.
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -72,7 +72,7 @@ void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<comple
 
 ///////////////////////////////////////////////////////////////
 
-void zero_outside_sphere(const basis::field_set<basis::fourier_space, complex> & fphi){
+void zero_outside_sphere(basis::field_set<basis::fourier_space, complex>& fphi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	//DATAOPERATIONS GPU::RUN 4D
