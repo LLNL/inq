@@ -106,7 +106,7 @@ namespace basis {
 		}
 		
 		auto hypercubic() const {
-			return cubic().template reinterpret_array_cast<Type>(1);
+			return cubic().template reinterpret_array_cast<Type const>(1);
 		}
 		
 		auto hypercubic() {
