@@ -53,7 +53,7 @@ int main(int argc, char ** argv){
 
 		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0_Ha), conf);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::energy_tolerance(1E-7));
+		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::energy_tolerance(1E-7_Ha));
 
 		std::printf("total energy:%20.16f\n",     result.energy.total() );
 	       

@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <magnitude/energy.hpp>
 #include <utils/merge_optional.hpp>
 
 #include <optional>
@@ -103,9 +104,9 @@ namespace input {
       return mix_field_requested() == mix_field::POTENTIAL;
     }
 
-		auto static energy_tolerance(double etol) {
+		auto static energy_tolerance(quantity<magnitude::energy> etol) {
 			scf solver;
-      solver.energy_tol_ = etol;
+      solver.energy_tol_ = etol.in_atomic_units();
       return solver;
     }
 				
