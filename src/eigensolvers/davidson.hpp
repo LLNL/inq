@@ -57,6 +57,9 @@ namespace eigensolvers {
 
 template <class operator_type, class preconditioner_type, class field_set_type>
 void davidson(const operator_type & ham, const preconditioner_type & prec, field_set_type & phi){
+
+	CALI_CXX_MARK_FUNCTION;
+	
 	//Get some sizes
 	const int nbasis  = std::get<0>(sizes(phi.matrix()));
 	const int nvec = std::get<1>(sizes(phi.matrix()));
@@ -78,7 +81,6 @@ void davidson(const operator_type & ham, const preconditioner_type & prec, field
 	namespace blas = boost::multi::blas ;
 
 	for(int istep = 0; istep < num_steps; istep++){
-
 		//allocate work wave funcs 
 		field_set_type wphi(phi.basis(), nbase, phi.full_comm());
 		wphi.matrix()({0,nbasis},{0,nbase})=aux_phi.matrix()({0,nbasis},{0,nbase});
@@ -94,9 +96,12 @@ void davidson(const operator_type & ham, const preconditioner_type & prec, field
 		auto Tk = +blas::gemm(1.0, Wk.matrix(), blas::hermitized(Yk));
 		//Residuals
 		nleft = nvec - nevf; //update nleft
-		for(int i=0; i<nleft ; i++){
-			wphi.matrix().rotated()[i] = blas::axpy(lk[i], Xk.rotated()[i], blas::scal(-1.0, Tk.rotated()[i]));   //wphi=l*psi+(-1.0)H*psi
-		}
+
+		// wphi=l*psi+(-1.0)H*psi
+		gpu::run(nleft, nbasis,
+						 [pwphi = begin(wphi.matrix()), plk = begin(lk), pxk = begin(Xk), ptk = begin(Tk)] GPU_LAMBDA (auto ist, auto ip){
+							 pwphi[ip][ist] = plk[ist]*pxk[ip][ist] - ptk[ip][ist];   							 
+						 });
 	
 		//Deflate here
 		int nc=0;
@@ -127,9 +132,7 @@ void davidson(const operator_type & ham, const preconditioner_type & prec, field
 		aux_phi.matrix()({0,nbasis},{nevf+nbase,nevf+nbase+notconv})=tphi.matrix()({0,nbasis},{0,notconv});
 		//orthogonalize everything   //allocate work wave funcs 
 		field_set_type ophi(phi.basis(), nevf+nbase+notconv, phi.full_comm());
-#ifdef CUDA_ENABLED
-		cudaDeviceSynchronize();
-#endif
+		
 		ophi.matrix() = aux_phi.matrix()({0, nbasis},{0, nevf+nbase+notconv});
 		//assert(size(ophi.matrix()) == nbasis);
 		//assert(size(~ophi.matrix()) == nevf+nbase+notconv);
