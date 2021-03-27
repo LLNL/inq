@@ -49,6 +49,11 @@ namespace inq {
 			return quant;
 		}
 
+		friend auto operator*(quantity quant, double scal){
+			quant.value_ *= scal;
+			return quant;
+		}
+
 	private:
 
 		element_type value_;
@@ -68,17 +73,16 @@ TEST_CASE("inq::quantity", "[inq::quantity]") {
 	using namespace Catch::literals;
 
 	auto zz = quantity<void>::zero();
-
 	CHECK(zz.in_atomic_units() == 0.0_a);
 
 	auto rr = quantity<void>::from_atomic_units(25.5);
-
 	CHECK(rr.in_atomic_units() == 25.5_a);
 
 	auto rr2 = 4.0*rr;
-
 	CHECK(rr2.in_atomic_units() == 102.0_a);
-	
+
+	rr2 = rr*4.0;
+	CHECK(rr2.in_atomic_units() == 102.0_a);
 }
 
 #endif
