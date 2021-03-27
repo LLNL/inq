@@ -22,6 +22,7 @@
 */
 
 #include <inq/quantity.hpp>
+#include <magnitude/energy.hpp>
 
 namespace inq {
 namespace magnitude {
@@ -66,6 +67,10 @@ auto operator "" _ns(long double val){
 	return val*1.0_nanosecond;
 }
 
+auto operator/(double num, quantity<energy> den){
+  return quantity<time>::from_atomic_units(num/den.in_atomic_units());
+}
+
 }
 }
 
@@ -85,6 +90,12 @@ TEST_CASE("magnitude::time", "[magnitude::time]") {
 
   auto t2 = 43.27_fs;
 	CHECK(t2.in_atomic_units() == 1788.84122421832_a);
+
+  auto t3 = 1.0/1.0_Ha;
+  CHECK(t3.in_atomic_units() == 1.0_a);
+
+  auto t4 = 1.0/100.0_eV;
+  CHECK(t4.in_atomic_units() == 0.272113862460642_a);
 
 }
 
