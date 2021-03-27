@@ -66,16 +66,12 @@ auto operator "" _Ry(long double val){
 	return val*1.0_ry;
 }
 	
-auto operator "" _k(long double val){
-	return inq::quantity<energy>::from_atomic_units(3.16681156345556e-06*val);
-}
-
 auto operator "" _K(long double val){
-	return val*1.0_k;
+	return inq::quantity<energy>::from_atomic_units(3.16681156345556e-06*val);	
 }
 	
 auto operator "" _kelvin(long double val){
-	return val*1.0_k;
+	return val*1.0_K;
 }
 	
 }
@@ -92,12 +88,45 @@ TEST_CASE("magnitude::energy", "[magnitude::energy]") {
 	using namespace Catch::literals;
 	using namespace magnitude;
 
-	auto en = 100.0_ha;
-	CHECK(en.in_atomic_units() == 100.0);
+	{
+		auto en = 100.0_ha;
+		CHECK(en.in_atomic_units() == 100.0);
+	}
 
-	auto en2 = 300.0_K;
-	CHECK(en2.in_atomic_units() == 0.0009500435_a);
+	{
+		auto en = 100.0_Ha;
+		CHECK(en.in_atomic_units() == 100.0);
+	}
+
+	{
+		auto en = 100.0_hartree;
+		CHECK(en.in_atomic_units() == 100.0);
+	}
+
+	{
+		auto en = 33.3_rydberg;
+		CHECK(en.in_atomic_units() == 16.65);
+	}
+
+ 	{
+		auto en = 33.3_ry;
+		CHECK(en.in_atomic_units() == 16.65);
+	}
+
+	{
+		auto en = 33.3_Ry;
+		CHECK(en.in_atomic_units() == 16.65);
+	}
+		
+	{
+		auto en = 300.0_K;
+		CHECK(en.in_atomic_units() == 0.0009500435_a);
+	}
 	
+	{
+		auto en = 300.0_kelvin;
+		CHECK(en.in_atomic_units() == 0.0009500435_a);
+	}
 	
 }
 
