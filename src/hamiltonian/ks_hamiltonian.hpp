@@ -253,6 +253,7 @@ namespace hamiltonian {
 TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
   using math::vector3;
 
@@ -261,7 +262,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);	
 
-  double ecut = 20.0;
+  auto ecut = 20.0_Ha;
   double ll = 10.0;
 
 	ions::geometry geo;

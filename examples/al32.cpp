@@ -33,6 +33,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
 
@@ -49,7 +50,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 8;
 	conf.temperature = 0.00095004347; //300 K
 	
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
 	
 	ground_state::initialize(ions, electrons);
 

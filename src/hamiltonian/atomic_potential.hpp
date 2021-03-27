@@ -285,6 +285,7 @@ namespace hamiltonian {
 TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using pseudo::element;
   using input::species;
@@ -336,7 +337,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		
 		double ll = 20.0;
 		auto cell = input::cell::cubic(ll, ll, ll);
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0));
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha));
 
     hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), comm);
 		

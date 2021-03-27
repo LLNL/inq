@@ -162,6 +162,7 @@ namespace basis {
 TEST_CASE("class basis::real_space", "[basis::real_space]") {
   
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
   using math::vector3;
 
@@ -171,7 +172,7 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
       ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
-      double ecut = 20.0;
+      auto ecut = 20.0_Ha;
       
       basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
@@ -191,7 +192,7 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
       ions::UnitCell cell(vector3<double>(77.7, 0.0, 0.0), vector3<double>(0.0, 14.14, 0.0), vector3<double>(0.0, 0.0, 23.25));
 
-      double ecut = 37.9423091;
+      auto ecut = 37.9423091_Ha;
       
       basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 

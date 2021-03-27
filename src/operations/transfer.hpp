@@ -317,6 +317,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	using namespace transfer_unit_test;
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using math::vector3;
 
@@ -324,7 +325,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);
 	
-	double ecut = 23.0;
+	auto ecut = 23.0_Ha;
 
 	vector3<double> ll{6.66, 7.77, 9.99};
 

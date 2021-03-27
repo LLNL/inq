@@ -213,10 +213,11 @@ field<basis::real_space, math::vector3<double>> real_field(field<basis::real_spa
 TEST_CASE("Class basis::field", "[basis::field]"){
 
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using math::vector3;
 
-	double ecut = 40.0;
+	auto ecut = 40.0_Ha;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	

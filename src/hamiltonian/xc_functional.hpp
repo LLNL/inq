@@ -194,6 +194,7 @@ namespace hamiltonian {
 TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using namespace operations;
 	using namespace inq::utils;
@@ -209,7 +210,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	
 	SECTION("LDA"){
 		
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0), cart_comm);
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
 
 		basis::field<basis::real_space, double> gaussian_field(rs);
 		
@@ -260,7 +261,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 	SECTION("GGA"){
 		
-		basis::real_space rs(cell, input::basis::cutoff_energy(90.0), cart_comm);
+		basis::real_space rs(cell, input::basis::cutoff_energy(90.0_Ha), cart_comm);
 		basis::field<basis::real_space, double> field(rs);
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -354,7 +355,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 	SECTION("Uniform"){
 		
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0), cart_comm);
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
 		
 		basis::field<basis::real_space, double> gaussian_field(rs);
 		

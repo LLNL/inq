@@ -37,6 +37,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq::input;
+	using namespace inq::magnitude;	
 	using inq::math::vector3;
 	
 	inq::input::environment env(argc, argv);
@@ -56,7 +57,7 @@ int main(int argc, char ** argv){
   
 	config conf;
   
-	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0), conf);
+	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0_Ha), conf);
 
 	inq::ground_state::initialize(ions, electrons);
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);

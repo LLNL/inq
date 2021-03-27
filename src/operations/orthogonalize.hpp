@@ -162,10 +162,11 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using math::vector3;
 
-	double ecut = 25.0;
+	auto ecut = 25.0_Ha;
 	double ll = 6.3;
 
 	ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));

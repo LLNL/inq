@@ -30,6 +30,8 @@
 
 int main(int argc, char ** argv){
 
+	using namespace inq::magnitude;
+
 	inq::input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
@@ -45,7 +47,7 @@ int main(int argc, char ** argv){
 
 	inq::input::config conf;
 	
-	inq::systems::electrons electrons(comm_world, ions, inq::input::basis::cutoff_energy(40.0), conf);
+	inq::systems::electrons electrons(comm_world, ions, inq::input::basis::cutoff_energy(40.0_Ha), conf);
 	inq::ground_state::initialize(ions, electrons);
 	
 	// Non Interacting

@@ -32,6 +32,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
@@ -47,7 +48,7 @@ int main(int argc, char ** argv){
 		
 	systems::ions ions(input::cell::cubic(10.0, 10.0, 12.0) /* | input::cell::finite() */, geo);
 
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), input::config{});
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0_Ha), input::config{});
 	ground_state::initialize(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::density_mixing());

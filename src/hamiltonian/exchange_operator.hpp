@@ -102,7 +102,7 @@ TEST_CASE("Class hamiltonian::exchange", "[hamiltonian::exchange]"){
 	using namespace Catch::literals;
   using math::vector3;
   /*
-  double ecut = 20.0;
+  auto ecut = 20.0_Ha;
   double ll = 10.0;
 	*/
 	/*

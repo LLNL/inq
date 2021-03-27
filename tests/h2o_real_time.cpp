@@ -37,6 +37,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
@@ -53,7 +54,7 @@ int main(int argc, char ** argv){
 
   input::config conf;
   
-  systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0), conf);
+  systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0_Ha), conf);
 
 	// Propagation without perturbation
 	{

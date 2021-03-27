@@ -161,12 +161,13 @@ namespace hamiltonian {
 TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fourier]") {
   
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
   using math::vector3;
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 	
-  double ecut = 20.0;
+  auto ecut = 20.0_Ha;
   double ll = 10.0;
 
   ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));

@@ -103,6 +103,7 @@ auto d_vectorial_real_wave (inq::math::vector3<double> k , inq::math::vector3<do
 TEST_CASE("function operations::divergence", "[operations::divergence]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using namespace operations;
 	using math::vector3;
@@ -118,7 +119,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	//	auto set_comm = cart_comm.axis(0);
 	//	auto basis_comm = cart_comm.axis(1);
 
-	basis::real_space rs(cell, input::basis::cutoff_energy(20.0), cart_comm);
+	basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
 
 	SECTION("Vectored plane-wave"){ 
 		basis::field<basis::real_space, math::vector3<complex>> vectorial_complex_field(rs);
