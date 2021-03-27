@@ -85,18 +85,61 @@ TEST_CASE("magnitude::time", "[magnitude::time]") {
 	using namespace Catch::literals;
 	using namespace magnitude;
 
-	auto t1 = 100.0_atomictime;
-	CHECK(t1.in_atomic_units() == 100.0_a);
+  {
+    auto ti = 100.0_atomictime;
+    CHECK(ti.in_atomic_units() == 100.0_a);
+  }
 
-  auto t2 = 43.27_fs;
-	CHECK(t2.in_atomic_units() == 1788.84122421832_a);
+  {
+    auto ti = 0.9562_attosecond;
+    CHECK(ti.in_atomic_units() == 0.0395306211832115_a);
+  }
+  
+  {
+    auto ti = 0.9562_as;
+    CHECK(ti.in_atomic_units() == 0.0395306211832115_a);
+  }
 
-  auto t3 = 1.0/1.0_Ha;
-  CHECK(t3.in_atomic_units() == 1.0_a);
+  {
+    auto ti = 43.27_femtosecond;
+    CHECK(ti.in_atomic_units() == 1788.84122421832_a);
+  }
+   
+  {
+    auto ti = 43.27_fs;
+    CHECK(ti.in_atomic_units() == 1788.84122421832_a);
+  }
+  
+  {
+    auto ti = 17.77_picosecond;
+    CHECK(ti.in_atomic_units() == 734636.204168237_a);
+  }
+  
+  {
+    auto ti = 17.77_ps;
+    CHECK(ti.in_atomic_units() == 734636.204168237_a);
+  }
 
-  auto t4 = 1.0/100.0_eV;
-  CHECK(t4.in_atomic_units() == 0.272113862460642_a);
+  {
+    auto ti = 0.03974_nanosecond;
+    CHECK(ti.in_atomic_units() == 1642906.17634472_a);
+  }
 
+  {
+    auto ti = 0.03974_ns;
+    CHECK(ti.in_atomic_units() == 1642906.17634472_a);
+  }
+  
+  {
+    auto ti = 1.0/1.0_Ha;
+    CHECK(ti.in_atomic_units() == 1.0_a);
+  }
+
+  {
+    auto ti = 1.0/100.0_eV;
+    CHECK(ti.in_atomic_units() == 0.272113862460642_a);
+  }
+  
 }
 
 #endif
