@@ -75,7 +75,7 @@ auto operator "" _pm(long double val){
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("magnitude::quantity", "[magnitude::quantity]") {
+TEST_CASE("magnitude::length", "[magnitude::length]") {
 
 	using namespace inq;
 	using namespace Catch::literals;

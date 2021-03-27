@@ -86,7 +86,7 @@ auto operator "" _kelvin(long double val){
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("magnitude::quantity", "[magnitude::quantity]") {
+TEST_CASE("magnitude::energy", "[magnitude::energy]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
