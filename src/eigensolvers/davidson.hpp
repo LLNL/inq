@@ -132,9 +132,7 @@ void davidson(const operator_type & ham, const preconditioner_type & prec, field
 		aux_phi.matrix()({0,nbasis},{nevf+nbase,nevf+nbase+notconv})=tphi.matrix()({0,nbasis},{0,notconv});
 		//orthogonalize everything   //allocate work wave funcs 
 		field_set_type ophi(phi.basis(), nevf+nbase+notconv, phi.full_comm());
-#ifdef CUDA_ENABLED
-		cudaDeviceSynchronize();
-#endif
+		
 		ophi.matrix() = aux_phi.matrix()({0, nbasis},{0, nevf+nbase+notconv});
 		//assert(size(ophi.matrix()) == nbasis);
 		//assert(size(~ophi.matrix()) == nevf+nbase+notconv);
