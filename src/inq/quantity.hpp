@@ -67,7 +67,17 @@ TEST_CASE("inq::quantity", "[inq::quantity]") {
 	using namespace inq;
 	using namespace Catch::literals;
 
-	//  inq::quantity<inq::magnitude::energy> 0.5_hartree;
+	auto zz = quantity<void>::zero();
+
+	CHECK(zz.in_atomic_units() == 0.0_a);
+
+	auto rr = quantity<void>::from_atomic_units(25.5);
+
+	CHECK(rr.in_atomic_units() == 25.5_a);
+
+	auto rr2 = 4.0*rr;
+
+	CHECK(rr2.in_atomic_units() == 102.0_a);
 	
 }
 
