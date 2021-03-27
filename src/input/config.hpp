@@ -22,6 +22,7 @@
 */
 
 #include <cassert>
+#include <magnitude/energy.hpp>
 
 namespace inq {
 namespace input {
@@ -31,12 +32,12 @@ struct config {
 	config(){
 		extra_states = 0;
 		excess_charge = 0.0;
-		temperature = 0.0;
+		temperature = quantity<magnitude::energy>::zero();
 	}
 	
 	int extra_states;
 	double excess_charge;
-	double temperature;
+	quantity<magnitude::energy> temperature;
 	
 };
 

@@ -36,6 +36,10 @@ namespace inq {
 			return qq;
 		}
 
+		static auto zero(){
+			return from_atomic_units(0.0);
+		}
+
 		auto in_atomic_units() const {
 			return value_;
 		}
@@ -44,7 +48,7 @@ namespace inq {
 			quant.value_ *= scal;
 			return quant;
 		}
-		
+
 	private:
 
 		element_type value_;

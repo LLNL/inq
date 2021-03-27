@@ -94,6 +94,9 @@ TEST_CASE("magnitude::quantity", "[magnitude::quantity]") {
 
 	auto en = 100.0_ha;
 	CHECK(en.in_atomic_units() == 100.0);
+
+	auto en2 = 300.0_K;
+	CHECK(en2.in_atomic_units() == 0.0009500435_a);
 	
 	
 }

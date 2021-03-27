@@ -55,7 +55,7 @@ int main(int argc, char ** argv){
 	
 	conf.excess_charge = -1;
 	conf.extra_states = 8;
-	conf.temperature = 0.00095004347; //300 K
+	conf.temperature = 300.0_K;
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
 	
