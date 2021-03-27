@@ -51,7 +51,7 @@ int main(int argc, char ** argv){
 	geo.push_back( "Si" | a*math::vector3<double>(0.0,  0.5,  0.5 ));
 	geo.push_back( "Si" | a*math::vector3<double>(0.25, 0.75, 0.75));
 
-	systems::ions ions(input::cell::cubic(a), geo);
+	systems::ions ions(input::cell::cubic(a*1.0_b), geo);
 	
 	input::config conf;
 	

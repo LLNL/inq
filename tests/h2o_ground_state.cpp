@@ -51,7 +51,7 @@ int main(int argc, char ** argv){
 	geo.push_back( "H" | vector3<double>( 1.429937,  0.553586, 0.0));
 	geo.push_back( "H" | vector3<double>(-1.429937,  0.553586, 0.0));
 
-	inq::systems::ions ions(cell::cubic(12.0, 11.0, 10.0) | cell::finite(), geo);
+	inq::systems::ions ions(cell::cubic(12.0_b, 11.0_b, 10.0_b) | cell::finite(), geo);
 
 	auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5_Ha) | scf::density_mixing() | scf::broyden_mixing();	
   

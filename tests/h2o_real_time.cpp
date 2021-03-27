@@ -50,7 +50,7 @@ int main(int argc, char ** argv){
 	geo.push_back( "H" | math::vector3<double>( 1.429937,  0.553586, 0.0));
   geo.push_back( "H" | math::vector3<double>(-1.429937,  0.553586, 0.0));
 
-	systems::ions ions(input::cell::cubic(12.0, 11.0, 10.0) | input::cell::finite(), geo);
+	systems::ions ions(input::cell::cubic(12.0_b, 11.0_b, 10.0_b) | input::cell::finite(), geo);
 
   input::config conf;
   

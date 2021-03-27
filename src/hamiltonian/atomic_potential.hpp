@@ -335,7 +335,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
     ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 		
-		double ll = 20.0;
+		auto ll = 20.0_b;
 		auto cell = input::cell::cubic(ll, ll, ll);
 		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha));
 

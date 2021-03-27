@@ -49,7 +49,7 @@ int main(int argc, char ** argv){
 
 	geo.emplace_back("H" | math::vector3<double>(0.00000, 1.91325, 1.91325));
 
-	systems::ions ions(input::cell::cubic(2*7.6524459), geo);
+	systems::ions ions(input::cell::cubic(2*7.6524459_b), geo);
 	
 	input::config conf;
 	

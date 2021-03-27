@@ -21,11 +21,13 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <magnitude/length.hpp>
 #include <math/vector3.hpp>
+#include <utils/merge_optional.hpp>
+
+#include <optional>
 #include <cassert>
 #include <array>
-#include <utils/merge_optional.hpp>
-#include <optional>
 
 namespace inq {
 namespace input {
@@ -34,12 +36,13 @@ class cell {
  
 public:
 
-	static auto cubic(double aa){
+	static auto cubic(quantity<magnitude::length> lat_par){
+		auto aa = lat_par.in_atomic_units();
 		return cell(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, aa, 0.0), math::vector3<double>(0.0, 0.0, aa));
 	}
 
-	static auto cubic(double aa, double bb, double cc){
-		return cell(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, bb, 0.0), math::vector3<double>(0.0, 0.0, cc));
+	static auto cubic(quantity<magnitude::length> aa, quantity<magnitude::length> bb, quantity<magnitude::length> cc){
+		return cell(math::vector3<double>(aa.in_atomic_units(), 0.0, 0.0), math::vector3<double>(0.0, bb.in_atomic_units(), 0.0), math::vector3<double>(0.0, 0.0, cc.in_atomic_units()));
 	}
 
 	static auto periodic() {
@@ -101,11 +104,12 @@ private:
 TEST_CASE("class input::cell", "[input::cell]") {
   
 	using namespace inq;
+	using namespace magnitude;
 	using namespace Catch::literals;
 
 	SECTION("Cubic"){
 
-		auto ci = input::cell::cubic(10.2);
+		auto ci = input::cell::cubic(10.2_b);
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
@@ -123,7 +127,7 @@ TEST_CASE("class input::cell", "[input::cell]") {
 	
 	SECTION("Cubic finite"){
 
-		auto ci = input::cell::cubic(10.2) | input::cell::finite();
+		auto ci = input::cell::cubic(10.2_b) | input::cell::finite();
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
@@ -141,7 +145,7 @@ TEST_CASE("class input::cell", "[input::cell]") {
 	
 	SECTION("Parallelepipedic"){
 
-		auto ci = input::cell::cubic(10.2, 5.7, 8.3) | input::cell::periodic();
+		auto ci = input::cell::cubic(10.2_b, 5.7_b, 8.3_b) | input::cell::periodic();
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);

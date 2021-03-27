@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
 
 	auto geo = input::parse_xyz(config::path::unit_tests_data() + "al32.xyz");
 
-	systems::ions ions(input::cell::cubic(2*7.6524459), geo);
+	systems::ions ions(input::cell::cubic(2*7.6524459_b), geo);
 	
 	input::config conf;
 	
