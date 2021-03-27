@@ -27,6 +27,7 @@
 #include <array>
 #include <optional>
 #include <utils/merge_optional.hpp>
+#include <magnitude/energy.hpp>
 
 namespace inq {
 namespace input {
@@ -41,9 +42,9 @@ namespace input {
 			return bs;
 		}
 
-		static auto cutoff_energy(double arg_ecut){
+		static auto cutoff_energy(quantity<magnitude::energy> arg_ecut){
 			basis bs;
-			bs.spacing_ = M_PI*sqrt(0.5/arg_ecut);
+			bs.spacing_ = M_PI*sqrt(0.5/arg_ecut.in_atomic_units());
 			return bs;
 		}
 
@@ -104,6 +105,7 @@ namespace input {
 TEST_CASE("class input::basis", "[basis]") {
   
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 
 	SECTION("Spacing"){
@@ -118,7 +120,7 @@ TEST_CASE("class input::basis", "[basis]") {
 	
 	SECTION("Cutoff energy"){
 
-		auto bi = input::basis::cutoff_energy(493.48);
+		auto bi = input::basis::cutoff_energy(493.48_Ha);
 
 		CHECK(bi.spacing() == 0.1_a);
 		
@@ -126,7 +128,7 @@ TEST_CASE("class input::basis", "[basis]") {
 			
 	SECTION("Spherical grid"){
 
-		auto bi = input::basis::cutoff_energy(493.48) | input::basis::spherical_grid(true);
+		auto bi = input::basis::cutoff_energy(493.48_Ha) | input::basis::spherical_grid(true);
 
 		CHECK(bi.spacing() == 0.1_a);
 		CHECK(bi.spherical_grid());
