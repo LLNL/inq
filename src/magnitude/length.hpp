@@ -39,11 +39,7 @@ auto operator "" _bohr(long double val){
 }
 
 auto operator "" _angstrom(long double val){
-	return inq::quantity<length>::from_atomic_units(1.88972612462938);
-}
-
-auto operator "" _Angstrom(long double val){
-	return val*1.0_angstrom;
+	return inq::quantity<length>::from_atomic_units(1.88972612462938*val);
 }
 
 auto operator "" _A(long double val){
@@ -81,15 +77,48 @@ TEST_CASE("magnitude::length", "[magnitude::length]") {
 	using namespace Catch::literals;
 	using namespace magnitude;
 
-	auto l1 = 100.0_b;
-	CHECK(l1.in_atomic_units() == 100.0);
+  {
+    auto le = 100.0_b;
+    CHECK(le.in_atomic_units() == 100.0);
+  }
 
-  auto l2 = 100.0_A;
-	CHECK(l2.in_atomic_units() == 188.9726124629_a);
+  {
+    auto le = 100.0_bohr;
+    CHECK(le.in_atomic_units() == 100.0);
+  }
+  
+  {
+    auto le = 100.0_A;
+    CHECK(le.in_atomic_units() == 188.9726124629_a);
+  }
+  
+  {
+    auto le = 100.0_angstrom;
+    CHECK(le.in_atomic_units() == 188.9726124629_a);
+  }
 
-  auto l3 = 23.333_pm;
-  CHECK(l3.in_atomic_units() == 0.440929796659773_a);
-	
+  {
+    auto le = 874.21_nanometer;
+    CHECK(le.in_atomic_units() == 16520.1747541225_a);
+  }
+
+  {
+    auto le = 874.21_nm;
+    CHECK(le.in_atomic_units() == 16520.1747541225_a);
+  }
+   
+  {
+    auto le = 23.333_picometer;
+    CHECK(le.in_atomic_units() == 0.440929796659773_a);
+  }
+  
+  {
+    auto le = 23.333_pm;
+    CHECK(le.in_atomic_units() == 0.440929796659773_a);
+  }
+
+  
+  
 }
 
 #endif
