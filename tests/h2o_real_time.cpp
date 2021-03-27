@@ -60,7 +60,7 @@ int main(int argc, char ** argv){
 	{
 		operations::io::load("h2o_restart", electrons.phi_);
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
 		match.check("energy step   0", result.energy[0],   -25.637012688816);
 		match.check("energy step  10", result.energy[10],  -25.637012688717);
@@ -88,7 +88,7 @@ int main(int argc, char ** argv){
 		
 		perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
 		/*		match.check("energy step  0", result.energy[0], -16.903925978590);
 		match.check("energy step 10", result.energy[10], -16.904635586794);
