@@ -21,10 +21,12 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <magnitude/time.hpp>
 #include <utils/merge_optional.hpp>
 
 #include <optional>
 #include <cassert>
+
 
 namespace inq {
 namespace input {
@@ -36,9 +38,9 @@ public:
 	rt(){
 	}
 
-	static auto dt(double dt) {
+	static auto dt(quantity<magnitude::time> dt) {
 		rt solver;
-		solver.dt_ = dt;
+		solver.dt_ = dt.in_atomic_units();
 		return solver;
 	}
 
@@ -85,6 +87,7 @@ private:
 TEST_CASE("class input::rt", "[input::rt]") {
 
   using namespace inq;
+  using namespace inq::magnitude;	
   using namespace Catch::literals;
 
 	SECTION("Defaults"){
@@ -98,7 +101,7 @@ TEST_CASE("class input::rt", "[input::rt]") {
 
   SECTION("Composition"){
 
-    auto solver = input::rt::num_steps(1000) | input::rt::dt(0.05);
+    auto solver = input::rt::num_steps(1000) | input::rt::dt(0.05_atomictime);
     
     CHECK(solver.num_steps() == 1000);
     CHECK(solver.dt() == 0.05_a);

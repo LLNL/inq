@@ -152,6 +152,7 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points]"){
 
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using math::vector3;
 
@@ -163,7 +164,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 	double ly = 6.55;
 	double lz = 8.02;
  	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
-  basis::real_space rs(cell, input::basis::cutoff_energy(20.0), cart_comm);
+  basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
 
   basis::field<basis::real_space, complex> test_field(rs);
 

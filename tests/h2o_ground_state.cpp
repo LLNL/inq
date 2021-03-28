@@ -37,6 +37,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq::input;
+	using namespace inq::magnitude;	
 	using inq::math::vector3;
 	
 	inq::input::environment env(argc, argv);
@@ -50,13 +51,13 @@ int main(int argc, char ** argv){
 	geo.push_back( "H" | vector3<double>( 1.429937,  0.553586, 0.0));
 	geo.push_back( "H" | vector3<double>(-1.429937,  0.553586, 0.0));
 
-	inq::systems::ions ions(cell::cubic(12.0, 11.0, 10.0) | cell::finite(), geo);
+	inq::systems::ions ions(cell::cubic(12.0_b, 11.0_b, 10.0_b) | cell::finite(), geo);
 
-	auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5) | scf::density_mixing() | scf::broyden_mixing();	
+	auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5_Ha) | scf::density_mixing() | scf::broyden_mixing();	
   
 	config conf;
   
-	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0), conf);
+	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0_Ha), conf);
 
 	inq::ground_state::initialize(ions, electrons);
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);

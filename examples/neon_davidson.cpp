@@ -31,6 +31,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	
 	inq::input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
@@ -41,7 +42,7 @@ int main(int argc, char ** argv){
 
 	geo.push_back("Ne" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
 		
-	systems::ions ions(input::cell::cubic(10.0, 10.0, 10.0) | input::cell::finite(), geo);
+	systems::ions ions(input::cell::cubic(10.0_b) | input::cell::finite(), geo);
 
 	//Real space pseudo
 	{
@@ -50,9 +51,9 @@ int main(int argc, char ** argv){
 
 		conf.extra_states = 3;
 
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0), conf);
+		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0_Ha), conf);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::energy_tolerance(1E-7));
+		auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::davidson() | input::scf::energy_tolerance(1E-7_Ha));
 
 		std::printf("total energy:%20.16f\n",     result.energy.total() );
 	       

@@ -37,6 +37,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
 
@@ -48,15 +49,15 @@ int main(int argc, char ** argv){
 
 	geo.emplace_back("H" | math::vector3<double>(0.00000, 1.91325, 1.91325));
 
-	systems::ions ions(input::cell::cubic(2*7.6524459), geo);
+	systems::ions ions(input::cell::cubic(2*7.6524459_b), geo);
 	
 	input::config conf;
 	
 	conf.excess_charge = -1;
 	conf.extra_states = 8;
-	conf.temperature = 0.00095004347; //300 K
+	conf.temperature = 300.0_K;
 	
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
 	
 	ground_state::initialize(ions, electrons);
 
@@ -77,7 +78,7 @@ int main(int argc, char ** argv){
 
 	inq::operations::io::save("al32_restart", electrons.phi_);
 
-	auto dt = 0.055;
+	auto dt = 0.055_atomictime;
 
 	ions.geo().velocities()[ions.geo().num_atoms() - 1] = math::vector3<double>(0.1, 0.0, 0.0);
 

@@ -87,10 +87,11 @@ math::vector3<double> dipole(systems::ions const & ions, systems::electrons cons
 TEST_CASE("observables::dipole", "[observables::dipole]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using math::vector3;
 	
-	double ecut = 31.2;
+	auto ecut = 31.2_Ha;
 
   ions::UnitCell cell(vector3<double>(4.2, 0.0, 0.0), vector3<double>(0.0, 3.5, 0.0), vector3<double>(0.0, 0.0, 6.4));
 

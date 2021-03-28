@@ -477,6 +477,7 @@ to_real(basis::field_set<basis::fourier_space, math::vector3<complex>> const& fp
 TEST_CASE("function operations::space", "[operations::space]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using math::vector3;
 
@@ -484,7 +485,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 
 	auto basis_comm = cart_comm.axis(1);
 	
-	double ecut = 23.0;
+	auto ecut = 23.0_Ha;
 	double ll = 6.66;
 	
 	ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));

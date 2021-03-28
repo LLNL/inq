@@ -95,6 +95,7 @@ namespace operations {
 TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
   using math::vector3;
 
@@ -109,7 +110,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 	auto basis_comm = cart_comm.axis(1);
 	
   ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
-  basis::real_space bas(cell, input::basis::cutoff_energy(20.0), basis_comm);
+  basis::real_space bas(cell, input::basis::cutoff_energy(20.0_Ha), basis_comm);
 	
 	SECTION("double"){
 		basis::field_set<basis::real_space, double> aa(bas, nst, cart_comm);

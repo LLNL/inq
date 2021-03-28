@@ -33,6 +33,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
+	using namespace inq::magnitude;	
 	
 	input::environment env(argc, argv);
 
@@ -42,13 +43,13 @@ int main(int argc, char ** argv){
 
 	auto geo = input::parse_xyz(config::path::unit_tests_data() + "al256.xyz");
 
-	systems::ions ions(input::cell::cubic(4*7.6524459), geo);
+	systems::ions ions(input::cell::cubic(4*7.6524459_b), geo);
 	
 	input::config conf;
 	
 	conf.extra_states = 0;
 	
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0), conf);
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
 	
 	ground_state::initialize(ions, electrons);
 

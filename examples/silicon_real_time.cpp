@@ -31,6 +31,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
@@ -50,15 +51,15 @@ int main(int argc, char ** argv){
 	geo.push_back( "Si" | a*math::vector3<double>(0.0,  0.5,  0.5 ));
 	geo.push_back( "Si" | a*math::vector3<double>(0.25, 0.75, 0.75));
 
-	systems::ions ions(input::cell::cubic(a), geo);
+	systems::ions ions(input::cell::cubic(a*1.0_b), geo);
 	
 	input::config conf;
 	
 	conf.extra_states = 4;
 	
-	systems::electrons electrons({comm_world, {}}, ions, input::basis::cutoff_energy(25.0), conf);
+	systems::electrons electrons({comm_world, {}}, ions, input::basis::cutoff_energy(25.0_Ha), conf);
 
-	auto result = real_time::propagate<>(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055));
+	auto result = real_time::propagate<>(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055_atomictime));
 	
 	operations::io::load("silicon_restart", electrons.phi_);
 

@@ -70,12 +70,13 @@ namespace perturbations {
 TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using math::vector3;
 	
 	const int nvec = 12;
 
-	double ecut = 31.2;
+	auto ecut = 31.2_Ha;
 	double phi_absdif = 0.0;
 	double phi_dif = 0.0;
 

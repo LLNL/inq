@@ -138,6 +138,7 @@ auto g_analytic2 (inq::math::vector3<double> kk , inq::math::vector3<double> rr)
 TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using namespace operations;
 	using math::vector3;
@@ -154,7 +155,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
 	SECTION("Plane-wave -- field"){ 
 
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0), cart_comm);
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
 	
 		basis::field<basis::real_space, complex> f_test(rs);
 	
@@ -189,7 +190,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
 	SECTION("Plane-wave -- field_set"){
 
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0), basis_comm);
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), basis_comm);
 		
 		basis::field_set<basis::real_space, complex> f_test(rs, 13, cart_comm);
 	
@@ -228,7 +229,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		
 	SECTION("Real function"){
 
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0), cart_comm);
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
 		
 		basis::field<basis::real_space, double> f_test2(rs);
 	

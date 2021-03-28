@@ -329,6 +329,7 @@ namespace basis {
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 	
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
   using math::vector3;
 
@@ -338,7 +339,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
   
   ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
   
-  double ecut = 20.0;
+  auto ecut = 20.0_Ha;
   
   basis::real_space pw(cell, input::basis::cutoff_energy(ecut), comm);
   

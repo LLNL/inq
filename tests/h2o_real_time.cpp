@@ -37,6 +37,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
@@ -49,17 +50,17 @@ int main(int argc, char ** argv){
 	geo.push_back( "H" | math::vector3<double>( 1.429937,  0.553586, 0.0));
   geo.push_back( "H" | math::vector3<double>(-1.429937,  0.553586, 0.0));
 
-	systems::ions ions(input::cell::cubic(12.0, 11.0, 10.0) | input::cell::finite(), geo);
+	systems::ions ions(input::cell::cubic(12.0_b, 11.0_b, 10.0_b) | input::cell::finite(), geo);
 
   input::config conf;
   
-  systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0), conf);
+  systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0_Ha), conf);
 
 	// Propagation without perturbation
 	{
 		operations::io::load("h2o_restart", electrons.phi_);
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
 		match.check("energy step   0", result.energy[0],   -25.637012688816);
 		match.check("energy step  10", result.energy[10],  -25.637012688717);
@@ -87,7 +88,7 @@ int main(int argc, char ** argv){
 		
 		perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
 		/*		match.check("energy step  0", result.energy[0], -16.903925978590);
 		match.check("energy step 10", result.energy[10], -16.904635586794);

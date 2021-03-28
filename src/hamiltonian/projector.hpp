@@ -231,6 +231,7 @@ namespace hamiltonian {
 TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
   using math::vector3;
 	
@@ -238,7 +239,7 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-  double ecut = 20.0;
+  auto ecut = 20.0_Ha;
   double ll = 10.0;
 
 	ions::geometry geo;
