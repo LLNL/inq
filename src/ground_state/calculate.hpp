@@ -147,7 +147,7 @@ namespace ground_state {
 			if(inter.self_consistent() and solver.mix_density()) {
 				auto new_density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 				mixer->operator()(electrons.density_.linear(), new_density.linear());
-				density::normalize(electrons.density_, electrons.states_.total_charge());
+				density::normalize(electrons.density_, electrons.states_.num_electrons());
 			} else {
 				electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
 			}
