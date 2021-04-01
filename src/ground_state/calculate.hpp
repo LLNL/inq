@@ -143,13 +143,19 @@ namespace ground_state {
 			}
 
 			CALI_MARK_BEGIN("mixing");
-			
-			if(inter.self_consistent() and solver.mix_density()) {
+
+			double densitydiff = 0.0;
+			{
 				auto new_density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
-				mixer->operator()(electrons.density_.linear(), new_density.linear());
-				density::normalize(electrons.density_, electrons.states_.num_electrons());
-			} else {
-				electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
+				densitydiff = operations::integral_absdiff(electrons.density_, new_density);				
+				densitydiff /= electrons.states_.num_electrons();
+				
+				if(inter.self_consistent() and solver.mix_density()) {
+					mixer->operator()(electrons.density_.linear(), new_density.linear());
+					density::normalize(electrons.density_, electrons.states_.num_electrons());
+				} else {
+					electrons.density_ = std::move(new_density);
+				}
 			}
 			
 			auto vks = sc.ks_potential(electrons.density_, res.energy);
@@ -186,8 +192,8 @@ namespace ground_state {
 				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.hf_exchange, 1, std::plus<>{});
 				
 				if(solver.verbose_output() and console){
-					console->info("SCF iter {} : e = {:.12f} de = {:5.0e}", 
-							iiter, res.energy.total(), res.energy.eigenvalues - old_energy);
+					console->info("SCF iter {} : e = {:.12f} de = {:5.0e} dn = {:5.0e}", 
+												iiter, res.energy.total(), res.energy.eigenvalues - old_energy, densitydiff);
 				
 					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 						console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
