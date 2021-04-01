@@ -144,11 +144,11 @@ namespace ground_state {
 
 			CALI_MARK_BEGIN("mixing");
 
-			double densitydiff = 0.0;
+			double density_diff = 0.0;
 			{
 				auto new_density = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
-				densitydiff = operations::integral_absdiff(electrons.density_, new_density);				
-				densitydiff /= electrons.states_.num_electrons();
+				density_diff = operations::integral_absdiff(electrons.density_, new_density);				
+				density_diff /= electrons.states_.num_electrons();
 				
 				if(inter.self_consistent() and solver.mix_density()) {
 					mixer->operator()(electrons.density_.linear(), new_density.linear());
@@ -167,52 +167,50 @@ namespace ground_state {
 			}
 
 			CALI_MARK_END("mixing");
-						
-			// calculate the new energy and print
-			{
 
+			{
 				CALI_CXX_MARK_SCOPE("energy_calculation");
-				
+			
 				auto residual = ham(electrons.phi_);
 				auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi_);
 				operations::shift(-1.0, eigenvalues, electrons.phi_, residual);
-				
+			
 				auto normres = operations::overlap_diagonal(residual);
 				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(electrons.phi_), electrons.phi_);
 				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(electrons.phi_), electrons.phi_);
-				
+			
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
-				
+			
 				res.energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, energy_term);
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
-
+			
 				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.eigenvalues, 1, std::plus<>{});
 				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.nonlocal, 1, std::plus<>{});
 				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.hf_exchange, 1, std::plus<>{});
+			
+				auto energy_diff = (res.energy.eigenvalues - old_energy)/ions.geo().num_atoms();
 				
 				if(solver.verbose_output() and console){
 					console->info("SCF iter {} : e = {:.12f} de = {:5.0e} dn = {:5.0e}", 
-												iiter, res.energy.total(), res.energy.eigenvalues - old_energy, densitydiff);
-				
+												iiter, res.energy.total(), energy_diff, density_diff);
+					
 					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 						console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-								istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
-						);
+													istate + 1, electrons.states_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
+													);
 					}
 				}
 				
+				if(fabs(energy_diff) < solver.energy_tolerance()){
+					conv_count++;
+					if(conv_count > 2) break;
+				} else {
+					conv_count = 0;
+				}
+
+				old_energy = res.energy.eigenvalues;
 			}
-			
-			if(fabs(res.energy.eigenvalues - old_energy) < solver.energy_tolerance()){
-				conv_count++;
-				if(conv_count > 2) break;
-			} else {
-				conv_count = 0;
-			}
-			
-			old_energy = res.energy.eigenvalues;
-			
 		}
 
 		//make sure we have a density consistent with phi
