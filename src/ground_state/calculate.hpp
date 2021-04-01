@@ -184,16 +184,21 @@ namespace ground_state {
 				res.energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, energy_term);
 				res.energy.nonlocal = operations::sum(electrons.states_.occupations(), nl_me, energy_term);
 				res.energy.hf_exchange = operations::sum(electrons.states_.occupations(), exchange_me, energy_term);
-			
+
+				auto state_conv = operations::sum(electrons.states_.occupations(), normres, [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
+					
 				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.eigenvalues, 1, std::plus<>{});
 				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.nonlocal, 1, std::plus<>{});
 				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.hf_exchange, 1, std::plus<>{});
-			
+				electrons.phi_.set_comm().all_reduce_in_place_n(&state_conv, 1, std::plus<>{});
+
+				state_conv /= electrons.states_.num_electrons();
+				
 				auto energy_diff = (res.energy.eigenvalues - old_energy)/ions.geo().num_atoms();
 				
 				if(solver.verbose_output() and console){
-					console->info("SCF iter {} : e = {:.12f} de = {:5.0e} dn = {:5.0e}", 
-												iiter, res.energy.total(), energy_diff, density_diff);
+					console->info("SCF iter {} : e = {:.10f} de = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
+												iiter, res.energy.total(), energy_diff, density_diff, state_conv);
 					
 					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 						console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
