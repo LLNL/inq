@@ -53,7 +53,7 @@ int main(int argc, char ** argv){
 	// Non Interacting
 	{
 	
-		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::non_interacting(), inq::input::scf::conjugate_gradient());
+		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::non_interacting(), inq::input::scf::conjugate_gradient() | inq::input::scf::energy_tolerance(1e-7_Ha));
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)

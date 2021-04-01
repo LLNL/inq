@@ -111,7 +111,7 @@ namespace input {
     }
 				
 		auto energy_tolerance() const {
-			return energy_tol_.value_or(1e-7);
+			return energy_tol_.value_or(1e-5);
 		}
 		
 		auto static linear_mixing(){
