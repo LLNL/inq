@@ -66,7 +66,7 @@ public:
 			rem_electrons -= occs_[ist];
 		}
 
-		total_charge_ = nelectrons;
+		num_electrons_ = nelectrons;
 
 	}
 
@@ -95,8 +95,8 @@ public:
 		return occs_;
 	}
 
-	auto total_charge() const {
-		return total_charge_;
+	auto num_electrons() const {
+		return num_electrons_;
 	}
 
 	auto smear_function(double xx) const {
@@ -123,7 +123,7 @@ public:
 
 		if(temperature_ == 0.0){
 
-			auto rem_electrons = total_charge_;
+			auto rem_electrons = num_electrons_;
 			for(int ist = 0; ist < nstates_; ist++){
 				occs_[ist] = std::min(2.0, rem_electrons);
 				rem_electrons -= occs_[ist];
@@ -154,9 +154,9 @@ public:
 					sumq = sumq + max_occ_*smear_function(xx);
 				}
 
-				if(fabs(sumq - total_charge_) <= tol) break;
-				if(sumq <= total_charge_) emin = efermi;
-				if(sumq >= total_charge_) emax = efermi;
+				if(fabs(sumq - num_electrons_) <= tol) break;
+				if(sumq <= num_electrons_) emin = efermi;
+				if(sumq >= num_electrons_) emax = efermi;
 				
 			}
 
@@ -165,7 +165,7 @@ public:
 				occs_[ist] = max_occ_*smear_function(xx);
 			}
 
-			assert(fabs(operations::sum(occs_) - total_charge_) <= tol);
+			assert(fabs(operations::sum(occs_) - num_electrons_) <= tol);
 			
 		}
 		
@@ -173,7 +173,7 @@ public:
 	
 private:
 
-	double total_charge_;
+	double num_electrons_;
 	int nstates_;
 	int nquantumnumbers_;
 	math::array<double, 1> occs_;
@@ -198,7 +198,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
   SECTION("Spin unpolarized"){
     
     states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
-    
+
+		CHECK(st.num_electrons() == 11.0);
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
@@ -216,7 +217,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
   SECTION("Spin unpolarized with temperature"){
     
     states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 4.0, 4, 0.01);
-    
+
+		CHECK(st.num_electrons() == 4.0);    
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
@@ -234,7 +236,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
   SECTION("Spin polarized"){
     
     states::ks_states st(states::ks_states::spin_config::POLARIZED, 11.0);
-    
+
+		CHECK(st.num_electrons() == 11.0);    
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 2);
 
@@ -243,7 +246,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
   SECTION("Non-collinear spin"){
     
     states::ks_states st(states::ks_states::spin_config::NON_COLLINEAR, 11.0);
-    
+
+		CHECK(st.num_electrons() == 11.0);
     CHECK(st.num_states() == 11);
     CHECK(st.num_quantum_numbers() == 1);
 
