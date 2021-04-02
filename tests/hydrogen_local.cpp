@@ -35,7 +35,7 @@ int main(int argc, char ** argv){
 	inq::input::environment env(argc, argv);
 	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
-	inq::utils::match energy_match(2.0e-5);
+	inq::utils::match energy_match(3.0e-5);
 
 	inq::input::species local_h = pseudo::element("H") | inq::input::species::symbol("Hloc") | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	
