@@ -80,7 +80,7 @@ int main(int argc, char ** argv){
 	
 	auto dt = 0.025_atomictime;
 	
-	auto propagation = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
+	auto propagation = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(10) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
 		
 	auto ofs = std::ofstream{"td_coordinates.dat"};
 	
