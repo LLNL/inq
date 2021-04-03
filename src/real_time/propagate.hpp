@@ -14,8 +14,9 @@
 #include <ions/propagator.hpp>
 #include <systems/electrons.hpp>
 #include <real_time/result.hpp>
-
 #include <utils/profiling.hpp>
+
+#include <chrono>
 
 namespace inq {
 namespace real_time {
@@ -61,7 +62,9 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		auto forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 		res.save_iteration_results(0.0, ions, electrons, energy, forces);
-			
+
+
+		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
 
 			{
@@ -95,10 +98,14 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
-			if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", istep, istep*dt, energy.total());
 
 			res.save_iteration_results((istep + 1.0)*dt, ions, electrons, energy, forces);
 
+			auto new_time = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
+			if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f  wtime = %9.3f\n", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
+
+			iter_start_time = new_time;
 		}
 
 		return res;
