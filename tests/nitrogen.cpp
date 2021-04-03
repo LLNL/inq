@@ -76,13 +76,11 @@ int main(int argc, char ** argv){
 	energy_match.check("force 2 y",           result.forces[1][1],            -0.000000025695);
 	energy_match.check("force 2 z",           result.forces[1][2],            -0.145731033675);
 
-	/*
-
 	//		EHRENFEST HASN'T BEEN TESTED YET
 	
-	auto dt = 0.025;
+	auto dt = 0.025_atomictime;
 	
-	auto propagation = real_time::propagate(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(1000) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
+	auto propagation = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(100) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
 		
 	auto ofs = std::ofstream{"td_coordinates.dat"};
 	
@@ -92,8 +90,6 @@ int main(int argc, char ** argv){
 				<< '\t' << propagation.velocities[ii][0]
 				<< '\t' << propagation.forces[ii][0] << std::endl;		
 	}
-	
-	*/
 
 	return energy_match.fail();
 
