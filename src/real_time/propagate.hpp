@@ -75,7 +75,10 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			
 			//propagate ionic positions to t + dt
 			ion_propagator.propagate_positions(dt, ions, forces);
-			if(not ion_propagator.static_ions) sc.update_ionic_fields(ions, electrons.atomic_pot_);
+			if(not ion_propagator.static_ions) {
+				sc.update_ionic_fields(ions, electrons.atomic_pot_);
+				ham.update_projectors(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo());
+			}
 			
 			//propagate the other half step with H(t + dt)
 			operations::exponential_in_place(ham, complex(0.0, dt/2.0), electrons.phi_);
