@@ -47,17 +47,12 @@ namespace hamiltonian {
 		
   public:
 
-		basis::field<basis::real_space, double> scalar_potential;
-		exchange_operator exchange;
-		
-    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
-									 const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> const & comm):
-			scalar_potential(basis),
-			exchange(basis, num_hf_orbitals, exchange_coefficient, comm),
-			non_local_in_fourier_(fourier_pseudo)
-		{
+		void update_projectors(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo){
 			
-			scalar_potential = pot.local_potential(basis, cell, geo);
+			CALI_CXX_MARK_FUNCTION;
+			
+			projectors_.clear();
+			projectors_fourier_map_.clear();			
 			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				if(non_local_in_fourier_){
@@ -69,6 +64,20 @@ namespace hamiltonian {
 					if(projectors_.back().empty()) projectors_.pop_back(); 
 				}
 			}
+		}
+		
+		basis::field<basis::real_space, double> scalar_potential;
+		exchange_operator exchange;
+		
+    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
+									 const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> const & comm):
+			scalar_potential(basis),
+			exchange(basis, num_hf_orbitals, exchange_coefficient, comm),
+			non_local_in_fourier_(fourier_pseudo)
+		{
+			
+			scalar_potential = pot.local_potential(basis, cell, geo);
+			update_projectors(basis, cell, pot, geo);
 
     }
 
