@@ -57,7 +57,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
-		if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+		if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
 
 		auto forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
