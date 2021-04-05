@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -30,6 +30,10 @@
 #include <input/parse_xyz.hpp>
 #include <config/path.hpp>
 
+#include <real_time/propagate.hpp>
+
+#include<fstream>
+
 int main(int argc, char ** argv){
 
 	using namespace inq;
@@ -42,22 +46,37 @@ int main(int argc, char ** argv){
 	utils::match energy_match(4.0e-6);
 
 	auto geo = input::parse_xyz(config::path::unit_tests_data() + "al256.xyz");
+	geo.emplace_back("H" | math::vector3<double>(0.00000, 1.91325, 1.91325));
 
 	systems::ions ions(input::cell::cubic(4*7.6524459_b), geo);
 	
 	input::config conf;
-	
+
+	conf.excess_charge = -1;
 	conf.extra_states = 64;
 	conf.temperature = 300.0_K;
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
 	
-	ground_state::initialize(ions, electrons);
+	inq::operations::io::load("al256_restart", electrons.phi_);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200) | inq::input::scf::mixing(0.01));
+	auto dt = 0.055_atomictime;
 
-	inq::operations::io::save("al256_restart", electrons.phi_);
+	ions.geo().velocities()[ions.geo().num_atoms() - 1] = math::vector3<double>(0.1, 0.0, 0.0);
 
+	auto ofs = std::ofstream{"al256_v0.1.dat"}; ofs<< "# distance (au), energy (au)\n";
+	
+	for(int ii = 0; ii < 1; ii++){
+		auto propagation = real_time::propagate(
+			ions, electrons, input::interaction::pbe(), 
+			input::rt::num_steps(1000) | input::rt::dt(dt), ions::propagator::impulsive{}
+		);
+
+		for(std::size_t i = 0; i != propagation.coordinates.size(); ++i){
+			ofs << propagation.coordinates[i][ions.geo().num_atoms() - 1][0] <<'\t'<< propagation.energy[i] << std::endl;
+		}
+	}
+	
 	return energy_match.fail();
 	
 }

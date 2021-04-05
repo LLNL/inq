@@ -64,16 +64,22 @@ namespace basis {
 		field_set(inq::utils::skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
 			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
 		}
-
-		auto skeleton() const {
-			return inq::utils::skeleton_wrapper<field_set<Basis, type>>(*this);
+		
+		// Avoid the default copy constructor since the multi copy constructor is slow
+		//		field_set(const field_set & coeff) = default;
+		field_set(field_set const & other)
+			:field_set(other.skeleton()){
+			matrix_ = other.matrix_;
 		}
 
-		field_set(const field_set & coeff) = default;
 		field_set(field_set && coeff) = default;
 		field_set & operator=(const field_set & coeff) = default;
 		field_set & operator=(field_set && coeff) = default;
 
+		auto skeleton() const {
+			return inq::utils::skeleton_wrapper<field_set<Basis, type>>(*this);
+		}
+	
 		internal_array_type & matrix() {
 			return matrix_;
 		}
