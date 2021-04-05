@@ -66,7 +66,8 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
-
+			CALI_CXX_MARK_SCOPE("time_step");
+			
 			{
 				//propagate half step and full step with H(t)
 				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), electrons.phi_);
