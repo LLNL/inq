@@ -71,7 +71,7 @@ link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
 # we know that at least Boost 1.53 is not compatible with C++17
-find_package(Boost 1.54 REQUIRED COMPONENTS serialization HINTS $ENV{BOOST_DIR})
+find_package(Boost 1.54.0 REQUIRED COMPONENTS serialization)
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
 
