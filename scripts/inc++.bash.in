@@ -37,7 +37,7 @@ includeflags="-I@Libxc_INCLUDE_DIRS@             \
   -I@PROJECT_SOURCE_DIR@/src/                    \
   -I@PROJECT_SOURCE_DIR@/external_libs/"
 
-set(INQPP_CFLAGS ${CMAKE_CXX_FLAGS})
+set(INQPP_CFLAGS "${CMAKE_CXX_FLAGS}")
 
 if(ENABLE_CUDA)
   set(INQPP_CFLAGS "${INQPP_CFLAGS} ${CMAKE_CUDA_FLAGS}")
