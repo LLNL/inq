@@ -31,18 +31,12 @@ fi
 
 includeflags="-I@Libxc_INCLUDE_DIRS@             \
   -I@Boost_INCLUDE_DIRS@                         \
-  @FFTW_CFLAGS@                                  \
+  ${FFTW_CFLAGS}                          \
   -I@PROJECT_BINARY_DIR@/                        \
   -I@PROJECT_BINARY_DIR@/external_libs/pseudopod \
   -I@PROJECT_SOURCE_DIR@/src/                    \
   -I@PROJECT_SOURCE_DIR@/external_libs/"
 
-set(INQPP_CFLAGS "${CMAKE_CXX_FLAGS}")
-
-if(ENABLE_CUDA)
-  set(INQPP_CFLAGS "${INQPP_CFLAGS} ${CMAKE_CUDA_FLAGS}")
-endif()
-
-command_line="$cxx -std=c++17 @INQPP_SCRIPT_CFLAGS@ ${includeflags//;/ -I} $ldflags $* ${libs//;/ }"
+command_line="$cxx -std=c++17 @CMAKE_CXX_FLAGS@ ${includeflags//;/ -I} $ldflags $* ${libs//;/ }"
 
 echo $command_line && $command_line
