@@ -40,7 +40,7 @@ includeflags="-I@Libxc_INCLUDE_DIRS@             \
 set(INQPP_CFLAGS ${CMAKE_CXX_FLAGS})
 
 if(ENABLE_CUDA)
-  append(INQPP_CFLAGS ${CMAKE_CUDA_FLAGS})
+  set(INQPP_CFLAGS "${INQPP_CFLAGS} ${CMAKE_CUDA_FLAGS}")
 endif()
 
 command_line="$cxx -std=c++17 @INQPP_SCRIPT_CFLAGS@ ${includeflags//;/ -I} $ldflags $* ${libs//;/ }"
