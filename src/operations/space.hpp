@@ -35,6 +35,7 @@
 #endif
 
 #include <utils/profiling.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 #ifdef ENABLE_HEFFTE
 #include <heffte.h>
@@ -124,7 +125,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("heffte_forward");
-			fft.forward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()));
+			fft.forward(raw_pointer_cast(input.data_elements()), static_cast<complex *>(output.data_elements()));
 		}
 		
 		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
@@ -180,7 +181,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 
 		{
@@ -241,7 +242,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("heffte_backward");
-			fft.backward(static_cast<complex *>(input.data_elements()), static_cast<complex *>(output.data_elements()), scaling);
+			fft.backward(raw_pointer_cast(input.data_elements()), static_cast<complex *>(output.data_elements()), scaling);
 		}
 		
 		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
@@ -286,7 +287,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, static_cast<complex *>(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
 		}
 		
 		math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});

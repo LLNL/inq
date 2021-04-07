@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <utils/raw_pointer_cast.hpp>
 #include <config/path.hpp>
 
 #include <pseudopod/set.hpp>
@@ -132,7 +133,7 @@ namespace hamiltonian {
 				
       }
 			
-			comm_.all_reduce_in_place_n(static_cast<double *>(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
+			comm_.all_reduce_in_place_n(raw_pointer_cast(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
 
 			return potential;			
     }
@@ -166,7 +167,7 @@ namespace hamiltonian {
 								 });
       }
 
-			comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+			comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 			
 			return density;			
     }
@@ -201,7 +202,7 @@ namespace hamiltonian {
 								 });
       }
 
-			comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+			comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 
 			return density;			
     }
@@ -242,7 +243,7 @@ namespace hamiltonian {
 				
       }
 
-			comm_.all_reduce_in_place_n(static_cast<double *>(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+			comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 
 			return density;			
     }

@@ -29,6 +29,7 @@
 #include <basis/field.hpp>
 
 #include <utils/profiling.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
 namespace hamiltonian {
@@ -238,7 +239,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					math::array<double, 1> local_density{gaussian(vec)};
 					math::array<double, 1> local_exc{1};
 					math::array<double, 1> local_vxc{1};
-					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, static_cast<double *>(local_density.data_elements()), static_cast<double *>(local_exc.data_elements()), static_cast<double *>(local_vxc.data_elements()));
+					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
 					gpu::sync();
 					
 					CHECK(Approx(local_vxc[0]) == gaussianVxc.cubic()[ix][iy][iz]);
@@ -302,8 +303,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					math::array<double, 1> local_density{sqwave(vec, 3)};
 					math::array<double, 1> local_sigma{dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3))};
 					
-					xc_gga_exc_vxc(ggafunctional.libxc_func_ptr(), 1, static_cast<double *>(local_density.data_elements()), static_cast<double *>(local_sigma.data_elements()),
-												 static_cast<double *>(local_exc.data_elements()), static_cast<double *>(local_vxc.data_elements()), static_cast<double *>(local_vsigma.data_elements()));
+					xc_gga_exc_vxc(ggafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_sigma.data_elements()),
+												 raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()), raw_pointer_cast(local_vsigma.data_elements()));
 					gpu::sync();
 					
 					auto calc_vsigma = [func = ggafunctional.libxc_func_ptr()] (auto point){
@@ -312,8 +313,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 						math::array<double, 1> local_exc{1};
 						math::array<double, 1> local_vxc{1};
 						math::array<double, 1> local_vsigma{1};
-						xc_gga_exc_vxc(func, 1, static_cast<double *>(local_density.data_elements()), static_cast<double *>(local_sigma.data_elements()),
-													 static_cast<double *>(local_exc.data_elements()), static_cast<double *>(local_vxc.data_elements()), static_cast<double *>(local_vsigma.data_elements()));
+						xc_gga_exc_vxc(func, 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_sigma.data_elements()),
+													 raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()), raw_pointer_cast(local_vsigma.data_elements()));
 						gpu::sync();
 						return local_vsigma[0];
 					};

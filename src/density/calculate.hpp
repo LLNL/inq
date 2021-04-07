@@ -25,8 +25,8 @@
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <operations/transfer.hpp>
-
 #include <utils/profiling.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
 namespace density {
@@ -48,7 +48,7 @@ calculate(const occupations_array_type & occupations, field_set_type & phi){
 						 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
 					 });
 
-	phi.set_comm().all_reduce_in_place_n(static_cast<double *>(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+	phi.set_comm().all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 		
 	return density;
 }
@@ -67,7 +67,7 @@ basis::field<typename vector_field_set_type::basis_type, math::vector3<double>> 
 						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
 					 });
 	
-	gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(static_cast<math::vector3<double> *>(gdensity.linear().data_elements())), 3*gdensity.linear().size(), std::plus<>{});
+	gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(gdensity.linear().data_elements())), 3*gdensity.linear().size(), std::plus<>{});
 	
 	return gdensity;
 }

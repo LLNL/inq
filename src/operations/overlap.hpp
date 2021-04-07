@@ -28,6 +28,7 @@
 #include <operations/integral.hpp>
 
 #include <utils/profiling.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
 namespace operations {
@@ -44,7 +45,7 @@ auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 	auto overlap_matrix =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
 
 	{	CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
-		phi1.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
+		phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
 	}
 		
 	return overlap_matrix;
@@ -70,7 +71,7 @@ auto overlap(const field_set_type & phi){
 	auto overlap_matrix = +blas::herk(phi.basis().volume_element(), blas::H(phi.matrix()));
 
 	{	CALI_CXX_MARK_SCOPE("overlap(1arg)_mpi_reduce");		
-		phi.basis().comm().all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
+		phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
 	}
 		
 	return overlap_matrix;
