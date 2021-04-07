@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <utils/raw_pointer_cast.hpp>
 #include <basis/field.hpp>
 
 #include <mpi3/communicator.hpp>
@@ -67,7 +68,7 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 
 	assert(total_needed == long(point_list.size()));
 
-	MPI_Alltoall(list_sizes_needed.data_elements(), 1, MPI_INT, list_sizes_requested.data_elements(), 1, MPI_INT, source.basis().comm().get());
+	MPI_Alltoall(raw_pointer_cast(list_sizes_needed.data_elements()), 1, MPI_INT, raw_pointer_cast(list_sizes_requested.data_elements()), 1, MPI_INT, source.basis().comm().get());
 
 	// get the list of points each processor requests from us and send a list of the points we need
 	math::array<int, 1> list_needed(total_needed);
@@ -105,7 +106,8 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 
 	math::array<int, 1> list_points_requested(total_requested);
 	
-	MPI_Alltoallv(list_needed.data_elements(), list_sizes_needed.data_elements(), list_displs_needed.data_elements(), MPI_INT, list_points_requested.data_elements(), list_sizes_requested.data_elements(), list_displs_requested.data_elements(), MPI_INT, source.basis().comm().get());
+	MPI_Alltoallv(raw_pointer_cast(list_needed.data_elements()), raw_pointer_cast(list_sizes_needed.data_elements()), raw_pointer_cast(list_displs_needed.data_elements()), MPI_INT,
+								raw_pointer_cast(list_points_requested.data_elements()), raw_pointer_cast(list_sizes_requested.data_elements()), raw_pointer_cast(list_displs_requested.data_elements()), MPI_INT, source.basis().comm().get());
 
 	// send the value of the request points
 	math::array<ElementType, 1> value_points_requested(total_requested);
@@ -119,8 +121,8 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 
 	auto mpi_type = boost::mpi3::detail::basic_datatype<ElementType>();
 	
-	MPI_Alltoallv(value_points_requested.data_elements(), list_sizes_requested.data_elements(), list_displs_requested.data_elements(), mpi_type,
-								value_points_needed.data_elements(), list_sizes_needed.data_elements(), list_displs_needed.data_elements(), mpi_type, source.basis().comm().get());
+	MPI_Alltoallv(raw_pointer_cast(value_points_requested.data_elements()), raw_pointer_cast(list_sizes_requested.data_elements()), raw_pointer_cast(list_displs_requested.data_elements()), mpi_type,
+								raw_pointer_cast(value_points_needed.data_elements()), raw_pointer_cast(list_sizes_needed.data_elements()), raw_pointer_cast(list_displs_needed.data_elements()), mpi_type, source.basis().comm().get());
 
 	// Finally copy the values to the return array in the proper order
 	math::array<ElementType, 1> remote_points(point_list.size());
