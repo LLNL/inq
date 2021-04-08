@@ -29,6 +29,7 @@
 
 #include <mpi3/communicator.hpp>
 #include <mpi3/environment.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
 namespace mixers {
@@ -87,8 +88,8 @@ public:
 							 wo[ii] = aa;
 						 });
 
-		comm_.all_reduce_in_place_n(static_cast<Type *>(beta.data_elements()), beta.num_elements(), std::plus<>{});
-		comm_.all_reduce_in_place_n(static_cast<Type *>(work.data_elements()), work.num_elements(), std::plus<>{});		
+		comm_.all_reduce_in_place_n(raw_pointer_cast(beta.data_elements()), beta.num_elements(), std::plus<>{});
+		comm_.all_reduce_in_place_n(raw_pointer_cast(work.data_elements()), work.num_elements(), std::plus<>{});		
 
 		solvers::least_squares(beta, work);
 

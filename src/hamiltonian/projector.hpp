@@ -30,8 +30,8 @@
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
 #include <hamiltonian/atomic_potential.hpp>
-
 #include <utils/profiling.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
 namespace hamiltonian {
@@ -105,7 +105,7 @@ namespace hamiltonian {
 			
 			if(comm_.size() > 1){
 				CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-				comm_.all_reduce_in_place_n(static_cast<typename field_set_type::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 			
 			{
@@ -175,7 +175,7 @@ namespace hamiltonian {
 			}
 
 			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				comm_.all_reduce_in_place_n(static_cast<typename PhiType::element_type *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 
 			if(sphere_.size() > 0) {

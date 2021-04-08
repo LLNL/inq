@@ -34,6 +34,7 @@
 #include <basis/spherical_grid.hpp>
 #include <operations/space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
 namespace hamiltonian {
@@ -119,7 +120,7 @@ namespace hamiltonian {
 									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj]*vol;
 								 });
 
-				phi.basis().comm().all_reduce_in_place_n(static_cast<complex *>(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
 				
 				for(int iproj = 0; iproj < nproj_; iproj++){
 					for(long ip = 0; ip < phi.basis().part().local_size(); ip++){
