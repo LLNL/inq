@@ -73,55 +73,6 @@ public:
 		return nproj_ == 0 or sphere_.size() == 0;
 	}
 
-	template <class field_set_type, typename SpherePhiType>
-	void project(field_set_type const & phi, SpherePhiType & sphere_phi) const {
-
-		assert(not empty());
-			
-		CALI_CXX_MARK_SCOPE("projector::project");
-
-
-		{	CALI_CXX_MARK_SCOPE("projector::gather");
-
-			gpu::run(std::get<1>(sizes(sphere_phi)), sphere_.size(),
-							 [sgr = begin(sphere_phi), gr = begin(phi.cubic()), sph = sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
-								 sgr[ipoint][ist] = gr[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
-							 });
-		}
-		
-		CALI_MARK_BEGIN("projector_allocation");
-
-		math::array<typename field_set_type::element_type, 2> projections({nproj_, phi.local_set_size()});
-
-		CALI_MARK_END("projector_allocation");
-			
-		{ CALI_CXX_MARK_SCOPE("projector_gemm_1");
-			namespace blas = boost::multi::blas;
-			blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
-		}
-			
-		{	CALI_CXX_MARK_SCOPE("projector_scal");
-				
-			//DATAOPERATIONS GPU::RUN 2D
-			gpu::run(phi.local_set_size(), nproj_,
-							 [proj = begin(projections), coeff = begin(kb_coeff_)]
-							 GPU_LAMBDA (auto ist, auto iproj){
-								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
-							 });
-		}
-			
-		if(comm_.size() > 1){
-			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-			comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
-		}
-			
-		{
-			CALI_CXX_MARK_SCOPE("projector_gemm_2");
-			namespace blas = boost::multi::blas;
-			blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
-		}
-	}
-			
 	template <typename OcType, typename PhiType, typename GPhiType>
 	struct force_term {
 		OcType oc;
@@ -211,16 +162,52 @@ public:
 		long max_sphere_size = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) max_sphere_size = std::max(max_sphere_size, it->sphere_.size());
 		
-		math::array<complex, 3> sphere_phi({projectors.size(), max_sphere_size, phi.local_set_size()});
+		math::array<complex, 3> sphere_phi_all({projectors.size(), max_sphere_size, phi.local_set_size()});
 
 		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			auto sph_phi = sphere_phi[iproj]({0, it->sphere_.size()});
-			it->project(phi, sph_phi);
+
+			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
+			
+			{	CALI_CXX_MARK_SCOPE("projector::gather");
+				
+				gpu::run(std::get<1>(sizes(sphere_phi)), it->sphere_.size(),
+								 [sgr = begin(sphere_phi), gr = begin(phi.cubic()), sph = it->sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
+									 sgr[ipoint][ist] = gr[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
+								 });
+			}
+			
+			math::array<complex, 2> projections({it->nproj_, phi.local_set_size()});
+			
+			{ CALI_CXX_MARK_SCOPE("projector_gemm_1");
+				namespace blas = boost::multi::blas;
+				blas::real_doubled(projections) = blas::gemm(it->sphere_.volume_element(), it->matrix_, blas::real_doubled(sphere_phi));
+			}
+			
+			{	CALI_CXX_MARK_SCOPE("projector_scal");
+				
+				//DATAOPERATIONS GPU::RUN 2D
+				gpu::run(phi.local_set_size(), it->nproj_,
+								 [proj = begin(projections), coeff = begin(it->kb_coeff_)]
+								 GPU_LAMBDA (auto ist, auto iproj){
+									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+								 });
+			}
+			
+			if(it->comm_.size() > 1){
+				CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
+				it->comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+			}
+			
+			{
+				CALI_CXX_MARK_SCOPE("projector_gemm_2");
+				namespace blas = boost::multi::blas;
+				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(it->matrix_), blas::real_doubled(projections));
+			}
 			iproj++;
 		}
 
-		return sphere_phi;
+		return sphere_phi_all;
 			
 	}
 
