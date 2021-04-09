@@ -160,15 +160,21 @@ public:
 		CALI_CXX_MARK_FUNCTION;
 
 		long max_sphere_size = 0;
-		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) max_sphere_size = std::max(max_sphere_size, it->sphere_.size());
-		
+		int max_nproj = 0;
+		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
+			max_sphere_size = std::max(max_sphere_size, it->sphere_.size());
+			max_nproj = std::max(max_nproj, it->nproj_);			
+		}
+
 		math::array<complex, 3> sphere_phi_all({projectors.size(), max_sphere_size, phi.local_set_size()});
+		math::array<complex, 3> projections_all({projectors.size(), max_nproj, phi.local_set_size()});
 
 		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
 
 			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
-			
+			auto projections = projections_all[iproj]({0, it->nproj_});
+				
 			{	CALI_CXX_MARK_SCOPE("projector::gather");
 				
 				gpu::run(std::get<1>(sizes(sphere_phi)), it->sphere_.size(),
@@ -176,8 +182,6 @@ public:
 									 sgr[ipoint][ist] = gr[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
 								 });
 			}
-			
-			math::array<complex, 2> projections({it->nproj_, phi.local_set_size()});
 			
 			{ CALI_CXX_MARK_SCOPE("projector_gemm_1");
 				namespace blas = boost::multi::blas;
@@ -194,16 +198,26 @@ public:
 								 });
 			}
 			
-			if(it->comm_.size() > 1){
-				CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-				it->comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
-			}
+			iproj++;
+		}
+
+		if(phi.basis().comm().size() > 1){
+			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
+		}
+		
+		iproj = 0;
+		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
+			
+			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
+			auto projections = projections_all[iproj]({0, it->nproj_});
 			
 			{
 				CALI_CXX_MARK_SCOPE("projector_gemm_2");
 				namespace blas = boost::multi::blas;
 				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(it->matrix_), blas::real_doubled(projections));
 			}
+			
 			iproj++;
 		}
 
