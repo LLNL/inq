@@ -73,14 +73,14 @@ public:
 		return nproj_ == 0 or sphere_.size() == 0;
 	}
 
-	template <class field_set_type>
-	math::array<typename field_set_type::element_type, 2> project(const field_set_type & phi) const {
+	template <class field_set_type, typename SpherePhiType>
+	void project(field_set_type const & phi, SpherePhiType & sphere_phi) const {
 
 		assert(not empty());
 			
 		CALI_CXX_MARK_SCOPE("projector::project");
 				
-		auto sphere_phi = sphere_.gather(phi.cubic());
+		sphere_phi = sphere_.gather(phi.cubic());
 
 		CALI_MARK_BEGIN("projector_allocation");
 
@@ -113,9 +113,6 @@ public:
 			namespace blas = boost::multi::blas;
 			blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
 		}
-
-			
-		return sphere_phi;
 	}
 			
 	template <typename OcType, typename PhiType, typename GPhiType>
@@ -207,15 +204,16 @@ public:
 		long max_sphere_size = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) max_sphere_size = std::max(max_sphere_size, it->sphere_.size());
 		
-		math::array<complex, 3> projections({projectors.size(), max_sphere_size, phi.local_set_size()});
+		math::array<complex, 3> sphere_phi({projectors.size(), max_sphere_size, phi.local_set_size()});
 
 		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			projections[iproj]({0, it->sphere_.size()}) = it->project(phi);
+			auto sph_phi = sphere_phi[iproj]({0, it->sphere_.size()});
+			it->project(phi, sph_phi);
 			iproj++;
 		}
 
-		return projections;
+		return sphere_phi;
 			
 	}
 
