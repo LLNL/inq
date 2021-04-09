@@ -213,13 +213,16 @@ public:
 	auto static project_all(ProjectorsType const & projectors, basis::field_set<basis::real_space, complex> const & phi) {
 
 		CALI_CXX_MARK_FUNCTION;
-			
-		using proj_type = decltype(projectors.cbegin()->project(phi));
-			
-		std::vector<proj_type> projections;
 
+		long max_sphere_size = 0;
+		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) max_sphere_size = std::max(max_sphere_size, it->sphere_.size());
+		
+		math::array<complex, 3> projections({projectors.size(), max_sphere_size, phi.local_set_size()});
+
+		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			projections.push_back(it->project(phi));
+			projections[iproj]({0, it->sphere_.size()}) = it->project(phi);
+			iproj++;
 		}
 
 		return projections;
@@ -233,10 +236,10 @@ public:
 
 		CALI_CXX_MARK_FUNCTION;
 			
-		auto projit = projections.begin();
+		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			it->apply(*projit, vnlphi);
-			++projit;
+			it->apply(projections[iproj]({0, it->sphere_.size()}), vnlphi);
+			iproj++;
 		}
 	}
 
