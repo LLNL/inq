@@ -118,16 +118,6 @@ public:
 		return sphere_phi;
 	}
 			
-	template <class SpherePhiType, class field_set_type>
-	void apply(SpherePhiType const & sphere_vnlphi, field_set_type & vnlphi) const {
-
-		CALI_CXX_MARK_SCOPE("projector::apply");
-			
-		assert(not empty());
-			
-		sphere_.scatter_add(sphere_vnlphi, vnlphi.cubic());
-	}
-
 	template <typename OcType, typename PhiType, typename GPhiType>
 	struct force_term {
 		OcType oc;
@@ -231,14 +221,14 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////		
 
-	template <typename ProjectorsType, typename ProjectionsType>
-	void static apply_all(ProjectorsType const & projectors, ProjectionsType & projections, basis::field_set<basis::real_space, complex> & vnlphi) {
+	template <typename ProjectorsType, typename SpherePhiType>
+	void static apply_all(ProjectorsType const & projectors, SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi) {
 
 		CALI_CXX_MARK_FUNCTION;
-			
+		
 		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			it->apply(projections[iproj]({0, it->sphere_.size()}), vnlphi);
+			it->sphere_.scatter_add(sphere_vnlphi[iproj]({0, it->sphere_.size()}), vnlphi.cubic());
 			iproj++;
 		}
 	}
