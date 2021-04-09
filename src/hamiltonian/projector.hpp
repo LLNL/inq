@@ -36,186 +36,187 @@
 namespace inq {
 namespace hamiltonian {
 
-  class projector {
+class projector {
 
-  public:
-    projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
-      sphere_(basis, cell, atom_position, ps.projector_radius()),
-      nproj_(ps.num_projectors_lm()),
-      matrix_({nproj_, sphere_.size()}),
-			kb_coeff_(nproj_),
-			comm_(sphere_.create_comm(basis.comm())),
-			iatom_(iatom){
+public:
+	projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
+		sphere_(basis, cell, atom_position, ps.projector_radius()),
+		nproj_(ps.num_projectors_lm()),
+		matrix_({nproj_, sphere_.size()}),
+		kb_coeff_(nproj_),
+		comm_(sphere_.create_comm(basis.comm())),
+		iatom_(iatom){
 
-			int iproj_lm = 0;
-      for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
+		int iproj_lm = 0;
+		for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
 				
-				int l = ps.projector_l(iproj_l);
+			int l = ps.projector_l(iproj_l);
 				
-				// now construct the projector with the spherical harmonics
-				for(int m = -l; m <= l; m++){
-					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-						matrix_[iproj_lm][ipoint] = ps.projector(iproj_l).value(sphere_.distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sphere_.point_pos(ipoint));
-					}
-					kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
-					iproj_lm++;
+			// now construct the projector with the spherical harmonics
+			for(int m = -l; m <= l; m++){
+				for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
+					matrix_[iproj_lm][ipoint] = ps.projector(iproj_l).value(sphere_.distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sphere_.point_pos(ipoint));
 				}
+				kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
+				iproj_lm++;
+			}
 				
-      }
-
-			assert(iproj_lm == ps.num_projectors_lm());
-			
-    }
-
-		projector(projector const &) = delete;		
-
-		auto empty() const {
-			return nproj_ == 0 or sphere_.size() == 0;
 		}
 
-    template <class field_set_type>
-    math::array<typename field_set_type::element_type, 2> project(const field_set_type & phi) const {
-
-			assert(not empty());
+		assert(iproj_lm == ps.num_projectors_lm());
 			
-			CALI_CXX_MARK_SCOPE("projector::project");
+	}
+
+	projector(projector const &) = delete;		
+
+	auto empty() const {
+		return nproj_ == 0 or sphere_.size() == 0;
+	}
+
+	template <class field_set_type>
+	math::array<typename field_set_type::element_type, 2> project(const field_set_type & phi) const {
+
+		assert(not empty());
+			
+		CALI_CXX_MARK_SCOPE("projector::project");
 				
-			auto sphere_phi = sphere_.gather(phi.cubic());
+		auto sphere_phi = sphere_.gather(phi.cubic());
 
-			CALI_MARK_BEGIN("projector_allocation");
+		CALI_MARK_BEGIN("projector_allocation");
 
-			math::array<typename field_set_type::element_type, 2> projections({nproj_, phi.local_set_size()});
+		math::array<typename field_set_type::element_type, 2> projections({nproj_, phi.local_set_size()});
 
-			CALI_MARK_END("projector_allocation");
+		CALI_MARK_END("projector_allocation");
 			
-			{ CALI_CXX_MARK_SCOPE("projector_gemm_1");
-				namespace blas = boost::multi::blas;
-				blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
-			}
+		{ CALI_CXX_MARK_SCOPE("projector_gemm_1");
+			namespace blas = boost::multi::blas;
+			blas::real_doubled(projections) = blas::gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
+		}
 			
-			{	CALI_CXX_MARK_SCOPE("projector_scal");
+		{	CALI_CXX_MARK_SCOPE("projector_scal");
 				
-				//DATAOPERATIONS GPU::RUN 2D
+			//DATAOPERATIONS GPU::RUN 2D
+			gpu::run(phi.local_set_size(), nproj_,
+							 [proj = begin(projections), coeff = begin(kb_coeff_)]
+							 GPU_LAMBDA (auto ist, auto iproj){
+								 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+							 });
+		}
+			
+		if(comm_.size() > 1){
+			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
+			comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+		}
+			
+		{
+			CALI_CXX_MARK_SCOPE("projector_gemm_2");
+			namespace blas = boost::multi::blas;
+			blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
+		}
+
+			
+		return sphere_phi;
+	}
+			
+	template <class SpherePhiType, class field_set_type>
+	void apply(SpherePhiType const & sphere_vnlphi, field_set_type & vnlphi) const {
+
+		CALI_CXX_MARK_SCOPE("projector::apply");
+			
+		assert(not empty());
+			
+		sphere_.scatter_add(sphere_vnlphi, vnlphi.cubic());
+	}
+
+	template <typename OcType, typename PhiType, typename GPhiType>
+	struct force_term {
+		OcType oc;
+		PhiType phi;
+		GPhiType gphi;
+		constexpr auto operator()(int ist, int ip) const {
+			return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
+		}
+	};
+		
+	template <class PhiType, typename GPhiType, typename OccsType>
+	math::vector3<double> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
+
+		math::vector3<double> force{0.0, 0.0, 0.0};
+
+		if(nproj_ == 0) return force;
+
+		CALI_CXX_MARK_SCOPE("projector::force");
+				
+		using boost::multi::blas::gemm;
+		using boost::multi::blas::transposed;
+		namespace blas = boost::multi::blas;
+				
+		auto sphere_phi = sphere_.gather(phi.cubic());
+		auto sphere_gphi = sphere_.gather(gphi.cubic());			
+
+		math::array<typename PhiType::element_type, 2> projections({nproj_, phi.local_set_size()});
+
+		if(sphere_.size() > 0) {
+				
+			blas::real_doubled(projections) = gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
+				
+			{
+				CALI_CXX_MARK_SCOPE("projector_force_scal"); 
+					
 				gpu::run(phi.local_set_size(), nproj_,
 								 [proj = begin(projections), coeff = begin(kb_coeff_)]
 								 GPU_LAMBDA (auto ist, auto iproj){
 									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
 								 });
 			}
-			
-			if(comm_.size() > 1){
-				CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-				comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
-			}
-			
-			{
-				CALI_CXX_MARK_SCOPE("projector_gemm_2");
-				namespace blas = boost::multi::blas;
-				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrix_), blas::real_doubled(projections));
-			}
-
-			
-			return sphere_phi;
-		}
-			
-		template <class SpherePhiType, class field_set_type>
-    void apply(SpherePhiType const & sphere_vnlphi, field_set_type & vnlphi) const {
-
-			CALI_CXX_MARK_SCOPE("projector::apply");
-			
-			assert(not empty());
-			
-			sphere_.scatter_add(sphere_vnlphi, vnlphi.cubic());
-		}
-
-		template <typename OcType, typename PhiType, typename GPhiType>
-		struct force_term {
-			OcType oc;
-			PhiType phi;
-			GPhiType gphi;
-			constexpr auto operator()(int ist, int ip) const {
-				return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
-			}
-		};
-		
-    template <class PhiType, typename GPhiType, typename OccsType>
-    math::vector3<double> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
-
-			math::vector3<double> force{0.0, 0.0, 0.0};
-
-			if(nproj_ == 0) return force;
-
-			CALI_CXX_MARK_SCOPE("projector::force");
 				
-			using boost::multi::blas::gemm;
-			using boost::multi::blas::transposed;
+		} else {
+			projections.elements().fill(0.0);
+		}
+
+		{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
+			comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+		}
+
+		if(sphere_.size() > 0) {
 			namespace blas = boost::multi::blas;
-				
-			auto sphere_phi = sphere_.gather(phi.cubic());
-			auto sphere_gphi = sphere_.gather(gphi.cubic());			
+			blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(matrix_), blas::real_doubled(projections));
 
-			math::array<typename PhiType::element_type, 2> projections({nproj_, phi.local_set_size()});
 
-			if(sphere_.size() > 0) {
-				
-				blas::real_doubled(projections) = gemm(sphere_.volume_element(), matrix_, blas::real_doubled(sphere_phi));
-				
-				{
-					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
-					
-					gpu::run(phi.local_set_size(), nproj_,
-									 [proj = begin(projections), coeff = begin(kb_coeff_)]
-									 GPU_LAMBDA (auto ist, auto iproj){
-										 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
-									 });
-				}
-				
-			} else {
-				projections.elements().fill(0.0);
+			{
+				CALI_CXX_MARK_SCOPE("projector_force_sum");
+				force = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(sphere_.size()),
+												 force_term<decltype(begin(occs)), decltype(begin(sphere_phi)), decltype(begin(sphere_gphi))>{begin(occs), begin(sphere_phi), begin(sphere_gphi)});
 			}
-
-			{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
-			}
-
-			if(sphere_.size() > 0) {
-				namespace blas = boost::multi::blas;
-				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(matrix_), blas::real_doubled(projections));
-
-
-				{
-					CALI_CXX_MARK_SCOPE("projector_force_sum");
-					force = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(sphere_.size()),
-													 force_term<decltype(begin(occs)), decltype(begin(sphere_phi)), decltype(begin(sphere_gphi))>{begin(occs), begin(sphere_phi), begin(sphere_gphi)});
-				}
 				
-			}
-			
-			return phi.basis().volume_element()*force;
-    }
-		
-    int num_projectors() const {
-      return nproj_;
-    }
-		
-    auto kb_coeff(int iproj){
-      return kb_coeff_[iproj];
-    }
-
-		auto iatom() const {
-			return iatom_;
 		}
+			
+		return phi.basis().volume_element()*force;
+	}
+		
+	int num_projectors() const {
+		return nproj_;
+	}
+		
+	auto kb_coeff(int iproj){
+		return kb_coeff_[iproj];
+	}
 
-  private:
+	auto iatom() const {
+		return iatom_;
+	}
 
-    basis::spherical_grid sphere_;
-    int nproj_;
-    math::array<double, 2> matrix_;
-		math::array<double, 1> kb_coeff_;
-		mutable boost::mpi3::communicator comm_;
-		int iatom_;
+private:
+
+	basis::spherical_grid sphere_;
+	int nproj_;
+	math::array<double, 2> matrix_;
+	math::array<double, 1> kb_coeff_;
+	mutable boost::mpi3::communicator comm_;
+	int iatom_;
     
-  };
+};
+
   
 }
 }
