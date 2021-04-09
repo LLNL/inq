@@ -4,21 +4,21 @@
 #define INQ__HAMILTONIAN__PROJECTOR
 
 /*
- Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa.
+	Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa.
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 3 of the License, or
- (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation; either version 3 of the License, or
+	(at your option) any later version.
   
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
   
- You should have received a copy of the GNU Lesser General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <pseudopod/spherical_harmonic.hpp>
@@ -206,6 +206,40 @@ public:
 		return iatom_;
 	}
 
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename ProjectorsType>
+	auto static project_all(ProjectorsType const & projectors, basis::field_set<basis::real_space, complex> const & phi) {
+
+		CALI_CXX_MARK_FUNCTION;
+			
+		using proj_type = decltype(projectors.cbegin()->project(phi));
+			
+		std::vector<proj_type> projections;
+
+		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
+			projections.push_back(it->project(phi));
+		}
+
+		return projections;
+			
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////		
+
+	template <typename ProjectorsType, typename ProjectionsType>
+	void static apply_all(ProjectorsType const & projectors, ProjectionsType & projections, basis::field_set<basis::real_space, complex> & vnlphi) {
+
+		CALI_CXX_MARK_FUNCTION;
+			
+		auto projit = projections.begin();
+		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
+			it->apply(*projit, vnlphi);
+			++projit;
+		}
+	}
+
 private:
 
 	basis::spherical_grid sphere_;
@@ -216,7 +250,6 @@ private:
 	int iatom_;
     
 };
-
   
 }
 }

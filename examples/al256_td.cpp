@@ -69,7 +69,7 @@ int main(int argc, char ** argv){
 	for(int ii = 0; ii < 1; ii++){
 		auto propagation = real_time::propagate(
 			ions, electrons, input::interaction::pbe(), 
-			input::rt::num_steps(1000) | input::rt::dt(dt), ions::propagator::impulsive{}
+			input::rt::num_steps(10) | input::rt::dt(dt), ions::propagator::impulsive{}
 		);
 
 		for(std::size_t i = 0; i != propagation.coordinates.size(); ++i){
