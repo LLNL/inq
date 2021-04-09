@@ -171,24 +171,35 @@ public:
 
 		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
+			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
+			
+			CALI_CXX_MARK_SCOPE("projector::gather");
+				
+			gpu::run(std::get<1>(sizes(sphere_phi)), it->sphere_.size(),
+							 [sgr = begin(sphere_phi), gr = begin(phi.cubic()), sph = it->sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
+								 sgr[ipoint][ist] = gr[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
+								 });
+			
+			iproj++;
+		}
 
+		iproj = 0;
+		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
 			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
 			auto projections = projections_all[iproj]({0, it->nproj_});
-				
-			{	CALI_CXX_MARK_SCOPE("projector::gather");
-				
-				gpu::run(std::get<1>(sizes(sphere_phi)), it->sphere_.size(),
-								 [sgr = begin(sphere_phi), gr = begin(phi.cubic()), sph = it->sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
-									 sgr[ipoint][ist] = gr[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
-								 });
-			}
 			
-			{ CALI_CXX_MARK_SCOPE("projector_gemm_1");
-				namespace blas = boost::multi::blas;
-				blas::real_doubled(projections) = blas::gemm(it->sphere_.volume_element(), it->matrix_, blas::real_doubled(sphere_phi));
-			}
+			CALI_CXX_MARK_SCOPE("projector_gemm_1");
+			namespace blas = boost::multi::blas;
+			blas::real_doubled(projections) = blas::gemm(it->sphere_.volume_element(), it->matrix_, blas::real_doubled(sphere_phi));
+				
+			iproj++;
+		}
+		
+		iproj = 0;
+		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
+			auto projections = projections_all[iproj]({0, it->nproj_});
 			
-			{	CALI_CXX_MARK_SCOPE("projector_scal");
+			CALI_CXX_MARK_SCOPE("projector_scal");
 				
 				//DATAOPERATIONS GPU::RUN 2D
 				gpu::run(phi.local_set_size(), it->nproj_,
@@ -196,8 +207,7 @@ public:
 								 GPU_LAMBDA (auto ist, auto iproj){
 									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
 								 });
-			}
-			
+				
 			iproj++;
 		}
 
@@ -208,7 +218,6 @@ public:
 		
 		iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			
 			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
 			auto projections = projections_all[iproj]({0, it->nproj_});
 			
