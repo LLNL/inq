@@ -155,7 +155,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename ProjectorsType>
-	auto static project_all(ProjectorsType const & projectors, basis::field_set<basis::real_space, complex> const & phi) {
+	static math::array<complex, 3> project_all(ProjectorsType const & projectors, basis::field_set<basis::real_space, complex> const & phi) {
 
 		CALI_CXX_MARK_FUNCTION;
 
