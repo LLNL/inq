@@ -79,9 +79,16 @@ public:
 		assert(not empty());
 			
 		CALI_CXX_MARK_SCOPE("projector::project");
-				
-		sphere_phi = sphere_.gather(phi.cubic());
 
+
+		{	CALI_CXX_MARK_SCOPE("projector::gather");
+
+			gpu::run(std::get<1>(sizes(sphere_phi)), sphere_.size(),
+							 [sgr = begin(sphere_phi), gr = begin(phi.cubic()), sph = sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
+								 sgr[ipoint][ist] = gr[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
+							 });
+		}
+		
 		CALI_MARK_BEGIN("projector_allocation");
 
 		math::array<typename field_set_type::element_type, 2> projections({nproj_, phi.local_set_size()});
