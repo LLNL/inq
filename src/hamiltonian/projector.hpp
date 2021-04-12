@@ -211,9 +211,16 @@ public:
 			iproj++;
 		}
 
-		if(phi.basis().comm().size() > 1){
+		iproj = 0;
+		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
 			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
+
+			if(it->comm_.size() > 1){
+				auto projections = +projections_all[iproj]({0, it->nproj_});
+				it->comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				projections_all[iproj]({0, it->nproj_}) = projections;
+			}
+			iproj++;
 		}
 		
 		iproj = 0;
