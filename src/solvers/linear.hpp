@@ -26,6 +26,7 @@
 #include <tuple> //std::get
 #include <cassert>
 #include <math/array.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 #define dpotrf FC_GLOBAL(dpotrf, DPOTRF) 
 extern "C" void dpotrf(const char * uplo, const int * n, double * a, const int * lda, int * info);
@@ -48,13 +49,13 @@ void linear_symmetric(matrix_type && matrix, vector_type & vector){
     
 	//DATAOPERATIONS RAWLAPACK dpotrf
 	int info;
-	dpotrf("U", &nn, matrix.data_elements(), &nn, &info);
+	dpotrf("U", &nn, raw_pointer_cast(matrix.data_elements()), &nn, &info);
 		
 	const int one = 1;
 	//DATAOPERATIONS RAWLAPACK dtrsv
-	dtrsv('U', 'T', 'N', nn, matrix.data_elements(), nn, vector.data_elements(), one);
+	dtrsv('U', 'T', 'N', nn, raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(vector.data_elements()), one);
 	//DATAOPERATIONS RAWLAPACK dtrsv
-	dtrsv('U', 'N', 'N', nn, matrix.data_elements(), nn, vector.data_elements(), one);
+	dtrsv('U', 'N', 'N', nn, raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(vector.data_elements()), one);
 		
 }
 
