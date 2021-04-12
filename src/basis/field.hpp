@@ -27,6 +27,7 @@ OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 #include <tinyformat/tinyformat.h>
 #include <algorithm>
 #include <utils/skeleton_wrapper.hpp>
+#include <utils/raw_pointer_cast.hpp>
 #include <basis/real_space.hpp>
 #include <math/complex.hpp>
 
@@ -114,11 +115,11 @@ namespace basis {
 		}
 		
 		auto data() {
-			return linear_.data_elements();
+			return raw_pointer_cast(linear_.data_elements());
 		}
 
 		auto data() const {
-			return linear_.data_elements();
+			return raw_pointer_cast(linear_.data_elements());
 		}
 
 		auto & linear() const {

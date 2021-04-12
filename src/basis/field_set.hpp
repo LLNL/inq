@@ -29,6 +29,7 @@
 #include <mpi3/environment.hpp>
 #include <mpi3/cartesian_communicator.hpp>
 #include <utils/skeleton_wrapper.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
 namespace basis {
@@ -89,11 +90,11 @@ namespace basis {
 		}
 
 		auto data() const {
-			return matrix_.data();
+			return raw_pointer_cast(matrix_.data());
 		}
 
 		auto data() {
-			return matrix_.data_elements();
+			return raw_pointer_cast(matrix_.data_elements());
 		}
 
 		auto num_elements() const {
