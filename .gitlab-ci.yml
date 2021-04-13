@@ -176,13 +176,33 @@ clang-ompi-serial:
       - cd build
       - export OMPI_CXX=clang++-8
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CXX=mpic++ ../configure --prefix=$HOME
+      - CC=mpicc CXX=mpic++ ../configure --prefix=$HOME
       - ls -l
       - time make -j4
       - time make -j4 install
       - ctest --output-on-failure --timeout 360
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
+
+clang9-ompi-serial:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev bzip2 python2
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - clang++-8 --version
+      - mkdir build
+      - cd build
+      - export OMPI_CXX=clang++-9
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - CC=mpicc CXX=mpic++ ../configure --prefix=$HOME
+      - ls -l
+      - time make -j4
+      - time make -j4 install
+      - ctest --output-on-failure --timeout 360
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - tests/silicon2
+
 
 clang-ompi-parallel:
     stage: build
