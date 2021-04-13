@@ -62,8 +62,8 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 	if(phi2.set_part().local_size() == 1){
 
 		namespace blas = boost::multi::blas;
-		overlap_vector[0] = phi1.basis().volume_element()*blas::dot(blas::C(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
-
+		overlap_vector[0] = blas::dot(blas::C(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
+		overlap_vector[0] *= phi1.basis().volume_element();
 	} else {
 		
 		overlap_vector = gpu::run(phi1.local_set_size(), gpu::reduce(phi1.basis().part().local_size()), overlap_diagonal_mult<decltype(begin(phi1.matrix()))>{phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix())});
