@@ -4,7 +4,7 @@
 #define OPERATIONS__OVERLAP_DIAGONAL
 
 /*
- Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa.
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -61,11 +61,8 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 
 	if(phi2.set_part().local_size() == 1){
 
-		using boost::multi::blas::dot;
-		using boost::multi::blas::conj;
-		
-		overlap_vector[0] = dot(boost::multi::blas::conj(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
-		overlap_vector[0] *= phi1.basis().volume_element();
+		namespace blas = boost::multi::blas;
+		overlap_vector[0] = phi1.basis().volume_element()*blas::dot(blas::C(phi1.matrix().rotated()[0]), phi2.matrix().rotated()[0]);
 
 	} else {
 		
