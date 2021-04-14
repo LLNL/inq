@@ -38,6 +38,7 @@
 #include <mpi3/detail/datatype.hpp>
 
 #include <utils/profiling.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
 namespace operations {
@@ -96,7 +97,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 		}
 
 		MPI_Status status;
-		mpi_err = MPI_File_write_at_all(fh, sizeof(Type)*phi.basis().part().start(), buffer.data_elements(), buffer.size(), mpi_type, &status);
+		mpi_err = MPI_File_write_at_all(fh, sizeof(Type)*phi.basis().part().start(), raw_pointer_cast(buffer.data_elements()), buffer.size(), mpi_type, &status);
 		
 		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot write restart file '" << filename << "'." << std::endl;
@@ -144,7 +145,7 @@ void load(std::string const & dirname, FieldSet & phi){
 		}
 		
 		MPI_Status status;
-		mpi_err = MPI_File_read_at_all(fh, sizeof(Type)*phi.basis().part().start(), buffer.data_elements(), buffer.size(), mpi_type, &status);
+		mpi_err = MPI_File_read_at_all(fh, sizeof(Type)*phi.basis().part().start(), raw_pointer_cast(buffer.data_elements()), buffer.size(), mpi_type, &status);
 		
 		if(mpi_err != MPI_SUCCESS){
 			std::cerr << "Error: cannot read restart file '" << filename << "'." << std::endl;

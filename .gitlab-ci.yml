@@ -176,7 +176,7 @@ clang-ompi-serial:
       - cd build
       - export OMPI_CXX=clang++-8
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CXX=mpic++ ../configure --prefix=$HOME
+      - CC=mpicc CXX=mpic++ ../configure --prefix=$HOME
       - ls -l
       - time make -j4
       - time make -j4 install

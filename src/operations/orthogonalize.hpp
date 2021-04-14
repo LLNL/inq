@@ -98,7 +98,7 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 #else
 	{
 		CALI_CXX_MARK_SCOPE("cuda_zpotrf");
-		zpotrf("U", &nst, olap.data_elements(), &nst, &info);
+		zpotrf("U", &nst, raw_pointer_cast(olap.data_elements()), &nst, &info);
 	}
 #endif
 
