@@ -59,7 +59,8 @@ public:
 
 		points_ = decltype(points_)({nprojs_, max_sphere_size_});
     coeff_ = decltype(coeff_)({nprojs_, max_nlm_}, 0.0);
-
+    matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
+		
     auto iproj = 0;
     for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
 			gpu::run(max_sphere_size_,
@@ -68,6 +69,15 @@ public:
 									 poi[iproj][ipoint] = sph.points(ipoint);
 								 } else {
 									 poi[iproj][ipoint] = {-1, -1, -1};
+								 }
+							 });
+			
+			gpu::run(max_sphere_size_, max_nlm_,
+							 [mat = begin(matrices_), itmat = begin(it->matrix_), iproj, np = it->sphere_.size(), nlm = it->nproj_] GPU_LAMBDA (auto ipoint, auto ilm){
+								 if(ipoint < (unsigned) np and ilm < (unsigned) nlm) {
+									 mat[iproj][ilm][ipoint] = itmat[ilm][ipoint];
+								 } else {
+									 mat[iproj][ilm][ipoint] = 0.0;								 
 								 }
 							 });
 								 
@@ -117,7 +127,7 @@ public:
 			
 			CALI_CXX_MARK_SCOPE("projector_gemm_1");
 			namespace blas = boost::multi::blas;
-			blas::real_doubled(projections) = blas::gemm(it->sphere_.volume_element(), it->matrix_, blas::real_doubled(sphere_phi));
+			blas::real_doubled(projections) = blas::gemm(it->sphere_.volume_element(), matrices_[iproj]({0, it->nproj_}, {0, it->sphere_.size()}), blas::real_doubled(sphere_phi));			
 				
 			iproj++;
 		}
@@ -151,7 +161,7 @@ public:
 			{
 				CALI_CXX_MARK_SCOPE("projector_gemm_2");
 				namespace blas = boost::multi::blas;
-				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(it->matrix_), blas::real_doubled(projections));
+				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrices_[iproj]({0, it->nproj_}, {0, it->sphere_.size()})), blas::real_doubled(projections));
 			}
 			
 			iproj++;
@@ -185,6 +195,7 @@ private:
 	int max_nlm_;
 	math::array<math::vector3<int>, 2> points_;
 	math::array<double, 2> coeff_;
+	math::array<double, 3> matrices_;
   
 };
   
