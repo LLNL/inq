@@ -42,7 +42,7 @@ public:
 
 	projector_all():
     max_sphere_size_(0),
-    max_nproj_(0) {
+    max_nlm_(0) {
   }
   
 	template <typename ProjectorsType>
@@ -51,13 +51,13 @@ public:
 		CALI_CXX_MARK_FUNCTION;
     
 		max_sphere_size_ = 0;
-		max_nproj_ = 0;
+		max_nlm_ = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
 			max_sphere_size_ = std::max(max_sphere_size_, it->sphere_.size());
-			max_nproj_ = std::max(max_nproj_, it->nproj_);			
+			max_nlm_ = std::max(max_nlm_, it->nproj_);			
 		}
 
-    coeff_ = decltype(coeff_)({projectors.size(), max_nproj_}, 0.0);
+    coeff_ = decltype(coeff_)({projectors.size(), max_nlm_}, 0.0);
 
     auto iproj = 0;
     for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
@@ -71,7 +71,7 @@ public:
 	math::array<complex, 3> project(ProjectorsType const & projectors, basis::field_set<basis::real_space, complex> const & phi) const {
     
 		math::array<complex, 3> sphere_phi_all({projectors.size(), max_sphere_size_, phi.local_set_size()});
-		math::array<complex, 3> projections_all({projectors.size(), max_nproj_, phi.local_set_size()});
+		math::array<complex, 3> projections_all({projectors.size(), max_nlm_, phi.local_set_size()});
 
 		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
@@ -101,7 +101,7 @@ public:
 		
     { CALI_CXX_MARK_SCOPE("projector_scal");
 				
-      gpu::run(phi.local_set_size(), max_nproj_, projectors.size(),
+      gpu::run(phi.local_set_size(), max_nlm_, projectors.size(),
                [proj = begin(projections_all), coe = begin(coeff_)]
                GPU_LAMBDA (auto ist, auto ilm, auto iproj){
                  proj[iproj][ilm][ist] = proj[iproj][ilm][ist]*coe[iproj][ilm];
@@ -155,7 +155,7 @@ public:
 private:
   
   long max_sphere_size_;
-  int max_nproj_;
+  int max_nlm_;
   math::array<double, 2> coeff_;
   
 };
