@@ -60,7 +60,7 @@ public:
 		points_ = decltype(points_)({nprojs_, max_sphere_size_});
     coeff_ = decltype(coeff_)({nprojs_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
-		comms_ = decltype(comms_)({nprojs_});
+		comms_ = decltype(comms_)(nprojs_);
 		
     auto iproj = 0;
     for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
@@ -181,7 +181,7 @@ private:
 	math::array<math::vector3<int>, 2> points_;
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
-	mutable math::array<boost::mpi3::communicator, 1> comms_;	
+	mutable boost::multi::array<boost::mpi3::communicator, 1> comms_;	
 
   
 };
