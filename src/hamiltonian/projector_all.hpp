@@ -104,9 +104,9 @@ public:
 			CALI_CXX_MARK_SCOPE("projector::gather");
 				
 			gpu::run(std::get<1>(sizes(sphere_phi)), it->sphere_.size(),
-							 [sgr = begin(sphere_phi), gr = begin(phi.cubic()), sph = it->sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
-								 sgr[ipoint][ist] = gr[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
-								 });
+							 [sgr = begin(sphere_phi), gr = begin(phi.cubic()), poi = begin(points_), iproj] GPU_LAMBDA (auto ist, auto ipoint){
+								 sgr[ipoint][ist] = gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
+							 });
 			
 			iproj++;
 		}
