@@ -40,20 +40,30 @@ class projector_all {
 
 public:
 
+	projector_all():
+    max_sphere_size_(0),
+    max_nproj_(0) {
+  }
+  
 	template <typename ProjectorsType>
-	static math::array<complex, 3> project(ProjectorsType const & projectors, basis::field_set<basis::real_space, complex> const & phi) {
-    
+	projector_all(ProjectorsType const & projectors){
+
 		CALI_CXX_MARK_FUNCTION;
-
-		long max_sphere_size = 0;
-		int max_nproj = 0;
+    
+		max_sphere_size_ = 0;
+		max_nproj_ = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
-			max_sphere_size = std::max(max_sphere_size, it->sphere_.size());
-			max_nproj = std::max(max_nproj, it->nproj_);			
+			max_sphere_size_ = std::max(max_sphere_size_, it->sphere_.size());
+			max_nproj_ = std::max(max_nproj_, it->nproj_);			
 		}
-
-		math::array<complex, 3> sphere_phi_all({projectors.size(), max_sphere_size, phi.local_set_size()});
-		math::array<complex, 3> projections_all({projectors.size(), max_nproj, phi.local_set_size()});
+    
+  }
+  
+	template <typename ProjectorsType>
+	math::array<complex, 3> project(ProjectorsType const & projectors, basis::field_set<basis::real_space, complex> const & phi) const {
+    
+		math::array<complex, 3> sphere_phi_all({projectors.size(), max_sphere_size_, phi.local_set_size()});
+		math::array<complex, 3> projections_all({projectors.size(), max_nproj_, phi.local_set_size()});
 
 		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
@@ -130,7 +140,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////		
 
 	template <typename ProjectorsType, typename SpherePhiType>
-	void static apply(ProjectorsType const & projectors, SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi) {
+	void apply(ProjectorsType const & projectors, SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi) const {
 
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -140,7 +150,12 @@ public:
 			iproj++;
 		}
 	}
-    
+
+private:
+  
+  long max_sphere_size_;
+  int max_nproj_;
+  
 };
   
 }

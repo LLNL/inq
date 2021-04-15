@@ -64,6 +64,9 @@ namespace hamiltonian {
 					if(projectors_.back().empty()) projectors_.pop_back(); 
 				}
 			}
+
+			projectors_all_ = projector_all(projectors_);
+			
 		}
 		
 		basis::field<basis::real_space, double> scalar_potential;
@@ -109,12 +112,12 @@ namespace hamiltonian {
 					
 			} else {
 
-				auto proj = projector_all::project(projectors_, phi);
+				auto proj = projectors_all_.project(projectors_, phi);
 				
 				basis::field_set<basis::real_space, complex> vnlphi(phi.skeleton());
 				vnlphi = 0.0;
 
-				projector_all::apply(projectors_, proj, vnlphi);
+				projectors_all_.apply(projectors_, proj, vnlphi);
 			
 				return vnlphi;
 							
@@ -128,7 +131,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projector_all::project(projectors_, phi);
+			auto proj = projectors_all_.project(projectors_, phi);
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
@@ -141,7 +144,7 @@ namespace hamiltonian {
 			hamiltonian::scalar_potential_add(scalar_potential, phi, hphi);
 			exchange(phi, hphi);
 
-			projector_all::apply(projectors_, proj, hphi);
+			projectors_all_.apply(projectors_, proj, hphi);
 
 			return hphi;
 			
@@ -155,13 +158,13 @@ namespace hamiltonian {
 			
 			auto phi_rs = operations::space::to_real(phi);
 
-			auto proj = projector_all::project(projectors_, phi_rs);
+			auto proj = projectors_all_.project(projectors_, phi_rs);
 			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
 
-			projector_all::apply(projectors_, proj, hphi_rs);
+			projectors_all_.apply(projectors_, proj, hphi_rs);
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
@@ -200,6 +203,7 @@ namespace hamiltonian {
   private:
 
 		std::list<projector> projectors_;
+		projector_all projectors_all_;		
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
