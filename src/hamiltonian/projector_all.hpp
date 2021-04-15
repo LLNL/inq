@@ -119,19 +119,14 @@ public:
 								 }
 							 });
 		}
-		
-		auto iproj = 0;
-		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
-			auto projections = projections_all[iproj]({0, it->nproj_});
-			
+
+		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			CALI_CXX_MARK_SCOPE("projector_gemm_1");
+
 			namespace blas = boost::multi::blas;
-			blas::real_doubled(projections) = blas::gemm(it->sphere_.volume_element(), matrices_[iproj]({0, it->nproj_}, {0, it->sphere_.size()}), blas::real_doubled(sphere_phi));			
-				
-			iproj++;
+			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj])); 
 		}
-		
+				
     { CALI_CXX_MARK_SCOPE("projector_scal");
 				
       gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
@@ -141,7 +136,7 @@ public:
                });
 		}
 
-		iproj = 0;
+		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
 			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
 
@@ -153,18 +148,10 @@ public:
 			iproj++;
 		}
 		
-		iproj = 0;
-		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
-			auto projections = projections_all[iproj]({0, it->nproj_});
-			
-			{
-				CALI_CXX_MARK_SCOPE("projector_gemm_2");
-				namespace blas = boost::multi::blas;
-				blas::real_doubled(sphere_phi) = blas::gemm(1., blas::T(matrices_[iproj]({0, it->nproj_}, {0, it->sphere_.size()})), blas::real_doubled(projections));
-			}
-			
-			iproj++;
+		for(auto iproj = 0; iproj < nprojs_; iproj++) {
+			CALI_CXX_MARK_SCOPE("projector_gemm_2");
+			namespace blas = boost::multi::blas;
+			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1., blas::T(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
 
 		return sphere_phi_all;
