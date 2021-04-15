@@ -62,12 +62,12 @@ public:
 
     auto iproj = 0;
     for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
-			gpu::run(it->sphere_.size(),
+			gpu::run(max_sphere_size_,
 							 [poi = begin(points_), sph = it->sphere_.ref(), iproj, npoint = it->sphere_.size()] GPU_LAMBDA (auto ipoint){
 								 if(ipoint < unsigned (npoint)){
 									 poi[iproj][ipoint] = sph.points(ipoint);
 								 } else {
-									 poi[iproj][ipoint] = {0, 0, 0};
+									 poi[iproj][ipoint] = {-1, -1, -1};
 								 }
 							 });
 								 
@@ -97,21 +97,20 @@ public:
 		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
 
-		auto iproj = 0;
-		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
-			
-			CALI_CXX_MARK_SCOPE("projector::gather");
-				
-			gpu::run(std::get<1>(sizes(sphere_phi)), it->sphere_.size(),
-							 [sgr = begin(sphere_phi), gr = begin(phi.cubic()), poi = begin(points_), iproj] GPU_LAMBDA (auto ist, auto ipoint){
-								 sgr[ipoint][ist] = gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
-							 });
-			
-			iproj++;
-		}
 
-		iproj = 0;
+		{ CALI_CXX_MARK_SCOPE("projector::gather");
+				
+			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
+							 [sgr = begin(sphere_phi_all), gr = begin(phi.cubic()), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
+								 if(poi[iproj][ipoint][0] >= 0){
+									 sgr[iproj][ipoint][ist] = gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
+								 } else {
+									 sgr[iproj][ipoint][ist] = 0.0;
+								 }
+							 });
+		}
+		
+		auto iproj = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
 			auto sphere_phi = sphere_phi_all[iproj]({0, it->sphere_.size()});
 			auto projections = projections_all[iproj]({0, it->nproj_});
