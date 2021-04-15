@@ -105,7 +105,7 @@ public:
 								 if(poi[iproj][ipoint][0] >= 0){
 									 sgr[iproj][ipoint][ist] = gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
 								 } else {
-									 sgr[iproj][ipoint][ist] = 0.0;
+									 sgr[iproj][ipoint][ist] = complex(0.0, 0.0);
 								 }
 							 });
 		}
@@ -163,15 +163,18 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////		
 
-	template <typename ProjectorsType, typename SpherePhiType>
-	void apply(ProjectorsType const & projectors, SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi) const {
+	template <typename SpherePhiType>
+	void apply(SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi) const {
 
 		CALI_CXX_MARK_FUNCTION;
-		
-		auto iproj = 0;
-		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			it->sphere_.scatter_add(sphere_vnlphi[iproj]({0, it->sphere_.size()}), vnlphi.cubic());
-			iproj++;
+
+		for(auto iproj = 0; iproj < nprojs_; iproj++){
+			gpu::run(vnlphi.local_set_size(), max_sphere_size_,
+							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.cubic()), poi = begin(points_), iproj] GPU_LAMBDA (auto ist, auto ipoint){
+								 if(poi[iproj][ipoint][0] >= 0){
+									 gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist] += sgr[iproj][ipoint][ist];
+								 }
+							 });
 		}
 	}
 

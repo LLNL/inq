@@ -117,7 +117,7 @@ namespace hamiltonian {
 				basis::field_set<basis::real_space, complex> vnlphi(phi.skeleton());
 				vnlphi = 0.0;
 
-				projectors_all_.apply(projectors_, proj, vnlphi);
+				projectors_all_.apply(proj, vnlphi);
 			
 				return vnlphi;
 							
@@ -144,7 +144,7 @@ namespace hamiltonian {
 			hamiltonian::scalar_potential_add(scalar_potential, phi, hphi);
 			exchange(phi, hphi);
 
-			projectors_all_.apply(projectors_, proj, hphi);
+			projectors_all_.apply(proj, hphi);
 
 			return hphi;
 			
@@ -164,7 +164,7 @@ namespace hamiltonian {
 		
 			exchange(phi_rs, hphi_rs);
 
-			projectors_all_.apply(projectors_, proj, hphi_rs);
+			projectors_all_.apply(proj, hphi_rs);
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
