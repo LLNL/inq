@@ -60,6 +60,7 @@ public:
 		points_ = decltype(points_)({nprojs_, max_sphere_size_});
     coeff_ = decltype(coeff_)({nprojs_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
+		comms_ = decltype(comms_)({nprojs_});
 		
     auto iproj = 0;
     for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
@@ -82,6 +83,9 @@ public:
 							 });
 								 
       coeff_[iproj]({0, it->nproj_}) = it->kb_coeff_;
+
+			comms_[iproj] = it->comm_;
+			
       iproj++;
     }
     
@@ -140,9 +144,9 @@ public:
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
 			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
 
-			if(it->comm_.size() > 1){
+			if(comms_[iproj].size() > 1){
 				auto projections = +projections_all[iproj]({0, it->nproj_});
-				it->comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
 				projections_all[iproj]({0, it->nproj_}) = projections;
 			}
 			iproj++;
@@ -183,6 +187,8 @@ private:
 	math::array<math::vector3<int>, 2> points_;
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
+	mutable math::array<boost::mpi3::communicator, 1> comms_;	
+
   
 };
   
