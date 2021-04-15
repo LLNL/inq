@@ -105,8 +105,7 @@ public:
 		constructor(projectors);
 	}
   
-	template <typename ProjectorsType>
-	math::array<complex, 3> project(ProjectorsType const & projectors, basis::field_set<basis::real_space, complex> const & phi) const {
+	math::array<complex, 3> project(basis::field_set<basis::real_space, complex> const & phi) const {
     
 		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});

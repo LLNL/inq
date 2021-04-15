@@ -112,7 +112,7 @@ namespace hamiltonian {
 					
 			} else {
 
-				auto proj = projectors_all_.project(projectors_, phi);
+				auto proj = projectors_all_.project(phi);
 				
 				basis::field_set<basis::real_space, complex> vnlphi(phi.skeleton());
 				vnlphi = 0.0;
@@ -131,7 +131,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projectors_all_.project(projectors_, phi);
+			auto proj = projectors_all_.project(phi);
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
@@ -158,7 +158,7 @@ namespace hamiltonian {
 			
 			auto phi_rs = operations::space::to_real(phi);
 
-			auto proj = projectors_all_.project(projectors_, phi_rs);
+			auto proj = projectors_all_.project(phi_rs);
 			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, phi_rs);
 		
