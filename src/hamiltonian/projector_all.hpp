@@ -56,6 +56,14 @@ public:
 			max_sphere_size_ = std::max(max_sphere_size_, it->sphere_.size());
 			max_nproj_ = std::max(max_nproj_, it->nproj_);			
 		}
+
+    coeff_ = decltype(coeff_)({projectors.size(), max_nproj_}, 0.0);
+
+    auto iproj = 0;
+    for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
+      coeff_[iproj]({0, it->nproj_}) = it->kb_coeff_;
+      iproj++;
+    }
     
   }
   
@@ -99,9 +107,9 @@ public:
 				
 				//DATAOPERATIONS GPU::RUN 2D
 				gpu::run(phi.local_set_size(), it->nproj_,
-								 [proj = begin(projections), coeff = begin(it->kb_coeff_)]
-								 GPU_LAMBDA (auto ist, auto iproj){
-									 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+								 [proj = begin(projections), coe = begin(coeff_), iproj]
+								 GPU_LAMBDA (auto ist, auto ilm){
+									 proj[ilm][ist] = proj[ilm][ist]*coe[iproj][ilm];
 								 });
 				
 			iproj++;
@@ -155,6 +163,7 @@ private:
   
   long max_sphere_size_;
   int max_nproj_;
+  math::array<double, 2> coeff_;
   
 };
   
