@@ -140,16 +140,11 @@ public:
                });
 		}
 
-		auto iproj = 0;
-		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
+		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-
-			if(comms_[iproj].size() > 1){
-				auto projections = +projections_all[iproj]({0, it->nproj_});
-				comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
-				projections_all[iproj]({0, it->nproj_}) = projections;
-			}
-			iproj++;
+			
+			if(comms_[iproj].size() == 1) continue;
+			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&projections_all[iproj][0][0]), max_nlm_*phi.local_set_size(), std::plus<>{});
 		}
 		
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
