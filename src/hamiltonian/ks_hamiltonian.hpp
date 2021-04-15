@@ -27,6 +27,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/exchange_operator.hpp>
 #include <hamiltonian/projector.hpp>
+#include <hamiltonian/projector_all.hpp>
 #include <hamiltonian/projector_fourier.hpp>
 #include <hamiltonian/scalar_potential.hpp>
 #include <input/environment.hpp>
@@ -108,12 +109,12 @@ namespace hamiltonian {
 					
 			} else {
 
-				auto proj = projector::project_all(projectors_, phi);
+				auto proj = projector_all::project(projectors_, phi);
 				
 				basis::field_set<basis::real_space, complex> vnlphi(phi.skeleton());
 				vnlphi = 0.0;
 
-				projector::apply_all(projectors_, proj, vnlphi);
+				projector_all::apply(projectors_, proj, vnlphi);
 			
 				return vnlphi;
 							
@@ -127,7 +128,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projector::project_all(projectors_, phi);
+			auto proj = projector_all::project(projectors_, phi);
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
@@ -140,7 +141,7 @@ namespace hamiltonian {
 			hamiltonian::scalar_potential_add(scalar_potential, phi, hphi);
 			exchange(phi, hphi);
 
-			projector::apply_all(projectors_, proj, hphi);
+			projector_all::apply(projectors_, proj, hphi);
 
 			return hphi;
 			
@@ -154,13 +155,13 @@ namespace hamiltonian {
 			
 			auto phi_rs = operations::space::to_real(phi);
 
-			auto proj = projector::project_all(projectors_, phi_rs);
+			auto proj = projector_all::project(projectors_, phi_rs);
 			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
 
-			projector::apply_all(projectors_, proj, hphi_rs);
+			projector_all::apply(projectors_, proj, hphi_rs);
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
