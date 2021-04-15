@@ -99,20 +99,13 @@ public:
 			iproj++;
 		}
 		
-		iproj = 0;
-		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it){
-			auto projections = projections_all[iproj]({0, it->nproj_});
-			
-			CALI_CXX_MARK_SCOPE("projector_scal");
+    { CALI_CXX_MARK_SCOPE("projector_scal");
 				
-				//DATAOPERATIONS GPU::RUN 2D
-				gpu::run(phi.local_set_size(), it->nproj_,
-								 [proj = begin(projections), coe = begin(coeff_), iproj]
-								 GPU_LAMBDA (auto ist, auto ilm){
-									 proj[ilm][ist] = proj[ilm][ist]*coe[iproj][ilm];
-								 });
-				
-			iproj++;
+      gpu::run(phi.local_set_size(), max_nproj_, projectors.size(),
+               [proj = begin(projections_all), coe = begin(coeff_)]
+               GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+                 proj[iproj][ilm][ist] = proj[iproj][ilm][ist]*coe[iproj][ilm];
+               });
 		}
 
 		iproj = 0;
