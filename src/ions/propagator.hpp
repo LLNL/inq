@@ -14,6 +14,7 @@ namespace propagator {
 struct fixed {
 
 	static constexpr bool static_ions = true;
+	static constexpr bool needs_force = false;
 
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_positions(double dt, TypeIons &, TypeForces const &){
@@ -28,6 +29,7 @@ struct fixed {
 struct impulsive {
 
 	static constexpr bool static_ions = false;
+	static constexpr bool needs_force = false;	
 
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_positions(double dt, TypeIons& ions, TypeForces const &){
@@ -44,6 +46,7 @@ struct impulsive {
 struct molecular_dynamics{
 
 	static constexpr bool static_ions = false;
+	static constexpr bool needs_force = true;	
 
 	template <typename TypeIons, typename TypeForces>
 	static auto acceleration(TypeIons& ions, TypeForces forces){
