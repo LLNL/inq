@@ -20,7 +20,7 @@ include(CTest)
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
   enable_language(CUDA)
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"") #nvcc
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
   find_package(CUDA)
   set(INQ_CUDA_LIBRARIES ${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
   link_libraries(${INQ_CUDA_LIBRARIES})
@@ -49,7 +49,7 @@ link_libraries(Threads::Threads)
 
 #FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
 find_package(PkgConfig REQUIRED)
-pkg_search_module(FFTW REQUIRED fftw3 libfftw3 lfftw3 IMPORTED_TARGET)
+pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 include_directories(PkgConfig::FFTW)
 link_libraries(PkgConfig::FFTW)
 
@@ -62,6 +62,7 @@ endif()
 find_package(BLAS REQUIRED)
 link_libraries(${BLAS_LIBRARIES})
 
+set(BLA_VENDOR Generic) # ESSL doesn't implement dgelss_, now needed in the code
 find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
 
@@ -71,10 +72,14 @@ include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
-# we know that at least Boost 1.53 is not compatible with C++17
-find_package(Boost 1.54.0 REQUIRED COMPONENTS serialization)
-include_directories(${Boost_INCLUDE_DIRS})
-link_libraries(${Boost_LIBRARIES})
+find_package(Boost REQUIRED COMPONENTS serialization)
+message(STATUS "Boost actual version found " ${Boost_VERSION})
+if(Boost_VERSION LESS_EQUAL 105300) # may be higher than 1.53.0
+	message(STATUS "Applying option BOOST_NO_AUTO_PTR to patch for old Boost")
+	add_compile_options(-DBOOST_NO_AUTO_PTR)
+endif()
+include_directories(Boost::serialization) #${Boost_INCLUDE_DIRS})
+link_libraries(Boost::serialization)
 
 # Required for inq_config.h
 include_directories(${PROJECT_BINARY_DIR})
