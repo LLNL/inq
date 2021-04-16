@@ -61,6 +61,7 @@ public:
     coeff_ = decltype(coeff_)({nprojs_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
 		comms_ = decltype(comms_)(nprojs_);
+		nlm_ = decltype(nlm_)(nprojs_);
 		
     auto iproj = 0;
     for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
@@ -85,6 +86,7 @@ public:
       coeff_[iproj]({0, it->nproj_}) = it->kb_coeff_;
 
 			comms_[iproj] = it->comm_;
+			nlm_[iproj] = it->nproj_;
 			
       iproj++;
     }
@@ -141,9 +143,9 @@ public:
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-			
+
 			if(comms_[iproj].size() == 1) continue;
-			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&projections_all[iproj][0][0]), max_nlm_*phi.local_set_size(), std::plus<>{});
+			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&projections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});
 		}
 		
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
@@ -182,7 +184,7 @@ private:
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
 	mutable boost::multi::array<boost::mpi3::communicator, 1> comms_;	
-
+	math::array<int, 1> nlm_;	
   
 };
   
