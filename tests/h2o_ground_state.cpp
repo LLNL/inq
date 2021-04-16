@@ -73,9 +73,11 @@ int main(int argc, char ** argv){
 	match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
 	match.check("ion-ion energy",      result.energy.ion,            -1.047736451449);
 
-	match.check("dipole x", result.dipole[0], -0.000301716434);
-	match.check("dipole y", result.dipole[1], -0.724131351204);
-	match.check("dipole z", result.dipole[2], -0.000091128328);
+	std::cout << result.dipole << std::endl;
+	
+	match.check("dipole x", result.dipole[0], -0.000304523);
+	match.check("dipole y", result.dipole[1], -0.724304);
+	match.check("dipole z", result.dipole[2], -2.78695e-05);
 	
 	inq::operations::io::save("h2o_restart", electrons.phi_);
 
