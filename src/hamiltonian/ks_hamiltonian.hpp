@@ -27,6 +27,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/exchange_operator.hpp>
 #include <hamiltonian/projector.hpp>
+#include <hamiltonian/projector_all.hpp>
 #include <hamiltonian/projector_fourier.hpp>
 #include <hamiltonian/scalar_potential.hpp>
 #include <input/environment.hpp>
@@ -63,6 +64,9 @@ namespace hamiltonian {
 					if(projectors_.back().empty()) projectors_.pop_back(); 
 				}
 			}
+
+			projectors_all_ = projector_all(projectors_);
+			
 		}
 		
 		basis::field<basis::real_space, double> scalar_potential;
@@ -108,12 +112,12 @@ namespace hamiltonian {
 					
 			} else {
 
-				auto proj = projector::project_all(projectors_, phi);
+				auto proj = projectors_all_.project(phi);
 				
 				basis::field_set<basis::real_space, complex> vnlphi(phi.skeleton());
 				vnlphi = 0.0;
 
-				projector::apply_all(projectors_, proj, vnlphi);
+				projectors_all_.apply(proj, vnlphi);
 			
 				return vnlphi;
 							
@@ -127,7 +131,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projector::project_all(projectors_, phi);
+			auto proj = projectors_all_.project(phi);
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
@@ -140,7 +144,7 @@ namespace hamiltonian {
 			hamiltonian::scalar_potential_add(scalar_potential, phi, hphi);
 			exchange(phi, hphi);
 
-			projector::apply_all(projectors_, proj, hphi);
+			projectors_all_.apply(proj, hphi);
 
 			return hphi;
 			
@@ -154,13 +158,13 @@ namespace hamiltonian {
 			
 			auto phi_rs = operations::space::to_real(phi);
 
-			auto proj = projector::project_all(projectors_, phi_rs);
+			auto proj = projectors_all_.project(phi_rs);
 			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
 
-			projector::apply_all(projectors_, proj, hphi_rs);
+			projectors_all_.apply(proj, hphi_rs);
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
@@ -199,6 +203,7 @@ namespace hamiltonian {
   private:
 
 		std::list<projector> projectors_;
+		projector_all projectors_all_;		
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
