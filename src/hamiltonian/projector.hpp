@@ -108,10 +108,19 @@ public:
 		using boost::multi::blas::gemm;
 		using boost::multi::blas::transposed;
 		namespace blas = boost::multi::blas;
-				
-		auto sphere_phi = sphere_.gather(phi.cubic());
-		auto sphere_gphi = sphere_.gather(gphi.cubic());			
 
+		math::array<typename PhiType::element_type, 2> sphere_phi({sphere_.size(), phi.local_set_size()});
+		math::array<typename GPhiType::element_type, 2> sphere_gphi({sphere_.size(), phi.local_set_size()});		
+
+		{
+			CALI_CXX_MARK_SCOPE("projector_force_gather"); 
+			gpu::run(phi.local_set_size(), sphere_.size(),
+							 [sphi = begin(sphere_phi), sgphi = begin(sphere_gphi), phic = begin(phi.cubic()), gphic = begin(gphi.cubic()), sph = sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
+								 sphi[ipoint][ist] = phic[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
+								 sgphi[ipoint][ist] = gphic[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
+							 });
+		}
+		
 		math::array<typename PhiType::element_type, 2> projections({nproj_, phi.local_set_size()});
 
 		if(sphere_.size() > 0) {
