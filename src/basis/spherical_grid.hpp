@@ -157,16 +157,17 @@ namespace basis {
 
 			long count;
 			{
-				CALI_CXX_MARK_SCOPE("spherical_grid::sort");				
+				CALI_CXX_MARK_SCOPE("spherical_grid::partition");				
 #ifdef ENABLE_CUDA
-				thrust::sort(thrust::device, begin(points_), end(points_));
-				auto it = thrust::upper_bound(thrust::device, begin(points_), end(points_), point_data{local_sizes - 1, 0.0, {0.0, 0.0, 0.0}});
-				count = it - begin(points_);								
+				using thrust::partition;
+				auto it = partition(thrust::device, begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ >= 0.0;});				
+				count = it - begin(points_);				
 #else
-				std::sort(begin(points_), end(points_));
-				auto it = std::upper_bound(begin(points_), end(points_), point_data{local_sizes - 1, 0.0, {0.0, 0.0, 0.0}});
+				using std::partition;
+				auto it = partition(begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ >= 0.0;});				
 				count = it - begin(points_);				
 #endif
+				
 			}
 
 			if(count == 0) {
