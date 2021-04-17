@@ -47,6 +47,8 @@ public:
 		comm_(sphere_.create_comm(basis.comm())),
 		iatom_(iatom){
 
+		CALI_CXX_MARK_SCOPE("projector::build");
+		
 		int iproj_lm = 0;
 		for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
 				
