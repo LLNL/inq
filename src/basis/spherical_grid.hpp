@@ -156,17 +156,16 @@ namespace basis {
 
 
 			{
-				CALI_CXX_MARK_SCOPE("spherical_grid::partition");				
+				CALI_CXX_MARK_SCOPE("spherical_grid::compact");				
 #ifdef ENABLE_CUDA
-				using thrust::partition;
-				auto it = partition(thrust::device, begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ >= 0.0;});				
+				using thrust::remove_if;
+				auto it = remove_if(thrust::device, begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ < 0.0;});
 				size_ = it - begin(points_);				
 #else
-				using std::partition;
-				auto it = partition(begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ >= 0.0;});				
+				using std::remove_if;
+				auto it = remove_if(begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ < 0.0;});
 				size_ = it - begin(points_);				
 #endif
-				
 			}
 
 			if(size_ == 0) {
@@ -176,7 +175,6 @@ namespace basis {
 			}
 			
 			assert(size_ == 0 or points_[size_ - 1].distance_ >= 0.0);
-			assert(points_[size_].distance_ < 0.0);
 
 			{
 				CALI_CXX_MARK_SCOPE("spherical_grid::reextent");
