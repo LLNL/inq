@@ -38,6 +38,36 @@ namespace hamiltonian {
 
 class projector {
 
+#ifdef ENABLE_CUDA
+public:
+#endif
+	
+	void constructor(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom) {
+
+		CALI_CXX_MARK_SCOPE("projector::build");
+		
+		int iproj_lm = 0;
+		for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
+				
+			int l = ps.projector_l(iproj_l);
+
+			// now construct the projector with the spherical harmonics
+			for(int m = -l; m <= l; m++){
+				gpu::run(sphere_.size(),
+								 [mat = begin(matrix_), spline = ps.projector(iproj_l).cbegin(), sph = sphere_.ref(), l, m, iproj_lm] GPU_LAMBDA (auto ipoint) {
+									 mat[iproj_lm][ipoint] = spline.value(sph.distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sph.point_pos(ipoint));
+								 });
+
+				kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
+				iproj_lm++;
+			}
+				
+		}
+
+		assert(iproj_lm == ps.num_projectors_lm());
+
+	}
+	
 public:
 	projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
 		sphere_(basis, cell, atom_position, ps.projector_radius()),
@@ -47,26 +77,8 @@ public:
 		comm_(sphere_.create_comm(basis.comm())),
 		iatom_(iatom){
 
-		CALI_CXX_MARK_SCOPE("projector::build");
-		
-		int iproj_lm = 0;
-		for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
-				
-			int l = ps.projector_l(iproj_l);
-				
-			// now construct the projector with the spherical harmonics
-			for(int m = -l; m <= l; m++){
-				for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-					matrix_[iproj_lm][ipoint] = ps.projector(iproj_l).value(sphere_.distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sphere_.point_pos(ipoint));
-				}
-				kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
-				iproj_lm++;
-			}
-				
-		}
+		constructor(basis, cell, ps, atom_position, iatom);
 
-		assert(iproj_lm == ps.num_projectors_lm());
-			
 	}
 
 	projector(projector const &) = delete;		
