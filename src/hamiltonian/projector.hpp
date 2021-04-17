@@ -42,7 +42,7 @@ class projector {
 public:
 #endif
 	
-	void constructor(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom) {
+	void build(atomic_potential::pseudopotential_type const & ps) {
 
 		CALI_CXX_MARK_SCOPE("projector::build");
 		
@@ -76,7 +76,7 @@ public:
 		comm_(sphere_.create_comm(basis.comm())),
 		iatom_(iatom){
 
-		constructor(basis, cell, ps, atom_position, iatom);
+		build(ps);
 
 	}
 
