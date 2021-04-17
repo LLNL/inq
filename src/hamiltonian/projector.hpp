@@ -52,16 +52,16 @@ public:
 			int l = ps.projector_l(iproj_l);
 
 			// now construct the projector with the spherical harmonics
-			for(int m = -l; m <= l; m++){
+			for(int m = 0; m < 2*l + 1; m++){
 				gpu::run(sphere_.size(),
 								 [mat = begin(matrix_), spline = ps.projector(iproj_l).cbegin(), sph = sphere_.ref(), l, m, iproj_lm] GPU_LAMBDA (auto ipoint) {
-									 mat[iproj_lm][ipoint] = spline.value(sph.distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sph.point_pos(ipoint));
+									 mat[iproj_lm + m][ipoint] = spline.value(sph.distance(ipoint))*pseudo::math::spherical_harmonic(l, m - l, sph.point_pos(ipoint));
 								 });
 
-				kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
-				iproj_lm++;
+				kb_coeff_[iproj_lm + m]	= ps.kb_coeff(iproj_l); 
 			}
-				
+			iproj_lm += 2*l + 1;
+			
 		}
 
 		assert(iproj_lm == ps.num_projectors_lm());
