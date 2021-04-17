@@ -45,7 +45,7 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(4.0e-6);
 
-	auto geo = input::parse_xyz(config::path::unit_tests_data() + "al256.xyz");
+	auto geo = input::parse_xyz(config::path::unit_tests_data() + "al256.xyz", 1.0_bohr);
 	geo.emplace_back("H" | math::vector3<double>(0.00000, 1.91325, 1.91325));
 
 	systems::ions ions(input::cell::cubic(4*7.6524459_b), geo);
