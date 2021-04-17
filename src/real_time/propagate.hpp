@@ -95,7 +95,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			energy.eigenvalues = operations::sum(electrons.states_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 			electrons.phi_.set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
 			
-			forces = hamiltonian::calculate_forces(ions, electrons, ham);
+			if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 			
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
