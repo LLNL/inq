@@ -29,12 +29,12 @@
 #include <pseudopod/element.hpp>
 #include <input/atom.hpp>
 #include <input/species.hpp>
-
+#include <magnitude/length.hpp>
 
 namespace inq {
 namespace input {
 
-auto parse_xyz(const std::string & xyz_file_name){
+auto parse_xyz(const std::string & xyz_file_name, quantity<magnitude::length> unit = magnitude::operator""_angstrom(1.0)){
 
 	using namespace inq;
  
@@ -57,7 +57,7 @@ auto parse_xyz(const std::string & xyz_file_name){
   
 	for(int iatom = 0; iatom < natoms; iatom++){
 		xyz_file >> atom_name >> atom_position;
-		geo.push_back(atom_name | atom_position*1.8897261);
+		geo.push_back(atom_name | atom_position*unit.in_atomic_units());
 	}
   
 	xyz_file.close();
