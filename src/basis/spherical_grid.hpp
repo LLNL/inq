@@ -155,35 +155,34 @@ namespace basis {
 			}
 
 
-			long count;
 			{
 				CALI_CXX_MARK_SCOPE("spherical_grid::partition");				
 #ifdef ENABLE_CUDA
 				using thrust::partition;
 				auto it = partition(thrust::device, begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ >= 0.0;});				
-				count = it - begin(points_);				
+				size_ = it - begin(points_);				
 #else
 				using std::partition;
 				auto it = partition(begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ >= 0.0;});				
-				count = it - begin(points_);				
+				size_ = it - begin(points_);				
 #endif
 				
 			}
 
-			if(count == 0) {
+			if(size_ == 0) {
 				points_.clear();
 				assert(points_.size() == 0);				
 				return;
 			}
 			
-			assert(count == 0 or points_[count - 1].distance_ >= 0.0);
-			assert(points_[count].distance_ < 0.0);				
+			assert(size_ == 0 or points_[size_ - 1].distance_ >= 0.0);
+			assert(points_[size_].distance_ < 0.0);
 
 			{
 				CALI_CXX_MARK_SCOPE("spherical_grid::reextent");
-				auto points2 = +points_({0, count});
+				auto points2 = +points_({0, size_});
 				points_ = std::move(points2);
-				assert(points_.size() == count);
+				assert(points_.size() == size_);
 			}
 
 		}
@@ -205,7 +204,7 @@ namespace basis {
 		}
 		
     long size() const {
-      return points_.size();
+      return size_;
     }
     
     template <class array_3d, class array_1d>
@@ -313,6 +312,7 @@ namespace basis {
 		math::array<point_data, 1> points_;
 		double volume_element_;
 		math::vector3<double> center_;
+		int size_;
 		
   };
 
