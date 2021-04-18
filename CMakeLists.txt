@@ -49,6 +49,8 @@ link_libraries(Threads::Threads)
 
 find_package(MPI REQUIRED)
 link_libraries(MPI::MPI_CXX) # needs cmake 3.9
+message(STATUS "MPI: Executable for running programs:" ${MPIEXEC_EXECUTABLE})
+message(STATUS "MPI: number of processors detected on the host system:" ${MPIEXEC_MAX_NUMPROCS})
 
 #FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
 find_package(PkgConfig REQUIRED)
