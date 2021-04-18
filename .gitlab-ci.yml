@@ -349,7 +349,7 @@ gcc-mpich-parallel:
       - c++ --version
       - mpichversion
       - mkdir build && cd build
-      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug
+      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=".mpich"
       - time make
       - time make -j4 install
       - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 360; cd ..
