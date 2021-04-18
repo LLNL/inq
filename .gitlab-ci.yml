@@ -69,7 +69,7 @@ gcc-ompi:
       - mkdir build
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
-      - CXX=mpic++ ../configure --prefix=$HOME  || cat config.log
+      - ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
       - ctest --output-on-failure --timeout 1000
@@ -149,7 +149,7 @@ gcc-ompi-fast:
       - mkdir build
       - cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
-      - CXX=mpic++ ../configure --prefix=$HOME  || cat config.log
+      - ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make -j4 install
       - ctest --output-on-failure --timeout 360
@@ -174,9 +174,8 @@ clang-ompi-serial:
       - clang++-8 --version
       - mkdir build
       - cd build
-      - export OMPI_CXX=clang++-8
-      - export CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CC=mpicc CXX=mpic++ ../configure --prefix=$HOME
+      - CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - CXX=clang++-8 CC=clang-8 ../configure --prefix=$HOME
       - ls -l
       - time make -j4
       - time make -j4 install
@@ -193,9 +192,8 @@ clang-ompi-parallel:
       - clang++-8 --version
       - mkdir build
       - cd build
-      - export OMPI_CXX=clang++-8
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CXX=mpic++ ../configure --prefix=$HOME
+      - CXX=clang++-8 CC=clang-8 ../configure --prefix=$HOME
       - ls -l
       - time make -j4
       - time make -j4 install
@@ -335,10 +333,9 @@ gcc-mpich-serial:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - c++ --version
       - mpichversion
-      - mkdir build
-      - cd build
+      - mkdir build && cd build
       - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-      - CXX=mpic++ ../configure --prefix=$HOME
+      - ../configure --prefix=$HOME -DMPI_GUESS_LIBRARY_NAME=MPICH2
       - time make
       - time make -j4 install
       - ctest --output-on-failure --timeout 360
@@ -353,10 +350,8 @@ gcc-mpich-parallel:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - c++ --version
       - mpichversion
-      - mkdir build
-      - cd build
-      - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-      - CXX=mpic++ ../configure --prefix=$HOME
+      - mkdir build && cd build
+      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_GUESS_LIBRARY_NAME=MPICH2
       - time make
       - time make -j4 install
       - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 360; cd ..
@@ -379,12 +374,10 @@ gcc-mpich-valgrind:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - c++ --version
       - mpichversion
-      - mkdir build
-      - cd build
-      - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-      - CXX=mpic++ ../configure --prefix=$HOME
+      - mkdir build && cd build
+      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug
       - time make
-      - time make -j4 install
+      - time make install
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 1200; cd ..
       - time $VALGRIND tests/h2o_ground_state
