@@ -458,14 +458,13 @@ intel-ompi:
     script:
       - export PREFIX=`mktemp -d`    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mkdir build
-      - cd build
+      - mkdir build && cd build
       - export CC=/opt/intel/system_studio_2020/bin/icc
       - export CXX=/opt/intel/system_studio_2020/bin/icpc
-      - export CXXFLAGS="-O3 -Wall -Wextra -Wl,-rpath,/opt/intel/system_studio_2020/lib/intel64 $(mpicxx -showme:compile || mpicxx -cxx= -compile_info)"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$PREFIX
+      - export CXXFLAGS="-Wl,-rpath,/opt/intel/system_studio_2020/lib/intel64" # $(mpicxx -showme:compile || mpicxx -cxx= -compile_info)"
+      - #export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
+      - #export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+      - time ../configure --prefix=$PREFIX --disable-debug
       - make -j $(($(nproc)/2 + 1))
       - make install
       - source /opt/intel/system_studio_2020/bin/compilervars.sh intel64
@@ -476,7 +475,7 @@ intel-ompi:
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 360
       - cd ..
       - $PREFIX/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
-      - tests/silicon2      
+      - tests/silicon2
 
 nvcc-ompi-fast:
     stage: build
