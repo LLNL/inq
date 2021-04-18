@@ -38,6 +38,35 @@ namespace hamiltonian {
 
 class projector {
 
+#ifdef ENABLE_CUDA
+public:
+#endif
+	
+	void build(atomic_potential::pseudopotential_type const & ps) {
+
+		CALI_CXX_MARK_SCOPE("projector::build");
+		
+		int iproj_lm = 0;
+		for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
+				
+			int l = ps.projector_l(iproj_l);
+
+			// now construct the projector with the spherical harmonics
+			gpu::run(sphere_.size(), 2*l + 1,
+							 [mat = begin(matrix_), spline = ps.projector(iproj_l).cbegin(), sph = sphere_.ref(), l, iproj_lm, kb_ = begin(kb_coeff_), coe = ps.kb_coeff(iproj_l)] GPU_LAMBDA (auto ipoint, auto m) {
+
+								 if(ipoint == 0) kb_[iproj_lm + m] = coe;
+								 mat[iproj_lm + m][ipoint] = spline.value(sph.distance(ipoint))*pseudo::math::spherical_harmonic(l, m - l, sph.point_pos(ipoint));
+							 });
+
+			iproj_lm += 2*l + 1;
+			
+		}
+
+		assert(iproj_lm == ps.num_projectors_lm());
+
+	}
+	
 public:
 	projector(const basis::real_space & basis, const ions::UnitCell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
 		sphere_(basis, cell, atom_position, ps.projector_radius()),
@@ -47,24 +76,8 @@ public:
 		comm_(sphere_.create_comm(basis.comm())),
 		iatom_(iatom){
 
-		int iproj_lm = 0;
-		for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
-				
-			int l = ps.projector_l(iproj_l);
-				
-			// now construct the projector with the spherical harmonics
-			for(int m = -l; m <= l; m++){
-				for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-					matrix_[iproj_lm][ipoint] = ps.projector(iproj_l).value(sphere_.distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sphere_.point_pos(ipoint));
-				}
-				kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
-				iproj_lm++;
-			}
-				
-		}
+		build(ps);
 
-		assert(iproj_lm == ps.num_projectors_lm());
-			
 	}
 
 	projector(projector const &) = delete;		
@@ -95,10 +108,19 @@ public:
 		using boost::multi::blas::gemm;
 		using boost::multi::blas::transposed;
 		namespace blas = boost::multi::blas;
-				
-		auto sphere_phi = sphere_.gather(phi.cubic());
-		auto sphere_gphi = sphere_.gather(gphi.cubic());			
 
+		math::array<typename PhiType::element_type, 2> sphere_phi({sphere_.size(), phi.local_set_size()});
+		math::array<typename GPhiType::element_type, 2> sphere_gphi({sphere_.size(), phi.local_set_size()});		
+
+		{
+			CALI_CXX_MARK_SCOPE("projector_force_gather"); 
+			gpu::run(phi.local_set_size(), sphere_.size(),
+							 [sphi = begin(sphere_phi), sgphi = begin(sphere_gphi), phic = begin(phi.cubic()), gphic = begin(gphi.cubic()), sph = sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
+								 sphi[ipoint][ist] = phic[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
+								 sgphi[ipoint][ist] = gphic[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
+							 });
+		}
+		
 		math::array<typename PhiType::element_type, 2> projections({nproj_, phi.local_set_size()});
 
 		if(sphere_.size() > 0) {
@@ -198,16 +220,18 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
 	CHECK(proj.num_projectors() == 8);
-	
-	CHECK(proj.kb_coeff(0) ==  7.494508815_a);
-	CHECK(proj.kb_coeff(1) ==  0.6363049519_a);
-	CHECK(proj.kb_coeff(2) == -4.2939052122_a);
-	CHECK(proj.kb_coeff(3) == -4.2939052122_a);
-	CHECK(proj.kb_coeff(4) == -4.2939052122_a);
-	CHECK(proj.kb_coeff(5) == -1.0069878791_a);
-	CHECK(proj.kb_coeff(6) == -1.0069878791_a);
-	CHECK(proj.kb_coeff(7) == -1.0069878791_a);
 
+	if(not proj.empty()){
+		CHECK(proj.kb_coeff(0) ==  7.494508815_a);
+		CHECK(proj.kb_coeff(1) ==  0.6363049519_a);
+		CHECK(proj.kb_coeff(2) == -4.2939052122_a);
+		CHECK(proj.kb_coeff(3) == -4.2939052122_a);
+		CHECK(proj.kb_coeff(4) == -4.2939052122_a);
+		CHECK(proj.kb_coeff(5) == -1.0069878791_a);
+		CHECK(proj.kb_coeff(6) == -1.0069878791_a);
+		CHECK(proj.kb_coeff(7) == -1.0069878791_a);
+	}
+	
 	CHECK(proj.iatom() == 77);
 	
 }
