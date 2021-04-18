@@ -461,9 +461,7 @@ intel-ompi:
       - mkdir build && cd build
       - export CC=/opt/intel/system_studio_2020/bin/icc
       - export CXX=/opt/intel/system_studio_2020/bin/icpc
-      - export CXXFLAGS="-Wl,-rpath,/opt/intel/system_studio_2020/lib/intel64" # $(mpicxx -showme:compile || mpicxx -cxx= -compile_info)"
-      - #export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - #export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+      - export CXXFLAGS="-Wl,-rpath,/opt/intel/system_studio_2020/lib/intel64"
       - time ../configure --prefix=$PREFIX --disable-debug
       - make -j $(($(nproc)/2 + 1))
       - make install
