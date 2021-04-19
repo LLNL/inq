@@ -20,8 +20,8 @@ include(CTest)
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
   enable_language(CUDA)
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
-  find_package(CUDA)
+  set(CMAKE_CUDA_FLAGS "--forward-unknown-to-host-linker ${CMAKE_CUDA_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+  find_package(CUDA 11.0.0 REQUIRED)
   set(INQ_CUDA_LIBRARIES ${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
   link_libraries(${INQ_CUDA_LIBRARIES})
 else()
@@ -43,9 +43,18 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-link_libraries(Threads::Threads)
+#set(THREADS_PREFER_PTHREAD_FLAG ON)
+#find_package(Threads REQUIRED)
+#link_libraries(Threads::Threads)
+
+find_package(MPI REQUIRED)
+
+#string(REPLACE "-pthread" "$<$<LINK_LANG_AND_ID:CUDA,NVIDIA>:SHELL:-Xcompiler >-pthread" _MPI_${LANG}_LINK_FLAGS "${MPI_${LANG}_LINK_FLAGS}") # needs cmake 3.18 see --forward-unknown-to-host-linker workaround
+
+link_libraries(MPI::MPI_CXX) # needs cmake 3.9
+
+message(STATUS "MPI Executable for running programs:" ${MPIEXEC_EXECUTABLE})
+message(STATUS "MPI number of processors detected on the host system: " ${MPIEXEC_MAX_NUMPROCS})
 
 #FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
 find_package(PkgConfig REQUIRED)
