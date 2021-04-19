@@ -56,18 +56,17 @@ sudo apt install libblas-dev liblapack-dev libfftw3-dev
 
 Instructions for compiling
 
-```bash
-git clone git@gitlab.com:npneq/inq.git
+```bash 
+git clone --recurse-submodules git@gitlab.com:npneq/inq.git
 cd inq
-git submodule update --init --recursive
-mkdir build
-cd build
+mkdir build && cd build
 ../configure --prefix=$HOME
 make -j
 make install
 ```
 
-This instructions might be incomplete for your particular, to see how to have an up-to-date install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
+This instructions might be incomplete for your particular setup; 
+to see how to have an up-to-date install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
 
 Some systems require detailed environment variables set up before running `configure`, for example:
 ```bash
@@ -91,4 +90,3 @@ Date Accepted: Wednesday, January 29, 2020
 
 This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344. 
 The work was supported by the U.S. Department of Energy, Office of Science, Materials Sciences and Engineering Division.
-
