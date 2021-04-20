@@ -58,11 +58,8 @@ int main(int argc, char ** argv){
 	for(int n = 0; n != N; ++n){
 
 		double const x = dx*n;
-		
-		geo.pop_back();
-		geo.emplace_back("H" | math::vector3<double>(0.00000 + x, 1.91325, 1.91325));
 
-		systems::ions ions(input::cell::cubic(L*1._b), geo);
+		ions.geo().coordinates()[ions.geo().num_atoms() - 1] = {0.00000 + x, 1.91325, 1.91325};
 	
 		auto result = ground_state::calculate(
 			ions, electrons, input::interaction::pbe(), 
