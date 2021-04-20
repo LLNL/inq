@@ -42,6 +42,7 @@ int main(int argc, char ** argv){
 	ofs<<"# distance (au), energy (au)\n"<< std::setprecision(10);
 
 	for(int n = 0; n != N; ++n){
+
 		double const x = dx*n;
 		geo.emplace_back("H" | math::vector3<double>(0.00000 + x, 1.91325, 1.91325));
 		systems::ions ions(input::cell::cubic(L*1._b), geo);
@@ -62,6 +63,8 @@ int main(int argc, char ** argv){
 		);
 
 		ofs<< x <<'\t'<< result.energy.total() << std::endl;
+
+		geo.pop_back();
 	}
 
 	fftw_cleanup(); //required for valgrid
