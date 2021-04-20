@@ -35,36 +35,41 @@ int main(int argc, char ** argv){
 	std::vector<input::atom> geo = input::parse_xyz(config::path::unit_tests_data() + "al32.xyz");
 
 	auto const L = 2*7.6524459;
-	int const N = 100;
+	int const N = 200;
 	double const dx = L/N;
 
 	std::ofstream ofs{"al32_adiab.dat"}; 
 	ofs<<"# distance (au), energy (au)\n"<< std::setprecision(10);
 
+	input::config conf;
+	
+	conf.excess_charge = -1;
+	conf.extra_states = 8;
+	conf.temperature = 300.0_K;
+
+	geo.emplace_back("H" | math::vector3<double>(0.00000, 1.91325, 1.91325));
+
+	systems::ions ions(input::cell::cubic(L*1._b), geo);
+	
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
+	
+	ground_state::initialize(ions, electrons);
+	
 	for(int n = 0; n != N; ++n){
 
 		double const x = dx*n;
+		
+		geo.pop_back();
 		geo.emplace_back("H" | math::vector3<double>(0.00000 + x, 1.91325, 1.91325));
+
 		systems::ions ions(input::cell::cubic(L*1._b), geo);
 	
-		input::config conf;
-	
-		conf.excess_charge = -1;
-		conf.extra_states = 8;
-		conf.temperature = 300.0_K;
-	
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
-	
-		ground_state::initialize(ions, electrons);
-
 		auto result = ground_state::calculate(
 			ions, electrons, input::interaction::pbe(), 
 			inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(400)
 		);
 
 		ofs<< x <<'\t'<< result.energy.total() << std::endl;
-
-		geo.pop_back();
 	}
 
 	fftw_cleanup(); //required for valgrid
