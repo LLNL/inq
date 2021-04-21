@@ -71,6 +71,16 @@ namespace input {
 		auto density_factor() const {
 			return density_factor_.value_or(1.0);
 		}
+
+		static auto double_grid(){
+			basis bs;
+			bs.double_grid_ = true;
+			return bs;
+		}
+		
+		auto double_grid_value() const {
+			return double_grid_.value_or(false);
+		}
 		
 		friend basis operator|(const basis & opt1, const basis & opt2){
 			using inq::utils::merge_optional;
@@ -79,8 +89,11 @@ namespace input {
 			ropt.spacing_ = merge_optional(opt1.spacing_, opt2.spacing_);
 			ropt.spherical_grid_ = merge_optional(opt1.spherical_grid_, opt2.spherical_grid_);
 			ropt.density_factor_ = merge_optional(opt1.density_factor_, opt2.density_factor_);
+			ropt.double_grid_	= merge_optional(opt1.double_grid_, opt2.double_grid_);		
 			return ropt;
 		}
+
+		
 
 	private:
 	
@@ -90,7 +103,8 @@ namespace input {
 		std::optional<double> spacing_;
 		std::optional<bool> spherical_grid_;
 		std::optional<double> density_factor_;
-		
+		std::optional<bool> double_grid_;	
+
 	};
 
 }

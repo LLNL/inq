@@ -37,9 +37,8 @@ class double_grid {
 	
 public:
 
-  double_grid(math::vector3<double> spacing, int order = 5):
-    fine_spacing_(spacing/3.0),
-    order_(order),
+  double_grid(bool enabled, int order = 5):
+    enabled_(enabled),
     min_(-order + 1),
     max_(order),
     npoints_(max_ - min_ + 1)
@@ -49,43 +48,51 @@ public:
     for(auto ii = 0; ii < npoints_; ii++) points[ii] = min_ + ii;
     coeff_ = utils::interpolation_coefficients(points, 1.0/3.0);
 
-    std::cout << coeff_[0] << '\t' << coeff_[1] << std::endl;
-    
   }
 
   template <class Function>
-  auto value(Function const & func, math::vector3<double> pos){
+  auto value(Function const & func, math::vector3<double> pos, math::vector3<double> spacing) const {
+
+    if(not enabled_) return func(pos);
 
     decltype(func(pos)) val = 0.0;
-
+    
     for(int k0 = min_; k0 <= max_; k0++){
       for(int k1 = min_; k1 <= max_; k1++){
         for(int k2 = min_; k2 <= max_; k2++){
-
+          
           double fac = coeff_[k0 - min_]*coeff_[k1 - min_]*coeff_[k2 - min_]/27.0;
           
           for(int i0 = -1; i0 <= 1; i0++){
             for(int i1 = -1; i1 <= 1; i1++){
               for(int i2 = -1; i2 <= 1; i2++){
-
-                val += fac*func(pos + fine_spacing_*math::vector3<double>{i0*(1.0 - 3.0*k0), i1*(1.0 - 3.0*k1), i2*(1.0 - 3.0*k2)});
-                
+                  
+                val += fac*func(pos + spacing*math::vector3<double>{i0*(1.0 - 3.0*k0), i1*(1.0 - 3.0*k1), i2*(1.0 - 3.0*k2)});
+                  
               }
             }
           }
-
-            
+          
+          
         }
       }
     }
-
+    
     return val;
+  }
+
+  auto spacing_factor() const {
+    if(not enabled_) return 1.0;
+    return 3.0;
+  }
+
+  auto & enabled() const {
+    return enabled_;
   }
   
 private:
 
-  math::vector3<double> fine_spacing_;
-  int order_;
+  bool enabled_;
   int min_;
   int max_;
   int npoints_;
