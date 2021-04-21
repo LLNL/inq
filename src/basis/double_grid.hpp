@@ -37,12 +37,33 @@ class double_grid {
 	
 public:
 
+  double_grid(math::vector3<double> spacing):
+    fine_spacing_(spacing/3.0){
+  }
 
   template <class Function>
   auto value(Function const & func, math::vector3<double> pos){
-    return func(pos);    
+
+    decltype(func(pos)) val = 0.0;
+    
+    for(int ii = -3; ii <= 3; ii++){
+      for(int jj = -3; jj <= 3; jj++){
+        for(int kk = -3; kk <= 3; kk++){
+          auto cii = (3.0*fine_spacing_[0] - fabs(ii*fine_spacing_[0]))/(9.0*fine_spacing_[0]);
+          auto cjj = (3.0*fine_spacing_[1] - fabs(jj*fine_spacing_[1]))/(9.0*fine_spacing_[1]);
+          auto ckk = (3.0*fine_spacing_[2] - fabs(kk*fine_spacing_[2]))/(9.0*fine_spacing_[2]);
+          
+          val += cii*cjj*ckk*func(pos + fine_spacing_*math::vector3<double>{double(ii), double(jj), double(kk)});
+        }
+      }
+    }
+    
+    return val;
   }
   
+private:
+
+  math::vector3<double> fine_spacing_;
   
 };
 
@@ -64,9 +85,9 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
   using math::vector3;
 
 
-  basis::double_grid dg;
+  basis::double_grid dg({0.3, 0.3, 0.3});
 
-  CHECK(dg.value([](auto point){ return 1.0; }, {1.0, 2.0, 3.0}) == 1.0);
+  CHECK(dg.value([](auto point){ return 1.0; }, {1.0, 2.0, 3.0}) == 1.0_a);
 
   
   

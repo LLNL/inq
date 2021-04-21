@@ -137,7 +137,7 @@ namespace hamiltonian {
 
 				} else {
 
-					basis::double_grid dg;
+					basis::double_grid dg(basis.rspacing());
 
 					for(auto ipoint = 0; ipoint < sphere.size(); ipoint++){
 
