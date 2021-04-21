@@ -29,6 +29,7 @@
 
 
 #include <basis/spherical_grid.hpp>
+#include <basis/double_grid.hpp>
 #include <math/array.hpp>
 #include <operations/integral.hpp>
 #include <solvers/poisson.hpp>
@@ -39,6 +40,7 @@
 #include <mpi3/environment.hpp>
 
 #include <utils/profiling.hpp>
+
 
 namespace inq {
 namespace hamiltonian {
@@ -122,14 +124,31 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 
- 				gpu::run(sphere.size(),
-								 [pot = begin(potential.cubic()),
-									sph = sphere.ref(),
-									spline = ps.short_range_potential().cbegin()] GPU_LAMBDA (auto ipoint){
-									 auto rr = sph.distance(ipoint);
-									 auto potential_val = spline.value(rr);
-									 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += potential_val;
-								 });
+				if(false){
+					
+					gpu::run(sphere.size(),
+									 [pot = begin(potential.cubic()),
+										sph = sphere.ref(),
+										spline = ps.short_range_potential().cbegin()] GPU_LAMBDA (auto ipoint){
+										 auto rr = sph.distance(ipoint);
+										 auto potential_val = spline.value(rr);
+										 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += potential_val;
+									 });
+
+				} else {
+
+					basis::double_grid dg;
+
+					for(auto ipoint = 0; ipoint < sphere.size(); ipoint++){
+
+						auto pot = begin(potential.cubic());
+						auto sph = sphere.ref();
+						auto spline = ps.short_range_potential().cbegin();
+
+						pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += dg.value([spline] (auto pos) { return spline.value(length(pos)); }, sph.point_pos(ipoint));
+						
+					}
+				}
 				
       }
 			
@@ -269,7 +288,7 @@ namespace hamiltonian {
 		mutable boost::mpi3::communicator comm_;
 		inq::utils::partition part_;
 		bool has_nlcc_;
-        
+
   };
 
 }
