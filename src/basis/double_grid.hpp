@@ -37,33 +37,59 @@ class double_grid {
 	
 public:
 
-  double_grid(math::vector3<double> spacing):
-    fine_spacing_(spacing/3.0){
+  double_grid(math::vector3<double> spacing, int order = 5):
+    fine_spacing_(spacing/3.0),
+    order_(order),
+    min_(-order + 1),
+    max_(order),
+    npoints_(max_ - min_ + 1)
+  {
+
+    math::array<double, 1> points(npoints_);
+    for(auto ii = 0; ii < npoints_; ii++) points[ii] = min_ + ii;
+    coeff_ = utils::interpolation_coefficients(points, 1.0/3.0);
+
+    std::cout << coeff_[0] << '\t' << coeff_[1] << std::endl;
+    
   }
 
   template <class Function>
   auto value(Function const & func, math::vector3<double> pos){
 
     decltype(func(pos)) val = 0.0;
-    
-    for(int ii = -3; ii <= 3; ii++){
-      for(int jj = -3; jj <= 3; jj++){
-        for(int kk = -3; kk <= 3; kk++){
-          auto cii = (3.0*fine_spacing_[0] - fabs(ii*fine_spacing_[0]))/(9.0*fine_spacing_[0]);
-          auto cjj = (3.0*fine_spacing_[1] - fabs(jj*fine_spacing_[1]))/(9.0*fine_spacing_[1]);
-          auto ckk = (3.0*fine_spacing_[2] - fabs(kk*fine_spacing_[2]))/(9.0*fine_spacing_[2]);
+
+    for(int k0 = min_; k0 <= max_; k0++){
+      for(int k1 = min_; k1 <= max_; k1++){
+        for(int k2 = min_; k2 <= max_; k2++){
+
+          double fac = coeff_[k0 - min_]*coeff_[k1 - min_]*coeff_[k2 - min_]/27.0;
           
-          val += cii*cjj*ckk*func(pos + fine_spacing_*math::vector3<double>{double(ii), double(jj), double(kk)});
+          for(int i0 = -1; i0 <= 1; i0++){
+            for(int i1 = -1; i1 <= 1; i1++){
+              for(int i2 = -1; i2 <= 1; i2++){
+
+                val += fac*func(pos + fine_spacing_*math::vector3<double>{i0*(1.0 - 3.0*k0), i1*(1.0 - 3.0*k1), i2*(1.0 - 3.0*k2)});
+                
+              }
+            }
+          }
+
+            
         }
       }
     }
-    
+
     return val;
   }
   
 private:
 
   math::vector3<double> fine_spacing_;
+  int order_;
+  int min_;
+  int max_;
+  int npoints_;
+  math::array<double, 1> coeff_;
   
 };
 
