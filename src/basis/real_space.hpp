@@ -21,13 +21,15 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <math/vector3.hpp>
-#include <ions/unitcell.hpp>
-#include "grid.hpp"
+
 #include <cassert>
 #include <array>
-#include <input/basis.hpp>
+
+#include <basis/grid.hpp>
 #include <gpu/run.hpp>
+#include <input/basis.hpp>
+#include <ions/unitcell.hpp>
+#include <math/vector3.hpp>
 
 namespace inq {
 namespace basis {
@@ -37,7 +39,8 @@ namespace basis {
   public:
 		
     real_space(const ions::UnitCell & cell, const input::basis & basis_input, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid(), cell.periodic_dimensions(), comm){
+			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid(), basis_input.double_grid_value(), cell.periodic_dimensions(), comm)
+		{
     }
 
 		real_space(const grid & grid_basis):
@@ -110,12 +113,12 @@ namespace basis {
 		}
 
 		auto enlarge(int factor) const {
-			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, periodic_dimensions_, this->comm()));
+			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, double_grid_.enabled(), periodic_dimensions_, this->comm()));
 		}
 
 		auto refine(double factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
 			assert(factor > 0.0);
-			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, spherical_g_grid_, periodic_dimensions_, comm));
+			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, spherical_g_grid_,  double_grid_.enabled(), periodic_dimensions_, comm));
 		}
 		
 		auto volume_element() const {
@@ -125,7 +128,7 @@ namespace basis {
 		auto gcutoff() const {
 			auto max_spacing = std::max({rspacing_[0], rspacing_[1],rspacing_[2]});
 
-			return M_PI/max_spacing;
+			return double_grid_.spacing_factor()*M_PI/max_spacing;
 		}
 
 		auto point_op() const {
@@ -147,7 +150,7 @@ namespace basis {
 			
 			return nr;
 		}
-		
+
   };
 
 }

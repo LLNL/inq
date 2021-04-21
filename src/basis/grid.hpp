@@ -22,13 +22,13 @@
 */
 
 
-#include <basis/base.hpp>
-#include <math/vector3.hpp>
-#include <ions/unitcell.hpp>
-
-
 #include <cassert>
 #include <array>
+
+#include <basis/base.hpp>
+#include <basis/double_grid.hpp>
+#include <math/vector3.hpp>
+#include <ions/unitcell.hpp>
 
 namespace inq {
 namespace basis {
@@ -39,13 +39,14 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
+		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
 			base(nr[0], comm),
 			cubic_dist_({base::part_, inq::utils::partition(nr[1]), inq::utils::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
-			periodic_dimensions_(periodic_dimensions){
+			periodic_dimensions_(periodic_dimensions),
+			double_grid_(double_grid){
 
 			if(base::part_.local_size() == 0){
 				std::cerr << "\n  Partition " << comm.rank() << " has 0 points. Please change the number of processors.\n" << std::endl;
@@ -179,6 +180,10 @@ namespace basis {
 			}
 			return contains;
 		}
+
+		auto & double_grid() const {
+			return double_grid_;
+		}
 		
 	protected:
 
@@ -202,7 +207,9 @@ namespace basis {
 		bool spherical_g_grid_;
 
 		int periodic_dimensions_;
-		
+
+		basis::double_grid double_grid_;
+
   };
 
 }
@@ -224,7 +231,7 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	basis::grid gr(cell, {120, 45, 77}, true, 3, comm);
+	basis::grid gr(cell, {120, 45, 77}, true, false, 3, comm);
 
 	CHECK(gr.sizes()[0] == 120);
 	CHECK(gr.sizes()[1] == 45);
@@ -265,6 +272,8 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 	CHECK(gr.symmetric_range_begin(2) == -38);
 	CHECK(gr.symmetric_range_end(2) == 39);	
 
+	CHECK(gr.double_grid().enabled() == false);
+ 
 }
 #endif
 

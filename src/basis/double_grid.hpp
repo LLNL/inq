@@ -117,11 +117,26 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
 	using namespace Catch::literals;
   using math::vector3;
 
+	SECTION("disabled"){
+		
+		basis::double_grid dg(false);
 
-  basis::double_grid dg({0.3, 0.3, 0.3});
+		CHECK(not dg.enabled());
+		CHECK(dg.spacing_factor() == 1.0);
+		CHECK(dg.value([](auto point){ return 1.0; }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 1.0_a);
+		CHECK(dg.value([](auto point){ return sin(point[1]); }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 0.9092974268_a);
 
-  CHECK(dg.value([](auto point){ return 1.0; }, {1.0, 2.0, 3.0}) == 1.0_a);
+	}
 
+	SECTION("enabled"){				
+	
+		basis::double_grid dg(true);
+		
+		CHECK(dg.enabled());
+		CHECK(dg.spacing_factor() == 3.0);		
+		CHECK(dg.value([](auto point){ return 1.0; }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 1.0_a);
+		CHECK(dg.value([](auto point){ return sin(point[1]); }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 0.9092634204_a);
+	}
   
   
 }

@@ -56,20 +56,17 @@ namespace hamiltonian {
     };
 
     template <class atom_array>
-    atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, bool double_grid_enabled, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+    atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			sep_(0.625), //this is the default from octopus
       pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
 			comm_(comm),
-			part_(natoms, comm_),
-			double_grid_(double_grid_enabled)
+			part_(natoms, comm_)
 		{
 
 			CALI_CXX_MARK_FUNCTION;
 			
 			has_nlcc_ = false;
       nelectrons_ = 0.0;
-
-			gcutoff *= double_grid_.spacing_factor();
 
       for(int iatom = 0; iatom < natoms; iatom++){
 				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
@@ -127,7 +124,7 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 
-				if(not double_grid_.enabled()){
+				if(not basis.double_grid().enabled()){
 					
 					gpu::run(sphere.size(),
 									 [pot = begin(potential.cubic()),
@@ -146,7 +143,7 @@ namespace hamiltonian {
 						auto sph = sphere.ref();
 						auto spline = ps.short_range_potential().cbegin();
 
-						pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += double_grid_.value([spline] (auto pos) { return spline.value(length(pos)); }, sph.point_pos(ipoint), basis.rspacing());
+						pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += basis.double_grid().value([spline] (auto pos) { return spline.value(length(pos)); }, sph.point_pos(ipoint), basis.rspacing());
 						
 					}
 				}
@@ -280,10 +277,6 @@ namespace hamiltonian {
 			return sep_;
 		}
 
-		auto & double_grid() const {
-			return double_grid_;
-		}
-		
   private:
 
 		pseudo::math::erf_range_separation const sep_;
@@ -293,7 +286,6 @@ namespace hamiltonian {
 		mutable boost::mpi3::communicator comm_;
 		inq::utils::partition part_;
 		bool has_nlcc_;
-		basis::double_grid double_grid_;
 
   };
 
