@@ -67,7 +67,7 @@ public:
             for(int i1 = -1; i1 <= 1; i1++){
               for(int i2 = -1; i2 <= 1; i2++){
                   
-                val += fac*func(pos + spacing*math::vector3<double>{i0*(1.0 - 3.0*k0), i1*(1.0 - 3.0*k1), i2*(1.0 - 3.0*k2)});
+								val += fac*func(pos + spacing*math::vector3<double>{i0*(1.0/3.0 - k0), i1*(1.0/3.0 - k1), i2*(1.0/3.0 - k2)});
                   
               }
             }
@@ -135,7 +135,7 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
 		CHECK(dg.enabled());
 		CHECK(dg.spacing_factor() == 3.0);		
 		CHECK(dg.value([](auto point){ return 1.0; }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 1.0_a);
-		CHECK(dg.value([](auto point){ return sin(point[1]); }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 0.9092634204_a);
+		CHECK(dg.value([](auto point){ return sin(point[1]); }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 0.9092974261_a);
 	}
   
   
