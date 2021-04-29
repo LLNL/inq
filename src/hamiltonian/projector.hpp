@@ -74,7 +74,7 @@ public:
 					kb_[iproj_lm + m] = coe;
 					
 					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-						mat[iproj_lm + m][ipoint] = basis.double_grid().value([=] (auto pos) { return spline.value(length(pos))*pseudo::math::spherical_harmonic(l, m - l, pos);}, sph.point_pos(ipoint), basis.rspacing());
+						mat[iproj_lm + m][ipoint] = basis.double_grid().value([=] (auto pos) { return spline.value(length(pos))*pseudo::math::spherical_harmonic(l, m - l, pos);}, basis.rspacing(), sph.point_pos(ipoint));
 					}
 				}
 			}

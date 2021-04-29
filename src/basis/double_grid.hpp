@@ -51,7 +51,7 @@ public:
   }
 
   template <class Function>
-  auto value(Function const & func, math::vector3<double> pos, math::vector3<double> spacing) const {
+  auto value(Function const & func, math::vector3<double> spacing, math::vector3<double> pos) const {
 
     if(not enabled_) return func(pos);
 
@@ -123,8 +123,8 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
 
 		CHECK(not dg.enabled());
 		CHECK(dg.spacing_factor() == 1.0);
-		CHECK(dg.value([](auto point){ return 1.0; }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 1.0_a);
-		CHECK(dg.value([](auto point){ return sin(point[1]); }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 0.9092974268_a);
+		CHECK(dg.value([](auto point){ return 1.0; }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0})== 1.0_a);
+		CHECK(dg.value([](auto point){ return sin(point[1]); }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 0.9092974268_a);
 
 	}
 
@@ -134,8 +134,8 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
 		
 		CHECK(dg.enabled());
 		CHECK(dg.spacing_factor() == 3.0);		
-		CHECK(dg.value([](auto point){ return 1.0; }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 1.0_a);
-		CHECK(dg.value([](auto point){ return sin(point[1]); }, {1.0, 2.0, 3.0}, {0.3, 0.3, 0.3}) == 0.9092974261_a);
+		CHECK(dg.value([](auto point){ return 1.0; }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 1.0_a);
+		CHECK(dg.value([](auto point){ return sin(point[1]); }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 0.9092974261_a);
 	}
   
   
