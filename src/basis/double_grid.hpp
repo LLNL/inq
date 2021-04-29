@@ -46,7 +46,6 @@ public:
 		if(not enabled_){
 			min_ = 0;
 			max_ = 0;
-			return;
 		}
 		
     auto npoints = max_ - min_ + 1;
@@ -163,7 +162,6 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
 		CHECK(dg.ref().value([](auto point){ return 1.0; }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 1.0_a);
 		CHECK(dg.ref().value([](auto point){ return sin(point[1]); }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 0.9092974261_a);
 	}
-  
   
 }
 #endif
