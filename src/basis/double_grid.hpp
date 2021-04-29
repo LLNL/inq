@@ -38,14 +38,14 @@ class double_grid {
 public:
 
   double_grid(bool enabled, int order = 5):
-    enabled_(enabled),
     min_(-order + 1),
     max_(order),
-    npoints_(max_ - min_ + 1)
+    enabled_(enabled)
   {
 
-    math::array<double, 1> points(npoints_);
-    for(auto ii = 0; ii < npoints_; ii++) points[ii] = min_ + ii;
+    auto npoints = max_ - min_ + 1;
+    math::array<double, 1> points(npoints);
+    for(auto ii = 0; ii < npoints; ii++) points[ii] = min_ + ii;
     coeff_ = utils::interpolation_coefficients(points, 1.0/3.0);
 
   }
@@ -92,11 +92,10 @@ public:
   
 private:
 
-  bool enabled_;
   int min_;
   int max_;
-  int npoints_;
   math::array<double, 1> coeff_;
+  bool enabled_;
   
 };
 
