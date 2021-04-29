@@ -77,7 +77,7 @@ public:
 				for(int k1 = min_; k1 <= max_; k1++){
 					for(int k2 = min_; k2 <= max_; k2++){
 						
-						double fac = coeff_[k0 - min_]*coeff_[k1 - min_]*coeff_[k2 - min_]/27.0;
+						double fac = coeff_[k0 - min_]*coeff_[k1 - min_]*coeff_[k2 - min_];
 						
 						for(int i0 = -1; i0 <= 1; i0++){
 							for(int i1 = -1; i1 <= 1; i1++){
@@ -92,7 +92,7 @@ public:
 				}
 			}
 			
-			return val;
+			return (1.0/27.0)*val;
 		}
 
 	private:
