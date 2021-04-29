@@ -67,7 +67,7 @@ public:
 		}
 		
 		template <class Function>
-		auto value(Function const & func, math::vector3<double> spacing, math::vector3<double> pos) const {
+		GPU_FUNCTION auto value(Function const & func, math::vector3<double> spacing, math::vector3<double> pos) const {
 			
 			if(min_ == 0) return func(pos);
 			

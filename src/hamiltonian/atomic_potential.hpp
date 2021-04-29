@@ -137,25 +137,24 @@ namespace hamiltonian {
 
 				} else {
 
-					for(auto ipoint = 0; ipoint < sphere.size(); ipoint++){
-
-						auto pot = begin(potential.cubic());
-						auto sph = sphere.ref();
-						auto spline = ps.short_range_potential().cbegin();
-
-						pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += basis.double_grid().ref().value([spline] (auto pos) { return spline.value(length(pos)); }, basis.rspacing(), sph.point_pos(ipoint));
-						
-					}
-				}
+					gpu::run(sphere.size(),
+									 [pot = begin(potential.cubic()),
+										sph = sphere.ref(),
+										spline = ps.short_range_potential().cbegin(),
+										dg = basis.double_grid().ref(),
+										spac = basis.rspacing()] GPU_LAMBDA (auto ipoint){
+										 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(length(pos)); }, spac, sph.point_pos(ipoint));
+									 });
 				
-      }
-			
-			comm_.all_reduce_in_place_n(raw_pointer_cast(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
+				}
+			}
 
+			comm_.all_reduce_in_place_n(raw_pointer_cast(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
+			
 			return potential;			
-    }
+		}
 		
-    template <class basis_type, class cell_type, class geo_type>
+		template <class basis_type, class cell_type, class geo_type>
     basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
