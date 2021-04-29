@@ -63,20 +63,15 @@ public:
 								 });
 				
 			} else {
+
+				gpu::run(sphere_.size(), 2*l + 1,
+								 [mat = begin(matrix_), spline = ps.projector(iproj_l).cbegin(), sph = sphere_.ref(), l, iproj_lm, kb_ = begin(kb_coeff_), coe = ps.kb_coeff(iproj_l),
+									dg = basis.double_grid().ref(), spac = basis.rspacing()] GPU_LAMBDA (auto ipoint, auto m) {
+									 
+									 if(ipoint == 0) kb_[iproj_lm + m] = coe;
+									 mat[iproj_lm + m][ipoint] = dg.value([spline, l, m] GPU_LAMBDA(auto pos) { return spline.value(length(pos))*pseudo::math::spherical_harmonic(l, m - l, pos);}, spac, sph.point_pos(ipoint));
+								 });
 				
-				auto mat = begin(matrix_);
-				auto spline = ps.projector(iproj_l).cbegin();
-				auto sph = sphere_.ref();
-				auto kb_ = begin(kb_coeff_);
-				auto coe = ps.kb_coeff(iproj_l);
-				
-				for(int m = 0; m < 2*l + 1; m++){
-					kb_[iproj_lm + m] = coe;
-					
-					for(int ipoint = 0; ipoint < sphere_.size(); ipoint++){
-						mat[iproj_lm + m][ipoint] = basis.double_grid().ref().value([=] (auto pos) { return spline.value(length(pos))*pseudo::math::spherical_harmonic(l, m - l, pos);}, basis.rspacing(), sph.point_pos(ipoint));
-					}
-				}
 			}
 
 			iproj_lm += 2*l + 1;
