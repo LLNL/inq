@@ -43,6 +43,12 @@ public:
     enabled_(enabled)
   {
 
+		if(not enabled_){
+			min_ = 0;
+			max_ = 0;
+			return;
+		}
+		
     auto npoints = max_ - min_ + 1;
     math::array<double, 1> points(npoints);
     for(auto ii = 0; ii < npoints; ii++) points[ii] = min_ + ii;
@@ -50,37 +56,58 @@ public:
 
   }
 
-  template <class Function>
-  auto value(Function const & func, math::vector3<double> spacing, math::vector3<double> pos) const {
+	struct reference {
 
-    if(not enabled_) return func(pos);
+	public:
 
-    decltype(func(pos)) val = 0.0;
-    
-    for(int k0 = min_; k0 <= max_; k0++){
-      for(int k1 = min_; k1 <= max_; k1++){
-        for(int k2 = min_; k2 <= max_; k2++){
-          
-          double fac = coeff_[k0 - min_]*coeff_[k1 - min_]*coeff_[k2 - min_]/27.0;
-          
-          for(int i0 = -1; i0 <= 1; i0++){
-            for(int i1 = -1; i1 <= 1; i1++){
-              for(int i2 = -1; i2 <= 1; i2++){
-                  
-								val += fac*func(pos + spacing*math::vector3<double>{i0*(1.0/3.0 - k0), i1*(1.0/3.0 - k1), i2*(1.0/3.0 - k2)});
-                  
-              }
-            }
-          }
-          
-          
-        }
-      }
-    }
-    
-    return val;
-  }
+		reference(int min, int max, math::array<double, 1>::const_iterator && coeff):
+			min_(min),
+			max_(max),
+			coeff_(std::move(coeff))
+		{
+		}
+		
+		template <class Function>
+		auto value(Function const & func, math::vector3<double> spacing, math::vector3<double> pos) const {
+			
+			if(min_ == 0) return func(pos);
+			
+			decltype(func(pos)) val = 0.0;
+			
+			for(int k0 = min_; k0 <= max_; k0++){
+				for(int k1 = min_; k1 <= max_; k1++){
+					for(int k2 = min_; k2 <= max_; k2++){
+						
+						double fac = coeff_[k0 - min_]*coeff_[k1 - min_]*coeff_[k2 - min_]/27.0;
+						
+						for(int i0 = -1; i0 <= 1; i0++){
+							for(int i1 = -1; i1 <= 1; i1++){
+								for(int i2 = -1; i2 <= 1; i2++){
+									val += fac*func(pos + spacing*math::vector3<double>{i0*(1.0/3.0 - k0), i1*(1.0/3.0 - k1), i2*(1.0/3.0 - k2)});
+								}
+							}
+						}
+						
+						
+					}
+				}
+			}
+			
+			return val;
+		}
 
+	private:
+		
+		int min_;
+		int max_;
+		math::array<double, 1>::const_iterator coeff_;
+		
+  };
+		
+	auto ref() const {
+		return reference{min_, max_, begin(coeff_)};
+	}
+		
   auto spacing_factor() const {
     if(not enabled_) return 1.0;
     return 3.0;
@@ -122,8 +149,8 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
 
 		CHECK(not dg.enabled());
 		CHECK(dg.spacing_factor() == 1.0);
-		CHECK(dg.value([](auto point){ return 1.0; }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0})== 1.0_a);
-		CHECK(dg.value([](auto point){ return sin(point[1]); }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 0.9092974268_a);
+		CHECK(dg.ref().value([](auto point){ return 1.0; }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0})== 1.0_a);
+		CHECK(dg.ref().value([](auto point){ return sin(point[1]); }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 0.9092974268_a);
 
 	}
 
@@ -133,8 +160,8 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
 		
 		CHECK(dg.enabled());
 		CHECK(dg.spacing_factor() == 3.0);		
-		CHECK(dg.value([](auto point){ return 1.0; }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 1.0_a);
-		CHECK(dg.value([](auto point){ return sin(point[1]); }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 0.9092974261_a);
+		CHECK(dg.ref().value([](auto point){ return 1.0; }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 1.0_a);
+		CHECK(dg.ref().value([](auto point){ return sin(point[1]); }, {0.3, 0.3, 0.3}, {1.0, 2.0, 3.0}) == 0.9092974261_a);
 	}
   
   

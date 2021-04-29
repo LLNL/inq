@@ -143,7 +143,7 @@ namespace hamiltonian {
 						auto sph = sphere.ref();
 						auto spline = ps.short_range_potential().cbegin();
 
-						pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += basis.double_grid().value([spline] (auto pos) { return spline.value(length(pos)); }, basis.rspacing(), sph.point_pos(ipoint));
+						pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += basis.double_grid().ref().value([spline] (auto pos) { return spline.value(length(pos)); }, basis.rspacing(), sph.point_pos(ipoint));
 						
 					}
 				}
