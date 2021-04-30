@@ -60,22 +60,14 @@ Instructions for compiling
 git clone --recurse-submodules git@gitlab.com:npneq/inq.git
 cd inq
 mkdir build && cd build
+# set up environment if necessary, e.g. export CUDACXX=/usr/local/cuda/bin/nvcc
 ../configure --prefix=$HOME
 make -j
 make install
 ```
 
 This instructions might be incomplete for your particular setup; 
-to see how to have an up-to-date install in a standard distribution see [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
-
-Some systems require detailed environment variables set up before running `configure`, for example:
-```bash
-export CUDACXX=/usr/local/cuda/bin/nvcc
-export CXXFLAGS="-O3"
-export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -std=c++17 -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++17,-Wall,-Wfatal-errors"
-export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-```
+see other possibilities in [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
 
 ## Release information 
 
@@ -88,5 +80,5 @@ Software Title: Electronic Structure Engine
 Date Submitted: Wednesday, December 11, 2019
 Date Accepted: Wednesday, January 29, 2020
 
-This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344. 
-The work was supported by the U.S. Department of Energy, Office of Science, Materials Sciences and Engineering Division.
+> This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344. 
+> The work was supported by the U.S. Department of Energy, Office of Science, Materials Sciences and Engineering Division.
