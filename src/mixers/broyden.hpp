@@ -98,9 +98,11 @@ public:
 							 iv[ip] += mix*ffp[ip];
 						 });
 
-		gpu::run(input_value.size(), iter_used,
-						 [iv = begin(input_value), ww, wo = begin(work), mix = mix_factor_, df = begin(df_), dv = begin(dv_)] GPU_LAMBDA (auto ip, auto ii){ 
-							 iv[ip] -= ww*ww*wo[ii]*(mix*df[ii][ip] + dv[ii][ip]);
+		gpu::run(input_value.size(), 
+						 [iv = begin(input_value), ww, wo = begin(work), mix = mix_factor_, df = begin(df_), dv = begin(dv_), iter_used] GPU_LAMBDA (auto ip){
+							 for(int ii = 0; ii < iter_used; ii++){
+								 iv[ip] -= ww*ww*wo[ii]*(mix*df[ii][ip] + dv[ii][ip]);
+							 }
 						 });
 			
 	}
