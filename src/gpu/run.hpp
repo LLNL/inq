@@ -47,7 +47,7 @@ namespace gpu {
 
 void sync(){
 #ifdef ENABLE_CUDA
-	cudaStreamSynchronize(0);
+	cudaDeviceSynchronize();
 #endif
 }
 
