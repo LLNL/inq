@@ -137,6 +137,8 @@ namespace hamiltonian {
 
 				} else {
 
+					CALI_CXX_MARK_SCOPE("atomic_potential::double_grid");
+					
 					gpu::run(sphere.size(),
 									 [pot = begin(potential.cubic()),
 										sph = sphere.ref(),
