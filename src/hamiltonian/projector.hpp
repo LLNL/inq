@@ -52,7 +52,7 @@ public:
 				
 			int l = ps.projector_l(iproj_l);
 
-			if(basis.double_grid().enabled()) {
+			if(not basis.double_grid().enabled()) {
 				
 				// now construct the projector with the spherical harmonics
 				gpu::run(sphere_.size(), 2*l + 1,
@@ -64,6 +64,8 @@ public:
 				
 			} else {
 
+				CALI_CXX_MARK_SCOPE("projector::double_grid");
+				
 				gpu::run(sphere_.size(), 2*l + 1,
 								 [mat = begin(matrix_), spline = ps.projector(iproj_l).cbegin(), sph = sphere_.ref(), l, iproj_lm, kb_ = begin(kb_coeff_), coe = ps.kb_coeff(iproj_l),
 									dg = basis.double_grid().ref(), spac = basis.rspacing()] GPU_LAMBDA (auto ipoint, auto m) {
