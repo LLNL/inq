@@ -449,13 +449,13 @@ intel-ompi:
       - export PREFIX=`mktemp -d`
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir build && cd build
-      - export CC=/opt/intel/system_studio_2020/bin/icc
-      - export CXX=/opt/intel/system_studio_2020/bin/icpc
-      - export CXXFLAGS="-Wl,-rpath,/opt/intel/system_studio_2020/lib/intel64"
+      - export CC=/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icc
+      - export CXX=/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc
+      - export CXXFLAGS="-Wl,-rpath,/opt/intel/oneapi/compiler/2021.2.0/linux/lib/"
+      - export FC=gfortran
       - time ../configure --prefix=$PREFIX --disable-debug
       - make -j $(($(nproc)/2 + 1))
       - make install
-      - source /opt/intel/system_studio_2020/bin/compilervars.sh intel64
       - ctest -j 6 --output-on-failure
       - cd src
       - INQ_EXEC_ENV="mpirun --oversubscribe -np 2" ctest --output-on-failure --timeout 360
