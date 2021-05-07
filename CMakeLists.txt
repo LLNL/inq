@@ -25,16 +25,6 @@ if(ENABLE_CUDA)
   list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
   string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
   set(CMAKE_CUDA_FLAGS "--forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
-#  add_compile_options(
-#            ${ARCH_FLAGS}
-#            --forward-unknown-to-host-linker -std=c++17
-#            --extended-lambda --expt-relaxed-constexpr
-#            --Werror=cross-execution-space-call
-#            -Xcudafe "--diag_suppress=implicit_return_from_non_void_function"
-#  )
-#  add_linker_options(
-#            $<$<COMPILE_LANGUAGE:CUDA>:--forward-unknown-to-host-linker>
-#  )
   set(INQ_CUDA_LIBRARIES ${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
   link_libraries(${INQ_CUDA_LIBRARIES})
 else()
