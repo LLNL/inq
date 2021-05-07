@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11) # ubuntu 20.04 -> cmake 3.16
+cmake_minimum_required(VERSION 3.11) # for reference: ubuntu 20.04 has cmake 3.16
 include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -20,18 +20,21 @@ include(CTest)
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
   enable_language(CUDA)
-  find_package(CUDA 11.0.0 REQUIRED) # deprecated in 3.17
+  find_package(CUDA 11.0.0 REQUIRED) # deprecated in 3.17 replaced by FindCudaToolkit
   cuda_select_nvcc_arch_flags(ARCH_FLAGS ${CMAKE_CUDA_ARCHITECTURES}) # needs cmake 3.7, may autodetect at configure time
   list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
-  message("ARCH_FLAGS = ${ARCH_FLAGS}")
   string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
-  add_compile_options(
-            ${ARCH_FLAGS}
-            --forward-unknown-to-host-linker -std=c++17
-            --extended-lambda --expt-relaxed-constexpr
-            --Werror=cross-execution-space-call
-            -Xcudafe "--diag_suppress=implicit_return_from_non_void_function"
-  )
+  set(CMAKE_CUDA_FLAGS "--forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+#  add_compile_options(
+#            ${ARCH_FLAGS}
+#            --forward-unknown-to-host-linker -std=c++17
+#            --extended-lambda --expt-relaxed-constexpr
+#            --Werror=cross-execution-space-call
+#            -Xcudafe "--diag_suppress=implicit_return_from_non_void_function"
+#  )
+#  add_linker_options(
+#            $<$<COMPILE_LANGUAGE:CUDA>:--forward-unknown-to-host-linker>
+#  )
   set(INQ_CUDA_LIBRARIES ${CUDA_CUFFT_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDA_CUBLAS_LIBRARIES})
   link_libraries(${INQ_CUDA_LIBRARIES})
 else()
