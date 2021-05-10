@@ -54,6 +54,7 @@ find_package(MPI REQUIRED)
 
 #string(REPLACE "-pthread" "$<$<LINK_LANG_AND_ID:CUDA,NVIDIA>:SHELL:-Xcompiler >-pthread" _MPI_${LANG}_LINK_FLAGS "${MPI_${LANG}_LINK_FLAGS}") # needs cmake 3.18 see --forward-unknown-to-host-linker workaround
 
+include_directories(MPI::MPI_CXX)
 link_libraries(MPI::MPI_CXX) # needs cmake 3.9
 
 message(STATUS "MPI Executable for running programs:" ${MPIEXEC_EXECUTABLE})
