@@ -46,18 +46,8 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
-#set(THREADS_PREFER_PTHREAD_FLAG ON)
-#find_package(Threads REQUIRED)
-#link_libraries(Threads::Threads)
-
 find_package(MPI REQUIRED)
-
-#string(REPLACE "-pthread" "$<$<LINK_LANG_AND_ID:CUDA,NVIDIA>:SHELL:-Xcompiler >-pthread" _MPI_${LANG}_LINK_FLAGS "${MPI_${LANG}_LINK_FLAGS}") # needs cmake 3.18 see --forward-unknown-to-host-linker workaround
-
-#include_directories(MPI::MPI_CXX)
-#include_directories(${MPI_CXX_INCLUDE_PATH})
 link_libraries(MPI::MPI_CXX) # needs cmake 3.9
-
 message(STATUS "MPI Executable for running programs:" ${MPIEXEC_EXECUTABLE})
 message(STATUS "MPI number of processors detected on the host system: " ${MPIEXEC_MAX_NUMPROCS})
 
