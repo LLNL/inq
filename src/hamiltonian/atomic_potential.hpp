@@ -29,6 +29,7 @@
 
 
 #include <basis/spherical_grid.hpp>
+#include <basis/double_grid.hpp>
 #include <math/array.hpp>
 #include <operations/integral.hpp>
 #include <solvers/poisson.hpp>
@@ -39,6 +40,7 @@
 #include <mpi3/environment.hpp>
 
 #include <utils/profiling.hpp>
+
 
 namespace inq {
 namespace hamiltonian {
@@ -122,23 +124,39 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 
- 				gpu::run(sphere.size(),
-								 [pot = begin(potential.cubic()),
-									sph = sphere.ref(),
-									spline = ps.short_range_potential().cbegin()] GPU_LAMBDA (auto ipoint){
-									 auto rr = sph.distance(ipoint);
-									 auto potential_val = spline.value(rr);
-									 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += potential_val;
-								 });
-				
-      }
-			
-			comm_.all_reduce_in_place_n(raw_pointer_cast(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
+				if(not basis.double_grid().enabled()){
+					
+					gpu::run(sphere.size(),
+									 [pot = begin(potential.cubic()),
+										sph = sphere.ref(),
+										spline = ps.short_range_potential().cbegin()] GPU_LAMBDA (auto ipoint){
+										 auto rr = sph.distance(ipoint);
+										 auto potential_val = spline.value(rr);
+										 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += potential_val;
+									 });
 
+				} else {
+
+					CALI_CXX_MARK_SCOPE("atomic_potential::double_grid");
+					
+					gpu::run(sphere.size(),
+									 [pot = begin(potential.cubic()),
+										sph = sphere.ref(),
+										spline = ps.short_range_potential().cbegin(),
+										dg = basis.double_grid().ref(),
+										spac = basis.rspacing()] GPU_LAMBDA (auto ipoint){
+										 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(length(pos)); }, spac, sph.point_pos(ipoint));
+									 });
+				
+				}
+			}
+
+			comm_.all_reduce_in_place_n(raw_pointer_cast(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
+			
 			return potential;			
-    }
+		}
 		
-    template <class basis_type, class cell_type, class geo_type>
+		template <class basis_type, class cell_type, class geo_type>
     basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
@@ -259,7 +277,7 @@ namespace hamiltonian {
 		auto & range_separation() const {
 			return sep_;
 		}
-    
+
   private:
 
 		pseudo::math::erf_range_separation const sep_;
@@ -269,7 +287,7 @@ namespace hamiltonian {
 		mutable boost::mpi3::communicator comm_;
 		inq::utils::partition part_;
 		bool has_nlcc_;
-        
+
   };
 
 }

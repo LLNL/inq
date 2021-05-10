@@ -27,6 +27,7 @@
 #include <math/vector3.hpp>
 #include <ions/unitcell.hpp>
 #include <ions/periodic_replicas.hpp>
+#include <basis/double_grid.hpp>
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
 #include <hamiltonian/atomic_potential.hpp>
@@ -42,7 +43,7 @@ class projector {
 public:
 #endif
 	
-	void build(atomic_potential::pseudopotential_type const & ps) {
+	void build(const basis::real_space & basis, atomic_potential::pseudopotential_type const & ps) {
 
 		CALI_CXX_MARK_SCOPE("projector::build");
 		
@@ -51,13 +52,29 @@ public:
 				
 			int l = ps.projector_l(iproj_l);
 
-			// now construct the projector with the spherical harmonics
-			gpu::run(sphere_.size(), 2*l + 1,
-							 [mat = begin(matrix_), spline = ps.projector(iproj_l).cbegin(), sph = sphere_.ref(), l, iproj_lm, kb_ = begin(kb_coeff_), coe = ps.kb_coeff(iproj_l)] GPU_LAMBDA (auto ipoint, auto m) {
+			if(not basis.double_grid().enabled()) {
+				
+				// now construct the projector with the spherical harmonics
+				gpu::run(sphere_.size(), 2*l + 1,
+								 [mat = begin(matrix_), spline = ps.projector(iproj_l).cbegin(), sph = sphere_.ref(), l, iproj_lm, kb_ = begin(kb_coeff_), coe = ps.kb_coeff(iproj_l)] GPU_LAMBDA (auto ipoint, auto m) {
+									 
+									 if(ipoint == 0) kb_[iproj_lm + m] = coe;
+									 mat[iproj_lm + m][ipoint] = spline.value(sph.distance(ipoint))*pseudo::math::spherical_harmonic(l, m - l, sph.point_pos(ipoint));
+								 });
+				
+			} else {
 
-								 if(ipoint == 0) kb_[iproj_lm + m] = coe;
-								 mat[iproj_lm + m][ipoint] = spline.value(sph.distance(ipoint))*pseudo::math::spherical_harmonic(l, m - l, sph.point_pos(ipoint));
-							 });
+				CALI_CXX_MARK_SCOPE("projector::double_grid");
+				
+				gpu::run(sphere_.size(), 2*l + 1,
+								 [mat = begin(matrix_), spline = ps.projector(iproj_l).cbegin(), sph = sphere_.ref(), l, iproj_lm, kb_ = begin(kb_coeff_), coe = ps.kb_coeff(iproj_l),
+									dg = basis.double_grid().ref(), spac = basis.rspacing()] GPU_LAMBDA (auto ipoint, auto m) {
+									 
+									 if(ipoint == 0) kb_[iproj_lm + m] = coe;
+									 mat[iproj_lm + m][ipoint] = dg.value([spline, l, m] GPU_LAMBDA(auto pos) { return spline.value(length(pos))*pseudo::math::spherical_harmonic(l, m - l, pos);}, spac, sph.point_pos(ipoint));
+								 });
+				
+			}
 
 			iproj_lm += 2*l + 1;
 			
@@ -76,7 +93,7 @@ public:
 		comm_(sphere_.create_comm(basis.comm())),
 		iatom_(iatom){
 
-		build(ps);
+		build(basis, ps);
 
 	}
 
