@@ -21,7 +21,9 @@ if(ENABLE_CUDA)
   set(SRC_EXT cu)
   enable_language(CUDA)
   find_package(CUDA 11.0.0 REQUIRED) # deprecated in 3.17 replaced by FindCudaToolkit
-  cuda_select_nvcc_arch_flags(ARCH_FLAGS ${CMAKE_CUDA_ARCHITECTURES}) # needs cmake 3.7, may autodetect at configure time
+  if(NOT DEFINED ENV{CUDA_ARCH_OVERRIDE})
+    cuda_select_nvcc_arch_flags(ARCH_FLAGS ${CMAKE_CUDA_ARCHITECTURES}) # needs cmake 3.7, may autodetect at configure time
+  endif()
   list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
   string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
   set(CMAKE_CUDA_FLAGS "--forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
