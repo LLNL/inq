@@ -80,8 +80,15 @@ namespace systems {
 				logger()->info("constructed with cell {}", ions.cell_);
 			}
 
+			auto myid = gpu::id();
+
+			auto ids = full_comm_.all_gather_as<std::vector<decltype(myid)>>(myid);
+
 			if(logger()){
 				logger()->info("electrons divided among {} processes ({} states x {} domains)", full_comm_.size(), full_comm_.shape()[0], full_comm_.shape()[1]);
+				for(int iproc = 0; iproc < full_comm_.size(); iproc++){
+					logger()->info("  process {} has gpu id {}", iproc, ids[iproc]);
+				}
 			}
 			
 		}
