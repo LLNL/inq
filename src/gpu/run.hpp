@@ -25,6 +25,7 @@
 
 #ifdef ENABLE_CUDA
 #include <cuda.h>
+#include <cuda_runtime.h>
 #endif
 
 #include<cstddef> // std::size_t
@@ -42,12 +43,28 @@
 #define CUDA_MAX_DIM1 2147483647ULL
 #define CUDA_MAX_DIM23 65535
 
+
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+
 namespace inq {
 namespace gpu {
 
 void sync(){
 #ifdef ENABLE_CUDA
 	cudaDeviceSynchronize();
+#endif
+}
+
+auto id() {
+#ifdef ENABLE_CUDA	
+	cudaDeviceProp prop;
+	cudaGetDeviceProperties (&prop, 0);
+	using namespace boost::archive::iterators;
+	using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
+	return std::string(it((unsigned char*)&prop.uuid), it((unsigned char*)&prop.uuid + sizeof(prop.uuid)));
+#else
+	return 0;
 #endif
 }
 
