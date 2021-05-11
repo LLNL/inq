@@ -79,6 +79,11 @@ namespace systems {
 				logger()->info("constructed with geometry {}", ions.geo_);
 				logger()->info("constructed with cell {}", ions.cell_);
 			}
+
+			if(logger()){
+				logger()->info("electrons divided among {} processes ({} states x {} domains)", full_comm_.size(), full_comm_.shape()[0], full_comm_.shape()[1]);
+			}
+			
 		}
 
 		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
