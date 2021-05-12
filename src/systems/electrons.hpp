@@ -79,6 +79,17 @@ namespace systems {
 				logger()->info("constructed with geometry {}", ions.geo_);
 				logger()->info("constructed with cell {}", ions.cell_);
 			}
+
+			auto myid = gpu::id();
+			auto gpuids = full_comm_.all_gather_as<boost::multi::array<decltype(myid), 1>>(myid);
+
+			if(logger()){
+				logger()->info("electrons divided among {} processes ({} states x {} domains)", full_comm_.size(), full_comm_.shape()[0], full_comm_.shape()[1]);
+				for(int iproc = 0; iproc < full_comm_.size(); iproc++){
+					logger()->info("  process {} has gpu id {}", iproc, gpuids[iproc]);
+				}
+			}
+			
 		}
 
 		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
