@@ -85,9 +85,13 @@ namespace systems {
 
 			if(logger()){
 				logger()->info("electrons divided among {} processes ({} states x {} domains)", full_comm_.size(), full_comm_.shape()[0], full_comm_.shape()[1]);
+#ifdef ENABLE_CUDA
 				for(int iproc = 0; iproc < full_comm_.size(); iproc++){
 					logger()->info("  process {} has gpu id {}", iproc, gpuids[iproc]);
 				}
+#else
+				logger()->info("  inq is running on the cpu");
+#endif
 			}
 			
 		}
