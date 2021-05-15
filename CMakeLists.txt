@@ -53,12 +53,15 @@ include_directories(${MPI_CXX_INCLUDE_PATH})
 link_libraries(MPI::MPI_CXX) # needs cmake 3.9
 message(STATUS "MPI Executable for running programs:" ${MPIEXEC_EXECUTABLE})
 message(STATUS "MPI number of processors detected on the host system: " ${MPIEXEC_MAX_NUMPROCS})
+include(CMakePrintHelpers)
+cmake_print_properties(TARGETS MPI::MPI_CXX PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
 
 #FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 include_directories(PkgConfig::FFTW)
 link_libraries(PkgConfig::FFTW)
+cmake_print_properties(TARGETS PkgConfig::FFTW PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
 
 if(ENABLE_HEFFTE)
   find_package(Heffte)
@@ -95,7 +98,15 @@ configure_file(inq_config.h.in inq_config.h)
 
 #Generate inc++
 set(INCXX scripts/inc++)
+if(ENABLE_CUDA)
+set(INCPP_COMPILER ${CMAKE_CUDA_COMPILER})
+set(INCPP_FLAGS ${CMAKE_CUDA_FLAGS})
+else()
+set(INCPP_COMPILER ${CMAKE_CXX_COMPILER})
+set(INCPP_FLAGS ${CMAKE_CXX_FLAGS})
+endif()
 configure_file(${INCXX}.bash.in ${INCXX} @ONLY)
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 install(DIRECTORY share/ DESTINATION share/inq)

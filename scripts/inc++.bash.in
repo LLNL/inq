@@ -19,25 +19,25 @@
 if [[ "$*" == *-c* ]]
 then
     #we are just compiling
-    cxx="@CMAKE_CXX_COMPILER@"
+    cxx="@INCPP_COMPILER@"
     ldflags=""
     libs=""
 else
     #we are linking too
-    cxx="@CMAKE_CXX_COMPILER@"
-    ldflags="@CMAKE_EXE_LINKER_FLAGS@ @MPI_CXX_LINK_FLAGS@"
-    libs="@Libxc_LIBRARIES@ @LAPACK_LIBRARIES@ @BLAS_LIBRARIES@ @INQ_CUDA_LIBRARIES@ -L@Boost_LIBRARY_DIRS@ -lboost_serialization @FFTW_LDFLAGS@ @CMAKE_CXX_STANDARD_LIBRARIES@ @CMAKE_THREAD_LIBS_INIT@ @MPI_CXX_LIBRARIES@"
+    cxx="@INCPP_COMPILER@"
+    ldflags="@CMAKE_EXE_LINKER_FLAGS@ "
+    libs="@Libxc_LIBRARIES@ @LAPACK_LIBRARIES@ @BLAS_LIBRARIES@ @INQ_CUDA_LIBRARIES@ -L@Boost_LIBRARY_DIRS@ -lboost_serialization @FFTW_LDFLAGS@ @CMAKE_CXX_STANDARD_LIBRARIES@ @MPI_CXX_LIBRARIES@"
 fi
 
 includeflags="-I@Libxc_INCLUDE_DIRS@             \
   -I@Boost_INCLUDE_DIRS@                         \
-  ${FFTW_CFLAGS}                          \
+  @FFTW_CFLAGS@                          \
   -I@PROJECT_BINARY_DIR@/                        \
   -I@PROJECT_BINARY_DIR@/external_libs/pseudopod \
   -I@PROJECT_SOURCE_DIR@/src/                    \
   -I@PROJECT_SOURCE_DIR@/external_libs/          \
   -I@MPI_CXX_INCLUDE_DIRS@"
 
-command_line="$cxx -std=c++17 @CMAKE_CXX_FLAGS@ ${includeflags//;/ -I} $ldflags $* ${libs//;/ }"
+command_line="$cxx -std=c++17 @INCPP_FLAGS@ ${includeflags//;/ -I} $ldflags $* ${libs//;/ }"
 
 echo $command_line && $command_line
