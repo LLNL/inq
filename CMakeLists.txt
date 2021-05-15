@@ -96,9 +96,11 @@ configure_file(inq_config.h.in inq_config.h)
 #Generate inc++
 set(INCXX scripts/inc++)
 if(ENABLE_CUDA)
-set(INQ_COMPILER ${CMAKE_CUDA_COMPILER})
+set(INCPP_COMPILER ${CMAKE_CUDA_COMPILER})
+set(INCPP_FLAGS ${CMAKE_CUDA_FLAGS})
 else()
-set(INQ_COMPILER ${CMAKE_CXX_COMPILER})
+set(INCPP_COMPILER ${CMAKE_CXX_COMPILER})
+set(INCPP_FLAGS ${CMAKE_CXX_FLAGS})
 endif()
 configure_file(${INCXX}.bash.in ${INCXX} @ONLY)
 
