@@ -19,14 +19,14 @@
 if [[ "$*" == *-c* ]]
 then
     #we are just compiling
-    cxx="@INQ_COMPILER@"
+    cxx="@INCPP_COMPILER@"
     ldflags=""
     libs=""
 else
     #we are linking too
-    cxx="@INQ_COMPILER@"
-    ldflags="@CMAKE_EXE_LINKER_FLAGS@ @MPI_CXX_LINK_FLAGS@ "
-    libs="@Libxc_LIBRARIES@ @LAPACK_LIBRARIES@ @BLAS_LIBRARIES@ @INQ_CUDA_LIBRARIES@ -L@Boost_LIBRARY_DIRS@ -lboost_serialization @FFTW_LDFLAGS@ @CMAKE_CXX_STANDARD_LIBRARIES@ @CMAKE_THREAD_LIBS_INIT@ @MPI_CXX_LIBRARIES@"
+    cxx="@INCPP_COMPILER@"
+    ldflags="@CMAKE_EXE_LINKER_FLAGS@ "
+    libs="@Libxc_LIBRARIES@ @LAPACK_LIBRARIES@ @BLAS_LIBRARIES@ @INQ_CUDA_LIBRARIES@ -L@Boost_LIBRARY_DIRS@ -lboost_serialization @FFTW_LDFLAGS@ @CMAKE_CXX_STANDARD_LIBRARIES@ @MPI_CXX_LIBRARIES@"
 fi
 
 includeflags="-I@Libxc_INCLUDE_DIRS@             \
