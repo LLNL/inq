@@ -246,7 +246,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		}
 		
 		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
-						 [out = gpubegin(output), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [out = begin(output), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 auto ip = iz + dz*(iy + dy*ix);
 							 ar[ix][iy][iz][ist] = out[ip];
 						 });
