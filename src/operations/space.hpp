@@ -117,22 +117,14 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 	
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
-		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
-						 [in = begin(input), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
-							 auto ip = iz + dz*(iy + dy*ix);
-							 in[ip] = ar[ix][iy][iz][ist];
-						 });
-
+		input({0, real_basis.local_size()}) = array_rs.flatted().flatted().transposed()[ist];
+		
 		{
 			CALI_CXX_MARK_SCOPE("heffte_forward");
 			fft.forward(raw_pointer_cast(input.data_elements()), static_cast<complex *>(output.data_elements()));
 		}
-		
-		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-						 [out = begin(output), ar = begin(array_fs), dz = fourier_basis.local_sizes()[2], dy = fourier_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
-							 auto ip = iz + dz*(iy + dy*ix);
-							 ar[ix][iy][iz][ist] = out[ip];
-						 });
+
+		array_fs.flatted().flatted().transposed()[ist] = output({0, fourier_basis.local_size()});
 	}
 		
 #else
@@ -234,22 +226,15 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 	
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
-		gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-						 [in = begin(input), ar = begin(array_fs), dz = fourier_basis.local_sizes()[2], dy = fourier_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
-							 auto ip = iz + dz*(iy + dy*ix);
-							 in[ip] = ar[ix][iy][iz][ist];
-						 });
-
+		input({0, fourier_basis.local_size()}) = array_fs.flatted().flatted().transposed()[ist];
+		
 		{
 			CALI_CXX_MARK_SCOPE("heffte_backward");
 			fft.backward(raw_pointer_cast(input.data_elements()), static_cast<complex *>(output.data_elements()), scaling);
 		}
+
+		array_rs.flatted().flatted().transposed()[ist] = output({0, real_basis.local_size()});
 		
-		gpu::run(real_basis.local_sizes()[2], real_basis.local_sizes()[1], real_basis.local_sizes()[0],
-						 [out = begin(output), ar = begin(array_rs), dz = real_basis.local_sizes()[2], dy = real_basis.local_sizes()[1], ist] GPU_LAMBDA (auto iz, auto iy, auto ix){
-							 auto ip = iz + dz*(iy + dy*ix);
-							 ar[ix][iy][iz][ist] = out[ip];
-						 });
 	}
 		
 #else //Heftte_FOUND
