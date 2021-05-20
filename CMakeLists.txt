@@ -64,7 +64,7 @@ link_libraries(PkgConfig::FFTW)
 cmake_print_properties(TARGETS PkgConfig::FFTW PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
 
 if(ENABLE_HEFFTE)
-  find_package(Heffte)
+  find_package(Heffte REQUIRED)
   #get_target_property(HEFFTE_INCLUDE_DIRS Heffte::Heffte INTERFACE_INCLUDE_DIRECTORIES)
   link_libraries(Heffte::Heffte)
 endif()
