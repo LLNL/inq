@@ -38,7 +38,7 @@ namespace math {
 
 		vector3() = default;
 
-		GPU_FUNCTION vector3(Type const & scal){
+		explicit GPU_FUNCTION vector3(Type const & scal){
 			vec_[0] = scal;
 			vec_[1] = scal;
 			vec_[2] = scal;
