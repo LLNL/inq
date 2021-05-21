@@ -169,7 +169,7 @@ auto run(reduce const & redx, reduce const & redy, kernel_type kernel) -> declty
   
 #ifndef ENABLE_CUDA
 
-  type accumulator = 0.0;
+  type accumulator(0.0);
 	for(long iy = 0; iy < sizey; iy++){
 		for(long ix = 0; ix < sizex; ix++){
 			accumulator += kernel(ix, iy);
