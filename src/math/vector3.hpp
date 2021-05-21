@@ -520,7 +520,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(x4[1] == 0.2277_a);
 		CHECK(x4[2] == 3.1_a);
 
-		x4 = -3.3;
+		x4 = math::vector3<double>(-3.3);
 	
 		CHECK(x4[0] == -3.3_a);
 		CHECK(x4[1] == -3.3_a);
