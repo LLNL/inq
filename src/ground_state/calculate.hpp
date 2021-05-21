@@ -228,7 +228,7 @@ namespace ground_state {
 		if(ions.cell().periodic_dimensions() == 0){
 			res.dipole = observables::dipole(ions, electrons);
 		} else {
-			res.dipole = 0.0;
+			res.dipole(0.0);
 		}
 
 
