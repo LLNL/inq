@@ -36,6 +36,17 @@ auto get_remote_points(basis::field<BasisType, ElementType> const & source, Arra
 
 	CALI_CXX_MARK_FUNCTION;
 
+	if(source.basis().comm().size() == 1){
+		math::array<ElementType, 1> remote_points(point_list.size());
+
+		gpu::run(point_list.size(),
+						 [rem = begin(remote_points), sou = begin(source.linear()), poi = begin(point_list)] GPU_LAMBDA (auto ip){
+							 rem[ip] = sou[poi[ip]];
+						 });
+		
+		return remote_points;
+	}
+
 	struct point_position {
 		long point;
 		long position;
