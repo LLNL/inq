@@ -44,10 +44,11 @@ auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 	namespace blas = boost::multi::blas;
 	auto overlap_matrix =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
 
-	{	CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
+	if(phi1.basis().comm().size() > 1) {
+		CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
 		phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
 	}
-		
+	
 	return overlap_matrix;
 }
 
@@ -70,10 +71,11 @@ auto overlap(const field_set_type & phi){
 	namespace blas = boost::multi::blas;
 	auto overlap_matrix = +blas::herk(phi.basis().volume_element(), blas::H(phi.matrix()));
 
-	{	CALI_CXX_MARK_SCOPE("overlap(1arg)_mpi_reduce");		
+	if(phi.basis().comm().size() > 1){
+		CALI_CXX_MARK_SCOPE("overlap(1arg)_mpi_reduce");		
 		phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
 	}
-		
+	
 	return overlap_matrix;
 #endif
 }

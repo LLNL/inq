@@ -70,8 +70,11 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 
 	}
 
-	phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_vector.data_elements()), overlap_vector.size(), std::plus<>{});
-		
+	if(phi1.basis().comm().size() > 1){
+		CALI_CXX_MARK_SCOPE("overlap_diagonal(2arg)::reduce");
+		phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_vector.data_elements()), overlap_vector.size(), std::plus<>{});
+	}
+	
 	return overlap_vector;
 }
 
@@ -131,8 +134,12 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal_normalize
 
 	auto overlap_and_norm = gpu::run(phi1.local_set_size(), gpu::reduce(phi1.basis().part().local_size()),
 																	 overlap_diagonal_normalized_mult<decltype(begin(phi1.matrix()))>{begin(phi1.matrix()), begin(phi2.matrix())});
+
 	
-	phi1.basis().comm().all_reduce_in_place_n(reinterpret_cast<type *>(raw_pointer_cast(overlap_and_norm.data_elements())), 2*overlap_and_norm.size(), std::plus<>{});
+	if(phi1.basis().comm().size() > 1){
+		CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized::reduce");
+		phi1.basis().comm().all_reduce_in_place_n(reinterpret_cast<type *>(raw_pointer_cast(overlap_and_norm.data_elements())), 2*overlap_and_norm.size(), std::plus<>{});
+	}
 
 	math::array<type, 1> overlap_vector(phi1.set_part().local_size());
 

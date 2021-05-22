@@ -158,7 +158,8 @@ public:
 			projections.elements().fill(0.0);
 		}
 
-		{	CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
+		if(comm_.size() > 1) {
+			CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
 			comm_.all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
 		}
 
