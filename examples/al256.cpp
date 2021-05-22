@@ -54,7 +54,7 @@ int main(int argc, char ** argv){
 	
 	ground_state::initialize(ions, electrons);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200) | inq::input::scf::mixing(0.01));
+	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
 
 	inq::operations::io::save("al256_restart", electrons.phi_);
 
