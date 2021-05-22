@@ -144,7 +144,9 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 		olap = blas::gemm(phi.basis().volume_element(), blas::H(phi_restricted), vec.matrix());
 	}
 	
-	phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(olap.data_elements()), olap.num_elements(), std::plus<>{});
+	if(phi.basis().comm().size() > 1){
+		phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(olap.data_elements()), olap.num_elements(), std::plus<>{});
+	}
 
 	vec.matrix() += blas::gemm(-1.0, phi_restricted, olap);
 
