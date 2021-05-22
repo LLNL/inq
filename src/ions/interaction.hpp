@@ -73,7 +73,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 	using math::vector3;
 
 	const double alpha = 0.21;
-		
+
 	double ers = 0.0;
 	for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vector3<double>(0.0, 0.0, 0.0);
 
@@ -81,8 +81,13 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 
 	for(int iatom = 0; iatom < natoms; iatom++){
 		double zi = charge[iatom];
-      
-		periodic_replicas rep(cell, positions[iatom], rcut);
+
+		double maxdist = 0.0;
+		for(int jatom = 0; jatom < natoms; jatom++){
+			maxdist = std::max(maxdist, norm(cell.position_in_cell(positions[jatom]) - cell.position_in_cell(positions[iatom])));
+		}
+		
+		periodic_replicas rep(cell, cell.position_in_cell(positions[iatom]), rcut + sqrt(maxdist));
 
 		for(unsigned irep = 0; irep < rep.size(); irep++){
 			vector3<double> xi = rep[irep];
@@ -94,7 +99,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 				double rr = length(rij);
 					
 				if(rr < 1.0e-5) continue;
-					
+				
 				auto eor = erfc(alpha*rr)/rr;
 					
 				ers += 0.5*zi*zj*eor;
