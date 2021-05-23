@@ -32,7 +32,7 @@ namespace inq {
 namespace operations {
 
 template <class BasisType, class ElementType, class ArrayType>
-auto get_remote_points(basis::field<BasisType, ElementType> const & source, ArrayType const & point_list){
+math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementType> const & source, ArrayType const & point_list){
 
 	CALI_CXX_MARK_FUNCTION;
 
