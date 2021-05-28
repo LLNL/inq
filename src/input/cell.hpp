@@ -162,7 +162,7 @@ TEST_CASE("class input::cell", "[input::cell]") {
 	
 	SECTION("Parallelepipedic"){
 
-		auto ci = input::cell::cubic(10.2_b, 5.7_b, 8.3_b) | input::cell::periodic();
+		auto ci = input::cell::orthorhombic(10.2_b, 5.7_b, 8.3_b) | input::cell::periodic();
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
