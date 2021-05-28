@@ -4,7 +4,7 @@
 #define INQ__INPUT__CONFIG
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -28,17 +28,11 @@ namespace inq {
 namespace input {
 
 struct config {
-	
-	config(){
-		extra_states = 0;
-		excess_charge = 0.0;
-		temperature = quantity<magnitude::energy>::zero();
-	}
-	
-	int extra_states;
-	double excess_charge;
-	quantity<magnitude::energy> temperature;
-	
+
+	int extra_states = 0;
+	double excess_charge = 0.0;
+	quantity<magnitude::energy> temperature = quantity<magnitude::energy>::zero();
+
 };
 
 }
