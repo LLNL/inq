@@ -41,10 +41,27 @@ public:
 		return cell(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, aa, 0.0), math::vector3<double>(0.0, 0.0, aa));
 	}
 
-	static auto cubic(quantity<magnitude::length> aa, quantity<magnitude::length> bb, quantity<magnitude::length> cc){
-		return cell(math::vector3<double>(aa.in_atomic_units(), 0.0, 0.0), math::vector3<double>(0.0, bb.in_atomic_units(), 0.0), math::vector3<double>(0.0, 0.0, cc.in_atomic_units()));
+	static cell orthorhombic(
+		quantity<magnitude::length> aa, 
+		quantity<magnitude::length> bb, 
+		quantity<magnitude::length> cc
+	){
+		return {
+			math::vector3<double>(aa.in_atomic_units(), 0.0, 0.0), 
+			math::vector3<double>(0.0, bb.in_atomic_units(), 0.0), 
+			math::vector3<double>(0.0, 0.0, cc.in_atomic_units())
+		};
 	}
 
+	[[deprecated("use orthorhombic for cells with 90 degrees")]] 
+	static cell cubic(
+		quantity<magnitude::length> aa, 
+		quantity<magnitude::length> bb, 
+		quantity<magnitude::length> cc
+	){
+		return orthorhombic(aa, bb, cc);
+	}
+	
 	static auto periodic() {
 		cell cl;
 		cl.periodic_dimensions_ = 3;
