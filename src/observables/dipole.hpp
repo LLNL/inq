@@ -34,6 +34,8 @@ namespace inq {
 namespace observables {
 
 math::vector3<double> dipole(basis::field<basis::real_space, double> const & density){
+
+	CALI_CXX_MARK_FUNCTION;
 	
 	math::vector3<double> dip = {0.0, 0.0, 0.0};
 	
@@ -45,8 +47,8 @@ math::vector3<double> dipole(basis::field<basis::real_space, double> const & den
 			}
 		}
 	}
-	
-	density.basis().comm().all_reduce_in_place_n(dip.data(), dip.size(), std::plus<>{});
+
+	if(density.basis().comm().size() > 1) density.basis().comm().all_reduce_in_place_n(dip.data(), dip.size(), std::plus<>{});
 	
 	return dip*density.basis().volume_element();
 	

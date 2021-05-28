@@ -59,9 +59,12 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		
 		forces_non_local[proj->iatom()] = proj->force(electrons.phi_, gphi, electrons.states_.occupations());
 	}
-
-	electrons.phi_.full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
-
+	
+	if(electrons.phi_.full_comm().size() > 1){
+		CALI_CXX_MARK_SCOPE("forces_nonlocal::reduce");
+		electrons.phi_.full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
+	}
+	
 	//ionic force
 	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
@@ -83,8 +86,11 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 			forces_local[iatom] *= electrons.density_basis_.volume_element();
 		}
 
-		gphi.basis().comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size(), std::plus<>{});
-
+		if(gphi.basis().comm().size() > 1){
+			CALI_CXX_MARK_SCOPE("forces_local::reduce");
+			gphi.basis().comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size(), std::plus<>{});
+		}
+		
 	}
 
 	math::array<math::vector3<double>, 1> forces(ions.geo().num_atoms());

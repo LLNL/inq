@@ -88,9 +88,12 @@ public:
 							 wo[ii] = aa;
 						 });
 
-		comm_.all_reduce_in_place_n(raw_pointer_cast(beta.data_elements()), beta.num_elements(), std::plus<>{});
-		comm_.all_reduce_in_place_n(raw_pointer_cast(work.data_elements()), work.num_elements(), std::plus<>{});		
-
+		if(comm_.size() > 1){
+			CALI_CXX_MARK_SCOPE("broyden_extrapolation::reduce");
+			comm_.all_reduce_in_place_n(raw_pointer_cast(beta.data_elements()), beta.num_elements(), std::plus<>{});
+			comm_.all_reduce_in_place_n(raw_pointer_cast(work.data_elements()), work.num_elements(), std::plus<>{});		
+		}
+		
 		solvers::least_squares(beta, work);
 
 		gpu::run(input_value.size(),
@@ -143,7 +146,10 @@ public:
 			
 			gamma_ = dot(conj(df_[pos]), df_[pos]);
 
-			comm_.all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
+			if(comm_.size() > 1){
+				CALI_CXX_MARK_SCOPE("broyden_mixing::reduce");
+				comm_.all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
+			}
 
 			gamma_ = std::max(1e-8, sqrt(gamma_));
 

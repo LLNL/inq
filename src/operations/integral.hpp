@@ -34,7 +34,9 @@ auto integral(const field_type & phi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
-	phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	if(phi.basis().comm().size() > 1) {
+		phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	}
 	return integral_value;
 }
 
@@ -45,7 +47,9 @@ auto integral(const field_type & phi1, const field_type & phi2, const binary_op 
 	assert(phi1.basis() == phi2.basis());
 
 	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
-	phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	if(phi1.basis().comm().size() > 1) {
+		phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	}
 	return integral_value;
 }
 	

@@ -80,7 +80,9 @@ auto enlarge(FieldType const & source, typename FieldType::basis_type const & ne
 			}
 		}
 
-		auto points = operations::get_remote_points(source, point_list);
+		math::array<long, 1> list(point_list.begin(), point_list.end());
+		
+		auto points = operations::get_remote_points(source, list);
 		
 		long ip = 0;
 		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){

@@ -32,9 +32,20 @@ namespace inq {
 namespace operations {
 
 template <class BasisType, class ElementType, class ArrayType>
-auto get_remote_points(basis::field<BasisType, ElementType> const & source, ArrayType const & point_list){
+math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementType> const & source, ArrayType const & point_list){
 
 	CALI_CXX_MARK_FUNCTION;
+
+	if(source.basis().comm().size() == 1){
+		math::array<ElementType, 1> remote_points(point_list.size());
+
+		gpu::run(point_list.size(),
+						 [rem = begin(remote_points), sou = begin(source.linear()), poi = begin(point_list)] GPU_LAMBDA (auto ip){
+							 rem[ip] = sou[poi[ip]];
+						 });
+		
+		return remote_points;
+	}
 
 	struct point_position {
 		long point;
