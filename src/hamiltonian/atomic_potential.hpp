@@ -352,14 +352,13 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
   SECTION("Construct from a geometry"){
 
-    ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
-		
-		auto ll = 20.0_b;
-		auto cell = input::cell::cubic(ll, ll, ll);
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha));
+	ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 
-    hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), comm);
-		
+	auto cell = input::cell::cubic(20.0_b);
+	basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha));
+
+	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), comm);
+
     CHECK(pot.num_species() == 2);
     CHECK(pot.num_electrons() == 30.0_a);
 
