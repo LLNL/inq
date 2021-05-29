@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -48,13 +48,13 @@ int main(int argc, char ** argv){
 
 	geo.push_back( "O" | math::vector3<double>( 0.0,      -0.553586, 0.0));
 	geo.push_back( "H" | math::vector3<double>( 1.429937,  0.553586, 0.0));
-  geo.push_back( "H" | math::vector3<double>(-1.429937,  0.553586, 0.0));
+	geo.push_back( "H" | math::vector3<double>(-1.429937,  0.553586, 0.0));
 
-	systems::ions ions(input::cell::cubic(12.0_b, 11.0_b, 10.0_b) | input::cell::finite(), geo);
+	systems::ions ions(input::cell::orthorhombic(12.0_b, 11.0_b, 10.0_b) | input::cell::finite(), geo);
 
-  input::config conf;
-  
-  systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0_Ha), conf);
+	input::config conf;
+
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0_Ha), conf);
 
 	// Propagation without perturbation
 	{

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
+ Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -42,8 +42,8 @@ int main(int argc, char ** argv){
 	std::vector<inq::input::atom> geo;
 	
 	geo.push_back(local_h | inq::math::vector3<double>(150.0, -30.0, 0.0));
-    
-	inq::systems::ions ions(inq::input::cell::cubic(15.0_b, 15.0_b, 15.0_b) | inq::input::cell::finite(), geo);
+
+	inq::systems::ions ions(inq::input::cell::cubic(15.0_b) | inq::input::cell::finite(), geo);
 
 	inq::input::config conf;
 	
