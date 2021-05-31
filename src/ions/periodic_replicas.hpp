@@ -44,6 +44,8 @@ public:
 		
 		position = cell.position_in_cell(position);
 
+		replicas_.push_back(position);		
+		
 		math::vector3<int> neigh_max(3);
 		//we should use floor here, but since we check later, round is more reliable
 		for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell[idir]))); 
@@ -51,6 +53,9 @@ public:
 		for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
 			for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
 				for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
+
+					if(ix == 0 and iy == 0 and iz == 0) continue;
+					
 					math::vector3<double> reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
             
 					if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
