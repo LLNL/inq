@@ -41,10 +41,27 @@ public:
 		return cell(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, aa, 0.0), math::vector3<double>(0.0, 0.0, aa));
 	}
 
-	static auto cubic(quantity<magnitude::length> aa, quantity<magnitude::length> bb, quantity<magnitude::length> cc){
-		return cell(math::vector3<double>(aa.in_atomic_units(), 0.0, 0.0), math::vector3<double>(0.0, bb.in_atomic_units(), 0.0), math::vector3<double>(0.0, 0.0, cc.in_atomic_units()));
+	static cell orthorhombic(
+		quantity<magnitude::length> aa, 
+		quantity<magnitude::length> bb, 
+		quantity<magnitude::length> cc
+	){
+		return {
+			math::vector3<double>(aa.in_atomic_units(), 0.0, 0.0), 
+			math::vector3<double>(0.0, bb.in_atomic_units(), 0.0), 
+			math::vector3<double>(0.0, 0.0, cc.in_atomic_units())
+		};
 	}
 
+	[[deprecated("use orthorhombic for cells with 90 degrees")]] 
+	static cell cubic(
+		quantity<magnitude::length> aa, 
+		quantity<magnitude::length> bb, 
+		quantity<magnitude::length> cc
+	){
+		return orthorhombic(aa, bb, cc);
+	}
+	
 	static auto periodic() {
 		cell cl;
 		cl.periodic_dimensions_ = 3;
@@ -145,7 +162,7 @@ TEST_CASE("class input::cell", "[input::cell]") {
 	
 	SECTION("Parallelepipedic"){
 
-		auto ci = input::cell::cubic(10.2_b, 5.7_b, 8.3_b) | input::cell::periodic();
+		auto ci = input::cell::orthorhombic(10.2_b, 5.7_b, 8.3_b) | input::cell::periodic();
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
