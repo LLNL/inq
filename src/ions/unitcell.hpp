@@ -564,7 +564,10 @@ namespace ions {
 
 		auto position_in_cell(math::vector3<double> const & pos) const {
 			auto crystal_pos = cart_to_crystal(pos);
-			for(int idir = 0; idir < 3; idir++) crystal_pos[idir] -= floor(crystal_pos[idir]);
+			for(int idir = 0; idir < 3; idir++) {
+				crystal_pos[idir] -= floor(crystal_pos[idir]);
+				if(crystal_pos[idir] >= 0.5) crystal_pos[idir] -= 1.0;
+			}
 			return crystal_to_cart(crystal_pos);
 		}
 		
