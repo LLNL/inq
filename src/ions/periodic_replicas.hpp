@@ -103,9 +103,9 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
       
       CHECK(rep.size() == 1);
       
-      CHECK(rep[0][0] == 5.0_a);
-      CHECK(rep[0][1] == 5.0_a);
-      CHECK(rep[0][2] == 5.0_a);
+      CHECK(rep[0][0] == -5.0_a);
+      CHECK(rep[0][1] == -5.0_a);
+      CHECK(rep[0][2] == -5.0_a);
 
     }
     
@@ -113,34 +113,34 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
       ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 10.0);
       
       CHECK(rep.size() == 7);
-      
+
       CHECK(rep[0][0] == -5.0_a);
-      CHECK(rep[0][1] == 5.0_a);
-      CHECK(rep[0][2] == 5.0_a);
+      CHECK(rep[0][1] == -5.0_a);
+      CHECK(rep[0][2] == -5.0_a);
       
-      CHECK(rep[1][0] == 5.0_a);
+      CHECK(rep[1][0] == -15.0_a);
       CHECK(rep[1][1] == -5.0_a);
-      CHECK(rep[1][2] == 5.0_a);
+      CHECK(rep[1][2] == -5.0_a);
       
-      CHECK(rep[2][0] == 5.0_a);
-      CHECK(rep[2][1] == 5.0_a);
+      CHECK(rep[2][0] == -5.0_a);
+      CHECK(rep[2][1] == -15.0_a);
       CHECK(rep[2][2] == -5.0_a);
       
-      CHECK(rep[3][0] == 5.0_a);
-      CHECK(rep[3][1] == 5.0_a);
-      CHECK(rep[3][2] == 5.0_a);
+      CHECK(rep[3][0] == -5.0_a);
+      CHECK(rep[3][1] == -5.0_a);
+      CHECK(rep[3][2] == -15.0_a);
       
-      CHECK(rep[4][0] == 5.0_a);
-      CHECK(rep[4][1] == 5.0_a);
-      CHECK(rep[4][2] == 15.0_a);
+      CHECK(rep[4][0] == -5.0_a);
+      CHECK(rep[4][1] == -5.0_a);
+      CHECK(rep[4][2] == 5.0_a);
       
-      CHECK(rep[5][0] == 5.0_a);
-      CHECK(rep[5][1] == 15.0_a);
-      CHECK(rep[5][2] == 5.0_a);
+      CHECK(rep[5][0] == -5.0_a);
+      CHECK(rep[5][1] == 5.0_a);
+      CHECK(rep[5][2] == -5.0_a);
 
-      CHECK(rep[6][0] == 15.0_a);
-      CHECK(rep[6][1] == 5.0_a);
-      CHECK(rep[6][2] == 5.0_a);
+      CHECK(rep[6][0] == 5.0_a);
+      CHECK(rep[6][1] == -5.0_a);
+      CHECK(rep[6][2] == -5.0_a);
 
     }
     
@@ -148,34 +148,34 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
       ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 11.0);
       
       CHECK(rep.size() == 7);
-      
+
       CHECK(rep[0][0] == -5.0_a);
-      CHECK(rep[0][1] == 5.0_a);
-      CHECK(rep[0][2] == 5.0_a);
-      
-      CHECK(rep[1][0] == 5.0_a);
+      CHECK(rep[0][1] == -5.0_a);
+      CHECK(rep[0][2] == -5.0_a);
+			
+      CHECK(rep[1][0] == -15.0_a);
       CHECK(rep[1][1] == -5.0_a);
-      CHECK(rep[1][2] == 5.0_a);
+      CHECK(rep[1][2] == -5.0_a);
       
-      CHECK(rep[2][0] == 5.0_a);
-      CHECK(rep[2][1] == 5.0_a);
+      CHECK(rep[2][0] == -5.0_a);
+      CHECK(rep[2][1] == -15.0_a);
       CHECK(rep[2][2] == -5.0_a);
       
-      CHECK(rep[3][0] == 5.0_a);
-      CHECK(rep[3][1] == 5.0_a);
-      CHECK(rep[3][2] == 5.0_a);
+      CHECK(rep[3][0] == -5.0_a);
+      CHECK(rep[3][1] == -5.0_a);
+      CHECK(rep[3][2] == -15.0_a);
       
-      CHECK(rep[4][0] == 5.0_a);
-      CHECK(rep[4][1] == 5.0_a);
-      CHECK(rep[4][2] == 15.0_a);
+      CHECK(rep[4][0] == -5.0_a);
+      CHECK(rep[4][1] == -5.0_a);
+      CHECK(rep[4][2] == 5.0_a);
       
-      CHECK(rep[5][0] == 5.0_a);
-      CHECK(rep[5][1] == 15.0_a);
-      CHECK(rep[5][2] == 5.0_a);
+      CHECK(rep[5][0] == -5.0_a);
+      CHECK(rep[5][1] == 5.0_a);
+      CHECK(rep[5][2] == -5.0_a);
 
-      CHECK(rep[6][0] == 15.0_a);
-      CHECK(rep[6][1] == 5.0_a);
-      CHECK(rep[6][2] == 5.0_a);
+      CHECK(rep[6][0] == 5.0_a);
+      CHECK(rep[6][1] == -5.0_a);
+      CHECK(rep[6][2] == -5.0_a);
 
     }
 
@@ -196,34 +196,34 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
       ions::periodic_replicas rep(cell, vector3<double>(35.0, -205.0, 2035.0), 10.0);
       
       CHECK(rep.size() == 7);
-      
+
       CHECK(rep[0][0] == -5.0_a);
-      CHECK(rep[0][1] == 5.0_a);
-      CHECK(rep[0][2] == 5.0_a);
-      
-      CHECK(rep[1][0] == 5.0_a);
+      CHECK(rep[0][1] == -5.0_a);
+      CHECK(rep[0][2] == -5.0_a);
+			
+      CHECK(rep[1][0] == -15.0_a);
       CHECK(rep[1][1] == -5.0_a);
-      CHECK(rep[1][2] == 5.0_a);
+      CHECK(rep[1][2] == -5.0_a);
       
-      CHECK(rep[2][0] == 5.0_a);
-      CHECK(rep[2][1] == 5.0_a);
+      CHECK(rep[2][0] == -5.0_a);
+      CHECK(rep[2][1] == -15.0_a);
       CHECK(rep[2][2] == -5.0_a);
       
-      CHECK(rep[3][0] == 5.0_a);
-      CHECK(rep[3][1] == 5.0_a);
-      CHECK(rep[3][2] == 5.0_a);
+      CHECK(rep[3][0] == -5.0_a);
+      CHECK(rep[3][1] == -5.0_a);
+      CHECK(rep[3][2] == -15.0_a);
       
-      CHECK(rep[4][0] == 5.0_a);
-      CHECK(rep[4][1] == 5.0_a);
-      CHECK(rep[4][2] == 15.0_a);
+      CHECK(rep[4][0] == -5.0_a);
+      CHECK(rep[4][1] == -5.0_a);
+      CHECK(rep[4][2] == 5.0_a);
       
-      CHECK(rep[5][0] == 5.0_a);
-      CHECK(rep[5][1] == 15.0_a);
-      CHECK(rep[5][2] == 5.0_a);
+      CHECK(rep[5][0] == -5.0_a);
+      CHECK(rep[5][1] == 5.0_a);
+      CHECK(rep[5][2] == -5.0_a);
 
-      CHECK(rep[6][0] == 15.0_a);
-      CHECK(rep[6][1] == 5.0_a);
-      CHECK(rep[6][2] == 5.0_a);
+      CHECK(rep[6][0] == 5.0_a);
+      CHECK(rep[6][1] == -5.0_a);
+      CHECK(rep[6][2] == -5.0_a);
 
     }
 		

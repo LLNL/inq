@@ -700,8 +700,8 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
 			auto in_cell = cell.position_in_cell(vector3<double>(6.66, 25.0, -18.33));
 
-			CHECK(in_cell[0] == 6.66_a);
-			CHECK(in_cell[1] == 5.00_a);
+			CHECK(in_cell[0] == -3.34_a);
+			CHECK(in_cell[1] == -5.00_a);
 			CHECK(in_cell[2] == 1.67_a);
 			
     }
@@ -811,7 +811,7 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
 			CHECK(in_cell[0] == 6.66_a);
 			CHECK(in_cell[1] == 44.72_a);
-			CHECK(in_cell[2] == 6.29_a);
+			CHECK(in_cell[2] == -6.02_a);
 			
     }
 
