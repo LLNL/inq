@@ -54,6 +54,11 @@ namespace inq {
 			return quant;
 		}
 
+		friend auto operator/(quantity quant, double scal){
+			quant.value_ /= scal;
+			return quant;
+		}
+		
 	private:
 
 		element_type value_;
