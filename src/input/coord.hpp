@@ -1,7 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
+#ifndef INQ__INPUT__COORD
+#define INQ__INPUT__COORD
+
 /*
- Copyright (C) 2020 Xavier Andrade
+ Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -18,11 +21,20 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <ground_state/initialize.hpp>
-#include <ground_state/calculate.hpp>
-#include <real_time/propagate.hpp>
-#include <utils/match.hpp>
+#include <math/vector3.hpp>
+#include <inq/quantity.hpp>
+#include <magnitude/length.hpp>
 
-#ifdef INQ_INQ_INQ_UNIT_TEST
-#undef INQ_INQ_INQ_UNIT_TEST
+namespace inq {
+namespace input {
+
+using coord = math::vector3<autocast_quantity<magnitude::length>>;
+
+}
+}
+
+#ifdef INQ_INPUT_COORD_UNIT_TEST
+#undef INQ_INPUT_COORD_UNIT_TEST
+#endif
+
 #endif
