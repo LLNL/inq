@@ -24,7 +24,6 @@
 namespace inq {
 
 	template <class MagnitudeType, class ElementType = double>
-
 	class quantity {
 	public:
 		using magnitude = MagnitudeType;
@@ -69,6 +68,29 @@ namespace inq {
 		
 	};
 
+template <class MagnitudeType, class ElementType = double>
+class autocast_quantity : public quantity<MagnitudeType, ElementType>{
+
+public:
+	using magnitude = MagnitudeType;
+	using element_type = ElementType;
+	
+	autocast_quantity(element_type const & val = 0.0):
+		quantity<MagnitudeType, ElementType>(this->from_atomic_units(val))
+	{
+	}
+
+	autocast_quantity(quantity<MagnitudeType, ElementType> const & val):
+		quantity<MagnitudeType, ElementType>(val)
+	{
+	}
+	
+	operator element_type() const {
+		return this->in_atomic_units();
+	}
+	
+};
+		
 }
 
 #ifdef INQ_INQ_QUANTITY_UNIT_TEST
