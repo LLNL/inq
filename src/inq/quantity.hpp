@@ -43,7 +43,7 @@ namespace inq {
 		auto in_atomic_units() const {
 			return value_;
 		}
-
+		
 		friend auto operator*(double scal, quantity quant){
 			quant.value_ *= scal;
 			return quant;
@@ -58,13 +58,17 @@ namespace inq {
 			quant.value_ /= scal;
 			return quant;
 		}
+
+		auto operator-() const {
+			return from_atomic_units(-value_);
+		}
 		
 	private:
 
 		element_type value_;
 		
 	};
-	
+
 }
 
 #ifdef INQ_INQ_QUANTITY_UNIT_TEST
