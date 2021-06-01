@@ -297,22 +297,22 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					if(rs.cubic_dist(2).local_to_global(iz).value()%2 == 1) continue;
 					
 					auto vec = rs.point_op().rvector(ix, iy, iz);
-					math::array<double, 1> local_exc{1};
-					math::array<double, 1> local_vxc{1};
-					math::array<double, 1> local_vsigma{1};
-					math::array<double, 1> local_density{sqwave(vec, 3)};
-					math::array<double, 1> local_sigma{dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3))};
+					math::array_nopre<double, 1> local_exc{1};
+					math::array_nopre<double, 1> local_vxc{1};
+					math::array_nopre<double, 1> local_vsigma{1};
+					math::array_nopre<double, 1> local_density{sqwave(vec, 3)};
+					math::array_nopre<double, 1> local_sigma{dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3))};
 					
 					xc_gga_exc_vxc(ggafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_sigma.data_elements()),
 												 raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()), raw_pointer_cast(local_vsigma.data_elements()));
 					gpu::sync();
 					
 					auto calc_vsigma = [func = ggafunctional.libxc_func_ptr()] (auto point){
-						math::array<double, 1> local_density{sqwave(point, 3)};
-						math::array<double, 1> local_sigma{dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3))};
-						math::array<double, 1> local_exc{1};
-						math::array<double, 1> local_vxc{1};
-						math::array<double, 1> local_vsigma{1};
+						math::array_nopre<double, 1> local_density{sqwave(point, 3)};
+						math::array_nopre<double, 1> local_sigma{dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3))};
+						math::array_nopre<double, 1> local_exc{1};
+						math::array_nopre<double, 1> local_vxc{1};
+						math::array_nopre<double, 1> local_vsigma{1};
 						xc_gga_exc_vxc(func, 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_sigma.data_elements()),
 													 raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()), raw_pointer_cast(local_vsigma.data_elements()));
 						gpu::sync();
