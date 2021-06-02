@@ -24,42 +24,79 @@
 namespace inq {
 
 	template <class MagnitudeType, class ElementType = double>
-
 	class quantity {
 	public:
 		using magnitude = MagnitudeType;
 		using element_type = ElementType;
 
-		static auto from_atomic_units(element_type const & au_value){
+	private:
+		
+		quantity() = default;
+
+	public:
+		
+		constexpr static auto from_atomic_units(element_type const & au_value){
 			quantity qq;
 			qq.value_ = au_value;
 			return qq;
 		}
 
-		static auto zero(){
+		constexpr static auto zero(){
 			return from_atomic_units(0.0);
 		}
 
-		auto in_atomic_units() const {
+		constexpr auto in_atomic_units() const {
 			return value_;
 		}
-
-		friend auto operator*(double scal, quantity quant){
+		
+		constexpr friend auto operator*(double scal, quantity quant){
 			quant.value_ *= scal;
 			return quant;
 		}
 
-		friend auto operator*(quantity quant, double scal){
+		constexpr friend auto operator*(quantity quant, double scal){
 			quant.value_ *= scal;
 			return quant;
 		}
 
+		constexpr friend auto operator/(quantity quant, double scal){
+			quant.value_ /= scal;
+			return quant;
+		}
+
+		constexpr auto operator-() const {
+			return from_atomic_units(-value_);
+		}
+		
 	private:
 
 		element_type value_;
 		
 	};
+
+template <class MagnitudeType, class ElementType = double>
+class autocast_quantity : public quantity<MagnitudeType, ElementType>{
+
+public:
+	using magnitude = MagnitudeType;
+	using element_type = ElementType;
 	
+	constexpr autocast_quantity(element_type const & val = 0.0):
+		quantity<MagnitudeType, ElementType>(this->from_atomic_units(val))
+	{
+	}
+
+	constexpr autocast_quantity(quantity<MagnitudeType, ElementType> const & val):
+		quantity<MagnitudeType, ElementType>(val)
+	{
+	}
+	
+	constexpr operator element_type() const {
+		return this->in_atomic_units();
+	}
+	
+};
+		
 }
 
 #ifdef INQ_INQ_QUANTITY_UNIT_TEST

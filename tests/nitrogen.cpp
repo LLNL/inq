@@ -18,16 +18,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <config/path.hpp>
-#include <input/atom.hpp>
-#include <utils/match.hpp>
-#include <ground_state/initialize.hpp>
-#include <ground_state/calculate.hpp>
-#include <real_time/propagate.hpp>
-
-#include <input/environment.hpp>
+#include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
 
