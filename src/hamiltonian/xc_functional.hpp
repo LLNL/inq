@@ -297,26 +297,29 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					if(rs.cubic_dist(2).local_to_global(iz).value()%2 == 1) continue;
 					
 					auto vec = rs.point_op().rvector(ix, iy, iz);
-					math::array<double, 1> local_exc{1};
-					math::array<double, 1> local_vxc{1};
-					math::array<double, 1> local_vsigma{1};
-					math::array<double, 1> local_density{sqwave(vec, 3)};
-					math::array<double, 1> local_sigma{dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3))};
+					math::array_nopre<double, 1> data(5);
+					data[0] = sqwave(vec, 3);
+					data[1] = dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3));
 					
-					xc_gga_exc_vxc(ggafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_sigma.data_elements()),
-												 raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()), raw_pointer_cast(local_vsigma.data_elements()));
+					auto data_ptr = raw_pointer_cast(data.data_elements());
+
+					xc_gga_exc_vxc(ggafunctional.libxc_func_ptr(), 1, data_ptr, data_ptr + 1, data_ptr + 2, data_ptr + 3, data_ptr + 4);
 					gpu::sync();
+
+					auto local_density = &data[0];
+					auto local_exc = &data[2];
+					auto local_vxc = &data[3];
+					auto local_vsigma = &data[4];					
 					
 					auto calc_vsigma = [func = ggafunctional.libxc_func_ptr()] (auto point){
-						math::array<double, 1> local_density{sqwave(point, 3)};
-						math::array<double, 1> local_sigma{dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3))};
-						math::array<double, 1> local_exc{1};
-						math::array<double, 1> local_vxc{1};
-						math::array<double, 1> local_vsigma{1};
-						xc_gga_exc_vxc(func, 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_sigma.data_elements()),
-													 raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()), raw_pointer_cast(local_vsigma.data_elements()));
+						math::array_nopre<double, 1> data(5);
+						data[0] = sqwave(point, 3);
+						data[1] = dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3));
+
+						auto data_ptr = raw_pointer_cast(data.data_elements());
+						xc_gga_exc_vxc(func, 1, data_ptr, data_ptr + 1, data_ptr + 2, data_ptr + 3, data_ptr + 4);
 						gpu::sync();
-						return local_vsigma[0];
+						return data[4];
 					};
 					
 					auto grad_vsigma = finite_difference_gradient5p(calc_vsigma, vec);

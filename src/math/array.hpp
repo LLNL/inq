@@ -49,6 +49,15 @@ template <class type, size_t dim,
 					>
 using array = boost::multi::array<type, dim, allocator>;
 
+template <class type, size_t dim,
+#ifdef ENABLE_CUDA
+					class allocator = boost::multi::memory::cuda::cached::allocator<type>
+#else
+					class allocator = std::allocator<type>
+#endif
+					>
+using array_nopre = boost::multi::array<type, dim, allocator>;
+
 template <typename ArrayType>
 void prefetch(ArrayType const & array){
 #ifdef ENABLE_CUDA
