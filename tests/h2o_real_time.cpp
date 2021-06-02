@@ -40,8 +40,8 @@ int main(int argc, char ** argv){
 	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
-	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
-	
+	auto comm = boost::mpi3::cartesian_communicator<2>{boost::mpi3::environment::get_world_instance(), {boost::mpi3::fill, 1}};
+		
 	utils::match match(1e-5);
 
 	std::vector<input::atom> geo;
@@ -54,7 +54,7 @@ int main(int argc, char ** argv){
 
 	input::config conf;
 
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0_Ha), conf);
+	systems::electrons electrons(comm, ions, input::basis::cutoff_energy(30.0_Ha), conf);
 
 	// Propagation without perturbation
 	{
