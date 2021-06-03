@@ -82,6 +82,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			if(not ion_propagator.static_ions) {
 				sc.update_ionic_fields(ions, electrons.atomic_pot_);
 				ham.update_projectors(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo());
+				energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 			}
 			
 			//propagate the other half step with H(t + dt)
