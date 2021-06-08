@@ -20,6 +20,7 @@
 
 #include <ground_state/initialize.hpp>
 #include <ground_state/calculate.hpp>
+#include <operations/io.hpp>
 #include <real_time/propagate.hpp>
 #include <utils/match.hpp>
 
