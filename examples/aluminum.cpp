@@ -18,17 +18,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <config/path.hpp>
-#include <input/atom.hpp>
-#include <operations/io.hpp>
-#include <utils/match.hpp>
-#include <ground_state/initialize.hpp>
-#include <ground_state/calculate.hpp>
-#include <input/environment.hpp>
-#include <input/parse_xyz.hpp>
-#include <config/path.hpp>
+#include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
 
@@ -76,26 +66,24 @@ int main(int argc, char ** argv){
 	conf.extra_states = 8;
 	conf.temperature = 300.0_K;
 	
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
+	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0_Ha), conf);
 	
 	auto restart_dir = "aluminum_" + std::to_string(repx) + "_" + std::to_string(repy) + "_" + std::to_string(repz);
+
+	auto found_gs = operations::io::load(restart_dir, electrons.phi_);
+
+	if(not found_gs){
+		
+		ground_state::initialize(ions, electrons);
+		
+		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
+		
+		operations::io::save(restart_dir, electrons.phi_);
+
+	}
+
+	auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0625_atomictime));
 	
-	ground_state::initialize(ions, electrons);
-
-	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
-	
-	energy_match.check("total energy",        result.energy.total()/supercell.size(),        -2.255100931633);
-	energy_match.check("kinetic energy",      result.energy.kinetic()/supercell.size(),       0.917466797668);
-	energy_match.check("eigenvalues",         result.energy.eigenvalues/supercell.size(),     0.246024442379);
-	energy_match.check("Hartree energy",      result.energy.hartree/supercell.size(),         0.003056986010);
-	energy_match.check("external energy",     result.energy.external/supercell.size(),        0.030210105865);
-	energy_match.check("non-local energy",    result.energy.nonlocal/supercell.size(),        0.374607223743);
-	energy_match.check("XC energy",           result.energy.xc/supercell.size(),             -1.081496717773);
-	energy_match.check("XC density integral", result.energy.nvxc/supercell.size(),           -1.082373656917);
-	energy_match.check("ion-ion energy",      result.energy.ion/supercell.size(),            -2.498945327145);
-
-	inq::operations::io::save(restart_dir, electrons.phi_);
-
 	return energy_match.fail();
 	
 }
