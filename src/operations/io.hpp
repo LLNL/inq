@@ -115,7 +115,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 }
 		
 template <class FieldSet>
-void load(std::string const & dirname, FieldSet & phi){
+auto load(std::string const & dirname, FieldSet & phi){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -126,8 +126,7 @@ void load(std::string const & dirname, FieldSet & phi){
 
 	DIR* dir = opendir(dirname.c_str());
 	if (!dir) {
-		std::cerr << "Error: cannot open restart directory '" << dirname << "/'." << std::endl;
-		exit(1);
+		return false;
 	}
 	closedir(dir);
 			
@@ -140,16 +139,14 @@ void load(std::string const & dirname, FieldSet & phi){
 		auto mpi_err = MPI_File_open(phi.basis().comm().get(), filename.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
 
 		if(mpi_err != MPI_SUCCESS){
-			std::cerr << "Error: cannot open restart file '" << filename << "'." << std::endl;
-			exit(1);
+			return false;
 		}
 		
 		MPI_Status status;
 		mpi_err = MPI_File_read_at_all(fh, sizeof(Type)*phi.basis().part().start(), raw_pointer_cast(buffer.data_elements()), buffer.size(), mpi_type, &status);
 		
 		if(mpi_err != MPI_SUCCESS){
-			std::cerr << "Error: cannot read restart file '" << filename << "'." << std::endl;
-			exit(1);
+			return false;
 		}
 
 		int data_read;
@@ -161,6 +158,8 @@ void load(std::string const & dirname, FieldSet & phi){
 		phi.matrix().rotated()[ist] = buffer;
 				
 	}
+
+	return true;
 }
 		
 }
@@ -204,13 +203,15 @@ TEST_CASE("function operations::io", "[operations::io]") {
 
 	operations::io::save("restart/", aa);
 
-	operations::io::load("restart/", bb);
+	CHECK(operations::io::load("restart/", bb));
 	
 	for(int ii = 0; ii < bas.part().local_size(); ii++){
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			CHECK(aa.matrix()[ii][jj] == bb.matrix()[ii][jj]);
 		}
 	}
+
+	CHECK(not operations::io::load("directory_that_doesnt_exist", bb));
 	
 }
 
