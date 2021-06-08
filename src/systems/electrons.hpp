@@ -46,7 +46,7 @@ namespace systems {
 	
 		enum class error { NO_ELECTRONS };
 
-		electrons(boost::mpi3::cartesian_communicator<2> && cart_comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
+		electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
 			full_comm_(cart_comm),
 			states_comm_(full_comm_.axis(0)),
 			atoms_comm_(states_comm_),
@@ -99,7 +99,6 @@ namespace systems {
 		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
 			electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, arg_basis_input, conf){
 		}
-
 		
 	private:
 		static std::string generate_tiny_uuid(){

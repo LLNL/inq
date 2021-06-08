@@ -53,6 +53,7 @@ namespace basis {
 		{
 			prefetch();
 			assert(basis_.part().comm_size() == comm.axis(1).size());
+			assert(local_set_size() > 0);
     }
 
 		//when no communicator is given, use the basis communicator
