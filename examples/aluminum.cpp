@@ -27,7 +27,7 @@ int main(int argc, char ** argv){
 	
 	input::environment env(argc, argv);
 
-	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {boost::mpi3::fill, 1});
 	
 	utils::match energy_match(4.0e-6);
 
@@ -62,23 +62,27 @@ int main(int argc, char ** argv){
 	systems::ions ions(input::cell::orthorhombic(repx*alat*1.0_b, repy*alat*1.0_b, repz*alat*1.0_b), supercell);
 	
 	input::config conf;
+
+	conf.extra_states = 2*repx*repy*repz;
+	conf.temperature = 300.0_K;	
 	
-	conf.extra_states = 8;
-	conf.temperature = 300.0_K;
-	
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0_Ha), conf);
+	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(30.0_Ha), conf);
 	
 	auto restart_dir = "aluminum_" + std::to_string(repx) + "_" + std::to_string(repy) + "_" + std::to_string(repz);
 
 	auto found_gs = operations::io::load(restart_dir, electrons.phi_);
 
 	if(not found_gs){
+
+		// the parallelization distribution is different for the ground state
+		systems::electrons gs_electrons(boost::mpi3::environment::get_world_instance(), ions, input::basis::cutoff_energy(30.0_Ha), conf);
 		
-		ground_state::initialize(ions, electrons);
+		ground_state::initialize(ions, gs_electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
+		auto result = ground_state::calculate(ions, gs_electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
 		
-		operations::io::save(restart_dir, electrons.phi_);
+		operations::io::save(restart_dir, gs_electrons.phi_);
+		operations::io::load(restart_dir, electrons.phi_);
 
 	}
 
