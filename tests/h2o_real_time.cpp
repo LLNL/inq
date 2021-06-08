@@ -40,7 +40,13 @@ int main(int argc, char ** argv){
 	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
-	auto comm = boost::mpi3::cartesian_communicator<2>{boost::mpi3::environment::get_world_instance(), {boost::mpi3::fill, 1}};
+
+	auto comm = boost::mpi3::environment::get_world_instance();
+
+	auto parstates = comm.size();
+	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
+	
+	auto cart_comm = boost::mpi3::cartesian_communicator<2>{boost::mpi3::environment::get_world_instance(), {parstates, boost::mpi3::fill}};
 		
 	utils::match match(1e-5);
 
@@ -54,7 +60,7 @@ int main(int argc, char ** argv){
 
 	input::config conf;
 
-	systems::electrons electrons(comm, ions, input::basis::cutoff_energy(30.0_Ha), conf);
+	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(30.0_Ha), conf);
 
 	// Propagation without perturbation
 	{
