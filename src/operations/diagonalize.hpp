@@ -197,6 +197,8 @@ auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
 	}
 	
 	if(comm.size() > 1){
+		CALI_CXX_MARK_SCOPE("diagonalize::broadcast");
+
 		comm.broadcast_n(raw_pointer_cast(eigenvalues.data_elements()), eigenvalues.num_elements(), 0);
 		comm.broadcast_n(raw_pointer_cast(matrix.data_elements()), matrix.num_elements(), 0);
 	}
