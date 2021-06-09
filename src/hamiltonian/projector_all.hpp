@@ -157,7 +157,8 @@ public:
 																							/*int ldc = */ 2*phi.local_set_size(),
 																							/*long long int strideC = */ 2*max_nlm_*phi.local_set_size(),
 																							/*int batchCount = */ nprojs_);
-
+			gpu::sync();
+			
 			assert(status == CUBLAS_STATUS_SUCCESS);
 			
 		}
