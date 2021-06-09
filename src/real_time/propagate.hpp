@@ -61,10 +61,11 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		
 		if(electrons.phi_.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
 
-		auto forces = hamiltonian::calculate_forces(ions, electrons, ham);
+		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
+		
+		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 		res.save_iteration_results(0.0, ions, electrons, energy, forces);
-
 
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
