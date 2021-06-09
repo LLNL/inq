@@ -133,7 +133,7 @@ public:
 			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
 		}
 #else
-		{
+		if(nprojs_ > 0) {
 			CALI_CXX_MARK_SCOPE("projector_gemm_1");			
 
 			const double zero = 0.0;
@@ -157,6 +157,9 @@ public:
 																							/*int ldc = */ 2*phi.local_set_size(),
 																							/*long long int strideC = */ 2*max_nlm_*phi.local_set_size(),
 																							/*int batchCount = */ nprojs_);
+
+			assert(status == CUBLAS_STATUS_SUCCESS);
+			
 		}
 #endif
 				
