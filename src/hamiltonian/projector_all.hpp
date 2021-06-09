@@ -109,9 +109,9 @@ public:
   
 	math::array<complex, 3> project(basis::field_set<basis::real_space, complex> const & phi) const {
     
-		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()}, complex(0.0, 0.0));
 		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
-
+		math::array<complex, 3> projections_all2({nprojs_, max_nlm_, phi.local_set_size()});
 
 		{ CALI_CXX_MARK_SCOPE("projector::gather");
 				
@@ -125,12 +125,40 @@ public:
 							 });
 		}
 
+#ifndef ENABLE_CUDA
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			CALI_CXX_MARK_SCOPE("projector_gemm_1");
-
+			
 			namespace blas = boost::multi::blas;
-			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj])); 
+			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
 		}
+#else
+		{
+			CALI_CXX_MARK_SCOPE("projector_gemm_1");			
+
+			const double zero = 0.0;
+			const double vol = phi.basis().volume_element();
+
+			auto status = cublasDgemmStridedBatched(/*cublasHandle_t handle = */ boost::multi::cuda::cublas::context::get_instance().get(),
+																							/*cublasOperation_t transa = */ CUBLAS_OP_N,
+																							/*cublasOperation_t transb = */ CUBLAS_OP_N,
+																							/*int m = */ 2*phi.local_set_size(),
+																							/*int n = */ max_nlm_,
+																							/*int k = */ max_sphere_size_,
+																							/*const double *alpha = */ &vol,
+																							/*const double *A = */ reinterpret_cast<double const *>(raw_pointer_cast(sphere_phi_all.data_elements())),
+																							/*int lda = */ 2*phi.local_set_size(),
+																							/*long long int strideA = */ 2*max_sphere_size_*phi.local_set_size(),
+																							/*const double *B = */ raw_pointer_cast(matrices_.data_elements()),
+																							/*int ldb = */ max_sphere_size_,
+																							/*long long int strideB =*/ max_nlm_*max_sphere_size_,
+																							/*const double *beta = */ &zero,
+																							/*double *C = */ reinterpret_cast<double *>(raw_pointer_cast(projections_all.data_elements())),
+																							/*int ldc = */ 2*phi.local_set_size(),
+																							/*long long int strideC = */ 2*max_nlm_*phi.local_set_size(),
+																							/*int batchCount = */ nprojs_);
+		}
+#endif
 				
     { CALI_CXX_MARK_SCOPE("projector_scal");
 				
