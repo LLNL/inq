@@ -87,7 +87,7 @@ void davidson(const operator_type & ham, const preconditioner_type & prec, field
 
 		auto Wk = ham(wphi);
 		auto Yk = operations::overlap(wphi, Wk);  //subspace hamiltonian
-		auto lk = operations::diagonalize(Yk);
+		auto lk = operations::diagonalize(phi.basis().comm(), Yk);
 		//print_vec(lk);
 		namespace blas = boost::multi::blas;
 		//Ritz vectors
