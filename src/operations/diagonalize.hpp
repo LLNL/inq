@@ -46,7 +46,7 @@ namespace inq {
 namespace operations {
 
 template<class Alloc>
-auto diagonalize(math::array<double, 2, Alloc>& matrix){
+auto diagonalize_raw(math::array<double, 2, Alloc>& matrix){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -112,8 +112,10 @@ auto diagonalize(math::array<double, 2, Alloc>& matrix){
 }
 
 template<class Alloc>
-auto diagonalize(math::array<complex, 2, Alloc>& matrix){
+auto diagonalize_raw(math::array<complex, 2, Alloc>& matrix){
 
+	CALI_CXX_MARK_FUNCTION;
+	
 	// the matrix must be square
 	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
 
@@ -176,6 +178,34 @@ auto diagonalize(math::array<complex, 2, Alloc>& matrix){
 	return eigenvalues;
 }
 
+template <class MatrixType>
+auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
+
+	CALI_CXX_MARK_FUNCTION;
+	
+	math::array<double, 1> eigenvalues;
+
+	//Dense matrix diagonalization is unstable with respect to small
+	//differences in the input. This can cause problems in parallel when
+	//each processor runs a copy of the diagonalizer that can give
+	//different values. So we diagonalize in one processor and broadcast.
+	
+	if(comm.rank() == 0){
+		eigenvalues = diagonalize_raw(matrix);
+	} else {
+		eigenvalues = math::array<double, 1>(matrix.size());
+	}
+	
+	if(comm.size() > 1){
+		CALI_CXX_MARK_SCOPE("diagonalize::broadcast");
+
+		comm.broadcast_n(raw_pointer_cast(eigenvalues.data_elements()), eigenvalues.num_elements(), 0);
+		comm.broadcast_n(raw_pointer_cast(matrix.data_elements()), matrix.num_elements(), 0);
+	}
+
+	return eigenvalues;		
+}
+
 }
 }
 
@@ -191,10 +221,12 @@ auto diagonalize(math::array<complex, 2, Alloc>& matrix){
 
 TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
 	SECTION("Real diagonal 2x2"){
 	
 		using namespace inq;
-	using namespace Catch::literals;
+		using namespace Catch::literals;
 		
 		math::array<double, 2> matrix({2, 2});
 		
@@ -203,7 +235,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		matrix[1][0] = 0.0;
 		matrix[1][1] = 2.0;
 		
-		auto evalues = operations::diagonalize(matrix);
+		auto evalues = operations::diagonalize(comm, matrix);
 		
 		CHECK(matrix[0][0] == 0.0_a);
 		CHECK(matrix[0][1] == 1.0_a);
@@ -216,9 +248,9 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	}
 	
 	SECTION("Complex diagonal 2x2"){
-	
+		
 		using namespace inq;
-	using namespace Catch::literals;
+		using namespace Catch::literals;
 		
 		math::array<complex, 2> matrix({2, 2});
 		
@@ -227,7 +259,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		matrix[1][0] = 0.0;
 		matrix[1][1] = 2.0;
 		
-		auto evalues = operations::diagonalize(matrix);
+		auto evalues = operations::diagonalize(comm, matrix);
 		
 		CHECK(real(matrix[0][0]) == 0.0_a);
 		CHECK(imag(matrix[0][0]) == 0.0_a);
@@ -263,7 +295,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		matrix[2][1] = 0.705297;
 		matrix[2][2] = 0.392459;
 		
-		auto evalues = operations::diagonalize(matrix);
+		auto evalues = operations::diagonalize(comm, matrix);
 		
 		CHECK(evalues[0] == -1.0626903983_a);
 		CHECK(evalues[1] == 0.1733844724_a);
@@ -273,7 +305,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	SECTION("Complex dense 3x3"){
 	
 		using namespace inq;
-	using namespace Catch::literals;
+		using namespace Catch::literals;
 		
 		math::array<complex, 2> matrix({3, 3});
 		
@@ -287,7 +319,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		matrix[2][1] = complex(0.705297, -0.12840);
 		matrix[2][2] = complex(0.392459,  0.00000);
 		
-		auto evalues = operations::diagonalize(matrix);
+		auto evalues = operations::diagonalize(comm, matrix);
 		
 		CHECK(evalues[0] == -1.0703967402_a);
 		CHECK(evalues[1] ==  0.1722879629_a);
