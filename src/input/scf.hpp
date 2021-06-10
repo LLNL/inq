@@ -165,6 +165,16 @@ namespace input {
 		auto scf_steps() const {
 			return scf_steps_.value_or(200);
 		}		
+
+		auto static calculate_forces() {
+			scf solver;
+      solver.calc_forces_ = true;
+      return solver;
+		}
+		
+		auto calc_forces() const {
+			return calc_forces_.value_or(false);
+		}
 		
     friend auto operator|(const scf & solver1, const scf & solver2){
 			using inq::utils::merge_optional;
@@ -178,6 +188,7 @@ namespace input {
 			rsolver.verbose_	= merge_optional(solver1.verbose_, solver2.verbose_);
 			rsolver.subspace_diag_ = merge_optional(solver1.subspace_diag_, solver2.subspace_diag_);
 			rsolver.scf_steps_ = merge_optional(solver1.scf_steps_, solver2.scf_steps_);
+			rsolver.calc_forces_ = merge_optional(solver1.calc_forces_, solver2.calc_forces_);
 			return rsolver;
 		}
     
@@ -191,6 +202,7 @@ namespace input {
 		std::optional<bool> verbose_;
 		std::optional<bool> subspace_diag_;
 		std::optional<int> scf_steps_;
+		std::optional<bool> calc_forces_;
 		
   };
     

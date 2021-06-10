@@ -220,8 +220,8 @@ namespace ground_state {
 
 		//make sure we have a density consistent with phi
 		electrons.density_ = density::calculate(electrons.states_.occupations(), electrons.phi_, electrons.density_basis_);
-		
-		res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
+
+		if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 		if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
 
