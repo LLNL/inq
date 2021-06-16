@@ -74,14 +74,14 @@ public:
 
 		//OPTIMIZATION: this should be done by gemm/gemv
 		gpu::run(iter_used,
-						 [iter_used, ivsize = input_value.size(), w0, ww, be = begin(beta), df = begin(df_), ffp = begin(ff), wo = begin(work)] GPU_LAMBDA (auto ii){
+						 [iter_used, ivsize = input_value.size(), w0, ww, be = begin(beta), df = begin(df_), ffp = begin(ff), wo = begin(work), dfactor = 1.0/comm_.size()] GPU_LAMBDA (auto ii){
 							 for(int jj = ii + 1; jj < iter_used; jj++){
 								 Type aa = 0.0;
 								 for(unsigned kk = 0; kk < ivsize; kk++) aa +=  ww*ww*conj(df[ii][kk])*df[jj][kk];
 								 be[ii][jj] = aa;
 								 be[jj][ii] = conj(aa);
 							 }
-							 be[ii][ii] = w0*w0 + ww*ww;
+							 be[ii][ii] = dfactor*(w0*w0 + ww*ww);
 
 							 Type aa = 0.0;
 							 for(unsigned kk = 0; kk < ivsize; kk++) aa += conj(df[ii][kk])*ffp[kk];
@@ -95,14 +95,10 @@ public:
 		}
 		
 		solvers::least_squares(beta, work);
-
-		gpu::run(input_value.size(),
-						 [iv = begin(input_value), ffp = begin(ff),  mix = mix_factor_] GPU_LAMBDA (auto ip){
-							 iv[ip] += mix*ffp[ip];
-						 });
-
+		
 		gpu::run(input_value.size(), 
-						 [iv = begin(input_value), ww, wo = begin(work), mix = mix_factor_, df = begin(df_), dv = begin(dv_), iter_used] GPU_LAMBDA (auto ip){
+						 [iv = begin(input_value),  ffp = begin(ff), ww, wo = begin(work), mix = mix_factor_, df = begin(df_), dv = begin(dv_), iter_used] GPU_LAMBDA (auto ip){
+							 iv[ip] += mix*ffp[ip];							 
 							 for(int ii = 0; ii < iter_used; ii++){
 								 iv[ip] -= ww*ww*wo[ii]*(mix*df[ii][ip] + dv[ii][ip]);
 							 }
