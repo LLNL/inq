@@ -43,9 +43,9 @@ namespace basis {
 		typedef math::array<type, 2> internal_array_type;
 		typedef type element_type;
 
-		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator<2> const & comm)
-			:full_comm_(comm),
-			 set_comm_(comm.axis(0)),
+		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator<2> comm)
+			:full_comm_(std::move(comm)),
+			 set_comm_(full_comm_.axis(0)),
 			 set_part_(num_vectors, set_comm_),
 			 matrix_({basis.part().local_size(), set_part_.local_size()}),
 			 num_vectors_(num_vectors),
