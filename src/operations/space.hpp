@@ -164,7 +164,17 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		}
 		
 		CALI_MARK_BEGIN("fft_forward_transpose");		
-		auto buffer = +tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated();
+		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
+
+		for(int i4 = 0; i4 < comm.size(); i4++){
+			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
+							 [i4,
+								buf = begin(buffer),
+								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
+							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
+								 buf[i4][i3][i2][i1][i0] = rot[i4][i3][i2][i1][i0];
+							 });
+		}
 		CALI_MARK_END("fft_forward_transpose");
 
 		assert(std::get<4>(sizes(buffer)) == last_dim);
@@ -280,7 +290,15 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_transpose");
-			tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated() = buffer({0, comm.size()}, {0, real_basis.local_sizes()[0]});
+			for(int i4 = 0; i4 < comm.size(); i4++){
+				gpu::run(last_dim, zblock, real_basis.local_sizes()[1], real_basis.local_sizes()[0],
+								 [i4, 
+									buf = begin(buffer),
+									rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
+								 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
+									 rot[i4][i3][i2][i1][i0] = buf[i4][i3][i2][i1][i0];
+								 });
+			}
 		}
 
 		{
