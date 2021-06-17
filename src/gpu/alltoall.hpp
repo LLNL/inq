@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <utils/raw_pointer_cast.hpp>
+
 #include <inq_config.h>
 #include <mpi.h>
 #include <mpi3/communicator.hpp>
@@ -28,14 +30,14 @@
 namespace inq {
 namespace gpu {
 
-template <typename Type>
-void alltoall(Type *buf, long count, boost::mpi3::communicator & comm){
+template <typename ArrayType>
+void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 
-	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
+	auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
+	auto count = buf[0].num_elements();
 
-  MPI_Alltoall(MPI_IN_PLACE, count, mpi_type, buf, count, mpi_type, comm.get());
-
-
+  MPI_Alltoall(MPI_IN_PLACE, count, mpi_type, raw_pointer_cast(buf.data_elements()), count, mpi_type, comm.get());
+	
   /*
 			std::vector<MPI_Request> reqs(comm.size()*2);
 			for(int iproc = 0; iproc < comm.size(); iproc++){
@@ -74,7 +76,7 @@ TEST_CASE("function gpu::alltoall", "[gpu::alltoall]"){
   
   math::array<int, 2> buffer({comm.size(), blocksize}, comm.rank());
   
-  gpu::alltoall(raw_pointer_cast(buffer.data_elements()), blocksize, comm);
+  gpu::alltoall(buffer, comm);
   
   for(int iproc = 0; iproc < comm.size(); iproc++){
     for(int ib = 0; ib < blocksize; ib++){
