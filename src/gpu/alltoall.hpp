@@ -28,8 +28,12 @@
 namespace inq {
 namespace gpu {
 
-void alltoall(void *recvbuf, long recvcount, MPI_Datatype recvtype, boost::mpi3::communicator & comm){
-  MPI_Alltoall(MPI_IN_PLACE, recvcount, recvtype, recvbuf, recvcount, recvtype, comm.get());
+template <typename Type>
+void alltoall(Type *buf, long count, boost::mpi3::communicator & comm){
+
+	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
+
+  MPI_Alltoall(MPI_IN_PLACE, count, mpi_type, buf, count, mpi_type, comm.get());
 
 
   /*
@@ -70,7 +74,7 @@ TEST_CASE("function gpu::alltoall", "[gpu::alltoall]"){
   
   math::array<int, 2> buffer({comm.size(), blocksize}, comm.rank());
   
-  gpu::alltoall(raw_pointer_cast(buffer.data_elements()), blocksize, MPI_INT, comm);
+  gpu::alltoall(raw_pointer_cast(buffer.data_elements()), blocksize, comm);
   
   for(int iproc = 0; iproc < comm.size(); iproc++){
     for(int ib = 0; ib < blocksize; ib++){

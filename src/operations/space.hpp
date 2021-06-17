@@ -184,7 +184,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_alltoall");
-			gpu::alltoall(raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm);
+			gpu::alltoall(raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), comm);
 		}
 
 		{
@@ -283,7 +283,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_alltoall");
-			gpu::alltoall(raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm);
+			gpu::alltoall(raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), comm);
 		}
 		
 		math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
