@@ -24,6 +24,7 @@
 #include <inq_config.h> //for ENABLE_HEFFTE
 
 #include <gpu/run.hpp>
+#include <gpu/alltoall.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
@@ -183,7 +184,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			gpu::alltoall(raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm);
 		}
 
 		{
@@ -282,7 +283,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_alltoall");
-			MPI_Alltoall(MPI_IN_PLACE, buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm.get());
+			gpu::alltoall(raw_pointer_cast(buffer.data_elements()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, comm);
 		}
 		
 		math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
