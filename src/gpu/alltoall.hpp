@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <math/array.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
 #include <inq_config.h>
@@ -36,21 +37,27 @@ void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 	auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
 	auto count = buf[0].num_elements();
 
+#if 0
+
   MPI_Alltoall(MPI_IN_PLACE, count, mpi_type, raw_pointer_cast(buf.data_elements()), count, mpi_type, comm.get());
+
+#else
+
+	ArrayType copy(extensions(buf));
+
+	std::vector<MPI_Request> reqs(comm.size()*2, MPI_REQUEST_NULL);
+
+	for(int iproc = 0; iproc < comm.size(); iproc++){
+		MPI_Irecv(raw_pointer_cast(copy[iproc].base()), count, mpi_type, iproc, comm.rank(), comm.get(), &reqs[2*iproc]);
+		MPI_Isend(raw_pointer_cast(buf[iproc].base()), count, mpi_type, iproc, iproc, comm.get(), &reqs[2*iproc + 1]);
+	}
 	
-  /*
-			std::vector<MPI_Request> reqs(comm.size()*2);
-			for(int iproc = 0; iproc < comm.size(); iproc++){
-				if(iproc == comm.rank()) continue;
-				MPI_Irecv(raw_pointer_cast(buffer2[iproc].base()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, iproc, comm.rank(), comm.get(), &reqs[2*iproc]);
-				MPI_Isend(raw_pointer_cast(buffer[iproc].base()), buffer[0].num_elements(), MPI_CXX_DOUBLE_COMPLEX, iproc, iproc, comm.get(), &reqs[2*iproc + 1]);
-			}
+	std::vector<MPI_Status> stats(comm.size()*2);
+	MPI_Waitall(reqs.size(), reqs.data(),  stats.data());
 
-			buffer2[comm.rank()] == buffer[comm.rank()];
+	buf = copy;
 
-			std::vector<MPI_Status> stats(comm.size()*2);
-			MPI_Waitall(reqs.size(), reqs.data(),  stats.data());
-  */
+#endif
 
 }
 
@@ -62,7 +69,6 @@ void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 
 #include <mpi3/environment.hpp>
 
-#include <math/array.hpp>
 #include <catch2/catch.hpp>
 
 TEST_CASE("function gpu::alltoall", "[gpu::alltoall]"){
