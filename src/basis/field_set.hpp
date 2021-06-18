@@ -43,18 +43,18 @@ namespace basis {
 		typedef math::array<type, 2> internal_array_type;
 		typedef type element_type;
 
-		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator<2> const & comm)
-			:full_comm_(comm),
-			 set_comm_(comm.axis(0)),
+		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator<2> comm)
+			:full_comm_(std::move(comm)),
+			 set_comm_(full_comm_.axis(0)),
 			 set_part_(num_vectors, set_comm_),
 			 matrix_({basis.part().local_size(), set_part_.local_size()}),
 			 num_vectors_(num_vectors),
 			 basis_(basis)
 		{
 			prefetch();
-			assert(basis_.part().comm_size() == comm.axis(1).size());
+			assert(basis_.part().comm_size() == full_comm_.axis(1).size());
 			assert(local_set_size() > 0);
-    }
+		}
 
 		//when no communicator is given, use the basis communicator
 		field_set(const basis_type & basis, const int num_vectors)			
@@ -75,7 +75,15 @@ namespace basis {
 		}
 
 		field_set(field_set && coeff) = default;
-		field_set & operator=(const field_set & coeff) = default;
+		field_set & operator=(field_set const& other){
+			full_comm_ = other.full_comm_;
+			set_comm_  = other.set_comm_;
+			set_part_  = other.set_part_;
+			matrix_    = other.matrix_;
+			num_vectors_ = other.num_vectors_;
+			basis_     = other.basis_;
+			return *this;
+		}
 		field_set & operator=(field_set && coeff) = default;
 
 		auto skeleton() const {

@@ -73,9 +73,9 @@ namespace hamiltonian {
 		exchange_operator exchange;
 		
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
-									 const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> const & comm):
+									 const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> comm):
 			scalar_potential(basis),
-			exchange(basis, num_hf_orbitals, exchange_coefficient, comm),
+			exchange(basis, num_hf_orbitals, exchange_coefficient, std::move(comm)),
 			non_local_in_fourier_(fourier_pseudo)
 		{
 			
