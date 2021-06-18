@@ -69,6 +69,10 @@ make install
 This instructions might be incomplete for your particular setup; 
 see other possibilities in [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/master/.gitlab-ci.yml).
 
+## Reference
+
+- [INQ, a modern GPU-accelerated computational framework for (time-dependent) density functional theory, `arXiv:2106.03872 [cond-mat.mtrl-sci]` (2021)](https://arxiv.org/abs/2106.03872)
+
 ## Release information 
 
 INQ is licensed under the terms of the [LGPL v3 License](/COPYING).
