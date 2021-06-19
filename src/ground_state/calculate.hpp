@@ -99,7 +99,7 @@ namespace ground_state {
 
 			if(solver.subspace_diag()) {
 				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_);
-				electrons.states_.update_occupations(eigenvalues);
+				electrons.update_occupations(eigenvalues);
 			}
 
 			{

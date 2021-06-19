@@ -99,6 +99,11 @@ namespace systems {
 		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
 			electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, arg_basis_input, conf){
 		}
+
+		template <typename ArrayType>
+		void update_occupations(ArrayType const eigenval) {
+			states_.update_occupations(eigenval);
+		}
 		
 	private:
 		static std::string generate_tiny_uuid(){
