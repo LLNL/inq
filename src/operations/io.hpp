@@ -79,12 +79,12 @@ void save(std::string const & dirname, boost::mpi3::communicator & comm, utils::
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
 	
 	assert(array.num_elements() == part.local_size());
-	
+
+	auto filename = dirname + "/array";
+
 	if(comm.root()) createdir(dirname);
 	comm.barrier();
 	
-	auto filename = dirname + "/array";
-
 	MPI_File fh;
 	
 	auto mpi_err = MPI_File_open(comm.get(), filename.c_str(), MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &fh);
@@ -108,6 +108,44 @@ void save(std::string const & dirname, boost::mpi3::communicator & comm, utils::
 	
 	MPI_File_close(&fh);
 	
+}
+
+template <class ArrayType>
+auto load(std::string const & dirname, boost::mpi3::communicator & comm, utils::partition const & part, ArrayType & array){
+
+	CALI_CXX_MARK_SCOPE("load(array)");
+
+	using Type = typename ArrayType::element_type;
+	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
+	
+	assert(array.num_elements() == part.local_size());
+	
+	MPI_File fh;
+
+	auto filename = dirname + "/array";
+	
+	auto mpi_err = MPI_File_open(comm.get(), filename.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+	
+	if(mpi_err != MPI_SUCCESS){
+		return false;
+	}
+	
+	MPI_Status status;
+	mpi_err = MPI_File_read_at(fh, sizeof(Type)*part.start(), raw_pointer_cast(array.data_elements()), part.local_size(), mpi_type, &status);
+	
+	if(mpi_err != MPI_SUCCESS){
+		MPI_File_close(&fh);
+		return false;
+	}
+	
+	int data_read;
+	MPI_Get_count(&status, mpi_type, &data_read);
+	assert(data_read == long(array.size()));
+	
+	MPI_File_close(&fh);
+
+	return false;
+
 }
 
 template <class FieldSet>
@@ -229,7 +267,7 @@ TEST_CASE("function operations::io", "[operations::io]") {
 
 		utils::partition part(size, comm);
 
-		math::array<double, 1> arr(part.local_size());
+		math::array<int, 1> arr(part.local_size());
 
 		for(int ii = 0; ii < part.local_size(); ii++){
 			arr[ii] = part.local_to_global(ii).value();
@@ -237,7 +275,14 @@ TEST_CASE("function operations::io", "[operations::io]") {
 		
 		operations::io::save("array_restart", comm, part, arr);
 		
-				
+		math::array<int, 1> arr2(part.local_size());
+
+		operations::io::load("array_restart", comm, part, arr2);
+
+		for(int ii = 0; ii < part.local_size(); ii++){
+			CHECK(arr[ii] == arr2[ii]);
+		}
+		
 	}
 
 	SECTION("field_set"){
