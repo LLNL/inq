@@ -25,6 +25,13 @@
 
 #include <math/array.hpp>
 
+#include <mpi3/communicator.hpp>
+#include <mpi3/detail/datatype.hpp>
+
+#include <utils/partition.hpp>
+#include <utils/profiling.hpp>
+#include <utils/raw_pointer_cast.hpp>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -35,12 +42,7 @@
 #include <cstdio>
 #include <iostream>
 
-#include <mpi3/communicator.hpp>
-#include <mpi3/detail/datatype.hpp>
-
-#include <utils/partition.hpp>
-#include <utils/profiling.hpp>
-#include <utils/raw_pointer_cast.hpp>
+#include <filesystem>
 
 namespace inq {
 namespace operations {
@@ -50,24 +52,6 @@ auto numstr(long num){
 	char numcstr[12]; 
 	snprintf(numcstr, 11, "%010ld", num);
 	return std::string(numcstr);				
-}
-
-auto createdir(std::string const & dirname){
-
-	DIR* dir = opendir(dirname.c_str());
-	if (dir) {
-		// The directory exists, we just use it
-		closedir(dir);
-
-	} else {
-		// The directory does not exist
-		auto status = mkdir(dirname.c_str(), 0777);
-		if(status != 0){
-			std::cerr << "Error: cannot create restart directory '" << dirname << "/'." << std::endl;
-			exit(1);
-		}
-	}
-
 }
 
 template <class ArrayType>
@@ -82,7 +66,7 @@ void save(std::string const & dirname, boost::mpi3::communicator & comm, utils::
 
 	auto filename = dirname + "/array";
 
-	if(comm.root()) createdir(dirname);
+	if(comm.root()) std::filesystem::create_directories(dirname);
 	comm.barrier();
 	
 	MPI_File fh;
@@ -158,7 +142,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 	
 	math::array<Type, 1> buffer(phi.basis().part().local_size());
 
-	if(phi.full_comm().rank() == 0) createdir(dirname);
+	if(phi.full_comm().rank() == 0) std::filesystem::create_directories(dirname);
 	phi.full_comm().barrier();
 				 
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
