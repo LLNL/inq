@@ -11,6 +11,7 @@
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/integral.hpp>
+#include <operations/io.hpp>
 #include <operations/orthogonalize.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
@@ -103,6 +104,14 @@ namespace systems {
 		template <typename ArrayType>
 		void update_occupations(ArrayType const eigenval) {
 			states_.update_occupations(eigenval);
+		}
+
+		void save(std::string const & dirname) const {
+			operations::io::save(dirname, phi_);
+		}
+		
+		auto load(std::string const & dirname) {
+			return operations::io::load(dirname, phi_);
 		}
 		
 	private:

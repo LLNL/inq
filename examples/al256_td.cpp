@@ -58,7 +58,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
 	
-	inq::operations::io::load("al256_restart", electrons.phi_);
+	electrons.load("al256_restart");
 
 	auto dt = 0.055_atomictime;
 

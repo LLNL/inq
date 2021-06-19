@@ -70,7 +70,7 @@ int main(int argc, char ** argv){
 	
 	auto restart_dir = "aluminum_" + std::to_string(repx) + "_" + std::to_string(repy) + "_" + std::to_string(repz);
 
-	auto found_gs = operations::io::load(restart_dir, electrons.phi_);
+	auto found_gs = electrons.load(restart_dir);
 
 	if(not found_gs){
 
@@ -81,8 +81,8 @@ int main(int argc, char ** argv){
 		
 		auto result = ground_state::calculate(ions, gs_electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
 		
-		operations::io::save(restart_dir, gs_electrons.phi_);
-		operations::io::load(restart_dir, electrons.phi_);
+		gs_electrons.save(restart_dir);
+		electrons.load(restart_dir);
 
 	}
 

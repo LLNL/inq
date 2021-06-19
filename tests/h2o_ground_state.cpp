@@ -79,8 +79,8 @@ int main(int argc, char ** argv){
 	match.check("dipole y", result.dipole[1], -0.724304);
 	match.check("dipole z", result.dipole[2], -2.78695e-05);
 	
-	inq::operations::io::save("h2o_restart", electrons.phi_);
-
+	electrons.save("h2o_restart");
+	
 	fftw_cleanup(); //required for valgrid
 	
 	return match.fail();

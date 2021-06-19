@@ -56,7 +56,7 @@ int main(int argc, char ** argv){
 
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
 
-	inq::operations::io::save("al256_restart", electrons.phi_);
+	electrons.save("al256_restart");
 
 	return energy_match.fail();
 	

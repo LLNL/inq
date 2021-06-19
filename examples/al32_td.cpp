@@ -76,7 +76,7 @@ int main(int argc, char ** argv){
 	energy_match.check("XC density integral", result.energy.nvxc,           -34.621784824997);
 	energy_match.check("ion-ion energy",      result.energy.ion,            -79.966247040437);
 
-	inq::operations::io::save("al32_restart", electrons.phi_);
+	electrons.save("al32_restart");
 
 	auto dt = 0.055_atomictime;
 
