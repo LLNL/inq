@@ -22,9 +22,11 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
   operations::randomize(electrons.phi_);
   operations::orthogonalize(electrons.phi_);
 
-	for(long ist = 0; ist < electrons.phi_.local_set_size(); ist++){
-		electrons.occupations_[ist] = ist + electrons.phi_.set_part().start();
-	}
+	math::array<double, 1> eigenvalues(electrons.phi_.local_set_size());
+	
+	for(long ist = 0; ist < electrons.phi_.local_set_size(); ist++) eigenvalues[ist] = ist + electrons.phi_.set_part().start();
+	
+	electrons.update_occupations(eigenvalues);
 	
 }
 }
