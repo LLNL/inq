@@ -191,7 +191,9 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 	using namespace inq;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
-		
+
+	if(comm.size() > 3) comm = boost::mpi3::environment::get_self_instance();
+	
   SECTION("Spin unpolarized"){
     
     states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
