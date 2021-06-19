@@ -103,9 +103,10 @@ public:
 	}
 	
 	template <typename ArrayType>
-	void update_occupations(ArrayType const & eigenval, ArrayType & occs) {
+	void update_occupations(boost::mpi3::communicator & comm, utils::partition const & part, ArrayType const & eigenval, ArrayType & occs) {
 
-		assert(nstates_ == eigenval.size());
+		assert(part.local_size() == eigenval.size());
+		assert(part.local_size() == occs.size());
 		
 		double const tol = 1e-10;
 		double efermi;
@@ -114,8 +115,9 @@ public:
 
 			auto rem_electrons = num_electrons_;
 			for(int ist = 0; ist < nstates_; ist++){
-				occs[ist] = std::min(2.0, rem_electrons);
-				rem_electrons -= occs[ist];
+				auto occ = std::min(2.0, rem_electrons);
+				if(part.contains(ist)) occs[ist - part.start()] = occ;
+				rem_electrons -= occ;
 			}
 			
 		} else {
@@ -126,10 +128,13 @@ public:
 			auto drange = dsmear*sqrt(-log(tol*0.01));
 
 			auto emin = real(eigenval[0]) - drange;
-			auto emax = real(eigenval[nstates_ - 1]) + drange;
-
+			auto emax = real(eigenval[part.local_size() - 1]) + drange;
+			comm.broadcast_value(emin, 0);
+			comm.barrier();
+			comm.broadcast_value(emax, part.comm_size() - 1);
+			
 			//check that the eigenvalues are sorted
-			for(int ist = 1; ist < nstates_; ist++){
+			for(int ist = 1; ist < part.local_size(); ist++){
 				assert(real(eigenval[ist]) >= real(eigenval[ist - 1]));
 			}
 		
@@ -138,10 +143,11 @@ public:
 				efermi = 0.5*(emin + emax);
 				sumq = 0.0;
 
-				for(int ist = 0; ist < nstates_; ist++){
+				for(int ist = 0; ist < part.local_size(); ist++){
 					auto xx = (efermi - real(eigenval[ist]))/dsmear;
 					sumq = sumq + max_occ_*smear_function(xx);
 				}
+				comm.all_reduce_in_place_n(&sumq, 1, std::plus<>{});
 
 				if(fabs(sumq - num_electrons_) <= tol) break;
 				if(sumq <= num_electrons_) emin = efermi;
@@ -149,12 +155,12 @@ public:
 				
 			}
 
-			for(int ist = 0; ist < nstates_; ist++){
+			for(int ist = 0; ist < part.local_size(); ist++){
 				auto xx = (efermi - real(eigenval[ist]))/dsmear;
 				occs[ist] = max_occ_*smear_function(xx);
 			}
 
-			assert(fabs(operations::sum(occs) - num_electrons_) <= tol);
+			assert(fabs(comm.all_reduce_value(operations::sum(occs)) - num_electrons_) <= tol);
 			
 		}
 		
@@ -206,7 +212,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(4)) eigenvalues[part.global_to_local(utils::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[part.global_to_local(utils::global_index(5))] = 1.0;
 		
-		st.update_occupations(eigenvalues, occupations);
+		st.update_occupations(comm, part, eigenvalues, occupations);
 		
 		if(part.contains(0)) CHECK(occupations[part.global_to_local(utils::global_index(0))] == 2.0);
 		if(part.contains(1)) CHECK(occupations[part.global_to_local(utils::global_index(1))] == 2.0);
@@ -225,6 +231,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
+		comm.barrier();
+		
 		utils::partition part(st.num_states(), comm);
 		
 		math::array<double, 1> eigenvalues(part.local_size());
@@ -237,7 +245,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(4)) eigenvalues[part.global_to_local(utils::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[part.global_to_local(utils::global_index(5))] = 1.0;
 		
-		st.update_occupations(eigenvalues, occupations);
+		st.update_occupations(comm, part, eigenvalues, occupations);
 		
 		if(part.contains(0)) CHECK(occupations[part.global_to_local(utils::global_index(0))] == 2.0_a);
 		if(part.contains(1)) CHECK(occupations[part.global_to_local(utils::global_index(1))] == 1.9810772793_a);
