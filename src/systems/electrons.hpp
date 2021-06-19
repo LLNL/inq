@@ -103,7 +103,7 @@ namespace systems {
 
 		template <typename ArrayType>
 		void update_occupations(ArrayType const eigenval) {
-			states_.update_occupations(eigenval);
+			states_.update_occupations(eigenval, states_.occupations());
 		}
 
 		void save(std::string const & dirname) const {

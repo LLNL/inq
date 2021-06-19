@@ -118,7 +118,7 @@ public:
 	}
 	
 	template <typename ArrayType>
-	void update_occupations(ArrayType const eigenval) {
+	void update_occupations(ArrayType const & eigenval, ArrayType & occs) {
 
 		assert(nstates_ == eigenval.size());
 		
@@ -129,8 +129,8 @@ public:
 
 			auto rem_electrons = num_electrons_;
 			for(int ist = 0; ist < nstates_; ist++){
-				occs_[ist] = std::min(2.0, rem_electrons);
-				rem_electrons -= occs_[ist];
+				occs[ist] = std::min(2.0, rem_electrons);
+				rem_electrons -= occs[ist];
 			}
 			
 		} else {
@@ -166,10 +166,10 @@ public:
 
 			for(int ist = 0; ist < nstates_; ist++){
 				auto xx = (efermi - real(eigenval[ist]))/dsmear;
-				occs_[ist] = max_occ_*smear_function(xx);
+				occs[ist] = max_occ_*smear_function(xx);
 			}
 
-			assert(fabs(operations::sum(occs_) - num_electrons_) <= tol);
+			assert(fabs(operations::sum(occs) - num_electrons_) <= tol);
 			
 		}
 		
@@ -207,7 +207,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
-		st.update_occupations(math::array<double, 1>{0.1, 0.2, 0.3, 0.3, 0.4, 1.0});
+		st.update_occupations(math::array<double, 1>{0.1, 0.2, 0.3, 0.3, 0.4, 1.0}, st.occupations());
 		
 		CHECK(st.occupations()[0] == 2.0);
 		CHECK(st.occupations()[1] == 2.0);
@@ -226,7 +226,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
-		st.update_occupations(math::array<double, 1>{0.0, 0.2, 0.3, 0.3, 0.4, 1.0});
+		st.update_occupations(math::array<double, 1>{0.0, 0.2, 0.3, 0.3, 0.4, 1.0}, st.occupations());
 
 		CHECK(st.occupations()[0] == 2.0_a);
 		CHECK(st.occupations()[1] == 1.9810772793_a);
