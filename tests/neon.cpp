@@ -24,7 +24,7 @@
 #include <config/path.hpp>
 #include <input/atom.hpp>
 #include <utils/match.hpp>
-#include <ground_state/initialize.hpp>
+#include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
 
 #include <input/environment.hpp>
@@ -51,7 +51,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(30.0_Ha), conf);
 	
-	ground_state::initialize(ions, electrons);
+	ground_state::initial_guess(ions, electrons);
 	
 	//REAL SPACE PSEUDO
 	{

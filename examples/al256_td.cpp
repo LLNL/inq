@@ -24,7 +24,7 @@
 #include <input/atom.hpp>
 #include <operations/io.hpp>
 #include <utils/match.hpp>
-#include <ground_state/initialize.hpp>
+#include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
 #include <input/environment.hpp>
 #include <input/parse_xyz.hpp>

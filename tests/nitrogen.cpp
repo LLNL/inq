@@ -40,7 +40,7 @@ int main(int argc, char ** argv){
 	systems::ions ions(input::cell::orthorhombic(10.0_b, 10.0_b, 12.0_b) /* | input::cell::finite() */, geo);
 
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0_Ha), input::config{});
-	ground_state::initialize(ions, electrons);
+	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(),
 																				input::scf::davidson() | input::scf::density_mixing() | input::scf::energy_tolerance(1e-7_Ha) | input::scf::calculate_forces());

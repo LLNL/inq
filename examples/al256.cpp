@@ -24,7 +24,7 @@
 #include <input/atom.hpp>
 #include <operations/io.hpp>
 #include <utils/match.hpp>
-#include <ground_state/initialize.hpp>
+#include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
 #include <input/environment.hpp>
 #include <input/parse_xyz.hpp>
@@ -52,7 +52,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
 	
-	ground_state::initialize(ions, electrons);
+	ground_state::initial_guess(ions, electrons);
 
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
 

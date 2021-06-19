@@ -77,7 +77,7 @@ int main(int argc, char ** argv){
 		// the parallelization distribution is different for the ground state
 		systems::electrons gs_electrons(boost::mpi3::environment::get_world_instance(), ions, input::basis::cutoff_energy(30.0_Ha), conf);
 		
-		ground_state::initialize(ions, gs_electrons);
+		ground_state::initial_guess(ions, gs_electrons);
 		
 		auto result = ground_state::calculate(ions, gs_electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
 		
