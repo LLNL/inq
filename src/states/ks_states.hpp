@@ -95,6 +95,10 @@ public:
 		return occs_;
 	}
 
+	auto & occupations() {
+		return occs_;
+	}
+	
 	auto num_electrons() const {
 		return num_electrons_;
 	}
