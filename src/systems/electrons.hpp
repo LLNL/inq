@@ -146,6 +146,50 @@ namespace systems {
 
 #ifdef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
 #undef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
+
+#include <catch2/catch.hpp>
+
+TEST_CASE("class system::electrons", "[system::electrons]") {
+	
+	using namespace inq;
+	using namespace inq::magnitude;
+	using namespace Catch::literals;
+	
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+
+	std::vector<input::atom> geo;
+	geo.push_back( "Si" | math::vector3<double>(0.0,  0.0,  0.0));
+
+	systems::ions ions(input::cell::cubic(5.0_b), geo);
+
+	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(25.0_Ha));
+	
+	for(int ip = 0; ip < electrons.phi_.basis().local_size(); ip++){
+		for(int ist = 0; ist < electrons.phi_.set_part().local_size(); ist++){
+			auto istg = electrons.phi_.set_part().local_to_global(ist);
+			auto ipg = electrons.phi_.basis().part().local_to_global(ip);
+			electrons.phi_.matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
+		}
+	}
+
+	electrons.save("electron_restart");
+	
+	systems::electrons electrons_read(cart_comm, ions, input::basis::cutoff_energy(25.0_Ha));
+
+	electrons_read.load("electron_restart");
+		
+	for(int ip = 0; ip < electrons.phi_.basis().local_size(); ip++){
+		for(int ist = 0; ist < electrons.phi_.set_part().local_size(); ist++){
+			CHECK(electrons.phi_.matrix()[ip][ist] == electrons_read.phi_.matrix()[ip][ist]);
+		}
+	}
+
+	CHECK(not electrons.load("directory_that_doesnt_exist"));
+
+}
+
 #endif
 
 #endif
