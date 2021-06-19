@@ -50,14 +50,14 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	CALI_CXX_MARK_FUNCTION;
 	
   auto gphi = operations::gradient(electrons.phi_);
-	auto gdensity = density::calculate_gradient(electrons.states_.occupations(), electrons.phi_, gphi);
+	auto gdensity = density::calculate_gradient(electrons.occupations_, electrons.phi_, gphi);
 	
   //the non-local potential term
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 	
 	for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
 		
-		forces_non_local[proj->iatom()] = proj->force(electrons.phi_, gphi, electrons.states_.occupations());
+		forces_non_local[proj->iatom()] = proj->force(electrons.phi_, gphi, electrons.occupations_);
 	}
 	
 	if(electrons.phi_.full_comm().size() > 1){

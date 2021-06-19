@@ -58,14 +58,6 @@ public:
 		nquantumnumbers_ = 1;
 		if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
 
-		occs_.reextent({nstates_});
-
-		auto rem_electrons = nelectrons;
-		for(int ist = 0; ist < nstates_; ist++){
-			occs_[ist] = std::min(2.0, rem_electrons);
-			rem_electrons -= occs_[ist];
-		}
-
 		num_electrons_ = nelectrons;
 
 	}
@@ -89,14 +81,6 @@ public:
 	friend OStream& operator<<(OStream& os, ks_states const& self){
 		self.info(os);
 		return os;
-	}
-	
-	auto & occupations() const {
-		return occs_;
-	}
-
-	auto & occupations() {
-		return occs_;
 	}
 	
 	auto num_electrons() const {
@@ -180,7 +164,6 @@ private:
 	double num_electrons_;
 	int nstates_;
 	int nquantumnumbers_;
-	math::array<double, 1> occs_;
 	double temperature_;
 	double max_occ_;
 
@@ -207,14 +190,16 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
-		st.update_occupations(math::array<double, 1>{0.1, 0.2, 0.3, 0.3, 0.4, 1.0}, st.occupations());
+		math::array<double, 1> occupations(st.num_states());
 		
-		CHECK(st.occupations()[0] == 2.0);
-		CHECK(st.occupations()[1] == 2.0);
-		CHECK(st.occupations()[2] == 2.0);
-		CHECK(st.occupations()[3] == 2.0);
-		CHECK(st.occupations()[4] == 2.0);
-		CHECK(st.occupations()[5] == 1.0);
+		st.update_occupations(math::array<double, 1>{0.1, 0.2, 0.3, 0.3, 0.4, 1.0}, occupations);
+		
+		CHECK(occupations[0] == 2.0);
+		CHECK(occupations[1] == 2.0);
+		CHECK(occupations[2] == 2.0);
+		CHECK(occupations[3] == 2.0);
+		CHECK(occupations[4] == 2.0);
+		CHECK(occupations[5] == 1.0);
 
   }
 	
@@ -226,14 +211,16 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
-		st.update_occupations(math::array<double, 1>{0.0, 0.2, 0.3, 0.3, 0.4, 1.0}, st.occupations());
+		math::array<double, 1> occupations(st.num_states());
+	
+		st.update_occupations(math::array<double, 1>{0.0, 0.2, 0.3, 0.3, 0.4, 1.0}, occupations);
 
-		CHECK(st.occupations()[0] == 2.0_a);
-		CHECK(st.occupations()[1] == 1.9810772793_a);
-		CHECK(st.occupations()[2] == 0.0094611446_a);
-		CHECK(st.occupations()[3] == 0.0094611446_a);
-		CHECK(st.occupations()[4] == 4.315768121820668e-07_a);
-		CHECK(st.occupations()[5] == 3.779107816290222e-33_a);
+		CHECK(occupations[0] == 2.0_a);
+		CHECK(occupations[1] == 1.9810772793_a);
+		CHECK(occupations[2] == 0.0094611446_a);
+		CHECK(occupations[3] == 0.0094611446_a);
+		CHECK(occupations[4] == 4.315768121820668e-07_a);
+		CHECK(occupations[5] == 3.779107816290222e-33_a);
 
   }
 
