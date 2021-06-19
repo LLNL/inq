@@ -24,6 +24,7 @@
 #include <math/complex.hpp>
 #include <math/array.hpp>
 #include <operations/sum.hpp>
+#include <utils/partition.hpp>
 
 namespace inq {
 namespace states {
@@ -176,12 +177,15 @@ private:
 #undef INQ_STATES_KS_STATES_UNIT_TEST
 
 #include <catch2/catch.hpp>
+#include <mpi3/environment.hpp>
 
 TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 	using namespace Catch::literals;
 	using namespace inq;
-  
+
+	auto comm = boost::mpi3::environment::get_world_instance();
+		
   SECTION("Spin unpolarized"){
     
     states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
@@ -190,16 +194,26 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
-		math::array<double, 1> occupations(st.num_states());
+		utils::partition part(st.num_states(), comm);
+
+		math::array<double, 1> eigenvalues(part.local_size());
+		math::array<double, 1> occupations(part.local_size());
+
+		if(part.contains(0)) eigenvalues[part.global_to_local(utils::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[part.global_to_local(utils::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[part.global_to_local(utils::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[part.global_to_local(utils::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[part.global_to_local(utils::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[part.global_to_local(utils::global_index(5))] = 1.0;
 		
-		st.update_occupations(math::array<double, 1>{0.1, 0.2, 0.3, 0.3, 0.4, 1.0}, occupations);
+		st.update_occupations(eigenvalues, occupations);
 		
-		CHECK(occupations[0] == 2.0);
-		CHECK(occupations[1] == 2.0);
-		CHECK(occupations[2] == 2.0);
-		CHECK(occupations[3] == 2.0);
-		CHECK(occupations[4] == 2.0);
-		CHECK(occupations[5] == 1.0);
+		if(part.contains(0)) CHECK(occupations[part.global_to_local(utils::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[part.global_to_local(utils::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[part.global_to_local(utils::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[part.global_to_local(utils::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[part.global_to_local(utils::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[part.global_to_local(utils::global_index(5))] == 1.0);
 
   }
 	
@@ -211,16 +225,26 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
-		math::array<double, 1> occupations(st.num_states());
-	
-		st.update_occupations(math::array<double, 1>{0.0, 0.2, 0.3, 0.3, 0.4, 1.0}, occupations);
+		utils::partition part(st.num_states(), comm);
+		
+		math::array<double, 1> eigenvalues(part.local_size());
+		math::array<double, 1> occupations(part.local_size());
 
-		CHECK(occupations[0] == 2.0_a);
-		CHECK(occupations[1] == 1.9810772793_a);
-		CHECK(occupations[2] == 0.0094611446_a);
-		CHECK(occupations[3] == 0.0094611446_a);
-		CHECK(occupations[4] == 4.315768121820668e-07_a);
-		CHECK(occupations[5] == 3.779107816290222e-33_a);
+		if(part.contains(0)) eigenvalues[part.global_to_local(utils::global_index(0))] = 0.0;
+		if(part.contains(1)) eigenvalues[part.global_to_local(utils::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[part.global_to_local(utils::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[part.global_to_local(utils::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[part.global_to_local(utils::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[part.global_to_local(utils::global_index(5))] = 1.0;
+		
+		st.update_occupations(eigenvalues, occupations);
+		
+		if(part.contains(0)) CHECK(occupations[part.global_to_local(utils::global_index(0))] == 2.0_a);
+		if(part.contains(1)) CHECK(occupations[part.global_to_local(utils::global_index(1))] == 1.9810772793_a);
+		if(part.contains(2)) CHECK(occupations[part.global_to_local(utils::global_index(2))] == 0.0094611446_a);
+		if(part.contains(3)) CHECK(occupations[part.global_to_local(utils::global_index(3))] == 0.0094611446_a);
+		if(part.contains(4)) CHECK(occupations[part.global_to_local(utils::global_index(4))] == 4.315768121820668e-07_a);
+		if(part.contains(5)) CHECK(occupations[part.global_to_local(utils::global_index(5))] == 3.779107816290222e-33_a);
 
   }
 
