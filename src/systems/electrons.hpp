@@ -162,13 +162,18 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
-
+	if(comm.size() > 4) comm = boost::mpi3::environment::get_self_instance();
+	
 	std::vector<input::atom> geo;
-	geo.push_back( "Si" | math::vector3<double>(0.0,  0.0,  0.0));
+	geo.push_back( "Cu" | math::vector3<double>(0.0,  0.0,  0.0));
+	geo.push_back( "Cu" | math::vector3<double>(1.0,  0.0,  0.0));
 
 	systems::ions ions(input::cell::cubic(5.0_b), geo);
 
 	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(25.0_Ha));
+
+	CHECK(electrons.states_.num_electrons() == 38.0_a);
+	CHECK(electrons.states_.num_states() == 19);
 	
 	for(int ist = 0; ist < electrons.phi_.set_part().local_size(); ist++){
 		auto istg = electrons.phi_.set_part().local_to_global(ist);
