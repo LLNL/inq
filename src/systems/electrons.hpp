@@ -11,6 +11,7 @@
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/integral.hpp>
+#include <operations/io.hpp>
 #include <operations/orthogonalize.hpp>
 #include <math/complex.hpp>
 #include <input/basis.hpp>
@@ -56,7 +57,8 @@ namespace systems {
 			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 			states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units()),
 			phi_(states_basis_, states_.num_states(), full_comm_),
-			density_(density_basis_)
+			density_(density_basis_),
+			occupations_(phi_.local_set_size())
 		{
 
 			CALI_CXX_MARK_FUNCTION;
@@ -99,6 +101,21 @@ namespace systems {
 		electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
 			electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, arg_basis_input, conf){
 		}
+
+		template <typename ArrayType>
+		void update_occupations(ArrayType const eigenval) {
+			states_.update_occupations(phi_.set_comm(), phi_.set_part(), eigenval, occupations_);
+		}
+
+		void save(std::string const & dirname) const {
+			operations::io::save(dirname + "/states", phi_);
+			if(phi_.basis().comm().root()) operations::io::save(dirname + "/ocupations", phi_.set_comm(), phi_.set_part(), occupations_);
+		}
+		
+		auto load(std::string const & dirname) {
+			return operations::io::load(dirname + "/states", phi_)
+				and operations::io::load(dirname + "/ocupations", phi_.set_comm(), phi_.set_part(), occupations_);
+		}
 		
 	private:
 		static std::string generate_tiny_uuid(){
@@ -121,7 +138,8 @@ namespace systems {
 		states::ks_states states_;
 		basis::field_set<basis::real_space, complex> phi_;
 		basis::field<basis::real_space, double> density_;
-		
+		math::array<double, 1> occupations_;
+
 		std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
 	private:
 		std::shared_ptr<spdlog::logger> logger_;
@@ -132,6 +150,59 @@ namespace systems {
 
 #ifdef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
 #undef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
+
+#include <catch2/catch.hpp>
+
+TEST_CASE("class system::electrons", "[system::electrons]") {
+	
+	using namespace inq;
+	using namespace inq::magnitude;
+	using namespace Catch::literals;
+	
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+	if(comm.size() > 4) comm = boost::mpi3::environment::get_self_instance();
+	
+	std::vector<input::atom> geo;
+	geo.push_back( "Cu" | math::vector3<double>(0.0,  0.0,  0.0));
+	geo.push_back( "Cu" | math::vector3<double>(1.0,  0.0,  0.0));
+
+	systems::ions ions(input::cell::cubic(5.0_b), geo);
+
+	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(25.0_Ha));
+
+	CHECK(electrons.states_.num_electrons() == 38.0_a);
+	CHECK(electrons.states_.num_states() == 19);
+	
+	for(int ist = 0; ist < electrons.phi_.set_part().local_size(); ist++){
+		auto istg = electrons.phi_.set_part().local_to_global(ist);
+
+		electrons.occupations_[ist] = cos(istg.value());
+		
+		for(int ip = 0; ip < electrons.phi_.basis().local_size(); ip++){
+			auto ipg = electrons.phi_.basis().part().local_to_global(ip);
+			electrons.phi_.matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
+		}
+	}
+
+	electrons.save("electron_restart");
+	
+	systems::electrons electrons_read(cart_comm, ions, input::basis::cutoff_energy(25.0_Ha));
+
+	electrons_read.load("electron_restart");
+
+	for(int ist = 0; ist < electrons.phi_.set_part().local_size(); ist++){
+		CHECK(electrons.occupations_[ist] == electrons_read.occupations_[ist]);
+		for(int ip = 0; ip < electrons.phi_.basis().local_size(); ip++){
+			CHECK(electrons.phi_.matrix()[ip][ist] == electrons_read.phi_.matrix()[ip][ist]);
+		}
+	}
+
+	CHECK(not electrons.load("directory_that_doesnt_exist"));
+
+}
+
 #endif
 
 #endif

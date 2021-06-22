@@ -27,7 +27,7 @@
 #include <utils/match.hpp>
 #include <operations/io.hpp>
 #include <perturbations/kick.hpp>
-#include <ground_state/initialize.hpp>
+#include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
 
 #include <input/environment.hpp>
@@ -59,7 +59,7 @@ int main(int argc, char ** argv){
 
 	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0_Ha), conf);
 
-	inq::ground_state::initialize(ions, electrons);
+	inq::ground_state::initial_guess(ions, electrons);
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);
 	
 	match.check("total energy",        result.energy.total(),       -25.637012688764);
@@ -79,8 +79,8 @@ int main(int argc, char ** argv){
 	match.check("dipole y", result.dipole[1], -0.724304);
 	match.check("dipole z", result.dipole[2], -2.78695e-05);
 	
-	inq::operations::io::save("h2o_restart", electrons.phi_);
-
+	electrons.save("h2o_restart");
+	
 	fftw_cleanup(); //required for valgrid
 	
 	return match.fail();

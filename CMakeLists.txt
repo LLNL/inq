@@ -82,14 +82,14 @@ include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
-find_package(Boost REQUIRED COMPONENTS serialization)
+find_package(Boost REQUIRED COMPONENTS serialization filesystem system)
 message(STATUS "Boost actual version found " ${Boost_VERSION})
 if(Boost_VERSION LESS_EQUAL 105300) # may be higher than 1.53.0
 	message(STATUS "Applying option BOOST_NO_AUTO_PTR to patch for old Boost")
 	add_compile_options(-DBOOST_NO_AUTO_PTR)
 endif()
-include_directories(Boost::serialization) #${Boost_INCLUDE_DIRS})
-link_libraries(Boost::serialization)
+include_directories(Boost::serialization Boost::filesystem Boost::system) #${Boost_INCLUDE_DIRS})
+link_libraries(Boost::serialization Boost::filesystem Boost::system)
 
 # Required for inq_config.h
 include_directories(${PROJECT_BINARY_DIR})

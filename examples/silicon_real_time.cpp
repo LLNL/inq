@@ -61,10 +61,8 @@ int main(int argc, char ** argv){
 
 	auto result = real_time::propagate<>(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055_atomictime));
 	
-	operations::io::load("silicon_restart", electrons.phi_);
+	electrons.load("silicon_restart");
 
-	fftw_cleanup(); //required for valgrid
-	
 	return energy_match.fail();
 	
 }
