@@ -162,7 +162,6 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
-	if(comm.size() > 4) comm = boost::mpi3::environment::get_self_instance();
 	
 	std::vector<input::atom> geo;
 	geo.push_back( "Cu" | math::vector3<double>(0.0,  0.0,  0.0));

@@ -49,8 +49,8 @@ public:
 		bsize_ = (size_ + comm_size_ - 1)/comm_size_;
 		
 		if(size_ > 0) assert(bsize_ > 0);
-		
-		start_ = bsize_*comm_rank;
+
+		start_ = std::min(bsize_*comm_rank, size_);
 		end_ = std::min(bsize_*(comm_rank + 1), size_);
 		
 		assert(local_size() <= bsize_);
@@ -240,6 +240,9 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 		
 	}
 
+	SECTION("Small sizes"){
+		for(int ii = 0; ii < 20; ii++) inq::utils::partition part(ii, comm);
+	}
 	
 }
 #endif

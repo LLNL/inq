@@ -127,17 +127,18 @@ public:
 			auto dsmear = std::max(1e-14, temperature_);
 			auto drange = dsmear*sqrt(-log(tol*0.01));
 
-			auto emin = real(eigenval[0]) - drange;
-			auto emax = real(eigenval[part.local_size() - 1]) + drange;
+			double emin, emax;
+			if(part.local_size() > 0) emin = real(eigenval[0]) - drange;
+			if(part.local_size() > 0) emax = real(eigenval[part.local_size() - 1]) + drange;
 			comm.broadcast_value(emin, 0);
 			comm.barrier();
-			comm.broadcast_value(emax, part.comm_size() - 1);
-			
+			comm.broadcast_value(emax, part.location(part.size() - 1));
+
 			//check that the eigenvalues are sorted
 			for(int ist = 1; ist < part.local_size(); ist++){
 				assert(real(eigenval[ist]) >= real(eigenval[ist - 1]));
 			}
-		
+
 			double sumq;
 			for(int iter = 0; iter < nitmax; iter++){
 				efermi = 0.5*(emin + emax);
@@ -192,8 +193,6 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	if(comm.size() > 3) comm = boost::mpi3::environment::get_self_instance();
-	
   SECTION("Spin unpolarized"){
     
     states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
@@ -255,7 +254,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(3)) CHECK(occupations[part.global_to_local(utils::global_index(3))] == 0.0094611446_a);
 		if(part.contains(4)) CHECK(occupations[part.global_to_local(utils::global_index(4))] == 4.315768121820668e-07_a);
 		if(part.contains(5)) CHECK(occupations[part.global_to_local(utils::global_index(5))] == 3.779107816290222e-33_a);
-
+		
   }
 
   SECTION("Spin polarized"){
