@@ -200,7 +200,7 @@ namespace hamiltonian {
     basis::field<basis_type, double> atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
-	
+
       basis::field<basis_type, double> density(basis);
 
 			density = 0.0;
@@ -211,19 +211,33 @@ namespace hamiltonian {
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 
-				//TODO: implement the case when the pseudo does not have the density
-				assert(ps.has_electronic_density());
+				if(ps.has_electronic_density()){
 
-				basis::spherical_grid sphere(basis, cell, atom_position, ps.electronic_density_radius());
+					basis::spherical_grid sphere(basis, cell, atom_position, ps.electronic_density_radius());
+					
+					gpu::run(sphere.size(),
+									 [dens = begin(density.cubic()),
+										sph = sphere.ref(),
+										spline = ps.electronic_density().cbegin()] GPU_LAMBDA (auto ipoint){
+										 auto rr = sph.distance(ipoint);
+										 auto density_val = spline.value(rr);
+										 dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += density_val;
+									 });
 
-				gpu::run(sphere.size(),
-								 [dens = begin(density.cubic()),
-									sph = sphere.ref(),
-									spline = ps.electronic_density().cbegin()] GPU_LAMBDA (auto ipoint){
-									 auto rr = sph.distance(ipoint);
-									 auto density_val = spline.value(rr);
-									 dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += density_val;
-								 });
+				} else {
+
+					//just some crude guess for now
+					basis::spherical_grid sphere(basis, cell, atom_position, 3.0);
+					
+					gpu::run(sphere.size(),
+									 [dens = begin(density.cubic()),
+										sph = sphere.ref(),
+										zval = ps.valence_charge()] GPU_LAMBDA (auto ipoint){
+										 auto rr = sph.distance(ipoint);
+										 dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += zval/(M_PI)*exp(-2.0*rr);
+									 });
+					
+				}
       }
 
 			if(comm_.size() > 1){
