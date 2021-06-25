@@ -36,7 +36,7 @@ namespace utils {
 class partition {
 	
 public:
-	
+
 	auto local_size() const {
 		return end_ - start_;
 	}
@@ -82,7 +82,13 @@ public:
 	auto end() const {
 		return end_;
 	}
-  
+
+	auto local_size(int part) const {
+		auto part_start = std::min(bsize_*part, size_);
+		auto part_end = std::min(bsize_*(part + 1), size_);
+		return part_end - part_start;
+	}
+	
 	auto parallel() const {
 		return comm_size_ > 1;
 	}

@@ -85,15 +85,32 @@ namespace systems {
 			auto myid = gpu::id();
 			auto gpuids = full_comm_.all_gather_as<boost::multi::array<decltype(myid), 1>>(myid);
 
+			basis::fourier_space fourier_basis(states_basis_);
+			
 			if(logger()){
-				logger()->info("electrons divided among {} processes ({} states x {} domains)", full_comm_.size(), full_comm_.shape()[0], full_comm_.shape()[1]);
+				logger()->info("parallelization:");
+				logger()->info("  electrons divided among {} processes ({} states x {} domains)", full_comm_.size(), full_comm_.shape()[0], full_comm_.shape()[1]);
 #ifdef ENABLE_CUDA
 				for(int iproc = 0; iproc < full_comm_.size(); iproc++){
 					logger()->info("  process {} has gpu id {}", iproc, gpuids[iproc]);
 				}
 #else
-				logger()->info("  inq is running on the cpu");
+				logger()->info("  inq is running on the cpu\n");
 #endif
+				logger()->info("state parallelization:");
+				logger()->info("  {} states divided among {} partitions", phi_.set_part().size(), phi_.set_part().comm_size());
+				logger()->info("  partition 0 has {} states and the last partition has {} states\n", phi_.set_part().local_size(0), phi_.set_part().local_size(phi_.set_part().comm_size() - 1));
+				
+				logger()->info("real-space parallelization:");
+				logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_dist(0).size(), states_basis_.part().size(), states_basis_.cubic_dist(0).comm_size());
+				logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n", states_basis_.cubic_dist(0).local_size(0), states_basis_.cubic_dist(0).local_size(states_basis_.part().comm_size() - 1),
+											 states_basis_.part().local_size(0), states_basis_.part().local_size(states_basis_.part().comm_size() - 1));
+
+				logger()->info("fourier-space parallelization:");
+				logger()->info("  {} slices ({} points) divided among {} partitions", fourier_basis.cubic_dist(2).size(), fourier_basis.part().size(), fourier_basis.cubic_dist(2).comm_size());
+				logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n", fourier_basis.cubic_dist(2).local_size(0), fourier_basis.cubic_dist(2).local_size(fourier_basis.part().comm_size() - 1),
+					fourier_basis.part().local_size(0), fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1));
+				
 			}
 			
 		}
