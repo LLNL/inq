@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <gpu/run.hpp>
+
 namespace inq {
 
 	template <class MagnitudeType, class ElementType = double>
@@ -29,42 +31,38 @@ namespace inq {
 		using magnitude = MagnitudeType;
 		using element_type = ElementType;
 
-	private:
-		
-		quantity() = default;
-
 	public:
 		
-		constexpr static auto from_atomic_units(element_type const & au_value){
+		GPU_FUNCTION static auto from_atomic_units(element_type const & au_value){
 			quantity qq;
 			qq.value_ = au_value;
 			return qq;
 		}
 
-		constexpr static auto zero(){
+		GPU_FUNCTION static auto zero(){
 			return from_atomic_units(0.0);
 		}
 
-		constexpr auto in_atomic_units() const {
+		GPU_FUNCTION auto in_atomic_units() const {
 			return value_;
 		}
 		
-		constexpr friend auto operator*(double scal, quantity quant){
+		GPU_FUNCTION friend auto operator*(double scal, quantity quant){
 			quant.value_ *= scal;
 			return quant;
 		}
 
-		constexpr friend auto operator*(quantity quant, double scal){
+		GPU_FUNCTION friend auto operator*(quantity quant, double scal){
 			quant.value_ *= scal;
 			return quant;
 		}
 
-		constexpr friend auto operator/(quantity quant, double scal){
+		GPU_FUNCTION friend auto operator/(quantity quant, double scal){
 			quant.value_ /= scal;
 			return quant;
 		}
 
-		constexpr auto operator-() const {
+		GPU_FUNCTION auto operator-() const {
 			return from_atomic_units(-value_);
 		}
 		
@@ -81,17 +79,17 @@ public:
 	using magnitude = MagnitudeType;
 	using element_type = ElementType;
 	
-	constexpr autocast_quantity(element_type const & val = 0.0):
+	GPU_FUNCTION autocast_quantity(element_type const & val = 0.0):
 		quantity<MagnitudeType, ElementType>(this->from_atomic_units(val))
 	{
 	}
 
-	constexpr autocast_quantity(quantity<MagnitudeType, ElementType> const & val):
+	GPU_FUNCTION autocast_quantity(quantity<MagnitudeType, ElementType> const & val):
 		quantity<MagnitudeType, ElementType>(val)
 	{
 	}
 	
-	constexpr operator element_type() const {
+	GPU_FUNCTION operator element_type() const {
 		return this->in_atomic_units();
 	}
 	
