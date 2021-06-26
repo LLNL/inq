@@ -128,8 +128,7 @@ auto load(std::string const & dirname, boost::mpi3::communicator & comm, utils::
 	
 	MPI_File_close(&fh);
 
-	return false;
-
+	return true;
 }
 
 template <class FieldSet>
@@ -261,12 +260,13 @@ TEST_CASE("function operations::io", "[operations::io]") {
 		
 		math::array<int, 1> arr2(part.local_size());
 
-		operations::io::load("array_restart", comm, part, arr2);
+		CHECK(operations::io::load("array_restart", comm, part, arr2));
 
 		for(int ii = 0; ii < part.local_size(); ii++){
 			CHECK(arr[ii] == arr2[ii]);
 		}
-		
+
+		CHECK(not operations::io::load("directory_that_doesnt_exist", comm, part, arr2));
 	}
 
 	SECTION("field_set"){
