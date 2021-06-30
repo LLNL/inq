@@ -61,7 +61,7 @@ git clone --recurse-submodules git@gitlab.com:npneq/inq.git
 cd inq
 mkdir build && cd build
 # set up environment if necessary, e.g. export CUDACXX=/usr/local/cuda/bin/nvcc
-../configure --prefix=$HOME
+../configure --prefix=$HOME # change prefix, e.g. $HOME/.local or /usr/local (needs root access), if necessary,
 make -j
 make install
 ```
@@ -84,5 +84,5 @@ Software Title: Electronic Structure Engine
 Date Submitted: Wednesday, December 11, 2019
 Date Accepted: Wednesday, January 29, 2020
 
-> The  work  was  supported  by  the  Center  for  Non-Perturbative Studies of Functional Materials Under Non-Equilibrium Conditions (NPNEQ) funded by the Computational Materials Sciences Program of the US Department of Energy, Office of Science, Basic Energy Sciences, Materials Sciences and Engineering  Division.
-> This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344. 
+> The work was supported by the Center for Non-Perturbative Studies of Functional Materials Under Non-Equilibrium Conditions (NPNEQ) funded by the Computational Materials Sciences Program of the US Department of Energy, Office of Science, Basic Energy Sciences, Materials Sciences and Engineering  Division.
+> This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.
