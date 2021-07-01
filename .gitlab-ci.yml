@@ -475,11 +475,7 @@ nvcc-ompi-fast:
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
       - mkdir nvcc && cd nvcc
-      - export CUDACXX=/usr/local/cuda/bin/nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW --gpu-architecture sm_70"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - time ../configure --prefix=$PREFIX --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda
       - time make -j8
       - time make -j8 install
       - ctest --output-on-failure --timeout 600
@@ -506,9 +502,7 @@ nvcc-ompi:
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
       - mkdir nvcc && cd nvcc
-      - export CUDACXX=/usr/local/cuda/bin/nvcc
-      - export CUDAFLAGS="-std=c++17 -D_DISABLE_CUDA_SLOW --gpu-architecture sm_70"
-      - ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --disable-debug
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --disable-debug
       - time make -j8
       - time make -j8 install
       - ctest --output-on-failure --timeout 600
