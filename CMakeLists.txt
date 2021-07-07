@@ -84,6 +84,15 @@ link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
 #SPGLIB
+
+message("\nCONFIGURING SPGLIB\n")
+set(CMAKE_BUILD_TYPE_BACKUP ${MAKE_BUILD_TYPE})
+set(CMAKE_BUILD_TYPE Release)
+add_subdirectory(external_libs/spglib)
+set(CMAKE_BUILD_TYPE ${MAKE_BUILD_TYPE_BACKUP})
+
+message("\nDONE CONFIGURING SPGLIB\n")
+
 set(spglib_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/spglib/src/)
 include_directories(${spglib_INCLUDE_DIRS})
 link_libraries(symspg)
