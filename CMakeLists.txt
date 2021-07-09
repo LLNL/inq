@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.11) # for reference: ubuntu 20.04 has cmake 3.16
+message("CMake version ${CMAKE_VERSION}")
 include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
