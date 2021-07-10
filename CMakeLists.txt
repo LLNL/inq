@@ -94,8 +94,10 @@ set(CMAKE_BUILD_TYPE ${MAKE_BUILD_TYPE_BACKUP})
 message("\nDONE CONFIGURING SPGLIB\n")
 
 set(spglib_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/spglib/src/)
+set(spglib_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/spglib/libsymspg.a)
 include_directories(${spglib_INCLUDE_DIRS})
-link_libraries(symspg)
+link_libraries(symspg_static)
+
 
 find_package(Boost REQUIRED COMPONENTS serialization filesystem system)
 message(STATUS "Boost actual version found " ${Boost_VERSION})
