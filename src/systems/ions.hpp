@@ -24,11 +24,16 @@ public:
 		cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
 		geo_(geo_arg)
 	{
-		char symbol[11];
+	}
 
+
+	auto symmetry_string() const{
+		
+		char symbol[11];
+		
 		std::vector<int> types(geo_.num_atoms());
 		std::vector<double> positions(3*geo_.num_atoms());
-
+		
 		for(int iatom = 0; iatom < geo_.num_atoms(); iatom++){
 			types[iatom] = geo_.atoms()[iatom].atomic_number();
 			auto pos = cell_.cart_to_crystal(cell_.position_in_cell(geo_.coordinates()[iatom]));
@@ -38,8 +43,7 @@ public:
 		}
 		
 		auto symnum = spg_get_international(symbol, reinterpret_cast<double (*)[3]>(const_cast<double *>(cell_.amat())), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), geo_.num_atoms(), 1e-4);
-		
-		std::cout << "symmetry: " << symbol << '\t' << symnum << std::endl;
+		return symbol + std::string(" (number ") + std::to_string(symnum) + std::string(")");
 	}
 
 	auto & geo() const {
