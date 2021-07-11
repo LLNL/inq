@@ -26,10 +26,11 @@ else
     #we are linking too
     cxx="@INCPP_COMPILER@"
     ldflags="@CMAKE_EXE_LINKER_FLAGS@ "
-    libs="@Libxc_LIBRARIES@ @LAPACK_LIBRARIES@ @BLAS_LIBRARIES@ @INQ_CUDA_LIBRARIES@ -L@Boost_LIBRARY_DIRS@ -lboost_serialization -lboost_filesystem -lboost_system  @FFTW_LDFLAGS@ @CMAKE_CXX_STANDARD_LIBRARIES@ @MPI_CXX_LIBRARIES@"
+    libs="@spglib_LIBRARIES@ @Libxc_LIBRARIES@ @LAPACK_LIBRARIES@ @BLAS_LIBRARIES@ @INQ_CUDA_LIBRARIES@ -L@Boost_LIBRARY_DIRS@ -lboost_serialization -lboost_filesystem -lboost_system  @FFTW_LDFLAGS@ @CMAKE_CXX_STANDARD_LIBRARIES@ @MPI_CXX_LIBRARIES@"
 fi
 
-includeflags="-I@Libxc_INCLUDE_DIRS@             \
+includeflags="-I@spglib_INCLUDE_DIRS@            \
+  -I@Libxc_INCLUDE_DIRS@                         \
   -I@Boost_INCLUDE_DIRS@                         \
   @FFTW_CFLAGS@                          \
   -I@PROJECT_BINARY_DIR@/                        \

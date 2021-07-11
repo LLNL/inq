@@ -77,11 +77,28 @@ set(BLA_VENDOR Generic) # ESSL doesn't implement dgelss_, now needed in the code
 find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
 
+#LIBXC
 set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)
 set(Libxc_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/libxc/libxc.a)
 include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
+
+#SPGLIB
+
+message("\nCONFIGURING SPGLIB\n")
+set(CMAKE_BUILD_TYPE_BACKUP ${MAKE_BUILD_TYPE})
+set(CMAKE_BUILD_TYPE Release)
+add_subdirectory(external_libs/spglib)
+set(CMAKE_BUILD_TYPE ${MAKE_BUILD_TYPE_BACKUP})
+
+message("\nDONE CONFIGURING SPGLIB\n")
+
+set(spglib_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/spglib/src/)
+set(spglib_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/spglib/libsymspg.a)
+include_directories(${spglib_INCLUDE_DIRS})
+link_libraries(symspg_static)
+
 
 find_package(Boost REQUIRED COMPONENTS serialization filesystem system)
 message(STATUS "Boost actual version found " ${Boost_VERSION})

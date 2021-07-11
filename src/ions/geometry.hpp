@@ -58,7 +58,9 @@ public:
 			
 	}
     
-	int num_atoms() const { return coordinates_.size(); }
+	int num_atoms() const {
+		return (long) coordinates_.size();
+	}
 
 	void add_atom(const input::species & element, const math::vector3<double> & position){
 		atoms_.push_back(element);
