@@ -27,13 +27,17 @@ public:
 		char symbol[11];
 
 		std::vector<int> types(geo_.num_atoms());
+		std::vector<double> positions(3*geo_.num_atoms());
 
 		for(int iatom = 0; iatom < geo_.num_atoms(); iatom++){
 			types[iatom] = geo_.atoms()[iatom].atomic_number();
+			auto pos = cell_.cart_to_crystal(cell_.position_in_cell(geo_.coordinates()[iatom]));
+			positions[3*iatom + 0] = pos[0];
+			positions[3*iatom + 1] = pos[1];
+			positions[3*iatom + 2] = pos[2];
 		}
 		
-		auto symnum = spg_get_international(symbol, reinterpret_cast<double (*)[3] >(const_cast<double *>(cell_.amat())), reinterpret_cast<double (*)[3] >(const_cast<math::vector3<double> *>(geo_.coordinates().data())),
-																				types.data(), geo_.num_atoms(), 1e-4);
+		auto symnum = spg_get_international(symbol, reinterpret_cast<double (*)[3]>(const_cast<double *>(cell_.amat())), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), geo_.num_atoms(), 1e-4);
 		
 		std::cout << "symmetry: " << symbol << '\t' << symnum << std::endl;
 	}
