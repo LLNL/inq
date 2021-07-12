@@ -35,6 +35,14 @@ namespace states {
 			:fields_(basis, num_vectors, comm){
 		}
 
+    auto & fields() const {
+      return fields_;
+    }
+
+    auto & fields() {
+      return fields_;
+    }
+    
 	private:
 
     basis::field_set<Basis, Type> fields_;
@@ -76,9 +84,9 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 
 	states::orbital_set<basis::real_space, double> orb(rs, 12, cart_comm);
 
-	CHECK(sizes(rs)[0] == 28);
-	CHECK(sizes(rs)[1] == 11);
-	CHECK(sizes(rs)[2] == 20);
+	CHECK(sizes(orb.fields().basis())[0] == 28);
+	CHECK(sizes(orb.fields().basis())[1] == 11);
+	CHECK(sizes(orb.fields().basis())[2] == 20);
 	
 }
 
