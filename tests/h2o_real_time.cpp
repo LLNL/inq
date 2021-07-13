@@ -92,7 +92,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 		
-		perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_);
+		perturbations::kick({0.1, 0.0, 0.0}, electrons.phi_.fields());
 		
 		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
