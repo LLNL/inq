@@ -137,14 +137,14 @@ namespace ground_state {
 				}
 				
 				//probably the occupations should be mixed too
-				ham.exchange.hf_occupations = electrons.occupations_;
+				ham.exchange.hf_occupations = electrons.phi_.occupations();
 			}
 
 			CALI_MARK_BEGIN("mixing");
 
 			double density_diff = 0.0;
 			{
-				auto new_density = density::calculate(electrons.occupations_, electrons.phi_.fields(), electrons.density_basis_);
+				auto new_density = density::calculate(electrons.phi_.occupations(), electrons.phi_.fields(), electrons.density_basis_);
 				density_diff = operations::integral_absdiff(electrons.density_, new_density);				
 				density_diff /= electrons.states_.num_electrons();
 				
@@ -179,11 +179,11 @@ namespace ground_state {
 			
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 			
-				res.energy.eigenvalues = operations::sum(electrons.occupations_, eigenvalues, energy_term);
-				res.energy.nonlocal = operations::sum(electrons.occupations_, nl_me, energy_term);
-				res.energy.hf_exchange = operations::sum(electrons.occupations_, exchange_me, energy_term);
+				res.energy.eigenvalues = operations::sum(electrons.phi_.occupations(), eigenvalues, energy_term);
+				res.energy.nonlocal = operations::sum(electrons.phi_.occupations(), nl_me, energy_term);
+				res.energy.hf_exchange = operations::sum(electrons.phi_.occupations(), exchange_me, energy_term);
 
-				auto state_conv = operations::sum(electrons.occupations_, normres, [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
+				auto state_conv = operations::sum(electrons.phi_.occupations(), normres, [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
 					
 				electrons.phi_.fields().set_comm().all_reduce_in_place_n(&res.energy.eigenvalues, 1, std::plus<>{});
 				electrons.phi_.fields().set_comm().all_reduce_in_place_n(&res.energy.nonlocal, 1, std::plus<>{});
@@ -200,7 +200,7 @@ namespace ground_state {
 					
 					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 						console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-													istate + 1, electrons.occupations_[istate], real(eigenvalues[istate]), real(normres[istate])
+													istate + 1, electrons.phi_.occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
 													);
 					}
 				}
@@ -217,7 +217,7 @@ namespace ground_state {
 		}
 
 		//make sure we have a density consistent with phi
-		electrons.density_ = density::calculate(electrons.occupations_, electrons.phi_.fields(), electrons.density_basis_);
+		electrons.density_ = density::calculate(electrons.phi_.occupations(), electrons.phi_.fields(), electrons.density_basis_);
 
 		if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 

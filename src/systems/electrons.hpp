@@ -58,8 +58,7 @@ namespace systems {
 			atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 			states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units()),
 			phi_(states_basis_, states_.num_states(), full_comm_),
-			density_(density_basis_),
-			occupations_(phi_.fields().local_set_size())
+			density_(density_basis_)
 		{
 
 			CALI_CXX_MARK_FUNCTION;
@@ -123,17 +122,17 @@ namespace systems {
 
 		template <typename ArrayType>
 		void update_occupations(ArrayType const eigenval) {
-			states_.update_occupations(phi_.fields().set_comm(), phi_.fields().set_part(), eigenval, occupations_);
+			states_.update_occupations(phi_.fields().set_comm(), phi_.fields().set_part(), eigenval, phi_.occupations());
 		}
 
 		void save(std::string const & dirname) const {
 			operations::io::save(dirname + "/states", phi_.fields());
-			if(phi_.fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi_.fields().set_comm(), phi_.fields().set_part(), occupations_);
+			if(phi_.fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi_.fields().set_comm(), phi_.fields().set_part(), phi_.occupations());
 		}
 		
 		auto load(std::string const & dirname) {
 			return operations::io::load(dirname + "/states", phi_.fields())
-				and operations::io::load(dirname + "/ocupations", phi_.fields().set_comm(), phi_.fields().set_part(), occupations_);
+				and operations::io::load(dirname + "/ocupations", phi_.fields().set_comm(), phi_.fields().set_part(), phi_.occupations());
 		}
 		
 	private:
@@ -157,7 +156,6 @@ namespace systems {
 		states::ks_states states_;
 		states::orbital_set<basis::real_space, complex> phi_;
 		basis::field<basis::real_space, double> density_;
-		math::array<double, 1> occupations_;
 
 		std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
 	private:
@@ -196,7 +194,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	for(int ist = 0; ist < electrons.phi_.fields().set_part().local_size(); ist++){
 		auto istg = electrons.phi_.fields().set_part().local_to_global(ist);
 
-		electrons.occupations_[ist] = cos(istg.value());
+		electrons.phi_.occupations()[ist] = cos(istg.value());
 		
 		for(int ip = 0; ip < electrons.phi_.fields().basis().local_size(); ip++){
 			auto ipg = electrons.phi_.fields().basis().part().local_to_global(ip);
@@ -211,7 +209,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	electrons_read.load("electron_restart");
 
 	for(int ist = 0; ist < electrons.phi_.fields().set_part().local_size(); ist++){
-		CHECK(electrons.occupations_[ist] == electrons_read.occupations_[ist]);
+		CHECK(electrons.phi_.occupations()[ist] == electrons_read.phi_.occupations()[ist]);
 		for(int ip = 0; ip < electrons.phi_.fields().basis().local_size(); ip++){
 			CHECK(electrons.phi_.fields().matrix()[ip][ist] == electrons_read.phi_.fields().matrix()[ip][ist]);
 		}
