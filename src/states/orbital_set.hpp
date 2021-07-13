@@ -32,7 +32,8 @@ namespace states {
   public:
 
 		orbital_set(Basis const & basis, int const num_vectors, boost::mpi3::cartesian_communicator<2> comm)
-			:fields_(basis, num_vectors, comm){
+			:fields_(basis, num_vectors, comm),
+       occupations_(fields_.local_set_size()){
 		}
 
     auto & fields() const {
@@ -42,10 +43,19 @@ namespace states {
     auto & fields() {
       return fields_;
     }
+
+    auto & occupations() const {
+      return occupations_;
+    }
+
+    auto & occupations() {
+      return occupations_;
+    }
     
 	private:
 
     basis::field_set<Basis, Type> fields_;
+    math::array<double, 1> occupations_;
     
   };
 
