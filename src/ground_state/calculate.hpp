@@ -98,12 +98,12 @@ namespace ground_state {
 			CALI_CXX_MARK_SCOPE("scf_iteration");
 
 			if(solver.subspace_diag()) {
-				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_);
+				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_.fields());
 				electrons.update_occupations(eigenvalues);
 			}
 
 			{
-				auto fphi = operations::space::to_fourier(std::move(electrons.phi_));
+				auto fphi = operations::space::to_fourier(std::move(electrons.phi_.fields()));
 				
 				switch(solver.eigensolver()){
 					
@@ -124,7 +124,7 @@ namespace ground_state {
 					assert(false);
 				}
 				
-				electrons.phi_ = operations::space::to_real(std::move(fphi));
+				electrons.phi_.fields() = operations::space::to_real(std::move(fphi));
 				
 			}
 			
@@ -132,8 +132,8 @@ namespace ground_state {
 			if(ham.exchange.enabled()) {
 				CALI_CXX_MARK_SCOPE("hf_mixing");
 				
-				for(int ii = 0; ii < electrons.phi_.num_elements(); ii++){
-					ham.exchange.hf_orbitals.data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.data()[ii] + solver.mixing()*electrons.phi_.data()[ii];
+				for(int ii = 0; ii < electrons.phi_.fields().num_elements(); ii++){
+					ham.exchange.hf_orbitals.data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.data()[ii] + solver.mixing()*electrons.phi_.fields().data()[ii];
 				}
 				
 				//probably the occupations should be mixed too
@@ -144,7 +144,7 @@ namespace ground_state {
 
 			double density_diff = 0.0;
 			{
-				auto new_density = density::calculate(electrons.occupations_, electrons.phi_, electrons.density_basis_);
+				auto new_density = density::calculate(electrons.occupations_, electrons.phi_.fields(), electrons.density_basis_);
 				density_diff = operations::integral_absdiff(electrons.density_, new_density);				
 				density_diff /= electrons.states_.num_electrons();
 				
@@ -169,13 +169,13 @@ namespace ground_state {
 			{
 				CALI_CXX_MARK_SCOPE("energy_calculation");
 			
-				auto residual = ham(electrons.phi_);
-				auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi_);
-				operations::shift(-1.0, eigenvalues, electrons.phi_, residual);
+				auto residual = ham(electrons.phi_.fields());
+				auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi_.fields());
+				operations::shift(-1.0, eigenvalues, electrons.phi_.fields(), residual);
 			
 				auto normres = operations::overlap_diagonal(residual);
-				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(electrons.phi_), electrons.phi_);
-				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(electrons.phi_), electrons.phi_);
+				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(electrons.phi_.fields()), electrons.phi_.fields());
+				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(electrons.phi_.fields()), electrons.phi_.fields());
 			
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 			
@@ -185,10 +185,10 @@ namespace ground_state {
 
 				auto state_conv = operations::sum(electrons.occupations_, normres, [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
 					
-				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.eigenvalues, 1, std::plus<>{});
-				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.nonlocal, 1, std::plus<>{});
-				electrons.phi_.set_comm().all_reduce_in_place_n(&res.energy.hf_exchange, 1, std::plus<>{});
-				electrons.phi_.set_comm().all_reduce_in_place_n(&state_conv, 1, std::plus<>{});
+				electrons.phi_.fields().set_comm().all_reduce_in_place_n(&res.energy.eigenvalues, 1, std::plus<>{});
+				electrons.phi_.fields().set_comm().all_reduce_in_place_n(&res.energy.nonlocal, 1, std::plus<>{});
+				electrons.phi_.fields().set_comm().all_reduce_in_place_n(&res.energy.hf_exchange, 1, std::plus<>{});
+				electrons.phi_.fields().set_comm().all_reduce_in_place_n(&state_conv, 1, std::plus<>{});
 
 				state_conv /= electrons.states_.num_electrons();
 				
@@ -217,7 +217,7 @@ namespace ground_state {
 		}
 
 		//make sure we have a density consistent with phi
-		electrons.density_ = density::calculate(electrons.occupations_, electrons.phi_, electrons.density_basis_);
+		electrons.density_ = density::calculate(electrons.occupations_, electrons.phi_.fields(), electrons.density_basis_);
 
 		if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
