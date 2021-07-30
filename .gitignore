@@ -4,4 +4,6 @@
 src/inq_unit_tests
 blds
 build
+build.*
 src/eigensolvers/BACKUP
+
