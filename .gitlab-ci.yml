@@ -166,13 +166,13 @@ clang-ompi-serial:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-8 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++-8 --version
+      - clang++-9 --version
       - mkdir build
       - cd build
       - CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CXX=clang++-8 CC=clang-8 ../configure --prefix=$HOME
+      - CXX=clang++-9 CC=clang-9 ../configure --prefix=$HOME
       - ls -l
       - time make
       - time make install
@@ -184,13 +184,13 @@ clang-ompi-parallel:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-8 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++-8 --version
+      - clang++-9 --version
       - mkdir build
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CXX=clang++-8 CC=clang-8 ../configure --prefix=$HOME
+      - CXX=clang++-9 CC=clang-9 ../configure --prefix=$HOME
       - ls -l
       - time make -j4
       - time make -j4 install
@@ -239,11 +239,11 @@ clang-ompi-fast-serial:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-8 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++-8 --version
+      - clang++-9 --version
       - mkdir build && cd build
-      - CXX=clang++-8 ../configure --prefix=$HOME --disable-debug
+      - CXX=clang++-9 ../configure --prefix=$HOME --disable-debug
       - time make -j4
       - time make -j4 install
       - ctest --output-on-failure --timeout 360
@@ -254,11 +254,11 @@ clang-ompi-fast-parallel:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-8 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++-8 --version
+      - clang++-9 --version
       - mkdir build && cd build
-      - CXX=clang++-8 ../configure --prefix=$HOME --disable-debug
+      - CXX=clang++-9 ../configure --prefix=$HOME --disable-debug
       - time make -j4
       - time make -j4 install
       - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest --output-on-failure --timeout 360; cd ..
