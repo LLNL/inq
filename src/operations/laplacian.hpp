@@ -38,17 +38,19 @@
 
 namespace inq {
 namespace operations {
-	
-void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff){
+
+
+template <typename FactorType = double>
+void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff, FactorType factor = 1.0){
 
 	CALI_CXX_MARK_FUNCTION;
 		
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic())]
+						ffcub = begin(ff.cubic()), factor]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-						 double lapl = -0.5*(-point_op.g2(ix, iy, iz));
+						 double lapl = factor*(-point_op.g2(ix, iy, iz));
 						 laplffcub[ix][iy][iz][ist] += lapl*ffcub[ix][iy][iz][ist];
 					 });
 	
@@ -56,21 +58,23 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff){
+template <typename FactorType = double>
+void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, FactorType factor = 1.0){
 
 	CALI_CXX_MARK_FUNCTION;
 		
 	gpu::run(ff.set_part().local_size(), ff.basis().local_sizes()[2], ff.basis().local_sizes()[1], ff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
-						ffcub = begin(ff.cubic())] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-						 double lapl = -0.5*(-point_op.g2(ix, iy, iz));
+						ffcub = begin(ff.cubic()), factor] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+						 double lapl = factor*(-point_op.g2(ix, iy, iz));
 						 ffcub[ix][iy][iz][ist] = ffcub[ix][iy][iz][ist]*lapl;
 					 });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff){
+template <typename FactorType = double>
+basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff, FactorType factor = 1.0){
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -79,9 +83,9 @@ basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic())]
+						ffcub = begin(ff.cubic()), factor]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-						 double lapl = -0.5*(-point_op.g2(ix, iy, iz));
+						 double lapl = factor*(-point_op.g2(ix, iy, iz));
 						 laplffcub[ix][iy][iz][ist] = lapl*ffcub[ix][iy][iz][ist];
 					 });
 
@@ -91,9 +95,10 @@ basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-auto laplacian(basis::field_set<basis::real_space, complex> const & ff){
+template <typename FactorType = double>
+auto laplacian(basis::field_set<basis::real_space, complex> const & ff, FactorType factor = 1.0){
 
-	return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff)));
+	return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff), factor));
 }
 
 }
@@ -134,7 +139,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	double lz = 10;
  	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
 
-	double factor = -0.5;
+	double factor = 0.673214;
 	
 	SECTION("Plane-wave -- field_set"){
 
@@ -154,11 +159,11 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			}
 		}
 
-		auto lapl = operations::laplacian(func);
+		auto lapl = operations::laplacian(func, factor);
 		auto func_fs = operations::space::to_fourier(func);
-		operations::laplacian_in_place(func_fs);
+		operations::laplacian_in_place(func_fs, factor);
 		auto lapl_in_place = operations::space::to_real(func_fs);
-		operations::laplacian_add(operations::space::to_fourier(func), func_fs);
+		operations::laplacian_add(operations::space::to_fourier(func), func_fs, factor);
 		auto lapl_add = operations::space::to_real(func_fs);
 		
 		double diff = 0.0;
@@ -185,7 +190,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		CHECK(diff < 1.0e-8) ;
 		CHECK(diff_in_place < 1.0e-8);
 		CHECK(diff_add < 1.0e-8);
-				
+		
 	}
 
 }
