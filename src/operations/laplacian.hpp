@@ -101,15 +101,70 @@ basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("function operations::laplacian", "[operations::laplacian]") {
-
-	using namespace inq;
-	using namespace Catch::literals;
-
-	
-	
+auto ff(inq::math::vector3<double> const & kk, inq::math::vector3<double> const & rr){
+	return exp(inq::complex(0.0,1.0)*dot(kk, rr));
 }
 
+auto laplff(inq::math::vector3<double> const & kk, inq::math::vector3<double> const & rr) {
+	return -dot(kk, kk)*ff(kk, rr);
+}
+
+TEST_CASE("function operations::gradient", "[operations::gradient]") {
+
+	using namespace inq;
+	using namespace inq::magnitude;	
+	using namespace Catch::literals;
+	using namespace operations;
+	using math::vector3;
+
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+	auto set_comm = cart_comm.axis(0);
+	auto basis_comm = cart_comm.axis(1);	
+
+	//UnitCell size
+	double lx = 9;
+	double ly = 12;
+	double lz = 10;
+ 	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
+
+	double factor = -0.5;
+	
+	SECTION("Plane-wave -- field_set"){
+
+		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), basis_comm);
+		
+		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
+	
+		//Define k-vector for test function
+		vector3<double> kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
+
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector(ix, iy, iz);
+					for(int ist = 0; ist < func.local_set_size(); ist++) func.cubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
+				}
+			}
+		}
+
+		auto lapl = operations::space::to_real(operations::laplacian(operations::space::to_fourier(func)));
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector(ix, iy, iz);
+					for(int ist = 0; ist < func.local_set_size(); ist++) diff += fabs(lapl.cubic()[ix][iy][iz][ist] - (ist + 1.0)*factor*laplff(kvec, vec));
+				}
+			}
+		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		
+		CHECK( diff < 1.0e-8 ); 
+	}
+
+}
 
 #endif
 
