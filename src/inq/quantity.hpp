@@ -46,6 +46,11 @@ namespace inq {
 		GPU_FUNCTION auto in_atomic_units() const {
 			return value_;
 		}
+
+		GPU_FUNCTION auto operator*=(double scal){
+			value_ *= scal;
+			return *this;
+		}
 		
 		GPU_FUNCTION friend auto operator*(double scal, quantity quant){
 			quant.value_ *= scal;
@@ -64,6 +69,30 @@ namespace inq {
 
 		GPU_FUNCTION auto operator-() const {
 			return from_atomic_units(-value_);
+		}
+
+		GPU_FUNCTION auto operator+=(quantity quant){
+			value_ += quant.value_;
+			return *this;
+		}
+				
+		GPU_FUNCTION auto operator+(quantity quant) const {
+			quant += *this;
+			return quant;
+		}
+		
+		GPU_FUNCTION auto operator-=(quantity quant){
+			value_ -= quant.value_;
+			return *this;
+		}
+				
+		GPU_FUNCTION auto operator-(quantity quant) const {
+			quant -= *this;
+			return quant;
+		}
+
+		GPU_FUNCTION auto operator==(quantity quant) const {
+			return value_ == quant.value_;
 		}
 		
 	private:
@@ -118,6 +147,25 @@ TEST_CASE("inq::quantity", "[inq::quantity]") {
 
 	rr2 = rr*4.0;
 	CHECK(rr2.in_atomic_units() == 102.0_a);
+
+	rr += rr2;
+	CHECK(rr.in_atomic_units() == 127.5_a);
+
+	auto rr3 = rr + rr2;
+	CHECK(rr3.in_atomic_units() == 229.5_a);
+
+	rr3 -= rr2;
+	CHECK(rr3 == rr);
+
+	rr3 = -rr2;
+	CHECK(rr3.in_atomic_units() == -102.0_a);	
+
+	rr3 *= -0.4;
+	CHECK(rr3.in_atomic_units() == 40.8_a);	
+	
+	auto rr4 = rr - rr;
+	CHECK(rr4.in_atomic_units() == 0.0_a);
+	
 }
 
 #endif
