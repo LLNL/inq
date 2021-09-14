@@ -155,20 +155,31 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		}
 
 		auto lapl = operations::laplacian(func);
+		auto func_fs = operations::space::to_fourier(func);
+		operations::laplacian_in_place(func_fs);
+		auto lapl_in_place = operations::space::to_real(func_fs);
 		
 		double diff = 0.0;
+		double diff_in_place = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector(ix, iy, iz);
-					for(int ist = 0; ist < func.local_set_size(); ist++) diff += fabs(lapl.cubic()[ix][iy][iz][ist] - (ist + 1.0)*factor*laplff(kvec, vec));
+					for(int ist = 0; ist < func.local_set_size(); ist++){
+						auto anvalue = (ist + 1.0)*factor*laplff(kvec, vec);
+						diff += fabs(lapl.cubic()[ix][iy][iz][ist] - anvalue);
+						diff_in_place += fabs(lapl.cubic()[ix][iy][iz][ist] - anvalue);
+					}
 				}
 			}
 		}
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		cart_comm.all_reduce_in_place_n(&diff_in_place, 1, std::plus<>{});
 		
-		CHECK( diff < 1.0e-8 ); 
+		CHECK(diff < 1.0e-8) ;
+		CHECK(diff_in_place < 1.0e-8);
+				
 	}
 
 }
