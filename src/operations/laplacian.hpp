@@ -89,6 +89,13 @@ basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+auto laplacian(basis::field_set<basis::real_space, complex> const & ff){
+
+	return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff)));
+}
+
 }
 }
 
@@ -147,7 +154,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			}
 		}
 
-		auto lapl = operations::space::to_real(operations::laplacian(operations::space::to_fourier(func)));
+		auto lapl = operations::laplacian(func);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
