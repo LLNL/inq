@@ -127,6 +127,11 @@ TEST_CASE("magnitude::energy", "[magnitude::energy]") {
 		auto en = 300.0_kelvin;
 		CHECK(en.in_atomic_units() == 0.0009500435_a);
 	}
+
+	{
+		auto en = 0.5_hartree + 300.0_kelvin;
+		CHECK(en.in_atomic_units() == 0.5009500435_a);
+	}
 	
 }
 
