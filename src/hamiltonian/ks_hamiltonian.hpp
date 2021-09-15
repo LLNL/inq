@@ -135,7 +135,7 @@ namespace hamiltonian {
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
-			auto hphi_fs = operations::laplacian(phi_fs);
+			auto hphi_fs = operations::laplacian(phi_fs, -0.5);
 
 			non_local(phi_fs, hphi_fs);
 			
@@ -168,7 +168,7 @@ namespace hamiltonian {
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
-			operations::laplacian_add(phi, hphi);
+			operations::laplacian_add(phi, hphi, -0.5);
 			non_local(phi, hphi);
 			
 			return hphi;
