@@ -27,6 +27,7 @@
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
 #include <input/environment.hpp>
+#include <observables/kinetic_energy_density.hpp>
 
 int main(int argc, char ** argv){
 
@@ -72,6 +73,10 @@ int main(int argc, char ** argv){
 	
 	electrons.save("silicon_restart");
 
+	auto ked = observables::kinetic_energy_density(electrons);
+
+	energy_match.check("kinetic energy", operations::integral(ked), 14.889578450755);
+	
 	fftw_cleanup(); //required for valgrid
 	
 	return energy_match.fail();
