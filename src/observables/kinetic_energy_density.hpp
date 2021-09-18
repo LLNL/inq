@@ -31,7 +31,7 @@
 namespace inq {
 namespace observables {
 
-auto kinetic_energy_density(systems::electrons const & electrons){
+basis::field<basis::real_space, double> kinetic_energy_density(systems::electrons const & electrons){
 
 	CALI_CXX_MARK_FUNCTION;
 
