@@ -23,12 +23,10 @@
 
 #include <inq_config.h>
 
-#include <math/vector3.hpp>
 #include <basis/real_space.hpp>
 #include <basis/field.hpp>
-#include <systems/ions.hpp>
 #include <systems/electrons.hpp>
-#include <physics/constants.hpp>
+#include <operations/gradient.hpp>
 
 namespace inq {
 namespace observables {
