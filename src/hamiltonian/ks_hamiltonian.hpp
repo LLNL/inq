@@ -165,13 +165,13 @@ namespace hamiltonian {
 			
 			auto phi_rs = operations::space::to_real(phi);
 
-			auto proj = projectors_all_.project(phi_rs);
+			auto proj = projectors_all_.project(phi_rs, kpoint);
 			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, -norm(kpoint), phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
 
-			projectors_all_.apply(proj, hphi_rs);
+			projectors_all_.apply(proj, hphi_rs, kpoint);
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
