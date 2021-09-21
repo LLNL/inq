@@ -21,19 +21,13 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <cassert>
+
 #include <gpu/run.hpp>
 #include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
+#include <math/vector3.hpp>
 #include <operations/space.hpp>
-
-#include <multi/adaptors/fftw.hpp>
-
-#ifdef ENABLE_CUDA
-#include <multi/adaptors/cufft.hpp>
-#endif
-
-#include <cassert>
-
 #include <utils/profiling.hpp>
 
 namespace inq {
@@ -41,16 +35,16 @@ namespace operations {
 
 
 template <typename FactorType = double>
-void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff, FactorType factor = 1.0){
+void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, math::vector3<complex> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic()), factor]
+						ffcub = begin(ff.cubic()), factor, gradcoeff]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-						 double lapl = factor*(-point_op.g2(ix, iy, iz));
+						 auto lapl = factor*(-point_op.g2(ix, iy, iz) + dot(gradcoeff, point_op.gvector(ix, iy, iz)));
 						 laplffcub[ix][iy][iz][ist] += lapl*ffcub[ix][iy][iz][ist];
 					 });
 	
@@ -59,14 +53,14 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FactorType = double>
-void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, FactorType factor = 1.0){
+void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, FactorType factor = 1.0, math::vector3<complex> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
 	gpu::run(ff.set_part().local_size(), ff.basis().local_sizes()[2], ff.basis().local_sizes()[1], ff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
-						ffcub = begin(ff.cubic()), factor] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-						 double lapl = factor*(-point_op.g2(ix, iy, iz));
+						ffcub = begin(ff.cubic()), factor, gradcoeff] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+						 auto lapl = factor*(-point_op.g2(ix, iy, iz) + dot(gradcoeff, point_op.gvector(ix, iy, iz)));						 
 						 ffcub[ix][iy][iz][ist] = ffcub[ix][iy][iz][ist]*lapl;
 					 });
 }
@@ -74,7 +68,7 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, Fac
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FactorType = double>
-basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff, FactorType factor = 1.0){
+basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, math::vector3<complex> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -83,9 +77,9 @@ basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic()), factor]
+						ffcub = begin(ff.cubic()), factor, gradcoeff]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-						 double lapl = factor*(-point_op.g2(ix, iy, iz));
+						 auto lapl = factor*(-point_op.g2(ix, iy, iz) + dot(gradcoeff, point_op.gvector(ix, iy, iz)));
 						 laplffcub[ix][iy][iz][ist] = lapl*ffcub[ix][iy][iz][ist];
 					 });
 
