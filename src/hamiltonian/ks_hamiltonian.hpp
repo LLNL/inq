@@ -142,7 +142,7 @@ namespace hamiltonian {
 			
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			hamiltonian::scalar_potential_add(scalar_potential, phi, hphi);
+			hamiltonian::scalar_potential_add(scalar_potential, -norm(kpoint), phi, hphi);
 			exchange(phi, hphi);
 
 			projectors_all_.apply(proj, hphi);
@@ -159,7 +159,7 @@ namespace hamiltonian {
 		
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-    auto operator()(const basis::field_set<basis::fourier_space, complex> & phi) const{
+    auto operator()(const basis::field_set<basis::fourier_space, complex> & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const{
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
 			
@@ -167,7 +167,7 @@ namespace hamiltonian {
 
 			auto proj = projectors_all_.project(phi_rs);
 			
-			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, phi_rs);
+			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, -norm(kpoint), phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
 
