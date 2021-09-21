@@ -22,7 +22,6 @@
 */
 
 #include <basis/field.hpp>
-#include <states/ks_states.hpp>
 #include <multi/adaptors/fftw.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <hamiltonian/exchange_operator.hpp>
@@ -34,6 +33,8 @@
 #include <ions/geometry.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
+#include <states/ks_states.hpp>
+#include <states/orbital_set.hpp>
 
 #include <utils/profiling.hpp>
 
@@ -127,7 +128,7 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 
-    auto operator()(const basis::field_set<basis::real_space, complex> & phi) const{
+    auto operator()(const basis::field_set<basis::real_space, complex> & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const{
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
@@ -150,6 +151,12 @@ namespace hamiltonian {
 			
 		}
 
+		////////////////////////////////////////////////////////////////////////////////////////////
+
+    auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
+			return operator()(phi.fields(), phi.kpoint());
+		}
+		
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
     auto operator()(const basis::field_set<basis::fourier_space, complex> & phi) const{
@@ -175,6 +182,12 @@ namespace hamiltonian {
 			
 		}
 
+		////////////////////////////////////////////////////////////////////////////////////////////
+
+    auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const {
+			return operator()(phi.fields(), phi.kpoint());
+		}
+		
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
 		int num_projectors() const {
