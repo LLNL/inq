@@ -227,7 +227,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 
 	basis::field<basis::real_space, double> ff(rs);
 
-	basis::field<basis::real_space, std::complex<double> > ff_complex = complex_field(ff);
+	basis::field<basis::real_space, complex> ff_complex = complex_field(ff);
 	basis::field<basis::real_space, double> ff2 = real_field(ff_complex);
 
 	ff2 = 0.;
