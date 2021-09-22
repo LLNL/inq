@@ -179,9 +179,14 @@ namespace basis {
 
   };
 
-auto complex_field(field_set<basis::real_space, double> const & field) {
+field_set<basis::real_space, inq::complex> complex_field(field_set<basis::real_space, double> const & field) {
 	field_set<basis::real_space, inq::complex> cfield(field.skeleton());
-	cfield.matrix() = field.matrix();
+
+	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
+					 [fie = begin(field.matrix()), cfie = begin(cfield.matrix())] GPU_LAMBDA (auto ist, auto ii){
+						 cfie[ii][ist] = fie[ii][ist];
+					 });
+	
 	return cfield;
 }
 
