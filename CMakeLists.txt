@@ -31,23 +31,29 @@ if(ENABLE_CUDA)
 #    cuda_select_nvcc_arch_flags(ARCH_FLAGS ${CMAKE_CUDA_ARCHITECTURES}) # needs cmake 3.7, may autodetect at configure time, in local system reboot after updating drivers
 #  endif()
 #  list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
-#  string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
 
 #  nvcc 11 doesn't work with gcc 10, use option `--pass-thru -DCMAKE_CUDA_HOST_COMPILER=g++-9`") # https://gitlab.com/npneq/inq/-/issues/107
 
   if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+   if(${CMAKE_VERSION} VERSION_LESS_EQUAL "3.13.4")
+     cuda_select_nvcc_arch_flags(ARCH_FLAGS "Auto") # optional argument for arch to add
+     message("ARCH_FLAGS = ${ARCH_FLAGS}")
+     string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
+   else()
     # temporary workaround to detect CUDA arch, for between the deprecation of FindCUDA in CMake 3.10 and the availability of FindCudaToolkit in CMake 3.17 # https://stackoverflow.com/a/68223399/225186
-    include(FindCUDA/select_compute_arch)
-    CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
-    string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-    string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
-    string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
-    SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-    set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
-    set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
-  endif()
+     include(FindCUDA/select_compute_arch)
+     CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+     string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+     string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+     string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+     SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+     set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
+     set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
+   endif()
+ endif()
 
   string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+
   if(${CUDA_CUFFT_LIBRARIES} STREQUAL "CUDA_cufft_LIBRARY-NOTFOUND")
     include_directories("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
     link_directories   ("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
