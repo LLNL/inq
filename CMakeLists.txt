@@ -7,9 +7,9 @@ project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-if(POLICY CMP0074)
-  cmake_policy(SET CMP0074 NEW)
-endif()
+#if(POLICY CMP0074)
+#  cmake_policy(SET CMP0074 NEW)
+#endif()
 
 #if(POLICY CMP0104)
 #  cmake_policy(SET CMP0104 NEW)
@@ -44,10 +44,10 @@ if(ENABLE_CUDA)
     string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
     SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
     set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
-    set_property(GLOBAL PROPERTY CUDA_STANDARD 17)
+    set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
   endif()
 
-  string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+  string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
   if(${CUDA_CUFFT_LIBRARIES} STREQUAL "CUDA_cufft_LIBRARY-NOTFOUND")
     include_directories("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
     link_directories   ("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
