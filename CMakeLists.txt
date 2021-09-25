@@ -11,23 +11,43 @@ if(POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
 
-if(POLICY CMP0104)
-  cmake_policy(SET CMP0104 NEW)
-endif()
+#if(POLICY CMP0104)
+#  cmake_policy(SET CMP0104 NEW)
+#endif()
 
 enable_testing()
 include(CTest)
+
+enable_language(CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA)
   set(SRC_EXT cu)
   enable_language(CUDA)
   find_package(CUDA 11.0.0 REQUIRED) # deprecated in 3.17 replaced by FindCudaToolkit
-  if(NOT DEFINED ENV{CUDA_ARCH_OVERRIDE})
-    cuda_select_nvcc_arch_flags(ARCH_FLAGS ${CMAKE_CUDA_ARCHITECTURES}) # needs cmake 3.7, may autodetect at configure time, in local system reboot after updating drivers
+#  if(NOT DEFINED ENV{CUDA_ARCH_OVERRIDE})
+#    cuda_select_nvcc_arch_flags(ARCH_FLAGS ${CMAKE_CUDA_ARCHITECTURES}) # needs cmake 3.7, may autodetect at configure time, in local system reboot after updating drivers
+#  endif()
+#  list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
+#  string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
+
+#  nvcc 11 doesn't work with gcc 10, use option `--pass-thru -DCMAKE_CUDA_HOST_COMPILER=g++-9`") # https://gitlab.com/npneq/inq/-/issues/107
+
+  if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    # temporary workaround to detect CUDA arch, for between the deprecation of FindCUDA in CMake 3.10 and the availability of FindCudaToolkit in CMake 3.17 # https://stackoverflow.com/a/68223399/225186
+    include(FindCUDA/select_compute_arch)
+    CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+    string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+    string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+    string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+    SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+    set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
+    set_property(GLOBAL PROPERTY CUDA_STANDARD 17)
   endif()
-  list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
-  string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
-  string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+
+  string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
   if(${CUDA_CUFFT_LIBRARIES} STREQUAL "CUDA_cufft_LIBRARY-NOTFOUND")
     include_directories("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
     link_directories   ("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
@@ -59,12 +79,7 @@ link_libraries(m)
 
 add_subdirectory(external_libs)
 
-enable_language(CXX)
 enable_language(Fortran)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
