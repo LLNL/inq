@@ -40,7 +40,7 @@ namespace operations {
 		typename field_set_type::element_type coeff = 1.0;
 		for(int iter = 1; iter <= order; iter++){
 			if(iter > 1) hnphi = ham(hnphi);
-			coeff *= factor/iter;
+			coeff *= factor/typename complex::value_type(iter);
 			shift(coeff, hnphi, phi);
 		}
   }
@@ -71,8 +71,8 @@ namespace operations {
 		typename field_set_type::element_type coeff2 = 1.0;
 		for(int iter = 1; iter <= order; iter++){
 			if(iter > 1) hnphi = ham(hnphi);
-			coeff1 *= factor1/iter;
-			coeff2 *= factor2/iter;
+			coeff1 *= factor1/typename complex::value_type(iter);
+			coeff2 *= factor2/typename complex::value_type(iter);
 			shift(coeff1, hnphi, expphi);
 			shift(coeff2, hnphi, phi);
 		}
