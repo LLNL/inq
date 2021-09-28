@@ -151,12 +151,12 @@ namespace math {
 
 		template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
 		friend GPU_FUNCTION vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
-			return {mul(scalar, vv[0]), mul(scalar, vv[1]), mul(scalar, vv[2])};
+			return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
 		}
 		
 		template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
 		friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
-			return {mul(vv[0], scalar), mul(vv[1], scalar), mul(vv[2],scalar)};
+			return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
 		}
 		
 		template <class TypeB>
