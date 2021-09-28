@@ -59,6 +59,20 @@ TEST_CASE("Class math::complex", "[math::complex]"){
   
 	using namespace inq;
 	using namespace Catch::literals;
+
+	double xx = 203.42;
+
+	CHECK(real(xx) == 203.42_a);
+	CHECK(imag(xx) == 0.0_a);
+	CHECK(norm(xx) == 41379.696_a);
+	CHECK(conj(xx) == xx);
+
+	complex zz{-654.21, 890.74};
+
+	CHECK(real(zz) == -654.21_a);
+	CHECK(imag(zz) == 890.74);
+	CHECK(norm(zz) == 1221408.5_a);
+	CHECK(fabs(zz) == 1105.1735_a);
 	
 }
 
