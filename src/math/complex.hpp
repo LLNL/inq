@@ -20,16 +20,6 @@ using complex = thrust::complex<double>;
 using complex = std::complex<double>;
 #endif
 
-template <class Type>
-struct compat_type {
-	using type = Type;
-};
-
-template <>
-struct compat_type<complex> {
-	using type = std::complex<double>;
-};
-
 GPU_FUNCTION inline double real(const double & x){
 	return x;
 }
@@ -69,10 +59,7 @@ TEST_CASE("Class math::complex", "[math::complex]"){
   
 	using namespace inq;
 	using namespace Catch::literals;
-
-	static_assert(std::is_same<compat_type<double>::type, double>::value, "check blas types match");
-	static_assert(std::is_same<compat_type<inq::complex>::type, std::complex<double>>::value, "check blas types match");
-
+	
 }
 
 #endif

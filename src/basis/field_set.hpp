@@ -98,14 +98,6 @@ namespace basis {
 			return matrix_;
 		}
 
-		auto compat_matrix() const {
-			return matrix_.template reinterpret_array_cast<typename compat_type<element_type>::type>();			
-		}
-
-		auto compat_matrix() {
-			return matrix_.template reinterpret_array_cast<typename compat_type<element_type>::type>();			
-		}
-		
 		auto data() const {
 			return raw_pointer_cast(matrix_.data());
 		}
