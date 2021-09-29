@@ -23,10 +23,12 @@
 
 #include <cstdlib>
 
+#include <pcg-cpp/pcg_random.hpp>
+
 #include <basis/field_set.hpp>
+#include <math/complex.hpp>
 #include <operations/overlap.hpp>
 
-#include <pcg-cpp/pcg_random.hpp>
 
 template<class T>
 struct uniform_distribution;
@@ -42,8 +44,8 @@ struct uniform_distribution<double>{// : std::uniform_real_distribution<double>{
 };
 
 template<>
-struct uniform_distribution<std::complex<double>>{
-	using result_type = std::complex<double>;
+struct uniform_distribution<inq::complex>{
+	using result_type = inq::complex;
 	using param_type = void;
 	uniform_distribution<double> impl_;
 	template<class Generator> 

@@ -91,19 +91,19 @@ auto overlap_diagonal(const field_set_type & phi){
 template <typename Type>
 struct value_and_norm {
 
-	constexpr value_and_norm(Type const & val, Type const & nrm):
+	GPU_FUNCTION value_and_norm(Type const & val, Type const & nrm):
 		value(val),
 		norm(nrm)
 	{
 	}
 
-	constexpr value_and_norm(double val = 0.0):
+	GPU_FUNCTION value_and_norm(double val = 0.0):
 		value(val),
 		norm(val)
 	{
 	}
 
-	constexpr auto operator+=(value_and_norm const & term){
+	GPU_FUNCTION value_and_norm & operator+=(value_and_norm const & term){
 		value += term.value;
 		norm  += term.norm;
 		return *this;

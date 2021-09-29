@@ -105,8 +105,8 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
 			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
 				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-					phi_absdif += std::norm(phi.cubic()[ix][iy][iz][ist]) - std::norm(phi_old.cubic()[ix][iy][iz][ist]);
-					phi_dif += std::norm(phi.cubic()[ix][iy][iz][ist] - phi_old.cubic()[ix][iy][iz][ist]);
+					phi_absdif += norm(phi.cubic()[ix][iy][iz][ist]) - norm(phi_old.cubic()[ix][iy][iz][ist]);
+					phi_dif += norm(phi.cubic()[ix][iy][iz][ist] - phi_old.cubic()[ix][iy][iz][ist]);
 				}
 			}
 		}
