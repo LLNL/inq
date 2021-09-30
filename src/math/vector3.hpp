@@ -207,7 +207,8 @@ namespace math {
 		// VECTORIAL PRODUCTS
 		
 		//internal product
-		friend GPU_FUNCTION auto dot(vector3 const & vv1, vector3 const & vv2) {
+		template <class OtherType>
+		friend GPU_FUNCTION auto dot(vector3 const & vv1, vector3<OtherType> const & vv2) {
 			return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];			
 		}
 

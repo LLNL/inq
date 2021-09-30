@@ -58,6 +58,7 @@ public:
 		}
 
 		points_ = decltype(points_)({nprojs_, max_sphere_size_});
+		positions_ = decltype(positions_)({nprojs_, max_sphere_size_});		
     coeff_ = decltype(coeff_)({nprojs_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
 		comms_ = decltype(comms_)(nprojs_);
@@ -66,9 +67,10 @@ public:
     auto iproj = 0;
     for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
 			gpu::run(max_sphere_size_,
-							 [poi = begin(points_), sph = it->sphere_.ref(), iproj, npoint = it->sphere_.size()] GPU_LAMBDA (auto ipoint){
+							 [poi = begin(points_), pos = begin(positions_), sph = it->sphere_.ref(), iproj, npoint = it->sphere_.size()] GPU_LAMBDA (auto ipoint){
 								 if(ipoint < unsigned (npoint)){
-									 poi[iproj][ipoint] = sph.points(ipoint);
+									 poi[iproj][ipoint] = sph.points(ipoint);	
+									 pos[iproj][ipoint] = sph.point_pos(ipoint);							 
 								 } else {
 									 poi[iproj][ipoint] = {-1, -1, -1};
 								 }
@@ -107,7 +109,7 @@ public:
 		constructor(projectors);
 	}
   
-	math::array<complex, 3> project(basis::field_set<basis::real_space, complex> const & phi) const {
+	math::array<complex, 3> project(basis::field_set<basis::real_space, complex> const & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const {
     
 		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
@@ -115,9 +117,10 @@ public:
 		{ CALI_CXX_MARK_SCOPE("projector::gather");
 				
 			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
-							 [sgr = begin(sphere_phi_all), gr = begin(phi.cubic()), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
+							 [sgr = begin(sphere_phi_all), gr = begin(phi.cubic()), poi = begin(points_), pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
 								 if(poi[iproj][ipoint][0] >= 0){
-									 sgr[iproj][ipoint][ist] = gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
+									 auto phase = expi(dot(kpoint, pos[iproj][ipoint]));
+									 sgr[iproj][ipoint][ist] = phase*gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
 								 } else {
 									 sgr[iproj][ipoint][ist] = complex(0.0, 0.0);
 								 }
@@ -217,6 +220,7 @@ public:
 			
 		}
 #endif
+
 		return sphere_phi_all;
 			
 	}
@@ -224,15 +228,16 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////		
 
 	template <typename SpherePhiType>
-	void apply(SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi) const {
+	void apply(SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			gpu::run(vnlphi.local_set_size(), max_sphere_size_,
-							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.cubic()), poi = begin(points_), iproj] GPU_LAMBDA (auto ist, auto ipoint){
+							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.cubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
 								 if(poi[iproj][ipoint][0] >= 0){
-									 gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist] += sgr[iproj][ipoint][ist];
+									 auto phase = expi(dot(kpoint, pos[iproj][ipoint]));
+									 gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist] += phase*sgr[iproj][ipoint][ist];
 								 }
 							 });
 		}
@@ -244,6 +249,7 @@ private:
 	long max_sphere_size_;
 	int max_nlm_;
 	math::array<math::vector3<int>, 2> points_;
+	math::array<math::vector3<double>, 2> positions_;
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
 	mutable boost::multi::array<boost::mpi3::communicator, 1> comms_;	

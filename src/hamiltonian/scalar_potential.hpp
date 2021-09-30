@@ -32,20 +32,20 @@
 namespace inq {
 namespace hamiltonian {
 	
-void scalar_potential_add(basis::field<basis::real_space, double> const & potential, basis::field_set<basis::real_space, complex> const & phi, basis::field_set<basis::real_space, complex> & vphi) {
+void scalar_potential_add(basis::field<basis::real_space, double> const & potential, double shift, basis::field_set<basis::real_space, complex> const & phi, basis::field_set<basis::real_space, complex> & vphi) {
 
 	CALI_CXX_MARK_FUNCTION;
   
   assert(potential.linear().num_elements() == phi.basis().local_size());
   
   gpu::run(phi.local_set_size(), phi.basis().local_size(),
-           [pot = begin(potential.linear()), it_vphi = begin(vphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
+           [pot = begin(potential.linear()), it_vphi = begin(vphi.matrix()), it_phi = begin(phi.matrix()), shift] GPU_LAMBDA
            (auto ist, auto ip){
-             it_vphi[ip][ist] += pot[ip]*it_phi[ip][ist];
+             it_vphi[ip][ist] += (pot[ip] + shift)*it_phi[ip][ist];
            });
 }
 
-basis::field_set<basis::real_space, complex> scalar_potential(basis::field<basis::real_space, double> const & potential, basis::field_set<basis::real_space, complex> const & phi) {
+basis::field_set<basis::real_space, complex> scalar_potential(basis::field<basis::real_space, double> const & potential, double shift, basis::field_set<basis::real_space, complex> const & phi) {
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -54,9 +54,9 @@ basis::field_set<basis::real_space, complex> scalar_potential(basis::field<basis
   assert(potential.linear().num_elements() == phi.basis().local_size());
   
   gpu::run(phi.local_set_size(), phi.basis().local_size(),
-           [pot = begin(potential.linear()), it_vphi = begin(vphi.matrix()), it_phi = begin(phi.matrix())] GPU_LAMBDA
+           [pot = begin(potential.linear()), it_vphi = begin(vphi.matrix()), it_phi = begin(phi.matrix()), shift] GPU_LAMBDA
            (auto ist, auto ip){
-             it_vphi[ip][ist] = pot[ip]*it_phi[ip][ist];
+             it_vphi[ip][ist] = (pot[ip] + shift)*it_phi[ip][ist];
            });
 
   return vphi;
