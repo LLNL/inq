@@ -33,8 +33,8 @@
 namespace inq {
 namespace operations {
 
-template <class field_set_type>
-auto overlap(const field_set_type & phi1, const field_set_type & phi2){
+template <class FieldSetType1, class FieldSetType2>
+auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 	CALI_CXX_MARK_SCOPE("overlap(2arg)");
 	
@@ -52,8 +52,8 @@ auto overlap(const field_set_type & phi1, const field_set_type & phi2){
 	return overlap_matrix;
 }
 
-template <class field_set_type>
-auto overlap(const field_set_type & phi){
+template <class FieldSetType>
+auto overlap(const FieldSetType & phi){
 
 	CALI_CXX_MARK_SCOPE("overlap(1arg)");
 
