@@ -98,7 +98,7 @@ namespace ground_state {
 			CALI_CXX_MARK_SCOPE("scf_iteration");
 
 			if(solver.subspace_diag()) {
-				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_.fields());
+				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_);
 				electrons.update_occupations(eigenvalues);
 			}
 
@@ -169,7 +169,7 @@ namespace ground_state {
 			{
 				CALI_CXX_MARK_SCOPE("energy_calculation");
 			
-				auto residual = ham(electrons.phi_.fields());
+				auto residual = ham(electrons.phi_);
 				auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi_.fields());
 				operations::shift(-1.0, eigenvalues, electrons.phi_.fields(), residual);
 			
