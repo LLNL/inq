@@ -31,6 +31,9 @@ namespace states {
 
   public:
 
+		using element_type = Type;
+		using basis_type = Basis;
+
 		orbital_set(Basis const & basis, int const num_vectors, math::vector3<double> const & kpoint, boost::mpi3::cartesian_communicator<2> comm)
 			:fields_(basis, num_vectors, comm),
        occupations_(fields_.local_set_size()),
@@ -39,6 +42,12 @@ namespace states {
 		
 		orbital_set(Basis const & basis, int const num_vectors, boost::mpi3::cartesian_communicator<2> comm)
 		:orbital_set(basis, num_vectors, math::vector3<double>{0.0, 0.0, 0.0}, comm){
+		}
+		
+		orbital_set(basis::field_set<Basis, Type> && fields, math::array<double, 1> const & occs, math::vector3<double> const & kpoint)
+		:fields_(std::move(fields)),
+       occupations_(occs),
+			 kpoint_(kpoint){
 		}
 		
     auto & fields() const {
@@ -99,6 +108,10 @@ namespace states {
 
 		auto & full_comm() const {
 			return fields_.full_comm();
+		}
+
+		auto & set_comm() const {
+			return fields_.set_comm();
 		}
 
 	private:
