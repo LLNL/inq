@@ -128,35 +128,29 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 
-    auto operator()(const basis::field_set<basis::real_space, complex> & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const{
-
+    auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
+			
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projectors_all_.project(phi);
+			auto proj = projectors_all_.project(phi.fields());
 			
-			auto phi_fs = operations::space::to_fourier(phi);
+			auto phi_fs = operations::space::to_fourier(phi.fields());
 		
-			auto hphi_fs = operations::laplacian(phi_fs, -0.5, complex(0.0, 2.0)*kpoint);
+			auto hphi_fs = operations::laplacian(phi_fs, -0.5, complex(0.0, 2.0)*phi.kpoint());
 
 			non_local(phi_fs, hphi_fs);
 			
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			hamiltonian::scalar_potential_add(scalar_potential, -norm(kpoint), phi, hphi);
-			exchange(phi, hphi);
+			hamiltonian::scalar_potential_add(scalar_potential, -norm(phi.kpoint()), phi.fields(), hphi);
+			exchange(phi.fields(), hphi);
 
 			projectors_all_.apply(proj, hphi);
 
-			return hphi;
+			return states::orbital_set<basis::real_space, complex>{std::move(hphi), phi.occupations(), phi.kpoint()};
 			
 		}
 
-		////////////////////////////////////////////////////////////////////////////////////////////
-
-    auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
-			return operator()(phi.fields(), phi.kpoint());
-		}
-		
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
     auto operator()(const basis::field_set<basis::fourier_space, complex> & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const{
