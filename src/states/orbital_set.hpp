@@ -65,6 +65,14 @@ namespace states {
 			return fields_.set_part();
 		}
 
+		auto local_set_size() const {
+			return fields_.local_set_size();
+		}
+		
+		auto set_size() const {
+			return fields_.local_set_size();
+		}
+		
 		auto & basis() const {
 			return fields_.basis();
 		}
@@ -81,6 +89,18 @@ namespace states {
 			return fields_.matrix();
 		}
 		
+		auto cubic() const {
+			return fields_.cubic();
+		}
+
+		auto cubic() {
+			return fields_.cubic();
+		}
+
+		auto & full_comm() const {
+			return fields_.full_comm();
+		}
+
 	private:
 
     basis::field_set<Basis, Type> fields_;
