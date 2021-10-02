@@ -60,7 +60,27 @@ namespace states {
 		auto & kpoint() const {
 			return kpoint_;
 		}
-    
+
+		auto & set_part() const {
+			return fields_.set_part();
+		}
+
+		auto & basis() const {
+			return fields_.basis();
+		}
+
+		auto & basis() {
+			return fields_.basis();
+		}
+		
+		auto & matrix() const {
+			return fields_.matrix();
+		}
+
+		auto & matrix() {
+			return fields_.matrix();
+		}
+		
 	private:
 
     basis::field_set<Basis, Type> fields_;
