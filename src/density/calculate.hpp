@@ -88,8 +88,10 @@ calculate(const occupations_array_type & occupations, field_set_type & phi, type
 		return calculate(occupations, phi);
 	} else {
 		//OPTIMIZATION: This should be done by blocks, to avoid the memory overhead
-		auto phi_fine = operations::transfer::refine(phi, destination_basis);
-		return calculate(occupations, phi_fine);
+		// This is disabled for the moment.
+		//		auto phi_fine = operations::transfer::refine(phi, destination_basis);
+		//		return calculate(occupations, phi_fine);
+		assert(false);
 	}
 
 }
