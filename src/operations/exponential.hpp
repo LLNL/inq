@@ -35,7 +35,7 @@ namespace operations {
 
     CALI_CXX_MARK_FUNCTION;
 
-		field_set_type hnphi = ham(phi);
+		auto hnphi = ham(phi);
 		
 		typename field_set_type::element_type coeff = 1.0;
 		for(int iter = 1; iter <= order; iter++){
@@ -52,7 +52,7 @@ namespace operations {
 
 		CALI_CXX_MARK_FUNCTION;
 		
-    field_set_type expphi = phi;
+    auto expphi = phi;
 		exponential_in_place(ham, factor, expphi, order);
 		return expphi;
   }
@@ -64,8 +64,8 @@ namespace operations {
 
 		CALI_CXX_MARK_FUNCTION;
 
-    field_set_type expphi = phi;
-		field_set_type hnphi = ham(phi);
+    auto expphi = phi;
+		auto hnphi = ham(phi);
 		
 		typename field_set_type::element_type coeff1 = 1.0;
 		typename field_set_type::element_type coeff2 = 1.0;

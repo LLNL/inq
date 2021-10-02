@@ -51,7 +51,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		
 		ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 
-		auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_.fields()), electrons.phi_.fields());;
+		auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_), electrons.phi_);;
 		energy.eigenvalues = operations::sum(electrons.phi_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 		electrons.phi_.fields().set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
 		
@@ -71,7 +71,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			
 			{
 				//propagate half step and full step with H(t)
-				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), electrons.phi_.fields());
+				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), electrons.phi_);
 				
 				//calculate H(t + dt) from the full step propagation
 				electrons.density_ = density::calculate(electrons.phi_.occupations(), fullstep_phi, electrons.density_basis_);
@@ -87,13 +87,13 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			}
 			
 			//propagate the other half step with H(t + dt)
-			operations::exponential_in_place(ham, complex(0.0, dt/2.0), electrons.phi_.fields());
+			operations::exponential_in_place(ham, complex(0.0, dt/2.0), electrons.phi_);
 
 			//calculate the new density, energy, forces
 			electrons.density_ = density::calculate(electrons.phi_.occupations(),  electrons.phi_.fields(), electrons.density_basis_);
 			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 			
-			auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_.fields()), electrons.phi_.fields());;
+			auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi_), electrons.phi_);
 			energy.eigenvalues = operations::sum(electrons.phi_.occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
 			electrons.phi_.fields().set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
 			
