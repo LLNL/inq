@@ -270,7 +270,6 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
   basis::field_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
-	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states(), cart_comm);
 
 	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0, cart_comm);
 
@@ -289,7 +288,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 		
-		hphi = ham(phi);
+		auto hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -333,7 +332,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham(phi);
+		auto hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -378,7 +377,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham(phi);
+		auto hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -423,7 +422,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
+		auto hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -469,7 +468,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
+		auto hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
