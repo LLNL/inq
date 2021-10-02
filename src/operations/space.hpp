@@ -28,6 +28,7 @@
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
+#include <states/orbital_set.hpp>
 
 #ifdef ENABLE_CUDA
 #include <multi/adaptors/fft.hpp>
@@ -75,6 +76,19 @@ void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<comple
 ///////////////////////////////////////////////////////////////
 
 void zero_outside_sphere(basis::field_set<basis::fourier_space, complex>& fphi){
+	CALI_CXX_MARK_FUNCTION;
+	
+	//DATAOPERATIONS GPU::RUN 4D
+	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
+					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
+					 (auto ist, auto iz, auto iy, auto ix){
+						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
+					 });
+}
+
+///////////////////////////////////////////////////////////////
+
+void zero_outside_sphere(states::orbital_set<basis::fourier_space, complex>& fphi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	//DATAOPERATIONS GPU::RUN 4D
@@ -352,6 +366,24 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 }
 
 ///////////////////////////////////////////////////////////////
+		
+states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbital_set<basis::real_space, complex> & phi){
+
+	CALI_CXX_MARK_SCOPE("to_fourier(field_set)");
+		
+	auto & real_basis = phi.basis();
+	basis::fourier_space fourier_basis(real_basis);
+	
+	states::orbital_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
+
+	to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
+	
+	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
+	
+	return fphi;
+}
+
+///////////////////////////////////////////////////////////////
 
 basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 
@@ -366,6 +398,24 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 
 	return phi;
 }
+
+
+///////////////////////////////////////////////////////////////
+
+states::orbital_set<basis::real_space, complex> to_real(const states::orbital_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
+
+	CALI_CXX_MARK_SCOPE("to_real(orbital_set)");
+	
+	auto & fourier_basis = fphi.basis();
+	basis::real_space real_basis(fourier_basis);
+	
+	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
+
+	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
+
+	return phi;
+}
+
 
 ///////////////////////////////////////////////////////////////
 
