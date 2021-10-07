@@ -106,6 +106,8 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 
 	CALI_CXX_MARK_FUNCTION;
 
+	assert(std::get<3>(sizes(array_rs)) == std::get<3>(sizes(array_fs)));
+	
 #ifdef ENABLE_HEFFTE
 
 	CALI_MARK_BEGIN("heffte_initialization");
@@ -210,7 +212,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		}
 
 	}
-	
+
 #endif
 	
 }
@@ -273,7 +275,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 	
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
-		
+
 		fft::dft({true, true, true, false}, array_fs, array_rs, fft::backward);
 		gpu::sync();
 		
@@ -369,13 +371,16 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 		
 states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbital_set<basis::real_space, complex> & phi){
 
-	CALI_CXX_MARK_SCOPE("to_fourier(field_set)");
+	CALI_CXX_MARK_SCOPE("to_fourier(orbital_set)");
 		
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
 	states::orbital_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
+	assert(phi.set_size() == fphi.set_size());
+	assert(phi.local_set_size() == fphi.local_set_size());
+	
 	to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
