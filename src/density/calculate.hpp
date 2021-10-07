@@ -83,17 +83,15 @@ basis::field<typename field_set_type::basis_type, double>
 calculate(const occupations_array_type & occupations, field_set_type & phi, typename field_set_type::basis_type & destination_basis){
 
 	CALI_CXX_MARK_SCOPE("density::calculate");
-	
-	if(destination_basis == phi.basis()){
-		return calculate(occupations, phi);
-	} else {
-		//OPTIMIZATION: This should be done by blocks, to avoid the memory overhead
-		// This is disabled for the moment.
-		//		auto phi_fine = operations::transfer::refine(phi, destination_basis);
-		//		return calculate(occupations, phi_fine);
-		assert(false);
-	}
 
+	
+	// This is disabled for different basis at the moment.
+	//		auto phi_fine = operations::transfer::refine(phi, destination_basis);
+	//		return calculate(occupations, phi_fine);
+
+	assert(destination_basis == phi.basis());
+	return calculate(occupations, phi);
+	
 }
 	
 }
