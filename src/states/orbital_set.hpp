@@ -79,7 +79,7 @@ namespace states {
 		}
 		
 		auto set_size() const {
-			return fields_.local_set_size();
+			return fields_.set_size();
 		}
 		
 		auto & basis() const {
@@ -161,6 +161,9 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(sizes(orb.fields().basis())[1] == 11);
 	CHECK(sizes(orb.fields().basis())[2] == 20);
 
+	CHECK(orb.fields().local_set_size() == orb.local_set_size());
+	CHECK(orb.fields().set_size() == orb.set_size());
+	
 	states::orbital_set<basis::real_space, double> orbk(rs, 12, {0.4, 0.22, -0.57}, cart_comm);
 
 	CHECK(sizes(orbk.fields().basis())[0] == 28);
@@ -170,6 +173,10 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orbk.kpoint()[0] == 0.4_a);
 	CHECK(orbk.kpoint()[1] == 0.22_a);
 	CHECK(orbk.kpoint()[2] == -0.57_a);
+
+	CHECK(orbk.fields().local_set_size() == orb.local_set_size());
+	CHECK(orbk.fields().set_size() == orb.set_size());
+
 	
 }
 
