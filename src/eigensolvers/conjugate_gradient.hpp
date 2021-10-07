@@ -44,7 +44,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
     
 	for(int ist = 0; ist < phi_all.set_size(); ist++){
 
-		FieldSetType phi(phi_all.basis(), 1, phi_all.full_comm());
+		FieldSetType phi(phi_all.basis(), 1, phi_all.kpoint(), phi_all.full_comm());
       
 		phi.matrix().rotated()[0] = phi_all.matrix().rotated()[ist];
 
@@ -57,7 +57,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 		double first_delta_e = 0.0;
 			
-		FieldSetType cg(phi_all.basis(), 1, phi_all.full_comm());
+		FieldSetType cg(phi_all.basis(), 1, phi_all.kpoint(), phi_all.full_comm());
 
 		complex gg0 = 1.0;
       
@@ -65,7 +65,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 			eigenvalue = operations::overlap_diagonal(phi, hphi)[0];
         
-			FieldSetType g(phi_all.basis(), 1, phi_all.full_comm());
+			FieldSetType g(phi_all.basis(), 1, phi_all.kpoint(), phi_all.full_comm());
 
 			auto gm = begin(g.matrix());
 			auto phim = begin(phi.matrix());

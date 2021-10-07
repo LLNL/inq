@@ -153,6 +153,8 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 
+	private:
+		
     auto operator()(const basis::field_set<basis::fourier_space, complex> & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const{
 
 			CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
@@ -176,6 +178,8 @@ namespace hamiltonian {
 			
 		}
 
+	public:
+		
 		////////////////////////////////////////////////////////////////////////////////////////////
 
     auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const {

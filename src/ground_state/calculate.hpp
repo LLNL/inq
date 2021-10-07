@@ -103,7 +103,7 @@ namespace ground_state {
 			}
 
 			{
-				auto fphi = operations::space::to_fourier(std::move(electrons.phi_.fields()));
+				auto fphi = operations::space::to_fourier(std::move(electrons.phi_));
 				
 				switch(solver.eigensolver()){
 					
@@ -124,7 +124,7 @@ namespace ground_state {
 					assert(false);
 				}
 				
-				electrons.phi_.fields() = operations::space::to_real(std::move(fphi));
+				electrons.phi_.fields() = operations::space::to_real(std::move(fphi.fields()));
 				
 			}
 			
