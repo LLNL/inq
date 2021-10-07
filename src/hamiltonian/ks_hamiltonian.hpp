@@ -148,42 +148,30 @@ namespace hamiltonian {
 			projectors_all_.apply(proj, hphi);
 
 			return states::orbital_set<basis::real_space, complex>{std::move(hphi), phi.occupations(), phi.kpoint()};
-			
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 
-	private:
-		
-    auto operator()(const basis::field_set<basis::fourier_space, complex> & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const{
-
+    auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const{
+			
 			CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
 			
-			auto phi_rs = operations::space::to_real(phi);
+			auto phi_rs = operations::space::to_real(phi.fields());
 
-			auto proj = projectors_all_.project(phi_rs, kpoint);
+			auto proj = projectors_all_.project(phi_rs, phi.kpoint());
 			
-			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, -norm(kpoint), phi_rs);
+			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, -norm(phi.kpoint()), phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
 
-			projectors_all_.apply(proj, hphi_rs, kpoint);
+			projectors_all_.apply(proj, hphi_rs, phi.kpoint());
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
-			operations::laplacian_add(phi, hphi, -0.5, complex(0.0, 2.0)*kpoint);
-			non_local(phi, hphi);
-			
-			return hphi;
-			
-		}
+			operations::laplacian_add(phi.fields(), hphi, -0.5, complex(0.0, 2.0)*phi.kpoint());
+			non_local(phi.fields(), hphi);
 
-	public:
-		
-		////////////////////////////////////////////////////////////////////////////////////////////
-
-    auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const {
-			return states::orbital_set<basis::fourier_space, complex>{std::move(operator()(phi.fields(), phi.kpoint())), phi.occupations(), phi.kpoint()};
+			return states::orbital_set<basis::fourier_space, complex>{std::move(hphi), phi.occupations(), phi.kpoint()};
 		}
 		
 		////////////////////////////////////////////////////////////////////////////////////////////
