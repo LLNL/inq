@@ -28,6 +28,7 @@
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
+#include <states/orbital_set.hpp>
 
 #ifdef ENABLE_CUDA
 #include <multi/adaptors/fft.hpp>
@@ -87,11 +88,26 @@ void zero_outside_sphere(basis::field_set<basis::fourier_space, complex>& fphi){
 
 ///////////////////////////////////////////////////////////////
 
+void zero_outside_sphere(states::orbital_set<basis::fourier_space, complex>& fphi){
+	CALI_CXX_MARK_FUNCTION;
+	
+	//DATAOPERATIONS GPU::RUN 4D
+	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
+					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
+					 (auto ist, auto iz, auto iy, auto ix){
+						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
+					 });
+}
+
+///////////////////////////////////////////////////////////////
+
 template <class InArray4D, class OutArray4D>
 void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 
 	CALI_CXX_MARK_FUNCTION;
 
+	assert(std::get<3>(sizes(array_rs)) == std::get<3>(sizes(array_fs)));
+	
 #ifdef ENABLE_HEFFTE
 
 	CALI_MARK_BEGIN("heffte_initialization");
@@ -196,7 +212,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		}
 
 	}
-	
+
 #endif
 	
 }
@@ -259,7 +275,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 	
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
-		
+
 		fft::dft({true, true, true, false}, array_fs, array_rs, fft::backward);
 		gpu::sync();
 		
@@ -352,6 +368,27 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 }
 
 ///////////////////////////////////////////////////////////////
+		
+states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbital_set<basis::real_space, complex> & phi){
+
+	CALI_CXX_MARK_SCOPE("to_fourier(orbital_set)");
+		
+	auto & real_basis = phi.basis();
+	basis::fourier_space fourier_basis(real_basis);
+	
+	states::orbital_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
+
+	assert(phi.set_size() == fphi.set_size());
+	assert(phi.local_set_size() == fphi.local_set_size());
+	
+	to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
+	
+	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
+	
+	return fphi;
+}
+
+///////////////////////////////////////////////////////////////
 
 basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
 
@@ -366,6 +403,24 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 
 	return phi;
 }
+
+
+///////////////////////////////////////////////////////////////
+
+states::orbital_set<basis::real_space, complex> to_real(const states::orbital_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
+
+	CALI_CXX_MARK_SCOPE("to_real(orbital_set)");
+	
+	auto & fourier_basis = fphi.basis();
+	basis::real_space real_basis(fourier_basis);
+	
+	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
+
+	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
+
+	return phi;
+}
+
 
 ///////////////////////////////////////////////////////////////
 

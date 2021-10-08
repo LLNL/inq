@@ -31,6 +31,9 @@ namespace states {
 
   public:
 
+		using element_type = Type;
+		using basis_type = Basis;
+
 		orbital_set(Basis const & basis, int const num_vectors, math::vector3<double> const & kpoint, boost::mpi3::cartesian_communicator<2> comm)
 			:fields_(basis, num_vectors, comm),
        occupations_(fields_.local_set_size()),
@@ -39,6 +42,12 @@ namespace states {
 		
 		orbital_set(Basis const & basis, int const num_vectors, boost::mpi3::cartesian_communicator<2> comm)
 		:orbital_set(basis, num_vectors, math::vector3<double>{0.0, 0.0, 0.0}, comm){
+		}
+		
+		orbital_set(basis::field_set<Basis, Type> && fields, math::array<double, 1> const & occs, math::vector3<double> const & kpoint)
+		:fields_(std::move(fields)),
+       occupations_(occs),
+			 kpoint_(kpoint){
 		}
 		
     auto & fields() const {
@@ -60,7 +69,51 @@ namespace states {
 		auto & kpoint() const {
 			return kpoint_;
 		}
-    
+
+		auto & set_part() const {
+			return fields_.set_part();
+		}
+
+		auto local_set_size() const {
+			return fields_.local_set_size();
+		}
+		
+		auto set_size() const {
+			return fields_.set_size();
+		}
+		
+		auto & basis() const {
+			return fields_.basis();
+		}
+
+		auto & basis() {
+			return fields_.basis();
+		}
+		
+		auto & matrix() const {
+			return fields_.matrix();
+		}
+
+		auto & matrix() {
+			return fields_.matrix();
+		}
+		
+		auto cubic() const {
+			return fields_.cubic();
+		}
+
+		auto cubic() {
+			return fields_.cubic();
+		}
+
+		auto & full_comm() const {
+			return fields_.full_comm();
+		}
+
+		auto & set_comm() const {
+			return fields_.set_comm();
+		}
+
 	private:
 
     basis::field_set<Basis, Type> fields_;
@@ -108,6 +161,9 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(sizes(orb.fields().basis())[1] == 11);
 	CHECK(sizes(orb.fields().basis())[2] == 20);
 
+	CHECK(orb.fields().local_set_size() == orb.local_set_size());
+	CHECK(orb.fields().set_size() == orb.set_size());
+	
 	states::orbital_set<basis::real_space, double> orbk(rs, 12, {0.4, 0.22, -0.57}, cart_comm);
 
 	CHECK(sizes(orbk.fields().basis())[0] == 28);
@@ -117,6 +173,10 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orbk.kpoint()[0] == 0.4_a);
 	CHECK(orbk.kpoint()[1] == 0.22_a);
 	CHECK(orbk.kpoint()[2] == -0.57_a);
+
+	CHECK(orbk.fields().local_set_size() == orb.local_set_size());
+	CHECK(orbk.fields().set_size() == orb.set_size());
+
 	
 }
 

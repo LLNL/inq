@@ -128,64 +128,50 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 
-    auto operator()(const basis::field_set<basis::real_space, complex> & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const{
-
+    auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
+			
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projectors_all_.project(phi);
+			auto proj = projectors_all_.project(phi.fields());
 			
-			auto phi_fs = operations::space::to_fourier(phi);
+			auto phi_fs = operations::space::to_fourier(phi.fields());
 		
-			auto hphi_fs = operations::laplacian(phi_fs, -0.5, complex(0.0, 2.0)*kpoint);
+			auto hphi_fs = operations::laplacian(phi_fs, -0.5, complex(0.0, 2.0)*phi.kpoint());
 
 			non_local(phi_fs, hphi_fs);
 			
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			hamiltonian::scalar_potential_add(scalar_potential, -norm(kpoint), phi, hphi);
-			exchange(phi, hphi);
+			hamiltonian::scalar_potential_add(scalar_potential, -norm(phi.kpoint()), phi.fields(), hphi);
+			exchange(phi.fields(), hphi);
 
 			projectors_all_.apply(proj, hphi);
 
-			return hphi;
+			return states::orbital_set<basis::real_space, complex>{std::move(hphi), phi.occupations(), phi.kpoint()};
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
+
+    auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const{
 			
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-
-    auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
-			return operator()(phi.fields(), phi.kpoint());
-		}
-		
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
-    auto operator()(const basis::field_set<basis::fourier_space, complex> & phi, math::vector3<double> const & kpoint = {0.0, 0.0, 0.0}) const{
-
 			CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
 			
-			auto phi_rs = operations::space::to_real(phi);
+			auto phi_rs = operations::space::to_real(phi.fields());
 
-			auto proj = projectors_all_.project(phi_rs, kpoint);
+			auto proj = projectors_all_.project(phi_rs, phi.kpoint());
 			
-			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, -norm(kpoint), phi_rs);
+			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, -norm(phi.kpoint()), phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
 
-			projectors_all_.apply(proj, hphi_rs, kpoint);
+			projectors_all_.apply(proj, hphi_rs, phi.kpoint());
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
-			operations::laplacian_add(phi, hphi, -0.5, complex(0.0, 2.0)*kpoint);
-			non_local(phi, hphi);
-			
-			return hphi;
-			
-		}
+			operations::laplacian_add(phi.fields(), hphi, -0.5, complex(0.0, 2.0)*phi.kpoint());
+			non_local(phi.fields(), hphi);
 
-		////////////////////////////////////////////////////////////////////////////////////////////
-
-    auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const {
-			return operator()(phi.fields(), phi.kpoint());
+			return states::orbital_set<basis::fourier_space, complex>{std::move(hphi), phi.occupations(), phi.kpoint()};
 		}
 		
 		////////////////////////////////////////////////////////////////////////////////////////////
@@ -269,8 +255,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-  basis::field_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
-	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states(), cart_comm);
+  states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
 
 	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0, cart_comm);
 
@@ -289,7 +274,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 		
-		hphi = ham(phi);
+		auto hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -333,7 +318,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham(phi);
+		auto hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -378,7 +363,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		hphi = ham(phi);
+		auto hphi = ham(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -423,7 +408,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
+		auto hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -469,7 +454,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			}
 		}
 
-		hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
+		auto hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){

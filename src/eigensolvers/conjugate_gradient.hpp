@@ -33,8 +33,8 @@
 namespace inq {
 namespace eigensolvers {
 
-template <class operator_type, class preconditioner_type, class field_set_type>
-void conjugate_gradient(const operator_type & ham, const preconditioner_type & prec, basis::field_set<basis::fourier_space, field_set_type> & phi_all){
+template <class operator_type, class preconditioner_type, class FieldSetType>
+void conjugate_gradient(const operator_type & ham, const preconditioner_type & prec, FieldSetType & phi_all){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -44,7 +44,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
     
 	for(int ist = 0; ist < phi_all.set_size(); ist++){
 
-		basis::field_set<basis::fourier_space, field_set_type> phi(phi_all.basis(), 1, phi_all.full_comm());
+		FieldSetType phi(phi_all.basis(), 1, phi_all.kpoint(), phi_all.full_comm());
       
 		phi.matrix().rotated()[0] = phi_all.matrix().rotated()[ist];
 
@@ -57,7 +57,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 		double first_delta_e = 0.0;
 			
-		basis::field_set<basis::fourier_space, field_set_type> cg(phi_all.basis(), 1, phi_all.full_comm());
+		FieldSetType cg(phi_all.basis(), 1, phi_all.kpoint(), phi_all.full_comm());
 
 		complex gg0 = 1.0;
       
@@ -65,7 +65,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 			eigenvalue = operations::overlap_diagonal(phi, hphi)[0];
         
-			basis::field_set<basis::fourier_space, field_set_type> g(phi_all.basis(), 1, phi_all.full_comm());
+			FieldSetType g(phi_all.basis(), 1, phi_all.kpoint(), phi_all.full_comm());
 
 			auto gm = begin(g.matrix());
 			auto phim = begin(phi.matrix());
@@ -173,7 +173,7 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 			//calculate the eigenvalue, this is duplicated
 			eigenvalue = operations::overlap_diagonal(phi, hphi)[0];
         
-			basis::field_set<basis::fourier_space, field_set_type> g2(phi_all.basis(), 1, phi_all.full_comm());
+			FieldSetType g2(phi_all.basis(), 1, phi_all.full_comm());
 
 			gpu::run(g.basis().local_size(),
 							 [eigenvalue,

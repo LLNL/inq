@@ -22,9 +22,9 @@
 */
 
 #include <basis/field.hpp>
-#include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
 #include <operations/space.hpp>
+#include <states/orbital_set.hpp>
 
 #include <cstdlib>
 
@@ -62,11 +62,11 @@ public:
 	}
 		
 	template <class type>
-	void operator()(basis::field_set<basis::fourier_space, type> & phi) const {
+	void operator()(states::orbital_set<basis::fourier_space, type> & phi) const {
 
 		CALI_MARK_BEGIN("preconditioner_reduction");
 		
-		auto kinetic = operations::overlap_diagonal_normalized(laplacian(phi, -0.5), phi);
+		auto kinetic = operations::overlap_diagonal_normalized(laplacian(phi.fields(), -0.5), phi.fields());
 
 		CALI_MARK_END("preconditioner_reduction");
 		
@@ -84,11 +84,11 @@ public:
 								 phcub[ix][iy][iz][ist] = k_function(lapl/real(kine[ist]))*phcub[ix][iy][iz][ist];
 							 });
 		}
-
+		
 	}
 
 	template <class type>
-	void operator()(basis::field_set<basis::real_space, type> & phi) const {
+	void operator()(states::orbital_set<basis::real_space, type> & phi) const {
 			
 		auto fphi = operations::space::to_fourier(phi);
 		operator()(fphi);

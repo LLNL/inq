@@ -116,8 +116,8 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	}
 }
 
-template <class field_set_type>
-void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int num_states = -1){
+template <class FieldSetType1, class FieldSetType2>
+void orthogonalize_single(FieldSetType1 & vec, FieldSetType2 const & phi, int num_states = -1){
 
 	if(num_states == 0) return;
 	
@@ -132,12 +132,12 @@ void orthogonalize_single(field_set_type & vec, field_set_type const & phi, int 
 	//the matrix of phi restricted to the vectors we are going to use
 	auto phi_restricted = phi.matrix()({0, phi.basis().local_size()}, {0, num_states});
 
-	math::array<typename field_set_type::element_type, 2> olap;
+	math::array<typename FieldSetType1::element_type, 2> olap;
 
 	if(num_states == 1){
 		// avoid a bug in multi by making an explicit copy
 		//   https://gitlab.com/correaa/boost-multi/-/issues/97
-		math::array<typename field_set_type::element_type, 2> phi_restricted_copy = phi_restricted;
+		math::array<typename FieldSetType1::element_type, 2> phi_restricted_copy = phi_restricted;
 		olap = blas::gemm(phi.basis().volume_element(), blas::H(phi_restricted_copy), vec.matrix());
 	} else {
 		//this should be done by gemv, but while multi gets better gemv support we use gemm

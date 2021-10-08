@@ -28,8 +28,8 @@
 namespace inq {
 namespace operations {
 
-template <class array_1d, class field_set_type>
-void shift(double scale, const array_1d & factor, const field_set_type & shift, field_set_type & phi){
+template <class array_1d, class FieldSetType1, class FieldSetType2>
+void shift(double scale, const array_1d & factor, const FieldSetType1 & shift, FieldSetType2 & phi){
 
 	CALI_CXX_MARK_SCOPE("shift");
 	
@@ -42,8 +42,8 @@ void shift(double scale, const array_1d & factor, const field_set_type & shift, 
 					 });
 }
 
-template <class field_set_type>
-void shift(typename field_set_type::element_type const & factor, const field_set_type & shift, field_set_type & phi){
+template <class FieldSetType1, class FieldSetType2>
+void shift(typename FieldSetType1::element_type const & factor, const FieldSetType1 & shift, FieldSetType2 & phi){
 
 	CALI_CXX_MARK_SCOPE("shift_const_factor");
 	

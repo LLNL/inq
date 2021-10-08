@@ -98,12 +98,12 @@ namespace ground_state {
 			CALI_CXX_MARK_SCOPE("scf_iteration");
 
 			if(solver.subspace_diag()) {
-				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_.fields());
+				auto eigenvalues = subspace_diagonalization(ham, electrons.phi_);
 				electrons.update_occupations(eigenvalues);
 			}
 
 			{
-				auto fphi = operations::space::to_fourier(std::move(electrons.phi_.fields()));
+				auto fphi = operations::space::to_fourier(std::move(electrons.phi_));
 				
 				switch(solver.eigensolver()){
 					
@@ -124,7 +124,7 @@ namespace ground_state {
 					assert(false);
 				}
 				
-				electrons.phi_.fields() = operations::space::to_real(std::move(fphi));
+				electrons.phi_.fields() = operations::space::to_real(std::move(fphi.fields()));
 				
 			}
 			
@@ -169,8 +169,8 @@ namespace ground_state {
 			{
 				CALI_CXX_MARK_SCOPE("energy_calculation");
 			
-				auto residual = ham(electrons.phi_.fields());
-				auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi_.fields());
+				auto residual = ham(electrons.phi_);
+				auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi_);
 				operations::shift(-1.0, eigenvalues, electrons.phi_.fields(), residual);
 			
 				auto normres = operations::overlap_diagonal(residual);
