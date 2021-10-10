@@ -1,3 +1,4 @@
+# -*- indent-tabs-mode: t -*-
 include_directories(.)
 include_directories(../external_libs)
 
