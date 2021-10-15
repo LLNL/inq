@@ -67,7 +67,7 @@ public:
 		return lattice_vectors_[ii].value();
 	}
 
-	auto periodic_dimensions() const {
+	auto periodic_dimensions_value() const {
 		return periodic_dimensions_.value_or(3);
 	}
 
@@ -127,7 +127,7 @@ TEST_CASE("class systems::box", "[systems::box]") {
 		CHECK(ci[2][1] == 0.0_a);
 		CHECK(ci[2][2] == 10.2_a);
 
-		CHECK(ci.periodic_dimensions() == 3);
+		CHECK(ci.periodic_dimensions_value() == 3);
 		
 	}
 	
@@ -145,7 +145,7 @@ TEST_CASE("class systems::box", "[systems::box]") {
 		CHECK(ci[2][1] == 0.0_a);
 		CHECK(ci[2][2] == 10.2_a);
 
-		CHECK(ci.periodic_dimensions() == 0);
+		CHECK(ci.periodic_dimensions_value() == 0);
 		
 	}
 	
@@ -163,7 +163,7 @@ TEST_CASE("class systems::box", "[systems::box]") {
 		CHECK(ci[2][1] == 0.0_a);
 		CHECK(ci[2][2] == 8.3_a);
 
-		CHECK(ci.periodic_dimensions() == 3);
+		CHECK(ci.periodic_dimensions_value() == 3);
 		
 	}
   

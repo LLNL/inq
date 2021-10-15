@@ -21,7 +21,7 @@ class ions {
 public:
 
 	ions(const systems::box & arg_cell_input, const inq::ions::geometry & geo_arg = inq::ions::geometry()):
-		cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
+		cell_(arg_cell_input, arg_cell_input.periodic_dimensions_value()),
 		geo_(geo_arg)
 	{
 	}

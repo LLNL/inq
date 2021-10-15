@@ -39,7 +39,7 @@ namespace basis {
   public:
 		
     real_space(const ions::UnitCell & cell, const input::basis & basis_input, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid(), basis_input.double_grid_value(), cell.periodic_dimensions(), comm)
+			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid_value(), basis_input.double_grid_value(), cell.periodic_dimensions(), comm)
 		{
     }
 
@@ -139,7 +139,7 @@ namespace basis {
 
 		static std::array<int, 3> calculate_dimensions(const ions::UnitCell & cell, const input::basis & basis_input){
 			std::array<int, 3> nr;
-			double spacing = basis_input.spacing();
+			double spacing = basis_input.spacing_value();
 			
 			// make the spacing conmensurate with the grid
 			// OPTIMIZATION: we can select a good size here for the FFT

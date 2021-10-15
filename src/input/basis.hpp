@@ -60,15 +60,15 @@ namespace input {
 			return bs;
 		}
 		
-		auto spacing() const {
+		auto spacing_value() const {
 			return spacing_.value();
 		}
 
-		auto spherical_grid() const {
+		auto spherical_grid_value() const {
 			return spherical_grid_.value_or(false);
 		}
 
-		auto density_factor() const {
+		auto density_factor_value() const {
 			return density_factor_.value_or(1.0);
 		}
 
@@ -126,8 +126,8 @@ TEST_CASE("class input::basis", "[basis]") {
 
 		auto bi = input::basis::spacing(0.123);
 
-		CHECK(bi.spacing() == 0.123_a);
-		CHECK(not bi.spherical_grid());
+		CHECK(bi.spacing_value() == 0.123_a);
+		CHECK(not bi.spherical_grid_value());
 				
 	}
 					
@@ -136,7 +136,7 @@ TEST_CASE("class input::basis", "[basis]") {
 
 		auto bi = input::basis::cutoff_energy(493.48_Ha);
 
-		CHECK(bi.spacing() == 0.1_a);
+		CHECK(bi.spacing_value() == 0.1_a);
 		
 	}
 			
@@ -144,8 +144,8 @@ TEST_CASE("class input::basis", "[basis]") {
 
 		auto bi = input::basis::cutoff_energy(493.48_Ha) | input::basis::spherical_grid(true);
 
-		CHECK(bi.spacing() == 0.1_a);
-		CHECK(bi.spherical_grid());
+		CHECK(bi.spacing_value() == 0.1_a);
+		CHECK(bi.spherical_grid_value());
 		
 	}
 			
