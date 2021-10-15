@@ -53,25 +53,14 @@ public:
 		};
 	}
 
-	[[deprecated("use orthorhombic for boxs with 90 degrees")]] 
-	static box cubic(
-		quantity<magnitude::length> aa, 
-		quantity<magnitude::length> bb, 
-		quantity<magnitude::length> cc
-	){
-		return orthorhombic(aa, bb, cc);
-	}
-	
-	static auto periodic() {
-		box cl;
-		cl.periodic_dimensions_ = 3;
-		return cl;
+	auto & periodic() {
+		periodic_dimensions_ = 3;
+		return *this;
 	}
 		
-	static auto finite() {
-		box cl;
-		cl.periodic_dimensions_ = 0;
-		return cl;
+	auto & finite() {
+		periodic_dimensions_ = 0;
+		return *this;
 	}
 		
 	auto & operator[](const int ii) const {
@@ -144,7 +133,7 @@ TEST_CASE("class systems::box", "[systems::box]") {
 	
 	SECTION("Cubic finite"){
 
-		auto ci = systems::box::cubic(10.2_b) | systems::box::finite();
+		auto ci = systems::box::cubic(10.2_b).finite();
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
@@ -162,7 +151,7 @@ TEST_CASE("class systems::box", "[systems::box]") {
 	
 	SECTION("Parallelepipedic"){
 
-		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b) | systems::box::periodic();
+		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic();
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);

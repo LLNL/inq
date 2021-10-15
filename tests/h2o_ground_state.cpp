@@ -52,15 +52,17 @@ int main(int argc, char ** argv){
 	geo.push_back( "H" | vector3<double>( 1.429937,  0.553586, 0.0));
 	geo.push_back( "H" | vector3<double>(-1.429937,  0.553586, 0.0));
 
-	inq::systems::ions ions(box::orthorhombic(12.0_b, 11.0_b, 10.0_b) | box::finite(), geo);
-
-	auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5_Ha) | scf::density_mixing() | scf::broyden_mixing();	
+	inq::systems::box box = box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite();
+	
+	inq::systems::ions ions(box, geo);
 
 	config conf;
 
 	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0_Ha), conf);
 
 	inq::ground_state::initial_guess(ions, electrons);
+
+	auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5_Ha) | scf::density_mixing() | scf::broyden_mixing();	
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);
 	
 	match.check("total energy",        result.energy.total(),       -25.637012688764);

@@ -41,7 +41,7 @@ int main(int argc, char ** argv){
 
 	geo.push_back("He" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
 		
-	systems::ions ions(systems::box::cubic(10.0_b) | systems::box::finite(), geo);
+	systems::ions ions(systems::box::cubic(10.0_b).finite(), geo);
 
 	//Real space pseudo
 	{
