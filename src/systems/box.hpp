@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INPUT__CELL
-#define INQ__INPUT__CELL
+#ifndef INQ__SYSTEMS__CELL
+#define INQ__SYSTEMS__CELL
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -30,18 +30,18 @@
 #include <array>
 
 namespace inq {
-namespace input {
+namespace systems {
 
-class cell {
+class box {
  
 public:
 
 	static auto cubic(quantity<magnitude::length> lat_par){
 		auto aa = lat_par.in_atomic_units();
-		return cell(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, aa, 0.0), math::vector3<double>(0.0, 0.0, aa));
+		return box(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, aa, 0.0), math::vector3<double>(0.0, 0.0, aa));
 	}
 
-	static cell orthorhombic(
+	static box orthorhombic(
 		quantity<magnitude::length> aa, 
 		quantity<magnitude::length> bb, 
 		quantity<magnitude::length> cc
@@ -53,8 +53,8 @@ public:
 		};
 	}
 
-	[[deprecated("use orthorhombic for cells with 90 degrees")]] 
-	static cell cubic(
+	[[deprecated("use orthorhombic for boxs with 90 degrees")]] 
+	static box cubic(
 		quantity<magnitude::length> aa, 
 		quantity<magnitude::length> bb, 
 		quantity<magnitude::length> cc
@@ -63,13 +63,13 @@ public:
 	}
 	
 	static auto periodic() {
-		cell cl;
+		box cl;
 		cl.periodic_dimensions_ = 3;
 		return cl;
 	}
 		
 	static auto finite() {
-		cell cl;
+		box cl;
 		cl.periodic_dimensions_ = 0;
 		return cl;
 	}
@@ -82,26 +82,26 @@ public:
 		return periodic_dimensions_.value_or(3);
 	}
 
-	friend auto operator|(const cell & cell1, const cell & cell2){
+	friend auto operator|(const box & box1, const box & box2){
 		using inq::utils::merge_optional;
 
-		cell rcell;
-		rcell.lattice_vectors_[0]	= merge_optional(cell1.lattice_vectors_[0], cell2.lattice_vectors_[0]);
-		rcell.lattice_vectors_[1]	= merge_optional(cell1.lattice_vectors_[1], cell2.lattice_vectors_[1]);
-		rcell.lattice_vectors_[2]	= merge_optional(cell1.lattice_vectors_[2], cell2.lattice_vectors_[2]);
-		rcell.periodic_dimensions_	= merge_optional(cell1.periodic_dimensions_, cell2.periodic_dimensions_);
-		return rcell;
+		box rbox;
+		rbox.lattice_vectors_[0]	= merge_optional(box1.lattice_vectors_[0], box2.lattice_vectors_[0]);
+		rbox.lattice_vectors_[1]	= merge_optional(box1.lattice_vectors_[1], box2.lattice_vectors_[1]);
+		rbox.lattice_vectors_[2]	= merge_optional(box1.lattice_vectors_[2], box2.lattice_vectors_[2]);
+		rbox.periodic_dimensions_	= merge_optional(box1.periodic_dimensions_, box2.periodic_dimensions_);
+		return rbox;
 	}
 	
 private:
 
-	cell(const math::vector3<double> & a0, const math::vector3<double> & a1, const math::vector3<double> & a2){
+	box(const math::vector3<double> & a0, const math::vector3<double> & a1, const math::vector3<double> & a2){
 		lattice_vectors_[0] = a0;
 		lattice_vectors_[1] = a1;
 		lattice_vectors_[2] = a2;
 	}
 
-	cell(){
+	box(){
 	}
 
 	std::array<std::optional<math::vector3<double>>, 3> lattice_vectors_;
@@ -112,13 +112,13 @@ private:
 }
 }
 
-#ifdef INQ_INPUT_CELL_UNIT_TEST
-#undef INQ_INPUT_CELL_UNIT_TEST
+#ifdef INQ_SYSTEMS_BOX_UNIT_TEST
+#undef INQ_SYSTEMS_BOX_UNIT_TEST
 
 #include <catch2/catch.hpp>
 #include <ions/unitcell.hpp>
 
-TEST_CASE("class input::cell", "[input::cell]") {
+TEST_CASE("class systems::box", "[systems::box]") {
   
 	using namespace inq;
 	using namespace magnitude;
@@ -126,7 +126,7 @@ TEST_CASE("class input::cell", "[input::cell]") {
 
 	SECTION("Cubic"){
 
-		auto ci = input::cell::cubic(10.2_b);
+		auto ci = systems::box::cubic(10.2_b);
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
@@ -144,7 +144,7 @@ TEST_CASE("class input::cell", "[input::cell]") {
 	
 	SECTION("Cubic finite"){
 
-		auto ci = input::cell::cubic(10.2_b) | input::cell::finite();
+		auto ci = systems::box::cubic(10.2_b) | systems::box::finite();
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
@@ -162,7 +162,7 @@ TEST_CASE("class input::cell", "[input::cell]") {
 	
 	SECTION("Parallelepipedic"){
 
-		auto ci = input::cell::orthorhombic(10.2_b, 5.7_b, 8.3_b) | input::cell::periodic();
+		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b) | systems::box::periodic();
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);

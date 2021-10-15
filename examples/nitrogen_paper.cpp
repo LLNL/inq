@@ -23,7 +23,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
-	using namespace inq::input;	
+	using namespace inq::input;
 	using namespace inq::magnitude;
 	
 	environment env(argc, argv);
@@ -35,7 +35,7 @@ int main(int argc, char ** argv){
 	geo.push_back( "N" | coord(0.0, 0.0, -distance/2));
 	geo.push_back( "N" | coord(0.0, 0.0,  distance/2));
 	
-	systems::ions ions(cell::orthorhombic(10.0_b, 10.0_b, 12.0_b) | cell::finite(), geo);
+	systems::ions ions(systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b) | systems::box::finite(), geo);
 
 	systems::electrons electrons(comm, ions, input::basis::cutoff_energy(40.0_Ha));
 	ground_state::initial_guess(ions, electrons);

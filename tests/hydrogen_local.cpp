@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
 	
 	geo.push_back(local_h | inq::math::vector3<double>(150.0, -30.0, 0.0));
 
-	inq::systems::ions ions(inq::input::cell::cubic(15.0_b) | inq::input::cell::finite(), geo);
+	inq::systems::ions ions(inq::systems::box::cubic(15.0_b) | inq::systems::box::finite(), geo);
 
 	inq::input::config conf;
 	

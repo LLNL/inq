@@ -42,7 +42,7 @@ int main(int argc, char ** argv){
 
 	geo.push_back("Ne" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
 		
-	systems::ions ions(input::cell::cubic(10.0_b) | input::cell::finite(), geo);
+	systems::ions ions(systems::box::cubic(10.0_b) | systems::box::finite(), geo);
 
 	//Real space pseudo
 	{

@@ -36,7 +36,7 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(1.0e-6);
 		
-	systems::ions ions(input::cell::cubic(10.0_b));
+	systems::ions ions(systems::box::cubic(10.0_b));
 
 	input::config conf;
 	conf.extra_states = 2;

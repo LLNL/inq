@@ -184,7 +184,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	geo.push_back( "Cu" | math::vector3<double>(0.0,  0.0,  0.0));
 	geo.push_back( "Cu" | math::vector3<double>(1.0,  0.0,  0.0));
 
-	systems::ions ions(input::cell::cubic(5.0_b), geo);
+	systems::ions ions(systems::box::cubic(5.0_b), geo);
 
 	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(25.0_Ha));
 

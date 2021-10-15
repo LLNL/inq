@@ -37,7 +37,7 @@ int main(int argc, char ** argv){
 	geo.push_back( "N" | math::vector3<double>(0.0, 0.0, -0.5*distance));
 	geo.push_back( "N" | math::vector3<double>(0.0, 0.0,  0.5*distance));
 		
-	systems::ions ions(input::cell::orthorhombic(10.0_b, 10.0_b, 12.0_b) /* | input::cell::finite() */, geo);
+	systems::ions ions(systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b) /* | systems::box::finite() */, geo);
 
 	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0_Ha), input::config{});
 	ground_state::initial_guess(ions, electrons);

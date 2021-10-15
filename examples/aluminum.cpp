@@ -59,7 +59,7 @@ int main(int argc, char ** argv){
 
 	assert(supercell.size() == cell.size()*repx*repy*repz);
 	
-	systems::ions ions(input::cell::orthorhombic(repx*alat*1.0_b, repy*alat*1.0_b, repz*alat*1.0_b), supercell);
+	systems::ions ions(systems::box::orthorhombic(repx*alat*1.0_b, repy*alat*1.0_b, repz*alat*1.0_b), supercell);
 	
 	input::config conf;
 
