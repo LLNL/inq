@@ -153,7 +153,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 	
 	{
 
-		systems::box box = systems::box::orthorhombic(10.0_b, 10.0_b, 13.7_b).spacing(0.1);
+		systems::box box = systems::box::orthorhombic(10.0_b, 10.0_b, 13.7_b).spacing(0.1_b);
 		basis::real_space rs(box, comm);
 
 		SECTION("Grid periodic"){
@@ -290,7 +290,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 	{
 
-		systems::box box = systems::box::cubic(8.0_b).spacing(0.09).finite();
+		systems::box box = systems::box::cubic(8.0_b).spacing(0.09_b).finite();
 		basis::real_space rs(box, comm);
 
 		solvers::poisson psolver;

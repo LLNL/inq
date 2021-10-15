@@ -72,8 +72,8 @@ public:
 		return periodic_dimensions_.value_or(3);
 	}
 
-	auto & spacing(double arg_spacing){
-		spacing_ = arg_spacing; 
+	auto & spacing(quantity<magnitude::length> arg_spacing){
+		spacing_ = arg_spacing.in_atomic_units(); 
 		return *this;
 	}
 	
@@ -169,7 +169,7 @@ TEST_CASE("class systems::box", "[systems::box]") {
 	
 	SECTION("Cubic finite"){
 
-		auto ci = systems::box::cubic(10.2_b).finite().spacing(0.123);
+		auto ci = systems::box::cubic(10.2_b).finite().spacing(0.123_b);
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
