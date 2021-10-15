@@ -218,8 +218,6 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	using namespace Catch::literals;
   using math::vector3;
   
-  auto ecut = 40.0_Ha;
-
 	auto comm = boost::mpi3::environment::get_world_instance();
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
