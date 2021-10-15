@@ -327,8 +327,6 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);
 	
-	auto ecut = 23.0_Ha;
-
 	vector3<double> ll{6.66, 7.77, 9.99};
 	
 	systems::box box = systems::box::orthorhombic(ll[0]*1.0_b, ll[1]*1.0_b, ll[2]*1.0_b).cutoff_energy(23.0_Ha);
