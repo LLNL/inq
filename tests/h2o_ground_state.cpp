@@ -52,13 +52,13 @@ int main(int argc, char ** argv){
 	geo.push_back( "H" | vector3<double>( 1.429937,  0.553586, 0.0));
 	geo.push_back( "H" | vector3<double>(-1.429937,  0.553586, 0.0));
 
-	inq::systems::box box = box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite();
+	inq::systems::box box = box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite().cutoff_energy(30.0_Ha);
 	
 	inq::systems::ions ions(box, geo);
 
 	config conf;
 
-	inq::systems::electrons electrons(comm_world, ions, basis::cutoff_energy(30.0_Ha), conf);
+	inq::systems::electrons electrons(comm_world, ions, box, conf);
 
 	inq::ground_state::initial_guess(ions, electrons);
 

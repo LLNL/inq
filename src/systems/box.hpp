@@ -22,6 +22,7 @@
 */
 
 #include <magnitude/length.hpp>
+#include <magnitude/energy.hpp>
 #include <math/vector3.hpp>
 #include <utils/merge_optional.hpp>
 
@@ -71,15 +72,45 @@ public:
 		return periodic_dimensions_.value_or(3);
 	}
 
-	friend auto operator|(const box & box1, const box & box2){
-		using inq::utils::merge_optional;
+	auto & spacing(double arg_spacing){
+		spacing_ = arg_spacing; 
+		return *this;
+	}
+	
+	 auto & cutoff_energy(quantity<magnitude::energy> arg_ecut){
+		spacing_ = M_PI*sqrt(0.5/arg_ecut.in_atomic_units());
+		return *this;
+	}
+	
+	auto spherical_grid(bool arg_sph_grid){
+		spherical_grid_ = arg_sph_grid;
+		return *this;
+	}
+	
+	auto spacing_value() const {
+		return spacing_.value();
+	}
+	
+	auto spherical_grid_value() const {
+		return spherical_grid_.value_or(false);
+	}
 
-		box rbox;
-		rbox.lattice_vectors_[0]	= merge_optional(box1.lattice_vectors_[0], box2.lattice_vectors_[0]);
-		rbox.lattice_vectors_[1]	= merge_optional(box1.lattice_vectors_[1], box2.lattice_vectors_[1]);
-		rbox.lattice_vectors_[2]	= merge_optional(box1.lattice_vectors_[2], box2.lattice_vectors_[2]);
-		rbox.periodic_dimensions_	= merge_optional(box1.periodic_dimensions_, box2.periodic_dimensions_);
-		return rbox;
+	auto & density_factor(double arg_factor){
+		density_factor_ = arg_factor;
+		return *this;
+	}
+
+	auto density_factor_value() const {
+		return density_factor_.value_or(1.0);
+	}
+	
+	auto & double_grid(){
+		double_grid_ = true;
+		return *this;
+	}
+	
+	auto double_grid_value() const {
+		return double_grid_.value_or(false);
 	}
 	
 private:
@@ -95,6 +126,11 @@ private:
 
 	std::array<std::optional<math::vector3<double>>, 3> lattice_vectors_;
 	std::optional<int> periodic_dimensions_;
+	std::optional<double> spacing_;
+	std::optional<bool> spherical_grid_;
+	std::optional<double> density_factor_;
+	std::optional<bool> double_grid_;	
+
 		
 };
 
@@ -133,7 +169,7 @@ TEST_CASE("class systems::box", "[systems::box]") {
 	
 	SECTION("Cubic finite"){
 
-		auto ci = systems::box::cubic(10.2_b).finite();
+		auto ci = systems::box::cubic(10.2_b).finite().spacing(0.123);
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
@@ -144,14 +180,15 @@ TEST_CASE("class systems::box", "[systems::box]") {
 		CHECK(ci[2][0] == 0.0_a);
 		CHECK(ci[2][1] == 0.0_a);
 		CHECK(ci[2][2] == 10.2_a);
-
 		CHECK(ci.periodic_dimensions_value() == 0);
+		CHECK(ci.spacing_value() == 0.123_a);
+		CHECK(not ci.spherical_grid_value());
 		
 	}
 	
 	SECTION("Parallelepipedic"){
 
-		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic();
+		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha);
 
 		CHECK(ci[0][0] == 10.2_a);
 		CHECK(ci[0][1] == 0.0_a);
@@ -162,8 +199,27 @@ TEST_CASE("class systems::box", "[systems::box]") {
 		CHECK(ci[2][0] == 0.0_a);
 		CHECK(ci[2][1] == 0.0_a);
 		CHECK(ci[2][2] == 8.3_a);
-
 		CHECK(ci.periodic_dimensions_value() == 3);
+		CHECK(ci.spacing_value() == 0.1_a);
+
+	}
+			
+	SECTION("Spherical grid"){
+
+		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha).spherical_grid(true);
+
+		CHECK(ci[0][0] == 10.2_a);
+		CHECK(ci[0][1] == 0.0_a);
+		CHECK(ci[0][2] == 0.0_a);
+		CHECK(ci[1][0] == 0.0_a);
+		CHECK(ci[1][1] == 5.7_a);
+		CHECK(ci[1][2] == 0.0_a);
+		CHECK(ci[2][0] == 0.0_a);
+		CHECK(ci[2][1] == 0.0_a);
+		CHECK(ci[2][2] == 8.3_a);
+		CHECK(ci.periodic_dimensions_value() == 3);
+		CHECK(ci.spacing_value() == 0.1_a);
+		CHECK(ci.spherical_grid_value());
 		
 	}
   

@@ -42,15 +42,17 @@ int main(int argc, char ** argv){
 	std::vector<input::atom> geo;
 
 	geo.push_back("Ne" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml") | math::vector3<double>(0.0, 0.0, 0.0));
-		
-	systems::ions ions(systems::box::cubic(15.0_b).finite(), geo);
+
+	auto box = systems::box::cubic(15.0_b).finite().cutoff_energy(25.0_Ha);
+	
+	systems::ions ions(box, geo);
 
 	input::config conf;
 	
 	conf.extra_states = 4;
   conf.temperature = 300.0_K;
 	
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
+	systems::electrons electrons(comm_world, ions, box, conf);
 	
 	ground_state::initial_guess(ions, electrons);
 

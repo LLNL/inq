@@ -43,13 +43,11 @@ int main(int argc, char ** argv){
 	
 	geo.push_back(local_h | inq::math::vector3<double>(150.0, -30.0, 0.0));
 
-	auto box = inq::systems::box::cubic(15.0_b).finite();
+	auto box = inq::systems::box::cubic(15.0_b).finite().cutoff_energy(40.0_Ha);
 	
 	inq::systems::ions ions(box, geo);
 
-	inq::input::config conf;
-	
-	inq::systems::electrons electrons(comm_world, ions, inq::input::basis::cutoff_energy(40.0_Ha), conf);
+	inq::systems::electrons electrons(comm_world, ions, box);
 	inq::ground_state::initial_guess(ions, electrons);
 	
 	// Non Interacting

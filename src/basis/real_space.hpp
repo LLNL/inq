@@ -27,9 +27,9 @@
 
 #include <basis/grid.hpp>
 #include <gpu/run.hpp>
-#include <input/basis.hpp>
 #include <ions/unitcell.hpp>
 #include <math/vector3.hpp>
+#include <systems/box.hpp>
 
 namespace inq {
 namespace basis {
@@ -38,8 +38,8 @@ namespace basis {
 
   public:
 		
-    real_space(const ions::UnitCell & cell, const input::basis & basis_input, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			grid(cell, calculate_dimensions(cell, basis_input), basis_input.spherical_grid_value(), basis_input.double_grid_value(), cell.periodic_dimensions(), comm)
+    real_space(systems::box const & box, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodic_dimensions_value(), comm)
 		{
     }
 
@@ -137,14 +137,14 @@ namespace basis {
 		
 	private:
 
-		static std::array<int, 3> calculate_dimensions(const ions::UnitCell & cell, const input::basis & basis_input){
+		static std::array<int, 3> calculate_dimensions(systems::box const & box){
 			std::array<int, 3> nr;
-			double spacing = basis_input.spacing_value();
+			double spacing = box.spacing_value();
 			
 			// make the spacing conmensurate with the grid
 			// OPTIMIZATION: we can select a good size here for the FFT
 			for(int idir = 0; idir < 3; idir++){
-				double rlength = length(cell[idir]);
+				double rlength = length(box[idir]);
 				nr[idir] = round(rlength/spacing);
 			}
 			
@@ -173,11 +173,8 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
     
     SECTION("Cubic cell"){
 
-      ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
-
-      auto ecut = 20.0_Ha;
-      
-      basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+			systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
+      basis::real_space rs(box);
 
       CHECK(rs.size() == 8000);
       
@@ -193,11 +190,8 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
     SECTION("Parallelepipedic cell"){
 
-      ions::UnitCell cell(vector3<double>(77.7, 0.0, 0.0), vector3<double>(0.0, 14.14, 0.0), vector3<double>(0.0, 0.0, 23.25));
-
-      auto ecut = 37.9423091_Ha;
-      
-      basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+			systems::box box = systems::box::orthorhombic(77.7_b, 14.14_b, 23.25_b).cutoff_energy(37.9423091_Ha);
+      basis::real_space rs(box);
 
       CHECK(rs.size() == 536640);
 	    

@@ -226,16 +226,13 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-  auto ecut = 20.0_Ha;
-  double ll = 10.0;
-
 	ions::geometry geo;
-  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
+	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
+  basis::real_space rs(box, comm);
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector proj(rs, cell, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+	hamiltonian::projector proj(rs, box, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
 	CHECK(proj.num_projectors() == 8);
 

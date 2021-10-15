@@ -31,7 +31,6 @@
 #include <eigensolvers/steepest_descent.hpp>
 #include <eigensolvers/davidson.hpp>
 #include <math/complex.hpp>
-#include <input/basis.hpp>
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>

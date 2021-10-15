@@ -167,16 +167,13 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
   using math::vector3;
 	
 	pseudo::math::erf_range_separation const sep(0.625);
-	
-  auto ecut = 20.0_Ha;
-  double ll = 10.0;
 
-  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
+	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
+  basis::real_space rs(box);
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector_fourier proj(rs, cell, ps);
+	hamiltonian::projector_fourier proj(rs, box, ps);
 
 	CHECK(proj.num_projectors() == 8);
 	

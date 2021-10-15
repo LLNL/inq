@@ -56,11 +56,13 @@ int main(int argc, char ** argv){
 	geo.push_back( "H" | math::vector3<double>( 1.429937,  0.553586, 0.0));
 	geo.push_back( "H" | math::vector3<double>(-1.429937,  0.553586, 0.0));
 
-	systems::ions ions(systems::box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite(), geo);
+	auto box = systems::box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite().cutoff_energy(30.0_Ha);
+	
+	systems::ions ions(box, geo);
 
 	input::config conf;
 
-	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(30.0_Ha), conf);
+	systems::electrons electrons(cart_comm, ions, box, conf);
 
 	// Propagation without perturbation
 	{

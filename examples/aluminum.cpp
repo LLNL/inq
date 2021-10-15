@@ -58,15 +58,17 @@ int main(int argc, char ** argv){
 	}
 
 	assert(supercell.size() == cell.size()*repx*repy*repz);
+
+	systems::box box = systems::box::orthorhombic(repx*alat*1.0_b, repy*alat*1.0_b, repz*alat*1.0_b).cutoff_energy(30.0_Ha);
 	
-	systems::ions ions(systems::box::orthorhombic(repx*alat*1.0_b, repy*alat*1.0_b, repz*alat*1.0_b), supercell);
+	systems::ions ions(box, supercell);
 	
 	input::config conf;
 
 	conf.extra_states = 2*repx*repy*repz;
 	conf.temperature = 300.0_K;	
 	
-	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(30.0_Ha), conf);
+	systems::electrons electrons(cart_comm, ions, box, conf);
 	
 	auto restart_dir = "aluminum_" + std::to_string(repx) + "_" + std::to_string(repy) + "_" + std::to_string(repz);
 
@@ -75,7 +77,7 @@ int main(int argc, char ** argv){
 	if(not found_gs){
 
 		// the parallelization distribution is different for the ground state
-		systems::electrons gs_electrons(boost::mpi3::environment::get_world_instance(), ions, input::basis::cutoff_energy(30.0_Ha), conf);
+		systems::electrons gs_electrons(boost::mpi3::environment::get_world_instance(), ions, box, conf);
 		
 		ground_state::initial_guess(ions, gs_electrons);
 		

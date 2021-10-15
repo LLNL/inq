@@ -144,6 +144,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	namespace multi = boost::multi;
 	using namespace basis;
@@ -152,10 +153,8 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 	
 	{
 
-		double ll = 10.0;
-		
-		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, 1.37*ll});
-		basis::real_space rs(cell, input::basis::spacing(0.1), comm);
+		systems::box box = systems::box::orthorhombic(10.0_b, 10.0_b, 13.7_b).spacing(0.1);
+		basis::real_space rs(box, comm);
 
 		SECTION("Grid periodic"){
 		
@@ -291,10 +290,8 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 	{
 
-		const double ll = 8.0;
-		
-		ions::UnitCell cell({ll, 0.0, 0.0}, {0.0, ll, 0.0}, {0.0, 0.0, ll}, 0);
-		basis::real_space rs(cell, input::basis::spacing(0.09), comm);
+		systems::box box = systems::box::cubic(8.0_b).spacing(0.09).finite();
+		basis::real_space rs(box, comm);
 
 		solvers::poisson psolver;
 
@@ -332,8 +329,8 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						auto ixg = rs.cubic_dist(0).local_to_global(ix);
 						auto iyg = rs.cubic_dist(1).local_to_global(iy);
 						auto izg = rs.cubic_dist(2).local_to_global(iz);
-						
-						auto rr = length(rs.point_op().rvector(ixg, iyg, izg));
+
+						auto rr = rs.point_op().rvector(ixg, iyg, izg).length();
 
 						// it should be close to -1/r
 						if(rr > 1) CHECK(fabs(potential.cubic()[ix][iy][iz]*rr + 1.0) < 0.025);

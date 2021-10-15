@@ -235,12 +235,9 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);	
 
-  auto ecut = 20.0_Ha;
-  double ll = 10.0;
-
 	ions::geometry geo;
-  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), basis_comm);
+	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
+  basis::real_space rs(box, basis_comm);
 
 	SECTION("Basis"){
 		
@@ -257,7 +254,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
   states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
 
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, cell, pot, false, geo, st.num_states(), 0.0, cart_comm);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, box, pot, false, geo, st.num_states(), 0.0, cart_comm);
 
 	SECTION("Constant function"){
 		

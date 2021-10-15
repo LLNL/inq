@@ -14,7 +14,6 @@
 #include <operations/io.hpp>
 #include <operations/orthogonalize.hpp>
 #include <math/complex.hpp>
-#include <input/basis.hpp>
 #include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <input/rt.hpp>
@@ -48,12 +47,12 @@ public:
 	
 	enum class error { NO_ELECTRONS };
 	
-	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
+	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}):
 		full_comm_(cart_comm),
 		states_comm_(full_comm_.axis(0)),
 		atoms_comm_(states_comm_),
 		basis_comm_(full_comm_.axis(1)),
-		states_basis_(ions.cell(), arg_basis_input, basis_comm_),
+		states_basis_(box, basis_comm_),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units()),
@@ -116,8 +115,8 @@ public:
 			
 	}
 
-	electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, const input::basis arg_basis_input, const input::config & conf = {}):
-		electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, arg_basis_input, conf){
+	electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}):
+		electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, box, conf){
 	}
 
 	template <typename ArrayType>
@@ -184,9 +183,11 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	geo.push_back( "Cu" | math::vector3<double>(0.0,  0.0,  0.0));
 	geo.push_back( "Cu" | math::vector3<double>(1.0,  0.0,  0.0));
 
-	systems::ions ions(systems::box::cubic(5.0_b), geo);
+	systems::box box = systems::box::cubic(5.0_b).cutoff_energy(25.0_Ha);
+	
+	systems::ions ions(box, geo);
 
-	systems::electrons electrons(cart_comm, ions, input::basis::cutoff_energy(25.0_Ha));
+	systems::electrons electrons(cart_comm, ions, box);
 
 	CHECK(electrons.states_.num_electrons() == 38.0_a);
 	CHECK(electrons.states_.num_states() == 19);
@@ -204,7 +205,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 
 	electrons.save("electron_restart");
 	
-	systems::electrons electrons_read(cart_comm, ions, input::basis::cutoff_energy(25.0_Ha));
+	systems::electrons electrons_read(cart_comm, ions, box);
 
 	electrons_read.load("electron_restart");
 

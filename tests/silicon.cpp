@@ -53,13 +53,15 @@ int main(int argc, char ** argv){
 	geo.push_back( "Si" | a*math::vector3<double>(0.0,  0.5,  0.5 ));
 	geo.push_back( "Si" | a*math::vector3<double>(0.25, 0.75, 0.75));
 
-	systems::ions ions(systems::box::cubic(a*1.0_b), geo);
+	auto box = systems::box::cubic(a*1.0_b).cutoff_energy(25.0_Ha);
+	
+	systems::ions ions(box, geo);
 	
 	input::config conf;
 	
 	conf.extra_states = 0;
 	
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
+	systems::electrons electrons(comm_world, ions, box, conf);
 	
 	ground_state::initial_guess(ions, electrons);
 	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-7_Ha));

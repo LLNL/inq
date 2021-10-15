@@ -40,8 +40,10 @@ int main(int argc, char ** argv){
 	std::vector<input::atom> geo;
 
 	geo.push_back("H" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
-		
-	systems::ions ions(systems::box::cubic(10.0_b).finite(), geo);
+
+	auto box = systems::box::cubic(10.0_b).finite().cutoff_energy(25.0_Ha);
+	
+	systems::ions ions(box, geo);
 
 	//Real space pseudo
 	{
@@ -50,7 +52,7 @@ int main(int argc, char ** argv){
 
 		conf.extra_states = 3;
 
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
+		systems::electrons electrons(comm_world, ions, box, conf);
 		
 		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::davidson());
 
@@ -65,7 +67,7 @@ int main(int argc, char ** argv){
 
 		conf.extra_states = 3;
 
-		systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(25.0_Ha), conf);
+		systems::electrons electrons(comm_world, ions, box, conf);
 		
 		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting() | input::interaction::fourier_pseudo(), input::scf::conjugate_gradient());
 

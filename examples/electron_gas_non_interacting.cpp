@@ -36,13 +36,15 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(1.0e-6);
 
-	systems::ions ions(systems::box::cubic(10.0_b));
+	auto box = systems::box::cubic(10.0_b).cutoff_energy(40.0_Ha);
+	
+	systems::ions ions(box);
 
 	input::config conf;
 	conf.extra_states = 2;
 	conf.excess_charge = 14.0;
 		
-	systems::electrons electrons(comm_world, ions, input::basis::cutoff_energy(40.0_Ha), conf);
+	systems::electrons electrons(comm_world, ions, box, conf);
 	
 	ground_state::initial_guess(ions, electrons);
 	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting());

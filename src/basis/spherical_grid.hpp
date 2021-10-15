@@ -333,18 +333,15 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
   using math::vector3;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
- 
-  double ll = 10.0;
-  
-  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
-  
-  auto ecut = 20.0_Ha;
-  
-  basis::real_space pw(cell, input::basis::cutoff_energy(ecut), comm);
+
+	auto ll = 10.0;
+	
+	systems::box box = systems::box::cubic(ll*1.0_b).cutoff_energy(20.0_Ha);
+	basis::real_space pw(box, comm);
   
   SECTION("Point 0 0 0"){
     
-    basis::spherical_grid sphere(pw, cell, {0.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, box, {0.0, 0.0, 0.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -371,7 +368,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point -l/2 0 0"){
     
-    basis::spherical_grid sphere(pw, cell, {-ll/2.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, box, {-ll/2.0, 0.0, 0.0}, 2.0);
 		
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -404,7 +401,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point l/2 0 0"){
     
-    basis::spherical_grid sphere(pw, cell, {ll/2.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, box, {ll/2.0, 0.0, 0.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -421,7 +418,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point -l/2 -l/2 -l/2"){
     
-    basis::spherical_grid sphere(pw, cell, {-ll/2.0, -ll/2.0, -ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, box, {-ll/2.0, -ll/2.0, -ll/2.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -431,7 +428,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point l/2 l/2 l/2"){
     
-    basis::spherical_grid sphere(pw, cell, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, box, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -441,7 +438,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point l/2 l/2 l/2"){
     
-    basis::spherical_grid sphere(pw, cell, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, box, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -451,7 +448,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point l/4 l/4 l/4"){
     
-    basis::spherical_grid sphere(pw, cell, {ll/4.0, ll/4.0, ll/4.0}, 2.0);
+    basis::spherical_grid sphere(pw, box, {ll/4.0, ll/4.0, ll/4.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});

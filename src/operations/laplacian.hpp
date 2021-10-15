@@ -127,17 +127,16 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);	
 
-	//UnitCell size
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;
- 	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
+	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
 
 	double factor = 0.673214;
 	
 	SECTION("Plane-wave -- field_set"){
 
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), basis_comm);
+		basis::real_space rs(box, basis_comm);
 		
 		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
 	

@@ -545,11 +545,8 @@ TEST_CASE("function operations::space", "[operations::space]") {
 
 	auto basis_comm = cart_comm.axis(1);
 	
-	auto ecut = 23.0_Ha;
-	double ll = 6.66;
-	
-	ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
-	basis::real_space rs(cell, input::basis::cutoff_energy(ecut), basis_comm);
+	systems::box box = systems::box::cubic(6.66_b).cutoff_energy(23.0_Ha);
+	basis::real_space rs(box, basis_comm);
 	
 	basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
 	
