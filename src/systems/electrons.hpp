@@ -62,7 +62,8 @@ public:
 	{
 
 		CALI_CXX_MARK_FUNCTION;
-			
+
+		assert(kpts.num() == 1);
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
 
 		if(full_comm_.root()){
@@ -116,8 +117,8 @@ public:
 			
 	}
 
-	electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}):
-		electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, box, conf){
+	electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
+		electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, box, conf, kpts){
 	}
 
 	template <typename ArrayType>

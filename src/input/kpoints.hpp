@@ -48,6 +48,10 @@ public:
   auto & shifts() const {
     return shifts_;
   }   
+
+  auto num() const {
+    return product(dims_);
+  }
   
 private:
 
