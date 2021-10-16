@@ -33,6 +33,10 @@ class kpoints {
 
 public:
 
+  static auto gamma(){
+    return kpoints({1, 1, 1}, {0.0, 0.0, 0.0});
+  }
+  
   static auto grid(math::vector3<int> const & dims, math::vector3<double> const & shifts = {0.0, 0.0, 0.0}){
     return kpoints(dims, shifts);
   }
@@ -70,6 +74,18 @@ TEST_CASE("class ions::kpoints", "[inq::input::kpoints]") {
   using namespace inq;
 	using namespace Catch::literals;
 
+	SECTION("Gamma - no arguments"){
+		auto kpts = input::kpoints::gamma();
+
+    CHECK(kpts.dims()[0] == 1);
+    CHECK(kpts.dims()[1] == 1);
+    CHECK(kpts.dims()[2] == 1);
+    CHECK(kpts.shifts()[0] == 0.0_a);
+    CHECK(kpts.shifts()[1] == 0.0_a);
+    CHECK(kpts.shifts()[2] == 0.0_a);
+    
+	}
+  
 	SECTION("Grid - one argument"){
 		auto kpts = input::kpoints::grid({10, 9, 8});
 
