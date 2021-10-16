@@ -16,6 +16,7 @@
 #include <math/complex.hpp>
 #include <input/config.hpp>
 #include <input/interaction.hpp>
+#include <input/kpoints.hpp>
 #include <input/rt.hpp>
 #include <input/scf.hpp>
 #include <ions/interaction.hpp>
@@ -47,7 +48,7 @@ public:
 	
 	enum class error { NO_ELECTRONS };
 	
-	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}):
+	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		full_comm_(cart_comm),
 		states_comm_(full_comm_.axis(0)),
 		atoms_comm_(states_comm_),
