@@ -204,14 +204,12 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;
-
-	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
-
+	
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	
 	SECTION("LDA"){
-		
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
+		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
+		basis::real_space rs(box, cart_comm);
 
 		basis::field<basis::real_space, double> gaussian_field(rs);
 		
@@ -261,8 +259,9 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	}
 
 	SECTION("GGA"){
+		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(90.0_Ha);
+		basis::real_space rs(box, cart_comm);
 		
-		basis::real_space rs(cell, input::basis::cutoff_energy(90.0_Ha), cart_comm);
 		basis::field<basis::real_space, double> field(rs);
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -358,8 +357,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	}
 
 	SECTION("Uniform"){
-		
-		basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
+		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
+		basis::real_space rs(box, cart_comm);
 		
 		basis::field<basis::real_space, double> gaussian_field(rs);
 		

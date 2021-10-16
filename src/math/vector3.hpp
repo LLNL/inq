@@ -216,13 +216,19 @@ namespace math {
 		friend GPU_FUNCTION auto cross(vector3 const & vv1, vector3 const & vv2) {
 			return vector3(vv1[1]*vv2[2] - vv1[2]*vv2[1], vv1[2]*vv2[0] - vv1[0]*vv2[2], vv1[0]*vv2[1] - vv1[1]*vv2[0]);
 		}
+
+		//norm
 		
 		friend GPU_FUNCTION auto norm(vector3 const & vv) {
 			return norm(vv[0]) + norm(vv[1]) + norm(vv[2]);
 		}
 
 		friend GPU_FUNCTION auto length(vector3 const & vv) {
-			return sqrt(norm(vv[0]) + norm(vv[1]) + norm(vv[2]));			
+			return sqrt(norm(vv[0]) + norm(vv[1]) + norm(vv[2]));
+		}
+		
+		GPU_FUNCTION auto length() const{
+			return sqrt(norm(vec_[0]) + norm(vec_[1]) + norm(vec_[2]));
 		}
 
 		// INPUT OUTPUT

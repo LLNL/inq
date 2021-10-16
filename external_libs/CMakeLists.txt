@@ -1,3 +1,5 @@
+# -*- indent-tabs-mode: t -*-
+
 add_subdirectory(pseudopod)
 
 message("\nCONFIGURING LIBXC\n")

@@ -23,7 +23,7 @@
 int main(int argc, char ** argv){
 
 	using namespace inq;
-	using namespace inq::input;	
+	using namespace inq::input;
 	using namespace inq::magnitude;
 	
 	environment env(argc, argv);
@@ -34,10 +34,12 @@ int main(int argc, char ** argv){
 	std::vector<atom> geo;
 	geo.push_back( "N" | coord(0.0, 0.0, -distance/2));
 	geo.push_back( "N" | coord(0.0, 0.0,  distance/2));
-	
-	systems::ions ions(cell::orthorhombic(10.0_b, 10.0_b, 12.0_b) | cell::finite(), geo);
 
-	systems::electrons electrons(comm, ions, input::basis::cutoff_energy(40.0_Ha));
+	auto box = systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b).finite().cutoff_energy(40.0_Ha);
+	
+	systems::ions ions(box, geo);
+
+	systems::electrons electrons(comm, ions, box);
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, interaction::pbe());

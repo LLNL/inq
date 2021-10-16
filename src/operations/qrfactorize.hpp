@@ -166,11 +166,8 @@ TEST_CASE("function operations::qrfactorizeze", "[operations::qrfactorize]") {
 	using namespace Catch::literals;
 	using math::vector3;
 
-	auto ecut = 25.0_Ha;
-	double ll = 6.3;
-
-	ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
-	basis::real_space pw(cell, input::basis::cutoff_energy(ecut));
+	systems::box box = systems::box::cubic(6.3_b).cutoff_energy(25.0_Ha);
+	basis::real_space pw(box);
 
 	SECTION("Dimension 3"){
 		basis::field_set<basis::real_space, complex> phi(pw, 3);

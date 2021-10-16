@@ -218,8 +218,6 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	using namespace Catch::literals;
   using math::vector3;
   
-  auto ecut = 40.0_Ha;
-
 	auto comm = boost::mpi3::environment::get_world_instance();
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
@@ -227,9 +225,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);	
 
-  ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
-
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut), basis_comm);
+	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(40.0_Ha);
+  basis::real_space rs(box, basis_comm);
 
 	basis::field_set<basis::real_space, double> ff(rs, 12, cart_comm);
 

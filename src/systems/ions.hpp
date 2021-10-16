@@ -9,7 +9,7 @@
 
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
-#include <input/cell.hpp>
+#include <systems/box.hpp>
 
 #include <math/array.hpp>
 
@@ -20,8 +20,8 @@ class ions {
 
 public:
 
-	ions(const input::cell & arg_cell_input, const inq::ions::geometry & geo_arg = inq::ions::geometry()):
-		cell_(arg_cell_input, arg_cell_input.periodic_dimensions()),
+	ions(const systems::box & arg_cell_input, const inq::ions::geometry & geo_arg = inq::ions::geometry()):
+		cell_(arg_cell_input, arg_cell_input.periodic_dimensions_value()),
 		geo_(geo_arg)
 	{
 	}

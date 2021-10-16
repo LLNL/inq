@@ -112,14 +112,13 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;
-
-	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
+	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	//	auto set_comm = cart_comm.axis(0);
 	//	auto basis_comm = cart_comm.axis(1);
 
-	basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
+	basis::real_space rs(box, cart_comm);
 
 	SECTION("Vectored plane-wave"){ 
 		basis::field<basis::real_space, math::vector3<complex>> vectorial_complex_field(rs);

@@ -327,15 +327,13 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);
 	
-	auto ecut = 23.0_Ha;
-
 	vector3<double> ll{6.66, 7.77, 9.99};
-
-	ions::UnitCell cell(vector3<double>(ll[0], 0.0, 0.0), vector3<double>(0.0, ll[1], 0.0), vector3<double>(0.0, 0.0, ll[2]));
+	
+	systems::box box = systems::box::orthorhombic(ll[0]*1.0_b, ll[1]*1.0_b, ll[2]*1.0_b).cutoff_energy(23.0_Ha);
 	
 	SECTION("Enlarge and shrink -- field"){
 		
-		basis::real_space grid(cell, input::basis::cutoff_energy(ecut), cart_comm);
+		basis::real_space grid(box, cart_comm);
 		basis::field<basis::real_space, TestType> small(grid);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -405,7 +403,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	SECTION("Enlarge and shrink -- field_set"){
 
-		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
+		basis::real_space grid(box);
 		basis::field_set<basis::real_space, TestType> small(grid, 5);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -481,7 +479,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	SECTION("Mesh refinement -- field"){
 
-		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
+		basis::real_space grid(box);
 		basis::field<basis::real_space, TestType> coarse(grid); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -533,7 +531,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		
 	SECTION("Mesh refinement -- field_set"){
 
-		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
+		basis::real_space grid(box);
 		basis::field_set<basis::real_space, TestType> coarse(grid, 5); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -585,7 +583,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	
 	SECTION("Mesh coarsening -- field"){
 
-		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
+		basis::real_space grid(box);
 		
 		auto fine_grid = grid.refine(2);
 		
@@ -640,7 +638,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	SECTION("Mesh coarsening -- field_set"){
 			
-		basis::real_space grid(cell, input::basis::cutoff_energy(ecut));
+		basis::real_space grid(box);
 		auto fine_grid = grid.refine(2);
 		
 		basis::field_set<basis::real_space, TestType> fine(fine_grid, 5);

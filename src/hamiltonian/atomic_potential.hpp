@@ -326,6 +326,7 @@ namespace hamiltonian {
 #include <catch2/catch.hpp>
 #include <ions/geometry.hpp>
 #include <basis/real_space.hpp>
+#include <systems/box.hpp>
 
 TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential]") {
 
@@ -380,8 +381,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 	ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 
-	auto cell = input::cell::cubic(20.0_b);
-	basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha));
+	auto cell = systems::box::cubic(20.0_b).cutoff_energy(20.0_Ha);
+	basis::real_space rs(cell);
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), comm);
 

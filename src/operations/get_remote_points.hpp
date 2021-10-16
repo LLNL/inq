@@ -173,11 +173,8 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 	auto set_comm = cart_comm.axis(0);
 	auto basis_comm = cart_comm.axis(1);	
 
-	double lx = 13.3;
-	double ly = 6.55;
-	double lz = 8.02;
- 	ions::UnitCell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz));
-  basis::real_space rs(cell, input::basis::cutoff_energy(20.0_Ha), cart_comm);
+	systems::box box = systems::box::orthorhombic(13.3_b, 6.55_b, 8.02_b).cutoff_energy(20.0_Ha);
+  basis::real_space rs(box, cart_comm);
 
   basis::field<basis::real_space, complex> test_field(rs);
 

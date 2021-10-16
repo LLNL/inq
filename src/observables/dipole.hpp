@@ -92,12 +92,10 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using math::vector3;
-	
-	auto ecut = 31.2_Ha;
 
-  ions::UnitCell cell(vector3<double>(4.2, 0.0, 0.0), vector3<double>(0.0, 3.5, 0.0), vector3<double>(0.0, 0.0, 6.4));
+	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(31.2_Ha);
 
-  basis::real_space bas(cell, input::basis::cutoff_energy(ecut));
+  basis::real_space bas(box);
 
 	basis::field<basis::real_space, double> density(bas);
 

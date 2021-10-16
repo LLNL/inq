@@ -34,7 +34,6 @@
 #include <math/vector3.hpp>
 #include <valarray>
 #include <array>
-#include <input/cell.hpp>
 
 namespace inq {
 namespace ions {

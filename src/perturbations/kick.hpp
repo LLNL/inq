@@ -80,9 +80,9 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	double phi_absdif = 0.0;
 	double phi_dif = 0.0;
 
-	ions::UnitCell cell(vector3<double>(4.2, 0.0, 0.0), vector3<double>(0.0, 3.5, 0.0), vector3<double>(0.0, 0.0, 6.4));
-
-	basis::real_space bas(cell, input::basis::cutoff_energy(ecut));
+	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(ecut);
+	
+	basis::real_space bas(box);
 
 	basis::field_set<basis::real_space, complex> phi(bas, nvec);
 

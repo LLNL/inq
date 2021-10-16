@@ -218,12 +218,10 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	using namespace Catch::literals;
 	using math::vector3;
 
-	auto ecut = 40.0_Ha;
-
 	auto comm = boost::mpi3::environment::get_world_instance();
-	
-	ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
-	basis::real_space rs(cell, input::basis::cutoff_energy(ecut), comm);
+
+	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(40.0_Ha);
+	basis::real_space rs(box, comm);
 
 	basis::field<basis::real_space, double> ff(rs);
 
