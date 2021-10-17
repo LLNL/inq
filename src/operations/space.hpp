@@ -376,7 +376,7 @@ states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbi
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
-	states::orbital_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
+	states::orbital_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.kpoint(), phi.full_comm());
 
 	assert(phi.set_size() == fphi.set_size());
 	assert(phi.local_set_size() == fphi.local_set_size());
@@ -414,7 +414,7 @@ states::orbital_set<basis::real_space, complex> to_real(const states::orbital_se
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 	
-	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
+	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.full_comm());
 
 	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
 
