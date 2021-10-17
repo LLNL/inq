@@ -132,7 +132,7 @@ namespace hamiltonian {
 			
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projectors_all_.project(phi.fields());
+			auto proj = projectors_all_.project(phi.fields(), phi.kpoint());
 			
 			auto phi_fs = operations::space::to_fourier(phi.fields());
 		
@@ -145,7 +145,7 @@ namespace hamiltonian {
 			hamiltonian::scalar_potential_add(scalar_potential, -norm(phi.kpoint()), phi.fields(), hphi);
 			exchange(phi.fields(), hphi);
 
-			projectors_all_.apply(proj, hphi);
+			projectors_all_.apply(proj, hphi, phi.kpoint());
 
 			return states::orbital_set<basis::real_space, complex>{std::move(hphi), phi.occupations(), phi.kpoint()};
 		}
