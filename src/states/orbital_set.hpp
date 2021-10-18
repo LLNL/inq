@@ -49,6 +49,15 @@ namespace states {
        occupations_(occs),
 			 kpoint_(kpoint){
 		}
+
+		template <class any_type>
+		orbital_set(inq::utils::skeleton_wrapper<orbital_set<Basis, any_type>> const & skeleton)
+			:orbital_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.kpoint(), skeleton.base.full_comm()){
+		}
+		
+		auto skeleton() const {
+			return inq::utils::skeleton_wrapper<orbital_set<Basis, Type>>(*this);
+		}
 		
     auto & fields() const {
       return fields_;
@@ -176,6 +185,12 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orbk.fields().local_set_size() == orb.local_set_size());
 	CHECK(orbk.fields().set_size() == orb.set_size());
 
+	states::orbital_set<basis::real_space, double> orb_copy(orbk.skeleton());
+
+	CHECK(sizes(orb_copy.fields().basis()) == sizes(orbk.fields().basis()));
+	CHECK(orb_copy.kpoint() == orbk.kpoint());
+	CHECK(orb_copy.fields().local_set_size() == orbk.local_set_size());
+	CHECK(orb_copy.fields().set_size() == orbk.set_size());
 	
 }
 

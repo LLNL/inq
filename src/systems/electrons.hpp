@@ -16,6 +16,7 @@
 #include <math/complex.hpp>
 #include <input/config.hpp>
 #include <input/interaction.hpp>
+#include <input/kpoints.hpp>
 #include <input/rt.hpp>
 #include <input/scf.hpp>
 #include <ions/interaction.hpp>
@@ -47,7 +48,7 @@ public:
 	
 	enum class error { NO_ELECTRONS };
 	
-	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}):
+	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		full_comm_(cart_comm),
 		states_comm_(full_comm_.axis(0)),
 		atoms_comm_(states_comm_),
@@ -56,12 +57,13 @@ public:
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units()),
-		phi_(states_basis_, states_.num_states(), full_comm_),
+		phi_(states_basis_, states_.num_states(), kpts.shifts(), full_comm_),
 		density_(density_basis_)
 	{
 
 		CALI_CXX_MARK_FUNCTION;
-			
+
+		assert(kpts.num() == 1);
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
 
 		if(full_comm_.root()){
@@ -115,8 +117,8 @@ public:
 			
 	}
 
-	electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}):
-		electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, box, conf){
+	electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
+		electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, box, conf, kpts){
 	}
 
 	template <typename ArrayType>

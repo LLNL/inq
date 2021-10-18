@@ -231,6 +231,11 @@ namespace math {
 			return sqrt(norm(vec_[0]) + norm(vec_[1]) + norm(vec_[2]));
 		}
 
+		
+		friend GPU_FUNCTION auto product(vector3 const & vv) {
+			return vv[0]*vv[1]*vv[2];
+		}
+		
 		// INPUT OUTPUT
 		
 		friend std::ostream& operator <<(std::ostream & out, vector3 const & vv){
@@ -378,6 +383,8 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(vv3[1] == -15.0_a);
 		CHECK(vv3[2] == -13.6_a);
 
+		CHECK(product(vv3) == Approx(120.0*15.0*13.6));
+		
 		/*
 
 			Disabled because std::complex causes problems on the GPU
