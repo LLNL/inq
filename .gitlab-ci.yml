@@ -435,8 +435,8 @@ gcc-ompi-coverage-noinline:
       - ../configure --prefix=$PREFIX || cat config.log
       - time make -j8
       - time make -j8 install
-      - ctest -j 16 --output-on-failure --timeout 3000
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -j 5 --output-on-failure --timeout 3000; cd ..
+      - ctest -j 16 --output-on-failure --timeout 4000
+      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -j 5 --output-on-failure --timeout 4000; cd ..
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
