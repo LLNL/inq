@@ -236,7 +236,7 @@ public:
 			gpu::run(vnlphi.local_set_size(), max_sphere_size_,
 							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.cubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
 								 if(poi[iproj][ipoint][0] >= 0){
-									 auto phase = expi(dot(kpoint, pos[iproj][ipoint]));
+									 auto phase = expi(-dot(kpoint, pos[iproj][ipoint]));
 									 gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist] += phase*sgr[iproj][ipoint][ist];
 								 }
 							 });
