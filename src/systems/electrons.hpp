@@ -49,11 +49,19 @@ public:
 	enum class error { NO_ELECTRONS };
 
 	auto & phi() const {
-		return phi_;
+		return lot_[0];
 	}
 
 	auto & phi() {
-		return phi_;
+		return lot_[0];
+	}
+
+	auto & lot() const {
+		return lot_;
+	}
+
+	auto & lot() {
+		return lot_;
 	}
 	
 	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
@@ -65,7 +73,6 @@ public:
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units()),
-		phi_(states_basis_, states_.num_states(), kpts.shifts(), full_comm_),
 		density_(density_basis_)
 	{
 
@@ -74,6 +81,8 @@ public:
 		assert(kpts.num() == 1);
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
 
+		lot_.emplace_back(states_basis_, states_.num_states(), kpts.shifts(), full_comm_);
+		
 		if(full_comm_.root()){
 			logger_ = spdlog::stdout_color_mt("electrons:"+ generate_tiny_uuid());
 			logger_->set_level(spdlog::level::trace);
@@ -165,7 +174,7 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	hamiltonian::atomic_potential atomic_pot_;
 	states::ks_states states_;
 private:
-	states::orbital_set<basis::real_space, complex> phi_;
+	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
 
 public:
 	basis::field<basis::real_space, double> density_;
