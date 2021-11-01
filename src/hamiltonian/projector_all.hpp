@@ -119,7 +119,7 @@ public:
 			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
 							 [sgr = begin(sphere_phi_all), gr = begin(phi.cubic()), poi = begin(points_), pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
 								 if(poi[iproj][ipoint][0] >= 0){
-									 auto phase = expi(dot(kpoint, pos[iproj][ipoint]));
+									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));
 									 sgr[iproj][ipoint][ist] = phase*gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
 								 } else {
 									 sgr[iproj][ipoint][ist] = complex(0.0, 0.0);
@@ -236,7 +236,7 @@ public:
 			gpu::run(vnlphi.local_set_size(), max_sphere_size_,
 							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.cubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
 								 if(poi[iproj][ipoint][0] >= 0){
-									 auto phase = expi(-dot(kpoint, pos[iproj][ipoint]));
+									 auto phase = polar(1.0, -dot(kpoint, pos[iproj][ipoint]));
 									 gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist] += phase*sgr[iproj][ipoint][ist];
 								 }
 							 });
