@@ -35,12 +35,12 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 
 	CALI_CXX_MARK_FUNCTION;
 
-  auto gphi = operations::gradient(electrons.phi_.fields());
-	basis::field<basis::real_space, double> density(electrons.phi_.fields().basis());
+  auto gphi = operations::gradient(electrons.phi().fields());
+	basis::field<basis::real_space, double> density(electrons.phi().fields().basis());
 
 	gpu::run(density.basis().part().local_size(),
 					 [nst = gphi.set_part().local_size(),
-						occ = begin(electrons.phi_.occupations()),
+						occ = begin(electrons.phi().occupations()),
 						gph = begin(gphi.matrix()),
 						den = begin(density.linear())]
 					 GPU_LAMBDA (auto ipoint){

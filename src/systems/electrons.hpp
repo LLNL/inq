@@ -47,6 +47,14 @@ class electrons {
 public:
 	
 	enum class error { NO_ELECTRONS };
+
+	auto & phi() const {
+		return phi_;
+	}
+
+	auto & phi() {
+		return phi_;
+	}
 	
 	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		full_comm_(cart_comm),
@@ -100,8 +108,8 @@ public:
 			logger()->info("  inq is running on the cpu\n");
 #endif
 			logger()->info("state parallelization:");
-			logger()->info("  {} states divided among {} partitions", phi_.fields().set_part().size(), phi_.fields().set_part().comm_size());
-			logger()->info("  partition 0 has {} states and the last partition has {} states\n", phi_.fields().set_part().local_size(0), phi_.fields().set_part().local_size(phi_.fields().set_part().comm_size() - 1));
+			logger()->info("  {} states divided among {} partitions", phi().fields().set_part().size(), phi().fields().set_part().comm_size());
+			logger()->info("  partition 0 has {} states and the last partition has {} states\n", phi().fields().set_part().local_size(0), phi().fields().set_part().local_size(phi().fields().set_part().comm_size() - 1));
 				
 			logger()->info("real-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_dist(0).size(), states_basis_.part().size(), states_basis_.cubic_dist(0).comm_size());
@@ -123,19 +131,19 @@ public:
 
 	template <typename ArrayType>
 	void update_occupations(ArrayType const eigenval) {
-		states_.update_occupations(phi_.fields().set_comm(), phi_.fields().set_part(), eigenval, phi_.occupations());
+		states_.update_occupations(phi().fields().set_comm(), phi().fields().set_part(), eigenval, phi().occupations());
 	}
 
 	void save(std::string const & dirname) const {
-		operations::io::save(dirname + "/states", phi_.fields());
-		if(phi_.fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi_.fields().set_comm(), phi_.fields().set_part(), phi_.occupations());
+		operations::io::save(dirname + "/states", phi().fields());
+		if(phi().fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), phi().occupations());
 	}
 		
 	auto load(std::string const & dirname) {
-		return operations::io::load(dirname + "/states", phi_.fields())
-			and operations::io::load(dirname + "/ocupations", phi_.fields().set_comm(), phi_.fields().set_part(), phi_.occupations());
+		return operations::io::load(dirname + "/states", phi().fields())
+			and operations::io::load(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), phi().occupations());
 	}
-		
+	
 private:
 	static std::string generate_tiny_uuid(){
 		auto uuid = boost::uuids::random_generator{}();
@@ -145,6 +153,7 @@ private:
 		return std::string(it((unsigned char*)&tiny), it((unsigned char*)&tiny+sizeof(tiny)));//.append((3-sizeof(tiny)%3)%3,'=');
 	}
 
+	
 public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
 	mutable boost::mpi3::cartesian_communicator<2> full_comm_;
@@ -155,9 +164,11 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
 	states::ks_states states_;
+private:
 	states::orbital_set<basis::real_space, complex> phi_;
-	basis::field<basis::real_space, double> density_;
 
+public:
+	basis::field<basis::real_space, double> density_;
 	std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
 private:
 	std::shared_ptr<spdlog::logger> logger_;
@@ -194,14 +205,14 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	CHECK(electrons.states_.num_electrons() == 38.0_a);
 	CHECK(electrons.states_.num_states() == 19);
 	
-	for(int ist = 0; ist < electrons.phi_.fields().set_part().local_size(); ist++){
-		auto istg = electrons.phi_.fields().set_part().local_to_global(ist);
+	for(int ist = 0; ist < electrons.phi().fields().set_part().local_size(); ist++){
+		auto istg = electrons.phi().fields().set_part().local_to_global(ist);
 
-		electrons.phi_.occupations()[ist] = cos(istg.value());
+		electrons.phi().occupations()[ist] = cos(istg.value());
 		
-		for(int ip = 0; ip < electrons.phi_.fields().basis().local_size(); ip++){
-			auto ipg = electrons.phi_.fields().basis().part().local_to_global(ip);
-			electrons.phi_.fields().matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
+		for(int ip = 0; ip < electrons.phi().fields().basis().local_size(); ip++){
+			auto ipg = electrons.phi().fields().basis().part().local_to_global(ip);
+			electrons.phi().fields().matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
 		}
 	}
 
@@ -211,10 +222,10 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 
 	electrons_read.load("electron_restart");
 
-	for(int ist = 0; ist < electrons.phi_.fields().set_part().local_size(); ist++){
-		CHECK(electrons.phi_.occupations()[ist] == electrons_read.phi_.occupations()[ist]);
-		for(int ip = 0; ip < electrons.phi_.fields().basis().local_size(); ip++){
-			CHECK(electrons.phi_.fields().matrix()[ip][ist] == electrons_read.phi_.fields().matrix()[ip][ist]);
+	for(int ist = 0; ist < electrons.phi().fields().set_part().local_size(); ist++){
+		CHECK(electrons.phi().occupations()[ist] == electrons_read.phi().occupations()[ist]);
+		for(int ip = 0; ip < electrons.phi().fields().basis().local_size(); ip++){
+			CHECK(electrons.phi().fields().matrix()[ip][ist] == electrons_read.phi().fields().matrix()[ip][ist]);
 		}
 	}
 
