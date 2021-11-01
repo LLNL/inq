@@ -66,6 +66,7 @@ public:
 	
 	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		full_comm_(cart_comm),
+		lot_comm_({boost::mpi3::environment::get_self_instance(), {}}),
 		states_comm_(full_comm_.axis(0)),
 		atoms_comm_(states_comm_),
 		basis_comm_(full_comm_.axis(1)),
@@ -166,6 +167,7 @@ private:
 public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
 	mutable boost::mpi3::cartesian_communicator<2> full_comm_;
+	mutable boost::mpi3::cartesian_communicator<1> lot_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> states_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> atoms_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> basis_comm_;

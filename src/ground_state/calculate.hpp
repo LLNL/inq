@@ -101,8 +101,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			electrons.update_occupations(eigenvalues);
 		}
 
-		{
-			auto fphi = operations::space::to_fourier(std::move(electrons.phi()));
+		for(auto & phi : electrons.lot()) {
+			auto fphi = operations::space::to_fourier(phi);
 				
 			switch(solver.eigensolver()){
 					
@@ -116,15 +116,16 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 					
 			case input::scf::scf_eigensolver::DAVIDSON:
 				eigensolvers::davidson(ham, prec, fphi);
-				//exit(0);
 				break;
 					
 			default:
 				assert(false);
 			}
-				
-			electrons.phi().fields() = operations::space::to_real(std::move(fphi.fields()));
-				
+
+			//This fails, I don't know why. XA
+			// phi = operations::space::to_real(fphi);			
+
+			phi.fields() = operations::space::to_real(fphi.fields());
 		}
 			
 		//update the Hartree-Fock operator, mixing the new and old orbitals
