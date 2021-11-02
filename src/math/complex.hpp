@@ -16,8 +16,10 @@ namespace inq {
 
 #ifdef ENABLE_CUDA
 using complex = thrust::complex<double>;
+using thrust::polar;
 #else
 using complex = std::complex<double>;
+using std::polar;
 #endif
 
 GPU_FUNCTION inline double real(const double & x){
@@ -48,10 +50,6 @@ GPU_FUNCTION inline auto fabs(complex const & z){
 	return abs(z);
 }
 
-GPU_FUNCTION inline auto expi(const double & x){
- return complex{cos(x), sin(x)};
-}
-
 }
 
 #ifdef INQ_MATH_COMPLEX_UNIT_TEST
@@ -77,8 +75,6 @@ TEST_CASE("Class math::complex", "[math::complex]"){
 	CHECK(imag(zz) == 890.74);
 	CHECK(norm(zz) == 1221408.5_a);
 	CHECK(fabs(zz) == 1105.1735_a);
-
-	CHECK(expi(-1.5938) == exp(complex{0.0, -1.5938}));
 	
 }
 

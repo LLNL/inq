@@ -35,7 +35,7 @@ namespace operations {
 
 
 template <typename FactorType = double>
-void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, math::vector3<complex> const & gradcoeff = {0.0, 0.0, 0.0}){
+void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, math::vector3<double> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -53,7 +53,7 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FactorType = double>
-void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, FactorType factor = 1.0, math::vector3<complex> const & gradcoeff = {0.0, 0.0, 0.0}){
+void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, FactorType factor = 1.0, math::vector3<double> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -68,7 +68,7 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, Fac
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FactorType = double>
-basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, math::vector3<complex> const & gradcoeff = {0.0, 0.0, 0.0}){
+basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, math::vector3<double> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 	
