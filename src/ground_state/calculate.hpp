@@ -144,7 +144,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 		double density_diff = 0.0;
 		{
-			auto new_density = density::calculate(electrons.phi().occupations(), electrons.phi().fields(), electrons.density_basis_);
+			auto new_density = density::calculate(electrons);
 			density_diff = operations::integral_absdiff(electrons.density_, new_density);				
 			density_diff /= electrons.states_.num_electrons();
 				
@@ -217,7 +217,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	}
 
 	//make sure we have a density consistent with phi
-	electrons.density_ = density::calculate(electrons.phi().occupations(), electrons.phi().fields(), electrons.density_basis_);
+	electrons.density_ = density::calculate(electrons);
 
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 

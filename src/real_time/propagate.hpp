@@ -41,7 +41,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 
 		result res;
 
-		electrons.density_ = density::calculate(electrons.phi().occupations(), electrons.phi().fields(), electrons.density_basis_);
+		electrons.density_ = density::calculate(electrons);
 		
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient(), electrons.full_comm_);
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
@@ -74,7 +74,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), electrons.phi());
 				
 				//calculate H(t + dt) from the full step propagation
-				electrons.density_ = density::calculate(electrons.phi().occupations(), fullstep_phi, electrons.density_basis_);
+				electrons.density_ = density::calculate(electrons);
 				ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 			}
 			
@@ -90,7 +90,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			operations::exponential_in_place(ham, complex(0.0, dt/2.0), electrons.phi());
 
 			//calculate the new density, energy, forces
-			electrons.density_ = density::calculate(electrons.phi().occupations(),  electrons.phi().fields(), electrons.density_basis_);
+			electrons.density_ = density::calculate(electrons);
 			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 			
 			auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi()), electrons.phi());
