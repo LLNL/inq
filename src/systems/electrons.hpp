@@ -21,8 +21,6 @@
 #include <input/scf.hpp>
 #include <ions/interaction.hpp>
 #include <systems/ions.hpp>
-#include <density/calculate.hpp>
-#include <density/normalize.hpp>
 #include <states/orbital_set.hpp>
 
 #include <boost/uuid/uuid.hpp>
