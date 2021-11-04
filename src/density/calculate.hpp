@@ -25,6 +25,7 @@
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <operations/transfer.hpp>
+#include <systems/electrons.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -93,7 +94,26 @@ calculate(const occupations_array_type & occupations, field_set_type & phi, type
 	return calculate(occupations, phi);
 	
 }
+
+basis::field<basis::real_space, double> calculate(const systems::electrons & elec){
 	
+	basis::field<basis::real_space, double> density(elec.density_basis_);
+
+	density = 0.0;
+	
+	for(auto & phi : elec.lot()) {
+		auto part_dens = density::calculate(phi.occupations(), phi.fields());
+		gpu::run(elec.density_basis_.local_size(),
+						 [den = begin(density.linear()), par = begin(part_dens.linear())] GPU_LAMBDA (auto ip){
+							 den[ip] += par[ip];
+						 });
+	}
+	
+	if(elec.lot_comm_.size() > 1) elec.lot_comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+
+	return density;
+}
+
 }
 }
 

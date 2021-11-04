@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <density/calculate.hpp>
 #include <operations/gradient.hpp>
 #include <solvers/poisson.hpp>
 #include <systems/ions.hpp>
@@ -49,20 +50,20 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 
 	CALI_CXX_MARK_FUNCTION;
 	
-  auto gphi = operations::gradient(electrons.phi_.fields());
-	auto gdensity = density::calculate_gradient(electrons.phi_.occupations(), electrons.phi_.fields(), gphi);
+  auto gphi = operations::gradient(electrons.phi().fields());
+	auto gdensity = density::calculate_gradient(electrons.phi().occupations(), electrons.phi().fields(), gphi);
 	
   //the non-local potential term
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 	
 	for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
 		
-		forces_non_local[proj->iatom()] = proj->force(electrons.phi_.fields(), gphi, electrons.phi_.occupations());
+		forces_non_local[proj->iatom()] = proj->force(electrons.phi().fields(), gphi, electrons.phi().occupations());
 	}
 	
-	if(electrons.phi_.fields().full_comm().size() > 1){
+	if(electrons.phi().fields().full_comm().size() > 1){
 		CALI_CXX_MARK_SCOPE("forces_nonlocal::reduce");
-		electrons.phi_.fields().full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
+		electrons.phi().fields().full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
 	}
 	
 	//ionic force

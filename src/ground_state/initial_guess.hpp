@@ -19,12 +19,12 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 
   density::normalize(electrons.density_, electrons.states_.num_electrons());
   
-  operations::randomize(electrons.phi_.fields());
-  operations::orthogonalize(electrons.phi_.fields());
+  operations::randomize(electrons.phi().fields());
+  operations::orthogonalize(electrons.phi().fields());
 
-	math::array<double, 1> eigenvalues(electrons.phi_.fields().local_set_size());
+	math::array<double, 1> eigenvalues(electrons.phi().fields().local_set_size());
 	
-	for(long ist = 0; ist < electrons.phi_.fields().local_set_size(); ist++) eigenvalues[ist] = ist + electrons.phi_.fields().set_part().start();
+	for(long ist = 0; ist < electrons.phi().fields().local_set_size(); ist++) eigenvalues[ist] = ist + electrons.phi().fields().set_part().start();
 	
 	electrons.update_occupations(eigenvalues);
 	
