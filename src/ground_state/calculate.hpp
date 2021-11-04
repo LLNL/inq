@@ -11,6 +11,7 @@
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
+#include <hamiltonian/calculate_energy.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/energy.hpp>
@@ -172,39 +173,22 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 		{
 			CALI_CXX_MARK_SCOPE("energy_calculation");
-			
-			auto residual = ham(electrons.phi());
-			auto eigenvalues = operations::overlap_diagonal_normalized(residual, electrons.phi());
-			operations::shift(-1.0, eigenvalues, electrons.phi().fields(), residual);
-			
-			auto normres = operations::overlap_diagonal(residual);
-			auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(electrons.phi()), electrons.phi());
-			auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(electrons.phi().fields()), electrons.phi().fields());
-			
-			auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
-			
-			res.energy.eigenvalues = operations::sum(electrons.phi().occupations(), eigenvalues, energy_term);
-			res.energy.nonlocal = operations::sum(electrons.phi().occupations(), nl_me, energy_term);
-			res.energy.hf_exchange = operations::sum(electrons.phi().occupations(), exchange_me, energy_term);
 
-			auto state_conv = operations::sum(electrons.phi().occupations(), normres, [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
-					
-			electrons.phi().fields().set_comm().all_reduce_in_place_n(&res.energy.eigenvalues, 1, std::plus<>{});
-			electrons.phi().fields().set_comm().all_reduce_in_place_n(&res.energy.nonlocal, 1, std::plus<>{});
-			electrons.phi().fields().set_comm().all_reduce_in_place_n(&res.energy.hf_exchange, 1, std::plus<>{});
-			electrons.phi().fields().set_comm().all_reduce_in_place_n(&state_conv, 1, std::plus<>{});
+			auto ecalc = hamiltonian::calculate_energy(ham, electrons);
+			
+			res.energy.eigenvalues = ecalc.sum_eigenvalues_;
+			res.energy.nonlocal = ecalc.nonlocal_;
+			res.energy.hf_exchange = ecalc.hf_exchange_;
 
-			state_conv /= electrons.states_.num_electrons();
-				
 			auto energy_diff = (res.energy.eigenvalues - old_energy)/ions.geo().num_atoms();
 				
 			if(solver.verbose_output() and console){
 				console->info("SCF iter {} : e = {:.10f} de = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
-											iiter, res.energy.total(), energy_diff, density_diff, state_conv);
+											iiter, res.energy.total(), energy_diff, density_diff, ecalc.state_conv_);
 					
 				for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 					console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-												istate + 1, electrons.phi().occupations()[istate], real(eigenvalues[istate]), real(normres[istate])
+												istate + 1, electrons.phi().occupations()[istate], real(ecalc.eigenvalues_[istate]), real(ecalc.normres_[istate])
 												);
 				}
 			}

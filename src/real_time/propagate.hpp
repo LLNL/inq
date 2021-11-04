@@ -6,6 +6,7 @@
 #define INQ__REAL_TIME__PROPAGATE
 
 #include <systems/ions.hpp>
+#include <hamiltonian/calculate_energy.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/forces.hpp>
 #include <operations/overlap_diagonal.hpp>
@@ -51,9 +52,8 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		
 		ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 
-		auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi()), electrons.phi());;
-		energy.eigenvalues = operations::sum(electrons.phi().occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
-		electrons.phi().fields().set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
+		auto ecalc = hamiltonian::calculate_energy(ham, electrons);
+		energy.eigenvalues = ecalc.sum_eigenvalues_;
 		
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
@@ -92,10 +92,9 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			//calculate the new density, energy, forces
 			electrons.density_ = density::calculate(electrons);
 			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
-			
-			auto eigenvalues = operations::overlap_diagonal_normalized(ham(electrons.phi()), electrons.phi());
-			energy.eigenvalues = operations::sum(electrons.phi().occupations(), eigenvalues, [](auto occ, auto ev){ return occ*real(ev); });
-			electrons.phi().fields().set_comm().all_reduce_in_place_n(&energy.eigenvalues, 1, std::plus<>{});
+
+			auto ecalc = hamiltonian::calculate_energy(ham, electrons);
+			energy.eigenvalues = ecalc.sum_eigenvalues_;
 			
 			if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 			
