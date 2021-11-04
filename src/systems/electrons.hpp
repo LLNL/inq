@@ -81,7 +81,14 @@ public:
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
 
 		lot_.emplace_back(states_basis_, states_.num_states(), kpts.shifts(), full_comm_);
+
+		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 		
+		print(ions);
+
+	}
+
+	void print(const inq::systems::ions & ions){
 		if(full_comm_.root()){
 			logger_ = spdlog::stdout_color_mt("electrons:"+ generate_tiny_uuid());
 			logger_->set_level(spdlog::level::trace);
@@ -92,7 +99,6 @@ public:
 			logger()->info("constructed with states {}", states_);
 		}
 			
-		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 
 		if(logger()){
 			logger()->info("constructed with geometry {}", ions.geo_);
