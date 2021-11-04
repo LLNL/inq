@@ -82,6 +82,9 @@ public:
 
 		lot_.emplace_back(states_basis_, states_.num_states(), kpts.shifts(), full_comm_);
 
+		eigenvalues_.reextent({lot_.size(), states_.num_states()});
+		occupations_.reextent({lot_.size(), states_.num_states()});
+		
 		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 		
 		print(ions);
@@ -157,6 +160,23 @@ public:
 		return operations::io::load(dirname + "/states", phi().fields())
 			and operations::io::load(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), phi().occupations());
 	}
+
+	auto & eigenvalues() const {
+		return eigenvalues_;
+	}
+
+	auto & eigenvalues() {
+		return eigenvalues_;
+	}
+
+	auto & occupations() const {
+		return occupations_;
+	}
+
+	auto & occupations() {
+		return occupations_;
+	}
+		
 	
 private:
 	static std::string generate_tiny_uuid(){
@@ -181,7 +201,9 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	states::ks_states states_;
 private:
 	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
-
+	math::array<double, 2> eigenvalues_;
+	math::array<double, 2> occupations_;
+	
 public:
 	basis::field<basis::real_space, double> density_;
 	std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
