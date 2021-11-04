@@ -102,8 +102,8 @@ public:
 		
 	}
 	
-	template <typename ArrayType>
-	void update_occupations(boost::mpi3::communicator & comm, utils::partition const & part, ArrayType const & eigenval, ArrayType & occs) {
+	template <typename EigenvalType, typename OccsType>
+	void update_occupations(boost::mpi3::communicator & comm, utils::partition const & part, EigenvalType const & eigenval, OccsType & occs) {
 
 		assert(part.local_size() == eigenval.size());
 		assert(part.local_size() == occs.size());

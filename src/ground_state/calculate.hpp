@@ -97,8 +97,12 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		CALI_CXX_MARK_SCOPE("scf_iteration");
 
 		if(solver.subspace_diag()) {
-			auto eigenvalues = subspace_diagonalization(ham, electrons.phi());
-			electrons.update_occupations(eigenvalues);
+			int ilot = 0;
+			for(auto & phi : electrons.lot()) {
+				electrons.eigenvalues()[ilot] = subspace_diagonalization(ham, phi);
+				electrons.update_occupations(electrons.eigenvalues()[ilot]);
+				ilot++;
+			}
 		}
 
 		for(auto & phi : electrons.lot()) {
