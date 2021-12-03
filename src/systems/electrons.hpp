@@ -90,8 +90,8 @@ public:
 
 		lot_.emplace_back(states_basis_, states_.num_states(), kpts.shifts(), full_comm_);
 
-		eigenvalues_.reextent({lot_.size(), states_.num_states()});
-		occupations_.reextent({lot_.size(), states_.num_states()});
+		eigenvalues_.reextent({lot_.size(), phi().set_part().local_size()});
+		occupations_.reextent({lot_.size(), phi().set_part().local_size()});
 		
 		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 		
@@ -162,12 +162,12 @@ public:
 
 	void save(std::string const & dirname) const {
 		operations::io::save(dirname + "/states", phi().fields());
-		if(phi().fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), occupations());
+		if(phi().fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi().fields().set_comm(), occupations().size()*phi().fields().set_part(), occupations());
 	}
 		
 	auto load(std::string const & dirname) {
 		return operations::io::load(dirname + "/states", phi().fields())
-			and operations::io::load(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), occupations());
+			and operations::io::load(dirname + "/ocupations", phi().fields().set_comm(), occupations().size()*phi().fields().set_part(), occupations());
 	}
 
 	auto & eigenvalues() const {

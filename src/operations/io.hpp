@@ -61,7 +61,7 @@ void save(std::string const & dirname, boost::mpi3::communicator & comm, utils::
 
 	using Type = typename ArrayType::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
-	
+
 	assert(array.num_elements() == part.local_size());
 
 	auto filename = dirname + "/array";
@@ -88,7 +88,7 @@ void save(std::string const & dirname, boost::mpi3::communicator & comm, utils::
 	
 	int data_written;
 	MPI_Get_count(&status, mpi_type, &data_written);
-	assert(data_written == long(part.size()));
+	assert(data_written == long(part.local_size()));
 	
 	MPI_File_close(&fh);
 	
@@ -124,7 +124,7 @@ auto load(std::string const & dirname, boost::mpi3::communicator & comm, utils::
 	
 	int data_read;
 	MPI_Get_count(&status, mpi_type, &data_read);
-	assert(data_read == long(part.size()));
+	assert(data_read == long(part.local_size()));
 	
 	MPI_File_close(&fh);
 
