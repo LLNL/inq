@@ -40,7 +40,7 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 
 	gpu::run(density.basis().part().local_size(),
 					 [nst = gphi.set_part().local_size(),
-						occ = begin(electrons.phi().occupations()),
+						occ = begin(electrons.occupations()[0]),
 						gph = begin(gphi.matrix()),
 						den = begin(density.linear())]
 					 GPU_LAMBDA (auto ipoint){

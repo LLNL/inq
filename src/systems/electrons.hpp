@@ -61,7 +61,15 @@ public:
 	auto & lot() {
 		return lot_;
 	}
-	
+
+	auto & occupations() const {
+		return occupations_;
+	}
+
+	auto & occupations() {
+		return occupations_;
+	}
+		
 	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		full_comm_(cart_comm),
 		lot_comm_({boost::mpi3::environment::get_self_instance(), {}}),
@@ -148,17 +156,18 @@ public:
 
 	template <typename ArrayType>
 	void update_occupations(ArrayType const eigenval) {
-		states_.update_occupations(phi().fields().set_comm(), phi().fields().set_part(), eigenval, phi().occupations());
+		auto occs = occupations()[0];
+		states_.update_occupations(phi().fields().set_comm(), phi().fields().set_part(), eigenval, occs);
 	}
 
 	void save(std::string const & dirname) const {
 		operations::io::save(dirname + "/states", phi().fields());
-		if(phi().fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), phi().occupations());
+		if(phi().fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), occupations());
 	}
 		
 	auto load(std::string const & dirname) {
 		return operations::io::load(dirname + "/states", phi().fields())
-			and operations::io::load(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), phi().occupations());
+			and operations::io::load(dirname + "/ocupations", phi().fields().set_comm(), phi().fields().set_part(), occupations());
 	}
 
 	auto & eigenvalues() const {
@@ -169,15 +178,6 @@ public:
 		return eigenvalues_;
 	}
 
-	auto & occupations() const {
-		return occupations_;
-	}
-
-	auto & occupations() {
-		return occupations_;
-	}
-		
-	
 private:
 	static std::string generate_tiny_uuid(){
 		auto uuid = boost::uuids::random_generator{}();
@@ -245,7 +245,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	for(int ist = 0; ist < electrons.phi().fields().set_part().local_size(); ist++){
 		auto istg = electrons.phi().fields().set_part().local_to_global(ist);
 
-		electrons.phi().occupations()[ist] = cos(istg.value());
+		electrons.occupations()[0][ist] = cos(istg.value());
 		
 		for(int ip = 0; ip < electrons.phi().fields().basis().local_size(); ip++){
 			auto ipg = electrons.phi().fields().basis().part().local_to_global(ip);
@@ -260,7 +260,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	electrons_read.load("electron_restart");
 
 	for(int ist = 0; ist < electrons.phi().fields().set_part().local_size(); ist++){
-		CHECK(electrons.phi().occupations()[ist] == electrons_read.phi().occupations()[ist]);
+		CHECK(electrons.occupations()[0][ist] == electrons_read.occupations()[0][ist]);
 		for(int ip = 0; ip < electrons.phi().fields().basis().local_size(); ip++){
 			CHECK(electrons.phi().fields().matrix()[ip][ist] == electrons_read.phi().fields().matrix()[ip][ist]);
 		}

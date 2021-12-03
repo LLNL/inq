@@ -45,11 +45,11 @@ namespace hamiltonian {
       
       auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
       
-      sum_eigenvalues_ = operations::sum(el.phi().occupations(), eigenvalues_, energy_term);
-      nonlocal_ = operations::sum(el.phi().occupations(), nl_me, energy_term);
-      hf_exchange_ = operations::sum(el.phi().occupations(), exchange_me, energy_term);
+      sum_eigenvalues_ = operations::sum(el.occupations()[0], eigenvalues_, energy_term);
+      nonlocal_ = operations::sum(el.occupations()[0], nl_me, energy_term);
+      hf_exchange_ = operations::sum(el.occupations()[0], exchange_me, energy_term);
 
-      state_conv_ = operations::sum(el.phi().occupations(), normres_, [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
+      state_conv_ = operations::sum(el.occupations()[0], normres_, [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
 					
 			state_conv_ /= el.states_.num_electrons();
       

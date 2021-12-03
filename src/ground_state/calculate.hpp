@@ -142,7 +142,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			}
 				
 			//probably the occupations should be mixed too
-			ham.exchange.hf_occupations = electrons.phi().occupations();
+			ham.exchange.hf_occupations = electrons.occupations()[0];
 		}
 
 		CALI_MARK_BEGIN("mixing");
@@ -188,7 +188,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 					
 				for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 					console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-												istate + 1, electrons.phi().occupations()[istate], real(ecalc.eigenvalues_[istate]), real(ecalc.normres_[istate])
+												istate + 1, electrons.occupations()[0][istate], real(ecalc.eigenvalues_[istate]), real(ecalc.normres_[istate])
 												);
 				}
 			}
