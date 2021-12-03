@@ -70,6 +70,11 @@ public:
 		
 		return *this;
 	}
+
+	friend auto operator*(const long factor, partition part){
+		part *= factor;
+		return part;
+	}
 	
 	auto size() const {
 		return size_;

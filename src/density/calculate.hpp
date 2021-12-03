@@ -102,7 +102,7 @@ basis::field<basis::real_space, double> calculate(const systems::electrons & ele
 	density = 0.0;
 	
 	for(auto & phi : elec.lot()) {
-		auto part_dens = density::calculate(phi.occupations(), phi.fields());
+		auto part_dens = density::calculate(elec.occupations()[0], phi.fields());
 		gpu::run(elec.density_basis_.local_size(),
 						 [den = begin(density.linear()), par = begin(part_dens.linear())] GPU_LAMBDA (auto ip){
 							 den[ip] += par[ip];

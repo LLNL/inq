@@ -147,7 +147,7 @@ namespace hamiltonian {
 
 			projectors_all_.apply(proj, hphi, phi.kpoint());
 
-			return states::orbital_set<basis::real_space, complex>{std::move(hphi), phi.occupations(), phi.kpoint()};
+			return states::orbital_set<basis::real_space, complex>{std::move(hphi), phi.kpoint()};
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,7 +171,7 @@ namespace hamiltonian {
 			operations::laplacian_add(phi.fields(), hphi, -0.5, -2.0*phi.kpoint());
 			non_local(phi.fields(), hphi);
 
-			return states::orbital_set<basis::fourier_space, complex>{std::move(hphi), phi.occupations(), phi.kpoint()};
+			return states::orbital_set<basis::fourier_space, complex>{std::move(hphi), phi.kpoint()};
 		}
 		
 		////////////////////////////////////////////////////////////////////////////////////////////

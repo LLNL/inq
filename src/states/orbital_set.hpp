@@ -36,7 +36,6 @@ namespace states {
 
 		orbital_set(Basis const & basis, int const num_vectors, math::vector3<double> const & kpoint, boost::mpi3::cartesian_communicator<2> comm)
 			:fields_(basis, num_vectors, comm),
-       occupations_(fields_.local_set_size()),
 			 kpoint_(kpoint){
 		}
 		
@@ -44,9 +43,8 @@ namespace states {
 		:orbital_set(basis, num_vectors, math::vector3<double>{0.0, 0.0, 0.0}, comm){
 		}
 		
-		orbital_set(basis::field_set<Basis, Type> && fields, math::array<double, 1> const & occs, math::vector3<double> const & kpoint)
+		orbital_set(basis::field_set<Basis, Type> && fields, math::vector3<double> const & kpoint)
 		:fields_(std::move(fields)),
-       occupations_(occs),
 			 kpoint_(kpoint){
 		}
 
@@ -66,15 +64,6 @@ namespace states {
     auto & fields() {
       return fields_;
     }
-
-    auto & occupations() const {
-      return occupations_;
-    }
-
-    auto & occupations() {
-      return occupations_;
-    }
-
 		auto & kpoint() const {
 			return kpoint_;
 		}
@@ -126,7 +115,6 @@ namespace states {
 	private:
 
     basis::field_set<Basis, Type> fields_;
-    math::array<double, 1> occupations_;
 		math::vector3<double> kpoint_;
 		
   };
