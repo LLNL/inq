@@ -85,9 +85,9 @@ TEST_CASE("class ions::kpoints", "[inq::input::kpoints]") {
     CHECK(kpts.dims()[0] == 1);
     CHECK(kpts.dims()[1] == 1);
     CHECK(kpts.dims()[2] == 1);
-    CHECK(kpts.shifts()[0] == 0.0_a);
-    CHECK(kpts.shifts()[1] == 0.0_a);
-    CHECK(kpts.shifts()[2] == 0.0_a);
+    CHECK(kpts.is_shift()[0] == 0);
+    CHECK(kpts.is_shift()[1] == 0);
+    CHECK(kpts.is_shift()[2] == 0);
     
 	}
   
@@ -97,21 +97,21 @@ TEST_CASE("class ions::kpoints", "[inq::input::kpoints]") {
     CHECK(kpts.dims()[0] == 10);
     CHECK(kpts.dims()[1] == 9);
     CHECK(kpts.dims()[2] == 8);
-    CHECK(kpts.shifts()[0] == 0.0_a);
-    CHECK(kpts.shifts()[1] == 0.0_a);
-    CHECK(kpts.shifts()[2] == 0.0_a);
+    CHECK(kpts.is_shift()[0] == 0);
+    CHECK(kpts.is_shift()[1] == 0);
+    CHECK(kpts.is_shift()[2] == 0);
     
 	}
 	
 	SECTION("Grid - two arguments"){
-		auto kpts = input::kpoints::grid({10, 9, 8}, {0.2, 0.1, 0.5});
+		auto kpts = input::kpoints::grid({10, 9, 8}, true);
 
     CHECK(kpts.dims()[0] == 10);
     CHECK(kpts.dims()[1] == 9);
     CHECK(kpts.dims()[2] == 8);
-    CHECK(kpts.shifts()[0] == 0.2_a);
-    CHECK(kpts.shifts()[1] == 0.1_a);
-    CHECK(kpts.shifts()[2] == 0.5_a);
+    CHECK(kpts.is_shift()[0] == 1);
+    CHECK(kpts.is_shift()[1] == 1);
+    CHECK(kpts.is_shift()[2] == 1);
     
 	}
 }
