@@ -107,13 +107,8 @@ public:
 																					 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
 
 		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
-
 			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shift[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shift[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shift[2])/kpts.dims()[2]};
-			
-			std::cout << "KPOINT " << kpoint << std::endl;
-
-			//TODO: convert from reduced to real kpoints
-			
+			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
 		}
 
