@@ -18,15 +18,18 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
   electrons.density_ = electrons.atomic_pot_.atomic_electronic_density(electrons.density_basis_, ions.cell(), ions.geo());
 
   density::normalize(electrons.density_, electrons.states_.num_electrons());
-  
-  operations::randomize(electrons.phi().fields());
-  operations::orthogonalize(electrons.phi().fields());
 
-	math::array<double, 1> eigenvalues(electrons.phi().fields().local_set_size());
+	for(auto & phi : electrons.lot()) {
+		
+		operations::randomize(phi.fields());
+		operations::orthogonalize(phi.fields());
+		
+		math::array<double, 1> eigenvalues(phi.fields().local_set_size());
+		
+		for(long ist = 0; ist < phi.fields().local_set_size(); ist++) eigenvalues[ist] = ist + phi.fields().set_part().start();
 	
-	for(long ist = 0; ist < electrons.phi().fields().local_set_size(); ist++) eigenvalues[ist] = ist + electrons.phi().fields().set_part().start();
-	
-	electrons.update_occupations(eigenvalues);
+		electrons.update_occupations(eigenvalues);
+	}
 	
 }
 }
