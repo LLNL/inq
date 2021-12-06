@@ -52,6 +52,10 @@ public:
   auto num() const {
     return product(dims_);
   }
+
+	auto is_shift() const {
+		return math::vector3<int>(shifts_[0] > 0.0, shifts_[1] > 0.0, shifts_[2] > 0.0);
+	}
   
 private:
 
