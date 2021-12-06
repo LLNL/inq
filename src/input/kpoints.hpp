@@ -34,40 +34,37 @@ class kpoints {
 public:
 
   static auto gamma(){
-    return kpoints({1, 1, 1}, {0.0, 0.0, 0.0});
+    return kpoints({1, 1, 1}, false);
   }
   
-  static auto grid(math::vector3<int> const & dims, math::vector3<double> const & shifts = {0.0, 0.0, 0.0}){
-    return kpoints(dims, shifts);
+  static auto grid(math::vector3<int> const & dims, bool shifted = false) { 
+    return kpoints(dims, shifted);
   }
-
+	
   auto & dims() const {
     return dims_;
   }
-
-  auto & shifts() const {
-    return shifts_;
-  }   
-
+	
   auto num() const {
     return product(dims_);
   }
 
-	auto is_shift() const {
-		return math::vector3<int>(shifts_[0] > 0.0, shifts_[1] > 0.0, shifts_[2] > 0.0);
+	math::vector3<int> is_shift() const {
+		if(shifted_) return {1, 1, 1};
+		return {0, 0, 0};
 	}
   
 private:
-
-  kpoints(math::vector3<int> const & dims, math::vector3<double> const & shifts):
+	
+  kpoints(math::vector3<int> const & dims, bool shifted):
     dims_(dims),
-    shifts_(shifts)
-  {
-  }
-  
-  math::vector3<int> dims_;
-  math::vector3<double> shifts_;
-
+		shifted_(shifted)
+	{
+	}
+	
+	math::vector3<int> dims_;
+	bool shifted_;
+	
 };
 }
 }
