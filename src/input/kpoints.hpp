@@ -34,36 +34,37 @@ class kpoints {
 public:
 
   static auto gamma(){
-    return kpoints({1, 1, 1}, {0.0, 0.0, 0.0});
+    return kpoints({1, 1, 1}, false);
   }
   
-  static auto grid(math::vector3<int> const & dims, math::vector3<double> const & shifts = {0.0, 0.0, 0.0}){
-    return kpoints(dims, shifts);
+  static auto grid(math::vector3<int> const & dims, bool shifted = false) { 
+    return kpoints(dims, shifted);
   }
-
+	
   auto & dims() const {
     return dims_;
   }
-
-  auto & shifts() const {
-    return shifts_;
-  }   
-
+	
   auto num() const {
     return product(dims_);
   }
+
+	math::vector3<int> is_shifted() const {
+		if(shifted_) return {1, 1, 1};
+		return {0, 0, 0};
+	}
   
 private:
-
-  kpoints(math::vector3<int> const & dims, math::vector3<double> const & shifts):
+	
+  kpoints(math::vector3<int> const & dims, bool shifted):
     dims_(dims),
-    shifts_(shifts)
-  {
-  }
-  
-  math::vector3<int> dims_;
-  math::vector3<double> shifts_;
-
+		shifted_(shifted)
+	{
+	}
+	
+	math::vector3<int> dims_;
+	bool shifted_;
+	
 };
 }
 }
@@ -84,9 +85,9 @@ TEST_CASE("class ions::kpoints", "[inq::input::kpoints]") {
     CHECK(kpts.dims()[0] == 1);
     CHECK(kpts.dims()[1] == 1);
     CHECK(kpts.dims()[2] == 1);
-    CHECK(kpts.shifts()[0] == 0.0_a);
-    CHECK(kpts.shifts()[1] == 0.0_a);
-    CHECK(kpts.shifts()[2] == 0.0_a);
+    CHECK(kpts.is_shifted()[0] == 0);
+    CHECK(kpts.is_shifted()[1] == 0);
+    CHECK(kpts.is_shifted()[2] == 0);
     
 	}
   
@@ -96,21 +97,21 @@ TEST_CASE("class ions::kpoints", "[inq::input::kpoints]") {
     CHECK(kpts.dims()[0] == 10);
     CHECK(kpts.dims()[1] == 9);
     CHECK(kpts.dims()[2] == 8);
-    CHECK(kpts.shifts()[0] == 0.0_a);
-    CHECK(kpts.shifts()[1] == 0.0_a);
-    CHECK(kpts.shifts()[2] == 0.0_a);
+    CHECK(kpts.is_shifted()[0] == 0);
+    CHECK(kpts.is_shifted()[1] == 0);
+    CHECK(kpts.is_shifted()[2] == 0);
     
 	}
 	
 	SECTION("Grid - two arguments"){
-		auto kpts = input::kpoints::grid({10, 9, 8}, {0.2, 0.1, 0.5});
+		auto kpts = input::kpoints::grid({10, 9, 8}, true);
 
     CHECK(kpts.dims()[0] == 10);
     CHECK(kpts.dims()[1] == 9);
     CHECK(kpts.dims()[2] == 8);
-    CHECK(kpts.shifts()[0] == 0.2_a);
-    CHECK(kpts.shifts()[1] == 0.1_a);
-    CHECK(kpts.shifts()[2] == 0.5_a);
+    CHECK(kpts.is_shifted()[0] == 1);
+    CHECK(kpts.is_shifted()[1] == 1);
+    CHECK(kpts.is_shifted()[2] == 1);
     
 	}
 }
