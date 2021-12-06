@@ -100,14 +100,14 @@ public:
 			positions[3*iatom + 2] = pos[2];
 		}
 
-		auto is_shift = kpts.is_shift();
+		auto is_shifted = kpts.is_shifted();
 		
-		auto nred = spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address.data()), map.data(), (int const *) &kpts.dims(), (int const *) &is_shift, 0,
+		auto nred = spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address.data()), map.data(), (int const *) &kpts.dims(), (int const *) &is_shifted, 0,
 																					 reinterpret_cast<double (*)[3]>(const_cast<double *>(ions.cell().amat())),
 																					 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
 
 		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
-			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shift[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shift[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shift[2])/kpts.dims()[2]};
+			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shifted[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shifted[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shifted[2])/kpts.dims()[2]};
 			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
 		}
