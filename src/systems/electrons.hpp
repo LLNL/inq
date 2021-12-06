@@ -85,10 +85,39 @@ public:
 
 		CALI_CXX_MARK_FUNCTION;
 
-		assert(kpts.num() == 1);
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
 
-		lot_.emplace_back(states_basis_, states_.num_states(), kpts.shifts(), full_comm_);
+		std::vector<int> grid_address(3*kpts.num());
+		std::vector<int> map(kpts.num());
+		std::vector<int> types(ions.geo().num_atoms());
+		std::vector<double> positions(3*ions.geo().num_atoms());
+		
+		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
+			types[iatom] = ions.geo().atoms()[iatom].atomic_number();
+			auto pos = ions.cell().cart_to_crystal(ions.cell().position_in_cell(ions.geo().coordinates()[iatom]));
+			positions[3*iatom + 0] = pos[0];
+			positions[3*iatom + 1] = pos[1];
+			positions[3*iatom + 2] = pos[2];
+		}
+
+		auto is_shift = kpts.is_shift();
+		
+		auto nred = spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address.data()), map.data(), (int const *) &kpts.dims(), (int const *) &is_shift, 0,
+																					 reinterpret_cast<double (*)[3]>(const_cast<double *>(ions.cell().amat())),
+																					 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
+
+		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
+
+			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shift[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shift[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shift[2])/kpts.dims()[2]};
+			
+			std::cout << "KPOINT " << kpoint << std::endl;
+
+			//TODO: convert from reduced to real kpoints
+			
+			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
+		}
+
+		assert(lot_.size() == kpts.num());
 
 		eigenvalues_.reextent({lot_.size(), phi().set_part().local_size()});
 		occupations_.reextent({lot_.size(), phi().set_part().local_size()});
