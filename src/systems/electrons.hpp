@@ -112,7 +112,7 @@ public:
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
 		}
 
-		assert(lot_.size() == kpts.num());
+		assert(long(lot_.size()) == kpts.num());
 
 		eigenvalues_.reextent({lot_.size(), phi().set_part().local_size()});
 		occupations_.reextent({lot_.size(), phi().set_part().local_size()});
