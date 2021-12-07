@@ -41,8 +41,9 @@ public:
 													NON_COLLINEAR
 	};
         
-	ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0, double temperature = 0.0):
-		temperature_(temperature)
+	ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0, double temperature = 0.0, int nkpoints = 1):
+		temperature_(temperature),
+		nkpoints_(nkpoints)
 	{
 		
 		max_occ_ = 1.0;
@@ -162,8 +163,9 @@ public:
 			}
 
 			assert(fabs(comm.all_reduce_value(operations::sum(occs)) - num_electrons_) <= tol);
-			
 		}
+
+		for(int ist = 0; ist < part.local_size(); ist++) occs[ist] /= (nkpoints_*nquantumnumbers_);
 		
 	}
 	
@@ -174,6 +176,7 @@ private:
 	int nquantumnumbers_;
 	double temperature_;
 	double max_occ_;
+	int nkpoints_;
 
 };
 
@@ -256,8 +259,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(5)) CHECK(occupations[part.global_to_local(utils::global_index(5))] == 3.779107816290222e-33_a);
 		
   }
-
-  SECTION("Spin polarized"){
+	
+	SECTION("Spin polarized"){
     
     states::ks_states st(states::ks_states::spin_config::POLARIZED, 11.0);
 
