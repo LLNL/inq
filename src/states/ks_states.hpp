@@ -106,8 +106,8 @@ public:
 	template <typename EigenvalType, typename OccsType>
 	void update_occupations(boost::mpi3::communicator & comm, utils::partition const & part, EigenvalType const & eigenval, OccsType & occs) {
 
-		assert(part.local_size() == eigenval.size());
-		assert(part.local_size() == occs.size());
+		assert(part.local_size() == eigenval[0].size());
+		assert(part.local_size() == occs[0].size());
 		
 		double const tol = 1e-10;
 		double efermi;
@@ -117,7 +117,7 @@ public:
 			auto rem_electrons = num_electrons_;
 			for(int ist = 0; ist < nstates_; ist++){
 				auto occ = std::min(2.0, rem_electrons);
-				if(part.contains(ist)) occs[ist - part.start()] = occ;
+				if(part.contains(ist)) occs[0][ist - part.start()] = occ;
 				rem_electrons -= occ;
 			}
 			
@@ -129,15 +129,15 @@ public:
 			auto drange = dsmear*sqrt(-log(tol*0.01));
 
 			double emin, emax;
-			if(part.local_size() > 0) emin = real(eigenval[0]) - drange;
-			if(part.local_size() > 0) emax = real(eigenval[part.local_size() - 1]) + drange;
+			if(part.local_size() > 0) emin = real(eigenval[0][0]) - drange;
+			if(part.local_size() > 0) emax = real(eigenval[0][part.local_size() - 1]) + drange;
 			comm.broadcast_value(emin, 0);
 			comm.barrier();
 			comm.broadcast_value(emax, part.location(part.size() - 1));
 
 			//check that the eigenvalues are sorted
 			for(int ist = 1; ist < part.local_size(); ist++){
-				assert(real(eigenval[ist]) >= real(eigenval[ist - 1]));
+				assert(real(eigenval[0][ist]) >= real(eigenval[0][ist - 1]));
 			}
 
 			double sumq;
@@ -146,7 +146,7 @@ public:
 				sumq = 0.0;
 
 				for(int ist = 0; ist < part.local_size(); ist++){
-					auto xx = (efermi - real(eigenval[ist]))/dsmear;
+					auto xx = (efermi - real(eigenval[0][ist]))/dsmear;
 					sumq = sumq + max_occ_*smear_function(xx);
 				}
 				comm.all_reduce_in_place_n(&sumq, 1, std::plus<>{});
@@ -158,14 +158,14 @@ public:
 			}
 
 			for(int ist = 0; ist < part.local_size(); ist++){
-				auto xx = (efermi - real(eigenval[ist]))/dsmear;
-				occs[ist] = max_occ_*smear_function(xx);
+				auto xx = (efermi - real(eigenval[0][ist]))/dsmear;
+				occs[0][ist] = max_occ_*smear_function(xx);
 			}
 
-			assert(fabs(comm.all_reduce_value(operations::sum(occs)) - num_electrons_) <= tol);
+			assert(fabs(comm.all_reduce_value(operations::sum(occs[0])) - num_electrons_) <= tol);
 		}
 
-		for(int ist = 0; ist < part.local_size(); ist++) occs[ist] /= (nkpoints_*nquantumnumbers_);
+		for(int ist = 0; ist < part.local_size(); ist++) occs[0][ist] /= (nkpoints_*nquantumnumbers_);
 		
 	}
 	
@@ -206,24 +206,24 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		utils::partition part(st.num_states(), comm);
 
-		math::array<double, 1> eigenvalues(part.local_size());
-		math::array<double, 1> occupations(part.local_size());
+		math::array<double, 2> eigenvalues({1, part.local_size()});
+		math::array<double, 2> occupations({1, part.local_size()});
 
-		if(part.contains(0)) eigenvalues[part.global_to_local(utils::global_index(0))] = 0.1;
-		if(part.contains(1)) eigenvalues[part.global_to_local(utils::global_index(1))] = 0.2;
-		if(part.contains(2)) eigenvalues[part.global_to_local(utils::global_index(2))] = 0.3;
-		if(part.contains(3)) eigenvalues[part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[part.global_to_local(utils::global_index(4))] = 0.4;
-		if(part.contains(5)) eigenvalues[part.global_to_local(utils::global_index(5))] = 1.0;
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
 		
 		st.update_occupations(comm, part, eigenvalues, occupations);
 		
-		if(part.contains(0)) CHECK(occupations[part.global_to_local(utils::global_index(0))] == 2.0);
-		if(part.contains(1)) CHECK(occupations[part.global_to_local(utils::global_index(1))] == 2.0);
-		if(part.contains(2)) CHECK(occupations[part.global_to_local(utils::global_index(2))] == 2.0);
-		if(part.contains(3)) CHECK(occupations[part.global_to_local(utils::global_index(3))] == 2.0);
-		if(part.contains(4)) CHECK(occupations[part.global_to_local(utils::global_index(4))] == 2.0);
-		if(part.contains(5)) CHECK(occupations[part.global_to_local(utils::global_index(5))] == 1.0);
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 1.0);
 
   }
 	
@@ -239,24 +239,24 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		
 		utils::partition part(st.num_states(), comm);
 		
-		math::array<double, 1> eigenvalues(part.local_size());
-		math::array<double, 1> occupations(part.local_size());
+		math::array<double, 2> eigenvalues({1, part.local_size()});
+		math::array<double, 2> occupations({1, part.local_size()});
 
-		if(part.contains(0)) eigenvalues[part.global_to_local(utils::global_index(0))] = 0.0;
-		if(part.contains(1)) eigenvalues[part.global_to_local(utils::global_index(1))] = 0.2;
-		if(part.contains(2)) eigenvalues[part.global_to_local(utils::global_index(2))] = 0.3;
-		if(part.contains(3)) eigenvalues[part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[part.global_to_local(utils::global_index(4))] = 0.4;
-		if(part.contains(5)) eigenvalues[part.global_to_local(utils::global_index(5))] = 1.0;
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.0;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
 		
 		st.update_occupations(comm, part, eigenvalues, occupations);
 		
-		if(part.contains(0)) CHECK(occupations[part.global_to_local(utils::global_index(0))] == 2.0_a);
-		if(part.contains(1)) CHECK(occupations[part.global_to_local(utils::global_index(1))] == 1.9810772793_a);
-		if(part.contains(2)) CHECK(occupations[part.global_to_local(utils::global_index(2))] == 0.0094611446_a);
-		if(part.contains(3)) CHECK(occupations[part.global_to_local(utils::global_index(3))] == 0.0094611446_a);
-		if(part.contains(4)) CHECK(occupations[part.global_to_local(utils::global_index(4))] == 4.315768121820668e-07_a);
-		if(part.contains(5)) CHECK(occupations[part.global_to_local(utils::global_index(5))] == 3.779107816290222e-33_a);
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0_a);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 1.9810772793_a);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 0.0094611446_a);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 0.0094611446_a);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 4.315768121820668e-07_a);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 3.779107816290222e-33_a);
 		
   }
 	

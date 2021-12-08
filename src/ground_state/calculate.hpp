@@ -101,9 +101,9 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			int ilot = 0;
 			for(auto & phi : electrons.lot()) {
 				electrons.eigenvalues()[ilot] = subspace_diagonalization(ham, phi);
-				electrons.update_occupations(electrons.eigenvalues()[ilot]);
 				ilot++;
 			}
+			electrons.update_occupations(electrons.eigenvalues());
 		}
 
 		for(auto & phi : electrons.lot()) {

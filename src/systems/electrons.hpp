@@ -180,8 +180,7 @@ public:
 
 	template <typename ArrayType>
 	void update_occupations(ArrayType const eigenval) {
-		auto occs = occupations()[0];
-		states_.update_occupations(phi().fields().set_comm(), phi().fields().set_part(), eigenval, occs);
+		states_.update_occupations(phi().fields().set_comm(), phi().fields().set_part(), eigenval, occupations_);
 	}
 
 	void save(std::string const & dirname) const {
