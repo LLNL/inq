@@ -179,7 +179,7 @@ public:
 				focc[ie] = max_occ_*smear_function(xx);
 			}
 			
-			assert(fabs(comm.all_reduce_value(operations::sum(focc) - num_electrons_)) <= 1e-10);
+			assert(fabs(comm.all_reduce_value(operations::sum(focc)) - num_electrons_) <= 1e-10);
 		}
 
 		for(long ie = 0; ie < feig.size(); ie++) focc[ie] /= nkpoints_;
