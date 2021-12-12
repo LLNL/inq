@@ -89,7 +89,7 @@ public:
 		return num_electrons_;
 	}
 
-	auto smear_function(double xx) const {
+	static auto smear_function(double xx)  {
 
 		double const maxarg = 200.0;
 		
@@ -102,6 +102,37 @@ public:
 		}
 		
 	}
+
+	template <typename EigType, typename FunctionType>
+	auto get_efermi(boost::mpi3::communicator & comm, double emin, double emax, EigType const & eig, FunctionType function){
+
+			
+		int const nitmax = 200;
+		double const tol = 1e-10;
+		auto drange = sqrt(-log(tol*0.01));
+
+		emin -= drange;
+		emax += drange;
+		
+		double efermi;
+		
+		for(int iter = 0; iter < nitmax; iter++){
+			efermi = 0.5*(emin + emax);
+
+			double sumq = 0.0;
+			for(long ie = 0; ie < eig.size(); ie++){
+				sumq = sumq + max_occ_*function(efermi, real(eig[ie]));
+			}
+			comm.all_reduce_in_place_n(&sumq, 1, std::plus<>{});
+			
+			if(fabs(sumq - num_electrons_) <= tol) break;
+			if(sumq <= num_electrons_) emin = efermi;
+			if(sumq >= num_electrons_) emax = efermi;
+			
+		}
+
+		return efermi;		
+	}
 	
 	template <typename EigenvalType, typename OccsType>
 	void update_occupations(boost::mpi3::communicator & comm, utils::partition const & part, EigenvalType const & eigenval, OccsType & occs) {
@@ -110,7 +141,6 @@ public:
 		assert(part.local_size() == occs[0].size());
 		assert(sizes(eigenval) == sizes(occs));
 		
-		double const tol = 1e-10;
 		double efermi;
 		
 		auto feig = eigenval.flatted();
@@ -120,17 +150,14 @@ public:
 
 			auto rem_electrons = num_electrons_;
 			for(int ist = 0; ist < nstates_; ist++){
-				auto occ = std::min(2.0, rem_electrons);
+				auto occ = std::min(max_occ_, rem_electrons);
 				if(part.contains(ist)) occs[0][ist - part.start()] = occ;
 				rem_electrons -= occ;
 			}
 			
 		} else {
 
-			int const nitmax = 200;
-
 			auto dsmear = std::max(1e-14, temperature_);
-			auto drange = dsmear*sqrt(-log(tol*0.01));
 
 			double emin = std::numeric_limits<double>::max();
 			double emax = std::numeric_limits<double>::min();
@@ -140,35 +167,22 @@ public:
 				emax = std::max(emax, feig[ie]);
 			}
 
-			emin = comm.all_reduce_value(emin, boost::mpi3::min<>{}) - drange;
-			emax = comm.all_reduce_value(emax, boost::mpi3::max<>{}) + drange;
+			emin = comm.all_reduce_value(emin, boost::mpi3::min<>{});
+			emax = comm.all_reduce_value(emax, boost::mpi3::max<>{});
 
-			double sumq;
-			for(int iter = 0; iter < nitmax; iter++){
-				efermi = 0.5*(emin + emax);
-				sumq = 0.0;
-
-				for(long ie = 0; ie < feig.size(); ie++){
-					auto xx = (efermi - real(feig[ie]))/dsmear;
-					sumq = sumq + max_occ_*smear_function(xx);
-				}
-				comm.all_reduce_in_place_n(&sumq, 1, std::plus<>{});
-
-				if(fabs(sumq - num_electrons_) <= tol) break;
-				if(sumq <= num_electrons_) emin = efermi;
-				if(sumq >= num_electrons_) emax = efermi;
+			efermi = get_efermi(comm, emin, emax, feig, [dsmear] (auto efermi, auto eig){
+				return smear_function((efermi - eig)/dsmear);
+			});
 				
-			}
-
 			for(long ie = 0; ie < feig.size(); ie++){
 				auto xx = (efermi - real(feig[ie]))/dsmear;
 				focc[ie] = max_occ_*smear_function(xx);
 			}
 			
-			assert(fabs(comm.all_reduce_value(operations::sum(focc) - num_electrons_)) <= tol);
+			assert(fabs(comm.all_reduce_value(operations::sum(focc) - num_electrons_)) <= 1e-10);
 		}
 
-		for(long ie = 0; ie < feig.size(); ie++) focc[ie] /= (nkpoints_*nquantumnumbers_);
+		for(long ie = 0; ie < feig.size(); ie++) focc[ie] /= nkpoints_;
 		
 	}
 	
