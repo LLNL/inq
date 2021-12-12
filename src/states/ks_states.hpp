@@ -104,15 +104,23 @@ public:
 	}
 
 	template <typename EigType, typename FunctionType>
-	auto get_efermi(boost::mpi3::communicator & comm, double nelec, double emin, double emax, EigType const & eig, FunctionType function){
+	auto get_efermi(boost::mpi3::communicator & comm, double nelec, EigType const & eig, FunctionType function){
 
 			
 		int const nitmax = 200;
 		double const tol = 1e-10;
 		auto drange = sqrt(-log(tol*0.01));
 
-		emin -= drange;
-		emax += drange;
+		double emin = std::numeric_limits<double>::max();
+		double emax = std::numeric_limits<double>::min();
+		
+		for(long ie = 0; ie < eig.size(); ie++){
+			emin = std::min(emin, eig[ie]);
+			emax = std::max(emax, eig[ie]);
+		}
+		
+		emin = comm.all_reduce_value(emin, boost::mpi3::min<>{}) - drange;
+		emax = comm.all_reduce_value(emax, boost::mpi3::max<>{}) + drange;
 		
 		double efermi;
 		
@@ -145,17 +153,6 @@ public:
 		
 		auto feig = eigenval.flatted();
 		auto focc = occs.flatted();
-
-		double emin = std::numeric_limits<double>::max();
-		double emax = std::numeric_limits<double>::min();
-		
-		for(long ie = 0; ie < feig.size(); ie++){
-			emin = std::min(emin, feig[ie]);
-			emax = std::max(emax, feig[ie]);
-		}
-		
-		emin = comm.all_reduce_value(emin, boost::mpi3::min<>{});
-		emax = comm.all_reduce_value(emax, boost::mpi3::max<>{});
 		
 		if(temperature_ == 0.0){
 
@@ -174,7 +171,7 @@ public:
 				return smear_function((efermi - eig)/dsmear);
 			};
 			
-			efermi = get_efermi(comm, num_electrons_, emin, emax, feig, func);
+			efermi = get_efermi(comm, num_electrons_, feig, func);
 			
 			for(long ie = 0; ie < feig.size(); ie++){
 				focc[ie] = max_occ_*func(efermi, feig[ie]);
