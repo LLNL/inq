@@ -104,7 +104,7 @@ public:
 	}
 
 	template <typename EigType, typename FunctionType>
-	auto get_efermi(boost::mpi3::communicator & comm, double emin, double emax, EigType const & eig, FunctionType function){
+	auto get_efermi(boost::mpi3::communicator & comm, double nelec, double emin, double emax, EigType const & eig, FunctionType function){
 
 			
 		int const nitmax = 200;
@@ -125,9 +125,9 @@ public:
 			}
 			comm.all_reduce_in_place_n(&sumq, 1, std::plus<>{});
 			
-			if(fabs(sumq - num_electrons_) <= tol) break;
-			if(sumq <= num_electrons_) emin = efermi;
-			if(sumq >= num_electrons_) emax = efermi;
+			if(fabs(sumq - nelec) <= tol) break;
+			if(sumq <= nelec) emin = efermi;
+			if(sumq >= nelec) emax = efermi;
 			
 		}
 
@@ -146,6 +146,17 @@ public:
 		auto feig = eigenval.flatted();
 		auto focc = occs.flatted();
 
+		double emin = std::numeric_limits<double>::max();
+		double emax = std::numeric_limits<double>::min();
+		
+		for(long ie = 0; ie < feig.size(); ie++){
+			emin = std::min(emin, feig[ie]);
+			emax = std::max(emax, feig[ie]);
+		}
+		
+		emin = comm.all_reduce_value(emin, boost::mpi3::min<>{});
+		emax = comm.all_reduce_value(emax, boost::mpi3::max<>{});
+		
 		if(temperature_ == 0.0){
 
 			auto rem_electrons = num_electrons_;
@@ -159,28 +170,19 @@ public:
 
 			auto dsmear = std::max(1e-14, temperature_);
 
-			double emin = std::numeric_limits<double>::max();
-			double emax = std::numeric_limits<double>::min();
-			
-			for(long ie = 0; ie < feig.size(); ie++){
-				emin = std::min(emin, feig[ie]);
-				emax = std::max(emax, feig[ie]);
-			}
-
-			emin = comm.all_reduce_value(emin, boost::mpi3::min<>{});
-			emax = comm.all_reduce_value(emax, boost::mpi3::max<>{});
-
-			efermi = get_efermi(comm, emin, emax, feig, [dsmear] (auto efermi, auto eig){
+			auto func = [dsmear] (auto efermi, auto eig){
 				return smear_function((efermi - eig)/dsmear);
-			});
-				
+			};
+			
+			efermi = get_efermi(comm, num_electrons_, emin, emax, feig, func);
+			
 			for(long ie = 0; ie < feig.size(); ie++){
-				auto xx = (efermi - real(feig[ie]))/dsmear;
-				focc[ie] = max_occ_*smear_function(xx);
+				focc[ie] = max_occ_*func(efermi, feig[ie]);
 			}
 			
-			assert(fabs(comm.all_reduce_value(operations::sum(focc)) - num_electrons_) <= 1e-10);
 		}
+
+		assert(fabs(comm.all_reduce_value(operations::sum(focc)) - num_electrons_) <= 1e-10);
 
 		for(long ie = 0; ie < feig.size(); ie++) focc[ie] /= nkpoints_;
 		
