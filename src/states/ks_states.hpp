@@ -108,9 +108,13 @@ public:
 
 		assert(part.local_size() == eigenval[0].size());
 		assert(part.local_size() == occs[0].size());
+		assert(sizes(eigenval) == sizes(occs));
 		
 		double const tol = 1e-10;
 		double efermi;
+		
+		auto feig = eigenval.flatted();
+		auto focc = occs.flatted();
 
 		if(temperature_ == 0.0){
 
@@ -128,25 +132,24 @@ public:
 			auto dsmear = std::max(1e-14, temperature_);
 			auto drange = dsmear*sqrt(-log(tol*0.01));
 
-			double emin, emax;
-			if(part.local_size() > 0) emin = real(eigenval[0][0]) - drange;
-			if(part.local_size() > 0) emax = real(eigenval[0][part.local_size() - 1]) + drange;
-			comm.broadcast_value(emin, 0);
-			comm.barrier();
-			comm.broadcast_value(emax, part.location(part.size() - 1));
-
-			//check that the eigenvalues are sorted
-			for(int ist = 1; ist < part.local_size(); ist++){
-				assert(real(eigenval[0][ist]) >= real(eigenval[0][ist - 1]));
+			double emin = std::numeric_limits<double>::max();
+			double emax = std::numeric_limits<double>::min();
+			
+			for(long ie = 0; ie < feig.size(); ie++){
+				emin = std::min(emin, feig[ie]);
+				emax = std::max(emax, feig[ie]);
 			}
+
+			emin = comm.all_reduce_value(emin, boost::mpi3::min<>{}) - drange;
+			emax = comm.all_reduce_value(emax, boost::mpi3::max<>{}) + drange;
 
 			double sumq;
 			for(int iter = 0; iter < nitmax; iter++){
 				efermi = 0.5*(emin + emax);
 				sumq = 0.0;
 
-				for(int ist = 0; ist < part.local_size(); ist++){
-					auto xx = (efermi - real(eigenval[0][ist]))/dsmear;
+				for(long ie = 0; ie < feig.size(); ie++){
+					auto xx = (efermi - real(feig[ie]))/dsmear;
 					sumq = sumq + max_occ_*smear_function(xx);
 				}
 				comm.all_reduce_in_place_n(&sumq, 1, std::plus<>{});
@@ -157,15 +160,15 @@ public:
 				
 			}
 
-			for(int ist = 0; ist < part.local_size(); ist++){
-				auto xx = (efermi - real(eigenval[0][ist]))/dsmear;
-				occs[0][ist] = max_occ_*smear_function(xx);
+			for(long ie = 0; ie < feig.size(); ie++){
+				auto xx = (efermi - real(feig[ie]))/dsmear;
+				focc[ie] = max_occ_*smear_function(xx);
 			}
-
-			assert(fabs(comm.all_reduce_value(operations::sum(occs[0])) - num_electrons_) <= tol);
+			
+			assert(fabs(comm.all_reduce_value(operations::sum(focc) - num_electrons_)) <= tol);
 		}
 
-		for(int ist = 0; ist < part.local_size(); ist++) occs[0][ist] /= (nkpoints_*nquantumnumbers_);
+		for(long ie = 0; ie < feig.size(); ie++) focc[ie] /= (nkpoints_*nquantumnumbers_);
 		
 	}
 	
