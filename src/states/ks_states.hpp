@@ -359,10 +359,10 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		math::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
-		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 1.0;
 		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
 		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 1.0;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.2;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(6))] = 1.1;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(7))] = 1.3;		
