@@ -112,7 +112,7 @@ public:
 		auto drange = sqrt(-log(tol*0.01));
 
 		double emin = std::numeric_limits<double>::max();
-		double emax = std::numeric_limits<double>::min();
+		double emax = std::numeric_limits<double>::lowest();
 		
 		for(long ie = 0; ie < eig.size(); ie++){
 			emin = std::min(emin, eig[ie]);
