@@ -162,7 +162,7 @@ public:
 
 			efermi = get_efermi(comm, nelec, feig, func);
 
-			double homo = std::numeric_limits<double>::min();
+			double homo = std::numeric_limits<double>::lowest();
 			int homoloc = 0;
 			for(long ie = 0; ie < feig.size(); ie++){
 				focc[ie] = max_occ_*func(efermi, feig[ie]);
