@@ -79,7 +79,7 @@ public:
 		states_basis_(box, basis_comm_),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
-		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units()),
+		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
 		density_(density_basis_)
 	{
 
@@ -112,7 +112,7 @@ public:
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
 		}
 
-		assert(lot_.size() == kpts.num());
+		assert(long(lot_.size()) == kpts.num());
 
 		eigenvalues_.reextent({lot_.size(), phi().set_part().local_size()});
 		occupations_.reextent({lot_.size(), phi().set_part().local_size()});
@@ -180,8 +180,7 @@ public:
 
 	template <typename ArrayType>
 	void update_occupations(ArrayType const eigenval) {
-		auto occs = occupations()[0];
-		states_.update_occupations(phi().fields().set_comm(), phi().fields().set_part(), eigenval, occs);
+		states_.update_occupations(phi().fields().set_comm(), eigenval, occupations_);
 	}
 
 	void save(std::string const & dirname) const {
