@@ -143,10 +143,8 @@ public:
 	}
 	
 	template <typename EigenvalType, typename OccsType>
-	auto update_occupations(boost::mpi3::communicator & comm, utils::partition const & part, EigenvalType const & eigenval, OccsType & occs) {
+	auto update_occupations(boost::mpi3::communicator & comm, EigenvalType const & eigenval, OccsType & occs) {
 
-		assert(part.local_size() == eigenval[0].size());
-		assert(part.local_size() == occs[0].size());
 		assert(sizes(eigenval) == sizes(occs));
 		
 		double efermi;
@@ -262,7 +260,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
 		
-		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 3.4032608849_a);
 		
@@ -295,7 +293,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
 		
-		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 3.4032608849_a);
 		
@@ -330,7 +328,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(6)) eigenvalues[0][part.global_to_local(utils::global_index(6))] = 1.1;
 		if(part.contains(7)) eigenvalues[0][part.global_to_local(utils::global_index(7))] = 1.3;		
 		
-		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 1.0660326106_a);
 		
@@ -367,7 +365,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(6)) eigenvalues[0][part.global_to_local(utils::global_index(6))] = 1.1;
 		if(part.contains(7)) eigenvalues[0][part.global_to_local(utils::global_index(7))] = 1.3;		
 		
-		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 1.0660326106_a);
 		
@@ -404,7 +402,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
 		
-		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 0.246510327_a);
 		
