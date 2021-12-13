@@ -143,7 +143,7 @@ public:
 	}
 	
 	template <typename EigenvalType, typename OccsType>
-	void update_occupations(boost::mpi3::communicator & comm, utils::partition const & part, EigenvalType const & eigenval, OccsType & occs) {
+	auto update_occupations(boost::mpi3::communicator & comm, utils::partition const & part, EigenvalType const & eigenval, OccsType & occs) {
 
 		assert(part.local_size() == eigenval[0].size());
 		assert(part.local_size() == occs[0].size());
@@ -156,11 +156,39 @@ public:
 		
 		if(temperature_ == 0.0){
 
-			auto rem_electrons = num_electrons_;
-			for(int ist = 0; ist < nstates_; ist++){
-				auto occ = std::min(max_occ_, rem_electrons);
-				if(part.contains(ist)) occs[0][ist - part.start()] = occ;
-				rem_electrons -= occ;
+			auto func = [] (auto efermi, auto eig){
+				return (eig <= efermi) ? 1.0 :  0.0;
+			};
+
+			auto nelec = ceil(num_electrons_/max_occ_)*max_occ_; 
+
+			efermi = get_efermi(comm, nelec, feig, func);
+
+			double homo = std::numeric_limits<double>::min();
+			int homoloc = 0;
+			for(long ie = 0; ie < feig.size(); ie++){
+				focc[ie] = max_occ_*func(efermi, feig[ie]);
+				if(func(efermi, feig[ie]) > 0.0 and feig[ie] >= homo){
+					homo = feig[ie];
+					homoloc = ie;
+				}
+			}
+
+			struct { 
+				double value; 
+				int index; 
+			} in, out;
+
+			in.value = homo;
+			in.index = -comm.rank();
+			
+			MPI_Allreduce(&in, &out, 1, MPI_DOUBLE_INT, MPI_MAXLOC, comm.get());
+
+			if(comm.rank() == -out.index) {
+				assert(out.value == homo);
+				focc[homoloc] -= nelec - num_electrons_;
+			} else {
+				assert(out.value >= homo);
 			}
 			
 		} else {
@@ -182,6 +210,8 @@ public:
 		assert(fabs(comm.all_reduce_value(operations::sum(focc)) - num_electrons_) <= 1e-10);
 
 		for(long ie = 0; ie < feig.size(); ie++) focc[ie] /= nkpoints_;
+
+		return efermi;
 		
 	}
 	
@@ -212,7 +242,40 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-  SECTION("Spin unpolarized"){
+  SECTION("Spin unpolarized even"){
+    
+    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 12.0);
+
+		CHECK(st.num_electrons() == 12.0);
+    CHECK(st.num_states() == 6);
+    CHECK(st.num_quantum_numbers() == 1);
+
+		utils::partition part(st.num_states(), comm);
+
+		math::array<double, 2> eigenvalues({1, part.local_size()});
+		math::array<double, 2> occupations({1, part.local_size()});
+
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
+		
+		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+
+		CHECK(efermi == 3.4032608849_a);
+		
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 2.0);
+
+  }
+	
+  SECTION("Spin unpolarized odd"){
     
     states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
@@ -232,7 +295,9 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
 		
-		st.update_occupations(comm, part, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+
+		CHECK(efermi == 3.4032608849_a);
 		
 		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
 		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
@@ -240,6 +305,80 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
 		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
 		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 1.0);
+
+  }
+	
+  SECTION("Spin unpolarized even extra"){
+    
+    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 12.0, 2);
+
+		CHECK(st.num_electrons() == 12.0);
+    CHECK(st.num_states() == 8);
+    CHECK(st.num_quantum_numbers() == 1);
+
+		utils::partition part(st.num_states(), comm);
+
+		math::array<double, 2> eigenvalues({1, part.local_size()});
+		math::array<double, 2> occupations({1, part.local_size()});
+
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(6))] = 1.1;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(7))] = 1.3;		
+		
+		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+
+		CHECK(efermi == 1.0660326106_a);
+		
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(6))] == 0.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(7))] == 0.0);		
+
+  }
+		
+  SECTION("Spin unpolarized odd extra"){
+    
+    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.235, 2);
+
+		CHECK(st.num_electrons() == 11.235);
+    CHECK(st.num_states() == 8);
+    CHECK(st.num_quantum_numbers() == 1);
+
+		utils::partition part(st.num_states(), comm);
+
+		math::array<double, 2> eigenvalues({1, part.local_size()});
+		math::array<double, 2> occupations({1, part.local_size()});
+
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 1.0;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(6))] = 1.1;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(7))] = 1.3;		
+		
+		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+
+		CHECK(efermi == 1.0660326106_a);
+		
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 1.235_a);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(6))] == 0.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(7))] == 0.0);	
 
   }
 	
@@ -265,7 +404,9 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
 		
-		st.update_occupations(comm, part, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, part, eigenvalues, occupations);
+
+		CHECK(efermi == 0.246510327_a);
 		
 		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0_a);
 		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 1.9810772793_a);
