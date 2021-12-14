@@ -202,6 +202,10 @@ public:
 		return eigenvalues_;
 	}
 
+	long lot_size() {
+		return lot().size();
+	}
+
 private:
 	static std::string generate_tiny_uuid(){
 		auto uuid = boost::uuids::random_generator{}();
