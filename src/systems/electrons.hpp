@@ -106,18 +106,21 @@ public:
 		spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address.data()), map.data(), (int const *) &kpts.dims(), (int const *) &is_shifted, 0,
 															 reinterpret_cast<double (*)[3]>(const_cast<double *>(ions.cell().amat())),
 															 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
+
+		lot_weights_.reextent({kpts.num()});
 		
 		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
 			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shifted[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shifted[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shifted[2])/kpts.dims()[2]};
 			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
+			lot_weights_[ikpt] = 1.0/kpts.num();
 		}
 
 		assert(long(lot_.size()) == kpts.num());
 
 		eigenvalues_.reextent({lot_.size(), phi().set_part().local_size()});
 		occupations_.reextent({lot_.size(), phi().set_part().local_size()});
-		
+
 		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 		
 		print(ions);
@@ -206,6 +209,10 @@ public:
 		return lot().size();
 	}
 
+	auto & lot_weights() const {
+		return lot_weights_;
+	}
+
 private:
 	static std::string generate_tiny_uuid(){
 		auto uuid = boost::uuids::random_generator{}();
@@ -232,6 +239,7 @@ private:
 	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
 	math::array<double, 2> eigenvalues_;
 	math::array<double, 2> occupations_;
+	math::array<double, 1> lot_weights_;
 	
 public:
 	basis::field<basis::real_space, double> density_;
