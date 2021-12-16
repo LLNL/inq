@@ -50,28 +50,30 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 
 	CALI_CXX_MARK_FUNCTION;
 
-	basis::field<basis::real_space, math::vector3<double>> gdensity(electrons.states_basis_);
+	basis::field<basis::real_space, math::vector3<double>> gdensity(electrons.density_basis_);
 	gdensity = {0.0, 0.0, 0.0};
-	
-  auto gphi = operations::gradient(electrons.phi().fields());
-	density::calculate_gradient_add(electrons.occupations()[0], electrons.phi().fields(), gphi, gdensity);
 
-	if(gphi.set_comm().size() > 1){
+  math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
+	
+	for(auto phi : electrons.lot()){
+		
+		auto gphi = operations::gradient(phi);
+		density::calculate_gradient_add(electrons.occupations()[0], phi, gphi, gdensity);
+	
+		//the non-local potential term
+		for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
+			forces_non_local[proj->iatom()] = proj->force(phi, gphi, electrons.occupations()[0]);
+		}
+	}
+	
+	if(electrons.lot_states_comm_.size() > 1){
 		CALI_CXX_MARK_SCOPE("forces::gdensity::reduce");
 		electrons.lot_states_comm_.all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(gdensity.linear().data_elements())), 3*gdensity.linear().size(), std::plus<>{});
 	}
 	
-  //the non-local potential term
-  math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
-	
-	for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
-		
-		forces_non_local[proj->iatom()] = proj->force(electrons.phi().fields(), gphi, electrons.occupations()[0]);
-	}
-	
-	if(electrons.phi().fields().full_comm().size() > 1){
+	if(electrons.full_comm_.size() > 1){
 		CALI_CXX_MARK_SCOPE("forces_nonlocal::reduce");
-		electrons.phi().fields().full_comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
+		electrons.full_comm_.all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
 	}
 	
 	//ionic force
@@ -95,9 +97,9 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 			forces_local[iatom] *= electrons.density_basis_.volume_element();
 		}
 
-		if(gphi.basis().comm().size() > 1){
+		if(electrons.basis_comm_.size() > 1){
 			CALI_CXX_MARK_SCOPE("forces_local::reduce");
-			gphi.basis().comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size(), std::plus<>{});
+			electrons.basis_comm_.all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size(), std::plus<>{});
 		}
 		
 	}
