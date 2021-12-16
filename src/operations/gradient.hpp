@@ -66,6 +66,24 @@ namespace operations {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+states::orbital_set<basis::fourier_space, math::vector3<complex>> gradient(states::orbital_set<basis::fourier_space, complex> const & ff){
+	states::orbital_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
+
+	CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
+ 
+	gpu::run(grad.set_part().local_size(), grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
+					 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic()), kpt = ff.kpoint()]
+					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+						 
+						 auto gvec = point_op.gvector(ix, iy, iz);
+						 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*(gvec[idir] + kpt[idir])*ffcub[ix][iy][iz][ist];
+					 });
+	
+	return grad;
+}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	auto gradient(basis::field<basis::real_space, complex> const & ff){
 
 		CALI_CXX_MARK_SCOPE("gradient_real_space(field)");
@@ -98,7 +116,18 @@ namespace operations {
 		auto grad_fourier = gradient(ff_fourier);
 		return operations::space::to_real(grad_fourier);
 	}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+auto gradient(states::orbital_set<basis::real_space, complex> const & ff){
+
+	CALI_CXX_MARK_SCOPE("gradient_real_space(orbital_set)");
+	
+	auto ff_fourier = operations::space::to_fourier(ff);
+	auto grad_fourier = gradient(ff_fourier);
+	return operations::space::to_real(grad_fourier);
+}
+
 }
 }
 
@@ -227,6 +256,45 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		CHECK( diff < 1.0e-8 ); 
 	}
 		
+	SECTION("Plane-wave -- orbital_set"){
+
+		basis::real_space rs(box, basis_comm);
+		
+		states::orbital_set<basis::real_space, complex> f_test(rs, 13, {0.0, 0.0, 0.0}, cart_comm);
+	
+		//Define k-vector for test function
+		vector3<double> kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
+
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector(ix, iy, iz);
+					for(int ist = 0; ist < f_test.local_set_size(); ist++){					
+						f_test.cubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
+					}
+				}
+			}
+		}
+
+		auto g_test = gradient(f_test);
+
+		double diff = 0.0;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector(ix, iy, iz);
+					for(int ist = 0; ist < f_test.local_set_size(); ist++){
+						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][ist][idir] - double(ist)*g_analytic(kvec, vec)[idir]);
+					}
+				}
+			}
+		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		
+		CHECK( diff < 1.0e-8 ); 
+	}
+	
 	SECTION("Real function"){
 
 		basis::real_space rs(box, cart_comm);
