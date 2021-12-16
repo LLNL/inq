@@ -108,18 +108,20 @@ public:
 															 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
 
 		lot_weights_.reextent({kpts.num()});
-		
+
+		max_local_size_ = 0;
 		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
 			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shifted[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shifted[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shifted[2])/kpts.dims()[2]};
 			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
 			lot_weights_[ikpt] = 1.0/kpts.num();
+			max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
 		}
 
 		assert(long(lot_.size()) == kpts.num());
 
-		eigenvalues_.reextent({lot_.size(), phi().set_part().local_size()});
-		occupations_.reextent({lot_.size(), phi().set_part().local_size()});
+		eigenvalues_.reextent({lot_.size(), max_local_size_});
+		occupations_.reextent({lot_.size(), max_local_size_});
 
 		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 		
@@ -213,6 +215,10 @@ public:
 		return lot_weights_;
 	}
 
+	auto max_local_size() const {
+		return max_local_size_;
+	}
+	
 private:
 	static std::string generate_tiny_uuid(){
 		auto uuid = boost::uuids::random_generator{}();
@@ -240,6 +246,7 @@ private:
 	math::array<double, 2> eigenvalues_;
 	math::array<double, 2> occupations_;
 	math::array<double, 1> lot_weights_;
+	long max_local_size_;
 	
 public:
 	basis::field<basis::real_space, double> density_;

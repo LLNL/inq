@@ -34,8 +34,8 @@ namespace hamiltonian {
 
     template <typename HamType>
     calculate_energy(HamType const & ham, systems::electrons const & el):
-			normres_({el.lot().size(), el.phi().local_set_size()}),
-			eigenvalues_({el.lot().size(), el.phi().local_set_size()})
+			normres_({el.lot().size(), el.max_local_size()}),
+			eigenvalues_({el.lot().size(), el.max_local_size()})
 		{
 			
 			sum_eigenvalues_ = 0.0;
