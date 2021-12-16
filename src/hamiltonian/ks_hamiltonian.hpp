@@ -140,14 +140,14 @@ namespace hamiltonian {
 
 			non_local(phi_fs, hphi_fs);
 			
-			auto hphi = operations::space::to_real(hphi_fs);
+			auto hphi = states::orbital_set<basis::real_space, complex>{operations::space::to_real(hphi_fs), phi.kpoint()};
 
-			hamiltonian::scalar_potential_add(scalar_potential, 0.5*norm(phi.kpoint()), phi.fields(), hphi);
-			exchange(phi.fields(), hphi);
+			hamiltonian::scalar_potential_add(scalar_potential, 0.5*norm(phi.kpoint()), phi.fields(), hphi.fields());
+			exchange(phi.fields(), hphi.fields());
 
-			projectors_all_.apply(proj, hphi, phi.kpoint());
+			projectors_all_.apply(proj, hphi.fields(), phi.kpoint());
 
-			return states::orbital_set<basis::real_space, complex>{std::move(hphi), phi.kpoint()};
+			return hphi;
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////
