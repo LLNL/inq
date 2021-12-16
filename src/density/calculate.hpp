@@ -58,25 +58,16 @@ calculate(const occupations_array_type & occupations, field_set_type & phi){
 }
 
 template<class occupations_array_type, class field_set_type, class vector_field_set_type>
-basis::field<typename vector_field_set_type::basis_type, math::vector3<double>> calculate_gradient(const occupations_array_type & occupations, field_set_type const & phi, vector_field_set_type const & gphi){
+void calculate_gradient_add(const occupations_array_type & occupations, field_set_type const & phi, vector_field_set_type const & gphi, basis::field<typename vector_field_set_type::basis_type, math::vector3<double>> & gdensity){
 
 	CALI_CXX_MARK_SCOPE("density::calculate_gradient");
  
-	basis::field<typename vector_field_set_type::basis_type, math::vector3<double>> gdensity(phi.basis());
-	
 	gpu::run(3, phi.basis().part().local_size(),
 					 [nst = phi.set_part().local_size(), occs = begin(occupations),
             phip = begin(phi.matrix()), gphip = begin(gphi.matrix()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto idir, auto ip){
-						 gdensityp[ip][idir] = 0.0;
 						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
 					 });
 
-	if(gphi.set_comm().size() > 1){
-		CALI_CXX_MARK_SCOPE("density::calculate_gradient::reduce");
-		gphi.set_comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(gdensity.linear().data_elements())), 3*gdensity.linear().size(), std::plus<>{});
-	}
-	
-	return gdensity;
 }
 
 template<class occupations_array_type, class field_set_type>
