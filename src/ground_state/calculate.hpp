@@ -86,7 +86,6 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
-	//DATAOPERATIONS STL FILL
 	std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
 		
 	ham.exchange.hf_orbitals = 0.0;
@@ -187,9 +186,11 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 											iiter, res.energy.total(), energy_diff, density_diff, ecalc.state_conv_);
 					
 				for(int istate = 0; istate < electrons.states_.num_states(); istate++){
-					console->info("	state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-												istate + 1, electrons.occupations()[0][istate], real(ecalc.eigenvalues_[istate]), real(ecalc.normres_[istate])
-												);
+					for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
+						console->info("	k-point {:4d} state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
+													ilot + 1, istate + 1, electrons.occupations()[ilot][istate]/electrons.lot_weights()[ilot], real(ecalc.eigenvalues_[ilot][istate]), real(ecalc.normres_[ilot][istate])
+													);
+					}
 				}
 			}
 				
