@@ -163,8 +163,8 @@ public:
 			logger()->info("  inq is running on the cpu\n");
 #endif
 			logger()->info("state parallelization:");
-			logger()->info("  {} states divided among {} partitions", phi().fields().set_part().size(), phi().fields().set_part().comm_size());
-			logger()->info("  partition 0 has {} states and the last partition has {} states\n", phi().fields().set_part().local_size(0), phi().fields().set_part().local_size(phi().fields().set_part().comm_size() - 1));
+			logger()->info("  {} states divided among {} partitions", lot()[0].fields().set_part().size(), lot()[0].fields().set_part().comm_size());
+			logger()->info("  partition 0 has {} states and the last partition has {} states\n", lot()[0].fields().set_part().local_size(0), lot()[0].fields().set_part().local_size(lot()[0].fields().set_part().comm_size() - 1));
 				
 			logger()->info("real-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_dist(0).size(), states_basis_.part().size(), states_basis_.cubic_dist(0).comm_size());
@@ -186,17 +186,17 @@ public:
 
 	template <typename ArrayType>
 	void update_occupations(ArrayType const eigenval) {
-		states_.update_occupations(phi().fields().set_comm(), eigenval, occupations_);
+		states_.update_occupations(lot_states_comm_, eigenval, occupations_);
 	}
 
 	void save(std::string const & dirname) const {
 		operations::io::save(dirname + "/states", phi().fields());
-		if(phi().fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi().fields().set_comm(), occupations().size()*phi().fields().set_part(), occupations());
+		if(basis_comm_.root()) operations::io::save(dirname + "/ocupations", lot_states_comm_, occupations().size()*phi().fields().set_part(), occupations());
 	}
 		
 	auto load(std::string const & dirname) {
 		return operations::io::load(dirname + "/states", phi().fields())
-			and operations::io::load(dirname + "/ocupations", phi().fields().set_comm(), occupations().size()*phi().fields().set_part(), occupations());
+			and operations::io::load(dirname + "/ocupations", lot_states_comm_, occupations().size()*phi().fields().set_part(), occupations());
 	}
 
 	auto & eigenvalues() const {
