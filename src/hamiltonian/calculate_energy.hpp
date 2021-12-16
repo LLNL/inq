@@ -52,7 +52,7 @@ namespace hamiltonian {
 				
 				normres_[iphi] = operations::overlap_diagonal(residual);
 				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);
-				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(phi.fields()), phi.fields());
+				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(phi), phi);
 				
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 				

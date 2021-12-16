@@ -143,7 +143,7 @@ namespace hamiltonian {
 			auto hphi = states::orbital_set<basis::real_space, complex>{operations::space::to_real(hphi_fs), phi.kpoint()};
 
 			hamiltonian::scalar_potential_add(scalar_potential, 0.5*norm(phi.kpoint()), phi, hphi);
-			exchange(phi.fields(), hphi.fields());
+			exchange(phi, hphi);
 
 			projectors_all_.apply(proj, hphi.fields(), phi.kpoint());
 
@@ -162,7 +162,7 @@ namespace hamiltonian {
 			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential, 0.5*norm(phi.kpoint()), phi_rs);
 		
-			exchange(phi_rs.fields(), hphi_rs.fields());
+			exchange(phi_rs, hphi_rs);
  
 			projectors_all_.apply(proj, hphi_rs.fields(), phi.kpoint());
 			
