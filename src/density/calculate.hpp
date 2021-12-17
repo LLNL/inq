@@ -33,10 +33,7 @@ namespace inq {
 namespace density {
 
 template<class occupations_array_type, class field_set_type>
-basis::field<typename field_set_type::basis_type, double> 
-calculate(const occupations_array_type & occupations, field_set_type & phi){
-
-	basis::field<typename field_set_type::basis_type, double> density(phi.basis());
+void calculate_add(const occupations_array_type & occupations, field_set_type & phi, basis::field<typename field_set_type::basis_type, double> & density){
 
 	const auto nst = phi.set_part().local_size();
 	auto occupationsp = begin(occupations);
@@ -45,17 +42,12 @@ calculate(const occupations_array_type & occupations, field_set_type & phi){
 		
 	gpu::run(phi.basis().part().local_size(),
 					 [=] GPU_LAMBDA (auto ipoint){
-						 densityp[ipoint] = 0.0;
 						 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
 					 });
 
-	if(phi.set_comm().size() > 1){
-		CALI_CXX_MARK_SCOPE("density::calculate::reduce");
-		phi.set_comm().all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
-	}
-	
-	return density;
 }
+
+///////////////////////////////////////////////////////////////
 
 template<class occupations_array_type, class field_set_type, class vector_field_set_type>
 void calculate_gradient_add(const occupations_array_type & occupations, field_set_type const & phi, vector_field_set_type const & gphi, basis::field<typename vector_field_set_type::basis_type, math::vector3<double>> & gdensity){
@@ -70,37 +62,21 @@ void calculate_gradient_add(const occupations_array_type & occupations, field_se
 
 }
 
-template<class occupations_array_type, class field_set_type>
-basis::field<typename field_set_type::basis_type, double> 
-calculate(const occupations_array_type & occupations, field_set_type & phi, typename field_set_type::basis_type & destination_basis){
-
-	CALI_CXX_MARK_SCOPE("density::calculate");
-
-	
-	// This is disabled for different basis at the moment.
-	//		auto phi_fine = operations::transfer::refine(phi, destination_basis);
-	//		return calculate(occupations, phi_fine);
-
-	assert(destination_basis == phi.basis());
-	return calculate(occupations, phi);
-	
-}
+///////////////////////////////////////////////////////////////
 
 basis::field<basis::real_space, double> calculate(const systems::electrons & elec){
 	
 	basis::field<basis::real_space, double> density(elec.density_basis_);
 
 	density = 0.0;
-	
+
+	int iphi = 0;
 	for(auto & phi : elec.lot()) {
-		auto part_dens = density::calculate(elec.occupations()[0], phi.fields());
-		gpu::run(elec.density_basis_.local_size(),
-						 [den = begin(density.linear()), par = begin(part_dens.linear())] GPU_LAMBDA (auto ip){
-							 den[ip] += par[ip];
-						 });
+		density::calculate_add(elec.occupations()[iphi], phi, density);
+		iphi++;
 	}
 	
-	if(elec.lot_comm_.size() > 1) elec.lot_comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+	if(elec.lot_states_comm_.size() > 1) elec.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 
 	return density;
 }
@@ -146,7 +122,10 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
 
-		auto dd = density::calculate(occ, aa);
+		basis::field<basis::trivial, double> dd(bas);
+		dd = 0.0;
+		
+		density::calculate_add(occ, aa, dd);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
@@ -166,7 +145,10 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
 
-		auto dd = density::calculate(occ, aa);
+		basis::field<basis::trivial, double> dd(bas);
+		dd = 0.0;
+		
+		density::calculate_add(occ, aa, dd);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
