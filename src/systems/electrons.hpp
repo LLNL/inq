@@ -81,7 +81,8 @@ public:
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
-		density_(density_basis_)
+		density_(density_basis_),
+		lot_part_(kpts.num(), lot_comm_)
 	{
 
 		CALI_CXX_MARK_FUNCTION;
@@ -190,13 +191,23 @@ public:
 	}
 
 	void save(std::string const & dirname) const {
-		operations::io::save(dirname + "/states", phi().fields());
-		if(basis_comm_.root()) operations::io::save(dirname + "/ocupations", lot_states_comm_, occupations().size()*phi().fields().set_part(), occupations());
+		int iphi = 0;
+		for(auto phi : lot()){
+			operations::io::save(dirname + "/" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi);
+			iphi++;
+		}
+		if(basis_comm_.root()) operations::io::save(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
 	}
 		
 	auto load(std::string const & dirname) {
-		return operations::io::load(dirname + "/states", phi().fields())
-			and operations::io::load(dirname + "/ocupations", lot_states_comm_, occupations().size()*phi().fields().set_part(), occupations());
+		auto success = operations::io::load(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
+
+		int iphi = 0;
+		for(auto phi : lot()){
+			success = success and operations::io::load(dirname + "/" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi.fields());
+			iphi++;
+		}
+		return success;
 	}
 
 	auto & eigenvalues() const {
@@ -247,12 +258,16 @@ private:
 	math::array<double, 2> occupations_;
 	math::array<double, 1> lot_weights_;
 	long max_local_size_;
-	
+
+ 	
 public:
 	basis::field<basis::real_space, double> density_;
 	std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
 private:
 	std::shared_ptr<spdlog::logger> logger_;
+
+	inq::utils::partition lot_part_;
+
 };
 
 }
