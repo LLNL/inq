@@ -37,6 +37,8 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 
 	basis::field<basis::real_space, double> density(electrons.states_basis_);
 
+	density = 0.0;
+	
 	for(auto & phi : electrons.lot()){
 		auto gphi = operations::gradient(phi);
 		
@@ -46,9 +48,7 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 							gph = begin(gphi.matrix()),
 							den = begin(density.linear())]
 						 GPU_LAMBDA (auto ipoint){
-							 den[ipoint] = 0.0;
-							 for(int ist = 0; ist < nst; ist++) den[ipoint] += occ[ist]*norm(gph[ipoint][ist]);
-							 den[ipoint] *= 0.5;
+							 for(int ist = 0; ist < nst; ist++) den[ipoint] += 0.5*occ[ist]*norm(gph[ipoint][ist]);
 						 });
 
 	}
