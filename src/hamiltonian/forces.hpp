@@ -55,7 +55,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 	
-	for(auto phi : electrons.lot()){
+	for(auto & phi : electrons.lot()){
 		
 		auto gphi = operations::gradient(phi);
 		density::calculate_gradient_add(electrons.occupations()[0], phi, gphi, gdensity);

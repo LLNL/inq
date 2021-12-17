@@ -184,7 +184,7 @@ public:
 
 	void save(std::string const & dirname) const {
 		int iphi = 0;
-		for(auto phi : lot()){
+		for(auto & phi : lot()){
 			operations::io::save(dirname + "/" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi);
 			iphi++;
 		}
@@ -195,7 +195,7 @@ public:
 		auto success = operations::io::load(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
 
 		int iphi = 0;
-		for(auto phi : lot()){
+		for(auto & phi : lot()){
 			success = success and operations::io::load(dirname + "/" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi.fields());
 			iphi++;
 		}
@@ -293,7 +293,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	CHECK(electrons.states_.num_electrons() == 38.0_a);
 	CHECK(electrons.states_.num_states() == 19);
 
-	for(auto phi : electrons.lot()) {
+	for(auto & phi : electrons.lot()) {
 		
 		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
 			auto istg = phi.fields().set_part().local_to_global(ist);
@@ -316,7 +316,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	CHECK(electrons.lot_size() == electrons_read.lot_size());
 	
 	int iphi = 0;
-	for(auto phi : electrons.lot()) {
+	for(auto & phi : electrons.lot()) {
 
 		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
 			CHECK(electrons.occupations()[0][ist] == electrons_read.occupations()[0][ist]);

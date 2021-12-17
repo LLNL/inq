@@ -71,7 +71,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 
 			electrons.density_ = 0.0;
 			int iphi = 0;
-			for(auto phi : electrons.lot()){
+			for(auto & phi : electrons.lot()){
 				//propagate half step and full step with H(t)
 				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
 				
@@ -95,7 +95,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			}
 			
 			//propagate the other half step with H(t + dt)
-			for(auto phi : electrons.lot()){
+			for(auto & phi : electrons.lot()){
 				operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
 			}
 			

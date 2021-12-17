@@ -37,7 +37,7 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 
 	basis::field<basis::real_space, double> density(electrons.states_basis_);
 
-	for(auto phi : electrons.lot()){
+	for(auto & phi : electrons.lot()){
 		auto gphi = operations::gradient(phi);
 		
 		gpu::run(density.basis().part().local_size(),
