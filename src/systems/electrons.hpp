@@ -46,14 +46,6 @@ public:
 	
 	enum class error { NO_ELECTRONS };
 
-	auto & phi() const {
-		return lot_[0];
-	}
-
-	auto & phi() {
-		return lot_[0];
-	}
-
 	auto & lot() const {
 		return lot_;
 	}
