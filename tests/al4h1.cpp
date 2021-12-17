@@ -54,6 +54,17 @@ int main(int argc, char ** argv){
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe());
+
+	energy_match.check("ion-ion energy",      result.energy.ion,             -10.318372113231);
+	energy_match.check("total energy",        result.energy.total(),          -9.802353624482);
+	energy_match.check("kinetic energy",      result.energy.kinetic(),         4.200403363300);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues,       0.602423636472);
+	energy_match.check("Hartree energy",      result.energy.hartree,           0.219187944078);
+	energy_match.check("external energy",     result.energy.external,         -0.562807745696);
+	energy_match.check("non-local energy",    result.energy.nonlocal,          1.427229177688);
+	energy_match.check("XC energy",           result.energy.xc,               -4.767994250622);
+	energy_match.check("XC density integral", result.energy.nvxc,             -4.900777046978);
+	energy_match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
 	
 	return energy_match.fail();
 	
