@@ -53,7 +53,7 @@ int main(int argc, char ** argv){
 	
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::calculate_forces());
 
 	energy_match.check("ion-ion energy",      result.energy.ion,             -10.318372113231);
 	energy_match.check("total energy",        result.energy.total(),          -9.802353624482);
@@ -65,6 +65,22 @@ int main(int argc, char ** argv){
 	energy_match.check("XC energy",           result.energy.xc,               -4.767994250622);
 	energy_match.check("XC density integral", result.energy.nvxc,             -4.900777046978);
 	energy_match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
+
+	energy_match.check("force 1 x",           result.forces[0][0],            -0.010958823420);
+	energy_match.check("force 1 y",           result.forces[0][1],            -0.020170976619);
+	energy_match.check("force 1 z",           result.forces[0][2],            -0.025825339342);
+	energy_match.check("force 2 x",           result.forces[1][0],            -0.006997173079);
+	energy_match.check("force 2 y",           result.forces[1][1],             0.028861371259);
+	energy_match.check("force 2 z",           result.forces[1][2],             0.022386977302);
+	energy_match.check("force 3 x",           result.forces[2][0],             0.021742257288);
+	energy_match.check("force 3 y",           result.forces[2][1],            -0.015045246329);
+	energy_match.check("force 3 z",           result.forces[2][2],             0.017083833900);
+	energy_match.check("force 4 x",           result.forces[3][0],             0.018522478479);
+	energy_match.check("force 4 y",           result.forces[3][1],             0.015573712792);
+	energy_match.check("force 4 z",           result.forces[3][2],            -0.013419282975);
+	energy_match.check("force 5 x",           result.forces[4][0],             0.032491963346);
+	energy_match.check("force 5 y",           result.forces[4][1],            -0.014763643737);
+	energy_match.check("force 5 z",           result.forces[4][2],             0.014730728104);
 	
 	return energy_match.fail();
 	
