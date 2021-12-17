@@ -27,7 +27,7 @@ int main(int argc, char ** argv){
 	
 	input::environment env(argc, argv);
 
-	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {boost::mpi3::fill, 1});
+	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {1, boost::mpi3::fill});
 	
 	utils::match energy_match(4.0e-6);
 
