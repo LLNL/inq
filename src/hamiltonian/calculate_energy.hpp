@@ -34,8 +34,8 @@ namespace hamiltonian {
 
     template <typename HamType>
     calculate_energy(HamType const & ham, systems::electrons const & el):
-			normres_({el.lot().size(), el.phi().local_set_size()}),
-			eigenvalues_({el.lot().size(), el.phi().local_set_size()})
+			normres_({el.lot().size(), el.max_local_size()}),
+			eigenvalues_({el.lot().size(), el.max_local_size()})
 		{
 			
 			sum_eigenvalues_ = 0.0;
@@ -52,7 +52,7 @@ namespace hamiltonian {
 				
 				normres_[iphi] = operations::overlap_diagonal(residual);
 				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);
-				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(phi.fields()), phi.fields());
+				auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(phi), phi);
 				
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 				

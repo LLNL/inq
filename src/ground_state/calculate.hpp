@@ -88,7 +88,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		
 	std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
 		
-	ham.exchange.hf_orbitals = 0.0;
+	ham.exchange.hf_orbitals.fields() = 0.0;
 
 	int conv_count = 0;
 
@@ -136,10 +136,10 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		if(ham.exchange.enabled()) {
 			CALI_CXX_MARK_SCOPE("hf_mixing");
 				
-			for(int ii = 0; ii < electrons.phi().fields().num_elements(); ii++){
-				ham.exchange.hf_orbitals.data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.data()[ii] + solver.mixing()*electrons.phi().fields().data()[ii];
+			for(int ii = 0; ii < electrons.lot()[0].fields().num_elements(); ii++){
+				ham.exchange.hf_orbitals.fields().data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.fields().data()[ii] + solver.mixing()*electrons.lot()[0].fields().data()[ii];
 			}
-				
+			
 			//probably the occupations should be mixed too
 			ham.exchange.hf_occupations = electrons.occupations()[0];
 		}

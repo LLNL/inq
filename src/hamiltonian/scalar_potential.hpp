@@ -23,7 +23,7 @@
 
 #include <gpu/run.hpp>
 #include <basis/field.hpp>
-#include <basis/field_set.hpp>
+#include <states/orbital_set.hpp>
 
 #include <cassert>
 
@@ -32,7 +32,7 @@
 namespace inq {
 namespace hamiltonian {
 	
-void scalar_potential_add(basis::field<basis::real_space, double> const & potential, double shift, basis::field_set<basis::real_space, complex> const & phi, basis::field_set<basis::real_space, complex> & vphi) {
+void scalar_potential_add(basis::field<basis::real_space, double> const & potential, double shift, states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vphi) {
 
 	CALI_CXX_MARK_FUNCTION;
   
@@ -45,11 +45,11 @@ void scalar_potential_add(basis::field<basis::real_space, double> const & potent
            });
 }
 
-basis::field_set<basis::real_space, complex> scalar_potential(basis::field<basis::real_space, double> const & potential, double shift, basis::field_set<basis::real_space, complex> const & phi) {
+states::orbital_set<basis::real_space, complex> scalar_potential(basis::field<basis::real_space, double> const & potential, double shift, states::orbital_set<basis::real_space, complex> const & phi) {
 
 	CALI_CXX_MARK_FUNCTION;
 
-  basis::field_set<basis::real_space, complex> vphi(phi.skeleton());
+  states::orbital_set<basis::real_space, complex> vphi(phi.skeleton());
   
   assert(potential.linear().num_elements() == phi.basis().local_size());
   

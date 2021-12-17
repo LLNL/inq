@@ -57,7 +57,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
-		if(electrons.phi().fields().full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
+		if(electrons.full_comm_.root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
 
 		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
 		
@@ -68,15 +68,23 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
-			
-			{
+
+			electrons.density_ = 0.0;
+			int iphi = 0;
+			for(auto & phi : electrons.lot()){
 				//propagate half step and full step with H(t)
-				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), electrons.phi());
+				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
 				
 				//calculate H(t + dt) from the full step propagation
-				electrons.density_ = density::calculate(electrons);
-				ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+				density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.density_);
+				iphi++;
 			}
+
+			if(electrons.lot_states_comm_.size() > 1){
+				electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.density_.linear().data_elements()), electrons.density_.linear().size(), std::plus<>{});
+			}
+ 
+			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 			
 			//propagate ionic positions to t + dt
 			ion_propagator.propagate_positions(dt, ions, forces);
@@ -87,8 +95,10 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			}
 			
 			//propagate the other half step with H(t + dt)
-			operations::exponential_in_place(ham, complex(0.0, dt/2.0), electrons.phi());
-
+			for(auto & phi : electrons.lot()){
+				operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
+			}
+			
 			//calculate the new density, energy, forces
 			electrons.density_ = density::calculate(electrons);
 			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
@@ -105,7 +115,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
-			if(electrons.phi().fields().full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f  wtime = %9.3f\n", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
+			if(electrons.full_comm_.root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f  wtime = %9.3f\n", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
 
 			iter_start_time = new_time;
 		}

@@ -46,14 +46,6 @@ public:
 	
 	enum class error { NO_ELECTRONS };
 
-	auto & phi() const {
-		return lot_[0];
-	}
-
-	auto & phi() {
-		return lot_[0];
-	}
-
 	auto & lot() const {
 		return lot_;
 	}
@@ -81,7 +73,8 @@ public:
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
-		density_(density_basis_)
+		density_(density_basis_),
+		lot_part_(kpts.num(), lot_comm_)
 	{
 
 		CALI_CXX_MARK_FUNCTION;
@@ -108,18 +101,20 @@ public:
 															 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
 
 		lot_weights_.reextent({kpts.num()});
-		
+
+		max_local_size_ = 0;
 		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
 			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shifted[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shifted[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shifted[2])/kpts.dims()[2]};
 			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
 			lot_weights_[ikpt] = 1.0/kpts.num();
+			max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
 		}
 
 		assert(long(lot_.size()) == kpts.num());
 
-		eigenvalues_.reextent({lot_.size(), phi().set_part().local_size()});
-		occupations_.reextent({lot_.size(), phi().set_part().local_size()});
+		eigenvalues_.reextent({lot_.size(), max_local_size_});
+		occupations_.reextent({lot_.size(), max_local_size_});
 
 		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 		
@@ -161,8 +156,8 @@ public:
 			logger()->info("  inq is running on the cpu\n");
 #endif
 			logger()->info("state parallelization:");
-			logger()->info("  {} states divided among {} partitions", phi().fields().set_part().size(), phi().fields().set_part().comm_size());
-			logger()->info("  partition 0 has {} states and the last partition has {} states\n", phi().fields().set_part().local_size(0), phi().fields().set_part().local_size(phi().fields().set_part().comm_size() - 1));
+			logger()->info("  {} states divided among {} partitions", lot()[0].fields().set_part().size(), lot()[0].fields().set_part().comm_size());
+			logger()->info("  partition 0 has {} states and the last partition has {} states\n", lot()[0].fields().set_part().local_size(0), lot()[0].fields().set_part().local_size(lot()[0].fields().set_part().comm_size() - 1));
 				
 			logger()->info("real-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_dist(0).size(), states_basis_.part().size(), states_basis_.cubic_dist(0).comm_size());
@@ -184,17 +179,27 @@ public:
 
 	template <typename ArrayType>
 	void update_occupations(ArrayType const eigenval) {
-		states_.update_occupations(phi().fields().set_comm(), eigenval, occupations_);
+		states_.update_occupations(lot_states_comm_, eigenval, occupations_);
 	}
 
 	void save(std::string const & dirname) const {
-		operations::io::save(dirname + "/states", phi().fields());
-		if(phi().fields().basis().comm().root()) operations::io::save(dirname + "/ocupations", phi().fields().set_comm(), occupations().size()*phi().fields().set_part(), occupations());
+		int iphi = 0;
+		for(auto & phi : lot()){
+			operations::io::save(dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi);
+			iphi++;
+		}
+		if(basis_comm_.root()) operations::io::save(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
 	}
 		
 	auto load(std::string const & dirname) {
-		return operations::io::load(dirname + "/states", phi().fields())
-			and operations::io::load(dirname + "/ocupations", phi().fields().set_comm(), occupations().size()*phi().fields().set_part(), occupations());
+		auto success = operations::io::load(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
+
+		int iphi = 0;
+		for(auto & phi : lot()){
+			success = success and operations::io::load(dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi.fields());
+			iphi++;
+		}
+		return success;
 	}
 
 	auto & eigenvalues() const {
@@ -213,6 +218,10 @@ public:
 		return lot_weights_;
 	}
 
+	auto max_local_size() const {
+		return max_local_size_;
+	}
+	
 private:
 	static std::string generate_tiny_uuid(){
 		auto uuid = boost::uuids::random_generator{}();
@@ -240,12 +249,17 @@ private:
 	math::array<double, 2> eigenvalues_;
 	math::array<double, 2> occupations_;
 	math::array<double, 1> lot_weights_;
-	
+	long max_local_size_;
+
+ 	
 public:
 	basis::field<basis::real_space, double> density_;
 	std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
 private:
 	std::shared_ptr<spdlog::logger> logger_;
+
+	inq::utils::partition lot_part_;
+
 };
 
 }
@@ -278,31 +292,41 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 
 	CHECK(electrons.states_.num_electrons() == 38.0_a);
 	CHECK(electrons.states_.num_states() == 19);
-	
-	for(int ist = 0; ist < electrons.phi().fields().set_part().local_size(); ist++){
-		auto istg = electrons.phi().fields().set_part().local_to_global(ist);
 
-		electrons.occupations()[0][ist] = cos(istg.value());
+	for(auto & phi : electrons.lot()) {
 		
-		for(int ip = 0; ip < electrons.phi().fields().basis().local_size(); ip++){
-			auto ipg = electrons.phi().fields().basis().part().local_to_global(ip);
-			electrons.phi().fields().matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
+		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
+			auto istg = phi.fields().set_part().local_to_global(ist);
+			
+			electrons.occupations()[0][ist] = cos(istg.value());
+			
+			for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
+				auto ipg = phi.fields().basis().part().local_to_global(ip);
+				phi.fields().matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
+			}
 		}
 	}
-
+		
 	electrons.save("electron_restart");
 	
 	systems::electrons electrons_read(cart_comm, ions, box);
-
+	
 	electrons_read.load("electron_restart");
 
-	for(int ist = 0; ist < electrons.phi().fields().set_part().local_size(); ist++){
-		CHECK(electrons.occupations()[0][ist] == electrons_read.occupations()[0][ist]);
-		for(int ip = 0; ip < electrons.phi().fields().basis().local_size(); ip++){
-			CHECK(electrons.phi().fields().matrix()[ip][ist] == electrons_read.phi().fields().matrix()[ip][ist]);
-		}
-	}
+	CHECK(electrons.lot_size() == electrons_read.lot_size());
+	
+	int iphi = 0;
+	for(auto & phi : electrons.lot()) {
 
+		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
+			CHECK(electrons.occupations()[0][ist] == electrons_read.occupations()[0][ist]);
+			for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
+				CHECK(phi.fields().matrix()[ip][ist] == electrons_read.lot()[iphi].fields().matrix()[ip][ist]);
+			}
+		}
+		iphi++;
+	}
+	
 	CHECK(not electrons.load("directory_that_doesnt_exist"));
 
 }

@@ -35,23 +35,27 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 
 	CALI_CXX_MARK_FUNCTION;
 
-  auto gphi = operations::gradient(electrons.phi().fields());
-	basis::field<basis::real_space, double> density(electrons.phi().fields().basis());
+	basis::field<basis::real_space, double> density(electrons.states_basis_);
 
-	gpu::run(density.basis().part().local_size(),
-					 [nst = gphi.set_part().local_size(),
-						occ = begin(electrons.occupations()[0]),
-						gph = begin(gphi.matrix()),
-						den = begin(density.linear())]
-					 GPU_LAMBDA (auto ipoint){
-						 den[ipoint] = 0.0;
-						 for(int ist = 0; ist < nst; ist++) den[ipoint] += occ[ist]*norm(gph[ipoint][ist]);
-						 den[ipoint] *= 0.5;
-					 });
+	density = 0.0;
 	
-	if(gphi.set_comm().size() > 1){
+	for(auto & phi : electrons.lot()){
+		auto gphi = operations::gradient(phi);
+		
+		gpu::run(density.basis().part().local_size(),
+						 [nst = gphi.set_part().local_size(),
+							occ = begin(electrons.occupations()[0]),
+							gph = begin(gphi.matrix()),
+							den = begin(density.linear())]
+						 GPU_LAMBDA (auto ipoint){
+							 for(int ist = 0; ist < nst; ist++) den[ipoint] += 0.5*occ[ist]*norm(gph[ipoint][ist]);
+						 });
+
+	}
+	
+	if(electrons.lot_states_comm_.size() > 1){
 		CALI_CXX_MARK_SCOPE("kinetic_energy_density::reduce");
-		gphi.set_comm().all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 	}
 
 	return density;

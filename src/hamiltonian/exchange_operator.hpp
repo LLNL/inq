@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <basis/field_set.hpp>
+#include <states/orbital_set.hpp>
 #include <basis/real_space.hpp>
 #include <solvers/poisson.hpp>
 
@@ -38,25 +38,25 @@ namespace hamiltonian {
 
 		}
 
-		void operator()(const basis::field_set<basis::real_space, complex> & phi, basis::field_set<basis::real_space, complex> & exxphi) const {
+		void operator()(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
 
 			if(exchange_coefficient_ != 0.0){
 
 				// Hartree-Fock exchange
-				for(int ii = 0; ii < phi.set_size(); ii++){
-					for(int jj = 0; jj < phi.set_size(); jj++){
+				for(int ii = 0; ii < phi.fields().set_size(); ii++){
+					for(int jj = 0; jj < phi.fields().set_size(); jj++){
 						
-						basis::field<basis::real_space, complex> rhoij(phi.basis());
+						basis::field<basis::real_space, complex> rhoij(phi.fields().basis());
 
 						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) rhoij.linear()[ipoint] = conj(hf_orbitals.matrix()[ipoint][jj])*phi.matrix()[ipoint][ii];
+						for(long ipoint = 0; ipoint < phi.fields().basis().size(); ipoint++) rhoij.linear()[ipoint] = conj(hf_orbitals.matrix()[ipoint][jj])*phi.fields().matrix()[ipoint][ii];
 						
 						//OPTIMIZATION: this could be done in place
 						auto potij = poisson_solver_(rhoij);
 						
 						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.basis().size(); ipoint++) {
-							exxphi.matrix()[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals.matrix()[ipoint][jj]*potij.linear()[ipoint];
+						for(long ipoint = 0; ipoint < phi.fields().basis().size(); ipoint++) {
+							exxphi.fields().matrix()[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals.matrix()[ipoint][jj]*potij.linear()[ipoint];
 						}
 						
 					}
@@ -66,9 +66,9 @@ namespace hamiltonian {
 			
 		}
 
-		auto operator()(const basis::field_set<basis::real_space, complex> & phi) const {
-			basis::field_set<basis::real_space, complex> exxphi(phi.skeleton());
-			exxphi = 0.0;
+		auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
+			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
+			exxphi.fields() = 0.0;
 			operator()(phi, exxphi);
 			return exxphi;
 		}
@@ -78,7 +78,7 @@ namespace hamiltonian {
 		}
 		
 		math::array<double, 1> hf_occupations;
-		basis::field_set<basis::real_space, complex> hf_orbitals;
+		states::orbital_set<basis::real_space, complex> hf_orbitals;
 
 	private:
 		solvers::poisson poisson_solver_;
@@ -114,8 +114,8 @@ TEST_CASE("Class hamiltonian::exchange", "[hamiltonian::exchange]"){
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-  basis::field_set<basis::real_space, complex> phi(rs, st.num_states());
-	basis::field_set<basis::real_space, complex> hphi(rs, st.num_states());
+  states::orbital_set<basis::real_space, complex> phi(rs, st.num_states());
+	states::orbital_set<basis::real_space, complex> hphi(rs, st.num_states());
 	
 	hamiltonian::exchange<basis::real_space> ham(rs, cell, pot, geo, st.num_states(), 0.0);
 	*/

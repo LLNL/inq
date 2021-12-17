@@ -525,6 +525,26 @@ to_real(basis::field_set<basis::fourier_space, math::vector3<complex>> const& fp
 
 ///////////////////////////////////////////////////////////////
 
+states::orbital_set<basis::real_space, math::vector3<complex>> 
+to_real(states::orbital_set<basis::fourier_space, math::vector3<complex>> const& fphi, bool normalize = true){
+
+	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
+
+	auto const& fourier_basis = fphi.basis();
+	basis::real_space real_basis(fourier_basis);
+
+	states::orbital_set<basis::real_space, math::vector3<complex>> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.full_comm());
+
+	auto const& fphi_as_scalar = fphi.cubic().reinterpret_array_cast<complex const>(3).rotated(3).flatted().rotated();
+	auto &&     phi_as_scalar  = phi .cubic().reinterpret_array_cast<complex      >(3).rotated(3).flatted().rotated();
+
+	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
+
+	return phi;
+}
+
+///////////////////////////////////////////////////////////////
+
 }
 }
 }
