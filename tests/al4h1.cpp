@@ -29,7 +29,7 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {1, boost::mpi3::fill});
 	
-	utils::match energy_match(4.0e-6);
+	utils::match energy_match(1.0e-5);
 
 	double alat = 7.6524459;
 	
