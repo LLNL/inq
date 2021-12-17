@@ -80,6 +80,9 @@ gcc-ompi:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/nitrogen
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/al4h1
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/al4h1
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/al4h1
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
@@ -159,6 +162,9 @@ gcc-ompi-fast:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/nitrogen
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/al4h1
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/al4h1
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/al4h1
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
@@ -209,7 +215,9 @@ clang-ompi-parallel:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/nitrogen
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/nitrogen
-
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/al4h1
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/al4h1
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/al4h1
 
 #clang-cuda:
 #    stage: build
@@ -276,6 +284,9 @@ clang-ompi-fast-parallel:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/nitrogen
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/nitrogen
+      - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/al4h1
+      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/al4h1
+      - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/al4h1      
 
 #clang-valgrind:
 #    stage: build
@@ -352,6 +363,9 @@ gcc-mpich-parallel:
       - time mpirun -np 2 tests/nitrogen
       - time mpirun -np 3 tests/nitrogen
       - time mpirun -np 5 tests/nitrogen
+      - time mpirun -np 2 tests/al4h1
+      - time mpirun -np 3 tests/al4h1
+      - time mpirun -np 5 tests/al4h1
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
@@ -491,6 +505,9 @@ nvcc-ompi-fast:
       - time mpirun --oversubscribe -np 2 tests/silicon
       - time mpirun --oversubscribe -np 3 tests/silicon
       - time mpirun --oversubscribe -np 5 tests/silicon
+      - time mpirun --oversubscribe -np 2 tests/al4h1
+      - time mpirun --oversubscribe -np 3 tests/al4h1
+      - time mpirun --oversubscribe -np 5 tests/al4h1
 
 nvcc-ompi:
     stage: build
@@ -521,6 +538,9 @@ nvcc-ompi:
       - time mpirun --oversubscribe -np 2 tests/nitrogen
       - time mpirun --oversubscribe -np 3 tests/nitrogen
       - time mpirun --oversubscribe -np 5 tests/nitrogen
-
+      - time mpirun --oversubscribe -np 2 tests/al4h1
+      - time mpirun --oversubscribe -np 3 tests/al4h1
+      - time mpirun --oversubscribe -np 5 tests/al4h1
+      
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
