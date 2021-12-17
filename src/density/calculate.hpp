@@ -126,6 +126,8 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		dd = 0.0;
 		
 		density::calculate_add(occ, aa, dd);
+
+		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.linear().data_elements()), dd.linear().size(), std::plus<>{});
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
@@ -149,6 +151,8 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		dd = 0.0;
 		
 		density::calculate_add(occ, aa, dd);
+
+		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.linear().data_elements()), dd.linear().size(), std::plus<>{});
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
