@@ -435,25 +435,26 @@ gcc-ompi-coverage:
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen      
       - tests/silicon2
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
-      
-gcc-ompi-coverage-noinline:
-    stage: build
-    tags:
-      - intel_compiler
-    script:
-      - export PREFIX=`mktemp -d`
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mkdir build
-      - cd build
-      - export CXXFLAGS="-O3 -Wall -Wextra --coverage -fno-inline -fno-inline-small-functions -fno-default-inline"
-      - ../configure --prefix=$PREFIX || cat config.log
-      - time make -j8
-      - time make -j8 install
-      - ctest -j 16 --output-on-failure --timeout 4000
-      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -j 5 --output-on-failure --timeout 4000; cd ..
-      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
-      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
-      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
+
+#DISABLED BECAUSE IT IS TOO SLOW
+#gcc-ompi-coverage-noinline:
+#    stage: build
+#    tags:
+#      - intel_compiler
+#    script:
+#      - export PREFIX=`mktemp -d`
+#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+#      - mkdir build
+#      - cd build
+#      - export CXXFLAGS="-O3 -Wall -Wextra --coverage -fno-inline -fno-inline-small-functions -fno-default-inline"
+#      - ../configure --prefix=$PREFIX || cat config.log
+#      - time make -j8
+#      - time make -j8 install
+#      - ctest -j 16 --output-on-failure --timeout 4000
+#      - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 3" ctest -j 5 --output-on-failure --timeout 4000; cd ..
+#      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/silicon
+#      - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/nitrogen
+#      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
 
 intel-ompi:
     stage: build
