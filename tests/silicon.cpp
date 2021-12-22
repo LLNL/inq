@@ -64,20 +64,20 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(comm_world, ions, box, conf, input::kpoints::grid({2, 1, 1}, true));
 	
 	ground_state::initial_guess(ions, electrons);
-	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-7_Ha));
+	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
 	
-	energy_match.check("total energy",     result.energy.total()    , -23.834202284365);
-	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.428076419699);
-	energy_match.check("eigenvalues",      result.energy.eigenvalues,   7.649418210735);
-	energy_match.check("external energy",  result.energy.external   , -12.019326392642);
-	energy_match.check("non-local energy", result.energy.nonlocal   ,   5.240668183679);
-	energy_match.check("ion-ion energy",   result.energy.ion        , -31.483620691456);
+	energy_match.check("total energy",     result.energy.total()    , -23.834202307265);
+	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.428064504524);
+	energy_match.check("eigenvalues",      result.energy.eigenvalues,   7.649418187835);
+	energy_match.check("external energy",  result.energy.external   , -12.019317998765);
+	energy_match.check("non-local energy", result.energy.nonlocal   ,   5.240671682076);
+	energy_match.check("ion-ion energy",   result.energy.ion        , -31.483620495100);
 	
 	electrons.save("silicon_restart");
 
 	auto ked = observables::kinetic_energy_density(electrons);
 
-	energy_match.check("kinetic energy", operations::integral(ked), 14.428076419699);
+	energy_match.check("kinetic energy", operations::integral(ked), 14.428064504524);
 	
 	fftw_cleanup(); //required for valgrid
 	
