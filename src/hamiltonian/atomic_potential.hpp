@@ -125,14 +125,14 @@ namespace hamiltonian {
 				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
 
 				if(not basis.double_grid().enabled()){
-					
+
 					gpu::run(sphere.size(),
 									 [pot = begin(potential.cubic()),
 										sph = sphere.ref(),
 										spline = ps.short_range_potential().cbegin()] GPU_LAMBDA (auto ipoint){
 										 auto rr = sph.distance(ipoint);
 										 auto potential_val = spline.value(rr);
-										 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += potential_val;
+										 gpu::atomic::add(&pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]], potential_val);
 									 });
 
 				} else {
@@ -145,12 +145,13 @@ namespace hamiltonian {
 										spline = ps.short_range_potential().cbegin(),
 										dg = basis.double_grid().ref(),
 										spac = basis.rspacing()] GPU_LAMBDA (auto ipoint){
-										 pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(length(pos)); }, spac, sph.point_pos(ipoint));
+										 gpu::atomic::add(&pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]],
+																			dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(length(pos)); }, spac, sph.point_pos(ipoint)));
 									 });
 				
 				}
 			}
-
+			
 			if(comm_.size() > 1){
 				CALI_CXX_MARK_SCOPE("atomic_potential::local_potential::reduce");
 				comm_.all_reduce_in_place_n(raw_pointer_cast(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
@@ -184,7 +185,7 @@ namespace hamiltonian {
 									chrg = ps.valence_charge(),
 									sp = sep_] GPU_LAMBDA (auto ipoint){
 									 double rr = sph.distance(ipoint);
-									 dns[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += chrg*sp.long_range_density(rr);
+									 gpu::atomic::add(&dns[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]], chrg*sp.long_range_density(rr));
 								 });
       }
 			
@@ -221,7 +222,7 @@ namespace hamiltonian {
 										spline = ps.electronic_density().cbegin()] GPU_LAMBDA (auto ipoint){
 										 auto rr = sph.distance(ipoint);
 										 auto density_val = spline.value(rr);
-										 dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += density_val;
+										 gpu::atomic::add(&dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]], density_val);
 									 });
 
 				} else {
@@ -234,7 +235,7 @@ namespace hamiltonian {
 										sph = sphere.ref(),
 										zval = ps.valence_charge()] GPU_LAMBDA (auto ipoint){
 										 auto rr = sph.distance(ipoint);
-										 dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += zval/(M_PI)*exp(-2.0*rr);
+										 gpu::atomic::add(&dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]], zval/(M_PI)*exp(-2.0*rr));
 									 });
 					
 				}
@@ -279,7 +280,7 @@ namespace hamiltonian {
 									spline = ps.nlcc_density().cbegin()] GPU_LAMBDA (auto ipoint){
 									 auto rr = sph.distance(ipoint);
 									 auto density_val = spline.value(rr);
-									 dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]] += density_val;
+									 gpu::atomic::add(&dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]], density_val);
 								 });
 				
       }

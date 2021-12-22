@@ -24,6 +24,7 @@
 #include <inq_config.h>
 
 #include <gpu/run.hpp>
+#include <math/complex.hpp>
 
 namespace inq {
 namespace gpu {
@@ -38,6 +39,12 @@ GPU_FUNCTION inline Type1 add(Type1 * val, Type2 const & incr){
   *val += incr;
   return old_val;
 #endif
+}
+
+GPU_FUNCTION inline complex add(complex * val, complex const & incr){
+	auto re = add((double *) val, real(incr));
+	auto im = add(((double *) val) + 1, imag(incr));
+	return complex(re, im);
 }
 
 #ifdef ENABLE_CUDA

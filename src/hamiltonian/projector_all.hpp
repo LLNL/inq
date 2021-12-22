@@ -237,7 +237,7 @@ public:
 							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.cubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
 								 if(poi[iproj][ipoint][0] >= 0){
 									 auto phase = polar(1.0, -dot(kpoint, pos[iproj][ipoint]));
-									 gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist] += phase*sgr[iproj][ipoint][ist];
+									 gpu::atomic::add(&gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist], phase*sgr[iproj][ipoint][ist]);
 								 }
 							 });
 		}
