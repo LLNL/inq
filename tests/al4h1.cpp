@@ -29,7 +29,7 @@ int main(int argc, char ** argv){
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {1, boost::mpi3::fill});
 	
-	utils::match energy_match(1.0e-5);
+	utils::match energy_match(2.0e-5);
 
 	double alat = 7.6524459;
 	
@@ -49,82 +49,39 @@ int main(int argc, char ** argv){
 	conf.extra_states = 1;
 	conf.temperature = 300.0_K;
 	
-	{
+	systems::electrons electrons(cart_comm, ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
 	
-		systems::electrons electrons(cart_comm, ions, box, conf, input::kpoints::grid({1, 1, 1}, false));
+	ground_state::initial_guess(ions, electrons);
 	
-		ground_state::initial_guess(ions, electrons);
+	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::energy_tolerance(1e-8_Ha) | input::scf::calculate_forces());
 	
-		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::energy_tolerance(1e-8_Ha) | input::scf::calculate_forces());
-		
-		energy_match.check("ion-ion energy",      result.energy.ion,           -10.318372113231);
-		energy_match.check("total energy",        result.energy.total(),        -9.607513740111);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),       4.370577472189);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,     0.811035586243);
-		energy_match.check("Hartree energy",      result.energy.hartree,         0.230750915164);
-		energy_match.check("external energy",     result.energy.external,       -0.576776950178);
-		energy_match.check("non-local energy",    result.energy.nonlocal,        1.451507818962);
-		energy_match.check("XC energy",           result.energy.xc,             -4.765200883017);
-		energy_match.check("XC density integral", result.energy.nvxc,           -4.895774585058);
-		energy_match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
+	energy_match.check("ion-ion energy",      result.energy.ion,           -10.318372113231);
+	energy_match.check("total energy",        result.energy.total(),        -9.802333987476);
+	energy_match.check("kinetic energy",      result.energy.kinetic(),       4.200416079743);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues,     0.602438168098);
+	energy_match.check("Hartree energy",      result.energy.hartree,         0.219182649052);
+	energy_match.check("external energy",     result.energy.external,       -0.562795472157);
 
-		energy_match.check("force 1 x",           result.forces[0][0],         -0.007644528749);
-		energy_match.check("force 1 y",           result.forces[0][1],         -0.022009609672);
-		energy_match.check("force 1 z",           result.forces[0][2],         -0.048258419450);
-		energy_match.check("force 2 x",           result.forces[1][0],         -0.007637880253);
-		energy_match.check("force 2 y",           result.forces[1][1],          0.048230672235);
-		energy_match.check("force 2 z",           result.forces[1][2],          0.022000950654);
-		energy_match.check("force 3 x",           result.forces[2][0],          0.002241483469);
-		energy_match.check("force 3 y",           result.forces[2][1],          0.014244445019);
-		energy_match.check("force 3 z",           result.forces[2][2],         -0.014247732654);
-		energy_match.check("force 4 x",           result.forces[3][0],         -0.000400847395);
-		energy_match.check("force 4 y",           result.forces[3][1],         -0.008952996586);
-		energy_match.check("force 4 z",           result.forces[3][2],          0.008949459842);
-		energy_match.check("force 5 x",           result.forces[4][0],          0.014165674778);
-		energy_match.check("force 5 y",           result.forces[4][1],         -0.024485363553);
-		energy_match.check("force 5 z",           result.forces[4][2],          0.024668817550);
-		
-	}
+	energy_match.check("non-local energy",    result.energy.nonlocal,        1.427227452028);
+	energy_match.check("XC energy",           result.energy.xc,             -4.767992582911);
+	energy_match.check("XC density integral", result.energy.nvxc,           -4.900775189621);
+	energy_match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
 
-#if 0
-	{
-	
-		systems::electrons electrons(cart_comm, ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
-	
-		ground_state::initial_guess(ions, electrons);
-	
-		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::energy_tolerance(1e-8_Ha) | input::scf::calculate_forces());
-
-		energy_match.check("ion-ion energy",      result.energy.ion,           -10.318372113231);
-		energy_match.check("total energy",        result.energy.total(),        -9.802333987476);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),       4.200416079743);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,     0.602438168098);
-		energy_match.check("Hartree energy",      result.energy.hartree,         0.219182649052);
-		energy_match.check("external energy",     result.energy.external,       -0.562795472157);
-
-		energy_match.check("non-local energy",    result.energy.nonlocal,        1.427227452028);
-		energy_match.check("XC energy",           result.energy.xc,             -4.767992582911);
-		energy_match.check("XC density integral", result.energy.nvxc,           -4.900775189621);
-		energy_match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
-
-		energy_match.check("force 1 x",           result.forces[0][0],           -0.010908884903);
-		energy_match.check("force 1 y",           result.forces[0][1],           -0.020154773248);
-		energy_match.check("force 1 z",           result.forces[0][2],           -0.025815361874);
-		energy_match.check("force 2 x",           result.forces[1][0],           -0.007006636214);
-		energy_match.check("force 2 y",           result.forces[1][1],           0.028892952180);
-		energy_match.check("force 2 z",           result.forces[1][2],           0.022439893354);
-		energy_match.check("force 3 x",           result.forces[2][0],           0.021741163411);
-		energy_match.check("force 3 y",           result.forces[2][1],           -0.015099277746);
-		energy_match.check("force 3 z",           result.forces[2][2],           0.017028233174);
-		energy_match.check("force 4 x",           result.forces[3][0],           0.018503162743);
-		energy_match.check("force 4 y",           result.forces[3][1],           0.015590401854);
-		energy_match.check("force 4 z",           result.forces[3][2],           -0.013401024729);
-		energy_match.check("force 5 x",           result.forces[4][0],           0.032499176957);
-		energy_match.check("force 5 y",           result.forces[4][1],           -0.014776362222);
-		energy_match.check("force 5 z",           result.forces[4][2],           0.014730294284);
-
-	}
-#endif
+	energy_match.check("force 1 x",           result.forces[0][0],           -0.010908884903);
+	energy_match.check("force 1 y",           result.forces[0][1],           -0.020154773248);
+	energy_match.check("force 1 z",           result.forces[0][2],           -0.025815361874);
+	energy_match.check("force 2 x",           result.forces[1][0],           -0.007006636214);
+	energy_match.check("force 2 y",           result.forces[1][1],           0.028892952180);
+	energy_match.check("force 2 z",           result.forces[1][2],           0.022439893354);
+	energy_match.check("force 3 x",           result.forces[2][0],           0.021741163411);
+	energy_match.check("force 3 y",           result.forces[2][1],           -0.015099277746);
+	energy_match.check("force 3 z",           result.forces[2][2],           0.017028233174);
+	energy_match.check("force 4 x",           result.forces[3][0],           0.018503162743);
+	energy_match.check("force 4 y",           result.forces[3][1],           0.015590401854);
+	energy_match.check("force 4 z",           result.forces[3][2],           -0.013401024729);
+	energy_match.check("force 5 x",           result.forces[4][0],           0.032499176957);
+	energy_match.check("force 5 y",           result.forces[4][1],           -0.014776362222);
+	energy_match.check("force 5 z",           result.forces[4][2],           0.014730294284);
 	
 	return energy_match.fail();
 	
