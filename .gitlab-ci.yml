@@ -122,23 +122,17 @@ gcc-ompi:
 #      - time make #-j 5 # parallel compilation can take too much memory
 #      - time make install
 
-#nvcc11.2-ompi-compileonly:
-#    image: nvidia/cuda:11.2.0-devel
-#    stage: build
-#    script:
-#      - time apt update -qq
-#      - DEBIAN_FRONTEND="noninteractive" apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
-#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-#      - nvcc --version
-#      - mkdir nvcc
-#      - cd nvcc
-#      - export CUDACXX=nvcc
-#      - export CUDAFLAGS="-DNDEBUG $(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++17,-Wall,-Wfatal-errors,-s"
-#      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-#      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-#      - time ../configure --prefix=$HOME --enable-cuda
-#      - time make #-j 5 # parallel compilation can take too much memory
-#      - time make install
+nvcc11.4-ompi-compileonly:
+    image: nvidia/cuda:11.4.0-devel
+    stage: build
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config cmake make git ca-certificates
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - mkdir build && cd build
+      - /usr/local/cuda/bin/nvcc -V
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=7.0
+      - make silicon
 
 gcc-ompi-fast:
     stage: build
@@ -242,7 +236,7 @@ clang-ompi-parallel:
 #      - time tests/neon
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
-      
+
 clang-ompi-fast-serial:
     stage: build
     script:
@@ -360,7 +354,7 @@ gcc-mpich-parallel-2:
       - time mpirun -np 2 tests/al4h1
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
-      
+
 gcc-mpich-parallel-3:
     stage: build
     script:
