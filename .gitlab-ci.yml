@@ -484,7 +484,7 @@ gcc-mpich:
       paths:
       - gcc-mpich-build.tar.gz
 
-gcc-mpich-serial:
+gcc-mpich-1p:
     stage: test
     needs: ["gcc-mpich"]
     script:
@@ -496,7 +496,7 @@ gcc-mpich-serial:
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
-gcc-mpich-parallel-2:
+gcc-mpich-2p:
     stage: test
     needs: ["gcc-mpich"]    
     script:
@@ -505,9 +505,9 @@ gcc-mpich-parallel-2:
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 360
+      - INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 3600
 
-gcc-mpich-parallel-3:
+gcc-mpich-3p:
     stage: test
     needs: ["gcc-mpich"]    
     script:
@@ -516,9 +516,9 @@ gcc-mpich-parallel-3:
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 3" ctest --output-on-failure --timeout 360
+      - INQ_EXEC_ENV="mpirun -np 3" ctest --output-on-failure --timeout 3600
 
-gcc-mpich-parallel-4:
+gcc-mpich-4p:
     stage: test
     needs: ["gcc-mpich"]    
     script:
@@ -527,9 +527,9 @@ gcc-mpich-parallel-4:
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 360
+      - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600
       
-gcc-mpich-parallel-5:
+gcc-mpich-5p:
     stage: test
     needs: ["gcc-mpich"]    
     script:
@@ -538,7 +538,7 @@ gcc-mpich-parallel-5:
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
-      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 360; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600; cd ..
 
 gcc-mpich-valgrind:
     stage: test
