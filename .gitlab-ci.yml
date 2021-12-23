@@ -323,6 +323,7 @@ clang-ompi-fast-serial:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
+      - make install
       - ctest --output-on-failure --timeout 360
       - tests/silicon2
 
@@ -331,12 +332,9 @@ clang-ompi-fast-parallel-2:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++-9 --version
-      - mkdir build && cd build
-      - CXX=clang++-9 ../configure --prefix=$HOME --disable-debug
-      - time make -j4
-      - time make -j4 install
+      - tar -xvzf clang-ompi-fast-build.tar.gz
+      - cd build
+      - make install
       - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest --output-on-failure --timeout 360; cd ..
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_ground_state
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_real_time
