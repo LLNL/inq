@@ -311,7 +311,7 @@ clang-ompi-fast:
       - time make -j4 install
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - cd ../
-      - tar -cvzf clang-ompi-fast-build.tar.gz
+      - tar -cvzf clang-ompi-fast-build.tar.gz build/
     artifacts:
       paths:
       - clang-ompi-fast-build.tar.gz
