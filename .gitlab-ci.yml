@@ -352,8 +352,8 @@ clang-ompi-fast-serial:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
-      - find . -type f -execdir touch {} +
-      - find -name \*.utx -type f -execdir touch {} +
+      - find . -execdir touch {} +
+      - find -name \*.utx -execdir touch {} +
       - make install
       - ctest --output-on-failure --timeout 360
       - tests/silicon2
@@ -366,8 +366,8 @@ clang-ompi-fast-parallel-2:
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
-      - find . -type f -execdir touch {} +
-      - find -name \*.utx -type f -execdir touch {} +      
+      - find . -execdir touch {} +
+      - find -name \*.utx -execdir touch {} +      
       - make install
       - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest --output-on-failure --timeout 360; cd ..
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_ground_state
