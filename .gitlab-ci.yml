@@ -11,6 +11,10 @@ variables:
   OMPI_MCA_btl_vader_single_copy_mechanism: none
   CODECOV_TOKEN: "5855e536-b784-400e-b0b2-b1d01c2287a9"
 
+stages:
+  - build
+  - test
+
 build-noblas:
     stage: build
     script:
@@ -294,8 +298,26 @@ clang-ompi-parallel-5:
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
       
-clang-ompi-fast-serial:
+clang-ompi-fast-build:
     stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - clang++-9 --version
+      - mkdir build && cd build
+      - CXX=clang++-9 ../configure --prefix=$HOME --disable-debug
+      - time make -j4
+      - time make -j4 install
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - cd ../
+      - tar -cvzf clang-ompi-fast-build.tar.gz
+    artifacts:
+      paths:
+      - clang-ompi-fast-build.tar.gz
+
+clang-ompi-fast-serial:
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -310,7 +332,7 @@ clang-ompi-fast-serial:
       - tests/silicon2
 
 clang-ompi-fast-parallel-2:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -328,7 +350,7 @@ clang-ompi-fast-parallel-2:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/al4h1
 
 clang-ompi-fast-parallel-3:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -346,7 +368,7 @@ clang-ompi-fast-parallel-3:
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/al4h1
       
 clang-ompi-fast-parallel-4:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -364,7 +386,7 @@ clang-ompi-fast-parallel-4:
       - time mpirun --allow-run-as-root --oversubscribe -np 4 tests/al4h1
 
 clang-ompi-fast-parallel-5:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
