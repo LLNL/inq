@@ -264,7 +264,6 @@ clang-ompi-parallel-5:
       - ls -l
       - time make -j4
       - time make -j4 install
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 5" ctest --output-on-failure --timeout 360; cd ..
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_ground_state
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_real_time
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
@@ -375,7 +374,6 @@ clang-ompi-fast-parallel-5:
       - CXX=clang++-9 ../configure --prefix=$HOME --disable-debug
       - time make -j4
       - time make -j4 install
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 5" ctest --output-on-failure --timeout 360; cd ..
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_ground_state
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/h2o_real_time
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/silicon
@@ -501,7 +499,6 @@ gcc-mpich-parallel-5:
       - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=".mpich"
       - time make
       - time make install
-      - cd src; INQ_EXEC_ENV="mpirun -np 5" ctest --output-on-failure --timeout 360; cd ..
       - time mpirun -np 5 tests/silicon
       - time mpirun -np 5 tests/nitrogen
       - time mpirun -np 5 tests/al4h1
