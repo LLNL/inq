@@ -540,25 +540,19 @@ gcc-mpich-5p:
       - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600; cd ..
 
-gcc-mpich-valgrind:
+gcc-mpich-valgrind-1p:
     stage: test
-    needs: []    
+    needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - c++ --version
-      - mpichversion
-      - mkdir build && cd build
-      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug
-      - time make
-      - time make install
+      - tar -xvzf gcc-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 1200; cd ..
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
-      - tests/silicon2      
 
 #nvcc-nocuda:
 #    stage: test
