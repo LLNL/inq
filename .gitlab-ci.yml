@@ -297,7 +297,10 @@ clang-ompi-parallel-5:
 #      - time tests/neon
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
-      
+
+
+#### CLANG-OMPI-FAST
+
 clang-ompi-fast:
     stage: build
     script:
@@ -434,7 +437,9 @@ clang-ompi-fast-parallel-5:
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
 
-gcc-mpich-serial:
+#### GCC-MPICH
+
+gcc-mpich:
     stage: test
     script:
       - apt update -qq && apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
@@ -445,6 +450,20 @@ gcc-mpich-serial:
       - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug
       - time make
       - time make install
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - cd ../
+      - tar -cvzf gcc-mpich-build.tar.gz build/
+    artifacts:
+      paths:
+      - gcc-mpich-build.tar.gz
+
+gcc-mpich-serial:
+    stage: test
+    script:
+      - apt update -qq && apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
+      - tar -xvzf gcc-mpich-build.tar.gz
+      - cd build
+      - make install
       - ctest --output-on-failure --timeout 360
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
