@@ -16,7 +16,7 @@ stages:
   - test
 
 build-noblas:
-    stage: build
+    stage: test
     script:
       - time apt update -qq 
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -28,7 +28,7 @@ build-noblas:
       - eval ! ../configure --prefix=$HOME
 
 build-noboost:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin python2
@@ -40,7 +40,7 @@ build-noboost:
       - eval ! ../configure --prefix=$HOME
 
 build-nofftw:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -52,7 +52,7 @@ build-nofftw:
       - eval ! ../configure --prefix=$HOME
 
 build-nolapack:
-    stage: build
+    stage: test
     script:
       - time apt update -qq 
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -64,7 +64,7 @@ build-nolapack:
       - eval ! ../configure --prefix=$HOME
 
 gcc-ompi:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -92,7 +92,7 @@ gcc-ompi:
 
 #nvcc11.0-ompi-compileonly:
 #    image: nvidia/cuda:11.0-devel
-#    stage: build
+#    stage: test
 #    script:
 #      - time apt update -qq
 #      - DEBIAN_FRONTEND="noninteractive" apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -110,7 +110,7 @@ gcc-ompi:
 
 #nvcc11.1-ompi-compileonly:
 #    image: nvidia/cuda:11.1-devel
-#    stage: build
+#    stage: test
 #    script:
 #      - time apt update -qq
 #      - DEBIAN_FRONTEND="noninteractive" apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -128,7 +128,7 @@ gcc-ompi:
 
 #nvcc11.2-ompi-compileonly:
 #    image: nvidia/cuda:11.2.0-devel
-#    stage: build
+#    stage: test
 #    script:
 #      - time apt update -qq
 #      - DEBIAN_FRONTEND="noninteractive" apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -145,7 +145,7 @@ gcc-ompi:
 #      - time make install
 
 gcc-ompi-fast:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran  make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -173,7 +173,7 @@ gcc-ompi-fast:
       - tests/silicon2
 
 clang-ompi-serial:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -191,7 +191,7 @@ clang-ompi-serial:
       - tests/silicon2
 
 clang-ompi-parallel-2:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -212,7 +212,7 @@ clang-ompi-parallel-2:
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/al4h1
 
 clang-ompi-parallel-3:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -233,7 +233,7 @@ clang-ompi-parallel-3:
       - time mpirun --allow-run-as-root --oversubscribe -np 3 tests/al4h1
 
 clang-ompi-parallel-4:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -255,7 +255,7 @@ clang-ompi-parallel-4:
 
 
 clang-ompi-parallel-5:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -275,7 +275,7 @@ clang-ompi-parallel-5:
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/al4h1
 
 #clang-cuda:
-#    stage: build
+#    stage: test
 #    tags:
 #      - cuda_gpu
 #    script:
@@ -298,7 +298,7 @@ clang-ompi-parallel-5:
 #      - time tests/h2o_ground_state
 #      - time tests/h2o_real_time
       
-clang-ompi-fast-build:
+clang-ompi-fast:
     stage: build
     script:
       - time apt update -qq
@@ -321,14 +321,9 @@ clang-ompi-fast-serial:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++-9 --version
-      - mkdir build && cd build
-      - CXX=clang++-9 ../configure --prefix=$HOME --disable-debug
-      - time make -j4
-      - time make -j4 install
+      - tar -cvzf clang-ompi-fast-build.tar.gz
+      - cd build
       - ctest --output-on-failure --timeout 360
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
 clang-ompi-fast-parallel-2:
@@ -403,7 +398,7 @@ clang-ompi-fast-parallel-5:
       - time mpirun --allow-run-as-root --oversubscribe -np 5 tests/al4h1
 
 #clang-valgrind:
-#    stage: build
+#    stage: test
 #    script:
 #      - time apt update -qq
 #      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python valgrind
@@ -422,7 +417,7 @@ clang-ompi-fast-parallel-5:
 #      - time $VALGRIND tests/h2o_real_time
       
 #clang-mpich-asan:
-#    stage: build
+#    stage: test
 #    script:
 #      - time apt update -qq
 #      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python valgrind libmpich-dev mpich
@@ -442,7 +437,7 @@ clang-ompi-fast-parallel-5:
 #      - time tests/h2o_real_time
 
 gcc-mpich-serial:
-    stage: build
+    stage: test
     script:
       - apt update -qq && apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
@@ -457,7 +452,7 @@ gcc-mpich-serial:
       - tests/silicon2
 
 gcc-mpich-parallel-2:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
@@ -476,7 +471,7 @@ gcc-mpich-parallel-2:
       - tests/silicon2
       
 gcc-mpich-parallel-3:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
@@ -493,7 +488,7 @@ gcc-mpich-parallel-3:
       - time mpirun -np 3 tests/al4h1
 
 gcc-mpich-parallel-4:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
@@ -510,7 +505,7 @@ gcc-mpich-parallel-4:
       - time mpirun -np 4 tests/al4h1
       
 gcc-mpich-parallel-5:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
@@ -526,7 +521,7 @@ gcc-mpich-parallel-5:
       - time mpirun -np 5 tests/al4h1
 
 gcc-mpich-valgrind:
-    stage: build
+    stage: test
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
@@ -545,7 +540,7 @@ gcc-mpich-valgrind:
       - tests/silicon2      
 
 #nvcc-nocuda:
-#    stage: build
+#    stage: test
 #    script:
 #      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
 #      - time apt update -qq
@@ -573,7 +568,7 @@ gcc-mpich-valgrind:
 #      - time tests/h2o_real_time
 
 gcc-ompi-coverage:
-    stage: build
+    stage: test
     tags:
       - intel_compiler
     script:
@@ -594,7 +589,7 @@ gcc-ompi-coverage:
 
 #DISABLED BECAUSE IT IS TOO SLOW
 #gcc-ompi-coverage-noinline:
-#    stage: build
+#    stage: test
 #    tags:
 #      - intel_compiler
 #    script:
@@ -613,7 +608,7 @@ gcc-ompi-coverage:
 #      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
 
 intel-ompi:
-    stage: build
+    stage: test
     tags:
       - intel_compiler
     script:
@@ -637,7 +632,7 @@ intel-ompi:
       - tests/silicon2
 
 nvcc-ompi-fast:
-    stage: build
+    stage: test
     tags:
       - cuda_gpu
     script:
@@ -667,7 +662,7 @@ nvcc-ompi-fast:
       - time mpirun --oversubscribe -np 5 tests/al4h1
 
 nvcc-ompi:
-    stage: build
+    stage: test
     tags:
       - cuda_gpu
     script:
