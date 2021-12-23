@@ -65,6 +65,7 @@ build-nolapack:
 
 gcc-ompi:
     stage: test
+    needs: []
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -146,6 +147,7 @@ gcc-ompi:
 
 gcc-ompi-fast:
     stage: test
+    needs: []    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran  make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -172,8 +174,31 @@ gcc-ompi-fast:
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
+#### CLANG-OMPI
+
+clang-ompi:
+    stage: build
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - clang++-9 --version
+      - mkdir build
+      - cd build
+      - CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - CXX=clang++-9 CC=clang-9 ../configure --prefix=$HOME
+      - ls -l
+      - time make
+      - time make install
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - cd ../
+      - tar -cvzf clang-ompi-fast-build.tar.gz build/
+    artifacts:
+      paths:
+      - clang-ompi-build.tar.gz
+
 clang-ompi-serial:
-    stage: test
+    stage: test    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -321,6 +346,7 @@ clang-ompi-fast:
 
 clang-ompi-fast-serial:
     stage: test
+    needs: ["clang-ompi-fast"]
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -334,6 +360,7 @@ clang-ompi-fast-serial:
 
 clang-ompi-fast-parallel-2:
     stage: test
+    needs: ["clang-ompi-fast"]    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -463,6 +490,7 @@ gcc-mpich:
 
 gcc-mpich-serial:
     stage: test
+    needs: ["gcc-mpich"]
     script:
       - apt update -qq && apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
       - tar -xvzf gcc-mpich-build.tar.gz
@@ -545,6 +573,7 @@ gcc-mpich-parallel-5:
 
 gcc-mpich-valgrind:
     stage: test
+    needs: []    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
@@ -592,6 +621,7 @@ gcc-mpich-valgrind:
 
 gcc-ompi-coverage:
     stage: test
+    needs: []    
     tags:
       - intel_compiler
     script:
@@ -632,6 +662,7 @@ gcc-ompi-coverage:
 
 intel-ompi:
     stage: test
+    needs: []    
     tags:
       - intel_compiler
     script:
@@ -656,6 +687,7 @@ intel-ompi:
 
 nvcc-ompi-fast:
     stage: test
+    needs: []    
     tags:
       - cuda_gpu
     script:
@@ -686,6 +718,7 @@ nvcc-ompi-fast:
 
 nvcc-ompi:
     stage: test
+    needs: []    
     tags:
       - cuda_gpu
     script:
