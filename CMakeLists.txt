@@ -54,10 +54,14 @@ if(ENABLE_CUDA)
     endif()
   else()
 	  message("-DCMAKE_CUDA_ARCHITECTURES is set...")
+	  set(CUDA_ARCH_LIST "${CMAKE_CUDA_ARCHITECTURES}")
+	  message("setting CUDA_ARCH_LIST to ${CMAKE_CUDA_ARCHITECTURES}")
       set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
       set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
 	  message("setting CUDA_ARCHITECTURES global property to ${CMAKE_CUDA_ARCHITECTURES}")
+	  set(ARCH_FLAGS "--generate-code=arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=[compute_${CMAKE_CUDA_ARCHITECTURES},sm_${CMAKE_CUDA_ARCHITECTURES}]")
   endif()
+  message("... at the end ARCH_FLAGS was set to ${ARCH_FLAGS}")
 
   string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
 
