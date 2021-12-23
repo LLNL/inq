@@ -353,7 +353,6 @@ clang-ompi-fast-serial:
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
       - cmake --build . --target install/fast      
-      - make install
       - ctest --output-on-failure --timeout 360
       - tests/silicon2
 
@@ -366,7 +365,6 @@ clang-ompi-fast-parallel-2:
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
-      - make install
       - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root --oversubscribe -np 2" ctest --output-on-failure --timeout 360; cd ..
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_ground_state
       - time mpirun --allow-run-as-root --oversubscribe -np 2 tests/h2o_real_time
@@ -500,72 +498,47 @@ gcc-mpich-serial:
 
 gcc-mpich-parallel-2:
     stage: test
+    needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - c++ --version
-      - mpichversion
-      - mkdir build && cd build
-      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=".mpich"
-      - time make
-      - time make install
-      - cd src; INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 360; cd ..
-      - time mpirun -np 2 tests/silicon
-      - time mpirun -np 2 tests/nitrogen
-      - time mpirun -np 2 tests/al4h1
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
-      - tests/silicon2
-      
+      - tar -xvzf gcc-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 360
+
 gcc-mpich-parallel-3:
     stage: test
+    needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - c++ --version
-      - mpichversion
-      - mkdir build && cd build
-      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=".mpich"
-      - time make
-      - time make install
-      - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest --output-on-failure --timeout 360; cd ..
-      - time mpirun -np 3 tests/silicon
-      - time mpirun -np 3 tests/nitrogen
-      - time mpirun -np 3 tests/al4h1
+      - tar -xvzf gcc-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun -np 3" ctest --output-on-failure --timeout 360
 
 gcc-mpich-parallel-4:
     stage: test
+    needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - c++ --version
-      - mpichversion
-      - mkdir build && cd build
-      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=".mpich"
-      - time make
-      - time make install
-      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 360; cd ..
-      - time mpirun -np 4 tests/silicon
-      - time mpirun -np 4 tests/nitrogen
-      - time mpirun -np 4 tests/al4h1
+      - tar -xvzf gcc-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 360
       
 gcc-mpich-parallel-5:
     stage: test
+    needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - c++ --version
-      - mpichversion
-      - mkdir build && cd build
-      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=".mpich"
-      - time make
-      - time make install
-      - time mpirun -np 5 tests/silicon
-      - time mpirun -np 5 tests/nitrogen
-      - time mpirun -np 5 tests/al4h1
+      - tar -xvzf gcc-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
+      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 360; cd ..
 
 gcc-mpich-valgrind:
     stage: test
