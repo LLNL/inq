@@ -16,7 +16,7 @@ stages:
   - test
 
 build-noblas:
-    stage: test
+    stage: build
     script:
       - time apt update -qq 
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -28,7 +28,7 @@ build-noblas:
       - eval ! ../configure --prefix=$HOME
 
 build-noboost:
-    stage: test
+    stage: build
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin python2
@@ -40,7 +40,7 @@ build-noboost:
       - eval ! ../configure --prefix=$HOME
 
 build-nofftw:
-    stage: test
+    stage: build
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -52,7 +52,7 @@ build-nofftw:
       - eval ! ../configure --prefix=$HOME
 
 build-nolapack:
-    stage: test
+    stage: build
     script:
       - time apt update -qq 
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
@@ -321,7 +321,7 @@ clang-ompi-fast-serial:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
-      - tar -cvzf clang-ompi-fast-build.tar.gz
+      - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
       - ctest --output-on-failure --timeout 360
       - tests/silicon2
