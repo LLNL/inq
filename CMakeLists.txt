@@ -33,11 +33,15 @@ if(ENABLE_CUDA)
 
   # temporary workaround to detect CUDA arch, for between the deprecation of FindCUDA in CMake 3.10 and the availability of FindCudaToolkit in CMake 3.17 # https://stackoverflow.com/a/68223399/225186
   if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+	message("-DCMAKE_CUDA_ARCHITECTURES is not set, automatic architecture detection...")
     if(${CMAKE_VERSION} VERSION_LESS_EQUAL "3.13.4")
+	  message("...cmake is old, using cuda_select_nvcc method")
       cuda_select_nvcc_arch_flags(ARCH_FLAGS "Auto") # optional argument for arch to add
       message("ARCH_FLAGS = ${ARCH_FLAGS}")
       string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
+	  message("setting ARCH_FLAGS to ${ARCH_FLAGS}")
     else()
+	  message("...cmake is new, using select_compute_arch method")
       include(FindCUDA/select_compute_arch)
       CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
       string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
@@ -46,10 +50,13 @@ if(ENABLE_CUDA)
       SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
       set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
       set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
+	  message("setting CUDA_ARCHITECTURES global property to ${CUDA_ARCH_LIST}")
     endif()
   else()
+	  message("-DCMAKE_CUDA_ARCHITECTURES is set...")
       set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
       set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
+	  message("setting CUDA_ARCHITECTURES global property to ${CMAKE_CUDA_ARCHITECTURES}")
   endif()
 
   string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
