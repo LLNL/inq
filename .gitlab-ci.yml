@@ -131,7 +131,7 @@ nvcc11.4-ompi-compileonly:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc -V
-      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=7.0
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
       - make silicon
 
 gcc-ompi-fast:
