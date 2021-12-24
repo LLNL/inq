@@ -33,6 +33,9 @@ namespace atomic {
 template <typename Type1, typename Type2>
 GPU_FUNCTION inline Type1 add(Type1 * val, Type2 const & incr){
 #ifdef ENABLE_CUDA
+#ifdef __CUDA_ARCH__
+	static_assert(__CUDA_ARCH__ >= 600, "gpu library needs target gpu architecture >= 6.0");
+#endif
   return atomicAdd(val, incr);
 #else
   auto old_val = *val;
