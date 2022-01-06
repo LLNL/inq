@@ -59,11 +59,13 @@ Instructions for compiling
 ```bash 
 git clone --recurse-submodules git@gitlab.com:npneq/inq.git
 cd inq
-mkdir build && cd build
+mkdir build
+cd build
 # set up environment if necessary, e.g. export CUDACXX=/usr/local/cuda/bin/nvcc
 ../configure --prefix=$HOME # change prefix, e.g. $HOME/.local or /usr/local (needs root access), if necessary,
 make -j
 make install
+make test
 ```
 
 This instructions might be incomplete for your particular setup; 
