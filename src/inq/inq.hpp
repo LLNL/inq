@@ -18,6 +18,9 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#ifndef INQ__INQ
+#define INQ__INQ
+
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
 #include <operations/io.hpp>
@@ -26,4 +29,14 @@
 
 #ifdef INQ_INQ_INQ_UNIT_TEST
 #undef INQ_INQ_INQ_UNIT_TEST
+
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("inq::inq", "[inq::inq]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
+#endif
 #endif

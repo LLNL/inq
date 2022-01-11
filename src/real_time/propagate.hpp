@@ -128,7 +128,13 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 #ifdef INQ_REAL_TIME_PROPAGATE_UNIT_TEST
 #undef INQ_REAL_TIME_PROPAGATE_UNIT_TEST
 
-#endif
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("real_time::propagate", "[real_time::propagate]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
 
 #endif
-
+#endif

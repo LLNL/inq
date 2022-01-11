@@ -68,6 +68,13 @@ public:
 #ifdef INQ_SYSTEMS_IONS_UNIT_TEST
 #undef INQ_SYSTEMS_IONS_UNIT_TEST
 
-#endif
-#endif
+#include <catch2/catch_all.hpp>
 
+TEST_CASE("systems::ions", "[systems::ions]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
+#endif
+#endif

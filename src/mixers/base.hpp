@@ -40,6 +40,14 @@ public:
 
 #ifdef INQ_MIXERS_BASE_UNIT_TEST
 #undef INQ_MIXERS_BASE_UNIT_TEST
-#endif
 
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("mixers::base", "[mixers::base]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
+#endif
 #endif

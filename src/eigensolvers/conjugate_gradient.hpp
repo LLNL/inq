@@ -232,6 +232,11 @@ void conjugate_gradient(const operator_type & ham, const preconditioner_type & p
 
 #include <catch2/catch_all.hpp>
 
-#endif
+TEST_CASE("eigensolvers::conjugate_gradient", "[eigensolvers::conjugate_gradient]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
 
+#endif
 #endif

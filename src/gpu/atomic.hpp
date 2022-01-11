@@ -64,5 +64,13 @@ GPU_FUNCTION inline long add(long * val, Type2 const & incr){
 #ifdef INQ_GPU_ATOMIC_UNIT_TEST
 #undef INQ_GPU_ATOMIC_UNIT_TEST
 
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("gpu::atomic", "[gpu::atomic]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
 #endif
 #endif

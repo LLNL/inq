@@ -44,8 +44,12 @@ struct config {
 #undef INQ_INPUT_CONFIG_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+
+TEST_CASE("input::config", "[input::config]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
 
 #endif
-   
 #endif
