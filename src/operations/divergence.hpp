@@ -71,7 +71,7 @@ auto divergence(basis::field<basis::real_space, math::vector3<double>> const & f
 #ifdef INQ_OPERATIONS_DIVERGENCE_UNIT_TEST
 #undef INQ_OPERATIONS_DIVERGENCE_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <math/vector3.hpp>
 
 auto vectorial_complex_plane_wave (inq::math::vector3<double> k , inq::math::vector3<double> r ){

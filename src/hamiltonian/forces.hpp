@@ -121,7 +121,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 #undef INQ_HAMILTONIAN_FORCES_UNIT_TEST
 
 #include <ions/unitcell.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
 TEST_CASE("Class hamiltonian::forces", "[forces]"){

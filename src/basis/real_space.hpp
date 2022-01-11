@@ -159,15 +159,17 @@ namespace basis {
 #ifdef INQ_BASIS_REAL_SPACE_UNIT_TEST
 #undef INQ_BASIS_REAL_SPACE_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 
 TEST_CASE("class basis::real_space", "[basis::real_space]") {
-  
+
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
-  using math::vector3;
+	using Catch::Approx;
+
+	using math::vector3;
 
   {
     

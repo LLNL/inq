@@ -69,7 +69,7 @@ void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 
 #include <mpi3/environment.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function gpu::alltoall", "[gpu::alltoall]"){
 

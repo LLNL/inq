@@ -35,6 +35,14 @@ using coord = math::vector3<autocast_quantity<magnitude::length>>;
 
 #ifdef INQ_INPUT_COORD_UNIT_TEST
 #undef INQ_INPUT_COORD_UNIT_TEST
-#endif
 
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("input::coord", "[input::coord]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
+#endif
 #endif

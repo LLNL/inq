@@ -214,7 +214,7 @@ auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
 #ifdef INQ_OPERATIONS_DIAGONALIZE_UNIT_TEST
 #undef INQ_OPERATIONS_DIAGONALIZE_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <operations/randomize.hpp>
 #include <math/array.hpp>

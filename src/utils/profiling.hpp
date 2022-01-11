@@ -26,5 +26,12 @@
 #ifdef INQ_UTILS_PROFILING_UNIT_TEST
 #undef INQ_UTILS_PROFILING_UNIT_TEST
 
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("utils::profiling", "[utils::profiling]") {
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
 #endif
 #endif

@@ -232,7 +232,7 @@ auto load(std::string const & dirname, FieldSet & phi){
 #ifdef INQ_OPERATIONS_IO_UNIT_TEST
 #undef INQ_OPERATIONS_IO_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/trivial.hpp>

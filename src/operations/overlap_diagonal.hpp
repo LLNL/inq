@@ -158,7 +158,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal_normalize
 #ifdef INQ_OPERATIONS_OVERLAP_DIAGONAL_UNIT_TEST
 #undef INQ_OPERATIONS_OVERLAP_DIAGONAL_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/trivial.hpp>
@@ -167,6 +167,7 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 	
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
 
 	const int npoint = 800;
 	const int nvec = 12;

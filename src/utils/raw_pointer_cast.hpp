@@ -33,7 +33,7 @@ auto raw_pointer_cast(Type * ptr){
 #ifdef INQ_UTILS_RAW_POINTER_CAST_UNIT_TEST
 #undef INQ_UTILS_RAW_POINTER_CAST_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <math/complex.hpp>
 
 using namespace inq;

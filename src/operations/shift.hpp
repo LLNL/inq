@@ -63,12 +63,14 @@ void shift(typename FieldSetType1::element_type const & factor, const FieldSetTy
 
 #include <basis/trivial.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function operations::shift", "[operations::shift]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
+
 	const int npoint = 185193;
 	const int nvec = 7;
 

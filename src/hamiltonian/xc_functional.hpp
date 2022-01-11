@@ -143,7 +143,7 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_XC_FUNCTIONAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_XC_FUNCTIONAL_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <operations/randomize.hpp>
 #include <operations/gradient.hpp>
 #include <basis/field.hpp>
@@ -197,6 +197,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
+	using Catch::Approx;
+
 	using namespace operations;
 	using namespace inq::utils;
 	using math::vector3;
@@ -204,9 +206,9 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;
-	
+
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
-	
+
 	SECTION("LDA"){
 		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
 		basis::real_space rs(box, cart_comm);

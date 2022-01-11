@@ -33,8 +33,16 @@ constexpr double proton_charge = -1.0;
 
 #ifdef INQ_PHYSICS_CONSTANTS_UNIT_TEST
 #undef INQ_PHYSICS_CONSTANTS_UNIT_TEST
-#endif
 
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("physics::constants", "[physics::constants]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
+#endif
 #endif
 
 

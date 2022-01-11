@@ -37,7 +37,15 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 
 #ifdef INQ_GROUND_STATE_INITIAL_GUESS_UNIT_TEST
 #undef INQ_GROUND_STATE_INITIAL_GUESS_UNIT_TEST
-#endif
 
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("ground_state::initial_guess", "[ground_state::initial_guess]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
+#endif
 #endif
 

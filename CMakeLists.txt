@@ -1,5 +1,5 @@
 # -*- indent-tabs-mode: t -*-
-cmake_minimum_required(VERSION 3.11) # for reference: ubuntu 20.04 has cmake 3.16
+cmake_minimum_required(VERSION 3.18) # for reference: ubuntu 20.04 has cmake 3.16
 message("CMake version ${CMAKE_VERSION}")
 include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
@@ -15,6 +15,46 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 #if(POLICY CMP0104)
 #  cmake_policy(SET CMP0104 NEW)
 #endif()
+
+#find_package(Catch2 CONFIG)
+#if (${Catch2_FOUND})
+#else ()
+    message(STATUS "downloading Catch2 v3p3")
+	Include(FetchContent)
+	FetchContent_Declare(
+		Catch2
+		GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+		GIT_TAG        devel
+	)
+	FetchContent_MakeAvailable(Catch2)
+#    include(ExternalProject)
+#    ExternalProject_Add(
+#            catch2
+#            PREFIX ${PROJECT_SOURCE_DIR}/lib/catch2
+#            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+#            TIMEOUT 10
+#            UPDATE_COMMAND ${GIT_EXECUTABLE} pull
+#            CONFIGURE_COMMAND ""
+#            BUILD_COMMAND ""
+#            INSTALL_COMMAND ""
+#            LOG_DOWNLOAD ON
+#    )
+#    add_dependencies(tests catch2)
+
+#    # Expose required variable (CATCH_INCLUDE_DIR) to parent scope
+#    ExternalProject_Get_Property(catch2 source_dir)
+#    set(CATCH_INCLUDE_DIR ${source_dir}/include CACHE INTERNAL "Path to include folder for Catch2")
+#    add_subdirectory(${PROJECT_SOURCE_DIR}/lib/catch2)
+#    include_directories(${CATCH_INCLUDE_DIR})
+#endif ()
+#	message(STATUS "foo include dir: ${CATCH_INCLUDE_DIR}")
+#	message(STATUS "foo include dir: ${catch2_SOURCE_DIR}")
+#	message(STATUS "foo include dir: ${catch2_SOURCE_DIR}/include")
+
+#	include_directories(${CATCH_INCLUDE_DIR})
+#	include_directories(${catch2_SOURCE_DIR})
+	include_directories(${catch2_SOURCE_DIR}/src)
+#	link_libraries(Catch2::Catch2)
 
 enable_testing()
 include(CTest)
@@ -33,15 +73,7 @@ if(ENABLE_CUDA)
 
   # temporary workaround to detect CUDA arch, for between the deprecation of FindCUDA in CMake 3.10 and the availability of FindCudaToolkit in CMake 3.17 # https://stackoverflow.com/a/68223399/225186
   if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-	message("-DCMAKE_CUDA_ARCHITECTURES is not set, automatic architecture detection...")
-    if(${CMAKE_VERSION} VERSION_LESS_EQUAL "3.13.4")
-	  message("...cmake is old, using cuda_select_nvcc method")
-      cuda_select_nvcc_arch_flags(ARCH_FLAGS "Auto") # optional argument for arch to add
-      message("ARCH_FLAGS = ${ARCH_FLAGS}")
-      string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
-	  message("setting ARCH_FLAGS to ${ARCH_FLAGS}")
-    else()
-	  message("...cmake is new, using select_compute_arch method")
+	  message("-DCMAKE_CUDA_ARCHITECTURES is not set, automatic architecture detection...")
       include(FindCUDA/select_compute_arch)
       CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
       string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
@@ -51,7 +83,6 @@ if(ENABLE_CUDA)
       set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
       set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
 	  message("setting CUDA_ARCHITECTURES global property to ${CUDA_ARCH_LIST}")
-    endif()
   else()
 	  message("-DCMAKE_CUDA_ARCHITECTURES is set...")
 	  set(CUDA_ARCH_LIST "${CMAKE_CUDA_ARCHITECTURES}")
@@ -61,6 +92,7 @@ if(ENABLE_CUDA)
 	  message("setting CUDA_ARCHITECTURES global property to ${CMAKE_CUDA_ARCHITECTURES}")
 	  set(ARCH_FLAGS "--generate-code=arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=[compute_${CMAKE_CUDA_ARCHITECTURES},sm_${CMAKE_CUDA_ARCHITECTURES}]")
   endif()
+
   message("... at the end ARCH_FLAGS was set to ${ARCH_FLAGS}")
 
   string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")

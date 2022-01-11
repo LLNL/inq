@@ -22,7 +22,14 @@ public:
 
 #ifdef INQ_GROUND_STATE_RESULT_UNIT_TEST
 #undef INQ_GROUND_STATE_RESULT_UNIT_TEST
-#endif
+
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("ground_state::result", "[ground_state::result]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
 
 #endif
-
+#endif

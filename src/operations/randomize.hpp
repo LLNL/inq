@@ -91,7 +91,7 @@ namespace operations {
 #ifdef INQ_OPERATIONS_RANDOMIZE_UNIT_TEST
 #undef INQ_OPERATIONS_RANDOMIZE_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <operations/overlap_diagonal.hpp>
 
 TEST_CASE("function operations::randomize", "[operations::randomize]") {

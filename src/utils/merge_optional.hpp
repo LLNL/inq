@@ -37,10 +37,13 @@ opt_type merge_optional(const opt_type & option1, const opt_type & option2){
 #ifdef INQ_UTILS_MERGE_OPTIONAL_UNIT_TEST
 #undef INQ_UTILS_MERGE_OPTIONAL_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("utils::merge_optional", "[utils::merge_optional]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
 
 #endif
-
 #endif
-
-

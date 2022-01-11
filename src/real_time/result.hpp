@@ -45,7 +45,7 @@ namespace real_time {
 #ifdef INQ_REAL_TIME_RESULT_UNIT_TEST
 #undef INQ_REAL_TIME_RESULT_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 
 TEST_CASE("real_time::result", "[real_time::result]") {

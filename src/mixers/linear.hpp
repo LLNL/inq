@@ -61,7 +61,7 @@ private:
 #ifdef INQ_MIXERS_LINEAR_UNIT_TEST
 #undef INQ_MIXERS_LINEAR_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 

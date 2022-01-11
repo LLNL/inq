@@ -60,7 +60,7 @@ void propagate_velocities(double dt, AccelType const & accel, VelType & velociti
 #ifdef INQ_SOLVERS_VELOCITY_VERLET_UNIT_TEST
 #undef INQ_SOLVERS_VELOCITY_VERLET_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <math/array.hpp>
 

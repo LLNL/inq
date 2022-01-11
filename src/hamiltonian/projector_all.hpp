@@ -266,14 +266,14 @@ private:
 #include <config/path.hpp>
 #include <ions/geometry.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class hamiltonian::projector_all", "[hamiltonian::projector_all]") {
-  
+
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-  using math::vector3;
+	using math::vector3;
 
 }
 

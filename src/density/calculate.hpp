@@ -90,12 +90,13 @@ basis::field<basis::real_space, double> calculate(const systems::electrons & ele
 #include <basis/trivial.hpp>
 #include <math/complex.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function density::calculate", "[density::calculate]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
 
 	const int npoint = 100;
 	const int nvec = 12;

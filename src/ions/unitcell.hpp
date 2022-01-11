@@ -578,13 +578,13 @@ namespace ions {
 #ifdef INQ_IONS_UNITCELL_UNIT_TEST
 #undef INQ_IONS_UNITCELL_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
+	using math::vector3;
 
   {
     

@@ -301,7 +301,7 @@ auto coarsen(FieldType<basis::real_space, double> const & source, typename basis
 
 #include <operations/integral.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 namespace transfer_unit_test {
 	
@@ -321,6 +321,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
+	using Catch::Approx;
+
 	using math::vector3;
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});

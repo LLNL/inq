@@ -132,7 +132,12 @@ nvcc11.4-ompi-compileonly:
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config cmake make git ca-certificates
+      - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates wget
+      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null # following https://askubuntu.com/a/865294/15943
+      - mkdir /opt/cmake
+      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+      - cmake --version
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc -V
@@ -426,7 +431,7 @@ gcc-mpich-4p:
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600
-      
+
 gcc-mpich-5p:
     stage: test
     needs: ["gcc-mpich"]    
@@ -548,16 +553,17 @@ intel-ompi:
 
 nvcc-ompi-fast:
     stage: test
-    needs: []    
+    needs: []
     tags:
       - cuda_gpu
     script:
-      - export PREFIX=`mktemp -d`    
+      - export PREFIX=`mktemp -d`
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
+      - cmake --version
       - nvcc -V
       - mkdir nvcc && cd nvcc
-      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j8
       - time make -j8 install
       - ctest --output-on-failure --timeout 600
@@ -586,9 +592,10 @@ nvcc-ompi:
       - export PREFIX=`mktemp -d`    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
+      - cmake --version
       - nvcc -V
       - mkdir nvcc && cd nvcc
-      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --disable-debug
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j8
       - time make -j8 install
       - ctest --output-on-failure --timeout 600
@@ -610,6 +617,6 @@ nvcc-ompi:
       - time mpirun --oversubscribe -np 2 tests/al4h1
       - time mpirun --oversubscribe -np 3 tests/al4h1
       - time mpirun --oversubscribe -np 5 tests/al4h1
-      
+
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 

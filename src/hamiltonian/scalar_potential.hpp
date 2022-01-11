@@ -73,7 +73,7 @@ states::orbital_set<basis::real_space, complex> scalar_potential(basis::field<ba
 #ifdef INQ_HAMILTONIAN_SCALAR_POTENTIAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_SCALAR_POTENTIAL_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function hamiltonian::scalar_potential", "[hamiltonian::scalar_potential]") {
 

@@ -196,7 +196,7 @@ void davidson(const operator_type & ham, const preconditioner_type & prec, field
 #include <ions/unitcell.hpp>
 #include <operations/matrix_operator.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("eigensolvers::davidson", "[eigensolvers::davidson]") {
 

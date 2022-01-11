@@ -71,6 +71,14 @@ void prefetch(ArrayType const & array){
 
 #ifdef INQ_MATH_ARRAY_UNIT_TEST
 #undef INQ_MATH_ARRAY_UNIT_TEST
-#endif
 
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("math::array", "[math::array]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
+
+#endif
 #endif

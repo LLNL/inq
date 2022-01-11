@@ -81,7 +81,7 @@ namespace utils {
 #ifdef INQ_UTILS_FINITE_DIFFERENCE_UNIT_TEST
 #undef INQ_UTILS_FINITE_DIFFERENCE_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <math/vector3.hpp>
 #include <complex>
 
@@ -123,6 +123,8 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
+
 	using namespace inq::utils;
 	using math::vector3;
 
@@ -136,7 +138,7 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec))).margin(1.0e-5) == 0.0);
 	CHECK(finite_difference_divergence5p(grad, vec) == -1.0775226897_a);
 	CHECK(Approx(laplacian_gaussian_func(vec) - finite_difference_divergence5p(grad, vec)).margin(1.0e-7) == 0.0);
-	
+
 	vec = {0.0001, -0.0, 0.003};
 	CHECK(Approx(norm(finite_difference_gradient5p(linear_func, vec))).margin(1.0e-5) == 60.75);
 	CHECK(Approx(norm(finite_difference_gradient5p(gaussian_func, vec) - dgaussian_func(vec))).margin(1.0e-5) == 0.0);

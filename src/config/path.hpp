@@ -38,7 +38,7 @@ struct path {
 #ifdef INQ_CONFIG_PATH_UNIT_TEST
 #undef INQ_CONFIG_PATH_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class config::path", "[path]") {
   SECTION("Share path"){

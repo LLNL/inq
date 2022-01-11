@@ -63,7 +63,7 @@ namespace perturbations {
 #ifdef INQ_PERTURBATIONS_KICK_UNIT_TEST
 #undef INQ_PERTURBATIONS_KICK_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
@@ -113,6 +113,9 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	}
 
 	//Kick should not change the phi absolute value - kick pulse change only the phase of a wave fucntion in the frame of TDDFTThe kick should not change the phi absolute value - kick pulse change only the phase of a wave function in the frame of TDDFT
+
+	using Catch::Approx;
+
 	CHECK(phi_absdif == Approx(0).margin(1.0e-9));
 	//The wave function should changes after applying a kick potetntial
 	CHECK(phi_dif > 1.0e-9);

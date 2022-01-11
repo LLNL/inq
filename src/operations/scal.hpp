@@ -54,7 +54,7 @@ void scal_invsqrt(const array_1d & factor, field_set_type & phi){
 #ifdef INQ_OPERATIONS_SCAL_UNIT_TEST
 #undef INQ_OPERATIONS_SCAL_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function operations::scal", "[scal]") {
 

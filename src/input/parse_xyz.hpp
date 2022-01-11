@@ -73,14 +73,15 @@ auto parse_xyz(const std::string & xyz_file_name, quantity<magnitude::length> un
 #ifdef INQ_INPUT_PARSE_XYZ_UNIT_TEST
 #undef INQ_INPUT_PARSE_XYZ_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <config/path.hpp>
 
 TEST_CASE("function ions::parse_xyz", "[inq::input::parse_xyz]") {
-	 
+
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
 
   auto geo = input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz");
   

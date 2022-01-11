@@ -70,7 +70,7 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 #ifdef INQ_SOLVERS_LEAST_SQUARES_UNIT_TEST
 #undef INQ_SOLVERS_LEAST_SQUARES_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function solvers::least_squares", "[solvers::least_squares]") {
 

@@ -78,7 +78,13 @@ struct molecular_dynamics{
 #ifdef INQ_IONS_PROPAGATOR_UNIT_TEST
 #undef INQ_IONS_PROPAGATOR_UNIT_TEST
 
-#endif
+#include <catch2/catch_all.hpp>
+
+TEST_CASE("ions::propagator", "[ions::progagator]") {
+	using namespace inq;
+	using namespace Catch::literals;
+	using Catch::Approx;
+}
 
 #endif
-
+#endif

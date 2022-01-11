@@ -217,7 +217,7 @@ private:
 #ifdef INQ_MIXERS_PULAY_UNIT_TEST
 #undef INQ_MIXERS_PULAY_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
@@ -225,8 +225,8 @@ TEST_CASE("mixers::pulay", "[mixers::pulay]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
- 
-  mixers::pulay<double> lm(5, 0.5, 2);
+
+	mixers::pulay<double> lm(5, 0.5, 2);
 
 	math::array<double, 1> vin({10.0, -20.0});
 	math::array<double, 1> vout({0.0,  22.2});

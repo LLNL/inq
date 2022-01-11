@@ -137,7 +137,7 @@ protected:
 #ifdef INQ_UTILS_PARTITION_UNIT_TEST
 #undef INQ_UTILS_PARTITION_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 
 #include <mpi3/environment.hpp>

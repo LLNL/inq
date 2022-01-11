@@ -82,7 +82,7 @@ private:
 #ifdef INQ_INPUT_RT_UNIT_TEST
 #undef INQ_INPUT_RT_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class input::rt", "[input::rt]") {
 
@@ -95,7 +95,7 @@ TEST_CASE("class input::rt", "[input::rt]") {
     input::rt solver;
 
     CHECK(solver.dt() == 0.01_a);
-    CHECK(solver.num_steps() == 100);		
+    CHECK(solver.num_steps() == 100);
     
   }
 

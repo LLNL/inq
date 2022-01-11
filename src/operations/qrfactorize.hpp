@@ -155,7 +155,7 @@ namespace inq {
 #ifdef INQ_OPERATIONS_QRFACTORIZE_UNIT_TEST
 #undef INQ_OPERATIONS_QRFACTORIZE_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <operations/randomize.hpp>
 

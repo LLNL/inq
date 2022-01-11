@@ -86,7 +86,7 @@ namespace operations {
 #ifdef INQ_OPERATIONS_EXPONENTIAL_UNIT_TEST
 #undef INQ_OPERATIONS_EXPONENTIAL_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 #include <basis/trivial.hpp>
@@ -96,7 +96,8 @@ TEST_CASE("operations::exponential", "[operations::exponential]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-	
+	using Catch::Approx;
+
   const int npoint = 100;
   const int nvec = 12;
   

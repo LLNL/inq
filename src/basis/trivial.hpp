@@ -76,7 +76,7 @@ namespace basis {
 #ifdef INQ_BASIS_TRIVIAL_UNIT_TEST
 #undef INQ_BASIS_TRIVIAL_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 
 TEST_CASE("class basis::trivial", "[basis::trivial]") {

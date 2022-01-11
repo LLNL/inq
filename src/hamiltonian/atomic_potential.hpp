@@ -324,7 +324,7 @@ namespace hamiltonian {
 #undef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 
 #include <input/parse_xyz.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <ions/geometry.hpp>
 #include <basis/real_space.hpp>
 #include <systems/box.hpp>
