@@ -79,6 +79,7 @@ if(ENABLE_CUDA)
       cuda_select_nvcc_arch_flags(ARCH_FLAGS "Auto") # optional argument for arch to add
       message("ARCH_FLAGS = ${ARCH_FLAGS}")
       string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
+      set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
 	  message("setting ARCH_FLAGS to ${ARCH_FLAGS}")
     else()
 	  message("...cmake is new, using select_compute_arch method")
