@@ -16,6 +16,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 #  cmake_policy(SET CMP0104 NEW)
 #endif()
 
+find_package(Catch2 CONFIG)
+
 enable_testing()
 include(CTest)
 
