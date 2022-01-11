@@ -553,16 +553,17 @@ intel-ompi:
 
 nvcc-ompi-fast:
     stage: test
-    needs: []    
+    needs: []
     tags:
       - cuda_gpu
     script:
-      - export PREFIX=`mktemp -d`    
+      - export PREFIX=`mktemp -d`
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
+      - cmake --version
       - nvcc -V
       - mkdir nvcc && cd nvcc
-      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j8
       - time make -j8 install
       - ctest --output-on-failure --timeout 600
@@ -591,9 +592,10 @@ nvcc-ompi:
       - export PREFIX=`mktemp -d`    
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
+      - cmake --version
       - nvcc -V
       - mkdir nvcc && cd nvcc
-      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --disable-debug
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j8
       - time make -j8 install
       - ctest --output-on-failure --timeout 600
