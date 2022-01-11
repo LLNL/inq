@@ -24,7 +24,7 @@ else ()
 	FetchContent_Declare(
 		Catch2
 		GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-		GIT_TAG        v3.0.0-preview3
+		GIT_TAG        v2.13.8
 	)
 	FetchContent_MakeAvailable(Catch2)
 #    include(ExternalProject)
@@ -45,7 +45,9 @@ else ()
 #    ExternalProject_Get_Property(catch2 source_dir)
 #    set(CATCH_INCLUDE_DIR ${source_dir}/include CACHE INTERNAL "Path to include folder for Catch2")
 #    add_subdirectory(${PROJECT_SOURCE_DIR}/lib/catch2)
-#    include_directories(${CATCH_INCLUDE_DIR})
+	include_directories(${CATCH_INCLUDE_DIR})
+	include_directories(${catch2_SOURCE_DIR})
+	include_directories(${catch2_SOURCE_DIR}/include)
 endif ()
 
 enable_testing()
