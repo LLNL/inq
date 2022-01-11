@@ -132,7 +132,7 @@ nvcc11.4-ompi-compileonly:
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates
+      - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates wget
       - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null # following https://askubuntu.com/a/865294/15943
       - mkdir /opt/cmake
       - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
