@@ -132,7 +132,7 @@ nvcc11.4-ompi-compileonly:
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet catch2 libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config cmake make git ca-certificates
+      - apt-get update && apt-get install --no-install-recommends -y --quiet `#catch2` libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config cmake make git ca-certificates
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc -V

@@ -17,6 +17,36 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 #endif()
 
 find_package(Catch2 CONFIG)
+if (${Catch2_FOUND})
+else ()
+    message(STATUS "downloading Catch2")
+	Include(FetchContent)
+	FetchContent_Declare(
+		Catch2
+		GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+		GIT_TAG        v3.0.0-preview3
+	)
+	FetchContent_MakeAvailable(Catch2)
+#    include(ExternalProject)
+#    ExternalProject_Add(
+#            catch2
+#            PREFIX ${PROJECT_SOURCE_DIR}/lib/catch2
+#            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+#            TIMEOUT 10
+#            UPDATE_COMMAND ${GIT_EXECUTABLE} pull
+#            CONFIGURE_COMMAND ""
+#            BUILD_COMMAND ""
+#            INSTALL_COMMAND ""
+#            LOG_DOWNLOAD ON
+#    )
+#    add_dependencies(tests catch2)
+
+#    # Expose required variable (CATCH_INCLUDE_DIR) to parent scope
+#    ExternalProject_Get_Property(catch2 source_dir)
+#    set(CATCH_INCLUDE_DIR ${source_dir}/include CACHE INTERNAL "Path to include folder for Catch2")
+#    add_subdirectory(${PROJECT_SOURCE_DIR}/lib/catch2)
+#    include_directories(${CATCH_INCLUDE_DIR})
+endif ()
 
 enable_testing()
 include(CTest)
