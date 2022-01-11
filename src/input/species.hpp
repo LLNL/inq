@@ -152,10 +152,10 @@ private:
 #ifdef INQ_INPUT_SPECIES_UNIT_TEST
 #undef INQ_INPUT_SPECIES_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class input::species", "[input::species]") {
-  
+
 	using namespace inq;
 	using namespace Catch::literals;
 

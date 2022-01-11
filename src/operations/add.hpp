@@ -89,7 +89,7 @@ field_type add(const field_type & t1, const field_type & t2, const field_type & 
 
 #include <basis/field.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/trivial.hpp>
 
 TEST_CASE("function operations::add", "[operations::add]") {

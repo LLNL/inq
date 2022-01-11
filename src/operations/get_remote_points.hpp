@@ -159,7 +159,7 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
 
 #include <math/vector3.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <mpi3/cartesian_communicator.hpp>
 
 TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points]"){

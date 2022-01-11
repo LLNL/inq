@@ -219,10 +219,10 @@ namespace basis {
 #undef INQ_BASIS_GRID_UNIT_TEST
 
 #include <ions/geometry.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class basis::grid", "[basis::grid]") {
-  
+
 	using namespace inq;
 	using namespace Catch::literals;
   using math::vector3;
@@ -230,7 +230,7 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
   ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
 
 	auto comm = boost::mpi3::environment::get_world_instance();
-	
+
 	basis::grid gr(cell, {120, 45, 77}, true, false, 3, comm);
 
 	CHECK(gr.sizes()[0] == 120);

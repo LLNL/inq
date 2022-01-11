@@ -209,7 +209,7 @@ field<basis::real_space, math::vector3<double>> real_field(field<basis::real_spa
 #include <basis/real_space.hpp>
 #include <ions/unitcell.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("Class basis::field", "[basis::field]"){
 

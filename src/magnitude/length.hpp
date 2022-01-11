@@ -69,7 +69,7 @@ auto operator "" _pm(long double val){
 #ifdef INQ_MAGNITUDE_LENGTH_UNIT_TEST
 #undef INQ_MAGNITUDE_LENGTH_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("magnitude::length", "[magnitude::length]") {
 

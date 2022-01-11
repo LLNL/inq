@@ -114,7 +114,7 @@ private:
 #ifdef INQ_IONS_GEOMETRY_UNIT_TEST
 #undef INQ_IONS_GEOMETRY_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <input/parse_xyz.hpp>
 

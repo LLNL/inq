@@ -552,7 +552,7 @@ to_real(states::orbital_set<basis::fourier_space, math::vector3<complex>> const&
 #ifdef INQ_OPERATIONS_SPACE_UNIT_TEST
 #undef INQ_OPERATIONS_SPACE_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function operations::space", "[operations::space]") {
 

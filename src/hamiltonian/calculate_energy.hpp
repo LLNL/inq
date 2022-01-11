@@ -88,7 +88,7 @@ namespace hamiltonian {
 #undef INQ_HAMILTONIAN_CALCULATE_ENERGY_UNIT_TEST
 
 #include <ions/unitcell.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
 TEST_CASE("Class hamiltonian::calculate_energy", "[calculate_energy]"){

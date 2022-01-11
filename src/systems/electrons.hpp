@@ -268,7 +268,7 @@ private:
 #ifdef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
 #undef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class system::electrons", "[system::electrons]") {
 	

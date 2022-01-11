@@ -157,7 +157,7 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_PROJECTOR_FOURIER_UNIT_TEST
 #undef INQ_HAMILTONIAN_PROJECTOR_FOURIER_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fourier]") {
   

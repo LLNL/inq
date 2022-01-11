@@ -51,7 +51,7 @@ void normalize(FieldType & density, const double & total_charge){
 
 #include <basis/trivial.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function density::normalize", "[density::normalize]") {
 

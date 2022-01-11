@@ -55,10 +55,10 @@ GPU_FUNCTION inline auto fabs(complex const & z){
 #ifdef INQ_MATH_COMPLEX_UNIT_TEST
 #undef INQ_MATH_COMPLEX_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("Class math::complex", "[math::complex]"){
-  
+
 	using namespace inq;
 	using namespace Catch::literals;
 
@@ -75,7 +75,7 @@ TEST_CASE("Class math::complex", "[math::complex]"){
 	CHECK(imag(zz) == 890.74);
 	CHECK(norm(zz) == 1221408.5_a);
 	CHECK(fabs(zz) == 1105.1735_a);
-	
+
 }
 
 #endif

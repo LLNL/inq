@@ -214,7 +214,7 @@ namespace input {
 #ifdef INQ_INPUT_SCF_UNIT_TEST
 #undef INQ_INPUT_SCF_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class input::scf", "[input::scf]") {
   

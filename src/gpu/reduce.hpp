@@ -500,7 +500,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 
 #include <mpi3/environment.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 struct ident {
   GPU_FUNCTION auto operator()(long ii) const {

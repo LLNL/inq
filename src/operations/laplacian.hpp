@@ -105,7 +105,7 @@ auto laplacian(basis::field_set<basis::real_space, complex> const & ff, FactorTy
 #ifdef INQ_OPERATIONS_LAPLACIAN_UNIT_TEST
 #undef INQ_OPERATIONS_LAPLACIAN_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 auto ff(inq::math::vector3<double> const & kk, inq::math::vector3<double> const & rr){
 	return exp(inq::complex(0.0,1.0)*dot(kk, rr));

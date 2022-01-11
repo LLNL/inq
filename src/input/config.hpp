@@ -43,7 +43,7 @@ struct config {
 #ifdef INQ_INPUT_CONFIG_UNIT_TEST
 #undef INQ_INPUT_CONFIG_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 
 #endif

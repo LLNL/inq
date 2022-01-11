@@ -70,14 +70,15 @@ auto integral_absdiff(const field_type & phi1, const field_type & phi2){
 #undef INQ_OPERATIONS_INTEGRAL_UNIT_TEST
 
 #include <basis/field.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/trivial.hpp>
 
 TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-	
+	using Catch::Approx;
+
 	const int N = 1000;
 
 	auto comm = boost::mpi3::environment::get_world_instance();

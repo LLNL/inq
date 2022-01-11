@@ -213,7 +213,7 @@ private:
 #include <config/path.hpp>
 #include <ions/geometry.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
   

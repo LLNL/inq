@@ -230,7 +230,7 @@ private:
 #ifdef INQ_STATES_KS_STATES_UNIT_TEST
 #undef INQ_STATES_KS_STATES_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <mpi3/environment.hpp>
 
 TEST_CASE("Class states::ks_states", "[ks_states]"){

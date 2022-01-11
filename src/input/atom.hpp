@@ -94,10 +94,10 @@ auto operator|(const std::string & arg_symbol, const inq::input::coord & arg_pos
 #ifdef INQ_INPUT_ATOM_UNIT_TEST
 #undef INQ_INPUT_ATOM_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("class ions::atom", "[inq::input::atom]") {
-  
+
 	using namespace Catch::literals;
 
 	SECTION("Constructor"){
@@ -107,7 +107,7 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 		CHECK(at.position()[0] == 1.0_a);
 		CHECK(at.position()[1] == 2.0_a);
 		CHECK(at.position()[2] == 3.0_a);
-		
+
 	}
 	
 	SECTION("Species composition"){

@@ -67,7 +67,7 @@ void linear_symmetric(matrix_type && matrix, vector_type & vector){
 #ifdef INQ_SOLVERS_LINEAR_UNIT_TEST
 #undef INQ_SOLVERS_LINEAR_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <math/array.hpp>
 

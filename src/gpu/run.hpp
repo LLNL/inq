@@ -301,7 +301,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 
 #include <mpi3/environment.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <gpu/atomic.hpp>
 

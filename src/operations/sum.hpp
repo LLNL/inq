@@ -68,7 +68,7 @@ auto sum_product(const field_type & phi1, const field_type & phi2){
 #include <math/complex.hpp>
 #include <basis/field.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/trivial.hpp>
 
 TEST_CASE("function operations::sum", "[operations::sum]") {
@@ -79,7 +79,9 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 	const int N = 21111;
 	
 	basis::trivial bas(N);
-	
+
+	using Catch::Approx;
+
 	SECTION("Sum double"){
 		
 		basis::field<basis::trivial, double> aa(bas);

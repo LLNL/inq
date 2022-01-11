@@ -320,17 +320,19 @@ namespace basis {
 #ifdef INQ_BASIS_SPHERICAL_GRID_UNIT_TEST
 #undef INQ_BASIS_SPHERICAL_GRID_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 #include <math/array.hpp>
 #include <math/complex.hpp>
 
 TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
-	
+
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-  using math::vector3;
+	using Catch::Approx;
+
+	using math::vector3;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 

@@ -158,7 +158,7 @@ void orthogonalize_single(FieldSetType1 & vec, FieldSetType2 const & phi, int nu
 #ifdef INQ_OPERATIONS_ORTHOGONALIZE_UNIT_TEST
 #undef INQ_OPERATIONS_ORTHOGONALIZE_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <operations/randomize.hpp>
 

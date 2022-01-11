@@ -68,12 +68,13 @@ private:
 
 #include <basis/trivial.hpp>
 #include <basis/field_set.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
 
   const int npoint = 100;
   const int nvec = 12;

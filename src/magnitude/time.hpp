@@ -77,7 +77,7 @@ auto operator/(double num, quantity<energy> den){
 #ifdef INQ_MAGNITUDE_TIME_UNIT_TEST
 #undef INQ_MAGNITUDE_TIME_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("magnitude::time", "[magnitude::time]") {
 

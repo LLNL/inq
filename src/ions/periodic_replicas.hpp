@@ -86,15 +86,15 @@ private:
 #ifdef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
 #undef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 
 TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
-  
+
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
-  
+	using math::vector3;
+
   {
     ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 

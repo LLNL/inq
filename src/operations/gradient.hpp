@@ -140,7 +140,7 @@ auto gradient(states::orbital_set<basis::real_space, complex> const & ff){
 
 #include <ions/geometry.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <math/vector3.hpp>
 
 auto f_analytic (inq::math::vector3<double> kk, inq::math::vector3<double> rr){

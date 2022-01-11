@@ -107,7 +107,7 @@ private:
 #ifdef INQ_OPERATIONS_PRECONDITIONER_UNIT_TEST
 #undef INQ_OPERATIONS_PRECONDITIONER_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("function operations::precondition", "[precondition]") {
 

@@ -101,7 +101,7 @@ auto overlap_single(field_type & phi){
 #ifdef INQ_OPERATIONS_OVERLAP_UNIT_TEST
 #undef INQ_OPERATIONS_OVERLAP_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/trivial.hpp>
@@ -110,6 +110,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 	
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
 
 	const int npoint = 100;
 	const int nvec = 12;

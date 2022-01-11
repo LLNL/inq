@@ -186,7 +186,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 #ifdef INQ_IONS_INTERACTION_UNIT_TEST
 #undef INQ_IONS_INTERACTION_UNIT_TEST
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <vector>
 #include <valarray>
