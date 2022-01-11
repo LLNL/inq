@@ -19,7 +19,7 @@ build-noblas:
     stage: build
     script:
       - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2  ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -31,7 +31,7 @@ build-noboost:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -43,7 +43,7 @@ build-nofftw:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -55,7 +55,7 @@ build-nolapack:
     stage: build
     script:
       - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build
@@ -68,7 +68,7 @@ gcc-ompi:
     needs: []
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq curl git catch2 ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build && cd build
@@ -144,7 +144,7 @@ gcc-ompi-fast:
     needs: []    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran  make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran  make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build && cd build
@@ -174,7 +174,7 @@ clang-ompi:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake catch2 pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++-9 --version
       - mkdir build
@@ -196,7 +196,7 @@ clang-ompi-1p:
     needs: ["clang-ompi"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -208,7 +208,7 @@ clang-ompi-2p:
     needs: ["clang-ompi"]
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -219,7 +219,7 @@ clang-ompi-3p:
     needs: ["clang-ompi"]
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -230,7 +230,7 @@ clang-ompi-4p:
     needs: ["clang-ompi"]
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -241,7 +241,7 @@ clang-ompi-5p:
     needs: ["clang-ompi"]
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -253,7 +253,7 @@ clang-ompi-fast:
     stage: build
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran catch2 clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++-9 --version
       - mkdir build && cd build
@@ -272,7 +272,7 @@ clang-ompi-fast-1p:
     needs: ["clang-ompi-fast"]
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
       - cmake --build . --target install/fast      
@@ -284,7 +284,7 @@ clang-ompi-fast-2p:
     needs: ["clang-ompi-fast"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -295,7 +295,7 @@ clang-ompi-fast-3p:
     needs: ["clang-ompi-fast"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -306,7 +306,7 @@ clang-ompi-fast-4p:
     needs: ["clang-ompi-fast"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -386,7 +386,7 @@ gcc-mpich-1p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - apt update -qq && apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
+      - apt update -qq && apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -399,7 +399,7 @@ gcc-mpich-2p:
     needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -410,7 +410,7 @@ gcc-mpich-3p:
     needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -421,18 +421,18 @@ gcc-mpich-4p:
     needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600
-      
+
 gcc-mpich-5p:
     stage: test
     needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
@@ -443,7 +443,7 @@ gcc-mpich-valgrind-1p:
     needs: ["gcc-mpich"]    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
+      - time apt install --no-install-recommends -y -qq git catch2 ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python2 valgrind libmpich-dev mpich
       - tar -xvzf gcc-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
