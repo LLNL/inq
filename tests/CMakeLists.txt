@@ -7,7 +7,7 @@ file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 foreach(TEST_FILE ${TEST_SRCS})
   get_filename_component(TEST_EXE ${TEST_FILE} NAME_WE)
   add_executable(${TEST_EXE} ${TEST_FILE})
-  target_include_directories(${TEST_EXE} 
+  target_include_directories(${TEST_EXE})
   target_link_libraries(${TEST_EXE} PRIVATE Catch2::Catch2)
   add_test(NAME ${TEST_EXE} COMMAND ${PROJECT_SOURCE_DIR}/scripts/run_test.sh ./${TEST_EXE})
   if(ENABLE_CUDA)
