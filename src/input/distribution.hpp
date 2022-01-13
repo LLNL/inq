@@ -32,10 +32,10 @@ namespace input {
   public:
 
     distribution(boost::mpi3::communicator & comm):
-      comm_(comm),
 			nproc_kpts_(boost::mpi3::fill),
 			nproc_states_(boost::mpi3::fill),
-			nproc_domains_(boost::mpi3::fill)			
+			nproc_domains_(boost::mpi3::fill),
+      comm_(comm)			
 		{
     }
 
