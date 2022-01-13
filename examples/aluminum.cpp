@@ -77,7 +77,7 @@ int main(int argc, char ** argv){
 	if(not found_gs){
 
 		// the parallelization distribution is different for the ground state
-		systems::electrons gs_electrons(boost::mpi3::environment::get_world_instance(), ions, box, conf);
+		systems::electrons gs_electrons(env.dist(), ions, box, conf);
 		
 		ground_state::initial_guess(ions, gs_electrons);
 		

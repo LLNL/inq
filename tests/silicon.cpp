@@ -36,8 +36,6 @@ int main(int argc, char ** argv){
 
 	input::environment env(argc, argv);
 
-	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
-	
 	utils::match energy_match(3.0e-5);
 
 	std::vector<input::atom> geo;
@@ -61,7 +59,7 @@ int main(int argc, char ** argv){
 	
 	conf.extra_states = 0;
 	
-	systems::electrons electrons(comm_world, ions, box, conf, input::kpoints::grid({2, 1, 1}, true));
+	systems::electrons electrons(env.dist(), ions, box, conf, input::kpoints::grid({2, 1, 1}, true));
 	
 	ground_state::initial_guess(ions, electrons);
 	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));

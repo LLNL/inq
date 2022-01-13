@@ -42,7 +42,6 @@ int main(int argc, char ** argv){
 	using inq::math::vector3;
 	
 	inq::input::environment env(argc, argv);
-	boost::mpi3::communicator comm_world = boost::mpi3::environment::get_world_instance();
 	
 	inq::utils::match match(3.0e-4);
 
@@ -58,7 +57,7 @@ int main(int argc, char ** argv){
 
 	config conf;
 
-	inq::systems::electrons electrons(comm_world, ions, box, conf);
+	inq::systems::electrons electrons(env.dist(), ions, box, conf);
 
 	inq::ground_state::initial_guess(ions, electrons);
 
