@@ -42,7 +42,19 @@ namespace input {
 		auto cart_comm() const {
       return boost::mpi3::cartesian_communicator<2>(comm_, {nproc_states_, nproc_domains_});
     }
-    
+
+		auto states(int num){
+			auto ret = *this;
+			ret.nproc_states_ = num;
+			return ret;
+		}
+		
+		auto domains(int num){
+			auto ret = *this;
+			ret.nproc_domains_ = num;
+			return ret;
+		}
+		
 	private:
 
 		int nproc_kpts_;

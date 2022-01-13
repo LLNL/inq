@@ -41,13 +41,6 @@ int main(int argc, char ** argv){
 	
 	input::environment env(argc, argv);
 
-	auto comm = boost::mpi3::environment::get_world_instance();
-
-	auto parstates = comm.size();
-	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
-	
-	auto cart_comm = boost::mpi3::cartesian_communicator<2>{boost::mpi3::environment::get_world_instance(), {parstates, boost::mpi3::fill}};
-		
 	utils::match match(1e-5);
 
 	std::vector<input::atom> geo;
@@ -62,7 +55,11 @@ int main(int argc, char ** argv){
 
 	input::config conf;
 
-	systems::electrons electrons(cart_comm, ions, box, conf);
+	auto comm = boost::mpi3::environment::get_world_instance();
+	auto parstates = comm.size();
+	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
+	
+	systems::electrons electrons(env.dist().states(parstates), ions, box, conf);
 
 	// Propagation without perturbation
 	{
