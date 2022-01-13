@@ -21,6 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <mpi3/cartesian_communicator.hpp>
 #include <mpi3/communicator.hpp>
 
 namespace inq {
@@ -31,15 +32,23 @@ namespace input {
   public:
 
     distribution(boost::mpi3::communicator & comm):
-      comm_(comm){
+      comm_(comm),
+			nproc_kpts_(boost::mpi3::fill),
+			nproc_states_(boost::mpi3::fill),
+			nproc_domains_(boost::mpi3::fill)			
+		{
     }
-    
-    auto & comm() {
-      return comm_;
+
+		auto cart_comm() const {
+      return boost::mpi3::cartesian_communicator<2>(comm_, {nproc_states_, nproc_domains_});
     }
     
 	private:
-		
+
+		int nproc_kpts_;
+		int nproc_states_;
+		int nproc_domains_;
+
     mutable boost::mpi3::communicator comm_;
     
   };

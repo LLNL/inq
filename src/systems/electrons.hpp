@@ -172,9 +172,13 @@ public:
 		}
 			
 	}
-
+		
 	electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, box, conf, kpts){
+	}
+
+	electrons(input::distribution const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
+		electrons(dist.cart_comm(), ions, box, conf, kpts){
 	}
 
 	template <typename ArrayType>
