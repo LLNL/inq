@@ -54,7 +54,13 @@ namespace input {
 			ret.nproc_domains_ = num;
 			return ret;
 		}
-		
+
+		auto kpoints(int num){
+			auto ret = *this;
+			ret.nproc_kpts_ = num;
+			return ret;
+		}
+
 	private:
 
 		int nproc_kpts_;
