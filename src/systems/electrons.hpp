@@ -62,8 +62,8 @@ public:
 		return occupations_;
 	}
 		
-	electrons(boost::mpi3::cartesian_communicator<2> cart_comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
-		full_comm_(cart_comm),
+	electrons(input::distribution const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
+		full_comm_(dist.cart_comm()),
 		lot_comm_({boost::mpi3::environment::get_self_instance(), {}}),
 		lot_states_comm_(full_comm_.axis(0)),
 		states_comm_(full_comm_.axis(0)),
@@ -169,12 +169,7 @@ public:
 			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n", fourier_basis.cubic_dist(2).local_size(0), fourier_basis.cubic_dist(2).local_size(fourier_basis.part().comm_size() - 1),
 										 fourier_basis.part().local_size(0), fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1));
 				
-		}
-			
-	}
-
-	electrons(boost::mpi3::communicator & comm, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
-		electrons(boost::mpi3::cartesian_communicator<2>{comm, {1, boost::mpi3::fill}}, ions, box, conf, kpts){
+		}		
 	}
 
 	template <typename ArrayType>

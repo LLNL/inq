@@ -27,7 +27,6 @@ int main(int argc, char ** argv){
 	using namespace inq::magnitude;
 	
 	environment env(argc, argv);
-	auto comm = boost::mpi3::environment::get_world_instance();
 
 	auto distance = 1.06_angstrom;
 
@@ -39,7 +38,7 @@ int main(int argc, char ** argv){
 	
 	systems::ions ions(box, geo);
 
-	systems::electrons electrons(comm, ions, box);
+	systems::electrons electrons(env.dist(), ions, box);
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, interaction::pbe());

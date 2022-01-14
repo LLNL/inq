@@ -26,8 +26,6 @@ int main(int argc, char ** argv){
 	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
-
-	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {boost::mpi3::fill, 1});
 	
 	utils::match energy_match(4.0e-6);
 
@@ -68,7 +66,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 2*repx*repy*repz;
 	conf.temperature = 300.0_K;	
 	
-	systems::electrons electrons(cart_comm, ions, box, conf);
+	systems::electrons electrons(env.dist().domains(1), ions, box, conf);
 	
 	auto restart_dir = "aluminum_" + std::to_string(repx) + "_" + std::to_string(repy) + "_" + std::to_string(repz);
 
@@ -77,7 +75,7 @@ int main(int argc, char ** argv){
 	if(not found_gs){
 
 		// the parallelization distribution is different for the ground state
-		systems::electrons gs_electrons(boost::mpi3::environment::get_world_instance(), ions, box, conf);
+		systems::electrons gs_electrons(env.dist(), ions, box, conf);
 		
 		ground_state::initial_guess(ions, gs_electrons);
 		

@@ -21,11 +21,11 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <input/distribution.hpp>
 #include <utils/merge_optional.hpp>
+#include <utils/profiling.hpp>
 
 #include <mpi3/environment.hpp>
-
-#include <utils/profiling.hpp>
 
 #include <optional>
 #include <cassert>
@@ -52,7 +52,8 @@ namespace input {
 		}
 		
     environment(int argc, char** argv, bool use_threads = false):
-      mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single)
+      mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
+			base_comm_(mpi_env_.get_world_instance())
     {
 			if(use_threads){
 				assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
@@ -60,7 +61,7 @@ namespace input {
 			
 			threaded_impl() = use_threads;
 			
-			if(not use_threads and mpi_env_.get_world_instance().rank() == 0){
+			if(not use_threads and base_comm_.rank() == 0){
 				calimgr_.add("runtime-report");
 				calimgr_.start();
 			}
@@ -73,15 +74,20 @@ namespace input {
 
 			CALI_MARK_END("inq_environment");
 			
-			if(not threaded() and mpi_env_.get_world_instance().rank() == 0){
+			if(not threaded() and base_comm_.rank() == 0){
 				calimgr_.flush(); // write performance results
 			}
+		}
+
+		auto dist() const {
+			return distribution(base_comm_);
 		}
 		
   private:
 		
     boost::mpi3::environment mpi_env_;
 		cali::ConfigManager calimgr_;
+    mutable boost::mpi3::communicator base_comm_;		
 
   };
     
