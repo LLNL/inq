@@ -79,6 +79,24 @@ namespace input {
 #ifdef INQ_INPUT_DISTRIBUTION_UNIT_TEST
 #undef INQ_INPUT_DISTRIBUTION_UNIT_TEST
 
+#include <catch2/catch_all.hpp>
+#include <mpi3/environment.hpp>
+
+TEST_CASE("class input::distribution", "[inq::input::distribution]") {
+
+  using namespace inq;
+	using namespace Catch::literals;
+
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
+	input::distribution dist(comm);
+	
+	auto cart_comm = dist.kpoints(1).states(comm.size()).domains(1).cart_comm();
+
+	CHECK(cart_comm.size() == comm.size());
+
+}
+
 #endif
    
 #endif
