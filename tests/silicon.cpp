@@ -58,10 +58,14 @@ int main(int argc, char ** argv){
 	input::config conf;
 	
 	conf.extra_states = 0;
+
+	int kpoint_par = 1;
+	if(env.dist().size()%2 == 0) kpoint_par = 2;
 	
-	systems::electrons electrons(env.dist(), ions, box, conf, input::kpoints::grid({2, 1, 1}, true));
-	
+	systems::electrons electrons(env.dist().kpoints(kpoint_par), ions, box, conf, input::kpoints::grid({2, 1, 1}, true));
+
 	ground_state::initial_guess(ions, electrons);
+
 	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
 	
 	energy_match.check("total energy",     result.energy.total()    , -23.834202307265);
