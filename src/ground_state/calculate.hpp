@@ -60,7 +60,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	auto console = electrons.logger();
 	if(console) console->trace("calculate started");
 		
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), inter.exchange_coefficient(), electrons.full_comm_);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
+																										 electrons.states_.num_states(), inter.exchange_coefficient(), electrons.states_basis_comm_);
 		
 	if(electrons.full_comm_.root()) ham.info(std::cout);
 		
