@@ -54,16 +54,18 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	gdensity = {0.0, 0.0, 0.0};
 
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
-	
+
+	auto iphi = 0;
 	for(auto & phi : electrons.lot()){
 		
 		auto gphi = operations::gradient(phi);
-		density::calculate_gradient_add(electrons.occupations()[0], phi, gphi, gdensity);
+		density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
 	
 		//the non-local potential term
 		for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
-			forces_non_local[proj->iatom()] = proj->force(phi, gphi, electrons.occupations()[0]);
+			forces_non_local[proj->iatom()] = proj->force(phi, gphi, electrons.occupations()[iphi]);
 		}
+		iphi++;
 	}
 	
 	if(electrons.lot_states_comm_.size() > 1){
