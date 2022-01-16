@@ -101,19 +101,24 @@ public:
 															 reinterpret_cast<double (*)[3]>(const_cast<double *>(ions.cell().amat())),
 															 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
 
-		lot_weights_.reextent({kpts.num()});
+		lot_weights_.reextent({lot_part_.local_size()});
 
 		max_local_size_ = 0;
 		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
+			if(not lot_part_.contains(ikpt)) continue;
+
 			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shifted[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shifted[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shifted[2])/kpts.dims()[2]};
 			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, states_basis_comm_);
-			lot_weights_[ikpt] = 1.0/kpts.num();
-			max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
+
+			auto likpt = lot_part_.global_to_local(utils::global_index(ikpt));
+			lot_weights_[likpt] = 1.0/kpts.num();
+			max_local_size_ = std::max(max_local_size_, lot_[likpt].fields().local_set_size());
 		}
 
-		assert(long(lot_.size()) == kpts.num());
-
+		assert(long(lot_.size()) == lot_part_.local_size());
+		assert(max_local_size_ > 0);
+		
 		eigenvalues_.reextent({lot_.size(), max_local_size_});
 		occupations_.reextent({lot_.size(), max_local_size_});
 
@@ -156,6 +161,10 @@ public:
 #else
 			logger()->info("  inq is running on the cpu\n");
 #endif
+			logger()->info("k-point parallelization:");
+			logger()->info("  {} k-points divided among {} partitions", lot_part_.size(), lot_part_.comm_size());
+			logger()->info("  partition 0 has {} k-points and the last partition has {} k-points\n", lot_part_.local_size(0), lot_part_.local_size(lot_part_.comm_size() - 1));
+			
 			logger()->info("state parallelization:");
 			logger()->info("  {} states divided among {} partitions", lot()[0].fields().set_part().size(), lot()[0].fields().set_part().comm_size());
 			logger()->info("  partition 0 has {} states and the last partition has {} states\n", lot()[0].fields().set_part().local_size(0), lot()[0].fields().set_part().local_size(lot()[0].fields().set_part().comm_size() - 1));
