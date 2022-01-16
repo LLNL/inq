@@ -63,7 +63,7 @@ public:
 	}
 		
 	electrons(input::distribution const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
-		full_comm_(dist.cart_comm()),
+		full_comm_(dist.cart_comm().hyperplane(0)),
 		lot_comm_({boost::mpi3::environment::get_self_instance(), {}}),
 		lot_states_comm_(full_comm_.axis(0)),
 		states_comm_(full_comm_.axis(0)),
