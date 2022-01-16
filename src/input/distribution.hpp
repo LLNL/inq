@@ -31,7 +31,7 @@ namespace input {
 
   public:
 
-    distribution(boost::mpi3::communicator & comm):
+    explicit distribution(boost::mpi3::communicator & comm):
 			nproc_kpts_(boost::mpi3::fill),
 			nproc_states_(1),
 			nproc_domains_(boost::mpi3::fill),

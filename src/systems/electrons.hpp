@@ -272,9 +272,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	using namespace Catch::literals;
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
-	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
-	
+
 	std::vector<input::atom> geo;
 	geo.push_back( "Cu" | math::vector3<double>(0.0,  0.0,  0.0));
 	geo.push_back( "Cu" | math::vector3<double>(1.0,  0.0,  0.0));
@@ -283,7 +281,9 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	
 	systems::ions ions(box, geo);
 
-	systems::electrons electrons(cart_comm, ions, box);
+	auto dist = input::distribution(comm);
+		
+	systems::electrons electrons(dist, ions, box);
 
 	CHECK(electrons.states_.num_electrons() == 38.0_a);
 	CHECK(electrons.states_.num_states() == 19);
@@ -304,7 +304,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		
 	electrons.save("electron_restart");
 	
-	systems::electrons electrons_read(cart_comm, ions, box);
+	systems::electrons electrons_read(dist, ions, box);
 	
 	electrons_read.load("electron_restart");
 
