@@ -64,11 +64,12 @@ public:
 		
 	electrons(input::distribution const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		full_comm_(dist.cart_comm()),
-		lot_comm_({boost::mpi3::environment::get_self_instance(), {}}),
-		lot_states_comm_(full_comm_.axis(0)),
-		states_comm_(full_comm_.axis(0)),
+		lot_comm_(full_comm_.axis(0)),
+		lot_states_comm_(full_comm_.hyperplane(2)),
+		states_comm_(full_comm_.axis(1)),
 		atoms_comm_(states_comm_),
-		basis_comm_(full_comm_.axis(1)),
+		states_basis_comm_(full_comm_.hyperplane(0)),
+		basis_comm_(full_comm_.axis(2)),
 		states_basis_(box, basis_comm_),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), atoms_comm_),
@@ -106,7 +107,7 @@ public:
 		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
 			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shifted[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shifted[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shifted[2])/kpts.dims()[2]};
 			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
-			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, full_comm_);
+			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, states_basis_comm_);
 			lot_weights_[ikpt] = 1.0/kpts.num();
 			max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
 		}
@@ -229,11 +230,12 @@ private:
 	
 public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
-	mutable boost::mpi3::cartesian_communicator<2> full_comm_;
+	mutable boost::mpi3::cartesian_communicator<3> full_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> lot_comm_;
-	mutable boost::mpi3::cartesian_communicator<1> lot_states_comm_;
+	mutable boost::mpi3::cartesian_communicator<2> lot_states_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> states_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> atoms_comm_;
+	mutable boost::mpi3::cartesian_communicator<2> states_basis_comm_;	
 	mutable boost::mpi3::cartesian_communicator<1> basis_comm_;
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
@@ -272,9 +274,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	using namespace Catch::literals;
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
-	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
-	
+
 	std::vector<input::atom> geo;
 	geo.push_back( "Cu" | math::vector3<double>(0.0,  0.0,  0.0));
 	geo.push_back( "Cu" | math::vector3<double>(1.0,  0.0,  0.0));
@@ -283,7 +283,9 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	
 	systems::ions ions(box, geo);
 
-	systems::electrons electrons(cart_comm, ions, box);
+	auto dist = input::distribution(comm);
+		
+	systems::electrons electrons(dist, ions, box);
 
 	CHECK(electrons.states_.num_electrons() == 38.0_a);
 	CHECK(electrons.states_.num_states() == 19);
@@ -304,7 +306,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		
 	electrons.save("electron_restart");
 	
-	systems::electrons electrons_read(cart_comm, ions, box);
+	systems::electrons electrons_read(dist, ions, box);
 	
 	electrons_read.load("electron_restart");
 

@@ -26,8 +26,6 @@ int main(int argc, char ** argv){
 	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
-
-	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {1, boost::mpi3::fill});
 	
 	utils::match energy_match(1.0e-5);
 
@@ -49,7 +47,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 1;
 	conf.temperature = 300.0_K;
 	
-	systems::electrons electrons(cart_comm, ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
+	systems::electrons electrons(env.dist(), ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
 	
 	ground_state::initial_guess(ions, electrons);
 	

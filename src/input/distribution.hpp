@@ -31,8 +31,8 @@ namespace input {
 
   public:
 
-    distribution(boost::mpi3::communicator & comm):
-			nproc_kpts_(boost::mpi3::fill),
+    explicit distribution(boost::mpi3::communicator & comm):
+			nproc_kpts_(1),
 			nproc_states_(1),
 			nproc_domains_(boost::mpi3::fill),
       comm_(comm)			
@@ -40,7 +40,7 @@ namespace input {
     }
 
 		auto cart_comm() const {
-      return boost::mpi3::cartesian_communicator<2>(comm_, {nproc_states_, nproc_domains_});
+			return boost::mpi3::cartesian_communicator<3>(comm_, {nproc_kpts_, nproc_states_, nproc_domains_});
     }
 
 		auto states(int num){
