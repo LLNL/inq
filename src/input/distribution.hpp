@@ -61,6 +61,10 @@ namespace input {
 			return ret;
 		}
 
+		auto size() const {
+			return comm_.size();
+		}
+
 	private:
 
 		int nproc_kpts_;
