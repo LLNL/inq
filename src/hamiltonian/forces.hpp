@@ -63,7 +63,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	
 		//the non-local potential term
 		for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
-			forces_non_local[proj->iatom()] = proj->force(phi, gphi, electrons.occupations()[iphi]);
+			forces_non_local[proj->iatom()] += proj->force(phi, gphi, electrons.occupations()[iphi]);
 		}
 		iphi++;
 	}
