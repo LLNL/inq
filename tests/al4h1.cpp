@@ -47,7 +47,10 @@ int main(int argc, char ** argv){
 	conf.extra_states = 1;
 	conf.temperature = 300.0_K;
 
-	systems::electrons electrons(env.dist().kpoints().domains(1), ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
+	auto par = env.dist();
+	if(par.size() != 5) par = par.kpoints().domains(1);
+	
+	systems::electrons electrons(par, ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
 	
 	ground_state::initial_guess(ions, electrons);
 	
