@@ -66,6 +66,10 @@ public:
       (grid_address_[3*ik + 2] + 0.5*is_shifted_[2])/grid_.dims()[2]};
   }
   
+  auto kpoint_weight(int ik) const {
+    return 1.0/grid_.num();
+  }
+  
 private:
 
   input::kpoints grid_;

@@ -97,7 +97,7 @@ public:
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, states_basis_comm_);
 
 			auto likpt = lot_part_.global_to_local(utils::global_index(ikpt));
-			lot_weights_[likpt] = 1.0/kpts.num();
+			lot_weights_[likpt] = brillouin_zone_.kpoint_weight(ikpt);
 			max_local_size_ = std::max(max_local_size_, lot_[likpt].fields().local_set_size());
 		}
 
