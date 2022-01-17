@@ -194,7 +194,7 @@ public:
 		for(auto & phi : lot()){
 			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
 			operations::io::save(basedir + "/states", phi);
-			if(basis_comm_.root()) operations::io::save(basedir + "/occupations", lot_states_comm_, lot()[iphi].fields().set_part(), +occupations()[iphi]);	
+			if(basis_comm_.root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), +occupations()[iphi]);	
 			iphi++;
 		}
 	}
@@ -208,7 +208,7 @@ public:
 			success = success and operations::io::load(basedir + "/states", phi.fields());
 
 			math::array<double, 1> tmpocc(lot()[iphi].fields().set_part().local_size());
-			success = success and operations::io::load(basedir + "/occupations", lot_states_comm_, lot()[iphi].fields().set_part(), tmpocc);
+			success = success and operations::io::load(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), tmpocc);
 			occupations()[iphi] = tmpocc;
 			
 			iphi++;
