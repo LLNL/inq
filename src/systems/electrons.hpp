@@ -192,18 +192,25 @@ public:
 	void save(std::string const & dirname) const {
 		int iphi = 0;
 		for(auto & phi : lot()){
-			operations::io::save(dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi);
+			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
+			operations::io::save(basedir + "/states", phi);
+			if(basis_comm_.root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), +occupations()[iphi]);	
 			iphi++;
 		}
-		if(basis_comm_.root()) operations::io::save(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
 	}
 		
 	auto load(std::string const & dirname) {
-		auto success = operations::io::load(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
+		auto success = true;
 
 		int iphi = 0;
 		for(auto & phi : lot()){
-			success = success and operations::io::load(dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi.fields());
+			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
+			success = success and operations::io::load(basedir + "/states", phi.fields());
+
+			math::array<double, 1> tmpocc(lot()[iphi].fields().set_part().local_size());
+			success = success and operations::io::load(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), tmpocc);
+			occupations()[iphi] = tmpocc;
+			
 			iphi++;
 		}
 		return success;

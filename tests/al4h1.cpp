@@ -83,7 +83,9 @@ int main(int argc, char ** argv){
 	energy_match.check("force 5 x",           result.forces[4][0],           0.027730558492);
 	energy_match.check("force 5 y",           result.forces[4][1],          -0.010195522642);
 	energy_match.check("force 5 z",           result.forces[4][2],           0.010429129714);
-
+	
+	electrons.save("al4h1_restart");
+	
 	return energy_match.fail();
 	
 }
