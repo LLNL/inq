@@ -81,24 +81,19 @@ public:
 	{
 
 		assert(lot_part_.local_size() > 0);
+		assert(density_basis_.comm().size() == states_basis_.comm().size());
 		
 		CALI_CXX_MARK_FUNCTION;
-
-		assert(density_basis_.comm().size() == states_basis_.comm().size());
 
 		lot_weights_.reextent({lot_part_.local_size()});
 
 		max_local_size_ = 0;
-		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
-			if(not lot_part_.contains(ikpt)) continue;
-
-			math::vector3<double> kpoint = brillouin_zone_.kpoint(ikpt);
-			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
-			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, states_basis_comm_);
-
-			auto likpt = lot_part_.global_to_local(utils::global_index(ikpt));
-			lot_weights_[likpt] = brillouin_zone_.kpoint_weight(ikpt);
-			max_local_size_ = std::max(max_local_size_, lot_[likpt].fields().local_set_size());
+		for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
+			lot_weights_[ikpt] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
+			auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
+			auto kpoint_absolute = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
+			lot_.emplace_back(states_basis_, states_.num_states(), kpoint_absolute, states_basis_comm_);
+			max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
 		}
 
 		assert(long(lot_.size()) == lot_part_.local_size());
