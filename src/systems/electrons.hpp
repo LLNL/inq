@@ -195,11 +195,11 @@ public:
 			operations::io::save(dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start()) + "/states", phi);
 			iphi++;
 		}
-		if(basis_comm_.root()) operations::io::save(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
+		if(basis_comm_.root()) operations::io::save(dirname + "/occupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
 	}
 		
 	auto load(std::string const & dirname) {
-		auto success = operations::io::load(dirname + "/ocupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
+		auto success = operations::io::load(dirname + "/occupations", lot_states_comm_, occupations().size()*lot()[0].fields().set_part(), occupations());
 
 		int iphi = 0;
 		for(auto & phi : lot()){
