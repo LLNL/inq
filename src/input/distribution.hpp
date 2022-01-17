@@ -43,22 +43,26 @@ namespace input {
 			return boost::mpi3::cartesian_communicator<3>(comm_, {nproc_kpts_, nproc_states_, nproc_domains_});
     }
 
-		auto states(int num){
+		auto states(int num = boost::mpi3::fill){
 			auto ret = *this;
 			ret.nproc_states_ = num;
 			return ret;
 		}
 		
-		auto domains(int num){
+		auto domains(int num = boost::mpi3::fill){
 			auto ret = *this;
 			ret.nproc_domains_ = num;
 			return ret;
 		}
 
-		auto kpoints(int num){
+		auto kpoints(int num = boost::mpi3::fill){
 			auto ret = *this;
 			ret.nproc_kpts_ = num;
 			return ret;
+		}
+
+		auto size() const {
+			return comm_.size();
 		}
 
 	private:

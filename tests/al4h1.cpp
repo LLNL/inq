@@ -46,8 +46,11 @@ int main(int argc, char ** argv){
 
 	conf.extra_states = 1;
 	conf.temperature = 300.0_K;
+
+	auto par = env.dist();
+	if(par.size() != 5) par = par.kpoints().domains(1);
 	
-	systems::electrons electrons(env.dist(), ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
+	systems::electrons electrons(par, ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
 	
 	ground_state::initial_guess(ions, electrons);
 	
@@ -64,23 +67,23 @@ int main(int argc, char ** argv){
 	energy_match.check("XC energy",           result.energy.xc,             -4.767992582911);
 	energy_match.check("XC density integral", result.energy.nvxc,           -4.900775189621);
 	energy_match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
-
-	energy_match.check("force 1 x",           result.forces[0][0],           -0.010908884903);
-	energy_match.check("force 1 y",           result.forces[0][1],           -0.020154773248);
-	energy_match.check("force 1 z",           result.forces[0][2],           -0.025815361874);
-	energy_match.check("force 2 x",           result.forces[1][0],           -0.007006636214);
-	energy_match.check("force 2 y",           result.forces[1][1],           0.028892952180);
-	energy_match.check("force 2 z",           result.forces[1][2],           0.022439893354);
-	energy_match.check("force 3 x",           result.forces[2][0],           0.021741163411);
-	energy_match.check("force 3 y",           result.forces[2][1],           -0.015099277746);
-	energy_match.check("force 3 z",           result.forces[2][2],           0.017028233174);
-	energy_match.check("force 4 x",           result.forces[3][0],           0.018503162743);
-	energy_match.check("force 4 y",           result.forces[3][1],           0.015590401854);
-	energy_match.check("force 4 z",           result.forces[3][2],           -0.013401024729);
-	energy_match.check("force 5 x",           result.forces[4][0],           0.032499176957);
-	energy_match.check("force 5 y",           result.forces[4][1],           -0.014776362222);
-	energy_match.check("force 5 z",           result.forces[4][2],           0.014730294284);
 	
+	energy_match.check("force 1 x",           result.forces[0][0],          -0.022709753044);
+	energy_match.check("force 1 y",           result.forces[0][1],          -0.043095553252);
+	energy_match.check("force 1 z",           result.forces[0][2],          -0.054890335463);
+	energy_match.check("force 2 x",           result.forces[1][0],          -0.022452956558);
+	energy_match.check("force 2 y",           result.forces[1][1],           0.050282682685);
+	energy_match.check("force 2 z",           result.forces[1][2],           0.040174668808);
+	energy_match.check("force 3 x",           result.forces[2][0],           0.005756508838);
+	energy_match.check("force 3 y",           result.forces[2][1],          -0.013770479386);
+	energy_match.check("force 3 z",           result.forces[2][2],           0.013990185961);
+	energy_match.check("force 4 x",           result.forces[3][0],           0.007915564866);
+	energy_match.check("force 4 y",           result.forces[3][1],           0.013228654243);
+	energy_match.check("force 4 z",           result.forces[3][2],          -0.012876043124);
+	energy_match.check("force 5 x",           result.forces[4][0],           0.027730558492);
+	energy_match.check("force 5 y",           result.forces[4][1],          -0.010195522642);
+	energy_match.check("force 5 z",           result.forces[4][2],           0.010429129714);
+
 	return energy_match.fail();
 	
 }
