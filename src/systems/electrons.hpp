@@ -3,12 +3,13 @@
 #ifndef SYSTEMS__ELECTRONS
 #define SYSTEMS__ELECTRONS
 
+#include <basis/field_set.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/energy.hpp>
-#include <basis/field_set.hpp>
+#include <ions/brillouin.hpp>
 #include <operations/randomize.hpp>
 #include <operations/integral.hpp>
 #include <operations/io.hpp>
@@ -63,6 +64,7 @@ public:
 	}
 		
 	electrons(input::distribution const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
+		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm()),
 		lot_comm_(full_comm_.axis(0)),
 		lot_states_comm_(full_comm_.hyperplane(2)),
@@ -84,32 +86,13 @@ public:
 
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
 
-		std::vector<int> grid_address(3*kpts.num());
-		std::vector<int> map(kpts.num());
-		std::vector<int> types(ions.geo().num_atoms());
-		std::vector<double> positions(3*ions.geo().num_atoms());
-		
-		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-			types[iatom] = ions.geo().atoms()[iatom].atomic_number();
-			auto pos = ions.cell().cart_to_crystal(ions.cell().position_in_cell(ions.geo().coordinates()[iatom]));
-			positions[3*iatom + 0] = pos[0];
-			positions[3*iatom + 1] = pos[1];
-			positions[3*iatom + 2] = pos[2];
-		}
-
-		auto is_shifted = kpts.is_shifted();
-		
-		spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address.data()), map.data(), (int const *) &kpts.dims(), (int const *) &is_shifted, 0,
-															 reinterpret_cast<double (*)[3]>(const_cast<double *>(ions.cell().amat())),
-															 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
-
 		lot_weights_.reextent({lot_part_.local_size()});
 
 		max_local_size_ = 0;
 		for(int ikpt = 0; ikpt < kpts.num(); ikpt++){
 			if(not lot_part_.contains(ikpt)) continue;
 
-			math::vector3<double> kpoint = {(grid_address[3*ikpt + 0] + 0.5*is_shifted[0])/kpts.dims()[0], (grid_address[3*ikpt + 1] + 0.5*is_shifted[1])/kpts.dims()[1], (grid_address[3*ikpt + 2] + 0.5*is_shifted[2])/kpts.dims()[2]};
+			math::vector3<double> kpoint = brillouin_zone_.kpoint(ikpt);
 			kpoint = 2.0*M_PI*ions.cell().cart_to_crystal(kpoint);
 			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, states_basis_comm_);
 
@@ -245,6 +228,7 @@ private:
 		return std::string(it((unsigned char*)&tiny), it((unsigned char*)&tiny+sizeof(tiny)));//.append((3-sizeof(tiny)%3)%3,'=');
 	}
 
+	inq::ions::brillouin brillouin_zone_;	
 	
 public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
