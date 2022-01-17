@@ -78,6 +78,8 @@ public:
 		lot_part_(kpts.num(), lot_comm_)
 	{
 
+		assert(lot_part_.local_size() > 0);
+		
 		CALI_CXX_MARK_FUNCTION;
 
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
