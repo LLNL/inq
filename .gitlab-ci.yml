@@ -9,6 +9,7 @@ variables:
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
 # avoid the annoying messages from openmpi over docker, https://github.com/open-mpi/ompi/issues/4948  
   OMPI_MCA_btl_vader_single_copy_mechanism: none
+  OMPI_MCA_rmaps_base_oversubscribe: 1
   CODECOV_TOKEN: "5855e536-b784-400e-b0b2-b1d01c2287a9"
 
 stages:
