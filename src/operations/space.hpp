@@ -138,7 +138,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		
 		{
 			CALI_CXX_MARK_SCOPE("heffte_forward");
-			fft.forward(raw_pointer_cast(input.data_elements()), static_cast<complex *>(output.data_elements()));
+			fft.forward((const std::complex<double> *) raw_pointer_cast(input.data_elements()), (std::complex<double> *) raw_pointer_cast(output.data_elements()));
 		}
 
 		array_fs.flatted().flatted().transposed()[ist] = output({0, fourier_basis.local_size()});
@@ -257,7 +257,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		
 		{
 			CALI_CXX_MARK_SCOPE("heffte_backward");
-			fft.backward(raw_pointer_cast(input.data_elements()), static_cast<complex *>(output.data_elements()), scaling);
+			fft.backward((const std::complex<double> *) raw_pointer_cast(input.data_elements()), (std::complex<double> *) raw_pointer_cast(output.data_elements()), scaling);
 		}
 
 		array_rs.flatted().flatted().transposed()[ist] = output({0, real_basis.local_size()});
