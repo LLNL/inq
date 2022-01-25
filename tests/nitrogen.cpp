@@ -40,7 +40,7 @@ int main(int argc, char ** argv){
 	
 	systems::ions ions(box, geo);
 
-	systems::electrons electrons(env.dist(), ions, box, input::config{});
+	systems::electrons electrons(env.par(), ions, box, input::config{});
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(),

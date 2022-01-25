@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 1;
 	conf.temperature = 300.0_K;
 
-	auto par = env.dist();
+	auto par = env.par();
 	if(par.size() != 5) par = par.kpoints().domains(1);
 	
 	systems::electrons electrons(par, ions, box, conf, input::kpoints::grid({2, 2, 2}, true));

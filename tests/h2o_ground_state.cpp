@@ -57,7 +57,7 @@ int main(int argc, char ** argv){
 
 	config conf;
 
-	inq::systems::electrons electrons(env.dist(), ions, box, conf);
+	inq::systems::electrons electrons(env.par(), ions, box, conf);
 
 	inq::ground_state::initial_guess(ions, electrons);
 
