@@ -112,7 +112,19 @@ public:
 	auto double_grid_value() const {
 		return double_grid_.value_or(false);
 	}
-	
+
+	friend auto operator==(box const& self, box const& other) {
+		return
+			    self.lattice_vectors_     == other.lattice_vectors_
+			and self.periodic_dimensions_ == other.periodic_dimensions_
+			and self.spacing_             == other.spacing_
+			and self.spherical_grid_      == other.spherical_grid_
+			and self.density_factor_      == other.density_factor_
+			and self.double_grid_         == other.double_grid_
+		;
+	}
+	friend auto operator!=(box const& self, box const& other) {return not(self == other);}
+
 private:
 
 	box(const math::vector3<double> & a0, const math::vector3<double> & a1, const math::vector3<double> & a2){
