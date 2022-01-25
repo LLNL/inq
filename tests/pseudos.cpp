@@ -51,7 +51,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 4;
   conf.temperature = 300.0_K;
 	
-	systems::electrons electrons(env.dist(), ions, box, conf);
+	systems::electrons electrons(env.par(), ions, box, conf);
 	
 	ground_state::initial_guess(ions, electrons);
 

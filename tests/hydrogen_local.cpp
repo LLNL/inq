@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
 	
 	inq::systems::ions ions(box, geo);
 
-	inq::systems::electrons electrons(env.dist(), ions, box);
+	inq::systems::electrons electrons(env.par(), ions, box);
 	inq::ground_state::initial_guess(ions, electrons);
 	
 	// Non Interacting

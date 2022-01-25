@@ -60,9 +60,9 @@ int main(int argc, char ** argv){
 	conf.extra_states = 0;
 
 	int kpoint_par = 1;
-	if(env.dist().size()%2 == 0) kpoint_par = 2;
+	if(env.par().size()%2 == 0) kpoint_par = 2;
 	
-	systems::electrons electrons(env.dist().kpoints(kpoint_par), ions, box, conf, input::kpoints::grid({2, 1, 1}, true));
+	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, box, conf, input::kpoints::grid({2, 1, 1}, true));
 
 	ground_state::initial_guess(ions, electrons);
 

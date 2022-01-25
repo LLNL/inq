@@ -50,7 +50,7 @@ int main(int argc, char ** argv){
 	
 	conf.extra_states = 3;
 	
-	systems::electrons electrons(env.dist(), ions, box, conf);
+	systems::electrons electrons(env.par(), ions, box, conf);
 	
 	ground_state::initial_guess(ions, electrons);
 	

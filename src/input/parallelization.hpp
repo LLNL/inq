@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INPUT__DISTRIBUTION
-#define INQ__INPUT__DISTRIBUTION
+#ifndef INQ__INPUT__PARALLELIZATION
+#define INQ__INPUT__PARALLELIZATION
 
 /*
  Copyright (C) 2020 Xavier Andrade
@@ -27,11 +27,11 @@
 namespace inq {
 namespace input {
 
-  class distribution {
+  class parallelization {
 
   public:
 
-    explicit distribution(boost::mpi3::communicator & comm):
+    explicit parallelization(boost::mpi3::communicator & comm):
 			nproc_kpts_(1),
 			nproc_states_(1),
 			nproc_domains_(boost::mpi3::fill),
@@ -80,22 +80,22 @@ namespace input {
 
 ////////////////////////////////////////////////////////
 
-#ifdef INQ_INPUT_DISTRIBUTION_UNIT_TEST
-#undef INQ_INPUT_DISTRIBUTION_UNIT_TEST
+#ifdef INQ_INPUT_PARALLELIZATION_UNIT_TEST
+#undef INQ_INPUT_PARALLELIZATION_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class input::distribution", "[inq::input::distribution]") {
+TEST_CASE("class input::parallelization", "[inq::input::parallelization]") {
 
   using namespace inq;
 	using namespace Catch::literals;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	input::distribution dist(comm);
+	input::parallelization par(comm);
 	
-	auto cart_comm = dist.kpoints(1).states(comm.size()).domains(1).cart_comm();
+	auto cart_comm = par.kpoints(1).states(comm.size()).domains(1).cart_comm();
 
 	CHECK(cart_comm.size() == comm.size());
 

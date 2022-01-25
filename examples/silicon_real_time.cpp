@@ -58,7 +58,7 @@ int main(int argc, char ** argv){
 	
 	conf.extra_states = 4;
 	
-	systems::electrons electrons(env.dist(), ions, box, conf);
+	systems::electrons electrons(env.par(), ions, box, conf);
 
 	auto result = real_time::propagate<>(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055_atomictime));
 	

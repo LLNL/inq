@@ -63,7 +63,7 @@ public:
 		return occupations_;
 	}
 		
-	electrons(input::distribution const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
+	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm()),
 		lot_comm_(full_comm_.axis(0)),
@@ -280,9 +280,9 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	
 	systems::ions ions(box, geo);
 
-	auto dist = input::distribution(comm);
+	auto par = input::parallelization(comm);
 		
-	systems::electrons electrons(dist, ions, box);
+	systems::electrons electrons(par, ions, box);
 
 	CHECK(electrons.states_.num_electrons() == 38.0_a);
 	CHECK(electrons.states_.num_states() == 19);
@@ -303,7 +303,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		
 	electrons.save("electron_restart");
 	
-	systems::electrons electrons_read(dist, ions, box);
+	systems::electrons electrons_read(par, ions, box);
 	
 	electrons_read.load("electron_restart");
 

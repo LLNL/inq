@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 2;
 	conf.excess_charge = 14.0;
 
-	systems::electrons electrons(env.dist(), ions, box, conf);
+	systems::electrons electrons(env.par(), ions, box, conf);
 
 	ground_state::initial_guess(ions, electrons);
 	auto result = ground_state::calculate(ions, electrons, input::interaction::dft());

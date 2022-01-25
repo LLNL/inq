@@ -66,7 +66,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 2*repx*repy*repz;
 	conf.temperature = 300.0_K;	
 	
-	systems::electrons electrons(env.dist().domains(1), ions, box, conf);
+	systems::electrons electrons(env.par().domains(1), ions, box, conf);
 	
 	auto restart_dir = "aluminum_" + std::to_string(repx) + "_" + std::to_string(repy) + "_" + std::to_string(repz);
 
@@ -75,7 +75,7 @@ int main(int argc, char ** argv){
 	if(not found_gs){
 
 		// the parallelization distribution is different for the ground state
-		systems::electrons gs_electrons(env.dist(), ions, box, conf);
+		systems::electrons gs_electrons(env.par(), ions, box, conf);
 		
 		ground_state::initial_guess(ions, gs_electrons);
 		

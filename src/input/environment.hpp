@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <input/distribution.hpp>
+#include <input/parallelization.hpp>
 #include <utils/merge_optional.hpp>
 #include <utils/profiling.hpp>
 
@@ -79,8 +79,8 @@ namespace input {
 			}
 		}
 
-		auto dist() const {
-			return distribution(base_comm_);
+		auto par() const {
+			return parallelization(base_comm_);
 		}
 		
   private:
