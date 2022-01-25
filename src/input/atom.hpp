@@ -58,6 +58,14 @@ public:
 		return position_;
 	}
 
+	friend auto operator==(atom const& self, atom const& other) {
+		return
+			    self.species_  == other.species_
+			and self.position_ == other_.position_
+		;
+	}
+	friend auto operator!=(atom const& self, atom const& other) {return not(self == other);}
+
 private:
 
 	input::species species_;
