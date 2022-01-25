@@ -126,19 +126,26 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 		fft(rs_box, fs_box, real_basis.comm().get());
 
 	CALI_MARK_END("heffte_initialization");
+
+	// we don't need a copy when there is just one field
+	if(size(array_rs[0][0][0]) == 1) {
+		CALI_CXX_MARK_SCOPE("heffte_forward_1");
+		fft.forward((const std::complex<double> *) raw_pointer_cast(array_rs.base()), (std::complex<double> *) raw_pointer_cast(array_fs.base()));
+		return;
+	}
 	
 	math::array<complex, 1> input(fft.size_inbox());
 	math::prefetch(input);
 	math::array<complex, 1> output(fft.size_outbox());	
 	math::prefetch(output);
-	
+
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
 		input({0, real_basis.local_size()}) = array_rs.flatted().flatted().transposed()[ist];
 		
 		{
 			CALI_CXX_MARK_SCOPE("heffte_forward");
-			fft.forward(raw_pointer_cast(input.data_elements()), static_cast<complex *>(output.data_elements()));
+			fft.forward((const std::complex<double> *) raw_pointer_cast(input.data_elements()), (std::complex<double> *) raw_pointer_cast(output.data_elements()));
 		}
 
 		array_fs.flatted().flatted().transposed()[ist] = output({0, fourier_basis.local_size()});
@@ -245,6 +252,13 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 	auto scaling = heffte::scale::none;
 	if(normalize) scaling = heffte::scale::full;
+
+	// we don't need a copy when there is just one field
+	if(size(array_rs[0][0][0]) == 1) {
+		CALI_CXX_MARK_SCOPE("heffte_backward_1");
+		fft.backward((const std::complex<double> *) raw_pointer_cast(array_fs.base()), (std::complex<double> *) raw_pointer_cast(array_rs.base()), scaling);
+		return;
+	}
 	
 	math::array<complex, 1> input(fft.size_inbox());
 	math::prefetch(input);	
@@ -257,13 +271,13 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 		
 		{
 			CALI_CXX_MARK_SCOPE("heffte_backward");
-			fft.backward(raw_pointer_cast(input.data_elements()), static_cast<complex *>(output.data_elements()), scaling);
+			fft.backward((const std::complex<double> *) raw_pointer_cast(input.data_elements()), (std::complex<double> *) raw_pointer_cast(output.data_elements()), scaling);
 		}
 
 		array_rs.flatted().flatted().transposed()[ist] = output({0, real_basis.local_size()});
 		
 	}
-		
+	
 #else //Heftte_FOUND
 	
 	namespace multi = boost::multi;
