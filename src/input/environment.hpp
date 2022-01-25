@@ -35,10 +35,7 @@ namespace input {
 
 class environment {
 
-  public:
-
-	private:
-		
+ private:
 		static auto & threaded_impl() {
 			static bool threaded_ = false;
 
