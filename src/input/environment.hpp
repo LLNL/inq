@@ -33,7 +33,7 @@
 namespace inq {
 namespace input {
 
-  class environment {
+class environment {
 
   public:
 
@@ -89,8 +89,8 @@ namespace input {
 		cali::ConfigManager calimgr_;
     mutable boost::mpi3::communicator base_comm_;		
 
-  };
-    
+};
+
 }
 }
 
