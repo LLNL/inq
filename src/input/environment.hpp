@@ -79,7 +79,9 @@ class environment {
 		auto dist() const {
 			return distribution(base_comm_);
 		}
-		
+
+	auto world() {return mpi_env_.world();}
+
   private:
 		
     boost::mpi3::environment mpi_env_;
