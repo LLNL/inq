@@ -58,6 +58,14 @@ public:
 		return position_;
 	}
 
+	friend auto operator==(atom const& self, atom const& other) {
+		return
+			    self.species_  == other.species_
+			and self.position_ == other.position_
+		;
+	}
+	friend auto operator!=(atom const& self, atom const& other) {return not(self == other);}
+
 private:
 
 	input::species species_;
@@ -161,9 +169,15 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 		CHECK(at.position()[0] == 1.0_a);
 		CHECK(at.position()[1] == 2.0_a);
 		CHECK(at.position()[2] == 3.0_a);
-		
 	}
-	
+
+	SECTION("Equality") {
+
+		inq::input::atom at1{pseudo::element("H"), inq::math::vector3<double>(1.0, 2.0, 3.0)};
+		inq::input::atom at2{pseudo::element("H"), inq::math::vector3<double>(1.0, 2.0, 3.0)};
+
+		CHECK( at1 == at2 );
+	}
 }
 
 
