@@ -33,12 +33,9 @@
 namespace inq {
 namespace input {
 
-  class environment {
+class environment {
 
-  public:
-
-	private:
-		
+ private:
 		static auto & threaded_impl() {
 			static bool threaded_ = false;
 
@@ -82,15 +79,17 @@ namespace input {
 		auto par() const {
 			return parallelization(base_comm_);
 		}
-		
+
+	auto world() {return mpi_env_.world();}
+
   private:
 		
     boost::mpi3::environment mpi_env_;
 		cali::ConfigManager calimgr_;
     mutable boost::mpi3::communicator base_comm_;		
 
-  };
-    
+};
+
 }
 }
 
