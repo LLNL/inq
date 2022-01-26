@@ -112,7 +112,19 @@ public:
 	auto double_grid_value() const {
 		return double_grid_.value_or(false);
 	}
-	
+
+	friend auto operator==(box const& self, box const& other) {
+		return
+			    self.lattice_vectors_     == other.lattice_vectors_
+			and self.periodic_dimensions_ == other.periodic_dimensions_
+			and self.spacing_             == other.spacing_
+			and self.spherical_grid_      == other.spherical_grid_
+			and self.density_factor_      == other.density_factor_
+			and self.double_grid_         == other.double_grid_
+		;
+	}
+	friend auto operator!=(box const& self, box const& other) {return not(self == other);}
+
 private:
 
 	box(const math::vector3<double> & a0, const math::vector3<double> & a1, const math::vector3<double> & a2){
@@ -220,9 +232,17 @@ TEST_CASE("class systems::box", "[systems::box]") {
 		CHECK(ci.periodic_dimensions_value() == 3);
 		CHECK(ci.spacing_value() == 0.1_a);
 		CHECK(ci.spherical_grid_value());
-		
+
 	}
-  
+
+	SECTION("Equality"){
+
+		auto ci1 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha).spherical_grid(true);
+		auto ci2 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha).spherical_grid(true);
+
+		CHECK(ci1 == ci2);
+		CHECK( not (ci1 != ci2) );
+	}
 }
 #endif
 
