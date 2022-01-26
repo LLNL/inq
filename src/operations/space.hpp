@@ -353,9 +353,9 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 
 	if(normalize){
 		CALI_CXX_MARK_SCOPE("fft_normalize");
-		gpu::run(size(array_rs[0][0][0]), real_basis.local_size(), 
-						 [ar = begin(array_rs.flatted().flatted()), factor = 1.0/real_basis.size()] GPU_LAMBDA (auto ist, auto ip){
-							 ar[ip][ist] = factor*ar[ip][ist];
+		gpu::run(size(array_rs[0][0][0])*real_basis.local_size(), 
+						 [ar = begin(array_rs.flatted().flatted().flatted()), factor = 1.0/real_basis.size()] GPU_LAMBDA (auto ip){
+							 ar[ip] = factor*ar[ip];
 						 });
 	}
 
