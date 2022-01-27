@@ -95,6 +95,22 @@ namespace inq {
 			return value_ == quant.value_;
 		}
 		
+		GPU_FUNCTION auto operator<=(quantity quant) const {
+			return value_ <= quant.value_;
+		}
+
+		GPU_FUNCTION auto operator>=(quantity quant) const {
+			return value_ >= quant.value_;
+		}
+
+		GPU_FUNCTION auto operator<(quantity quant) const {
+			return value_ < quant.value_;
+		}
+
+		GPU_FUNCTION auto operator>(quantity quant) const {
+			return value_ > quant.value_;
+		}
+		
 	private:
 
 		element_type value_;
