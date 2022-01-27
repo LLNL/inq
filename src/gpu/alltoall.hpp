@@ -25,6 +25,10 @@
 
 #include <cstdlib>
 
+#ifdef ENABLE_NCCL
+#include <nccl.h>
+#endif
+
 #include <math/array.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -81,6 +85,15 @@ void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 		std::vector<MPI_Status> stats(reqs.size());
 		MPI_Waitall(reqs.size(), reqs.data(), stats.data());
 		
+	} else if(method == std::string("nccl")) {
+
+#ifndef ENABLE_NCCL
+		assert(false and "inq was compiled without nccl support");		
+#else
+		ncclUniqueId Id;
+		ncclGetUniqueId(&Id);
+#endif
+
 	} else {
 		assert(false and "uknown communication method");		
 	}	
