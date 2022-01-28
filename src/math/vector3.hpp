@@ -399,63 +399,56 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 
 		CHECK(product(vv3) == Approx(120.0*15.0*13.6));
 		
-		/*
+		auto zvv = complex(0.0, 1.0)*vv1;
 
-			Disabled because std::complex causes problems on the GPU
-
-			auto zvv = complex(0.0, 1.0)*vv1;
-
-			CHECK(real(zvv[0]) ==   0.0_a);
-			CHECK(imag(zvv[0]) ==  10.0_a);
-			CHECK(real(zvv[1]) ==   0.0_a);
-			CHECK(imag(zvv[1]) ==   5.0_a);
-			CHECK(real(zvv[2]) ==   0.0_a);
-			CHECK(imag(zvv[2]) ==  -3.4_a);
-
-			auto zvv2 = zvv/complex(0.0, -1.0);
-			zvv /= complex(0.0, -1.0);
-
-			CHECK(real(zvv[0]) == -10.0_a);
-			CHECK(imag(zvv[0]) ==   0.0_a);
-			CHECK(real(zvv[1]) ==  -5.0_a);
-			CHECK(imag(zvv[1]) ==   0.0_a);
-			CHECK(real(zvv[2]) ==   3.4_a);
-			CHECK(imag(zvv[2]) ==   0.0_a);
-	
-			CHECK(zvv == zvv2);
-		*/
+		CHECK(real(zvv[0]) ==   0.0_a);
+		CHECK(imag(zvv[0]) ==  10.0_a);
+		CHECK(real(zvv[1]) ==   0.0_a);
+		CHECK(imag(zvv[1]) ==   5.0_a);
+		CHECK(real(zvv[2]) ==   0.0_a);
+		CHECK(imag(zvv[2]) ==  -3.4_a);
+		
+		auto zvv2 = zvv/complex(0.0, -1.0);
+		zvv /= complex(0.0, -1.0);
+		
+		CHECK(real(zvv[0]) == -10.0_a);
+		CHECK(imag(zvv[0]) ==   0.0_a);
+		CHECK(real(zvv[1]) ==  -5.0_a);
+		CHECK(imag(zvv[1]) ==   0.0_a);
+		CHECK(real(zvv[2]) ==   3.4_a);
+		CHECK(imag(zvv[2]) ==   0.0_a);
+		
+		CHECK(zvv == zvv2);
+		
 	}
 
 	SECTION("Vector operations"){
 		math::vector3<double> dv(3.0, -1.1, 0.1);
 
 		CHECK( dot(dv, dv) == norm(dv));		
-		/*
 
-			Disabled because std::complex causes problems on the GPU
-
-			This values might need to be updated because the conjugation was missing.
-
-			math::vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
-			math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
-
-			CHECK((vv1|vv2) == conj(vv2|vv1));
+		math::vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
+		math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
 		
-			CHECK(real(vv1|vv2) == -54.462);
-			CHECK(imag(vv1|vv2) == -14.9765);
+		CHECK(dot(vv1, vv2) == conj(dot(vv2, vv1)));
 
-			CHECK(norm(vv1) == Approx(real(conj(vv1)|vv1)));
-			CHECK(imag(conj(vv1)|vv1) == 0.0_a);
-			CHECK(norm(vv1) == Approx(4.0 + 0.04 + 1.21 + 0.01 + 0.01));
-			CHECK(length(vv1) == Approx(sqrt(4.0 + 0.04 + 1.21 + 0.01 + 0.01)));
+		CHECK(real(dot(vv1, vv2)) == 54.7180_a);
+		CHECK(imag(dot(vv1, vv2)) == 1.5765_a);
 
-			CHECK(real(vv1)[0] ==  0.0_a);
-			CHECK(imag(vv1)[0] ==  2.0_a);
-			CHECK(real(vv1)[1] ==  0.2_a);
-			CHECK(imag(vv1)[1] == -1.1_a);
-			CHECK(real(vv1)[2] ==  0.1_a);
-			CHECK(imag(vv1)[2] ==  0.1_a);
-		*/
+		CHECK(norm(vv1) == 5.2700_a);
+		CHECK(norm(vv1) == Approx(real(dot(vv1, vv1))));
+		CHECK(imag(dot(vv1, vv1)) == 0.0_a);
+		
+		CHECK(norm(vv1) == Approx(4.0 + 0.04 + 1.21 + 0.01 + 0.01));
+		CHECK(length(vv1) == Approx(sqrt(4.0 + 0.04 + 1.21 + 0.01 + 0.01)));
+		
+		CHECK(real(vv1)[0] ==  0.0_a);
+		CHECK(imag(vv1)[0] ==  2.0_a);
+		CHECK(real(vv1)[1] ==  0.2_a);
+		CHECK(imag(vv1)[1] == -1.1_a);
+		CHECK(real(vv1)[2] ==  0.1_a);
+		CHECK(imag(vv1)[2] ==  0.1_a);
+
 	}
 	
 	SECTION("Elementwise Multiplication same type"){
@@ -469,17 +462,13 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	}
 	
 	SECTION("Elementwise Multiplication cross type"){
-		/*	
-				Disabled because std::complex causes problems on the GPU
-				
-				using complex = std::complex<double>;
-				
-				math::vector3<double> vv1 = {10.0,  5.0, -3.4};
-				math::vector3<complex> vv2 = {12.0, -3.0,  4.0};
-				
-				CHECK( (vv1*vv2)[0] == vv1[0]*vv2[0] );
-				CHECK( (complex{2.}*vv1)[0] == complex{2.}*vv1[0] );
-		*/
+		
+		math::vector3<double> vv1 = {10.0,  5.0, -3.4};
+		math::vector3<complex> vv2 = {12.0, -3.0,  4.0};
+		
+		CHECK( (vv1*vv2)[0] == vv1[0]*vv2[0] );
+		CHECK( (complex{2.}*vv1)[0] == complex{2.}*vv1[0] );
+		
 	}
 
 	SECTION("Old vector3<double> tests"){
