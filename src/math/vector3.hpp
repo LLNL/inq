@@ -31,235 +31,248 @@
 namespace inq {
 namespace math {
 
-	template <class Type>
-	class vector3 {
+struct cartesian {
+  using DualSpace = cartesian;
+};
 
-	public:
+struct covariant;
 
-		vector3() = default;
+struct contravariant {
+  using DualSpace = covariant;
+};
 
-		explicit GPU_FUNCTION vector3(Type const & scal){
-			vec_[0] = scal;
-			vec_[1] = scal;
-			vec_[2] = scal;
-		}
+struct covariant {
+  using DualSpace = contravariant;
+};
+
+template <class Type, class Space = cartesian>
+class vector3 {
+	
+public:
+
+	vector3() = default;
+
+	explicit GPU_FUNCTION vector3(Type const & scal){
+		vec_[0] = scal;
+		vec_[1] = scal;
+		vec_[2] = scal;
+	}
 		
-		GPU_FUNCTION vector3(Type const & v0, Type const & v1, Type const & v2){
-			vec_[0] = v0;
-			vec_[1] = v1;
-			vec_[2] = v2;
-		}
+	GPU_FUNCTION vector3(Type const & v0, Type const & v1, Type const & v2){
+		vec_[0] = v0;
+		vec_[1] = v1;
+		vec_[2] = v2;
+	}
 		
-		GPU_FUNCTION vector3(std::initializer_list<Type> const & list){
-			vec_[0] = list.begin()[0];
-			vec_[1] = list.begin()[1];
-			vec_[2] = list.begin()[2];
-		}
+	GPU_FUNCTION vector3(std::initializer_list<Type> const & list){
+		vec_[0] = list.begin()[0];
+		vec_[1] = list.begin()[1];
+		vec_[2] = list.begin()[2];
+	}
 
-		explicit GPU_FUNCTION vector3(Type const * const arr){
-			vec_[0] = arr[0];
-			vec_[1] = arr[1];
-			vec_[2] = arr[2];
-		}
+	explicit GPU_FUNCTION vector3(Type const * const arr){
+		vec_[0] = arr[0];
+		vec_[1] = arr[1];
+		vec_[2] = arr[2];
+	}
 		
-		GPU_FUNCTION vector3(std::array<Type, 3> const & arr){
-			vec_[0] = arr[0];
-			vec_[1] = arr[1];
-			vec_[2] = arr[2];
-		}
+	GPU_FUNCTION vector3(std::array<Type, 3> const & arr){
+		vec_[0] = arr[0];
+		vec_[1] = arr[1];
+		vec_[2] = arr[2];
+	}
 		
-		GPU_FUNCTION auto & operator[](int ii){
-			return vec_[ii];
-		}
+	GPU_FUNCTION auto & operator[](int ii){
+		return vec_[ii];
+	}
 
-		GPU_FUNCTION auto & operator[](int ii) const {
-			return vec_[ii];
-		}
+	GPU_FUNCTION auto & operator[](int ii) const {
+		return vec_[ii];
+	}
 
-		auto data() {
-			return vec_;
-		}
+	auto data() {
+		return vec_;
+	}
 
-		auto data() const {
-			return vec_;
-		}
+	auto data() const {
+		return vec_;
+	}
 
-		constexpr auto size() const {
-			return 3;
-		}
+	constexpr auto size() const {
+		return 3;
+	}
 		
-		//COMPARISON
+	//COMPARISON
 		
-		GPU_FUNCTION bool operator==(const vector3 & other) const {
-			return vec_[0] == other.vec_[0] && vec_[1] == other.vec_[1] && vec_[2] == other.vec_[2];
-		}
+	GPU_FUNCTION bool operator==(const vector3 & other) const {
+		return vec_[0] == other.vec_[0] && vec_[1] == other.vec_[1] && vec_[2] == other.vec_[2];
+	}
 
-		GPU_FUNCTION bool operator!=(const vector3 & other) const {
-			return ! (*this == other);
-		}
+	GPU_FUNCTION bool operator!=(const vector3 & other) const {
+		return ! (*this == other);
+	}
 
-		//ADDITION AND SUBSTRACTION
+	//ADDITION AND SUBSTRACTION
 		
-		GPU_FUNCTION vector3 & operator+=(const vector3 & other){
-			vec_[0] += other.vec_[0];
-			vec_[1] += other.vec_[1];
-			vec_[2] += other.vec_[2];
-			return *this;
-		}
+	GPU_FUNCTION vector3 & operator+=(const vector3 & other){
+		vec_[0] += other.vec_[0];
+		vec_[1] += other.vec_[1];
+		vec_[2] += other.vec_[2];
+		return *this;
+	}
 
-		GPU_FUNCTION vector3 operator+(const vector3 & other) const {
-			vector3 result;
-			result.vec_[0] = vec_[0] + other.vec_[0];
-			result.vec_[1] = vec_[1] + other.vec_[1];
-			result.vec_[2] = vec_[2] + other.vec_[2];
-			return result;
-		}
+	GPU_FUNCTION vector3 operator+(const vector3 & other) const {
+		vector3 result;
+		result.vec_[0] = vec_[0] + other.vec_[0];
+		result.vec_[1] = vec_[1] + other.vec_[1];
+		result.vec_[2] = vec_[2] + other.vec_[2];
+		return result;
+	}
 
-		GPU_FUNCTION vector3 & operator-=(const vector3 & other){
-			vec_[0] -= other.vec_[0];
-			vec_[1] -= other.vec_[1];
-			vec_[2] -= other.vec_[2];
-			return *this;
-		}
+	GPU_FUNCTION vector3 & operator-=(const vector3 & other){
+		vec_[0] -= other.vec_[0];
+		vec_[1] -= other.vec_[1];
+		vec_[2] -= other.vec_[2];
+		return *this;
+	}
 
-		GPU_FUNCTION vector3 operator-(const vector3 & other) const {
-			vector3 result;
-			result.vec_[0] = vec_[0] - other.vec_[0];
-			result.vec_[1] = vec_[1] - other.vec_[1];
-			result.vec_[2] = vec_[2] - other.vec_[2];
-			return result;
-		}
+	GPU_FUNCTION vector3 operator-(const vector3 & other) const {
+		vector3 result;
+		result.vec_[0] = vec_[0] - other.vec_[0];
+		result.vec_[1] = vec_[1] - other.vec_[1];
+		result.vec_[2] = vec_[2] - other.vec_[2];
+		return result;
+	}
 		
-		// MULTIPLICATION
+	// MULTIPLICATION
 		
-		//element-wise multiplication and division
-		template <class TypeB>
-		friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(const vector3 & vv1, const vector3<TypeB> & vv2){
-			return {vv1[0]*vv2[0], vv1[1]*vv2[1], vv1[2]*vv2[2]};
-		}
+	//element-wise multiplication and division
+	template <class TypeB>
+	friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(const vector3 & vv1, const vector3<TypeB> & vv2){
+		return {vv1[0]*vv2[0], vv1[1]*vv2[1], vv1[2]*vv2[2]};
+	}
 
-		template <class TypeB>
-		friend GPU_FUNCTION vector3<decltype(TypeB()/Type())> operator/(const vector3<TypeB> & vv1, const vector3 & vv2){
-			return {vv1[0]/vv2[0], vv1[1]/vv2[1], vv1[2]/vv2[2]};
-		}
+	template <class TypeB>
+	friend GPU_FUNCTION vector3<decltype(TypeB()/Type())> operator/(const vector3<TypeB> & vv1, const vector3 & vv2){
+		return {vv1[0]/vv2[0], vv1[1]/vv2[1], vv1[2]/vv2[2]};
+	}
 
-		//scalar multiplication and division
-		private:
-		template<class   > struct is_vector              : std::false_type{};
-		template<class TT> struct is_vector<vector3<TT>> : std::true_type {};
-		public:
+	//scalar multiplication and division
+private:
+	template<class   > struct is_vector              : std::false_type{};
+	template<class TT> struct is_vector<vector3<TT>> : std::true_type {};
+public:
 
-		template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
-		friend GPU_FUNCTION vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
-			return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
-		}
+	template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
+	friend GPU_FUNCTION vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
+		return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
+	}
 		
-		template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
-		friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
-			return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
-		}
+	template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
+	friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
+		return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
+	}
 		
-		template <class TypeB>
-		friend GPU_FUNCTION vector3<decltype(Type()/TypeB())> operator/(const vector3 & vv, const TypeB & scalar){
-			return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
-		}
+	template <class TypeB>
+	friend GPU_FUNCTION vector3<decltype(Type()/TypeB())> operator/(const vector3 & vv, const TypeB & scalar){
+		return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
+	}
 		
-		friend GPU_FUNCTION vector3 operator-(vector3 const & vv){
-			return -1*vv;
-		}
+	friend GPU_FUNCTION vector3 operator-(vector3 const & vv){
+		return -1*vv;
+	}
 
-		GPU_FUNCTION vector3 & operator*=(Type const & factor){
-			vec_[0] *= factor;
-			vec_[1] *= factor;
-			vec_[2] *= factor;
-			return *this;
-		}
+	GPU_FUNCTION vector3 & operator*=(Type const & factor){
+		vec_[0] *= factor;
+		vec_[1] *= factor;
+		vec_[2] *= factor;
+		return *this;
+	}
 
-		GPU_FUNCTION vector3 & operator/=(Type const & factor){
-			vec_[0] /= factor;
-			vec_[1] /= factor;
-			vec_[2] /= factor;
-			return *this;
-		}
+	GPU_FUNCTION vector3 & operator/=(Type const & factor){
+		vec_[0] /= factor;
+		vec_[1] /= factor;
+		vec_[2] /= factor;
+		return *this;
+	}
 
-		// ELEMENTWISE OPERATIONS
-		template <class Function>
-		friend GPU_FUNCTION auto elementwise(Function const & func, vector3 const & vv) -> vector3<decltype(func(Type{}))> {
-			return {func(vv[0]), func(vv[1]), func(vv[2])};
-		}
+	// ELEMENTWISE OPERATIONS
+	template <class Function>
+	friend GPU_FUNCTION auto elementwise(Function const & func, vector3 const & vv) -> vector3<decltype(func(Type{}))> {
+		return {func(vv[0]), func(vv[1]), func(vv[2])};
+	}
 
-		friend GPU_FUNCTION auto conj(vector3 const & vv){
-			return vector3{conj(vv[0]), conj(vv[1]), conj(vv[2])};
-		}
+	friend GPU_FUNCTION auto conj(vector3 const & vv){
+		return vector3{conj(vv[0]), conj(vv[1]), conj(vv[2])};
+	}
 
-		friend GPU_FUNCTION auto real(vector3 const & vv){
-			return vector3<double>{real(vv[0]), real(vv[1]), real(vv[2])};
-		}
+	friend GPU_FUNCTION auto real(vector3 const & vv){
+		return vector3<double>{real(vv[0]), real(vv[1]), real(vv[2])};
+	}
 		
-		friend GPU_FUNCTION auto imag(vector3 const & vv){
-			return elementwise([] (auto x) { return imag(x);}, vv);
-		}
+	friend GPU_FUNCTION auto imag(vector3 const & vv){
+		return elementwise([] (auto x) { return imag(x);}, vv);
+	}
 
-		friend GPU_FUNCTION auto fabs(vector3 const & vv){
-			return elementwise([] (auto x) { return fabs(x);}, vv);
-		}
+	friend GPU_FUNCTION auto fabs(vector3 const & vv){
+		return elementwise([] (auto x) { return fabs(x);}, vv);
+	}
 		
-		// VECTORIAL PRODUCTS
+	// VECTORIAL PRODUCTS
 		
-		//internal product
-		template <class OtherType>
-		friend GPU_FUNCTION auto dot(vector3 const & vv1, vector3<OtherType> const & vv2) {
-			return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];			
-		}
+	//internal product
+	template <class OtherType>
+	friend GPU_FUNCTION auto dot(vector3 const & vv1, vector3<OtherType, typename Space::DualSpace> const & vv2) {
+		return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];			
+	}
 
-		//cross product
-		friend GPU_FUNCTION auto cross(vector3 const & vv1, vector3 const & vv2) {
-			return vector3(vv1[1]*vv2[2] - vv1[2]*vv2[1], vv1[2]*vv2[0] - vv1[0]*vv2[2], vv1[0]*vv2[1] - vv1[1]*vv2[0]);
-		}
+	//cross product
+	friend GPU_FUNCTION auto cross(vector3 const & vv1, vector3 const & vv2) {
+		return vector3(vv1[1]*vv2[2] - vv1[2]*vv2[1], vv1[2]*vv2[0] - vv1[0]*vv2[2], vv1[0]*vv2[1] - vv1[1]*vv2[0]);
+	}
 
-		//norm
+	//norm
 		
-		friend GPU_FUNCTION auto norm(vector3 const & vv) {
-			return norm(vv[0]) + norm(vv[1]) + norm(vv[2]);
-		}
+	friend GPU_FUNCTION auto norm(vector3 const & vv) {
+		return norm(vv[0]) + norm(vv[1]) + norm(vv[2]);
+	}
 
-		friend GPU_FUNCTION auto length(vector3 const & vv) {
-			return sqrt(norm(vv[0]) + norm(vv[1]) + norm(vv[2]));
-		}
+	friend GPU_FUNCTION auto length(vector3 const & vv) {
+		return sqrt(norm(vv[0]) + norm(vv[1]) + norm(vv[2]));
+	}
 		
-		GPU_FUNCTION auto length() const{
-			return sqrt(norm(vec_[0]) + norm(vec_[1]) + norm(vec_[2]));
-		}
+	GPU_FUNCTION auto length() const{
+		return sqrt(norm(vec_[0]) + norm(vec_[1]) + norm(vec_[2]));
+	}
 
+	friend GPU_FUNCTION auto product(vector3 const & vv) {
+		return vv[0]*vv[1]*vv[2];
+	}
 		
-		friend GPU_FUNCTION auto product(vector3 const & vv) {
-			return vv[0]*vv[1]*vv[2];
-		}
+	// INPUT OUTPUT
 		
-		// INPUT OUTPUT
-		
-		friend std::ostream& operator <<(std::ostream & out, vector3 const & vv){
-			out << vv.vec_[0] << '\t' << vv.vec_[1] << '\t' << vv.vec_[2];
-			return out;
-		}
+	friend std::ostream& operator <<(std::ostream & out, vector3 const & vv){
+		out << vv.vec_[0] << '\t' << vv.vec_[1] << '\t' << vv.vec_[2];
+		return out;
+	}
 
-		friend std::istream& operator >>(std::istream & in, vector3 & vv){
-			in >> vv.vec_[0] >> vv.vec_[1] >> vv.vec_[2] ;
-			return in;
-		}
+	friend std::istream& operator >>(std::istream & in, vector3 & vv){
+		in >> vv.vec_[0] >> vv.vec_[1] >> vv.vec_[2] ;
+		return in;
+	}
 
-	private:
+private:
 
-		Type vec_[3];
+	Type vec_[3];
 
-	};
+};
 
 }
 }
 
 namespace std{
-	template<class T> // workaround for types that recursively have a TDC workaround
-	struct is_trivially_default_constructible<inq::math::vector3<T>> : 
+template<class T> // workaround for types that recursively have a TDC workaround
+struct is_trivially_default_constructible<inq::math::vector3<T>> : 
 		is_trivially_default_constructible<T>{};
 }
 
@@ -392,24 +405,24 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 
 			auto zvv = complex(0.0, 1.0)*vv1;
 
-		CHECK(real(zvv[0]) ==   0.0_a);
-		CHECK(imag(zvv[0]) ==  10.0_a);
-		CHECK(real(zvv[1]) ==   0.0_a);
-		CHECK(imag(zvv[1]) ==   5.0_a);
-		CHECK(real(zvv[2]) ==   0.0_a);
-		CHECK(imag(zvv[2]) ==  -3.4_a);
+			CHECK(real(zvv[0]) ==   0.0_a);
+			CHECK(imag(zvv[0]) ==  10.0_a);
+			CHECK(real(zvv[1]) ==   0.0_a);
+			CHECK(imag(zvv[1]) ==   5.0_a);
+			CHECK(real(zvv[2]) ==   0.0_a);
+			CHECK(imag(zvv[2]) ==  -3.4_a);
 
-		auto zvv2 = zvv/complex(0.0, -1.0);
-		zvv /= complex(0.0, -1.0);
+			auto zvv2 = zvv/complex(0.0, -1.0);
+			zvv /= complex(0.0, -1.0);
 
-		CHECK(real(zvv[0]) == -10.0_a);
-		CHECK(imag(zvv[0]) ==   0.0_a);
-		CHECK(real(zvv[1]) ==  -5.0_a);
-		CHECK(imag(zvv[1]) ==   0.0_a);
-		CHECK(real(zvv[2]) ==   3.4_a);
-		CHECK(imag(zvv[2]) ==   0.0_a);
+			CHECK(real(zvv[0]) == -10.0_a);
+			CHECK(imag(zvv[0]) ==   0.0_a);
+			CHECK(real(zvv[1]) ==  -5.0_a);
+			CHECK(imag(zvv[1]) ==   0.0_a);
+			CHECK(real(zvv[2]) ==   3.4_a);
+			CHECK(imag(zvv[2]) ==   0.0_a);
 	
-		CHECK(zvv == zvv2);
+			CHECK(zvv == zvv2);
 		*/
 	}
 
@@ -419,29 +432,29 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK( dot(dv, dv) == norm(dv));		
 		/*
 
-				Disabled because std::complex causes problems on the GPU
+			Disabled because std::complex causes problems on the GPU
 
-				This values might need to be updated because the conjugation was missing.
+			This values might need to be updated because the conjugation was missing.
 
-		math::vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
-		math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
+			math::vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
+			math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
 
-		CHECK((vv1|vv2) == conj(vv2|vv1));
+			CHECK((vv1|vv2) == conj(vv2|vv1));
 		
-		CHECK(real(vv1|vv2) == -54.462);
-		CHECK(imag(vv1|vv2) == -14.9765);
+			CHECK(real(vv1|vv2) == -54.462);
+			CHECK(imag(vv1|vv2) == -14.9765);
 
-		CHECK(norm(vv1) == Approx(real(conj(vv1)|vv1)));
-		CHECK(imag(conj(vv1)|vv1) == 0.0_a);
-		CHECK(norm(vv1) == Approx(4.0 + 0.04 + 1.21 + 0.01 + 0.01));
-		CHECK(length(vv1) == Approx(sqrt(4.0 + 0.04 + 1.21 + 0.01 + 0.01)));
+			CHECK(norm(vv1) == Approx(real(conj(vv1)|vv1)));
+			CHECK(imag(conj(vv1)|vv1) == 0.0_a);
+			CHECK(norm(vv1) == Approx(4.0 + 0.04 + 1.21 + 0.01 + 0.01));
+			CHECK(length(vv1) == Approx(sqrt(4.0 + 0.04 + 1.21 + 0.01 + 0.01)));
 
-		CHECK(real(vv1)[0] ==  0.0_a);
-		CHECK(imag(vv1)[0] ==  2.0_a);
-		CHECK(real(vv1)[1] ==  0.2_a);
-		CHECK(imag(vv1)[1] == -1.1_a);
-		CHECK(real(vv1)[2] ==  0.1_a);
-		CHECK(imag(vv1)[2] ==  0.1_a);
+			CHECK(real(vv1)[0] ==  0.0_a);
+			CHECK(imag(vv1)[0] ==  2.0_a);
+			CHECK(real(vv1)[1] ==  0.2_a);
+			CHECK(imag(vv1)[1] == -1.1_a);
+			CHECK(real(vv1)[2] ==  0.1_a);
+			CHECK(imag(vv1)[2] ==  0.1_a);
 		*/
 	}
 	
@@ -542,7 +555,15 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(x4[2] == -3.3_a);
 
 	}
-	
+
+	SECTION("contravariant and covariant"){
+
+		math::vector3<double, math::contravariant> vec(2.0, 3.0, 5.0);
+		math::vector3<double, math::covariant> covec(4.1, 0.76, 2.4);
+
+		CHECK(dot(covec, vec) == 22.48_a);
+		
+	}
 }
 
 #endif
