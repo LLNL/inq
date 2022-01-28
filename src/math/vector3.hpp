@@ -234,15 +234,15 @@ public:
 	//norm
 		
 	friend GPU_FUNCTION auto norm(vector3 const & vv) {
-		return norm(vv[0]) + norm(vv[1]) + norm(vv[2]);
+		return real(dot(vv, vv));
 	}
 
 	friend GPU_FUNCTION auto length(vector3 const & vv) {
-		return sqrt(norm(vv[0]) + norm(vv[1]) + norm(vv[2]));
+		return sqrt(real(dot(vv, vv)));
 	}
 		
 	GPU_FUNCTION auto length() const{
-		return sqrt(norm(vec_[0]) + norm(vec_[1]) + norm(vec_[2]));
+		return sqrt(real(dot(*this, *this)));
 	}
 
 	friend GPU_FUNCTION auto product(vector3 const & vv) {
