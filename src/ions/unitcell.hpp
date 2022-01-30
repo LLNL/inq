@@ -39,7 +39,7 @@ namespace inq {
 namespace ions {
 
   class UnitCell{
-	using vector_type = math::vector3<double>;
+		using vector_type = math::vector3<double>;
   private:
     vector_type a_[3];
     vector_type b_[3];
@@ -61,6 +61,16 @@ namespace ions {
 		
   public:
 
+		template <class Type1, class Space1, class Type2, class Space2>
+		auto dot(math::vector3<Type1, Space1> const & vv1, math::vector3<Type2, Space2> const & vv2) const {
+			return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];
+		}
+
+		template <class Type, class Space>
+		auto norm(math::vector3<Type, Space> const & vv) const {
+			return real(dot(vv, vv));
+		}
+		
 		enum class error { WRONG_LATTICE };
 
     void set(const vector_type& a0, const vector_type& a1, const vector_type& a2, int arg_periodic_dimensions = 3){
@@ -210,7 +220,7 @@ namespace ions {
 		self.info(os);
 		return os;
 	}
-    
+
     const double* amat() const { return &amat_[0]; }
     const double* bmat() const { return &bmat_[0]; }
     const double* amat_inv() const { return &amat_inv_[0]; }
