@@ -193,7 +193,7 @@ public:
 
 	// ELEMENTWISE OPERATIONS
 	template <class Function>
-	friend GPU_FUNCTION auto elementwise(Function const & func, vector3 const & vv) -> vector3<decltype(func(Type{}))> {
+	friend GPU_FUNCTION auto elementwise(Function const & func, vector3 const & vv) -> vector3<decltype(func(Type{})), Space> {
 		return {func(vv[0]), func(vv[1]), func(vv[2])};
 	}
 
@@ -202,7 +202,7 @@ public:
 	}
 
 	friend GPU_FUNCTION auto real(vector3 const & vv){
-		return vector3<double>{real(vv[0]), real(vv[1]), real(vv[2])};
+		return vector3<double, Space>{real(vv[0]), real(vv[1]), real(vv[2])};
 	}
 		
 	friend GPU_FUNCTION auto imag(vector3 const & vv){
