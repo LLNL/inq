@@ -148,33 +148,28 @@ public:
 		
 	//element-wise multiplication and division
 	template <class TypeB>
-	friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(const vector3 & vv1, const vector3<TypeB> & vv2){
+	friend GPU_FUNCTION vector3<decltype(Type()*TypeB()), Space> operator*(const vector3 & vv1, const vector3<TypeB, Space> & vv2){
 		return {vv1[0]*vv2[0], vv1[1]*vv2[1], vv1[2]*vv2[2]};
-	}
-
-	template <class TypeB>
-	friend GPU_FUNCTION vector3<decltype(TypeB()/Type())> operator/(const vector3<TypeB> & vv1, const vector3 & vv2){
-		return {vv1[0]/vv2[0], vv1[1]/vv2[1], vv1[2]/vv2[2]};
 	}
 
 	//scalar multiplication and division
 private:
 	template<class   > struct is_vector              : std::false_type{};
-	template<class TT> struct is_vector<vector3<TT>> : std::true_type {};
+	template<class TT> struct is_vector<vector3<TT, Space>> : std::true_type {};
 public:
 
 	template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
-	friend GPU_FUNCTION vector3<decltype(TypeA()*Type())> operator*(TypeA const& scalar, vector3 const& vv){
+	friend GPU_FUNCTION vector3<decltype(TypeA()*Type()), Space> operator*(TypeA const& scalar, vector3 const& vv){
 		return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
 	}
 		
 	template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
-	friend GPU_FUNCTION vector3<decltype(Type()*TypeB())> operator*(vector3 const& vv, TypeB const& scalar){
+	friend GPU_FUNCTION vector3<decltype(Type()*TypeB()), Space> operator*(vector3 const& vv, TypeB const& scalar){
 		return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
 	}
 		
 	template <class TypeB>
-	friend GPU_FUNCTION vector3<decltype(Type()/TypeB())> operator/(const vector3 & vv, const TypeB & scalar){
+	friend GPU_FUNCTION vector3<decltype(Type()/TypeB()), Space> operator/(const vector3 & vv, const TypeB & scalar){
 		return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
 	}
 		
