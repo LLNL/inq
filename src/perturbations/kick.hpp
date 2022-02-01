@@ -30,29 +30,29 @@
 namespace inq {
 namespace perturbations {
 
-	void kick(math::vector3<double> kick_field, basis::field_set<basis::real_space, complex> & phi){
+void kick(math::vector3<double, math::covariant> kick_field, basis::field_set<basis::real_space, complex> & phi){
 
-		//DATAOPERATIONS LOOP 4D
-		for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+	//DATAOPERATIONS LOOP 4D
+	for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
+		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
+			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+				
+				auto ixg = phi.basis().cubic_dist(0).local_to_global(ix);
+				auto iyg = phi.basis().cubic_dist(1).local_to_global(iy);
+				auto izg = phi.basis().cubic_dist(2).local_to_global(iz);
 					
-					auto ixg = phi.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = phi.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = phi.basis().cubic_dist(2).local_to_global(iz);
-					
-					auto rr = phi.basis().point_op().rvector(ixg, iyg, izg);
-
-					auto kick_factor = exp(complex(0.0, dot(kick_field, rr)));
-					
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] *= kick_factor;
-					}
-					
+				auto rr = phi.basis().point_op().rvector(ixg, iyg, izg);
+				
+				auto kick_factor = exp(complex(0.0, dot(kick_field, rr)));
+				
+				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+					phi.cubic()[ix][iy][iz][ist] *= kick_factor;
 				}
+				
 			}
 		}
 	}
+}
 }
 }
 

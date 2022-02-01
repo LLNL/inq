@@ -58,10 +58,11 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & nr, math::vector3<double> const & rspacing, std::array<inq::utils::partition, 3> const & dist):
+			point_operator(std::array<int, 3> const & nr, math::vector3<double> const & rspacing, std::array<inq::utils::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
 				nr_(nr),
 				rspacing_(rspacing),
-				cubic_dist_(dist)
+				cubic_dist_(dist),
+				metric_(metric)
 			{
 			}
 
@@ -69,29 +70,38 @@ namespace basis {
 				return grid::from_symmetric_range(nr_, ii);
 			}
 
-			GPU_FUNCTION math::vector3<double> rvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+			GPU_FUNCTION auto rvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
 				auto ii = to_symmetric_range(nr_, ix, iy, iz);
-				return math::vector3<double>{ii[0]*rspacing_[0], ii[1]*rspacing_[1], ii[2]*rspacing_[2]};
+				return math::vector3<double, math::contravariant>{ii[0]*rspacing_[0], ii[1]*rspacing_[1], ii[2]*rspacing_[2]};
 			}
 			
-			GPU_FUNCTION math::vector3<double> rvector(int ix, int iy, int iz) const {
+			GPU_FUNCTION auto rvector(int ix, int iy, int iz) const {
 				auto ixg = cubic_dist_[0].local_to_global(ix);
 				auto iyg = cubic_dist_[1].local_to_global(iy);
 				auto izg = cubic_dist_[2].local_to_global(iz);
 				
 				return rvector(ixg, iyg, izg);
 			}
+
+			GPU_FUNCTION auto rvector_cartesian(int ix, int iy, int iz) const {
+				return metric_.to_cartesian(rvector(ix, iy, iz));
+			}
 			
 			template <class int_array>
-			GPU_FUNCTION math::vector3<double> rvector(const int_array & indices) const {
+			GPU_FUNCTION auto rvector(const int_array & indices) const {
 				return rvector(indices[0], indices[1], indices[2]);
 			}
 			
 			template <typename IndexType>
 			GPU_FUNCTION double r2(IndexType ix, IndexType iy, IndexType iz) const {
-				return norm(rvector(ix, iy, iz));
+				return metric_.norm(rvector(ix, iy, iz));
 			}
 
+			template <typename IndexType>
+			GPU_FUNCTION double rlength(IndexType ix, IndexType iy, IndexType iz) const {
+				return metric_.length(rvector(ix, iy, iz));
+			}
+			
 			GPU_FUNCTION auto & cubic_dist() const {
 				return cubic_dist_;
 			}
@@ -101,6 +111,7 @@ namespace basis {
 			std::array<int, 3> nr_;
 			math::vector3<double> rspacing_;
 			std::array<inq::utils::partition, 3> cubic_dist_;
+			ions::UnitCell::cell_metric metric_;
 			
 		};
 			
@@ -132,7 +143,7 @@ namespace basis {
 		}
 
 		auto point_op() const {
-			return point_operator(nr_, rspacing_, cubic_dist_);
+			return point_operator(nr_, rspacing_, cubic_dist_, cell_.metric());
 		}
 		
 	private:

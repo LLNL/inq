@@ -33,17 +33,18 @@ namespace states {
 
 		using element_type = Type;
 		using basis_type = Basis;
+		using kpoint_type = math::vector3<double, math::covariant>;
 
-		orbital_set(Basis const & basis, int const num_vectors, math::vector3<double> const & kpoint, boost::mpi3::cartesian_communicator<2> comm)
+		orbital_set(Basis const & basis, int const num_vectors, kpoint_type const & kpoint, boost::mpi3::cartesian_communicator<2> comm)
 			:fields_(basis, num_vectors, comm),
 			 kpoint_(kpoint){
 		}
 		
 		orbital_set(Basis const & basis, int const num_vectors, boost::mpi3::cartesian_communicator<2> comm)
-		:orbital_set(basis, num_vectors, math::vector3<double>{0.0, 0.0, 0.0}, comm){
+		:orbital_set(basis, num_vectors, kpoint_type{0.0, 0.0, 0.0}, comm){
 		}
 		
-		orbital_set(basis::field_set<Basis, Type> && fields, math::vector3<double> const & kpoint)
+		orbital_set(basis::field_set<Basis, Type> && fields, kpoint_type const & kpoint)
 		:fields_(std::move(fields)),
 			 kpoint_(kpoint){
 		}
@@ -115,7 +116,7 @@ namespace states {
 	private:
 
     basis::field_set<Basis, Type> fields_;
-		math::vector3<double> kpoint_;
+		kpoint_type kpoint_;
 		
   };
 

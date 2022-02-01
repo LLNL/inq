@@ -35,7 +35,7 @@ namespace operations {
 
 
 template <typename FactorType = double>
-void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, math::vector3<double> const & gradcoeff = {0.0, 0.0, 0.0}){
+void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -53,7 +53,7 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FactorType = double>
-void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, FactorType factor = 1.0, math::vector3<double> const & gradcoeff = {0.0, 0.0, 0.0}){
+void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -68,7 +68,7 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, Fac
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FactorType = double>
-basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, math::vector3<double> const & gradcoeff = {0.0, 0.0, 0.0}){
+basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -107,14 +107,6 @@ auto laplacian(basis::field_set<basis::real_space, complex> const & ff, FactorTy
 
 #include <catch2/catch_all.hpp>
 
-auto ff(inq::math::vector3<double> const & kk, inq::math::vector3<double> const & rr){
-	return exp(inq::complex(0.0,1.0)*dot(kk, rr));
-}
-
-auto laplff(inq::math::vector3<double> const & kk, inq::math::vector3<double> const & rr) {
-	return -dot(kk, kk)*ff(kk, rr);
-}
-
 TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
 	using namespace inq;
@@ -141,8 +133,16 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
 	
 		//Define k-vector for test function
-		vector3<double> kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
-
+		auto kvec = 2.0*M_PI*vector3<double, math::covariant>(1.0/lx, 1.0/ly, 1.0/lz);
+		
+		auto ff = [] (auto & kk, auto & rr){
+			return exp(inq::complex(0.0,1.0)*dot(kk, rr));
+		};
+		
+		auto laplff = [cell = rs.cell(), ff] (auto & kk, auto & rr) {
+			return -cell.metric().norm(kk)*ff(kk, rr);
+		};
+		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){

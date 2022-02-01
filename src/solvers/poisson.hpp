@@ -313,7 +313,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 						density.cubic()[ix][iy][iz] = 0.0;
-						if(norm(rs.point_op().rvector(ix, iy, iz)) < 1e-10) density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
+						if(rs.point_op().r2(ix, iy, iz) < 1e-10) density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
 					}
 				}
 			}
@@ -330,7 +330,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						auto iyg = rs.cubic_dist(1).local_to_global(iy);
 						auto izg = rs.cubic_dist(2).local_to_global(iz);
 
-						auto rr = rs.point_op().rvector(ixg, iyg, izg).length();
+						auto rr = rs.point_op().rlength(ixg, iyg, izg);
 
 						// it should be close to -1/r
 						if(rr > 1) CHECK(fabs(potential.cubic()[ix][iy][iz]*rr + 1.0) < 0.025);

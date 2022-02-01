@@ -184,6 +184,10 @@ namespace basis {
 		auto & double_grid() const {
 			return double_grid_;
 		}
+
+		auto & cell() const {
+			return cell_;
+		}		
 		
 	protected:
 

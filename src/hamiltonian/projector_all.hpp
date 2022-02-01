@@ -108,8 +108,9 @@ public:
 	projector_all(ProjectorsType const & projectors){
 		constructor(projectors);
 	}
-  
-	math::array<complex, 3> project(basis::field_set<basis::real_space, complex> const & phi, math::vector3<double> const & kpoint) const {
+
+	template <typename KpointType>
+	math::array<complex, 3> project(basis::field_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
     
 		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
@@ -227,8 +228,8 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////		
 
-	template <typename SpherePhiType>
-	void apply(SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi, math::vector3<double> const & kpoint) const {
+	template <typename SpherePhiType, typename KpointType>
+	void apply(SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -249,7 +250,7 @@ private:
 	long max_sphere_size_;
 	int max_nlm_;
 	math::array<math::vector3<int>, 2> points_;
-	math::array<math::vector3<double>, 2> positions_;
+	math::array<math::vector3<double, math::contravariant>, 2> positions_;
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
 	mutable boost::multi::array<boost::mpi3::communicator, 1> comms_;	

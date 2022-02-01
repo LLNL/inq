@@ -39,7 +39,7 @@ namespace inq {
 namespace ions {
 
   class UnitCell{
-	using vector_type = math::vector3<double>;
+		using vector_type = math::vector3<double>;
   private:
     vector_type a_[3];
     vector_type b_[3];
@@ -60,7 +60,7 @@ namespace ions {
 		int periodic_dimensions_;
 		
   public:
-
+		
 		enum class error { WRONG_LATTICE };
 
     void set(const vector_type& a0, const vector_type& a1, const vector_type& a2, int arg_periodic_dimensions = 3){
@@ -210,7 +210,7 @@ namespace ions {
 		self.info(os);
 		return os;
 	}
-    
+
     const double* amat() const { return &amat_[0]; }
     const double* bmat() const { return &bmat_[0]; }
     const double* amat_inv() const { return &amat_inv_[0]; }
@@ -568,6 +568,46 @@ namespace ions {
 				if(crystal_pos[idir] >= 0.5) crystal_pos[idir] -= 1.0;
 			}
 			return crystal_to_cart(crystal_pos);
+		}
+		
+		class cell_metric {
+
+		public:
+			
+			template <class Type1, class Space1, class Type2, class Space2>
+			GPU_FUNCTION auto dot(math::vector3<Type1, Space1> const & vv1, math::vector3<Type2, Space2> const & vv2) const {
+				return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];
+			}
+			
+			template <class Type, class Space>
+			GPU_FUNCTION auto norm(math::vector3<Type, Space> const & vv) const {
+				return real(dot(vv, vv));
+			}
+
+			template <class Type, class Space>
+			GPU_FUNCTION auto length(math::vector3<Type, Space> const & vv) const {
+				return sqrt(norm(vv));
+			}
+
+			template <class Type, class Space>
+			GPU_FUNCTION auto to_covariant(math::vector3<Type, Space> const & vv) const {
+				return math::vector3<Type, math::covariant>{vv[0], vv[1], vv[2]};
+			}
+
+			template <class Type, class Space>
+			GPU_FUNCTION auto to_contravariant(math::vector3<Type, Space> const & vv) const {
+				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
+			}
+			
+			template <class Type, class Space>
+			GPU_FUNCTION auto to_cartesian(math::vector3<Type, Space> const & vv) const {
+				return math::vector3<Type, math::cartesian>{vv[0], vv[1], vv[2]};
+			}
+			
+		};
+
+		auto metric() const {
+			return cell_metric{};
 		}
 		
   };
