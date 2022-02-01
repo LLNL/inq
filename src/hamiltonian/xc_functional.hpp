@@ -78,8 +78,8 @@ namespace hamiltonian {
 			basis::field<basis::real_space, double> sigma(vxc.basis());
 
 			gpu::run(vxc.basis().local_size(),
-							 [sig = begin(sigma.linear()), grad = begin(grad_real.linear())] GPU_LAMBDA (auto ip){
-								 sig[ip] = norm(grad[ip]);
+							 [sig = begin(sigma.linear()), grad = begin(grad_real.linear()), metric = density.basis().cell().metric()] GPU_LAMBDA (auto ip){
+								 sig[ip] = metric.norm(grad[ip]);
 							 });
 
 			basis::field<basis::real_space, double> vsigma(vxc.basis());
