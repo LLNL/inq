@@ -144,11 +144,10 @@ namespace hamiltonian {
 										sph = sphere.ref(),
 										spline = ps.short_range_potential().cbegin(),
 										dg = basis.double_grid().ref(),
-										spac = basis.rspacing()] GPU_LAMBDA (auto ipoint){
+										spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint){
 										 gpu::atomic::add(&pot[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]],
-																			dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(length(pos)); }, spac, sph.point_pos(ipoint)));
+																			dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(length(pos)); }, spac, metric.to_cartesian(sph.point_pos(ipoint))));
 									 });
-				
 				}
 			}
 			

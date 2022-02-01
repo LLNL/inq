@@ -68,7 +68,7 @@ namespace basis {
 		struct point_data {
 			math::vector3<int> coords_;
 			float distance_; //I don't think we need additional precision for this, and we get aligned memory
-			math::vector3<double> relative_pos_;
+			math::vector3<double, math::contravariant> relative_pos_;
 
 			GPU_FUNCTION friend auto operator<(point_data const & aa, point_data const & bb){
 				if(aa.coords_[0] < bb.coords_[0]) return true;
@@ -122,7 +122,7 @@ namespace basis {
 				assert(std::get<2>(sizes(buffer)) == cubesize[2]);
 
 				gpu::run((hi[2] - lo[2]), (hi[1] - lo[1]), (hi[0] - lo[0]),
-								 [lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 [lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius, metric = parent_grid.cell().metric()] GPU_LAMBDA (auto iz, auto iy, auto ix){
 									 
 									 buf[ix][iy][iz].coords_ = local_sizes;
 									 buf[ix][iy][iz].distance_ = -1.0;
@@ -141,14 +141,14 @@ namespace basis {
 									 if(iyl < 0 or iyl >= local_sizes[1]) return;
 									 if(izl < 0 or izl >= local_sizes[2]) return;
 									 
-									 auto rpoint = point_op.rvector(ii0, ii1, ii2);
+									 auto rpoint = metric.to_cartesian(point_op.rvector(ii0, ii1, ii2));
 									 
 									 auto n2 = norm(rpoint - re);
 									 if(n2 > radius*radius) return;
 									 
 									 buf[ix][iy][iz].coords_ = {ixl, iyl, izl};
 									 buf[ix][iy][iz].distance_ = sqrt(n2);
-									 buf[ix][iy][iz].relative_pos_ = rpoint - re;
+									 buf[ix][iy][iz].relative_pos_ = metric.to_contravariant(rpoint - re);
 								 });
 				
 				upper_count += upper_local;

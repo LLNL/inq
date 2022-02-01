@@ -79,7 +79,7 @@ namespace hamiltonian {
 			
     }
 		
-		void add_coord(math::vector3<double> const & coord){
+		void add_coord(math::vector3<double, math::contravariant> const & coord){
 			coords_.push_back(coord);
 		}
 
@@ -147,7 +147,7 @@ namespace hamiltonian {
     int nproj_;
 		math::array<double, 1> kb_coeff_;
     basis::field_set<basis::fourier_space, complex> beta_;
-		std::vector<math::vector3<double>> coords_;
+		std::vector<math::vector3<double, math::contravariant>> coords_;
 		
   };
   

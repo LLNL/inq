@@ -38,12 +38,11 @@ math::vector3<double> dipole(basis::field<basis::real_space, double> const & den
 	CALI_CXX_MARK_FUNCTION;
 	
 	math::vector3<double> dip = {0.0, 0.0, 0.0};
-	
-	//DATAOPERATIONS LOOP 3D
+
 	for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
 		for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
 			for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
-				dip += density.cubic()[ix][iy][iz]*density.basis().point_op().rvector(ix, iy, iz);
+				dip += density.cubic()[ix][iy][iz]*density.basis().point_op().rvector_cartesian(ix, iy, iz);
 			}
 		}
 	}
@@ -104,7 +103,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 			for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
 					
-					auto rr = density.basis().point_op().rvector(ix, iy, iz);
+					auto rr = density.basis().point_op().rvector_cartesian(ix, iy, iz);
 					density.cubic()[ix][iy][iz] = rr[0]*exp(-norm(rr));
 						
 				}
@@ -124,7 +123,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 			for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
 					
-					auto rr = density.basis().point_op().rvector(ix, iy, iz);
+					auto rr = density.basis().point_op().rvector_cartesian(ix, iy, iz);
 					density.cubic()[ix][iy][iz] = (rr[1] + 2.0*rr[2])*exp(-norm(rr));
 						
 				}
@@ -144,7 +143,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 			for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < density.basis().local_sizes()[2]; iz++){
 					
-					auto rr = density.basis().point_op().rvector(ix, iy, iz);
+					auto rr = density.basis().point_op().rvector_cartesian(ix, iy, iz);
 					density.cubic()[ix][iy][iz] = (sin(rr[1]) + rr[0]*rr[2])*exp(-norm(rr));
 						
 				}

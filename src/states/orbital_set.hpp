@@ -33,7 +33,7 @@ namespace states {
 
 		using element_type = Type;
 		using basis_type = Basis;
-		using kpoint_type = math::vector3<double, math::cartesian>;
+		using kpoint_type = math::vector3<double, math::covariant>;
 
 		orbital_set(Basis const & basis, int const num_vectors, kpoint_type const & kpoint, boost::mpi3::cartesian_communicator<2> comm)
 			:fields_(basis, num_vectors, comm),

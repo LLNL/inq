@@ -155,42 +155,42 @@ namespace hamiltonian {
 #include <iomanip>
 #include <fstream>
 
-	auto sqwave(inq::math::vector3<double> rr, int n){
-		inq::math::vector3<double> kvec = 2.0 * M_PI * inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
-		return  sin(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
-	}
+auto sqwave(inq::math::vector3<double> rr, int n){
+	auto kvec = 2.0*M_PI*inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
+	return  sin(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
+}
 
-	auto laplacian_sqwave(inq::math::vector3<double> rr, int n){
-		inq::math::vector3<double> kvec = 2.0 * M_PI * inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
-		auto ff = 0.0;
-		for(int idir = 0; idir < 3 ; idir++) ff += 2*n*n*kvec[idir]*kvec[idir]*cos(2*n*dot(kvec, rr));
-		return ff;
-	}
+auto laplacian_sqwave(inq::math::vector3<double> rr, int n){
+	auto kvec = 2.0*M_PI*inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
+	auto ff = 0.0;
+	for(int idir = 0; idir < 3 ; idir++) ff += 2*n*n*kvec[idir]*kvec[idir]*cos(2*n*dot(kvec, rr));
+	return ff;
+}
 
-	auto gradient_sqwave(inq::math::vector3<double> rr, int n){
-		inq::math::vector3<double> kvec = 2.0 * M_PI * inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
-		inq::math::vector3<double> ff;
-		for(int idir = 0; idir < 3 ; idir++) ff[idir] = 2*n*kvec[idir]*cos(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
-		return ff;
-	}
+auto gradient_sqwave(inq::math::vector3<double> rr, int n){
+	auto kvec = 2.0*M_PI*inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
+	inq::math::vector3<double> ff;
+	for(int idir = 0; idir < 3 ; idir++) ff[idir] = 2*n*kvec[idir]*cos(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
+	return ff;
+}
 
-	auto gaussiansigma(inq::math::vector3<double> rr, double sigma){
-		return  pow(2*M_PI, -1.5)*pow(sigma, -3.0)*exp(-0.5*norm(rr)*pow(sigma, -2.0));
-	}
-	
-	auto gaussian(inq::math::vector3<double> rr){  // sigma = 1/sqrt(2)
-		return  pow(M_PI, -1.5)*exp(-norm(rr));
-	}
+auto gaussiansigma(inq::math::vector3<double> rr, double sigma){
+	return  pow(2*M_PI, -1.5)*pow(sigma, -3.0)*exp(-0.5*norm(rr)*pow(sigma, -2.0));
+}
 
-	auto dgaussian(inq::math::vector3<double> rr){
-		inq::math::vector3<double> ff;
-		for(int idir = 0; idir < 3 ; idir++) ff[idir] = -2.0*rr[idir]*gaussian(rr);
-		return ff;
-	}
+auto gaussian(inq::math::vector3<double> rr){  // sigma = 1/sqrt(2)
+	return  pow(M_PI, -1.5)*exp(-norm(rr));
+}
 
-	auto laplacian_gaussian(inq::math::vector3<double> rr){
-		return 4.0*dot(rr, rr)*gaussian(rr) - 6.0*gaussian(rr);
-	}
+auto dgaussian(inq::math::vector3<double> rr){
+	inq::math::vector3<double> ff;
+	for(int idir = 0; idir < 3 ; idir++) ff[idir] = -2.0*rr[idir]*gaussian(rr);
+	return ff;
+}
+
+auto laplacian_gaussian(inq::math::vector3<double> rr){
+	return 4.0*dot(rr, rr)*gaussian(rr) - 6.0*gaussian(rr);
+}
 
 TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]") {
 
@@ -218,7 +218,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					gaussian_field.cubic()[ix][iy][iz] = gaussian(vec);
 				}
 			}
@@ -235,7 +235,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					math::array<double, 1> local_density{gaussian(vec)};
 					math::array<double, 1> local_exc{1};
 					math::array<double, 1> local_vxc{1};
@@ -268,7 +268,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					field.cubic()[ix][iy][iz] = sqwave(vec, 3);
 				}
 			}
@@ -297,7 +297,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					if(rs.cubic_dist(1).local_to_global(iy).value()%2 == 1) continue;
 					if(rs.cubic_dist(2).local_to_global(iz).value()%2 == 1) continue;
 					
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					math::array_nopre<double, 1> data(5);
 					data[0] = sqwave(vec, 3);
 					data[1] = dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3));

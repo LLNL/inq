@@ -59,24 +59,25 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, math::vector3<double> const & gspacing, math::vector3<double> const & glength, std::array<inq::utils::partition, 3> const & dist):
+			point_operator(std::array<int, 3> const & ng, math::vector3<double> const & gspacing, math::vector3<double> const & glength, std::array<inq::utils::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
 				glength_(glength),
-				cubic_dist_(dist)
+				cubic_dist_(dist),
+				metric_(metric)
 			{
 			}
 
-			GPU_FUNCTION math::vector3<double> gvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+			GPU_FUNCTION auto gvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
 				
 				//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 				//grid from -pi/h to pi/h
 				
 				auto ii = to_symmetric_range(ng_, ix, iy, iz);
-				return math::vector3<double>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
+				return math::vector3<double, math::covariant>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
 			}
 
-			GPU_FUNCTION math::vector3<double> gvector(int ix, int iy, int iz) const {
+			GPU_FUNCTION auto gvector(int ix, int iy, int iz) const {
 				auto ixg = cubic_dist_[0].local_to_global(ix);
 				auto iyg = cubic_dist_[1].local_to_global(iy);
 				auto izg = cubic_dist_[2].local_to_global(iz);
@@ -113,11 +114,11 @@ namespace basis {
 			}
 			
 			GPU_FUNCTION double g2(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
-				return norm(gvector(ix, iy, iz));
+				return metric_.norm(gvector(ix, iy, iz));
 			}
 			
 			GPU_FUNCTION double g2(int ix, int iy, int iz) const {
-				return norm(gvector(ix, iy, iz));
+				return metric_.norm(gvector(ix, iy, iz));
 			}
 			
 		private:
@@ -126,11 +127,12 @@ namespace basis {
 			math::vector3<double> gspacing_;
 			math::vector3<double> glength_;
 			std::array<inq::utils::partition, 3> cubic_dist_;
+			ions::UnitCell::cell_metric metric_;
 			
 		};
 
 		auto point_op() const {
-			return point_operator(ng_, gspacing_, glength_, cubic_dist_);
+			return point_operator(ng_, gspacing_, glength_, cubic_dist_, cell_.metric());
 		}
 		
 	private:

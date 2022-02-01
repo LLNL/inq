@@ -250,7 +250,7 @@ private:
 	long max_sphere_size_;
 	int max_nlm_;
 	math::array<math::vector3<int>, 2> points_;
-	math::array<math::vector3<double>, 2> positions_;
+	math::array<math::vector3<double, math::contravariant>, 2> positions_;
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
 	mutable boost::multi::array<boost::mpi3::communicator, 1> comms_;	

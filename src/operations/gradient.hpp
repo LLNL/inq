@@ -143,22 +143,22 @@ auto gradient(states::orbital_set<basis::real_space, complex> const & ff){
 #include <catch2/catch_all.hpp>
 #include <math/vector3.hpp>
 
-auto f_analytic (inq::math::vector3<double> kk, inq::math::vector3<double> rr){
+auto f_analytic(inq::math::vector3<double, inq::math::covariant> kk, inq::math::vector3<double, inq::math::contravariant> rr){
 	return exp(inq::complex(0.0,1.0)*dot(kk, rr));
 }
 
-auto g_analytic (inq::math::vector3<double> kk , inq::math::vector3<double> rr) {
+auto g_analytic(inq::math::vector3<double, inq::math::covariant> kk, inq::math::vector3<double, inq::math::contravariant> rr) {
 	inq::math::vector3<inq::complex> gg;
 	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0, 1.0)*dot(kk, rr));
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = factor*kk[idir] ;
 	return gg;
 }
 
-auto f_analytic2 (inq::math::vector3<double> kk, inq::math::vector3<double> rr){
+auto f_analytic2(inq::math::vector3<double, inq::math::covariant> kk, inq::math::vector3<double, inq::math::contravariant> rr){
 	return sin(dot(kk, rr));
 }
 
-auto g_analytic2 (inq::math::vector3<double> kk , inq::math::vector3<double> rr) {
+auto g_analytic2(inq::math::vector3<double, inq::math::covariant> kk , inq::math::vector3<double, inq::math::contravariant> rr) {
 	inq::math::vector3<double> gg;
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(dot(kk, rr));
 	return gg;
@@ -182,15 +182,14 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	double lz = 10;
 	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);	
 
+	auto kvec = 2.0*M_PI*vector3<double, math::covariant>(1.0/lx, 1.0/ly, 1.0/lz);
+	
 	SECTION("Plane-wave -- field"){ 
 
 		basis::real_space rs(box, cart_comm);
 	
 		basis::field<basis::real_space, complex> f_test(rs);
 	
-		//Define k-vector for test function
-		vector3<double> kvec = 2.0 * M_PI * vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
-
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
@@ -223,9 +222,6 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		
 		basis::field_set<basis::real_space, complex> f_test(rs, 13, cart_comm);
 	
-		//Define k-vector for test function
-		vector3<double> kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
-
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
@@ -262,9 +258,6 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		
 		states::orbital_set<basis::real_space, complex> f_test(rs, 13, {0.0, 0.0, 0.0}, cart_comm);
 	
-		//Define k-vector for test function
-		vector3<double> kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
-
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
@@ -301,8 +294,6 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		
 		basis::field<basis::real_space, double> f_test2(rs);
 	
-		vector3<double> kvec = 2.0 * M_PI * vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
-
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
