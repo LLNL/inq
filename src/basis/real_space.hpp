@@ -105,6 +105,10 @@ namespace basis {
 			GPU_FUNCTION auto & cubic_dist() const {
 				return cubic_dist_;
 			}
+
+			GPU_FUNCTION auto & metric() const {
+				return metric_;
+			}				
 			
 		private:
 			
