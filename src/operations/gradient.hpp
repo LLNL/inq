@@ -40,7 +40,7 @@ basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad
 						 GPU_LAMBDA (auto iz, auto iy, auto ix){
 
 							 auto gvec = point_op.gvector(ix, iy, iz);
-							 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ffcub[ix][iy][iz];
+							 gradcub[ix][iy][iz] = complex(0.0, 1.0)*gvec*ffcub[ix][iy][iz];
 						 });
 
 		return grad;
@@ -58,7 +58,7 @@ basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad
 						 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 							 
 							 auto gvec = point_op.gvector(ix, iy, iz);
-							 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*gvec[idir]*ffcub[ix][iy][iz][ist];
+							 gradcub[ix][iy][iz][ist] = complex(0.0, 1.0)*gvec*ffcub[ix][iy][iz][ist];
 						 });
 
 		return grad;
@@ -76,7 +76,7 @@ states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 
 						 auto gvec = point_op.gvector(ix, iy, iz);
-						 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*(gvec[idir] + kpt[idir])*ffcub[ix][iy][iz][ist];
+						 gradcub[ix][iy][iz][ist] = complex(0.0, 1.0)*(gvec + kpt)*ffcub[ix][iy][iz][ist];
 					 });
 	
 	return grad;
