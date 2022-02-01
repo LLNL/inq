@@ -30,8 +30,8 @@
 namespace inq {
 namespace operations {
 
-	basis::field<basis::fourier_space, math::vector3<complex>> gradient(basis::field<basis::fourier_space, complex> const & ff){
-		basis::field<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
+basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(basis::field<basis::fourier_space, complex> const & ff){
+		basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
 
 		CALI_CXX_MARK_SCOPE("gradient_fourier(field)");
  
@@ -48,8 +48,8 @@ namespace operations {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	basis::field_set<basis::fourier_space, math::vector3<complex>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
-		basis::field_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
+	basis::field_set<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
+		basis::field_set<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
 
 		CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
@@ -66,8 +66,8 @@ namespace operations {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-states::orbital_set<basis::fourier_space, math::vector3<complex>> gradient(states::orbital_set<basis::fourier_space, complex> const & ff){
-	states::orbital_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
+states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(states::orbital_set<basis::fourier_space, complex> const & ff){
+	states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
 
 	CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
