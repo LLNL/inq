@@ -170,8 +170,9 @@ field<basis::real_space, complex> complex_field(field<basis::real_space, double>
 	return cfield;
 }
 
-field<basis::real_space, math::vector3<inq::complex>> complex_field(field<basis::real_space, math::vector3<double>> const & rfield) {
-	field<basis::real_space, math::vector3<inq::complex>> cfield(rfield.skeleton());
+template <class VectorSpace>
+field<basis::real_space, math::vector3<inq::complex, VectorSpace>> complex_field(field<basis::real_space, math::vector3<double, VectorSpace>> const & rfield) {
+	field<basis::real_space, math::vector3<inq::complex, VectorSpace>> cfield(rfield.skeleton());
 	
 	gpu::run(3, rfield.basis().part().local_size(),
 					 [cp = begin(cfield.linear()), rp = begin(rfield.linear())] GPU_LAMBDA (auto idir, auto ip){
@@ -187,8 +188,9 @@ field<basis::real_space, double> real_field(field<basis::real_space, complex> co
 	return rfield;
 }
 
-field<basis::real_space, math::vector3<double>> real_field(field<basis::real_space, math::vector3<complex>> const & cfield) {
-	field<basis::real_space, math::vector3<double>> rfield(cfield.skeleton());		
+template <class VectorSpace>
+field<basis::real_space, math::vector3<double, VectorSpace>> real_field(field<basis::real_space, math::vector3<complex, VectorSpace>> const & cfield) {
+	field<basis::real_space, math::vector3<double, VectorSpace>> rfield(cfield.skeleton());		
 	
 	//DATAOPERATIONS GPU::RUN 1D
 	gpu::run(3, cfield.basis().part().local_size(),
