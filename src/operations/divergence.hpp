@@ -30,7 +30,8 @@
 namespace inq {
 namespace operations {
 
-basis::field<basis::fourier_space, complex> divergence(basis::field<basis::fourier_space, math::vector3<complex>> const & ff){ // Divergence function for the field-set type defined in the Fourier space which return a filed 'diverg'
+template <typename VectorSpace>
+basis::field<basis::fourier_space, complex> divergence(basis::field<basis::fourier_space, math::vector3<complex, VectorSpace>> const & ff){
 	
 	basis::field<basis::fourier_space, complex> diverg(ff.basis());
 
@@ -38,23 +39,22 @@ basis::field<basis::fourier_space, complex> divergence(basis::field<basis::fouri
 					 [point_op = ff.basis().point_op(), divergcub = begin(diverg.cubic()), ffcub = begin(ff.cubic())]
 					 GPU_LAMBDA (auto iz, auto iy, auto ix){
 
-						 auto gvec = point_op.gvector(ix, iy, iz);
-						 complex div = 0.0;
-						 for(int idir = 0; idir < 3 ; idir++) div += complex(0.0, 1.0)*gvec[idir]*ffcub[ix][iy][iz][idir]; 
-						 divergcub[ix][iy][iz] = div;
+						 divergcub[ix][iy][iz] = complex(0.0, 1.0)*point_op.metric().dot(point_op.gvector(ix, iy, iz), ffcub[ix][iy][iz]);
 					 });
 	
 	return diverg;
 }
 
-auto divergence(basis::field<basis::real_space, math::vector3<complex>> const & ff){
+template <typename VectorSpace>
+auto divergence(basis::field<basis::real_space, math::vector3<complex, VectorSpace>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(ff); 			
 	auto diverg_fourier = divergence(ff_fourier); 				
 	auto diverg_real = operations::space::to_real(diverg_fourier);
 	return diverg_real;
 }
 
-auto divergence(basis::field<basis::real_space, math::vector3<double>> const & ff){
+template <typename VectorSpace>
+auto divergence(basis::field<basis::real_space, math::vector3<double, VectorSpace>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(complex_field(ff));
 	auto diverg_fourier = divergence(ff_fourier); 
 	auto diverg_real = operations::space::to_real(diverg_fourier);
