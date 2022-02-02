@@ -49,15 +49,15 @@ void calculate_add(const occupations_array_type & occupations, field_set_type & 
 
 ///////////////////////////////////////////////////////////////
 
-template<class occupations_array_type, class field_set_type, class vector_field_set_type>
-void calculate_gradient_add(const occupations_array_type & occupations, field_set_type const & phi, vector_field_set_type const & gphi, basis::field<typename vector_field_set_type::basis_type, math::vector3<double>> & gdensity){
+template<class occupations_array_type, class field_set_type, class vector_field_set_type, typename VectorSpace>
+void calculate_gradient_add(const occupations_array_type & occupations, field_set_type const & phi, vector_field_set_type const & gphi, basis::field<typename vector_field_set_type::basis_type, math::vector3<double, VectorSpace>> & gdensity){
 
 	CALI_CXX_MARK_SCOPE("density::calculate_gradient");
  
-	gpu::run(3, phi.basis().part().local_size(),
+	gpu::run(phi.basis().part().local_size(),
 					 [nst = phi.set_part().local_size(), occs = begin(occupations),
-            phip = begin(phi.matrix()), gphip = begin(gphi.matrix()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto idir, auto ip){
-						 for(int ist = 0; ist < nst; ist++) gdensityp[ip][idir] += occs[ist]*real(conj(gphip[ip][ist][idir])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist][idir]);
+            phip = begin(phi.matrix()), gphip = begin(gphi.matrix()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
+						 for(int ist = 0; ist < nst; ist++) gdensityp[ip] += occs[ist]*real(conj(gphip[ip][ist])*phip[ip][ist] + conj(phip[ip][ist])*gphip[ip][ist]);
 					 });
 
 }

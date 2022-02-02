@@ -86,6 +86,10 @@ namespace basis {
 			GPU_FUNCTION auto rvector_cartesian(int ix, int iy, int iz) const {
 				return metric_.to_cartesian(rvector(ix, iy, iz));
 			}
+
+			GPU_FUNCTION auto rvector_cartesian(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+				return metric_.to_cartesian(rvector(ix, iy, iz));
+			}
 			
 			template <class int_array>
 			GPU_FUNCTION auto rvector(const int_array & indices) const {
@@ -105,6 +109,10 @@ namespace basis {
 			GPU_FUNCTION auto & cubic_dist() const {
 				return cubic_dist_;
 			}
+
+			GPU_FUNCTION auto & metric() const {
+				return metric_;
+			}				
 			
 		private:
 			

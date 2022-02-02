@@ -119,9 +119,9 @@ public:
 	};
 		
 	template <class PhiType, typename GPhiType, typename OccsType>
-	math::vector3<double> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
+	math::vector3<double, math::covariant> force(PhiType const & phi, GPhiType const & gphi, OccsType const & occs) const {
 
-		math::vector3<double> force{0.0, 0.0, 0.0};
+		math::vector3<double, math::covariant> force{0.0, 0.0, 0.0};
 
 		if(nproj_ == 0) return force;
 

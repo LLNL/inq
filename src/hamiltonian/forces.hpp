@@ -50,7 +50,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 
 	CALI_CXX_MARK_FUNCTION;
 
-	basis::field<basis::real_space, math::vector3<double>> gdensity(electrons.density_basis_);
+	basis::field<basis::real_space, math::vector3<double, math::covariant>> gdensity(electrons.density_basis_);
 	gdensity = {0.0, 0.0, 0.0};
 
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
@@ -63,7 +63,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	
 		//the non-local potential term
 		for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
-			forces_non_local[proj->iatom()] += proj->force(phi, gphi, electrons.occupations()[iphi]);
+			forces_non_local[proj->iatom()] += ions.cell().metric().to_cartesian(proj->force(phi, gphi, electrons.occupations()[iphi]));
 		}
 		iphi++;
 	}
@@ -92,11 +92,12 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
 			auto ionic_long_range = poisson_solver(electrons.atomic_pot_.ionic_density(electrons.density_basis_, ions.cell(), ions.geo(), iatom));
 			auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.density_basis_, ions.cell(), ions.geo(), iatom);
+
+			auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
+																 loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>
+																 {begin(ionic_long_range.linear()), begin(ionic_short_range.linear()), begin(gdensity.linear())});
 			
-			forces_local[iatom] = -gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
-																			loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>
-																			{begin(ionic_long_range.linear()), begin(ionic_short_range.linear()), begin(gdensity.linear())});
-			forces_local[iatom] *= electrons.density_basis_.volume_element();
+			forces_local[iatom] = electrons.density_basis_.volume_element()*ions.cell().metric().to_cartesian(force_cov);
 		}
 
 		if(electrons.basis_comm_.size() > 1){

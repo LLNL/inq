@@ -30,8 +30,8 @@
 namespace inq {
 namespace operations {
 
-	basis::field<basis::fourier_space, math::vector3<complex>> gradient(basis::field<basis::fourier_space, complex> const & ff){
-		basis::field<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
+basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(basis::field<basis::fourier_space, complex> const & ff){
+		basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
 
 		CALI_CXX_MARK_SCOPE("gradient_fourier(field)");
  
@@ -40,7 +40,7 @@ namespace operations {
 						 GPU_LAMBDA (auto iz, auto iy, auto ix){
 
 							 auto gvec = point_op.gvector(ix, iy, iz);
-							 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][idir] = complex(0.0, 1.0)*gvec[idir]*ffcub[ix][iy][iz];
+							 gradcub[ix][iy][iz] = complex(0.0, 1.0)*gvec*ffcub[ix][iy][iz];
 						 });
 
 		return grad;
@@ -48,8 +48,8 @@ namespace operations {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	basis::field_set<basis::fourier_space, math::vector3<complex>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
-		basis::field_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
+	basis::field_set<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
+		basis::field_set<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
 
 		CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
@@ -58,7 +58,7 @@ namespace operations {
 						 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 							 
 							 auto gvec = point_op.gvector(ix, iy, iz);
-							 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*gvec[idir]*ffcub[ix][iy][iz][ist];
+							 gradcub[ix][iy][iz][ist] = complex(0.0, 1.0)*gvec*ffcub[ix][iy][iz][ist];
 						 });
 
 		return grad;
@@ -66,8 +66,8 @@ namespace operations {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-states::orbital_set<basis::fourier_space, math::vector3<complex>> gradient(states::orbital_set<basis::fourier_space, complex> const & ff){
-	states::orbital_set<basis::fourier_space, math::vector3<complex>> grad(ff.skeleton());
+states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(states::orbital_set<basis::fourier_space, complex> const & ff){
+	states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
 
 	CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
@@ -76,7 +76,7 @@ states::orbital_set<basis::fourier_space, math::vector3<complex>> gradient(state
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 
 						 auto gvec = point_op.gvector(ix, iy, iz);
-						 for(int idir = 0; idir < 3; idir++) gradcub[ix][iy][iz][ist][idir] = complex(0.0, 1.0)*(gvec[idir] + kpt[idir])*ffcub[ix][iy][iz][ist];
+						 gradcub[ix][iy][iz][ist] = complex(0.0, 1.0)*(gvec + kpt)*ffcub[ix][iy][iz][ist];
 					 });
 	
 	return grad;

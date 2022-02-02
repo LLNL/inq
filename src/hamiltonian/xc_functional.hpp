@@ -78,8 +78,8 @@ namespace hamiltonian {
 			basis::field<basis::real_space, double> sigma(vxc.basis());
 
 			gpu::run(vxc.basis().local_size(),
-							 [sig = begin(sigma.linear()), grad = begin(grad_real.linear())] GPU_LAMBDA (auto ip){
-								 sig[ip] = norm(grad[ip]);
+							 [sig = begin(sigma.linear()), grad = begin(grad_real.linear()), metric = density.basis().cell().metric()] GPU_LAMBDA (auto ip){
+								 sig[ip] = metric.norm(grad[ip]);
 							 });
 
 			basis::field<basis::real_space, double> vsigma(vxc.basis());
@@ -87,13 +87,11 @@ namespace hamiltonian {
 			xc_gga_exc_vxc(&func_, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
 			gpu::sync();
 					
-			basis::field<basis::real_space, math::vector3<double>> vxc_extra(vxc.basis());
+			basis::field<basis::real_space, math::vector3<double, math::covariant>> vxc_extra(vxc.basis());
 
 			gpu::run(vxc.basis().local_size(),
 							 [vex = begin(vxc_extra.linear()), vsig = begin(vsigma.linear()), grad = begin(grad_real.linear())] GPU_LAMBDA (auto ip){
-								 vex[ip][0] = vsig[ip]*grad[ip][0];
-								 vex[ip][1] = vsig[ip]*grad[ip][1];
-								 vex[ip][2] = vsig[ip]*grad[ip][2];
+								 vex[ip] = vsig[ip]*grad[ip];
 							 });
 
 			auto divvxcextra = operations::divergence(vxc_extra);

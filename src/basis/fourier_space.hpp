@@ -120,7 +120,10 @@ namespace basis {
 			GPU_FUNCTION double g2(int ix, int iy, int iz) const {
 				return metric_.norm(gvector(ix, iy, iz));
 			}
-			
+
+			GPU_FUNCTION auto & metric() const {
+				return metric_;
+			}				
 		private:
 			
 			std::array<int, 3> ng_;
