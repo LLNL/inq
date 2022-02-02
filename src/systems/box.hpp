@@ -53,7 +53,15 @@ public:
 			math::vector3<double>(0.0, 0.0, cc.in_atomic_units())
 		};
 	}
-
+	
+	static box lattice(math::vector3<quantity<magnitude::length>> aa, math::vector3<quantity<magnitude::length>> bb, math::vector3<quantity<magnitude::length>> cc){
+		return {
+			math::vector3<double>(aa[0].in_atomic_units(), aa[1].in_atomic_units(), aa[2].in_atomic_units()), 
+			math::vector3<double>(bb[0].in_atomic_units(), bb[1].in_atomic_units(), bb[2].in_atomic_units()), 
+			math::vector3<double>(cc[0].in_atomic_units(), cc[1].in_atomic_units(), cc[2].in_atomic_units())
+		};
+	}
+	
 	auto & periodic() {
 		periodic_dimensions_ = 3;
 		return *this;
@@ -234,7 +242,24 @@ TEST_CASE("class systems::box", "[systems::box]") {
 		CHECK(ci.spherical_grid_value());
 
 	}
+	
+	SECTION("Non-orthogonal"){
 
+		auto ci = systems::box::lattice({0.0_A, 1.0_A, 1.0_A}, {1.0_A, 0.0_b, 1.0_A}, {1.0_A, 1.0_A, 0.0_A});
+
+		CHECK(ci[0][0] == 0.0_a);
+		CHECK(ci[0][1] == 1.8897261246_a);
+		CHECK(ci[0][2] == 1.8897261246_a);
+		CHECK(ci[1][0] == 1.8897261246_a);
+		CHECK(ci[1][1] == 0.0_a);
+		CHECK(ci[1][2] == 1.8897261246_a);
+		CHECK(ci[2][0] == 1.8897261246_a);
+		CHECK(ci[2][1] == 1.8897261246_a);
+		CHECK(ci[2][2] == 0.0_a);
+		CHECK(ci.periodic_dimensions_value() == 3);
+
+	}
+	
 	SECTION("Equality"){
 
 		auto ci1 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha).spherical_grid(true);
