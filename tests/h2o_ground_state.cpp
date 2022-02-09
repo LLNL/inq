@@ -45,16 +45,14 @@ int main(int argc, char ** argv){
 	
 	inq::utils::match match(3.0e-4);
 
-	std::vector<atom> geo;
-
-	geo.push_back( "O" | vector3<double>( 0.0,      -0.553586, 0.0));
-	geo.push_back( "H" | vector3<double>( 1.429937,  0.553586, 0.0));
-	geo.push_back( "H" | vector3<double>(-1.429937,  0.553586, 0.0));
-
 	inq::systems::box box = box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite().cutoff_energy(30.0_Ha);
 	
-	inq::systems::ions ions(box, geo);
-
+	inq::systems::ions ions(box);
+	
+	ions.insert("O", { 0.0_b,     -0.553586_b, 0.0_b});
+	ions.insert("H", { 1.429937_b, 0.553586_b, 0.0_b});
+	ions.insert("H", {-1.429937_b, 0.553586_b, 0.0_b});
+	
 	config conf;
 
 	inq::systems::electrons electrons(env.par(), ions, box, conf);

@@ -43,15 +43,13 @@ int main(int argc, char ** argv){
 
 	utils::match match(1e-5);
 
-	std::vector<input::atom> geo;
-
-	geo.push_back( "O" | math::vector3<double>( 0.0,      -0.553586, 0.0));
-	geo.push_back( "H" | math::vector3<double>( 1.429937,  0.553586, 0.0));
-	geo.push_back( "H" | math::vector3<double>(-1.429937,  0.553586, 0.0));
-
 	auto box = systems::box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite().cutoff_energy(30.0_Ha);
 	
-	systems::ions ions(box, geo);
+	systems::ions ions(box);
+	
+	ions.insert("O", { 0.0_b,     -0.553586_b, 0.0_b});
+	ions.insert("H", { 1.429937_b, 0.553586_b, 0.0_b});
+	ions.insert("H", {-1.429937_b, 0.553586_b, 0.0_b});
 
 	input::config conf;
 

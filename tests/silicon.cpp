@@ -40,21 +40,21 @@ int main(int argc, char ** argv){
 
 	std::vector<input::atom> geo;
 
-	double a = 10.18;
-	
-	geo.push_back( "Si" | a*math::vector3<double>(0.0,  0.0,  0.0 ));
-	geo.push_back( "Si" | a*math::vector3<double>(0.25, 0.25, 0.25));
-	geo.push_back( "Si" | a*math::vector3<double>(0.5,  0.5,  0.0 ));
-	geo.push_back( "Si" | a*math::vector3<double>(0.75, 0.75, 0.25));
-	geo.push_back( "Si" | a*math::vector3<double>(0.5,  0.0,  0.5 ));
-	geo.push_back( "Si" | a*math::vector3<double>(0.75, 0.25, 0.75));
-	geo.push_back( "Si" | a*math::vector3<double>(0.0,  0.5,  0.5 ));
-	geo.push_back( "Si" | a*math::vector3<double>(0.25, 0.75, 0.75));
+	auto a = 10.18_b;
 
-	auto box = systems::box::cubic(a*1.0_b).cutoff_energy(25.0_Ha);
+	auto box = systems::box::cubic(a).cutoff_energy(25.0_Ha);
 	
-	systems::ions ions(box, geo);
+	systems::ions ions(box);
 	
+	ions.insert("Si", a*math::vector3<double>(0.0,  0.0,  0.0 ));
+	ions.insert("Si", a*math::vector3<double>(0.25, 0.25, 0.25));
+	ions.insert("Si", a*math::vector3<double>(0.5,  0.5,  0.0 ));
+	ions.insert("Si", a*math::vector3<double>(0.75, 0.75, 0.25));
+	ions.insert("Si", a*math::vector3<double>(0.5,  0.0,  0.5 ));
+	ions.insert("Si", a*math::vector3<double>(0.75, 0.25, 0.75));
+	ions.insert("Si", a*math::vector3<double>(0.0,  0.5,  0.5 ));
+	ions.insert("Si", a*math::vector3<double>(0.25, 0.75, 0.75));
+
 	input::config conf;
 	
 	conf.extra_states = 0;

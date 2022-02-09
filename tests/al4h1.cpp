@@ -29,18 +29,16 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(1.0e-5);
 
-	double alat = 7.6524459;
+	auto alat = 7.6524459_bohr;
 	
-	std::vector<input::atom> cell;
+	systems::box box = systems::box::orthorhombic(alat, alat, alat).cutoff_energy(30.0_Ha);
+	systems::ions ions(box);
 
-	cell.push_back( "Al" | alat*math::vector3<double>(0.0, 0.0, 0.0));
-	cell.push_back( "Al" | alat*math::vector3<double>(0.0, 0.5, 0.5));
-	cell.push_back( "Al" | alat*math::vector3<double>(0.5, 0.0, 0.5));
-	cell.push_back( "Al" | alat*math::vector3<double>(0.5, 0.5, 0.0));	
-	cell.push_back( "H"  | alat*math::vector3<double>(0.1, 0.2, 0.3));
-	
-	systems::box box = systems::box::orthorhombic(alat*1.0_b, alat*1.0_b, alat*1.0_b).cutoff_energy(30.0_Ha);
-	systems::ions ions(box, cell);
+	ions.insert("Al", alat*math::vector3<double>(0.0, 0.0, 0.0));
+	ions.insert("Al", alat*math::vector3<double>(0.0, 0.5, 0.5));
+	ions.insert("Al", alat*math::vector3<double>(0.5, 0.0, 0.5));
+	ions.insert("Al", alat*math::vector3<double>(0.5, 0.5, 0.0));	
+	ions.insert("H",  alat*math::vector3<double>(0.1, 0.2, 0.3));
 	
 	input::config conf;
 
