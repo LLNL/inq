@@ -22,6 +22,7 @@
 */
 
 #include <gpu/run.hpp>
+#include <math/vector3.hpp>
 
 namespace inq {
 
@@ -46,7 +47,7 @@ namespace inq {
 		GPU_FUNCTION auto in_atomic_units() const {
 			return value_;
 		}
-
+		
 		GPU_FUNCTION auto operator*=(double scal){
 			value_ *= scal;
 			return *this;
@@ -117,6 +118,24 @@ namespace inq {
 		
 	};
 
+template <class MagnitudeType>
+GPU_FUNCTION auto in_atomic_units(quantity<MagnitudeType> const & qua) {
+	return qua.in_atomic_units();
+}
+
+GPU_FUNCTION auto in_atomic_units(double const & value) {
+	return value;
+}
+
+GPU_FUNCTION auto in_atomic_units(math::vector3<double> const & value) {
+	return value;
+}
+
+template <typename MagnitudeType>
+GPU_FUNCTION auto in_atomic_units(math::vector3<MagnitudeType> const & quant) {
+	return math::vector3<double>{quant[0].in_atomic_units(), quant[1].in_atomic_units(), quant[2].in_atomic_units()};
+}
+
 template <class MagnitudeType, class ElementType = double>
 class autocast_quantity : public quantity<MagnitudeType, ElementType>{
 
@@ -181,6 +200,14 @@ TEST_CASE("inq::quantity", "[inq::quantity]") {
 	
 	auto rr4 = rr - rr;
 	CHECK(rr4.in_atomic_units() == 0.0_a);
+
+	CHECK(in_atomic_units(rr4) == 0.0_a);
+	
+	CHECK(in_atomic_units(10.0) == 10.0_a);
+
+	CHECK(in_atomic_units({10.0, -2.1, 4.6}) == math::vector3<double>{10.0, -2.1, 4.6});
+
+	CHECK(in_atomic_units(math::vector3{rr, rr, rr}) == math::vector3<double>{127.5, 127.5, 127.5});
 	
 }
 
