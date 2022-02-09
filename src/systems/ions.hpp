@@ -26,7 +26,6 @@ public:
 	{
 	}
 
-
 	auto symmetry_string() const{
 		
 		char symbol[11];
@@ -57,6 +56,14 @@ public:
 		return cell_;
 	}
 
+	auto insert(std::string const & symbol, math::vector3<quantity<magnitude::length>> const & pos){
+		geo_.add_atom(input::species(pseudo::element(symbol)), pos);
+	}
+	
+	auto insert(input::species const & sp, math::vector3<quantity<magnitude::length>> const & pos){
+		geo_.add_atom(sp, pos);
+	}
+	
 	inq::ions::UnitCell cell_;
 	inq::ions::geometry geo_;
 	
