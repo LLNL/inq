@@ -29,38 +29,36 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(4.0e-6);
 
-	double alat = 7.6524459;
+	auto alat = 7.6524459_bohr;
 	
-	std::vector<input::atom> cell;
+	std::vector<math::vector3<double>> cell;
 
-	cell.push_back( "Al" | alat*math::vector3<double>(0.0, 0.0, 0.0));
-	cell.push_back( "Al" | alat*math::vector3<double>(0.0, 0.5, 0.5));
-	cell.push_back( "Al" | alat*math::vector3<double>(0.5, 0.0, 0.5));
-	cell.push_back( "Al" | alat*math::vector3<double>(0.5, 0.5, 0.0));	
+	cell.push_back(math::vector3<double>(0.0, 0.0, 0.0));
+	cell.push_back(math::vector3<double>(0.0, 0.5, 0.5));
+	cell.push_back(math::vector3<double>(0.5, 0.0, 0.5));
+	cell.push_back(math::vector3<double>(0.5, 0.5, 0.0));
 
 	int repx = 2;
 	int repy = 2;
 	int repz = 2;
 
-	std::vector<input::atom> supercell;
-
+	systems::box box = systems::box::orthorhombic(repx*alat, repy*alat, repz*alat).cutoff_energy(30.0_Ha);
+	
+	systems::ions ions(box);
+	
 	for(int ix = 0; ix < repx; ix++){
 		for(int iy = 0; iy < repy; iy++){
 			for(int iz = 0; iz < repz; iz++){
-				math::vector3<double> base{ix*alat, iy*alat, iz*alat};
+				math::vector3<double> base{double(ix), double(iy), double(iz)};
 				for(unsigned iatom = 0; iatom < cell.size(); iatom++){
-					supercell.push_back(cell[iatom].species() | (base + cell[iatom].position()));
+					ions.insert("Al", alat*(base + cell[iatom]));
 				}
 			}
 		}
 	}
 
-	assert(supercell.size() == cell.size()*repx*repy*repz);
+	assert(ions.geo().num_atoms() == cell.size()*repx*repy*repz);
 
-	systems::box box = systems::box::orthorhombic(repx*alat*1.0_b, repy*alat*1.0_b, repz*alat*1.0_b).cutoff_energy(30.0_Ha);
-	
-	systems::ions ions(box, supercell);
-	
 	input::config conf;
 
 	conf.extra_states = 2*repx*repy*repz;

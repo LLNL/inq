@@ -31,7 +31,7 @@ int main(int argc, char ** argv){
 
 	auto alat = 7.6524459_bohr;
 	
-	systems::box box = systems::box::orthorhombic(alat, alat, alat).cutoff_energy(30.0_Ha);
+	systems::box box = systems::box::cubic(alat).cutoff_energy(30.0_Ha);
 	systems::ions ions(box);
 
 	ions.insert("Al", alat*math::vector3<double>(0.0, 0.0, 0.0));

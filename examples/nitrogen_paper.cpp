@@ -30,14 +30,13 @@ int main(int argc, char ** argv){
 
 	auto distance = 1.06_angstrom;
 
-	std::vector<atom> geo;
-	geo.push_back( "N" | coord(0.0, 0.0, -distance/2));
-	geo.push_back( "N" | coord(0.0, 0.0,  distance/2));
-
 	auto box = systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b).finite().cutoff_energy(40.0_Ha);
 	
-	systems::ions ions(box, geo);
+	systems::ions ions(box);
 
+	ions.insert("N", {0.0_b, 0.0_b, -distance/2});
+  ions.insert("N", {0.0_b, 0.0_b,  distance/2});
+	
 	systems::electrons electrons(env.par(), ions, box);
 	ground_state::initial_guess(ions, electrons);
 	
