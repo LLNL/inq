@@ -8,53 +8,15 @@ project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-#if(POLICY CMP0074)
-#  cmake_policy(SET CMP0074 NEW)
-#endif()
-
-#if(POLICY CMP0104)
-#  cmake_policy(SET CMP0104 NEW)
-#endif()
-
-#find_package(Catch2 CONFIG)
-#if (${Catch2_FOUND})
-#else ()
-    message(STATUS "downloading Catch2 v3p3")
-	Include(FetchContent)
-	FetchContent_Declare(
-		Catch2
-		GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-		GIT_TAG        devel
+message(STATUS "downloading Catch2 v3p3")
+Include(FetchContent)
+FetchContent_Declare(
+	Catch2
+	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+	GIT_TAG        devel
 	)
-	FetchContent_MakeAvailable(Catch2)
-#    include(ExternalProject)
-#    ExternalProject_Add(
-#            catch2
-#            PREFIX ${PROJECT_SOURCE_DIR}/lib/catch2
-#            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-#            TIMEOUT 10
-#            UPDATE_COMMAND ${GIT_EXECUTABLE} pull
-#            CONFIGURE_COMMAND ""
-#            BUILD_COMMAND ""
-#            INSTALL_COMMAND ""
-#            LOG_DOWNLOAD ON
-#    )
-#    add_dependencies(tests catch2)
-
-#    # Expose required variable (CATCH_INCLUDE_DIR) to parent scope
-#    ExternalProject_Get_Property(catch2 source_dir)
-#    set(CATCH_INCLUDE_DIR ${source_dir}/include CACHE INTERNAL "Path to include folder for Catch2")
-#    add_subdirectory(${PROJECT_SOURCE_DIR}/lib/catch2)
-#    include_directories(${CATCH_INCLUDE_DIR})
-#endif ()
-#	message(STATUS "foo include dir: ${CATCH_INCLUDE_DIR}")
-#	message(STATUS "foo include dir: ${catch2_SOURCE_DIR}")
-#	message(STATUS "foo include dir: ${catch2_SOURCE_DIR}/include")
-
-#	include_directories(${CATCH_INCLUDE_DIR})
-#	include_directories(${catch2_SOURCE_DIR})
-	include_directories(${catch2_SOURCE_DIR}/src)
-#	link_libraries(Catch2::Catch2)
+FetchContent_MakeAvailable(Catch2)
+include_directories(${catch2_SOURCE_DIR}/src)
 
 enable_testing()
 include(CTest)
