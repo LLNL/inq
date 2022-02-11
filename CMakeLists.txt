@@ -8,6 +8,8 @@ project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "")
+
 message(STATUS "downloading Catch2 v3p3")
 Include(FetchContent)
 FetchContent_Declare(
