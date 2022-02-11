@@ -23,7 +23,7 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
-#include <input/atom.hpp>
+#include <input/parse_xyz.hpp>
 #include <utils/match.hpp>
 #include <operations/io.hpp>
 #include <perturbations/kick.hpp>
@@ -46,10 +46,8 @@ int main(int argc, char ** argv){
 	auto box = systems::box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite().cutoff_energy(30.0_Ha);
 	
 	systems::ions ions(box);
-	
-	ions.insert("O", { 0.0_b,     -0.553586_b, 0.0_b});
-	ions.insert("H", { 1.429937_b, 0.553586_b, 0.0_b});
-	ions.insert("H", {-1.429937_b, 0.553586_b, 0.0_b});
+
+	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "water.xyz"));
 
 	input::config conf;
 
