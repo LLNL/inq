@@ -136,29 +136,6 @@ GPU_FUNCTION auto in_atomic_units(math::vector3<MagnitudeType> const & quant) {
 	return math::vector3<double>{quant[0].in_atomic_units(), quant[1].in_atomic_units(), quant[2].in_atomic_units()};
 }
 
-template <class MagnitudeType, class ElementType = double>
-class autocast_quantity : public quantity<MagnitudeType, ElementType>{
-
-public:
-	using magnitude = MagnitudeType;
-	using element_type = ElementType;
-	
-	GPU_FUNCTION autocast_quantity(element_type const & val = 0.0):
-		quantity<MagnitudeType, ElementType>(this->from_atomic_units(val))
-	{
-	}
-
-	GPU_FUNCTION autocast_quantity(quantity<MagnitudeType, ElementType> const & val):
-		quantity<MagnitudeType, ElementType>(val)
-	{
-	}
-	
-	GPU_FUNCTION operator element_type() const {
-		return this->in_atomic_units();
-	}
-	
-};
-		
 }
 
 #ifdef INQ_INQ_QUANTITY_UNIT_TEST
