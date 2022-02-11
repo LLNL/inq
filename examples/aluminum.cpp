@@ -57,7 +57,7 @@ int main(int argc, char ** argv){
 		}
 	}
 
-	assert(ions.geo().num_atoms() == cell.size()*repx*repy*repz);
+	assert(int(ions.geo().num_atoms()) == int(cell.size()*repx*repy*repz));
 
 	input::config conf;
 
