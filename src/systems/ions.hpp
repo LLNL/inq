@@ -63,6 +63,11 @@ public:
 	auto insert(input::species const & sp, math::vector3<quantity<magnitude::length>> const & pos){
 		geo_.add_atom(sp, pos);
 	}
+
+	template <class ContainerType>
+	auto insert(ContainerType const & container){
+		for(auto atom : container) geo_.add_atom(atom.species(), atom.position());
+	}
 	
 	inq::ions::UnitCell cell_;
 	inq::ions::geometry geo_;
