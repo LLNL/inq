@@ -26,6 +26,7 @@
 #include <input/species.hpp>
 #include <input/atom.hpp>
 #include <config/path.hpp>
+#include <inq/quantity.hpp>
 
 #include <vector>
 #include <cassert>
