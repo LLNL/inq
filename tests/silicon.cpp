@@ -46,14 +46,14 @@ int main(int argc, char ** argv){
 	
 	systems::ions ions(box);
 	
-	ions.insert("Si", a*math::vector3<double>(0.0,  0.0,  0.0 ));
-	ions.insert("Si", a*math::vector3<double>(0.25, 0.25, 0.25));
-	ions.insert("Si", a*math::vector3<double>(0.5,  0.5,  0.0 ));
-	ions.insert("Si", a*math::vector3<double>(0.75, 0.75, 0.25));
-	ions.insert("Si", a*math::vector3<double>(0.5,  0.0,  0.5 ));
-	ions.insert("Si", a*math::vector3<double>(0.75, 0.25, 0.75));
-	ions.insert("Si", a*math::vector3<double>(0.0,  0.5,  0.5 ));
-	ions.insert("Si", a*math::vector3<double>(0.25, 0.75, 0.75));
+	ions.insert("Si", {0.0_crys,  0.0_crys,  0.0_crys });
+	ions.insert("Si", {0.25_crys, 0.25_crys, 0.25_crys});
+	ions.insert("Si", {0.5_crys,  0.5_crys,  0.0_crys });
+	ions.insert("Si", {0.75_crys, 0.75_crys, 0.25_crys});
+	ions.insert("Si", {0.5_crys,  0.0_crys,  0.5_crys });
+	ions.insert("Si", {0.75_crys, 0.25_crys, 0.75_crys});
+	ions.insert("Si", {0.0_crys,  0.5_crys,  0.5_crys });
+	ions.insert("Si", {0.25_crys, 0.75_crys, 0.75_crys});
 
 	input::config conf;
 	

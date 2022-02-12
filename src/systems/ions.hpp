@@ -9,9 +9,9 @@
 
 #include <ions/geometry.hpp>
 #include <ions/unitcell.hpp>
-#include <systems/box.hpp>
-
+#include <magnitude/fractionary.hpp>
 #include <math/array.hpp>
+#include <systems/box.hpp>
 
 namespace inq {
 namespace systems {
@@ -67,6 +67,15 @@ public:
 	auto insert(ContainerType const & container){
 		for(auto atom : container) geo_.add_atom(atom.species(), atom.position());
 	}
+
+	auto insert(input::species const & sp, math::vector3<quantity<magnitude::fractionary>> const & pos){
+		geo_.add_atom(sp, cell_.crystal_to_cart(in_atomic_units(pos)));
+	}
+
+	auto insert(std::string const & symbol, math::vector3<quantity<magnitude::fractionary>> const & pos){
+		insert(input::species(pseudo::element(symbol)), pos);
+	}
+
 	
 	inq::ions::UnitCell cell_;
 	inq::ions::geometry geo_;

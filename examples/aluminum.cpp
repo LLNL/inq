@@ -30,13 +30,15 @@ int main(int argc, char ** argv){
 	utils::match energy_match(4.0e-6);
 
 	auto alat = 7.6524459_bohr;
-	
-	std::vector<math::vector3<double>> cell;
 
-	cell.push_back(math::vector3<double>(0.0, 0.0, 0.0));
-	cell.push_back(math::vector3<double>(0.0, 0.5, 0.5));
-	cell.push_back(math::vector3<double>(0.5, 0.0, 0.5));
-	cell.push_back(math::vector3<double>(0.5, 0.5, 0.0));
+	using frac_coord = math::vector3<decltype(0.0_crys)>;
+	
+	std::vector<frac_coord> cell;
+
+	cell.emplace_back(frac_coord{0.0_crys, 0.0_crys, 0.0_crys});
+	cell.emplace_back(frac_coord{0.0_crys, 0.5_crys, 0.5_crys});
+	cell.emplace_back(frac_coord{0.5_crys, 0.0_crys, 0.5_crys});
+	cell.emplace_back(frac_coord{0.5_crys, 0.5_crys, 0.0_crys});
 
 	int repx = 2;
 	int repy = 2;
@@ -49,9 +51,9 @@ int main(int argc, char ** argv){
 	for(int ix = 0; ix < repx; ix++){
 		for(int iy = 0; iy < repy; iy++){
 			for(int iz = 0; iz < repz; iz++){
-				math::vector3<double> base{double(ix), double(iy), double(iz)};
+				frac_coord base{ix*1.0_crys, iy*1.0_crys, iz*1.0_crys};
 				for(unsigned iatom = 0; iatom < cell.size(); iatom++){
-					ions.insert("Al", alat*(base + cell[iatom]));
+					ions.insert("Al", (base + cell[iatom]));
 				}
 			}
 		}
