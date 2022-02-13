@@ -29,16 +29,14 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(5.0e-6);
 
-	std::vector<input::atom> geo;
-
-	auto distance = 2.2; //a bit larger than experiment to check the force
-	
-	geo.push_back( "N" | math::vector3<double>(0.0, 0.0, -0.5*distance));
-	geo.push_back( "N" | math::vector3<double>(0.0, 0.0,  0.5*distance));
-
 	auto box = systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b).cutoff_energy(40.0_Ha);
 	
-	systems::ions ions(box, geo);
+	systems::ions ions(box);
+
+	auto distance = 2.2_bohr; //a bit larger than experiment to check the force
+	
+	ions.insert("N", {0.0_b, 0.0_b, -0.5*distance});
+	ions.insert("N", {0.0_b, 0.0_b,  0.5*distance});
 
 	systems::electrons electrons(env.par(), ions, box, input::config{});
 	ground_state::initial_guess(ions, electrons);

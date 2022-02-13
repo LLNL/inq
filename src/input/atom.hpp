@@ -24,7 +24,6 @@
 #include <math/vector3.hpp>
 
 #include <pseudopod/element.hpp>
-#include <input/coord.hpp>
 #include <input/species.hpp>
 #include <vector>
 #include <cmath>
@@ -41,11 +40,6 @@ public:
 		position_(arg_position){
 	}
 
-	atom(const input::species & arg_spec, const inq::input::coord & arg_coord):
-		species_(arg_spec),
-		position_({arg_coord[0], arg_coord[1], arg_coord[2]}){
-	}
-	
 	const auto & species() const {
 		return species_;
 	}
@@ -84,18 +78,6 @@ auto operator|(const pseudo::element & arg_element, const inq::math::vector3<dou
 }
 
 auto operator|(const std::string & arg_symbol, const inq::math::vector3<double> & arg_position){
-	return inq::input::atom(pseudo::element(arg_symbol), arg_position);
-}
-
-auto operator|(const inq::input::species & arg_spec, const inq::input::coord & arg_position){
-	return inq::input::atom(arg_spec, arg_position);
-}
-
-auto operator|(const pseudo::element & arg_element, const inq::input::coord & arg_position){
-	return inq::input::atom(arg_element, arg_position);
-}
-
-auto operator|(const std::string & arg_symbol, const inq::input::coord & arg_position){
 	return inq::input::atom(pseudo::element(arg_symbol), arg_position);
 }
 

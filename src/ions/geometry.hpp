@@ -26,6 +26,7 @@
 #include <input/species.hpp>
 #include <input/atom.hpp>
 #include <config/path.hpp>
+#include <inq/quantity.hpp>
 
 #include <vector>
 #include <cassert>
@@ -62,9 +63,10 @@ public:
 		return (long) coordinates_.size();
 	}
 
-	void add_atom(const input::species & element, const math::vector3<double> & position){
+	template <typename PositionType>
+	void add_atom(input::species const & element, PositionType const & position){
 		atoms_.push_back(element);
-		coordinates_.push_back(position);
+		coordinates_.push_back(in_atomic_units(position));
 		velocities_.push_back(math::vector3<double>(0.0, 0.0, 0.0));					
 	}
 

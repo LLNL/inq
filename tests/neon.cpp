@@ -38,14 +38,12 @@ int main(int argc, char ** argv){
 		
 	utils::match energy_match(2.0e-5);
 
-	std::vector<input::atom> geo;
-
-	geo.push_back("Ne" | input::species::nofilter() | math::vector3<double>(0.0, 0.0, 0.0));
-
 	systems::box box = systems::box::cubic(15.0_b).finite().cutoff_energy(30.0_Ha);
 	
-	systems::ions ions(box, geo);
+	systems::ions ions(box);
 
+	ions.insert("Ne" | input::species::nofilter(), {0.0_b, 0.0_b, 0.0_b});
+	
 	input::config conf;
 	
 	conf.extra_states = 3;

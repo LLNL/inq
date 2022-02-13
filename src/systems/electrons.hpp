@@ -272,14 +272,13 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	std::vector<input::atom> geo;
-	geo.push_back( "Cu" | math::vector3<double>(0.0,  0.0,  0.0));
-	geo.push_back( "Cu" | math::vector3<double>(1.0,  0.0,  0.0));
-
 	systems::box box = systems::box::cubic(5.0_b).cutoff_energy(25.0_Ha);
 	
-	systems::ions ions(box, geo);
+	systems::ions ions(box);
 
+	ions.insert("Cu", {0.0_b,  0.0_b,  0.0_b});
+	ions.insert("Cu", {1.0_b,  0.0_b,  0.0_b});
+	
 	auto par = input::parallelization(comm);
 		
 	systems::electrons electrons(par, ions, box);
