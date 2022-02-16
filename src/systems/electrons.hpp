@@ -99,8 +99,8 @@ public:
 		assert(long(lot_.size()) == lot_part_.local_size());
 		assert(max_local_size_ > 0);
 		
-		eigenvalues_.reextent({lot_.size(), max_local_size_});
-		occupations_.reextent({lot_.size(), max_local_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
 
 		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
 		
