@@ -200,7 +200,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
 							 [i4,
 								buf = begin(buffer),
-								rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
+								rot = begin(tmp.unrotated().unrotated().partitioned(comm.size()).transposed().rotated().transposed().rotated())]
 							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
 								 buf[i4][i3][i2][i1][i0] = rot[i4][i3][i2][i1][i0];
 							 });
@@ -331,7 +331,7 @@ void to_real(basis::fourier_space const & fourier_basis, basis::real_space const
 				gpu::run(last_dim, zblock, real_basis.local_sizes()[1], real_basis.local_sizes()[0],
 								 [i4, 
 									buf = begin(buffer),
-									rot = begin(tmp.unrotated(2).partitioned(comm.size()).transposed().rotated().transposed().rotated())]
+									rot = begin(tmp.unrotated().unrotated().partitioned(comm.size()).transposed().rotated().transposed().rotated())]
 								 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
 									 rot[i4][i3][i2][i1][i0] = buf[i4][i3][i2][i1][i0];
 								 });
@@ -536,8 +536,8 @@ auto to_real(basis::field_set<basis::fourier_space, math::vector3<complex, Vecto
 
 	basis::field_set<basis::real_space, math::vector3<complex, VectorSpace>> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	auto const& fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex const>(3).rotated(3).flatted().rotated();
-	auto &&     phi_as_scalar  = phi .cubic().template reinterpret_array_cast<complex      >(3).rotated(3).flatted().rotated();
+	auto const& fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
+	auto &&     phi_as_scalar  = phi .cubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 
 	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
 
@@ -556,8 +556,8 @@ auto to_real(states::orbital_set<basis::fourier_space, math::vector3<complex, Ve
 
 	states::orbital_set<basis::real_space, math::vector3<complex, VectorSpace>> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.full_comm());
 
-	auto const& fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex const>(3).rotated(3).flatted().rotated();
-	auto &&     phi_as_scalar  = phi .cubic().template reinterpret_array_cast<complex      >(3).rotated(3).flatted().rotated();
+	auto const& fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
+	auto &&     phi_as_scalar  = phi .cubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 
 	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
 
