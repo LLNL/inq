@@ -174,18 +174,18 @@ TEST_CASE("inq::quantity", "[inq::quantity]") {
 
 	rr3 *= -0.4;
 	CHECK(rr3.in_atomic_units() == 40.8_a);	
-	
+
 	auto rr4 = rr - rr;
 	CHECK(rr4.in_atomic_units() == 0.0_a);
 
 	CHECK(in_atomic_units(rr4) == 0.0_a);
-	
+
 	CHECK(in_atomic_units(10.0) == 10.0_a);
 
 	CHECK(in_atomic_units({10.0, -2.1, 4.6}) == math::vector3<double>{10.0, -2.1, 4.6});
 
-	CHECK(in_atomic_units(math::vector3{rr, rr, rr}) == math::vector3<double>{127.5, 127.5, 127.5});
-	
+	CHECK(in_atomic_units(math::vector3<decltype(rr)>{rr, rr, rr}) == math::vector3<double>{127.5, 127.5, 127.5});
+
 }
 
 #endif
