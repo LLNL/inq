@@ -15,7 +15,7 @@ Include(FetchContent)
 FetchContent_Declare(
 	Catch2
 	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-	GIT_TAG        devel
+	GIT_TAG        7cf2f88e50f0d1de324489c31db0314188423b6d
 	)
 FetchContent_MakeAvailable(Catch2)
 include_directories(${catch2_SOURCE_DIR}/src)
