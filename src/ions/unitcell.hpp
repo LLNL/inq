@@ -204,13 +204,13 @@ namespace ions {
       out << "  Volume [b^3]        = " << volume_ << std::endl;
       out << std::endl;
     }
-    
-	template<class OStream>
-	friend OStream& operator<<(OStream& os, UnitCell const& self){
-		self.info(os);
-		return os;
-	}
 
+		template<class OStream>
+		friend OStream& operator<<(OStream& os, UnitCell const& self){
+			self.info(os);
+			return os;
+	  }
+		
     const double* amat() const { return &amat_[0]; }
     const double* bmat() const { return &bmat_[0]; }
     const double* amat_inv() const { return &amat_inv_[0]; }
@@ -314,21 +314,6 @@ namespace ions {
 
 		}
 
-		void compute_deda(const std::valarray<double>& sigma, std::valarray<double>& deda) const {
-			// Compute energy derivatives dE/da_ij from a symmetric stress tensor
-			assert(sigma.size()==6);
-			assert(deda.size()==9);
-  
-			//!! local copy of sigma to circumvent bug in icc compiler
-			std::valarray<double> sigma_loc(6);
-			sigma_loc = sigma;
-  
-			// deda = - omega * sigma * A^-T
-			smatmult3x3(&sigma_loc[0],&amat_inv_t_[0],&deda[0]);
-  
-			deda *= -volume_;
-		}
-
 		////////////////////////////////////////////////////////////////////////////////
 		
     void cart_to_crystal(const double* scart, double* scryst) const {
@@ -420,112 +405,6 @@ namespace ions {
 			return vcart;
 		}
 
-		////////////////////////////////////////////////////////////////////////////////
-		
-    bool in_ws(const math::vector3<double>& v) const {
-
-			bool in = true;
-			int i = 0;
-			while ( i < 13 && in ) {
-				in = ( fabs(dot(v, an_[i])) <= an2h_[i] ) ;
-				i++;
-			}
-			return in;
-		}
-		
-    double min_wsdist() const {
-			double min = sqrt(2.*an2h_[0]);
-			for (int i=1; i<13; i++) 
-				if (sqrt(2.*an2h_[i]) < min) min = sqrt(2.*an2h_[i]);
-			
-			return min;
-		}
-
-  ////////////////////////////////////////////////////////////////////////////////
-		
-    void fold_in_ws(math::vector3<double>& v) const {
-
-			const double epsilon = 1.e-10;
-			bool done = false;
-			const int maxiter = 10;
-			int iter = 0;
-			while ( !done && iter < maxiter )
-				{
-					done = true;
-					for ( int i = 0; (i < 13) && done; i++ )
-						{
-							const double sp = dot(v, an_[i]);
-							if ( sp > an2h_[i] + epsilon )
-								{
-									done = false;
-									do
-										v -= an_[i];
-									while ( dot(v, an_[i]) > an2h_[i] + epsilon );
-								}
-							else if ( sp < -an2h_[i] - epsilon )
-								{
-									done = false;
-									do
-										v += an_[i];
-									while ( dot(v, an_[i]) < -an2h_[i] - epsilon );
-								}
-						}
-					iter++;
-				}
-			assert(iter < maxiter);
-
-		}
-
-  ////////////////////////////////////////////////////////////////////////////////
-		
-    bool in_bz(const math::vector3<double>& k) const {
-			
-			bool in = true;
-			int i = 0;
-			while ( i < 13 && in )
-				{
-					in = ( fabs(dot(k, bn_[i])) <= bn2h_[i] ) ;
-					i++;
-				}
-			return in;
-			
-		}
-
-		////////////////////////////////////////////////////////////////////////////////
-			
-    void fold_in_bz(math::vector3<double>& k) const {
-
-			const double epsilon = 1.e-10;
-			bool done = false;
-			const int maxiter = 10;
-			int iter = 0;
-			while ( !done && iter < maxiter )
-				{
-					done = true;
-					for ( int i = 0; (i < 13) && done; i++ )
-						{
-							double sp = dot(k, bn_[i]);
-							if ( sp > bn2h_[i] + epsilon )
-								{
-									done = false;
-									do
-										k -= bn_[i];
-									while ( dot(k, bn_[i]) > bn2h_[i] + epsilon );
-								}
-							else if ( sp < -bn2h_[i] - epsilon )
-								{
-									done = false;
-									do
-										k += bn_[i];
-									while ( dot(k, bn_[i]) < -bn2h_[i] - epsilon );
-								}
-						}
-					iter++;
-				}
-			assert(iter < maxiter);
-			
-		}
-  
     bool encloses(const UnitCell& c) const {
 			bool in = true;
 			int i = 0;
