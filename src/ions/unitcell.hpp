@@ -461,15 +461,12 @@ namespace ions {
 				for(int ii = 0; ii < 3; ii++){
 					for(int jj = 0; jj < 3; jj++){
 						lat_[ii][jj] = aa[ii][jj];
-						rlat_[ii][jj] = bb[ii][jj];						
+						rlat_[ii][jj] = bb[ii][jj];
 					}
 				}
+
 			}
 
-			auto lat_norm() const {
-				return math::vector3<double>{lat_[0].norm(), lat_[1].norm(), lat_[2].norm()};
-			}
-			
 			template <class Type1, class Space1, class Type2, class Space2>
 			GPU_FUNCTION auto dot(math::vector3<Type1, Space1> const & vv1, math::vector3<Type2, Space2> const & vv2) const {
 				return to_cartesian(vv1).dot(to_cartesian(vv2));
@@ -491,13 +488,13 @@ namespace ions {
 			}
 			
 			template <class Type>
-			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::contravariant> const & vv) const {
-				return math::vector3<Type, math::covariant>{vv[0], vv[1], vv[2]};
+			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::cartesian> const & vv) const {
+				return math::vector3<Type, math::covariant>{lat_[0].dot(vv), lat_[1].dot(vv), lat_[2].dot(vv)};
 			}
 
 			template <class Type>
-			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::cartesian> const & vv) const {
-				return math::vector3<Type, math::covariant>{vv[0], vv[1], vv[2]};
+			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::contravariant> const & vv) const {
+				return to_covariant(to_cartesian(vv));
 			}
 
 			template <class Type>
@@ -507,12 +504,12 @@ namespace ions {
 			
 			template <class Type>
 			GPU_FUNCTION auto to_contravariant(math::vector3<Type, math::covariant> const & vv) const {
-				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
+				return to_contravariant(to_cartesian(vv));
 			}
 
 			template <class Type>
 			GPU_FUNCTION auto to_contravariant(math::vector3<Type, math::cartesian> const & vv) const {
-				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
+				return math::vector3<Type, math::contravariant>{rlat_[0].dot(vv), rlat_[1].dot(vv), rlat_[2].dot(vv)}/(2.0*M_PI);
 			}
 
 			template <class Type>
@@ -522,12 +519,12 @@ namespace ions {
 			
 			template <class Type>
 			GPU_FUNCTION auto to_cartesian(math::vector3<Type, math::contravariant> const & vv) const {
-				return math::vector3<Type, math::cartesian>{vv[0], vv[1], vv[2]};
+				return lat_[0]*vv[0] + lat_[1]*vv[1] + lat_[2]*vv[2];
 			}
 			
 			template <class Type>
 			GPU_FUNCTION auto to_cartesian(math::vector3<Type, math::covariant> const & vv) const {
-				return math::vector3<Type, math::cartesian>{vv[0], vv[1], vv[2]};
+				return (rlat_[0]*vv[0] + rlat_[1]*vv[1] + rlat_[2]*vv[2])/(2.0*M_PI);
 			}
 			
 		};
@@ -550,6 +547,7 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
 	using math::vector3;
 
   {
@@ -668,7 +666,28 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 			CHECK(in_cell[0] == -3.34_a);
 			CHECK(in_cell[1] == -5.00_a);
 			CHECK(in_cell[2] == 1.67_a);
-			
+
+			{
+				auto vv = cell.metric().to_contravariant(math::vector3<double, math::cartesian>{10.0, 10.0, 10.0});
+				CHECK(vv[0] == 1.0_a);		
+				CHECK(vv[1] == 1.0_a);
+				CHECK(vv[2] == 1.0_a);
+			}
+
+			{
+				auto vv = cell.metric().to_covariant(math::vector3<double, math::cartesian>{M_PI/10.0, M_PI/10.0, M_PI/10.0});
+				CHECK(vv[0] == Approx(M_PI));		
+				CHECK(vv[1] == Approx(M_PI));
+				CHECK(vv[2] == Approx(M_PI));
+			}
+
+			{
+				auto vv = math::vector3<double, math::contravariant>{1.0, 0.0, 0.0};
+				CHECK(cell.metric().length(vv) == 10.0);			
+				CHECK(dot(cell.metric().to_covariant(vv), vv) == 100.0_a);
+				CHECK(cell.metric().dot(cell.metric().to_covariant(vv), vv) == 100.0_a);
+
+			}
     }
 
     SECTION("Parallelepipedic cell"){
@@ -778,7 +797,43 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 			CHECK(in_cell[1] == 44.72_a);
 			CHECK(in_cell[2] == -6.02_a);
 			
-    }
+			{
+				auto vv = cell.metric().to_contravariant(math::vector3<double, math::cartesian>{28.62, 90.14, 12.31});
+				CHECK(vv[0] == 1.0_a);		
+				CHECK(vv[1] == 1.0_a);
+				CHECK(vv[2] == 1.0_a);
+
+				auto vv2 = cell.metric().to_cartesian(vv);
+				CHECK(vv2[0] == 28.62_a);		
+				CHECK(vv2[1] == 90.14_a);
+				CHECK(vv2[2] == 12.31_a);
+
+				CHECK(norm(vv2) == Approx(dot(vv, cell.metric().to_covariant(vv))));
+			}
+
+			{
+				auto vv1 = cell.metric().to_covariant(math::vector3<double, math::cartesian>{M_PI/28.62, 0.0, 0.0});
+				CHECK(vv1[0] == Approx(M_PI));		
+				CHECK(vv1[1] == Approx(0.0));
+				CHECK(vv1[2] == Approx(0.0));
+
+				auto vv2 = cell.metric().to_covariant(math::vector3<double, math::cartesian>{0.0, M_PI/90.14, 0.0});
+				CHECK(vv2[0] == Approx(0.0));		
+				CHECK(vv2[1] == Approx(M_PI));
+				CHECK(vv2[2] == Approx(0.0));
+
+				auto vv3 = cell.metric().to_covariant(math::vector3<double, math::cartesian>{0.0, 0.0, M_PI/12.31});
+				CHECK(vv3[0] == Approx(0.0));		
+				CHECK(vv3[1] == Approx(0.0));
+				CHECK(vv3[2] == Approx(M_PI));
+
+				CHECK(cell.metric().dot(vv1, math::vector3<double, math::cartesian>{28.62, 0.0, 0.0}) == Approx(M_PI));
+				
+			}
+						
+			CHECK(cell.metric().length(math::vector3<double, math::contravariant>{1.0, 0.0, 0.0}) == 28.62);
+
+		}
 
     SECTION("Non-orthogonal cell"){
 
@@ -880,6 +935,20 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       //CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(1.5, 0.5, 0.5))));
       CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(0.5, -0.1, 0.0))));
       CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(0.5, 0.5, -1.0))));
+
+			{
+				auto vv = cell.metric().to_contravariant(math::vector3<double, math::cartesian>{9.627, 7.092, 4.819});
+				CHECK(fabs(vv[0]) < 1e-12);		
+				CHECK(vv[1] == 1.0_a);
+				CHECK(fabs(vv[2]) < 1e-12);
+
+				auto vv2 = cell.metric().to_cartesian(vv);
+				CHECK(vv2[0] == 9.627_a);		
+				CHECK(vv2[1] == 7.092_a);
+				CHECK(vv2[2] == 4.819_a);
+
+				CHECK(norm(vv2) == Approx(dot(vv, cell.metric().to_covariant(vv))));
+			}
 		
     }
   }

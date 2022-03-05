@@ -97,7 +97,7 @@ namespace basis {
 				return g2 > radius()*radius();
 			}		
 			
-			GPU_FUNCTION const math::vector3<double> & gspacing() const{
+			GPU_FUNCTION const auto & gspacing() const{
 				return gspacing_;
 			}
 
@@ -114,11 +114,13 @@ namespace basis {
 			}
 			
 			GPU_FUNCTION double g2(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
-				return metric_.norm(gvector(ix, iy, iz));
+				auto gg = gvector(ix, iy, iz);
+				return gg[0]*gg[0] + gg[1]*gg[1] + gg[2]*gg[2];
 			}
 			
 			GPU_FUNCTION double g2(int ix, int iy, int iz) const {
-				return metric_.norm(gvector(ix, iy, iz));
+				auto gg = gvector(ix, iy, iz);
+				return gg[0]*gg[0] + gg[1]*gg[1] + gg[2]*gg[2];
 			}
 
 			GPU_FUNCTION auto & metric() const {

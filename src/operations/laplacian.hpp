@@ -182,7 +182,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		
 		CHECK(diff < 1.0e-8) ;
 		CHECK(diff_in_place < 1.0e-8);
-		CHECK(diff_add < 1.0e-8);
+		CHECK(diff_add < 5.0e-7);
 		
 	}
 
