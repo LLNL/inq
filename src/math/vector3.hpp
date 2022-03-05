@@ -232,7 +232,10 @@ public:
 	}
 
 	//norm
-		
+	GPU_FUNCTION auto norm() const {
+		return real(dot(*this, *this));
+	}
+	
 	friend GPU_FUNCTION auto norm(vector3 const & vv) {
 		return real(dot(vv, vv));
 	}
@@ -436,6 +439,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(imag(dot(vv1, vv2)) == 1.5765_a);
 
 		CHECK(norm(vv1) == 5.2700_a);
+		CHECK(vv1.norm() == 5.2700_a);
 		CHECK(norm(vv1) == Approx(real(dot(vv1, vv1))));
 		CHECK(imag(dot(vv1, vv1)) == 0.0_a);
 		
