@@ -611,8 +611,13 @@ namespace ions {
 				return vv;
 			}
 			
-			template <class Type, class Space>
-			GPU_FUNCTION auto to_covariant(math::vector3<Type, Space> const & vv) const {
+			template <class Type>
+			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::contravariant> const & vv) const {
+				return math::vector3<Type, math::covariant>{vv[0], vv[1], vv[2]};
+			}
+
+			template <class Type>
+			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::cartesian> const & vv) const {
 				return math::vector3<Type, math::covariant>{vv[0], vv[1], vv[2]};
 			}
 
@@ -621,8 +626,13 @@ namespace ions {
 				return vv;
 			}
 			
-			template <class Type, class Space>
-			GPU_FUNCTION auto to_contravariant(math::vector3<Type, Space> const & vv) const {
+			template <class Type>
+			GPU_FUNCTION auto to_contravariant(math::vector3<Type, math::covariant> const & vv) const {
+				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
+			}
+
+			template <class Type>
+			GPU_FUNCTION auto to_contravariant(math::vector3<Type, math::cartesian> const & vv) const {
 				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
 			}
 
@@ -631,8 +641,13 @@ namespace ions {
 				return vv;
 			}
 			
-			template <class Type, class Space>
-			GPU_FUNCTION auto to_cartesian(math::vector3<Type, Space> const & vv) const {
+			template <class Type>
+			GPU_FUNCTION auto to_cartesian(math::vector3<Type, math::contravariant> const & vv) const {
+				return math::vector3<Type, math::cartesian>{vv[0], vv[1], vv[2]};
+			}
+			
+			template <class Type>
+			GPU_FUNCTION auto to_cartesian(math::vector3<Type, math::covariant> const & vv) const {
 				return math::vector3<Type, math::cartesian>{vv[0], vv[1], vv[2]};
 			}
 			
