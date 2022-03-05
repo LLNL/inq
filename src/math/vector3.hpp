@@ -156,11 +156,12 @@ public:
 	friend GPU_FUNCTION vector3<decltype(Type()/TypeB()), Space> operator/(const vector3 & vv1, const vector3<TypeB, Space> & vv2){
 		return {vv1[0]/vv2[0], vv1[1]/vv2[1], vv1[2]/vv2[2]};
 	}
-	
+
 	//scalar multiplication and division
 private:
 	template<class   > struct is_vector              : std::false_type{};
 	template<class TT> struct is_vector<vector3<TT, Space>> : std::true_type {};
+
 public:
 
 	template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
@@ -173,7 +174,7 @@ public:
 		return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
 	}
 		
-	template <class TypeB>
+	template <class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
 	friend GPU_FUNCTION vector3<decltype(Type()/TypeB()), Space> operator/(const vector3 & vv, const TypeB & scalar){
 		return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
 	}
@@ -195,7 +196,7 @@ public:
 		vec_[2] /= factor;
 		return *this;
 	}
-
+	
 	// ELEMENTWISE OPERATIONS
 	template <class Function>
 	friend GPU_FUNCTION auto elementwise(Function const & func, vector3 const & vv) -> vector3<decltype(func(Type{})), Space> {
