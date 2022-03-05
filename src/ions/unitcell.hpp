@@ -586,10 +586,10 @@ namespace ions {
 					}
 				}
 			}
-			
+
 			template <class Type1, class Space1, class Type2, class Space2>
 			GPU_FUNCTION auto dot(math::vector3<Type1, Space1> const & vv1, math::vector3<Type2, Space2> const & vv2) const {
-				return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];
+				return to_cartesian(vv1).dot(to_cartesian(vv2));
 			}
 			
 			template <class Type, class Space>
