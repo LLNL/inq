@@ -587,6 +587,10 @@ namespace ions {
 				}
 			}
 
+			auto lat_norm() const {
+				return math::vector3<double>{lat_[0].norm(), lat_[1].norm(), lat_[2].norm()};
+			}
+			
 			template <class Type1, class Space1, class Type2, class Space2>
 			GPU_FUNCTION auto dot(math::vector3<Type1, Space1> const & vv1, math::vector3<Type2, Space2> const & vv2) const {
 				return to_cartesian(vv1).dot(to_cartesian(vv2));
