@@ -572,7 +572,20 @@ namespace ions {
 		
 		class cell_metric {
 
+			math::vector3<double, math::cartesian> lat_[3];
+			math::vector3<double, math::cartesian> rlat_[3];
+
 		public:
+
+			template <class AType, class BType>
+			cell_metric(AType const & aa, BType const & bb){
+				for(int ii = 0; ii < 3; ii++){
+					for(int jj = 0; jj < 3; jj++){
+						lat_[ii][jj] = aa[ii][jj];
+						rlat_[ii][jj] = bb[ii][jj];						
+					}
+				}
+			}
 			
 			template <class Type1, class Space1, class Type2, class Space2>
 			GPU_FUNCTION auto dot(math::vector3<Type1, Space1> const & vv1, math::vector3<Type2, Space2> const & vv2) const {
@@ -593,7 +606,7 @@ namespace ions {
 			GPU_FUNCTION auto to_covariant(math::vector3<Type, Space> const & vv) const {
 				return math::vector3<Type, math::covariant>{vv[0], vv[1], vv[2]};
 			}
-
+			
 			template <class Type, class Space>
 			GPU_FUNCTION auto to_contravariant(math::vector3<Type, Space> const & vv) const {
 				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
@@ -607,7 +620,7 @@ namespace ions {
 		};
 
 		auto metric() const {
-			return cell_metric{};
+			return cell_metric{a_, b_};
 		}
 		
   };
