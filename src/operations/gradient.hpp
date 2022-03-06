@@ -143,22 +143,22 @@ auto gradient(states::orbital_set<basis::real_space, complex> const & ff){
 #include <catch2/catch_all.hpp>
 #include <math/vector3.hpp>
 
-auto f_analytic(inq::math::vector3<double, inq::math::covariant> kk, inq::math::vector3<double, inq::math::contravariant> rr){
+auto f_analytic(inq::math::vector3<double> kk, inq::math::vector3<double> rr){
 	return exp(inq::complex(0.0,1.0)*dot(kk, rr));
 }
 
-auto g_analytic(inq::math::vector3<double, inq::math::covariant> kk, inq::math::vector3<double, inq::math::contravariant> rr) {
+auto g_analytic(inq::math::vector3<double> kk, inq::math::vector3<double> rr) {
 	inq::math::vector3<inq::complex> gg;
 	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0, 1.0)*dot(kk, rr));
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = factor*kk[idir] ;
 	return gg;
 }
 
-auto f_analytic2(inq::math::vector3<double, inq::math::covariant> kk, inq::math::vector3<double, inq::math::contravariant> rr){
+auto f_analytic2(inq::math::vector3<double> kk, inq::math::vector3<double> rr){
 	return sin(dot(kk, rr));
 }
 
-auto g_analytic2(inq::math::vector3<double, inq::math::covariant> kk , inq::math::vector3<double, inq::math::contravariant> rr) {
+auto g_analytic2(inq::math::vector3<double> kk , inq::math::vector3<double> rr) {
 	inq::math::vector3<double> gg;
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(dot(kk, rr));
 	return gg;
@@ -182,7 +182,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	double lz = 10;
 	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);	
 
-	auto kvec = 2.0*M_PI*vector3<double, math::covariant>(1.0/lx, 1.0/ly, 1.0/lz);
+	auto kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 	
 	SECTION("Plane-wave -- field"){ 
 
@@ -193,7 +193,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					f_test.cubic()[ix][iy][iz] = f_analytic(kvec, vec);
 				}
 			}
@@ -205,7 +205,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][idir] - g_analytic (kvec, vec)[idir]);
 				}
 			}
@@ -225,7 +225,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){					
 						f_test.cubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
 					}
@@ -239,7 +239,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){
 						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][ist][idir] - double(ist)*g_analytic(kvec, vec)[idir]);
 					}
@@ -261,7 +261,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){					
 						f_test.cubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
 					}
@@ -275,7 +275,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){
 						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][ist][idir] - double(ist)*g_analytic(kvec, vec)[idir]);
 					}
@@ -297,7 +297,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					f_test2.cubic()[ix][iy][iz] = f_analytic2(kvec, vec);
 				}
 			}
@@ -308,7 +308,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.cubic()[ix][iy][iz][idir] - g_analytic2(kvec, vec)[idir]);
 				}
 			}
