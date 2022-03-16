@@ -136,7 +136,7 @@ namespace hamiltonian {
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
-			auto hphi_fs = states::orbital_set<basis::fourier_space, complex>{operations::laplacian(phi_fs.fields(), -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint())), phi.kpoint()};
+			auto hphi_fs = operations::laplacian(phi_fs, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint()));
 
 			non_local(phi_fs.fields(), hphi_fs.fields());
 			
@@ -168,7 +168,7 @@ namespace hamiltonian {
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
-			operations::laplacian_add(phi.fields(), hphi.fields(), -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint()));
+			operations::laplacian_add(phi, hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint()));
 			non_local(phi.fields(), hphi.fields());
 
 			return hphi;
