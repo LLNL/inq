@@ -134,13 +134,13 @@ namespace hamiltonian {
 
 			auto proj = projectors_all_.project(phi.fields(), phi.kpoint());
 			
-			auto phi_fs = operations::space::to_fourier(phi.fields());
+			auto phi_fs = operations::space::to_fourier(phi);
 		
 			auto hphi_fs = operations::laplacian(phi_fs, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint()));
 
-			non_local(phi_fs, hphi_fs);
+			non_local(phi_fs.fields(), hphi_fs.fields());
 			
-			auto hphi = states::orbital_set<basis::real_space, complex>{operations::space::to_real(hphi_fs), phi.kpoint()};
+			auto hphi = operations::space::to_real(hphi_fs);
 
 			hamiltonian::scalar_potential_add(scalar_potential, 0.5*phi.basis().cell().metric().norm(phi.kpoint()), phi, hphi);
 			exchange(phi, hphi);
@@ -166,12 +166,12 @@ namespace hamiltonian {
  
 			projectors_all_.apply(proj, hphi_rs.fields(), phi.kpoint());
 			
-			auto hphi = operations::space::to_fourier(hphi_rs.fields());
+			auto hphi = operations::space::to_fourier(hphi_rs);
 
-			operations::laplacian_add(phi.fields(), hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint()));
-			non_local(phi.fields(), hphi);
+			operations::laplacian_add(phi, hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint()));
+			non_local(phi.fields(), hphi.fields());
 
-			return states::orbital_set<basis::fourier_space, complex>{std::move(hphi), phi.kpoint()};
+			return hphi;
 		}
 		
 		////////////////////////////////////////////////////////////////////////////////////////////

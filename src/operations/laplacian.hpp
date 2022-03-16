@@ -34,8 +34,8 @@ namespace inq {
 namespace operations {
 
 
-template <typename FactorType = double>
-void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, basis::field_set<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <template<typename, typename> class SetType, typename FactorType = double>
+void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -52,8 +52,8 @@ void laplacian_add(basis::field_set<basis::fourier_space, complex> const & ff, b
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename FactorType = double>
-void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <template<typename, typename> class SetType, typename FactorType = double>
+void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -67,12 +67,12 @@ void laplacian_in_place(basis::field_set<basis::fourier_space, complex>& ff, Fac
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename FactorType = double>
-basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <template<typename, typename> class SetType, typename FactorType = double>
+SetType<basis::fourier_space, complex> laplacian(SetType<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	basis::field_set<basis::fourier_space, complex> laplff(ff.skeleton());
+	SetType<basis::fourier_space, complex> laplff(ff.skeleton());
 	
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
@@ -89,8 +89,8 @@ basis::field_set<basis::fourier_space, complex> laplacian(basis::field_set<basis
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename FactorType = double>
-auto laplacian(basis::field_set<basis::real_space, complex> const & ff, FactorType factor = 1.0){
+template <template<typename, typename> class SetType, typename FactorType = double>
+auto laplacian(SetType<basis::real_space, complex> const & ff, FactorType factor = 1.0){
 
 	return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff), factor));
 }
