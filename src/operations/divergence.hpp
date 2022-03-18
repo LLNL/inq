@@ -74,7 +74,7 @@ auto divergence(basis::field<basis::real_space, math::vector3<double, VectorSpac
 #include <catch2/catch_all.hpp>
 #include <math/vector3.hpp>
 
-auto vectorial_complex_plane_wave(inq::math::vector3<double, inq::math::covariant> k, inq::math::vector3<double, inq::math::contravariant> r){
+auto vectorial_complex_plane_wave(inq::math::vector3<double> k, inq::math::vector3<double> r){
 	std::array<inq::complex, 3> f;
 	f[0] = 1.0*exp(inq::complex(0.0, 1.0)*dot(k, r));
 	f[1] = -2.3*exp(inq::complex(0.0, 1.0)*dot(k, r));
@@ -82,12 +82,12 @@ auto vectorial_complex_plane_wave(inq::math::vector3<double, inq::math::covarian
 	return f;
 }
 
-auto d_vectorial_complex_plane_wave(inq::math::vector3<double, inq::math::covariant> k, inq::math::vector3<double, inq::math::contravariant> r){
+auto d_vectorial_complex_plane_wave(inq::math::vector3<double> k, inq::math::vector3<double> r){
 	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0,1.0)*dot(k, r));
 	return factor*(1.0*k[0] - 2.3*k[1] + 3.4*k[2]);
 }
 
-auto vectorial_real_wave(inq::math::vector3<double, inq::math::covariant> k, inq::math::vector3<double, inq::math::contravariant> r){
+auto vectorial_real_wave(inq::math::vector3<double> k, inq::math::vector3<double> r){
 	std::array<double, 3> f;
 
 	f[0] = 1.0*sin(dot(k, r));
@@ -96,7 +96,7 @@ auto vectorial_real_wave(inq::math::vector3<double, inq::math::covariant> k, inq
 	return f;
 }
 
-auto d_vectorial_real_wave (inq::math::vector3<double, inq::math::covariant> k, inq::math::vector3<double, inq::math::contravariant> r){
+auto d_vectorial_real_wave (inq::math::vector3<double> k, inq::math::vector3<double> r){
 	return 1.0*k[0]*cos(dot(k, r)) + 2.5*k[1]*sin(dot(k, r)) + 3.3*k[2]*cos(dot(k, r));
 }
 
@@ -120,7 +120,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 
 	basis::real_space rs(box, cart_comm);
 
-	auto kvec = 2.0*M_PI*vector3<double, math::covariant>(1.0/lx, 1.0/ly, 1.0/lz);
+	auto kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 	
 	SECTION("Vectored plane-wave"){ 
 		basis::field<basis::real_space, math::vector3<complex>> vectorial_complex_field(rs);
@@ -128,7 +128,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int idir = 0; idir < 3 ; idir++) vectorial_complex_field.cubic()[ix][iy][iz][idir] = vectorial_complex_plane_wave (kvec, vec)[idir];
 				}
 			}
@@ -140,7 +140,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field-set 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					diff3 += fabs(d_vectorial_complex_field.cubic()[ix][iy][iz] - d_vectorial_complex_plane_wave (kvec, vec));
 				}
 			}
@@ -155,7 +155,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int idir = 0; idir < 3 ; idir++) vectorial_real_field.cubic()[ix][iy][iz][idir] = vectorial_real_wave (kvec, vec)[idir];
 				}
 			}
@@ -167,7 +167,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field-set 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					diff4 += fabs(d_vectorial_real_field.cubic()[ix][iy][iz] - d_vectorial_real_wave (kvec, vec));
 				}
 			}

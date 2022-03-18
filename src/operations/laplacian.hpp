@@ -133,20 +133,20 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
 	
 		//Define k-vector for test function
-		auto kvec = 2.0*M_PI*vector3<double, math::covariant>(1.0/lx, 1.0/ly, 1.0/lz);
+		auto kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 		
 		auto ff = [] (auto & kk, auto & rr){
 			return exp(inq::complex(0.0,1.0)*dot(kk, rr));
 		};
 		
-		auto laplff = [cell = rs.cell(), ff] (auto & kk, auto & rr) {
-			return -cell.metric().norm(kk)*ff(kk, rr);
+		auto laplff = [ff] (auto & kk, auto & rr) {
+			return -norm(kk)*ff(kk, rr);
 		};
 		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < func.local_set_size(); ist++) func.cubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
 				}
 			}
@@ -165,7 +165,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector(ix, iy, iz);
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < func.local_set_size(); ist++){
 						auto anvalue = (ist + 1.0)*factor*laplff(kvec, vec);
 						diff += fabs(lapl.cubic()[ix][iy][iz][ist] - anvalue);

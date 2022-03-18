@@ -345,7 +345,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		for(int ix = 0; ix < small.basis().local_sizes()[0]; ix++){
 			for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
-					auto rr = small.basis().point_op().rvector(ix, iy, iz);
+					auto rr = small.basis().point_op().rvector_cartesian(ix, iy, iz);
 					small.cubic()[ix][iy][iz] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 				}
 			}
@@ -375,7 +375,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						CHECK(imag(large.cubic()[ix][iy][iz]) == 0.0_a);
 						count_large++;
 					} else {
-						auto rr = large.basis().point_op().rvector(ix, iy, iz);
+						auto rr = large.basis().point_op().rvector_cartesian(ix, iy, iz);
 						CHECK(real(large.cubic()[ix][iy][iz]) == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
 						count_small++;
 					}
@@ -420,7 +420,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto ixg = small.basis().cubic_dist(0).local_to_global(ix);
 						auto iyg = small.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = small.basis().cubic_dist(2).local_to_global(iz);						
-						auto rr = small.basis().point_op().rvector(ixg, iyg, izg);
+						auto rr = small.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						small.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 					}
 				}
@@ -451,7 +451,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 							CHECK(imag(large.cubic()[ix][iy][iz][ist]) == 0.0_a);							
 							count_large++;
 						} else {
-							auto rr = large.basis().point_op().rvector(ix, iy, iz);
+							auto rr = large.basis().point_op().rvector_cartesian(ix, iy, iz);
 							CHECK(real(large.cubic()[ix][iy][iz][ist]) == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
 							count_small++;
 						}
@@ -491,7 +491,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 					auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
 					auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
 					auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
-					auto rr = coarse.basis().point_op().rvector(ixg, iyg, izg);
+					auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 					coarse.cubic()[ix][iy][iz] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 				}
 			}
@@ -522,7 +522,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 					auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
 					auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
 					auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
-					auto rr = fine.basis().point_op().rvector(ixg, iyg, izg);
+					auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 					CHECK(fabs(real(fine.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 					CHECK(fabs(imag(fine.cubic()[ix][iy][iz])) < 5e-3);
 				}
@@ -544,7 +544,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
 						auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
-						auto rr = coarse.basis().point_op().rvector(ixg, iyg, izg);
+						auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						coarse.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 
 					}
@@ -572,7 +572,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
 						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
-						auto rr = fine.basis().point_op().rvector(ixg, iyg, izg);
+						auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						CHECK(fabs(real(fine.cubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 						CHECK(fabs(imag(fine.cubic()[ix][iy][iz][ist])) < 5e-3);
 						
@@ -598,7 +598,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 					auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
 					auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
 					auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
-					auto rr = fine.basis().point_op().rvector(ixg, iyg, izg);
+					auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 					fine.cubic()[ix][iy][iz] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 				}
 			}
@@ -629,7 +629,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 					auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
 					auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
 					auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
-					auto rr = coarse.basis().point_op().rvector(ixg, iyg, izg);
+					auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 					CHECK(fabs(real(coarse.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 					CHECK(fabs(imag(coarse.cubic()[ix][iy][iz])) < 5e-3);
 				}
@@ -653,7 +653,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
 						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
-						auto rr = fine.basis().point_op().rvector(ixg, iyg, izg);
+						auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						fine.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 					}
 				}
@@ -680,7 +680,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
 						auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
-						auto rr = coarse.basis().point_op().rvector(ixg, iyg, izg);
+						auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						CHECK(fabs(real(coarse.cubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 						CHECK(fabs(imag(coarse.cubic()[ix][iy][iz][ist])) < 5e-3);
 					}
