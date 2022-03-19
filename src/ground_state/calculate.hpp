@@ -136,15 +136,16 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		//update the Hartree-Fock operator, mixing the new and old orbitals
 		if(ham.exchange.enabled()) {
 			CALI_CXX_MARK_SCOPE("hf_mixing");
-				
-			for(int ii = 0; ii < electrons.lot()[0].fields().num_elements(); ii++){
-				ham.exchange.hf_orbitals.fields().data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.fields().data()[ii] + solver.mixing()*electrons.lot()[0].fields().data()[ii];
-			}
+			
+			gpu::run(electrons.lot()[0].fields().num_elements(),
+							 [hfo = raw_pointer_cast(ham.exchange.hf_orbitals.fields().data()), phi = raw_pointer_cast(electrons.lot()[0].fields().data()), mix = solver.mixing()] GPU_LAMBDA (auto ii){
+								 hfo[ii] = (1.0 - mix)*hfo[ii] + mix*phi[ii];
+							 });
 			
 			//probably the occupations should be mixed too
 			ham.exchange.hf_occupations = electrons.occupations()[0];
 		}
-
+		
 		CALI_MARK_BEGIN("mixing");
 
 		double density_diff = 0.0;

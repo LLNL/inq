@@ -44,28 +44,26 @@ namespace hamiltonian {
 
 				CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
 				
-				// Hartree-Fock exchange
 				for(int ii = 0; ii < phi.fields().set_size(); ii++){
 					for(int jj = 0; jj < phi.fields().set_size(); jj++){
 						
 						basis::field<basis::real_space, complex> rhoij(phi.fields().basis());
-
-						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.fields().basis().size(); ipoint++) rhoij.linear()[ipoint] = conj(hf_orbitals.matrix()[ipoint][jj])*phi.fields().matrix()[ipoint][ii];
 						
-						//OPTIMIZATION: this could be done in place
+						gpu::run(phi.fields().basis().size(), [rho = begin(rhoij.linear()), hfo = begin(hf_orbitals.matrix()), ph = begin(phi.fields().matrix()), ii, jj] GPU_LAMBDA (auto ipoint){ 
+							rho[ipoint] = conj(hfo[ipoint][jj])*ph[ipoint][ii];
+						});
+						
 						auto potij = poisson_solver_(rhoij);
 						
-						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.fields().basis().size(); ipoint++) {
-							exxphi.fields().matrix()[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals.matrix()[ipoint][jj]*potij.linear()[ipoint];
-						}
+						gpu::run(phi.fields().basis().size(), [pot = begin(potij.linear()), hfo = begin(hf_orbitals.matrix()), exph = begin(exxphi.fields().matrix()), occ = begin(hf_occupations), ii, jj, coeff = exchange_coefficient_]
+										 GPU_LAMBDA (auto ipoint){
+							exph[ipoint][ii] -= 0.5*coeff*occ[jj]*hfo[ipoint][jj]*pot[ipoint];
+						});
 						
 					}
 				}
 				
-			}
-			
+			}			
 		}
 
 		auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
