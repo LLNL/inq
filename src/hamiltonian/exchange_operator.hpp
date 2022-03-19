@@ -42,6 +42,8 @@ namespace hamiltonian {
 
 			if(exchange_coefficient_ != 0.0){
 
+				CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
+				
 				// Hartree-Fock exchange
 				for(int ii = 0; ii < phi.fields().set_size(); ii++){
 					for(int jj = 0; jj < phi.fields().set_size(); jj++){
