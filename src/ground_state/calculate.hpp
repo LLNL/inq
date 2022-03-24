@@ -88,8 +88,9 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 	std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
-		
-	ham.exchange.hf_orbitals.fields() = 0.0;
+
+	ham.exchange.hf_occupations = electrons.occupations()[0];
+	ham.exchange.hf_orbitals.fields() = electrons.lot()[0].fields();
 
 	int conv_count = 0;
 
