@@ -43,27 +43,27 @@ namespace hamiltonian {
 			if(exchange_coefficient_ != 0.0){
 
 				CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
+
+				basis::field_set<basis::real_space, complex> rhoij(phi.fields().basis(), phi.fields().set_size());
 				
-				for(int ii = 0; ii < phi.fields().set_size(); ii++){
-					for(int jj = 0; jj < phi.fields().set_size(); jj++){
-						
-						basis::field<basis::real_space, complex> rhoij(phi.fields().basis());
-						
-						gpu::run(phi.fields().basis().size(), [rho = begin(rhoij.linear()), hfo = begin(hf_orbitals.matrix()), ph = begin(phi.fields().matrix()), ii, jj] GPU_LAMBDA (auto ipoint){ 
-							rho[ipoint] = conj(hfo[ipoint][jj])*ph[ipoint][ii];
-						});
-						
-						auto potij = poisson_solver_(rhoij);
-						
-						gpu::run(phi.fields().basis().size(), [pot = begin(potij.linear()), hfo = begin(hf_orbitals.matrix()), exph = begin(exxphi.fields().matrix()), occ = begin(hf_occupations), ii, jj, coeff = exchange_coefficient_]
-										 GPU_LAMBDA (auto ipoint){
-							exph[ipoint][ii] -= 0.5*coeff*occ[jj]*hfo[ipoint][jj]*pot[ipoint];
-						});
-						
-					}
+				for(int jj = 0; jj < hf_orbitals.set_size(); jj++){
+					
+					gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
+									 [rho = begin(rhoij.matrix()), hfo = begin(hf_orbitals.matrix()), ph = begin(phi.fields().matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
+										 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
+									 });
+					
+					poisson_solver_.in_place(rhoij);
+					
+					gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
+									 [pot = begin(rhoij.matrix()), hfo = begin(hf_orbitals.matrix()), exph = begin(exxphi.fields().matrix()), occ = begin(hf_occupations), jj, coeff = exchange_coefficient_]
+									 GPU_LAMBDA (auto ist, auto ipoint){
+										 exph[ipoint][ist] -= 0.5*coeff*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
+									 });
+					
 				}
 				
-			}			
+			}
 		}
 
 		auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
