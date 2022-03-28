@@ -108,6 +108,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		if(ham.exchange.enabled()) {
 			CALI_CXX_MARK_SCOPE("hf_update");
 
+			assert(electrons.lot_size() == 1);
+			
 			ham.exchange.hf_orbitals.fields() = electrons.lot()[0].fields();
 			ham.exchange.hf_occupations = electrons.occupations()[0];
 		}
