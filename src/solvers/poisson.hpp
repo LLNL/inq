@@ -38,7 +38,7 @@ class poisson {
 
 public:
 
-	basis::field<basis::real_space, complex> poisson_solve_periodic(const basis::field<basis::real_space, complex> & density) const {
+	basis::field<basis::real_space, complex> poisson_solve_periodic(basis::field<basis::real_space, complex> const & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -76,7 +76,7 @@ public:
 		const basis::real_space & real_space = density.basis();
 		basis::fourier_space fourier_basis(real_space);
 
-		auto potential_fs = operations::space::to_fourier(density);
+		auto potential_fs = operations::space::to_fourier(std::move(density));
 			
 		const double scal = (-4.0*M_PI)/fourier_basis.size();
 
@@ -97,10 +97,10 @@ public:
 							 });
 		}
 		
-		density = operations::space::to_real(potential_fs,  /*normalize = */ false);
+		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
 	
-	basis::field<basis::real_space, complex> poisson_solve_finite(const basis::field<basis::real_space, complex> & density) const {
+	basis::field<basis::real_space, complex> poisson_solve_finite(basis::field<basis::real_space, complex> const & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -140,7 +140,7 @@ public:
 		CALI_CXX_MARK_FUNCTION;
 
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
-		auto potential_fs = operations::space::to_fourier(potential2x);
+		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
 			
 		auto fourier_basis = potential_fs.basis();
 
@@ -164,7 +164,7 @@ public:
 							 });
 		}
 
-		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
+		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
 	}
 	
