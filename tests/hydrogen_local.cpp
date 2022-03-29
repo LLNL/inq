@@ -133,6 +133,10 @@ int main(int argc, char ** argv){
 		
 	}
 
+	/*
+
+		Disabled because it is too slow for the moment.
+
 	// Hartree-Fock
 	{
 	
@@ -150,7 +154,7 @@ int main(int argc, char ** argv){
 		energy_match.check("ion-ion energy",      result.energy.ion,          -0.093849362128);
 		
 	}
-	
+	*/
 	return energy_match.fail();
 	
 }
