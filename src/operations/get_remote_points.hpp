@@ -149,13 +149,13 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
 	// send the value of the request points
 	math::array<ElementType, 1> value_points_requested(rp.total_requested);
 	math::array<ElementType, 1> value_points_needed(rp.total_needed);
-	
-	for(long ip = 0; ip < rp.total_requested; ip++){
-		auto iplocal = source.basis().part().global_to_local(utils::global_index(rp.list_points_requested[ip]));
-		assert(iplocal < source.basis().size());
-		value_points_requested[ip] = source.linear()[iplocal];
-	}
 
+	gpu::run(rp.total_requested,
+					 [par =  source.basis().part(), lreq = begin(rp.list_points_requested), vreq = begin(value_points_requested), sou = begin(source.linear())] GPU_LAMBDA (auto ip){
+						 auto iplocal = par.global_to_local(utils::global_index(lreq[ip]));
+						 vreq[ip] = sou[iplocal];
+					 });
+	
 	auto mpi_type = boost::mpi3::detail::basic_datatype<ElementType>();
 	
 	MPI_Alltoallv(raw_pointer_cast(value_points_requested.data_elements()), raw_pointer_cast(rp.list_sizes_requested.data_elements()), raw_pointer_cast(rp.list_displs_requested.data_elements()), mpi_type,
@@ -201,16 +201,13 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
 	// send the value of the request points
 	math::array<ElementType, 2> value_points_requested({rp.total_requested, nset});
 	math::array<ElementType, 2> value_points_needed({rp.total_needed, nset});
+
+	gpu::run(nset, rp.total_requested,
+					 [par =  source.basis().part(), lreq = begin(rp.list_points_requested), vreq = begin(value_points_requested), sou = begin(source.matrix())] GPU_LAMBDA (auto iset, auto ip){
+						 auto iplocal = par.global_to_local(utils::global_index(lreq[ip]));
+						 vreq[ip][iset] = sou[iplocal][iset];
+					 });
 	
-	for(long ip = 0; ip < rp.total_requested; ip++){
-		for(long iset = 0; iset < nset; iset++){
-			auto iplocal = source.basis().part().global_to_local(utils::global_index(rp.list_points_requested[ip]));
-			assert(iplocal < source.basis().size());
-			value_points_requested[ip][iset] = source.matrix()[iplocal][iset];
-		}
-	}
-
-
 	MPI_Datatype mpi_type;
 	MPI_Type_contiguous(nset, boost::mpi3::detail::basic_datatype<ElementType>(), &mpi_type);
 	MPI_Type_commit(&mpi_type);
