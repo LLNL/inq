@@ -23,6 +23,7 @@
 
 #include <utils/raw_pointer_cast.hpp>
 #include <basis/field.hpp>
+#include <basis/field_set.hpp>
 
 #include <mpi3/communicator.hpp>
 
@@ -31,8 +32,7 @@
 namespace inq {
 namespace operations {
 
-
-struct remote_points {
+struct remote_points_table {
 
 	struct point_position {
 		long point;
@@ -50,7 +50,7 @@ struct remote_points {
 	math::array<int, 1> list_displs_requested;	
 	
 	template <class BasisType, class ArrayType>
-	remote_points(BasisType & basis, ArrayType const & point_list){
+	remote_points_table(BasisType & basis, ArrayType const & point_list){
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -144,7 +144,7 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
 		return remote_points;
 	}
 	
-	remote_points rp(source.basis(), point_list);
+	remote_points_table rp(source.basis(), point_list);
 	
 	// send the value of the request points
 	math::array<ElementType, 1> value_points_requested(rp.total_requested);
@@ -177,6 +177,65 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
   return remote_points;
 }
 
+template <class BasisType, class ElementType, class ArrayType>
+math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, ElementType> const & source, ArrayType const & point_list){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	auto const nset = source.local_set_size();
+	auto const num_proc = source.basis().comm().size();
+ 
+	if(num_proc == 1){
+		math::array<ElementType, 2> remote_points({point_list.size(), nset});
+		
+		gpu::run(nset, point_list.size(),
+						 [rem = begin(remote_points), sou = begin(source.matrix()), poi = begin(point_list)] GPU_LAMBDA (auto ist, auto ip){
+							 rem[ip][ist] = sou[poi[ip]][ist];
+						 });
+		
+		return remote_points;
+	}
+	
+	remote_points_table rp(source.basis(), point_list);
+	
+	// send the value of the request points
+	math::array<ElementType, 2> value_points_requested({rp.total_requested, nset});
+	math::array<ElementType, 2> value_points_needed({rp.total_needed, nset});
+	
+	for(long ip = 0; ip < rp.total_requested; ip++){
+		for(long iset = 0; iset < nset; iset++){
+			auto iplocal = source.basis().part().global_to_local(utils::global_index(rp.list_points_requested[ip]));
+			assert(iplocal < source.basis().size());
+			value_points_requested[ip][iset] = source.matrix()[iplocal][iset];
+		}
+	}
+
+
+	MPI_Datatype mpi_type;
+	MPI_Type_contiguous(nset, boost::mpi3::detail::basic_datatype<ElementType>(), &mpi_type);
+	MPI_Type_commit(&mpi_type);
+	
+	MPI_Alltoallv(raw_pointer_cast(value_points_requested.data_elements()), raw_pointer_cast(rp.list_sizes_requested.data_elements()), raw_pointer_cast(rp.list_displs_requested.data_elements()), mpi_type,
+								raw_pointer_cast(value_points_needed.data_elements()), raw_pointer_cast(rp.list_sizes_needed.data_elements()), raw_pointer_cast(rp.list_displs_needed.data_elements()), mpi_type, source.basis().comm().get());
+
+	MPI_Type_free(&mpi_type);
+	
+	// Finally copy the values to the return array in the proper order
+	math::array<ElementType, 2> remote_points({point_list.size(), nset});
+
+	long ip = 0;
+	for(int iproc = 0; iproc < num_proc; iproc++){
+		for(long jp = 0; jp < long(rp.points_needed[iproc].size()); jp++) {
+				for(long iset = 0; iset < nset; iset++) remote_points[rp.points_needed[iproc][jp].position][iset] = value_points_needed[ip][iset];
+			ip++;
+		}
+	}
+
+	assert(ip == long(point_list.size()));
+	
+  return remote_points;
+}
+
 }
 }
 
@@ -193,6 +252,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
+	using Catch::Approx;
 	using math::vector3;
 
   boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
@@ -202,11 +262,15 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 	systems::box box = systems::box::orthorhombic(13.3_b, 6.55_b, 8.02_b).cutoff_energy(20.0_Ha);
   basis::real_space rs(box, cart_comm);
 
+	int const nvec = 19;
+	
   basis::field<basis::real_space, complex> test_field(rs);
+  basis::field_set<basis::real_space, complex> test_field_set(rs, 19);
 
   for(long ip = 0; ip < rs.local_size(); ip++){
     auto ipg = rs.part().local_to_global(ip);
     test_field.linear()[ip] = complex(ipg.value(), 0.1*ipg.value());
+    for(int ivec = 0; ivec < nvec; ivec++) test_field_set.matrix()[ip][ivec] = (ivec + 1.0)*complex(ipg.value(), 0.1*ipg.value());		
   }
 
 	srand48(500 + 34895783*cart_comm.rank());
@@ -221,10 +285,15 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 	}
 
 	auto remote_points = operations::get_remote_points(test_field, list);
+	auto remote_points_set = operations::get_remote_points(test_field_set, list);	
 
 	for(long ip = 0; ip < npoints; ip++){
-		CHECK(double(list[ip]) == real(remote_points[ip]));
-		CHECK(0.1*double(list[ip]) == imag(remote_points[ip]));
+		CHECK(double(list[ip]) == Approx(real(remote_points[ip])));
+		CHECK(0.1*double(list[ip]) == Approx(imag(remote_points[ip])));
+		for(int ivec = 0; ivec < nvec; ivec++){
+			CHECK((ivec + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ivec])));
+			CHECK((ivec + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ivec])));
+		}
 	}
 
 	
