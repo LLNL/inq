@@ -31,14 +31,111 @@
 namespace inq {
 namespace operations {
 
+
+struct remote_points {
+
+	struct point_position {
+		long point;
+		long position;
+	};
+	
+	std::vector<std::vector<point_position>> points_needed;
+	int total_needed;
+	int total_requested;
+	math::array<int, 1> list_points_requested;
+	math::array<int, 1> list_sizes_requested;
+	math::array<int, 1> list_sizes_needed;	
+	math::array<int, 1> list_needed;
+	math::array<int, 1> list_displs_needed;
+	math::array<int, 1> list_displs_requested;	
+	
+	template <class BasisType, class ArrayType>
+	remote_points(BasisType & basis, ArrayType const & point_list){
+
+		CALI_CXX_MARK_FUNCTION;
+
+		auto const num_proc = basis.comm().size();
+
+		// create a list per processor of the points we need
+		points_needed.resize(num_proc);
+		
+		for(long ilist = 0; ilist < long(point_list.size()); ilist++){
+			auto point = point_list[ilist];
+			assert(point >= 0);
+			assert(point < basis.size());
+
+			auto src_proc = basis.part().location(point);
+			assert(src_proc >= 0 and src_proc < num_proc); 
+			points_needed[src_proc].push_back(point_position{point, ilist});
+		}
+
+		// find out how many points each processor requests from us
+		list_sizes_needed.reextent(num_proc);
+		list_sizes_requested.reextent(num_proc);	
+	
+		total_needed = 0;
+		for(int iproc = 0; iproc < num_proc; iproc++){
+			list_sizes_needed[iproc] = points_needed[iproc].size();
+			total_needed += list_sizes_needed[iproc];
+		}
+
+		assert(total_needed == long(point_list.size()));
+
+		MPI_Alltoall(raw_pointer_cast(list_sizes_needed.data_elements()), 1, MPI_INT, raw_pointer_cast(list_sizes_requested.data_elements()), 1, MPI_INT, basis.comm().get());
+
+		// get the list of points each processor requests from us and send a list of the points we need
+		list_needed.reextent(total_needed);
+		list_displs_needed.reextent(num_proc);
+		list_displs_requested.reextent(num_proc);
+	
+		total_requested = 0;
+
+		basis.comm().barrier();
+	
+		for(int iproc = 0; iproc < num_proc; iproc++){
+
+			total_requested += list_sizes_requested[iproc];
+		
+			if(iproc > 0){
+				list_displs_needed[iproc] = list_displs_needed[iproc - 1] + list_sizes_needed[iproc - 1];
+				list_displs_requested[iproc] = list_displs_requested[iproc - 1] + list_sizes_requested[iproc - 1];			
+			} else {
+				list_displs_needed[iproc] = 0;
+				list_displs_requested[iproc] = 0;
+			}
+
+		}
+
+		basis.comm().barrier();
+	
+		for(int iproc = 0; iproc < num_proc; iproc++){
+
+			basis.comm().barrier();
+		
+			for(long ip = 0; ip < list_sizes_needed[iproc]; ip++) {
+				list_needed[list_displs_needed[iproc] + ip] = points_needed[iproc][ip].point;
+			}
+		}
+
+		list_points_requested.reextent(total_requested);
+	
+		MPI_Alltoallv(raw_pointer_cast(list_needed.data_elements()), raw_pointer_cast(list_sizes_needed.data_elements()), raw_pointer_cast(list_displs_needed.data_elements()), MPI_INT,
+									raw_pointer_cast(list_points_requested.data_elements()), raw_pointer_cast(list_sizes_requested.data_elements()), raw_pointer_cast(list_displs_requested.data_elements()), MPI_INT, basis.comm().get());
+		
+	}
+
+};
+
 template <class BasisType, class ElementType, class ArrayType>
 math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementType> const & source, ArrayType const & point_list){
 
 	CALI_CXX_MARK_FUNCTION;
 
-	if(source.basis().comm().size() == 1){
+	auto const num_proc = source.basis().comm().size();
+ 
+	if(num_proc == 1){
 		math::array<ElementType, 1> remote_points(point_list.size());
-
+		
 		gpu::run(point_list.size(),
 						 [rem = begin(remote_points), sou = begin(source.linear()), poi = begin(point_list)] GPU_LAMBDA (auto ip){
 							 rem[ip] = sou[poi[ip]];
@@ -46,102 +143,31 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
 		
 		return remote_points;
 	}
-
-	struct point_position {
-		long point;
-		long position;
-	};
-
-	auto const num_proc = source.basis().comm().size();
-
-	// create a list per processor of the points we need
-	std::vector<std::vector<point_position>> points_needed(num_proc);
-		
-	for(long ilist = 0; ilist < long(point_list.size()); ilist++){
-		auto point = point_list[ilist];
-		assert(point >= 0);
-		assert(point < source.basis().size());
-
-		auto src_proc = source.basis().part().location(point);
-		assert(src_proc >= 0 and src_proc < num_proc); 
-		points_needed[src_proc].push_back(point_position{point, ilist});
-	}
-
-	// find out how many points each processor requests from us
-	math::array<int, 1> list_sizes_needed(num_proc);
-	math::array<int, 1> list_sizes_requested(num_proc);	
 	
-	int total_needed = 0;
-	for(int iproc = 0; iproc < num_proc; iproc++){
-		list_sizes_needed[iproc] = points_needed[iproc].size();
-		total_needed += list_sizes_needed[iproc];
-	}
-
-	assert(total_needed == long(point_list.size()));
-
-	MPI_Alltoall(raw_pointer_cast(list_sizes_needed.data_elements()), 1, MPI_INT, raw_pointer_cast(list_sizes_requested.data_elements()), 1, MPI_INT, source.basis().comm().get());
-
-	// get the list of points each processor requests from us and send a list of the points we need
-	math::array<int, 1> list_needed(total_needed);
-	math::array<int, 1> list_displs_needed(num_proc);
-	math::array<int, 1> list_displs_requested(num_proc);
+	remote_points rp(source.basis(), point_list);
 	
-	int total_requested = 0;
-
-	source.basis().comm().barrier();
-	
-	for(int iproc = 0; iproc < num_proc; iproc++){
-
-		total_requested += list_sizes_requested[iproc];
-		
-		if(iproc > 0){
-			list_displs_needed[iproc] = list_displs_needed[iproc - 1] + list_sizes_needed[iproc - 1];
-			list_displs_requested[iproc] = list_displs_requested[iproc - 1] + list_sizes_requested[iproc - 1];			
-		} else {
-			list_displs_needed[iproc] = 0;
-			list_displs_requested[iproc] = 0;
-		}
-
-	}
-
-	source.basis().comm().barrier();
-	
-	for(int iproc = 0; iproc < num_proc; iproc++){
-
-		source.basis().comm().barrier();
-		
-		for(long ip = 0; ip < list_sizes_needed[iproc]; ip++) {
-			list_needed[list_displs_needed[iproc] + ip] = points_needed[iproc][ip].point;
-		}
-	}
-
-	math::array<int, 1> list_points_requested(total_requested);
-	
-	MPI_Alltoallv(raw_pointer_cast(list_needed.data_elements()), raw_pointer_cast(list_sizes_needed.data_elements()), raw_pointer_cast(list_displs_needed.data_elements()), MPI_INT,
-								raw_pointer_cast(list_points_requested.data_elements()), raw_pointer_cast(list_sizes_requested.data_elements()), raw_pointer_cast(list_displs_requested.data_elements()), MPI_INT, source.basis().comm().get());
-
 	// send the value of the request points
-	math::array<ElementType, 1> value_points_requested(total_requested);
-	math::array<ElementType, 1> value_points_needed(total_needed);
+	math::array<ElementType, 1> value_points_requested(rp.total_requested);
+	math::array<ElementType, 1> value_points_needed(rp.total_needed);
 	
-	for(long ip = 0; ip < total_requested; ip++){
-		auto iplocal = source.basis().part().global_to_local(utils::global_index(list_points_requested[ip]));
+	for(long ip = 0; ip < rp.total_requested; ip++){
+		auto iplocal = source.basis().part().global_to_local(utils::global_index(rp.list_points_requested[ip]));
 		assert(iplocal < source.basis().size());
 		value_points_requested[ip] = source.linear()[iplocal];
 	}
 
 	auto mpi_type = boost::mpi3::detail::basic_datatype<ElementType>();
 	
-	MPI_Alltoallv(raw_pointer_cast(value_points_requested.data_elements()), raw_pointer_cast(list_sizes_requested.data_elements()), raw_pointer_cast(list_displs_requested.data_elements()), mpi_type,
-								raw_pointer_cast(value_points_needed.data_elements()), raw_pointer_cast(list_sizes_needed.data_elements()), raw_pointer_cast(list_displs_needed.data_elements()), mpi_type, source.basis().comm().get());
+	MPI_Alltoallv(raw_pointer_cast(value_points_requested.data_elements()), raw_pointer_cast(rp.list_sizes_requested.data_elements()), raw_pointer_cast(rp.list_displs_requested.data_elements()), mpi_type,
+								raw_pointer_cast(value_points_needed.data_elements()), raw_pointer_cast(rp.list_sizes_needed.data_elements()), raw_pointer_cast(rp.list_displs_needed.data_elements()), mpi_type, source.basis().comm().get());
 
 	// Finally copy the values to the return array in the proper order
 	math::array<ElementType, 1> remote_points(point_list.size());
 
 	long ip = 0;
 	for(int iproc = 0; iproc < num_proc; iproc++){
-		for(long jp = 0; jp < long(points_needed[iproc].size()); jp++) {
-			remote_points[points_needed[iproc][jp].position] = value_points_needed[ip];
+		for(long jp = 0; jp < long(rp.points_needed[iproc].size()); jp++) {
+			remote_points[rp.points_needed[iproc][jp].position] = value_points_needed[ip];
 			ip++;
 		}
 	}
