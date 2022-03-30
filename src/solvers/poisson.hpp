@@ -240,7 +240,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 		}
 		
-		int const nst = 13;
+		int const nst = 5;
 		
 		field<real_space, complex> density(rs);
 		field_set<real_space, complex> density_set(rs, nst);
@@ -392,7 +392,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 		}
 
-		int const nst = 16;
+		int const nst = 3;
 		
 		field<real_space, complex> density(rs);
 		field_set<real_space, complex> density_set(rs, nst);
