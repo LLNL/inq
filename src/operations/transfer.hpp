@@ -118,26 +118,70 @@ auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const &
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	assert(not source.basis().part().parallel());
 			
-	basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
-
+	basis::field_set<BasisType, Type> destination(new_basis, source.set_size(), source.full_comm());
 	destination = 0.0;
 
-	for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-		for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-			for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-				for(int ist = 0; ist < source.set_part().local_size(); ist++){
-
+	if(not source.basis().part().parallel()){
+		
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+					
 					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
 					auto idest = destination.basis().from_symmetric_range(ii);
-							
-					destination.cubic()[idest[0]][idest[1]][idest[2]][ist] = factor*source.cubic()[ix][iy][iz][ist];
+					
+					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[idest[0]][idest[1]][idest[2]][ist] = factor*source.cubic()[ix][iy][iz][ist];
 				}
 			}
 		}
-	}
+		
+	} else {
 
+		std::vector<long> point_list;
+
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+					
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+
+					if(not destination.basis().local_contains(idest)) continue;
+
+					point_list.push_back(source.basis().linear_index(ix, iy, iz));
+					
+				}
+			}
+		}
+
+		math::array<long, 1> list(point_list.begin(), point_list.end());
+		
+		auto points = operations::get_remote_points(source, list);
+		
+		long ip = 0;
+		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
+	
+					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
+					auto idest = destination.basis().from_symmetric_range(ii);
+
+					if(not destination.basis().local_contains(idest)) continue;
+
+					auto il0 = destination.basis().cubic_dist(0).global_to_local(utils::global_index(idest[0]));
+					auto il1 = destination.basis().cubic_dist(1).global_to_local(utils::global_index(idest[1]));
+					auto il2 = destination.basis().cubic_dist(2).global_to_local(utils::global_index(idest[2]));
+
+					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[il0][il1][il2][ist] = factor*points[ip][ist];
+					ip++;
+					
+				}
+			}
+		}
+
+	}
+	
 	return destination;			
 }
 
@@ -220,24 +264,64 @@ auto shrink(basis::field_set<BasisType, Type> const & source, BasisType const & 
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	assert(not source.basis().part().parallel());
-			
-	basis::field_set<BasisType, Type> destination(new_basis, source.set_size());
+	basis::field_set<BasisType, Type> destination(new_basis, source.set_size(), source.full_comm());
 			
 	destination = 0.0;
-			
-	for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-		for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-			for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
-				for(int ist = 0; ist < source.set_part().local_size(); ist++){
-							
+	if(not new_basis.part().parallel()) {
+		
+		for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
+			for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
+				for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
+						
 					auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
 					auto isource = source.basis().from_symmetric_range(ii);
-					destination.cubic()[ix][iy][iz][ist] = factor*source.cubic()[isource[0]][isource[1]][isource[2]][ist];
-							
+					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[ix][iy][iz][ist] = factor*source.cubic()[isource[0]][isource[1]][isource[2]][ist];
+					
 				}
 			}
 		}
+		
+	} else {
+
+		math::array<long, 1> point_list(destination.basis().local_size());
+		
+		{
+			long ip = 0;
+			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
+						
+						auto ixg = destination.basis().cubic_dist(0).local_to_global(ix);
+						auto iyg = destination.basis().cubic_dist(1).local_to_global(iy);
+						auto izg = destination.basis().cubic_dist(2).local_to_global(iz);						
+						
+						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
+						auto isource = source.basis().from_symmetric_range(ii);
+						
+						point_list[ip] = source.basis().linear_index(isource[0], isource[1], isource[2]);
+						ip++;
+					}
+				}
+			}
+
+			assert(ip == point_list.size());
+		}
+
+		auto points = operations::get_remote_points(source, point_list);
+
+		{
+			long ip = 0;
+			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
+				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
+					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
+						
+						for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[ix][iy][iz][ist] = factor*points[ip][ist];
+						ip++;
+					}
+				}
+			}
+		}
+
 	}
 
 	return destination;
@@ -405,8 +489,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	SECTION("Enlarge and shrink -- field_set"){
 
-		basis::real_space grid(box);
-		basis::field_set<basis::real_space, TestType> small(grid, 5);
+		basis::real_space grid(box, basis_comm);
+		basis::field_set<basis::real_space, TestType> small(grid, 5, cart_comm);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
 		CHECK(small.basis().rlength()[1] == Approx(ll[1]));
@@ -460,7 +544,10 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 				}
 			}
 		}
-
+		
+		cart_comm.all_reduce_in_place_n(&count_small, 1, std::plus<>{});
+		cart_comm.all_reduce_in_place_n(&count_large, 1, std::plus<>{});		
+				
 		CHECK(count_small == small.basis().size()*small.set_size());
 		CHECK(count_large > count_small);
 		CHECK(count_large == large.basis().size()*small.set_size() - count_small);
