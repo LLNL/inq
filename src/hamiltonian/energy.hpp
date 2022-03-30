@@ -50,7 +50,7 @@ namespace hamiltonian {
 		}
 
 		auto kinetic() const {
-			return eigenvalues - 2.0*hartree - nvxc - hf_exchange - external - nonlocal;
+			return eigenvalues - 2.0*hartree - nvxc - 2.0*hf_exchange - external - nonlocal;
 		}
 		
 		auto total() const {
