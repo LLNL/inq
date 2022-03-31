@@ -76,7 +76,7 @@ int main(int argc, char ** argv){
 
 	auto ked = observables::kinetic_energy_density(electrons);
 
-	energy_match.check("kinetic energy", operations::integral(ked), 14.428064504524);
+	energy_match.check("kinetic energy", operations::integral(ked), 13.234089398748);
 	
 	fftw_cleanup(); //required for valgrid
 	
