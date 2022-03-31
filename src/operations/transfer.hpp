@@ -40,7 +40,7 @@ namespace operations {
 namespace transfer {
 
 template <class FieldType>
-auto enlarge(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
+FieldType enlarge(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -48,18 +48,15 @@ auto enlarge(FieldType const & source, typename FieldType::basis_type const & ne
 	destination = 0.0;
 	
 	if(not source.basis().part().parallel()){
-		
-		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-					
-					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-					auto idest = destination.basis().from_symmetric_range(ii);
-					
-					destination.cubic()[idest[0]][idest[1]][idest[2]] = factor*source.cubic()[ix][iy][iz];
-				}
-			}
-		}
+
+		gpu::run(source.basis().sizes()[2], source.basis().sizes()[1], source.basis().sizes()[0],
+						 [sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 
+							 auto ii = sbas.to_symmetric_range(ix, iy, iz);
+							 auto idest = dbas.from_symmetric_range(ii);
+							 
+							 des[idest[0]][idest[1]][idest[2]] = factor*sou[ix][iy][iz];
+						 });
 		
 	} else {
 
@@ -114,7 +111,7 @@ auto enlarge(FieldType const & source, typename FieldType::basis_type const & ne
 //////////////////////////////////////////////////////////
 
 template <class Type, class BasisType>
-auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
+basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -124,17 +121,14 @@ auto enlarge(basis::field_set<BasisType, Type> const & source, BasisType const &
 
 	if(not source.basis().part().parallel()){
 		
-		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-					
-					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-					auto idest = destination.basis().from_symmetric_range(ii);
-					
-					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[idest[0]][idest[1]][idest[2]][ist] = factor*source.cubic()[ix][iy][iz][ist];
-				}
-			}
-		}
+		gpu::run(source.basis().sizes()[2], source.basis().sizes()[1], source.basis().sizes()[0],
+						 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 
+							 auto ii = sbas.to_symmetric_range(ix, iy, iz);
+							 auto idest = dbas.from_symmetric_range(ii);
+							 
+							 for(int ist = 0; ist < nst; ist++) des[idest[0]][idest[1]][idest[2]][ist] = factor*sou[ix][iy][iz][ist];
+						 });
 		
 	} else {
 
