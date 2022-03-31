@@ -95,43 +95,43 @@ gcc-ompi:
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
-nvcc11.3-ompi-compileonly:
-    image: nvidia/cuda:11.3.0-devel
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - rm -f /etc/apt/sources.list.d/nvidia-ml.list
-      - apt-get update
-      - apt-get install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates wget
-      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null # following https://askubuntu.com/a/865294/15943
-      - mkdir /opt/cmake
-      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
-      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-      - cmake --version
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mkdir build && cd build
-      - /usr/local/cuda/bin/nvcc -V
-      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
-      - make silicon
+#nvcc11.3-ompi-compileonly:
+#    image: nvidia/cuda:11.3.0-devel
+#    stage: build
+#    script:
+#      - export DEBIAN_FRONTEND=noninteractive
+#      - rm -f /etc/apt/sources.list.d/nvidia-ml.list
+#      - apt-get update
+#      - apt-get install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates wget
+#      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null # following https://askubuntu.com/a/865294/15943
+#      - mkdir /opt/cmake
+#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+#      - cmake --version
+#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+#      - mkdir build && cd build
+#      - /usr/local/cuda/bin/nvcc -V
+#      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+#      - make silicon
 
-nvcc11.4-ompi-compileonly:
-    image: nvidia/cuda:11.4.0-devel
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - rm -f /etc/apt/sources.list.d/nvidia-ml.list      
-      - apt-get update
-      - apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates wget
-      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null # following https://askubuntu.com/a/865294/15943
-      - mkdir /opt/cmake
-      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
-      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-      - cmake --version
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mkdir build && cd build
-      - /usr/local/cuda/bin/nvcc -V
-      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
-      - make silicon
+#nvcc11.4-ompi-compileonly:
+#    image: nvidia/cuda:11.4.0-devel
+#    stage: build
+#    script:
+#      - export DEBIAN_FRONTEND=noninteractive
+#      - rm -f /etc/apt/sources.list.d/nvidia-ml.list      
+#      - apt-get update
+#      - apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates wget
+#      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null # following https://askubuntu.com/a/865294/15943
+#      - mkdir /opt/cmake
+#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+#      - cmake --version
+#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+#      - mkdir build && cd build
+#      - /usr/local/cuda/bin/nvcc -V
+#      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+#      - make silicon
 
 gcc-ompi-fast:
     stage: test
