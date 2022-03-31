@@ -87,8 +87,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
-	ham.exchange.hf_occupations = electrons.occupations()[0];
-	ham.exchange.hf_orbitals.fields() = electrons.lot()[0].fields();
+	ham.exchange.update(electrons);
 
 	int conv_count = 0;
 	for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
@@ -104,15 +103,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			electrons.update_occupations(electrons.eigenvalues());
 		}
 
-
-		if(ham.exchange.enabled()) {
-			CALI_CXX_MARK_SCOPE("hf_update");
-
-			assert(electrons.lot_size() == 1);
-			
-			ham.exchange.hf_orbitals.fields() = electrons.lot()[0].fields();
-			ham.exchange.hf_occupations = electrons.occupations()[0];
-		}
+		ham.exchange.update(electrons);
 		
 		for(auto & phi : electrons.lot()) {
 			auto fphi = operations::space::to_fourier(phi);

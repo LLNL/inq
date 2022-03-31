@@ -38,6 +38,18 @@ namespace hamiltonian {
 
 		}
 
+		template <class ElectronsType>
+		void update(ElectronsType const & el){
+			if(not enabled()) return;
+			
+			CALI_CXX_MARK_SCOPE("hf_update");
+
+			assert(el.lot_size() == 1);			
+			
+			hf_occupations = el.occupations()[0];
+			hf_orbitals.fields() = el.lot()[0].fields();
+		}
+		
 		void operator()(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
 
 			if(exchange_coefficient_ != 0.0){
@@ -77,10 +89,10 @@ namespace hamiltonian {
 			return exxphi;
 		}
 
-		auto enabled() const {
+		bool enabled() const {
 			return exchange_coefficient_ != 0.0;
 		}
-		
+
 		math::array<double, 1> hf_occupations;
 		states::orbital_set<basis::real_space, complex> hf_orbitals;
 
