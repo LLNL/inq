@@ -183,7 +183,7 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 //////////////////////////////////////////////////////////
 		
 template <class FieldType>
-auto shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
+FieldType shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -192,18 +192,15 @@ auto shrink(FieldType const & source, typename FieldType::basis_type const & new
 	destination = 0.0;
 		
 	if(not new_basis.part().parallel()) {
-	
-		for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
-					
-					auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
-					auto isource = source.basis().from_symmetric_range(ii);
-					destination.cubic()[ix][iy][iz] = factor*source.cubic()[isource[0]][isource[1]][isource[2]];
-					
-				}
-			}
-		}
+
+		gpu::run(destination.basis().sizes()[2], destination.basis().sizes()[1], destination.basis().sizes()[0],
+						 [sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor]
+						 GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 
+							 auto ii = dbas.to_symmetric_range(ix, iy, iz);
+							 auto isource = sbas.from_symmetric_range(ii);
+							 des[ix][iy][iz] = factor*sou[isource[0]][isource[1]][isource[2]];
+						 });
 
 	} else {
 
@@ -254,7 +251,7 @@ auto shrink(FieldType const & source, typename FieldType::basis_type const & new
 //////////////////////////////////////////////////////////
 		
 template <class Type, class BasisType>
-auto shrink(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
+basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -262,18 +259,15 @@ auto shrink(basis::field_set<BasisType, Type> const & source, BasisType const & 
 			
 	destination = 0.0;
 	if(not new_basis.part().parallel()) {
-		
-		for(int ix = 0; ix < destination.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < destination.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < destination.basis().sizes()[2]; iz++){	
-						
-					auto ii = destination.basis().to_symmetric_range(ix, iy, iz);
-					auto isource = source.basis().from_symmetric_range(ii);
-					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[ix][iy][iz][ist] = factor*source.cubic()[isource[0]][isource[1]][isource[2]][ist];
-					
-				}
-			}
-		}
+			
+		gpu::run(destination.basis().sizes()[2], destination.basis().sizes()[1], destination.basis().sizes()[0],
+						 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor]
+						 GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 
+							 auto ii = dbas.to_symmetric_range(ix, iy, iz);
+							 auto isource = sbas.from_symmetric_range(ii);
+							 for(int ist = 0; ist < nst; ist++) des[ix][iy][iz][ist] = factor*sou[isource[0]][isource[1]][isource[2]][ist];
+						 });
 		
 	} else {
 
