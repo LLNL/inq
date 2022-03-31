@@ -73,7 +73,7 @@ namespace basis {
 				//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 				//grid from -pi/h to pi/h
 				
-				auto ii = to_symmetric_range(ng_, ix, iy, iz);
+				auto ii = grid::to_symmetric_range(ng_, ix, iy, iz);
 				return math::vector3<double, math::covariant>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
 			}
 
@@ -123,7 +123,16 @@ namespace basis {
 
 			GPU_FUNCTION auto & metric() const {
 				return metric_;
-			}				
+			}
+
+			GPU_FUNCTION auto to_symmetric_range(int ix, int iy, int iz) const {
+				return grid::to_symmetric_range(ng_, ix, iy, iz);
+			}
+			
+			GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
+				return grid::from_symmetric_range(ng_, ii);
+			}
+			
 		private:
 			
 			std::array<int, 3> ng_;
