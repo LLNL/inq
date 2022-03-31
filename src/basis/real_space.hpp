@@ -66,12 +66,16 @@ namespace basis {
 			{
 			}
 
+			GPU_FUNCTION auto to_symmetric_range(int ix, int iy, int iz) const {
+				return grid::to_symmetric_range(nr_, ix, iy, iz);
+			}
+			
 			GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
 				return grid::from_symmetric_range(nr_, ii);
 			}
 
 			GPU_FUNCTION auto rvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
-				auto ii = to_symmetric_range(nr_, ix, iy, iz);
+				auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
 				return math::vector3<double, math::contravariant>{ii[0]*rspacing_[0], ii[1]*rspacing_[1], ii[2]*rspacing_[2]};
 			}
 			

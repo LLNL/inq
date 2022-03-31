@@ -42,28 +42,32 @@ namespace hamiltonian {
 
 			if(exchange_coefficient_ != 0.0){
 
-				// Hartree-Fock exchange
-				for(int ii = 0; ii < phi.fields().set_size(); ii++){
-					for(int jj = 0; jj < phi.fields().set_size(); jj++){
-						
-						basis::field<basis::real_space, complex> rhoij(phi.fields().basis());
+				CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
 
-						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.fields().basis().size(); ipoint++) rhoij.linear()[ipoint] = conj(hf_orbitals.matrix()[ipoint][jj])*phi.fields().matrix()[ipoint][ii];
-						
-						//OPTIMIZATION: this could be done in place
-						auto potij = poisson_solver_(rhoij);
-						
-						//DATAOPERATIONS LOOP 1D
-						for(long ipoint = 0; ipoint < phi.fields().basis().size(); ipoint++) {
-							exxphi.fields().matrix()[ipoint][ii] -= 0.5*exchange_coefficient_*hf_occupations[jj]*hf_orbitals.matrix()[ipoint][jj]*potij.linear()[ipoint];
-						}
-						
+				basis::field_set<basis::real_space, complex> rhoij(phi.fields().basis(), phi.fields().set_size());
+				
+				for(int jj = 0; jj < hf_orbitals.set_size(); jj++){
+
+					{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_gen_dens");
+						gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
+										 [rho = begin(rhoij.matrix()), hfo = begin(hf_orbitals.matrix()), ph = begin(phi.fields().matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
+											 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
+										 });
 					}
+					
+					poisson_solver_.in_place(rhoij);
+
+					{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_mul_pot");
+						gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
+										 [pot = begin(rhoij.matrix()), hfo = begin(hf_orbitals.matrix()), exph = begin(exxphi.fields().matrix()), occ = begin(hf_occupations), jj, coeff = exchange_coefficient_]
+										 GPU_LAMBDA (auto ist, auto ipoint){
+											 exph[ipoint][ist] -= 0.5*coeff*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
+										 });
+					}
+					
 				}
 				
 			}
-			
 		}
 
 		auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {

@@ -81,8 +81,12 @@ namespace hamiltonian {
 
 			case input::interaction::electronic_theory::HARTREE_FOCK:
 				{
-
-					vks = vion_;
+					
+					auto vhartree = poisson_solver(electronic_density);
+					
+					energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
+					
+					vks = operations::add(vion_, vhartree);
 					
 					break;
 				}

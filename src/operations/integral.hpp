@@ -52,7 +52,12 @@ auto integral(const field_type & phi1, const field_type & phi2, const binary_op 
 	}
 	return integral_value;
 }
-	
+
+template <class field_type>
+auto integral_abs(const field_type & phi){
+	return integral(phi, phi, [](auto t1, auto t2){return fabs(t1);});
+}
+
 template <class field_type>
 auto integral_product(const field_type & phi1, const field_type & phi2){
 	return integral(phi1, phi2, std::multiplies<>());

@@ -148,7 +148,7 @@ public:
 		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 
 		{
-			CALI_CXX_MARK_SCOPE("poisson_finite_kernel_finite");
+			CALI_CXX_MARK_SCOPE("poisson_in_place_kernel_finite");
 
 			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
 							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), nst = density.local_set_size(), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){

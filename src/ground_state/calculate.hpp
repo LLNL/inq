@@ -87,12 +87,10 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
-	std::fill(ham.exchange.hf_occupations.begin(), ham.exchange.hf_occupations.end(), 0.0);
-		
-	ham.exchange.hf_orbitals.fields() = 0.0;
+	ham.exchange.hf_occupations = electrons.occupations()[0];
+	ham.exchange.hf_orbitals.fields() = electrons.lot()[0].fields();
 
 	int conv_count = 0;
-
 	for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
 
 		CALI_CXX_MARK_SCOPE("scf_iteration");
@@ -106,6 +104,16 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			electrons.update_occupations(electrons.eigenvalues());
 		}
 
+
+		if(ham.exchange.enabled()) {
+			CALI_CXX_MARK_SCOPE("hf_update");
+
+			assert(electrons.lot_size() == 1);
+			
+			ham.exchange.hf_orbitals.fields() = electrons.lot()[0].fields();
+			ham.exchange.hf_occupations = electrons.occupations()[0];
+		}
+		
 		for(auto & phi : electrons.lot()) {
 			auto fphi = operations::space::to_fourier(phi);
 				
@@ -131,18 +139,6 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			// phi = operations::space::to_real(fphi);			
 
 			phi.fields() = operations::space::to_real(fphi.fields());
-		}
-			
-		//update the Hartree-Fock operator, mixing the new and old orbitals
-		if(ham.exchange.enabled()) {
-			CALI_CXX_MARK_SCOPE("hf_mixing");
-				
-			for(int ii = 0; ii < electrons.lot()[0].fields().num_elements(); ii++){
-				ham.exchange.hf_orbitals.fields().data()[ii] = (1.0 - solver.mixing())*ham.exchange.hf_orbitals.fields().data()[ii] + solver.mixing()*electrons.lot()[0].fields().data()[ii];
-			}
-			
-			//probably the occupations should be mixed too
-			ham.exchange.hf_occupations = electrons.occupations()[0];
 		}
 
 		CALI_MARK_BEGIN("mixing");

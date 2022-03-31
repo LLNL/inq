@@ -58,7 +58,7 @@ namespace hamiltonian {
 				
 				sum_eigenvalues_ += operations::sum(el.occupations()[iphi], eigenvalues_[iphi], energy_term);
 				nonlocal_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
-				hf_exchange_ += operations::sum(el.occupations()[iphi], exchange_me, energy_term);
+				hf_exchange_ += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
 				state_conv_ += operations::sum(el.occupations()[iphi], normres_[iphi], [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
 
 				iphi++;
