@@ -37,7 +37,7 @@ namespace hamiltonian {
 			hf_occupations(num_hf_orbitals),
 			exchange_coefficient_(exchange_coefficient){
 
-			hf_orbitals.emplace(basis, num_hf_orbitals, std::move(comm));
+			if(exchange_coefficient_ != 0.0) hf_orbitals.emplace(basis, num_hf_orbitals, std::move(comm));
 		}
 
 		template <class ElectronsType>
@@ -88,7 +88,7 @@ namespace hamiltonian {
 		}
 
 		bool enabled() const {
-			return exchange_coefficient_ != 0.0;
+			return hf_orbitals.has_value();
 		}
 
 		math::array<double, 1> hf_occupations;
