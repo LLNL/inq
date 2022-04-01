@@ -25,6 +25,8 @@
 #include <basis/real_space.hpp>
 #include <solvers/poisson.hpp>
 
+#include <optional>
+
 namespace inq {
 namespace hamiltonian {
   class exchange_operator {
@@ -33,40 +35,48 @@ namespace hamiltonian {
 
 		exchange_operator(const basis::real_space & basis, const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> comm):
 			hf_occupations(num_hf_orbitals),
-			hf_orbitals(basis, num_hf_orbitals, std::move(comm)),
 			exchange_coefficient_(exchange_coefficient){
 
+			if(exchange_coefficient_ != 0.0) hf_orbitals.emplace(basis, num_hf_orbitals, std::move(comm));
 		}
 
+		template <class ElectronsType>
+		void update(ElectronsType const & el){
+			if(not enabled()) return;
+			
+			CALI_CXX_MARK_SCOPE("hf_update");
+
+			assert(el.lot_size() == 1);			
+			
+			hf_occupations = el.occupations()[0];
+			hf_orbitals->fields() = el.lot()[0].fields();
+		}
+		
 		void operator()(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
-
-			if(exchange_coefficient_ != 0.0){
-
-				CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
-
-				basis::field_set<basis::real_space, complex> rhoij(phi.fields().basis(), phi.fields().set_size());
+			if(not enabled()) return;
+			
+			CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
+			
+			basis::field_set<basis::real_space, complex> rhoij(phi.fields().basis(), phi.fields().set_size());
+			
+			for(int jj = 0; jj < hf_orbitals->set_size(); jj++){
 				
-				for(int jj = 0; jj < hf_orbitals.set_size(); jj++){
-
-					{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_gen_dens");
-						gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
-										 [rho = begin(rhoij.matrix()), hfo = begin(hf_orbitals.matrix()), ph = begin(phi.fields().matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
-											 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
-										 });
-					}
-					
-					poisson_solver_.in_place(rhoij);
-
-					{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_mul_pot");
-						gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
-										 [pot = begin(rhoij.matrix()), hfo = begin(hf_orbitals.matrix()), exph = begin(exxphi.fields().matrix()), occ = begin(hf_occupations), jj, coeff = exchange_coefficient_]
-										 GPU_LAMBDA (auto ist, auto ipoint){
-											 exph[ipoint][ist] -= 0.5*coeff*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
-										 });
-					}
-					
+				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_gen_dens");
+					gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
+									 [rho = begin(rhoij.matrix()), hfo = begin(hf_orbitals->matrix()), ph = begin(phi.fields().matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
+										 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
+									 });
 				}
 				
+				poisson_solver_.in_place(rhoij);
+				
+				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_mul_pot");
+					gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
+									 [pot = begin(rhoij.matrix()), hfo = begin(hf_orbitals->matrix()), exph = begin(exxphi.fields().matrix()), occ = begin(hf_occupations), jj, coeff = exchange_coefficient_]
+									 GPU_LAMBDA (auto ist, auto ipoint){
+										 exph[ipoint][ist] -= 0.5*coeff*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
+									 });
+				}
 			}
 		}
 
@@ -77,12 +87,12 @@ namespace hamiltonian {
 			return exxphi;
 		}
 
-		auto enabled() const {
-			return exchange_coefficient_ != 0.0;
+		bool enabled() const {
+			return hf_orbitals.has_value();
 		}
-		
+
 		math::array<double, 1> hf_occupations;
-		states::orbital_set<basis::real_space, complex> hf_orbitals;
+		std::optional<states::orbital_set<basis::real_space, complex>> hf_orbitals;
 
 	private:
 		solvers::poisson poisson_solver_;

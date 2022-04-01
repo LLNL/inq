@@ -202,7 +202,7 @@ public:
 		return eigenvalues_;
 	}
 
-	long lot_size() {
+	long lot_size() const {
 		return lot().size();
 	}
 
