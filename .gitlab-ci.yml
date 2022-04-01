@@ -135,14 +135,14 @@ gcc-ompi:
 
 gcc-ompi-fast:
     stage: test
-    needs: []    
+    needs: []
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran  make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build && cd build
-      - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors -Wextra -Wno-cast-function-type -Wno-unknown-pragmas -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors -Wextra -Wno-narrowing -Wno-cast-function-type -Wno-unknown-pragmas -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make install
