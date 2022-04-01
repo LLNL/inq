@@ -21,9 +21,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <states/orbital_set.hpp>
 #include <basis/real_space.hpp>
+#include <operations/overlap.hpp>
 #include <solvers/poisson.hpp>
+#include <states/orbital_set.hpp>
 
 #include <optional>
 
@@ -47,12 +48,17 @@ namespace hamiltonian {
 			CALI_CXX_MARK_SCOPE("hf_update");
 
 			assert(el.lot_size() == 1);			
+
+			auto & phi = el.lot()[0];
 			
 			hf_occupations = el.occupations()[0];
-			hf_orbitals->fields() = el.lot()[0].fields();
+			hf_orbitals->fields() = phi.fields();
+
+			exx_matrix = operations::overlap(direct(phi), phi);
+			
 		}
 		
-		void operator()(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
+		void direct(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
 			if(not enabled()) return;
 			
 			CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
@@ -80,6 +86,17 @@ namespace hamiltonian {
 			}
 		}
 
+		auto direct(const states::orbital_set<basis::real_space, complex> & phi) const {
+			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
+			exxphi.fields() = 0.0;
+			operator()(phi, exxphi);
+			return exxphi;
+		}
+
+		void operator()(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
+			direct(phi, exxphi);
+		}
+		
 		auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
 			exxphi.fields() = 0.0;
@@ -93,11 +110,12 @@ namespace hamiltonian {
 
 		math::array<double, 1> hf_occupations;
 		std::optional<states::orbital_set<basis::real_space, complex>> hf_orbitals;
-
+		math::array<complex, 2> exx_matrix;
+		
 	private:
 		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
-
+		
   };
 
 }
