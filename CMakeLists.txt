@@ -133,8 +133,10 @@ include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
-#SPGLIB
+# Multi
+include_directories(${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 
+# SPGLIB
 message("\nCONFIGURING SPGLIB\n")
 set(CMAKE_BUILD_TYPE_BACKUP ${MAKE_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE Release)
