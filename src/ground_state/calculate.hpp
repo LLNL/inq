@@ -86,8 +86,11 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	ham.scalar_potential = sc.ks_potential(electrons.density_, res.energy);
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
-		
-	ham.exchange.update(electrons);
+
+	
+	double old_exe = ham.exchange.update(electrons);
+	double exe_diff = fabs(old_exe);
+	auto update_hf = false;
 
 	int conv_count = 0;
 	for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
@@ -103,7 +106,11 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			electrons.update_occupations(electrons.eigenvalues());
 		}
 
-		ham.exchange.update(electrons);
+		if(update_hf){
+			auto exe = ham.exchange.update(electrons);
+			exe_diff = fabs(exe - old_exe);
+			old_exe = exe;
+		}
 		
 		for(auto & phi : electrons.lot()) {
 			auto fphi = operations::space::to_fourier(phi);
@@ -170,8 +177,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			auto energy_diff = (res.energy.eigenvalues - old_energy)/ions.geo().num_atoms();
 				
 			if(solver.verbose_output() and console){
-				console->info("SCF iter {} : e = {:.10f} de = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
-											iiter, res.energy.total(), energy_diff, density_diff, ecalc.state_conv_);
+				console->info("SCF iter {} : e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
+											iiter, res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_conv_);
 					
 				for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 					for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
@@ -184,9 +191,10 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				
 			if(fabs(energy_diff) < solver.energy_tolerance()){
 				conv_count++;
-				if(conv_count > 2) break;
+				if(conv_count > 2 and exe_diff < solver.energy_tolerance()) break;
+				if(conv_count > 2) update_hf = true;
 			} else {
-				conv_count = 0;
+				conv_count = 0; 
 			}
 
 			old_energy = res.energy.eigenvalues;
