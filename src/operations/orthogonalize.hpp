@@ -21,27 +21,17 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <inq_config.h>
-#include <math/complex.hpp>
-#include <basis/field_set.hpp>
-#include <cstdlib>
 
+
+#include <inq_config.h>
+#include <basis/field_set.hpp>
+#include <math/complex.hpp>
+#include <solvers/cholesky.hpp>
+
+#include <cstdlib>
 #include <utils/profiling.hpp>
-#include <utils/raw_pointer_cast.hpp>
 #include <operations/overlap.hpp>
 
-#ifdef ENABLE_CUDA
-#include <cusolverDn.h>
-#endif
-
-#include "FC.h"
-
-#define zpotrf FC_GLOBAL(zpotrf, ZPOTRF) 
-extern "C" void zpotrf(const char * uplo, const int * n, inq::complex * a, const int * lda, int * info);
-
-//#define blas_ztrsm FC_GLOBAL(ztrsm, ZTRSM) 
-//extern "C" void blas_ztrsm(const char& side, const char& uplo, const char& transa, const char& diag,
-//											const long& m, const long& n, const complex& alpha, const complex * a, const long& lda, complex * B, const long& ldb);
 
 namespace inq {
 namespace operations {
@@ -55,60 +45,8 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	
 	auto olap = overlap(phi);
 
-	const int nst = phi.set_size();
-	int info;
+	solvers::cholesky(olap);
 	
-	//DATAOPERATIONS RAWLAPACK zpotrf
-#ifdef ENABLE_CUDA
-	{
-
-		CALI_CXX_MARK_SCOPE("cuda_zpotrf");
-		
-		cusolverDnHandle_t cusolver_handle;
-			
-		[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
-		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
-			
-		//query the work size
-		int lwork;
-		cusolver_status = cusolverDnZpotrf_bufferSize(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data_elements()), nst, &lwork);
-		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-		assert(lwork >= 0);
-			
-		//allocate the work array
-		cuDoubleComplex * work;
-		[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
-		assert(cudaSuccess == cuda_status);
-
-		//finaly do the decomposition
-		int * devInfo;
-		cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
-		assert(cudaSuccess == cuda_status);
-
-		cusolver_status = cusolverDnZpotrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(olap.data_elements()), nst, work, lwork, devInfo);
-		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-		cudaDeviceSynchronize();
-		info = *devInfo ;
-		
-		cudaFree(work);
-		cudaFree(devInfo);
-		cusolverDnDestroy(cusolver_handle);
-			
-	}
-#else
-	{
-		CALI_CXX_MARK_SCOPE("cuda_zpotrf");
-		zpotrf("U", &nst, raw_pointer_cast(olap.data_elements()), &nst, &info);
-	}
-#endif
-
-	if(not nocheck and info < 0){
-		std::printf("Error: Failed orthogonalization in ZPOTRF! info is %10i.\n", info);
-		abort();
-	} else if(info > 0) {
-		std::printf("Warning: Imperfect orthogonalization in ZPOTRF! info is %10i, subspace size is %10i\n", info, nst); 
-	}
-
 	{
 		CALI_CXX_MARK_SCOPE("orthogonalize_trsm");
 		namespace blas = boost::multi::blas;
