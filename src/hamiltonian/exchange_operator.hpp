@@ -53,10 +53,10 @@ namespace hamiltonian {
 			assert(el.lot_size() == 1);			
 
 			auto & phi = el.lot()[0];
-			
+					
 			hf_occupations = el.occupations()[0];
 			hf_orbitals->fields() = phi.fields();
-
+			
 			*xi_ = direct(phi, -1.0);
 
 			exx_matrix = operations::overlap(*xi_, phi);
@@ -85,10 +85,10 @@ namespace hamiltonian {
 			double factor = -0.5*scale*exchange_coefficient_;
 			basis::field_set<basis::real_space, complex> rhoij(phi.fields().basis(), phi.fields().set_size());
 			
-			for(int jj = 0; jj < hf_orbitals->set_size(); jj++){
+			for(int jj = 0; jj < hf_orbitals->local_set_size(); jj++){
 				
 				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_gen_dens");
-					gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
+					gpu::run(phi.fields().local_set_size(), phi.fields().basis().local_size(),
 									 [rho = begin(rhoij.matrix()), hfo = begin(hf_orbitals->matrix()), ph = begin(phi.fields().matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
 										 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
 									 });
@@ -97,7 +97,7 @@ namespace hamiltonian {
 				poisson_solver_.in_place(rhoij);
 
 				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_mul_pot");
-					gpu::run(phi.fields().set_size(), phi.fields().basis().size(),
+					gpu::run(phi.fields().local_set_size(), phi.fields().basis().local_size(),
 									 [pot = begin(rhoij.matrix()), hfo = begin(hf_orbitals->matrix()), exph = begin(exxphi.fields().matrix()), occ = begin(hf_occupations), jj, factor]
 									 GPU_LAMBDA (auto ist, auto ipoint){
 										 exph[ipoint][ist] += factor*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
