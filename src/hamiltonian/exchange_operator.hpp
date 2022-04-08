@@ -68,7 +68,6 @@ namespace hamiltonian {
 
 			el.lot_states_comm_.all_reduce_in_place_n(&energy, 1, std::plus<>{});
 			
-			//reduce energy
 			solvers::cholesky(exx_matrix);
 			
 			namespace blas = boost::multi::blas;
