@@ -60,7 +60,7 @@ namespace hamiltonian {
 			
 			*xi_ = direct(phi, -1.0);
 
-			exx_matrix = operations::overlap(*xi_, phi);
+			auto exx_matrix = operations::overlap(*xi_, phi);
 
 			double energy = 0.0;
 			for(int ii = 0; ii < phi.local_set_size(); ii++){
@@ -150,7 +150,6 @@ namespace hamiltonian {
 	private:
 		math::array<double, 1> hf_occupations;
 		std::optional<states::orbital_set<basis::real_space, complex>> hf_orbitals;
-		math::array<complex, 2> exx_matrix;
 		std::optional<states::orbital_set<basis::real_space, complex>> xi_;		
 		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
