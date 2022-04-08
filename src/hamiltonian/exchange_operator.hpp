@@ -147,11 +147,10 @@ namespace hamiltonian {
 			return hf_orbitals.has_value() or xi_.has_value();
 		}
 
+	private:
 		math::array<double, 1> hf_occupations;
 		std::optional<states::orbital_set<basis::real_space, complex>> hf_orbitals;
 		math::array<complex, 2> exx_matrix;
-		
-	private:
 		std::optional<states::orbital_set<basis::real_space, complex>> xi_;		
 		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
