@@ -36,6 +36,42 @@ template <class operator_type, class preconditioner_type, class field_set_type>
 void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
 	CALI_CXX_MARK_SCOPE("solver::steepest_descent");
 
+	const int num_steps = 5;
+  
+	for(int istep = 0; istep < num_steps; istep++){
+    
+		//calculate the residual
+			
+		auto residual = ham(phi);
+    operations::shift(-1.0, rhs, residual);
+
+    auto sd = residual;
+		prec(sd);
+		auto hsd = ham(sd);
+
+		auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.set_size()});
+    auto lambda = math::array<typename field_set_type::element_type, 1>(phi.set_size());
+      
+		mm[0] = operations::overlap_diagonal(hsd, hsd);
+		mm[1] = operations::overlap_diagonal(residual, hsd);
+		mm[2] = operations::overlap_diagonal(residual, residual);
+		
+		gpu::run(phi.set_size(),
+						 [m = begin(mm), lam = begin(lambda)]
+						 GPU_LAMBDA (auto ist){
+							 auto ca = m[0][ist];
+							 auto cb = 4.0*real(m[1][ist]);
+							 auto cc = m[2][ist];
+
+							 if(fabs(ca) < 1e-15) { //this happens if we are perfectly converged
+								 lam[ist] = complex(0.0, 0.0);
+							 } else {
+								 lam[ist] = 0.5*(-cb + sqrt(cb*cb - 4.0*ca*cc))/ca;
+							 }
+						 });
+		
+		operations::shift(1.0, lambda, residual, phi);
+	}
 }
 
 }
@@ -90,11 +126,11 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 		for(int ip = 0; ip < npoint; ip++){
       for(int ivec = 0; ivec < nvec; ivec++){
         phi.matrix()[ip][ivec] = exp(complex(0.0, (ip*ivec)*0.1));
-        rhs.matrix()[ip][ivec] = ivec + 1.0;
+        rhs.matrix()[ip][ivec] = cos(ip*(ivec + 1.0)/2.0);
       }
     }
 
-		const int num_iter = 100;
+		const int num_iter = 50;
 		
 		for(int iter = 0; iter < num_iter; iter++){
 
@@ -108,28 +144,11 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
       tfm::format(std::cout, "  Iteration %4d:\n", iter);
 			
       for(int ivec = 0; ivec < phi.set_size(); ivec++){
+        if(num_iter - 1 == iter) CHECK(fabs(normres[ivec]) < 1e-8);
 				tfm::format(std::cout, "    state %4d  res = %15.10e\n", ivec + 1, real(normres[ivec]));
       }
-      /*
-			if(num_iter - 1 == iter){
 
-				CHECK(fabs(eigenvalues[0]) == 1.000000001634_a);
-				CHECK(fabs(eigenvalues[1]) == 2.000000003689_a);
-				CHECK(fabs(eigenvalues[2]) == 3.000000001955_a);
-				CHECK(fabs(eigenvalues[3]) == 4.000000001760_a);
-				CHECK(fabs(eigenvalues[4]) == 5.000000002561_a);
-				CHECK(fabs(eigenvalues[5]) == 6.000000003127_a);
-				CHECK(fabs(eigenvalues[6]) == 7.000000002312_a);
-				CHECK(fabs(eigenvalues[7]) == 8.000000000292_a);
-				CHECK(fabs(eigenvalues[8]) == 8.999999999033_a);
-				CHECK(fabs(eigenvalues[9]) == 9.999999998497_a);
-				CHECK(fabs(eigenvalues[10]) == 10.999999998768_a);
-				CHECK(fabs(eigenvalues[11]) == 11.999999998422_a);
-
-			}
-			*/
-		}
- 	
+		}	
  }
 
 
