@@ -31,25 +31,26 @@
 namespace inq {
 namespace real_time {
 
-template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsitencyType>
-void etrs(systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsitencyType & sc, double const dt){
+template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
+void etrs(double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 	
 	electrons.density_ = 0.0;
 	int iphi = 0;
 	for(auto & phi : electrons.lot()){
+		
 		//propagate half step and full step with H(t)
 		auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
 		
 		//calculate H(t + dt) from the full step propagation
 		density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.density_);
-				iphi++;
+
+		iphi++;
 	}
 
 	if(electrons.lot_states_comm_.size() > 1){
 		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.density_.linear().data_elements()), electrons.density_.linear().size(), std::plus<>{});
 	}
 
-	hamiltonian::energy energy;
 	ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 	
 	//propagate ionic positions to t + dt

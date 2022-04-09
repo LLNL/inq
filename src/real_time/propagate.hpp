@@ -70,7 +70,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
 
-			etrs(ions, electrons, ion_propagator, forces, ham, sc, dt);
+			etrs(dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
 			
 			//calculate the new density, energy, forces
 			electrons.density_ = density::calculate(electrons);
