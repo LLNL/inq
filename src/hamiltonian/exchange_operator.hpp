@@ -36,9 +36,10 @@ namespace hamiltonian {
 		
   public:
 
-		exchange_operator(const basis::real_space & basis, const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> comm):
+		exchange_operator(const basis::real_space & basis, const int num_hf_orbitals, const double exchange_coefficient, bool const use_ace, boost::mpi3::cartesian_communicator<2> comm):
 			hf_occupations(num_hf_orbitals),
-			exchange_coefficient_(exchange_coefficient){
+			exchange_coefficient_(exchange_coefficient),
+			use_ace_(use_ace){
 
 			if(exchange_coefficient_ != 0.0) hf_orbitals.emplace(basis, num_hf_orbitals, comm);	
 			if(exchange_coefficient_ != 0.0) xi_.emplace(basis, num_hf_orbitals, std::move(comm));		
@@ -59,7 +60,7 @@ namespace hamiltonian {
 			
 			*xi_ = direct(phi, -1.0);
 
-			exx_matrix = operations::overlap(*xi_, phi);
+			auto exx_matrix = operations::overlap(*xi_, phi);
 
 			double energy = 0.0;
 			for(int ii = 0; ii < phi.local_set_size(); ii++){
@@ -130,12 +131,8 @@ namespace hamiltonian {
 		void operator()(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
 			if(not enabled()) return;
 
-			bool dir = false;
-			if(dir){
-				direct(phi, exxphi);
-			} else {
-				ace(phi, exxphi);
-			}
+			if(use_ace_) ace(phi, exxphi);
+			else direct(phi, exxphi);
 		}
 		
 		void ace(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {			
@@ -150,14 +147,13 @@ namespace hamiltonian {
 			return hf_orbitals.has_value() or xi_.has_value();
 		}
 
+	private:
 		math::array<double, 1> hf_occupations;
 		std::optional<states::orbital_set<basis::real_space, complex>> hf_orbitals;
-		math::array<complex, 2> exx_matrix;
-		
-	private:
 		std::optional<states::orbital_set<basis::real_space, complex>> xi_;		
 		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
+		bool use_ace_;
 		
   };
 
