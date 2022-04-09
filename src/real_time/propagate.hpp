@@ -32,6 +32,43 @@ class ehrenfest_propagator{
 		: ions_{ions}, electrons_{electrons}, options_{options}, ion_propagator_{ion_propagator}{}
 };
 
+
+template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsitencyType>
+void etrs(systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsitencyType & sc, double const dt){
+	
+	electrons.density_ = 0.0;
+	int iphi = 0;
+	for(auto & phi : electrons.lot()){
+		//propagate half step and full step with H(t)
+		auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
+		
+		//calculate H(t + dt) from the full step propagation
+		density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.density_);
+				iphi++;
+	}
+
+	if(electrons.lot_states_comm_.size() > 1){
+		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.density_.linear().data_elements()), electrons.density_.linear().size(), std::plus<>{});
+	}
+
+	hamiltonian::energy energy;
+	ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+	
+	//propagate ionic positions to t + dt
+	ion_propagator.propagate_positions(dt, ions, forces);
+	if(not ion_propagator.static_ions) {
+		sc.update_ionic_fields(ions, electrons.atomic_pot_);
+		ham.update_projectors(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo());
+		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+	}
+	
+	//propagate the other half step with H(t + dt)
+	for(auto & phi : electrons.lot()){
+		operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
+	}
+	
+}
+
 template<typename IonSubPropagator = ions::propagator::fixed>
 real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
 
@@ -70,35 +107,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
 
-			electrons.density_ = 0.0;
-			int iphi = 0;
-			for(auto & phi : electrons.lot()){
-				//propagate half step and full step with H(t)
-				auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
-				
-				//calculate H(t + dt) from the full step propagation
-				density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.density_);
-				iphi++;
-			}
-
-			if(electrons.lot_states_comm_.size() > 1){
-				electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.density_.linear().data_elements()), electrons.density_.linear().size(), std::plus<>{});
-			}
- 
-			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
-			
-			//propagate ionic positions to t + dt
-			ion_propagator.propagate_positions(dt, ions, forces);
-			if(not ion_propagator.static_ions) {
-				sc.update_ionic_fields(ions, electrons.atomic_pot_);
-				ham.update_projectors(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo());
-				energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
-			}
-			
-			//propagate the other half step with H(t + dt)
-			for(auto & phi : electrons.lot()){
-				operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
-			}
+			etrs(ions, electrons, ion_propagator, forces, ham, sc, dt);
 			
 			//calculate the new density, energy, forces
 			electrons.density_ = density::calculate(electrons);
