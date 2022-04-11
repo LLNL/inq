@@ -48,38 +48,40 @@ void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & 
 
 
 	auto prec = [&](auto phi){
-		/*auto precphi = phi;
-		operations::preconditioner{}(precphi);
-		
-		gpu::run(precphi.fields().local_set_size(), precphi.fields().basis().local_size(),
-						 [precph = begin(precphi.matrix()), ph = begin(phi.matrix()), dt] GPU_LAMBDA (auto ist, auto ip){
-							 precph[ip][ist] = (ph[ip][ist] + complex{0.0, 0.5*dt}*precph[ip][ist]);
-						 });
-
-						 phi = precphi;*/
 	};
 
+	std::vector<states::orbital_set<basis::real_space, complex>> rhs; 
+	rhs.reserve(electrons.lot_size());
+	
+	//calculate the right hand side with H(t)
+	auto iphi = 0;
 	for(auto & phi : electrons.lot()){
-
-		//calculate the right hand side with H(t)
-		auto rhs = ham(phi);
-		gpu::run(rhs.fields().local_set_size(), rhs.fields().basis().local_size(),
-						 [rh = begin(rhs.matrix()), ph = begin(phi.matrix()), dt] GPU_LAMBDA (auto ist, auto ip){
+		rhs.emplace_back(ham(phi));
+		gpu::run(rhs[iphi].fields().local_set_size(), rhs[iphi].fields().basis().local_size(),
+						 [rh = begin(rhs[iphi].matrix()), ph = begin(phi.matrix()), dt] GPU_LAMBDA (auto ist, auto ip){
 							 rh[ip][ist] = (ph[ip][ist] - complex{0.0, 0.5*dt}*rh[ip][ist]);
 						 });
+		iphi++;
+	}
+	
+	//propagate ionic positions to t + dt
+	ion_propagator.propagate_positions(dt, ions, forces);
+	if(not ion_propagator.static_ions) {
+		sc.update_ionic_fields(ions, electrons.atomic_pot_);
+		ham.update_projectors(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo());
+		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+	}
 
-		//propagate ionic positions to t + dt
-		ion_propagator.propagate_positions(dt, ions, forces);
-		if(not ion_propagator.static_ions) {
-			sc.update_ionic_fields(ions, electrons.atomic_pot_);
-			ham.update_projectors(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo());
-			energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+	ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+
+	//now calculate the wave functions in t + dt by solving a linear equation
+	for(int istep = 0; istep < 10; istep++) {
+		auto iphi = 0;
+		for(auto & phi : electrons.lot()){
+			solvers::steepest_descent(op, prec, rhs[iphi], phi);
+			iphi++;
 		}
-		
-		ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 
-		for(int istep = 0; istep < 10; istep++) solvers::steepest_descent(op, prec, rhs, phi);
-		
 	}
 	
 }
