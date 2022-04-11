@@ -34,7 +34,9 @@ namespace input {
 class rt {
 
 public:
-
+	
+	enum class electron_propagator { ETRS, CRANK_NICOLSON };
+	
 	rt(){
 	}
 
@@ -57,13 +59,30 @@ public:
 	auto num_steps() const {
 		return num_steps_.value_or(100);
 	}
-        
+
+	auto static etrs() {
+		rt solver;
+		solver.prop_ = electron_propagator::ETRS;
+		return solver;
+	}
+
+	auto static crank_nicolson() {
+		rt solver;
+		solver.prop_ = electron_propagator::CRANK_NICOLSON;
+		return solver;
+	}
+	
+	auto propagator() const {
+		return prop_.value_or(electron_propagator::ETRS);
+	}
+	
 	friend auto operator|(const rt & solver1, const rt & solver2){
 		using utils::merge_optional;
 
 		rt rsolver;
 		rsolver.dt_	= merge_optional(solver1.dt_, solver2.dt_);
 		rsolver.num_steps_	= merge_optional(solver1.num_steps_, solver2.num_steps_);
+		rsolver.prop_	= merge_optional(solver1.prop_, solver2.prop_);		
 		return rsolver;
 	}
     
@@ -71,6 +90,7 @@ private:
 
 	std::optional<double> dt_;
 	std::optional<int> num_steps_;
+	std::optional<electron_propagator> prop_;
 		
 };
     
@@ -96,16 +116,17 @@ TEST_CASE("class input::rt", "[input::rt]") {
 
     CHECK(solver.dt() == 0.01_a);
     CHECK(solver.num_steps() == 100);
+    CHECK(solver.propagator() == input::rt::electron_propagator::ETRS);		
     
   }
 
   SECTION("Composition"){
 
-    auto solver = input::rt::num_steps(1000) | input::rt::dt(0.05_atomictime);
+    auto solver = input::rt::num_steps(1000) | input::rt::dt(0.05_atomictime) | input::rt::crank_nicolson();
     
     CHECK(solver.num_steps() == 1000);
     CHECK(solver.dt() == 0.05_a);
-    
+		CHECK(solver.propagator() == input::rt::electron_propagator::CRANK_NICOLSON);
   }
 
 }
