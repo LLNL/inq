@@ -55,7 +55,13 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 		mm[0] = operations::overlap_diagonal(hsd, hsd);
 		mm[1] = operations::overlap_diagonal(residual, hsd);
 		mm[2] = operations::overlap_diagonal(residual, residual);
-		
+
+		/*		std::cout << istep;
+		for(int ist = 0; ist < phi.set_size(); ist++){
+			std::cout << '\t' << fabs(mm[2][ist]);
+			}
+		std::cout << std::endl;
+		*/
 		gpu::run(phi.set_size(),
 						 [m = begin(mm), lam = begin(lambda)]
 						 GPU_LAMBDA (auto ist){
