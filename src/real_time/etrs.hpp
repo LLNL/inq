@@ -51,8 +51,6 @@ void etrs(double const dt, systems::ions & ions, systems::electrons & electrons,
 		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.density_.linear().data_elements()), electrons.density_.linear().size(), std::plus<>{});
 	}
 
-	ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
-	
 	//propagate ionic positions to t + dt
 	ion_propagator.propagate_positions(dt, ions, forces);
 	if(not ion_propagator.static_ions) {
@@ -60,7 +58,9 @@ void etrs(double const dt, systems::ions & ions, systems::electrons & electrons,
 		ham.update_projectors(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, ions.geo());
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 	}
-	
+
+	ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+
 	//propagate the other half step with H(t + dt)
 	for(auto & phi : electrons.lot()){
 		operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
