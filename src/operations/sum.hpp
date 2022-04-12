@@ -37,7 +37,7 @@ template <class array_type>
 typename array_type::element sum(const array_type & phi){
 
 	CALI_CXX_MARK_SCOPE("sum(1arg)");
-
+	if(phi.size() == 0) return 0.0;
 	return gpu::run(gpu::reduce(phi.size()), gpu::array_access<decltype(begin(phi))>{begin(phi)});
 }
 
