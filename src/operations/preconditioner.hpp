@@ -74,7 +74,6 @@ public:
 
 			CALI_CXX_MARK_SCOPE("preconditioner_apply");
 			
-			//DATAOPERATIONS GPU::RUN 4D
 			gpu::run(phi.set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 
 							 [kine = begin(kinetic),
 								phcub = begin(phi.cubic()),
@@ -100,7 +99,14 @@ public:
 private:
 
 };
-	
+
+class no_preconditioner {
+public:
+	template <class Type>
+	void operator()(Type &) const {
+	}
+};
+
 }
 }
 
