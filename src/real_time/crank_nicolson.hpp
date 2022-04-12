@@ -32,37 +32,35 @@
 namespace inq {
 namespace real_time {
 
+template <class OpType>
+struct crank_nicolson_op {
+	OpType & op;
+	complex factor;
+	
+	template <class PhiType>
+	PhiType operator()(PhiType const & phi) const {
+		auto opphi = op(phi);
+		
+		gpu::run(opphi.fields().local_set_size(), opphi.fields().basis().local_size(),
+						 [opph = begin(opphi.matrix()), ph = begin(phi.matrix()), fac = factor] GPU_LAMBDA (auto ist, auto ip){
+							 opph[ip][ist] = ph[ip][ist] + fac*opph[ip][ist];
+						 });
+		
+		return opphi;
+	}
+};
+
+
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
 void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 
-	auto op = [&](auto phi){
-		auto opphi = ham(phi);
-
-		gpu::run(opphi.fields().local_set_size(), opphi.fields().basis().local_size(),
-						 [opph = begin(opphi.matrix()), ph = begin(phi.matrix()), dt] GPU_LAMBDA (auto ist, auto ip){
-							 opph[ip][ist] = ph[ip][ist] + complex{0.0, 0.5*dt}*opph[ip][ist];
-						 });
-
-		return opphi;
-	};
-
-
-	auto prec = [&](auto phi){
-	};
-
-	std::vector<states::orbital_set<basis::real_space, complex>> rhs; 
-	rhs.reserve(electrons.lot_size());
+	crank_nicolson_op<decltype(ham)> op{ham, complex{0.0, 0.5*dt}};
+	crank_nicolson_op<decltype(ham)> op_rhs{ham, complex{0.0, -0.5*dt}};
 	
 	//calculate the right hand side with H(t)
-	auto iphi = 0;
-	for(auto & phi : electrons.lot()){
-		rhs.emplace_back(ham(phi));
-		gpu::run(rhs[iphi].fields().local_set_size(), rhs[iphi].fields().basis().local_size(),
-						 [rh = begin(rhs[iphi].matrix()), ph = begin(phi.matrix()), dt] GPU_LAMBDA (auto ist, auto ip){
-							 rh[ip][ist] = (ph[ip][ist] - complex{0.0, 0.5*dt}*rh[ip][ist]);
-						 });
-		iphi++;
-	}
+	std::vector<states::orbital_set<basis::real_space, complex>> rhs; 
+	rhs.reserve(electrons.lot_size());	
+	for(auto & phi : electrons.lot()) rhs.emplace_back(op_rhs(phi));
 	
 	//propagate ionic positions to t + dt
 	ion_propagator.propagate_positions(dt, ions, forces);
@@ -78,7 +76,7 @@ void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & 
 	for(int istep = 0; istep < 10; istep++) {
 		auto iphi = 0;
 		for(auto & phi : electrons.lot()){
-			solvers::steepest_descent(op, prec, rhs[iphi], phi);
+			solvers::steepest_descent(op, operations::no_preconditioner{}, rhs[iphi], phi);
 			iphi++;
 		}
 
