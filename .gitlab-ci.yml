@@ -630,13 +630,8 @@ nvcc-ompi-fast-2p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-ompi-fast-path`
-      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
-      - time mpirun -np 2 $PREFIX/build/tests/h2o_ground_state
-      - time mpirun -np 2 $PREFIX/build/tests/h2o_real_time
-      - time mpirun -np 2 $PREFIX/build/tests/silicon
-      - time mpirun -np 2 $PREFIX/build/tests/al4h1
-      - time mpirun -np 2 $PREFIX/build/tests/al4h1_td
-      - time mpirun -np 2 $PREFIX/build/tests/silicon_hartree_fock
+      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 600 -j8"      
 
 nvcc-ompi-fast-3p:
     stage: test
@@ -645,7 +640,7 @@ nvcc-ompi-fast-3p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-ompi-fast-path`
-      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
+      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
       - time mpirun -np 3 $PREFIX/build/tests/h2o_ground_state
       - time mpirun -np 3 $PREFIX/build/tests/h2o_real_time
       - time mpirun -np 3 $PREFIX/build/tests/silicon
@@ -660,7 +655,7 @@ nvcc-ompi-fast-4p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-ompi-fast-path`
-      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
+      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
       - time mpirun -np 4 $PREFIX/build/tests/h2o_ground_state
       - time mpirun -np 4 $PREFIX/build/tests/h2o_real_time
       - time mpirun -np 4 $PREFIX/build/tests/silicon
@@ -722,14 +717,9 @@ nvcc-ompi-2p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-ompi-path`
-      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
-      - time mpirun -np 2 $PREFIX/build/tests/h2o_ground_state
-      - time mpirun -np 2 $PREFIX/build/tests/h2o_real_time
-      - time mpirun -np 2 $PREFIX/build/tests/silicon
-      - time mpirun -np 2 $PREFIX/build/tests/al4h1
-      - time mpirun -np 2 $PREFIX/build/tests/al4h1_td
-      - time mpirun -np 2 $PREFIX/build/tests/silicon_hartree_fock
-      
+      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 600 -j8"      
+
 nvcc-ompi-3p:
     stage: test
     needs: ["nvcc-ompi"]
@@ -737,7 +727,7 @@ nvcc-ompi-3p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-ompi-path`
-      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
+      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
       - time mpirun -np 3 $PREFIX/build/tests/h2o_ground_state
       - time mpirun -np 3 $PREFIX/build/tests/h2o_real_time
       - time mpirun -np 3 $PREFIX/build/tests/silicon
@@ -752,7 +742,7 @@ nvcc-ompi-4p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-ompi-path`
-      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
+      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
       - time mpirun -np 4 $PREFIX/build/tests/h2o_ground_state
       - time mpirun -np 4 $PREFIX/build/tests/h2o_real_time
       - time mpirun -np 4 $PREFIX/build/tests/silicon
