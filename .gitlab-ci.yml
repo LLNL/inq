@@ -629,7 +629,6 @@ nvcc-ompi-fast-5p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-ompi-fast-path`
-      - INQ_EXEC_ENV="mpirun -np 5" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
       - time mpirun -np 5 $PREFIX/build/tests/h2o_ground_state
       - time mpirun -np 5 $PREFIX/build/tests/h2o_real_time
       - time mpirun -np 5 $PREFIX/build/tests/silicon
@@ -722,7 +721,6 @@ nvcc-ompi-5p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-ompi-path`
-      - INQ_EXEC_ENV="mpirun -np 5" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
       - time mpirun -np 5 $PREFIX/build/tests/h2o_ground_state
       - time mpirun -np 5 $PREFIX/build/tests/h2o_real_time
       - time mpirun -np 5 $PREFIX/build/tests/silicon
