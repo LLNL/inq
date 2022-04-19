@@ -518,6 +518,10 @@ gcc-ompi-coverage:
 #      - time mpirun --allow-run-as-root -np 3 tests/nitrogen
 #      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
 
+#########################################################################################################################
+# INTEL OMPI
+#########################################################################################################################
+
 intel-ompi:
     stage: build
     needs: []    
@@ -551,8 +555,8 @@ intel-ompi-1p:
     script:
       - PREFIX=`cat intel-ompi-path`
       - INQ_EXEC_ENV="mpirun -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
+      - INQ_EXEC_ENV="mpirun -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
       - $PREFIX/build/tests/silicon2
-
 
 intel-ompi-2p:
     stage: test
@@ -562,6 +566,7 @@ intel-ompi-2p:
     script:
       - PREFIX=`cat intel-ompi-path`
       - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
 
 intel-ompi-3p:
     stage: test
@@ -571,6 +576,7 @@ intel-ompi-3p:
     script:
       - PREFIX=`cat intel-ompi-path`
       - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
+      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
 
 intel-ompi-4p:
     stage: test
@@ -579,7 +585,10 @@ intel-ompi-4p:
       - intel_compiler
     script:
       - PREFIX=`cat intel-ompi-path`
-      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"      
+      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
+      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
+
+#########################################################################################################################3
 
 nvcc-ompi-fast:
     stage: build
