@@ -1,19 +1,19 @@
 [submodule "external_libs/multi"]
 	path = external_libs/multi
-	url = ../boost-multi.git
+	url = https://gitlab.com/npneq/boost-multi.git
 
 [submodule "external_libs/pseudopod"]
 	path = external_libs/pseudopod
-	url = ../pseudopod.git
+	url = https://gitlab.com/npneq/pseudopod.git
 [submodule "external_libs/boost-mpi3"]
 	path = external_libs/mpi3
-	url = ../boost-mpi3
+	url = https://gitlab.com/npneq/boost-mpi3
 [submodule "external_libs/libxc"]
 	path = external_libs/libxc
-	url = ../libxc.git
+	url = https://gitlab.com/npneq/libxc.git
 [submodule "external_libs/kalimotxo"]
 	path = external_libs/kalimotxo
-	url = ../kalimotxo.git
+	url = https://gitlab.com/npneq/kalimotxo.git
 [submodule "external_libs/spglib"]
 	path = external_libs/spglib
-	url = ../spglib
+	url = https://gitlab.com/npneq/spglib
