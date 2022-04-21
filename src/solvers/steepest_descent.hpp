@@ -33,7 +33,7 @@ namespace inq {
 namespace solvers {
 
 template <class operator_type, class preconditioner_type, class field_set_type>
-auto steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
+math::array<typename field_set_type::element_type, 1> steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
 	CALI_CXX_MARK_SCOPE("solver::steepest_descent");
 
 	const int num_steps = 5;
