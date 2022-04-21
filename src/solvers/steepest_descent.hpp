@@ -33,11 +33,14 @@ namespace inq {
 namespace solvers {
 
 template <class operator_type, class preconditioner_type, class field_set_type>
-void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
+auto steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
 	CALI_CXX_MARK_SCOPE("solver::steepest_descent");
 
 	const int num_steps = 5;
-  
+
+	auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.set_size()});
+	auto lambda = math::array<typename field_set_type::element_type, 1>(phi.set_size());
+
 	for(int istep = 0; istep < num_steps; istep++){
     
 		//calculate the residual
@@ -48,9 +51,6 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
     auto sd = residual;
 		prec(sd);
 		auto hsd = ham(sd);
-
-		auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.set_size()});
-    auto lambda = math::array<typename field_set_type::element_type, 1>(phi.set_size());
       
 		mm[0] = operations::overlap_diagonal(hsd, hsd);
 		mm[1] = operations::overlap_diagonal(residual, hsd);
@@ -78,6 +78,8 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 		
 		operations::shift(1.0, lambda, residual, phi);
 	}
+
+	return +mm[2];
 }
 
 }
