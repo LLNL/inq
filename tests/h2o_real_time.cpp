@@ -63,25 +63,22 @@ int main(int argc, char ** argv){
 		
 		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
-		match.check("energy step   0", result.energy[0],   -25.637012688816);
-		match.check("energy step  10", result.energy[10],  -25.637012688717);
-		match.check("energy step  20", result.energy[20],  -25.637012688605);
-		match.check("energy step  30", result.energy[30],  -25.637012688485);
+		match.check("ETRS: energy step   0", result.energy[0],   -25.637012688816);
+		match.check("ETRS: energy step  10", result.energy[10],  -25.637012688717);
+		match.check("ETRS: energy step  20", result.energy[20],  -25.637012688605);
+		match.check("ETRS: energy step  30", result.energy[30],  -25.637012688485);
+	}
 
-		/*
-		match.check("dipole x step   0", result.dipole[0][0],   -0.00035331);
-		match.check("dipole y step   0", result.dipole[0][1],   -2.812602083171);
-		match.check("dipole z step   0", result.dipole[0][2],   -0.00064554);
-		match.check("dipole x step  10", result.dipole[10][0],  -0.000353744);
-		match.check("dipole y step  10", result.dipole[10][1],  -2.812598839225);
-		match.check("dipole z step  10", result.dipole[10][2],  -0.000645826);
-		match.check("dipole x step  20", result.dipole[20][0],  -0.00035331);
-		match.check("dipole y step  20", result.dipole[20][1],  -2.812591107786);
-		match.check("dipole z step  20", result.dipole[20][2],  -0.00064554);
-		match.check("dipole x step  30", result.dipole[30][0],  -0.000353744);
-		match.check("dipole y step  30", result.dipole[30][1],  -2.812589627003);
-		match.check("dipole z step  30", result.dipole[30][2],  -0.000645826);
-		*/
+	// Propagation without perturbation
+	{
+		electrons.load("h2o_restart");
+		
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
+		
+		match.check("CN: energy step   0", result.energy[0],   -25.637012688816);
+		match.check("CN: energy step  10", result.energy[10],  -25.637012688717);
+		match.check("CN: energy step  20", result.energy[20],  -25.637012688605);
+		match.check("CN: energy step  30", result.energy[30],  -25.637012688485);
 	}
 	
 	{
@@ -91,18 +88,31 @@ int main(int argc, char ** argv){
 		
 		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
-		/*		match.check("energy step  0", result.energy[0], -16.903925978590);
-		match.check("energy step 10", result.energy[10], -16.904635586794);
-		*/
 		{
-			auto dipole_file = std::ofstream("dipole.dat");
+			auto dipole_file = std::ofstream("dipole_etrs.dat");
 			
 			for(unsigned ii = 0; ii < result.dipole.size(); ii++){
 				dipole_file << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
 			}
 		}
 	}
-
+	
+	{
+		electrons.load("h2o_restart");
+		
+		for(auto phi : electrons.lot()) perturbations::kick({0.1, 0.0, 0.0}, phi.fields());
+		
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
+		
+		{
+			auto dipole_file = std::ofstream("dipole_cn.dat");
+			
+			for(unsigned ii = 0; ii < result.dipole.size(); ii++){
+				dipole_file << result.time[ii] << '\t' << result.dipole[ii] << std::endl;
+			}
+		}
+	}
+	
 	fftw_cleanup(); //required for valgrind
 	
 	return match.fail();
