@@ -56,6 +56,8 @@ void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & 
 
 	crank_nicolson_op<decltype(ham)> op{ham, complex{0.0, 0.5*dt}};
 	crank_nicolson_op<decltype(ham)> op_rhs{ham, complex{0.0, -0.5*dt}};
+
+	double const tol = 1e-12;
 	
 	//calculate the right hand side with H(t)
 	std::vector<states::orbital_set<basis::real_space, complex>> rhs; 
@@ -72,14 +74,28 @@ void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & 
 
 	ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 
+	math::array<bool, 1> conv(electrons.lot_size());
+	
 	//now calculate the wave functions in t + dt by solving a linear equation
-	for(int istep = 0; istep < 10; istep++) {
+	for(int istep = 0; istep < 200; istep++) {
+		
 		auto iphi = 0;
 		for(auto & phi : electrons.lot()){
-			solvers::steepest_descent(op, operations::no_preconditioner{}, rhs[iphi], phi);
+			auto res = solvers::steepest_descent(op, operations::no_preconditioner{}, rhs[iphi], phi);
+
+			conv[iphi] = true;
+			for(auto & ires : res) {
+				conv[iphi] = conv[iphi] and fabs(ires) < tol;
+			}
 			iphi++;
 		}
 
+		bool all_conv = true;
+		for(auto & iconv : conv) {
+			all_conv = all_conv and iconv;
+		}
+
+		if(all_conv) break;
 	}
 	
 }
