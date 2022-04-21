@@ -82,11 +82,7 @@ void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & 
 		auto iphi = 0;
 		for(auto & phi : electrons.lot()){
 			auto res = solvers::steepest_descent(op, operations::no_preconditioner{}, rhs[iphi], phi);
-
-			conv[iphi] = true;
-			for(auto & ires : res) {
-				conv[iphi] = conv[iphi] and fabs(ires) < tol;
-			}
+			conv[iphi] = res < tol;
 			iphi++;
 		}
 

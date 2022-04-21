@@ -33,13 +33,14 @@ namespace inq {
 namespace solvers {
 
 template <class operator_type, class preconditioner_type, class field_set_type>
-math::array<typename field_set_type::element_type, 1> steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
+double steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
 	CALI_CXX_MARK_SCOPE("solver::steepest_descent");
 
 	const int num_steps = 5;
 
 	auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.set_size()});
 	auto lambda = math::array<typename field_set_type::element_type, 1>(phi.set_size());
+	auto normres = math::array<double, 1>(phi.set_size());
 
 	for(int istep = 0; istep < num_steps; istep++){
     
@@ -63,8 +64,7 @@ math::array<typename field_set_type::element_type, 1> steepest_descent(const ope
 		std::cout << std::endl;
 		*/
 		gpu::run(phi.set_size(),
-						 [m = begin(mm), lam = begin(lambda)]
-						 GPU_LAMBDA (auto ist){
+						 [m = begin(mm), lam = begin(lambda), nor = begin(normres)] GPU_LAMBDA (auto ist){
 							 auto ca = m[0][ist];
 							 auto cb = 4.0*real(m[1][ist]);
 							 auto cc = m[2][ist];
@@ -74,12 +74,20 @@ math::array<typename field_set_type::element_type, 1> steepest_descent(const ope
 							 } else {
 								 lam[ist] = 0.5*(-cb + sqrt(cb*cb - 4.0*ca*cc))/ca;
 							 }
+
+							 nor[ist] = fabs(cc);
 						 });
 		
 		operations::shift(1.0, lambda, residual, phi);
 	}
 
-	return +mm[2];
+#ifdef HAVE_CUDA
+	using thrust::max_element;
+#else
+	using std::max_element;
+#endif
+
+	return *max_element(normres.begin(), normres.end());
 }
 
 }
