@@ -38,9 +38,9 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 
 	const int num_steps = 5;
 
-	auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.set_size()});
-	auto lambda = math::array<typename field_set_type::element_type, 1>(phi.set_size());
-	auto normres = math::array<double, 1>(phi.set_size());
+	auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.local_set_size()});
+	auto lambda = math::array<typename field_set_type::element_type, 1>(phi.local_set_size());
+	auto normres = math::array<double, 1>(phi.local_set_size());
 
 	for(int istep = 0; istep < num_steps; istep++){
     
@@ -63,7 +63,7 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 			}
 		std::cout << std::endl;
 		*/
-		gpu::run(phi.set_size(),
+		gpu::run(phi.local_set_size(),
 						 [m = begin(mm), lam = begin(lambda), nor = begin(normres)] GPU_LAMBDA (auto ist){
 							 auto ca = m[0][ist];
 							 auto cb = 4.0*real(m[1][ist]);
