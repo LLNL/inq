@@ -91,6 +91,8 @@ void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & 
 			all_conv = all_conv and iconv;
 		}
 
+		if(electrons.lot_states_comm_.size() > 1) electrons.lot_states_comm_.all_reduce_in_place_n(&all_conv, 1, std::logical_and<>{});
+		
 		if(all_conv) break;
 	}
 	

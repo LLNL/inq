@@ -87,7 +87,9 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 	using std::max_element;
 #endif
 
-	return *max_element(normres.begin(), normres.end());
+	auto maxloc = max_element(normres.begin(), normres.end());
+	if(maxloc == normres.end()) return 0.0;
+	return *maxloc;
 }
 
 }
