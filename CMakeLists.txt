@@ -134,6 +134,7 @@ link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
 # Multi
+set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 include_directories(${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 
 # SPGLIB

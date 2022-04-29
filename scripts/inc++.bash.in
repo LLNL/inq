@@ -31,6 +31,7 @@ fi
 
 includeflags="-I@spglib_INCLUDE_DIRS@            \
   -I@Libxc_INCLUDE_DIRS@                         \
+  -I@multi_INCLUDE_DIRS@                         \
   -I@Boost_INCLUDE_DIRS@                         \
   @FFTW_CFLAGS@                          \
   -I@PROJECT_BINARY_DIR@/                        \
