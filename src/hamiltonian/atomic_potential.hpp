@@ -10,12 +10,12 @@
  it under the terms of the GNU Lesser General Public License as published by
  the Free Software Foundation; either version 3 of the License, or
  (at your option) any later version.
-  
+	
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU Lesser General Public License for more details.
-  
+	
  You should have received a copy of the GNU Lesser General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -45,20 +45,20 @@
 namespace inq {
 namespace hamiltonian {
 
-  class atomic_potential {
+	class atomic_potential {
 
-  public:
+	public:
 
 		using pseudopotential_type = pseudo::pseudopotential<math::array<double, 1>>;
 		
-    enum class error {
-      PSEUDOPOTENTIAL_NOT_FOUND
-    };
+		enum class error {
+			PSEUDOPOTENTIAL_NOT_FOUND
+		};
 
-    template <class atom_array>
-    atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+		template <class atom_array>
+		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			sep_(0.625), //this is the default from octopus
-      pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
+			pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
 			comm_(comm),
 			part_(natoms, comm_)
 		{
@@ -66,9 +66,9 @@ namespace hamiltonian {
 			CALI_CXX_MARK_FUNCTION;
 			
 			has_nlcc_ = false;
-      nelectrons_ = 0.0;
+			nelectrons_ = 0.0;
 
-      for(int iatom = 0; iatom < natoms; iatom++){
+			for(int iatom = 0; iatom < natoms; iatom++){
 				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
 				
 				auto map_ref = pseudopotential_list_.find(atom_list[iatom].symbol());
@@ -91,31 +91,31 @@ namespace hamiltonian {
 				
 			}
 
-    }
+		}
 		
-    int num_species() const {
-      return pseudopotential_list_.size();
-    }
+		int num_species() const {
+			return pseudopotential_list_.size();
+		}
 
-    const double & num_electrons() const {
-      return nelectrons_;
-    }
+		const double & num_electrons() const {
+			return nelectrons_;
+		}
 		
 		template <class element_type>
-    const pseudopotential_type & pseudo_for_element(const element_type & el) const {
-      return pseudopotential_list_.at(el.symbol());
-    }
+		const pseudopotential_type & pseudo_for_element(const element_type & el) const {
+			return pseudopotential_list_.at(el.symbol());
+		}
 
-    template <class basis_type, class cell_type, class geo_type>
-    basis::field<basis_type, double> local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		template <class basis_type, class cell_type, class geo_type>
+		basis::field<basis_type, double> local_potential(const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
-      basis::field<basis_type, double> potential(basis);
+			basis::field<basis_type, double> potential(basis);
 
 			potential = 0.0;
 			
-      for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
+			for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 
 				if(single_atom >= 0 and single_atom != iatom) continue;
 				
@@ -160,11 +160,11 @@ namespace hamiltonian {
 		}
 		
 		template <class basis_type, class cell_type, class geo_type>
-    basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		basis::field<basis_type, double> ionic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
 	
-      basis::field<basis_type, double> density(basis);
+			basis::field<basis_type, double> density(basis);
 			
 			density = 0.0;
 
@@ -186,7 +186,7 @@ namespace hamiltonian {
 									 double rr = sph.distance(ipoint);
 									 gpu::atomic::add(&dns[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]], chrg*sp.long_range_density(rr));
 								 });
-      }
+			}
 			
 			if(comm_.size() > 1){
 				CALI_CXX_MARK_SCOPE("ionic_density::reduce");
@@ -194,18 +194,18 @@ namespace hamiltonian {
 			}
 			
 			return density;			
-    }
-    
-    template <class basis_type, class cell_type, class geo_type>
-    basis::field<basis_type, double> atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		}
+		
+		template <class basis_type, class cell_type, class geo_type>
+		basis::field<basis_type, double> atomic_electronic_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
-      basis::field<basis_type, double> density(basis);
+			basis::field<basis_type, double> density(basis);
 
 			density = 0.0;
 			
-      for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
+			for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
 				
@@ -238,7 +238,7 @@ namespace hamiltonian {
 									 });
 					
 				}
-      }
+			}
 
 			if(comm_.size() > 1){
 				CALI_CXX_MARK_SCOPE("atomic_electronic_density::reduce");
@@ -246,22 +246,22 @@ namespace hamiltonian {
 			}
 
 			return density;			
-    }
+		}
 
 		auto has_nlcc() const {
 			return has_nlcc_;
 		}
 
 		template <class basis_type, class cell_type, class geo_type>
-    basis::field<basis_type, double> nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		basis::field<basis_type, double> nlcc_density(const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 	
-      basis::field<basis_type, double> density(basis);
+			basis::field<basis_type, double> density(basis);
 
 			density = 0.0;
 			
-      for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
+			for(auto iatom = part_.start(); iatom < part_.end(); iatom++){
 				
 				auto atom_position = geo.coordinates()[iatom];
 				
@@ -282,7 +282,7 @@ namespace hamiltonian {
 									 gpu::atomic::add(&dens[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]], density_val);
 								 });
 				
-      }
+			}
 
 			if(comm_.size() > 1){
 				CALI_CXX_MARK_SCOPE("nlcc_density::reduce");
@@ -290,31 +290,31 @@ namespace hamiltonian {
 			}
 			
 			return density;			
-    }
+		}
 		
-    template <class output_stream>
-    void info(output_stream & out) const {
-      out << "ATOMIC POTENTIAL:" << std::endl;
-      out << "  Number of species   = " << num_species() << std::endl;
-      out << "  Number of electrons = " << num_electrons() << std::endl;
-      out << std::endl;
-    }
+		template <class output_stream>
+		void info(output_stream & out) const {
+			out << "ATOMIC POTENTIAL:" << std::endl;
+			out << "	Number of species		= " << num_species() << std::endl;
+			out << "	Number of electrons = " << num_electrons() << std::endl;
+			out << std::endl;
+		}
 
 		auto & range_separation() const {
 			return sep_;
 		}
 
-  private:
+	private:
 
 		pseudo::math::erf_range_separation const sep_;
-    double nelectrons_;
-    pseudo::set pseudo_set_;
-    std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
+		double nelectrons_;
+		pseudo::set pseudo_set_;
+		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		mutable boost::mpi3::communicator comm_;
 		inq::utils::partition part_;
 		bool has_nlcc_;
 
-  };
+	};
 
 }
 }
@@ -334,50 +334,50 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using pseudo::element;
-  using input::species;
+	using input::species;
 
 	double const gcut = 0.785;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	SECTION("Non-existing element"){
-    std::vector<species> el_list({element("P"), element("X")});
+		std::vector<species> el_list({element("P"), element("X")});
 
-    CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut));
-  }
-  
-  SECTION("Duplicated element"){
-    std::vector<species> el_list({element("N"), element("N")});
+		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut));
+	}
+	
+	SECTION("Duplicated element"){
+		std::vector<species> el_list({element("N"), element("N")});
 
-    hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut);
+		hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut);
 
-    CHECK(pot.num_species() == 1);
-    CHECK(pot.num_electrons() == 10.0_a);
-    
-  }
+		CHECK(pot.num_species() == 1);
+		CHECK(pot.num_electrons() == 10.0_a);
+		
+	}
 
-  SECTION("Empty list"){
-    std::vector<species> el_list;
-    
-    hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut);
+	SECTION("Empty list"){
+		std::vector<species> el_list;
+		
+		hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut);
 
-    CHECK(pot.num_species() == 0);
-    CHECK(pot.num_electrons() == 0.0_a);
+		CHECK(pot.num_species() == 0);
+		CHECK(pot.num_electrons() == 0.0_a);
 
 		CHECK(not pot.has_nlcc());
 		
-  }
+	}
 
-  SECTION("CNOH"){
-    species el_list[] = {element("C"), element("N"), element("O"), element("H")};
+	SECTION("CNOH"){
+		species el_list[] = {element("C"), element("N"), element("O"), element("H")};
 
-    hamiltonian::atomic_potential pot(4, el_list, gcut);
+		hamiltonian::atomic_potential pot(4, el_list, gcut);
 
-    CHECK(pot.num_species() == 4);
-    CHECK(pot.num_electrons() == 16.0_a);
-  }
+		CHECK(pot.num_species() == 4);
+		CHECK(pot.num_electrons() == 16.0_a);
+	}
 
-  SECTION("Construct from a geometry"){
+	SECTION("Construct from a geometry"){
 
 	ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 
@@ -386,8 +386,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), comm);
 
-    CHECK(pot.num_species() == 2);
-    CHECK(pot.num_electrons() == 30.0_a);
+		CHECK(pot.num_species() == 2);
+		CHECK(pot.num_electrons() == 30.0_a);
 
 		rs.info(std::cout);
 		
@@ -418,10 +418,10 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		CHECK(nlcc.cubic()[5][3][0] == 0.6248217151_a);
 		CHECK(nlcc.cubic()[3][1][0] == 0.0007040027_a);
 		
-  }
-  
+	}
+	
 }
 
 #endif
-  
+	
 #endif
