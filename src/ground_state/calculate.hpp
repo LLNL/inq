@@ -30,7 +30,6 @@
 #include <mixers/broyden.hpp>
 #include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
-#include <eigensolvers/davidson.hpp>
 #include <math/complex.hpp>
 #include <input/config.hpp>
 #include <input/interaction.hpp>
@@ -124,11 +123,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			case input::scf::scf_eigensolver::CONJUGATE_GRADIENT:
 				eigensolvers::conjugate_gradient(ham, prec, fphi);
 				break;
-					
-			case input::scf::scf_eigensolver::DAVIDSON:
-				eigensolvers::davidson(ham, prec, fphi);
-				break;
-					
+				
 			default:
 				assert(false);
 			}
