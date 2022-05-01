@@ -272,7 +272,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	systems::box box = systems::box::cubic(5.0_b).cutoff_energy(25.0_Ha);
+	systems::box box = systems::box::cubic(3.0_b).cutoff_energy(10.0_Ha);
 	
 	systems::ions ions(box);
 
