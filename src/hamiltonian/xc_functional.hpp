@@ -153,7 +153,7 @@ namespace hamiltonian {
 #include <iomanip>
 #include <fstream>
 
-auto sqwave(inq::math::vector3<double> rr, int n){
+GPU_FUNCTION auto sqwave(inq::math::vector3<double> rr, int n){
 	auto kvec = 2.0*M_PI*inq::math::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
 	return  sin(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
 }
@@ -263,14 +263,11 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		basis::real_space rs(box, cart_comm);
 		
 		basis::field<basis::real_space, double> field(rs);
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					field.cubic()[ix][iy][iz] = sqwave(vec, 3);
-				}
-			}
-		}
+		gpu::run(rs.local_sizes()[2], rs.local_sizes()[1], rs.local_sizes()[0],
+						 [pop = rs.point_op(), fie = begin(field.cubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 auto vec = pop.rvector_cartesian(ix, iy, iz);
+							 fie[ix][iy][iz] = sqwave(vec, 3);
+						 });
 	
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
 		basis::field<basis::real_space, double> Vxc(rs);
@@ -280,76 +277,6 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		ggafunctional(field, Exc, Vxc);
 
 		CHECK(Exc == -393.4604748792_a);
-		
-		std::ofstream fout("fout.dat");
-
-		double diff_ways = 0.0;
-		double diff = 0.0;
-		double int_xc_energy = 0.0;
-
-		//This is slow, so jump by 2 in each dimension
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					if(rs.cubic_dist(0).local_to_global(ix).value()%2 == 1) continue;
-					if(rs.cubic_dist(1).local_to_global(iy).value()%2 == 1) continue;
-					if(rs.cubic_dist(2).local_to_global(iz).value()%2 == 1) continue;
-					
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					math::array_nopre<double, 1> data(5);
-					data[0] = sqwave(vec, 3);
-					data[1] = dot(gradient_sqwave(vec, 3), gradient_sqwave(vec, 3));
-					
-					auto data_ptr = raw_pointer_cast(data.data_elements());
-
-					xc_gga_exc_vxc(ggafunctional.libxc_func_ptr(), 1, data_ptr, data_ptr + 1, data_ptr + 2, data_ptr + 3, data_ptr + 4);
-					gpu::sync();
-
-					auto local_density = &data[0];
-					auto local_exc = &data[2];
-					auto local_vxc = &data[3];
-					auto local_vsigma = &data[4];					
-					
-					auto calc_vsigma = [func = ggafunctional.libxc_func_ptr()] (auto point){
-						math::array_nopre<double, 1> data(5);
-						data[0] = sqwave(point, 3);
-						data[1] = dot(gradient_sqwave(point, 3), gradient_sqwave(point, 3));
-
-						auto data_ptr = raw_pointer_cast(data.data_elements());
-						xc_gga_exc_vxc(func, 1, data_ptr, data_ptr + 1, data_ptr + 2, data_ptr + 3, data_ptr + 4);
-						gpu::sync();
-						return data[4];
-					};
-					
-					auto grad_vsigma = finite_difference_gradient5p(calc_vsigma, vec);
-
-					auto calc_vsigmadn = [calc_vsigma] (auto point){
-						return gradient_sqwave(point, 3)*calc_vsigma(point);
-					};
-					
-					auto vxc_extra = finite_difference_divergence5p(calc_vsigmadn, vec);
-
-					diff_ways = std::max(diff_ways, fabs(dot(grad_vsigma, gradient_sqwave(vec, 3)) + local_vsigma[0]*laplacian_sqwave(vec, 3) - vxc_extra));
-
-					local_vxc[0] -= 2.0*vxc_extra;
-					int_xc_energy += local_exc[0]*local_density[0]*rs.volume_element()*8.0; //the factor of 8 is to compensate the iteration by 2
-					
-					diff = std::max(diff, fabs(local_vxc[0] - Vxc.cubic()[ix][iy][iz])*local_density[0]);
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&int_xc_energy, 1, std::plus<>{});
-		
-		CHECK(diff == Approx(0).margin(0.033132713));
-		CHECK(diff_ways == Approx(0).margin(0.000001359));
-		
-		//This check works if we evaluate the whole grid
-		//CHECK(Approx(Exc) == int_xc_energy);
-		//So check for the value instead
-		CHECK(int_xc_energy == -410.5050535709_a);
-
-
 		
 		if(rs.part().contains(1)) CHECK(Vxc.linear()[rs.part().global_to_local(utils::global_index(1))] == -0.5607887985_a);
 		if(rs.part().contains(33)) CHECK(Vxc.linear()[rs.part().global_to_local(utils::global_index(33))] == -1.1329131862_a);
