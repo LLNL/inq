@@ -75,13 +75,14 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 							 auto cb = 4.0*real(m[1][ist]);
 							 auto cc = m[2][ist];
 
-							 if(fabs(ca) < 1e-15) { //this happens if we are perfectly converged
-								 lam[ist] = complex(0.0, 0.0);
-							 } else {
-								 lam[ist] = 0.5*(-cb + sqrt(cb*cb - 4.0*ca*cc))/ca;
-							 }
-
 							 nor[ist] = fabs(cc);
+
+							 auto sqarg = cb*cb - 4.0*ca*cc;
+							 auto signb = (real(conj(cb)*sqarg) >= 0)?1.0:-1.0;
+
+							 auto qq = -0.5*(cb + signb*sqrt(sqarg));
+							 lam[ist] = cc/qq;
+
 						 });
 		
 		operations::shift(1.0, lambda, residual, phi);
