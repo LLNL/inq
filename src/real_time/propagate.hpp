@@ -13,6 +13,7 @@
 #include <observables/dipole.hpp>
 #include <ions/propagator.hpp>
 #include <systems/electrons.hpp>
+#include <real_time/crank_nicolson.hpp>
 #include <real_time/etrs.hpp>
 #include <real_time/result.hpp>
 #include <utils/profiling.hpp>
@@ -70,7 +71,15 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
 
-			etrs(dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
+			//propagate using the chosen method
+			switch(options.propagator()){
+			case input::rt::electron_propagator::ETRS :
+				etrs(dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
+				break;
+			case input::rt::electron_propagator::CRANK_NICOLSON :
+				crank_nicolson(dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
+				break;
+			}
 			
 			//calculate the new density, energy, forces
 			electrons.density_ = density::calculate(electrons);

@@ -29,15 +29,21 @@
 #include <operations/orthogonalize.hpp>
 #include <operations/overlap_diagonal.hpp>
 
+#include <mpi3/ostream.hpp>
+
 namespace inq {
 namespace solvers {
 
 template <class operator_type, class preconditioner_type, class field_set_type>
-void steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
+double steepest_descent(const operator_type & ham, const preconditioner_type & prec, field_set_type & rhs, field_set_type & phi){
 	CALI_CXX_MARK_SCOPE("solver::steepest_descent");
 
 	const int num_steps = 5;
-  
+
+	auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.local_set_size()});
+	auto lambda = math::array<typename field_set_type::element_type, 1>(phi.local_set_size());
+	auto normres = math::array<double, 1>(phi.local_set_size());
+
 	for(int istep = 0; istep < num_steps; istep++){
     
 		//calculate the residual
@@ -48,30 +54,49 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
     auto sd = residual;
 		prec(sd);
 		auto hsd = ham(sd);
-
-		auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.set_size()});
-    auto lambda = math::array<typename field_set_type::element_type, 1>(phi.set_size());
       
 		mm[0] = operations::overlap_diagonal(hsd, hsd);
 		mm[1] = operations::overlap_diagonal(residual, hsd);
 		mm[2] = operations::overlap_diagonal(residual, residual);
+
+		/*
+		boost::mpi3::ostream wout(phi.set_comm());
 		
-		gpu::run(phi.set_size(),
-						 [m = begin(mm), lam = begin(lambda)]
-						 GPU_LAMBDA (auto ist){
+		wout << istep << std::flush;
+		for(int ist = 0; ist < phi.local_set_size(); ist++){
+			wout << '\t' << fabs(mm[2][ist]) << std::flush;
+		}
+		wout << std::endl;
+		*/
+		
+		gpu::run(phi.local_set_size(),
+						 [m = begin(mm), lam = begin(lambda), nor = begin(normres)] GPU_LAMBDA (auto ist){
 							 auto ca = m[0][ist];
 							 auto cb = 4.0*real(m[1][ist]);
 							 auto cc = m[2][ist];
 
-							 if(fabs(ca) < 1e-15) { //this happens if we are perfectly converged
-								 lam[ist] = complex(0.0, 0.0);
-							 } else {
-								 lam[ist] = 0.5*(-cb + sqrt(cb*cb - 4.0*ca*cc))/ca;
-							 }
+							 nor[ist] = fabs(cc);
+
+							 auto sqarg = cb*cb - 4.0*ca*cc;
+							 auto signb = (real(conj(cb)*sqarg) >= 0)?1.0:-1.0;
+
+							 auto qq = -0.5*(cb + signb*sqrt(sqarg));
+							 lam[ist] = cc/qq;
+
 						 });
 		
 		operations::shift(1.0, lambda, residual, phi);
 	}
+
+#ifdef HAVE_CUDA
+	using thrust::max_element;
+#else
+	using std::max_element;
+#endif
+
+	auto maxloc = max_element(normres.begin(), normres.end());
+	if(maxloc == normres.end()) return 0.0;
+	return *maxloc;
 }
 
 }
