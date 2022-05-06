@@ -668,10 +668,10 @@ nvcc-ompi-fast:
 #      - INQ_EXEC_ENV="mpirun -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"      
 
 #########################################################################################################################
-# NVIDIA OMPI
+# NVIDIA OMPI DEBUG
 #########################################################################################################################
 
-nvcc-ompi:
+nvcc-ompi-debug:
     stage: build
     needs: []
     tags:
@@ -689,61 +689,61 @@ nvcc-ompi:
       - time make -j16
       - time make -j16 install
       - cd $SRCDIR
-      - echo $PREFIX > nvcc-ompi-path
+      - echo $PREFIX > nvcc-ompi-debug-path
     artifacts:
       paths:
-      - nvcc-ompi-path
+      - nvcc-ompi-debug-path
 
 #  This is disabled since there are some issues with mpirun not
 #  detecting MPI_Finalize
 #
-#nvcc-ompi-1p:
+#nvcc-ompi-debug-1p:
 #    stage: test
-#    needs: ["nvcc-ompi"]
+#    needs: ["nvcc-ompi-debug"]
 #    tags:
 #      - cuda_gpu
 #    script:
-#      - PREFIX=`cat nvcc-ompi-path`
+#      - PREFIX=`cat nvcc-ompi-debug-path`
 #      - INQ_EXEC_ENV="mpirun -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
 #      - INQ_EXEC_ENV="mpirun -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
 #
-#nvcc-ompi-2p:
+#nvcc-ompi-debug-2p:
 #    stage: test
-#    needs: ["nvcc-ompi"]
+#    needs: ["nvcc-ompi-debug"]
 #    tags:
 #      - cuda_gpu
 #    script:
-#      - PREFIX=`cat nvcc-ompi-path`
+#      - PREFIX=`cat nvcc-ompi-debug-path`
 #      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
 #      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"      
 #
-#nvcc-ompi-3p:
+#nvcc-ompi-debug-3p:
 #    stage: test
-#    needs: ["nvcc-ompi"]
+#    needs: ["nvcc-ompi-debug"]
 #    tags:
 #      - cuda_gpu
 #    script:
-#      - PREFIX=`cat nvcc-ompi-path`
+#      - PREFIX=`cat nvcc-ompi-debug-path`
 #      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
 #      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"      
 #      
-#nvcc-ompi-4p:
+#nvcc-ompi-debug-4p:
 #    stage: test
-#    needs: ["nvcc-ompi"]
+#    needs: ["nvcc-ompi-debug"]
 #    tags:
 #      - cuda_gpu
 #    script:
-#      - PREFIX=`cat nvcc-ompi-path`
+#      - PREFIX=`cat nvcc-ompi-debug-path`
 #      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
 #      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
 #      
-#nvcc-ompi-5p:
+#nvcc-ompi-debug-5p:
 #    stage: test
-#    needs: ["nvcc-ompi"]
+#    needs: ["nvcc-ompi-debug"]
 #    tags:
 #      - cuda_gpu
 #    script:
-#      - PREFIX=`cat nvcc-ompi-path`
+#      - PREFIX=`cat nvcc-ompi-debug-path`
 #      - INQ_EXEC_ENV="mpirun -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"
 
 #########################################################################################################################
