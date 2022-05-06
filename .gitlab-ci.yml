@@ -589,6 +589,76 @@ intel-ompi-4p:
       - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
 
 #########################################################################################################################
+# INTEL MPICH
+#########################################################################################################################
+
+intel-mpich:
+    stage: build
+    needs: []    
+    tags:
+      - intel_compiler
+    script:
+      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
+      - export SRCDIR=`pwd`
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - mkdir -p $PREFIX/build
+      - cd $PREFIX/build
+      - export CC=/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icc
+      - export CXX=/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc
+      - export CXXFLAGS="-Wl,-rpath,/opt/intel/oneapi/compiler/2021.2.0/linux/lib/"
+      - export FC=gfortran
+      - time $SRCDIR/configure --prefix=$PREFIX/install --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - make -j 16
+      - make install
+      - $PREFIX/install/bin/inc++ $SRCDIR/tests/silicon.cpp -o tests/silicon2
+      - cd $SRCDIR
+      - echo $PREFIX > intel-mpich-path
+    artifacts:
+      paths:
+      - intel-mpich-path
+      
+intel-mpich-1p:
+    stage: test
+    needs: ["intel-mpich"]    
+    tags:
+      - intel_compiler
+    script:
+      - PREFIX=`cat intel-mpich-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
+      - $PREFIX/build/tests/silicon2
+
+intel-mpich-2p:
+    stage: test
+    needs: ["intel-mpich"]    
+    tags:
+      - intel_compiler
+    script:
+      - PREFIX=`cat intel-mpich-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
+
+intel-mpich-3p:
+    stage: test
+    needs: ["intel-mpich"]    
+    tags:
+      - intel_compiler
+    script:
+      - PREFIX=`cat intel-mpich-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
+
+intel-mpich-4p:
+    stage: test
+    needs: ["intel-mpich"]    
+    tags:
+      - intel_compiler
+    script:
+      - PREFIX=`cat intel-mpich-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
+
+#########################################################################################################################
 # NVIDIA OMPI FAST
 #########################################################################################################################
 
