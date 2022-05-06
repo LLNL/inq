@@ -272,7 +272,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	systems::box box = systems::box::cubic(5.0_b).cutoff_energy(25.0_Ha);
+	systems::box box = systems::box::orthorhombic(6.0_b, 1.0_b, 6.0_b).cutoff_energy(15.0_Ha);
 	
 	systems::ions ions(box);
 
@@ -286,18 +286,20 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	CHECK(electrons.states_.num_electrons() == 38.0_a);
 	CHECK(electrons.states_.num_states() == 19);
 
+	int iphi = 0;
 	for(auto & phi : electrons.lot()) {
 		
 		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
 			auto istg = phi.fields().set_part().local_to_global(ist);
 			
-			electrons.occupations()[0][ist] = cos(istg.value());
+			electrons.occupations()[iphi][ist] = cos(istg.value());
 			
 			for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
 				auto ipg = phi.fields().basis().part().local_to_global(ip);
 				phi.fields().matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
 			}
 		}
+		iphi++;
 	}
 		
 	electrons.save("electron_restart");
@@ -308,11 +310,11 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 
 	CHECK(electrons.lot_size() == electrons_read.lot_size());
 	
-	int iphi = 0;
+	iphi = 0;
 	for(auto & phi : electrons.lot()) {
 
 		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
-			CHECK(electrons.occupations()[0][ist] == electrons_read.occupations()[0][ist]);
+			CHECK(electrons.occupations()[iphi][ist] == electrons_read.occupations()[0][ist]);
 			for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
 				CHECK(phi.fields().matrix()[ip][ist] == electrons_read.lot()[iphi].fields().matrix()[ip][ist]);
 			}
