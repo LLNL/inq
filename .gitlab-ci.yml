@@ -764,8 +764,7 @@ nvcc-mpich-fast:
       - nvcc -V
       - mkdir -p $PREFIX/build
       - cd $PREFIX/build
-      - export CUDAFLAGS="`mpicxx.mpich -c -compile_info -cxx= | sed 's/-c//g'`"
-      - CXX=mpicxx.mpich CUDACXX=/usr/local/cuda/bin/nvcc $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+      - CUDACXX=/usr/local/cuda/bin/nvcc $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j16
       - time make -j16 install
       - cd $SRCDIR
@@ -841,8 +840,7 @@ nvcc-mpich-debug:
       - nvcc -V
       - mkdir -p $PREFIX/build
       - cd $PREFIX/build
-      - export CUDAFLAGS="`mpicxx.mpich -c -compile_info -cxx= | sed 's/-c//g'`"
-      - CXX=mpicxx.mpich CUDACXX=/usr/local/cuda/bin/nvcc $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+      - CUDACXX=/usr/local/cuda/bin/nvcc $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j16
       - time make -j16 install
       - cd $SRCDIR
