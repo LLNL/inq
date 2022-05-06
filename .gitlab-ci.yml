@@ -740,6 +740,160 @@ nvcc-ompi-5p:
       - PREFIX=`cat nvcc-ompi-path`
       - INQ_EXEC_ENV="mpirun -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"
 
+#########################################################################################################################
+# NVIDIA MPICH FAST
+#########################################################################################################################
+
+nvcc-mpich-fast:
+    stage: build
+    needs: []
+    tags:
+      - cuda_gpu
+    script:
+      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
+      - export SRCDIR=`pwd`
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - export PATH=/usr/local/cuda/bin:$PATH
+      - cmake --version
+      - nvcc -V
+      - mkdir -p $PREFIX/build
+      - cd $PREFIX/build
+      - export CUDAFLAGS="`mpicxx.mpich -c -compile_info -cxx= | sed 's/-c//g'`"
+      - CXX=mpicxx.mpich CUDACXX=/usr/local/cuda/bin/nvcc $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+      - time make -j16
+      - time make -j16 install
+      - cd $SRCDIR
+      - echo $PREFIX > nvcc-mpich-fast-path
+    artifacts:
+      paths:
+      - nvcc-mpich-fast-path
+
+nvcc-mpich-fast-1p:
+    stage: test
+    needs: ["nvcc-mpich-fast"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-fast-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"      
+
+nvcc-mpich-fast-2p:
+    stage: test
+    needs: ["nvcc-mpich-fast"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-fast-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"      
+
+nvcc-mpich-fast-3p:
+    stage: test
+    needs: ["nvcc-mpich-fast"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-fast-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
+
+nvcc-mpich-fast-4p:
+    stage: test
+    needs: ["nvcc-mpich-fast"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-fast-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"      
+
+nvcc-mpich-fast-5p:
+    stage: test
+    needs: ["nvcc-mpich-fast"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-fast-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"      
+
+#########################################################################################################################
+# NVIDIA MPICH DEBUG
+#########################################################################################################################
+
+nvcc-mpich-debug:
+    stage: build
+    needs: []
+    tags:
+      - cuda_gpu
+    script:
+      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
+      - export SRCDIR=`pwd`
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - export PATH=/usr/local/cuda/bin:$PATH
+      - cmake --version
+      - nvcc -V
+      - mkdir -p $PREFIX/build
+      - cd $PREFIX/build
+      - export CUDAFLAGS="`mpicxx.mpich -c -compile_info -cxx= | sed 's/-c//g'`"
+      - CXX=mpicxx.mpich CUDACXX=/usr/local/cuda/bin/nvcc $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+      - time make -j16
+      - time make -j16 install
+      - cd $SRCDIR
+      - echo $PREFIX > nvcc-mpich-debug-path
+    artifacts:
+      paths:
+      - nvcc-mpich-debug-path
+
+nvcc-mpich-debug-1p:
+    stage: test
+    needs: ["nvcc-mpich-debug"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-debug-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"      
+
+nvcc-mpich-debug-2p:
+    stage: test
+    needs: ["nvcc-mpich-debug"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-debug-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"      
+
+nvcc-mpich-debug-3p:
+    stage: test
+    needs: ["nvcc-mpich-debug"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-debug-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
+
+nvcc-mpich-debug-4p:
+    stage: test
+    needs: ["nvcc-mpich-debug"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-debug-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"      
+
+nvcc-mpich-debug-5p:
+    stage: test
+    needs: ["nvcc-mpich-debug"]
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-debug-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"      
+
 #######################################################################################################################
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
