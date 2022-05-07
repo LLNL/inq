@@ -68,6 +68,8 @@ public:
 	static auto non_interacting(){
 		interaction inter;
 		inter.theory_ = electronic_theory::NON_INTERACTING;
+		inter.exchange_ = exchange_functional::NONE;
+		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
 	}
 
@@ -80,6 +82,8 @@ public:
 	static auto hartree_fock(){
 		interaction inter;
 		inter.theory_ = electronic_theory::HARTREE_FOCK;
+		inter.exchange_ = exchange_functional::NONE;
+		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
 	}
 		
