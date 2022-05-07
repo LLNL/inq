@@ -68,6 +68,7 @@ public:
 	static auto non_interacting(){
 		interaction inter;
 		inter.theory_ = electronic_theory::NON_INTERACTING;
+		inter.hartree_potential_ = false;
 		inter.exchange_ = exchange_functional::NONE;
 		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
@@ -75,6 +76,7 @@ public:
 
 	static auto dft(){
 		interaction inter;
+		inter.hartree_potential_ = true;		
 		inter.theory_ = electronic_theory::DENSITY_FUNCTIONAL;
 		return inter;
 	}
@@ -82,6 +84,7 @@ public:
 	static auto hartree_fock(){
 		interaction inter;
 		inter.theory_ = electronic_theory::HARTREE_FOCK;
+		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::NONE;
 		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
@@ -101,6 +104,7 @@ public:
 
 	static auto pbe() {
 		interaction inter;
+		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::PBE;
 		inter.correlation_ = correlation_functional::PBE;
 		return inter;
@@ -108,6 +112,7 @@ public:
 
 	static auto pbe0() {
 		interaction inter;
+		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::PBE0;
 		inter.correlation_ = correlation_functional::NONE;
 		return inter;
@@ -115,6 +120,7 @@ public:
 
 	static auto b3lyp() {
 		interaction inter;
+		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::B3LYP;
 		inter.correlation_ = correlation_functional::NONE;
 		return inter;
@@ -150,6 +156,7 @@ public:
 		
 		interaction rinter;
 		rinter.theory_	= merge_optional(inter1.theory_, inter2.theory_);
+		rinter.hartree_potential_	= merge_optional(inter1.hartree_potential_, inter2.hartree_potential_);
 		rinter.exchange_	= merge_optional(inter1.exchange_, inter2.exchange_);
 		rinter.correlation_	= merge_optional(inter1.correlation_, inter2.correlation_);
 		rinter.fourier_pseudo_	= merge_optional(inter1.fourier_pseudo_, inter2.fourier_pseudo_);
@@ -159,6 +166,7 @@ public:
 private:
 
 	std::optional<electronic_theory> theory_;
+	std::optional<bool> hartree_potential_;
 	std::optional<exchange_functional> exchange_;
 	std::optional<correlation_functional> correlation_;
 	std::optional<bool> fourier_pseudo_;
