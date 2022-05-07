@@ -39,7 +39,7 @@ namespace hamiltonian {
 	public:
 
 		self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis):
-			theory_(interaction.theory()),
+			interaction_(interaction),
 			exchange_(int(interaction.exchange())),
 			correlation_(int(interaction.correlation())),
 			vion_(density_basis),
@@ -77,7 +77,7 @@ namespace hamiltonian {
 
 			solvers::poisson poisson_solver;
 
-			switch(theory_){
+			switch(interaction_.theory()){
 
 			case input::interaction::electronic_theory::HARTREE_FOCK:
 				{
@@ -135,12 +135,12 @@ namespace hamiltonian {
 		}
 
 		auto theory() const {
-			return theory_;
+			return interaction_.theory();
 		}
 
 	private:
 
-		input::interaction::electronic_theory theory_;
+		input::interaction interaction_;
 		hamiltonian::xc_functional exchange_;
 		hamiltonian::xc_functional correlation_;
 		basis::field<basis::real_space, double> vion_;
