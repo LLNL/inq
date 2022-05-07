@@ -77,7 +77,14 @@ namespace hamiltonian {
 			
 			return energy;
 		}
-		
+
+		auto direct(const states::orbital_set<basis::real_space, complex> & phi, double scale = 1.0) const {
+			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
+			exxphi.fields() = 0.0;
+			direct(phi, exxphi, scale);
+			return exxphi;
+		}
+
 		void direct(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi, double scale = 1.0) const {
 			if(not enabled()) return;
 			
@@ -105,13 +112,6 @@ namespace hamiltonian {
 									 });
 				}
 			}
-		}
-
-		auto direct(const states::orbital_set<basis::real_space, complex> & phi, double scale = 1.0) const {
-			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
-			exxphi.fields() = 0.0;
-			direct(phi, exxphi, scale);
-			return exxphi;
 		}
 
 		auto ace(const states::orbital_set<basis::real_space, complex> & phi) const {
