@@ -46,7 +46,7 @@ public:
 		B = 106,
 		B3LYP = 402,
 		PBE0 = 406,
-		HARTREE_FOCK = 100000
+		HARTREE_FOCK = -1
 	};
 
 	enum class correlation_functional {

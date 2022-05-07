@@ -38,19 +38,26 @@ namespace hamiltonian {
 		public:
 			
 		xc_functional(const int functional_id){
-			if(xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
+			true_functional_ = functional_id > 0;
+			if(true_functional_ and xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
 				fprintf(stderr, "Functional '%d' not found\n", functional_id);
 				exit(1);
 			}
 		}
 
 		~xc_functional(){
-			xc_func_end(&func_);
+			if(true_functional_) xc_func_end(&func_);
 		}
 
+		auto true_functional() const {
+			return true_functional_;
+		}
+		
 		template <class field_type>
 		void operator()(field_type const & density, double & xc_energy, field_type & vxc) const {
 
+			assert(true_functional_);
+			
 			CALI_CXX_MARK_SCOPE("xc_functional");
 			
 			field_type exc(vxc.skeleton());
@@ -63,7 +70,7 @@ namespace hamiltonian {
 		auto & libxc_func() const {
 			return func_;
 		}
-
+		
 		auto libxc_func_ptr() const {
 			return &func_;
 		}
@@ -126,9 +133,10 @@ namespace hamiltonian {
 			}
 		}
 
-		private:
+	private:
 
-			xc_func_type func_;
+		bool true_functional_;
+		xc_func_type func_;
 			
 	};
 
