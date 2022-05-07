@@ -84,11 +84,10 @@ namespace hamiltonian {
 			if(interaction_.hartree_potential()){
 				auto vhartree = poisson_solver(electronic_density);
 				energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
-				vks = operations::add(vks, vhartree);
+				operations::increment(vks, vhartree);
 			} else {
 				energy.hartree = 0.0;
 			}
-
 
 			// XC
 			energy.xc = 0.0;
@@ -103,14 +102,14 @@ namespace hamiltonian {
 				if(exchange_.true_functional()){
 					exchange_(full_density, efunc, vfunc);
 					energy.xc += efunc;
-					vks = operations::add(vks, vfunc);
+					operations::increment(vks, vfunc);
 					energy.nvxc += operations::integral_product(electronic_density, vfunc); //the core correction does not go here
 				}
 				
 				if(correlation_.true_functional()){
 					correlation_(full_density, efunc, vfunc);
 					energy.xc += efunc;
-					vks = operations::add(vks, vfunc);
+					operations::increment(vks, vfunc);
 					energy.nvxc += operations::integral_product(electronic_density, vfunc); //the core correction does not go here
 				}
 			}

@@ -33,11 +33,6 @@ class interaction {
 
 public:
 
-	enum class electronic_theory { NON_INTERACTING,
-		DENSITY_FUNCTIONAL,
-		HARTREE_FOCK
-	};
-
 	// these numbers match the libxc definition
 	enum class exchange_functional {
 		NONE = 0,
@@ -60,15 +55,8 @@ public:
 	interaction(){
 	}
 
-	static auto theory(electronic_theory arg_theory){
-		interaction inter;
-		inter.theory_ = arg_theory;
-		return inter;
-	}
-
 	static auto non_interacting(){
 		interaction inter;
-		inter.theory_ = electronic_theory::NON_INTERACTING;
 		inter.hartree_potential_ = false;
 		inter.exchange_ = exchange_functional::NONE;
 		inter.correlation_ = correlation_functional::NONE;		
@@ -77,24 +65,26 @@ public:
 
 	static auto dft(){
 		interaction inter;
-		inter.hartree_potential_ = true;		
-		inter.theory_ = electronic_theory::DENSITY_FUNCTIONAL;
+		inter.hartree_potential_ = true;
+		return inter;
+	}
+	
+	static auto lda(){
+		interaction inter;
+		inter.hartree_potential_ = true;
+		inter.exchange_ = exchange_functional::LDA;
+		inter.correlation_ = correlation_functional::LDA_PZ;		
 		return inter;
 	}
 
 	static auto hartree_fock(){
 		interaction inter;
-		inter.theory_ = electronic_theory::HARTREE_FOCK;
 		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::HARTREE_FOCK;
 		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
 	}
 		
-	auto theory() const {
-		return theory_.value_or(electronic_theory::DENSITY_FUNCTIONAL);
-	}
-
 	auto exchange() const {
 		return exchange_.value_or(exchange_functional::LDA);
 	}
@@ -162,7 +152,6 @@ public:
 		using inq::utils::merge_optional;
 		
 		interaction rinter;
-		rinter.theory_	= merge_optional(inter1.theory_, inter2.theory_);
 		rinter.hartree_potential_	= merge_optional(inter1.hartree_potential_, inter2.hartree_potential_);
 		rinter.exchange_	= merge_optional(inter1.exchange_, inter2.exchange_);
 		rinter.correlation_	= merge_optional(inter1.correlation_, inter2.correlation_);
@@ -172,7 +161,6 @@ public:
 
 private:
 
-	std::optional<electronic_theory> theory_;
 	std::optional<bool> hartree_potential_;
 	std::optional<exchange_functional> exchange_;
 	std::optional<correlation_functional> correlation_;
@@ -201,10 +189,12 @@ TEST_CASE("class input::interaction", "[input::interaction]") {
 
     input::interaction inter;
 
-    CHECK(inter.theory() == input::interaction::electronic_theory::DENSITY_FUNCTIONAL);
+		CHECK(inter.hartree_potential() == true);
 		CHECK(inter.exchange() == input::interaction::exchange_functional::LDA);
 		CHECK(inter.correlation() == input::interaction::correlation_functional::LDA_PZ);
-    CHECK(inter.fourier_pseudo_value() == false);
+		CHECK(inter.exchange_coefficient() == 0.0);
+		CHECK(inter.fourier_pseudo_value() == false);
+
   }
 
   SECTION("Composition"){
