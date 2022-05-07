@@ -45,7 +45,8 @@ public:
 		PBE = 101,
 		B = 106,
 		B3LYP = 402,
-		PBE0 = 406
+		PBE0 = 406,
+		HARTREE_FOCK = 100000
 	};
 
 	enum class correlation_functional {
@@ -85,7 +86,7 @@ public:
 		interaction inter;
 		inter.theory_ = electronic_theory::HARTREE_FOCK;
 		inter.hartree_potential_ = true;
-		inter.exchange_ = exchange_functional::NONE;
+		inter.exchange_ = exchange_functional::HARTREE_FOCK;
 		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
 	}
@@ -127,7 +128,9 @@ public:
 	}
 
 	auto exchange_coefficient() const {
-		if(theory_ == electronic_theory::HARTREE_FOCK) return 1.0;
+		if(exchange_ == exchange_functional::HARTREE_FOCK) return 1.0;
+		if(exchange_ == exchange_functional::B3LYP) return 0.2;
+		if(exchange_ == exchange_functional::PBE0) return 0.25;	
 		return 0.0;
 	}
 
