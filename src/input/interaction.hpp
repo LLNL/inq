@@ -39,12 +39,18 @@ public:
 	};
 
 	// these numbers match the libxc definition
-	enum class exchange_functional { LDA = 1,
+	enum class exchange_functional {
+		NONE = 0,
+		LDA = 1,
 		PBE = 101,
-		B = 106
+		B = 106,
+		B3LYP = 402,
+		PBE0 = 406
 	};
 
-	enum class correlation_functional { LDA_PZ = 9,
+	enum class correlation_functional {
+		NONE = 0,
+		LDA_PZ = 9,
 		PBE = 130,
 		LYP = 131
 	};
@@ -93,6 +99,20 @@ public:
 		interaction inter;
 		inter.exchange_ = exchange_functional::PBE;
 		inter.correlation_ = correlation_functional::PBE;
+		return inter;
+	}
+
+	static auto pbe0() {
+		interaction inter;
+		inter.exchange_ = exchange_functional::PBE0;
+		inter.correlation_ = correlation_functional::NONE;
+		return inter;
+	}
+
+	static auto b3lyp() {
+		interaction inter;
+		inter.exchange_ = exchange_functional::B3LYP;
+		inter.correlation_ = correlation_functional::NONE;
 		return inter;
 	}
 
