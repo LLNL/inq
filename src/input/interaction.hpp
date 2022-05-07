@@ -128,14 +128,18 @@ public:
 	}
 
 	auto exchange_coefficient() const {
-		if(exchange_ == exchange_functional::HARTREE_FOCK) return 1.0;
-		if(exchange_ == exchange_functional::B3LYP) return 0.2;
-		if(exchange_ == exchange_functional::PBE0) return 0.25;	
+		if(exchange() == exchange_functional::HARTREE_FOCK) return 1.0;
+		if(exchange() == exchange_functional::B3LYP) return 0.2;
+		if(exchange() == exchange_functional::PBE0) return 0.25;
 		return 0.0;
 	}
 
+	auto hartree_potential() const {
+		return hartree_potential_.value_or(true);
+	}
+	
 	auto self_consistent() const {
-		return theory_ != electronic_theory::NON_INTERACTING;
+		return hartree_potential() or exchange() != exchange_functional::NONE or correlation() != correlation_functional::NONE;
 	}
 
 	static auto real_space_pseudo(){
