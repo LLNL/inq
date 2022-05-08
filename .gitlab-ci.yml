@@ -15,7 +15,8 @@ variables:
 stages:
   - build
   - test
-
+  - clean
+  
 build-noblas:
     stage: build
     script:
@@ -543,6 +544,7 @@ intel-ompi:
       - $PREFIX/install/bin/inc++ $SRCDIR/tests/silicon.cpp -o tests/silicon2
       - cd $SRCDIR
       - echo $PREFIX > intel-ompi-path
+      - rm -fr $PREFIX
     artifacts:
       paths:
       - intel-ompi-path
@@ -658,6 +660,20 @@ intel-mpich-4p:
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
 
+intel-mpich-clean:
+    stage: clean
+    needs:
+     - intel-mpich
+     - intel-mpich-1p
+     - intel-mpich-2p
+     - intel-mpich-3p
+     - intel-mpich-4p
+    tags:
+      - intel_compiler
+    script:
+      - PREFIX=`cat intel-mpich-path`
+      - rm -vfr $PREFIX
+
 #########################################################################################################################
 # NVIDIA OMPI FAST
 #########################################################################################################################
@@ -681,6 +697,7 @@ nvcc-ompi-fast:
       - time make -j16 install
       - cd $SRCDIR
       - echo $PREFIX > nvcc-ompi-fast-path
+      - rm -fr $PREFIX      
     artifacts:
       paths:
       - nvcc-ompi-fast-path
@@ -760,6 +777,7 @@ nvcc-ompi-debug:
       - time make -j16 install
       - cd $SRCDIR
       - echo $PREFIX > nvcc-ompi-debug-path
+      - rm -fr $PREFIX      
     artifacts:
       paths:
       - nvcc-ompi-debug-path
@@ -892,6 +910,21 @@ nvcc-mpich-fast-5p:
       - PREFIX=`cat nvcc-mpich-fast-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"      
 
+nvcc-mpich-fast-clean:
+    stage: clean
+    needs:
+     - nvcc-mpich-fast
+     - nvcc-mpich-fast-1p
+     - nvcc-mpich-fast-2p
+     - nvcc-mpich-fast-3p
+     - nvcc-mpich-fast-4p
+     - nvcc-mpich-fast-5p
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-fast-path`
+      - rm -vfr $PREFIX
+
 #########################################################################################################################
 # NVIDIA MPICH DEBUG
 #########################################################################################################################
@@ -966,7 +999,22 @@ nvcc-mpich-debug-5p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"      
+      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"
+
+nvcc-mpich-debug-clean:
+    stage: clean
+    needs:
+     - nvcc-mpich-debug
+     - nvcc-mpich-debug-1p
+     - nvcc-mpich-debug-2p
+     - nvcc-mpich-debug-3p
+     - nvcc-mpich-debug-4p
+     - nvcc-mpich-debug-5p
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-debug-path`
+      - rm -vfr $PREFIX
 
 #######################################################################################################################
 
