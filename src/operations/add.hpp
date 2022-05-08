@@ -60,24 +60,16 @@ field_type add(const field_type & t1, const field_type & t2, const field_type & 
 	assert(t1.basis() == t2.basis());
 	assert(t1.basis() == t3.basis());
 		
-	field_type tadd(t1.basis());
+	field_type tadd(t1.skeleton());
 
-	//DATAOPERATIONS LOOP + GPU::RUN 1D
-#ifdef ENABLE_CUDA
-
-	auto t1p = t1.linear().begin();
-	auto t2p = t2.linear().begin();
-	auto t3p = t3.linear().begin();
-	auto taddp = tadd.linear().begin();
-		
 	gpu::run(t1.linear().size(),
-					 [=] __device__ (long ii){
+					 [t1p = t1.linear().begin(),
+						t2p = t2.linear().begin(),
+						t3p = t3.linear().begin(),
+						taddp = tadd.linear().begin()] GPU_LAMBDA (auto ii){
 						 taddp[ii] = t1p[ii] + t2p[ii] + t3p[ii];
 					 });
-#else
-	for(long ii = 0; ii < t1.linear().size(); ii++) tadd.linear()[ii] = t1.linear()[ii] + t2.linear()[ii] + t3.linear()[ii];
-#endif
-		
+	
 	return tadd;
 }
 
