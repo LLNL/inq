@@ -660,6 +660,20 @@ intel-mpich-4p:
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
 
+intel-mpich-clean:
+    stage: clean
+    needs:
+     - intel-mpich
+     - intel-mpich-1p
+     - intel-mpich-2p
+     - intel-mpich-3p
+     - intel-mpich-4p
+    tags:
+      - intel_compiler
+    script:
+      - PREFIX=`cat intel-mpich-path`
+      - rm -vfr $PREFIX
+
 #########################################################################################################################
 # NVIDIA OMPI FAST
 #########################################################################################################################
@@ -895,6 +909,21 @@ nvcc-mpich-fast-5p:
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"      
+
+nvcc-mpich-fast-clean:
+    stage: clean
+    needs:
+     - nvcc-mpich-fast
+     - nvcc-mpich-fast-1p
+     - nvcc-mpich-fast-2p
+     - nvcc-mpich-fast-3p
+     - nvcc-mpich-fast-4p
+     - nvcc-mpich-fast-5p
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-fast-path`
+      - rm -vfr $PREFIX
 
 #########################################################################################################################
 # NVIDIA MPICH DEBUG
