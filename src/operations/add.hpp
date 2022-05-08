@@ -33,7 +33,7 @@ namespace operations {
 
 //	Returns a field that has the sum of the values of t1 and t2.
 template <class field_type>
-auto add(const field_type & t1, const field_type & t2){
+field_type add(const field_type & t1, const field_type & t2){
 	assert(t1.basis() == t2.basis());
 		
 	field_type tadd(t1.skeleton());
