@@ -38,7 +38,7 @@ auto add(const field_type & t1, const field_type & t2){
 		
 	field_type tadd(t1.skeleton());
 
-		gpu::run(t1.linear().size(),
+	gpu::run(t1.linear().size(),
 					 [t1p = t1.linear().begin(),
 						t2p = t2.linear().begin(),
 						taddp = tadd.linear().begin()] GPU_LAMBDA (auto ii){
@@ -65,6 +65,18 @@ field_type add(const field_type & t1, const field_type & t2, const field_type & 
 					 });
 	
 	return tadd;
+}
+
+//	Add t2 to t1.
+template <class field_type>
+void increment(field_type & t1, const field_type & t2){
+	assert(t1.basis() == t2.basis());
+		
+	gpu::run(t1.linear().size(),
+					 [t1p = t1.linear().begin(),
+						t2p = t2.linear().begin()] GPU_LAMBDA (auto ii){
+						 t1p[ii] += t2p[ii];
+					 });
 }
 
 }
@@ -157,7 +169,39 @@ TEST_CASE("function operations::add", "[operations::add]") {
 			CHECK(imag(dd.linear()[ii]) == -10.4_a);
 		}
 
-	}	
+	}
+	
+	SECTION("Increment 2 double arrays"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+		basis::field<basis::trivial, double> bb(bas);
+
+		aa = 1.0;
+		bb = 2.5;
+
+		operations::increment(aa, bb);
+		
+		for(int ii = 0; ii < aa.linear().size(); ii++) CHECK(aa.linear()[ii] == 3.5_a);
+
+	}
+	
+	SECTION("Increment 2 complex arrays"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+		basis::field<basis::trivial, complex> bb(bas);
+
+		aa = complex(1.0, -20.2);
+		bb = complex(2.5, 1.2);
+
+		operations::increment(aa, bb);
+		
+		for(int ii = 0; ii < aa.linear().size(); ii++){
+			CHECK(real(aa.linear()[ii]) == 3.5_a);
+			CHECK(imag(aa.linear()[ii]) == -19.0_a);
+		}
+
+	}
+	
 }
 
 
