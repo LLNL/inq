@@ -31,30 +31,24 @@
 namespace inq {
 namespace operations {
 
-/*
-	
-	Returns a field that has the sum of the values of t1 and t2.
-	
-*/
+//	Returns a field that has the sum of the values of t1 and t2.
 template <class field_type>
 auto add(const field_type & t1, const field_type & t2){
 	assert(t1.basis() == t2.basis());
 		
-	field_type tadd(t1.basis());
+	field_type tadd(t1.skeleton());
 
-	using type = typename field_type::element_type;
-
-	//DATAOPERATIONS STL TRANSFORM
-	std::transform(t1.linear().begin(), t1.linear().end(), t2.linear().begin(), tadd.linear().begin(), std::plus<type>());
+		gpu::run(t1.linear().size(),
+					 [t1p = t1.linear().begin(),
+						t2p = t2.linear().begin(),
+						taddp = tadd.linear().begin()] GPU_LAMBDA (auto ii){
+						 taddp[ii] = t1p[ii] + t2p[ii];
+					 });
 		
 	return tadd;
 }
 	
-/*
-
-	Returns a field that has the sum of the values of t1, t2 and t3.
-
-*/
+//	Returns a field that has the sum of the values of t1, t2 and t3.
 template <class field_type>
 field_type add(const field_type & t1, const field_type & t2, const field_type & t3){
 	assert(t1.basis() == t2.basis());
