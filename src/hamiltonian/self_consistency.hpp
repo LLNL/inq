@@ -39,7 +39,7 @@ namespace hamiltonian {
 	public:
 
 		self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis):
-			theory_(interaction.theory()),
+			interaction_(interaction),
 			exchange_(int(interaction.exchange())),
 			correlation_(int(interaction.correlation())),
 			vion_(density_basis),
@@ -77,53 +77,41 @@ namespace hamiltonian {
 
 			solvers::poisson poisson_solver;
 
-			switch(theory_){
+			//IONIC POTENTIAL
+			vks = vion_;
 
-			case input::interaction::electronic_theory::HARTREE_FOCK:
-				{
-					
-					auto vhartree = poisson_solver(electronic_density);
-					
-					energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
-					
-					vks = operations::add(vion_, vhartree);
-					
-					break;
+			// Hartree
+			if(interaction_.hartree_potential()){
+				auto vhartree = poisson_solver(electronic_density);
+				energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
+				operations::increment(vks, vhartree);
+			} else {
+				energy.hartree = 0.0;
+			}
+
+			// XC
+			energy.xc = 0.0;
+			energy.nvxc = 0.0;
+				
+			if(exchange_.true_functional() or correlation_.true_functional()){
+
+				auto full_density = operations::add(electronic_density, core_density_);
+				double efunc = 0.0;
+				field_type vfunc(vion_.skeleton());
+
+				if(exchange_.true_functional()){
+					exchange_(full_density, efunc, vfunc);
+					energy.xc += efunc;
+					operations::increment(vks, vfunc);
+					energy.nvxc += operations::integral_product(electronic_density, vfunc); //the core correction does not go here
 				}
 				
-			case input::interaction::electronic_theory::DENSITY_FUNCTIONAL:
-				{
-
-					auto vhartree = poisson_solver(electronic_density);
-					
-					energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
-					
-					double ex, ec;
-					field_type vx(vion_.skeleton());
-					field_type vc(vion_.skeleton());
-
-					{
-						auto full_density = operations::add(electronic_density, core_density_);
-						exchange_(full_density, ex, vx);
-						correlation_(full_density, ec, vc);
-					}
-
-					energy.xc = ex + ec;
-					auto vxc = operations::add(vx, vc);
-					energy.nvxc = operations::integral_product(electronic_density, vxc); //the core correction does not go here
-
-					vks = operations::add(vion_, vhartree, vxc);
-
-					break;
+				if(correlation_.true_functional()){
+					correlation_(full_density, efunc, vfunc);
+					energy.xc += efunc;
+					operations::increment(vks, vfunc);
+					energy.nvxc += operations::integral_product(electronic_density, vfunc); //the core correction does not go here
 				}
-
-			case input::interaction::electronic_theory::NON_INTERACTING:
-				{
-
-					vks = vion_;
-					break;
-				}
-				
 			}
 			
 			if(potential_basis_ == vks.basis()){
@@ -134,13 +122,9 @@ namespace hamiltonian {
 			
 		}
 
-		auto theory() const {
-			return theory_;
-		}
-
 	private:
 
-		input::interaction::electronic_theory theory_;
+		input::interaction interaction_;
 		hamiltonian::xc_functional exchange_;
 		hamiltonian::xc_functional correlation_;
 		basis::field<basis::real_space, double> vion_;

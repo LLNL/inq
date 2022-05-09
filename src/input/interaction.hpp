@@ -33,18 +33,20 @@ class interaction {
 
 public:
 
-	enum class electronic_theory { NON_INTERACTING,
-		DENSITY_FUNCTIONAL,
-		HARTREE_FOCK
-	};
-
 	// these numbers match the libxc definition
-	enum class exchange_functional { LDA = 1,
+	enum class exchange_functional {
+		NONE = 0,
+		LDA = 1,
 		PBE = 101,
-		B = 106
+		B = 106,
+		B3LYP = 402,
+		PBE0 = 406,
+		HARTREE_FOCK = -1
 	};
 
-	enum class correlation_functional { LDA_PZ = 9,
+	enum class correlation_functional {
+		NONE = 0,
+		LDA_PZ = 9,
 		PBE = 130,
 		LYP = 131
 	};
@@ -53,34 +55,36 @@ public:
 	interaction(){
 	}
 
-	static auto theory(electronic_theory arg_theory){
-		interaction inter;
-		inter.theory_ = arg_theory;
-		return inter;
-	}
-
 	static auto non_interacting(){
 		interaction inter;
-		inter.theory_ = electronic_theory::NON_INTERACTING;
+		inter.hartree_potential_ = false;
+		inter.exchange_ = exchange_functional::NONE;
+		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
 	}
 
 	static auto dft(){
 		interaction inter;
-		inter.theory_ = electronic_theory::DENSITY_FUNCTIONAL;
+		inter.hartree_potential_ = true;
+		return inter;
+	}
+	
+	static auto lda(){
+		interaction inter;
+		inter.hartree_potential_ = true;
+		inter.exchange_ = exchange_functional::LDA;
+		inter.correlation_ = correlation_functional::LDA_PZ;		
 		return inter;
 	}
 
 	static auto hartree_fock(){
 		interaction inter;
-		inter.theory_ = electronic_theory::HARTREE_FOCK;
+		inter.hartree_potential_ = true;
+		inter.exchange_ = exchange_functional::HARTREE_FOCK;
+		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
 	}
 		
-	auto theory() const {
-		return theory_.value_or(electronic_theory::DENSITY_FUNCTIONAL);
-	}
-
 	auto exchange() const {
 		return exchange_.value_or(exchange_functional::LDA);
 	}
@@ -91,18 +95,41 @@ public:
 
 	static auto pbe() {
 		interaction inter;
+		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::PBE;
 		inter.correlation_ = correlation_functional::PBE;
 		return inter;
 	}
 
+	static auto pbe0() {
+		interaction inter;
+		inter.hartree_potential_ = true;		
+		inter.exchange_ = exchange_functional::PBE0;
+		inter.correlation_ = correlation_functional::NONE;
+		return inter;
+	}
+
+	static auto b3lyp() {
+		interaction inter;
+		inter.hartree_potential_ = true;		
+		inter.exchange_ = exchange_functional::B3LYP;
+		inter.correlation_ = correlation_functional::NONE;
+		return inter;
+	}
+
 	auto exchange_coefficient() const {
-		if(theory_ == electronic_theory::HARTREE_FOCK) return 1.0;
+		if(exchange() == exchange_functional::HARTREE_FOCK) return 1.0;
+		if(exchange() == exchange_functional::B3LYP) return 0.2;
+		if(exchange() == exchange_functional::PBE0) return 0.25;
 		return 0.0;
 	}
 
+	auto hartree_potential() const {
+		return hartree_potential_.value_or(true);
+	}
+	
 	auto self_consistent() const {
-		return theory_ != electronic_theory::NON_INTERACTING;
+		return hartree_potential() or exchange() != exchange_functional::NONE or correlation() != correlation_functional::NONE;
 	}
 
 	static auto real_space_pseudo(){
@@ -125,7 +152,7 @@ public:
 		using inq::utils::merge_optional;
 		
 		interaction rinter;
-		rinter.theory_	= merge_optional(inter1.theory_, inter2.theory_);
+		rinter.hartree_potential_	= merge_optional(inter1.hartree_potential_, inter2.hartree_potential_);
 		rinter.exchange_	= merge_optional(inter1.exchange_, inter2.exchange_);
 		rinter.correlation_	= merge_optional(inter1.correlation_, inter2.correlation_);
 		rinter.fourier_pseudo_	= merge_optional(inter1.fourier_pseudo_, inter2.fourier_pseudo_);
@@ -134,7 +161,7 @@ public:
 
 private:
 
-	std::optional<electronic_theory> theory_;
+	std::optional<bool> hartree_potential_;
 	std::optional<exchange_functional> exchange_;
 	std::optional<correlation_functional> correlation_;
 	std::optional<bool> fourier_pseudo_;
@@ -162,10 +189,12 @@ TEST_CASE("class input::interaction", "[input::interaction]") {
 
     input::interaction inter;
 
-    CHECK(inter.theory() == input::interaction::electronic_theory::DENSITY_FUNCTIONAL);
+		CHECK(inter.hartree_potential() == true);
 		CHECK(inter.exchange() == input::interaction::exchange_functional::LDA);
 		CHECK(inter.correlation() == input::interaction::correlation_functional::LDA_PZ);
-    CHECK(inter.fourier_pseudo_value() == false);
+		CHECK(inter.exchange_coefficient() == 0.0);
+		CHECK(inter.fourier_pseudo_value() == false);
+
   }
 
   SECTION("Composition"){
