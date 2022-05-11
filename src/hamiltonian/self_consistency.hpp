@@ -122,6 +122,11 @@ namespace hamiltonian {
 			
 		}
 
+		auto exx_coefficient(){
+			if(exchange_.true_functional()) return exchange_.exx_coefficient();
+			return interaction_.exchange_coefficient();
+		}
+
 	private:
 
 		input::interaction interaction_;
