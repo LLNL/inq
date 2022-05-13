@@ -133,28 +133,24 @@ int main(int argc, char ** argv){
 		
 	}
 
-	/*
-
-		Disabled because it is too slow for the moment.
-
-	// Hartree-Fock
+	// B3LYP
 	{
-	
-		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::hartree_fock(), inq::input::scf::conjugate_gradient() | inq::input::scf::energy_tolerance(1e-8_Ha));
+
+		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::b3lyp(), inq::input::scf::conjugate_gradient() | inq::input::scf::energy_tolerance(1e-6_Ha));
 		
-		energy_match.check("total energy",        result.energy.total(),      -0.578525486338);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),     0.348185715818);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,  -0.230237311450);
-		energy_match.check("Hartree energy",      result.energy.hartree,       0.254438812760);
-		energy_match.check("external energy",     result.energy.external,     -0.832861830904);
-		energy_match.check("non-local energy",    result.energy.nonlocal,      0.0);
-		energy_match.check("XC energy",           result.energy.xc,            0.0);
-		energy_match.check("XC density integral", result.energy.nvxc,          0.0);
-		energy_match.check("HF exchange energy",  result.energy.hf_exchange,  -0.254438821884);
+		energy_match.check("total energy",        result.energy.total(),      -0.541272073214);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),     0.421674180797);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,  -0.247447655678);
+		energy_match.check("Hartree energy",      result.energy.hartree,       0.282616005043);
+		energy_match.check("external energy",     result.energy.external,     -0.916566570259);
+		energy_match.check("non-local energy",    result.energy.nonlocal,      0.000000000000);
+		energy_match.check("XC energy",           result.energy.xc,           -0.206884719747);
+		energy_match.check("XC density integral", result.energy.nvxc,         -0.261264062460);
+		energy_match.check("HF exchange energy",  result.energy.hf_exchange,  -0.028261606921);
 		energy_match.check("ion-ion energy",      result.energy.ion,          -0.093849362128);
 		
 	}
-	*/
+	
 	return energy_match.fail();
 	
 }
