@@ -74,6 +74,11 @@ namespace hamiltonian {
 		auto libxc_func_ptr() const {
 			return &func_;
 		}
+
+		auto exx_coefficient() const {
+			if(xc_hyb_type(&func_) == XC_HYB_HYBRID) return xc_hyb_exx_coef(&func_);
+			return 0.0;
+		}
 		
 		//this function has to be public because of cuda limitations
 		template <class density_type, class exc_type, class vxc_type>
@@ -234,6 +239,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		basis::field<basis::real_space, double> gaussianVxc(rs);
 		double gaussianExc;
 
+		CHECK(ldafunctional.exx_coefficient() == 0.0);
+		
 		ldafunctional(gaussian_field, gaussianExc, gaussianVxc);
 		CHECK(gaussianExc == -0.270646_a);
 
@@ -281,6 +288,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		basis::field<basis::real_space, double> Vxc(rs);
 		basis::field<basis::real_space, double> local_vsigma_output(rs);
 
+		CHECK(ggafunctional.exx_coefficient() == 0.0);
+		
 		double Exc = 0.0;
 		ggafunctional(field, Exc, Vxc);
 
@@ -323,6 +332,15 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		}
 
 	}
+
+	SECTION("HYBRIDS"){
+		inq::hamiltonian::xc_functional b3lyp(XC_HYB_GGA_XC_B3LYP);
+		CHECK(b3lyp.exx_coefficient() == 0.2_a);
+
+		inq::hamiltonian::xc_functional pbeh(XC_HYB_GGA_XC_PBEH);
+		CHECK(pbeh.exx_coefficient() == 0.25_a);
+	}
+	
 }
 
 #endif
