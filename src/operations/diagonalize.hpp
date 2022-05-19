@@ -57,7 +57,6 @@ auto diagonalize_raw(math::array<double, 2, Alloc>& matrix){
     
 	math::array<double, 1> eigenvalues(nn);
 
-	//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
 #ifdef ENABLE_CUDA
 	{
 		cusolverDnHandle_t cusolver_handle;
@@ -123,7 +122,6 @@ auto diagonalize_raw(math::array<complex, 2, Alloc>& matrix){
     
 	math::array<double, 1> eigenvalues(nn);
 
-	//DATAOPERATIONS RAWLAPACK + CUSOLVER (diagonalization)
 #ifdef ENABLE_CUDA
 	{
 		cusolverDnHandle_t cusolver_handle;

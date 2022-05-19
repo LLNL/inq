@@ -52,7 +52,6 @@ namespace space {
 void zero_outside_sphere(basis::field<basis::fourier_space, complex> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
-	//DATAOPERATIONS GPU::RUN 3D
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto iz, auto iy, auto ix){
@@ -66,7 +65,6 @@ template <typename VectorSpace>
 void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<complex, VectorSpace>> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
-	//DATAOPERATIONS GPU::RUN 3D
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto iz, auto iy, auto ix){
@@ -79,7 +77,6 @@ void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<comple
 void zero_outside_sphere(basis::field_set<basis::fourier_space, complex>& fphi){
 	CALI_CXX_MARK_FUNCTION;
 	
-	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto ist, auto iz, auto iy, auto ix){
@@ -92,7 +89,6 @@ void zero_outside_sphere(basis::field_set<basis::fourier_space, complex>& fphi){
 void zero_outside_sphere(states::orbital_set<basis::fourier_space, complex>& fphi){
 	CALI_CXX_MARK_FUNCTION;
 	
-	//DATAOPERATIONS GPU::RUN 4D
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto ist, auto iz, auto iy, auto ix){

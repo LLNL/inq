@@ -192,7 +192,6 @@ template <class VectorSpace>
 field<basis::real_space, math::vector3<double, VectorSpace>> real_field(field<basis::real_space, math::vector3<complex, VectorSpace>> const & cfield) {
 	field<basis::real_space, math::vector3<double, VectorSpace>> rfield(cfield.skeleton());		
 	
-	//DATAOPERATIONS GPU::RUN 1D
 	gpu::run(3, cfield.basis().part().local_size(),
 					 [rp = begin(rfield.linear()), cp = begin(cfield.linear())] GPU_LAMBDA (auto idir, auto ip){
 						 rp[ip][idir] = inq::real(cp[ip][idir]);

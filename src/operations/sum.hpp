@@ -50,7 +50,6 @@ auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op)
 	
 	const typename array1_type::element initial = 0.0;
 	//OPTIMIZATION we should use std::transform_reduce here, but it is not available in C++14
-	//DATAOPERATIONS STL INNER_PRODUCT
 	return std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);
 }
 

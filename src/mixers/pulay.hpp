@@ -87,7 +87,6 @@ public:
 			}
 		}
 
-		//DATAOPERATIONS LOOP 1D (one input two outputs)
 		for(unsigned ii = 0; ii < input_value.size(); ii++){
 			ff_[size - 1][ii] = input_value[ii];
 			dff_[size - 1][ii] = output_value[ii] - input_value[ii];
@@ -104,7 +103,6 @@ public:
 		}
 			
 		if(iter_ == 1) {
-			//DATAOPERATIONS LOOP 1D
 			for(unsigned ii = 0; ii < input_value.size(); ii++)	input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
 
 			Type aa = 0.0;
@@ -116,7 +114,6 @@ public:
 
 		math::array<Type, 2> amatrix({size + 1, size + 1}, NAN);
 
-		//DATAOPERATIONS LOOP 2D (use overlap)
 		for(int ii = 0; ii < size; ii++){
 			for(int jj = 0; jj < size; jj++){
 				Type aa = 0.0;
@@ -152,11 +149,8 @@ public:
 
 		//			std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
 			
-		//DATAOPERATIONS LOOP
 		double sumalpha = 0.0;
 		for(int ii = 0; ii < size; ii++) sumalpha += alpha[ii];
-			
-		//DATAOPERATIONS LOOP
 		for(int ii = 0; ii < size; ii++) alpha[ii] /= sumalpha;
 
 		sumalpha = 0.0;
@@ -182,10 +176,8 @@ public:
 			std::cout << "res norm " << aa << std::endl;
 		}
 
-		//DATAOPERATIONS STL FILL
 		std::fill(input_value.begin(), input_value.end(), 0.0);
 			
-		//DATAOPERATIONS LOOP 2D (use gemv)
 		for(int jj = 0; jj < size; jj++) {
 			for(unsigned ii = 0; ii < input_value.size(); ii++) {
 				input_value[ii] += alpha[jj]*(ff_[jj][ii] + residual_coeff*dff_[jj][ii]);

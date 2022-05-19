@@ -115,7 +115,6 @@ namespace basis {
 
 			CALI_CXX_MARK_SCOPE("field_set=scalar");
 
-			//DATAOPERATIONS GPU::RUN
 			gpu::run(matrix_.num_elements(),
 							 [lin = (element_type *) matrix_.data_elements(), value] GPU_LAMBDA (auto ii){
 								 lin[ii] = value;
@@ -189,7 +188,6 @@ field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq
 	// Multi should be able to do this, but it causes a lot of compilation troubles
 	//			rfield.matrix() = boost::multi::blas::real(matrix());
 	
-	//DATAOPERATIONS GPU::RUN 1D
 	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
 					 [rp = begin(rfield.matrix()), cp = begin(field.matrix())] GPU_LAMBDA (auto ist, auto ii){
 						 rp[ii][ist] = inq::real(cp[ii][ist]);
