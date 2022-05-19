@@ -3,6 +3,8 @@
 #ifndef SYSTEMS__ELECTRONS
 #define SYSTEMS__ELECTRONS
 
+#include <stdexcept>
+
 #include <basis/field_set.hpp>
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
@@ -45,8 +47,6 @@ class electrons {
 	
 public:
 	
-	enum class error { NO_ELECTRONS };
-
 	auto & lot() const {
 		return lot_;
 	}
@@ -102,7 +102,7 @@ public:
 		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
 		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
 
-		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw error::NO_ELECTRONS;
+		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw std::runtime_error("inq error: the system does not have any electrons");
 		
 		print(ions);
 
