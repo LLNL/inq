@@ -47,7 +47,6 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 	int rank, info;
 	double dwork;
 		
-	//DATAOPERATIONS RAWLAPACK dgelss
 	dgelss(mm, nn, 1, raw_pointer_cast(matrix.data_elements()), mm, raw_pointer_cast(rhs.data_elements()), mm, raw_pointer_cast(ss.base()), -1.0, rank, &dwork, -1, info);
 
 	if(info != 0) std::runtime_error("inq error: dgelss in least_squares failed with info = " + std::to_string(info));
