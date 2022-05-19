@@ -19,7 +19,6 @@
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
-#include <operations/scal.hpp>
 #include <operations/orthogonalize.hpp>
 #include <operations/preconditioner.hpp>
 #include <operations/integral.hpp>
