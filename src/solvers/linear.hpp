@@ -47,16 +47,13 @@ void linear_symmetric(matrix_type && matrix, vector_type & vector){
 
 	int nn = std::get<0>(sizes(matrix));
     
-	//DATAOPERATIONS RAWLAPACK dpotrf
 	int info;
 	dpotrf("U", &nn, raw_pointer_cast(matrix.data_elements()), &nn, &info);
 		
 	const int one = 1;
-	//DATAOPERATIONS RAWLAPACK dtrsv
 	dtrsv('U', 'T', 'N', nn, raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(vector.data_elements()), one);
-	//DATAOPERATIONS RAWLAPACK dtrsv
 	dtrsv('U', 'N', 'N', nn, raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(vector.data_elements()), one);
-		
+	
 }
 
 }
