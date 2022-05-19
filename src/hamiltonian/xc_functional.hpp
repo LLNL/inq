@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <stdexcept>
+
 #include <xc.h>
 #include <operations/gradient.hpp>
 #include <operations/integral.hpp>
@@ -132,7 +134,7 @@ namespace hamiltonian {
 					break;
 				}	
 				default:{
-					assert(false);
+					std::runtime_error("inq error: unsupported xc functional family");
 					break;
 				}
 			}

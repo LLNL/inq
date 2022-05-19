@@ -27,8 +27,8 @@
 
 #include <FC.h>
 
+#include <stdexcept>
 #include <tuple> //for get
-
 
 #define dgelss FC_GLOBAL(dgelss, DGELSS) 
 extern "C" void dgelss(const int & m, const int & n, const int & nrhs, double * a, const int & lda, double * b, const int & ldb, double * s, const double & rcond, int & rank, double * work, const int & lwork, int & info);
@@ -50,13 +50,13 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 	//DATAOPERATIONS RAWLAPACK dgelss
 	dgelss(mm, nn, 1, raw_pointer_cast(matrix.data_elements()), mm, raw_pointer_cast(rhs.data_elements()), mm, raw_pointer_cast(ss.base()), -1.0, rank, &dwork, -1, info);
 
-	assert(info == 0);
-		
+	if(info != 0) std::runtime_error("inq error: dgelss in least_squares failed with info = " + std::to_string(info));
+	
 	auto work = (double *) malloc(int(dwork)*sizeof(double));
 
 	dgelss(mm, nn, 1, raw_pointer_cast(matrix.data_elements()), mm, raw_pointer_cast(rhs.data_elements()), mm, raw_pointer_cast(ss.data_elements()), -1.0, rank, work, int(dwork), info);
 
-	assert(info == 0);
+	if(info != 0) std::runtime_error("inq error: dgelss in least_squares failed with info = " + std::to_string(info));
 		
 	free(work);
 		
