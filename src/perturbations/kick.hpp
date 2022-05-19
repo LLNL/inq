@@ -32,27 +32,15 @@ namespace perturbations {
 
 void kick(math::vector3<double, math::covariant> kick_field, basis::field_set<basis::real_space, complex> & phi){
 
-	//DATAOPERATIONS LOOP 4D
-	for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
-		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
-			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
-				
-				auto ixg = phi.basis().cubic_dist(0).local_to_global(ix);
-				auto iyg = phi.basis().cubic_dist(1).local_to_global(iy);
-				auto izg = phi.basis().cubic_dist(2).local_to_global(iz);
-					
-				auto rr = phi.basis().point_op().rvector(ixg, iyg, izg);
-				
-				auto kick_factor = exp(complex(0.0, dot(kick_field, rr)));
-				
-				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-					phi.cubic()[ix][iy][iz][ist] *= kick_factor;
-				}
-				
-			}
-		}
-	}
+	gpu::run(phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0],
+					 [pop = phi.basis().point_op(), ph = begin(phi.cubic()), kick_field, nst = phi.set_part().local_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
+
+						 auto rr = pop.rvector(ix, iy, iz);
+						 auto kick_factor = exp(complex(0.0, dot(kick_field, rr)));
+						 for(int ist = 0; ist < nst; ist++) ph[ix][iy][iz][ist] *= kick_factor;
+					 });
 }
+
 }
 }
 
@@ -72,6 +60,7 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
+	using Catch::Approx;
 	using math::vector3;
 	
 	const int nvec = 12;
@@ -112,12 +101,7 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 		}
 	}
 
-	//Kick should not change the phi absolute value - kick pulse change only the phase of a wave fucntion in the frame of TDDFTThe kick should not change the phi absolute value - kick pulse change only the phase of a wave function in the frame of TDDFT
-
-	using Catch::Approx;
-
 	CHECK(phi_absdif == Approx(0).margin(1.0e-9));
-	//The wave function should changes after applying a kick potetntial
 	CHECK(phi_dif > 1.0e-9);
 
 }
