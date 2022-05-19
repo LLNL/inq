@@ -71,9 +71,7 @@ namespace operations {
 		uint64_t size_z = phi.basis().sizes()[2];
 		uint64_t size_y = phi.basis().sizes()[1];
 		auto phicub = begin(phi.cubic());
-
-
-		// DATAOPERATIONS GPU:RUN 4D
+		
 		gpu::run(phi.set_part().local_size(), phi.basis().cubic_dist(2).local_size(), phi.basis().cubic_dist(1).local_size(), phi.basis().cubic_dist(0).local_size(),
 						 [=] GPU_LAMBDA (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
 						uniform_distribution<typename field_set_type::element_type> dist;

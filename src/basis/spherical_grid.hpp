@@ -210,7 +210,6 @@ namespace basis {
 
 			CALI_CXX_MARK_SCOPE("spherical_grid::gather(3d)");
 				
-			//DATAOPERATIONS STL TRANSFORM
 			std::transform(points_.begin(), points_.end(), subgrid.begin(),
 										 [& grid](auto point){
 											 return grid[point.coords_[0]][point.coords_[1]][point.coords_[2]];
