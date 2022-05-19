@@ -44,10 +44,10 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		result res;
 
 		electrons.density_ = density::calculate(electrons);
-		
-		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
-																											 electrons.states_.num_states(), inter.exchange_coefficient(), electrons.states_basis_comm_);
+
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
+		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
+																											 electrons.states_.num_states(), sc.exx_coefficient(), electrons.states_basis_comm_);
 		hamiltonian::energy energy;
 		
 		sc.update_ionic_fields(ions, electrons.atomic_pot_);

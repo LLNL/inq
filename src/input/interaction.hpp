@@ -21,10 +21,11 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <utils/merge_optional.hpp>
-
-#include <optional>
 #include <cassert>
+#include <optional>
+#include <stdexcept>
+
+#include <utils/merge_optional.hpp>
 
 namespace inq {
 namespace input {
@@ -119,9 +120,8 @@ public:
 
 	auto exchange_coefficient() const {
 		if(exchange() == exchange_functional::HARTREE_FOCK) return 1.0;
-		if(exchange() == exchange_functional::B3LYP) return 0.2;
-		if(exchange() == exchange_functional::PBE0) return 0.25;
-		return 0.0;
+		if(exchange() == exchange_functional::NONE) return 0.0;
+		throw std::runtime_error("inq internal error: exchange coefficient not known here for true functionals");
 	}
 
 	auto hartree_potential() const {
@@ -192,9 +192,8 @@ TEST_CASE("class input::interaction", "[input::interaction]") {
 		CHECK(inter.hartree_potential() == true);
 		CHECK(inter.exchange() == input::interaction::exchange_functional::LDA);
 		CHECK(inter.correlation() == input::interaction::correlation_functional::LDA_PZ);
-		CHECK(inter.exchange_coefficient() == 0.0);
 		CHECK(inter.fourier_pseudo_value() == false);
-
+		CHECK_THROWS(inter.exchange_coefficient());
   }
 
   SECTION("Composition"){
@@ -203,6 +202,13 @@ TEST_CASE("class input::interaction", "[input::interaction]") {
     
 		CHECK(not inter.self_consistent());
 		CHECK(inter.fourier_pseudo_value() == true);
+		CHECK(inter.exchange_coefficient() == 0.0);		
+  }
+	
+  SECTION("Hartee-Fock"){
+
+    auto inter = input::interaction::hartree_fock();
+		CHECK(inter.exchange_coefficient() == 1.0);
   }
 
 }
