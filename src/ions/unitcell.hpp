@@ -31,6 +31,8 @@
 #ifndef INQ__IONS__UNITCELL
 #define INQ__IONS__UNITCELL
 
+#include <stdexcept>
+
 #include <math/vector3.hpp>
 #include <valarray>
 #include <array>
@@ -61,8 +63,6 @@ namespace ions {
 		
   public:
 		
-		enum class error { WRONG_LATTICE };
-
     void set(const vector_type& a0, const vector_type& a1, const vector_type& a2, int arg_periodic_dimensions = 3){
 			
 			periodic_dimensions_ = arg_periodic_dimensions;
@@ -81,7 +81,7 @@ namespace ions {
 			// volume = det(A)
 			volume_ = dot(a0, cross(a1, a2));
 
-			if(fabs(volume_) < 1e-10) throw error::WRONG_LATTICE;
+			if(fabs(volume_) < 1e-10) throw std::runtime_error("inq error: the lattice volume is zero");
 		
 			if ( volume_ > 0.0 ){
 				// Compute rows of A-1 (columns of A^-T)

@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <stdexcept>
+
 #include <utils/raw_pointer_cast.hpp>
 #include <config/path.hpp>
 
@@ -51,10 +53,6 @@ namespace hamiltonian {
 
 		using pseudopotential_type = pseudo::pseudopotential<math::array<double, 1>>;
 		
-		enum class error {
-			PSEUDOPOTENTIAL_NOT_FOUND
-		};
-
 		template <class atom_array>
 		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			sep_(0.625), //this is the default from octopus
@@ -69,7 +67,7 @@ namespace hamiltonian {
 			nelectrons_ = 0.0;
 
 			for(int iatom = 0; iatom < natoms; iatom++){
-				if(!pseudo_set_.has(atom_list[iatom])) throw error::PSEUDOPOTENTIAL_NOT_FOUND; 
+				if(!pseudo_set_.has(atom_list[iatom])) throw std::runtime_error("inq error: pseudopotential for element " + atom_list[iatom].symbol() + " not found.");
 				
 				auto map_ref = pseudopotential_list_.find(atom_list[iatom].symbol());
 				
@@ -342,7 +340,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 	
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({element("P"), element("X")});
-
+	
 		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut));
 	}
 	
