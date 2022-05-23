@@ -261,21 +261,21 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 #else
 
 	int mingridsize, blocksize;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_rrr<kernel_type, decltype(begin(math::array<type, 3>{}))>));
-	
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_rrr<kernel_type, decltype(begin(std::declval<math::array<type, 3>&>()))>));
+
 	const unsigned bsizex = blocksize;
 	const unsigned bsizey = 1;
-	const unsigned bsizez = 1;	
+	const unsigned bsizez = 1;
 
 	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
 	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
-	unsigned nblockz = (sizez + bsizez - 1)/bsizez;	
-	
+	unsigned nblockz = (sizez + bsizez - 1)/bsizez;
+
 	math::array<type, 3> result({nblockx, nblocky, nblockz});
 
-  reduce_kernel_rrr<<<{nblockx, nblocky, nblockz}, {bsizex, bsizey, bsizez}, bsizex*bsizey*bsizez*sizeof(type)>>>(sizex, sizey, sizez, kernel, begin(result));
-  check_error(cudaGetLastError());
-	
+	reduce_kernel_rrr<<<{nblockx, nblocky, nblockz}, {bsizex, bsizey, bsizez}, bsizex*bsizey*bsizez*sizeof(type)>>>(sizex, sizey, sizez, kernel, begin(result));
+	check_error(cudaGetLastError());
+
   if(nblockx*nblocky*nblockz == 1) {
     cudaDeviceSynchronize();
     return initial_value + result[0][0][0];
@@ -558,7 +558,6 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 		
   }
 
-	
 	SECTION("rrr"){
 
 		const long maxsize = 125;
