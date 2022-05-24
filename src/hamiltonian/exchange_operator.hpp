@@ -64,16 +64,16 @@ namespace hamiltonian {
 
 			double energy = 0.0;
 			for(int ii = 0; ii < phi.local_set_size(); ii++){
-				energy += -0.5*real(hf_occupations[ii]*exx_matrix[ii][ii]);
+				energy += -0.5*real(hf_occupations[ii]*exx_matrix.array()[ii][ii]);
 			}
 
 			el.lot_states_comm_.all_reduce_in_place_n(&energy, 1, std::plus<>{});
 			
-			solvers::cholesky(exx_matrix);
+			solvers::cholesky(exx_matrix.array());
 			
 			namespace blas = boost::multi::blas;
 
-			blas::trsm(blas::side::right, blas::filling::upper, 1.0, blas::H(exx_matrix), xi_->matrix());
+			blas::trsm(blas::side::right, blas::filling::upper, 1.0, blas::H(exx_matrix.array()), xi_->matrix());
 			
 			return energy;
 		}
@@ -140,7 +140,7 @@ namespace hamiltonian {
 			namespace blas = boost::multi::blas;
 
 			auto olap = operations::overlap(*xi_, phi);
-			exxphi.matrix() += blas::gemm(-1.0, xi_->matrix(), blas::H(olap));
+			exxphi.matrix() += blas::gemm(-1.0, xi_->matrix(), blas::H(olap.array()));
 		}
 		
 		bool enabled() const {

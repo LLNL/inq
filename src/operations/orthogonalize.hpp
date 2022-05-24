@@ -45,12 +45,12 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	
 	auto olap = overlap(phi);
 
-	solvers::cholesky(olap);
+	solvers::cholesky(olap.array());
 	
 	{
 		CALI_CXX_MARK_SCOPE("orthogonalize_trsm");
 		namespace blas = boost::multi::blas;
-		blas::trsm(blas::side::right, blas::filling::upper, 1., blas::H(olap), phi.matrix());
+		blas::trsm(blas::side::right, blas::filling::upper, 1., blas::H(olap.array()), phi.matrix());
 	}
 }
 
@@ -121,18 +121,18 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		
 		std::cout << "------" << std::endl;
 		
-		std::cout << olap[0][0] << '\t' << olap[0][1] << '\t' << olap[0][2] << std::endl;
-		std::cout << olap[1][0] << '\t' << olap[1][1] << '\t' << olap[1][2] << std::endl;
-		std::cout << olap[2][0] << '\t' << olap[2][1] << '\t' << olap[2][2] << std::endl;
+		std::cout << olap.array()[0][0] << '\t' << olap.array()[0][1] << '\t' << olap.array()[0][2] << std::endl;
+		std::cout << olap.array()[1][0] << '\t' << olap.array()[1][1] << '\t' << olap.array()[1][2] << std::endl;
+		std::cout << olap.array()[2][0] << '\t' << olap.array()[2][1] << '\t' << olap.array()[2][2] << std::endl;
 		
 		
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					CHECK(real(olap[ii][ii]) == 1.0_a);
-					CHECK(fabs(imag(olap[ii][ii])) < 1e-14);
+					CHECK(real(olap.array()[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap.array()[ii][ii])) < 1e-14);
 			} else {
-					CHECK(fabs(olap[ii][jj]) < 1e-14);
+					CHECK(fabs(olap.array()[ii][jj]) < 1e-14);
 				}
 			}
 		}
@@ -175,10 +175,10 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					CHECK(real(olap[ii][ii]) == 1.0_a);
-					CHECK(fabs(imag(olap[ii][ii])) < 1e-14);
+					CHECK(real(olap.array()[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap.array()[ii][ii])) < 1e-14);
 				} else {
-					CHECK(fabs(olap[ii][jj]) < 1e-13);
+					CHECK(fabs(olap.array()[ii][jj]) < 1e-13);
 				}
 			}
 		}
@@ -198,10 +198,10 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					CHECK(real(olap[ii][ii]) == 1.0_a);
-					CHECK(fabs(imag(olap[ii][ii])) < 1e-16);
+					CHECK(real(olap.array()[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap.array()[ii][ii])) < 1e-16);
 				} else {
-					CHECK(fabs(olap[ii][jj]) < 5e-16);
+					CHECK(fabs(olap.array()[ii][jj]) < 5e-16);
 				}
 			}
 		}

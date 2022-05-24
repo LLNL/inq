@@ -24,11 +24,12 @@
 #include <inq_config.h>
 
 #include <math/array.hpp>
-#include <cassert>
+#include <math/subspace_matrix.hpp>
 #include <operations/integral.hpp>
-
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
+
+#include <cassert>
 
 namespace inq {
 namespace operations {
@@ -49,7 +50,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
 	}
 	
-	return overlap_matrix;
+	return math::subspace_matrix(std::move(overlap_matrix));
 }
 
 template <class FieldSetType>
@@ -75,8 +76,8 @@ auto overlap(const FieldSetType & phi){
 		CALI_CXX_MARK_SCOPE("overlap(1arg)_mpi_reduce");		
 		phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
 	}
-	
-	return overlap_matrix;
+
+	return math::subspace_matrix(std::move(overlap_matrix));	
 #endif
 }
 
@@ -143,7 +144,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			auto cc = operations::overlap(aa, bb);
 
 			for(int ii = 0; ii < nvec; ii++){
-				for(int jj = 0; jj < nvec; jj++) CHECK(cc[ii][jj] == Approx(-sqrt(jj)*sqrt(ii)));
+				for(int jj = 0; jj < nvec; jj++) CHECK(cc.array()[ii][jj] == Approx(-sqrt(jj)*sqrt(ii)));
 			}
 		}
 
@@ -158,12 +159,12 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		{
 			auto cc = operations::overlap(aa);
 
-			CHECK(typeid(decltype(cc[0][0])) == typeid(double));
-			CHECK(std::get<0>(sizes(cc)) == nvec);
-			CHECK(std::get<1>(sizes(cc)) == nvec);
+			CHECK(typeid(decltype(cc.array()[0][0])) == typeid(double));
+			CHECK(std::get<0>(sizes(cc.array())) == nvec);
+			CHECK(std::get<1>(sizes(cc.array())) == nvec);
 			
 			for(int ii = 0; ii < nvec; ii++){
-				for(int jj = 0; jj < nvec; jj++) CHECK(cc[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+				for(int jj = 0; jj < nvec; jj++) CHECK(cc.array()[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
 			}
 		}
 
@@ -187,13 +188,13 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			auto cc = operations::overlap(aa, bb);
 			
 
-			CHECK(std::get<0>(sizes(cc)) == nvec);
-			CHECK(std::get<1>(sizes(cc)) == nvec);
+			CHECK(std::get<0>(sizes(cc.array())) == nvec);
+			CHECK(std::get<1>(sizes(cc.array())) == nvec);
 				
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++) {
-					CHECK(fabs(real(cc[ii][jj])) < 1.0e-14);
-					CHECK(imag(cc[ii][jj]) == Approx(sqrt(jj)*sqrt(ii)));
+					CHECK(fabs(real(cc.array()[ii][jj])) < 1.0e-14);
+					CHECK(imag(cc.array()[ii][jj]) == Approx(sqrt(jj)*sqrt(ii)));
 				}
 			}
 		}
@@ -209,14 +210,14 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		{
 			auto cc = operations::overlap(aa);
 
-			CHECK(typeid(decltype(cc[0][0])) == typeid(complex));
-			CHECK(std::get<0>(sizes(cc)) == nvec);
-			CHECK(std::get<1>(sizes(cc)) == nvec);
+			CHECK(typeid(decltype(cc.array()[0][0])) == typeid(complex));
+			CHECK(std::get<0>(sizes(cc.array())) == nvec);
+			CHECK(std::get<1>(sizes(cc.array())) == nvec);
 				
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					CHECK(real(cc[ii][jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
-					CHECK(fabs(imag(cc[ii][jj])) < 1e-13);
+					CHECK(real(cc.array()[ii][jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+					CHECK(fabs(imag(cc.array()[ii][jj])) < 1e-13);
 				}
 			}
 		}
@@ -279,11 +280,11 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			
 		auto cc = operations::overlap(aa);
 			
-		CHECK(std::get<0>(sizes(cc)) == nvec);
-		CHECK(std::get<1>(sizes(cc)) == nvec);
+		CHECK(std::get<0>(sizes(cc.array())) == nvec);
+		CHECK(std::get<1>(sizes(cc.array())) == nvec);
 			
-		CHECK(real(cc[0][0]) == Approx(400.0*0.5*npoint*(npoint + 1.0)*bas.volume_element()));
-		CHECK(fabs(imag(cc[0][0])) < 1e-13);
+		CHECK(real(cc.array()[0][0]) == Approx(400.0*0.5*npoint*(npoint + 1.0)*bas.volume_element()));
+		CHECK(fabs(imag(cc.array()[0][0])) < 1e-13);
 
 	}
 
