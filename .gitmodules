@@ -11,9 +11,6 @@
 [submodule "external_libs/libxc"]
 	path = external_libs/libxc
 	url = https://gitlab.com/npneq/libxc.git
-[submodule "external_libs/kalimotxo"]
-	path = external_libs/kalimotxo
-	url = https://gitlab.com/npneq/kalimotxo.git
 [submodule "external_libs/spglib"]
 	path = external_libs/spglib
 	url = https://gitlab.com/npneq/spglib
