@@ -177,7 +177,7 @@ auto diagonalize_raw(math::array<complex, 2, Alloc>& matrix){
 }
 
 template <class MatrixType>
-auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
+auto diagonalize(MatrixType & matrix){
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -188,17 +188,17 @@ auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
 	//each processor runs a copy of the diagonalizer that can give
 	//different values. So we diagonalize in one processor and broadcast.
 	
-	if(comm.rank() == 0){
+	if(matrix.comm().rank() == 0){
 		eigenvalues = diagonalize_raw(matrix.array());
 	} else {
 		eigenvalues = math::array<double, 1>(matrix.size());
 	}
 	
-	if(comm.size() > 1){
+	if(matrix.comm().size() > 1){
 		CALI_CXX_MARK_SCOPE("diagonalize::broadcast");
 
-		comm.broadcast_n(raw_pointer_cast(eigenvalues.data_elements()), eigenvalues.num_elements(), 0);
-		comm.broadcast_n(raw_pointer_cast(matrix.array().data_elements()), matrix.array().num_elements(), 0);
+		matrix.comm().broadcast_n(raw_pointer_cast(eigenvalues.data_elements()), eigenvalues.num_elements(), 0);
+		matrix.comm().broadcast_n(raw_pointer_cast(matrix.array().data_elements()), matrix.array().num_elements(), 0);
 	}
 
 	return eigenvalues;		
@@ -236,7 +236,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
-		auto evalues = operations::diagonalize(comm, matrix);
+		auto evalues = operations::diagonalize(matrix);
 		
 		CHECK(matrix.array()[0][0] == 0.0_a);
 		CHECK(matrix.array()[0][1] == 1.0_a);
@@ -262,7 +262,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
-		auto evalues = operations::diagonalize(comm, matrix);
+		auto evalues = operations::diagonalize(matrix);
 		
 		CHECK(real(matrix.array()[0][0]) == 0.0_a);
 		CHECK(imag(matrix.array()[0][0]) == 0.0_a);
@@ -300,7 +300,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
-		auto evalues = operations::diagonalize(comm, matrix);
+		auto evalues = operations::diagonalize(matrix);
 		
 		CHECK(evalues[0] == -1.0626903983_a);
 		CHECK(evalues[1] == 0.1733844724_a);
@@ -326,7 +326,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
-		auto evalues = operations::diagonalize(comm, matrix);
+		auto evalues = operations::diagonalize(matrix);
 		
 		CHECK(evalues[0] == -1.0703967402_a);
 		CHECK(evalues[1] ==  0.1722879629_a);
