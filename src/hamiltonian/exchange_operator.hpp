@@ -63,9 +63,9 @@ namespace hamiltonian {
 			auto exx_matrix = operations::overlap(*xi_, phi);
 
 			double energy = 0.0;
-			for(int ii = 0; ii < phi.local_set_size(); ii++){
-				energy += -0.5*real(hf_occupations[ii]*exx_matrix.array()[ii][ii]);
-			}
+			auto ediag = exx_matrix.diagonal();
+			
+			for(int ii = 0; ii < phi.local_set_size(); ii++) energy += -0.5*real(hf_occupations[ii]*ediag[ii]);
 
 			el.lot_states_comm_.all_reduce_in_place_n(&energy, 1, std::plus<>{});
 			
