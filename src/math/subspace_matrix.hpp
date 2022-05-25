@@ -37,6 +37,10 @@ public:
   subspace_matrix(array_type && mat):
     array_(std::move(mat)){
   }
+
+  auto size() const {
+    return array_.size();
+  }
   
   auto & array() const {
     return array_;
@@ -47,8 +51,8 @@ public:
   }
 
   auto diagonal() {
-    math::array<Type, 1> diag(array_.size());
-    gpu::run(array_.size(), [dia = begin(diag), arr = begin(array_)] GPU_LAMBDA (auto ii){
+    math::array<Type, 1> diag(size());
+    gpu::run(size(), [dia = begin(diag), arr = begin(array_)] GPU_LAMBDA (auto ii){
                dia[ii] = arr[ii][ii];
              });
     return diag;
