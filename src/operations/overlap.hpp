@@ -41,7 +41,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 	namespace blas = boost::multi::blas;
 
-	if(false and not phi1.set_part().parallel()){
+	if(not phi1.set_part().parallel()){
 		
 		auto overlap_matrix =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
 		
@@ -58,37 +58,37 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		
 		math::subspace_matrix<typename FieldSetType1::element_type> overlap_matrix(phi1.full_comm(), phi1.set_size(), 0.0);
 
-		math::array<typename FieldSetType2::element_type, 2> rphi({phi2.basis().local_size(), phi2.set_part().block_size()}, 0.0);
-		rphi({0, phi2.basis().local_size()}, {0, phi2.set_part().local_size()}) = phi2.matrix();		
+		math::array<typename FieldSetType2::element_type, 2> rphi({phi1.basis().local_size(), phi1.set_part().block_size()}, 0.0);
+		rphi(boost::multi::ALL, {0, phi1.set_part().local_size()}) = phi1.matrix();
 		
-		auto next_proc = phi2.set_comm().rank() + 1;
-		if(next_proc == phi2.set_comm().size()) next_proc = 0;
-		auto prev_proc = phi2.set_comm().rank() - 1;
+		auto next_proc = phi1.set_comm().rank() + 1;
+		if(next_proc == phi1.set_comm().size()) next_proc = 0;
+		auto prev_proc = phi1.set_comm().rank() - 1;
 		if(prev_proc == -1) prev_proc = phi2.set_comm().size() - 1;
 
-		auto ipart = phi2.set_comm().rank();
-		auto loc = phi2.set_part().start();
-		for(int istep = 0; istep < phi2.set_part().comm_size(); istep++){
+		auto ipart = phi1.set_comm().rank();
+		auto loc = phi1.set_part().start();
+		for(int istep = 0; istep < phi1.set_part().comm_size(); istep++){
 			
-			auto block =+ blas::gemm(phi1.basis().volume_element(), blas::H(rphi), phi1.matrix());
-			overlap_matrix.array()({loc, loc + phi2.set_part().local_size(ipart)}, {phi1.set_part().start(), phi1.set_part().end()}) = block;
+			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), rphi(boost::multi::ALL, {0, phi1.set_part().local_size(ipart)}));
+			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {loc, loc + phi1.set_part().local_size(ipart)}) = block;
 
 			//the last step we don't need to do communicate
-			if(istep == phi2.set_part().comm_size() - 1) break;
+			if(istep == phi1.set_part().comm_size() - 1) break;
 			
-			MPI_Sendrecv_replace(raw_pointer_cast(rphi.data_elements()), rphi.num_elements(), mpi_type, next_proc, istep, prev_proc, istep, phi2.set_comm().get(), MPI_STATUS_IGNORE);
+			MPI_Sendrecv_replace(raw_pointer_cast(rphi.data_elements()), rphi.num_elements(), mpi_type, prev_proc, istep, next_proc, istep, phi1.set_comm().get(), MPI_STATUS_IGNORE);
 			
-			loc += phi2.set_part().local_size(ipart);
+			loc += phi1.set_part().local_size(ipart);
 			ipart++;
-			if(ipart == phi2.set_comm().size()) {
+			if(ipart == phi1.set_comm().size()) {
 				ipart = 0;
 				loc = 0;
 			}
 		}
 
-		if(phi1.basis().comm().size() > 1) {
+		if(phi1.full_comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
-			phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.array().data_elements()), overlap_matrix.array().num_elements(), std::plus<>{});
+			phi1.full_comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.array().data_elements()), overlap_matrix.array().num_elements(), std::plus<>{});
 		}
 		
 		return overlap_matrix;
@@ -136,12 +136,11 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 	using Catch::Approx;
 
 	const int npoint = 100;
-	const int nvec = 12;
+	const int nvec = 16;
 			
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
-
 	auto basis_comm = cart_comm.axis(1);
 		
 	basis::trivial bas(npoint, basis_comm);
@@ -189,7 +188,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		}
 		
 	}
-	
+
 	SECTION("complex"){
 		
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
@@ -288,7 +287,12 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 	}
 
 	SECTION("complex 1x1"){
-
+	
+		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {1, comm.size()});
+		auto basis_comm = cart_comm.axis(1);
+		
+		basis::trivial bas(npoint, basis_comm);
+	
 		const int nvec = 1;
 			
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
@@ -306,7 +310,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		CHECK(real(cc.array()[0][0]) == Approx(400.0*0.5*npoint*(npoint + 1.0)*bas.volume_element()));
 		CHECK(fabs(imag(cc.array()[0][0])) < 1e-13);
 
-	}
+		}
 
 }
 
