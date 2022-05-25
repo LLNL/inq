@@ -22,6 +22,7 @@
 */
 
 #include <math/array.hpp>
+#include <gpu/run.hpp>
 
 namespace inq {
 namespace math {
@@ -43,6 +44,14 @@ public:
 
   auto & array() {
     return array_;
+  }
+
+  auto diagonal() {
+    math::array<Type, 1> diag(array_.size());
+    gpu::run(array_.size(), [dia = begin(diag), arr = begin(array_)] GPU_LAMBDA (auto ii){
+               dia[ii] = arr[ii][ii];
+             });
+    return diag;
   }
   
 private:
@@ -77,6 +86,11 @@ TEST_CASE("math::subspace_matrix", "[math::subspace_matrix]") {
   CHECK(mm.array()[0][1] == 0.0);
   CHECK(mm.array()[1][0] == 0.0);
   CHECK(mm.array()[1][1] == 2.0);
+
+  auto dd = mm.diagonal();
+
+  CHECK(dd[0] == 4.0);
+  CHECK(dd[1] == 2.0);
   
 }
 
