@@ -38,47 +38,69 @@ template <class FieldSetType1, class FieldSetType2>
 auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 	CALI_CXX_MARK_SCOPE("overlap(2arg)");
-	
-	// no state parallelization for now
-	assert(not phi1.set_part().parallel());
-	
-	namespace blas = boost::multi::blas;
-	auto overlap_matrix =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
 
-	if(phi1.basis().comm().size() > 1) {
-		CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
-		phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
+	namespace blas = boost::multi::blas;
+
+	if(false and not phi1.set_part().parallel()){
+		
+		auto overlap_matrix =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
+		
+		if(phi1.basis().comm().size() > 1) {
+			CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
+			phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
+		}
+
+		return math::subspace_matrix<typename decltype(overlap_matrix)::element_type>(phi1.full_comm(), std::move(overlap_matrix));
+		
+	} else {
+
+		auto mpi_type = boost::mpi3::detail::basic_datatype<typename FieldSetType2::element_type>();
+		
+		math::subspace_matrix<typename FieldSetType1::element_type> overlap_matrix(phi1.full_comm(), phi1.set_size(), 0.0);
+
+		math::array<typename FieldSetType2::element_type, 2> rphi({phi2.basis().local_size(), phi2.set_part().block_size()}, 0.0);
+		rphi({0, phi2.basis().local_size()}, {0, phi2.set_part().local_size()}) = phi2.matrix();		
+		
+		auto next_proc = phi2.set_comm().rank() + 1;
+		if(next_proc == phi2.set_comm().size()) next_proc = 0;
+		auto prev_proc = phi2.set_comm().rank() - 1;
+		if(prev_proc == -1) prev_proc = phi2.set_comm().size() - 1;
+
+		auto ipart = phi2.set_comm().rank();
+		auto loc = phi2.set_part().start();
+		for(int istep = 0; istep < phi2.set_part().comm_size(); istep++){
+			
+			auto block =+ blas::gemm(phi1.basis().volume_element(), blas::H(rphi), phi1.matrix());
+			overlap_matrix.array()({loc, loc + phi2.set_part().local_size(ipart)}, {phi1.set_part().start(), phi1.set_part().end()}) = block;
+
+			//the last step we don't need to do communicate
+			if(istep == phi2.set_part().comm_size() - 1) break;
+			
+			MPI_Sendrecv_replace(raw_pointer_cast(rphi.data_elements()), rphi.num_elements(), mpi_type, next_proc, istep, prev_proc, istep, phi2.set_comm().get(), MPI_STATUS_IGNORE);
+			
+			loc += phi2.set_part().local_size(ipart);
+			ipart++;
+			if(ipart == phi2.set_comm().size()) {
+				ipart = 0;
+				loc = 0;
+			}
+		}
+
+		if(phi1.basis().comm().size() > 1) {
+			CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
+			phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.array().data_elements()), overlap_matrix.array().num_elements(), std::plus<>{});
+		}
+		
+		return overlap_matrix;
 	}
 	
-	return math::subspace_matrix<typename decltype(overlap_matrix)::element_type>(phi1.full_comm(), std::move(overlap_matrix));
+
 }
 
 template <class FieldSetType>
 auto overlap(const FieldSetType & phi){
-
 	CALI_CXX_MARK_SCOPE("overlap(1arg)");
-
-#ifdef ENABLE_CUDA
-
-	//call the 2 argument version, since there is a bug in multi that
-	//doesn't dispatch herk to the gpu
 	return overlap(phi, phi);
-	
-#else
-	
-	// no state parallelization for now
-	assert(not phi.set_part().parallel());
-	
-	namespace blas = boost::multi::blas;
-	auto overlap_matrix = +blas::herk(phi.basis().volume_element(), blas::H(phi.matrix()));
-
-	if(phi.basis().comm().size() > 1){
-		CALI_CXX_MARK_SCOPE("overlap(1arg)_mpi_reduce");		
-		phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
-	}
-
-	return math::subspace_matrix<typename decltype(overlap_matrix)::element_type>(phi.full_comm(), std::move(overlap_matrix));	
-#endif
 }
 
 template <class field_type>
@@ -117,12 +139,10 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 	const int nvec = 12;
 			
 	auto comm = boost::mpi3::environment::get_world_instance();
-		
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {1, comm.size()});
+	
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 
 	auto basis_comm = cart_comm.axis(1);
-
-	CHECK(basis_comm.size() == comm.size());
 		
 	basis::trivial bas(npoint, basis_comm);
 
@@ -132,7 +152,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.local_set_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value());
@@ -149,7 +169,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		}
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.local_set_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value());
@@ -167,16 +187,16 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 				for(int jj = 0; jj < nvec; jj++) CHECK(cc.array()[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
 			}
 		}
-
+		
 	}
-
+	
 	SECTION("complex"){
 		
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.local_set_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
@@ -200,7 +220,7 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		}
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.local_set_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));

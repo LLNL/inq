@@ -36,6 +36,16 @@ public:
   
   using array_type = math::array<Type, 2>;
   
+  subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size):
+    comm_(comm),
+    array_({size, size}){
+  }
+
+  subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size, Type const & ival):
+    comm_(comm),
+    array_({size, size}, ival){
+  }
+  
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, array_type && mat):
     comm_(comm),
     array_(std::move(mat)){
