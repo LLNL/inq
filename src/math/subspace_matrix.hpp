@@ -63,7 +63,7 @@ public:
     return array_;
   }
 
-  math::array<Type, 1> diagonal() {
+  math::array<Type, 1> diagonal() const {
     math::array<Type, 1> diag(size());
     gpu::run(size(), [dia = begin(diag), arr = begin(array_)] GPU_LAMBDA (auto ii){
                dia[ii] = arr[ii][ii];
