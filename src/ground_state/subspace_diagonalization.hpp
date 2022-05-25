@@ -37,13 +37,13 @@ auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 	assert(not phi.set_part().parallel());
 	
 	auto subspace_hamiltonian = operations::overlap(phi, ham(phi));
-	auto eigenvalues = operations::diagonalize(phi.basis().comm(), subspace_hamiltonian);
+	auto eigenvalues = operations::diagonalize(subspace_hamiltonian);
 	
 	//OPTIMIZATION: here we don't need to make a full copy.
 	{
 		CALI_CXX_MARK_SCOPE("subspace_diagonalization_gemm");
 		namespace blas = boost::multi::blas;
-		phi.matrix() = blas::gemm(1., phi.matrix(), blas::H(subspace_hamiltonian));
+		phi.matrix() = blas::gemm(1., phi.matrix(), blas::H(subspace_hamiltonian.array()));
 	}
 	
 	return eigenvalues;	

@@ -177,7 +177,7 @@ auto diagonalize_raw(math::array<complex, 2, Alloc>& matrix){
 }
 
 template <class MatrixType>
-auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
+auto diagonalize(MatrixType & matrix){
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -188,17 +188,17 @@ auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
 	//each processor runs a copy of the diagonalizer that can give
 	//different values. So we diagonalize in one processor and broadcast.
 	
-	if(comm.rank() == 0){
-		eigenvalues = diagonalize_raw(matrix);
+	if(matrix.comm().rank() == 0){
+		eigenvalues = diagonalize_raw(matrix.array());
 	} else {
 		eigenvalues = math::array<double, 1>(matrix.size());
 	}
 	
-	if(comm.size() > 1){
+	if(matrix.comm().size() > 1){
 		CALI_CXX_MARK_SCOPE("diagonalize::broadcast");
 
-		comm.broadcast_n(raw_pointer_cast(eigenvalues.data_elements()), eigenvalues.num_elements(), 0);
-		comm.broadcast_n(raw_pointer_cast(matrix.data_elements()), matrix.num_elements(), 0);
+		matrix.comm().broadcast_n(raw_pointer_cast(eigenvalues.data_elements()), eigenvalues.num_elements(), 0);
+		matrix.comm().broadcast_n(raw_pointer_cast(matrix.array().data_elements()), matrix.array().num_elements(), 0);
 	}
 
 	return eigenvalues;		
@@ -220,25 +220,28 @@ auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
 TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 	
 	SECTION("Real diagonal 2x2"){
 	
 		using namespace inq;
 		using namespace Catch::literals;
 		
-		math::array<double, 2> matrix({2, 2});
+		math::array<double, 2> array({2, 2});
 		
-		matrix[0][0] = 4.0;
-		matrix[0][1] = 0.0;
-		matrix[1][0] = 0.0;
-		matrix[1][1] = 2.0;
+		array[0][0] = 4.0;
+		array[0][1] = 0.0;
+		array[1][0] = 0.0;
+		array[1][1] = 2.0;
+
+		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
-		auto evalues = operations::diagonalize(comm, matrix);
+		auto evalues = operations::diagonalize(matrix);
 		
-		CHECK(matrix[0][0] == 0.0_a);
-		CHECK(matrix[0][1] == 1.0_a);
-		CHECK(matrix[1][0] == 1.0_a);
-		CHECK(matrix[0][0] == 0.0_a);
+		CHECK(matrix.array()[0][0] == 0.0_a);
+		CHECK(matrix.array()[0][1] == 1.0_a);
+		CHECK(matrix.array()[1][0] == 1.0_a);
+		CHECK(matrix.array()[0][0] == 0.0_a);
 		
 		CHECK(evalues[0] == 2.0_a);
 		CHECK(evalues[1] == 4.0_a);
@@ -250,26 +253,28 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		using namespace inq;
 		using namespace Catch::literals;
 		
-		math::array<complex, 2> matrix({2, 2});
+		math::array<complex, 2> array({2, 2});
 		
-		matrix[0][0] = 4.0;
-		matrix[0][1] = 0.0;
-		matrix[1][0] = 0.0;
-		matrix[1][1] = 2.0;
+		array[0][0] = 4.0;
+		array[0][1] = 0.0;
+		array[1][0] = 0.0;
+		array[1][1] = 2.0;
+
+		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
-		auto evalues = operations::diagonalize(comm, matrix);
+		auto evalues = operations::diagonalize(matrix);
 		
-		CHECK(real(matrix[0][0]) == 0.0_a);
-		CHECK(imag(matrix[0][0]) == 0.0_a);
+		CHECK(real(matrix.array()[0][0]) == 0.0_a);
+		CHECK(imag(matrix.array()[0][0]) == 0.0_a);
 		
-		CHECK(real(matrix[0][1]) == 1.0_a);
-		CHECK(imag(matrix[0][1]) == 0.0_a);
+		CHECK(real(matrix.array()[0][1]) == 1.0_a);
+		CHECK(imag(matrix.array()[0][1]) == 0.0_a);
 		
-		CHECK(real(matrix[1][0]) == 1.0_a);
-		CHECK(imag(matrix[1][0]) == 0.0_a);
+		CHECK(real(matrix.array()[1][0]) == 1.0_a);
+		CHECK(imag(matrix.array()[1][0]) == 0.0_a);
 		
-		CHECK(real(matrix[0][0]) == 0.0_a);
-		CHECK(imag(matrix[0][0]) == 0.0_a);
+		CHECK(real(matrix.array()[0][0]) == 0.0_a);
+		CHECK(imag(matrix.array()[0][0]) == 0.0_a);
 		
 		CHECK(evalues[0] == 2.0_a);
 		CHECK(evalues[1] == 4.0_a);
@@ -279,21 +284,23 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 	SECTION("Real dense 3x3"){
 	
 		using namespace inq;
-	using namespace Catch::literals;
+		using namespace Catch::literals;
 		
-		math::array<double, 2> matrix({3, 3});
+		math::array<double, 2> array({3, 3});
 		
-		matrix[0][0] = 0.088958;
-		matrix[0][1] = 1.183407;
-		matrix[0][2] = 1.191946;
-		matrix[1][0] = 1.183407;
-		matrix[1][1] = 1.371884;
-		matrix[1][2] = 0.705297;
-		matrix[2][0] = 1.191946;
-		matrix[2][1] = 0.705297;
-		matrix[2][2] = 0.392459;
+		array[0][0] = 0.088958;
+		array[0][1] = 1.183407;
+		array[0][2] = 1.191946;
+		array[1][0] = 1.183407;
+		array[1][1] = 1.371884;
+		array[1][2] = 0.705297;
+		array[2][0] = 1.191946;
+		array[2][1] = 0.705297;
+		array[2][2] = 0.392459;
+
+		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
-		auto evalues = operations::diagonalize(comm, matrix);
+		auto evalues = operations::diagonalize(matrix);
 		
 		CHECK(evalues[0] == -1.0626903983_a);
 		CHECK(evalues[1] == 0.1733844724_a);
@@ -305,19 +312,21 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		using namespace inq;
 		using namespace Catch::literals;
 		
-		math::array<complex, 2> matrix({3, 3});
+		math::array<complex, 2> array({3, 3});
 		
-		matrix[0][0] = complex(0.088958,  0.00000);
-		matrix[0][1] = complex(1.183407,  0.08285);
-		matrix[0][2] = complex(1.191946,  0.09413);
-		matrix[1][0] = complex(1.183407, -0.08285);
-		matrix[1][1] = complex(1.371884,  0.00000);
-		matrix[1][2] = complex(0.705297,  0.12840);
-		matrix[2][0] = complex(1.191946, -0.09413);
-		matrix[2][1] = complex(0.705297, -0.12840);
-		matrix[2][2] = complex(0.392459,  0.00000);
+		array[0][0] = complex(0.088958,  0.00000);
+		array[0][1] = complex(1.183407,  0.08285);
+		array[0][2] = complex(1.191946,  0.09413);
+		array[1][0] = complex(1.183407, -0.08285);
+		array[1][1] = complex(1.371884,  0.00000);
+		array[1][2] = complex(0.705297,  0.12840);
+		array[2][0] = complex(1.191946, -0.09413);
+		array[2][1] = complex(0.705297, -0.12840);
+		array[2][2] = complex(0.392459,  0.00000);
+
+		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
-		auto evalues = operations::diagonalize(comm, matrix);
+		auto evalues = operations::diagonalize(matrix);
 		
 		CHECK(evalues[0] == -1.0703967402_a);
 		CHECK(evalues[1] ==  0.1722879629_a);
