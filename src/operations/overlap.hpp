@@ -50,7 +50,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
 	}
 	
-	return math::subspace_matrix(std::move(overlap_matrix));
+	return math::subspace_matrix(phi1.full_comm(), std::move(overlap_matrix));
 }
 
 template <class FieldSetType>
@@ -77,7 +77,7 @@ auto overlap(const FieldSetType & phi){
 		phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.base()), overlap_matrix.num_elements(), std::plus<>{});
 	}
 
-	return math::subspace_matrix(std::move(overlap_matrix));	
+	return math::subspace_matrix(phi.full_comm(), std::move(overlap_matrix));	
 #endif
 }
 

@@ -220,6 +220,7 @@ auto diagonalize(boost::mpi3::communicator & comm, MatrixType & matrix){
 TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 	
 	SECTION("Real diagonal 2x2"){
 	
@@ -233,7 +234,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		array[1][0] = 0.0;
 		array[1][1] = 2.0;
 
-		math::subspace_matrix matrix(std::move(array));
+		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
 		auto evalues = operations::diagonalize(comm, matrix);
 		
@@ -259,7 +260,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		array[1][0] = 0.0;
 		array[1][1] = 2.0;
 
-		math::subspace_matrix matrix(std::move(array));
+		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
 		auto evalues = operations::diagonalize(comm, matrix);
 		
@@ -297,7 +298,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		array[2][1] = 0.705297;
 		array[2][2] = 0.392459;
 
-		math::subspace_matrix matrix(std::move(array));
+		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
 		auto evalues = operations::diagonalize(comm, matrix);
 		
@@ -323,7 +324,7 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 		array[2][1] = complex(0.705297, -0.12840);
 		array[2][2] = complex(0.392459,  0.00000);
 
-		math::subspace_matrix matrix(std::move(array));
+		math::subspace_matrix matrix(cart_comm, std::move(array));
 		
 		auto evalues = operations::diagonalize(comm, matrix);
 		

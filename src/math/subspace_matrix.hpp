@@ -24,6 +24,8 @@
 #include <math/array.hpp>
 #include <gpu/run.hpp>
 
+#include <mpi3/cartesian_communicator.hpp>
+
 namespace inq {
 namespace math {
 
@@ -34,7 +36,8 @@ public:
   
   using array_type = math::array<Type, 2>;
   
-  subspace_matrix(array_type && mat):
+  subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, array_type && mat):
+    comm_(comm),
     array_(std::move(mat)){
   }
 
@@ -57,9 +60,14 @@ public:
              });
     return diag;
   }
+
+  auto comm() const {
+    return comm_;
+  }
   
 private:
 
+  mutable boost::mpi3::cartesian_communicator<2> comm_;
   array_type array_;
   
 };
@@ -71,12 +79,16 @@ private:
 #undef INQ_MATH_SUBSPACE_MATRIX_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
+#include <mpi3/environment.hpp>
 
 TEST_CASE("math::subspace_matrix", "[math::subspace_matrix]") {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;
 
+  auto comm = boost::mpi3::environment::get_world_instance();
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+  
   math::array<double, 2> matrix({2, 2});
   
   matrix[0][0] = 4.0;
@@ -84,7 +96,7 @@ TEST_CASE("math::subspace_matrix", "[math::subspace_matrix]") {
   matrix[1][0] = 0.0;
   matrix[1][1] = 2.0;
 
-  math::subspace_matrix mm(std::move(matrix));
+  math::subspace_matrix mm(cart_comm, std::move(matrix));
 
   CHECK(mm.array()[0][0] == 4.0);
   CHECK(mm.array()[0][1] == 0.0);
