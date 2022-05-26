@@ -36,6 +36,16 @@ public:
   
   using array_type = math::array<Type, 2>;
   
+  subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size):
+    comm_(comm),
+    array_({size, size}){
+  }
+
+  subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size, Type const & ival):
+    comm_(comm),
+    array_({size, size}, ival){
+  }
+  
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, array_type && mat):
     comm_(comm),
     array_(std::move(mat)){
@@ -53,7 +63,7 @@ public:
     return array_;
   }
 
-  math::array<Type, 1> diagonal() {
+  math::array<Type, 1> diagonal() const {
     math::array<Type, 1> diag(size());
     gpu::run(size(), [dia = begin(diag), arr = begin(array_)] GPU_LAMBDA (auto ii){
                dia[ii] = arr[ii][ii];
