@@ -46,6 +46,11 @@ void invert_triangular(math::subspace_matrix<double> & matrix){
 	int nn = std::get<0>(sizes(matrix.array()));
 	int info;
   dtrtri("U", "N", &nn, raw_pointer_cast(matrix.array().data_elements()), &nn, &info);
+	for(int ii = 0; ii < nn; ii++){
+		for(int jj = 0; jj < nn; jj++){
+			if(ii < jj) matrix.array()[ii][jj] = 0.0;
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -56,6 +61,12 @@ void invert_triangular(math::subspace_matrix<complex> & matrix){
 	int nn = std::get<0>(sizes(matrix.array()));
 	int info;
   ztrtri("U", "N", &nn, raw_pointer_cast(matrix.array().data_elements()), &nn, &info);
+	for(int ii = 0; ii < nn; ii++){
+		for(int jj = 0; jj < nn; jj++){
+			if(ii < jj) matrix.array()[ii][jj] = 0.0;
+		}
+	}
+	
 }
 
 
@@ -94,6 +105,7 @@ TEST_CASE("function solvers::invert_triangular", "[solvers::invert_triangular]")
 		solvers::invert_triangular(matrix);
     
     CHECK(matrix.array()[0][0] == 0.25);
+		CHECK(matrix.array()[0][1] == 0.0);		
     CHECK(matrix.array()[1][0] == 0.125);
     CHECK(matrix.array()[1][1] == 0.5);
   }
@@ -112,6 +124,7 @@ TEST_CASE("function solvers::invert_triangular", "[solvers::invert_triangular]")
 		solvers::invert_triangular(matrix);
     
     CHECK(matrix.array()[0][0] == 0.25);
+		CHECK(matrix.array()[0][1] == 0.0);				
     CHECK(matrix.array()[1][0] == 0.125);
     CHECK(matrix.array()[1][1] == 0.5);
   }
