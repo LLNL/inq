@@ -25,6 +25,7 @@
 
 #include <math/array.hpp>
 #include <utils/profiling.hpp>
+#include <solvers/invert_triangular.hpp>
 
 #include <cassert>
 
@@ -50,8 +51,11 @@ void rotate_trs(MatrixType const & rotation, FieldSetType & phi){
 	
 	CALI_CXX_MARK_SCOPE("operations::rotate_trs");
 
+	auto invrot = rotation;
+	
 	namespace blas = boost::multi::blas;
-	blas::trsm(blas::side::right, blas::filling::upper, 1.0, blas::H(rotation.array()), phi.matrix());
+	solvers::invert_triangular(invrot);
+	rotate(invrot, phi);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
