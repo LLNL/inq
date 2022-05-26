@@ -1,0 +1,16 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+lassen-build:
+    tags:
+      - lassen
+    script:
+      - module load cuda/11
+      - module load gcc/8
+      - module load cmake/3.21
+      - export CUDAFLAGS="--gpu-architecture sm_70"
+      - mkdir build
+      - cd build
+      - ../configure --prefix=`pwd`../install --disable-debug
+      - make -j8
+      - make install
