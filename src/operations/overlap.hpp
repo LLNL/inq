@@ -139,10 +139,13 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 	const int nvec = 16;
 			
 	auto comm = boost::mpi3::environment::get_world_instance();
+
+	auto parstates = comm.size();
+	if(comm.size() >= 5) parstates = 1;
 	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {parstates, boost::mpi3::fill});
 	auto basis_comm = cart_comm.axis(1);
-		
+
 	basis::trivial bas(npoint, basis_comm);
 
 	SECTION("double"){
