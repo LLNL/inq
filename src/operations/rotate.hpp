@@ -86,79 +86,157 @@ TEST_CASE("function operations::rotate", "[operations::rotate]") {
 			
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	auto parstates = comm.size();
-	if(comm.size() >= 1) parstates = 1;
-	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {parstates, boost::mpi3::fill});
-	auto basis_comm = cart_comm.axis(1);
-	
-	basis::trivial bas(npoint, basis_comm);
-	
-	SECTION("rotate double"){
+	{
+		auto parstates = comm.size();
+		if(comm.size() >= 1) parstates = 1;
 		
-		math::subspace_matrix<double> rot(cart_comm, nvec, 0.0);
+		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {parstates, boost::mpi3::fill});
+		auto basis_comm = cart_comm.axis(1);
 		
-		for(int ii = 0; ii < nvec; ii++){
-			for(int jj = 0; jj < nvec; jj++){
-				rot.array()[ii][jj] = ii + 1;
-			}
-		}
-
-	basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
+		basis::trivial bas(npoint, basis_comm);
+		
+		SECTION("rotate double"){
 			
-		for(int ip = 0; ip < bas.part().local_size(); ip++){
-			for(int jj = 0; jj < aa.local_set_size(); jj++){
-				auto jjg = aa.set_part().local_to_global(jj);
-				auto ipg = bas.part().local_to_global(ip);
-				aa.matrix()[ip][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
+			math::subspace_matrix<double> rot(cart_comm, nvec, 0.0);
+			
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					rot.array()[ii][jj] = ii + 1;
+				}
 			}
-		}
 
-		operations::rotate(rot, aa);
-
-		for(int ip = 0; ip < bas.part().local_size(); ip++){
-			for(int jj = 0; jj < aa.local_set_size(); jj++){
-				auto jjg = aa.set_part().local_to_global(jj);
-				auto ipg = bas.part().local_to_global(ip);
-				CHECK(aa.matrix()[ip][jj] == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+			basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					aa.matrix()[ip][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
+				}
 			}
-		}
+
+			operations::rotate(rot, aa);
+
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					CHECK(aa.matrix()[ip][jj] == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+				}
+			}
 		
+		}
+	
+		SECTION("rotate complex"){
+		
+			math::subspace_matrix<complex> rot(cart_comm, nvec, 0.0);
+		
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					rot.array()[ii][jj] = ii + 1;
+				}
+			}
+		
+			basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					aa.matrix()[ip][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
+				}
+			}
+
+			operations::rotate(rot, aa);
+
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					CHECK(real(aa.matrix()[ip][jj]) == 0.0);
+					CHECK(imag(aa.matrix()[ip][jj]) == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+				}
+			}
+		
+		}
+
 	}
 	
-	SECTION("rotate complex"){
+	{
+		auto parstates = comm.size();
+		if(comm.size() >= 1) parstates = 1;
 		
-		math::subspace_matrix<complex> rot(cart_comm, nvec, 0.0);
+		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {parstates, boost::mpi3::fill});
+		auto basis_comm = cart_comm.axis(1);
 		
-		for(int ii = 0; ii < nvec; ii++){
-			for(int jj = 0; jj < nvec; jj++){
-				rot.array()[ii][jj] = ii + 1;
-			}
-		}
-		
-		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
+		basis::trivial bas(npoint, basis_comm);
+
+#ifndef ENABLE_CUDA
+		//the double version of trsm doesn't seem to work in multi
+		SECTION("rotate_trs double"){
 			
-		for(int ip = 0; ip < bas.part().local_size(); ip++){
-			for(int jj = 0; jj < aa.local_set_size(); jj++){
-				auto jjg = aa.set_part().local_to_global(jj);
-				auto ipg = bas.part().local_to_global(ip);
-				aa.matrix()[ip][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
+			math::subspace_matrix<double> rot(cart_comm, nvec, 0.0);
+			
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					rot.array()[ii][jj] = 1.0;
+				}
 			}
-		}
 
-		operations::rotate(rot, aa);
-
-		for(int ip = 0; ip < bas.part().local_size(); ip++){
-			for(int jj = 0; jj < aa.local_set_size(); jj++){
-				auto jjg = aa.set_part().local_to_global(jj);
-				auto ipg = bas.part().local_to_global(ip);
-				CHECK(real(aa.matrix()[ip][jj]) == 0.0);
-				CHECK(imag(aa.matrix()[ip][jj]) == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+			basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					aa.matrix()[ip][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
+				}
 			}
+
+			operations::rotate_trs(rot, aa);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto ipg = bas.part().local_to_global(ip);
+					CHECK(aa.matrix()[ip][jj] == (ipg.value() + 1.0));
+				}
+			}
+			
 		}
+#endif
 		
+		SECTION("rotate_trs complex"){
+			
+			math::subspace_matrix<complex> rot(cart_comm, nvec, 0.0);
+			
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					rot.array()[ii][jj] = 1.0;
+				}
+			}
+
+			basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					aa.matrix()[ip][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
+				}
+			}
+
+			operations::rotate_trs(rot, aa);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto ipg = bas.part().local_to_global(ip);
+					CHECK(real(aa.matrix()[ip][jj]) == 0.0);
+					CHECK(imag(aa.matrix()[ip][jj]) == (ipg.value() + 1.0));
+				}
+			}
+			
+		}
 	}
-	
 	
 }
 
