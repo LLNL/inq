@@ -31,20 +31,37 @@
 namespace inq {
 namespace operations {
 
+//////////////////////////////////////////////////////////////////////////////////
+
 template <class MatrixType, class FieldSetType>
 void rotate(MatrixType const & rotation, FieldSetType & phi){
 	
 	CALI_CXX_MARK_SCOPE("operations::rotate");
 
 	namespace blas = boost::multi::blas;
-
 	//OPTIMIZATION: here we don't need to make a full copy.
 	phi.matrix() = blas::gemm(1., phi.matrix(), blas::H(rotation.array()));
-	
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+
+template <class MatrixType, class FieldSetType>
+void rotate_trs(MatrixType const & rotation, FieldSetType & phi){
+	
+	CALI_CXX_MARK_SCOPE("operations::rotate_trs");
+
+	namespace blas = boost::multi::blas;
+	blas::trsm(blas::side::right, blas::filling::upper, 1.0, blas::H(rotation.array()), phi.matrix());
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 
 }
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 
 #ifdef INQ_OPERATIONS_ROTATE_UNIT_TEST
 #undef INQ_OPERATIONS_ROTATE_UNIT_TEST
