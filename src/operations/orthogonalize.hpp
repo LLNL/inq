@@ -27,10 +27,12 @@
 #include <basis/field_set.hpp>
 #include <math/complex.hpp>
 #include <solvers/cholesky.hpp>
+#include <operations/overlap.hpp>
+#include <operations/rotate.hpp>
 
 #include <cstdlib>
 #include <utils/profiling.hpp>
-#include <operations/overlap.hpp>
+
 
 
 namespace inq {
@@ -44,14 +46,9 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	assert(phi.set_comm().size() == 1);
 	
 	auto olap = overlap(phi);
-
 	solvers::cholesky(olap.array());
+	operations::rotate_trs(olap, phi);
 	
-	{
-		CALI_CXX_MARK_SCOPE("orthogonalize_trsm");
-		namespace blas = boost::multi::blas;
-		blas::trsm(blas::side::right, blas::filling::upper, 1., blas::H(olap.array()), phi.matrix());
-	}
 }
 
 template <class FieldSetType1, class FieldSetType2>

@@ -24,6 +24,7 @@
 #include <basis/real_space.hpp>
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
+#include <operations/rotate.hpp>
 #include <solvers/cholesky.hpp>
 #include <solvers/poisson.hpp>
 #include <states/orbital_set.hpp>
@@ -70,10 +71,7 @@ namespace hamiltonian {
 			el.lot_states_comm_.all_reduce_in_place_n(&energy, 1, std::plus<>{});
 			
 			solvers::cholesky(exx_matrix.array());
-			
-			namespace blas = boost::multi::blas;
-
-			blas::trsm(blas::side::right, blas::filling::upper, 1.0, blas::H(exx_matrix.array()), xi_->matrix());
+			operations::rotate_trs(exx_matrix, *xi_);
 			
 			return energy;
 		}
