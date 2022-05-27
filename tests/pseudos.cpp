@@ -53,11 +53,11 @@ int main(int argc, char ** argv){
 	
 	ground_state::initial_guess(ions, electrons);
 
-  auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::conjugate_gradient());
+  auto result = ground_state::calculate(ions, electrons, input::interaction::pbe());
 
-  energy_match.check("total energy",        result.energy.total()    ,    -6.865720746337);
-  energy_match.check("kinetic energy",      result.energy.kinetic()  ,     3.176990908258);
-  energy_match.check("eigenvalues",         result.energy.eigenvalues,    -1.404855551387);
+  energy_match.check("total energy",        result.energy.total()    ,    -6.865764722606);
+  energy_match.check("kinetic energy",      result.energy.kinetic()  ,     3.176961020786);
+  energy_match.check("eigenvalues",         result.energy.eigenvalues,    -1.404899722467);
 	energy_match.check("Hartree energy",      result.energy.hartree,         4.371246797420);
 	energy_match.check("external energy",     result.energy.external,      -11.993844933515);
 	energy_match.check("non-local energy",    result.energy.nonlocal,        0.494162047716);
