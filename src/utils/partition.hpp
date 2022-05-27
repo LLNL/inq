@@ -254,7 +254,42 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 	SECTION("Small sizes"){
 		for(int ii = 0; ii < 20; ii++) inq::utils::partition part(ii, comm);
 	}
+
+	SECTION("Check partition sizes 16 in 4"){
+		inq::utils::partition part(16, 4, 0);
+
+		CHECK(part.block_size() == 4);
+		CHECK(part.local_size() == 4);
+		CHECK(part.local_size(0) == 4);
+		CHECK(part.local_size(1) == 4);
+		CHECK(part.local_size(2) == 4);
+		CHECK(part.local_size(3) == 4);
+	}
 	
+	SECTION("Check partition sizes 16 in 5"){
+		inq::utils::partition part(16, 5, 0);
+
+		CHECK(part.block_size() == 4);
+		CHECK(part.local_size() == 4);
+		CHECK(part.local_size(0) == 4);
+		CHECK(part.local_size(1) == 4);
+		CHECK(part.local_size(2) == 4);
+		CHECK(part.local_size(3) == 4);
+		CHECK(part.local_size(4) == 0);
+	}
+
+	SECTION("Check partition sizes 17 in 5"){
+		inq::utils::partition part(17, 5, 0);
+
+		CHECK(part.block_size() == 4);
+		CHECK(part.local_size() == 4);
+		CHECK(part.local_size(0) == 4);
+		CHECK(part.local_size(1) == 4);
+		CHECK(part.local_size(2) == 4);
+		CHECK(part.local_size(3) == 4);
+		CHECK(part.local_size(4) == 1);
+	}
+
 }
 #endif
 
