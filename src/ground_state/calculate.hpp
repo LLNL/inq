@@ -27,7 +27,6 @@
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
 #include <mixers/broyden.hpp>
-#include <eigensolvers/conjugate_gradient.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
 #include <input/config.hpp>
@@ -116,10 +115,6 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 					
 			case input::scf::scf_eigensolver::STEEPEST_DESCENT:
 				eigensolvers::steepest_descent(ham, prec, fphi);
-				break;
-					
-			case input::scf::scf_eigensolver::CONJUGATE_GRADIENT:
-				eigensolvers::conjugate_gradient(ham, prec, fphi);
 				break;
 				
 			default:
