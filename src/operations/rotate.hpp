@@ -43,18 +43,13 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 
 	auto copy = phi.matrix();
 
-	auto loc = 0;
 	for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
 
-		if(istep == phi.set_comm().rank()) assert(loc == phi.set_part().start());
-
-		auto block = +blas::gemm(1.0, copy, blas::H(rotation.array()({loc, loc + phi.set_part().local_size(istep)}, {phi.set_part().start(), phi.set_part().end()}))); 
+		auto block = +blas::gemm(1.0, copy, blas::H(rotation.array()({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()}))); 
 
 		assert(block.extensions() == phi.matrix().extensions());
 
 		phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi.matrix().data_elements()), std::plus{}, istep);
-		
-		loc += phi.set_part().local_size(istep);	
 	}
 	
 }
