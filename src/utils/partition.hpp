@@ -83,15 +83,21 @@ public:
 	auto start() const {
 		return start_;
 	}
+
+	auto start(int part) const {
+		return std::min(bsize_*part, size_);
+	}
 	
 	auto end() const {
 		return end_;
 	}
-
+	
+	auto end(int part) const {
+		return std::min(bsize_*(part + 1), size_);
+	}
+	
 	auto local_size(int part) const {
-		auto part_start = std::min(bsize_*part, size_);
-		auto part_end = std::min(bsize_*(part + 1), size_);
-		return part_end - part_start;
+		return end(part) - start(part);
 	}
 	
 	auto parallel() const {
@@ -260,10 +266,22 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 
 		CHECK(part.block_size() == 4);
 		CHECK(part.local_size() == 4);
+		
 		CHECK(part.local_size(0) == 4);
 		CHECK(part.local_size(1) == 4);
 		CHECK(part.local_size(2) == 4);
 		CHECK(part.local_size(3) == 4);
+
+		CHECK(part.start(0) == 0);
+		CHECK(part.start(1) == 4);
+		CHECK(part.start(2) == 8);
+		CHECK(part.start(3) == 12);
+
+		CHECK(part.end(0) == 4);
+		CHECK(part.end(1) == 8);
+		CHECK(part.end(2) == 12);
+		CHECK(part.end(3) == 16);		
+		
 	}
 	
 	SECTION("Check partition sizes 16 in 5"){
@@ -271,11 +289,25 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 
 		CHECK(part.block_size() == 4);
 		CHECK(part.local_size() == 4);
+		
 		CHECK(part.local_size(0) == 4);
 		CHECK(part.local_size(1) == 4);
 		CHECK(part.local_size(2) == 4);
 		CHECK(part.local_size(3) == 4);
 		CHECK(part.local_size(4) == 0);
+
+		CHECK(part.start(0) == 0);
+		CHECK(part.start(1) == 4);
+		CHECK(part.start(2) == 8);
+		CHECK(part.start(3) == 12);
+		CHECK(part.start(4) == 16);
+
+		CHECK(part.end(0) == 4);
+		CHECK(part.end(1) == 8);
+		CHECK(part.end(2) == 12);
+		CHECK(part.end(3) == 16);
+		CHECK(part.end(4) == 16);
+		
 	}
 
 	SECTION("Check partition sizes 17 in 5"){
@@ -283,11 +315,25 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 
 		CHECK(part.block_size() == 4);
 		CHECK(part.local_size() == 4);
+		
 		CHECK(part.local_size(0) == 4);
 		CHECK(part.local_size(1) == 4);
 		CHECK(part.local_size(2) == 4);
 		CHECK(part.local_size(3) == 4);
 		CHECK(part.local_size(4) == 1);
+
+		CHECK(part.start(0) == 0);
+		CHECK(part.start(1) == 4);
+		CHECK(part.start(2) == 8);
+		CHECK(part.start(3) == 12);
+		CHECK(part.start(4) == 16);
+
+		CHECK(part.end(0) == 4);
+		CHECK(part.end(1) == 8);
+		CHECK(part.end(2) == 12);
+		CHECK(part.end(3) == 16);
+		CHECK(part.end(4) == 17);
+		
 	}
 
 }
