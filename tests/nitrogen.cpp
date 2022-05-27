@@ -41,7 +41,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par(), ions, box, input::config{});
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::density_mixing() | input::scf::energy_tolerance(1e-7_Ha) | input::scf::calculate_forces());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::density_mixing() | input::scf::energy_tolerance(1e-8_Ha) | input::scf::calculate_forces());
 
 	for(int iatom = 0; iatom < result.forces.size(); iatom++){
 		printf("Force atom %d = %20.14f %20.14f %20.14f\n", iatom, result.forces[iatom][0], result.forces[iatom][1], result.forces[iatom][2]);
@@ -61,11 +61,11 @@ int main(int argc, char ** argv){
 	
 	energy_match.check("force 1 x",           result.forces[0][0],            -0.000000025966);
 	energy_match.check("force 1 y",           result.forces[0][1],             0.000000017231);
-	energy_match.check("force 1 z",           result.forces[0][2],             0.145730384341);
+	energy_match.check("force 1 z",           result.forces[0][2],             0.145730905464);
 	energy_match.check("force 2 x",           result.forces[1][0],             0.000000035122);
 	energy_match.check("force 2 y",           result.forces[1][1],            -0.000000025695);
-	energy_match.check("force 2 z",           result.forces[1][2],            -0.145731033675);
-
+	energy_match.check("force 2 z",           result.forces[1][2],            -0.145730534902);
+	
 	//		EHRENFEST HASN'T BEEN TESTED YET
 	
 	auto dt = 0.025_atomictime;
