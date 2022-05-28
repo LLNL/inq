@@ -47,42 +47,6 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	operations::rotate_trs(olap, phi);
 }
 
-template <class FieldSetType1, class FieldSetType2>
-void orthogonalize_single(FieldSetType1 & vec, FieldSetType2 const & phi, int num_states = -1){
-
-	if(num_states == 0) return;
-	
-	CALI_CXX_MARK_FUNCTION;
-
-	if(num_states == -1) num_states = phi.set_size();
-		
-	assert(num_states <= phi.set_size());
-
-	namespace blas = boost::multi::blas;
-
-	//the matrix of phi restricted to the vectors we are going to use
-	auto phi_restricted = phi.matrix()({0, phi.basis().local_size()}, {0, num_states});
-
-	math::array<typename FieldSetType1::element_type, 2> olap;
-
-	if(num_states == 1){
-		// avoid a bug in multi by making an explicit copy
-		//   https://gitlab.com/correaa/boost-multi/-/issues/97
-		math::array<typename FieldSetType1::element_type, 2> phi_restricted_copy = phi_restricted;
-		olap = blas::gemm(phi.basis().volume_element(), blas::H(phi_restricted_copy), vec.matrix());
-	} else {
-		//this should be done by gemv, but while multi gets better gemv support we use gemm
-		olap = blas::gemm(phi.basis().volume_element(), blas::H(phi_restricted), vec.matrix());
-	}
-	
-	if(phi.basis().comm().size() > 1){
-		phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(olap.data_elements()), olap.num_elements(), std::plus<>{});
-	}
-
-	vec.matrix() += blas::gemm(-1.0, phi_restricted, olap);
-
-}
-
 }
 }
 
@@ -200,62 +164,6 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 		}
 	}
 	
-	SECTION("single -- Dimension 3"){
-		basis::field_set<basis::real_space, complex> phi(pw, 3);
-		basis::field_set<basis::real_space, complex> vec(pw, 1);
-		
-		operations::randomize(phi);
-		operations::orthogonalize(phi);
-
-		operations::randomize(vec);
-		operations::orthogonalize_single(vec, phi, 1);
-
-		for(int ist = 0; ist < 1; ist++){
-			
-			complex olap = 0.0;
-			
-			for(long ip = 0; ip < phi.basis().local_size(); ip++){
-				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-			}
-
-			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-	
-			CHECK(fabs(olap) < 5e-14);
-		}
-		
-		operations::randomize(vec);
-		operations::orthogonalize_single(vec, phi, 2);
-
-		for(int ist = 0; ist < 2; ist++){
-			
-			complex olap = 0.0;
-			
-			for(long ip = 0; ip < phi.basis().local_size(); ip++){
-				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-			}
-
-			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-	
-			CHECK(fabs(olap) < 5e-14);
-		}
-		
-		operations::randomize(vec);
-		operations::orthogonalize_single(vec, phi);
-
-		for(int ist = 0; ist < 3; ist++){
-			
-			complex olap = 0.0;
-			
-			for(long ip = 0; ip < phi.basis().local_size(); ip++){
-				olap += conj(phi.matrix()[ip][ist])*vec.matrix()[ip][0];
-			}
-
-			phi.basis().comm().all_reduce_in_place_n(&olap, 1, std::plus<>{});
-	
-			CHECK(fabs(olap) < 5e-14);
-		}
-		
-	}
 }
 
 

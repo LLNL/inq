@@ -34,21 +34,12 @@ namespace input {
 
   public:
 
-    enum class scf_eigensolver { STEEPEST_DESCENT, CONJUGATE_GRADIENT };
-    enum class mixing_algo { LINEAR,
-			     PULAY,
-			     BROYDEN
-    };
+    enum class scf_eigensolver { STEEPEST_DESCENT };
+    enum class mixing_algo { LINEAR, PULAY, BROYDEN };
 
     static auto steepest_descent(){
       scf solver;
       solver.eigensolver_ = scf_eigensolver::STEEPEST_DESCENT;
-      return solver;
-    }
-
-    static auto conjugate_gradient(){
-      scf solver;
-      solver.eigensolver_ = scf_eigensolver::CONJUGATE_GRADIENT;
       return solver;
     }
 
@@ -66,9 +57,7 @@ namespace input {
       return mixing_.value_or(0.3);
     }
 
-    enum class mix_field { DENSITY,
-                           POTENTIAL
-    };
+    enum class mix_field { DENSITY, POTENTIAL };
     
     auto static density_mixing() {
       scf solver;
@@ -222,9 +211,9 @@ TEST_CASE("class input::scf", "[input::scf]") {
 
   SECTION("Composition"){
 
-    auto solver = input::scf::conjugate_gradient() | input::scf::mixing(0.05);
-    
-    CHECK(solver.eigensolver() == input::scf::scf_eigensolver::CONJUGATE_GRADIENT);
+    auto solver = input::scf::calculate_forces() | input::scf::mixing(0.05);
+
+		CHECK(solver.calc_forces());
     CHECK(solver.mixing() == 0.05_a);
     
   }

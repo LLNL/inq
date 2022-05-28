@@ -54,7 +54,7 @@ int main(int argc, char ** argv){
 	
 	//REAL SPACE PSEUDO
 	{
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), input::scf::conjugate_gradient());
+		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting());
 		
 		energy_match.check("total energy",     result.energy.total()    , -67.771731167338);
 		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.606535224997);
@@ -67,7 +67,7 @@ int main(int argc, char ** argv){
 
 	//FOURIER SPACE PSEUDO
 	{	
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting() | input::interaction::fourier_pseudo(), input::scf::conjugate_gradient());
+		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting() | input::interaction::fourier_pseudo());
 		
 		energy_match.check("total energy",     result.energy.total()    , -67.771735282066);
 		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.606511739929);
