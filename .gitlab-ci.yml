@@ -605,9 +605,9 @@ intel-mpich:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mkdir -p $PREFIX/build
       - cd $PREFIX/build
-      - export CC=/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icc
-      - export CXX=/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc
-      - export CXXFLAGS="-Wl,-rpath,/opt/intel/oneapi/compiler/2021.2.0/linux/lib/"
+      - export CC=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icc
+      - export CXX=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icpc
+      - export CXXFLAGS="-Wl,-rpath,/opt/intel/oneapi/compiler/latest/linux/lib/"
       - export FC=gfortran
       - time $SRCDIR/configure --prefix=$PREFIX/install --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.mpich
       - make -j 16
@@ -626,6 +626,7 @@ intel-mpich-1p:
       - intel_compiler
     script:
       - PREFIX=`cat intel-mpich-path`
+      - export OMP_NUM_THREADS=1      
       - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
       - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
       - $PREFIX/build/tests/silicon2
@@ -637,6 +638,7 @@ intel-mpich-2p:
       - intel_compiler
     script:
       - PREFIX=`cat intel-mpich-path`
+      - export OMP_NUM_THREADS=1      
       - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
       - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
 
@@ -647,6 +649,7 @@ intel-mpich-3p:
       - intel_compiler
     script:
       - PREFIX=`cat intel-mpich-path`
+      - export OMP_NUM_THREADS=1      
       - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
       - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
 
@@ -657,6 +660,7 @@ intel-mpich-4p:
       - intel_compiler
     script:
       - PREFIX=`cat intel-mpich-path`
+      - export OMP_NUM_THREADS=1
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
 
