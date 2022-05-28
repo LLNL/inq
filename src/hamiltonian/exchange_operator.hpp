@@ -63,11 +63,7 @@ namespace hamiltonian {
 
 			auto exx_matrix = operations::overlap(*xi_, phi);
 
-			double energy = 0.0;
-			auto ediag = exx_matrix.diagonal();
-			
-			for(int ii = 0; ii < phi.local_set_size(); ii++) energy += -0.5*real(hf_occupations[ii]*ediag[ii]);
-
+			double energy = -0.5*real(operations::sum_product(hf_occupations, exx_matrix.diagonal()));
 			el.lot_states_comm_.all_reduce_in_place_n(&energy, 1, std::plus<>{});
 			
 			solvers::cholesky(exx_matrix.array());
