@@ -103,20 +103,6 @@ auto overlap(const FieldSetType & phi){
 	return overlap(phi, phi);
 }
 
-template <class field_type>
-auto overlap_single(const field_type & phi1, const field_type & phi2){
-	CALI_CXX_MARK_SCOPE("overlap_single(2arg)");
-	
-	return integral(phi1, phi2, [](auto t1, auto t2){ return conj(t1)*t2; });
-}
-	
-template <class field_type>
-auto overlap_single(field_type & phi){
-	CALI_CXX_MARK_SCOPE("overlap_single(1arg)");
-			
-	return overlap_single(phi, phi);
-}
-	
 }
 }
 
@@ -244,49 +230,6 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			}
 		}
 
-	}
-
-		
-	SECTION("Overlap single double"){
-			
-		basis::field<basis::trivial, double> aa(bas);
-		basis::field<basis::trivial, double> bb(bas);
-			
-		aa = 2.0;
-		bb = 0.8;
-		
-		CHECK(operations::overlap_single(aa, bb) == 1.6_a);
-			
-		for(int ii = 0; ii < bas.part().local_size(); ii++)	{
-			auto iig = bas.part().local_to_global(ii);
-			aa.linear()[ii] = pow(iig.value() + 1, 2);
-			bb.linear()[ii] = 1.0/(iig.value() + 1);
-		}
-			
-		CHECK(operations::overlap_single(aa, bb) == Approx(0.5*npoint*(npoint + 1.0)*bas.volume_element()));
-			
-	}
-		
-	SECTION("Integral product complex"){
-			
-		basis::field<basis::trivial, complex> aa(bas);
-		basis::field<basis::trivial, complex> bb(bas);
-			
-		aa = complex(2.0, -0.3);
-		bb = complex(0.8, 0.01);
-		
-		CHECK(real(operations::overlap_single(aa, bb)) == 1.597_a);
-		CHECK(imag(operations::overlap_single(aa, bb)) == 0.26_a);
-		
-		for(int ii = 0; ii < bas.part().local_size(); ii++)	{
-			auto iig = bas.part().local_to_global(ii);
-			aa.linear()[ii] = pow(iig.value() + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(iig.value() + 1)));
-			bb.linear()[ii] = 1.0/(iig.value() + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(iig.value() + 1)));
-		}
-
-		CHECK(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
-		CHECK(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
-		
 	}
 
 	SECTION("complex 1x1"){
