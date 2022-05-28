@@ -74,7 +74,7 @@ public:
 
 			CALI_CXX_MARK_SCOPE("preconditioner_apply");
 			
-			gpu::run(phi.set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 
+			gpu::run(phi.local_set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 
 							 [kine = begin(kinetic),
 								phcub = begin(phi.cubic()),
 								point_op = phi.basis().point_op()] GPU_LAMBDA

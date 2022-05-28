@@ -32,16 +32,12 @@ namespace ground_state {
 
 template <class hamiltonian_type, class field_set_type>
 auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi){
-
 	CALI_CXX_MARK_FUNCTION;
 
-	assert(not phi.set_part().parallel());
-	
 	auto subspace_hamiltonian = operations::overlap(phi, ham(phi));
 	auto eigenvalues = operations::diagonalize(subspace_hamiltonian);
 	operations::rotate(subspace_hamiltonian, phi);
-	
-	return eigenvalues;	
+	return +eigenvalues({phi.set_part().start(), phi.set_part().end()});
 }
 
 }

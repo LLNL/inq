@@ -53,11 +53,15 @@ int main(int argc, char ** argv){
 	
 	config conf;
 
-	inq::systems::electrons electrons(env.par(), ions, box, conf);
+	auto comm = boost::mpi3::environment::get_world_instance();
+	auto parstates = comm.size();
+	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
+	
+	inq::systems::electrons electrons(env.par().states(parstates), ions, box, conf);
 
 	inq::ground_state::initial_guess(ions, electrons);
 
-	auto scf_options = scf::conjugate_gradient() | scf::energy_tolerance(1.0e-5_Ha) | scf::density_mixing() | scf::broyden_mixing();	
+	auto scf_options = scf::energy_tolerance(1.0e-5_Ha) | scf::density_mixing() | scf::broyden_mixing();	
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::dft(), scf_options);
 	
 	match.check("total energy",        result.energy.total(),       -25.637012688764);

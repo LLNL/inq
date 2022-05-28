@@ -40,17 +40,14 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 	const int num_steps = 5;
 
 	for(int istep = 0; istep < num_steps; istep++){
-			
-		//calculate the residual
-			
+
 		auto residual = ham(phi);
-			
 		auto eigenvalues = operations::overlap_diagonal(residual, phi);
 		auto norm =	operations::overlap_diagonal(phi);
 			
 		auto lambda = eigenvalues;
 			
-		gpu::run(phi.set_size(),
+		gpu::run(phi.local_set_size(),
 						 [lam = begin(lambda), nor = begin(norm)]
 						 GPU_LAMBDA (auto ist){
 							 lam[ist] = lam[ist]/(-real(nor[ist]));
@@ -60,11 +57,8 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 
 		prec(residual);
 			
-		//now calculate the step size
 		auto hresidual = ham(residual);
-
-		auto mm = math::array<typename field_set_type::element_type, 2>({6, phi.set_size()});
-			
+		auto mm = math::array<typename field_set_type::element_type, 2>({6, phi.local_set_size()});
 		mm[0] = operations::overlap_diagonal(residual, residual);
 		mm[1] = operations::overlap_diagonal(phi, residual);
 		mm[2] = operations::overlap_diagonal(residual, hresidual);
@@ -72,7 +66,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 		mm[4] = eigenvalues;
 		mm[5] = norm;
 		
-		gpu::run(phi.set_size(),
+		gpu::run(phi.local_set_size(),
 						 [m = begin(mm), lam = begin(lambda)]
 						 GPU_LAMBDA (auto ist){
 							 auto ca = real(m[0][ist]*m[3][ist] - m[2][ist]*m[1][ist]);
@@ -86,11 +80,9 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 							 } else {
 								 lam[ist] = complex(2.0*cc/den, 0.0);
 							 }
-							 
 						 });
 		
 		operations::shift(1.0, lambda, residual, phi);
-
 	}
 
 	operations::orthogonalize(phi);
@@ -167,7 +159,7 @@ TEST_CASE("eigensolvers::steepest_descent", "[eigensolvers::steepest_descent]") 
 			/*
 				tfm::format(std::cout, "  Iteration %4d:\n", iter);
 				
-				for(int ivec = 0; ivec < phi.set_size(); ivec++){
+				for(int ivec = 0; ivec < phi.local_set_size(); ivec++){
 				tfm::format(std::cout, "    state %4d  evalue = %18.12f  res = %15.10e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
 				}
 			*/
@@ -223,7 +215,7 @@ TEST_CASE("eigensolvers::steepest_descent", "[eigensolvers::steepest_descent]") 
 			operations::shift(eigenvalues, phi, residual, -1.0);
 			auto normres = operations::overlap_diagonal(residual);
 			
-			for(int ivec = 0; ivec < phi.set_size(); ivec++){
+			for(int ivec = 0; ivec < phi.local_set_size(); ivec++){
 				tfm::format(std::cout, " state %4d  evalue = %18.12f  res = %5.0e\n", ivec + 1, real(eigenvalues[ivec]), real(normres[ivec]));
 			}
 		}

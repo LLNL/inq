@@ -40,15 +40,11 @@ namespace operations {
 
 template <class field_set_type>
 void orthogonalize(field_set_type & phi, bool nocheck = false){
-
 	CALI_CXX_MARK_FUNCTION;
 
-	assert(phi.set_comm().size() == 1);
-	
 	auto olap = overlap(phi);
 	solvers::cholesky(olap.array());
 	operations::rotate_trs(olap, phi);
-	
 }
 
 template <class FieldSetType1, class FieldSetType2>
