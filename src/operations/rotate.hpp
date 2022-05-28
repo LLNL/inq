@@ -115,10 +115,6 @@ TEST_CASE("function operations::rotate", "[operations::rotate]") {
 		
 		basis::trivial bas(npoint, basis_comm);
 
-		/*
-			
-			Disabled to avoid a bug in multi
-
 		SECTION("rotate double"){
 			
 			math::subspace_matrix<double> rot(cart_comm, nvec, 0.0);
@@ -150,7 +146,6 @@ TEST_CASE("function operations::rotate", "[operations::rotate]") {
 			}
 		
 		}
-		*/
 		
 		SECTION("rotate complex"){
 		
@@ -185,10 +180,6 @@ TEST_CASE("function operations::rotate", "[operations::rotate]") {
 		
 		}
 		
-		/*
-
-			Disabled to avoid a bug in multi
-
 		SECTION("rotate_trs double"){
 			
 			math::subspace_matrix<double> rot(cart_comm, nvec, 0.0);
@@ -219,7 +210,7 @@ TEST_CASE("function operations::rotate", "[operations::rotate]") {
 			}
 			
 		}
-		*/
+		
 		SECTION("rotate_trs complex"){
 			
 			math::subspace_matrix<complex> rot(cart_comm, nvec, 0.0);
