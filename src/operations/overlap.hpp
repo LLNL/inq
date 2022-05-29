@@ -67,23 +67,16 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		if(prev_proc == -1) prev_proc = phi2.set_comm().size() - 1;
 
 		auto ipart = phi1.set_comm().rank();
-		auto loc = phi1.set_part().start();
 		for(int istep = 0; istep < phi1.set_part().comm_size(); istep++){
 			
 			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), rphi(boost::multi::ALL, {0, phi1.set_part().local_size(ipart)}));
-			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {loc, loc + phi1.set_part().local_size(ipart)}) = block;
+			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(ipart), phi1.set_part().end(ipart)}) = block;
 
-			//the last step we don't need to do communicate
-			if(istep == phi1.set_part().comm_size() - 1) break;
-			
+			if(istep == phi1.set_part().comm_size() - 1) break; //the last step we don't need to do communicate
 			MPI_Sendrecv_replace(raw_pointer_cast(rphi.data_elements()), rphi.num_elements(), mpi_type, prev_proc, istep, next_proc, istep, phi1.set_comm().get(), MPI_STATUS_IGNORE);
 			
-			loc += phi1.set_part().local_size(ipart);
 			ipart++;
-			if(ipart == phi1.set_comm().size()) {
-				ipart = 0;
-				loc = 0;
-			}
+			if(ipart == phi1.set_comm().size()) ipart = 0;
 		}
 
 		if(phi1.full_comm().size() > 1) {
@@ -103,20 +96,6 @@ auto overlap(const FieldSetType & phi){
 	return overlap(phi, phi);
 }
 
-template <class field_type>
-auto overlap_single(const field_type & phi1, const field_type & phi2){
-	CALI_CXX_MARK_SCOPE("overlap_single(2arg)");
-	
-	return integral(phi1, phi2, [](auto t1, auto t2){ return conj(t1)*t2; });
-}
-	
-template <class field_type>
-auto overlap_single(field_type & phi){
-	CALI_CXX_MARK_SCOPE("overlap_single(1arg)");
-			
-	return overlap_single(phi, phi);
-}
-	
 }
 }
 
@@ -244,49 +223,6 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 			}
 		}
 
-	}
-
-		
-	SECTION("Overlap single double"){
-			
-		basis::field<basis::trivial, double> aa(bas);
-		basis::field<basis::trivial, double> bb(bas);
-			
-		aa = 2.0;
-		bb = 0.8;
-		
-		CHECK(operations::overlap_single(aa, bb) == 1.6_a);
-			
-		for(int ii = 0; ii < bas.part().local_size(); ii++)	{
-			auto iig = bas.part().local_to_global(ii);
-			aa.linear()[ii] = pow(iig.value() + 1, 2);
-			bb.linear()[ii] = 1.0/(iig.value() + 1);
-		}
-			
-		CHECK(operations::overlap_single(aa, bb) == Approx(0.5*npoint*(npoint + 1.0)*bas.volume_element()));
-			
-	}
-		
-	SECTION("Integral product complex"){
-			
-		basis::field<basis::trivial, complex> aa(bas);
-		basis::field<basis::trivial, complex> bb(bas);
-			
-		aa = complex(2.0, -0.3);
-		bb = complex(0.8, 0.01);
-		
-		CHECK(real(operations::overlap_single(aa, bb)) == 1.597_a);
-		CHECK(imag(operations::overlap_single(aa, bb)) == 0.26_a);
-		
-		for(int ii = 0; ii < bas.part().local_size(); ii++)	{
-			auto iig = bas.part().local_to_global(ii);
-			aa.linear()[ii] = pow(iig.value() + 1, 2)*exp(complex(0.0, -M_PI/8 + 2.0*M_PI/(iig.value() + 1)));
-			bb.linear()[ii] = 1.0/(iig.value() + 1)*exp(complex(0.0, M_PI/8 + 2.0*M_PI/(iig.value() + 1)));
-		}
-
-		CHECK(real(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
-		CHECK(imag(operations::overlap_single(aa, bb)) == Approx(sqrt(2.0)*0.25*npoint*(npoint + 1.0)*bas.volume_element()));
-		
 	}
 
 	SECTION("complex 1x1"){
