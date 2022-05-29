@@ -38,17 +38,20 @@ public:
   
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size):
     comm_(comm),
-    array_({size, size}){
+    array_({size, size}),
+		part_(size, comm){
   }
 
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size, Type const & ival):
     comm_(comm),
-    array_({size, size}, ival){
+    array_({size, size}, ival),
+		part_(size, comm){
   }
   
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, array_type && mat):
     comm_(comm),
-    array_(std::move(mat)){
+    array_(std::move(mat)),
+		part_(array_.size(), comm){
   }
 
   auto size() const {
@@ -64,10 +67,11 @@ public:
   }
 
   math::array<Type, 1> diagonal() const {
-    math::array<Type, 1> diag(size());
-    gpu::run(size(), [dia = begin(diag), arr = begin(array_)] GPU_LAMBDA (auto ii){
-               dia[ii] = arr[ii][ii];
-             });
+    math::array<Type, 1> diag(part_.local_size());
+    gpu::run(part_.local_size(), [dia = begin(diag), arr = begin(array_), pa = part_] GPU_LAMBDA (auto ii){
+			auto iig = pa.start() + ii;
+			dia[ii] = arr[iig][iig];
+		});
     return diag;
   }
 
@@ -79,6 +83,7 @@ private:
 
   mutable boost::mpi3::cartesian_communicator<2> comm_;
   array_type array_;
+	utils::partition part_;
   
 };
 
