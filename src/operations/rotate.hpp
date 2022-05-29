@@ -50,7 +50,8 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 			auto block = +blas::gemm(1.0, copy, blas::H(rotation.array()({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()}))); 
 			
 			assert(block.extensions() == phi.matrix().extensions());
-			
+
+			CALI_CXX_MARK_SCOPE("operations::rotate(2arg)_reduce");
 			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi.matrix().data_elements()), std::plus{}, istep);
 		}
 
@@ -88,7 +89,8 @@ void rotate(MatrixType const & rotation, FieldSetType const & phi, FieldSetType 
 									 blo[ip][ist] += beta*rot[ip][ist];
 								 });
 			}
-			
+
+			CALI_CXX_MARK_SCOPE("operations::rotate(5arg)_reduce");
 			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi.matrix().data_elements()), std::plus{}, istep);
 		}
 	}
