@@ -67,23 +67,16 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		if(prev_proc == -1) prev_proc = phi2.set_comm().size() - 1;
 
 		auto ipart = phi1.set_comm().rank();
-		auto loc = phi1.set_part().start();
 		for(int istep = 0; istep < phi1.set_part().comm_size(); istep++){
 			
 			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), rphi(boost::multi::ALL, {0, phi1.set_part().local_size(ipart)}));
-			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {loc, loc + phi1.set_part().local_size(ipart)}) = block;
+			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(ipart), phi1.set_part().end(ipart)}) = block;
 
-			//the last step we don't need to do communicate
-			if(istep == phi1.set_part().comm_size() - 1) break;
-			
+			if(istep == phi1.set_part().comm_size() - 1) break; //the last step we don't need to do communicate
 			MPI_Sendrecv_replace(raw_pointer_cast(rphi.data_elements()), rphi.num_elements(), mpi_type, prev_proc, istep, next_proc, istep, phi1.set_comm().get(), MPI_STATUS_IGNORE);
 			
-			loc += phi1.set_part().local_size(ipart);
 			ipart++;
-			if(ipart == phi1.set_comm().size()) {
-				ipart = 0;
-				loc = 0;
-			}
+			if(ipart == phi1.set_comm().size()) ipart = 0;
 		}
 
 		if(phi1.full_comm().size() > 1) {
