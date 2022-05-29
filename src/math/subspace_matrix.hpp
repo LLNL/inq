@@ -23,6 +23,7 @@
 
 #include <math/array.hpp>
 #include <gpu/run.hpp>
+#include <utils/partition.hpp>
 
 #include <mpi3/cartesian_communicator.hpp>
 
@@ -39,19 +40,19 @@ public:
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size):
     comm_(comm),
     array_({size, size}),
-		part_(size, comm){
+		part_(size, comm.axis(0)){
   }
 
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size, Type const & ival):
     comm_(comm),
     array_({size, size}, ival),
-		part_(size, comm){
+		part_(size, comm.axis(0)){
   }
   
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, array_type && mat):
     comm_(comm),
     array_(std::move(mat)),
-		part_(array_.size(), comm){
+		part_(array_.size(), comm.axis(0)){
   }
 
   auto size() const {

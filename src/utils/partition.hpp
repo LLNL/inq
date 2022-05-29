@@ -23,9 +23,11 @@
 
 
 #include <utils/global_index.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 #include <mpi3/communicator.hpp>
 #include <mpi3/environment.hpp>
+#include <mpi3/detail/datatype.hpp>
 
 #include <cassert>
 #include <array>
@@ -126,6 +128,33 @@ public:
 	
 	auto location(long global_i) const {
 		return global_i/bsize_;
+	}
+
+	template <class ArrayType>
+	auto gather(ArrayType const & array, boost::mpi3::communicator & comm, int root) const {
+		if(comm.size() == 1) {
+			return array;
+		} else {
+
+			ArrayType ret;
+
+			auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
+
+			std::vector<int> recvcounts(comm.size());
+			std::vector<int> displs(comm.size());
+
+			if(comm.rank() == root){
+				ret.reextent(size_);
+				for(int ipart = 0; ipart < comm.size(); ipart++){
+					recvcounts[ipart] = local_size(ipart);
+					displs[ipart] = start(ipart);
+				}
+			}
+			
+			MPI_Gatherv(raw_pointer_cast(array.data_elements()), local_size(), mpi_type, raw_pointer_cast(ret.data_elements()), recvcounts.data(), displs.data(), mpi_type, root, comm.get());
+
+			return ret;
+		}
 	}
 	
 protected:
