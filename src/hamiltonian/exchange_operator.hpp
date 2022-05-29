@@ -158,7 +158,7 @@ namespace hamiltonian {
 			namespace blas = boost::multi::blas;
 
 			auto olap = operations::overlap(*xi_, phi);
-			exxphi.matrix() += blas::gemm(-1.0, xi_->matrix(), blas::H(olap.array()));
+			operations::rotate(olap, *xi_, exxphi, -1.0, 1.0);
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
