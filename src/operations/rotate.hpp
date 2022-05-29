@@ -67,13 +67,32 @@ void rotate(MatrixType const & rotation, FieldSetType const & phi, FieldSetType 
 
 	CALI_CXX_MARK_SCOPE("operations::rotate(5arg)");
 
-	//this not the most efficient implementation since it copies too much
-	auto phicopy = phi;
-	rotate(rotation, phicopy);
-	gpu::run(phi.local_set_size(), phi.basis().local_size(),
-					 [ph = begin(phicopy.matrix()), rot = begin(rotphi.matrix()), alpha, beta] GPU_LAMBDA (auto ist, auto ip){
-						 rot[ip][ist] = beta*rot[ip][ist] + alpha*ph[ip][ist];
-					 });
+	
+	if(not phi.set_part().parallel()){
+
+		assert(beta == 1.0); //there is a bug in multi that doesn't allow us to use a general value
+		// blas::gemm(alpha, phi.matrix(), blas::H(rotation.array(), beta, rotphi.matrix())); // <- this doesn't work on the GPU
+		rotphi.matrix() += blas::gemm(alpha, phi.matrix(), blas::H(rotation.array()));
+		
+	} else {
+		
+		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
+				
+			auto block = +blas::gemm(alpha, phi.matrix(), blas::H(rotation.array()({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()})));
+			
+			assert(block.extensions() == phi.matrix().extensions());
+
+			if(istep == rotphi.set_comm().rank() and beta != 0.0){
+				gpu::run(phi.local_set_size(), phi.basis().local_size(),
+								 [blo = begin(block), rot = begin(rotphi.matrix()), beta] GPU_LAMBDA (auto ist, auto ip){
+									 blo[ip][ist] += beta*rot[ip][ist];
+								 });
+			}
+			
+			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi.matrix().data_elements()), std::plus{}, istep);
+		}
+	}
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////////
