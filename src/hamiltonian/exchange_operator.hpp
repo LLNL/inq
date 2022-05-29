@@ -46,6 +46,8 @@ namespace hamiltonian {
 			if(exchange_coefficient_ != 0.0) xi_.emplace(basis, num_hf_orbitals, std::move(comm));		
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+
 		template <class ElectronsType>
 		double update(ElectronsType const & el){
 			if(not enabled()) return 0.0;
@@ -72,6 +74,8 @@ namespace hamiltonian {
 			return energy;
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+		
 		auto direct(const states::orbital_set<basis::real_space, complex> & phi, double scale = 1.0) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
 			exxphi.fields() = 0.0;
@@ -79,6 +83,8 @@ namespace hamiltonian {
 			return exxphi;
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+		
 		template <class BasisType, class HFType, class HFOccType, class PhiType, class ExxphiType>
 		void block_exchange(double factor, BasisType const & basis, HFType const & hf, HFOccType const & hfocc, PhiType const & phi, ExxphiType & exxphi) const {
 
@@ -106,6 +112,8 @@ namespace hamiltonian {
 				}
 			}
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 		
 		void direct(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi, double scale = 1.0) const {
 			if(not enabled()) return;
@@ -116,12 +124,16 @@ namespace hamiltonian {
 			block_exchange(factor, phi.basis(), hf_orbitals->matrix(), hf_occupations, phi.matrix(), exxphi.matrix());
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+		
 		auto ace(const states::orbital_set<basis::real_space, complex> & phi) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
 			exxphi.fields() = 0.0;
 			ace(phi, exxphi);
 			return exxphi;
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 		
 		auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
@@ -130,12 +142,16 @@ namespace hamiltonian {
 			return exxphi;
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+
 		void operator()(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
 			if(not enabled()) return;
 
 			if(use_ace_) ace(phi, exxphi);
 			else direct(phi, exxphi);
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 		
 		void ace(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {			
 			if(not enabled()) return;
@@ -144,10 +160,14 @@ namespace hamiltonian {
 			auto olap = operations::overlap(*xi_, phi);
 			exxphi.matrix() += blas::gemm(-1.0, xi_->matrix(), blas::H(olap.array()));
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 		
 		bool enabled() const {
 			return hf_orbitals.has_value() or xi_.has_value();
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 
 	private:
 		math::array<double, 1> hf_occupations;
