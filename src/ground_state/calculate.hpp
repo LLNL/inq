@@ -163,16 +163,24 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			res.energy.hf_exchange = ecalc.hf_exchange_;
 
 			auto energy_diff = (res.energy.eigenvalues - old_energy)/ions.geo().num_atoms();
-				
+
 			if(solver.verbose_output() and console){
 				console->info("SCF iter {} : e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
 											iiter, res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_conv_);
-					
-				for(int istate = 0; istate < electrons.states_.num_states(); istate++){
-					for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
+			}
+			
+			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
+
+				auto comm = electrons.lot()[ilot].fields().set_comm();
+				
+				auto all_eigenvalues = electrons.lot()[ilot].fields().set_part().gather(+ecalc.eigenvalues_[ilot],comm, 0);
+				auto all_occupations = electrons.lot()[ilot].fields().set_part().gather(+electrons.occupations()[ilot], comm, 0);
+				auto all_normres = electrons.lot()[ilot].fields().set_part().gather(+ecalc.normres_[ilot], comm, 0);			
+				
+				if(solver.verbose_output() and console){
+					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
 						console->info("	k-point {:4d} state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-													ilot + 1, istate + 1, electrons.occupations()[ilot][istate]/electrons.lot_weights()[ilot], real(ecalc.eigenvalues_[ilot][istate]), real(ecalc.normres_[ilot][istate])
-													);
+													ilot + 1, istate + 1, all_occupations[istate]/electrons.lot_weights()[ilot], real(all_eigenvalues[istate]), real(all_normres[istate]));
 					}
 				}
 			}
