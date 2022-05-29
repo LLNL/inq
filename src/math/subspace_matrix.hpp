@@ -79,7 +79,11 @@ public:
   auto comm() const {
     return comm_;
   }
-  
+
+	auto & part() const {
+		return part_;
+	}
+	
 private:
 
   mutable boost::mpi3::cartesian_communicator<2> comm_;
@@ -121,8 +125,8 @@ TEST_CASE("math::subspace_matrix", "[math::subspace_matrix]") {
 
   auto dd = mm.diagonal();
 
-  CHECK(dd[0] == 4.0);
-  CHECK(dd[1] == 2.0);
+  if(mm.part().contains(0)) CHECK(dd[mm.part().global_to_local(utils::global_index(0))] == 4.0);
+  if(mm.part().contains(1)) CHECK(dd[mm.part().global_to_local(utils::global_index(1))] == 2.0);	
   
 }
 
