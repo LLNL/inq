@@ -38,13 +38,14 @@ namespace hamiltonian {
   public:
 
 		exchange_operator(const basis::real_space & basis, const int num_hf_orbitals, const double exchange_coefficient, bool const use_ace, boost::mpi3::cartesian_communicator<2> comm):
-			hf_occupations(num_hf_orbitals),
 			exchange_coefficient_(exchange_coefficient),
 			use_ace_(use_ace){
 
 			if(exchange_coefficient_ != 0.0) hf_orbitals.emplace(basis, num_hf_orbitals, comm);	
 			if(exchange_coefficient_ != 0.0) xi_.emplace(basis, num_hf_orbitals, std::move(comm));		
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 
 		template <class ElectronsType>
 		double update(ElectronsType const & el){
@@ -55,7 +56,8 @@ namespace hamiltonian {
 			assert(el.lot_size() == 1);			
 
 			auto & phi = el.lot()[0];
-					
+
+			hf_occupations.reextent(phi.local_set_size());
 			hf_occupations = el.occupations()[0];
 			hf_orbitals->fields() = phi.fields();
 			
@@ -63,11 +65,7 @@ namespace hamiltonian {
 
 			auto exx_matrix = operations::overlap(*xi_, phi);
 
-			double energy = 0.0;
-			auto ediag = exx_matrix.diagonal();
-			
-			for(int ii = 0; ii < phi.local_set_size(); ii++) energy += -0.5*real(hf_occupations[ii]*ediag[ii]);
-
+			double energy = -0.5*real(operations::sum_product(hf_occupations, exx_matrix.diagonal()));
 			el.lot_states_comm_.all_reduce_in_place_n(&energy, 1, std::plus<>{});
 			
 			solvers::cholesky(exx_matrix.array());
@@ -76,6 +74,8 @@ namespace hamiltonian {
 			return energy;
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+		
 		auto direct(const states::orbital_set<basis::real_space, complex> & phi, double scale = 1.0) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
 			exxphi.fields() = 0.0;
@@ -83,28 +83,29 @@ namespace hamiltonian {
 			return exxphi;
 		}
 
-		void direct(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi, double scale = 1.0) const {
-			if(not enabled()) return;
+		//////////////////////////////////////////////////////////////////////////////////
+		
+		template <class BasisType, class HFType, class HFOccType, class PhiType, class ExxphiType>
+		void block_exchange(double factor, BasisType const & basis, HFType const & hf, HFOccType const & hfocc, PhiType const & phi, ExxphiType & exxphi) const {
+
+			auto nst = (~phi).size();
+			auto nhf = (~hf).size();
+			basis::field_set<basis::real_space, complex> rhoij(basis, nst);
 			
-			CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
-			
-			double factor = -0.5*scale*exchange_coefficient_;
-			basis::field_set<basis::real_space, complex> rhoij(phi.fields().basis(), phi.fields().set_size());
-			
-			for(int jj = 0; jj < hf_orbitals->local_set_size(); jj++){
+			for(int jj = 0; jj < nhf; jj++){
 				
 				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_gen_dens");
-					gpu::run(phi.fields().local_set_size(), phi.fields().basis().local_size(),
-									 [rho = begin(rhoij.matrix()), hfo = begin(hf_orbitals->matrix()), ph = begin(phi.fields().matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
+					gpu::run(nst, basis.local_size(),
+									 [rho = begin(rhoij.matrix()), hfo = begin(hf), ph = begin(phi), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
 										 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
 									 });
 				}
 				
 				poisson_solver_.in_place(rhoij);
-
+				
 				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_mul_pot");
-					gpu::run(phi.fields().local_set_size(), phi.fields().basis().local_size(),
-									 [pot = begin(rhoij.matrix()), hfo = begin(hf_orbitals->matrix()), exph = begin(exxphi.fields().matrix()), occ = begin(hf_occupations), jj, factor]
+					gpu::run(nst, basis.local_size(),
+									 [pot = begin(rhoij.matrix()), hfo = begin(hf), exph = begin(exxphi), occ = begin(hfocc), jj, factor]
 									 GPU_LAMBDA (auto ist, auto ipoint){
 										 exph[ipoint][ist] += factor*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
 									 });
@@ -112,12 +113,57 @@ namespace hamiltonian {
 			}
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+		
+		void direct(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi, double scale = 1.0) const {
+			if(not enabled()) return;
+			
+			CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
+			
+			double factor = -0.5*scale*exchange_coefficient_;
+
+			if(not hf_orbitals->set_part().parallel()){
+				block_exchange(factor, phi.basis(), hf_orbitals->matrix(), hf_occupations, phi.matrix(), exxphi.matrix());
+			} else {
+
+				auto mpi_type = boost::mpi3::detail::basic_datatype<complex>();
+ 
+				math::array<complex, 2> rhfo({hf_orbitals->basis().local_size(), hf_orbitals->set_part().block_size()}, 0.0);
+				rhfo(boost::multi::ALL, {0, hf_orbitals->set_part().local_size()}) = hf_orbitals->matrix();
+
+				math::array<complex, 1> roccs(hf_orbitals->set_part().block_size(), 0.0);
+				roccs({0, hf_orbitals->set_part().local_size()}) = hf_occupations;
+				
+				auto next_proc = phi.set_comm().rank() + 1;
+				if(next_proc == phi.set_comm().size()) next_proc = 0;
+				auto prev_proc = phi.set_comm().rank() - 1;
+				if(prev_proc == -1) prev_proc = phi.set_comm().size() - 1;
+
+				auto ipart = hf_orbitals->set_comm().rank();
+				for(int istep = 0; istep < hf_orbitals->set_part().comm_size(); istep++){
+					block_exchange(factor, phi.basis(), rhfo(boost::multi::ALL, {0, hf_orbitals->set_part().local_size(ipart)}), roccs, phi.matrix(), exxphi.matrix());
+
+					if(istep == hf_orbitals->set_part().comm_size() - 1) break; //the last step we don't need to do communicate
+					MPI_Sendrecv_replace(raw_pointer_cast(rhfo.data_elements()), rhfo.num_elements(), mpi_type, prev_proc, istep, next_proc, istep, hf_orbitals->set_comm().get(), MPI_STATUS_IGNORE);
+					MPI_Sendrecv_replace(raw_pointer_cast(roccs.data_elements()), roccs.num_elements(), mpi_type, prev_proc, istep, next_proc, istep, hf_orbitals->set_comm().get(), MPI_STATUS_IGNORE);
+			
+					ipart++;
+					if(ipart == hf_orbitals->set_comm().size()) ipart = 0;
+				}
+
+			}
+		}
+
+		//////////////////////////////////////////////////////////////////////////////////
+		
 		auto ace(const states::orbital_set<basis::real_space, complex> & phi) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
 			exxphi.fields() = 0.0;
 			ace(phi, exxphi);
 			return exxphi;
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 		
 		auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
@@ -126,24 +172,32 @@ namespace hamiltonian {
 			return exxphi;
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+
 		void operator()(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
 			if(not enabled()) return;
 
 			if(use_ace_) ace(phi, exxphi);
 			else direct(phi, exxphi);
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 		
 		void ace(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {			
 			if(not enabled()) return;
 			namespace blas = boost::multi::blas;
 
 			auto olap = operations::overlap(*xi_, phi);
-			exxphi.matrix() += blas::gemm(-1.0, xi_->matrix(), blas::H(olap.array()));
+			operations::rotate(olap, *xi_, exxphi, -1.0, 1.0);
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 		
 		bool enabled() const {
 			return hf_orbitals.has_value() or xi_.has_value();
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
 
 	private:
 		math::array<double, 1> hf_occupations;

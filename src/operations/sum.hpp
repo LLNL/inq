@@ -48,13 +48,14 @@ auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op)
 
 	assert(phi1.size() == phi2.size());
 	
-	const typename array1_type::element initial = 0.0;
-	//OPTIMIZATION we should use std::transform_reduce here, but it is not available in C++14
+	using return_type = decltype(op(phi1[0], phi2[0]));
+
+	return_type initial = 0.0;
 	return std::inner_product(phi1.begin(), phi1.end(), phi2.begin(), initial, std::plus<>(), op);
 }
 
-template <class field_type>
-auto sum_product(const field_type & phi1, const field_type & phi2){
+template <class ArrayType1, class ArrayType2>
+auto sum_product(ArrayType1 & phi1, ArrayType2 const & phi2){
 	return sum(phi1, phi2, std::multiplies<>());
 }
 	

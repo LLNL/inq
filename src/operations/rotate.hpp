@@ -37,7 +37,7 @@ namespace operations {
 template <class MatrixType, class FieldSetType>
 void rotate(MatrixType const & rotation, FieldSetType & phi){
 	
-	CALI_CXX_MARK_SCOPE("operations::rotate");
+	CALI_CXX_MARK_SCOPE("operations::rotate(2arg)");
 
 	namespace blas = boost::multi::blas;
 
@@ -58,6 +58,22 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 		phi.matrix() = blas::gemm(1., phi.matrix(), blas::H(rotation.array()));
 	}
 	
+}
+//////////////////////////////////////////////////////////////////////////////////
+
+template <class MatrixType, class FieldSetType>
+void rotate(MatrixType const & rotation, FieldSetType const & phi, FieldSetType & rotphi, typename FieldSetType::element_type const & alpha = 1.0, typename FieldSetType::element_type const & beta = 0.0){
+	namespace blas = boost::multi::blas;
+
+	CALI_CXX_MARK_SCOPE("operations::rotate(5arg)");
+
+	//this not the most efficient implementation since it copies too much
+	auto phicopy = phi;
+	rotate(rotation, phicopy);
+	gpu::run(phi.local_set_size(), phi.basis().local_size(),
+					 [ph = begin(phicopy.matrix()), rot = begin(rotphi.matrix()), alpha, beta] GPU_LAMBDA (auto ist, auto ip){
+						 rot[ip][ist] = beta*rot[ip][ist] + alpha*ph[ip][ist];
+					 });
 }
 
 //////////////////////////////////////////////////////////////////////////////////
