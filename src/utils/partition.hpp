@@ -82,23 +82,23 @@ public:
 		return size_;
 	}
 	
-	auto start() const {
+	constexpr auto start() const {
 		return start_;
 	}
 
-	auto start(int part) const {
+	constexpr auto start(int part) const {
 		return std::min(bsize_*part, size_);
 	}
 	
-	auto end() const {
+	constexpr auto end() const {
 		return end_;
 	}
 	
-	auto end(int part) const {
+	constexpr auto end(int part) const {
 		return std::min(bsize_*(part + 1), size_);
 	}
 	
-	auto local_size(int part) const {
+	constexpr auto local_size(int part) const {
 		return end(part) - start(part);
 	}
 	
