@@ -56,15 +56,18 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 		operations::shift(1.0, lambda, phi, residual);
 
 		prec(residual);
-			
-		auto hresidual = ham(residual);
+
 		auto mm = math::array<typename field_set_type::element_type, 2>({6, phi.local_set_size()});
-		mm[0] = operations::overlap_diagonal(residual, residual);
-		mm[1] = operations::overlap_diagonal(phi, residual);
-		mm[2] = operations::overlap_diagonal(residual, hresidual);
-		mm[3] = operations::overlap_diagonal(phi, hresidual);
-		mm[4] = eigenvalues;
-		mm[5] = norm;
+
+		{
+			auto hresidual = ham(residual);
+			mm[0] = operations::overlap_diagonal(residual, residual);
+			mm[1] = operations::overlap_diagonal(phi, residual);
+			mm[2] = operations::overlap_diagonal(residual, hresidual);
+			mm[3] = operations::overlap_diagonal(phi, hresidual);
+			mm[4] = eigenvalues;
+			mm[5] = norm;
+		}
 		
 		gpu::run(phi.local_set_size(),
 						 [m = begin(mm), lam = begin(lambda)]
