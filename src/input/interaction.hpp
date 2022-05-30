@@ -87,11 +87,11 @@ public:
 	}
 		
 	auto exchange() const {
-		return exchange_.value_or(exchange_functional::LDA);
+		return exchange_.value_or(exchange_functional::PBE);
 	}
 
 	auto correlation() const {
-		return correlation_.value_or(correlation_functional::LDA_PZ);
+		return correlation_.value_or(correlation_functional::PBE);
 	}
 
 	static auto pbe() {
@@ -190,8 +190,8 @@ TEST_CASE("class input::interaction", "[input::interaction]") {
     input::interaction inter;
 
 		CHECK(inter.hartree_potential() == true);
-		CHECK(inter.exchange() == input::interaction::exchange_functional::LDA);
-		CHECK(inter.correlation() == input::interaction::correlation_functional::LDA_PZ);
+		CHECK(inter.exchange() == input::interaction::exchange_functional::PBE);
+		CHECK(inter.correlation() == input::interaction::correlation_functional::PBE);
 		CHECK(inter.fourier_pseudo_value() == false);
 		CHECK_THROWS(inter.exchange_coefficient());
   }
