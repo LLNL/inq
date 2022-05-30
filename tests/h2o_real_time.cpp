@@ -61,7 +61,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
 		match.check("ETRS: energy step   0", result.energy[0],   -25.637012688816);
 		match.check("ETRS: energy step  10", result.energy[10],  -25.637012688717);
@@ -73,7 +73,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
 		
 		match.check("CN: energy step   0", result.energy[0],   -25.637012688816);
 		match.check("CN: energy step  10", result.energy[10],  -25.637012688717);
@@ -86,7 +86,7 @@ int main(int argc, char ** argv){
 
 		for(auto phi : electrons.lot()) perturbations::kick({0.1, 0.0, 0.0}, phi.fields());
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
 		{
 			auto dipole_file = std::ofstream("dipole_etrs.dat");
@@ -102,7 +102,7 @@ int main(int argc, char ** argv){
 		
 		for(auto phi : electrons.lot()) perturbations::kick({0.1, 0.0, 0.0}, phi.fields());
 		
-		auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
+		auto result = real_time::propagate<>(ions, electrons, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
 		
 		{
 			auto dipole_file = std::ofstream("dipole_cn.dat");

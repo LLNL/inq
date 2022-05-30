@@ -53,7 +53,7 @@ int main(int argc, char ** argv){
 	
 	electrons.load("al4h1_restart");
 
-	auto result = real_time::propagate<>(ions, electrons, input::interaction::dft(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+	auto result = real_time::propagate<>(ions, electrons, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 
 	energy_match.check("energy step   0", result.energy[0],   -9.798687545590);
 	energy_match.check("energy step  10", result.energy[10],  -9.798687882908);
