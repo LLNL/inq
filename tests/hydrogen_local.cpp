@@ -93,7 +93,7 @@ int main(int argc, char ** argv){
 	// LDA
 	{
 		
-		auto result = inq::ground_state::calculate(ions, electrons);
+		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::lda());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)

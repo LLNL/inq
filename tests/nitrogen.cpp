@@ -41,7 +41,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par(), ions, box, input::config{});
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, input::interaction::dft(), input::scf::density_mixing() | input::scf::energy_tolerance(1e-8_Ha) | input::scf::calculate_forces());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), input::scf::density_mixing() | input::scf::energy_tolerance(1e-8_Ha) | input::scf::calculate_forces());
 
 	for(int iatom = 0; iatom < result.forces.size(); iatom++){
 		printf("Force atom %d = %20.14f %20.14f %20.14f\n", iatom, result.forces[iatom][0], result.forces[iatom][1], result.forces[iatom][2]);
@@ -70,7 +70,7 @@ int main(int argc, char ** argv){
 	
 	auto dt = 0.025_atomictime;
 	
-	auto propagation = real_time::propagate(ions, electrons, input::interaction::dft(), input::rt::num_steps(10) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
+	auto propagation = real_time::propagate(ions, electrons, input::interaction::lda(), input::rt::num_steps(10) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
 		
 	auto ofs = std::ofstream{"td_coordinates.dat"};
 	
