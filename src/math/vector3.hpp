@@ -152,6 +152,11 @@ public:
 		return {vv1[0]*vv2[0], vv1[1]*vv2[1], vv1[2]*vv2[2]};
 	}
 
+	template <class TypeB>
+	friend GPU_FUNCTION vector3<decltype(Type()/TypeB()), Space> operator/(const vector3 & vv1, const vector3<TypeB, Space> & vv2){
+		return {vv1[0]/vv2[0], vv1[1]/vv2[1], vv1[2]/vv2[2]};
+	}
+	
 	//scalar multiplication and division
 private:
 	template<class   > struct is_vector              : std::false_type{};
