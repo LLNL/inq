@@ -37,6 +37,25 @@ int main(int argc, char ** argv){
 	
 	input::environment env(argc, argv);
 
+	int pardomains = 1;
+	
+	{
+		int opt;
+		while ((opt = getopt(argc, argv, "p:?gs:")) != EOF){
+			switch(opt){
+			case 'p':
+				pardomains = atoi(optarg);
+				break;
+				case '?':
+				std::cerr << "usage is " << std::endl;
+				std::cerr << "-p N to set the number of processors in the domain partition (1 by default)." << std::endl;
+				exit(1);
+			default:
+				abort();
+			}
+		}
+	}
+	
 	auto box = systems::box::cubic(20.0_A).finite().spacing(20.0_A/90);
 	
 	systems::ions ions(box);
@@ -48,7 +67,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 32;
 	conf.temperature = 300.0_K;
 	
-	systems::electrons electrons(env.par(), ions, box, conf);
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, conf);
 	
 	ground_state::initial_guess(ions, electrons);
 	ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(10) | inq::input::scf::mixing(0.3));
