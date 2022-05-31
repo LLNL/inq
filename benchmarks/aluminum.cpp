@@ -44,6 +44,8 @@ int main(int argc, char ** argv){
 	int repy = 2;
 	int repz = 2;
 
+	auto reps = math::vector3{repx, repy, repz};
+	
 	systems::box box = systems::box::orthorhombic(repx*alat, repy*alat, repz*alat).cutoff_energy(30.0_Ha);
 	
 	systems::ions ions(box);
@@ -53,7 +55,7 @@ int main(int argc, char ** argv){
 			for(int iz = 0; iz < repz; iz++){
 				frac_coord base{ix*1.0_crys, iy*1.0_crys, iz*1.0_crys};
 				for(unsigned iatom = 0; iatom < cell.size(); iatom++){
-					ions.insert("Al", (base + cell[iatom]));
+					ions.insert("Al", (base + cell[iatom])/reps);
 				}
 			}
 		}
