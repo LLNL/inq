@@ -40,9 +40,9 @@ int main(int argc, char ** argv){
 	cell.emplace_back(frac_coord{0.5_crys, 0.0_crys, 0.5_crys});
 	cell.emplace_back(frac_coord{0.5_crys, 0.5_crys, 0.0_crys});
 
-	int repx = 2;
-	int repy = 2;
-	int repz = 2;
+	int repx = 4;
+	int repy = 4;
+	int repz = 4;
 
 	auto reps = math::vector3{repx, repy, repz};
 	
