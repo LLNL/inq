@@ -112,6 +112,11 @@ namespace inq {
 			return value_ > quant.value_;
 		}
 		
+		friend std::ostream& operator <<(std::ostream & out, quantity const & qq){
+			out << qq.in_atomic_units();
+			return out;
+		}
+		
 	private:
 
 		element_type value_;
