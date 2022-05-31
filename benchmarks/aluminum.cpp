@@ -26,6 +26,24 @@ int main(int argc, char ** argv){
 	using namespace inq::magnitude;
 	
 	input::environment env(argc, argv);
+
+	int pardomains = 1;
+	
+	{
+		int opt;
+		while ((opt = getopt(argc, argv, "p:?")) != EOF){
+			switch(opt){
+			case 'p':
+				pardomains = atoi(optarg);
+				break;
+			case '?':
+				std::cerr << "usage is \n -p: <value> to set the number of processors in the domain partition." << std::endl;
+				exit(0);
+			default:
+				abort();
+			}
+		}
+	}
 	
 	utils::match energy_match(4.0e-6);
 
@@ -68,7 +86,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 2*repx*repy*repz;
 	conf.temperature = 300.0_K;	
 	
-	systems::electrons electrons(env.par().domains(1), ions, box, conf);
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, conf);
 	
 	auto restart_dir = "aluminum_" + std::to_string(repx) + "_" + std::to_string(repy) + "_" + std::to_string(repz);
 
