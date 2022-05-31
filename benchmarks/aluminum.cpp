@@ -46,7 +46,7 @@ int main(int argc, char ** argv){
 
 	auto reps = math::vector3{repx, repy, repz};
 	
-	systems::box box = systems::box::orthorhombic(repx*alat, repy*alat, repz*alat).cutoff_energy(30.0_Ha);
+	systems::box box = systems::box::orthorhombic(repx*alat, repy*alat, repz*alat).spacing(alat/20);
 	
 	systems::ions ions(box);
 	
@@ -88,7 +88,7 @@ int main(int argc, char ** argv){
 
 	}
 
-	auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0625_atomictime));
+	auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
 	
 	return energy_match.fail();
 	
