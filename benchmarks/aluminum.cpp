@@ -28,16 +28,22 @@ int main(int argc, char ** argv){
 	input::environment env(argc, argv);
 
 	int pardomains = 1;
+	bool groundstate_only = false;
 	
 	{
 		int opt;
-		while ((opt = getopt(argc, argv, "p:?")) != EOF){
+		while ((opt = getopt(argc, argv, "p:?g")) != EOF){
 			switch(opt){
 			case 'p':
 				pardomains = atoi(optarg);
 				break;
+			case 'g':
+				groundstate_only = true;
+				break;
 			case '?':
-				std::cerr << "usage is \n -p: <value> to set the number of processors in the domain partition." << std::endl;
+				std::cerr << "usage is " << std::endl;
+				std::cerr << "-p <value> to set the number of processors in the domain partition." << std::endl;
+				std::cerr << "-g only calculate the ground state." << std::endl;
 				exit(0);
 			default:
 				abort();
@@ -90,14 +96,17 @@ int main(int argc, char ** argv){
 	
 	auto restart_dir = "aluminum_" + std::to_string(repx) + "_" + std::to_string(repy) + "_" + std::to_string(repz);
 
-	auto found_gs = electrons.load(restart_dir);
+	auto not_found_gs = groundstate_only or not electrons.load(restart_dir);
 
-	if(not found_gs){
+	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
+		electrons.save(restart_dir);
 	}
 
-	auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
+	if(not groundstate_only){
+		auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
+	}
 	
 	return energy_match.fail();
 	
