@@ -93,17 +93,8 @@ int main(int argc, char ** argv){
 	auto found_gs = electrons.load(restart_dir);
 
 	if(not found_gs){
-
-		// the parallelization distribution is different for the ground state
-		systems::electrons gs_electrons(env.par(), ions, box, conf);
-		
-		ground_state::initial_guess(ions, gs_electrons);
-		
-		auto result = ground_state::calculate(ions, gs_electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
-		
-		gs_electrons.save(restart_dir);
-		electrons.load(restart_dir);
-
+		ground_state::initial_guess(ions, electrons);
+		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(200));
 	}
 
 	auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
