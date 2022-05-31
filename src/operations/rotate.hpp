@@ -56,7 +56,7 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 		}
 
 	} else {
-		phi.matrix() = blas::gemm(1., phi.matrix(), blas::H(rotation.array()));
+		phi.matrix() = +blas::gemm(1., phi.matrix(), blas::H(rotation.array()));
 	}
 	
 }
