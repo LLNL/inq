@@ -20,6 +20,8 @@
 
 #include <inq/inq.hpp>
 
+#include <sstream>
+
 int main(int argc, char ** argv){
 
 	using namespace inq;
@@ -29,10 +31,14 @@ int main(int argc, char ** argv){
 
 	int pardomains = 1;
 	bool groundstate_only = false;
-	
+	int repx = 2;
+	int repy = 2;
+	int repz = 2;
+
+
 	{
 		int opt;
-		while ((opt = getopt(argc, argv, "p:?g")) != EOF){
+		while ((opt = getopt(argc, argv, "p:?gs:")) != EOF){
 			switch(opt){
 			case 'p':
 				pardomains = atoi(optarg);
@@ -40,11 +46,18 @@ int main(int argc, char ** argv){
 			case 'g':
 				groundstate_only = true;
 				break;
+			case 's':
+				{
+					std::stringstream instr(optarg);
+					instr >> repx >> repy >> repz;
+				}
+				break;
 			case '?':
 				std::cerr << "usage is " << std::endl;
-				std::cerr << "-p <value> to set the number of processors in the domain partition." << std::endl;
+				std::cerr << "-p N to set the number of processors in the domain partition (1 by default)." << std::endl;
 				std::cerr << "-g only calculate the ground state." << std::endl;
-				exit(0);
+				std::cerr << "-s 'N N N' the supercell size in each direction (2 2 2 by default)." << std::endl;
+				exit(1);
 			default:
 				abort();
 			}
@@ -63,10 +76,6 @@ int main(int argc, char ** argv){
 	cell.emplace_back(frac_coord{0.0_crys, 0.5_crys, 0.5_crys});
 	cell.emplace_back(frac_coord{0.5_crys, 0.0_crys, 0.5_crys});
 	cell.emplace_back(frac_coord{0.5_crys, 0.5_crys, 0.0_crys});
-
-	int repx = 4;
-	int repy = 4;
-	int repz = 4;
 
 	auto reps = math::vector3{repx, repy, repz};
 	
