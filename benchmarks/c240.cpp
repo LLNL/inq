@@ -18,17 +18,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <config/path.hpp>
-#include <input/atom.hpp>
-#include <operations/io.hpp>
-#include <utils/match.hpp>
-#include <ground_state/initial_guess.hpp>
-#include <ground_state/calculate.hpp>
-#include <input/environment.hpp>
-#include <input/parse_xyz.hpp>
-#include <config/path.hpp>
+#include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
 
@@ -38,7 +28,8 @@ int main(int argc, char ** argv){
 	input::environment env(argc, argv);
 
 	int pardomains = 1;
-	
+	bool groundstate_only = false;
+
 	{
 		int opt;
 		while ((opt = getopt(argc, argv, "p:?gs:")) != EOF){
@@ -46,9 +37,13 @@ int main(int argc, char ** argv){
 			case 'p':
 				pardomains = atoi(optarg);
 				break;
-				case '?':
+			case 'g':
+				groundstate_only = true;
+				break;
+			case '?':
 				std::cerr << "usage is " << std::endl;
 				std::cerr << "-p N to set the number of processors in the domain partition (1 by default)." << std::endl;
+				std::cerr << "-g only calculate the ground state." << std::endl;				
 				exit(1);
 			default:
 				abort();
@@ -63,15 +58,25 @@ int main(int argc, char ** argv){
 	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "c240.xyz"));
 	
 	input::config conf;
+
+	std::string restart_dir = "c240_restart";
 	
 	conf.extra_states = 32;
 	conf.temperature = 300.0_K;
 	
 	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, conf);
-	
-	ground_state::initial_guess(ions, electrons);
-	ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(10) | inq::input::scf::mixing(0.3));
 
-	electrons.save("c240_restart");
+	auto not_found_gs = groundstate_only or not electrons.load(restart_dir);
+		
+	if(not_found_gs){
+		ground_state::initial_guess(ions, electrons);
+		ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::steepest_descent() | input::scf::scf_steps(10) | input::scf::mixing(0.3));
+		electrons.save(restart_dir);
+	}
+	
+	if(not groundstate_only){
+		auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
+	}
+	
 }
 
