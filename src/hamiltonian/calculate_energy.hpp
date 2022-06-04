@@ -62,16 +62,16 @@ namespace hamiltonian {
 				state_conv_ += operations::sum(el.occupations()[iphi], normres_[iphi], [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
 
 				iphi++;
-      }
-			
-      el.lot_states_comm_.all_reduce_in_place_n(&sum_eigenvalues_, 1, std::plus<>{});
-      el.lot_states_comm_.all_reduce_in_place_n(&nonlocal_, 1, std::plus<>{});
-      el.lot_states_comm_.all_reduce_in_place_n(&hf_exchange_, 1, std::plus<>{});
-      el.lot_states_comm_.all_reduce_in_place_n(&state_conv_, 1, std::plus<>{});
+			}
+
+			el.lot_states_comm_.all_reduce_in_place_n(&sum_eigenvalues_, 1, std::plus<>{});
+			el.lot_states_comm_.all_reduce_in_place_n(&nonlocal_, 1, std::plus<>{});
+			el.lot_states_comm_.all_reduce_in_place_n(&hf_exchange_, 1, std::plus<>{});
+			el.lot_states_comm_.all_reduce_in_place_n(&state_conv_, 1, std::plus<>{});
 
 			state_conv_ /= el.states_.num_electrons();
-			
-    }
+
+	}
 
     math::array<complex, 2> normres_;
     math::array<complex, 2> eigenvalues_;
@@ -84,7 +84,7 @@ namespace hamiltonian {
     double hf_exchange_;
     double state_conv_;
   };
-  
+
 }
 }
 
