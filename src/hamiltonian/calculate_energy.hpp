@@ -33,11 +33,11 @@ namespace hamiltonian {
   public:
 
     template <typename HamType>
-    calculate_energy(HamType const & ham, systems::electrons const & el):
-			normres_({el.lot().size(), el.max_local_size()}),
-			eigenvalues_({el.lot().size(), el.max_local_size()})
-		{
-			
+    calculate_energy(HamType const & ham, systems::electrons const & el) :
+		normres_    ({static_cast<size_type>(el.lot().size()), el.max_local_size()}),
+		eigenvalues_({static_cast<size_type>(el.lot().size()), el.max_local_size()})
+	{
+
 			sum_eigenvalues_ = 0.0;
 			nonlocal_ = 0.0;
 			hf_exchange_ = 0.0;
@@ -62,25 +62,29 @@ namespace hamiltonian {
 				state_conv_ += operations::sum(el.occupations()[iphi], normres_[iphi], [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
 
 				iphi++;
-      }
-			
-      el.lot_states_comm_.all_reduce_in_place_n(&sum_eigenvalues_, 1, std::plus<>{});
-      el.lot_states_comm_.all_reduce_in_place_n(&nonlocal_, 1, std::plus<>{});
-      el.lot_states_comm_.all_reduce_in_place_n(&hf_exchange_, 1, std::plus<>{});
-      el.lot_states_comm_.all_reduce_in_place_n(&state_conv_, 1, std::plus<>{});
+			}
+
+			el.lot_states_comm_.all_reduce_in_place_n(&sum_eigenvalues_, 1, std::plus<>{});
+			el.lot_states_comm_.all_reduce_in_place_n(&nonlocal_, 1, std::plus<>{});
+			el.lot_states_comm_.all_reduce_in_place_n(&hf_exchange_, 1, std::plus<>{});
+			el.lot_states_comm_.all_reduce_in_place_n(&state_conv_, 1, std::plus<>{});
 
 			state_conv_ /= el.states_.num_electrons();
-			
-    }
+
+	}
 
     math::array<complex, 2> normres_;
     math::array<complex, 2> eigenvalues_;
+
+	using size_type = math::array<complex, 2>::size_type;
+	using extensions_type = math::array<complex, 2>::extensions_type;
+
     double sum_eigenvalues_;
     double nonlocal_;
     double hf_exchange_;
     double state_conv_;
   };
-  
+
 }
 }
 
