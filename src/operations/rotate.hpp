@@ -52,7 +52,7 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 			assert(block.extensions() == phi.matrix().extensions());
 
 			CALI_CXX_MARK_SCOPE("operations::rotate(2arg)_reduce");
-			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi.matrix().data_elements()), std::plus{}, istep);
+			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi.matrix().data_elements()), std::plus<>{}, istep);
 		}
 
 	} else {
@@ -91,7 +91,7 @@ void rotate(MatrixType const & rotation, FieldSetType const & phi, FieldSetType 
 			}
 
 			CALI_CXX_MARK_SCOPE("operations::rotate(5arg)_reduce");
-			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi.matrix().data_elements()), std::plus{}, istep);
+			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi.matrix().data_elements()), std::plus<>{}, istep);
 		}
 	}
 	
