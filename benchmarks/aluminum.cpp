@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2022 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -31,8 +31,8 @@ int main(int argc, char ** argv){
 
 	int pardomains = 1;
 	bool groundstate_only = false;
-	math::vector3 reps{2, 2, 2};
-	
+	math::vector3<int> reps{2, 2, 2};
+
 	{
 		int opt;
 		while ((opt = getopt(argc, argv, "p:?gs:")) != EOF){
