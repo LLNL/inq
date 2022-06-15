@@ -29,10 +29,6 @@
 namespace inq {
 namespace basis {
 
-/*
-	This is a class that implements a very simple basis object. Useful for testing.
-*/
-
 class base {
 	
 public:
