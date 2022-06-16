@@ -64,6 +64,11 @@ namespace basis {
 		{
 		}
 
+		real_space(real_space && old, boost::mpi3::communicator && new_comm):
+			real_space(grid(grid(old), new_comm))
+		{
+		}
+
 		class point_operator {
 
 		public:
