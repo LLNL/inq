@@ -85,7 +85,6 @@ public:
 		lot_comm_(lot_subcomm(full_comm_)),
 		lot_states_comm_(lot_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
-		atoms_comm_(states_comm_),
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
 		states_basis_(box, basis_subcomm(full_comm_)),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
@@ -129,7 +128,6 @@ public:
 		lot_comm_(std::move(old_el.lot_comm_)),
 		lot_states_comm_(std::move(old_el.lot_states_comm_)),
 		states_comm_(std::move(old_el.states_comm_)),
-		atoms_comm_(std::move(old_el.atoms_comm_)),
 		states_basis_comm_(std::move(old_el.states_basis_comm_)),
 		states_basis_(std::move(old_el.states_basis_), full_comm_.axis(2)),
 		density_basis_(std::move(old_el.density_basis_), full_comm_.axis(2)),
@@ -269,7 +267,6 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	mutable boost::mpi3::cartesian_communicator<1> lot_comm_;
 	mutable boost::mpi3::cartesian_communicator<2> lot_states_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> states_comm_;
-	mutable boost::mpi3::cartesian_communicator<1> atoms_comm_;
 	mutable boost::mpi3::cartesian_communicator<2> states_basis_comm_;	
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
