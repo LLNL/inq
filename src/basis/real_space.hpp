@@ -53,6 +53,11 @@ namespace basis {
 			
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();		
     }
+		
+		real_space(real_space && old, boost::mpi3::communicator & new_comm):
+			real_space(grid(grid(old), new_comm))
+		{
+		}
 
 		class point_operator {
 
@@ -212,7 +217,13 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
       CHECK(rs.sizes()[0] == 20);
       CHECK(rs.sizes()[1] == 20);
       CHECK(rs.sizes()[2] == 20);
-
+			
+			basis::real_space new_rs(basis::real_space(rs), boost::mpi3::environment::get_self_instance());
+			
+			CHECK(rs.sizes() == new_rs.sizes());
+			CHECK(new_rs.local_sizes() == new_rs.sizes());	
+			CHECK(rs.periodic_dimensions() == new_rs.periodic_dimensions());
+			
     }
 
     SECTION("Parallelepipedic cell"){
