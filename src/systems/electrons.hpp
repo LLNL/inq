@@ -267,7 +267,7 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	mutable boost::mpi3::cartesian_communicator<1> lot_comm_;
 	mutable boost::mpi3::cartesian_communicator<2> lot_states_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> states_comm_;
-	mutable boost::mpi3::cartesian_communicator<2> states_basis_comm_;	
+	mutable boost::mpi3::cartesian_communicator<2> states_basis_comm_;
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
@@ -335,18 +335,18 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		}
 		iphi++;
 	}
-		
+
 	electrons.save("electron_restart");
 	
 	systems::electrons electrons_read(par, ions, box);
 	
 	electrons_read.load("electron_restart");
-
+	
 	CHECK(electrons.lot_size() == electrons_read.lot_size());
 	
 	iphi = 0;
 	for(auto & phi : electrons.lot()) {
-
+		
 		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
 			CHECK(electrons.occupations()[iphi][ist] == electrons_read.occupations()[0][ist]);
 			for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
@@ -356,9 +356,32 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		iphi++;
 	}
 	
-	CHECK(not electrons.load("directory_that_doesnt_exist"));
+	SECTION("Redistribute"){
+		
+		systems::electrons newel(std::move(electrons_read), input::parallelization(comm));
+		
+		newel.save("newel_restart");
+		
+		systems::electrons newel_read(par, ions, box);
+		newel_read.load("newel_restart");
+		
+		CHECK(electrons.lot_size() == newel_read.lot_size());
+		
+		iphi = 0;
+		for(auto & phi : electrons.lot()) {
+			
+			for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
+				CHECK(electrons.occupations()[iphi][ist] == newel_read.occupations()[0][ist]);
+				for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
+					CHECK(phi.fields().matrix()[ip][ist] == newel_read.lot()[iphi].fields().matrix()[ip][ist]);
+				}
+			}
+			iphi++;
+		}
 
-	systems::electrons newel(std::move(electrons), input::parallelization(comm));
+	}
+
+	CHECK(not electrons.load("directory_that_doesnt_exist"));
 	
 }
 
