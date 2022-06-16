@@ -133,7 +133,6 @@ public:
 		density_basis_(std::move(old_el.density_basis_), full_comm_.axis(2)),
 		atomic_pot_(std::move(old_el.atomic_pot_)),
 		states_(std::move(old_el.states_)),
-		lot_(std::move(old_el.lot_)),
 		eigenvalues_(std::move(old_el.eigenvalues_)),
 		occupations_(std::move(old_el.occupations_)),
 		lot_weights_(std::move(old_el.lot_weights_)),
@@ -142,6 +141,18 @@ public:
 		logger_(std::move(old_el.logger_)),
 		lot_part_(std::move(old_el.lot_part_))
 	{
+
+		assert(lot_comm_ == old_el.lot_comm_); //resizing of k points not supported for the moment
+
+		auto iphi = 0;
+		for(auto & oldphi : old_el.lot_){
+			lot_.emplace_back(states_basis_, states_.num_states(), oldphi.kpoint(), states_basis_comm_);
+			lot_[iphi].matrix() = std::move(oldphi.matrix());
+			iphi++;
+		}
+
+		assert(lot_.size() == old_el.lot_.size());
+		
 	}
 
 	void print(const inq::systems::ions & ions){
@@ -359,6 +370,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	SECTION("Redistribute"){
 		
 		systems::electrons newel(std::move(electrons_read), input::parallelization(comm));
+		//		systems::electrons newel(par, ions, box);
 		
 		newel.save("newel_restart");
 		
