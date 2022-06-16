@@ -87,8 +87,7 @@ public:
 		states_comm_(states_subcomm(full_comm_)),
 		atoms_comm_(states_comm_),
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
-		basis_comm_(basis_subcomm(full_comm_)),
-		states_basis_(box, basis_comm_),
+		states_basis_(box, basis_subcomm(full_comm_)),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
@@ -132,7 +131,6 @@ public:
 		states_comm_(std::move(old_el.states_comm_)),
 		atoms_comm_(std::move(old_el.atoms_comm_)),
 		states_basis_comm_(std::move(old_el.states_basis_comm_)),
-		basis_comm_(std::move(old_el.basis_comm_)),
 		states_basis_(std::move(old_el.states_basis_)),
 		density_basis_(std::move(old_el.density_basis_)),
 		atomic_pot_(std::move(old_el.atomic_pot_)),
@@ -212,7 +210,7 @@ public:
 		for(auto & phi : lot()){
 			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
 			operations::io::save(basedir + "/states", phi);
-			if(basis_comm_.root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), +occupations()[iphi]);	
+			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), +occupations()[iphi]);	
 			iphi++;
 		}
 	}
@@ -273,7 +271,6 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	mutable boost::mpi3::cartesian_communicator<1> states_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> atoms_comm_;
 	mutable boost::mpi3::cartesian_communicator<2> states_basis_comm_;	
-	mutable boost::mpi3::cartesian_communicator<1> basis_comm_;
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
