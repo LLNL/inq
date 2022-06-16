@@ -194,12 +194,14 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
 	using math::vector3;
 
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
   {
     
     SECTION("Cubic cell"){
 
 			systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
-      basis::real_space rs(box);
+      basis::real_space rs(box, comm);
 
       CHECK(rs.size() == 8000);
       
@@ -216,7 +218,7 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
     SECTION("Parallelepipedic cell"){
 
 			systems::box box = systems::box::orthorhombic(77.7_b, 14.14_b, 23.25_b).cutoff_energy(37.9423091_Ha);
-      basis::real_space rs(box);
+      basis::real_space rs(box, comm);
 
       CHECK(rs.size() == 536640);
 	    
