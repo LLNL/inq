@@ -68,7 +68,12 @@ namespace basis {
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();
 			
 		}
-
+		
+		grid(grid && old, boost::mpi3::communicator & new_comm):
+			grid(old.cell_, old.nr_, old.spherical_g_grid_, old.double_grid_.enabled(), old.periodic_dimensions_, new_comm)
+		{
+		}
+		
     GPU_FUNCTION const math::vector3<double> & rspacing() const{
       return rspacing_;
     }
@@ -188,7 +193,7 @@ namespace basis {
 		auto & cell() const {
 			return cell_;
 		}		
-		
+
 	protected:
 
 		std::array<inq::utils::partition, 3> cubic_dist_;
@@ -277,7 +282,13 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 	CHECK(gr.symmetric_range_end(2) == 39);	
 
 	CHECK(gr.double_grid().enabled() == false);
- 
+
+	auto new_gr = basis::grid(basis::grid(gr), boost::mpi3::environment::get_self_instance());
+
+	CHECK(gr.sizes() == new_gr.sizes());
+	CHECK(new_gr.local_sizes() == new_gr.sizes());	
+	CHECK(gr.periodic_dimensions() == new_gr.periodic_dimensions());
+	
 }
 #endif
 
