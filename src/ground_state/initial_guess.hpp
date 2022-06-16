@@ -15,7 +15,7 @@ namespace inq {
 namespace ground_state {
 	
 void initial_guess(const systems::ions & ions, systems::electrons & electrons){
-  electrons.density_ = electrons.atomic_pot_.atomic_electronic_density(electrons.density_basis_, ions.cell(), ions.geo());
+  electrons.density_ = electrons.atomic_pot_.atomic_electronic_density(electrons.states_comm_, electrons.density_basis_, ions.cell(), ions.geo());
 
   density::normalize(electrons.density_, electrons.states_.num_electrons());
 

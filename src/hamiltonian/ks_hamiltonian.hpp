@@ -72,6 +72,8 @@ namespace hamiltonian {
 		
 		basis::field<basis::real_space, double> scalar_potential;
 		exchange_operator exchange;
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 		
     ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
 									 const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> comm, bool use_ace = false):
@@ -79,10 +81,8 @@ namespace hamiltonian {
 			exchange(basis, num_hf_orbitals, exchange_coefficient, use_ace, std::move(comm)),
 			non_local_in_fourier_(fourier_pseudo)
 		{
-			
-			scalar_potential = pot.local_potential(basis, cell, geo);
+			scalar_potential = 0.0;
 			update_projectors(basis, cell, pot, geo);
-
     }
 
 		////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,7 +248,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), set_comm);
+	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff());
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 

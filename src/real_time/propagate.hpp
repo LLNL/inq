@@ -50,7 +50,7 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 																											 electrons.states_.num_states(), sc.exx_coefficient(), electrons.states_basis_comm_);
 		hamiltonian::energy energy;
 		
-		sc.update_ionic_fields(ions, electrons.atomic_pot_);
+		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
 		
 		ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
 

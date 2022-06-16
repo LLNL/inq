@@ -90,8 +90,8 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		
 		//the force from the local potential
 		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-			auto ionic_long_range = poisson_solver(electrons.atomic_pot_.ionic_density(electrons.density_basis_, ions.cell(), ions.geo(), iatom));
-			auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.density_basis_, ions.cell(), ions.geo(), iatom);
+			auto ionic_long_range = poisson_solver(electrons.atomic_pot_.ionic_density(electrons.states_comm_, electrons.density_basis_, ions.cell(), ions.geo(), iatom));
+			auto ionic_short_range = electrons.atomic_pot_.local_potential(electrons.states_comm_, electrons.density_basis_, ions.cell(), ions.geo(), iatom);
 
 			auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
 																 loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>
