@@ -124,6 +124,30 @@ public:
 
 	}
 
+	electrons(electrons && old_el, input::parallelization const & new_dist):
+		brillouin_zone_(std::move(old_el.brillouin_zone_)),
+		full_comm_(std::move(old_el.full_comm_)),
+		lot_comm_(std::move(old_el.lot_comm_)),
+		lot_states_comm_(std::move(old_el.lot_states_comm_)),
+		states_comm_(std::move(old_el.states_comm_)),
+		atoms_comm_(std::move(old_el.atoms_comm_)),
+		states_basis_comm_(std::move(old_el.states_basis_comm_)),
+		basis_comm_(std::move(old_el.basis_comm_)),
+		states_basis_(std::move(old_el.states_basis_)),
+		density_basis_(std::move(old_el.density_basis_)),
+		atomic_pot_(std::move(old_el.atomic_pot_)),
+		states_(std::move(old_el.states_)),
+		lot_(std::move(old_el.lot_)),
+		eigenvalues_(std::move(old_el.eigenvalues_)),
+		occupations_(std::move(old_el.occupations_)),
+		lot_weights_(std::move(old_el.lot_weights_)),
+		max_local_size_(std::move(old_el.max_local_size_)),
+		density_(std::move(old_el.density_)),
+		logger_(std::move(old_el.logger_)),
+		lot_part_(std::move(old_el.lot_part_))
+	{
+	}
+
 	void print(const inq::systems::ions & ions){
 		if(full_comm_.root()){
 			logger_ = spdlog::stdout_color_mt("electrons:"+ generate_tiny_uuid());
@@ -340,6 +364,8 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	
 	CHECK(not electrons.load("directory_that_doesnt_exist"));
 
+	systems::electrons newel(std::move(electrons), input::parallelization(comm));
+	
 }
 
 #endif
