@@ -37,6 +37,11 @@ namespace basis {
   class real_space : public grid {
 
   public:
+
+    real_space(systems::box const & box, boost::mpi3::communicator && comm):
+			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodic_dimensions_value(), comm)
+		{
+    }
 		
     real_space(systems::box const & box, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodic_dimensions_value(), comm)
