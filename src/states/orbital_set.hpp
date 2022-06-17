@@ -50,7 +50,8 @@ namespace states {
 		}
 
 		orbital_set(orbital_set && oldset, boost::mpi3::cartesian_communicator<2> new_comm)
-		:orbital_set(std::move(oldset)){
+		:fields_(std::move(oldset.fields_), new_comm),
+			 kpoint_(oldset.kpoint()){
 		}
 		
 		template <class any_type>

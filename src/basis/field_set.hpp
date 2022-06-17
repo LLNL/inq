@@ -82,6 +82,13 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 		}
 
 		field_set(field_set && coeff) = default;
+
+		field_set(field_set && oldset, boost::mpi3::cartesian_communicator<2> & new_comm):
+			field_set(oldset.basis(), oldset.set_size(), new_comm)
+		{
+			matrix_ = std::move(oldset.matrix_);
+		}
+				
 		field_set & operator=(field_set const& other){
 			full_comm_ = other.full_comm_;
 			set_comm_  = other.set_comm_;
