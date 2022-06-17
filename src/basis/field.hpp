@@ -284,7 +284,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	basis::field<basis::real_space, double> red(basis::field<basis::real_space, double>(ff), boost::mpi3::environment::get_self_instance());
 
 	for(long ip = 0; ip < red.basis().local_size(); ip++){
-		utils::global_index ipg(ip);
+		parallel::global_index ipg(ip);
 		if(ff.basis().part().contains(ip)) CHECK(red.linear()[ip] == ff.linear()[ff.basis().part().global_to_local(ipg)]);
 	}
 	

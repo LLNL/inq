@@ -21,16 +21,20 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <utils/raw_pointer_cast.hpp>
-#include <basis/field.hpp>
-#include <basis/field_set.hpp>
-
+#include <gpu/run.hpp>
+#include <math/array.hpp>
 #include <mpi3/communicator.hpp>
 #include <parallel/array_iterator_2d.hpp>
 
 #include <cstdlib> //drand48
 
 namespace inq {
+
+namespace basis {
+template<class Basis, typename Type> class field;
+template<class Basis, typename Type> class field_set;
+}
+
 namespace parallel {
 
 struct remote_points_table {
@@ -274,6 +278,8 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
 #undef INQ_PARALLEL_GET_REMOTE_POINTS_UNIT_TEST
 
 #include <math/vector3.hpp>
+#include <basis/field.hpp>
+#include <basis/field_set.hpp>
 
 #include <catch2/catch_all.hpp>
 #include <mpi3/cartesian_communicator.hpp>
