@@ -73,6 +73,11 @@ namespace basis {
 		field(field && old, boost::mpi3::communicator new_comm)
 			:field(basis_type(std::move(old.basis_), new_comm)){
 
+			if(new_comm == old.basis().comm()){
+				linear_ = std::move(old.linear_);
+				return;
+			}
+			
 			math::array<int, 1> rem_points(basis().local_size());
 			for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
 			linear_ = operations::get_remote_points(old, rem_points);
