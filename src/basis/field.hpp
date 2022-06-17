@@ -30,6 +30,7 @@ OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 #include <utils/raw_pointer_cast.hpp>
 #include <basis/real_space.hpp>
 #include <math/complex.hpp>
+#include <operations/get_remote_points.hpp>
 
 #include <mpi3/environment.hpp>
 
@@ -71,7 +72,10 @@ namespace basis {
 
 		field(field && old, boost::mpi3::communicator new_comm)
 			:field(basis_type(std::move(old.basis_), new_comm)){
-			linear_ = std::move(old.linear_);
+
+			math::array<int, 1> rem_points(basis().local_size());
+			for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
+			linear_ = operations::get_remote_points(old, rem_points);
 		}
 		
 		explicit field(const field & coeff) = default; 		//avoid unadverted copies
@@ -283,6 +287,8 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	
 	basis::field<basis::real_space, double> red(basis::field<basis::real_space, double>(ff), boost::mpi3::environment::get_self_instance());
 
+	CHECK(red.basis().local_size() == red.linear().size());
+	
 	for(long ip = 0; ip < red.basis().local_size(); ip++){
 		parallel::global_index ipg(ip);
 		if(ff.basis().part().contains(ip)) CHECK(red.linear()[ip] == ff.linear()[ff.basis().part().global_to_local(ipg)]);
