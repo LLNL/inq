@@ -83,10 +83,10 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 
 		field_set(field_set && coeff) = default;
 
-		field_set(field_set && oldset, boost::mpi3::cartesian_communicator<2> & new_comm):
+		field_set(field_set && oldset, boost::mpi3::cartesian_communicator<2> new_comm):
 			field_set(oldset.basis(), oldset.set_size(), new_comm)
 		{
-			matrix_ = std::move(oldset.matrix_);
+			//			matrix_ = std::move(oldset.matrix_);
 		}
 				
 		field_set & operator=(field_set const& other){
@@ -373,6 +373,11 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 			CHECK(imag(zff.matrix()[ii][jj]) == 0.0_a);
 		}
 	}
+
+	basis::field_set<basis::real_space, double> red(basis::field_set<basis::real_space, double>(ff), boost::mpi3::cartesian_communicator<2>{comm, {boost::mpi3::fill, 1}});
+
+	CHECK(red.basis().local_size() == red.matrix().size());
+	CHECK(red.local_set_size() == (~red.matrix()).size());
 	
 }
 
