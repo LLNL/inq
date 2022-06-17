@@ -77,7 +77,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		
 	auto old_energy = std::numeric_limits<double>::max();
 		
-	sc.update_ionic_fields(ions, electrons.atomic_pot_);
+	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
 		
 	ham.scalar_potential = sc.ks_potential(electrons.density_, res.energy);
 		
