@@ -29,7 +29,8 @@
 #include <operations/orthogonalize.hpp>
 #include <operations/overlap_diagonal.hpp>
 
-#include <mpi3/ostream.hpp>
+//required for debugging
+//#include <mpi3/ostream.hpp>
 
 namespace inq {
 namespace solvers {
@@ -60,6 +61,7 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 		mm[2] = operations::overlap_diagonal(residual, residual);
 
 		/*
+		//Debugging output
 		boost::mpi3::ostream wout(phi.set_comm());
 		
 		wout << istep << std::flush;
