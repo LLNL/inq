@@ -137,7 +137,7 @@ public:
 		occupations_(std::move(old_el.occupations_)),
 		lot_weights_(std::move(old_el.lot_weights_)),
 		max_local_size_(std::move(old_el.max_local_size_)),
-		density_(std::move(old_el.density_)),
+		density_(std::move(old_el.density_), density_basis_.comm()),
 		logger_(std::move(old_el.logger_)),
 		lot_part_(std::move(old_el.lot_part_))
 	{

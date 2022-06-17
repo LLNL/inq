@@ -69,6 +69,11 @@ namespace basis {
 			return inq::utils::skeleton_wrapper<field<basis_type, element_type>>(*this);
 		}
 
+		field(field && old, boost::mpi3::communicator new_comm)
+			:field(basis_type(std::move(old.basis_), new_comm)){
+			linear_ = std::move(old.linear_);
+		}
+		
 		field(const field & coeff) = delete; 		//avoid unadverted copies
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
