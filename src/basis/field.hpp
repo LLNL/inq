@@ -74,7 +74,7 @@ namespace basis {
 			linear_ = std::move(old.linear_);
 		}
 		
-		field(const field & coeff) = delete; 		//avoid unadverted copies
+		explicit field(const field & coeff) = default; 		//avoid unadverted copies
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
@@ -280,6 +280,13 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	CHECK(std::get<0>(strd) >= std::get<1>(strd));
 	CHECK(std::get<1>(strd) >= std::get<2>(strd));
 	CHECK(std::get<2>(strd) >= std::get<3>(strd));
+	
+	basis::field<basis::real_space, double> red(basis::field<basis::real_space, double>(ff), boost::mpi3::environment::get_self_instance());
+
+	for(long ip = 0; ip < red.basis().local_size(); ip++){
+		utils::global_index ipg(ip);
+		if(ff.basis().part().contains(ip)) CHECK(red.linear()[ip] == ff.linear()[ff.basis().part().global_to_local(ipg)]);
+	}
 	
 }
 
