@@ -146,8 +146,7 @@ public:
 
 		auto iphi = 0;
 		for(auto & oldphi : old_el.lot_){
-			lot_.emplace_back(states_basis_, states_.num_states(), oldphi.kpoint(), states_basis_comm_);
-			lot_[iphi].matrix() = std::move(oldphi.matrix());
+			lot_.emplace_back(std::move(oldphi), states_basis_comm_);
 			iphi++;
 		}
 
