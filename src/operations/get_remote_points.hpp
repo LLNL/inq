@@ -233,6 +233,21 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
   return remote_points;
 }
 
+template <class BasisType, class ElementType, class ArrayType>
+math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, ElementType> const & source, ArrayType const & point_list, ArrayType const & state_list){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	math::array<ElementType, 2> remote_points({point_list.size(), state_list.size()});
+	
+	gpu::run(state_list.size(), point_list.size(),
+					 [rem = begin(remote_points), sou = begin(source.matrix()), poi = begin(point_list), sta = begin(state_list)] GPU_LAMBDA (auto ist, auto ip){
+						 rem[ip][ist] = sou[poi[ip]][sta[ist]];
+					 });
+	
+	return remote_points;
+}
+
 }
 }
 
@@ -272,8 +287,10 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 
 	srand48(500 + 34895783*cart_comm.rank());
 	
-	long const npoints = drand48()*rs.size();
-
+	long const npoints = 1 + drand48()*(rs.size() - 1);
+	assert(npoints > 0);
+	assert(npoints <= rs.size());
+	
 	math::array<long, 1> list(npoints);
 	
 	for(long ip = 0; ip < npoints; ip++){
@@ -281,18 +298,42 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 		assert(list[ip] < rs.size());
 	}
 
-	auto remote_points = operations::get_remote_points(test_field, list);
-	auto remote_points_set = operations::get_remote_points(test_field_set, list);	
+	{
+		auto remote_points = operations::get_remote_points(test_field, list);
+		auto remote_points_set = operations::get_remote_points(test_field_set, list);	
 
-	for(long ip = 0; ip < npoints; ip++){
-		CHECK(double(list[ip]) == Approx(real(remote_points[ip])));
-		CHECK(0.1*double(list[ip]) == Approx(imag(remote_points[ip])));
-		for(int ivec = 0; ivec < nvec; ivec++){
-			CHECK((ivec + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ivec])));
-			CHECK((ivec + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ivec])));
+		for(long ip = 0; ip < npoints; ip++){
+			CHECK(double(list[ip]) == Approx(real(remote_points[ip])));
+			CHECK(0.1*double(list[ip]) == Approx(imag(remote_points[ip])));
+			for(int ivec = 0; ivec < nvec; ivec++){
+				CHECK((ivec + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ivec])));
+				CHECK((ivec + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ivec])));
+			}
 		}
 	}
+	
+	long const nst = 1 + drand48()*(nvec - 1);
+	assert(nst > 0);
+	assert(nst <= nvec);
+		
+	math::array<long, 1> stlist(nst);
+	
+	for(long ist = 0; ist < nst; ist++){
+		stlist[ist] = drand48()*(nvec - 1);
+		assert(stlist[ist] < nvec);
+	}
 
+	auto remote_points_set = operations::get_remote_points(test_field_set, list, stlist);	
+
+	assert(remote_points_set.size() == npoints);
+	assert(remote_points_set.transposed().size() == nst);
+	
+	for(long ip = 0; ip < npoints; ip++){
+		for(long ist = 0; ist < nst; ist++){
+			CHECK((stlist[ist] + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ist])));
+			CHECK((stlist[ist] + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ist])));
+		}
+	}
 	
 }
 
