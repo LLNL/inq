@@ -298,13 +298,19 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 		assert(list[ip] < rs.size());
 	}
 
-	{
+	SECTION("field"){
 		auto remote_points = operations::get_remote_points(test_field, list);
-		auto remote_points_set = operations::get_remote_points(test_field_set, list);	
-
+		
 		for(long ip = 0; ip < npoints; ip++){
 			CHECK(double(list[ip]) == Approx(real(remote_points[ip])));
 			CHECK(0.1*double(list[ip]) == Approx(imag(remote_points[ip])));
+		}
+	}
+	
+	SECTION("field_set"){
+		auto remote_points_set = operations::get_remote_points(test_field_set, list);	
+
+		for(long ip = 0; ip < npoints; ip++){
 			for(int ivec = 0; ivec < nvec; ivec++){
 				CHECK((ivec + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ivec])));
 				CHECK((ivec + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ivec])));
@@ -323,15 +329,18 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 		assert(stlist[ist] < nvec);
 	}
 
-	auto remote_points_set = operations::get_remote_points(test_field_set, list, stlist);	
-
-	assert(remote_points_set.size() == npoints);
-	assert(remote_points_set.transposed().size() == nst);
-	
-	for(long ip = 0; ip < npoints; ip++){
-		for(long ist = 0; ist < nst; ist++){
-			CHECK((stlist[ist] + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ist])));
-			CHECK((stlist[ist] + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ist])));
+	SECTION("field_set state indices"){
+		
+		auto remote_points_set = operations::get_remote_points(test_field_set, list, stlist);	
+		
+		assert(remote_points_set.size() == npoints);
+		assert(remote_points_set.transposed().size() == nst);
+		
+		for(long ip = 0; ip < npoints; ip++){
+			for(long ist = 0; ist < nst; ist++){
+				CHECK((stlist[ist] + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ist])));
+				CHECK((stlist[ist] + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ist])));
+			}
 		}
 	}
 	
