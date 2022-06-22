@@ -80,10 +80,14 @@ public:
     return ip;
   }
 
-  auto array() const {
+  auto operator*() const {
     return arr_({0, part_.local_size(ipart())});
   }
 
+  auto operator->() const {
+    return &arr_({0, part_.local_size(ipart())});
+  }
+  
   static auto end() {
     return end_type{};
   }
@@ -118,10 +122,10 @@ TEST_CASE("class parallel::array_iterator", "[parallel::array_iterator]") {
   for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){
 
     CHECK(ipart == pai.ipart());
-    CHECK(pai.array().size() == part.local_size(ipart)); 
+    CHECK(pai->size() == part.local_size(ipart)); 
 
-    for(int ii = 0; ii < pai.array().size(); ii++){
-      CHECK(pai.array()[ii] == ipart + 1.0);
+    for(int ii = 0; ii < pai->size(); ii++){
+      CHECK((*pai)[ii] == ipart + 1.0);
     }
     
     ipart++;

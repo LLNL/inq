@@ -129,7 +129,7 @@ namespace hamiltonian {
 
 				auto occ_it = parallel::array_iterator(hf_orbitals->set_part(), hf_orbitals->set_comm(), hf_occupations);
 				for(auto hfo_it = hf_orbitals->par_set_begin(); hfo_it != hf_orbitals->par_set_end(); ++hfo_it){
-					block_exchange(factor, phi.basis(), hfo_it.matrix(), occ_it.array(), phi.matrix(), exxphi.matrix());
+					block_exchange(factor, phi.basis(), hfo_it.matrix(), *occ_it, phi.matrix(), exxphi.matrix());
 					++occ_it;
 				}
 			}
