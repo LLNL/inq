@@ -91,9 +91,9 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 
 					if(not destination.basis().local_contains(idest)) continue;
 
-					auto il0 = destination.basis().cubic_dist(0).global_to_local(utils::global_index(idest[0]));
-					auto il1 = destination.basis().cubic_dist(1).global_to_local(utils::global_index(idest[1]));
-					auto il2 = destination.basis().cubic_dist(2).global_to_local(utils::global_index(idest[2]));
+					auto il0 = destination.basis().cubic_dist(0).global_to_local(parallel::global_index(idest[0]));
+					auto il1 = destination.basis().cubic_dist(1).global_to_local(parallel::global_index(idest[1]));
+					auto il2 = destination.basis().cubic_dist(2).global_to_local(parallel::global_index(idest[2]));
 
 					destination.cubic()[il0][il1][il2] = factor*points[ip];
 					ip++;
@@ -163,9 +163,9 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 
 					if(not destination.basis().local_contains(idest)) continue;
 
-					auto il0 = destination.basis().cubic_dist(0).global_to_local(utils::global_index(idest[0]));
-					auto il1 = destination.basis().cubic_dist(1).global_to_local(utils::global_index(idest[1]));
-					auto il2 = destination.basis().cubic_dist(2).global_to_local(utils::global_index(idest[2]));
+					auto il0 = destination.basis().cubic_dist(0).global_to_local(parallel::global_index(idest[0]));
+					auto il1 = destination.basis().cubic_dist(1).global_to_local(parallel::global_index(idest[1]));
+					auto il2 = destination.basis().cubic_dist(2).global_to_local(parallel::global_index(idest[2]));
 
 					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[il0][il1][il2][ist] = factor*points[ip][ist];
 					ip++;

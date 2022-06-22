@@ -152,7 +152,7 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
 
 	gpu::run(rp.total_requested,
 					 [par =  source.basis().part(), lreq = begin(rp.list_points_requested), vreq = begin(value_points_requested), sou = begin(source.linear())] GPU_LAMBDA (auto ip){
-						 auto iplocal = par.global_to_local(utils::global_index(lreq[ip]));
+						 auto iplocal = par.global_to_local(parallel::global_index(lreq[ip]));
 						 vreq[ip] = sou[iplocal];
 					 });
 	
@@ -204,7 +204,7 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
 
 	gpu::run(nset, rp.total_requested,
 					 [par =  source.basis().part(), lreq = begin(rp.list_points_requested), vreq = begin(value_points_requested), sou = begin(source.matrix())] GPU_LAMBDA (auto iset, auto ip){
-						 auto iplocal = par.global_to_local(utils::global_index(lreq[ip]));
+						 auto iplocal = par.global_to_local(parallel::global_index(lreq[ip]));
 						 vreq[ip][iset] = sou[iplocal][iset];
 					 });
 	

@@ -22,7 +22,7 @@
 */
 
 #include <basis/real_space.hpp>
-#include <utils/partition.hpp>
+#include <parallel/partition.hpp>
 #include <math/array.hpp>
 #include <algorithm>
 
@@ -165,11 +165,11 @@ namespace basis {
 			int istep_;
 			int set_ipart_;
 			mutable boost::mpi3::cartesian_communicator<1> set_comm_;
-			utils::partition set_part_;
+			parallel::partition set_part_;
 
 		public:
 			
-			parallel_set_iterator(long basis_local_size, utils::partition set_part, boost::mpi3::cartesian_communicator<1> set_comm, internal_array_type const & data):
+			parallel_set_iterator(long basis_local_size, parallel::partition set_part, boost::mpi3::cartesian_communicator<1> set_comm, internal_array_type const & data):
 				matrix_({basis_local_size, set_part.block_size()}, 0.0),
 				istep_(0),
 				set_ipart_(set_comm.rank()),
@@ -221,7 +221,7 @@ namespace basis {
 
 		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
 		mutable boost::mpi3::cartesian_communicator<1> set_comm_;
-		inq::utils::partition set_part_;
+		inq::parallel::partition set_part_;
 		internal_array_type matrix_;
 		int num_vectors_;
 		basis_type basis_;

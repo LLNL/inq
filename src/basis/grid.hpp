@@ -41,7 +41,7 @@ namespace basis {
 		
 		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
 			base(nr[0], comm),
-			cubic_dist_({base::part_, inq::utils::partition(nr[1]), inq::utils::partition(nr[2])}),
+			cubic_dist_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
@@ -143,7 +143,7 @@ namespace basis {
 			return ii;
 		}
 
-		GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, utils::global_index ix, utils::global_index iy, utils::global_index iz) {
+		GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) {
 			return to_symmetric_range(nr, ix.value(), iy.value(), iz.value());
 		}
 
@@ -158,7 +158,7 @@ namespace basis {
 			return to_symmetric_range(nr_, ix, iy, iz);
 		}
 
-		GPU_FUNCTION auto to_symmetric_range(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+		GPU_FUNCTION auto to_symmetric_range(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 			return to_symmetric_range(nr_, ix.value(), iy.value(), iz.value());
 		}
 			
@@ -196,7 +196,7 @@ namespace basis {
 
 	protected:
 
-		std::array<inq::utils::partition, 3> cubic_dist_;
+		std::array<inq::parallel::partition, 3> cubic_dist_;
 		ions::UnitCell cell_;
 
     std::array<int, 3> nr_;

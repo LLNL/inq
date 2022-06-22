@@ -28,7 +28,7 @@
 #include <math/array.hpp>
 #include <math/vector3.hpp>
 #include <utils/interpolation_coefficients.hpp>
-#include <utils/partition.hpp>
+#include <parallel/partition.hpp>
 
 namespace inq {
 namespace basis {

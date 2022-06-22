@@ -252,7 +252,7 @@ public:
 private:
 	std::shared_ptr<spdlog::logger> logger_;
 
-	inq::utils::partition lot_part_;
+	inq::parallel::partition lot_part_;
 
 };
 

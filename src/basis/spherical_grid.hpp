@@ -129,9 +129,9 @@ namespace basis {
 									 
 									 auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
 									 
-									 utils::global_index ii0(ii[0]);
-									 utils::global_index ii1(ii[1]);
-									 utils::global_index ii2(ii[2]);
+									 parallel::global_index ii0(ii[0]);
+									 parallel::global_index ii1(ii[1]);
+									 parallel::global_index ii2(ii[2]);
 									 
 									 int ixl = point_op.cubic_dist()[0].global_to_local(ii0);
 									 int iyl = point_op.cubic_dist()[1].global_to_local(ii1);

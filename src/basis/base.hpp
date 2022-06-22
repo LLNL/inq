@@ -24,7 +24,7 @@
 #include <cassert>
 
 #include <mpi3/environment.hpp>
-#include <utils/partition.hpp>
+#include <parallel/partition.hpp>
 
 namespace inq {
 namespace basis {
@@ -57,7 +57,7 @@ public:
 	protected:
 	
 	mutable boost::mpi3::communicator comm_;
-	inq::utils::partition part_;
+	inq::parallel::partition part_;
 		
 };
 
