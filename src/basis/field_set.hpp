@@ -200,7 +200,7 @@ namespace basis {
 				return istep_ != it_istep;
 			}
 
-			auto matrix() {
+			auto matrix() const {
 				return matrix_(boost::multi::ALL, {0, set_part_.local_size(set_ipart_)});										 
 			}
 
