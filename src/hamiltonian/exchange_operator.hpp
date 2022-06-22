@@ -131,7 +131,7 @@ namespace hamiltonian {
 				math::array<complex, 2> rhfo({hf_orbitals->basis().local_size(), hf_orbitals->set_part().block_size()}, 0.0);
 				rhfo(boost::multi::ALL, {0, hf_orbitals->set_part().local_size()}) = hf_orbitals->matrix();
 
-				math::array<complex, 1> roccs(hf_orbitals->set_part().block_size(), 0.0);
+				math::array<double, 1> roccs(hf_orbitals->set_part().block_size(), 0.0);
 				roccs({0, hf_orbitals->set_part().local_size()}) = hf_occupations;
 				
 				auto next_proc = phi.set_comm().rank() + 1;
@@ -145,7 +145,7 @@ namespace hamiltonian {
 
 					if(istep == hf_orbitals->set_part().comm_size() - 1) break; //the last step we don't need to do communicate
 					MPI_Sendrecv_replace(raw_pointer_cast(rhfo.data_elements()), rhfo.num_elements(), mpi_type, prev_proc, istep, next_proc, istep, hf_orbitals->set_comm().get(), MPI_STATUS_IGNORE);
-					MPI_Sendrecv_replace(raw_pointer_cast(roccs.data_elements()), roccs.num_elements(), mpi_type, prev_proc, istep, next_proc, istep, hf_orbitals->set_comm().get(), MPI_STATUS_IGNORE);
+					MPI_Sendrecv_replace(raw_pointer_cast(roccs.data_elements()), roccs.num_elements(), MPI_DOUBLE, prev_proc, istep, next_proc, istep, hf_orbitals->set_comm().get(), MPI_STATUS_IGNORE);
 			
 					ipart++;
 					if(ipart == hf_orbitals->set_comm().size()) ipart = 0;
