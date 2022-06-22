@@ -113,6 +113,14 @@ namespace states {
 			return fields_.set_comm();
 		}
 
+		auto par_set_begin() const {
+			return fields().par_set_begin();
+		}
+
+		auto par_set_end() const {
+			return fields().par_set_end();
+		}
+		
 	private:
 
     basis::field_set<Basis, Type> fields_;

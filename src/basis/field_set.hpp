@@ -158,6 +158,64 @@ namespace basis {
 		void prefetch() const {
 			math::prefetch(matrix_);
 		}
+
+		class parallel_set_iterator {
+			
+			internal_array_type matrix_;
+			int istep_;
+			int set_ipart_;
+			mutable boost::mpi3::cartesian_communicator<1> set_comm_;
+			utils::partition set_part_;
+
+		public:
+			
+			parallel_set_iterator(long basis_local_size, utils::partition set_part, boost::mpi3::cartesian_communicator<1> set_comm, internal_array_type const & data):
+				matrix_({basis_local_size, set_part.block_size()}, 0.0),
+				istep_(0),
+				set_ipart_(set_comm.rank()),
+				set_comm_(std::move(set_comm)),
+				set_part_(std::move(set_part)){
+				matrix_({0, basis_local_size}, {0, set_part.local_size()}) = data;
+			};
+			
+			void operator++(){
+				auto mpi_type = boost::mpi3::detail::basic_datatype<element_type>();
+				
+				auto next_proc = set_comm_.rank() + 1;
+				if(next_proc == set_comm_.size()) next_proc = 0;
+				auto prev_proc = set_comm_.rank() - 1;
+				if(prev_proc == -1) prev_proc = set_comm_.size() - 1;
+
+				if(istep_ < set_comm_.size() - 1) {
+					//there is no need to copy for the last step
+					MPI_Sendrecv_replace(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, set_comm_.get(), MPI_STATUS_IGNORE);
+				}
+				
+				set_ipart_++;
+				if(set_ipart_ == set_comm_.size()) set_ipart_ = 0;
+				istep_++;
+			}
+
+			bool operator!=(int it_istep){
+				return istep_ != it_istep;
+			}
+
+			auto matrix() {
+				return matrix_(boost::multi::ALL, {0, set_part_.local_size(set_ipart_)});										 
+			}
+
+			auto set_ipart() const {
+				return set_ipart_;
+			}
+		};
+
+		auto par_set_begin() const {
+			return parallel_set_iterator(basis().local_size(), set_part_, set_comm_, matrix());
+		}
+
+		auto par_set_end() const {
+			return set_comm_.size();
+		}
 		
 	private:
 
