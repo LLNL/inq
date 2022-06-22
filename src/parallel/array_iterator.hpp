@@ -40,6 +40,9 @@ class array_iterator {
   mutable boost::mpi3::communicator comm_;
   ArrayType arr_;
   long istep_;
+
+  struct end_type {
+  };
   
 public:
 
@@ -52,7 +55,7 @@ public:
     arr_({0, part_.local_size()}) = arr;
   }
 
-  auto end() const {
+  auto operator!=(end_type) const {
     return istep_ != comm_.size();
   }
 
@@ -81,6 +84,10 @@ public:
     return arr_({0, part_.local_size(ipart())});
   }
 
+  static auto end() {
+    return end_type{};
+  }
+  
 };
 }
 }
@@ -108,7 +115,7 @@ TEST_CASE("class parallel::array_iterator", "[parallel::array_iterator]") {
   math::array<double, 1> arr(part.local_size(), double(comm.rank() + 1.0));
 
   auto ipart = comm.rank();
-  for(parallel::array_iterator pai(part, comm, arr); pai.end(); ++pai){
+  for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){
 
     CHECK(ipart == pai.ipart());
     CHECK(pai.array().size() == part.local_size(ipart)); 
