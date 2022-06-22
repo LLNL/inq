@@ -25,6 +25,7 @@
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <operations/rotate.hpp>
+#include <parallel/array_iterator.hpp>
 #include <solvers/cholesky.hpp>
 #include <solvers/poisson.hpp>
 #include <states/orbital_set.hpp>
@@ -126,25 +127,11 @@ namespace hamiltonian {
 				block_exchange(factor, phi.basis(), hf_orbitals->matrix(), hf_occupations, phi.matrix(), exxphi.matrix());
 			} else {
 
-				auto hfo_it = hf_orbitals->par_set_begin();
-
-				math::array<double, 1> roccs(hf_orbitals->set_part().block_size(), 0.0);
-				roccs({0, hf_orbitals->set_part().local_size()}) = hf_occupations;
-				
-				auto next_proc = phi.set_comm().rank() + 1;
-				if(next_proc == phi.set_comm().size()) next_proc = 0;
-				auto prev_proc = phi.set_comm().rank() - 1;
-				if(prev_proc == -1) prev_proc = phi.set_comm().size() - 1;
-
-				for(int istep = 0; istep < hf_orbitals->set_part().comm_size(); istep++){
-					block_exchange(factor, phi.basis(), hfo_it.matrix(), roccs, phi.matrix(), exxphi.matrix());
-					
-					if(istep == hf_orbitals->set_part().comm_size() - 1) break; //the last step we don't need to do communicate
-					MPI_Sendrecv_replace(raw_pointer_cast(roccs.data_elements()), roccs.num_elements(), MPI_DOUBLE, prev_proc, istep, next_proc, istep, hf_orbitals->set_comm().get(), MPI_STATUS_IGNORE);
-					
-					++hfo_it;
+				auto occ_it = parallel::array_iterator(hf_orbitals->set_part(), hf_orbitals->set_comm(), hf_occupations);
+				for(auto hfo_it = hf_orbitals->par_set_begin(); hfo_it != hf_orbitals->par_set_end(); ++hfo_it){
+					block_exchange(factor, phi.basis(), hfo_it.matrix(), occ_it.array(), phi.matrix(), exxphi.matrix());
+					++occ_it;
 				}
-
 			}
 		}
 
