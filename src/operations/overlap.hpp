@@ -58,7 +58,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 		for(auto it = phi1.par_set_begin(); it != phi1.par_set_end(); ++it){
 			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), it.matrix());
-			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(it.set_ipart_), phi1.set_part().end(it.set_ipart_)}) = block;
+			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(it.set_ipart()), phi1.set_part().end(it.set_ipart())}) = block;
 		}
 		
 		if(phi1.full_comm().size() > 1) {

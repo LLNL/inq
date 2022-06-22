@@ -159,12 +159,15 @@ namespace basis {
 			math::prefetch(matrix_);
 		}
 
-		struct parallel_set_iterator {
+		class parallel_set_iterator {
+			
 			internal_array_type matrix_;
 			int istep_;
 			int set_ipart_;
 			mutable boost::mpi3::cartesian_communicator<1> set_comm_;
 			utils::partition set_part_;
+
+		public:
 			
 			parallel_set_iterator(long basis_local_size, utils::partition set_part, boost::mpi3::cartesian_communicator<1> set_comm, internal_array_type const & data):
 				matrix_({basis_local_size, set_part.block_size()}, 0.0),
@@ -176,7 +179,6 @@ namespace basis {
 			};
 			
 			void operator++(){
-
 				auto mpi_type = boost::mpi3::detail::basic_datatype<element_type>();
 				
 				auto next_proc = set_comm_.rank() + 1;
@@ -201,7 +203,10 @@ namespace basis {
 			auto matrix() {
 				return matrix_(boost::multi::ALL, {0, set_part_.local_size(set_ipart_)});										 
 			}
-			
+
+			auto set_ipart() const {
+				return set_ipart_;
+			}
 		};
 
 		auto par_set_begin() const {
