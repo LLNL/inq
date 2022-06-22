@@ -184,8 +184,8 @@ namespace basis {
 				istep_++;
 			}
 
-			bool operator!=(parallel_set_iterator const & it){
-				return istep_ != it.istep_;
+			bool operator!=(int it_istep){
+				return istep_ != it_istep;
 			}
 			
 		};
@@ -201,9 +201,7 @@ namespace basis {
 		}
 
 		auto par_set_end() const {
-			parallel_set_iterator it;
-			it.istep_ = set_comm_.size();
-			return it;
+			return set_comm_.size();
 		}
 		
 	private:
