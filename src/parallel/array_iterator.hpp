@@ -80,7 +80,7 @@ public:
     return ip;
   }
 
-  auto array() {
+  auto array() const {
     return arr_({0, part_.local_size(ipart())});
   }
 
