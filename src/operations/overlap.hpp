@@ -54,31 +54,13 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		
 	} else {
 
-		auto mpi_type = boost::mpi3::detail::basic_datatype<typename FieldSetType2::element_type>();
-		
 		math::subspace_matrix<typename FieldSetType1::element_type> overlap_matrix(phi1.full_comm(), phi1.set_size(), 0.0);
 
-		math::array<typename FieldSetType2::element_type, 2> rphi({phi1.basis().local_size(), phi1.set_part().block_size()}, 0.0);
-		rphi(boost::multi::ALL, {0, phi1.set_part().local_size()}) = phi1.matrix();
-		
-		auto next_proc = phi1.set_comm().rank() + 1;
-		if(next_proc == phi1.set_comm().size()) next_proc = 0;
-		auto prev_proc = phi1.set_comm().rank() - 1;
-		if(prev_proc == -1) prev_proc = phi2.set_comm().size() - 1;
-
-		auto ipart = phi1.set_comm().rank();
-		for(int istep = 0; istep < phi1.set_part().comm_size(); istep++){
-			
-			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), rphi(boost::multi::ALL, {0, phi1.set_part().local_size(ipart)}));
-			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(ipart), phi1.set_part().end(ipart)}) = block;
-
-			if(istep == phi1.set_part().comm_size() - 1) break; //the last step we don't need to do communicate
-			MPI_Sendrecv_replace(raw_pointer_cast(rphi.data_elements()), rphi.num_elements(), mpi_type, prev_proc, istep, next_proc, istep, phi1.set_comm().get(), MPI_STATUS_IGNORE);
-			
-			ipart++;
-			if(ipart == phi1.set_comm().size()) ipart = 0;
+		for(auto it = phi1.par_set_begin(); it != phi1.par_set_end(); ++it){
+			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), it.matrix_({0, phi1.basis().local_size()}, {0, phi1.set_part().local_size(it.set_ipart_)}));
+			overlap_matrix.array()({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(it.set_ipart_), phi1.set_part().end(it.set_ipart_)}) = block;
 		}
-
+		
 		if(phi1.full_comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
 			phi1.full_comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.array().data_elements()), overlap_matrix.array().num_elements(), std::plus<>{});
