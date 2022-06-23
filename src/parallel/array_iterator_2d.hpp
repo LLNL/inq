@@ -42,7 +42,9 @@ class array_iterator_2d {
   ArrayType arr_;
   long xstep_;
   long ystep_;
-
+  int prev_proc_;
+  int next_proc_;
+  
   struct end_type {
   };
   
@@ -57,6 +59,20 @@ public:
     ystep_(0)      
   {
     arr_({0, partx_.local_size()}, {0, party_.local_size()}) = arr;
+
+    int coords[2];
+    MPI_Cart_coords(comm_.get(), comm_.rank(), 2, coords);
+    
+    assert(coords[0] == comm_.axis(0).rank());
+    assert(coords[1] == comm_.axis(1).rank());
+
+    coords[1]++;
+    MPI_Cart_rank(comm_.get(), coords, &next_proc_);
+
+    MPI_Cart_coords(comm_.get(), comm_.rank(), 2, coords);
+    coords[1]--;
+    MPI_Cart_rank(comm_.get(), coords, &prev_proc_);
+    
   }
 
   auto operator!=(end_type) const {
@@ -64,7 +80,11 @@ public:
   }
 
   void operator++(){
-    
+
+    auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
+    auto tag = ystep_ + xstep_*party_.comm_size();
+    MPI_Sendrecv_replace(raw_pointer_cast(arr_.data_elements()), arr_.num_elements(), mpi_type, prev_proc_, tag, next_proc_, tag, comm_.get(), MPI_STATUS_IGNORE);
+          
     ystep_++;
     if(ystep_ == party_.comm_size()) {
       xstep_++;
@@ -87,6 +107,15 @@ public:
   static auto end() {
     return end_type{};
   }
+
+  auto operator*() const {
+    return arr_({0, partx_.local_size(xpart())}, {0, party_.local_size(ypart())});
+  }
+
+  auto operator->() const {
+    return &arr_({0, partx_.local_size(xpart())}, {0, party_.local_size(ypart())});
+  }
+  
   
 };
 }
@@ -147,6 +176,15 @@ TEST_CASE("class parallel::array_iterator_2d", "[parallel::array_iterator_2d]") 
   {
     int itcount = 0;
     for(parallel::array_iterator_2d pai(partx, party, comm, arr); pai != pai.end(); ++pai){
+
+      CHECK(pai->size() ==  partx.local_size(pai.xpart()));
+      CHECK(pai->rotated().size() ==  party.local_size(pai.ypart()));
+      
+      for(long ix = 0; ix < partx.local_size(pai.xpart()); ix++){
+        for(long iy = 0; iy < party.local_size(pai.ypart()); iy++){
+          CHECK((*pai)[ix][iy] == pai.xpart() + 1.0 + 10000.0*(pai.ypart() + 1.0));
+        }
+      }
       
       itcount++;
     }
