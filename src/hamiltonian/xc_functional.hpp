@@ -268,10 +268,10 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		
 		CHECK(Approx(gaussianExc) == int_xc_energy);
 
-		if(rs.part().contains(1)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(1))] == -0.5111609291_a);
-		if(rs.part().contains(8233)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(8233))] == -0.00406881_a);
-		if(rs.part().contains(233)) CHECK(fabs(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(233))]) < 1e-10);
-		if(rs.part().contains(rs.size() - 1)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(utils::global_index(rs.size() - 1))] == -0.4326883849_a);
+		if(rs.part().contains(1)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(parallel::global_index(1))] == -0.5111609291_a);
+		if(rs.part().contains(8233)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(parallel::global_index(8233))] == -0.00406881_a);
+		if(rs.part().contains(233)) CHECK(fabs(gaussianVxc.linear()[rs.part().global_to_local(parallel::global_index(233))]) < 1e-10);
+		if(rs.part().contains(rs.size() - 1)) CHECK(gaussianVxc.linear()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))] == -0.4326883849_a);
 
 	}
 
@@ -297,9 +297,9 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 		CHECK(Exc == -393.4604748792_a);
 		
-		if(rs.part().contains(1)) CHECK(Vxc.linear()[rs.part().global_to_local(utils::global_index(1))] == -0.5607887985_a);
-		if(rs.part().contains(33)) CHECK(Vxc.linear()[rs.part().global_to_local(utils::global_index(33))] == -1.1329131862_a);
-		if(rs.part().contains(rs.size() - 1)) CHECK(Vxc.linear()[rs.part().global_to_local(utils::global_index(rs.size() - 1))] == -1.1461742979_a);
+		if(rs.part().contains(1)) CHECK(Vxc.linear()[rs.part().global_to_local(parallel::global_index(1))] == -0.5607887985_a);
+		if(rs.part().contains(33)) CHECK(Vxc.linear()[rs.part().global_to_local(parallel::global_index(33))] == -1.1329131862_a);
+		if(rs.part().contains(rs.size() - 1)) CHECK(Vxc.linear()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))] == -1.1461742979_a);
 	}
 
 	SECTION("Uniform"){

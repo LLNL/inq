@@ -438,20 +438,20 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 			}
 			
 			auto & part = potential.basis().part();
-			if(part.contains(0))      CHECK(real(potential.linear()[part.global_to_local(utils::global_index(0))])      == -27.175214167_a);
-			if(part.contains(8102))   CHECK(real(potential.linear()[part.global_to_local(utils::global_index(8102))])   ==  -2.9731998189_a);
-			if(part.contains(700102)) CHECK(real(potential.linear()[part.global_to_local(utils::global_index(700102))]) ==  -0.2524115517_a);
-			if(part.contains(27848))  CHECK(real(potential.linear()[part.global_to_local(utils::global_index(27848))])  ==  -0.2470080223_a);
-			if(part.contains(612909)) CHECK(real(potential.linear()[part.global_to_local(utils::global_index(612909))]) ==  -0.2275712710_a);
-			if(part.contains(368648)) CHECK(real(potential.linear()[part.global_to_local(utils::global_index(368648))]) ==  -0.1844298173_a);
+			if(part.contains(0))      CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(0))])      == -27.175214167_a);
+			if(part.contains(8102))   CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(8102))])   ==  -2.9731998189_a);
+			if(part.contains(700102)) CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(700102))]) ==  -0.2524115517_a);
+			if(part.contains(27848))  CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(27848))])  ==  -0.2470080223_a);
+			if(part.contains(612909)) CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(612909))]) ==  -0.2275712710_a);
+			if(part.contains(368648)) CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(368648))]) ==  -0.1844298173_a);
 
 			for(int ist = 0; ist < nst; ist++) {
-				if(part.contains(0))      CHECK(real(density_set.matrix()[part.global_to_local(utils::global_index(0))][ist])/(1.0 + ist) == -27.175214167_a);
-				if(part.contains(8102))   CHECK(real(density_set.matrix()[part.global_to_local(utils::global_index(8102))][ist])/(1.0 + ist)   ==  -2.9731998189_a);
-				if(part.contains(700102)) CHECK(real(density_set.matrix()[part.global_to_local(utils::global_index(700102))][ist])/(1.0 + ist) ==  -0.2524115517_a);
-				if(part.contains(27848))  CHECK(real(density_set.matrix()[part.global_to_local(utils::global_index(27848))][ist])/(1.0 + ist)  ==  -0.2470080223_a);
-				if(part.contains(612909)) CHECK(real(density_set.matrix()[part.global_to_local(utils::global_index(612909))][ist])/(1.0 + ist) ==  -0.2275712710_a);
-				if(part.contains(368648)) CHECK(real(density_set.matrix()[part.global_to_local(utils::global_index(368648))][ist])/(1.0 + ist) ==  -0.1844298173_a);
+				if(part.contains(0))      CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(0))][ist])/(1.0 + ist) == -27.175214167_a);
+				if(part.contains(8102))   CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(8102))][ist])/(1.0 + ist)   ==  -2.9731998189_a);
+				if(part.contains(700102)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(700102))][ist])/(1.0 + ist) ==  -0.2524115517_a);
+				if(part.contains(27848))  CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(27848))][ist])/(1.0 + ist)  ==  -0.2470080223_a);
+				if(part.contains(612909)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(612909))][ist])/(1.0 + ist) ==  -0.2275712710_a);
+				if(part.contains(368648)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(368648))][ist])/(1.0 + ist) ==  -0.1844298173_a);
 			}
 
 				

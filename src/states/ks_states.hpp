@@ -24,7 +24,7 @@
 #include <math/complex.hpp>
 #include <math/array.hpp>
 #include <operations/sum.hpp>
-#include <utils/partition.hpp>
+#include <parallel/partition.hpp>
 
 namespace inq {
 namespace states {
@@ -248,28 +248,28 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
-		utils::partition part(st.num_states(), comm);
+		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({1, part.local_size()});
 		math::array<double, 2> occupations({1, part.local_size()});
 
-		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
-		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
-		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
-		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
-		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
 		
 		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 3.4032608849_a);
 		
-		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
-		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
-		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
-		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
-		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
-		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 2.0);
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(parallel::global_index(5))] == 2.0);
 
   }
 	
@@ -281,28 +281,28 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_quantum_numbers() == 1);
 
-		utils::partition part(st.num_states(), comm);
+		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({1, part.local_size()});
 		math::array<double, 2> occupations({1, part.local_size()});
 
-		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
-		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
-		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
-		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
-		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
 		
 		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 3.4032608849_a);
 		
-		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
-		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
-		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
-		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
-		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
-		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 1.0);
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(parallel::global_index(5))] == 1.0);
 
   }
 	
@@ -314,32 +314,32 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 8);
     CHECK(st.num_quantum_numbers() == 1);
 
-		utils::partition part(st.num_states(), comm);
+		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({1, part.local_size()});
 		math::array<double, 2> occupations({1, part.local_size()});
 
-		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
-		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
-		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
-		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
-		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
-		if(part.contains(6)) eigenvalues[0][part.global_to_local(utils::global_index(6))] = 1.1;
-		if(part.contains(7)) eigenvalues[0][part.global_to_local(utils::global_index(7))] = 1.3;		
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
+		if(part.contains(6)) eigenvalues[0][part.global_to_local(parallel::global_index(6))] = 1.1;
+		if(part.contains(7)) eigenvalues[0][part.global_to_local(parallel::global_index(7))] = 1.3;		
 		
 		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 1.0660326106_a);
 		
-		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
-		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
-		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
-		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
-		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
-		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 2.0);
-		if(part.contains(6)) CHECK(occupations[0][part.global_to_local(utils::global_index(6))] == 0.0);
-		if(part.contains(7)) CHECK(occupations[0][part.global_to_local(utils::global_index(7))] == 0.0);		
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(parallel::global_index(5))] == 2.0);
+		if(part.contains(6)) CHECK(occupations[0][part.global_to_local(parallel::global_index(6))] == 0.0);
+		if(part.contains(7)) CHECK(occupations[0][part.global_to_local(parallel::global_index(7))] == 0.0);		
 
   }
 		
@@ -351,32 +351,32 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 8);
     CHECK(st.num_quantum_numbers() == 1);
 
-		utils::partition part(st.num_states(), comm);
+		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({1, part.local_size()});
 		math::array<double, 2> occupations({1, part.local_size()});
 
-		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
-		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 1.0;
-		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
-		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.2;
-		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
-		if(part.contains(6)) eigenvalues[0][part.global_to_local(utils::global_index(6))] = 1.1;
-		if(part.contains(7)) eigenvalues[0][part.global_to_local(utils::global_index(7))] = 1.3;		
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 1.0;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.2;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
+		if(part.contains(6)) eigenvalues[0][part.global_to_local(parallel::global_index(6))] = 1.1;
+		if(part.contains(7)) eigenvalues[0][part.global_to_local(parallel::global_index(7))] = 1.3;		
 		
 		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 1.0660326106_a);
 		
-		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
-		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
-		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
-		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
-		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
-		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 1.235_a);
-		if(part.contains(6)) CHECK(occupations[0][part.global_to_local(utils::global_index(6))] == 0.0);
-		if(part.contains(7)) CHECK(occupations[0][part.global_to_local(utils::global_index(7))] == 0.0);	
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(parallel::global_index(5))] == 1.235_a);
+		if(part.contains(6)) CHECK(occupations[0][part.global_to_local(parallel::global_index(6))] == 0.0);
+		if(part.contains(7)) CHECK(occupations[0][part.global_to_local(parallel::global_index(7))] == 0.0);	
 
   }
 	
@@ -390,28 +390,28 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		comm.barrier();
 		
-		utils::partition part(st.num_states(), comm);
+		parallel::partition part(st.num_states(), comm);
 		
 		math::array<double, 2> eigenvalues({1, part.local_size()});
 		math::array<double, 2> occupations({1, part.local_size()});
 
-		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.0;
-		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
-		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
-		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
-		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.0;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
 		
 		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 0.246510327_a);
 		
-		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0_a);
-		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 1.9810772793_a);
-		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 0.0094611446_a);
-		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 0.0094611446_a);
-		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 4.315768121820668e-07_a);
-		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 3.779107816290222e-33_a);
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 2.0_a);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 1.9810772793_a);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 0.0094611446_a);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 0.0094611446_a);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 4.315768121820668e-07_a);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(parallel::global_index(5))] == 3.779107816290222e-33_a);
 		
   }
 	
@@ -443,32 +443,32 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 8);
     CHECK(st.num_quantum_numbers() == 1);
 
-		utils::partition part(st.num_states(), comm);
+		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({1, part.local_size()});
 		math::array<double, 2> occupations({1, part.local_size()});
 
-		if(part.contains(0)) eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.1;
-		if(part.contains(1)) eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.2;
-		if(part.contains(2)) eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.3;
-		if(part.contains(3)) eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.3;
-		if(part.contains(4)) eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.4;
-		if(part.contains(5)) eigenvalues[0][part.global_to_local(utils::global_index(5))] = 1.0;
-		if(part.contains(6)) eigenvalues[0][part.global_to_local(utils::global_index(6))] = 1.1;
-		if(part.contains(7)) eigenvalues[0][part.global_to_local(utils::global_index(7))] = 1.3;		
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
+		if(part.contains(6)) eigenvalues[0][part.global_to_local(parallel::global_index(6))] = 1.1;
+		if(part.contains(7)) eigenvalues[0][part.global_to_local(parallel::global_index(7))] = 1.3;		
 		
 		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
 
 		CHECK(efermi == 1.0660326106_a);
 		
-		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 2.0);
-		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 2.0);
-		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 2.0);
-		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 2.0);
-		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 2.0);
-		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(utils::global_index(5))] == 2.0);
-		if(part.contains(6)) CHECK(occupations[0][part.global_to_local(utils::global_index(6))] == 0.0);
-		if(part.contains(7)) CHECK(occupations[0][part.global_to_local(utils::global_index(7))] == 0.0);		
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 2.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 2.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 2.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 2.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 2.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(parallel::global_index(5))] == 2.0);
+		if(part.contains(6)) CHECK(occupations[0][part.global_to_local(parallel::global_index(6))] == 0.0);
+		if(part.contains(7)) CHECK(occupations[0][part.global_to_local(parallel::global_index(7))] == 0.0);		
 
   }
 		
@@ -480,35 +480,35 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 5);
     CHECK(st.num_quantum_numbers() == 1);
 
-		utils::partition part(st.num_states(), comm);
+		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({3, part.local_size()});
 		math::array<double, 2> occupations({3, part.local_size()});
 
 		if(part.contains(0)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.11;
-			eigenvalues[1][part.global_to_local(utils::global_index(0))] = 0.12;
-			eigenvalues[2][part.global_to_local(utils::global_index(0))] = 0.13;
+			eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.11;
+			eigenvalues[1][part.global_to_local(parallel::global_index(0))] = 0.12;
+			eigenvalues[2][part.global_to_local(parallel::global_index(0))] = 0.13;
 		}
 		if(part.contains(1)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.21;
-			eigenvalues[1][part.global_to_local(utils::global_index(1))] = 0.22;
-			eigenvalues[2][part.global_to_local(utils::global_index(1))] = 0.23;
+			eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.21;
+			eigenvalues[1][part.global_to_local(parallel::global_index(1))] = 0.22;
+			eigenvalues[2][part.global_to_local(parallel::global_index(1))] = 0.23;
 		}
 		if(part.contains(2)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.31;
-			eigenvalues[1][part.global_to_local(utils::global_index(2))] = 0.35;
-			eigenvalues[2][part.global_to_local(utils::global_index(2))] = 0.33;
+			eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.31;
+			eigenvalues[1][part.global_to_local(parallel::global_index(2))] = 0.35;
+			eigenvalues[2][part.global_to_local(parallel::global_index(2))] = 0.33;
 		}
 		if(part.contains(3)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.34;
-			eigenvalues[1][part.global_to_local(utils::global_index(3))] = 0.42;
-			eigenvalues[2][part.global_to_local(utils::global_index(3))] = 0.43;
+			eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.34;
+			eigenvalues[1][part.global_to_local(parallel::global_index(3))] = 0.42;
+			eigenvalues[2][part.global_to_local(parallel::global_index(3))] = 0.43;
 		}
 		if(part.contains(4)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.51;
-			eigenvalues[1][part.global_to_local(utils::global_index(4))] = 0.52;
-			eigenvalues[2][part.global_to_local(utils::global_index(4))] = 0.53;
+			eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.51;
+			eigenvalues[1][part.global_to_local(parallel::global_index(4))] = 0.52;
+			eigenvalues[2][part.global_to_local(parallel::global_index(4))] = 0.53;
 		}
 		
 		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
@@ -516,29 +516,29 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		CHECK(efermi == 0.3413536007_a);
 		
 		if(part.contains(0)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 0.6666666667_a);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(0))] == 0.6666666667_a);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(0))] == 0.6666666667_a);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 0.6666666667_a);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(0))] == 0.6666666667_a);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(0))] == 0.6666666667_a);
 		}
 		if(part.contains(1)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 0.6666666667_a);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(1))] == 0.6666666667_a);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(1))] == 0.6666666667_a);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 0.6666666667_a);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(1))] == 0.6666666667_a);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(1))] == 0.6666666667_a);
 		}			
 		if(part.contains(2)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 0.6666666667_a);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(2))] == 0.0_a);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(2))] == 0.6666666667_a);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 0.6666666667_a);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(2))] == 0.0_a);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(2))] == 0.6666666667_a);
 		}
 		if(part.contains(3)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 0.6666666667_a);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(3))] == 0.0_a);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(3))] == 0.0_a);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 0.6666666667_a);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(3))] == 0.0_a);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(3))] == 0.0_a);
 		}
 		if(part.contains(4)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 0.0);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(4))] == 0.0);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(4))] == 0.0);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 0.0);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(4))] == 0.0);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(4))] == 0.0);
 		}
 
   }
@@ -551,35 +551,35 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 5);
     CHECK(st.num_quantum_numbers() == 1);
 
-		utils::partition part(st.num_states(), comm);
+		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({3, part.local_size()});
 		math::array<double, 2> occupations({3, part.local_size()});
 
 		if(part.contains(0)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(0))] = 0.11;
-			eigenvalues[1][part.global_to_local(utils::global_index(0))] = 0.12;
-			eigenvalues[2][part.global_to_local(utils::global_index(0))] = 0.13;
+			eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.11;
+			eigenvalues[1][part.global_to_local(parallel::global_index(0))] = 0.12;
+			eigenvalues[2][part.global_to_local(parallel::global_index(0))] = 0.13;
 		}
 		if(part.contains(1)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(1))] = 0.21;
-			eigenvalues[1][part.global_to_local(utils::global_index(1))] = 0.22;
-			eigenvalues[2][part.global_to_local(utils::global_index(1))] = 0.23;
+			eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.21;
+			eigenvalues[1][part.global_to_local(parallel::global_index(1))] = 0.22;
+			eigenvalues[2][part.global_to_local(parallel::global_index(1))] = 0.23;
 		}
 		if(part.contains(2)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(2))] = 0.31;
-			eigenvalues[1][part.global_to_local(utils::global_index(2))] = 0.35;
-			eigenvalues[2][part.global_to_local(utils::global_index(2))] = 0.33;
+			eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.31;
+			eigenvalues[1][part.global_to_local(parallel::global_index(2))] = 0.35;
+			eigenvalues[2][part.global_to_local(parallel::global_index(2))] = 0.33;
 		}
 		if(part.contains(3)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(3))] = 0.34;
-			eigenvalues[1][part.global_to_local(utils::global_index(3))] = 0.42;
-			eigenvalues[2][part.global_to_local(utils::global_index(3))] = 0.43;
+			eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.34;
+			eigenvalues[1][part.global_to_local(parallel::global_index(3))] = 0.42;
+			eigenvalues[2][part.global_to_local(parallel::global_index(3))] = 0.43;
 		}
 		if(part.contains(4)) {
-			eigenvalues[0][part.global_to_local(utils::global_index(4))] = 0.51;
-			eigenvalues[1][part.global_to_local(utils::global_index(4))] = 0.52;
-			eigenvalues[2][part.global_to_local(utils::global_index(4))] = 0.53;
+			eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.51;
+			eigenvalues[1][part.global_to_local(parallel::global_index(4))] = 0.52;
+			eigenvalues[2][part.global_to_local(parallel::global_index(4))] = 0.53;
 		}
 		
 		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
@@ -587,29 +587,29 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		CHECK(efermi == 0.3413536007_a);
 		
 		if(part.contains(0)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(0))] == 0.6666666667_a);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(0))] == 0.6666666667_a);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(0))] == 0.6666666667_a);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 0.6666666667_a);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(0))] == 0.6666666667_a);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(0))] == 0.6666666667_a);
 		}
 		if(part.contains(1)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(1))] == 0.6666666667_a);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(1))] == 0.6666666667_a);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(1))] == 0.6666666667_a);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 0.6666666667_a);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(1))] == 0.6666666667_a);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(1))] == 0.6666666667_a);
 		}			
 		if(part.contains(2)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(2))] == 0.6666666667_a);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(2))] == 0.0_a);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(2))] == 0.6666666667_a);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 0.6666666667_a);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(2))] == 0.0_a);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(2))] == 0.6666666667_a);
 		}
 		if(part.contains(3)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(3))] == 0.1666666667_a);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(3))] == 0.0_a);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(3))] == 0.0_a);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 0.1666666667_a);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(3))] == 0.0_a);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(3))] == 0.0_a);
 		}
 		if(part.contains(4)) {
-			CHECK(occupations[0][part.global_to_local(utils::global_index(4))] == 0.0);
-			CHECK(occupations[1][part.global_to_local(utils::global_index(4))] == 0.0);
-			CHECK(occupations[2][part.global_to_local(utils::global_index(4))] == 0.0);
+			CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 0.0);
+			CHECK(occupations[1][part.global_to_local(parallel::global_index(4))] == 0.0);
+			CHECK(occupations[2][part.global_to_local(parallel::global_index(4))] == 0.0);
 		}
 
   }

@@ -46,7 +46,7 @@ namespace basis {
 		real_space(const grid & grid_basis):
 			grid(grid_basis){
 			
-			cubic_dist_ = {inq::utils::partition(nr_[0], grid_basis.comm()), inq::utils::partition(nr_[1]), inq::utils::partition(nr_[2])};
+			cubic_dist_ = {inq::parallel::partition(nr_[0], grid_basis.comm()), inq::parallel::partition(nr_[1]), inq::parallel::partition(nr_[2])};
 
 			base::part_ = cubic_dist_[0];
 			base::part_ *= nr_[1]*long(nr_[2]);
@@ -63,7 +63,7 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & nr, math::vector3<double> const & rspacing, std::array<inq::utils::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
+			point_operator(std::array<int, 3> const & nr, math::vector3<double> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
 				nr_(nr),
 				rspacing_(rspacing),
 				cubic_dist_(dist),
@@ -79,7 +79,7 @@ namespace basis {
 				return grid::from_symmetric_range(nr_, ii);
 			}
 
-			GPU_FUNCTION auto rvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+			GPU_FUNCTION auto rvector(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 				auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
 				return math::vector3<double, math::contravariant>{ii[0]*rspacing_[0], ii[1]*rspacing_[1], ii[2]*rspacing_[2]};
 			}
@@ -96,7 +96,7 @@ namespace basis {
 				return metric_.to_cartesian(rvector(ix, iy, iz));
 			}
 
-			GPU_FUNCTION auto rvector_cartesian(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+			GPU_FUNCTION auto rvector_cartesian(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 				return metric_.to_cartesian(rvector(ix, iy, iz));
 			}
 			
@@ -127,7 +127,7 @@ namespace basis {
 			
 			std::array<int, 3> nr_;
 			math::vector3<double> rspacing_;
-			std::array<inq::utils::partition, 3> cubic_dist_;
+			std::array<inq::parallel::partition, 3> cubic_dist_;
 			ions::UnitCell::cell_metric metric_;
 			
 		};

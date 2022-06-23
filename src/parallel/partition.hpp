@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__UTILS__PARTITION
-#define INQ__UTILS__PARTITION
+#ifndef INQ__PARALLEL__PARTITION
+#define INQ__PARALLEL__PARTITION
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -22,7 +22,7 @@
 */
 
 
-#include <utils/global_index.hpp>
+#include <parallel/global_index.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
 #include <mpi3/communicator.hpp>
@@ -33,7 +33,7 @@
 #include <array>
 
 namespace inq{
-namespace utils {
+namespace parallel {
 
 class partition {
 	
@@ -169,15 +169,15 @@ protected:
 }
 }
 
-#ifdef INQ_UTILS_PARTITION_UNIT_TEST
-#undef INQ_UTILS_PARTITION_UNIT_TEST
+#ifdef INQ_PARALLEL_PARTITION_UNIT_TEST
+#undef INQ_PARALLEL_PARTITION_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class utils::partition", "[utils::partition]") {
+TEST_CASE("class parallel::partition", "[parallel::partition]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
@@ -187,7 +187,7 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 
   auto comm = boost::mpi3::environment::get_world_instance();
   
-	inq::utils::partition part(NN, comm);
+	inq::parallel::partition part(NN, comm);
 
   auto next = comm.rank() + 1;
   if(next == comm.size()) next = 0;
@@ -287,11 +287,11 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 	}
 
 	SECTION("Small sizes"){
-		for(int ii = 0; ii < 20; ii++) inq::utils::partition part(ii, comm);
+		for(int ii = 0; ii < 20; ii++) inq::parallel::partition part(ii, comm);
 	}
 
 	SECTION("Check partition sizes 16 in 4"){
-		inq::utils::partition part(16, 4, 0);
+		inq::parallel::partition part(16, 4, 0);
 
 		CHECK(part.block_size() == 4);
 		CHECK(part.local_size() == 4);
@@ -314,7 +314,7 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 	}
 	
 	SECTION("Check partition sizes 16 in 5"){
-		inq::utils::partition part(16, 5, 0);
+		inq::parallel::partition part(16, 5, 0);
 
 		CHECK(part.block_size() == 4);
 		CHECK(part.local_size() == 4);
@@ -340,7 +340,7 @@ TEST_CASE("class utils::partition", "[utils::partition]") {
 	}
 
 	SECTION("Check partition sizes 17 in 5"){
-		inq::utils::partition part(17, 5, 0);
+		inq::parallel::partition part(17, 5, 0);
 
 		CHECK(part.block_size() == 4);
 		CHECK(part.local_size() == 4);

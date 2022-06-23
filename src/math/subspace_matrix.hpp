@@ -23,7 +23,7 @@
 
 #include <math/array.hpp>
 #include <gpu/run.hpp>
-#include <utils/partition.hpp>
+#include <parallel/partition.hpp>
 
 #include <mpi3/cartesian_communicator.hpp>
 
@@ -88,7 +88,7 @@ private:
 
   mutable boost::mpi3::cartesian_communicator<2> comm_;
   array_type array_;
-	utils::partition part_;
+	parallel::partition part_;
   
 };
 
@@ -125,8 +125,8 @@ TEST_CASE("math::subspace_matrix", "[math::subspace_matrix]") {
 
   auto dd = mm.diagonal();
 
-  if(mm.part().contains(0)) CHECK(dd[mm.part().global_to_local(utils::global_index(0))] == 4.0);
-  if(mm.part().contains(1)) CHECK(dd[mm.part().global_to_local(utils::global_index(1))] == 2.0);	
+  if(mm.part().contains(0)) CHECK(dd[mm.part().global_to_local(parallel::global_index(0))] == 4.0);
+  if(mm.part().contains(1)) CHECK(dd[mm.part().global_to_local(parallel::global_index(1))] == 2.0);	
   
 }
 

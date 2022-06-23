@@ -39,7 +39,7 @@ namespace basis {
     fourier_space(const grid & grid_basis):
 			grid(grid_basis){
 			
-			cubic_dist_ = {inq::utils::partition(nr_[0]), inq::utils::partition(nr_[1]), inq::utils::partition(nr_[2], comm())};
+			cubic_dist_ = {inq::parallel::partition(nr_[0]), inq::parallel::partition(nr_[1]), inq::parallel::partition(nr_[2], comm())};
 
 			base::part_ = cubic_dist_[2];
 			base::part_ *= nr_[0]*long(nr_[1]);
@@ -59,7 +59,7 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, math::vector3<double> const & gspacing, math::vector3<double> const & glength, std::array<inq::utils::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
+			point_operator(std::array<int, 3> const & ng, math::vector3<double> const & gspacing, math::vector3<double> const & glength, std::array<inq::parallel::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
 				glength_(glength),
@@ -68,7 +68,7 @@ namespace basis {
 			{
 			}
 
-			GPU_FUNCTION auto gvector(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+			GPU_FUNCTION auto gvector(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 				
 				//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 				//grid from -pi/h to pi/h
@@ -101,7 +101,7 @@ namespace basis {
 				return gspacing_;
 			}
 
-			GPU_FUNCTION bool g_is_zero(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+			GPU_FUNCTION bool g_is_zero(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 				return (ix.value() == 0 and iy.value() == 0 and iz.value() == 0);
 			}
 
@@ -113,7 +113,7 @@ namespace basis {
 				return g_is_zero(ixg, iyg, izg);
 			}
 			
-			GPU_FUNCTION double g2(utils::global_index ix, utils::global_index iy, utils::global_index iz) const {
+			GPU_FUNCTION double g2(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 				return metric_.norm(gvector(ix, iy, iz));
 			}
 			
@@ -138,7 +138,7 @@ namespace basis {
 			std::array<int, 3> ng_;
 			math::vector3<double> gspacing_;
 			math::vector3<double> glength_;
-			std::array<inq::utils::partition, 3> cubic_dist_;
+			std::array<inq::parallel::partition, 3> cubic_dist_;
 			ions::UnitCell::cell_metric metric_;
 			
 		};

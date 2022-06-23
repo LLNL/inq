@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__UTILS__GLOBAL_INDEX
-#define INQ__UTILS__GLOBAL_INDEX
+#ifndef INQ__PARALLEL__GLOBAL_INDEX
+#define INQ__PARALLEL__GLOBAL_INDEX
 
 /*
  Copyright (C) 2019 Xavier Andrade
@@ -29,7 +29,7 @@
 #include <array>
 
 namespace inq{
-namespace utils {
+namespace parallel {
 
 class global_index {
 
@@ -50,20 +50,20 @@ class global_index {
 }
 }
 
-#ifdef INQ_UTILS_GLOBAL_INDEX_UNIT_TEST
-#undef INQ_UTILS_GLOBAL_INDEX_UNIT_TEST
+#ifdef INQ_PARALLEL_GLOBAL_INDEX_UNIT_TEST
+#undef INQ_PARALLEL_GLOBAL_INDEX_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 #include <ions/unitcell.hpp>
 
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class utils::global_index", "[utils::global_index]") {
+TEST_CASE("class parallel::global_index", "[parallel::global_index]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
 
-	utils::global_index gi(10);
+	parallel::global_index gi(10);
 
 	CHECK(gi.value() == 10);
 	

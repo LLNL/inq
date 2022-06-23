@@ -35,7 +35,7 @@
 #include <math/array.hpp>
 #include <operations/integral.hpp>
 #include <solvers/poisson.hpp>
-#include <utils/partition.hpp>
+#include <parallel/partition.hpp>
 
 #include <unordered_map>
 
@@ -110,7 +110,7 @@ namespace hamiltonian {
 			
 			basis::field<basis_type, double> potential(basis);
 
-			utils::partition part(natoms_, comm);
+			parallel::partition part(natoms_, comm);
 			
 			potential = 0.0;
 			
@@ -163,7 +163,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			utils::partition part(natoms_, comm);
+			parallel::partition part(natoms_, comm);
 			
 			basis::field<basis_type, double> density(basis);
 			
@@ -202,7 +202,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			utils::partition part(natoms_, comm);
+			parallel::partition part(natoms_, comm);
 			
 			basis::field<basis_type, double> density(basis);
 
@@ -260,7 +260,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			utils::partition part(natoms_, comm);
+			parallel::partition part(natoms_, comm);
 			
 			basis::field<basis_type, double> density(basis);
 

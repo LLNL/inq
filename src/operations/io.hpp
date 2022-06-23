@@ -28,7 +28,7 @@
 #include <mpi3/communicator.hpp>
 #include <mpi3/detail/datatype.hpp>
 
-#include <utils/partition.hpp>
+#include <parallel/partition.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -55,7 +55,7 @@ auto numstr(long num){
 }
 
 template <class ArrayType>
-void save(std::string const & dirname, boost::mpi3::communicator & comm, utils::partition const & part, ArrayType const & array){
+void save(std::string const & dirname, boost::mpi3::communicator & comm, parallel::partition const & part, ArrayType const & array){
 
 	CALI_CXX_MARK_SCOPE("save(array)");
 
@@ -95,7 +95,7 @@ void save(std::string const & dirname, boost::mpi3::communicator & comm, utils::
 }
 
 template <class ArrayType>
-auto load(std::string const & dirname, boost::mpi3::communicator & comm, utils::partition const & part, ArrayType & array){
+auto load(std::string const & dirname, boost::mpi3::communicator & comm, parallel::partition const & part, ArrayType & array){
 
 	CALI_CXX_MARK_SCOPE("load(array)");
 
@@ -248,7 +248,7 @@ TEST_CASE("function operations::io", "[operations::io]") {
 
 		int const size = 12345;
 
-		utils::partition part(size, comm);
+		parallel::partition part(size, comm);
 
 		math::array<int, 1> arr(part.local_size());
 
