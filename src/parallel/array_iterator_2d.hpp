@@ -93,13 +93,13 @@ public:
   }
 
   auto xpart() const {
-    auto xp = xstep_ + comm_.axis(0).rank();
+    auto xp = xstep_ + comm_.coordinates()[0];
     if(xp >= partx_.comm_size()) xp -= partx_.comm_size();
     return xp;
   }
 
   auto ypart() const {
-    auto yp = ystep_ + comm_.axis(1).rank();
+    auto yp = ystep_ + comm_.coordinates()[1];
     if(yp >= party_.comm_size()) yp -= party_.comm_size();
     return yp;
   }
