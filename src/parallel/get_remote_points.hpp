@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__UTILS__GET_REMOTE_POINTS
-#define INQ__UTILS__GET_REMOTE_POINTS
+#ifndef INQ__PARALLEL__GET_REMOTE_POINTS
+#define INQ__PARALLEL__GET_REMOTE_POINTS
 
 /*
  Copyright (C) 2020 Xavier Andrade
@@ -30,7 +30,7 @@
 #include <cstdlib> //drand48
 
 namespace inq {
-namespace operations {
+namespace parallel {
 
 struct remote_points_table {
 
@@ -251,15 +251,15 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
 }
 }
 
-#ifdef INQ_OPERATIONS_GET_REMOTE_POINTS_UNIT_TEST
-#undef INQ_OPERATIONS_GET_REMOTE_POINTS_UNIT_TEST
+#ifdef INQ_PARALLEL_GET_REMOTE_POINTS_UNIT_TEST
+#undef INQ_PARALLEL_GET_REMOTE_POINTS_UNIT_TEST
 
 #include <math/vector3.hpp>
 
 #include <catch2/catch_all.hpp>
 #include <mpi3/cartesian_communicator.hpp>
 
-TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points]"){
+TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
 
 	using namespace inq;
 	using namespace inq::magnitude;	
@@ -299,7 +299,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 	}
 
 	SECTION("field"){
-		auto remote_points = operations::get_remote_points(test_field, list);
+		auto remote_points = parallel::get_remote_points(test_field, list);
 		
 		for(long ip = 0; ip < npoints; ip++){
 			CHECK(double(list[ip]) == Approx(real(remote_points[ip])));
@@ -308,7 +308,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 	}
 	
 	SECTION("field_set"){
-		auto remote_points_set = operations::get_remote_points(test_field_set, list);	
+		auto remote_points_set = parallel::get_remote_points(test_field_set, list);	
 
 		for(long ip = 0; ip < npoints; ip++){
 			for(int ivec = 0; ivec < nvec; ivec++){
@@ -331,7 +331,7 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 
 	SECTION("field_set state indices"){
 		
-		auto remote_points_set = operations::get_remote_points(test_field_set, list, stlist);	
+		auto remote_points_set = parallel::get_remote_points(test_field_set, list, stlist);	
 		
 		assert(remote_points_set.size() == npoints);
 		assert(remote_points_set.transposed().size() == nst);
