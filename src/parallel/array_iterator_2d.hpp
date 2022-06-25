@@ -40,8 +40,10 @@ class array_iterator_2d {
   partition party_;  
   mutable boost::mpi3::cartesian_communicator<2> comm_;
   ArrayType arr_;
-  long xstep_;
-  long ystep_;
+  int xstep_;
+  int ystep_;
+  int xpart_;
+  int ypart_;  
   int prev_proc_;
   int next_proc_;
   
@@ -56,7 +58,9 @@ public:
     comm_(std::move(comm)),
     arr_({partx.block_size(), party.block_size()}),
     xstep_(0),
-    ystep_(0)      
+    ystep_(0),
+    xpart_(comm_.coordinates()[0]),
+    ypart_(comm_.coordinates()[1])
   {
     arr_({0, partx_.local_size()}, {0, party_.local_size()}) = arr;
 
@@ -79,6 +83,7 @@ public:
       if(coords[0] == comm_.shape()[0]) coords[0] = 0;
     }
     MPI_Cart_rank(comm_.get(), coords, &next_proc_);
+
   }
 
   auto operator!=(end_type) const {
@@ -89,6 +94,7 @@ public:
 
     auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
     auto tag = ystep_ + xstep_*party_.comm_size();
+
     MPI_Sendrecv_replace(raw_pointer_cast(arr_.data_elements()), arr_.num_elements(), mpi_type, prev_proc_, tag, next_proc_, tag, comm_.get(), MPI_STATUS_IGNORE);
           
     ystep_++;
@@ -96,18 +102,21 @@ public:
       xstep_++;
       ystep_ = 0;
     }
+
+    ypart_++;
+    if(ypart_ == party_.comm_size()){
+      ypart_ = 0;
+      xpart_++;
+      if(xpart_ == partx_.comm_size()) xpart_ = 0;
+    }
   }
 
   auto xpart() const {
-    auto xp = xstep_ + comm_.coordinates()[0];
-    if(xp >= partx_.comm_size()) xp -= partx_.comm_size();
-    return xp;
+    return xpart_;
   }
 
   auto ypart() const {
-    auto yp = ystep_ + comm_.coordinates()[1];
-    if(yp >= party_.comm_size()) yp -= party_.comm_size();
-    return yp;
+    return ypart_;
   }
 
   static auto end() {
@@ -148,8 +157,14 @@ TEST_CASE("class parallel::array_iterator_2d", "[parallel::array_iterator_2d]") 
   parallel::partition partx(sizex, comm.axis(0));
   parallel::partition party(sizey, comm.axis(1));
 
-  math::array<double, 2> arr({partx.local_size(), party.local_size()}, comm.axis(0).rank() + 1.0 + 10000.0*(comm.axis(1).rank() + 1.0));
-
+  math::array<double, 2> arr({partx.local_size(), party.local_size()}, comm.axis(1).rank() + 1.0 + 10000.0*(comm.axis(0).rank() + 1.0));
+  /*
+  std::cout << "----------------" << std::endl;
+  comm.barrier();
+  std::cout << comm.axis(0).rank() + 1 << '\t' << comm.axis(1).rank() + 1 << '\t' << arr[0][0] << std::endl;
+  comm.barrier();
+  std::cout << "----------------" << std::endl;
+  */  
   {
     parallel::array_iterator_2d pai(partx, party, comm, arr);
     int itcount = 0;
@@ -162,19 +177,21 @@ TEST_CASE("class parallel::array_iterator_2d", "[parallel::array_iterator_2d]") 
         
         CHECK(xpart == pai.xpart());
         CHECK(ypart == pai.ypart());
-
-        if(comm.root()) std::cout << comm.rank() << '\t' << pai.xpart() + 1 << '\t' << pai.ypart() + 1 << '\t' << (*pai)[0][0] << std::endl;
-         
-        ++pai;
         
+        //        if(comm.rank() == 1) std::cout << comm.rank() << '\t' << pai.xpart() + 1 << '\t' << pai.ypart() + 1 << '\t' << (*pai)[0][0] << std::endl;
+        //        if(comm.rank() == 1) std::cout << comm.rank() << '\t' << xpart + 1 << '\t' << ypart + 1 << '\t' << (*pai)[0][0] << std::endl;
+                 
+        ++pai;
         ypart++;
-        if(ypart == party.comm_size()) ypart = 0;
+        if(ypart == party.comm_size()){
+          ypart = 0;
+          xpart++;
+          if(xpart == partx.comm_size()) xpart = 0;
+        }
 
         itcount++;
       }
       
-      xpart++;
-      if(xpart == partx.comm_size()) xpart = 0;
     }
 
     CHECK(itcount == comm.size());
@@ -191,7 +208,7 @@ TEST_CASE("class parallel::array_iterator_2d", "[parallel::array_iterator_2d]") 
         for(long iy = 0; iy < party.local_size(pai.ypart()); iy++){
       //      std::cout << comm.rank() << '\t' << pai.xpart() + 1 << '\t' << pai.ypart() + 1 << '\t' << (*pai)[0][0] << std::endl;
           
-          //          CHECK((*pai)[ix][iy] == pai.xpart() + 1.0 + 10000.0*(pai.ypart() + 1.0));
+          CHECK((*pai)[ix][iy] == pai.ypart() + 1.0 + 10000.0*(pai.xpart() + 1.0));
         }
       }
       
