@@ -26,6 +26,7 @@
 #include <basis/field_set.hpp>
 
 #include <mpi3/communicator.hpp>
+#include <parallel/array_iterator_2d.hpp>
 
 #include <cstdlib> //drand48
 
@@ -240,11 +241,29 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
 
 	math::array<ElementType, 2> remote_points({point_list.size(), state_list.size()});
 	
-	gpu::run(state_list.size(), point_list.size(),
-					 [rem = begin(remote_points), sou = begin(source.matrix()), poi = begin(point_list), sta = begin(state_list)] GPU_LAMBDA (auto ist, auto ip){
-						 rem[ip][ist] = sou[poi[ip]][sta[ist]];
-					 });
-	
+	if(source.full_comm().size() == 1) {
+		gpu::run(state_list.size(), point_list.size(),
+						 [rem = begin(remote_points), sou = begin(source.matrix()), poi = begin(point_list), sta = begin(state_list)] GPU_LAMBDA (auto ist, auto ip){
+							 rem[ip][ist] = sou[poi[ip]][sta[ist]];
+						 });
+
+	} else {
+
+		for(parallel::array_iterator_2d pai(source.basis().part(), source.set_part(), source.full_comm(), source.matrix()); pai != pai.end(); ++pai){
+
+			for(long ip = 0; ip < point_list.size(); ip++){
+				if(not source.basis().part().contains(point_list[ip], pai.xpart())) continue;
+
+				for(long ist = 0; ist < state_list.size(); ist++){
+					if(not source.set_part().contains(state_list[ist], pai.ypart())) continue;
+					
+					remote_points[ip][ist] = (*pai)[point_list[ip] - source.basis().part().start(pai.xpart())][state_list[ist] - source.set_part().start(pai.ypart())];
+				}
+      }
+			
+		}
+	}
+		
 	return remote_points;
 }
 
@@ -297,7 +316,7 @@ TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
 		list[ip] = drand48()*(rs.size() - 1);
 		assert(list[ip] < rs.size());
 	}
-
+	
 	SECTION("field"){
 		auto remote_points = parallel::get_remote_points(test_field, list);
 		
@@ -328,14 +347,14 @@ TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
 		stlist[ist] = drand48()*(nvec - 1);
 		assert(stlist[ist] < nvec);
 	}
-
+	
 	SECTION("field_set state indices"){
 		
 		auto remote_points_set = parallel::get_remote_points(test_field_set, list, stlist);	
 		
 		assert(remote_points_set.size() == npoints);
 		assert(remote_points_set.transposed().size() == nst);
-		
+
 		for(long ip = 0; ip < npoints; ip++){
 			for(long ist = 0; ist < nst; ist++){
 				CHECK((stlist[ist] + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ist])));
