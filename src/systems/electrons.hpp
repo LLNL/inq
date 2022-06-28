@@ -47,6 +47,22 @@ class electrons {
 	
 public:
 	
+	static auto lot_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+		return comm.axis(0);
+	}
+	static auto states_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+		return comm.axis(1);
+	}
+	static auto basis_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+		return comm.axis(2);
+	}
+	static auto states_basis_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+		return comm.hyperplane(0);
+	}
+	static auto lot_states_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+		return comm.hyperplane(2);
+	}
+	
 	auto & lot() const {
 		return lot_;
 	}
@@ -66,12 +82,12 @@ public:
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm()),
-		lot_comm_(full_comm_.axis(0)),
-		lot_states_comm_(full_comm_.hyperplane(2)),
-		states_comm_(full_comm_.axis(1)),
+		lot_comm_(lot_subcomm(full_comm_)),
+		lot_states_comm_(lot_states_subcomm(full_comm_)),
+		states_comm_(states_subcomm(full_comm_)),
 		atoms_comm_(states_comm_),
-		states_basis_comm_(full_comm_.hyperplane(0)),
-		basis_comm_(full_comm_.axis(2)),
+		states_basis_comm_(states_basis_subcomm(full_comm_)),
+		basis_comm_(basis_subcomm(full_comm_)),
 		states_basis_(box, basis_comm_),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
