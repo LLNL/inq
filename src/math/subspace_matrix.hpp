@@ -40,19 +40,19 @@ public:
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size):
     comm_(comm),
     array_({size, size}),
-		part_(size, comm.axis(0)){
+		part_(size, comm.axis(1)){
   }
 
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size, Type const & ival):
     comm_(comm),
     array_({size, size}, ival),
-		part_(size, comm.axis(0)){
+		part_(size, comm.axis(1)){
   }
   
   subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, array_type && mat):
     comm_(comm),
     array_(std::move(mat)),
-		part_(array_.size(), comm.axis(0)){
+		part_(array_.size(), comm.axis(1)){
   }
 
   auto size() const {

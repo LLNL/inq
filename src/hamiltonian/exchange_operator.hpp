@@ -42,6 +42,8 @@ namespace hamiltonian {
 			exchange_coefficient_(exchange_coefficient),
 			use_ace_(use_ace){
 
+			assert(basis.comm() == basis::basis_subcomm(comm));
+
 			if(exchange_coefficient_ != 0.0) hf_orbitals.emplace(basis, num_hf_orbitals, comm);	
 			if(exchange_coefficient_ != 0.0) xi_.emplace(basis, num_hf_orbitals, std::move(comm));		
 		}

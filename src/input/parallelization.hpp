@@ -40,7 +40,7 @@ namespace input {
     }
 
 		auto cart_comm() const {
-			return boost::mpi3::cartesian_communicator<3>(comm_, {nproc_kpts_, nproc_states_, nproc_domains_});
+			return boost::mpi3::cartesian_communicator<3>(comm_, {nproc_kpts_, nproc_domains_, nproc_states_});
     }
 
 		auto states(int num = boost::mpi3::fill){

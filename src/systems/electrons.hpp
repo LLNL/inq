@@ -51,16 +51,16 @@ public:
 		return comm.axis(0);
 	}
 	static auto states_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
-		return comm.axis(1);
+		return comm.axis(2);
 	}
 	static auto basis_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
-		return comm.axis(2);
+		return comm.axis(1);
 	}
 	static auto states_basis_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
 		return comm.hyperplane(0);
 	}
 	static auto lot_states_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
-		return comm.hyperplane(2);
+		return comm.hyperplane(1);
 	}
 	
 	auto & lot() const {

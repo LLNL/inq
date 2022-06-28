@@ -35,10 +35,10 @@ namespace inq {
 namespace basis {
 
 static auto set_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
-	return comm.axis(0);
+	return comm.axis(1);
 }
 static auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
-	return comm.axis(1);
+	return comm.axis(0);
 }
 
 	template<class Basis, class type>
@@ -65,7 +65,7 @@ static auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 
 		//when no communicator is given, use the basis communicator
 		field_set(const basis_type & basis, const int num_vectors)			
-			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(basis.comm(), {1}))
+			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(basis.comm(), {basis.comm().size(), 1}))
 		{
 		}
 
