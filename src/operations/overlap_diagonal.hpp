@@ -176,7 +176,7 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 		
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {1, comm.size()});
 
-	auto basis_comm = cart_comm.axis(1);
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 
 	CHECK(basis_comm.size() == comm.size());
 		

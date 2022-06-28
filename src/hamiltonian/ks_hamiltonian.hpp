@@ -232,8 +232,8 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 
-	auto set_comm = cart_comm.axis(0);
-	auto basis_comm = cart_comm.axis(1);	
+	auto set_comm = basis::set_subcomm(cart_comm);
+	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
 	ions::geometry geo;
 	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);

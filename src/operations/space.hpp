@@ -580,7 +580,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 
-	auto basis_comm = cart_comm.axis(1);
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 	
 	systems::box box = systems::box::cubic(6.66_b).cutoff_energy(23.0_Ha);
 	basis::real_space rs(box, basis_comm);

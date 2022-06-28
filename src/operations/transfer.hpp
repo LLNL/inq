@@ -398,8 +398,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	using math::vector3;
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
-	auto set_comm = cart_comm.axis(0);
-	auto basis_comm = cart_comm.axis(1);
+	auto set_comm = basis::set_subcomm(cart_comm);
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 	
 	vector3<double> ll{6.66, 7.77, 9.99};
 	
