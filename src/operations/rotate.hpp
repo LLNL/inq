@@ -146,8 +146,9 @@ TEST_CASE("function operations::rotate", "[operations::rotate]") {
 	{
 		auto parstates = comm.size();
 		if(comm.size() == 3 or comm.size() >= 5) parstates = 1;
+		if(comm.size() == 2 or comm.size() == 4) parstates = 2;
 		
-		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {parstates, boost::mpi3::fill});
+		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {boost::mpi3::fill, parstates});
 		auto basis_comm = basis::basis_subcomm(cart_comm);
 		
 		basis::trivial bas(npoint, basis_comm);
