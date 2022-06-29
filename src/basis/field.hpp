@@ -30,7 +30,7 @@ OMPI_CXX=$CXX ../../blds/gcc/scripts/inc++ -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 #include <utils/raw_pointer_cast.hpp>
 #include <basis/real_space.hpp>
 #include <math/complex.hpp>
-#include <operations/get_remote_points.hpp>
+#include <parallel/get_remote_points.hpp>
 
 #include <mpi3/environment.hpp>
 
@@ -80,7 +80,7 @@ namespace basis {
 			
 			math::array<int, 1> rem_points(basis().local_size());
 			for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
-			linear_ = operations::get_remote_points(old, rem_points);
+			linear_ = parallel::get_remote_points(old, rem_points);
 		}
 		
 		explicit field(const field & coeff) = default; 		//avoid unadverted copies

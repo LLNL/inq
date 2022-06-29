@@ -25,6 +25,8 @@
 #include <math/array.hpp>
 #include <mpi3/communicator.hpp>
 #include <parallel/array_iterator_2d.hpp>
+#include <parallel/partition.hpp>
+#include <utils/raw_pointer_cast.hpp>
 
 #include <cstdlib> //drand48
 
