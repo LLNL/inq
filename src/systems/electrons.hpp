@@ -124,11 +124,11 @@ public:
 
 	electrons(electrons && old_el, input::parallelization const & new_dist):
 		brillouin_zone_(std::move(old_el.brillouin_zone_)),
-		full_comm_(std::move(old_el.full_comm_)),
-		lot_comm_(std::move(old_el.lot_comm_)),
-		lot_states_comm_(std::move(old_el.lot_states_comm_)),
-		states_comm_(std::move(old_el.states_comm_)),
-		states_basis_comm_(std::move(old_el.states_basis_comm_)),
+		full_comm_(new_dist.cart_comm()),
+		lot_comm_(lot_subcomm(full_comm_)),
+		lot_states_comm_(lot_states_subcomm(full_comm_)),
+		states_comm_(states_subcomm(full_comm_)),
+		states_basis_comm_(states_basis_subcomm(full_comm_)),
 		states_basis_(std::move(old_el.states_basis_), basis_subcomm(full_comm_)),
 		density_basis_(std::move(old_el.density_basis_), basis_subcomm(full_comm_)),
 		atomic_pot_(std::move(old_el.atomic_pot_)),
