@@ -34,10 +34,10 @@
 namespace inq {
 namespace basis {
 
-static auto set_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
+auto set_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 	return comm.axis(1);
 }
-static auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
+auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 	return comm.axis(0);
 }
 
