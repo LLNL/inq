@@ -154,8 +154,8 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 
-	auto set_comm = cart_comm.axis(0);
-	auto basis_comm = cart_comm.axis(1);	
+	auto set_comm = basis::set_subcomm(cart_comm);
+	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
 	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(ecut);
   basis::real_space rs(box, basis_comm);

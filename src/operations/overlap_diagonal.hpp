@@ -174,9 +174,9 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 			
 	auto comm = boost::mpi3::environment::get_world_instance();
 		
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {1, comm.size()});
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
 
-	auto basis_comm = cart_comm.axis(1);
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 
 	CHECK(basis_comm.size() == comm.size());
 		

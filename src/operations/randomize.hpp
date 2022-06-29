@@ -105,7 +105,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 	
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 
-	auto basis_comm = cart_comm.axis(1);
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 
 	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
   basis::real_space bas(box, basis_comm);

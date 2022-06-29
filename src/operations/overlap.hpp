@@ -104,8 +104,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 	auto parstates = comm.size();
 	if(comm.size() >= 5) parstates = 1;
 	
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {parstates, boost::mpi3::fill});
-	auto basis_comm = cart_comm.axis(1);
+	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {boost::mpi3::fill, parstates});
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 
 	basis::trivial bas(npoint, basis_comm);
 
@@ -209,8 +209,8 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 
 	SECTION("complex 1x1"){
 	
-		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {1, comm.size()});
-		auto basis_comm = cart_comm.axis(1);
+		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
+		auto basis_comm = basis::basis_subcomm(cart_comm);
 		
 		basis::trivial bas(npoint, basis_comm);
 	

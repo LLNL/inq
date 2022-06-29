@@ -54,6 +54,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 	CALI_CXX_MARK_FUNCTION;
 
+	assert(electrons.lot()[0].full_comm() == electrons.states_basis_comm_);
+	
 	auto console = electrons.logger();
 	if(console) console->trace("calculate started");
 	hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);

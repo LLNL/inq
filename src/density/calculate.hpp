@@ -105,7 +105,7 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 	
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 	
-	auto basis_comm = cart_comm.axis(1);
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 	
 	basis::trivial bas(npoint, basis_comm);
 	

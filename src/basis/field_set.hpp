@@ -33,7 +33,14 @@
 
 namespace inq {
 namespace basis {
-	
+
+auto set_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
+	return comm.axis(1);
+}
+auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
+	return comm.axis(0);
+}
+
 	template<class Basis, class type>
   class field_set {
 
@@ -45,20 +52,20 @@ namespace basis {
 
 		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator<2> comm)
 			:full_comm_(std::move(comm)),
-			 set_comm_(full_comm_.axis(0)),
+			 set_comm_(basis::set_subcomm(full_comm_)),
 			 set_part_(num_vectors, set_comm_),
 			 matrix_({basis.part().local_size(), set_part_.local_size()}),
 			 num_vectors_(num_vectors),
 			 basis_(basis)
 		{
 			prefetch();
-			assert(basis_.part().comm_size() == full_comm_.axis(1).size());
+			assert(basis_.part().comm_size() == basis::basis_subcomm(full_comm_).size());
 			assert(local_set_size() > 0);
 		}
 
 		//when no communicator is given, use the basis communicator
 		field_set(const basis_type & basis, const int num_vectors)			
-			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(basis.comm(), {1}))
+			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(basis.comm(), {basis.comm().size(), 1}))
 		{
 		}
 
@@ -277,8 +284,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
 
-	auto set_comm = cart_comm.axis(0);
-	auto basis_comm = cart_comm.axis(1);	
+	auto set_comm = basis::set_subcomm(cart_comm);
+	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
 	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(40.0_Ha);
   basis::real_space rs(box, basis_comm);
