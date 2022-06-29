@@ -24,7 +24,7 @@
 #include <basis/fourier_space.hpp>
 #include <basis/field_set.hpp>
 #include <gpu/run.hpp>
-#include <operations/get_remote_points.hpp>
+#include <parallel/get_remote_points.hpp>
 #include <operations/space.hpp>
 
 #include <multi/adaptors/fftw.hpp>
@@ -79,7 +79,7 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 
 		math::array<long, 1> list(point_list.begin(), point_list.end());
 		
-		auto points = operations::get_remote_points(source, list);
+		auto points = parallel::get_remote_points(source, list);
 		
 		long ip = 0;
 		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
@@ -151,7 +151,7 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 
 		math::array<long, 1> list(point_list.begin(), point_list.end());
 		
-		auto points = operations::get_remote_points(source, list);
+		auto points = parallel::get_remote_points(source, list);
 		
 		long ip = 0;
 		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
@@ -228,7 +228,7 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 			assert(ip == point_list.size());
 		}
 
-		auto points = operations::get_remote_points(source, point_list);
+		auto points = parallel::get_remote_points(source, point_list);
 
 		{
 			long ip = 0;
@@ -295,7 +295,7 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const
 			assert(ip == point_list.size());
 		}
 
-		auto points = operations::get_remote_points(source, point_list);
+		auto points = parallel::get_remote_points(source, point_list);
 
 		{
 			long ip = 0;

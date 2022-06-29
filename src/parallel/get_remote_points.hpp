@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__UTILS__GET_REMOTE_POINTS
-#define INQ__UTILS__GET_REMOTE_POINTS
+#ifndef INQ__PARALLEL__GET_REMOTE_POINTS
+#define INQ__PARALLEL__GET_REMOTE_POINTS
 
 /*
  Copyright (C) 2020 Xavier Andrade
@@ -26,11 +26,12 @@
 #include <basis/field_set.hpp>
 
 #include <mpi3/communicator.hpp>
+#include <parallel/array_iterator_2d.hpp>
 
 #include <cstdlib> //drand48
 
 namespace inq {
-namespace operations {
+namespace parallel {
 
 struct remote_points_table {
 
@@ -233,18 +234,51 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
   return remote_points;
 }
 
+template <class BasisType, class ElementType, class ArrayType>
+math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, ElementType> const & source, ArrayType const & point_list, ArrayType const & state_list){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	math::array<ElementType, 2> remote_points({point_list.size(), state_list.size()});
+	
+	if(source.full_comm().size() == 1) {
+		gpu::run(state_list.size(), point_list.size(),
+						 [rem = begin(remote_points), sou = begin(source.matrix()), poi = begin(point_list), sta = begin(state_list)] GPU_LAMBDA (auto ist, auto ip){
+							 rem[ip][ist] = sou[poi[ip]][sta[ist]];
+						 });
+
+	} else {
+
+		for(parallel::array_iterator_2d pai(source.basis().part(), source.set_part(), source.full_comm(), source.matrix()); pai != pai.end(); ++pai){
+
+			for(long ip = 0; ip < point_list.size(); ip++){
+				if(not source.basis().part().contains(point_list[ip], pai.xpart())) continue;
+
+				for(long ist = 0; ist < state_list.size(); ist++){
+					if(not source.set_part().contains(state_list[ist], pai.ypart())) continue;
+					
+					remote_points[ip][ist] = (*pai)[point_list[ip] - source.basis().part().start(pai.xpart())][state_list[ist] - source.set_part().start(pai.ypart())];
+				}
+      }
+			
+		}
+	}
+		
+	return remote_points;
+}
+
 }
 }
 
-#ifdef INQ_OPERATIONS_GET_REMOTE_POINTS_UNIT_TEST
-#undef INQ_OPERATIONS_GET_REMOTE_POINTS_UNIT_TEST
+#ifdef INQ_PARALLEL_GET_REMOTE_POINTS_UNIT_TEST
+#undef INQ_PARALLEL_GET_REMOTE_POINTS_UNIT_TEST
 
 #include <math/vector3.hpp>
 
 #include <catch2/catch_all.hpp>
 #include <mpi3/cartesian_communicator.hpp>
 
-TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points]"){
+TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
 
 	using namespace inq;
 	using namespace inq::magnitude;	
@@ -272,27 +306,62 @@ TEST_CASE("Class operations::get_remote_points", "[operations::get_remote_points
 
 	srand48(500 + 34895783*cart_comm.rank());
 	
-	long const npoints = drand48()*rs.size();
-
+	long const npoints = 1 + drand48()*(rs.size() - 1);
+	assert(npoints > 0);
+	assert(npoints <= rs.size());
+	
 	math::array<long, 1> list(npoints);
 	
 	for(long ip = 0; ip < npoints; ip++){
 		list[ip] = drand48()*(rs.size() - 1);
 		assert(list[ip] < rs.size());
 	}
-
-	auto remote_points = operations::get_remote_points(test_field, list);
-	auto remote_points_set = operations::get_remote_points(test_field_set, list);	
-
-	for(long ip = 0; ip < npoints; ip++){
-		CHECK(double(list[ip]) == Approx(real(remote_points[ip])));
-		CHECK(0.1*double(list[ip]) == Approx(imag(remote_points[ip])));
-		for(int ivec = 0; ivec < nvec; ivec++){
-			CHECK((ivec + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ivec])));
-			CHECK((ivec + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ivec])));
+	
+	SECTION("field"){
+		auto remote_points = parallel::get_remote_points(test_field, list);
+		
+		for(long ip = 0; ip < npoints; ip++){
+			CHECK(double(list[ip]) == Approx(real(remote_points[ip])));
+			CHECK(0.1*double(list[ip]) == Approx(imag(remote_points[ip])));
 		}
 	}
+	
+	SECTION("field_set"){
+		auto remote_points_set = parallel::get_remote_points(test_field_set, list);	
 
+		for(long ip = 0; ip < npoints; ip++){
+			for(int ivec = 0; ivec < nvec; ivec++){
+				CHECK((ivec + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ivec])));
+				CHECK((ivec + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ivec])));
+			}
+		}
+	}
+	
+	long const nst = 1 + drand48()*(nvec - 1);
+	assert(nst > 0);
+	assert(nst <= nvec);
+		
+	math::array<long, 1> stlist(nst);
+	
+	for(long ist = 0; ist < nst; ist++){
+		stlist[ist] = drand48()*(nvec - 1);
+		assert(stlist[ist] < nvec);
+	}
+	
+	SECTION("field_set state indices"){
+		
+		auto remote_points_set = parallel::get_remote_points(test_field_set, list, stlist);	
+		
+		assert(remote_points_set.size() == npoints);
+		assert(remote_points_set.transposed().size() == nst);
+
+		for(long ip = 0; ip < npoints; ip++){
+			for(long ist = 0; ist < nst; ist++){
+				CHECK((stlist[ist] + 1.0)*double(list[ip]) == Approx(real(remote_points_set[ip][ist])));
+				CHECK((stlist[ist] + 1.0)*0.1*double(list[ip]) == Approx(imag(remote_points_set[ip][ist])));
+			}
+		}
+	}
 	
 }
 

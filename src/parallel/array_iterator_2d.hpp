@@ -60,6 +60,10 @@ public:
     xpart_(comm_.coordinates()[0]),
     ypart_(comm_.coordinates()[1])
   {
+
+    assert(partx_.comm_size() == comm_.shape()[0]);
+    assert(party_.comm_size() == comm_.shape()[1]);    
+    
     arr_({0, partx_.local_size()}, {0, party_.local_size()}) = arr;
 
     int coords[2];
