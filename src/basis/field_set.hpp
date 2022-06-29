@@ -23,6 +23,7 @@
 
 #include <basis/real_space.hpp>
 #include <parallel/partition.hpp>
+#include <parallel/get_remote_points.hpp>
 #include <math/array.hpp>
 #include <algorithm>
 
@@ -86,7 +87,11 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 		field_set(field_set && oldset, boost::mpi3::cartesian_communicator<2> new_comm):
 			field_set(oldset.basis(), oldset.set_size(), new_comm)
 		{
-			//			matrix_ = std::move(oldset.matrix_);
+			math::array<int, 1> rem_points(basis().local_size());
+			math::array<int, 1> rem_states(local_set_size());
+			for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
+			for(long ist = 0; ist < local_set_size(); ist++) rem_states[ist] = set_part().local_to_global(ist).value();
+			matrix_ = parallel::get_remote_points(oldset, rem_points, rem_states);
 		}
 				
 		field_set & operator=(field_set const& other){
