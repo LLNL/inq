@@ -368,8 +368,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	
 	SECTION("Redistribute"){
 		
-		systems::electrons newel(std::move(electrons_read), input::parallelization(comm));
-		//		systems::electrons newel(par, ions, box);
+		systems::electrons newel(std::move(electrons_read), input::parallelization(comm).domains(1).states());
 		
 		newel.save("newel_restart");
 		
