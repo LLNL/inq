@@ -85,10 +85,8 @@ public:
 		lot_comm_(lot_subcomm(full_comm_)),
 		lot_states_comm_(lot_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
-		atoms_comm_(states_comm_),
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
-		basis_comm_(basis_subcomm(full_comm_)),
-		states_basis_(box, basis_comm_),
+		states_basis_(box, basis_subcomm(full_comm_)),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
@@ -122,6 +120,61 @@ public:
 		
 		print(ions);
 
+	}
+
+	electrons(electrons && old_el, input::parallelization const & new_dist):
+		brillouin_zone_(std::move(old_el.brillouin_zone_)),
+		full_comm_(new_dist.cart_comm()),
+		lot_comm_(lot_subcomm(full_comm_)),
+		lot_states_comm_(lot_states_subcomm(full_comm_)),
+		states_comm_(states_subcomm(full_comm_)),
+		states_basis_comm_(states_basis_subcomm(full_comm_)),
+		states_basis_(std::move(old_el.states_basis_), basis_subcomm(full_comm_)),
+		density_basis_(std::move(old_el.density_basis_), basis_subcomm(full_comm_)),
+		atomic_pot_(std::move(old_el.atomic_pot_)),
+		states_(std::move(old_el.states_)),
+		lot_weights_(std::move(old_el.lot_weights_)),
+		max_local_size_(std::move(old_el.max_local_size_)),
+		density_(std::move(old_el.density_), density_basis_.comm()),
+		logger_(std::move(old_el.logger_)),
+		lot_part_(std::move(old_el.lot_part_))
+	{
+
+		assert(lot_comm_ == old_el.lot_comm_); //resizing of k points not supported for the moment
+
+		max_local_size_ = 0;
+		for(auto & oldphi : old_el.lot_){
+			lot_.emplace_back(std::move(oldphi), states_basis_comm_);
+			max_local_size_ = std::max(max_local_size_, lot_.back().fields().local_set_size());
+		}
+
+		assert(lot_.size() == old_el.lot_.size());
+
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
+		
+		for(unsigned ilot = 0; ilot < lot_.size(); ilot++){
+
+			parallel::partition part(lot_[ilot].set_size(), states_subcomm(old_el.full_comm_));
+			
+			parallel::array_iterator eigit(part, states_subcomm(old_el.full_comm_), +old_el.eigenvalues_[ilot]);
+			parallel::array_iterator occit(part, states_subcomm(old_el.full_comm_), +old_el.occupations_[ilot]);
+
+			for(; eigit != eigit.end(); ++eigit){
+				
+				for(int ist = 0; ist < eigenvalues_[ilot].size(); ist++){
+					auto istg = lot_[ilot].set_part().local_to_global(ist);
+					if(part.contains(istg.value())){
+						eigenvalues_[ilot][ist] = (*eigit)[part.global_to_local(istg)];
+						occupations_[ilot][ist] = (*occit)[part.global_to_local(istg)];
+					}
+				}
+				
+				++occit;
+			}
+			
+		}		
+		
 	}
 
 	void print(const inq::systems::ions & ions){
@@ -188,7 +241,7 @@ public:
 		for(auto & phi : lot()){
 			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
 			operations::io::save(basedir + "/states", phi);
-			if(basis_comm_.root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), +occupations()[iphi]);	
+			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), +occupations()[iphi]);	
 			iphi++;
 		}
 	}
@@ -247,9 +300,7 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	mutable boost::mpi3::cartesian_communicator<1> lot_comm_;
 	mutable boost::mpi3::cartesian_communicator<2> lot_states_comm_;
 	mutable boost::mpi3::cartesian_communicator<1> states_comm_;
-	mutable boost::mpi3::cartesian_communicator<1> atoms_comm_;
-	mutable boost::mpi3::cartesian_communicator<2> states_basis_comm_;	
-	mutable boost::mpi3::cartesian_communicator<1> basis_comm_;
+	mutable boost::mpi3::cartesian_communicator<2> states_basis_comm_;
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
@@ -317,18 +368,18 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		}
 		iphi++;
 	}
-		
+
 	electrons.save("electron_restart");
 	
 	systems::electrons electrons_read(par, ions, box);
 	
 	electrons_read.load("electron_restart");
-
+	
 	CHECK(electrons.lot_size() == electrons_read.lot_size());
 	
 	iphi = 0;
 	for(auto & phi : electrons.lot()) {
-
+		
 		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
 			CHECK(electrons.occupations()[iphi][ist] == electrons_read.occupations()[0][ist]);
 			for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
@@ -338,8 +389,33 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		iphi++;
 	}
 	
-	CHECK(not electrons.load("directory_that_doesnt_exist"));
+	SECTION("Redistribute"){
+		
+		systems::electrons newel(std::move(electrons_read), input::parallelization(comm).domains(1).states());
+		
+		newel.save("newel_restart");
+		
+		systems::electrons newel_read(par, ions, box);
+		newel_read.load("newel_restart");
+		
+		CHECK(electrons.lot_size() == newel_read.lot_size());
+		
+		iphi = 0;
+		for(auto & phi : electrons.lot()) {
+			
+			for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
+				CHECK(electrons.occupations()[iphi][ist] == newel_read.occupations()[0][ist]);
+				for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
+					CHECK(phi.fields().matrix()[ip][ist] == newel_read.lot()[iphi].fields().matrix()[ip][ist]);
+				}
+			}
+			iphi++;
+		}
 
+	}
+
+	CHECK(not electrons.load("directory_that_doesnt_exist"));
+	
 }
 
 #endif

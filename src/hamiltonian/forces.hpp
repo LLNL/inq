@@ -100,9 +100,9 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 			forces_local[iatom] = electrons.density_basis_.volume_element()*ions.cell().metric().to_cartesian(force_cov);
 		}
 
-		if(electrons.basis_comm_.size() > 1){
+		if(electrons.density_basis_.comm().size() > 1){
 			CALI_CXX_MARK_SCOPE("forces_local::reduce");
-			electrons.basis_comm_.all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size(), std::plus<>{});
+			electrons.density_basis_.comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size(), std::plus<>{});
 		}
 		
 	}

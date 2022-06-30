@@ -49,6 +49,11 @@ namespace states {
 			 kpoint_(kpoint){
 		}
 
+		orbital_set(orbital_set && oldset, boost::mpi3::cartesian_communicator<2> new_comm)
+		:fields_(std::move(oldset.fields_), new_comm),
+			 kpoint_(oldset.kpoint()){
+		}
+		
 		template <class any_type>
 		orbital_set(inq::utils::skeleton_wrapper<orbital_set<Basis, any_type>> const & skeleton)
 			:orbital_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.kpoint(), skeleton.base.full_comm()){
