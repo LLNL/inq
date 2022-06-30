@@ -133,8 +133,6 @@ public:
 		density_basis_(std::move(old_el.density_basis_), basis_subcomm(full_comm_)),
 		atomic_pot_(std::move(old_el.atomic_pot_)),
 		states_(std::move(old_el.states_)),
-		eigenvalues_(std::move(old_el.eigenvalues_)),
-		occupations_(std::move(old_el.occupations_)),
 		lot_weights_(std::move(old_el.lot_weights_)),
 		max_local_size_(std::move(old_el.max_local_size_)),
 		density_(std::move(old_el.density_), density_basis_.comm()),
@@ -144,13 +142,16 @@ public:
 
 		assert(lot_comm_ == old_el.lot_comm_); //resizing of k points not supported for the moment
 
-		auto iphi = 0;
+		max_local_size_ = 0;
 		for(auto & oldphi : old_el.lot_){
 			lot_.emplace_back(std::move(oldphi), states_basis_comm_);
-			iphi++;
+			max_local_size_ = std::max(max_local_size_, lot_.back().fields().local_set_size());
 		}
 
 		assert(lot_.size() == old_el.lot_.size());
+
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
 		
 	}
 
