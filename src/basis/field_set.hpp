@@ -85,7 +85,7 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 		field_set(field_set && coeff) = default;
 
 		field_set(field_set && oldset, boost::mpi3::cartesian_communicator<2> new_comm):
-			field_set(oldset.basis(), oldset.set_size(), new_comm)
+			field_set(Basis{Basis{oldset.basis()}, basis_subcomm(new_comm)}, oldset.set_size(), new_comm)
 		{
 			math::array<int, 1> rem_points(basis().local_size());
 			math::array<int, 1> rem_states(local_set_size());
