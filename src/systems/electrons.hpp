@@ -153,6 +153,28 @@ public:
 		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
 		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
 		
+		for(unsigned ilot = 0; ilot < lot_.size(); ilot++){
+
+			parallel::partition part(lot_[ilot].set_size(), states_subcomm(old_el.full_comm_));
+			
+			parallel::array_iterator eigit(part, states_subcomm(old_el.full_comm_), +old_el.eigenvalues_[ilot]);
+			parallel::array_iterator occit(part, states_subcomm(old_el.full_comm_), +old_el.occupations_[ilot]);
+
+			for(; eigit != eigit.end(); ++eigit){
+				
+				for(int ist = 0; ist < eigenvalues_[ilot].size(); ist++){
+					auto istg = lot_[ilot].set_part().local_to_global(ist);
+					if(part.contains(istg.value())){
+						eigenvalues_[ilot][ist] = (*eigit)[part.global_to_local(istg)];
+						occupations_[ilot][ist] = (*occit)[part.global_to_local(istg)];
+					}
+				}
+				
+				++occit;
+			}
+			
+		}		
+		
 	}
 
 	void print(const inq::systems::ions & ions){
