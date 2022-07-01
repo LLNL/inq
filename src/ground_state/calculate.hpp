@@ -85,7 +85,6 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
-	
 	double old_exe = ham.exchange.update(electrons);
 	double exe_diff = fabs(old_exe);
 	auto update_hf = false;
