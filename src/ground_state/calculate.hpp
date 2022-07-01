@@ -90,6 +90,9 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	double exe_diff = fabs(old_exe);
 	auto update_hf = false;
 
+	electrons.full_comm_.barrier();
+	auto iter_start_time = std::chrono::high_resolution_clock::now();
+
 	int conv_count = 0;
 	for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
 
@@ -166,9 +169,14 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 			auto energy_diff = (res.energy.eigenvalues - old_energy)/ions.geo().num_atoms();
 
+			electrons.full_comm_.barrier();
+			auto new_time = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
+			iter_start_time = new_time;
+			
 			if(solver.verbose_output() and console){
-				console->info("SCF iter {} : e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
-											iiter, res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_conv_);
+				console->info("SCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
+											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_conv_);
 			}
 			
 			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
