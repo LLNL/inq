@@ -98,7 +98,7 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
-find_package(MPI REQUIRED)
+find_package(MPI REQUIRED COMPONENTS CXX)
 include_directories(${MPI_CXX_INCLUDE_PATH})
 link_libraries(MPI::MPI_CXX) # needs cmake 3.9
 message(STATUS "MPI Executable for running programs:" ${MPIEXEC_EXECUTABLE})
