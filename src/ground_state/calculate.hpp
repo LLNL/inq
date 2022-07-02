@@ -76,7 +76,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<double>>(4, solver.mixing(), electrons.states_basis_.part().local_size(), electrons.density_basis_.comm());
 		} __builtin_unreachable();
 	}();
-		
+	
 	auto old_energy = std::numeric_limits<double>::max();
 		
 	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
@@ -85,10 +85,12 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
-	
 	double old_exe = ham.exchange.update(electrons);
 	double exe_diff = fabs(old_exe);
 	auto update_hf = false;
+
+	electrons.full_comm_.barrier();
+	auto iter_start_time = std::chrono::high_resolution_clock::now();
 
 	int conv_count = 0;
 	for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
@@ -166,9 +168,15 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 			auto energy_diff = (res.energy.eigenvalues - old_energy)/ions.geo().num_atoms();
 
+			electrons.full_comm_.barrier();
+			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - iter_start_time;
+
+			electrons.full_comm_.barrier();
+			iter_start_time = std::chrono::high_resolution_clock::now();
+			
 			if(solver.verbose_output() and console){
-				console->info("SCF iter {} : e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
-											iiter, res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_conv_);
+				console->info("SCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
+											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_conv_);
 			}
 			
 			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){

@@ -311,7 +311,7 @@ namespace hamiltonian {
 
 	private:
 
-		pseudo::math::erf_range_separation const sep_;
+		pseudo::math::erf_range_separation sep_;
 		int natoms_;
 		double nelectrons_;
 		pseudo::set pseudo_set_;
