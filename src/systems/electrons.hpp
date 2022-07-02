@@ -81,7 +81,7 @@ public:
 		
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
-		full_comm_(dist.cart_comm()),
+		full_comm_(dist.cart_comm(brillouin_zone_.size())),
 		lot_comm_(lot_subcomm(full_comm_)),
 		lot_states_comm_(lot_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
@@ -124,7 +124,7 @@ public:
 
 	electrons(electrons && old_el, input::parallelization const & new_dist):
 		brillouin_zone_(std::move(old_el.brillouin_zone_)),
-		full_comm_(new_dist.cart_comm()),
+		full_comm_(new_dist.cart_comm(brillouin_zone_.size())),
 		lot_comm_(lot_subcomm(full_comm_)),
 		lot_states_comm_(lot_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),

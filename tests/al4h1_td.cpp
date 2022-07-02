@@ -46,10 +46,7 @@ int main(int argc, char ** argv){
 	conf.extra_states = 1;
 	conf.temperature = 300.0_K;
 
-	auto par = env.par();
-	if(par.size() != 5) par = par.kpoints().domains(1);
-	
-	systems::electrons electrons(par, ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
+	systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
 	
 	electrons.load("al4h1_restart");
 

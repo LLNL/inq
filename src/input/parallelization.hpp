@@ -32,15 +32,18 @@ namespace input {
   public:
 
     explicit parallelization(boost::mpi3::communicator & comm):
-			nproc_kpts_(1),
+			nproc_kpts_(boost::mpi3::fill),
 			nproc_states_(1),
 			nproc_domains_(boost::mpi3::fill),
       comm_(comm)			
 		{
     }
 
-		auto cart_comm() const {
-			return boost::mpi3::cartesian_communicator<3>(comm_, {nproc_kpts_, nproc_domains_, nproc_states_});
+		auto cart_comm(int nkpoints) const {
+			auto nproc_kpts = std::gcd(comm_.size(), nkpoints);
+			if(nproc_kpts_ != boost::mpi3::fill) nproc_kpts = nproc_kpts_;
+
+			return boost::mpi3::cartesian_communicator<3>(comm_, {nproc_kpts, nproc_domains_, nproc_states_});
     }
 
 		auto states(int num = boost::mpi3::fill){
@@ -95,7 +98,7 @@ TEST_CASE("class input::parallelization", "[inq::input::parallelization]") {
 	
 	input::parallelization par(comm);
 	
-	auto cart_comm = par.kpoints(1).states(comm.size()).domains(1).cart_comm();
+	auto cart_comm = par.kpoints(1).states(comm.size()).domains(1).cart_comm(10);
 
 	CHECK(cart_comm.size() == comm.size());
 
