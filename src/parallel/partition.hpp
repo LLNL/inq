@@ -134,6 +134,11 @@ public:
 		return global_i/bsize_;
 	}
 
+	auto waste() const {
+		auto total_elements = block_size()*comm_size();
+		return (total_elements - size())/double(size());
+	}
+	
 	template <class ArrayType>
 	auto gather(ArrayType const & array, boost::mpi3::communicator & comm, int root) const {
 		if(comm.size() == 1) {
@@ -208,8 +213,17 @@ TEST_CASE("class parallel::partition", "[parallel::partition]") {
     comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
     
     CHECK(NN == calculated_size);
+
   }
 
+	SECTION("Waste"){
+		if(comm.size() == 1) CHECK(part.waste() == 0.0_a);
+		if(comm.size() == 2) CHECK(part.waste() == 0.0009680542_a);
+		if(comm.size() == 3) CHECK(part.waste() == 0.0019361084_a);
+		if(comm.size() == 4) CHECK(part.waste() == 0.0029041626_a);
+		if(comm.size() == 5) CHECK(part.waste() == 0.0019361084_a);
+	}
+	
   SECTION("Upper bound"){
     auto boundary_value = part.end();
     
@@ -315,6 +329,7 @@ TEST_CASE("class parallel::partition", "[parallel::partition]") {
 		CHECK(part.end(2) == 12);
 		CHECK(part.end(3) == 16);		
 		
+		CHECK(part.waste() == 0.0_a);
 	}
 	
 	SECTION("Check partition sizes 16 in 5"){
@@ -340,7 +355,8 @@ TEST_CASE("class parallel::partition", "[parallel::partition]") {
 		CHECK(part.end(2) == 12);
 		CHECK(part.end(3) == 16);
 		CHECK(part.end(4) == 16);
-		
+
+		CHECK(part.waste() == 0.25_a);		
 	}
 
 	SECTION("Check partition sizes 17 in 5"){
@@ -366,7 +382,8 @@ TEST_CASE("class parallel::partition", "[parallel::partition]") {
 		CHECK(part.end(2) == 12);
 		CHECK(part.end(3) == 16);
 		CHECK(part.end(4) == 17);
-		
+
+		CHECK(part.waste() == 0.1764705882_a);
 	}
 
 }
