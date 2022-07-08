@@ -24,12 +24,25 @@
 #include <mpi3/cartesian_communicator.hpp>
 #include <mpi3/communicator.hpp>
 
+#include <parallel/partition.hpp>
+#include <utils/factors.hpp>
+
 namespace inq {
 namespace input {
 
   class parallelization {
 
   public:
+
+		static auto optimal_nprocs(int size, int max_comm_size, double threshold){
+			for(utils::factors_reverse fac(max_comm_size); fac != fac.end(); ++fac){
+				parallel::partition part(size, *fac);
+
+				if(part.local_size(*fac - 1) == 0) continue; //avoid empty partitions
+				if(part.waste() <= threshold) return *fac;
+			}
+			return 1;
+		}
 
     explicit parallelization(boost::mpi3::communicator & comm):
 			nproc_kpts_(boost::mpi3::fill),
@@ -40,7 +53,7 @@ namespace input {
     }
 
 		auto cart_comm(int nkpoints) const {
-			auto nproc_kpts = std::gcd(comm_.size(), nkpoints);
+			auto nproc_kpts = optimal_nprocs(nkpoints, comm_.size(), kpoint_efficiency_threshold);
 			if(nproc_kpts_ != boost::mpi3::fill) nproc_kpts = nproc_kpts_;
 
 			return boost::mpi3::cartesian_communicator<3>(comm_, {nproc_kpts, nproc_domains_, nproc_states_});
@@ -75,7 +88,9 @@ namespace input {
 		int nproc_domains_;
 
     mutable boost::mpi3::communicator comm_;
-    
+
+		constexpr static double const kpoint_efficiency_threshold = 0.1;
+		
   };
     
 }
@@ -102,6 +117,16 @@ TEST_CASE("class input::parallelization", "[inq::input::parallelization]") {
 
 	CHECK(cart_comm.size() == comm.size());
 
+	SECTION("optimize parallelization"){
+		CHECK(input::parallelization::optimal_nprocs(16, 4, 0.05) == 4);
+		CHECK(input::parallelization::optimal_nprocs(15, 8, 0.1) == 8);
+		CHECK(input::parallelization::optimal_nprocs(31, 4, 0.05) == 4);
+		CHECK(input::parallelization::optimal_nprocs(20, 38, 0.05) == 2);
+		CHECK(input::parallelization::optimal_nprocs(34785, 78, 0.05) == 78);
+		CHECK(input::parallelization::optimal_nprocs(12, 64, 0.05) == 4);
+		CHECK(input::parallelization::optimal_nprocs(1, 737730, 0.05) == 1);		
+	}
+	
 }
 
 #endif
