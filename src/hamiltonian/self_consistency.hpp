@@ -49,6 +49,17 @@ namespace hamiltonian {
 		{
 		}
 
+		self_consistency(self_consistency && old, boost::mpi3::communicator new_comm):
+			interaction_(std::move(old.interaction_)),
+			exchange_(int(interaction_.exchange())),
+			correlation_(int(interaction_.correlation())),
+			vion_(std::move(old.vion_), new_comm),
+			core_density_(std::move(old.core_density_), new_comm),
+			potential_basis_(std::move(old.potential_basis_), new_comm),
+			density_basis_(std::move(old.density_basis_), new_comm)
+		{
+		}
+				
 		template <class ions_type>
 		void update_ionic_fields(boost::mpi3::communicator & comm, const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
 
