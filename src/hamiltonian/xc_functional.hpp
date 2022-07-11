@@ -57,6 +57,7 @@ namespace hamiltonian {
 		
 		xc_functional operator=(xc_functional const & other) {
 			if(id_ == other.id_) return *this;
+			if(true_functional()) xc_func_end(&func_);
 			id_ = other.id_;
 			if(true_functional() and xc_func_init(&func_, id_, XC_UNPOLARIZED) != 0){
 				fprintf(stderr, "Functional '%d' not found\n", id_);
