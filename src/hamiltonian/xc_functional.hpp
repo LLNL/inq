@@ -38,11 +38,14 @@ namespace hamiltonian {
 	class xc_functional {
 
 		public:
-			
+		
+		auto true_functional() const {
+			return id_ > 0;			
+		}
+		
 		xc_functional(const int functional_id):
 			id_(functional_id){
-			true_functional_ = functional_id > 0;
-			if(true_functional_ and xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
+			if(true_functional() and xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
 				fprintf(stderr, "Functional '%d' not found\n", functional_id);
 				exit(1);
 			}
@@ -54,10 +57,8 @@ namespace hamiltonian {
 		
 		xc_functional operator=(xc_functional const & other) {
 			if(id_ == other.id_) return *this;
-			if(true_functional_) xc_func_end(&func_);
 			id_ = other.id_;
-			true_functional_ = other.true_functional_;
-			if(true_functional_ and xc_func_init(&func_, id_, XC_UNPOLARIZED) != 0){
+			if(true_functional() and xc_func_init(&func_, id_, XC_UNPOLARIZED) != 0){
 				fprintf(stderr, "Functional '%d' not found\n", id_);
 				exit(1);
 			}
@@ -65,17 +66,13 @@ namespace hamiltonian {
 		}
 		
 		~xc_functional(){
-			if(true_functional_) xc_func_end(&func_);
+			if(true_functional()) xc_func_end(&func_);
 		}
 
-		auto true_functional() const {
-			return true_functional_;
-		}
-		
 		template <class field_type>
 		void operator()(field_type const & density, double & xc_energy, field_type & vxc) const {
 
-			assert(true_functional_);
+			assert(true_functional());
 			
 			CALI_CXX_MARK_SCOPE("xc_functional");
 			
@@ -160,7 +157,6 @@ namespace hamiltonian {
 	private:
 
 		int id_;
-		bool true_functional_;
 		xc_func_type func_;
 			
 	};
