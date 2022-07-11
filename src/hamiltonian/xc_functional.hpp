@@ -38,27 +38,42 @@ namespace hamiltonian {
 	class xc_functional {
 
 		public:
-			
-		xc_functional(const int functional_id){
-			true_functional_ = functional_id > 0;
-			if(true_functional_ and xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
+		
+		auto true_functional() const {
+			return id_ > 0;			
+		}
+		
+		xc_functional(const int functional_id):
+			id_(functional_id){
+			if(true_functional() and xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
 				fprintf(stderr, "Functional '%d' not found\n", functional_id);
 				exit(1);
 			}
 		}
 
-		~xc_functional(){
-			if(true_functional_) xc_func_end(&func_);
-		}
-
-		auto true_functional() const {
-			return true_functional_;
+		xc_functional(xc_functional const & other):
+			xc_functional(other.id_){
 		}
 		
+		xc_functional operator=(xc_functional const & other) {
+			if(id_ == other.id_) return *this;
+			if(true_functional()) xc_func_end(&func_);
+			id_ = other.id_;
+			if(true_functional() and xc_func_init(&func_, id_, XC_UNPOLARIZED) != 0){
+				fprintf(stderr, "Functional '%d' not found\n", id_);
+				exit(1);
+			}
+			return *this;
+		}
+		
+		~xc_functional(){
+			if(true_functional()) xc_func_end(&func_);
+		}
+
 		template <class field_type>
 		void operator()(field_type const & density, double & xc_energy, field_type & vxc) const {
 
-			assert(true_functional_);
+			assert(true_functional());
 			
 			CALI_CXX_MARK_SCOPE("xc_functional");
 			
@@ -142,7 +157,7 @@ namespace hamiltonian {
 
 	private:
 
-		bool true_functional_;
+		int id_;
 		xc_func_type func_;
 			
 	};
@@ -335,12 +350,27 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 	}
 
+	inq::hamiltonian::xc_functional b3lyp(XC_HYB_GGA_XC_B3LYP);
+	inq::hamiltonian::xc_functional pbeh(XC_HYB_GGA_XC_PBEH);
+	
 	SECTION("HYBRIDS"){
-		inq::hamiltonian::xc_functional b3lyp(XC_HYB_GGA_XC_B3LYP);
 		CHECK(b3lyp.exx_coefficient() == 0.2_a);
-
-		inq::hamiltonian::xc_functional pbeh(XC_HYB_GGA_XC_PBEH);
 		CHECK(pbeh.exx_coefficient() == 0.25_a);
+	}
+
+	SECTION("COPY AND ASSIGNMENT"){
+		auto copy = b3lyp;
+		CHECK(copy.exx_coefficient() == 0.2_a);
+
+		copy = pbeh;
+		CHECK(copy.exx_coefficient() == 0.25_a);
+
+		auto copy2 = std::move(copy);
+		CHECK(copy2.exx_coefficient() == 0.25_a);
+
+		copy2 = std::move(b3lyp);
+		CHECK(copy2.exx_coefficient() == 0.2_a);
+		
 	}
 	
 }
