@@ -75,6 +75,10 @@ see other possibilities in [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/
 
 - [INQ, a modern GPU-accelerated computational framework for (time-dependent) density functional theory, `arXiv:2106.03872 [cond-mat.mtrl-sci]` (2021)](https://arxiv.org/abs/2106.03872)
 
+## Introductory material
+
+(video) [INQ: a state-of-the art implementation of (TD)DFT for GPUs](https://www.youtube.com/watch?v=pM4wwYjb5Vo) at the MolSSI 2022 Workshop
+
 ## Release information 
 
 INQ is licensed under the terms of the [LGPL v3 License](/COPYING).
