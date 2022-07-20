@@ -196,6 +196,9 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 			};
 			
 			void operator++(){
+
+				CALI_CXX_MARK_SCOPE("field_set_iterator++");
+				
 				auto mpi_type = boost::mpi3::detail::basic_datatype<element_type>();
 				
 				auto next_proc = set_comm_.rank() + 1;
