@@ -188,7 +188,7 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 		public:
 			
 			parallel_set_iterator(long basis_local_size, parallel::partition set_part, boost::mpi3::cartesian_communicator<1> set_comm, internal_array_type const & data):
-				matrix_({basis_local_size, set_part.block_size()}, 0.0),
+				matrix_({basis_local_size, set_part.block_size()}),
 				istep_(0),
 				set_comm_(std::move(set_comm)),
 				set_part_(std::move(set_part)){
