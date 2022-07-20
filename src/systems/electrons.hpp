@@ -202,7 +202,7 @@ public:
 			
 		if(logger()){
 			logger()->info("parallelization:");
-			logger()->info("  electrons divided among {} processes ({} kpoints x {} states x {} domains)", full_comm_.size(), full_comm_.shape()[0], full_comm_.shape()[1], full_comm_.shape()[2]);
+			logger()->info("  electrons divided among {} processes ({} kpoints x {} domains x {} states)", full_comm_.size(), full_comm_.shape()[0], full_comm_.shape()[1], full_comm_.shape()[2]);
 #ifdef ENABLE_CUDA
 			for(int iproc = 0; iproc < full_comm_.size(); iproc++){
 				logger()->info("  process {} has gpu id {}", iproc, gpuids[iproc]);
@@ -214,21 +214,21 @@ public:
 			logger()->info("  {} k-points divided among {} partitions", lot_part_.size(), lot_part_.comm_size());
 			logger()->info("  partition 0 has {} k-points and the last partition has {} k-points\n", lot_part_.local_size(0), lot_part_.local_size(lot_part_.comm_size() - 1));
 			
-			logger()->info("state parallelization:");
-			logger()->info("  {} states divided among {} partitions", lot()[0].fields().set_part().size(), lot()[0].fields().set_part().comm_size());
-			logger()->info("  partition 0 has {} states and the last partition has {} states\n", lot()[0].fields().set_part().local_size(0), lot()[0].fields().set_part().local_size(lot()[0].fields().set_part().comm_size() - 1));
-				
 			logger()->info("real-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_dist(0).size(), states_basis_.part().size(), states_basis_.cubic_dist(0).comm_size());
-			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n", states_basis_.cubic_dist(0).local_size(0), states_basis_.cubic_dist(0).local_size(states_basis_.part().comm_size() - 1),
+			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)", states_basis_.cubic_dist(0).local_size(0), states_basis_.cubic_dist(0).local_size(states_basis_.part().comm_size() - 1),
 										 states_basis_.part().local_size(0), states_basis_.part().local_size(states_basis_.part().comm_size() - 1));
 
 			logger()->info("fourier-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", fourier_basis.cubic_dist(2).size(), fourier_basis.part().size(), fourier_basis.cubic_dist(2).comm_size());
 			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n", fourier_basis.cubic_dist(2).local_size(0), fourier_basis.cubic_dist(2).local_size(fourier_basis.part().comm_size() - 1),
 										 fourier_basis.part().local_size(0), fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1));
+
+			logger()->info("state parallelization:");
+			logger()->info("  {} states divided among {} partitions", lot()[0].fields().set_part().size(), lot()[0].fields().set_part().comm_size());
+			logger()->info("  partition 0 has {} states and the last partition has {} states\n", lot()[0].fields().set_part().local_size(0), lot()[0].fields().set_part().local_size(lot()[0].fields().set_part().comm_size() - 1));
 				
-		}		
+		}
 	}
 
 	template <typename ArrayType>
