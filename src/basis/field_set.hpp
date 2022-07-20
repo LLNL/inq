@@ -32,6 +32,8 @@
 #include <utils/skeleton_wrapper.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
+#include <gpu/copy.hpp>
+
 namespace inq {
 namespace basis {
 
@@ -192,7 +194,10 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 				istep_(0),
 				set_comm_(std::move(set_comm)),
 				set_part_(std::move(set_part)){
-				matrix_({0, basis_local_size}, {0, set_part.local_size()}) = data;
+
+				CALI_CXX_MARK_SCOPE("field_set_iterator_constructor");
+ 
+				gpu::copy(basis_local_size, set_part.local_size(), data, matrix_);
 			};
 			
 			void operator++(){
