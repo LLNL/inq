@@ -44,16 +44,13 @@ int main(int argc, char ** argv){
 				groundstate_only = true;
 				break;
 			case 's':
-				{
-					std::stringstream instr(optarg);
-					instr >> reps;
-				}
+				sscanf(optarg, "%d%*c%d%*c%d", &reps[0], &reps[1], &reps[2]);
 				break;
 			case '?':
 				std::cerr << "usage is " << std::endl;
 				std::cerr << "-p N to set the number of processors in the domain partition (1 by default)." << std::endl;
 				std::cerr << "-g only calculate the ground state." << std::endl;
-				std::cerr << "-s 'N N N' the supercell size in each direction (2 2 2 by default)." << std::endl;
+				std::cerr << "-s NxMxK the supercell size in each direction (2x2x2 by default)." << std::endl;
 				exit(1);
 			default:
 				abort();

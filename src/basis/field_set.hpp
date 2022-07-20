@@ -32,6 +32,8 @@
 #include <utils/skeleton_wrapper.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
+#include <gpu/copy.hpp>
+
 namespace inq {
 namespace basis {
 
@@ -188,14 +190,20 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 		public:
 			
 			parallel_set_iterator(long basis_local_size, parallel::partition set_part, boost::mpi3::cartesian_communicator<1> set_comm, internal_array_type const & data):
-				matrix_({basis_local_size, set_part.block_size()}, 0.0),
+				matrix_({basis_local_size, set_part.block_size()}),
 				istep_(0),
 				set_comm_(std::move(set_comm)),
 				set_part_(std::move(set_part)){
-				matrix_({0, basis_local_size}, {0, set_part.local_size()}) = data;
+
+				CALI_CXX_MARK_SCOPE("field_set_iterator_constructor");
+ 
+				gpu::copy(basis_local_size, set_part.local_size(), data, matrix_);
 			};
 			
 			void operator++(){
+
+				CALI_CXX_MARK_SCOPE("field_set_iterator++");
+				
 				auto mpi_type = boost::mpi3::detail::basic_datatype<element_type>();
 				
 				auto next_proc = set_comm_.rank() + 1;
