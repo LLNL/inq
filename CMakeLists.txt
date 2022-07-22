@@ -184,6 +184,7 @@ install(DIRECTORY share/ DESTINATION share/inq)
 
 add_subdirectory(src)
 add_subdirectory(tests)
+add_subdirectory(speed_tests)
 add_subdirectory(examples)
 add_subdirectory(benchmarks)
 
