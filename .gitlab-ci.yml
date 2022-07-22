@@ -629,6 +629,7 @@ intel-mpich-1p:
       - export OMP_NUM_THREADS=1      
       - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
       - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j16"      
       - $PREFIX/build/tests/silicon2
 
 intel-mpich-2p:
@@ -873,8 +874,9 @@ nvcc-mpich-fast-1p:
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"      
-
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j16"
+      
 nvcc-mpich-fast-2p:
     stage: test
     needs: ["nvcc-mpich-fast"]
@@ -883,7 +885,7 @@ nvcc-mpich-fast-2p:
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"      
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
 
 nvcc-mpich-fast-3p:
     stage: test
@@ -903,7 +905,7 @@ nvcc-mpich-fast-4p:
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"      
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
 
 nvcc-mpich-fast-5p:
     stage: test
@@ -964,7 +966,8 @@ nvcc-mpich-debug-1p:
     script:
       - PREFIX=`cat nvcc-mpich-debug-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"      
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j16"
 
 nvcc-mpich-debug-2p:
     stage: test
