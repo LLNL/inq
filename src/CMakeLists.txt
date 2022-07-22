@@ -30,6 +30,6 @@ foreach(TEST_FILE ${INCLUDE_FILES})
 #  target_link_libraries(${TEST_EXE} PRIVATE Catch2::Catch2)
 #  target_include_directories(${TEST_EXE} PRIVATE ${catch2_SOURCE_DIR}/src)
 
-  add_test(NAME unit_test_${dir}_${name} COMMAND  ${PROJECT_BINARY_DIR}/scripts/run_test.sh ./${TEST_EXE})
+  add_test(NAME unit_tests::${dir}_${name} COMMAND  ${PROJECT_BINARY_DIR}/scripts/run_test.sh ./${TEST_EXE})
 endforeach()
 
