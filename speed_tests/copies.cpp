@@ -59,21 +59,45 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 				memcpy_rate = size/time.count();
 			}
 
-			std::cout << "memcpy    rate = " << memcpy_rate << " GB/s " << std::endl;
+			std::cout << "memcpy rate        = " << memcpy_rate << " GB/s " << std::endl;
 
-			//GPU::COPY
-			{
+			{ //GPU::COPY
 				auto start_time = std::chrono::high_resolution_clock::now();				
 				gpu::copy(nn, nn, src, dest);
 				std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
 				double rate = size/time.count();
 				double ratio = rate/memcpy_rate;
 				
-				std::cout << "gpu::copy rate = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
-																																				 
+				std::cout << "gpu::copy rate     = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
 				CHECK(ratio >= 0.25);
 			}
 
+			{ //MULTI COPY CONSTRUCTOR
+				auto start_time = std::chrono::high_resolution_clock::now();				
+				auto dest2 = src;
+				std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
+				double rate = size/time.count();
+				double ratio = rate/memcpy_rate;
+				
+				std::cout << "constructor rate   = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
+#ifndef ENABLE_CUDA //disabled for now because of a bug in multi					
+				CHECK(ratio >= 0.25);
+#endif
+			}
+			
+			{ //MULTI ASSIGNMENT
+				auto start_time = std::chrono::high_resolution_clock::now();				
+				dest = src;
+				std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
+				double rate = size/time.count();
+				double ratio = rate/memcpy_rate;
+				
+				std::cout << "assignment rate    = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
+#ifndef ENABLE_CUDA //disabled for now because of a bug in multi	
+				CHECK(ratio >= 0.25);
+#endif
+			}
+			
 		}
 		
   }
