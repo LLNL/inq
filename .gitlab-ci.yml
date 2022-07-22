@@ -491,7 +491,8 @@ gcc-ompi-coverage:
       - ../configure --prefix=$PREFIX || cat config.log
       - time make -j8
       - time make -j8 install
-      - ctest -j 16 --output-on-failure --timeout 3000
+      - cd src; ctest -j 16 --output-on-failure --timeout 3000; cd ..
+      - cd tests; ctest -j 16 --output-on-failure --timeout 3000; cd ..
       - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest -j 5 --output-on-failure --timeout 3000; cd ..
       - $PREFIX/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - time mpirun --allow-run-as-root -np 3 tests/silicon
