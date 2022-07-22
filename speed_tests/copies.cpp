@@ -30,6 +30,8 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 
   auto comm = boost::mpi3::environment::get_world_instance();
 
+	double const threshold = 0.1;
+	
   SECTION("2D copy performance benchmark"){
 
 		if(comm.root()){
@@ -69,7 +71,7 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 				double ratio = rate/memcpy_rate;
 				
 				std::cout << "gpu::copy rate     = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
-				CHECK(ratio >= 0.25);
+				CHECK(ratio >= threshold);
 			}
 
 			{ //MULTI COPY CONSTRUCTOR
@@ -81,7 +83,7 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 				
 				std::cout << "constructor rate   = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
 #ifndef ENABLE_CUDA //disabled for now because of a bug in multi					
-				CHECK(ratio >= 0.25);
+				CHECK(ratio >= threshold);
 #endif
 			}
 			
@@ -94,10 +96,22 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 				
 				std::cout << "assignment rate    = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
 #ifndef ENABLE_CUDA //disabled for now because of a bug in multi	
-				CHECK(ratio >= 0.25);
+				CHECK(ratio >= threshold);
 #endif
 			}
-			
+
+			{ //MULTI SUB ARRAY ASSIGNMENT
+				auto start_time = std::chrono::high_resolution_clock::now();				
+				dest({0, nn - 2}, {0, nn - 2}) = src({2, nn}, {2, nn});
+				std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
+				double rate = size/time.count();
+				double ratio = rate/memcpy_rate;
+				
+				std::cout << "sub array rate     = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
+#ifndef ENABLE_CUDA //disabled for now because of a bug in multi	
+				CHECK(ratio >= threshold);
+#endif
+			}
 		}
 		
   }
