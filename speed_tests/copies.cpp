@@ -44,32 +44,35 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 				de[i2][i1] = -1.0;
 			});
 			
-			std::chrono::duration<double> memcpy_time, gpucopy_time;
+			double size = nn*nn*sizeof(complex)/1e9;
+			double memcpy_rate;
 			
+			//MEMCPY
 			{
-				auto iter_start_time = std::chrono::high_resolution_clock::now();
-				gpu::copy(nn, nn, src, dest);
-				gpucopy_time = std::chrono::high_resolution_clock::now() - iter_start_time;
-			}
-			
-			{
-				auto iter_start_time = std::chrono::high_resolution_clock::now();
+				auto start_time = std::chrono::high_resolution_clock::now();
 #ifdef ENABLE_CUDA
 				cudaMemcpy(raw_pointer_cast(dest.data_elements()), raw_pointer_cast(src.data_elements()), nn*nn*sizeof(complex), cudaMemcpyDeviceToDevice);
 #else
 				memcpy(dest.data_elements(), src.data_elements(), nn*nn*sizeof(complex));
 #endif
-				memcpy_time = std::chrono::high_resolution_clock::now() - iter_start_time;
+				std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
+				memcpy_rate = size/time.count();
 			}
-			
-			double size = nn*nn*sizeof(complex)/1e9;
-			double ratio = memcpy_time.count()/gpucopy_time.count();
-			
-			std::cout << "memcpy transfer rate = " << size/memcpy_time.count() << "GB/s " << std::endl;
-			std::cout << "gpu::copy transfer rate = " << size/gpucopy_time.count() << "GB/s " << std::endl;
-			std::cout << "ratio = " << ratio << std::endl;
-			
-			CHECK(ratio >= 0.25);
+
+			std::cout << "memcpy    rate = " << memcpy_rate << " GB/s " << std::endl;
+
+			//GPU::COPY
+			{
+				auto start_time = std::chrono::high_resolution_clock::now();				
+				gpu::copy(nn, nn, src, dest);
+				std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
+				double rate = size/time.count();
+				double ratio = rate/memcpy_rate;
+				
+				std::cout << "gpu::copy rate = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
+																																				 
+				CHECK(ratio >= 0.25);
+			}
 
 		}
 		
