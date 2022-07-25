@@ -25,6 +25,13 @@
 
 #include <utils/profiling.hpp>
 
+#include <multi/detail/fix_complex_traits.hpp>
+
+#ifdef ENABLE_CUDA
+#include <multi/adaptors/thrust/fix_complex_traits.hpp>
+#include <multi/adaptors/thrust.hpp>
+#endif
+
 #include <multi/array.hpp>
 
 #ifdef ENABLE_CUDA
