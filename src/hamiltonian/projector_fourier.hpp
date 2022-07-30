@@ -63,8 +63,8 @@ namespace hamiltonian {
 				// now construct the projector with the spherical harmonics
 				for(int m = -l; m <= l; m++){
 					for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
-						auto point = sphere.points(ipoint);					
-						beta_rs.cubic()[point[0]][point[1]][point[2]][iproj_lm] = ps.projector(iproj_l).value(sphere.distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sphere.point_pos(ipoint));
+						auto point = sphere.ref().grid_point(ipoint);
+						beta_rs.cubic()[point[0]][point[1]][point[2]][iproj_lm] = ps.projector(iproj_l).value(sphere.ref().distance(ipoint))*pseudo::math::spherical_harmonic(l, m, sphere.ref().point_pos(ipoint));
 					}
 					
 					kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 

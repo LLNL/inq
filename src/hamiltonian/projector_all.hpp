@@ -69,7 +69,7 @@ public:
 			gpu::run(max_sphere_size_,
 							 [poi = begin(points_), pos = begin(positions_), sph = it->sphere_.ref(), iproj, npoint = it->sphere_.size()] GPU_LAMBDA (auto ipoint){
 								 if(ipoint < unsigned (npoint)){
-									 poi[iproj][ipoint] = sph.points(ipoint);	
+									 poi[iproj][ipoint] = sph.grid_point(ipoint);	
 									 pos[iproj][ipoint] = sph.point_pos(ipoint);							 
 								 } else {
 									 poi[iproj][ipoint] = {-1, -1, -1};

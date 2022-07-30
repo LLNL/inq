@@ -261,18 +261,6 @@ namespace basis {
 			return volume_element_;
 		}
 
-		auto & points(int ii) const {
-			return points_[ii].coords_;
-		}
-		
-		auto & distance(int ii) const {
-			return points_[ii].distance_;
-		}
-		
-		auto & point_pos(int ii) const {
-			return points_[ii].relative_pos_;
-		}
-		
 		friend auto sizes(const spherical_grid & sphere){
 			return std::array<long, dimension>{sphere.size()};
 		}
@@ -286,7 +274,7 @@ namespace basis {
 
 			PointsType points_;
 
-			GPU_FUNCTION auto & points(int ii) const {
+			GPU_FUNCTION auto & grid_point(int ii) const {
 				return points_[ii].coords_;
 			}
 
