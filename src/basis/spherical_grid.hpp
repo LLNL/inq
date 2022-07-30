@@ -274,7 +274,7 @@ namespace basis {
 
 			PointsType points_;
 
-			GPU_FUNCTION auto & points(int ii) const {
+			GPU_FUNCTION auto & grid_point(int ii) const {
 				return points_[ii].coords_;
 			}
 

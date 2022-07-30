@@ -138,8 +138,8 @@ public:
 			CALI_CXX_MARK_SCOPE("projector_force_gather"); 
 			gpu::run(phi.local_set_size(), sphere_.size(),
 							 [sphi = begin(sphere_phi), sgphi = begin(sphere_gphi), phic = begin(phi.cubic()), gphic = begin(gphi.cubic()), sph = sphere_.ref()] GPU_LAMBDA (auto ist, auto ipoint){
-								 sphi[ipoint][ist] = phic[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
-								 sgphi[ipoint][ist] = gphic[sph.points(ipoint)[0]][sph.points(ipoint)[1]][sph.points(ipoint)[2]][ist];
+								 sphi[ipoint][ist] = phic[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ist];
+								 sgphi[ipoint][ist] = gphic[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ist];
 							 });
 		}
 		
