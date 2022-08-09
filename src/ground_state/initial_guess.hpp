@@ -32,6 +32,8 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 		electrons.density_ = density::calculate(electrons);
 	}
 
+	assert(fabs(operations::integral(electrons.density_)) > 1e-16);
+	
   density::normalize(electrons.density_, electrons.states_.num_electrons());
 	
 	electrons.update_occupations(electrons.eigenvalues());
