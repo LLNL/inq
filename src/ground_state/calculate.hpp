@@ -166,7 +166,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			res.energy.nonlocal = ecalc.nonlocal_;
 			res.energy.hf_exchange = ecalc.hf_exchange_;
 
-			auto energy_diff = (res.energy.eigenvalues - old_energy)/ions.geo().num_atoms();
+			auto energy_diff = (res.energy.eigenvalues - old_energy)/electrons.states_.num_electrons();
 
 			electrons.full_comm_.barrier();
 			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - iter_start_time;
