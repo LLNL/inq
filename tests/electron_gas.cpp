@@ -35,25 +35,25 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(1.0e-6);
 
-	auto box = systems::box::cubic(10.0_b).cutoff_energy(40.0_Ha);
+	auto box = systems::box::cubic(10.0_b).cutoff_energy(30.0_Ha);
 	
 	systems::ions ions(box);
 
 	input::config conf;
-	conf.extra_states = 5;
+	conf.extra_states = 2;
 	conf.excess_charge = 14.0;
 
-	systems::electrons electrons(env.par(), ions, box, conf);
+	systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({1, 1, 3}));
 
 	ground_state::initial_guess(ions, electrons);
-	auto result = ground_state::calculate(ions, electrons, input::interaction::lda());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), inq::input::scf::energy_tolerance(1e-8_Ha));
 
-	energy_match.check("total energy",        result.energy.total()    , -0.684795414294);
-	energy_match.check("kinetic energy",      result.energy.kinetic()  ,  2.368849520758);
-	energy_match.check("eigenvalues",         result.energy.eigenvalues, -1.605333033837);
-	energy_match.check("eigenvalues",         result.energy.hartree    ,  0.000001191289);	
-	energy_match.check("XC energy",           result.energy.xc         , -3.053646126342);
-	energy_match.check("XC density integral", result.energy.nvxc       , -3.974184937174);
+	energy_match.check("total energy",        result.energy.total()    , -0.684940595672);
+	energy_match.check("kinetic energy",      result.energy.kinetic()  ,  2.368705073030);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues, -1.605479264356);
+	energy_match.check("hartree",             result.energy.hartree    ,  0.000000000000);	
+	energy_match.check("XC energy",           result.energy.xc         , -3.053645668702);
+	energy_match.check("XC density integral", result.energy.nvxc       , -3.974184337385);
 
 	return energy_match.fail();
 	
