@@ -26,6 +26,9 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 
 		iphi++;
 	}
+	
+	electrons.update_occupations(electrons.eigenvalues());
+	
 	if(ions.geo().num_atoms() > 0){
 		electrons.density_ = electrons.atomic_pot_.atomic_electronic_density(electrons.states_comm_, electrons.density_basis_, ions.cell(), ions.geo());
 	} else {
@@ -35,8 +38,6 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 	assert(fabs(operations::integral(electrons.density_)) > 1e-16);
 	
   density::normalize(electrons.density_, electrons.states_.num_electrons());
-	
-	electrons.update_occupations(electrons.eigenvalues());
 
 }
 }
