@@ -156,11 +156,12 @@ public:
 	friend GPU_FUNCTION vector3<decltype(Type()/TypeB()), Space> operator/(const vector3 & vv1, const vector3<TypeB, Space> & vv2){
 		return {vv1[0]/vv2[0], vv1[1]/vv2[1], vv1[2]/vv2[2]};
 	}
-	
+
 	//scalar multiplication and division
 private:
 	template<class   > struct is_vector              : std::false_type{};
 	template<class TT> struct is_vector<vector3<TT, Space>> : std::true_type {};
+
 public:
 
 	template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
@@ -173,7 +174,7 @@ public:
 		return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
 	}
 		
-	template <class TypeB>
+	template <class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
 	friend GPU_FUNCTION vector3<decltype(Type()/TypeB()), Space> operator/(const vector3 & vv, const TypeB & scalar){
 		return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
 	}
@@ -195,7 +196,7 @@ public:
 		vec_[2] /= factor;
 		return *this;
 	}
-
+	
 	// ELEMENTWISE OPERATIONS
 	template <class Function>
 	friend GPU_FUNCTION auto elementwise(Function const & func, vector3 const & vv) -> vector3<decltype(func(Type{})), Space> {
@@ -226,23 +227,31 @@ public:
 		return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];			
 	}
 
+	template <class OtherType>
+	GPU_FUNCTION auto dot(vector3<OtherType, typename Space::DualSpace> const & vv2) const {
+		return conj(vec_[0])*vv2[0] + conj(vec_[1])*vv2[1] + conj(vec_[2])*vv2[2];			
+	}
+	
 	//cross product
 	friend GPU_FUNCTION auto cross(vector3 const & vv1, vector3 const & vv2) {
 		return vector3(vv1[1]*vv2[2] - vv1[2]*vv2[1], vv1[2]*vv2[0] - vv1[0]*vv2[2], vv1[0]*vv2[1] - vv1[1]*vv2[0]);
 	}
 
 	//norm
-		
+	GPU_FUNCTION auto norm() const {
+		return real(this->dot(*this));
+	}
+	
 	friend GPU_FUNCTION auto norm(vector3 const & vv) {
-		return real(dot(vv, vv));
+		return real(vv.dot(vv));
 	}
 
 	friend GPU_FUNCTION auto length(vector3 const & vv) {
-		return sqrt(real(dot(vv, vv)));
+		return sqrt(real(vv.dot(vv)));
 	}
 		
 	GPU_FUNCTION auto length() const{
-		return sqrt(real(dot(*this, *this)));
+		return sqrt(real(this->dot(*this)));
 	}
 
 	friend GPU_FUNCTION auto product(vector3 const & vv) {
@@ -431,11 +440,13 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
 		
 		CHECK(dot(vv1, vv2) == conj(dot(vv2, vv1)));
-
+		CHECK(dot(vv1, vv2) == vv1.dot(vv2));
+		
 		CHECK(real(dot(vv1, vv2)) == 54.7180_a);
 		CHECK(imag(dot(vv1, vv2)) == 1.5765_a);
 
 		CHECK(norm(vv1) == 5.2700_a);
+		CHECK(vv1.norm() == 5.2700_a);
 		CHECK(norm(vv1) == Approx(real(dot(vv1, vv1))));
 		CHECK(imag(dot(vv1, vv1)) == 0.0_a);
 		

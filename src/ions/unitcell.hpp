@@ -204,13 +204,13 @@ namespace ions {
       out << "  Volume [b^3]        = " << volume_ << std::endl;
       out << std::endl;
     }
-    
-	template<class OStream>
-	friend OStream& operator<<(OStream& os, UnitCell const& self){
-		self.info(os);
-		return os;
-	}
 
+		template<class OStream>
+		friend OStream& operator<<(OStream& os, UnitCell const& self){
+			self.info(os);
+			return os;
+	  }
+		
     const double* amat() const { return &amat_[0]; }
     const double* bmat() const { return &bmat_[0]; }
     const double* amat_inv() const { return &amat_inv_[0]; }
@@ -314,21 +314,6 @@ namespace ions {
 
 		}
 
-		void compute_deda(const std::valarray<double>& sigma, std::valarray<double>& deda) const {
-			// Compute energy derivatives dE/da_ij from a symmetric stress tensor
-			assert(sigma.size()==6);
-			assert(deda.size()==9);
-  
-			//!! local copy of sigma to circumvent bug in icc compiler
-			std::valarray<double> sigma_loc(6);
-			sigma_loc = sigma;
-  
-			// deda = - omega * sigma * A^-T
-			smatmult3x3(&sigma_loc[0],&amat_inv_t_[0],&deda[0]);
-  
-			deda *= -volume_;
-		}
-
 		////////////////////////////////////////////////////////////////////////////////
 		
     void cart_to_crystal(const double* scart, double* scryst) const {
@@ -420,112 +405,6 @@ namespace ions {
 			return vcart;
 		}
 
-		////////////////////////////////////////////////////////////////////////////////
-		
-    bool in_ws(const math::vector3<double>& v) const {
-
-			bool in = true;
-			int i = 0;
-			while ( i < 13 && in ) {
-				in = ( fabs(dot(v, an_[i])) <= an2h_[i] ) ;
-				i++;
-			}
-			return in;
-		}
-		
-    double min_wsdist() const {
-			double min = sqrt(2.*an2h_[0]);
-			for (int i=1; i<13; i++) 
-				if (sqrt(2.*an2h_[i]) < min) min = sqrt(2.*an2h_[i]);
-			
-			return min;
-		}
-
-  ////////////////////////////////////////////////////////////////////////////////
-		
-    void fold_in_ws(math::vector3<double>& v) const {
-
-			const double epsilon = 1.e-10;
-			bool done = false;
-			const int maxiter = 10;
-			int iter = 0;
-			while ( !done && iter < maxiter )
-				{
-					done = true;
-					for ( int i = 0; (i < 13) && done; i++ )
-						{
-							const double sp = dot(v, an_[i]);
-							if ( sp > an2h_[i] + epsilon )
-								{
-									done = false;
-									do
-										v -= an_[i];
-									while ( dot(v, an_[i]) > an2h_[i] + epsilon );
-								}
-							else if ( sp < -an2h_[i] - epsilon )
-								{
-									done = false;
-									do
-										v += an_[i];
-									while ( dot(v, an_[i]) < -an2h_[i] - epsilon );
-								}
-						}
-					iter++;
-				}
-			assert(iter < maxiter);
-
-		}
-
-  ////////////////////////////////////////////////////////////////////////////////
-		
-    bool in_bz(const math::vector3<double>& k) const {
-			
-			bool in = true;
-			int i = 0;
-			while ( i < 13 && in )
-				{
-					in = ( fabs(dot(k, bn_[i])) <= bn2h_[i] ) ;
-					i++;
-				}
-			return in;
-			
-		}
-
-		////////////////////////////////////////////////////////////////////////////////
-			
-    void fold_in_bz(math::vector3<double>& k) const {
-
-			const double epsilon = 1.e-10;
-			bool done = false;
-			const int maxiter = 10;
-			int iter = 0;
-			while ( !done && iter < maxiter )
-				{
-					done = true;
-					for ( int i = 0; (i < 13) && done; i++ )
-						{
-							double sp = dot(k, bn_[i]);
-							if ( sp > bn2h_[i] + epsilon )
-								{
-									done = false;
-									do
-										k -= bn_[i];
-									while ( dot(k, bn_[i]) > bn2h_[i] + epsilon );
-								}
-							else if ( sp < -bn2h_[i] - epsilon )
-								{
-									done = false;
-									do
-										k += bn_[i];
-									while ( dot(k, bn_[i]) < -bn2h_[i] - epsilon );
-								}
-						}
-					iter++;
-				}
-			assert(iter < maxiter);
-			
-		}
-  
     bool encloses(const UnitCell& c) const {
 			bool in = true;
 			int i = 0;
@@ -572,11 +451,28 @@ namespace ions {
 		
 		class cell_metric {
 
+			math::vector3<double, math::cartesian> lat_[3];
+			math::vector3<double, math::cartesian> rlat_[3];
+
 		public:
+
+			template <class AType, class BType>
+			cell_metric(AType const & aa, BType const & bb){
+				for(int ii = 0; ii < 3; ii++){
+					for(int jj = 0; jj < 3; jj++){
+						lat_[ii][jj] = aa[ii][jj];
+						rlat_[ii][jj] = bb[ii][jj];						
+					}
+				}
+			}
+
+			auto lat_norm() const {
+				return math::vector3<double>{lat_[0].norm(), lat_[1].norm(), lat_[2].norm()};
+			}
 			
 			template <class Type1, class Space1, class Type2, class Space2>
 			GPU_FUNCTION auto dot(math::vector3<Type1, Space1> const & vv1, math::vector3<Type2, Space2> const & vv2) const {
-				return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];
+				return to_cartesian(vv1).dot(to_cartesian(vv2));
 			}
 			
 			template <class Type, class Space>
@@ -589,25 +485,55 @@ namespace ions {
 				return sqrt(norm(vv));
 			}
 
-			template <class Type, class Space>
-			GPU_FUNCTION auto to_covariant(math::vector3<Type, Space> const & vv) const {
+			template <class Type>
+			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::covariant> const & vv) const {
+				return vv;
+			}
+			
+			template <class Type>
+			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::contravariant> const & vv) const {
 				return math::vector3<Type, math::covariant>{vv[0], vv[1], vv[2]};
 			}
 
-			template <class Type, class Space>
-			GPU_FUNCTION auto to_contravariant(math::vector3<Type, Space> const & vv) const {
-				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
+			template <class Type>
+			GPU_FUNCTION auto to_covariant(math::vector3<Type, math::cartesian> const & vv) const {
+				return math::vector3<Type, math::covariant>{vv[0], vv[1], vv[2]};
+			}
+
+			template <class Type>
+			GPU_FUNCTION auto to_contravariant(math::vector3<Type, math::contravariant> const & vv) const {
+				return vv;
 			}
 			
-			template <class Type, class Space>
-			GPU_FUNCTION auto to_cartesian(math::vector3<Type, Space> const & vv) const {
+			template <class Type>
+			GPU_FUNCTION auto to_contravariant(math::vector3<Type, math::covariant> const & vv) const {
+				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
+			}
+
+			template <class Type>
+			GPU_FUNCTION auto to_contravariant(math::vector3<Type, math::cartesian> const & vv) const {
+				return math::vector3<Type, math::contravariant>{vv[0], vv[1], vv[2]};
+			}
+
+			template <class Type>
+			GPU_FUNCTION auto to_cartesian(math::vector3<Type, math::cartesian> const & vv) const {
+				return vv;
+			}
+			
+			template <class Type>
+			GPU_FUNCTION auto to_cartesian(math::vector3<Type, math::contravariant> const & vv) const {
+				return math::vector3<Type, math::cartesian>{vv[0], vv[1], vv[2]};
+			}
+			
+			template <class Type>
+			GPU_FUNCTION auto to_cartesian(math::vector3<Type, math::covariant> const & vv) const {
 				return math::vector3<Type, math::cartesian>{vv[0], vv[1], vv[2]};
 			}
 			
 		};
 
 		auto metric() const {
-			return cell_metric{};
+			return cell_metric{a_, b_};
 		}
 		
   };
