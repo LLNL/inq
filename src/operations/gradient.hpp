@@ -206,7 +206,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][idir] - g_analytic (kvec, vec)[idir]);
+					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.basis().cell().metric().to_cartesian(g_test.cubic()[ix][iy][iz])[idir] - g_analytic (kvec, vec)[idir]);
 				}
 			}
 		}
@@ -241,7 +241,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){
-						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][ist][idir] - double(ist)*g_analytic(kvec, vec)[idir]);
+						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.basis().cell().metric().to_cartesian(g_test.cubic()[ix][iy][iz][ist])[idir] - double(ist)*g_analytic(kvec, vec)[idir]);
 					}
 				}
 			}
@@ -277,7 +277,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){
-						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.cubic()[ix][iy][iz][ist][idir] - double(ist)*g_analytic(kvec, vec)[idir]);
+						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.basis().cell().metric().to_cartesian(g_test.cubic()[ix][iy][iz][ist])[idir] - double(ist)*g_analytic(kvec, vec)[idir]);
 					}
 				}
 			}
@@ -309,7 +309,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.cubic()[ix][iy][iz][idir] - g_analytic2(kvec, vec)[idir]);
+					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.basis().cell().metric().to_cartesian(g_test2.cubic()[ix][iy][iz])[idir] - g_analytic2(kvec, vec)[idir]);
 				}
 			}
 		}
