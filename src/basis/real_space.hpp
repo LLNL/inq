@@ -73,7 +73,7 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & nr, math::vector3<double> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
+			point_operator(std::array<int, 3> const & nr, math::vector3<double, math::contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
 				nr_(nr),
 				rspacing_(rspacing),
 				cubic_dist_(dist),
@@ -91,7 +91,7 @@ namespace basis {
 
 			GPU_FUNCTION auto rvector(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 				auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
-				return math::vector3<double, math::contravariant>{ii[0]*rspacing_[0], ii[1]*rspacing_[1], ii[2]*rspacing_[2]};
+				return math::vector3<int, math::contravariant>{ii[0], ii[1], ii[2]}*rspacing_;
 			}
 			
 			GPU_FUNCTION auto rvector(int ix, int iy, int iz) const {
@@ -136,7 +136,7 @@ namespace basis {
 		private:
 			
 			std::array<int, 3> nr_;
-			math::vector3<double> rspacing_;
+			math::vector3<double, math::contravariant> rspacing_;
 			std::array<inq::parallel::partition, 3> cubic_dist_;
 			ions::UnitCell::cell_metric metric_;
 			
@@ -170,7 +170,7 @@ namespace basis {
 		}
 
 		auto point_op() const {
-			return point_operator(nr_, rspacing_, cubic_dist_, cell_.metric());
+			return point_operator(nr_, cell_.metric().to_contravariant(rspacing_), cubic_dist_, cell_.metric());
 		}
 		
 	private:

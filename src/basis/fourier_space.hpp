@@ -59,7 +59,7 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, math::vector3<double> const & gspacing, math::vector3<double> const & glength, std::array<inq::parallel::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
+			point_operator(std::array<int, 3> const & ng, math::vector3<double, math::covariant> const & gspacing, math::vector3<double> const & glength, std::array<inq::parallel::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
 				glength_(glength),
@@ -97,7 +97,7 @@ namespace basis {
 				return g2 > radius()*radius();
 			}		
 			
-			GPU_FUNCTION const math::vector3<double> & gspacing() const{
+			GPU_FUNCTION const auto & gspacing() const{
 				return gspacing_;
 			}
 
@@ -136,7 +136,7 @@ namespace basis {
 		private:
 			
 			std::array<int, 3> ng_;
-			math::vector3<double> gspacing_;
+			math::vector3<double, math::covariant> gspacing_;
 			math::vector3<double> glength_;
 			std::array<inq::parallel::partition, 3> cubic_dist_;
 			ions::UnitCell::cell_metric metric_;
@@ -144,7 +144,7 @@ namespace basis {
 		};
 
 		auto point_op() const {
-			return point_operator(ng_, gspacing_, glength_, cubic_dist_, cell_.metric());
+			return point_operator{ng_, cell_.metric().to_covariant(gspacing_), glength_, cubic_dist_, cell_.metric()};
 		}
 		
 	private:
