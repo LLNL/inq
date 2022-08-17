@@ -43,8 +43,8 @@ namespace ions {
   class UnitCell{
 		using vector_type = math::vector3<double>;
   private:
-    vector_type a_[3];
-    vector_type b_[3];
+    vector_type lattice_[3];
+    vector_type reciprocal_[3];
     double volume_;
 		int periodic_dimensions_;
 		
@@ -54,16 +54,16 @@ namespace ions {
 			
 			periodic_dimensions_ = arg_periodic_dimensions;
 		
-			a_[0] = a0;
-			a_[1] = a1;
-			a_[2] = a2;
+			lattice_[0] = a0;
+			lattice_[1] = a1;
+			lattice_[2] = a2;
 			volume_ = dot(a0, cross(a1, a2));
 
 			if(fabs(volume_) < 1e-10) throw std::runtime_error("inq error: the lattice volume is not positive");
 		
-			b_[0] = 2.0*M_PI/volume_*cross(a1, a2);
-			b_[1] = 2.0*M_PI/volume_*cross(a2, a0);
-			b_[2] = 2.0*M_PI/volume_*cross(a0, a1);
+			reciprocal_[0] = 2.0*M_PI/volume_*cross(a1, a2);
+			reciprocal_[1] = 2.0*M_PI/volume_*cross(a2, a0);
+			reciprocal_[2] = 2.0*M_PI/volume_*cross(a0, a1);
 		}
 		
 		template<class lat_type>
@@ -71,13 +71,13 @@ namespace ions {
 			UnitCell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodic_dimensions){
 		}
 
-		vector_type const& operator[](int i) const {return a_[i];}
+		vector_type const& operator[](int i) const {return lattice_[i];}
     
-    vector_type const& a(int i) const { return a_[i]; }
-		vector_type const& b(int i) const { return b_[i]; }
+    vector_type const& lattice(int i) const { return lattice_[i]; }
+		vector_type const& reciprocal(int i) const { return reciprocal_[i]; }
 		
 		auto enlarge(int factor) const {
-			return UnitCell(factor*a_[0], factor*a_[1], factor*a_[2], periodic_dimensions_);
+			return UnitCell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodic_dimensions_);
 		}
 				
     double volume() const { return volume_; }
@@ -85,9 +85,9 @@ namespace ions {
     template <class output_stream>
     void info(output_stream & out) const {
       out << "UNIT CELL:" << std::endl;
-      out << "  Lattice vectors [b] = " << a_[0] << std::endl;
-      out << "                        " << a_[1] << std::endl;
-      out << "                        " << a_[2] << std::endl;
+      out << "  Lattice vectors [b] = " << lattice_[0] << std::endl;
+      out << "                        " << lattice_[1] << std::endl;
+      out << "                        " << lattice_[2] << std::endl;
       out << "  Volume [b^3]        = " << volume_ << std::endl;
       out << std::endl;
     }
@@ -102,15 +102,15 @@ namespace ions {
 
     bool contains(math::vector3<double> v) const {
 			const double fac = 0.5 / ( 2.0 * M_PI );
-			const double p0 = fac*dot(v, b_[0]);
-			const double p1 = fac*dot(v, b_[1]);
-			const double p2 = fac*dot(v, b_[2]);
+			const double p0 = fac*dot(v, reciprocal_[0]);
+			const double p1 = fac*dot(v, reciprocal_[1]);
+			const double p2 = fac*dot(v, reciprocal_[2]);
 			
 			return ( (p0 > 0.0) && (p0 <= 1.0) && (p1 > 0.0) && (p1 <= 1.0) && (p2 > 0.0) && (p2 <= 1.0) );
 		}
   
     bool operator==(const UnitCell& c) const {
-			return ( a_[0]==c.a_[0] && a_[1]==c.a_[1] && a_[2]==c.a_[2] );
+			return ( lattice_[0]==c.lattice_[0] && lattice_[1]==c.lattice_[1] && lattice_[2]==c.lattice_[2] );
 		}
 			
     bool operator!=(const UnitCell& c) const {
@@ -118,7 +118,7 @@ namespace ions {
 		}
 
 		auto diagonal_length() const {
-			return sqrt(norm(a_[0]) + norm(a_[1]) + norm(a_[2]));
+			return sqrt(norm(lattice_[0]) + norm(lattice_[1]) + norm(lattice_[2]));
 		}
 
 		auto periodic_dimensions() const {
@@ -207,7 +207,7 @@ namespace ions {
 		};
 
 		auto metric() const {
-			return cell_metric{a_, b_};
+			return cell_metric{lattice_, reciprocal_};
 		}
 
 		auto position_in_cell(math::vector3<double> const & pos) const {
@@ -252,25 +252,25 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell[2][1] ==  0.0_a);
       CHECK(cell[2][2] == 10.0_a);
       
-      CHECK(cell.a(0)[0] == 10.0_a);
-      CHECK(cell.a(0)[1] ==  0.0_a);
-      CHECK(cell.a(0)[2] ==  0.0_a);
-      CHECK(cell.a(1)[0] ==  0.0_a);
-      CHECK(cell.a(1)[1] == 10.0_a);
-      CHECK(cell.a(1)[2] ==  0.0_a);
-      CHECK(cell.a(2)[0] ==  0.0_a);
-      CHECK(cell.a(2)[1] ==  0.0_a);
-      CHECK(cell.a(2)[2] == 10.0_a);
+      CHECK(cell.lattice(0)[0] == 10.0_a);
+      CHECK(cell.lattice(0)[1] ==  0.0_a);
+      CHECK(cell.lattice(0)[2] ==  0.0_a);
+      CHECK(cell.lattice(1)[0] ==  0.0_a);
+      CHECK(cell.lattice(1)[1] == 10.0_a);
+      CHECK(cell.lattice(1)[2] ==  0.0_a);
+      CHECK(cell.lattice(2)[0] ==  0.0_a);
+      CHECK(cell.lattice(2)[1] ==  0.0_a);
+      CHECK(cell.lattice(2)[2] == 10.0_a);
     
-      CHECK(cell.b(0)[0] == 0.6283185307_a);
-      CHECK(cell.b(0)[1] ==  0.0_a);
-      CHECK(cell.b(0)[2] ==  0.0_a);
-      CHECK(cell.b(1)[0] ==  0.0_a);
-      CHECK(cell.b(1)[1] == 0.6283185307_a);
-      CHECK(cell.b(1)[2] ==  0.0_a);
-      CHECK(cell.b(2)[0] ==  0.0_a);
-      CHECK(cell.b(2)[1] ==  0.0_a);
-      CHECK(cell.b(2)[2] == 0.6283185307_a);
+      CHECK(cell.reciprocal(0)[0] == 0.6283185307_a);
+      CHECK(cell.reciprocal(0)[1] ==  0.0_a);
+      CHECK(cell.reciprocal(0)[2] ==  0.0_a);
+      CHECK(cell.reciprocal(1)[0] ==  0.0_a);
+      CHECK(cell.reciprocal(1)[1] == 0.6283185307_a);
+      CHECK(cell.reciprocal(1)[2] ==  0.0_a);
+      CHECK(cell.reciprocal(2)[0] ==  0.0_a);
+      CHECK(cell.reciprocal(2)[1] ==  0.0_a);
+      CHECK(cell.reciprocal(2)[2] == 0.6283185307_a);
     
       CHECK(cell.volume() == 1000.0_a);
 
@@ -320,25 +320,25 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
 			ions::UnitCell cell(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
 			
-      CHECK(cell.a(0)[0] == 28.62_a);
-      CHECK(cell.a(0)[1] ==  0.0_a);
-      CHECK(cell.a(0)[2] ==  0.0_a);
-      CHECK(cell.a(1)[0] ==  0.0_a);
-      CHECK(cell.a(1)[1] == 90.14_a);
-      CHECK(cell.a(1)[2] ==  0.0_a);
-      CHECK(cell.a(2)[0] ==  0.0_a);
-      CHECK(cell.a(2)[1] ==  0.0_a);
-      CHECK(cell.a(2)[2] == 12.31_a);
+      CHECK(cell.lattice(0)[0] == 28.62_a);
+      CHECK(cell.lattice(0)[1] ==  0.0_a);
+      CHECK(cell.lattice(0)[2] ==  0.0_a);
+      CHECK(cell.lattice(1)[0] ==  0.0_a);
+      CHECK(cell.lattice(1)[1] == 90.14_a);
+      CHECK(cell.lattice(1)[2] ==  0.0_a);
+      CHECK(cell.lattice(2)[0] ==  0.0_a);
+      CHECK(cell.lattice(2)[1] ==  0.0_a);
+      CHECK(cell.lattice(2)[2] == 12.31_a);
     
-      CHECK(cell.b(0)[0] == 0.2195382707_a);
-      CHECK(cell.b(0)[1] ==  0.0_a);
-      CHECK(cell.b(0)[2] ==  0.0_a);
-      CHECK(cell.b(1)[0] ==  0.0_a);
-      CHECK(cell.b(1)[1] == 0.0697047405_a);
-      CHECK(cell.b(1)[2] ==  0.0_a);
-      CHECK(cell.b(2)[0] ==  0.0_a);
-      CHECK(cell.b(2)[1] ==  0.0_a);
-      CHECK(cell.b(2)[2] == 0.5104131038_a);
+      CHECK(cell.reciprocal(0)[0] == 0.2195382707_a);
+      CHECK(cell.reciprocal(0)[1] ==  0.0_a);
+      CHECK(cell.reciprocal(0)[2] ==  0.0_a);
+      CHECK(cell.reciprocal(1)[0] ==  0.0_a);
+      CHECK(cell.reciprocal(1)[1] == 0.0697047405_a);
+      CHECK(cell.reciprocal(1)[2] ==  0.0_a);
+      CHECK(cell.reciprocal(2)[0] ==  0.0_a);
+      CHECK(cell.reciprocal(2)[1] ==  0.0_a);
+      CHECK(cell.reciprocal(2)[2] == 0.5104131038_a);
     
       CHECK(cell.volume() == 31757.421708_a);
 
@@ -404,25 +404,25 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 			double lv[3][3] = {{6.942, 8.799, 4.759}, {9.627, 7.092, 4.819}, {4.091, 0.721, 1.043}};
       ions::UnitCell cell(lv);
       
-      CHECK(cell.a(0)[0] == 6.942_a);
-      CHECK(cell.a(0)[1] == 8.799_a);
-      CHECK(cell.a(0)[2] == 4.759_a);
-      CHECK(cell.a(1)[0] == 9.627_a);
-      CHECK(cell.a(1)[1] == 7.092_a);
-      CHECK(cell.a(1)[2] == 4.819_a);
-      CHECK(cell.a(2)[0] == 4.091_a);
-      CHECK(cell.a(2)[1] == 0.721_a);
-      CHECK(cell.a(2)[2] == 1.043_a);
+      CHECK(cell.lattice(0)[0] == 6.942_a);
+      CHECK(cell.lattice(0)[1] == 8.799_a);
+      CHECK(cell.lattice(0)[2] == 4.759_a);
+      CHECK(cell.lattice(1)[0] == 9.627_a);
+      CHECK(cell.lattice(1)[1] == 7.092_a);
+      CHECK(cell.lattice(1)[2] == 4.819_a);
+      CHECK(cell.lattice(2)[0] == 4.091_a);
+      CHECK(cell.lattice(2)[1] == 0.721_a);
+      CHECK(cell.lattice(2)[2] == 1.043_a);
     
-      CHECK(cell.b(0)[0] == 3.3736397602_a);
-      CHECK(cell.b(0)[1] == 8.3200742872_a);
-      CHECK(cell.b(0)[2] == -18.9840209206_a);
-      CHECK(cell.b(1)[0] == -4.942140131_a);
-      CHECK(cell.b(1)[1] == -10.517582818_a);
-      CHECK(cell.b(1)[2] == 26.6552948109_a);
-      CHECK(cell.b(2)[0] == 7.4410562534_a);
-      CHECK(cell.b(2)[1] == 10.6318294029_a);
-      CHECK(cell.b(2)[2] == -30.5117208294_a);
+      CHECK(cell.reciprocal(0)[0] == 3.3736397602_a);
+      CHECK(cell.reciprocal(0)[1] == 8.3200742872_a);
+      CHECK(cell.reciprocal(0)[2] == -18.9840209206_a);
+      CHECK(cell.reciprocal(1)[0] == -4.942140131_a);
+      CHECK(cell.reciprocal(1)[1] == -10.517582818_a);
+      CHECK(cell.reciprocal(1)[2] == 26.6552948109_a);
+      CHECK(cell.reciprocal(2)[0] == 7.4410562534_a);
+      CHECK(cell.reciprocal(2)[1] == 10.6318294029_a);
+      CHECK(cell.reciprocal(2)[2] == -30.5117208294_a);
     
       CHECK(cell.volume() == 7.305321831_a);
 			

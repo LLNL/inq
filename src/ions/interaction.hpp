@@ -125,7 +125,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 	auto efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
 
 	double gcut = std::numeric_limits<double>::max();
-	for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.b(idir)));
+	for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.reciprocal(idir)));
 	gcut = sqrt(gcut);
       
 	const int isph = ceil(9.5*alpha/gcut);
@@ -140,7 +140,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 					
 				if(ss == 0 || ss > isph*isph) continue;
 					
-				vector3<double> gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
+				vector3<double> gg = ix*cell.reciprocal(0) + iy*cell.reciprocal(1) + iz*cell.reciprocal(2);
 				double gg2 = norm(gg);
 					
 				double exparg = -0.25*gg2/(alpha*alpha);

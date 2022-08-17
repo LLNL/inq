@@ -41,15 +41,15 @@ public:
 		}
 
 		double amat[9];
-		amat[0] = cell_.a(0)[0];
-		amat[1] = cell_.a(0)[1];
-		amat[2] = cell_.a(0)[2];
-		amat[3] = cell_.a(1)[0];
-		amat[4] = cell_.a(1)[1];
-		amat[5] = cell_.a(1)[2];
-		amat[6] = cell_.a(2)[0];
-		amat[7] = cell_.a(2)[1];
-		amat[8] = cell_.a(2)[2];
+		amat[0] = cell_.lattice(0)[0];
+		amat[1] = cell_.lattice(0)[1];
+		amat[2] = cell_.lattice(0)[2];
+		amat[3] = cell_.lattice(1)[0];
+		amat[4] = cell_.lattice(1)[1];
+		amat[5] = cell_.lattice(1)[2];
+		amat[6] = cell_.lattice(2)[0];
+		amat[7] = cell_.lattice(2)[1];
+		amat[8] = cell_.lattice(2)[2];
 		
 		auto symnum = spg_get_international(symbol, reinterpret_cast<double (*)[3]>(amat), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), geo_.num_atoms(), 1e-4);
 		return symbol + std::string(" (number ") + std::to_string(symnum) + std::string(")");
