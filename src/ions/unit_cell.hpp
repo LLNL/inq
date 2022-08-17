@@ -1,35 +1,25 @@
 /* -*- indent-tabs-mode: t -*- */
 
-////////////////////////////////////////////////////////////////////////////////  
-// Copyright (c) 2013, Lawrence Livermore National Security, LLC. 
-//
-// Produced at the Lawrence Livermore National Laboratory. 
-// Written by Xavier Andrade <xavier@llnl.gov>, Erik Draeger
-// <draeger1@llnl.gov> and Francois Gygi <fgygi@ucdavis.edu>.
-// Based on the Qbox code by Francois Gygi Copyright (c) 2008 
-// LLNL-CODE-635376. All rights reserved. 
-//
-// This program is free software: you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details, in the file COPYING in the
-// root directory of this partition or <http://www.gnu.org/licenses/>.
-//
-////////////////////////////////////////////////////////////////////////////////
-//
-// UnitCell.h
-//
-////////////////////////////////////////////////////////////////////////////////
+/*
+ Copyright (C) 2022 Xavier Andrade, Alfredo A. Correa
 
-//#include <inq_config.h>
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+  
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
+  
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
-#ifndef INQ__IONS__UNITCELL
-#define INQ__IONS__UNITCELL
+#ifndef INQ__IONS__UNIT_CELL
+#define INQ__IONS__UNIT_CELL
 
 #include <stdexcept>
 
@@ -40,7 +30,7 @@
 namespace inq {
 namespace ions {
 
-  class UnitCell{
+  class unit_cell{
 		using vector_type = math::vector3<double>;
   private:
     vector_type lattice_[3];
@@ -50,7 +40,7 @@ namespace ions {
 		
   public:
 		
-    UnitCell(math::vector3<double> const& a0, math::vector3<double> const& a1, math::vector3<double> const& a2, int arg_periodic_dimensions = 3){
+    unit_cell(math::vector3<double> const& a0, math::vector3<double> const& a1, math::vector3<double> const& a2, int arg_periodic_dimensions = 3){
 			
 			periodic_dimensions_ = arg_periodic_dimensions;
 		
@@ -67,8 +57,8 @@ namespace ions {
 		}
 		
 		template<class lat_type>
-		UnitCell(const lat_type & lat, int periodic_dimensions = 3):
-			UnitCell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodic_dimensions){
+		unit_cell(const lat_type & lat, int periodic_dimensions = 3):
+			unit_cell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodic_dimensions){
 		}
 
 		vector_type const& operator[](int i) const {return lattice_[i];}
@@ -77,7 +67,7 @@ namespace ions {
 		vector_type const& reciprocal(int i) const { return reciprocal_[i]; }
 		
 		auto enlarge(int factor) const {
-			return UnitCell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodic_dimensions_);
+			return unit_cell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodic_dimensions_);
 		}
 				
     double volume() const { return volume_; }
@@ -93,7 +83,7 @@ namespace ions {
     }
 
 		template<class OStream>
-		friend OStream& operator<<(OStream& os, UnitCell const& self){
+		friend OStream& operator<<(OStream& os, unit_cell const& self){
 			self.info(os);
 			return os;
 	  }
@@ -109,11 +99,11 @@ namespace ions {
 			return ( (p0 > 0.0) && (p0 <= 1.0) && (p1 > 0.0) && (p1 <= 1.0) && (p2 > 0.0) && (p2 <= 1.0) );
 		}
   
-    bool operator==(const UnitCell& c) const {
+    bool operator==(const unit_cell& c) const {
 			return ( lattice_[0]==c.lattice_[0] && lattice_[1]==c.lattice_[1] && lattice_[2]==c.lattice_[2] );
 		}
 			
-    bool operator!=(const UnitCell& c) const {
+    bool operator!=(const unit_cell& c) const {
 			return ! ( *this == c );
 		}
 
@@ -124,7 +114,6 @@ namespace ions {
 		auto periodic_dimensions() const {
 			return periodic_dimensions_;
 		}
-
 		
 		class cell_metric {
 
@@ -224,12 +213,12 @@ namespace ions {
 }
 }
 
-#ifdef INQ_IONS_UNITCELL_UNIT_TEST
-#undef INQ_IONS_UNITCELL_UNIT_TEST
+#ifdef INQ_IONS_UNIT_CELL_UNIT_TEST
+#undef INQ_IONS_UNIT_CELL_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
+TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
@@ -240,7 +229,7 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
     
     SECTION("Cubic cell"){
     
-      ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
+      ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
       CHECK(cell[0][0] == 10.0_a);
       CHECK(cell[0][1] ==  0.0_a);
@@ -318,7 +307,7 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
     SECTION("Parallelepipedic cell"){
 
-			ions::UnitCell cell(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
+			ions::unit_cell cell(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
 			
       CHECK(cell.lattice(0)[0] == 28.62_a);
       CHECK(cell.lattice(0)[1] ==  0.0_a);
@@ -402,7 +391,7 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
     SECTION("Non-orthogonal cell"){
 
 			double lv[3][3] = {{6.942, 8.799, 4.759}, {9.627, 7.092, 4.819}, {4.091, 0.721, 1.043}};
-      ions::UnitCell cell(lv);
+      ions::unit_cell cell(lv);
       
       CHECK(cell.lattice(0)[0] == 6.942_a);
       CHECK(cell.lattice(0)[1] == 8.799_a);

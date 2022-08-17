@@ -198,7 +198,7 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_EXCHANGE_OPERATOR_UNIT_TEST
 #undef INQ_HAMILTONIAN_EXCHANGE_OPERATOR_UNIT_TEST
 
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
@@ -213,7 +213,7 @@ TEST_CASE("Class hamiltonian::exchange", "[hamiltonian::exchange]"){
 	*/
 	/*
 	ions::geometry geo;
-  ions::UnitCell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
+  ions::unit_cell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
   basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
 
 	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());

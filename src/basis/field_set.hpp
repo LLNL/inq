@@ -288,7 +288,7 @@ field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq
 
 #include <basis/real_space.hpp>
 
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 
 #include <mpi3/cartesian_communicator.hpp>

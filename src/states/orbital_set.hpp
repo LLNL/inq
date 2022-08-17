@@ -141,7 +141,7 @@ namespace states {
 
 #include <basis/real_space.hpp>
 
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 
 #include <mpi3/cartesian_communicator.hpp>

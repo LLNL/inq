@@ -8,7 +8,7 @@
 #include <spglib.h>
 
 #include <ions/geometry.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <magnitude/fractionary.hpp>
 #include <math/array.hpp>
 #include <systems/box.hpp>
@@ -88,7 +88,7 @@ public:
 	}
 
 	
-	inq::ions::UnitCell cell_;
+	inq::ions::unit_cell cell_;
 	inq::ions::geometry geo_;
 	
 };

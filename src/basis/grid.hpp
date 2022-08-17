@@ -28,7 +28,7 @@
 #include <basis/base.hpp>
 #include <basis/double_grid.hpp>
 #include <math/vector3.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 namespace inq {
 namespace basis {
@@ -39,7 +39,7 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const ions::UnitCell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
+		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodic_dimensions, boost::mpi3::communicator & comm) :
 			base(nr[0], comm),
 			cubic_dist_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
 			cell_(cell),
@@ -197,7 +197,7 @@ namespace basis {
 	protected:
 
 		std::array<inq::parallel::partition, 3> cubic_dist_;
-		ions::UnitCell cell_;
+		ions::unit_cell cell_;
 
     std::array<int, 3> nr_;
 
@@ -236,7 +236,7 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 	using namespace Catch::literals;
   using math::vector3;
 
-  ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
+  ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 

@@ -48,7 +48,7 @@ namespace hamiltonian {
 		
   public:
 
-		void update_projectors(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, const ions::geometry & geo){
+		void update_projectors(const basis_type & basis, const ions::unit_cell & cell, const atomic_potential & pot, const ions::geometry & geo){
 			
 			CALI_CXX_MARK_FUNCTION;
 			
@@ -75,7 +75,7 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-    ks_hamiltonian(const basis_type & basis, const ions::UnitCell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
+    ks_hamiltonian(const basis_type & basis, const ions::unit_cell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
 									 const int num_hf_orbitals, const double exchange_coefficient, boost::mpi3::cartesian_communicator<2> comm, bool use_ace = false):
 			scalar_potential(basis),
 			exchange(basis, num_hf_orbitals, exchange_coefficient, use_ace, std::move(comm)),
@@ -219,7 +219,7 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_KS_HAMILTONIAN_UNIT_TEST
 #undef INQ_HAMILTONIAN_KS_HAMILTONIAN_UNIT_TEST
 
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 

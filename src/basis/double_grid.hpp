@@ -134,7 +134,7 @@ private:
 #undef INQ_BASIS_DOUBLE_GRID_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
   

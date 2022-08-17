@@ -53,7 +53,7 @@ void kick(math::vector3<double, math::covariant> kick_field, basis::field_set<ba
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 

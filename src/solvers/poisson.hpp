@@ -211,7 +211,7 @@ private:
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <operations/integral.hpp>
 
 TEST_CASE("class solvers::poisson", "[solvers::poisson]") {

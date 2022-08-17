@@ -33,7 +33,7 @@
 #include <gpu/atomic.hpp>
 #include <gpu/run.hpp>
 #include <gpu/reduce.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
 #include <cassert>
@@ -84,7 +84,7 @@ namespace basis {
 
 		//we need to make an additional public function to make cuda happy
 		template <class basis>
-		void initialize(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius){
+		void initialize(const basis & parent_grid, const ions::unit_cell & cell, const math::vector3<double> & center_point, const double radius){
 			CALI_CXX_MARK_SCOPE("spherical_grid::initialize");
 					
       ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
@@ -188,7 +188,7 @@ namespace basis {
 		const static int dimension = 1;
 		
 		template <class basis>
-    spherical_grid(const basis & parent_grid, const ions::UnitCell & cell, const math::vector3<double> & center_point, const double radius):
+    spherical_grid(const basis & parent_grid, const ions::unit_cell & cell, const math::vector3<double> & center_point, const double radius):
 			volume_element_(parent_grid.volume_element()),
 			center_(center_point){
 
@@ -308,7 +308,7 @@ namespace basis {
 #undef INQ_BASIS_SPHERICAL_GRID_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <math/array.hpp>
 #include <math/complex.hpp>
 

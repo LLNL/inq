@@ -191,7 +191,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 #include <vector>
 #include <valarray>
 #include <math/array.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
@@ -204,7 +204,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
   
     double aa = 7.653;
     
-    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
     
     std::valarray<double> charge(4);
     charge = 3.0;
@@ -228,7 +228,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
     double aa = 6.74065308785213;
     
-    ions::UnitCell cell(vector3<double>(0.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, 0.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, 0.0));
+    ions::unit_cell cell(vector3<double>(0.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, 0.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, 0.0));
 
     const double charge[2] = {4.0, 4.0};
     
@@ -249,7 +249,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 5.3970578;
     
-    ions::UnitCell cell(vector3<double>(-aa/2.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, -aa/2.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, -aa/2.0));
+    ions::unit_cell cell(vector3<double>(-aa/2.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, -aa/2.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, -aa/2.0));
 
     const double charge = 16.0;
     
@@ -268,7 +268,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 20.0;
     
-    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
 
 		const double charge[2] = {5.0, 5.0};
 
@@ -300,7 +300,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 20.0;
     
-    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
 
 		const double charge[2] = {5.0, 5.0};
 
@@ -331,7 +331,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double alat = 20.25;
     
-    ions::UnitCell cell(vector3<double>(alat, 0.0, 0.0), vector3<double>(0.0, alat, 0.0), vector3<double>(0.0, 0.0, alat));
+    ions::unit_cell cell(vector3<double>(alat, 0.0, 0.0), vector3<double>(0.0, alat, 0.0), vector3<double>(0.0, 0.0, alat));
 
 		math::array<double, 1> charge(64, 4.0);
 

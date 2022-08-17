@@ -24,7 +24,7 @@
 #include <inq_config.h>
 
 #include <math/vector3.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include "grid.hpp"
 #include <cassert>
 #include <array>
@@ -59,7 +59,7 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, math::vector3<double, math::covariant> const & gspacing, math::vector3<double> const & glength, std::array<inq::parallel::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
+			point_operator(std::array<int, 3> const & ng, math::vector3<double, math::covariant> const & gspacing, math::vector3<double> const & glength, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
 				glength_(glength),
@@ -139,7 +139,7 @@ namespace basis {
 			math::vector3<double, math::covariant> gspacing_;
 			math::vector3<double> glength_;
 			std::array<inq::parallel::partition, 3> cubic_dist_;
-			ions::UnitCell::cell_metric metric_;
+			ions::unit_cell::cell_metric metric_;
 			
 		};
 
@@ -158,7 +158,7 @@ namespace basis {
 #undef INQ_BASIS_FOURIER_SPACE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("class basis::fourier_space", "[fourier_space]") {
 

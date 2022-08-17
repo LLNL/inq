@@ -27,7 +27,7 @@
 
 #include <basis/grid.hpp>
 #include <gpu/run.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <math/vector3.hpp>
 #include <systems/box.hpp>
 
@@ -73,7 +73,7 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & nr, math::vector3<double, math::contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, ions::UnitCell::cell_metric metric):
+			point_operator(std::array<int, 3> const & nr, math::vector3<double, math::contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
 				nr_(nr),
 				rspacing_(rspacing),
 				cubic_dist_(dist),
@@ -138,7 +138,7 @@ namespace basis {
 			std::array<int, 3> nr_;
 			math::vector3<double, math::contravariant> rspacing_;
 			std::array<inq::parallel::partition, 3> cubic_dist_;
-			ions::UnitCell::cell_metric metric_;
+			ions::unit_cell::cell_metric metric_;
 			
 		};
 			
@@ -198,7 +198,7 @@ namespace basis {
 #undef INQ_BASIS_REAL_SPACE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
