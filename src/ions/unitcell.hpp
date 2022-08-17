@@ -53,7 +53,6 @@ namespace ions {
   
     // 3x3 matrix forms
     double amat_[9];
-    double bmat_[9];
     // 3x3 matrix form of inverse
     double amat_inv_[9];
     // 3x3 matrix form of inverse transpose
@@ -115,23 +114,11 @@ namespace ions {
 				b_[1] = 2.0 * M_PI * amt1;
 				b_[2] = 2.0 * M_PI * amt2;
 			
-				bmat_[0] = b_[0][0];
-				bmat_[1] = b_[0][1];
-				bmat_[2] = b_[0][2];
-				bmat_[3] = b_[1][0];
-				bmat_[4] = b_[1][1];
-				bmat_[5] = b_[1][2];
-				bmat_[6] = b_[2][0];
-				bmat_[7] = b_[2][1];
-				bmat_[8] = b_[2][2];
 			} else  {
 				b_[0] = b_[1] = b_[2] = vector_type(0.0,0.0,0.0);
 				amat_inv_[0] =  amat_inv_[1] =  amat_inv_[2] = 
 					amat_inv_[3] =  amat_inv_[4] =  amat_inv_[5] = 
 					amat_inv_[6] =  amat_inv_[7] =  amat_inv_[8] = 0.0;
-				bmat_[0] =  bmat_[1] =  bmat_[2] = 
-					bmat_[3] =  bmat_[4] =  bmat_[5] = 
-					bmat_[6] =  bmat_[7] =  bmat_[8] = 0.0;
 			}
 		
 			an_[0]  = a_[0];
@@ -212,10 +199,8 @@ namespace ions {
 	  }
 		
     const double* amat() const { return &amat_[0]; }
-    const double* bmat() const { return &bmat_[0]; }
     const double* amat_inv() const { return &amat_inv_[0]; }
     double amat(int ij) const { return amat_[ij]; }
-    double bmat(int ij) const { return bmat_[ij]; }
     double amat_inv(int ij) const { return amat_inv_[ij]; }
 
 		////////////////////////////////////////////////////////////////////////////////
@@ -404,16 +389,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat()[7] ==  0.0_a);
       CHECK(cell.amat()[8] == 10.0_a);
     
-      CHECK(cell.bmat()[0] == 0.6283185307_a);
-      CHECK(cell.bmat()[1] ==  0.0_a);
-      CHECK(cell.bmat()[2] ==  0.0_a);
-      CHECK(cell.bmat()[3] ==  0.0_a);
-      CHECK(cell.bmat()[4] == 0.6283185307_a);
-      CHECK(cell.bmat()[5] ==  0.0_a);
-      CHECK(cell.bmat()[6] ==  0.0_a);
-      CHECK(cell.bmat()[7] ==  0.0_a);
-      CHECK(cell.bmat()[8] == 0.6283185307_a);
-    
       CHECK(cell.amat_inv()[0] == 0.1_a);
       CHECK(cell.amat_inv()[1] == 0.0_a);
       CHECK(cell.amat_inv()[2] == 0.0_a);
@@ -433,16 +408,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat(6) ==  0.0_a);
       CHECK(cell.amat(7) ==  0.0_a);
       CHECK(cell.amat(8) == 10.0_a);
-    
-      CHECK(cell.bmat(0) == 0.6283185307_a);
-      CHECK(cell.bmat(1) ==  0.0_a);
-      CHECK(cell.bmat(2) ==  0.0_a);
-      CHECK(cell.bmat(3) ==  0.0_a);
-      CHECK(cell.bmat(4) == 0.6283185307_a);
-      CHECK(cell.bmat(5) ==  0.0_a);
-      CHECK(cell.bmat(6) ==  0.0_a);
-      CHECK(cell.bmat(7) ==  0.0_a);
-      CHECK(cell.bmat(8) == 0.6283185307_a);
     
       CHECK(cell.amat_inv(0) == 0.1_a);
       CHECK(cell.amat_inv(1) == 0.0_a);
@@ -534,16 +499,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat()[7] ==  0.0_a);
       CHECK(cell.amat()[8] == 12.31_a);
     
-      CHECK(cell.bmat()[0] == 0.2195382707_a);
-      CHECK(cell.bmat()[1] ==  0.0_a);
-      CHECK(cell.bmat()[2] ==  0.0_a);
-      CHECK(cell.bmat()[3] ==  0.0_a);
-      CHECK(cell.bmat()[4] == 0.0697047405_a);
-      CHECK(cell.bmat()[5] ==  0.0_a);
-      CHECK(cell.bmat()[6] ==  0.0_a);
-      CHECK(cell.bmat()[7] ==  0.0_a);
-      CHECK(cell.bmat()[8] == 0.5104131038_a);
-    
       CHECK(cell.amat_inv()[0] == 0.034940601_a);
       CHECK(cell.amat_inv()[1] == 0.0_a);
       CHECK(cell.amat_inv()[2] == 0.0_a);
@@ -563,16 +518,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat(6) ==  0.0_a);
       CHECK(cell.amat(7) ==  0.0_a);
       CHECK(cell.amat(8) == 12.31_a);
-    
-      CHECK(cell.bmat(0) == 0.2195382707_a);
-      CHECK(cell.bmat(1) ==  0.0_a);
-      CHECK(cell.bmat(2) ==  0.0_a);
-      CHECK(cell.bmat(3) ==  0.0_a);
-      CHECK(cell.bmat(4) == 0.0697047405_a);
-      CHECK(cell.bmat(5) ==  0.0_a);
-      CHECK(cell.bmat(6) ==  0.0_a);
-      CHECK(cell.bmat(7) ==  0.0_a);
-      CHECK(cell.bmat(8) == 0.5104131038_a);
     
       CHECK(cell.amat_inv(0) == 0.034940601_a);
       CHECK(cell.amat_inv(1) == 0.0_a);
@@ -678,16 +623,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat()[7] == 0.721_a);		
       CHECK(cell.amat()[8] == 1.043_a);		
    			                          
-      CHECK(cell.bmat()[0] == 3.3736397602_a);	
-      CHECK(cell.bmat()[1] == 8.3200742872_a);	
-      CHECK(cell.bmat()[2] == -18.9840209206_a);
-      CHECK(cell.bmat()[3] == -4.942140131_a);	
-      CHECK(cell.bmat()[4] == -10.517582818_a);	
-      CHECK(cell.bmat()[5] == 26.6552948109_a);	
-      CHECK(cell.bmat()[6] == 7.4410562534_a);	
-      CHECK(cell.bmat()[7] == 10.6318294029_a);	
-      CHECK(cell.bmat()[8] == -30.5117208294_a);
-    
       CHECK(cell.amat_inv()[0] == 0.5369314441_a); 
       CHECK(cell.amat_inv()[1] == -0.7865660313_a);
       CHECK(cell.amat_inv()[2] == 1.1842808846_a); 
@@ -708,16 +643,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat(7) == 0.721_a);		
       CHECK(cell.amat(8) == 1.043_a);		
     			                        
-      CHECK(cell.bmat(0) == 3.3736397602_a);	
-      CHECK(cell.bmat(1) == 8.3200742872_a);	
-      CHECK(cell.bmat(2) == -18.9840209206_a);
-      CHECK(cell.bmat(3) == -4.942140131_a);	
-      CHECK(cell.bmat(4) == -10.517582818_a);	
-      CHECK(cell.bmat(5) == 26.6552948109_a);	
-      CHECK(cell.bmat(6) == 7.4410562534_a);	
-      CHECK(cell.bmat(7) == 10.6318294029_a);	
-      CHECK(cell.bmat(8) == -30.5117208294_a);
-    
       CHECK(cell.amat_inv(0) == 0.5369314441_a); 
       CHECK(cell.amat_inv(1) == -0.7865660313_a);;
       CHECK(cell.amat_inv(2) == 1.1842808846_a); 
