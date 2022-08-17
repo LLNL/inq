@@ -69,7 +69,7 @@ public:
 	}
 
 	auto insert(input::species const & sp, math::vector3<quantity<magnitude::fractionary>> const & pos){
-		geo_.add_atom(sp, cell_.crystal_to_cart(in_atomic_units(pos)));
+		geo_.add_atom(sp, cell_.metric().to_cartesian(in_atomic_units(pos)));
 	}
 
 	auto insert(std::string const & symbol, math::vector3<quantity<magnitude::fractionary>> const & pos){
