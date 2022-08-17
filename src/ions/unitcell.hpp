@@ -315,49 +315,6 @@ namespace ions {
 		}
 
 		////////////////////////////////////////////////////////////////////////////////
-		
-    void cart_to_crystal(const double* scart, double* scryst) const {
-			// convert symmetric 3x3 matrix scart to crystalline coordinates
-			// scart[0] = s_xx, scart[1] = s_yy, scart[2] = s_zz, scart[3] = s_xy, 
-			// scart[4] = s_yz, scart[5] = s_xz
-			
-			scryst[0] = 
-				a_[0][0]*scart[0]*a_[0][0] + a_[0][0]*scart[3]*a_[0][1] + a_[0][0]*scart[5]*a_[0][2] + 
-				a_[0][1]*scart[3]*a_[0][0] + a_[0][1]*scart[1]*a_[0][1] + a_[0][1]*scart[4]*a_[0][2] + 
-				a_[0][2]*scart[5]*a_[0][0] + a_[0][2]*scart[4]*a_[0][1] + a_[0][2]*scart[2]*a_[0][2];
-			scryst[1] = 
-				a_[1][0]*scart[0]*a_[1][0] + a_[1][0]*scart[3]*a_[1][1] + a_[1][0]*scart[5]*a_[1][2] + 
-				a_[1][1]*scart[3]*a_[1][0] + a_[1][1]*scart[1]*a_[1][1] + a_[1][1]*scart[4]*a_[1][2] + 
-				a_[1][2]*scart[5]*a_[1][0] + a_[1][2]*scart[4]*a_[1][1] + a_[1][2]*scart[2]*a_[1][2];
-			scryst[2] = 
-				a_[2][0]*scart[0]*a_[2][0] + a_[2][0]*scart[3]*a_[2][1] + a_[2][0]*scart[5]*a_[2][2] + 
-				a_[2][1]*scart[3]*a_[2][0] + a_[2][1]*scart[1]*a_[2][1] + a_[2][1]*scart[4]*a_[2][2] + 
-				a_[2][2]*scart[5]*a_[2][0] + a_[2][2]*scart[4]*a_[2][1] + a_[2][2]*scart[2]*a_[2][2];
-			scryst[3] = 
-				a_[0][0]*scart[0]*a_[1][0] + a_[0][0]*scart[3]*a_[1][1] + a_[0][0]*scart[5]*a_[1][2] + 
-				a_[0][1]*scart[3]*a_[1][0] + a_[0][1]*scart[1]*a_[1][1] + a_[0][1]*scart[4]*a_[1][2] + 
-				a_[0][2]*scart[5]*a_[1][0] + a_[0][2]*scart[4]*a_[1][1] + a_[0][2]*scart[2]*a_[1][2];
-			scryst[4] = 
-				a_[1][0]*scart[0]*a_[2][0] + a_[1][0]*scart[3]*a_[2][1] + a_[1][0]*scart[5]*a_[2][2] + 
-				a_[1][1]*scart[3]*a_[2][0] + a_[1][1]*scart[1]*a_[2][1] + a_[1][1]*scart[4]*a_[2][2] + 
-				a_[1][2]*scart[5]*a_[2][0] + a_[1][2]*scart[4]*a_[2][1] + a_[1][2]*scart[2]*a_[2][2];
-			scryst[5] = 
-				a_[0][0]*scart[0]*a_[2][0] + a_[0][0]*scart[3]*a_[2][1] + a_[0][0]*scart[5]*a_[2][2] + 
-				a_[0][1]*scart[3]*a_[2][0] + a_[0][1]*scart[1]*a_[2][1] + a_[0][1]*scart[4]*a_[2][2] + 
-				a_[0][2]*scart[5]*a_[2][0] + a_[0][2]*scart[4]*a_[2][1] + a_[0][2]*scart[2]*a_[2][2];
-
-		}
-		
-		////////////////////////////////////////////////////////////////////////////////
-		
-    math::vector3<double> cart_to_crystal(const math::vector3<double>& v) const {
-			vector_type vcryst;
-			const double twopiinv = 0.5/M_PI;
-			vcryst[0] = dot(b_[0], v)*twopiinv;
-			vcryst[1] = dot(b_[1], v)*twopiinv;
-			vcryst[2] = dot(b_[2], v)*twopiinv;
-			return vcryst;
-		}
 
     bool encloses(const UnitCell& c) const {
 			bool in = true;
