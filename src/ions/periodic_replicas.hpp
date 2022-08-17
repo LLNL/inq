@@ -87,7 +87,7 @@ private:
 #undef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
 
@@ -96,7 +96,7 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
 	using math::vector3;
 
   {
-    ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
+    ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
     SECTION("Cubic cell 0"){
       ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 9.5);

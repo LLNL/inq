@@ -138,7 +138,7 @@ public:
 #undef INQ_PARALLEL_ARRAY_ITERATOR_2D_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <math/array.hpp>
 
 #include <mpi3/environment.hpp>

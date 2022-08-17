@@ -222,7 +222,7 @@ field<basis::real_space, math::vector3<double, VectorSpace>> real_field(field<ba
 #undef INQ_BASIS_FIELD_UNIT_TEST
 
 #include <basis/real_space.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 #include <catch2/catch_all.hpp>
 

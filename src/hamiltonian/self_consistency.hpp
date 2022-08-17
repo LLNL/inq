@@ -155,7 +155,7 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_SELF_CONSISTENCY_UNIT_TEST
 #undef INQ_HAMILTONIAN_SELF_CONSISTENCY_UNIT_TEST
 
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 

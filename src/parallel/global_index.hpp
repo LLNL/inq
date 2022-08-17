@@ -54,7 +54,7 @@ class global_index {
 #undef INQ_PARALLEL_GLOBAL_INDEX_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 #include <mpi3/environment.hpp>
 

@@ -176,7 +176,6 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
-	//UnitCell size
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;

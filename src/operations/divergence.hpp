@@ -108,7 +108,6 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	using namespace operations;
 	using math::vector3;
 
-	//UnitCell size
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;

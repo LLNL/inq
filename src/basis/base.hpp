@@ -69,7 +69,7 @@ public:
 #undef INQ_BASIS_BASE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("class basis::base", "[basis::base]") {
   

@@ -83,7 +83,7 @@ math::vector3<double> dipole(systems::ions const & ions, systems::electrons cons
 #undef INQ_OBSERVABLES_DIPOLE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("observables::dipole", "[observables::dipole]") {
 

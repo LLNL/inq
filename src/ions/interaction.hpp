@@ -125,7 +125,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 	auto efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
 
 	double gcut = std::numeric_limits<double>::max();
-	for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.b(idir)));
+	for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.reciprocal(idir)));
 	gcut = sqrt(gcut);
       
 	const int isph = ceil(9.5*alpha/gcut);
@@ -140,7 +140,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 					
 				if(ss == 0 || ss > isph*isph) continue;
 					
-				vector3<double> gg = ix*cell.b(0) + iy*cell.b(1) + iz*cell.b(2);
+				vector3<double> gg = ix*cell.reciprocal(0) + iy*cell.reciprocal(1) + iz*cell.reciprocal(2);
 				double gg2 = norm(gg);
 					
 				double exparg = -0.25*gg2/(alpha*alpha);
@@ -191,7 +191,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 #include <vector>
 #include <valarray>
 #include <math/array.hpp>
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 
 TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
@@ -204,7 +204,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
   
     double aa = 7.653;
     
-    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
     
     std::valarray<double> charge(4);
     charge = 3.0;
@@ -228,13 +228,13 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
     double aa = 6.74065308785213;
     
-    ions::UnitCell cell(vector3<double>(0.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, 0.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, 0.0));
+    ions::unit_cell cell(vector3<double>(0.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, 0.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, 0.0));
 
     const double charge[2] = {4.0, 4.0};
     
     std::vector<vector3<double>> positions(2);
-    positions[0] = cell.crystal_to_cart(vector3<double>(0.0,  0.0,  0.0 ));
-    positions[1] = cell.crystal_to_cart(vector3<double>(0.25, 0.25, 0.25));
+    positions[0] = cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0,  0.0,  0.0 ));
+    positions[1] = cell.metric().to_cartesian(vector3<double, math::contravariant>(0.25, 0.25, 0.25));
     
     double energy;
     std::vector<vector3<double>> forces(2);
@@ -249,7 +249,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 5.3970578;
     
-    ions::UnitCell cell(vector3<double>(-aa/2.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, -aa/2.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, -aa/2.0));
+    ions::unit_cell cell(vector3<double>(-aa/2.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, -aa/2.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, -aa/2.0));
 
     const double charge = 16.0;
     
@@ -268,7 +268,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 20.0;
     
-    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
 
 		const double charge[2] = {5.0, 5.0};
 
@@ -300,7 +300,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 20.0;
     
-    ions::UnitCell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
 
 		const double charge[2] = {5.0, 5.0};
 
@@ -331,7 +331,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double alat = 20.25;
     
-    ions::UnitCell cell(vector3<double>(alat, 0.0, 0.0), vector3<double>(0.0, alat, 0.0), vector3<double>(0.0, 0.0, alat));
+    ions::unit_cell cell(vector3<double>(alat, 0.0, 0.0), vector3<double>(0.0, alat, 0.0), vector3<double>(0.0, 0.0, alat));
 
 		math::array<double, 1> charge(64, 4.0);
 

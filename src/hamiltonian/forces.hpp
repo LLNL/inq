@@ -123,7 +123,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 #ifdef INQ_HAMILTONIAN_FORCES_UNIT_TEST
 #undef INQ_HAMILTONIAN_FORCES_UNIT_TEST
 
-#include <ions/unitcell.hpp>
+#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
