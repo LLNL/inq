@@ -46,16 +46,6 @@ namespace ions {
     vector_type a_[3];
     vector_type b_[3];
     double volume_;
-    vector_type an_[13];
-    vector_type bn_[13];
-  
-    // 3x3 matrix forms
-    double amat_[9];
-    // 3x3 matrix form of inverse
-    double amat_inv_[9];
-    // 3x3 matrix form of inverse transpose
-    double amat_inv_t_[9];
-
 		int periodic_dimensions_;
 		
   public:
@@ -64,89 +54,16 @@ namespace ions {
 			
 			periodic_dimensions_ = arg_periodic_dimensions;
 		
-			a_[0] = a0; a_[1] = a1, a_[2] = a2;
-			amat_[0] = a0[0];
-			amat_[1] = a0[1];
-			amat_[2] = a0[2];
-			amat_[3] = a1[0];
-			amat_[4] = a1[1];
-			amat_[5] = a1[2];
-			amat_[6] = a2[0];
-			amat_[7] = a2[1];
-			amat_[8] = a2[2];
-  
-			// volume = det(A)
+			a_[0] = a0;
+			a_[1] = a1;
+			a_[2] = a2;
 			volume_ = dot(a0, cross(a1, a2));
 
-			if(fabs(volume_) < 1e-10) throw std::runtime_error("inq error: the lattice volume is zero");
+			if(fabs(volume_) < 1e-10) throw std::runtime_error("inq error: the lattice volume is not positive");
 		
-			if ( volume_ > 0.0 ){
-				// Compute rows of A-1 (columns of A^-T)
-				double fac = 1.0 / volume_;
-				vector_type amt0 = fac*cross(a1, a2);
-				vector_type amt1 = fac*cross(a2, a0);
-				vector_type amt2 = fac*cross(a0, a1);
-			
-				amat_inv_[0] = amt0[0];
-				amat_inv_[1] = amt1[0];
-				amat_inv_[2] = amt2[0];
-				amat_inv_[3] = amt0[1];
-				amat_inv_[4] = amt1[1];
-				amat_inv_[5] = amt2[1];
-				amat_inv_[6] = amt0[2];
-				amat_inv_[7] = amt1[2];
-				amat_inv_[8] = amt2[2];
-			
-				amat_inv_t_[0] = amt0[0];
-				amat_inv_t_[1] = amt0[1];
-				amat_inv_t_[2] = amt0[2];
-				amat_inv_t_[3] = amt1[0];
-				amat_inv_t_[4] = amt1[1];
-				amat_inv_t_[5] = amt1[2];
-				amat_inv_t_[6] = amt2[0];
-				amat_inv_t_[7] = amt2[1];
-				amat_inv_t_[8] = amt2[2];
-			
-				// B = 2 pi A^-T
-				b_[0] = 2.0 * M_PI * amt0;
-				b_[1] = 2.0 * M_PI * amt1;
-				b_[2] = 2.0 * M_PI * amt2;
-			
-			} else  {
-				b_[0] = b_[1] = b_[2] = vector_type(0.0,0.0,0.0);
-				amat_inv_[0] =  amat_inv_[1] =  amat_inv_[2] = 
-					amat_inv_[3] =  amat_inv_[4] =  amat_inv_[5] = 
-					amat_inv_[6] =  amat_inv_[7] =  amat_inv_[8] = 0.0;
-			}
-		
-			an_[0]  = a_[0];
-			an_[1]  = a_[1];
-			an_[2]  = a_[2];
-			an_[3]  = a_[0] + a_[1];
-			an_[4]  = a_[0] - a_[1];
-			an_[5]  = a_[1] + a_[2];
-			an_[6]  = a_[1] - a_[2];
-			an_[7]  = a_[2] + a_[0];
-			an_[8]  = a_[2] - a_[0];
-			an_[9]  = a_[0] + a_[1] + a_[2];
-			an_[10] = a_[0] - a_[1] - a_[2];
-			an_[11] = a_[0] + a_[1] - a_[2];
-			an_[12] = a_[0] - a_[1] + a_[2];
- 
-			bn_[0]  = b_[0];
-			bn_[1]  = b_[1];
-			bn_[2]  = b_[2];
-			bn_[3]  = b_[0] + b_[1];
-			bn_[4]  = b_[0] - b_[1];
-			bn_[5]  = b_[1] + b_[2];
-			bn_[6]  = b_[1] - b_[2];
-			bn_[7]  = b_[2] + b_[0];
-			bn_[8]  = b_[2] - b_[0];
-			bn_[9]  = b_[0] + b_[1] + b_[2];
-			bn_[10] = b_[0] - b_[1] - b_[2];
-			bn_[11] = b_[0] + b_[1] - b_[2];
-			bn_[12] = b_[0] - b_[1] + b_[2];
- 
+			b_[0] = 2.0*M_PI/volume_*cross(a1, a2);
+			b_[1] = 2.0*M_PI/volume_*cross(a2, a0);
+			b_[2] = 2.0*M_PI/volume_*cross(a0, a1);
 		}
 		
 		vector_type const& operator[](int i) const {return a_[i];}
@@ -191,11 +108,6 @@ namespace ions {
 			return os;
 	  }
 		
-    const double* amat() const { return &amat_[0]; }
-    const double* amat_inv() const { return &amat_inv_[0]; }
-    double amat(int ij) const { return amat_[ij]; }
-    double amat_inv(int ij) const { return amat_inv_[ij]; }
-
 		////////////////////////////////////////////////////////////////////////////////
 
     bool contains(math::vector3<double> v) const {
@@ -372,46 +284,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
     
       CHECK(cell.volume() == 1000.0_a);
 
-      CHECK(cell.amat()[0] == 10.0_a);
-      CHECK(cell.amat()[1] ==  0.0_a);
-      CHECK(cell.amat()[2] ==  0.0_a);
-      CHECK(cell.amat()[3] ==  0.0_a);
-      CHECK(cell.amat()[4] == 10.0_a);
-      CHECK(cell.amat()[5] ==  0.0_a);
-      CHECK(cell.amat()[6] ==  0.0_a);
-      CHECK(cell.amat()[7] ==  0.0_a);
-      CHECK(cell.amat()[8] == 10.0_a);
-    
-      CHECK(cell.amat_inv()[0] == 0.1_a);
-      CHECK(cell.amat_inv()[1] == 0.0_a);
-      CHECK(cell.amat_inv()[2] == 0.0_a);
-      CHECK(cell.amat_inv()[3] == 0.0_a);
-      CHECK(cell.amat_inv()[4] == 0.1_a);
-      CHECK(cell.amat_inv()[5] == 0.0_a);
-      CHECK(cell.amat_inv()[6] == 0.0_a);
-      CHECK(cell.amat_inv()[7] == 0.0_a);
-      CHECK(cell.amat_inv()[8] == 0.1_a);
-    
-      CHECK(cell.amat(0) == 10.0_a);
-      CHECK(cell.amat(1) ==  0.0_a);
-      CHECK(cell.amat(2) ==  0.0_a);
-      CHECK(cell.amat(3) ==  0.0_a);
-      CHECK(cell.amat(4) == 10.0_a);
-      CHECK(cell.amat(5) ==  0.0_a);
-      CHECK(cell.amat(6) ==  0.0_a);
-      CHECK(cell.amat(7) ==  0.0_a);
-      CHECK(cell.amat(8) == 10.0_a);
-    
-      CHECK(cell.amat_inv(0) == 0.1_a);
-      CHECK(cell.amat_inv(1) == 0.0_a);
-      CHECK(cell.amat_inv(2) == 0.0_a);
-      CHECK(cell.amat_inv(3) == 0.0_a);
-      CHECK(cell.amat_inv(4) == 0.1_a);
-      CHECK(cell.amat_inv(5) == 0.0_a);
-      CHECK(cell.amat_inv(6) == 0.0_a);
-      CHECK(cell.amat_inv(7) == 0.0_a);
-      CHECK(cell.amat_inv(8) == 0.1_a);
-
       CHECK(cell.contains(vector3<double>(5.0, 5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
@@ -481,46 +353,6 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.b(2)[2] == 0.5104131038_a);
     
       CHECK(cell.volume() == 31757.421708_a);
-
-      CHECK(cell.amat()[0] == 28.62_a);
-      CHECK(cell.amat()[1] ==  0.0_a);
-      CHECK(cell.amat()[2] ==  0.0_a);
-      CHECK(cell.amat()[3] ==  0.0_a);
-      CHECK(cell.amat()[4] == 90.14_a);
-      CHECK(cell.amat()[5] ==  0.0_a);
-      CHECK(cell.amat()[6] ==  0.0_a);
-      CHECK(cell.amat()[7] ==  0.0_a);
-      CHECK(cell.amat()[8] == 12.31_a);
-    
-      CHECK(cell.amat_inv()[0] == 0.034940601_a);
-      CHECK(cell.amat_inv()[1] == 0.0_a);
-      CHECK(cell.amat_inv()[2] == 0.0_a);
-      CHECK(cell.amat_inv()[3] == 0.0_a);
-      CHECK(cell.amat_inv()[4] == 0.011093854_a);
-      CHECK(cell.amat_inv()[5] == 0.0_a);
-      CHECK(cell.amat_inv()[6] == 0.0_a);
-      CHECK(cell.amat_inv()[7] == 0.0_a);
-      CHECK(cell.amat_inv()[8] == 0.0812347685_a);
-    
-      CHECK(cell.amat(0) == 28.62_a);
-      CHECK(cell.amat(1) ==  0.0_a);
-      CHECK(cell.amat(2) ==  0.0_a);
-      CHECK(cell.amat(3) ==  0.0_a);
-      CHECK(cell.amat(4) == 90.14_a);
-      CHECK(cell.amat(5) ==  0.0_a);
-      CHECK(cell.amat(6) ==  0.0_a);
-      CHECK(cell.amat(7) ==  0.0_a);
-      CHECK(cell.amat(8) == 12.31_a);
-    
-      CHECK(cell.amat_inv(0) == 0.034940601_a);
-      CHECK(cell.amat_inv(1) == 0.0_a);
-      CHECK(cell.amat_inv(2) == 0.0_a);
-      CHECK(cell.amat_inv(3) == 0.0_a);
-      CHECK(cell.amat_inv(4) == 0.011093854_a);
-      CHECK(cell.amat_inv(5) == 0.0_a);
-      CHECK(cell.amat_inv(6) == 0.0_a);
-      CHECK(cell.amat_inv(7) == 0.0_a);
-      CHECK(cell.amat_inv(8) == 0.0812347685_a);
 
       CHECK(cell.contains(vector3<double>(5.0, 5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
@@ -605,47 +437,7 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.b(2)[2] == -30.5117208294_a);
     
       CHECK(cell.volume() == 7.305321831_a);
-
-      CHECK(cell.amat()[0] == 6.942_a);		
-      CHECK(cell.amat()[1] == 8.799_a);		
-      CHECK(cell.amat()[2] == 4.759_a);		
-      CHECK(cell.amat()[3] == 9.627_a);		
-      CHECK(cell.amat()[4] == 7.092_a);		
-      CHECK(cell.amat()[5] == 4.819_a);		
-      CHECK(cell.amat()[6] == 4.091_a);		
-      CHECK(cell.amat()[7] == 0.721_a);		
-      CHECK(cell.amat()[8] == 1.043_a);		
-   			                          
-      CHECK(cell.amat_inv()[0] == 0.5369314441_a); 
-      CHECK(cell.amat_inv()[1] == -0.7865660313_a);
-      CHECK(cell.amat_inv()[2] == 1.1842808846_a); 
-      CHECK(cell.amat_inv()[3] == 1.3241809497_a); 
-      CHECK(cell.amat_inv()[4] == -1.6739252949_a);
-      CHECK(cell.amat_inv()[5] == 1.6921082036_a); 
-      CHECK(cell.amat_inv()[6] == -3.0214007693_a);
-      CHECK(cell.amat_inv()[7] == 4.2423219287_a); 
-      CHECK(cell.amat_inv()[8] == -4.8560911922_a);
-    
-      CHECK(cell.amat(0) == 6.942_a);		
-      CHECK(cell.amat(1) == 8.799_a);		
-      CHECK(cell.amat(2) == 4.759_a);		
-      CHECK(cell.amat(3) == 9.627_a);		
-      CHECK(cell.amat(4) == 7.092_a);		
-      CHECK(cell.amat(5) == 4.819_a);		
-      CHECK(cell.amat(6) == 4.091_a);		
-      CHECK(cell.amat(7) == 0.721_a);		
-      CHECK(cell.amat(8) == 1.043_a);		
-    			                        
-      CHECK(cell.amat_inv(0) == 0.5369314441_a); 
-      CHECK(cell.amat_inv(1) == -0.7865660313_a);;
-      CHECK(cell.amat_inv(2) == 1.1842808846_a); 
-      CHECK(cell.amat_inv(3) == 1.3241809497_a); 
-      CHECK(cell.amat_inv(4) == -1.6739252949_a);
-      CHECK(cell.amat_inv(5) == 1.6921082036_a); 
-      CHECK(cell.amat_inv(6) == -3.0214007693_a);
-      CHECK(cell.amat_inv(7) == 4.2423219287_a); 
-      CHECK(cell.amat_inv(8) == -4.8560911922_a);
-
+			
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[0] == 0.121797_a);
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[1] == -1.161093_a);
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[2] == -0.553419_a);
