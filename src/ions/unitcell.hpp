@@ -653,13 +653,13 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(5.0, 5.0, -5.0)));
 
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[0] == 2.0_a);
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[1] == -5.0_a);
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[2] == 8.67_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[0] == 2.0_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[1] == -5.0_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[2] == 8.67_a);
 
-      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[0] == 0.666_a);
-      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[1] == -0.377_a);
-      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -3.77, 27.2))[2] == 2.72_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(6.66, -3.77, 27.2))[0] == 0.666_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(6.66, -3.77, 27.2))[1] == -0.377_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(6.66, -3.77, 27.2))[2] == 2.72_a);
 
 			auto in_cell = cell.position_in_cell(vector3<double>(6.66, 25.0, -18.33));
 
@@ -783,13 +783,13 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(5.0, 5.0, -5.0)));
 
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[0] == 5.724_a);
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[1] == -45.07_a);
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[2] == 10.67277_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[0] == 5.724_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[1] == -45.07_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[2] == 10.67277_a);
 
-      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[0] == 0.2327044025_a);
-      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[1] == -2.2605946306_a);
-      CHECK(cell.cart_to_crystal(vector3<double>(6.66, -203.77, 927.2))[2] == 75.3208773355_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(6.66, -203.77, 927.2))[0] == 0.2327044025_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(6.66, -203.77, 927.2))[1] == -2.2605946306_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(6.66, -203.77, 927.2))[2] == 75.3208773355_a);
 
 			auto in_cell = cell.position_in_cell(vector3<double>(6.66, 225.0, -18.33));
 
@@ -922,19 +922,19 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
       CHECK(cell.amat_inv(7) == 4.2423219287_a); 
       CHECK(cell.amat_inv(8) == -4.8560911922_a);
 
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[0] == 0.121797_a);
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[1] == -1.161093_a);
-      CHECK(cell.crystal_to_cart(vector3<double>(0.2, -0.5, 0.867))[2] == -0.553419_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[0] == 0.121797_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[1] == -1.161093_a);
+      CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[2] == -0.553419_a);
 
-      CHECK(cell.cart_to_crystal(vector3<double>(0.66, -23.77, 2.72))[0] == -39.3396165136_a);
-      CHECK(cell.cart_to_crystal(vector3<double>(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
-      CHECK(cell.cart_to_crystal(vector3<double>(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[0] == -39.3396165136_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
 
-      CHECK(cell.contains(cell.crystal_to_cart(vector3<double>(0.5, 0.5, 0.5))));
+      CHECK(cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, 0.5, 0.5))));
       //This next one fails, this has to be checked.
-      //CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(1.5, 0.5, 0.5))));
-      CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(0.5, -0.1, 0.0))));
-      CHECK(!cell.contains(cell.crystal_to_cart(vector3<double>(0.5, 0.5, -1.0))));
+			//CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(1.5, 0.5, 0.5))));
+      CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, -0.1, 0.0))));
+      CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, 0.5, -1.0))));
 
 			{
 				auto vv = cell.metric().to_contravariant(math::vector3<double, math::cartesian>{9.627, 7.092, 4.819});
