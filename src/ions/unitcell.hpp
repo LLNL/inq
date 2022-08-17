@@ -48,8 +48,6 @@ namespace ions {
     double volume_;
     vector_type an_[13];
     vector_type bn_[13];
-    double an2h_[13];
-    double bn2h_[13];
   
     // 3x3 matrix forms
     double amat_[9];
@@ -149,11 +147,6 @@ namespace ions {
 			bn_[11] = b_[0] + b_[1] - b_[2];
 			bn_[12] = b_[0] - b_[1] + b_[2];
  
-			for(int i = 0; i < 13; i++ ){
-				an2h_[i] = 0.5 * norm(an_[i]);
-				bn2h_[i] = 0.5 * norm(bn_[i]);
-			}
-
 		}
 		
 		vector_type const& operator[](int i) const {return a_[i];}
