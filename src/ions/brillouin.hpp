@@ -48,10 +48,20 @@ public:
 			positions[3*iatom + 1] = pos[1];
 			positions[3*iatom + 2] = pos[2];
 		}
+
+		double amat[9];
+		amat[0] = ions.cell().a(0)[0];
+		amat[1] = ions.cell().a(0)[1];
+		amat[2] = ions.cell().a(0)[2];
+		amat[3] = ions.cell().a(1)[0];
+		amat[4] = ions.cell().a(1)[1];
+		amat[5] = ions.cell().a(1)[2];
+		amat[6] = ions.cell().a(2)[0];
+		amat[7] = ions.cell().a(2)[1];
+		amat[8] = ions.cell().a(2)[2];
 		
 		spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address_.data()), map_.data(), (int const *) &grid_.dims(), (int const *) &is_shifted_, 0,
-															 reinterpret_cast<double (*)[3]>(const_cast<double *>(ions.cell().amat())),
-															 reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
+															 reinterpret_cast<double (*)[3]>(amat), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
 
   }
 
