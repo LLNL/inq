@@ -34,7 +34,7 @@ public:
 		
 		for(int iatom = 0; iatom < geo_.num_atoms(); iatom++){
 			types[iatom] = geo_.atoms()[iatom].atomic_number();
-			auto pos = cell_.cart_to_crystal(cell_.position_in_cell(geo_.coordinates()[iatom]));
+			auto pos = cell_.metric().to_contravariant(cell_.position_in_cell(geo_.coordinates()[iatom]));
 			positions[3*iatom + 0] = pos[0];
 			positions[3*iatom + 1] = pos[1];
 			positions[3*iatom + 2] = pos[2];
