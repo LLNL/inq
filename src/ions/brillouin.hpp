@@ -60,7 +60,7 @@ public:
   }
 
   auto kpoint(int ik) const {
-    return math::vector3<double>{
+    return 2.0*M_PI*math::vector3<double, math::covariant>{
       (grid_address_[3*ik + 0] + 0.5*is_shifted_[0])/grid_.dims()[0],
       (grid_address_[3*ik + 1] + 0.5*is_shifted_[1])/grid_.dims()[1],
       (grid_address_[3*ik + 2] + 0.5*is_shifted_[2])/grid_.dims()[2]};
