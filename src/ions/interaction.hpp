@@ -233,8 +233,8 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     const double charge[2] = {4.0, 4.0};
     
     std::vector<vector3<double>> positions(2);
-    positions[0] = cell.crystal_to_cart(vector3<double>(0.0,  0.0,  0.0 ));
-    positions[1] = cell.crystal_to_cart(vector3<double>(0.25, 0.25, 0.25));
+    positions[0] = cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0,  0.0,  0.0 ));
+    positions[1] = cell.metric().to_cartesian(vector3<double, math::contravariant>(0.25, 0.25, 0.25));
     
     double energy;
     std::vector<vector3<double>> forces(2);
