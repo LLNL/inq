@@ -220,16 +220,6 @@ namespace ions {
 
 		////////////////////////////////////////////////////////////////////////////////
 
-    bool encloses(const UnitCell& c) const {
-			bool in = true;
-			int i = 0;
-			while ( i < 13 && in ) {
-				in = ( contains(c.an_[i]) );
-				i++;
-      }
-			return in;
-		}
-		
     bool contains(math::vector3<double> v) const {
 			const double fac = 0.5 / ( 2.0 * M_PI );
 			const double p0 = fac*dot(v, b_[0]);
