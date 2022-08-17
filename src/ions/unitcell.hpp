@@ -50,7 +50,7 @@ namespace ions {
 		
   public:
 		
-    void set(const vector_type& a0, const vector_type& a1, const vector_type& a2, int arg_periodic_dimensions = 3){
+    UnitCell(math::vector3<double> const& a0, math::vector3<double> const& a1, math::vector3<double> const& a2, int arg_periodic_dimensions = 3){
 			
 			periodic_dimensions_ = arg_periodic_dimensions;
 		
@@ -66,24 +66,16 @@ namespace ions {
 			b_[2] = 2.0*M_PI/volume_*cross(a0, a1);
 		}
 		
+		template<class lat_type>
+		UnitCell(const lat_type & lat, int periodic_dimensions = 3):
+			UnitCell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodic_dimensions){
+		}
+
 		vector_type const& operator[](int i) const {return a_[i];}
     
     vector_type const& a(int i) const { return a_[i]; }
 		vector_type const& b(int i) const { return b_[i]; }
-  
-		template<class lattice_vectors_type>
-		UnitCell(const lattice_vectors_type & lattice_vectors, int periodic_dimensions = 3){
-			std::array<math::vector3<double>, 3> lvectors;
-			for(int ii = 0; ii < 3; ii++){
-				for(int jj = 0; jj < 3; jj++) lvectors[ii][jj] = lattice_vectors[ii][jj];
-			}
-			set(lvectors[0], lvectors[1], lvectors[2], periodic_dimensions);
-		}
 		
-    UnitCell(math::vector3<double> const& a0, math::vector3<double> const& a1, math::vector3<double> const& a2, int periodic_dimensions = 3){
-      set(a0, a1, a2, periodic_dimensions);
-    }
-
 		auto enlarge(int factor) const {
 			return UnitCell(factor*a_[0], factor*a_[1], factor*a_[2], periodic_dimensions_);
 		}
@@ -326,10 +318,8 @@ TEST_CASE("Class ions::UnitCell", "[UnitCell]") {
 
     SECTION("Parallelepipedic cell"){
 
-			ions::UnitCell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
-   
-      cell.set(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
-
+			ions::UnitCell cell(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
+			
       CHECK(cell.a(0)[0] == 28.62_a);
       CHECK(cell.a(0)[1] ==  0.0_a);
       CHECK(cell.a(0)[2] ==  0.0_a);
