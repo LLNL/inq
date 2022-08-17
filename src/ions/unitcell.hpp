@@ -71,8 +71,6 @@ namespace ions {
     vector_type const& a(int i) const { return a_[i]; }
 		vector_type const& b(int i) const { return b_[i]; }
   
-    UnitCell() = default;
-
 		template<class lattice_vectors_type>
 		UnitCell(const lattice_vectors_type & lattice_vectors, int periodic_dimensions = 3){
 			std::array<math::vector3<double>, 3> lvectors;
