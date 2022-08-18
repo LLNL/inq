@@ -289,6 +289,27 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
     }
 
+    SECTION("Non-orthogonal cell"){
+
+			auto a = 3.567095_A;
+			systems::box box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(30.0_Ha);
+      basis::real_space rs(box, comm);
+
+      CHECK(rs.size() == 1728);
+
+			CHECK(rs.cell().volume() == Approx(0.25*pow(a.in_atomic_units(), 3)));
+			CHECK(rs.cell().volume() == rs.volume_element()*rs.size());
+			
+      CHECK(rs.rspacing()[0] == 0.3972073708_a);
+      CHECK(rs.rspacing()[1] == 0.3972073708_a);
+      CHECK(rs.rspacing()[2] == 0.3972073708_a);
+      
+      CHECK(rs.sizes()[0] == 12);
+      CHECK(rs.sizes()[1] == 12);
+			CHECK(rs.sizes()[2] == 12);
+
+    }
+
   }
 }
 #endif
