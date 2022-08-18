@@ -160,7 +160,7 @@ namespace basis {
 		}
 		
 		auto volume_element() const {
-			return rspacing_[0]*rspacing_[1]*rspacing_[2];
+			return cell().volume()/size();
 		}
 
 		auto gcutoff() const {
@@ -219,6 +219,8 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
       basis::real_space rs(box, comm);
 
       CHECK(rs.size() == 8000);
+
+			CHECK(rs.cell().volume() == rs.volume_element()*rs.size());
       
       CHECK(rs.rspacing()[0] == 0.5_a);
       CHECK(rs.rspacing()[1] == 0.5_a);
@@ -242,7 +244,9 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
       basis::real_space rs(box, comm);
 
       CHECK(rs.size() == 536640);
-	    
+
+			CHECK(rs.cell().volume() == rs.volume_element()*rs.size());
+			
       CHECK(rs.rspacing()[0] == 0.3613953488_a);
       CHECK(rs.rspacing()[1] == 0.3625641026_a);
       CHECK(rs.rspacing()[2] == 0.36328125_a);
