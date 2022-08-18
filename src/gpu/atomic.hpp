@@ -55,6 +55,12 @@ template <typename Type2>
 GPU_FUNCTION inline long add(long * val, Type2 const & incr){
   return add((unsigned long long int *) val, incr);
 }
+
+template <typename Type2>
+GPU_FUNCTION inline long add(size_t * val, Type2 const & incr){
+	static_assert(sizeof(size_t) == sizeof(unsigned long long int));
+  return add((unsigned long long int *) val, incr);
+}
 #endif
 
 }
