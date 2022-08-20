@@ -52,7 +52,7 @@ namespace basis {
 		}
 
 		auto volume_element() const {
-			return rspacing_[0]*rspacing_[1]*rspacing_[2]/size();
+			return cell().volume()/(size()*size());
 		}
 
 		class point_operator {
