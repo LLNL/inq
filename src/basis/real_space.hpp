@@ -170,7 +170,7 @@ namespace basis {
 		}
 
 		auto point_op() const {
-			return point_operator(nr_, cell_.metric().to_contravariant(rspacing_), cubic_dist_, cell_.metric());
+			return point_operator(nr_, conspacing_, cubic_dist_, cell_.metric());
 		}
 		
 	private:
