@@ -144,7 +144,7 @@ namespace basis {
 		};
 
 		auto point_op() const {
-			return point_operator{ng_, cell_.metric().to_covariant(gspacing_), glength_, cubic_dist_, cell_.metric()};
+			return point_operator{ng_, covspacing_, glength_, cubic_dist_, cell_.metric()};			
 		}
 		
 	private:
