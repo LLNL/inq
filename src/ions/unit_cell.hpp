@@ -90,15 +90,6 @@ namespace ions {
 		
 		////////////////////////////////////////////////////////////////////////////////
 
-    bool contains(math::vector3<double> v) const {
-			const double fac = 0.5 / ( 2.0 * M_PI );
-			const double p0 = fac*dot(v, reciprocal_[0]);
-			const double p1 = fac*dot(v, reciprocal_[1]);
-			const double p2 = fac*dot(v, reciprocal_[2]);
-			
-			return ( (p0 > 0.0) && (p0 <= 1.0) && (p1 > 0.0) && (p1 <= 1.0) && (p2 > 0.0) && (p2 <= 1.0) );
-		}
-  
     bool operator==(const unit_cell& c) const {
 			return ( lattice_[0]==c.lattice_[0] && lattice_[1]==c.lattice_[1] && lattice_[2]==c.lattice_[2] );
 		}
@@ -199,12 +190,22 @@ namespace ions {
 			return cell_metric{lattice_, reciprocal_};
 		}
 
+    bool contains(math::vector3<double, math::contravariant> point) const {
+			return point[0] >= -0.5 && point[0] < 0.5 && point[1] >= -0.5 && point[1] < 0.5 && point[2] >= -0.5 && point[2] <= 0.5;
+		}
+
+		bool contains(math::vector3<double> point) const {
+			return contains(metric().to_contravariant(point));
+		}
+		
 		auto position_in_cell(math::vector3<double> const & pos) const {
 			auto crystal_pos = metric().to_contravariant(pos);
 			for(int idir = 0; idir < 3; idir++) {
 				crystal_pos[idir] -= floor(crystal_pos[idir]);
 				if(crystal_pos[idir] >= 0.5) crystal_pos[idir] -= 1.0;
 			}
+
+			assert(contains(crystal_pos));			
 			return metric().to_cartesian(crystal_pos);
 		}
 		
@@ -263,7 +264,7 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
     
       CHECK(cell.volume() == 1000.0_a);
 
-      CHECK(cell.contains(vector3<double>(5.0, 5.0, 5.0)));
+      CHECK(!cell.contains(vector3<double>(5.0, 5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(5.0, 5.0, -5.0)));
@@ -332,9 +333,9 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
       CHECK(cell.volume() == 31757.421708_a);
 
       CHECK(cell.contains(vector3<double>(5.0, 5.0, 5.0)));
-      CHECK(!cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
-      CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
-      CHECK(!cell.contains(vector3<double>(5.0, 5.0, -5.0)));
+      CHECK(cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
+      CHECK(cell.contains(vector3<double>(5.0, -5.0, 5.0)));
+      CHECK(cell.contains(vector3<double>(5.0, 5.0, -5.0)));
 
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[0] == 5.724_a);
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[1] == -45.07_a);
@@ -489,11 +490,10 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
       CHECK(cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
       CHECK(cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
 
-      CHECK(cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, 0.5, 0.5))));
-      //This next one fails, this has to be checked.
-			//CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(1.5, 0.5, 0.5))));
-      CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, -0.1, 0.0))));
-      CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, 0.5, -1.0))));
+      CHECK(!cell.contains(vector3<double, math::contravariant>(0.5, 0.5, 0.5)));
+			CHECK(!cell.contains(vector3<double, math::contravariant>(1.5, 0.5, 0.5)));
+      CHECK(!cell.contains(vector3<double, math::contravariant>(0.5, -0.1, 0.0)));
+      CHECK(!cell.contains(vector3<double, math::contravariant>(0.5, 0.5, -1.0)));
 
 			{
 				auto vv = cell.metric().to_contravariant(math::vector3<double, math::cartesian>{9.627, 7.092, 4.819});
