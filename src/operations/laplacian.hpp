@@ -79,7 +79,6 @@ SetType<basis::fourier_space, complex> laplacian(SetType<basis::fourier_space, c
 						laplffcub = begin(laplff.cubic()),
 						ffcub = begin(ff.cubic()), factor, gradcoeff]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-						 if(ist == 0 and iz == 0 and iy == 0 and ix == 1) std::cout << "G20 " << point_op.g2(ix, iy, iz) << '\t' << point_op.gvector(ix, iy, iz) << std::endl;
 						 auto lapl = factor*(-point_op.g2(ix, iy, iz) + dot(gradcoeff, point_op.gvector(ix, iy, iz)));
 						 laplffcub[ix][iy][iz][ist] = lapl*ffcub[ix][iy][iz][ist];
 					 });
@@ -251,6 +250,72 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		
 		CHECK(diff < 1.0e-8) ;
 		CHECK(diff_in_place < 1.0e-8);
+		CHECK(diff_add < 5.0e-7);
+		
+	}
+	
+	SECTION("Plane-wave -- non-orthogonal"){
+		
+		double ll = 5.89;
+		systems::box box = systems::box::lattice({0.0_b, ll*1.0_b, ll*1.0_b}, {ll*1.0_b, 0.0_b, ll*1.0_b}, {ll*1.0_b, ll*1.0_b, 0.0_b}).cutoff_energy(20.0_Ha);
+		
+		double factor = 0.673214;
+	
+		basis::real_space rs(box, basis_comm);
+
+		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
+	
+		auto kvec = rs.cell().metric().to_cartesian(2.0*rs.cell().reciprocal(2) + 3.0*rs.cell().reciprocal(2) - 1.0*rs.cell().reciprocal(2));
+		
+		auto ff = [] (auto & kk, auto & rr){
+			return exp(inq::complex(0.0, 1.0)*dot(kk, rr));
+		};
+		
+		auto laplff = [ff] (auto & kk, auto & rr) {
+			return -norm(kk)*ff(kk, rr);
+		};
+
+		CHECK(norm(kvec) == rs.cell().metric().norm(rs.cell().metric().to_covariant(kvec)));
+		
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ist = 0; ist < func.local_set_size(); ist++) func.cubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
+				}
+			}
+		}
+
+		auto lapl = operations::laplacian(func, factor);
+		auto func_fs = operations::space::to_fourier(func);
+		operations::laplacian_in_place(func_fs, factor);
+		auto lapl_in_place = operations::space::to_real(func_fs);
+		operations::laplacian_add(operations::space::to_fourier(func), func_fs, factor);
+		auto lapl_add = operations::space::to_real(func_fs);
+		
+		double diff = 0.0;
+		double diff_in_place = 0.0;
+		double diff_add = 0.0;		
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ist = 0; ist < func.local_set_size(); ist++){
+						auto anvalue = (ist + 1.0)*factor*laplff(kvec, vec);
+						diff += fabs(lapl.cubic()[ix][iy][iz][ist] - anvalue);
+						diff_in_place += fabs(lapl_in_place.cubic()[ix][iy][iz][ist] - anvalue);
+						diff_add += fabs(lapl_add.cubic()[ix][iy][iz][ist] - 2.0*anvalue);						
+					}
+				}
+			}
+		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		cart_comm.all_reduce_in_place_n(&diff_in_place, 1, std::plus<>{});
+		cart_comm.all_reduce_in_place_n(&diff_add, 1, std::plus<>{});
+		
+		CHECK(diff < 1.0e-7) ;
+		CHECK(diff_in_place < 1.0e-7);
 		CHECK(diff_add < 5.0e-7);
 		
 	}
