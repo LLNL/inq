@@ -59,10 +59,9 @@ namespace basis {
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, math::vector3<double, math::covariant> const & gspacing, math::vector3<double> const & glength, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
+			point_operator(std::array<int, 3> const & ng, math::vector3<double, math::covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
-				glength_(glength),
 				cubic_dist_(dist),
 				metric_(metric)
 			{
@@ -84,18 +83,14 @@ namespace basis {
 				
 				return gvector(ixg, iyg, izg);
 			}
-		
-			GPU_FUNCTION const math::vector3<double> & glength() const{
-				return glength_;
+					
+			GPU_FUNCTION auto outside_sphere(int ix, int iy, int iz) const {
+				auto gvec = gvector(ix, iy, iz);
+				gvec[0] /= ng_[0]/2.0;
+				gvec[1] /= ng_[1]/2.0;
+				gvec[2] /= ng_[2]/2.0;
+				return metric_.norm(gvec) > 1.0;
 			}
-			
-			GPU_FUNCTION auto radius() const {
-				return 0.5*std::min({glength_[0], glength_[1], glength_[2]});
-			}
-			
-			GPU_FUNCTION auto outside_sphere(const double g2) const {
-				return g2 > radius()*radius();
-			}		
 			
 			GPU_FUNCTION const auto & gspacing() const{
 				return gspacing_;
@@ -137,14 +132,13 @@ namespace basis {
 			
 			std::array<int, 3> ng_;
 			math::vector3<double, math::covariant> gspacing_;
-			math::vector3<double> glength_;
 			std::array<inq::parallel::partition, 3> cubic_dist_;
 			ions::unit_cell::cell_metric metric_;
 			
 		};
 
 		auto point_op() const {
-			return point_operator{ng_, covspacing_, glength_, cubic_dist_, cell_.metric()};			
+			return point_operator{ng_, covspacing_, cubic_dist_, cell_.metric()};			
 		}
 		
 	private:

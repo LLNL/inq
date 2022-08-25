@@ -59,7 +59,6 @@ namespace basis {
 				rspacing_[idir] = rlength_[idir]/nr_[idir];
 				conspacing_[idir] = 1.0/nr_[idir];
 				covspacing_[idir] = 2.0*M_PI;				
-				glength_[idir] = 2.0*M_PI/rspacing_[idir];
 			}
 
 			base::part_ *= nr_[1]*long(nr_[2]);
@@ -211,7 +210,6 @@ namespace basis {
     math::vector3<double, math::covariant> covspacing_;
 		
     math::vector3<double> rlength_;
-    math::vector3<double> glength_;
 
 		long npoints_;
 
