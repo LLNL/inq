@@ -198,15 +198,18 @@ namespace ions {
 			return contains(metric().to_contravariant(point));
 		}
 		
-		auto position_in_cell(math::vector3<double> const & pos) const {
-			auto crystal_pos = metric().to_contravariant(pos);
+		auto position_in_cell(math::vector3<double, math::contravariant> crystal_pos) const {
 			for(int idir = 0; idir < 3; idir++) {
 				crystal_pos[idir] -= floor(crystal_pos[idir]);
 				if(crystal_pos[idir] >= 0.5) crystal_pos[idir] -= 1.0;
 			}
-
-			assert(contains(crystal_pos));			
-			return metric().to_cartesian(crystal_pos);
+			assert(contains(crystal_pos));
+			return crystal_pos;
+		}
+		
+		auto position_in_cell(math::vector3<double> const & pos) const {
+			auto crystal_pos = metric().to_contravariant(pos);
+			return metric().to_cartesian(position_in_cell(crystal_pos));
 		}
 		
   };
