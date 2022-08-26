@@ -49,7 +49,7 @@ namespace ions {
 			lattice_[2] = a2;
 			volume_ = dot(a0, cross(a1, a2));
 
-			if(fabs(volume_) < 1e-10) throw std::runtime_error("inq error: the lattice volume is not positive");
+			if(volume_ < 1e-10) throw std::runtime_error("inq error: the lattice volume " + std::to_string(volume_) + " is not positive");
 		
 			reciprocal_[0] = 2.0*M_PI/volume_*cross(a1, a2);
 			reciprocal_[1] = 2.0*M_PI/volume_*cross(a2, a0);
