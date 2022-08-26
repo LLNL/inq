@@ -51,6 +51,14 @@ namespace basis {
 		template <class BasisType, typename PosType>
 		void static cube(const BasisType & parent_grid, PosType const & pos, double radius, math::vector3<int> & hi, math::vector3<int> & lo){
 			for(int idir = 0; idir < 3; idir++){
+
+				//this doesnt work for non-orthogonal cells yet
+				if(not parent_grid.cell().is_orthogonal()){
+					lo[idir] = parent_grid.symmetric_range_begin(idir);
+					hi[idir] = parent_grid.symmetric_range_end(idir);
+					continue;
+				}
+				
 				lo[idir] = floor((pos[idir] - radius)/parent_grid.rspacing()[idir]) - 1;
 				hi[idir] = ceil((pos[idir] + radius)/parent_grid.rspacing()[idir]) + 1;
 				
@@ -182,7 +190,6 @@ namespace basis {
 				points_ = std::move(points2);
 				assert(points_.size() == size_);
 			}
-
 		}
 		
 		const static int dimension = 1;
