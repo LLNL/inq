@@ -42,7 +42,7 @@ int main(int argc, char ** argv){
 
 	auto a =  3.567095_A;
 
-	auto box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(30.0_Ha);
+	auto box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(35.0_Ha);
 	
 	systems::ions ions(box);
 	
@@ -51,7 +51,7 @@ int main(int argc, char ** argv){
 
 	input::config conf;
 	
-	conf.extra_states = 1;
+	conf.extra_states = 3;
 
 	systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({1, 1, 1}, false));
 
