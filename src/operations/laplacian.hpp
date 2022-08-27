@@ -113,6 +113,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using namespace operations;
+	using Catch::Approx;
 	using math::vector3;
 
 	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
@@ -209,7 +210,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			return -norm(kk)*ff(kk, rr);
 		};
 
-		CHECK(norm(kvec) == rs.cell().metric().norm(rs.cell().metric().to_covariant(kvec)));
+		CHECK(norm(kvec) == Approx(rs.cell().metric().norm(rs.cell().metric().to_covariant(kvec))));
 		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -275,7 +276,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			return -norm(kk)*ff(kk, rr);
 		};
 
-		CHECK(norm(kvec) == rs.cell().metric().norm(rs.cell().metric().to_covariant(kvec)));
+		CHECK(norm(kvec) == Approx(rs.cell().metric().norm(rs.cell().metric().to_covariant(kvec))));
 		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
