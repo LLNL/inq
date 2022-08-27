@@ -57,14 +57,17 @@ int main(int argc, char ** argv){
 
 	ground_state::initial_guess(ions, electrons);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
-	
-	/*	energy_match.check("total energy",     result.energy.total()    , -23.834202307265);
-	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  14.428064504524);
-	energy_match.check("eigenvalues",      result.energy.eigenvalues,   7.649418187835);
-	energy_match.check("external energy",  result.energy.external   , -12.019317998765);
-	energy_match.check("non-local energy", result.energy.nonlocal   ,   5.240671682076);*/
-	energy_match.check("ion-ion energy",   result.energy.ion        , -10.734724128603);
+	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
+
+	energy_match.check("total energy",        result.energy.total(),         -10.949196617732);
+	energy_match.check("kinetic energy",      result.energy.kinetic(),        11.411454690719);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues,       0.795474829167);
+	energy_match.check("Hartree energy",      result.energy.hartree,           1.473883973621);
+	energy_match.check("external energy",     result.energy.external,         -7.034444637769);
+	energy_match.check("non-local energy",    result.energy.nonlocal,         -1.496762367780);
+	energy_match.check("XC energy",           result.energy.xc,               -4.568604147920);
+	energy_match.check("XC density integral", result.energy.nvxc,             -5.032540803244);
+	energy_match.check("ion-ion energy",      result.energy.ion,             -10.734724128603);
 	
 	electrons.save("diamond_restart");
 
