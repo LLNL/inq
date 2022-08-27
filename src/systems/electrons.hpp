@@ -191,7 +191,7 @@ public:
 		if(logger()){
 			logger()->info("constructed with geometry {}", ions.geo_);
 			logger()->info("constructed with cell {}", ions.cell_);
-			logger()->info("system symmetries: " + ions.symmetry_string());	
+			if(ions.geo().num_atoms() > 0) logger()->info("system symmetries: " + ions.symmetry_string());	
 		}
 
 		auto myid = gpu::id();

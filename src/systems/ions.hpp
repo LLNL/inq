@@ -26,6 +26,8 @@ public:
 	}
 
 	auto symmetry_string() const{
+
+		assert(geo_.num_atoms() > 0);
 		
 		char symbol[11];
 		
