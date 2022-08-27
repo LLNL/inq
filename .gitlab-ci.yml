@@ -628,9 +628,9 @@ intel-mpich-1p:
     script:
       - PREFIX=`cat intel-mpich-path`
       - export OMP_NUM_THREADS=1      
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j16"      
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j8"      
       - $PREFIX/build/tests/silicon2
 
 intel-mpich-2p:
@@ -641,8 +641,8 @@ intel-mpich-2p:
     script:
       - PREFIX=`cat intel-mpich-path`
       - export OMP_NUM_THREADS=1      
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
 
 intel-mpich-3p:
     stage: test
@@ -652,8 +652,8 @@ intel-mpich-3p:
     script:
       - PREFIX=`cat intel-mpich-path`
       - export OMP_NUM_THREADS=1      
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
 
 intel-mpich-4p:
     stage: test
@@ -663,8 +663,8 @@ intel-mpich-4p:
     script:
       - PREFIX=`cat intel-mpich-path`
       - export OMP_NUM_THREADS=1
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
 
 intel-mpich-clean:
     stage: clean
@@ -714,9 +714,9 @@ nvcc-mpich-fast-1p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j16"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j8"
       
 nvcc-mpich-fast-2p:
     stage: test
@@ -725,8 +725,8 @@ nvcc-mpich-fast-2p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
 
 nvcc-mpich-fast-3p:
     stage: test
@@ -735,8 +735,8 @@ nvcc-mpich-fast-3p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
 
 nvcc-mpich-fast-4p:
     stage: test
@@ -745,8 +745,8 @@ nvcc-mpich-fast-4p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
 
 nvcc-mpich-fast-5p:
     stage: test
@@ -755,7 +755,7 @@ nvcc-mpich-fast-5p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-fast-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"      
+      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j1"      
 
 nvcc-mpich-fast-clean:
     stage: clean
@@ -806,9 +806,9 @@ nvcc-mpich-debug-1p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j16"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j8"
 
 nvcc-mpich-debug-2p:
     stage: test
@@ -817,8 +817,8 @@ nvcc-mpich-debug-2p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"      
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"      
 
 nvcc-mpich-debug-3p:
     stage: test
@@ -827,8 +827,8 @@ nvcc-mpich-debug-3p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
 
 nvcc-mpich-debug-4p:
     stage: test
@@ -837,8 +837,8 @@ nvcc-mpich-debug-4p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"      
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"      
 
 nvcc-mpich-debug-5p:
     stage: test
@@ -847,7 +847,7 @@ nvcc-mpich-debug-5p:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j3"
+      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j1"
 
 nvcc-mpich-debug-clean:
     stage: clean
