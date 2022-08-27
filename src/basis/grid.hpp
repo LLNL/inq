@@ -57,8 +57,8 @@ namespace basis {
 				rlength_[idir] = length(cell[idir]);
 				ng_[idir] = nr_[idir];
 				rspacing_[idir] = rlength_[idir]/nr_[idir];
-				glength_[idir] = 2.0*M_PI/rspacing_[idir];
-				gspacing_[idir] = glength_[idir]/ng_[idir];
+				conspacing_[idir] = 1.0/nr_[idir];
+				covspacing_[idir] = 2.0*M_PI;				
 			}
 
 			base::part_ *= nr_[1]*long(nr_[2]);
@@ -206,10 +206,10 @@ namespace basis {
     std::array<int, 3> ng_;
 
     math::vector3<double> rspacing_;
-    math::vector3<double> gspacing_;
-    
+    math::vector3<double, math::contravariant> conspacing_;
+    math::vector3<double, math::covariant> covspacing_;
+		
     math::vector3<double> rlength_;
-    math::vector3<double> glength_;
 
 		long npoints_;
 

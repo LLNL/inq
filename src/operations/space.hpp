@@ -55,7 +55,7 @@ void zero_outside_sphere(basis::field<basis::fourier_space, complex> & fphi){
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto iz, auto iy, auto ix){
-						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz] = complex(0.0);
+						 if(point_op.outside_sphere(ix, iy, iz)) fphicub[ix][iy][iz] = complex(0.0);
 					 });
 }
 
@@ -68,7 +68,7 @@ void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<comple
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto iz, auto iy, auto ix){
-						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz] = {0.0, 0.0, 0.0};
+						 if(point_op.outside_sphere(ix, iy, iz)) fphicub[ix][iy][iz] = {0.0, 0.0, 0.0};
 					 });
 }
 
@@ -80,7 +80,7 @@ void zero_outside_sphere(basis::field_set<basis::fourier_space, complex>& fphi){
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto ist, auto iz, auto iy, auto ix){
-						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
+						 if(point_op.outside_sphere(ix, iy, iz)) fphicub[ix][iy][iz][ist] = complex(0.0);
 					 });
 }
 
@@ -92,7 +92,7 @@ void zero_outside_sphere(states::orbital_set<basis::fourier_space, complex>& fph
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
 					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto ist, auto iz, auto iy, auto ix){
-						 if(point_op.outside_sphere(point_op.g2(ix, iy, iz))) fphicub[ix][iy][iz][ist] = complex(0.0);
+						 if(point_op.outside_sphere(ix, iy, iz)) fphicub[ix][iy][iz][ist] = complex(0.0);
 					 });
 }
 

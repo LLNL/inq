@@ -49,7 +49,7 @@ namespace ions {
 			lattice_[2] = a2;
 			volume_ = dot(a0, cross(a1, a2));
 
-			if(fabs(volume_) < 1e-10) throw std::runtime_error("inq error: the lattice volume is not positive");
+			if(volume_ < 1e-10) throw std::runtime_error("inq error: the lattice volume " + std::to_string(volume_) + " is not positive");
 		
 			reciprocal_[0] = 2.0*M_PI/volume_*cross(a1, a2);
 			reciprocal_[1] = 2.0*M_PI/volume_*cross(a2, a0);
@@ -90,15 +90,6 @@ namespace ions {
 		
 		////////////////////////////////////////////////////////////////////////////////
 
-    bool contains(math::vector3<double> v) const {
-			const double fac = 0.5 / ( 2.0 * M_PI );
-			const double p0 = fac*dot(v, reciprocal_[0]);
-			const double p1 = fac*dot(v, reciprocal_[1]);
-			const double p2 = fac*dot(v, reciprocal_[2]);
-			
-			return ( (p0 > 0.0) && (p0 <= 1.0) && (p1 > 0.0) && (p1 <= 1.0) && (p2 > 0.0) && (p2 <= 1.0) );
-		}
-  
     bool operator==(const unit_cell& c) const {
 			return ( lattice_[0]==c.lattice_[0] && lattice_[1]==c.lattice_[1] && lattice_[2]==c.lattice_[2] );
 		}
@@ -199,13 +190,34 @@ namespace ions {
 			return cell_metric{lattice_, reciprocal_};
 		}
 
-		auto position_in_cell(math::vector3<double> const & pos) const {
-			auto crystal_pos = metric().to_contravariant(pos);
+    bool contains(math::vector3<double, math::contravariant> point) const {
+			return point[0] >= -0.5 && point[0] < 0.5 && point[1] >= -0.5 && point[1] < 0.5 && point[2] >= -0.5 && point[2] <= 0.5;
+		}
+
+		bool contains(math::vector3<double> point) const {
+			return contains(metric().to_contravariant(point));
+		}
+		
+		auto position_in_cell(math::vector3<double, math::contravariant> crystal_pos) const {
 			for(int idir = 0; idir < 3; idir++) {
 				crystal_pos[idir] -= floor(crystal_pos[idir]);
 				if(crystal_pos[idir] >= 0.5) crystal_pos[idir] -= 1.0;
 			}
-			return metric().to_cartesian(crystal_pos);
+			assert(contains(crystal_pos));
+			return crystal_pos;
+		}
+		
+		auto position_in_cell(math::vector3<double> const & pos) const {
+			auto crystal_pos = metric().to_contravariant(pos);
+			return metric().to_cartesian(position_in_cell(crystal_pos));
+		}
+
+		auto is_orthogonal() const {
+			return fabs(dot(lattice_[0], lattice_[1])) < 1e-8 and fabs(dot(lattice_[1], lattice_[2])) < 1e-8 and fabs(dot(lattice_[2], lattice_[0])) < 1e-8;
+		}
+
+		auto is_cartesian() const {
+			return is_orthogonal() and lattice_[0][1] < 1e-8 and lattice_[0][2] < 1e-8;
 		}
 		
   };
@@ -263,7 +275,7 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
     
       CHECK(cell.volume() == 1000.0_a);
 
-      CHECK(cell.contains(vector3<double>(5.0, 5.0, 5.0)));
+      CHECK(!cell.contains(vector3<double>(5.0, 5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
       CHECK(!cell.contains(vector3<double>(5.0, 5.0, -5.0)));
@@ -303,6 +315,9 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
 				CHECK(cell.metric().dot(cell.metric().to_covariant(vv), vv) == 100.0_a);
 
 			}
+
+			CHECK(cell.is_orthogonal());
+			CHECK(cell.is_cartesian());			
     }
 
     SECTION("Parallelepipedic cell"){
@@ -332,9 +347,9 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
       CHECK(cell.volume() == 31757.421708_a);
 
       CHECK(cell.contains(vector3<double>(5.0, 5.0, 5.0)));
-      CHECK(!cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
-      CHECK(!cell.contains(vector3<double>(5.0, -5.0, 5.0)));
-      CHECK(!cell.contains(vector3<double>(5.0, 5.0, -5.0)));
+      CHECK(cell.contains(vector3<double>(-5.0, 5.0, 5.0)));
+      CHECK(cell.contains(vector3<double>(5.0, -5.0, 5.0)));
+      CHECK(cell.contains(vector3<double>(5.0, 5.0, -5.0)));
 
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[0] == 5.724_a);
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[1] == -45.07_a);
@@ -386,8 +401,68 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
 						
 			CHECK(cell.metric().length(math::vector3<double, math::contravariant>{1.0, 0.0, 0.0}) == 28.62);
 
+			CHECK(cell.is_orthogonal());
+			CHECK(cell.is_cartesian());			
 		}
 
+    SECTION("Rotated cell"){
+
+			double ll = 10;
+			double lv[3][3] = {{ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {-ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {0.0, 0.0, ll}};
+      ions::unit_cell cell(lv);
+      
+      CHECK(cell.lattice(0)[0] == 7.0710678119_a);
+      CHECK(cell.lattice(0)[1] == 7.0710678119_a);
+      CHECK(cell.lattice(0)[2] == 0.0_a);
+      CHECK(cell.lattice(1)[0] == -7.0710678119_a);
+      CHECK(cell.lattice(1)[1] == 7.0710678119_a);
+      CHECK(cell.lattice(1)[2] == 0.0_a);
+      CHECK(cell.lattice(2)[0] == 0.0_a);
+      CHECK(cell.lattice(2)[1] == 0.0_a);
+      CHECK(cell.lattice(2)[2] == 10.0_a);
+			
+      CHECK(cell.reciprocal(0)[0] == 0.4442882938_a);
+      CHECK(cell.reciprocal(0)[1] == 0.4442882938_a);
+      CHECK(cell.reciprocal(0)[2] == 0.0_a);
+      CHECK(cell.reciprocal(1)[0] == -0.4442882938_a);
+      CHECK(cell.reciprocal(1)[1] == 0.4442882938_a);
+      CHECK(cell.reciprocal(1)[2] == 0.0_a);
+      CHECK(cell.reciprocal(2)[0] == 0.0_a);
+      CHECK(cell.reciprocal(2)[1] == 0.0_a);
+      CHECK(cell.reciprocal(2)[2] == 0.6283185307_a);
+
+      CHECK(cell.volume() == 1000.0_a);
+
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(1.0, 0.0, 0.0))[0] == 7.0710678119_a);
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(1.0, 0.0, 0.0))[1] == 7.0710678119_a);
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(1.0, 0.0, 0.0))[2] == 0.0_a);
+
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0, 1.0, 0.0))[0] == -7.0710678119_a);
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0, 1.0, 0.0))[1] == 7.0710678119_a);
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0, 1.0, 0.0))[2] == 0.0_a);
+
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0, 0.0, 1.0))[0] == 0.0_a);
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0, 0.0, 1.0))[1] == 0.0_a);
+			CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0, 0.0, 1.0))[2] == 10.0_a);
+
+			CHECK(dot(cell.reciprocal(0), cell.lattice(0)) == Approx(2.0*M_PI));
+			CHECK(dot(cell.reciprocal(1), cell.lattice(0)) < 1e-14);
+			CHECK(dot(cell.reciprocal(2), cell.lattice(0)) < 1e-14);
+			CHECK(dot(cell.reciprocal(0), cell.lattice(1)) < 1e-14);
+			CHECK(dot(cell.reciprocal(1), cell.lattice(1)) == 2.0*M_PI);
+			CHECK(dot(cell.reciprocal(2), cell.lattice(1)) < 1e-14);
+			CHECK(dot(cell.reciprocal(0), cell.lattice(2)) < 1e-14);
+			CHECK(dot(cell.reciprocal(1), cell.lattice(2)) < 1e-14);
+			CHECK(dot(cell.reciprocal(2), cell.lattice(2)) == 2.0*M_PI);		
+			
+      CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[0] == 1.0_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == 0.0_a);
+      CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == 0.0_a);			
+
+			CHECK(cell.is_orthogonal());
+			CHECK(not cell.is_cartesian());
+    }
+		
     SECTION("Non-orthogonal cell"){
 
 			double lv[3][3] = {{6.942, 8.799, 4.759}, {9.627, 7.092, 4.819}, {4.091, 0.721, 1.043}};
@@ -414,6 +489,16 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
       CHECK(cell.reciprocal(2)[2] == -30.5117208294_a);
     
       CHECK(cell.volume() == 7.305321831_a);
+
+			CHECK(dot(cell.reciprocal(0), cell.lattice(0)) == Approx(2.0*M_PI));
+			CHECK(dot(cell.reciprocal(1), cell.lattice(0)) < 1e-12);
+			CHECK(dot(cell.reciprocal(2), cell.lattice(0)) < 1e-12);
+			CHECK(dot(cell.reciprocal(0), cell.lattice(1)) < 1e-12);
+			CHECK(dot(cell.reciprocal(1), cell.lattice(1)) == Approx(2.0*M_PI));
+			CHECK(dot(cell.reciprocal(2), cell.lattice(1)) < 1e-12);
+			CHECK(dot(cell.reciprocal(0), cell.lattice(2)) < 1e-12);
+			CHECK(dot(cell.reciprocal(1), cell.lattice(2)) < 1e-12);
+			CHECK(dot(cell.reciprocal(2), cell.lattice(2)) == Approx(2.0*M_PI));
 			
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[0] == 0.121797_a);
       CHECK(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.2, -0.5, 0.867))[1] == -1.161093_a);
@@ -423,11 +508,10 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
       CHECK(cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
       CHECK(cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
 
-      CHECK(cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, 0.5, 0.5))));
-      //This next one fails, this has to be checked.
-			//CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(1.5, 0.5, 0.5))));
-      CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, -0.1, 0.0))));
-      CHECK(!cell.contains(cell.metric().to_cartesian(vector3<double, math::contravariant>(0.5, 0.5, -1.0))));
+      CHECK(!cell.contains(vector3<double, math::contravariant>(0.5, 0.5, 0.5)));
+			CHECK(!cell.contains(vector3<double, math::contravariant>(1.5, 0.5, 0.5)));
+      CHECK(!cell.contains(vector3<double, math::contravariant>(0.5, -0.1, 0.0)));
+      CHECK(!cell.contains(vector3<double, math::contravariant>(0.5, 0.5, -1.0)));
 
 			{
 				auto vv = cell.metric().to_contravariant(math::vector3<double, math::cartesian>{9.627, 7.092, 4.819});
@@ -442,7 +526,9 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
 
 				CHECK(norm(vv2) == Approx(dot(vv, cell.metric().to_covariant(vv))));
 			}
-		
+
+			CHECK(not cell.is_orthogonal());
+			CHECK(not cell.is_cartesian());
     }
   }
 }

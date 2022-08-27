@@ -160,7 +160,7 @@ namespace basis {
 		}
 		
 		auto volume_element() const {
-			return rspacing_[0]*rspacing_[1]*rspacing_[2];
+			return cell().volume()/size();
 		}
 
 		auto gcutoff() const {
@@ -170,7 +170,7 @@ namespace basis {
 		}
 
 		auto point_op() const {
-			return point_operator(nr_, cell_.metric().to_contravariant(rspacing_), cubic_dist_, cell_.metric());
+			return point_operator(nr_, conspacing_, cubic_dist_, cell_.metric());
 		}
 		
 	private:
@@ -219,6 +219,8 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
       basis::real_space rs(box, comm);
 
       CHECK(rs.size() == 8000);
+
+			CHECK(rs.cell().volume() == rs.volume_element()*rs.size());
       
       CHECK(rs.rspacing()[0] == 0.5_a);
       CHECK(rs.rspacing()[1] == 0.5_a);
@@ -242,7 +244,9 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
       basis::real_space rs(box, comm);
 
       CHECK(rs.size() == 536640);
-	    
+
+			CHECK(rs.cell().volume() == rs.volume_element()*rs.size());
+			
       CHECK(rs.rspacing()[0] == 0.3613953488_a);
       CHECK(rs.rspacing()[1] == 0.3625641026_a);
       CHECK(rs.rspacing()[2] == 0.36328125_a);
@@ -282,6 +286,27 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
       CHECK(rs_155.sizes()[0] == 333);
       CHECK(rs_155.sizes()[1] == 60);
 			CHECK(rs_155.sizes()[2] == 99);
+
+    }
+
+    SECTION("Non-orthogonal cell"){
+
+			auto a = 3.567095_A;
+			systems::box box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(30.0_Ha);
+      basis::real_space rs(box, comm);
+
+      CHECK(rs.size() == 1728);
+
+			CHECK(rs.cell().volume() == Approx(0.25*pow(a.in_atomic_units(), 3)));
+			CHECK(rs.cell().volume() == rs.volume_element()*rs.size());
+			
+      CHECK(rs.rspacing()[0] == 0.3972073708_a);
+      CHECK(rs.rspacing()[1] == 0.3972073708_a);
+      CHECK(rs.rspacing()[2] == 0.3972073708_a);
+      
+      CHECK(rs.sizes()[0] == 12);
+      CHECK(rs.sizes()[1] == 12);
+			CHECK(rs.sizes()[2] == 12);
 
     }
 
