@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 			
 	input::environment env(argc, argv);
 	
-	utils::match energy_match(1.0e-6);
+	utils::match energy_match(3.0e-6);
 
 	{
 		auto box = systems::box::cubic(10.0_b).cutoff_energy(30.0_Ha);
