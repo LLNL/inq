@@ -53,7 +53,7 @@ namespace basis {
 			for(int idir = 0; idir < 3; idir++){
 
 				//this doesnt work for non-orthogonal cells yet
-				if(not parent_grid.cell().is_orthogonal()){
+				if(not parent_grid.cell().is_cartesian()){
 					lo[idir] = parent_grid.symmetric_range_begin(idir);
 					hi[idir] = parent_grid.symmetric_range_end(idir);
 					continue;

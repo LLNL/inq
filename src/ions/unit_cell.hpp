@@ -215,6 +215,10 @@ namespace ions {
 		auto is_orthogonal() const {
 			return fabs(dot(lattice_[0], lattice_[1])) < 1e-8 and fabs(dot(lattice_[1], lattice_[2])) < 1e-8 and fabs(dot(lattice_[2], lattice_[0])) < 1e-8;
 		}
+
+		auto is_cartesian() const {
+			return is_orthogonal() and lattice_[0][1] < 1e-8 and lattice_[0][2] < 1e-8;
+		}
 		
   };
 
@@ -313,6 +317,7 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
 			}
 
 			CHECK(cell.is_orthogonal());
+			CHECK(cell.is_cartesian());			
     }
 
     SECTION("Parallelepipedic cell"){
@@ -397,6 +402,7 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
 			CHECK(cell.metric().length(math::vector3<double, math::contravariant>{1.0, 0.0, 0.0}) == 28.62);
 
 			CHECK(cell.is_orthogonal());
+			CHECK(cell.is_cartesian());			
 		}
 
     SECTION("Rotated cell"){
@@ -454,6 +460,7 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
       CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == 0.0_a);			
 
 			CHECK(cell.is_orthogonal());
+			CHECK(not cell.is_cartesian());
     }
 		
     SECTION("Non-orthogonal cell"){
@@ -520,7 +527,8 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
 				CHECK(norm(vv2) == Approx(dot(vv, cell.metric().to_covariant(vv))));
 			}
 
-			CHECK(not cell.is_orthogonal());			
+			CHECK(not cell.is_orthogonal());
+			CHECK(not cell.is_cartesian());
     }
   }
 }
