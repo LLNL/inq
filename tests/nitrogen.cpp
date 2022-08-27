@@ -27,7 +27,7 @@ int main(int argc, char ** argv){
 	
 	input::environment env(argc, argv);
 	
-	utils::match energy_match(5.0e-6);
+	utils::match energy_match(6.0e-6);
 
 	auto box = systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b).cutoff_energy(40.0_Ha);
 	
