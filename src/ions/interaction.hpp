@@ -70,6 +70,18 @@ auto interaction_forces(const cell_type & cell, const geometry_type & geo, const
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 												double & energy, array_forces & forces){
+
+	if(cell.periodic_dimensions() == 3) {
+		interaction_energy_periodic(natoms, cell, charge, positions, sep, energy, forces);
+	} else {
+		throw std::runtime_error("inq internal error: ionic interaction not implemented");
+	}
+	
+}
+	
+template <class cell_type, class array_charge, class array_positions, class array_forces>
+void interaction_energy_periodic(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
+																 double & energy, array_forces & forces){
 	using math::vector3;
 
 	const double alpha = 0.21;
