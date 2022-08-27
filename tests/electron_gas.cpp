@@ -72,12 +72,12 @@ int main(int argc, char ** argv){
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), inq::input::scf::energy_tolerance(1e-8_Ha));
 		
-		energy_match.check("total energy",        result.energy.total()    , -0.684940595672);
-		energy_match.check("kinetic energy",      result.energy.kinetic()  ,  2.368705073030);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues, -1.605479264356);
+		energy_match.check("total energy",        result.energy.total()    , -0.684940577843);
+		energy_match.check("kinetic energy",      result.energy.kinetic()  ,  2.368705090856);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues, -1.605479246524);
 		energy_match.check("hartree",             result.energy.hartree    ,  0.000000000000);	
-		energy_match.check("XC energy",           result.energy.xc         , -3.053645668702);
-		energy_match.check("XC density integral", result.energy.nvxc       , -3.974184337385);
+		energy_match.check("XC energy",           result.energy.xc         , -3.053645668703);
+		energy_match.check("XC density integral", result.energy.nvxc       , -3.974184337387);
 	}
 
 	{
