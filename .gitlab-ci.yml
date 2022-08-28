@@ -487,25 +487,26 @@ gcc-ompi-coverage:
     needs: []
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
       - mkdir build && cd build
       - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
       - ../configure --prefix=$HOME 
       - time make
       - time make install
       - cd ../
-      - tar -cvzf gcc-ompi-coverage.tar.gz build/
+      - tar -cvjf gcc-ompi-coverage.tar.bz2 build/
+      - ls -lh gcc-ompi-coverage.tar.bz2
     artifacts:
       paths:
-      - gcc-ompi-coverage.tar.gz
+      - gcc-ompi-coverage.tar.bz2
 
 gcc-ompi-coverage-1p:
     stage: test
     needs: ["gcc-ompi-coverage"]
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
-      - tar -xvzf gcc-ompi-coverage.tar.gz
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
+      - tar -xvjf gcc-ompi-coverage.tar.bz2
       - cd build
       - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 1000
@@ -516,8 +517,8 @@ gcc-ompi-coverage-4p:
     needs: ["gcc-ompi-coverage"]
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
-      - tar -xvzf gcc-ompi-coverage.tar.gz
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
+      - tar -xvjf gcc-ompi-coverage.tar.bz2
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000
