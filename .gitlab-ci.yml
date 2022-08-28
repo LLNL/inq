@@ -490,7 +490,7 @@ gcc-ompi-coverage:
       - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
       - mkdir build && cd build
       - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
-      - ../configure --prefix=$HOME 
+      - ../configure --disable-debug --prefix=$HOME
       - time make
       - time make install
       - cd ../
