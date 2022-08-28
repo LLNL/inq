@@ -521,164 +521,88 @@ gcc-ompi-coverage:
 #      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
 
 #########################################################################################################################
-# INTEL OMPI
-#########################################################################################################################
-
-intel-ompi:
-    stage: build
-    needs: []    
-    tags:
-      - intel_compiler
-    script:
-      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
-      - export SRCDIR=`pwd`
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mkdir -p $PREFIX/build
-      - cd $PREFIX/build
-      - export CC=/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icc
-      - export CXX=/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc
-      - export CXXFLAGS="-Wl,-rpath,/opt/intel/oneapi/compiler/2021.2.0/linux/lib/"
-      - export FC=gfortran
-      - time $SRCDIR/configure --prefix=$PREFIX/install --disable-debug
-      - make -j 16
-      - make install
-      - $PREFIX/install/bin/inc++ $SRCDIR/tests/silicon.cpp -o tests/silicon2
-      - cd $SRCDIR
-      - echo $PREFIX > intel-ompi-path
-      - rm -fr $PREFIX
-    artifacts:
-      paths:
-      - intel-ompi-path
-      
-#intel-ompi-1p:
-#    stage: test
-#    needs: ["intel-ompi"]    
-#    tags:
-#      - intel_compiler
-#    script:
-#      - PREFIX=`cat intel-ompi-path`
-#      - INQ_EXEC_ENV="mpirun -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j16"
-#      - INQ_EXEC_ENV="mpirun -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j16"
-#      - $PREFIX/build/tests/silicon2
-#
-#intel-ompi-2p:
-#    stage: test
-#    needs: ["intel-ompi"]    
-#    tags:
-#      - intel_compiler
-#    script:
-#      - PREFIX=`cat intel-ompi-path`
-#      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
-#      - INQ_EXEC_ENV="mpirun -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
-#
-#intel-ompi-3p:
-#    stage: test
-#    needs: ["intel-ompi"]    
-#    tags:
-#      - intel_compiler
-#    script:
-#      - PREFIX=`cat intel-ompi-path`
-#      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j5"
-#      - INQ_EXEC_ENV="mpirun -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j5"
-#
-#intel-ompi-4p:
-#    stage: test
-#    needs: ["intel-ompi"]    
-#    tags:
-#      - intel_compiler
-#    script:
-#      - PREFIX=`cat intel-ompi-path`
-#      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
-#      - INQ_EXEC_ENV="mpirun -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
-
-#########################################################################################################################
 # INTEL MPICH
 #########################################################################################################################
 
 intel-mpich:
     stage: build
-    needs: []    
-    tags:
-      - intel_compiler
     script:
-      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
-      - export SRCDIR=`pwd`
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mkdir -p $PREFIX/build
-      - cd $PREFIX/build
-      - export CC=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icc
-      - export CXX=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icpc
-      - export CXXFLAGS="-Wl,-rpath,/opt/intel/oneapi/compiler/latest/linux/lib/"
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18479/l_HPCKit_p_2022.1.2.117_offline.sh --retry 5 --retry-delay 5
+      - chmod +x webimage.sh
+      - ./webimage.sh -x -f webimage_extracted --log extract.log
+      - rm -rf webimage.sh
+      - ls -1 webimage_extracted/
+      - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
+      - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.dpcpp-cpp-compiler-pro:intel.oneapi.lin.mpi.devel --eula=accept --log-dir=.
+      - rm -rf webimage_extracted
+      - . /opt/intel/oneapi/setvars.sh
+      - mkdir build
+      - cd build
+      - export CC=icc
+      - export CXX=icpc
       - export FC=gfortran
-      - time $SRCDIR/configure --prefix=$PREFIX/install --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.mpich
-      - make -j 16
+      - time ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - make
       - make install
-      - $PREFIX/install/bin/inc++ $SRCDIR/tests/silicon.cpp -o tests/silicon2
-      - cd $SRCDIR
-      - echo $PREFIX > intel-mpich-path
+      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
+      - ldd tests/nitrogen
+      - cd ../
+      - tar -cvzf intel-mpich-build.tar.gz build/
     artifacts:
       paths:
-      - intel-mpich-path
-      
+      - intel-mpich-build.tar.gz
+
 intel-mpich-1p:
     stage: test
-    needs: ["intel-mpich"]    
-    tags:
-      - intel_compiler
+    needs: ["intel-mpich"]
     script:
-      - PREFIX=`cat intel-mpich-path`
-      - export OMP_NUM_THREADS=1      
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j8"      
-      - $PREFIX/build/tests/silicon2
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - tar -xvzf intel-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
+      - cd src/; ctest --output-on-failure --timeout 360; cd ../
+      - cd tests/; ctest --output-on-failure --timeout 360; cd ../
+      - cd speed_tests/; ctest --output-on-failure --timeout 360; cd ../
+      - tests/silicon2
 
 intel-mpich-2p:
     stage: test
-    needs: ["intel-mpich"]    
-    tags:
-      - intel_compiler
+    needs: ["intel-mpich"]
     script:
-      - PREFIX=`cat intel-mpich-path`
-      - export OMP_NUM_THREADS=1      
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
-
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - tar -xvzf intel-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
+      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 1800; cd ../
+      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 1800; cd ../
+     
 intel-mpich-3p:
     stage: test
-    needs: ["intel-mpich"]    
-    tags:
-      - intel_compiler
+    needs: ["intel-mpich"]
     script:
-      - PREFIX=`cat intel-mpich-path`
-      - export OMP_NUM_THREADS=1      
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - tar -xvzf intel-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
+      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 1800; cd ../
+      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 1800; cd ../
 
 intel-mpich-4p:
     stage: test
-    needs: ["intel-mpich"]    
-    tags:
-      - intel_compiler
+    needs: ["intel-mpich"]
     script:
-      - PREFIX=`cat intel-mpich-path`
-      - export OMP_NUM_THREADS=1
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
-
-intel-mpich-clean:
-    stage: clean
-    needs:
-     - intel-mpich
-     - intel-mpich-1p
-     - intel-mpich-2p
-     - intel-mpich-3p
-     - intel-mpich-4p
-    tags:
-      - intel_compiler
-    script:
-      - PREFIX=`cat intel-mpich-path`
-      - rm -vfr $PREFIX
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libboost-serialization-dev libboost-filesystem-dev bzip2 python2
+      - tar -xvzf intel-mpich-build.tar.gz
+      - cd build
+      - cmake --build . --target install/fast
+      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 1800; cd ../
+      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 1800; cd ../
 
 #########################################################################################################################
 # NVIDIA MPICH FAST
