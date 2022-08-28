@@ -577,8 +577,8 @@ intel-mpich-2p:
       - tar -xvzf intel-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
-      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 1800; cd ../
-      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 1800; cd ../
+      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 7200; cd ../
+      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 7200; cd ../
      
 intel-mpich-3p:
     stage: test
@@ -589,8 +589,8 @@ intel-mpich-3p:
       - tar -xvzf intel-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
-      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 1800; cd ../
-      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 1800; cd ../
+      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 7200; cd ../
+      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 7200; cd ../
 
 intel-mpich-4p:
     stage: test
@@ -601,8 +601,8 @@ intel-mpich-4p:
       - tar -xvzf intel-mpich-build.tar.gz
       - cd build
       - cmake --build . --target install/fast
-      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 1800; cd ../
-      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 1800; cd ../
+      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 7200; cd ../
+      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 7200; cd ../
 
 #########################################################################################################################
 # NVIDIA MPICH FAST
