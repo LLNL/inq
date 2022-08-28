@@ -483,6 +483,41 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 			CHECK(length(forces[iatom]) < 1e-12);
 		}
   }
+
+	SECTION("H2O finite"){
+    
+    double aa = 20.0;
+    
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodic_dimensions = */ 0);
+
+		const double charge[3] = {6.0, 1.0, 1.0};
+
+    std::vector<vector3<double>> positions(3);
+    positions[0] = vector3<double>( 0.0,      -0.553586, 0.0);
+    positions[1] = vector3<double>( 1.429937,  0.553586, 0.0);
+    positions[2] = vector3<double>(-1.429937,  0.553586, 0.0);
+
+    double energy;
+    std::vector<vector3<double>> forces(3);
+
+    ions::interaction_energy(3, cell, charge, positions, sep, energy, forces);
+
+		//these numbers come from Octopus
+    CHECK(energy == 6.98512326_a); 
+
+		CHECK(fabs(forces[0][0]) < 1.0e-12);
+		CHECK(forces[0][1] == -2.2462868673626861_a);
+		CHECK(fabs(forces[0][2]) < 1.0e-12);
+
+		CHECK(forces[1][0] == 1.5728305979055519_a);
+		CHECK(forces[1][1] == 1.1231434336813431_a);		
+		CHECK(fabs(forces[1][2]) < 1.0e-12);
+
+		CHECK(forces[2][0] == -1.5728305979055519_a);
+		CHECK(forces[2][1] == 1.1231434336813431_a);
+		CHECK(fabs(forces[2][2]) < 1.0e-12);
+		
+  }
 	
 }
 #endif
