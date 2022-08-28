@@ -35,7 +35,7 @@
 #include <multi/array.hpp>
 
 #ifdef ENABLE_CUDA
-#include <multi/memory/adaptors/cuda/cached/allocator.hpp>
+#include <thrust/system/cuda/memory.h>
 #endif
 
 #ifdef ENABLE_CUDA
@@ -49,7 +49,7 @@ namespace math {
 
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = boost::multi::memory::cuda::cached::allocator<type, std::integral_constant<int, 0> >
+					class allocator = ::thrust::cuda::universal_allocator<type>
 #else
 					class allocator = std::allocator<type>
 #endif
@@ -58,7 +58,7 @@ using array = boost::multi::array<type, dim, allocator>;
 
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = boost::multi::memory::cuda::cached::allocator<type>
+					class allocator = ::thrust::cuda::universal_allocator<type>
 #else
 					class allocator = std::allocator<type>
 #endif

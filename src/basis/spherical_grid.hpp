@@ -129,8 +129,8 @@ namespace basis {
 				gpu::run((hi[2] - lo[2]), (hi[1] - lo[1]), (hi[0] - lo[0]),
 								 [lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
 									 
-									 buf[ix][iy][iz].coords_ = local_sizes;
-									 buf[ix][iy][iz].distance_ = -1.0;
+									 (&buf[ix][iy][iz])->coords_ = local_sizes;
+									 (&buf[ix][iy][iz])->distance_ = -1.0;
 									 
 									 auto ii = point_op.from_symmetric_range({int(lo[0] + ix), int(lo[1] + iy), int(lo[2] + iz)});
 									 
@@ -151,9 +151,9 @@ namespace basis {
 									 auto n2 = norm(rpoint - re);
 									 if(n2 > radius*radius) return;
 									 
-									 buf[ix][iy][iz].coords_ = {ixl, iyl, izl};
-									 buf[ix][iy][iz].distance_ = sqrt(n2);
-									 buf[ix][iy][iz].relative_pos_ = point_op.metric().to_contravariant(rpoint - re);
+									 (&buf[ix][iy][iz])->coords_ = {ixl, iyl, izl};
+									 (&buf[ix][iy][iz])->distance_ = sqrt(n2);
+									 (&buf[ix][iy][iz])->relative_pos_ = point_op.metric().to_contravariant(rpoint - re);
 								 });
 				
 				upper_count += upper_local;
@@ -179,7 +179,7 @@ namespace basis {
 				return;
 			}
 			
-			assert(size_ == 0 or points_[size_ - 1].distance_ >= 0.0);
+			assert(size_ == 0 or point_data(points_[size_ - 1]).distance_ >= 0.0);
 
 			{
 				CALI_CXX_MARK_SCOPE("spherical_grid::reextent");
@@ -216,7 +216,7 @@ namespace basis {
 				
 			std::transform(points_.begin(), points_.end(), subgrid.begin(),
 										 [& grid](auto point){
-											 return grid[point.coords_[0]][point.coords_[1]][point.coords_[2]];
+											 return grid[point_data(point).coords_[0]][point_data(point).coords_[1]][point_data(point).coords_[2]];
 										 });
 		}
 
@@ -257,7 +257,7 @@ namespace basis {
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter");
 			
       for(int ipoint = 0; ipoint < size(); ipoint++){
-				grid[points_[ipoint].coords_[0]][points_[ipoint].coords_[1]][points_[ipoint].coords_[2]] = subgrid[ipoint];
+				grid[point_data(points_[ipoint]).coords_[0]][point_data(points_[ipoint]).coords_[1]][point_data(points_[ipoint]).coords_[2]] = subgrid[ipoint];
       }
     }
 
@@ -279,15 +279,15 @@ namespace basis {
 			PointsType points_;
 
 			GPU_FUNCTION auto & grid_point(int ii) const {
-				return points_[ii].coords_;
+				return (&points_[ii])->coords_;
 			}
 
 			GPU_FUNCTION auto & distance(int ii) const {
-				return points_[ii].distance_;
+				return (&points_[ii])->distance_;
 			}
 
 			GPU_FUNCTION auto & point_pos(int ii) const {
-				return points_[ii].relative_pos_;
+				return (&points_[ii])->relative_pos_;
 			}
 			
 		};

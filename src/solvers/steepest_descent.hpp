@@ -4,7 +4,7 @@
 #define INQ__SOLVERS__STEEPEST_DESCENT
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2019-2022 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -90,13 +90,13 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 		operations::shift(1.0, lambda, residual, phi);
 	}
 
+	auto maxloc =
 #ifdef HAVE_CUDA
-	using thrust::max_element;
+		thrust::max_element(normres.begin(), normres.end())
 #else
-	using std::max_element;
+		std   ::max_element(normres.begin(), normres.end())
 #endif
-
-	auto maxloc = max_element(normres.begin(), normres.end());
+	;
 	if(maxloc == normres.end()) return 0.0;
 	return *maxloc;
 }
