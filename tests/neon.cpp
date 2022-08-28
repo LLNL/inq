@@ -56,12 +56,12 @@ int main(int argc, char ** argv){
 	{
 		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting());
 		
-		energy_match.check("total energy",     result.energy.total()    , -67.771731167338);
+		energy_match.check("total energy",     result.energy.total()    , -61.765371991220);
 		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.606535224997);
 		energy_match.check("eigenvalues",      result.energy.eigenvalues, -61.765371991153);
 		energy_match.check("external energy",  result.energy.external   , -79.444978433236);
 		energy_match.check("non-local energy", result.energy.nonlocal   , -17.926928782914);
-		energy_match.check("ion-ion energy",   result.energy.ion        , -6.006359176186);
+		energy_match.check("ion-ion energy",   result.energy.ion        ,   0.000000000000);
 
 	}
 
@@ -69,12 +69,12 @@ int main(int argc, char ** argv){
 	{	
 		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting() | input::interaction::fourier_pseudo());
 		
-		energy_match.check("total energy",     result.energy.total()    , -67.771735282066);
+		energy_match.check("total energy",     result.energy.total()    , -61.765376105880);
 		energy_match.check("kinetic energy",   result.energy.kinetic()  ,  35.606511739929);
 		energy_match.check("eigenvalues",      result.energy.eigenvalues, -61.765376105880);
 		energy_match.check("external energy",  result.energy.external   , -79.444966794608);
 		energy_match.check("non-local energy", result.energy.nonlocal   , -17.926921051201);
-		energy_match.check("ion-ion energy",   result.energy.ion        ,  -6.006359176186);
+		energy_match.check("ion-ion energy",   result.energy.ion        ,   0.000000000000);
 		
 	}
 
