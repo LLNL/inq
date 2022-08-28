@@ -480,24 +480,18 @@ gcc-mpich-valgrind-1p:
 
 gcc-ompi-coverage:
     stage: test
-    needs: []    
-    tags:
-      - intel_compiler
+    needs: []
     script:
-      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - mkdir build && cd build
-      - export CXXFLAGS="-O3 -Wall -Wextra --coverage"
-      - ../configure --prefix=$PREFIX || cat config.log
-      - time make -j8
-      - time make -j8 install
-      - cd src; ctest -j 16 --output-on-failure --timeout 3000; cd ..
-      - cd tests; ctest -j 16 --output-on-failure --timeout 3000; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun -np 3" ctest -j 5 --output-on-failure --timeout 3000; cd ..
-      - $PREFIX/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
-      - time mpirun --allow-run-as-root -np 3 tests/silicon
-      - time mpirun --allow-run-as-root -np 3 tests/nitrogen      
-      - tests/silicon2
+      - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
+      - ../configure --prefix=$HOME --disable-debug || cat config.log
+      - time make
+      - time make install
+      - ctest --output-on-failure --timeout 1000
+      - time mpirun --allow-run-as-root -np 4 tests/silicon
+      - time mpirun --allow-run-as-root -np 4 tests/nitrogen
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
 
 #DISABLED BECAUSE IT IS TOO SLOW
