@@ -71,14 +71,43 @@ template <class cell_type, class array_charge, class array_positions, class arra
 void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 												double & energy, array_forces & forces){
 
-	if(cell.periodic_dimensions() == 3) {
+	if(cell.periodic_dimensions() == 0) {
+		interaction_energy_finite(natoms, cell, charge, positions, sep, energy, forces);
+	} else if(cell.periodic_dimensions() == 3) {
 		interaction_energy_periodic(natoms, cell, charge, positions, sep, energy, forces);
 	} else {
-		throw std::runtime_error("inq internal error: ionic interaction not implemented");
+		throw std::runtime_error("inq internal error: ionic interaction not implemented for periodicity " + std::to_string(cell.periodic_dimensions()));
 	}
 	
 }
+
+template <class cell_type, class array_charge, class array_positions, class array_forces>
+void interaction_energy_finite(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
+															 double & energy, array_forces & forces){
+	using math::vector3;
+
+	energy = 0.0;
+	for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vector3<double>{0.0, 0.0, 0.0};
 	
+	for(int iatom = 0; iatom < natoms; iatom++){
+		double zi = charge[iatom];
+
+		for(int jatom = iatom + 1; jatom < natoms; jatom++){
+			double zj = charge[jatom];
+
+			vector3<double> rij =  cell.position_in_cell(positions[iatom]) - cell.position_in_cell(positions[jatom]);
+			double invr = 1.0/sqrt(norm(rij));
+
+			auto de = zi*zj*invr;
+			auto df = de*invr*(rij*invr);
+
+			energy += de;
+			forces[iatom] += df;
+			forces[jatom] -= df;
+		}
+	}
+}
+
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy_periodic(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 																 double & energy, array_forces & forces){
@@ -119,7 +148,6 @@ void interaction_energy_periodic(const int natoms, const cell_type & cell, const
 				forces[jatom] -= zi*zj*rij*(eor + 2.0*alpha/sqrt(M_PI)*exp(-alpha*alpha*rr*rr))/(rr*rr);
 			}
 		}
-      
 	}
 
 	double eself = 0.0;
@@ -275,7 +303,38 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     CHECK(energy == -78.31680646_a); //this number comes from Octopus
     
   }
-  
+
+	SECTION("N2 finite"){
+    
+    double aa = 20.0;
+    
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodic_dimensions = */ 0);
+
+		const double charge[2] = {5.0, 5.0};
+
+    double distance = 2.0739744;
+
+    std::vector<vector3<double>> positions(2);
+    positions[0] = vector3<double>(0.0, 0.0, -distance/2.0);
+    positions[1] = vector3<double>(0.0, 0.0,  distance/2.0);
+    
+    double energy;
+    std::vector<vector3<double>> forces(2);
+
+    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+
+		//these numbers come from Octopus
+    CHECK(energy == 12.05415072_a); 
+
+		CHECK(fabs(forces[0][0]) < 1.0e-16);
+		CHECK(fabs(forces[0][1]) < 1.0e-16);
+		CHECK(forces[0][2] == -5.81210198_a);
+		CHECK(fabs(forces[1][0]) < 1.0e-16);
+		CHECK(fabs(forces[1][1]) < 1.0e-16);
+		CHECK(forces[1][2] == 5.81210198_a);
+    
+  }
+		
   SECTION("N2 supercell"){
     
     double aa = 20.0;
@@ -306,7 +365,6 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 		CHECK(forces[1][2] == 5.7840844208_a);
     
   }
-
 	
 	SECTION("N2 supercell shifted"){
     
