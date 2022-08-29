@@ -78,6 +78,10 @@ namespace basis {
       return rspacing_;
     }
 
+    GPU_FUNCTION const auto & contravariant_spacing() const{
+      return conspacing_;
+    }
+		
 		double diagonal_length() const {
 			return length(rlength_);
 		}
