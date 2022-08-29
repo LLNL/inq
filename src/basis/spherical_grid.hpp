@@ -35,6 +35,7 @@
 #include <gpu/reduce.hpp>
 #include <ions/unit_cell.hpp>
 #include <ions/periodic_replicas.hpp>
+#include <basis/containing_cube.hpp>
 #include <basis/real_space.hpp>
 #include <cassert>
 #include <array>
@@ -46,26 +47,6 @@ namespace inq {
 namespace basis {
 
   class spherical_grid {
-
-		//returns the cube that contains the sphere, this makes the initialization O(1) instead of O(N)
-		template <class BasisType, typename PosType>
-		void static cube(const BasisType & parent_grid, PosType const & pos, double radius, math::vector3<int> & hi, math::vector3<int> & lo){
-			for(int idir = 0; idir < 3; idir++){
-
-				//this doesnt work for non-orthogonal cells yet
-				if(not parent_grid.cell().is_cartesian()){
-					lo[idir] = parent_grid.symmetric_range_begin(idir);
-					hi[idir] = parent_grid.symmetric_range_end(idir);
-					continue;
-				}
-				
-				lo[idir] = floor((pos[idir] - radius)/parent_grid.rspacing()[idir]) - 1;
-				hi[idir] = ceil((pos[idir] + radius)/parent_grid.rspacing()[idir]) + 1;
-
-				lo[idir] = std::clamp(lo[idir], parent_grid.symmetric_range_begin(idir), parent_grid.symmetric_range_end(idir));
-				hi[idir] = std::clamp(hi[idir], parent_grid.symmetric_range_begin(idir), parent_grid.symmetric_range_end(idir));
-			}
-		}
 
 #ifdef ENABLE_CUDA
 	public:
@@ -101,7 +82,7 @@ namespace basis {
 			//FIRST PASS: we count the cubes, this gives us an upper bound for the memory allocation
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 				math::vector3<int> lo, hi;
-				cube(parent_grid, rep[irep], radius, hi, lo);
+				containing_cube(parent_grid, rep[irep], radius, lo, hi);
 				upper_count += (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);
 			}
 
@@ -111,7 +92,7 @@ namespace basis {
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
 				math::vector3<int> lo, hi;
-				cube(parent_grid, rep[irep], radius, hi, lo);
+				containing_cube(parent_grid, rep[irep], radius, lo, hi);
 
 				auto cubesize = hi - lo;
 
