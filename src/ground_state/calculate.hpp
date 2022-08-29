@@ -214,7 +214,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 	if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
 
-	if(ions.cell().periodic_dimensions() == 0){
+	if(ions.cell().periodicity() == 0){
 		res.dipole = observables::dipole(ions, electrons);
 	} else {
 		res.dipole = math::vector3<double>(0.);

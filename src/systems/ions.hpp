@@ -21,7 +21,7 @@ class ions {
 public:
 
 	ions(const systems::box & arg_cell_input):
-		cell_(arg_cell_input, arg_cell_input.periodic_dimensions_value())
+		cell_(arg_cell_input, arg_cell_input.periodicity_value())
 	{
 	}
 

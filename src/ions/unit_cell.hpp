@@ -36,13 +36,13 @@ namespace ions {
     vector_type lattice_[3];
     vector_type reciprocal_[3];
     double volume_;
-		int periodic_dimensions_;
+		int periodicity_;
 		
   public:
 		
-    unit_cell(math::vector3<double> const& a0, math::vector3<double> const& a1, math::vector3<double> const& a2, int arg_periodic_dimensions = 3){
+    unit_cell(math::vector3<double> const& a0, math::vector3<double> const& a1, math::vector3<double> const& a2, int arg_periodicity = 3){
 			
-			periodic_dimensions_ = arg_periodic_dimensions;
+			periodicity_ = arg_periodicity;
 		
 			lattice_[0] = a0;
 			lattice_[1] = a1;
@@ -57,8 +57,8 @@ namespace ions {
 		}
 		
 		template<class lat_type>
-		unit_cell(const lat_type & lat, int periodic_dimensions = 3):
-			unit_cell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodic_dimensions){
+		unit_cell(const lat_type & lat, int periodicity = 3):
+			unit_cell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodicity){
 		}
 
 		vector_type const& operator[](int i) const {return lattice_[i];}
@@ -67,7 +67,7 @@ namespace ions {
 		vector_type const& reciprocal(int i) const { return reciprocal_[i]; }
 		
 		auto enlarge(int factor) const {
-			return unit_cell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodic_dimensions_);
+			return unit_cell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodicity_);
 		}
 				
     double volume() const { return volume_; }
@@ -102,8 +102,8 @@ namespace ions {
 			return sqrt(norm(lattice_[0]) + norm(lattice_[1]) + norm(lattice_[2]));
 		}
 
-		auto periodic_dimensions() const {
-			return periodic_dimensions_;
+		auto periodicity() const {
+			return periodicity_;
 		}
 		
 		class cell_metric {

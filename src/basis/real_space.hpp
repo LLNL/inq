@@ -39,12 +39,12 @@ namespace basis {
   public:
 
     real_space(systems::box const & box, boost::mpi3::communicator && comm):
-			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodic_dimensions_value(), comm)
+			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
 		{
     }
 		
     real_space(systems::box const & box, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
-			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodic_dimensions_value(), comm)
+			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
 		{
     }
 
@@ -151,12 +151,12 @@ namespace basis {
 		}
 
 		auto enlarge(int factor) const {
-			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, double_grid_.enabled(), periodic_dimensions_, this->comm()));
+			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, double_grid_.enabled(), periodicity_, this->comm()));
 		}
 
 		auto refine(double factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
 			assert(factor > 0.0);
-			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, spherical_g_grid_,  double_grid_.enabled(), periodic_dimensions_, comm));
+			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, spherical_g_grid_,  double_grid_.enabled(), periodicity_, comm));
 		}
 		
 		auto volume_element() const {
@@ -234,7 +234,7 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 			
 			CHECK(rs.sizes() == new_rs.sizes());
 			CHECK(new_rs.local_sizes() == new_rs.sizes());	
-			CHECK(rs.periodic_dimensions() == new_rs.periodic_dimensions());
+			CHECK(rs.periodicity() == new_rs.periodicity());
 			
     }
 
