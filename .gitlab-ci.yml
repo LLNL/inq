@@ -2,6 +2,10 @@
 
 image: debian:stable-backports
 
+default:
+  artifacts:
+    expire_in: 2 days
+    
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CXXFLAGS: "-O3 -pipe"
