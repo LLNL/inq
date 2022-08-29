@@ -172,7 +172,7 @@ public:
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
-		if(density.basis().periodic_dimensions() == 3){
+		if(density.basis().periodicity() == 3){
 			return poisson_solve_periodic(density);
 		} else {
 			return poisson_solve_finite(density);
@@ -183,7 +183,7 @@ public:
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
-		if(density.basis().periodic_dimensions() == 3){
+		if(density.basis().periodicity() == 3){
 			poisson_solve_in_place_periodic(density);
 		} else {
 			poisson_solve_in_place_finite(density);
@@ -232,7 +232,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 		SECTION("Grid periodic"){
 		
-			CHECK(rs.periodic_dimensions() == 3);
+			CHECK(rs.periodicity() == 3);
 			
 			CHECK(rs.sizes()[0] == 100);
 			CHECK(rs.sizes()[1] == 100);
@@ -384,7 +384,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 		SECTION("Grid finite"){		
 
-			CHECK(rs.periodic_dimensions() == 0);
+			CHECK(rs.periodicity() == 0);
 			
 			CHECK(rs.sizes()[0] == 89);
 			CHECK(rs.sizes()[1] == 89);

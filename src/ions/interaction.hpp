@@ -71,12 +71,12 @@ template <class cell_type, class array_charge, class array_positions, class arra
 void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 												double & energy, array_forces & forces){
 
-	if(cell.periodic_dimensions() == 0) {
+	if(cell.periodicity() == 0) {
 		interaction_energy_finite(natoms, cell, charge, positions, sep, energy, forces);
-	} else if(cell.periodic_dimensions() == 3) {
+	} else if(cell.periodicity() == 3) {
 		interaction_energy_periodic(natoms, cell, charge, positions, sep, energy, forces);
 	} else {
-		throw std::runtime_error("inq internal error: ionic interaction not implemented for periodicity " + std::to_string(cell.periodic_dimensions()));
+		throw std::runtime_error("inq internal error: ionic interaction not implemented for periodicity " + std::to_string(cell.periodicity()));
 	}
 	
 }
@@ -308,7 +308,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 20.0;
     
-    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodic_dimensions = */ 0);
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodicity = */ 0);
 
 		const double charge[2] = {5.0, 5.0};
 
@@ -488,7 +488,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     
     double aa = 20.0;
     
-    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodic_dimensions = */ 0);
+    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodicity = */ 0);
 
 		const double charge[3] = {6.0, 1.0, 1.0};
 
