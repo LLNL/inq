@@ -33,9 +33,11 @@ int main(int argc, char ** argv){
 	bool groundstate_only = false;
 	math::vector3<int> reps{2, 2, 2};
 
+	auto functional = input::interaction::pbe();
+	
 	{
 		int opt;
-		while ((opt = getopt(argc, argv, "p:?gs:")) != EOF){
+		while ((opt = getopt(argc, argv, "p:?gs:y")) != EOF){
 			switch(opt){
 			case 'p':
 				pardomains = atoi(optarg);
@@ -46,11 +48,15 @@ int main(int argc, char ** argv){
 			case 's':
 				sscanf(optarg, "%d%*c%d%*c%d", &reps[0], &reps[1], &reps[2]);
 				break;
+			case 'y':
+				functional = input::interaction::pbe0();
+				break;
 			case '?':
 				std::cerr << "usage is " << std::endl;
 				std::cerr << "-p N to set the number of processors in the domain partition (1 by default)." << std::endl;
 				std::cerr << "-g only calculate the ground state." << std::endl;
 				std::cerr << "-s NxMxK the supercell size in each direction (2x2x2 by default)." << std::endl;
+				std::cerr << "-y use the PBE0 hybrid functional (the default is PBE)." << std::endl;				
 				exit(1);
 			default:
 				abort();
@@ -99,12 +105,12 @@ int main(int argc, char ** argv){
 
 	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(10));
+		auto result = ground_state::calculate(ions, electrons, functional, inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(10));
 		electrons.save(restart_dir);
 	}
 
 	if(not groundstate_only){
-		auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
+		auto propagation = real_time::propagate(ions, electrons, functional, input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
 	}
 	
 }
