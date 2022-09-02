@@ -51,6 +51,8 @@ auto interaction_energy(const cell_type & cell, const geometry_type & geo, const
 	return energy;
 }
 
+///////////////////////////////////////////////////////////////////////////
+
 template <class cell_type, class geometry_type>
 auto interaction_forces(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
 
@@ -67,19 +69,23 @@ auto interaction_forces(const cell_type & cell, const geometry_type & geo, const
 	return forces;
 }
 
+///////////////////////////////////////////////////////////////////////////
+
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 												double & energy, array_forces & forces){
 
 	if(cell.periodicity() == 0) {
 		interaction_energy_finite(natoms, cell, charge, positions, sep, energy, forces);
-	} else if(cell.periodicity() == 3) {
-		interaction_energy_periodic(natoms, cell, charge, positions, sep, energy, forces);
+	} else if(cell.periodicity() == 2 or cell.periodicity() == 3) {
+		interaction_energy_periodic(cell.periodicity(), natoms, cell, charge, positions, sep, energy, forces);
 	} else {
 		throw std::runtime_error("inq internal error: ionic interaction not implemented for periodicity " + std::to_string(cell.periodicity()));
 	}
 	
 }
+
+///////////////////////////////////////////////////////////////////////////
 
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy_finite(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
@@ -108,9 +114,11 @@ void interaction_energy_finite(const int natoms, const cell_type & cell, const a
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////
+
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void ewald_fourier_3d(const int natoms, const cell_type & cell, const array_charge & charge, double total_charge, const array_positions & positions, double alpha,
-						 double & efs, array_forces & forces){
+											double & efs, array_forces & forces){
 	using math::vector3;
  
 	// G = 0 energy
@@ -123,7 +131,7 @@ void ewald_fourier_3d(const int natoms, const cell_type & cell, const array_char
 	const int isph = ceil(9.5*alpha/gcut);
 
 	std::vector<std::complex<double> > phase(natoms);
-    
+	
 	for(int ix = -isph; ix <= isph; ix++){
 		for(int iy = -isph; iy <= isph; iy++){
 			for(int iz = -isph; iz <= isph; iz++){
@@ -161,12 +169,132 @@ void ewald_fourier_3d(const int natoms, const cell_type & cell, const array_char
 			}
 		}
 	}
-
 }
 
+///////////////////////////////////////////////////////////////////////////
+
 template <class cell_type, class array_charge, class array_positions, class array_forces>
-void interaction_energy_periodic(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
+void ewald_fourier_2d(const int natoms, const cell_type & cell, const array_charge & charge, double total_charge, const array_positions & positions, double alpha,
+											double & efs, array_forces & forces){
+	using math::vector3;
+
+	//	In-Chul Yeh and Max L. Berkowitz, J. Chem. Phys. 111, 3155 (1999).
+
+	auto dz_max = 0.0;
+	for(int iatom = 0; iatom < natoms; iatom++){
+		for(int jatom = 0; jatom < natoms; jatom++){
+			dz_max = std::max(dz_max, fabs(positions[iatom][2] - positions[jatom][2]));
+		}
+	}
+
+	auto rcut = 2.0*alpha*4.6 + 2.0*alpha*alpha*dz_max;
+
+	while(true){
+		if(rcut*dz_max >= 718) break;
+		auto erfc1 = 1.0 - erf(alpha*dz_max + 0.5*rcut/alpha);
+		if(erfc1*exp(rcut*dz_max) < 1e-10) break;
+		rcut *= 1.414;
+	}
+
+	auto ix_max = ceil(rcut/length(cell.reciprocal(0)));
+	auto iy_max = ceil(rcut/length(cell.reciprocal(1)));
+
+	auto area_cell = fabs(cell.lattice(0)[0]*cell.lattice(1)[1] - cell.lattice(0)[1]*cell.reciprocal(1)[0]);
+
+	efs = 0.0;
+
+	for(int iatom = 0; iatom < natoms; iatom++){
+		for(int jatom = 0; jatom < natoms; jatom++){
+
+			auto factor = M_PI/area_cell;
+
+			auto dz_ij = positions[iatom][2] - positions[jatom][2];
+			auto tmp_erf = erf(alpha*dz_ij);
+			auto factor1 = dz_ij*tmp_erf;
+			auto factor2 = exp(-pow(alpha*dz_ij, 2))/(sqrt(M_PI)*alpha);
+
+			efs -= factor*charge[iatom]*charge[jatom]*(factor1 + factor2);
+
+			if(iatom == jatom) continue;
+			if(fabs(tmp_erf) < 1e-16) continue;
+
+			forces[iatom][2] -= -2.0*factor*charge[iatom]*charge[jatom]*tmp_erf;
+		}
+	}
+
+	for(int ix = -ix_max; ix <= ix_max; ix++){
+		for(int iy = -iy_max; iy <= iy_max; iy++){		
+
+			auto ss = ix*ix + iy*iy;
+			if(ss == 0) continue;
+
+			auto gg = ix*cell.reciprocal(0) + iy*cell.reciprocal(1);
+			auto gg2 = norm(gg);
+
+			if(gg2 < 1e-16) continue;
+			auto gg_abs = sqrt(gg2);
+			auto factor = 0.5*M_PI/(area_cell*gg_abs);
+
+			for(int iatom = 0; iatom < natoms; iatom++){
+				for(int jatom = iatom; jatom < natoms; jatom++){
+
+					auto gx = gg[0]*(positions[iatom][0] - positions[jatom][0]) + gg[1]*(positions[iatom][1] - positions[jatom][1]);
+					auto dz_ij = positions[iatom][2] - positions[jatom][2];
+
+					auto erfc1 = 1.0 - erf(alpha*dz_ij + 0.5*gg_abs/alpha);
+					auto factor1 = exp(gg_abs*dz_ij)*erfc1;
+					if(fabs(erfc1) <= 1e-16) factor1 = 0.0;
+
+					auto erfc2 = 1.0 - erf(-alpha*dz_ij + 0.5*gg_abs/alpha);					
+					auto factor2 = exp(-gg_abs*dz_ij)*erfc2;
+					if(fabs(erfc2) <= 1e-16) factor2 = 0.0;
+					
+					auto coeff = 2.0;
+					if(iatom == jatom) coeff = 1.0;
+
+					efs += factor*coeff*charge[iatom]*charge[jatom]*cos(gx)*(factor1 + factor2);
+
+					if(iatom == jatom) continue;
+
+					forces[iatom][0] -= -2.0*factor*gg[0]*charge[iatom]*charge[jatom]*sin(gx)*(factor1 + factor2);
+					forces[iatom][1] -= -2.0*factor*gg[1]*charge[iatom]*charge[jatom]*sin(gx)*(factor1 + factor2);					
+					forces[jatom][0] += -2.0*factor*gg[0]*charge[iatom]*charge[jatom]*sin(gx)*(factor1 + factor2);
+					forces[jatom][1] += -2.0*factor*gg[1]*charge[iatom]*charge[jatom]*sin(gx)*(factor1 + factor2);					
+
+					factor1 = gg_abs*erfc1 - 2.0*alpha/sqrt(M_PI)*exp(-pow(alpha*dz_ij + 0.5*gg_abs/alpha, 2));
+					if(fabs(factor1) > 1e-16){
+						factor1 *= exp(gg_abs*dz_ij);
+					} else {
+						factor1 = 0.0;
+					}
+
+					factor2 = gg_abs*erfc2 - 2.0*alpha/sqrt(M_PI)*exp(-pow(-alpha*dz_ij + 0.5*gg_abs/alpha, 2));
+					if(fabs(factor2) > 1e-16){
+						factor2 *= exp(-gg_abs*dz_ij);
+					} else {
+						factor2 = 0.0;
+					}
+
+					forces[iatom][2] -= 2.0*factor*charge[iatom]*charge[jatom]*cos(gx)*(factor1 - factor2);
+					forces[jatom][2] += 2.0*factor*charge[iatom]*charge[jatom]*cos(gx)*(factor1 - factor2);					
+					
+				}
+			}
+			
+		}
+	}
+	
+	
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+template <class cell_type, class array_charge, class array_positions, class array_forces>
+void interaction_energy_periodic(int periodicity, const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 																 double & energy, array_forces & forces){
+
+	assert(periodicity == 2 or periodicity == 3);
+	
 	using math::vector3;
 
 	const double alpha = 0.21;
@@ -205,7 +333,7 @@ void interaction_energy_periodic(const int natoms, const cell_type & cell, const
 			}
 		}
 	}
-
+	
 	double eself = 0.0;
 
 	// self-interaction
@@ -216,20 +344,26 @@ void interaction_energy_periodic(const int natoms, const cell_type & cell, const
 		total_charge += zi;
 		eself -= alpha*zi*zi/sqrt(M_PI);
 	}
-	
-	double efs;
-	ewald_fourier_3d(natoms, cell, charge, total_charge, positions, alpha, efs, forces);
 
-	// Previously unaccounted G = 0 term from pseudopotentials. 
-	// See J. Ihm, A. Zunger, M.L. Cohen, J. Phys. C 12, 4409 (1979)
+	double efs;
+	if(cell.periodicity() == 3){
+		ewald_fourier_3d(natoms, cell, charge, total_charge, positions, alpha, efs, forces);
+	} else 	if(cell.periodicity() == 2){
+		ewald_fourier_2d(natoms, cell, charge, total_charge, positions, alpha, efs, forces);
+	}
+
 	double epseudo = 0.0;
-	for(int iatom = 0; iatom < natoms; iatom++){
-		epseudo += M_PI*charge[iatom]*pow(sep.sigma()*sqrt(2.0), 2)/cell.volume()*total_charge;
+	if(cell.periodicity() == 3){
+		// Previously unaccounted G = 0 term from pseudopotentials. 
+		// See J. Ihm, A. Zunger, M.L. Cohen, J. Phys. C 12, 4409 (1979)
+		for(int iatom = 0; iatom < natoms; iatom++){
+			epseudo += M_PI*charge[iatom]*pow(sep.sigma()*sqrt(2.0), 2)/cell.volume()*total_charge;
+		}
 	}
 
 	energy = ers + eself + efs + epseudo;
-
 }
+
 }
 }
 
@@ -528,7 +662,86 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 		CHECK(fabs(forces[2][2]) < 1.0e-12);
 		
   }
+
+	SECTION("BN"){
+    
+    auto aa = 2.7401029;
+		auto lx = 3*aa;
+		auto ly = sqrt(3.0)*aa;
+		auto lz = 7.5589045;
+    
+    ions::unit_cell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz), 2);
+
+		const double charge[4] = {3.0, 5.0, 3.0, 5.0};
+
+    std::vector<vector3<double>> positions(4);
+    positions[0] = vector3<double>(0.0,        0.0,    0.0);
+    positions[1] = vector3<double>(2.0/3.0*lx, 0.0,    0.0);
+		positions[2] = vector3<double>(0.5*lx,     0.5*ly, 0.0);
+		positions[3] = vector3<double>(1.0/6.0*lx, 0.5*ly, 0.0);
+    
+    double energy;
+    std::vector<vector3<double>> forces(4);
+
+    ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
+
+		//these numbers come from Octopus
+    CHECK(energy == -39.9332202862_a); 
+
+		CHECK(fabs(forces[0][0]) < 1.0e-12);
+		CHECK(fabs(forces[0][1]) < 1.0e-12);
+		CHECK(fabs(forces[0][2]) < 1.0e-12);
+		CHECK(fabs(forces[1][0]) < 1.0e-12);
+		CHECK(fabs(forces[1][1]) < 1.0e-12);	
+		CHECK(fabs(forces[1][2]) < 1.0e-12);
+		CHECK(fabs(forces[2][0]) < 1.0e-12);
+		CHECK(fabs(forces[2][1]) < 1.0e-12);	
+		CHECK(fabs(forces[2][2]) < 1.0e-12);
+		CHECK(fabs(forces[3][0]) < 1.0e-12);
+		CHECK(fabs(forces[3][1]) < 1.0e-12);	
+		CHECK(fabs(forces[3][2]) < 1.0e-12);
+    
+  }
 	
+	SECTION("BN displaced"){
+    
+    auto aa = 2.7401029;
+		auto lx = 3*aa;
+		auto ly = sqrt(3.0)*aa;
+		auto lz = 7.5589045;
+    
+    ions::unit_cell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz), 2);
+
+		const double charge[4] = {3.0, 5.0, 3.0, 5.0};
+
+    std::vector<vector3<double>> positions(4);
+    positions[0] = vector3<double>(0.0,        0.0,    0.0);
+    positions[1] = vector3<double>(2.0/3.0*lx, 0.0,    -1.0);
+		positions[2] = vector3<double>(0.5*lx,     0.5*ly, 1.0);
+		positions[3] = vector3<double>(1.0/6.0*lx, 0.5*ly, 0.0);
+    
+    double energy;
+    std::vector<vector3<double>> forces(4);
+
+    ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
+
+		//these numbers come from Octopus
+    CHECK(energy == -45.1682138928_a); 
+
+		CHECK(forces[0][0] == -0.33195958936549447_a);
+		CHECK(fabs(forces[0][1]) < 1.0e-12);
+		CHECK(forces[0][2] == 0.69323391694246583_a);
+		CHECK(forces[1][0] == -0.57710256739291033_a);
+		CHECK(fabs(forces[1][1]) < 1.0e-12);	
+		CHECK(forces[1][2] == -5.0157974583153031_a);
+		CHECK(forces[2][0] == 0.57710256739291232_a);
+		CHECK(fabs(forces[2][1]) < 1.0e-12);	
+		CHECK(forces[2][2] == 4.0937958343994687_a);
+		CHECK(forces[3][0] == 0.33195958936549214_a);
+		CHECK(fabs(forces[3][1]) < 1.0e-12);	
+		CHECK(forces[3][2] == 0.22876770697336701_a);
+		
+  }	
 }
 #endif
 
