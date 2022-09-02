@@ -82,9 +82,7 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 				double ratio = rate/memcpy_rate;
 				
 				std::cout << "constructor rate   = " << rate << " GB/s " << "(ratio = " << ratio << ")" << std::endl;
-#ifndef ENABLE_CUDA //disabled for now because of a bug in multi					
 				CHECK(ratio >= threshold);
-#endif
 			}
 			
 			{ //MULTI ASSIGNMENT
