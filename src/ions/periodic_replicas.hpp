@@ -46,10 +46,10 @@ public:
 
 		replicas_.push_back(position);		
 		
-		math::vector3<int> neigh_max(3);
+		math::vector3<int> neigh_max{0, 0, 0};
 		//we should use floor here, but since we check later, round is more reliable
-		for(int idir = 0; idir < 3; idir++) neigh_max[idir] = round(range/sqrt(norm(cell[idir]))); 
-      
+		for(int idir = 0; idir < cell.periodicity(); idir++) neigh_max[idir] = round(range/sqrt(norm(cell[idir])));
+		
 		for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
 			for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
 				for(int iz = -neigh_max[2]; iz <= neigh_max[2]; iz++){
@@ -226,7 +226,53 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
       CHECK(rep[6][2] == -5.0_a);
 
     }
-		
+
+		SECTION("Periodicity 2"){
+
+			ions::unit_cell cell2(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0), 2);
+
+			CHECK(cell2.periodicity() == 2);
+			
+			ions::periodic_replicas rep(cell2, vector3<double>(5.0, 5.0, 5.0), 11.0);
+      
+      CHECK(rep.size() == 5);
+
+      CHECK(rep[0][0] == -5.0_a);
+      CHECK(rep[0][1] == -5.0_a);
+      CHECK(rep[0][2] == -5.0_a);
+			
+      CHECK(rep[1][0] == -15.0_a);
+      CHECK(rep[1][1] == -5.0_a);
+      CHECK(rep[1][2] == -5.0_a);
+      
+      CHECK(rep[2][0] == -5.0_a);
+      CHECK(rep[2][1] == -15.0_a);
+      CHECK(rep[2][2] == -5.0_a);
+      
+      CHECK(rep[3][0] == -5.0_a);
+      CHECK(rep[3][1] ==  5.0_a);
+      CHECK(rep[3][2] == -5.0_a);
+
+      CHECK(rep[4][0] ==  5.0_a);
+      CHECK(rep[4][1] == -5.0_a);
+      CHECK(rep[4][2] == -5.0_a);
+
+    }
+
+		SECTION("Periodicity 0"){
+
+			ions::unit_cell cell0(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0), 0);
+
+			CHECK(cell0.periodicity() == 0);
+			
+			ions::periodic_replicas rep(cell0, vector3<double>(5.0, 5.0, 5.0), 11.0);
+      
+      CHECK(rep.size() == 1);
+
+      CHECK(rep[0][0] == -5.0_a);
+      CHECK(rep[0][1] == -5.0_a);
+      CHECK(rep[0][2] == -5.0_a);
+    }
   }
 
 }
