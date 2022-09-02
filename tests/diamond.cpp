@@ -53,28 +53,56 @@ int main(int argc, char ** argv){
 	
 	conf.extra_states = 3;
 
-	systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({1, 1, 1}, false));
+	{
+		systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({1, 1, 1}, false));
+		
+		ground_state::initial_guess(ions, electrons);
+		
+		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
+		
+		energy_match.check("total energy",        result.energy.total(),         -10.949196617732);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),        11.411454690719);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,       0.795474829167);
+		energy_match.check("Hartree energy",      result.energy.hartree,           1.473883973621);
+		energy_match.check("external energy",     result.energy.external,         -7.034444637769);
+		energy_match.check("non-local energy",    result.energy.nonlocal,         -1.496762367780);
+		energy_match.check("XC energy",           result.energy.xc,               -4.568604147920);
+		energy_match.check("XC density integral", result.energy.nvxc,             -5.032540803244);
+		energy_match.check("ion-ion energy",      result.energy.ion,             -10.734724128603);
+		
+		electrons.save("diamond_restart");
+		
+		auto ked = observables::kinetic_energy_density(electrons);
+		
+		energy_match.check("kinetic energy", operations::integral(ked), 11.411455188639);
+	}
 
-	ground_state::initial_guess(ions, electrons);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
+	{
+		systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
+		
+		ground_state::initial_guess(ions, electrons);
+		
+		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
+		
+		energy_match.check("total energy",        result.energy.total(),         -12.041109839377);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.512710905972);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -0.761518169623);
+		energy_match.check("Hartree energy",      result.energy.hartree,           0.974796551487);
+		energy_match.check("external energy",     result.energy.external,         -5.856090421562);
+		energy_match.check("non-local energy",    result.energy.nonlocal,         -0.592990139256);
+		energy_match.check("XC energy",           result.energy.xc,               -4.344812607415);
+		energy_match.check("XC density integral", result.energy.nvxc,             -4.774741617751);
+		energy_match.check("ion-ion energy",      result.energy.ion,             -10.734724128603);
+		
+		electrons.save("diamond_restart");
+		
+		auto ked = observables::kinetic_energy_density(electrons);
+		
+		energy_match.check("kinetic energy", operations::integral(ked), 8.512710900191);
+	}
 
-	energy_match.check("total energy",        result.energy.total(),         -10.949196617732);
-	energy_match.check("kinetic energy",      result.energy.kinetic(),        11.411454690719);
-	energy_match.check("eigenvalues",         result.energy.eigenvalues,       0.795474829167);
-	energy_match.check("Hartree energy",      result.energy.hartree,           1.473883973621);
-	energy_match.check("external energy",     result.energy.external,         -7.034444637769);
-	energy_match.check("non-local energy",    result.energy.nonlocal,         -1.496762367780);
-	energy_match.check("XC energy",           result.energy.xc,               -4.568604147920);
-	energy_match.check("XC density integral", result.energy.nvxc,             -5.032540803244);
-	energy_match.check("ion-ion energy",      result.energy.ion,             -10.734724128603);
-	
-	electrons.save("diamond_restart");
-
-	auto ked = observables::kinetic_energy_density(electrons);
-
-	//	energy_match.check("kinetic energy", operations::integral(ked), 14.428064504524);
-	
+		
 	fftw_cleanup();
 	
 	return energy_match.fail();
