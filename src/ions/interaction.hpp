@@ -109,6 +109,62 @@ void interaction_energy_finite(const int natoms, const cell_type & cell, const a
 }
 
 template <class cell_type, class array_charge, class array_positions, class array_forces>
+void ewald_fourier_3d(const int natoms, const cell_type & cell, const array_charge & charge, double total_charge, const array_positions & positions, double alpha,
+						 double & efs, array_forces & forces){
+	using math::vector3;
+ 
+	// G = 0 energy
+	efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
+
+	double gcut = std::numeric_limits<double>::max();
+	for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.reciprocal(idir)));
+	gcut = sqrt(gcut);
+      
+	const int isph = ceil(9.5*alpha/gcut);
+
+	std::vector<std::complex<double> > phase(natoms);
+    
+	for(int ix = -isph; ix <= isph; ix++){
+		for(int iy = -isph; iy <= isph; iy++){
+			for(int iz = -isph; iz <= isph; iz++){
+					
+				const int ss = ix*ix + iy*iy + iz*iz;
+					
+				if(ss == 0 || ss > isph*isph) continue;
+					
+				vector3<double> gg = ix*cell.reciprocal(0) + iy*cell.reciprocal(1) + iz*cell.reciprocal(2);
+				double gg2 = norm(gg);
+					
+				double exparg = -0.25*gg2/(alpha*alpha);
+					
+				if(exparg < -36.0) continue;
+					
+				double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
+					
+				std::complex<double> sumatoms = 0.0;
+				for(int iatom = 0; iatom < natoms; iatom++){
+					double gx = dot(gg, positions[iatom]);
+					auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
+					phase[iatom] = aa;
+					sumatoms += aa;
+				}
+					
+				efs += factor*std::real(sumatoms*std::conj(sumatoms));
+					
+				for(int iatom = 0; iatom < natoms; iatom++){
+					for(int idir = 0; idir < 3; idir++){
+						auto tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
+						forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
+					}
+				}
+					
+			}
+		}
+	}
+
+}
+
+template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy_periodic(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 																 double & energy, array_forces & forces){
 	using math::vector3;
@@ -160,55 +216,9 @@ void interaction_energy_periodic(const int natoms, const cell_type & cell, const
 		total_charge += zi;
 		eself -= alpha*zi*zi/sqrt(M_PI);
 	}
-
-	// G = 0 energy
-	auto efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
-
-	double gcut = std::numeric_limits<double>::max();
-	for(int idir = 0; idir < 3; idir++) gcut = std::min(gcut, norm(cell.reciprocal(idir)));
-	gcut = sqrt(gcut);
-      
-	const int isph = ceil(9.5*alpha/gcut);
-
-	std::vector<std::complex<double> > phase(natoms);
-    
-	for(int ix = -isph; ix <= isph; ix++){
-		for(int iy = -isph; iy <= isph; iy++){
-			for(int iz = -isph; iz <= isph; iz++){
-					
-				const int ss = ix*ix + iy*iy + iz*iz;
-					
-				if(ss == 0 || ss > isph*isph) continue;
-					
-				vector3<double> gg = ix*cell.reciprocal(0) + iy*cell.reciprocal(1) + iz*cell.reciprocal(2);
-				double gg2 = norm(gg);
-					
-				double exparg = -0.25*gg2/(alpha*alpha);
-					
-				if(exparg < -36.0) continue;
-					
-				double factor = 2.0*M_PI/cell.volume()*exp(exparg)/gg2;
-					
-				std::complex<double> sumatoms = 0.0;
-				for(int iatom = 0; iatom < natoms; iatom++){
-					double gx = dot(gg, positions[iatom]);
-					auto aa = charge[iatom]*std::complex<double>(cos(gx), sin(gx));
-					phase[iatom] = aa;
-					sumatoms += aa;
-				}
-					
-				efs += factor*std::real(sumatoms*std::conj(sumatoms));
-					
-				for(int iatom = 0; iatom < natoms; iatom++){
-					for(int idir = 0; idir < 3; idir++){
-						auto tmp = std::complex<double>(0.0, 1.0)*gg[idir]*phase[iatom];
-						forces[iatom][idir] -= factor*std::real(std::conj(tmp)*sumatoms + tmp*std::conj(sumatoms));
-					}
-				}
-					
-			}
-		}
-	}
+	
+	double efs;
+	ewald_fourier_3d(natoms, cell, charge, total_charge, positions, alpha, efs, forces);
 
 	// Previously unaccounted G = 0 term from pseudopotentials. 
 	// See J. Ihm, A. Zunger, M.L. Cohen, J. Phys. C 12, 4409 (1979)
