@@ -69,7 +69,11 @@ namespace ions {
 		auto enlarge(int factor) const {
 			return unit_cell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodicity_);
 		}
-				
+
+		auto enlarge(math::vector3<int> factor) const {
+			return unit_cell(factor[0]*lattice_[0], factor[1]*lattice_[1], factor[2]*lattice_[2], periodicity_);
+		}
+			
     double volume() const { return volume_; }
 
     template <class output_stream>
