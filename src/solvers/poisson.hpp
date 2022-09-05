@@ -60,7 +60,7 @@ public:
 								 if(point_op.g_is_zero(ix, iy, iz)){
 									 pfs[ix][iy][iz] = complex(0.0, 0.0);
 								 } else {
-									 pfs[ix][iy][iz] = pfs[ix][iy][iz]*(-scal/g2);
+									 pfs[ix][iy][iz] *= -scal/g2;
 								 }
 								 
 							 });
@@ -120,12 +120,12 @@ public:
 								 
 								 // this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
 								 if(point_op.g_is_zero(ix, iy, iz)){
-									 pfs[ix][iy][iz] = pfs[ix][iy][iz]*(-scal)*cutoff_radius*cutoff_radius/2.0;
+									 pfs[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
 									 return;
 								 }
 								 
 								 auto g2 = point_op.g2(ix, iy, iz);
-								 pfs[ix][iy][iz] = pfs[ix][iy][iz]*(-scal)*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
+								 pfs[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
 							 });
 		}
 
@@ -155,12 +155,12 @@ public:
 								 
 								 // this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
 								 if(point_op.g_is_zero(ix, iy, iz)){
-									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= (-scal)*cutoff_radius*cutoff_radius/2.0;
+									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= -scal*cutoff_radius*cutoff_radius/2.0;
 									 return;
 								 }
 								 
 								 auto g2 = point_op.g2(ix, iy, iz);
-								 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= (-scal)*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
+								 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
 							 });
 		}
 
