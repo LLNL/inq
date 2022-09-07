@@ -99,6 +99,97 @@ public:
 		
 		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
+
+
+private:
+
+	auto static poisson_slab_cutoff(math::vector3<double, math::cartesian> gg, double const & rc){
+		auto gpar = hypot(gg[0], gg[1]);
+		auto gz = fabs(gg[2]);
+		
+		if(gpar < 1e-12){
+			return 1.0 - cos(gz*rc) - gz*rc*sin(gz*rc);
+		} else {
+			return 1.0 + exp(-gpar*rc)*(gz*sin(gz*rc)/gpar - cos(gz*rc));
+		}
+	}
+	
+public:
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////	
+	
+	basis::field<basis::real_space, complex> poisson_solve_slab(basis::field<basis::real_space, complex> const & density) const {
+
+		CALI_CXX_MARK_FUNCTION;
+
+		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge({1, 1, 2}));
+		auto potential_fs = operations::space::to_fourier(potential2x);
+			
+		auto fourier_basis = potential_fs.basis();
+
+		const auto scal = (-4.0*M_PI)/fourier_basis.size();
+		const auto cutoff_radius = density.basis().rlength()[2];
+
+		{
+			CALI_CXX_MARK_SCOPE("poisson_solve_kernel_slab");
+
+			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
+							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 
+								 if(point_op.g_is_zero(ix, iy, iz)){
+									 pfs[ix][iy][iz] *= scal*cutoff_radius*cutoff_radius/2.0;
+									 return;
+								 }
+
+								 auto gg = point_op.gvector_cartesian(ix, iy, iz);
+								 auto g2 = point_op.g2(ix, iy, iz);
+								 pfs[ix][iy][iz] *= -scal*poisson_slab_cutoff(gg, cutoff_radius)/g2;
+							 });
+		}
+
+		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
+		auto potential = operations::transfer::shrink(potential2x, density.basis());
+
+		return potential;
+	}
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	void poisson_solve_in_place_slab(basis::field_set<basis::real_space, complex> & density) const {
+
+		CALI_CXX_MARK_FUNCTION;
+
+		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge({1, 1, 2}));
+		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
+			
+		auto fourier_basis = potential_fs.basis();
+
+		const auto scal = (-4.0*M_PI)/fourier_basis.size();
+		const auto cutoff_radius = density.basis().rlength()[2];
+
+		{
+			CALI_CXX_MARK_SCOPE("poisson_in_place_kernel_slab");
+
+			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
+							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), nst = density.local_set_size(), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 
+								 if(point_op.g_is_zero(ix, iy, iz)){
+									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= scal*cutoff_radius*cutoff_radius/2.0;
+									 return;
+								 }
+
+								 auto gg = point_op.gvector_cartesian(ix, iy, iz);								 
+								 auto g2 = point_op.g2(ix, iy, iz);
+								 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= -scal*poisson_slab_cutoff(gg, cutoff_radius)/g2;
+							 });
+		}
+
+		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+		density = operations::transfer::shrink(potential2x, density.basis());
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	basis::field<basis::real_space, complex> poisson_solve_finite(basis::field<basis::real_space, complex> const & density) const {
 
@@ -174,6 +265,8 @@ public:
 		
 		if(density.basis().periodicity() == 3){
 			return poisson_solve_periodic(density);
+		} else if(density.basis().periodicity() == 2){
+			return poisson_solve_slab(density);
 		} else {
 			return poisson_solve_finite(density);
 		}
@@ -185,6 +278,8 @@ public:
 		
 		if(density.basis().periodicity() == 3){
 			poisson_solve_in_place_periodic(density);
+		} else if(density.basis().periodicity() == 2){
+			return poisson_solve_in_place_slab(density);
 		} else {
 			poisson_solve_in_place_finite(density);
 		}
@@ -268,7 +363,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 		
 			auto potential = psolver(density);
 			psolver.in_place(density_set);
-		
+			
 			double sum[2] = {0.0, 0.0};
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -470,6 +565,62 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 
 	}
 
+	SECTION("Point charge 2d periodic"){
+		
+		systems::box box = systems::box::orthorhombic(8.0_b, 8.0_b, 20.0_b).spacing(0.09_b).periodicity(2);
+		basis::real_space rs(box, comm);
+		
+		solvers::poisson psolver;
+		
+		CHECK(rs.periodicity() == 2);
+		
+		CHECK(rs.sizes()[0] == 89);
+		CHECK(rs.sizes()[1] == 89);
+		CHECK(rs.sizes()[2] == 222);
+		
+		
+		int const nst = 3;
+		
+		field<real_space, complex> density(rs);
+		field_set<real_space, complex> density_set(rs, nst);
+		
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					density.cubic()[ix][iy][iz] = 0.0;
+					for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = 0.0;
+					if(rs.point_op().r2(ix, iy, iz) < 1e-10) {
+						density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
+						for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = -(1.0 + ist)/rs.volume_element();
+					}
+				}
+			}
+		}
+		
+		CHECK(real(operations::integral(density)) == -1.0_a);
+		
+		auto potential = psolver(density);
+		psolver.in_place(density_set);
+
+		CHECK(real(potential.cubic()[0][0][0]) == -26.6681663255_a);
+		CHECK(real(potential.cubic()[0][0][10]) == -0.6028904821_a);
+		CHECK(real(potential.cubic()[0][0][0] - potential.cubic()[0][0][10]) == -26.0652758434_a);
+		CHECK(real(potential.cubic()[10][0][0]) == -0.6164288566_a);
+		CHECK(real(potential.cubic()[0][0][0] - potential.cubic()[10][0][0]) == -26.0517374689_a);
+		CHECK(real(potential.cubic()[0][10][0]) == -0.6164288566_a);
+		CHECK(real(potential.cubic()[0][0][0] - potential.cubic()[0][10][0]) == -26.0517374689_a);
+
+		for(int ist = 0; ist < nst; ist++){
+			CHECK(real(density_set.cubic()[0][0][0][ist])/(1.0 + ist) == -26.6681663255_a);
+			CHECK(real(density_set.cubic()[0][0][10][ist])/(1.0 + ist) == -0.6028904821_a);
+			CHECK(real(density_set.cubic()[0][0][0][ist] - density_set.cubic()[0][0][10][ist])/(1.0 + ist) == -26.0652758434_a);
+			CHECK(real(density_set.cubic()[10][0][0][ist])/(1.0 + ist) == -0.6164288566_a);
+			CHECK(real(density_set.cubic()[0][0][0][ist] - density_set.cubic()[10][0][0][ist])/(1.0 + ist) == -26.0517374689_a);
+			CHECK(real(density_set.cubic()[0][10][0][ist])/(1.0 + ist) == -0.6164288566_a);
+			CHECK(real(density_set.cubic()[0][0][0][ist] - density_set.cubic()[0][10][0][ist])/(1.0 + ist) == -26.0517374689_a);
+		}
+		
+	}
 }
 
 
