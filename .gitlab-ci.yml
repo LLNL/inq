@@ -600,18 +600,6 @@ intel-mpich-3p:
       - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 7200; cd ../
       - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 7200; cd ../
 
-intel-mpich-4p:
-    stage: test
-    needs: ["intel-mpich"]
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libboost-serialization-dev libboost-filesystem-dev bzip2 python2
-      - tar -xvzf intel-mpich-build.tar.gz
-      - cd build
-      - cmake --build . --target install/fast
-      - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 7200; cd ../
-      - cd tests/; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 7200; cd ../
-
 #########################################################################################################################
 # NVIDIA MPICH FAST
 #########################################################################################################################

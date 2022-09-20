@@ -70,6 +70,8 @@ class environment {
 		~environment(){
 
 			CALI_MARK_END("inq_environment");
+
+			base_comm_.barrier();
 			
 			if(not threaded() and base_comm_.rank() == 0){
 				calimgr_.flush(); // write performance results
