@@ -57,7 +57,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(env.par(), ions, box, conf);
 
-	auto result = real_time::propagate<>(ions, electrons, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055_atomictime));
+	real_time::propagate<>(ions, electrons, [](auto){}, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055_atomictime));
 	
 	electrons.load("silicon_restart");
 

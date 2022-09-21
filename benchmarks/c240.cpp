@@ -75,7 +75,7 @@ int main(int argc, char ** argv){
 	}
 	
 	if(not groundstate_only){
-		auto propagation = real_time::propagate(ions, electrons, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
+		auto propagation = real_time::propagate(ions, electrons, [](auto){}, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
 	}
 	
 }

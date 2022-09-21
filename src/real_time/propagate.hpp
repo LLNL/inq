@@ -23,9 +23,53 @@
 namespace inq {
 namespace real_time {
 
-template<typename IonSubPropagator = ions::propagator::fixed>
-real_time::result propagate(systems::ions & ions, systems::electrons & electrons, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
+template <class ForcesType>
+class real_time_data {
+	int iter_;
+	double time_;
+	systems::ions & ions_;
+	systems::electrons & electrons_;
+	hamiltonian::energy & energy_;
+	ForcesType & forces_;
 
+public:
+
+	real_time_data(int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces)
+		:iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces){
+	}
+
+	auto iter() const {
+		return iter_;
+	}
+	
+	auto time() const {
+		return time_;
+	}
+	
+	auto coordinates(int iatom) const {
+		return ions_.geo().coordinates()[iatom];
+	}
+	
+	auto velocities(int iatom) const {
+		return ions_.geo().velocities()[iatom];
+	}
+
+	auto forces(int iatom) const {
+		return forces_[iatom];
+	}
+
+	auto energy() const {
+		return energy_.total();
+	}
+
+	auto dipole() const {
+		return observables::dipole(ions_, electrons_);
+	}
+	
+};
+
+template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed>
+real_time::result propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
 		CALI_CXX_MARK_FUNCTION;
 		
 		const double dt = options.dt();
@@ -56,7 +100,8 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 		res.save_iteration_results(0.0, ions, electrons, energy, forces);
-
+		func(real_time_data<decltype(forces)>{0, 0.0, ions, electrons, energy, forces});
+		
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
@@ -85,6 +130,8 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 
 			res.save_iteration_results((istep + 1.0)*dt, ions, electrons, energy, forces);
 
+			func(real_time_data<decltype(forces)>{istep, (istep + 1.0)*dt, ions, electrons, energy, forces});
+			
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
 			if(electrons.full_comm_.root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f  wtime = %9.3f\n", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
