@@ -15,7 +15,6 @@
 #include <systems/electrons.hpp>
 #include <real_time/crank_nicolson.hpp>
 #include <real_time/etrs.hpp>
-#include <real_time/result.hpp>
 #include <utils/profiling.hpp>
 
 #include <chrono>
@@ -69,13 +68,11 @@ public:
 };
 
 template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed>
-real_time::result propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
+void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
 		CALI_CXX_MARK_FUNCTION;
 		
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
-
-		result res;
 
 		electrons.density_ = density::calculate(electrons);
 
@@ -99,7 +96,6 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 		
 		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
-		res.save_iteration_results(0.0, ions, electrons, energy, forces);
 		func(real_time_data<decltype(forces)>{0, 0.0, ions, electrons, energy, forces});
 		
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
@@ -128,8 +124,6 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
 
-			res.save_iteration_results((istep + 1.0)*dt, ions, electrons, energy, forces);
-
 			func(real_time_data<decltype(forces)>{istep, (istep + 1.0)*dt, ions, electrons, energy, forces});
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
@@ -138,8 +132,6 @@ real_time::result propagate(systems::ions & ions, systems::electrons & electrons
 
 			iter_start_time = new_time;
 		}
-
-		return res;
 	}
 }
 }

@@ -66,12 +66,12 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy());
 		};
 		
-		auto result = real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 		
-		match.check("ETRS: energy step   0", result.energy[0],   -17.604152928271);
-		match.check("ETRS: energy step  10", result.energy[10],  -17.604152928272);
-		match.check("ETRS: energy step  20", result.energy[20],  -17.604152928272);
-		match.check("ETRS: energy step  30", result.energy[30],  -17.604152928271);
+		match.check("ETRS: energy step   0", energy[0],   -17.604152928271);
+		match.check("ETRS: energy step  10", energy[10],  -17.604152928272);
+		match.check("ETRS: energy step  20", energy[20],  -17.604152928272);
+		match.check("ETRS: energy step  30", energy[30],  -17.604152928271);
 	}
 
 	// Propagation without perturbation
@@ -83,12 +83,12 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy());
 		};
 		
-		auto result = real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
 		
-		match.check("CN: energy step   0", result.energy[0],   -17.604152928271);
-		match.check("CN: energy step  10", result.energy[10],  -17.604152928278);
-		match.check("CN: energy step  20", result.energy[20],  -17.604152928294);
-		match.check("CN: energy step  30", result.energy[30],  -17.604152928302);
+		match.check("CN: energy step   0", energy[0],   -17.604152928271);
+		match.check("CN: energy step  10", energy[10],  -17.604152928278);
+		match.check("CN: energy step  20", energy[20],  -17.604152928294);
+		match.check("CN: energy step  30", energy[30],  -17.604152928302);
 	}
 	
 	{
