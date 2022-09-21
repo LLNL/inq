@@ -50,12 +50,14 @@ int main(int argc, char ** argv){
 	
 	electrons.load("al4h1_restart");
 
-	auto result = real_time::propagate<>(ions, electrons, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+	std::vector<double> energy;
+	
+	real_time::propagate<>(ions, electrons, [&](auto data){energy.push_back(data.energy());}, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
 
-	energy_match.check("energy step   0", result.energy[0],   -9.798687545590);
-	energy_match.check("energy step  10", result.energy[10],  -9.798687882908);
-	energy_match.check("energy step  20", result.energy[20],  -9.798688620193);
-	energy_match.check("energy step  30", result.energy[30],  -9.798688818773);
+	energy_match.check("energy step   0", energy[0],   -9.798687545590);
+	energy_match.check("energy step  10", energy[10],  -9.798687882908);
+	energy_match.check("energy step  20", energy[20],  -9.798688620193);
+	energy_match.check("energy step  30", energy[30],  -9.798688818773);
 	
 	return energy_match.fail();
 	

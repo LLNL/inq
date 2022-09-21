@@ -110,7 +110,7 @@ int main(int argc, char ** argv){
 	}
 
 	if(not groundstate_only){
-		auto propagation = real_time::propagate(ions, electrons, functional, input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
+		real_time::propagate(ions, electrons, [](auto){}, functional, input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
 	}
 	
 }
