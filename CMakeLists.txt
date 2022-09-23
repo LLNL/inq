@@ -186,6 +186,8 @@ endif()
 include_directories(Boost::serialization Boost::filesystem Boost::system) #${Boost_INCLUDE_DIRS})
 link_libraries(Boost::serialization Boost::filesystem Boost::system)
 
+find_package(HDF5 REQUIRED COMPONENTS CXX HL)
+
 # Required for inq_config.h
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
