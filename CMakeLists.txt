@@ -186,7 +186,11 @@ endif()
 include_directories(Boost::serialization Boost::filesystem Boost::system) #${Boost_INCLUDE_DIRS})
 link_libraries(Boost::serialization Boost::filesystem Boost::system)
 
-find_package(HDF5 REQUIRED COMPONENTS CXX HL)
+#HDF5
+set(HDF5_PREFER_PARALLEL true)
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+include_directories(${HDF5_CXX_INCLUDE_DIRS})
+link_libraries(hdf5::hdf5_hl_cpp hdf5::hdf5_hl hdf5::hdf5)
 
 # Required for inq_config.h
 include_directories(${PROJECT_BINARY_DIR})
