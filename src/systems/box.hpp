@@ -71,7 +71,14 @@ public:
 		periodicity_ = 0;
 		return *this;
 	}
-		
+
+	auto & periodicity(int const pval) {
+		if(pval > 3 or pval < 0) throw std::runtime_error("inq error: the requested periodicity (" + std::to_string(pval) + ") does not make sense.");
+		if(pval == 1) throw std::runtime_error("inq error: periodicity 1 is not implemented yet.");
+		periodicity_ = pval;
+		return *this;
+	}
+	
 	auto & operator[](const int ii) const {
 		return lattice_vectors_[ii].value();
 	}
