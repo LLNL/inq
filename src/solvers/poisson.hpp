@@ -103,7 +103,7 @@ public:
 
 private:
 
-	auto static poisson_slab_cutoff(math::vector3<double, math::cartesian> gg, double const & rc){
+	GPU_FUNCTION auto static poisson_slab_cutoff(math::vector3<double, math::cartesian> gg, double const & rc){
 		auto gpar = hypot(gg[0], gg[1]);
 		auto gz = fabs(gg[2]);
 		
