@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
   auto aa = sqrt(3)*dcc;
   auto lz = 10.0_b;
 
-	auto box = systems::box::lattice(aa*math::vector3{1.0, 0.0, 0.0}, aa*math::vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).spacing(aa/12.0).periodicity(2);
+	auto box = systems::box::lattice(aa*math::vector3{1.0, 0.0, 0.0}, aa*math::vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).spacing(aa/15.0).periodicity(2);
 	
 	systems::ions ions(box);
 	
@@ -62,14 +62,14 @@ int main(int argc, char ** argv){
 		
 		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
 		
-		energy_match.check("total energy",        result.energy.total(),         -11.792793695508);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),         9.515237663983);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -3.541096022050);
-		energy_match.check("Hartree energy",      result.energy.hartree,         -11.145827958222);
-		energy_match.check("external energy",     result.energy.external,         15.137337350821);
-		energy_match.check("non-local energy",    result.energy.nonlocal,         -1.110883371446);
-		energy_match.check("XC energy",           result.energy.xc,               -4.374940915610);
-		energy_match.check("XC density integral", result.energy.nvxc,             -4.791131748964);
+		energy_match.check("total energy",        result.energy.total(),         -11.794106663282);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),         9.555702987386);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -3.535844485436);
+		energy_match.check("Hartree energy",      result.energy.hartree,         -11.139895259643);
+		energy_match.check("external energy",     result.energy.external,         15.119948124584);
+		energy_match.check("non-local energy",    result.energy.nonlocal,         -1.139268347279);
+		energy_match.check("XC energy",           result.energy.xc,               -4.376877703296);
+		energy_match.check("XC density integral", result.energy.nvxc,             -4.792436730841);
 		energy_match.check("ion-ion energy",      result.energy.ion,             -19.813716465033);
 		
 	}
