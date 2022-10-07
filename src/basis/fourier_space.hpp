@@ -83,7 +83,11 @@ namespace basis {
 				
 				return gvector(ixg, iyg, izg);
 			}
-					
+
+			GPU_FUNCTION auto gvector_cartesian(int ix, int iy, int iz) const {
+				return metric_.to_cartesian(gvector(ix, iy, iz));
+			}
+			
 			GPU_FUNCTION auto outside_sphere(int ix, int iy, int iz) const {
 				auto gvec = gvector(ix, iy, iz);
 				gvec[0] /= ng_[0]/2.0;

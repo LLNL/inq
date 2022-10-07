@@ -741,7 +741,66 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 		CHECK(fabs(forces[3][1]) < 1.0e-12);	
 		CHECK(forces[3][2] == 0.22876770697336701_a);
 		
+  }
+
+	SECTION("Graphene 3D periodicity"){
+    
+		auto dcc = 2.6834111;
+		auto aa = sqrt(3)*dcc;
+		auto lz = 10.0;
+    
+    ions::unit_cell cell(aa*vector3<double>(1.0, 0.0, 0.0), aa*vector3<double>(-1.0/2.0, sqrt(3.0)/2.0, 0.0), vector3<double>(0.0, 0.0, lz), 3);
+
+		const double charge[2] = {4.0, 4.0};
+
+    std::vector<vector3<double>> positions(2);
+    positions[0] = vector3<double>(0.0, 0.0, 0.0);
+    positions[1] = vector3<double>(0.0, dcc, 0.0);
+    
+    double energy;
+    std::vector<vector3<double>> forces(2);
+
+    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+
+		//these numbers come from Octopus
+    CHECK(energy == -1.0617337162_a);
+		
+		CHECK(fabs(forces[0][0]) < 1.0e-12);
+		CHECK(fabs(forces[0][1]) < 1.0e-12);
+		CHECK(fabs(forces[0][2]) < 1.0e-12);
+		CHECK(fabs(forces[1][0]) < 1.0e-12);
+		CHECK(fabs(forces[1][1]) < 1.0e-12);
+  }
+	
+	SECTION("Graphene 2D periodicity"){
+    
+		auto dcc = 2.6834111;
+		auto aa = sqrt(3)*dcc;
+		auto lz = 10.0;
+    
+    ions::unit_cell cell(aa*vector3<double>(1.0, 0.0, 0.0), aa*vector3<double>(-1.0/2.0, sqrt(3.0)/2.0, 0.0), vector3<double>(0.0, 0.0, lz), 2);
+
+		const double charge[2] = {4.0, 4.0};
+
+    std::vector<vector3<double>> positions(2);
+    positions[0] = vector3<double>(0.0, 0.0, 0.0);
+    positions[1] = vector3<double>(0.0, dcc, 0.0);
+    
+    double energy;
+    std::vector<vector3<double>> forces(2);
+
+    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+
+		//these numbers come from Octopus
+    CHECK(energy == -19.8137164427_a);
+		
+		CHECK(fabs(forces[0][0]) < 1.0e-12);
+		CHECK(fabs(forces[0][1]) < 1.0e-12);
+		CHECK(fabs(forces[0][2]) < 1.0e-12);
+		CHECK(fabs(forces[1][0]) < 1.0e-12);
+		CHECK(fabs(forces[1][1]) < 1.0e-12);
   }	
+	
 }
 #endif
 

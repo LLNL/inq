@@ -72,7 +72,7 @@ void prefetch(ArrayType const &
 #endif
 							){
 #ifdef ENABLE_CUDA
-	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), 0);
+	//	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), 0);
 #endif
 }
 
