@@ -11,6 +11,7 @@
 #include <hamiltonian/forces.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <observables/dipole.hpp>
+#include <perturbations/none.hpp>
 #include <ions/propagator.hpp>
 #include <systems/electrons.hpp>
 #include <real_time/crank_nicolson.hpp>
@@ -67,8 +68,8 @@ public:
 	
 };
 
-template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed>
-void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}){
+template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed, typename Perturbation = perturbations::none>
+void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}, Perturbation const & pert = {}){
 		CALI_CXX_MARK_FUNCTION;
 		
 		const double dt = options.dt();
