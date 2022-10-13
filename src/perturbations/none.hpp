@@ -33,11 +33,11 @@ class none {
 
 public:
 
-	auto has_electric_field() const {
+	auto has_uniform_electric_field() const {
 		return false;
 	}
 
-	auto electric_field(double time) const {
+	auto uniform_electric_field(double time) const {
 		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
 	}
 
@@ -62,7 +62,8 @@ using namespace Catch::literals;
 using namespace magnitude;
 
 TEST_CASE("perturbations::none", "[perturbations::none]") {
-	perturbations::none las;
+	perturbations::none nop;
+	CHECK(not nop.has_uniform_electric_field());
 }
 
 #endif

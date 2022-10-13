@@ -41,11 +41,11 @@ public:
 	{
 	}
 
-	auto has_electric_field() const {
+	auto has_uniform_electric_field() const {
 		return true;
 	}
 
-	auto electric_field(double time) const {
+	auto uniform_electric_field(double time) const {
 		return polarization_*cos(time*frequency_);
 	}
 
@@ -84,7 +84,9 @@ TEST_CASE("perturbations::laser", "[perturbations::laser]") {
 
 	perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV);
 
-	las.print_info(std::cout);	
+	las.print_info(std::cout);
+
+	CHECK(las.has_uniform_electric_field());
 }
 
 #endif
