@@ -23,7 +23,7 @@
 namespace inq {
 namespace real_time {
 
-template <class ForcesType>
+template <class ForcesType, class Perturbation>
 class real_time_data {
 	int iter_;
 	double time_;
@@ -31,11 +31,12 @@ class real_time_data {
 	systems::electrons & electrons_;
 	hamiltonian::energy & energy_;
 	ForcesType & forces_;
-
+	Perturbation const & pert_;
+	
 public:
 
-	real_time_data(int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces)
-		:iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces){
+	real_time_data(int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces, Perturbation const & pert)
+		:iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces), pert_(pert){
 	}
 
 	auto iter() const {
@@ -64,6 +65,10 @@ public:
 
 	auto dipole() const {
 		return observables::dipole(ions_, electrons_);
+	}
+
+	auto laser_field() const {
+		return pert_.uniform_electric_field(time_);
 	}
 	
 };
@@ -97,7 +102,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		
 		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
-		func(real_time_data<decltype(forces)>{0, 0.0, ions, electrons, energy, forces});
+		func(real_time_data{0, 0.0, ions, electrons, energy, forces, pert});
 		
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
@@ -125,7 +130,8 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
 
-			func(real_time_data<decltype(forces)>{istep, (istep + 1.0)*dt, ions, electrons, energy, forces});
+			//func(real_time_data<decltype(forces)>{istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert_});
+			func(real_time_data{istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert});			
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
