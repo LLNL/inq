@@ -32,7 +32,7 @@ namespace inq {
 namespace real_time {
 
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
-void etrs(double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
+void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 	
 	electrons.density_ = 0.0;
 	int iphi = 0;
@@ -59,7 +59,7 @@ void etrs(double const dt, systems::ions & ions, systems::electrons & electrons,
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 	}
 
-	ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+	ham.scalar_potential = sc.ks_potential(electrons.density_, energy, time);
 
 	//propagate the other half step with H(t + dt)
 	for(auto & phi : electrons.lot()){

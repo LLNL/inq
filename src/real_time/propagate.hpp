@@ -77,14 +77,14 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 		electrons.density_ = density::calculate(electrons);
 
-		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
+		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, pert);
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
 																											 electrons.states_.num_states(), sc.exx_coefficient(), electrons.states_basis_comm_);
 		hamiltonian::energy energy;
 		
 		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
 		
-		ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+		ham.scalar_potential = sc.ks_potential(electrons.density_, energy, 0.0);
 
 		auto ecalc = hamiltonian::calculate_energy(ham, electrons);
 		energy.eigenvalues = ecalc.sum_eigenvalues_;
@@ -106,16 +106,16 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			//propagate using the chosen method
 			switch(options.propagator()){
 			case input::rt::electron_propagator::ETRS :
-				etrs(dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
+				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
 				break;
 			case input::rt::electron_propagator::CRANK_NICOLSON :
-				crank_nicolson(dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
+				crank_nicolson(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
 				break;
 			}
 			
 			//calculate the new density, energy, forces
 			electrons.density_ = density::calculate(electrons);
-			ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+			ham.scalar_potential = sc.ks_potential(electrons.density_, energy, (istep + 1.0)*dt);
 
 			auto ecalc = hamiltonian::calculate_energy(ham, electrons);
 			energy.eigenvalues = ecalc.sum_eigenvalues_;

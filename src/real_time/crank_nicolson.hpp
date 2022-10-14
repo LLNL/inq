@@ -52,7 +52,7 @@ struct crank_nicolson_op {
 
 
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
-void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
+void crank_nicolson(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 
 	crank_nicolson_op<decltype(ham)> op{ham, complex{0.0, 0.5*dt}};
 	crank_nicolson_op<decltype(ham)> op_rhs{ham, complex{0.0, -0.5*dt}};
@@ -72,7 +72,7 @@ void crank_nicolson(double const dt, systems::ions & ions, systems::electrons & 
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 	}
 
-	ham.scalar_potential = sc.ks_potential(electrons.density_, energy);
+	ham.scalar_potential = sc.ks_potential(electrons.density_, energy, time);
 
 	math::array<bool, 1> conv(electrons.lot_size());
 	
