@@ -46,7 +46,7 @@ public:
 	}
 
 	auto uniform_electric_field(double time) const {
-		return polarization_*cos(time*frequency_);
+		return polarization_*sin(time*frequency_);
 	}
 
 	template <typename OutputStream>
