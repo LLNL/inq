@@ -28,24 +28,26 @@
 #include <input/interaction.hpp>
 #include <hamiltonian/xc_functional.hpp>
 #include <hamiltonian/atomic_potential.hpp>
-
+#include <perturbations/none.hpp>
 #include <utils/profiling.hpp>
 
 namespace inq {
 namespace hamiltonian {
 
+template <typename Perturbation = perturbations::none>
 	class self_consistency {
 
 	public:
 
-		self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis):
+	self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis, Perturbation const & pert = {}):
 			interaction_(interaction),
 			exchange_(int(interaction.exchange())),
 			correlation_(int(interaction.correlation())),
 			vion_(density_basis),
 			core_density_(density_basis),
 			potential_basis_(potential_basis),
-			density_basis_(density_basis)
+			density_basis_(density_basis),
+			pert_(pert)
 		{
 		}
 
@@ -56,7 +58,8 @@ namespace hamiltonian {
 			vion_(std::move(old.vion_), new_comm),
 			core_density_(std::move(old.core_density_), new_comm),
 			potential_basis_(std::move(old.potential_basis_), new_comm),
-			density_basis_(std::move(old.density_basis_), new_comm)
+			density_basis_(std::move(old.density_basis_), new_comm),
+			pert_(std::move(old.pert_))
 		{
 		}
 				
@@ -75,7 +78,7 @@ namespace hamiltonian {
 		}
 		
 		template <class field_type, class energy_type>
-		auto ks_potential(const field_type & electronic_density, energy_type & energy) const {
+		field_type ks_potential(const field_type & electronic_density, energy_type & energy, double time = 0.0) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -91,6 +94,16 @@ namespace hamiltonian {
 			//IONIC POTENTIAL
 			vks = vion_;
 
+			//Time-dependent perturbation
+			if(pert_.has_uniform_electric_field()){
+				auto efield = pert_.uniform_electric_field(time);
+				gpu::run(vks.basis().local_sizes()[2], vks.basis().local_sizes()[1], vks.basis().local_sizes()[0],
+								 [point_op = vks.basis().point_op(), efield, vk = begin(vks.cubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
+									 auto rr = point_op.rvector_cartesian(ix, iy, iz);
+									 vk[ix][iy][iz] += -dot(efield, rr);
+								 });
+			}
+			
 			// Hartree
 			if(interaction_.hartree_potential()){
 				auto vhartree = poisson_solver(electronic_density);
@@ -147,6 +160,7 @@ namespace hamiltonian {
 		basis::field<basis::real_space, double> core_density_;
 		basis::real_space potential_basis_;
 		basis::real_space density_basis_;
+	Perturbation pert_;
 		
 	};
 }

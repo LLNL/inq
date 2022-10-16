@@ -27,6 +27,7 @@
 #include <operations/io.hpp>
 #include <real_time/propagate.hpp>
 #include <utils/match.hpp>
+#include <perturbations/laser.hpp>
 
 #ifdef INQ_INQ_INQ_UNIT_TEST
 #undef INQ_INQ_INQ_UNIT_TEST
