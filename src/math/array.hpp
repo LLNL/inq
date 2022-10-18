@@ -35,7 +35,8 @@
 #include <multi/array.hpp>
 
 #ifdef ENABLE_CUDA
-#include <thrust/system/cuda/memory.h>
+#include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::universal_allocator<type>
+#include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
 #endif
 
 #ifdef ENABLE_CUDA
@@ -47,9 +48,20 @@
 namespace inq {
 namespace math {
 
+#ifdef ENABLE_CUDA
+template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>>
+struct caching_allocator : Base_ {
+	caching_allocator() : Base_{
+		&thrust::mr::tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
+	} {}
+	caching_allocator(caching_allocator const&) : caching_allocator{} {}
+	template<class U> struct rebind {using other = caching_allocator<U>;};
+};
+#endif
+
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = ::thrust::cuda::universal_allocator<type>
+					class allocator = caching_allocator<type>  // ::thrust::cuda::universal_allocator<type>
 #else
 					class allocator = std::allocator<type>
 #endif
