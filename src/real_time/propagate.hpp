@@ -25,6 +25,7 @@ namespace real_time {
 
 template <class ForcesType, class Perturbation>
 class real_time_data {
+	bool last_iter_;
 	int iter_;
 	double time_;
 	systems::ions & ions_;
@@ -35,12 +36,16 @@ class real_time_data {
 	
 public:
 
-	real_time_data(int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces, Perturbation const & pert)
-		:iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces), pert_(pert){
+	real_time_data(bool last_iter, int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces, Perturbation const & pert)
+		:last_iter_(last_iter), iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces), pert_(pert){
 	}
 
 	auto iter() const {
 		return iter_;
+	}
+
+	auto last_iter() const {
+		return last_iter_;
 	}
 	
 	auto time() const {
@@ -102,7 +107,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		
 		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
-		func(real_time_data{0, 0.0, ions, electrons, energy, forces, pert});
+		func(real_time_data{false, 0, 0.0, ions, electrons, energy, forces, pert});
 		
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
@@ -131,7 +136,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			ion_propagator.propagate_velocities(dt, ions, forces);
 
 			//func(real_time_data<decltype(forces)>{istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert_});
-			func(real_time_data{istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert});			
+			func(real_time_data{istep == numsteps - 1, istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert});			
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
