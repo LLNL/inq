@@ -68,6 +68,10 @@ namespace inq {
 			return quant;
 		}
 
+		GPU_FUNCTION friend auto operator/(quantity num, quantity den){
+			return num.value_/den.value_;
+		}
+
 		GPU_FUNCTION auto operator-() const {
 			return from_atomic_units(-value_);
 		}
