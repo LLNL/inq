@@ -79,7 +79,10 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 			}
 
 			{ //MULTI COPY CONSTRUCTOR
-				auto start_time = std::chrono::high_resolution_clock::now();				
+				{
+					auto warmup = src;
+				}
+				auto start_time = std::chrono::high_resolution_clock::now();
 				auto dest2 = src;
 				std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
 				double rate = size/time.count();
