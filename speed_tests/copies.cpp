@@ -39,7 +39,7 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 			long nn = 8000;
 
 			// WARMUP POOL MEMORY, IF ANY
-			std::vector<math::array<complex, 2>> warmup(10, math::array<complex, 2>({nn, nn}, complex{double{i}}));
+			std::vector<math::array<complex, 2>> warmup(10, math::array<complex, 2>({nn, nn}, static_cast<double>(i)));
 			for(int i = 0; i != 10; ++i) {
 				CHECK(warmup[5][nn-1][nn-1] == complex{static_cast<double>(i)});
 			}
