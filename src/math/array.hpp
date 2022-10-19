@@ -70,7 +70,7 @@ using array = boost::multi::array<type, dim, allocator>;
 
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = ::thrust::cuda::universal_allocator<type>
+					class allocator = caching_allocator<type>  // was ::thrust::cuda::universal_allocator<type>
 #else
 					class allocator = std::allocator<type>
 #endif
