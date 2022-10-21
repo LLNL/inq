@@ -48,14 +48,25 @@
 namespace inq {
 namespace math {
 
+
+template<typename Upstream, typename Bookkeeper>
+thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>& 
+LEAKY_tls_disjoint_pool(
+			Upstream * upstream = NULL,
+			Bookkeeper * bookkeeper = NULL
+) {
+  static thread_local auto adaptor = new thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>(upstream, bookkeeper);
+  return *adaptor;
+}
+
 #ifdef ENABLE_CUDA
 template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>>
 struct caching_allocator : Base_ {
 	caching_allocator() : Base_{
-		&thrust::mr::tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
+		&LEAKY_tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
 	} {}
 	caching_allocator(caching_allocator const&) : caching_allocator{} {}
-	template<class U> struct rebind {using other = caching_allocator<U>;};
+  	template<class U> struct rebind {using other = caching_allocator<U>;};
 
   // using Base_::allocate;
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n) -> typename std::allocator_traits<Base_>::pointer {
