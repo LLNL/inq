@@ -57,13 +57,13 @@ struct caching_allocator : Base_ {
 	caching_allocator(caching_allocator const&) : caching_allocator{} {}
 	template<class U> struct rebind {using other = caching_allocator<U>;};
 
-#if 0
   // using Base_::allocate;
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n) -> typename std::allocator_traits<Base_>::pointer {
     auto ret = std::allocator_traits<Base_>::allocate(*this, n);
     prefetch_to_device(ret, n*sizeof(T), get_current_device());
     return ret;
   }
+#if 0
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n, typename std::allocator_traits<Base_>::const_void_pointer hint) -> typename std::allocator_traits<Base_>::pointer {
     auto ret = std::allocator_traits<Base_>::allocate(*this, n);
     if(not hint) {
@@ -73,7 +73,7 @@ struct caching_allocator : Base_ {
     prefetch_to_device(ret, n*sizeof(T), get_device(hint));
     return ret;
   }
-
+#endif
 private:
   using device_index = int;
   static auto get_current_device() -> device_index {
@@ -103,7 +103,6 @@ private:
     assert(attr.type == cudaMemoryTypeManaged);
     return attr.device;
   }
-  #endif
 };
 #endif
 
