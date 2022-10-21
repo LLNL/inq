@@ -63,11 +63,11 @@ struct caching_allocator : Base_ {
     prefetch_to_device(ret, n*sizeof(T), get_current_device());
     return ret;
   }
-#if 0
+#if 1
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n, typename std::allocator_traits<Base_>::const_void_pointer hint) -> typename std::allocator_traits<Base_>::pointer {
     auto ret = std::allocator_traits<Base_>::allocate(*this, n);
     if(not hint) {
-      prefetch_to_device(ret, n*sizeof(T), get_current_device());
+  // prefetch_to_device(ret, n*sizeof(T), get_current_device());
       return ret;
     }
     prefetch_to_device(ret, n*sizeof(T), get_device(hint));
