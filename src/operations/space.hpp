@@ -99,7 +99,7 @@ void zero_outside_sphere(states::orbital_set<basis::fourier_space, complex>& fph
 ///////////////////////////////////////////////////////////////
 
 template <class InArray4D, class OutArray4D>
-void to_fourier(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
+void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -229,7 +229,7 @@ void to_fourier(basis::real_space const & real_basis, basis::fourier_space const
 ///////////////////////////////////////////////////////////////
 
 template <class InArray4D, class OutArray4D>
-void to_real(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs, bool normalize) {
+void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs, bool normalize) {
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -376,7 +376,7 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 	
 	basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
-	to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
+	to_fourier_array(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
@@ -397,7 +397,7 @@ states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbi
 	assert(phi.set_size() == fphi.set_size());
 	assert(phi.local_set_size() == fphi.local_set_size());
 	
-	to_fourier(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
+	to_fourier_array(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
@@ -415,7 +415,7 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 	
 	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
+	to_real_array(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
 
 	return phi;
 }
@@ -432,7 +432,7 @@ states::orbital_set<basis::real_space, complex> to_real(const states::orbital_se
 	
 	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.full_comm());
 
-	to_real(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
+	to_real_array(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
 
 	return phi;
 }
@@ -449,7 +449,7 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 	
 	basis::field<basis::fourier_space, complex> fphi(fourier_basis);
 
-	to_fourier(real_basis, fourier_basis, phi.hypercubic(), fphi.hypercubic());
+	to_fourier_array(real_basis, fourier_basis, phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 			
@@ -468,7 +468,7 @@ basis::field<basis::real_space, complex> to_real(const basis::field<basis::fouri
 
 	basis::field<basis::real_space, complex> phi(real_basis);
 
-	to_real(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
+	to_real_array(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
 			
 	return phi;
 }
@@ -485,9 +485,7 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex, Vec
 	
 	basis::field<basis::fourier_space, math::vector3<complex, VectorSpace>> fphi(fourier_basis);
 	
-	to_fourier(
-		real_basis, 
-		fourier_basis, 
+	to_fourier_array(real_basis, fourier_basis, 
 		phi .cubic().template reinterpret_array_cast<complex const>(3), 
 		fphi.cubic().template reinterpret_array_cast<complex      >(3)
 	);
@@ -510,12 +508,10 @@ auto to_real(const basis::field<basis::fourier_space, math::vector3<complex, Vec
 
 	basis::field<basis::real_space, math::vector3<complex, VectorSpace>> phi(real_basis);
 
-	to_real(
-		fourier_basis, real_basis, 
+	to_real_array(fourier_basis, real_basis, 
 		fphi.cubic().template reinterpret_array_cast<complex const>(3), 
 		phi .cubic().template reinterpret_array_cast<complex      >(3), 
-		normalize
-	);
+		normalize);
 
 	return phi;
 }
@@ -535,7 +531,7 @@ auto to_real(basis::field_set<basis::fourier_space, math::vector3<complex, Vecto
 	auto const& fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	auto &&     phi_as_scalar  = phi .cubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 
-	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
+	to_real_array(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
 
 	return phi;
 }
@@ -555,7 +551,7 @@ auto to_real(states::orbital_set<basis::fourier_space, math::vector3<complex, Ve
 	auto const& fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	auto &&     phi_as_scalar  = phi .cubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 
-	to_real(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
+	to_real_array(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
 
 	return phi;
 }
