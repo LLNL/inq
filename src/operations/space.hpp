@@ -98,6 +98,7 @@ void zero_outside_sphere(states::orbital_set<basis::fourier_space, complex>& fph
 
 ///////////////////////////////////////////////////////////////
 
+#ifdef ENABLE_HEFFTE
 template <class InArray4D, class OutArray4D>
 void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 
@@ -105,8 +106,6 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 	assert(std::get<3>(sizes(array_rs)) == std::get<3>(sizes(array_fs)));
 	
-#ifdef ENABLE_HEFFTE
-
 	CALI_MARK_BEGIN("heffte_initialization");
  
 	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(2).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(0).start())},
@@ -152,8 +151,19 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 			array_fs.flatted().flatted().transposed()[ist] = output({0, fourier_basis.local_size()});
 		}
 	}
-		
-#else
+
+}
+
+#else // no HEFFTE
+
+///////////////////////////////////////////////////////////////
+
+template <class InArray4D, class OutArray4D>
+void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
+
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(std::get<3>(sizes(array_rs)) == std::get<3>(sizes(array_fs)));
 	
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
@@ -221,20 +231,18 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 		}
 
 	}
+}
 
 #endif
-	
-}
-		
+
 ///////////////////////////////////////////////////////////////
 
+#ifdef ENABLE_HEFFTE
 template <class InArray4D, class OutArray4D>
 void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs, bool normalize) {
 
 	CALI_CXX_MARK_FUNCTION;
 
-#ifdef ENABLE_HEFFTE
-	
 	CALI_MARK_BEGIN("heffte_initialization");
 	
 	heffte::box3d<> const rs_box = {{int(real_basis.cubic_dist(2).start()), int(real_basis.cubic_dist(1).start()), int(real_basis.cubic_dist(0).start())},
@@ -279,8 +287,16 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 		array_rs.flatted().flatted().transposed()[ist] = output({0, real_basis.local_size()});
 		
 	}
+}
 	
-#else //Heftte_FOUND
+#else //NO HEFTTE
+
+///////////////////////////////////////////////////////////////
+
+template <class InArray4D, class OutArray4D>
+void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs, bool normalize) {
+
+	CALI_CXX_MARK_FUNCTION;
 	
 	namespace multi = boost::multi;
 #ifdef ENABLE_CUDA
@@ -360,10 +376,8 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 							 ar[ip] = factor*ar[ip];
 						 });
 	}
-
-#endif //Heftte_FOUND
-
 }
+#endif
 
 ///////////////////////////////////////////////////////////////
 		
