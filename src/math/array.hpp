@@ -72,10 +72,22 @@ void prefetch(ArrayType const &
 #endif
 							){
 #ifdef ENABLE_CUDA
-	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), 0);
+	int device;
+	cudaGetDevice(&device);
+	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), device);
 #endif
 }
 
+template <typename ArrayType>
+void prefetch_cpu(ArrayType const &
+#ifdef ENABLE_CUDA
+							array
+#endif
+							){
+#ifdef ENABLE_CUDA
+	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), cudaCpuDeviceId);
+#endif
+}
 
 }
 }
