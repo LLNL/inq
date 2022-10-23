@@ -273,6 +273,7 @@ clang-ompi-fast-1p:
     stage: test
     needs: ["clang-ompi-fast"]
     script:
+      - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
@@ -285,6 +286,7 @@ clang-ompi-fast-2p:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
@@ -296,6 +298,7 @@ clang-ompi-fast-3p:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
@@ -307,6 +310,7 @@ clang-ompi-fast-4p:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
@@ -318,6 +322,7 @@ clang-ompi-fast-5p:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2
       - tar -xvzf clang-ompi-fast-build.tar.gz
@@ -725,6 +730,7 @@ nvcc-mpich-debug-1p:
     tags:
       - cuda_gpu
     script:
+      - export INQ_COMM="point"
       - PREFIX=`cat nvcc-mpich-debug-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
       - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
@@ -736,6 +742,7 @@ nvcc-mpich-debug-2p:
     tags:
       - cuda_gpu
     script:
+      - export INQ_COMM="point"      
       - PREFIX=`cat nvcc-mpich-debug-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
       - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"      
@@ -746,6 +753,7 @@ nvcc-mpich-debug-3p:
     tags:
       - cuda_gpu
     script:
+      - export INQ_COMM="point"      
       - PREFIX=`cat nvcc-mpich-debug-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
       - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
@@ -756,6 +764,7 @@ nvcc-mpich-debug-4p:
     tags:
       - cuda_gpu
     script:
+      - export INQ_COMM="point"      
       - PREFIX=`cat nvcc-mpich-debug-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
       - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"      
@@ -766,6 +775,7 @@ nvcc-mpich-debug-5p:
     tags:
       - cuda_gpu
     script:
+      - export INQ_COMM="point"      
       - PREFIX=`cat nvcc-mpich-debug-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j1"
 
