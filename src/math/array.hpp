@@ -74,7 +74,7 @@ struct caching_allocator : Base_ {
     prefetch_to_device(ret, n*sizeof(T), get_current_device());
     return ret;
   }
-#if 1
+
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n, typename std::allocator_traits<Base_>::const_void_pointer hint) -> typename std::allocator_traits<Base_>::pointer {
     auto ret = std::allocator_traits<Base_>::allocate(*this, n);
     if(not hint) {
@@ -84,7 +84,7 @@ struct caching_allocator : Base_ {
     prefetch_to_device(ret, n*sizeof(T), get_device(hint));
     return ret;
   }
-#endif
+
 private:
   using device_index = int;
   static auto get_current_device() -> device_index {
@@ -119,7 +119,7 @@ private:
 
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = caching_allocator<type>  // ::thrust::cuda::universal_allocator<type>
+					class allocator = caching_allocator<type>
 #else
 					class allocator = std::allocator<type>
 #endif
@@ -128,7 +128,7 @@ using array = boost::multi::array<type, dim, allocator>;
 
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = caching_allocator<type>  // was ::thrust::cuda::universal_allocator<type>
+					class allocator = caching_allocator<type>
 #else
 					class allocator = std::allocator<type>
 #endif
