@@ -51,7 +51,8 @@ void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 		ArrayType copy(buf);
 		
 		std::vector<MPI_Request> reqs(comm.size()*2, MPI_REQUEST_NULL);
-		
+
+		//We should use MPI_Isendrecv_replace here but it is not implemented in some OpenMPI versions 
 		for(int iproc = 0; iproc < comm.size(); iproc++){
 			MPI_Irecv(raw_pointer_cast(buf[iproc].base()), count, mpi_type, iproc, comm.rank(), comm.get(), &reqs[2*iproc]);
 			MPI_Isend(raw_pointer_cast(copy[iproc].base()), count, mpi_type, iproc, iproc, comm.get(), &reqs[2*iproc + 1]);
