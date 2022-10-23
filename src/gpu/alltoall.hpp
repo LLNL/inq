@@ -21,6 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <inq_config.h>
+
 #include <cstdlib>
 
 #include <math/array.hpp>
@@ -51,21 +53,34 @@ void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 		}
 		
 	} else if(method == std::string("point")) {
-		
-		ArrayType copy(buf);
-		std::vector<MPI_Request> reqs(comm.size()*2, MPI_REQUEST_NULL);
+
+#ifdef HAVE_MPI_ISENDRECV_REPLACE
+
+		std::vector<MPI_Request> reqs(comm.size(), MPI_REQUEST_NULL);
 
 		CALI_CXX_MARK_SCOPE("alltoall:mpi");
 		
-		//We should use MPI_Isendrecv_replace here but it is not implemented in some OpenMPI versions 
+		for(int iproc = 0; iproc < comm.size(); iproc++){
+			MPI_Isendrecv_replace(raw_pointer_cast(buf[iproc].base()), count, mpi_type, iproc, iproc, iproc, comm.rank(), comm.get(), &reqs[iproc]);
+		}
+		
+#else
+
+		ArrayType copy(buf);
+		std::vector<MPI_Request> reqs(comm.size()*2, MPI_REQUEST_NULL);
+		
+		CALI_CXX_MARK_SCOPE("alltoall:mpi");
+		
 		for(int iproc = 0; iproc < comm.size(); iproc++){
 			MPI_Irecv(raw_pointer_cast(buf[iproc].base()), count, mpi_type, iproc, comm.rank(), comm.get(), &reqs[2*iproc]);
 			MPI_Isend(raw_pointer_cast(copy[iproc].base()), count, mpi_type, iproc, iproc, comm.get(), &reqs[2*iproc + 1]);
 		}
-		
-		std::vector<MPI_Status> stats(comm.size()*2);
-		MPI_Waitall(reqs.size(), reqs.data(),  stats.data());
 
+#endif
+
+		std::vector<MPI_Status> stats(reqs.size());
+		MPI_Waitall(reqs.size(), reqs.data(), stats.data());
+		
 	} else {
 		assert(false and "uknown communication method");		
 	}	
