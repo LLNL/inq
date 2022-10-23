@@ -36,22 +36,27 @@ namespace gpu {
 
 template <typename ArrayType>
 void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
-
+	CALI_CXX_MARK_FUNCTION;
+ 
 	auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
 	auto count = buf[0].num_elements();
 
 	auto method = std::getenv("INQ_COMM");
 
 	if(method == NULL or method == std::string("collective")){
-		
-		MPI_Alltoall(MPI_IN_PLACE, count, mpi_type, raw_pointer_cast(buf.data_elements()), count, mpi_type, comm.get());
 
+		{
+			CALI_CXX_MARK_SCOPE("alltoall:mpi");
+			MPI_Alltoall(MPI_IN_PLACE, count, mpi_type, raw_pointer_cast(buf.data_elements()), count, mpi_type, comm.get());
+		}
+		
 	} else if(method == std::string("point")) {
 		
 		ArrayType copy(buf);
-		
 		std::vector<MPI_Request> reqs(comm.size()*2, MPI_REQUEST_NULL);
 
+		CALI_CXX_MARK_SCOPE("alltoall:mpi");
+		
 		//We should use MPI_Isendrecv_replace here but it is not implemented in some OpenMPI versions 
 		for(int iproc = 0; iproc < comm.size(); iproc++){
 			MPI_Irecv(raw_pointer_cast(buf[iproc].base()), count, mpi_type, iproc, comm.rank(), comm.get(), &reqs[2*iproc]);
