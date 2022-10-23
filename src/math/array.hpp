@@ -48,7 +48,7 @@
 namespace inq {
 namespace math {
 
-
+#ifdef ENABLE_CUDA
 template<typename Upstream, typename Bookkeeper>
 thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>& 
 LEAKY_tls_disjoint_pool(
@@ -59,7 +59,6 @@ LEAKY_tls_disjoint_pool(
   return *adaptor;
 }
 
-#ifdef ENABLE_CUDA
 template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>>
 struct caching_allocator : Base_ {
 	caching_allocator() : Base_{
