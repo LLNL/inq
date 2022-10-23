@@ -525,7 +525,8 @@ gcc-ompi-coverage-4p:
       - tar -xvjf gcc-ompi-coverage.tar.bz2
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000
+      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
 
 #########################################################################################################################
