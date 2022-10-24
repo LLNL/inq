@@ -4,7 +4,7 @@
 #define INQ__MATH__ARRAY
 
 /*
- Copyright (C) 2019-2021 Xavier Andrade, Alfredo A. Correa.
+ Copyright (C) 2019-2022 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -35,7 +35,8 @@
 #include <multi/array.hpp>
 
 #ifdef ENABLE_CUDA
-#include <thrust/system/cuda/memory.h>
+#include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::universal_allocator<type>
+#include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
 #endif
 
 #ifdef ENABLE_CUDA
@@ -47,9 +48,77 @@
 namespace inq {
 namespace math {
 
+#ifdef ENABLE_CUDA
+template<typename Upstream, typename Bookkeeper>
+thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>& 
+LEAKY_tls_disjoint_pool(
+			Upstream * upstream = NULL,
+			Bookkeeper * bookkeeper = NULL
+) {
+  static thread_local auto adaptor = new thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>(upstream, bookkeeper);
+  return *adaptor;
+}
+
+template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>>
+struct caching_allocator : Base_ {
+	caching_allocator() : Base_{
+		&LEAKY_tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
+	} {}
+	caching_allocator(caching_allocator const&) : caching_allocator{} {}
+  	template<class U> struct rebind {using other = caching_allocator<U>;};
+
+  // using Base_::allocate;
+  [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n) -> typename std::allocator_traits<Base_>::pointer {
+    auto ret = std::allocator_traits<Base_>::allocate(*this, n);
+    prefetch_to_device(ret, n*sizeof(T), get_current_device());
+    return ret;
+  }
+
+  [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n, typename std::allocator_traits<Base_>::const_void_pointer hint) -> typename std::allocator_traits<Base_>::pointer {
+    auto ret = std::allocator_traits<Base_>::allocate(*this, n);
+    if(not hint) {
+      prefetch_to_device(ret, n*sizeof(T), get_current_device());
+      return ret;
+    }
+    prefetch_to_device(ret, n*sizeof(T), get_device(hint));
+    return ret;
+  }
+
+private:
+  using device_index = int;
+  static auto get_current_device() -> device_index {
+    int device;
+    switch(cudaGetDevice(&device)) {
+    case cudaSuccess          : break;
+    case cudaErrorInvalidValue: assert(0);
+    }
+    return device;
+  }
+  static void prefetch_to_device(typename std::allocator_traits<Base_>::const_void_pointer p, typename std::allocator_traits<Base_>::size_type byte_count, device_index d) {
+    switch(cudaMemPrefetchAsync(raw_pointer_cast(p), byte_count, d)) {
+    case cudaSuccess           : return;
+    case cudaErrorInvalidValue : ;
+    case cudaErrorInvalidDevice: ;
+    }
+    assert(0);
+  }
+
+  static auto get_device(typename std::allocator_traits<Base_>::const_void_pointer p) -> device_index {
+    cudaPointerAttributes attr{};
+    switch(cudaPointerGetAttributes(&attr, raw_pointer_cast(p))) {
+    case cudaSuccess           : break;
+    case cudaErrorInvalidDevice:
+    case cudaErrorInvalidValue : assert(0);
+    }
+    assert(attr.type == cudaMemoryTypeManaged);
+    return attr.device;
+  }
+};
+#endif
+
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = ::thrust::cuda::universal_allocator<type>
+					class allocator = caching_allocator<type>
 #else
 					class allocator = std::allocator<type>
 #endif
@@ -58,7 +127,7 @@ using array = boost::multi::array<type, dim, allocator>;
 
 template <class type, size_t dim,
 #ifdef ENABLE_CUDA
-					class allocator = ::thrust::cuda::universal_allocator<type>
+					class allocator = caching_allocator<type>
 #else
 					class allocator = std::allocator<type>
 #endif

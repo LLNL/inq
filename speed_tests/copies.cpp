@@ -1,6 +1,6 @@
 /* -*- indent-tabs-mode: t -*- */
 /*
- Copyright (C) 2022 Xavier Andrade
+ Copyright (C) 2022 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -37,7 +37,11 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 		if(comm.root()){
 			
 			long nn = 8000;
-			
+
+			// WARMUP POOL MEMORY, IF ANY
+			std::vector<math::array<complex, 2>> warmup(10, math::array<complex, 2>({nn, nn}, complex{1.0, 2.0}));
+			CHECK( warmup[5][nn-1][nn-1] == complex{1.0, 2.0} );
+
 			math::array<complex, 2> src({nn, nn});
 			math::array<complex, 2> dest({nn, nn});
 			
@@ -75,7 +79,10 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 			}
 
 			{ //MULTI COPY CONSTRUCTOR
-				auto start_time = std::chrono::high_resolution_clock::now();				
+				{
+					auto warmup = src;
+				}
+				auto start_time = std::chrono::high_resolution_clock::now();
 				auto dest2 = src;
 				std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
 				double rate = size/time.count();
