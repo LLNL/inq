@@ -20,7 +20,11 @@ stages:
   - build
   - test
   - clean
-  
+
+#########################################################################################################################
+# CHECK MISSING LIBRARY DETECTION 
+#########################################################################################################################
+
 build-noblas:
     stage: build
     script:
@@ -69,6 +73,10 @@ build-nolapack:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
+#########################################################################################################################
+# GCC-OMPI
+#########################################################################################################################
+
 gcc-ompi:
     stage: test
     needs: []
@@ -100,6 +108,10 @@ gcc-ompi:
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
+#########################################################################################################################
+# GCC-OMPI-FAST
+#########################################################################################################################
+      
 gcc-ompi-fast:
     stage: test
     needs: []
@@ -132,7 +144,9 @@ gcc-ompi-fast:
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
-#### CLANG-OMPI
+#########################################################################################################################
+# CLANG-OMPI
+#########################################################################################################################
 
 clang-ompi:
     stage: build
@@ -211,7 +225,9 @@ clang-ompi-5p:
       - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
-#### CLANG-OMPI-FAST
+#########################################################################################################################
+# CLANG-OMPI-FAST
+#########################################################################################################################
 
 clang-ompi-fast:
     stage: build
@@ -292,7 +308,9 @@ clang-ompi-fast-5p:
       - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
-#### GCC-MPICH
+#############################################################################################
+# GCC-MPICH
+#############################################################################################
 
 gcc-mpich:
     stage: build
