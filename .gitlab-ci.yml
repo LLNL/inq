@@ -100,44 +100,6 @@ gcc-ompi:
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - tests/silicon2
 
-#nvcc11.3-ompi-compileonly:
-#    image: nvidia/cuda:11.3.0-devel
-#    stage: build
-#    script:
-#      - export DEBIAN_FRONTEND=noninteractive
-#      - rm -f /etc/apt/sources.list.d/nvidia-ml.list
-#      - apt-get update
-#      - apt-get install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates wget
-#      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null # following https://askubuntu.com/a/865294/15943
-#      - mkdir /opt/cmake
-#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
-#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-#      - cmake --version
-#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-#      - mkdir build && cd build
-#      - /usr/local/cuda/bin/nvcc -V
-#      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
-#      - make silicon
-
-#nvcc11.4-ompi-compileonly:
-#    image: nvidia/cuda:11.4.0-devel
-#    stage: build
-#    script:
-#      - export DEBIAN_FRONTEND=noninteractive
-#      - rm -f /etc/apt/sources.list.d/nvidia-ml.list      
-#      - apt-get update
-#      - apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config make git ca-certificates wget
-#      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null # following https://askubuntu.com/a/865294/15943
-#      - mkdir /opt/cmake
-#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
-#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-#      - cmake --version
-#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-#      - mkdir build && cd build
-#      - /usr/local/cuda/bin/nvcc -V
-#      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
-#      - make silicon
-
 gcc-ompi-fast:
     stage: test
     needs: []
@@ -330,45 +292,6 @@ clang-ompi-fast-5p:
       - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
-#clang-valgrind:
-#    stage: test
-#    script:
-#      - time apt update -qq
-#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python valgrind
-#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-#      - clang++ --version
-#      - mkdir build
-#      - cd build
-#      - export OMPI_CXX=clang++
-#      - export CXXFLAGS="-g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-#      - time ../configure --prefix=$HOME
-#      - time make -j4
-#      - time make -j4 install
-#      - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../.valgrind_suppressions"
-#      - time $VALGRIND src/inq_unit_tests
-#      - time $VALGRIND tests/h2o_ground_state
-#      - time $VALGRIND tests/h2o_real_time
-      
-#clang-mpich-asan:
-#    stage: test
-#    script:
-#      - time apt update -qq
-#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev bzip2 python valgrind libmpich-dev mpich
-#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-#      - clang++ --version
-#      - mkdir build
-#      - cd build
-#      - export CXX=clang++
-#      - export MPICH_CC=clang++
-#      - export MPICH_CXX=clang++
-#      - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -g -Ofast -fno-builtin -ffast-math -pipe -Wall -Werror -DNDEBUG"
-#      - time ../configure --prefix=$HOME
-#      - time make -j4
-#      - time make -j4 install
-#      - time src/inq_unit_tests
-#      - time tests/h2o_ground_state
-#      - time tests/h2o_real_time
-
 #### GCC-MPICH
 
 gcc-mpich:
@@ -458,34 +381,6 @@ gcc-mpich-valgrind-1p:
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 1200; cd ..
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
-
-#nvcc-nocuda:
-#    stage: test
-#    script:
-#      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list
-#      - time apt update -qq
-#      - time apt install --no-install-recommends -y -qq git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
-#      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-#      - export PATH=/usr/local/cuda/bin:$PATH
-#      - nvcc -V
-#      - mkdir nvcc
-#      - cd nvcc
-#      - export CXX="nvcc -x cu"
-#      - export CXXLD="nvcc"
-#      - export CXXFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -D_DISABLE_CUDA_SLOW -O3 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++17,-Wall,-Wfatal-errors"
-#      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-#      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-#      - time ../configure --prefix=$HOME || cat config.log
-#      - time make -j4
-#      - time make -j4 install
-#      - time src/inq_unit_tests
-#      - time mpirun -np 2 src/inq_unit_tests
-#      - time mpirun -np 3 src/inq_unit_tests
-#      - time mpirun -np 4 src/inq_unit_tests
-#      - time tests/hydrogen_local
-#      - time tests/neon
-#      - time tests/h2o_ground_state
-#      - time tests/h2o_real_time
 
 #########################################################################################################################
 # GCC OMPI COVERAGE
