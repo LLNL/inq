@@ -74,6 +74,56 @@ build-nolapack:
       - eval ! ../configure --prefix=$HOME
 
 #########################################################################################################################
+# GCC OMPI COVERAGE
+#########################################################################################################################
+
+gcc-ompi-coverage:
+    stage: test
+    needs: []
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
+      - mkdir build && cd build
+      - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
+      - ../configure --disable-debug --prefix=$HOME
+      - time make
+      - time make install
+      - cd ../
+      - tar -cvjf gcc-ompi-coverage.tar.bz2 build/
+      - ls -lh gcc-ompi-coverage.tar.bz2
+    artifacts:
+      paths:
+      - gcc-ompi-coverage.tar.bz2
+
+gcc-ompi-coverage-1p:
+    stage: test
+    needs: ["gcc-ompi-coverage"]
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
+      - tar -xvjf gcc-ompi-coverage.tar.bz2
+      - cd build
+      - cmake --build . --target install/fast
+      - cd src; ctest --output-on-failure --timeout 2000; cd ..
+      - cd tests; ctest --output-on-failure --timeout 2000; cd ..
+      - cd speed_tests; ctest --output-on-failure --timeout 2000 || echo "Ignoring failed speed test"; cd ..
+      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
+
+gcc-ompi-coverage-4p:
+    stage: test
+    needs: ["gcc-ompi-coverage"]
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
+      - tar -xvjf gcc-ompi-coverage.tar.bz2
+      - cd build
+      - cmake --build . --target install/fast
+      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
+      - cd speed_tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000 || echo "Ignoring failed speed test"; cd ..
+      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
+
+#########################################################################################################################
 # GCC-OMPI
 #########################################################################################################################
 
@@ -399,56 +449,6 @@ gcc-mpich-valgrind-1p:
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 1200; cd ..
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
-
-#########################################################################################################################
-# GCC OMPI COVERAGE
-#########################################################################################################################
-
-gcc-ompi-coverage:
-    stage: test
-    needs: []
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
-      - mkdir build && cd build
-      - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
-      - ../configure --disable-debug --prefix=$HOME
-      - time make
-      - time make install
-      - cd ../
-      - tar -cvjf gcc-ompi-coverage.tar.bz2 build/
-      - ls -lh gcc-ompi-coverage.tar.bz2
-    artifacts:
-      paths:
-      - gcc-ompi-coverage.tar.bz2
-
-gcc-ompi-coverage-1p:
-    stage: test
-    needs: ["gcc-ompi-coverage"]
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
-      - tar -xvjf gcc-ompi-coverage.tar.bz2
-      - cd build
-      - cmake --build . --target install/fast
-      - cd src; ctest --output-on-failure --timeout 2000; cd ..
-      - cd tests; ctest --output-on-failure --timeout 2000; cd ..
-      - cd speed_tests; ctest --output-on-failure --timeout 2000 || echo "Ignoring failed speed test"; cd ..
-      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
-
-gcc-ompi-coverage-4p:
-    stage: test
-    needs: ["gcc-ompi-coverage"]
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev bzip2 python2 bzip2
-      - tar -xvjf gcc-ompi-coverage.tar.bz2
-      - cd build
-      - cmake --build . --target install/fast
-      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
-      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
-      - cd speed_tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000 || echo "Ignoring failed speed test"; cd ..
-      - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
 
 #########################################################################################################################
 # INTEL MPICH
