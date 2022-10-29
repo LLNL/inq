@@ -69,7 +69,6 @@ auto sum_product(ArrayType1 & phi1, ArrayType2 const & phi2){
 #include <basis/field.hpp>
 
 #include <catch2/catch_all.hpp>
-#include <basis/trivial.hpp>
 
 TEST_CASE("function operations::sum", "[operations::sum]") {
 
@@ -78,77 +77,74 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 	using Catch::Approx;
 	
 	const int N = 21111;
-	auto comm = boost::mpi3::environment::get_world_instance();
-	
-	basis::trivial bas(N, comm);
 
 	SECTION("Sum double"){
-		
-		basis::field<basis::trivial, double> aa(bas);
 
-		aa = 1.0;
+		math::array<double, 1> aa(N);
 
-		CHECK(operations::sum(aa.linear()) == Approx(N));
+		aa.fill(1.0);
 
-		for(int ii = 0; ii < N; ii++)	aa.linear()[ii] = ii;
+		CHECK(operations::sum(aa) == Approx(N));
 
-		CHECK(operations::sum(aa.linear()) == Approx(0.5*N*(N - 1.0)));
+		for(int ii = 0; ii < N; ii++)	aa[ii] = ii;
+
+		CHECK(operations::sum(aa) == Approx(0.5*N*(N - 1.0)));
 
 	}
 	
 	SECTION("Sum complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas);
+		math::array<complex, 1> aa(N);
+		
+		aa.fill(complex(1.0, 1.0));
 
-		aa = complex(1.0, 1.0);
+		CHECK(real(operations::sum(aa)) == Approx(N));
+		CHECK(imag(operations::sum(aa)) == Approx(N));
 
-		CHECK(real(operations::sum(aa.linear())) == Approx(N));
-		CHECK(imag(operations::sum(aa.linear())) == Approx(N));
+		for(int ii = 0; ii < N; ii++)	aa[ii] = complex(ii, -3.0*ii);
 
-		for(int ii = 0; ii < N; ii++)	aa.linear()[ii] = complex(ii, -3.0*ii);
-
-		CHECK(real(operations::sum(aa.linear())) == Approx(0.5*N*(N - 1.0)));
-		CHECK(imag(operations::sum(aa.linear())) == Approx(-1.5*N*(N - 1.0)));
+		CHECK(real(operations::sum(aa)) == Approx(0.5*N*(N - 1.0)));
+		CHECK(imag(operations::sum(aa)) == Approx(-1.5*N*(N - 1.0)));
 
 	}
 
 	SECTION("Sum product double"){
+
+		math::array<double, 1> aa(N);
+		math::array<double, 1> bb(N);
+
+		aa.fill(2.0);
+		bb.fill(0.8);
 		
-		basis::field<basis::trivial, double> aa(bas);
-		basis::field<basis::trivial, double> bb(bas);
-		
-		aa = 2.0;
-		bb = 0.8;
-		
-		CHECK(operations::sum_product(aa.linear(), bb.linear()) == Approx(1.6*N));
+		CHECK(operations::sum_product(aa, bb) == Approx(1.6*N));
 		
 		for(int ii = 0; ii < N; ii++)	{
-			aa.linear()[ii] = pow(ii + 1, 2);
-			bb.linear()[ii] = 1.0/(ii + 1);
+			aa[ii] = pow(ii + 1, 2);
+			bb[ii] = 1.0/(ii + 1);
 		}
 		
-		CHECK(operations::sum_product(aa.linear(), bb.linear()) == Approx(0.5*N*(N + 1.0)));
+		CHECK(operations::sum_product(aa, bb) == Approx(0.5*N*(N + 1.0)));
 		
 	}
 	
 	SECTION("Sum product complex"){
+
+		math::array<complex, 1> aa(N);
+		math::array<complex, 1> bb(N);
 		
-		basis::field<basis::trivial, complex> aa(bas);
-		basis::field<basis::trivial, complex> bb(bas);
+		aa.fill(complex(2.0, -0.3));
+		bb.fill(complex(0.8, 0.01));
 		
-		aa = complex(2.0, -0.3);
-		bb = complex(0.8, 0.01);
-		
-		CHECK(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(1.603*N));
-		CHECK(imag(operations::sum_product(aa.linear(), bb.linear())) == Approx(-0.22*N));
+		CHECK(real(operations::sum_product(aa, bb)) == Approx(1.603*N));
+		CHECK(imag(operations::sum_product(aa, bb)) == Approx(-0.22*N));
 		
 		for(int ii = 0; ii < N; ii++)	{
-			aa.linear()[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
-			bb.linear()[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
+			aa[ii] = pow(ii + 1, 2)*exp(complex(0.0, M_PI/8 + M_PI/7*ii));
+			bb[ii] = 1.0/(ii + 1)*exp(complex(0.0, M_PI/8 - M_PI/7*ii));
 		}
 		
-		CHECK(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
-		CHECK(real(operations::sum_product(aa.linear(), bb.linear())) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
+		CHECK(real(operations::sum_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
+		CHECK(real(operations::sum_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
 		
 	}
 	

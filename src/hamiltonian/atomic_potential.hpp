@@ -342,7 +342,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 	double const gcut = 0.785;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	auto comm = boost::mpi3::environment::get_self_instance();
 	
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({element("P"), element("X")});
