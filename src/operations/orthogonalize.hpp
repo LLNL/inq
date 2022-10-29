@@ -64,8 +64,10 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 	using namespace Catch::literals;
 	using math::vector3;
 
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
 	systems::box box = systems::box::cubic(6.3_b).cutoff_energy(25.0_Ha);
-	basis::real_space pw(box);
+	basis::real_space pw(box, comm);
 
 	SECTION("Dimension 3"){
 		basis::field_set<basis::real_space, complex> phi(pw, 3);

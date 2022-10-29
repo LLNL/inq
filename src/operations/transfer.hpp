@@ -400,6 +400,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);
+
+	auto self_comm = boost::mpi3::environment::get_self_instance();
 	
 	vector3<double> ll{6.66, 7.77, 9.99};
 	
@@ -556,7 +558,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	SECTION("Mesh refinement -- field"){
 
-		basis::real_space grid(box);
+		basis::real_space grid(box, self_comm);
 		basis::field<basis::real_space, TestType> coarse(grid); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -608,7 +610,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 		
 	SECTION("Mesh refinement -- field_set"){
 
-		basis::real_space grid(box);
+		basis::real_space grid(box, self_comm);
 		basis::field_set<basis::real_space, TestType> coarse(grid, 5); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -660,7 +662,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 	
 	SECTION("Mesh coarsening -- field"){
 
-		basis::real_space grid(box);
+		basis::real_space grid(box, self_comm);
 		
 		auto fine_grid = grid.refine(2);
 		
@@ -715,7 +717,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	SECTION("Mesh coarsening -- field_set"){
 			
-		basis::real_space grid(box);
+		basis::real_space grid(box, self_comm);
 		auto fine_grid = grid.refine(2);
 		
 		basis::field_set<basis::real_space, TestType> fine(fine_grid, 5);

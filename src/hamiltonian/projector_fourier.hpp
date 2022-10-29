@@ -165,11 +165,13 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
   using math::vector3;
+
+	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 
 	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
-  basis::real_space rs(box);
+  basis::real_space rs(box, comm);
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
