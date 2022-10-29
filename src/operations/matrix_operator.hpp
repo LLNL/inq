@@ -79,7 +79,7 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
   const int npoint = 100;
   const int nvec = 12;
   
-  basis::trivial bas(npoint);
+  basis::trivial bas(npoint, boost::mpi3::environment::get_self_instance());
 
   SECTION("Diagonal matrix real"){
 

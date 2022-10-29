@@ -75,12 +75,12 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
 	
 	const int N = 21111;
+	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	basis::trivial bas(N);
-
-	using Catch::Approx;
+	basis::trivial bas(N, comm);
 
 	SECTION("Sum double"){
 		
