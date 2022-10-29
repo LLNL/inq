@@ -39,7 +39,7 @@ namespace basis {
 
 		const static int dimension = 1;
 		
-		trivial(const long size, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+		trivial(const long size, parallel::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			base(size, comm),
       size_(size){
 		}

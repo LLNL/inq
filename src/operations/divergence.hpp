@@ -113,7 +113,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	double lz = 10;
 	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
 
-	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	//	auto set_comm = basis::set_subcomm(cart_comm);
 	//	auto basis_comm = basis::basis_subcomm(cart_comm);
 

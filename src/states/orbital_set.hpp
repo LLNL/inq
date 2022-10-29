@@ -35,12 +35,12 @@ namespace states {
 		using basis_type = Basis;
 		using kpoint_type = math::vector3<double, math::covariant>;
 
-		orbital_set(Basis const & basis, int const num_vectors, kpoint_type const & kpoint, boost::mpi3::cartesian_communicator<2> comm)
+		orbital_set(Basis const & basis, int const num_vectors, kpoint_type const & kpoint, parallel::cartesian_communicator<2> comm)
 			:fields_(basis, num_vectors, comm),
 			 kpoint_(kpoint){
 		}
 		
-		orbital_set(Basis const & basis, int const num_vectors, boost::mpi3::cartesian_communicator<2> comm)
+		orbital_set(Basis const & basis, int const num_vectors, parallel::cartesian_communicator<2> comm)
 		:orbital_set(basis, num_vectors, kpoint_type{0.0, 0.0, 0.0}, comm){
 		}
 		
@@ -49,7 +49,7 @@ namespace states {
 			 kpoint_(kpoint){
 		}
 
-		orbital_set(orbital_set && oldset, boost::mpi3::cartesian_communicator<2> new_comm)
+		orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
 		:fields_(std::move(oldset.fields_), new_comm),
 			 kpoint_(oldset.kpoint()){
 		}
@@ -144,7 +144,7 @@ namespace states {
 #include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 
-#include <mpi3/cartesian_communicator.hpp>
+#include <parallel/communicator.hpp>
 
 TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
   
@@ -157,7 +157,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+	parallel::cartesian_communicator<2> cart_comm(comm, {});
 
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	

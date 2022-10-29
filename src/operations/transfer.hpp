@@ -397,7 +397,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 
 	using math::vector3;
 
-	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);
 	

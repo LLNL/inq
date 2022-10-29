@@ -38,12 +38,12 @@ namespace basis {
 
   public:
 
-    real_space(systems::box const & box, boost::mpi3::communicator && comm):
+    real_space(systems::box const & box, parallel::communicator && comm):
 			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
 		{
     }
 		
-    real_space(systems::box const & box, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+    real_space(systems::box const & box, parallel::communicator & comm = boost::mpi3::environment::get_self_instance()):
 			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
 		{
     }
@@ -59,12 +59,12 @@ namespace basis {
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();		
     }
 		
-		real_space(real_space && old, boost::mpi3::communicator & new_comm):
+		real_space(real_space && old, parallel::communicator & new_comm):
 			real_space(grid(grid(old), new_comm))
 		{
 		}
 
-		real_space(real_space && old, boost::mpi3::communicator && new_comm):
+		real_space(real_space && old, parallel::communicator && new_comm):
 			real_space(grid(grid(old), new_comm))
 		{
 		}
@@ -158,7 +158,7 @@ namespace basis {
 			return real_space(grid(cell_.enlarge(factor), {factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]}, spherical_g_grid_, double_grid_.enabled(), periodicity_, this->comm()));
 		}
 		
-		auto refine(double factor, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
+		auto refine(double factor, parallel::communicator & comm = boost::mpi3::environment::get_self_instance()) const {
 			assert(factor > 0.0);
 			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, spherical_g_grid_,  double_grid_.enabled(), periodicity_, comm));
 		}

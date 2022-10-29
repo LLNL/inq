@@ -23,7 +23,7 @@
 
 
 #include <parallel/partition.hpp>
-#include <mpi3/cartesian_communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <mpi3/environment.hpp>
 #include <mpi3/detail/datatype.hpp>
 
@@ -37,7 +37,7 @@ template <typename ArrayType>
 class array_iterator {
 
   partition part_;
-  mutable boost::mpi3::cartesian_communicator<1> comm_;
+  mutable parallel::cartesian_communicator<1> comm_;
   ArrayType arr_;
   long istep_;
 
@@ -46,7 +46,7 @@ class array_iterator {
   
 public:
 
-  array_iterator(partition part, boost::mpi3::cartesian_communicator<1> comm, ArrayType const & arr):
+  array_iterator(partition part, parallel::cartesian_communicator<1> comm, ArrayType const & arr):
     part_(std::move(part)),
     comm_(std::move(comm)),
     arr_(part.block_size()),
@@ -110,7 +110,7 @@ TEST_CASE("class parallel::array_iterator", "[parallel::array_iterator]") {
 	using namespace inq;
 	using namespace Catch::literals;
   
-	auto comm = boost::mpi3::cartesian_communicator<1>{boost::mpi3::environment::get_world_instance(), {}};
+	auto comm = parallel::cartesian_communicator<1>{boost::mpi3::environment::get_world_instance(), {}};
 
   long size = 12345;
   

@@ -25,7 +25,7 @@
 
 #include <math/array.hpp>
 
-#include <mpi3/communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <mpi3/detail/datatype.hpp>
 
 #include <parallel/partition.hpp>
@@ -55,7 +55,7 @@ auto numstr(long num){
 }
 
 template <class ArrayType>
-void save(std::string const & dirname, boost::mpi3::communicator & comm, parallel::partition const & part, ArrayType const & array){
+void save(std::string const & dirname, parallel::communicator & comm, parallel::partition const & part, ArrayType const & array){
 
 	CALI_CXX_MARK_SCOPE("save(array)");
 
@@ -95,7 +95,7 @@ void save(std::string const & dirname, boost::mpi3::communicator & comm, paralle
 }
 
 template <class ArrayType>
-auto load(std::string const & dirname, boost::mpi3::communicator & comm, parallel::partition const & part, ArrayType & array){
+auto load(std::string const & dirname, parallel::communicator & comm, parallel::partition const & part, ArrayType & array){
 
 	CALI_CXX_MARK_SCOPE("load(array)");
 
@@ -274,7 +274,7 @@ TEST_CASE("function operations::io", "[operations::io]") {
 		const int npoint = 100;
 		const int nvec = 12;
 		
-		boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+		parallel::cartesian_communicator<2> cart_comm(comm, {});
 		
 		auto basis_comm = basis::basis_subcomm(cart_comm);
 		

@@ -21,8 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <mpi3/cartesian_communicator.hpp>
-#include <mpi3/communicator.hpp>
+#include <parallel/communicator.hpp>
 
 #include <parallel/partition.hpp>
 #include <utils/factors.hpp>
@@ -44,7 +43,7 @@ namespace input {
 			return 1;
 		}
 
-    explicit parallelization(boost::mpi3::communicator & comm):
+    explicit parallelization(parallel::communicator & comm):
 			nproc_kpts_(boost::mpi3::fill),
 			nproc_states_(1),
 			nproc_domains_(boost::mpi3::fill),
@@ -56,7 +55,7 @@ namespace input {
 			auto nproc_kpts = optimal_nprocs(nkpoints, comm_.size(), kpoint_efficiency_threshold);
 			if(nproc_kpts_ != boost::mpi3::fill) nproc_kpts = nproc_kpts_;
 
-			return boost::mpi3::cartesian_communicator<3>(comm_, {nproc_kpts, nproc_domains_, nproc_states_});
+			return parallel::cartesian_communicator<3>(comm_, {nproc_kpts, nproc_domains_, nproc_states_});
     }
 
 		auto states(int num = boost::mpi3::fill){
@@ -87,7 +86,7 @@ namespace input {
 		int nproc_states_;
 		int nproc_domains_;
 
-    mutable boost::mpi3::communicator comm_;
+    mutable parallel::communicator comm_;
 
 		constexpr static double const kpoint_efficiency_threshold = 0.1;
 		

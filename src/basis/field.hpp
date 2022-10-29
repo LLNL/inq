@@ -70,7 +70,7 @@ namespace basis {
 			return inq::utils::skeleton_wrapper<field<basis_type, element_type>>(*this);
 		}
 
-		field(field && old, boost::mpi3::communicator new_comm)
+		field(field && old, parallel::communicator new_comm)
 			:field(basis_type(std::move(old.basis_), new_comm)){
 
 			if(new_comm == old.basis().comm()){

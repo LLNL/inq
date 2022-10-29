@@ -588,7 +588,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	using namespace Catch::literals;
 	using math::vector3;
 
-	boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 
 	auto basis_comm = basis::basis_subcomm(cart_comm);
 	

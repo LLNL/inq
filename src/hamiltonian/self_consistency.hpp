@@ -51,7 +51,7 @@ template <typename Perturbation = perturbations::none>
 		{
 		}
 
-		self_consistency(self_consistency && old, boost::mpi3::communicator new_comm):
+		self_consistency(self_consistency && old, parallel::communicator new_comm):
 			interaction_(std::move(old.interaction_)),
 			exchange_(int(interaction_.exchange())),
 			correlation_(int(interaction_.correlation())),
@@ -64,7 +64,7 @@ template <typename Perturbation = perturbations::none>
 		}
 				
 		template <class ions_type>
-		void update_ionic_fields(boost::mpi3::communicator & comm, const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
+		void update_ionic_fields(parallel::communicator & comm, const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
 
 			CALI_CXX_MARK_FUNCTION;
 			

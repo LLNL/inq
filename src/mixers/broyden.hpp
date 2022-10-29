@@ -27,7 +27,7 @@
 #include <solvers/least_squares.hpp>
 #include <mixers/base.hpp>
 
-#include <mpi3/communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <mpi3/environment.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -39,7 +39,7 @@ class broyden : public base<Type> {
 	
 public:
 
-	broyden(const int arg_steps, const double arg_mix_factor, const long long dim, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+	broyden(const int arg_steps, const double arg_mix_factor, const long long dim, parallel::communicator & comm = boost::mpi3::environment::get_self_instance()):
 		iter_(0),
 		max_size_(arg_steps),
 		mix_factor_(arg_mix_factor),
@@ -179,7 +179,7 @@ private:
 	math::array<Type, 1> vin_old_;
 	Type gamma_;
 	int last_pos_;
-	mutable boost::mpi3::communicator comm_;
+	mutable parallel::communicator comm_;
 	
 };
 	

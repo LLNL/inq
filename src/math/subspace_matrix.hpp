@@ -25,7 +25,7 @@
 #include <gpu/run.hpp>
 #include <parallel/partition.hpp>
 
-#include <mpi3/cartesian_communicator.hpp>
+#include <parallel/communicator.hpp>
 
 namespace inq {
 namespace math {
@@ -37,19 +37,19 @@ public:
   
   using array_type = math::array<Type, 2>;
   
-  subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size):
+  subspace_matrix(parallel::cartesian_communicator<2> & comm, long size):
     comm_(comm),
     array_({size, size}),
 		part_(size, comm.axis(1)){
   }
 
-  subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, long size, Type const & ival):
+  subspace_matrix(parallel::cartesian_communicator<2> & comm, long size, Type const & ival):
     comm_(comm),
     array_({size, size}, ival),
 		part_(size, comm.axis(1)){
   }
   
-  subspace_matrix(boost::mpi3::cartesian_communicator<2> & comm, array_type && mat):
+  subspace_matrix(parallel::cartesian_communicator<2> & comm, array_type && mat):
     comm_(comm),
     array_(std::move(mat)),
 		part_(array_.size(), comm.axis(1)){
@@ -86,7 +86,7 @@ public:
 	
 private:
 
-  mutable boost::mpi3::cartesian_communicator<2> comm_;
+  mutable parallel::cartesian_communicator<2> comm_;
   array_type array_;
 	parallel::partition part_;
   
@@ -107,7 +107,7 @@ TEST_CASE("math::subspace_matrix", "[math::subspace_matrix]") {
 	using Catch::Approx;
 
   auto comm = boost::mpi3::environment::get_world_instance();
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+	parallel::cartesian_communicator<2> cart_comm(comm, {});
   
   math::array<double, 2> matrix({2, 2});
   

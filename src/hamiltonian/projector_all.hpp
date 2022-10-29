@@ -253,7 +253,7 @@ private:
 	math::array<math::vector3<double, math::contravariant>, 2> positions_;
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
-	mutable boost::multi::array<boost::mpi3::communicator, 1> comms_;	
+	mutable boost::multi::array<parallel::communicator, 1> comms_;	
 	math::array<int, 1> nlm_;	
   
 };

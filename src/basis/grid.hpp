@@ -39,7 +39,7 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodicity, boost::mpi3::communicator & comm) :
+		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodicity, parallel::communicator & comm) :
 			base(nr[0], comm),
 			cubic_dist_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
 			cell_(cell),
@@ -69,7 +69,7 @@ namespace basis {
 			
 		}
 		
-		grid(grid && old, boost::mpi3::communicator & new_comm):
+		grid(grid && old, parallel::communicator & new_comm):
 			grid(old.cell_, old.nr_, old.spherical_g_grid_, old.double_grid_.enabled(), old.periodicity_, new_comm)
 		{
 		}

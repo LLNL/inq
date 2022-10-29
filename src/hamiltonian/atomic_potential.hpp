@@ -104,7 +104,7 @@ namespace hamiltonian {
 		}
 
 		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> local_potential(boost::mpi3::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		basis::field<basis_type, double> local_potential(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
@@ -159,7 +159,7 @@ namespace hamiltonian {
 		}
 	
 		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> ionic_density(boost::mpi3::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		basis::field<basis_type, double> ionic_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -198,7 +198,7 @@ namespace hamiltonian {
 		}
 		
 		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> atomic_electronic_density(boost::mpi3::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		basis::field<basis_type, double> atomic_electronic_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -256,7 +256,7 @@ namespace hamiltonian {
 		}
 
 		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> nlcc_density(boost::mpi3::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		basis::field<basis_type, double> nlcc_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 

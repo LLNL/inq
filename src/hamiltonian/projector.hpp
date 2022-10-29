@@ -204,7 +204,7 @@ private:
 	int nproj_;
 	math::array<double, 2> matrix_;
 	math::array<double, 1> kb_coeff_;
-	mutable boost::mpi3::communicator comm_;
+	mutable parallel::communicator comm_;
 	int iatom_;
     
 };
