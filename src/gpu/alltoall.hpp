@@ -25,6 +25,11 @@
 
 #include <cstdlib>
 
+#ifdef ENABLE_NCCL
+#define ncclRemoteError 1347895789
+#include <mpi3/nccl/communicator.hpp>
+#endif
+
 #include <math/array.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -39,8 +44,9 @@ namespace gpu {
 template <typename ArrayType>
 void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 	CALI_CXX_MARK_FUNCTION;
- 
-	auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
+
+	using type = typename ArrayType::element_type;
+	auto mpi_type = boost::mpi3::detail::basic_datatype<type>();
 	auto count = buf[0].num_elements();
 
 	auto method = std::getenv("INQ_COMM");
@@ -81,6 +87,25 @@ void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 		std::vector<MPI_Status> stats(reqs.size());
 		MPI_Waitall(reqs.size(), reqs.data(), stats.data());
 		
+	} else if(method == std::string("nccl")) {
+
+#ifndef ENABLE_NCCL
+		assert(false and "inq was compiled without nccl support");		
+#else
+		boost::mpi3::nccl::communicator ncomm{comm};
+		ArrayType copy(buf);
+
+		CALI_CXX_MARK_SCOPE("alltoall:nccl");
+
+		ncclGroupStart();
+		for(int iproc = 0; iproc < comm.size(); iproc++){
+			ncclRecv(raw_pointer_cast(buf[iproc].base()), count*sizeof(type)/sizeof(double), ncclDouble, iproc, &ncomm, 0);
+			ncclSend(raw_pointer_cast(copy[iproc].base()), count*sizeof(type)/sizeof(double), ncclDouble, iproc, &ncomm, 0);
+		}
+		ncclGroupEnd();
+
+#endif
+
 	} else {
 		assert(false and "uknown communication method");		
 	}	
@@ -92,6 +117,7 @@ void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
 #ifdef INQ_GPU_ALLTOALL_UNIT_TEST
 #undef INQ_GPU_ALLTOALL_UNIT_TEST
 
+#include <gpu/run.hpp>
 #include <mpi3/environment.hpp>
 
 #include <catch2/catch_all.hpp>
@@ -106,12 +132,13 @@ TEST_CASE("function gpu::alltoall", "[gpu::alltoall]"){
   int blocksize = 100;
   
   math::array<int, 2> buffer({comm.size(), blocksize}, comm.rank());
-  
+
   gpu::alltoall(buffer, comm);
-  
+	gpu::sync();
+
   for(int iproc = 0; iproc < comm.size(); iproc++){
     for(int ib = 0; ib < blocksize; ib++){
-      CHECK(buffer[iproc][ib] == iproc);
+			CHECK(buffer[iproc][ib] == iproc);
     }
   }
 
