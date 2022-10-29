@@ -27,7 +27,7 @@
 #include <solvers/least_squares.hpp>
 #include <mixers/base.hpp>
 
-#include <mpi3/communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <mpi3/environment.hpp>
 
 namespace inq {
@@ -42,7 +42,7 @@ class pulay : public base<Type> {
 		
 public:
 
-	pulay(const int arg_steps, const double arg_mix_factor, const long long dim, boost::mpi3::communicator & comm = boost::mpi3::environment::get_self_instance()):
+	pulay(const int arg_steps, const double arg_mix_factor, const long long dim, parallel::communicator & comm):
 		iter_(0),
 		max_size_(arg_steps),
 		mix_factor_(arg_mix_factor),
@@ -218,7 +218,7 @@ TEST_CASE("mixers::pulay", "[mixers::pulay]") {
 	using namespace inq;
 	using namespace Catch::literals;
 
-	mixers::pulay<double> lm(5, 0.5, 2);
+	mixers::pulay<double> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
 
 	math::array<double, 1> vin({10.0, -20.0});
 	math::array<double, 1> vout({0.0,  22.2});

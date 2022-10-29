@@ -28,7 +28,7 @@
 #include <algorithm>
 
 #include <mpi3/environment.hpp>
-#include <mpi3/cartesian_communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <utils/skeleton_wrapper.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -37,10 +37,10 @@
 namespace inq {
 namespace basis {
 
-auto set_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
+auto set_subcomm(parallel::cartesian_communicator<2> & comm){
 	return comm.axis(1);
 }
-auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
+auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 	return comm.axis(0);
 }
 
@@ -53,7 +53,7 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 		typedef math::array<type, 2> internal_array_type;
 		typedef type element_type;
 
-		field_set(const basis_type & basis, const int num_vectors, boost::mpi3::cartesian_communicator<2> comm)
+		field_set(const basis_type & basis, const int num_vectors, parallel::cartesian_communicator<2> comm)
 			:full_comm_(std::move(comm)),
 			 set_comm_(basis::set_subcomm(full_comm_)),
 			 set_part_(num_vectors, set_comm_),
@@ -68,7 +68,7 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 
 		//when no communicator is given, use the basis communicator
 		field_set(const basis_type & basis, const int num_vectors)			
-			:field_set(basis, num_vectors, boost::mpi3::cartesian_communicator<2>(basis.comm(), {basis.comm().size(), 1}))
+			:field_set(basis, num_vectors, parallel::cartesian_communicator<2>(basis.comm(), {basis.comm().size(), 1}))
 		{
 		}
 
@@ -86,7 +86,7 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 
 		field_set(field_set && coeff) = default;
 
-		field_set(field_set && oldset, boost::mpi3::cartesian_communicator<2> new_comm):
+		field_set(field_set && oldset, parallel::cartesian_communicator<2> new_comm):
 			field_set(Basis{Basis{oldset.basis()}, basis_subcomm(new_comm)}, oldset.set_size(), new_comm)
 		{
 			math::array<int, 1> rem_points(basis().local_size());
@@ -184,12 +184,12 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 			
 			internal_array_type matrix_;
 			int istep_;
-			mutable boost::mpi3::cartesian_communicator<1> set_comm_;
+			mutable parallel::cartesian_communicator<1> set_comm_;
 			parallel::partition set_part_;
 
 		public:
 			
-			parallel_set_iterator(long basis_local_size, parallel::partition set_part, boost::mpi3::cartesian_communicator<1> set_comm, internal_array_type const & data):
+			parallel_set_iterator(long basis_local_size, parallel::partition set_part, parallel::cartesian_communicator<1> set_comm, internal_array_type const & data):
 				matrix_({basis_local_size, set_part.block_size()}),
 				istep_(0),
 				set_comm_(std::move(set_comm)),
@@ -245,8 +245,8 @@ auto basis_subcomm(boost::mpi3::cartesian_communicator<2> & comm){
 		
 	private:
 
-		mutable boost::mpi3::cartesian_communicator<2> full_comm_;
-		mutable boost::mpi3::cartesian_communicator<1> set_comm_;
+		mutable parallel::cartesian_communicator<2> full_comm_;
+		mutable parallel::cartesian_communicator<1> set_comm_;
 		inq::parallel::partition set_part_;
 		internal_array_type matrix_;
 		int num_vectors_;
@@ -291,7 +291,7 @@ field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq
 #include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 
-#include <mpi3/cartesian_communicator.hpp>
+#include <parallel/communicator.hpp>
 
 TEST_CASE("Class basis::field_set", "[basis::field_set]"){
   
@@ -302,7 +302,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
   
 	auto comm = boost::mpi3::environment::get_world_instance();
 
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+	parallel::cartesian_communicator<2> cart_comm(comm, {});
 
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
@@ -387,7 +387,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 		}
 	}
 
-	basis::field_set<basis::real_space, double> red(basis::field_set<basis::real_space, double>(ff), boost::mpi3::cartesian_communicator<2>{comm, {boost::mpi3::fill, 1}});
+	basis::field_set<basis::real_space, double> red(basis::field_set<basis::real_space, double>(ff), parallel::cartesian_communicator<2>{comm, {boost::mpi3::fill, 1}});
 
 	CHECK(red.basis().local_size() == red.matrix().size());
 	CHECK(red.local_set_size() == (~red.matrix()).size());

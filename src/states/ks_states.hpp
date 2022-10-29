@@ -104,7 +104,7 @@ public:
 	}
 
 	template <typename EigType, typename FunctionType>
-	auto get_efermi(boost::mpi3::communicator & comm, double nelec, EigType const & eig, FunctionType function){
+	auto get_efermi(parallel::communicator & comm, double nelec, EigType const & eig, FunctionType function){
 
 			
 		int const nitmax = 200;
@@ -143,7 +143,7 @@ public:
 	}
 	
 	template <typename EigenvalType, typename OccsType>
-	auto update_occupations(boost::mpi3::communicator & comm, EigenvalType const & eigenval, OccsType & occs) {
+	auto update_occupations(parallel::communicator & comm, EigenvalType const & eigenval, OccsType & occs) {
 
 		assert(sizes(eigenval) == sizes(occs));
 		

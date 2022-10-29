@@ -22,7 +22,7 @@
 */
 
 
-#include <mpi3/communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <mpi3/environment.hpp>
 
 #include <cassert>

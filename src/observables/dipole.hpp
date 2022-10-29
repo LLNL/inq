@@ -92,9 +92,11 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 	using namespace Catch::literals;
 	using math::vector3;
 
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
 	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(31.2_Ha);
 
-  basis::real_space bas(box);
+  basis::real_space bas(box, comm);
 
 	basis::field<basis::real_space, double> density(bas);
 

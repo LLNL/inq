@@ -23,7 +23,7 @@
 
 #include <gpu/run.hpp>
 #include <math/array.hpp>
-#include <mpi3/communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <parallel/array_iterator_2d.hpp>
 #include <parallel/partition.hpp>
 #include <utils/raw_pointer_cast.hpp>
@@ -284,7 +284,7 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
 #include <basis/field_set.hpp>
 
 #include <catch2/catch_all.hpp>
-#include <mpi3/cartesian_communicator.hpp>
+#include <parallel/communicator.hpp>
 
 TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
 
@@ -294,7 +294,7 @@ TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
 	using Catch::Approx;
 	using math::vector3;
 
-  boost::mpi3::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
+  parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 

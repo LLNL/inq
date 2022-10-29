@@ -104,7 +104,7 @@ namespace hamiltonian {
 		}
 
 		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> local_potential(boost::mpi3::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		basis::field<basis_type, double> local_potential(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
@@ -159,7 +159,7 @@ namespace hamiltonian {
 		}
 	
 		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> ionic_density(boost::mpi3::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		basis::field<basis_type, double> ionic_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -198,7 +198,7 @@ namespace hamiltonian {
 		}
 		
 		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> atomic_electronic_density(boost::mpi3::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		basis::field<basis_type, double> atomic_electronic_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -256,7 +256,7 @@ namespace hamiltonian {
 		}
 
 		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> nlcc_density(boost::mpi3::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		basis::field<basis_type, double> nlcc_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -342,7 +342,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 	double const gcut = 0.785;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	auto comm = boost::mpi3::environment::get_self_instance();
 	
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({element("P"), element("X")});
@@ -386,7 +386,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 		
 		auto cell = systems::box::cubic(20.0_b).cutoff_energy(20.0_Ha);
-		basis::real_space rs(cell);
+		basis::real_space rs(cell, comm);
 		
 		hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff());
 		

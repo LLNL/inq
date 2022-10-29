@@ -1,10 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__BASIS__BASE
-#define INQ__BASIS__BASE
+#ifndef INQ__PARALLEL__COMMUNICATOR
+#define INQ__PARALLEL__COMMUNICATOR
 
 /*
- Copyright (C) 2019 Xavier Andrade
+ Copyright (C) 2022 Xavier Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -21,64 +21,34 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <cassert>
 
+#include <mpi3/communicator.hpp>
+#include <mpi3/cartesian_communicator.hpp>
 #include <mpi3/environment.hpp>
-#include <parallel/communicator.hpp>
-#include <parallel/partition.hpp>
 
-namespace inq {
-namespace basis {
+#include <cassert>
+#include <array>
 
-class base {
-	
-public:
-	
-	base(const long size, parallel::communicator & comm):
-		comm_(comm),
-		part_(size, comm){
-	}
-	
-	auto & part() {
-		return part_;
-	}
-	
-	auto & part() const {
-		return part_;
-	}
+namespace inq{
+namespace parallel {
 
-	auto & comm() const {
-		return comm_;
-	}
+using communicator = boost::mpi3::communicator;
 
-	auto local_size() const {
-		return part_.local_size();
-	}
-
-	protected:
-	
-	mutable parallel::communicator comm_;
-	inq::parallel::partition part_;
-		
-};
+template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
+using cartesian_communicator = boost::mpi3::cartesian_communicator<D>;
 
 }
 }
 
-
-#ifdef INQ_BASIS_BASE_UNIT_TEST
-#undef INQ_BASIS_BASE_UNIT_TEST
+#ifdef INQ_PARALLEL_COMMUNICATOR_UNIT_TEST
+#undef INQ_PARALLEL_COMMUNICATOR_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
-TEST_CASE("class basis::base", "[basis::base]") {
-  
-	using namespace inq;
-	using namespace Catch::literals;
-  using math::vector3;
+TEST_CASE("class parallel::communicator", "[parallel::communicator]") {
   
 }
 #endif
 
+    
 #endif

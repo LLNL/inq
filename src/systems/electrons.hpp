@@ -47,19 +47,19 @@ class electrons {
 	
 public:
 	
-	static auto lot_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+	static auto lot_subcomm(parallel::cartesian_communicator<3> & comm){
 		return comm.axis(0);
 	}
-	static auto states_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+	static auto states_subcomm(parallel::cartesian_communicator<3> & comm){
 		return comm.axis(2);
 	}
-	static auto basis_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+	static auto basis_subcomm(parallel::cartesian_communicator<3> & comm){
 		return comm.axis(1);
 	}
-	static auto states_basis_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+	static auto states_basis_subcomm(parallel::cartesian_communicator<3> & comm){
 		return comm.hyperplane(0);
 	}
-	static auto lot_states_subcomm(boost::mpi3::cartesian_communicator<3> & comm){
+	static auto lot_states_subcomm(parallel::cartesian_communicator<3> & comm){
 		return comm.hyperplane(1);
 	}
 	
@@ -295,11 +295,11 @@ private:
 	
 public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
 
-	mutable boost::mpi3::cartesian_communicator<3> full_comm_;
-	mutable boost::mpi3::cartesian_communicator<1> lot_comm_;
-	mutable boost::mpi3::cartesian_communicator<2> lot_states_comm_;
-	mutable boost::mpi3::cartesian_communicator<1> states_comm_;
-	mutable boost::mpi3::cartesian_communicator<2> states_basis_comm_;
+	mutable parallel::cartesian_communicator<3> full_comm_;
+	mutable parallel::cartesian_communicator<1> lot_comm_;
+	mutable parallel::cartesian_communicator<2> lot_states_comm_;
+	mutable parallel::cartesian_communicator<1> states_comm_;
+	mutable parallel::cartesian_communicator<2> states_basis_comm_;
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;

@@ -220,7 +220,7 @@ auto diagonalize(MatrixType & matrix){
 TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
-	boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+	inq::parallel::cartesian_communicator<2> cart_comm(comm, {});
 	
 	SECTION("Real diagonal 2x2"){
 	

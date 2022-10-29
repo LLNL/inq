@@ -86,7 +86,7 @@ void invert_triangular(math::subspace_matrix<complex> & matrix){
 TEST_CASE("function solvers::invert_triangular", "[solvers::invert_triangular]") {
 
   auto comm = boost::mpi3::environment::get_world_instance();
-  boost::mpi3::cartesian_communicator<2> cart_comm(comm, {});
+	inq::parallel::cartesian_communicator<2> cart_comm(comm, {});
   
 	SECTION("Real 2x2"){
 	

@@ -23,7 +23,7 @@
 
 
 #include <parallel/partition.hpp>
-#include <mpi3/cartesian_communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <mpi3/environment.hpp>
 #include <mpi3/detail/datatype.hpp>
 
@@ -38,7 +38,7 @@ class array_iterator_2d {
 
   partition partx_;
   partition party_;  
-  mutable boost::mpi3::cartesian_communicator<2> comm_;
+  mutable parallel::cartesian_communicator<2> comm_;
   ArrayType arr_;
   int step_;
   int xpart_;
@@ -51,7 +51,7 @@ class array_iterator_2d {
   
 public:
 
-  array_iterator_2d(partition partx, partition party, boost::mpi3::cartesian_communicator<2> comm, ArrayType const & arr):
+  array_iterator_2d(partition partx, partition party, parallel::cartesian_communicator<2> comm, ArrayType const & arr):
     partx_(std::move(partx)),
     party_(std::move(party)),
     comm_(std::move(comm)),
@@ -148,7 +148,7 @@ TEST_CASE("class parallel::array_iterator_2d", "[parallel::array_iterator_2d]") 
 	using namespace inq;
 	using namespace Catch::literals;
   
-	auto comm = boost::mpi3::cartesian_communicator<2>{boost::mpi3::environment::get_world_instance(), {}};
+	auto comm = parallel::cartesian_communicator<2>{boost::mpi3::environment::get_world_instance(), {}};
 
   long sizex = 1234;
   long sizey = 987;

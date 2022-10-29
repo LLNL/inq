@@ -25,7 +25,7 @@
 #include <parallel/global_index.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
-#include <mpi3/communicator.hpp>
+#include <parallel/communicator.hpp>
 #include <mpi3/environment.hpp>
 #include <mpi3/detail/datatype.hpp>
 
@@ -60,7 +60,7 @@ public:
 		assert(end_ <= size);
 	}
 	
-	partition(const long size, const boost::mpi3::communicator & comm)
+	partition(const long size, const parallel::communicator & comm)
 		:partition(size, comm.size(), comm.rank()){
 	}
 	
@@ -140,7 +140,7 @@ public:
 	}
 	
 	template <class ArrayType>
-	auto gather(ArrayType const & array, boost::mpi3::communicator & comm, int root) const {
+	auto gather(ArrayType const & array, parallel::communicator & comm, int root) const {
 		if(comm.size() == 1) {
 			return array;
 		} else {

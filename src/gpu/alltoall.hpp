@@ -35,14 +35,14 @@
 
 #include <inq_config.h>
 #include <mpi.h>
-#include <mpi3/communicator.hpp>
+#include <parallel/communicator.hpp>
 
 
 namespace inq {
 namespace gpu {
 
 template <typename ArrayType>
-void alltoall(ArrayType & buf, boost::mpi3::communicator & comm){
+void alltoall(ArrayType & buf, parallel::communicator & comm){
 	CALI_CXX_MARK_FUNCTION;
 
 	using type = typename ArrayType::element_type;
