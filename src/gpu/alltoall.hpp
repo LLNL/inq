@@ -127,7 +127,7 @@ TEST_CASE("function gpu::alltoall", "[gpu::alltoall]"){
   using namespace inq;
   using namespace Catch::literals;
   
-  auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm = boost::mpi3::environment::get_world_instance();
   
   int blocksize = 100;
   

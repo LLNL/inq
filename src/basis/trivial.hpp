@@ -39,7 +39,7 @@ namespace basis {
 
 		const static int dimension = 1;
 		
-		trivial(const long size, parallel::communicator & comm):
+		trivial(const long size, parallel::communicator comm):
 			base(size, comm),
       size_(size){
 		}
