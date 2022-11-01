@@ -49,7 +49,6 @@ public:
 
 		CALI_CXX_MARK_FUNCTION;
 
-		nprojs_ = projectors.size();
 		max_sphere_size_ = 0;
 		max_nlm_ = 0;
 		for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
@@ -61,8 +60,6 @@ public:
 		positions_ = decltype(positions_)({nprojs_, max_sphere_size_});		
     coeff_ = decltype(coeff_)({nprojs_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
-		comms_ = decltype(comms_)(nprojs_);
-		nlm_ = decltype(nlm_)(nprojs_);
 		
     auto iproj = 0;
     for(auto it = projectors.cbegin(); it != projectors.cend(); ++it) {
@@ -105,7 +102,11 @@ public:
   
 
 	template <typename ProjectorsType>
-	projector_all(ProjectorsType const & projectors){
+	projector_all(ProjectorsType const & projectors):
+		nprojs_(projectors.size()),
+		comms_(nprojs_),
+		nlm_(nprojs_)
+	{
 		constructor(projectors);
 	}
 
