@@ -35,7 +35,8 @@ int main(int argc, char ** argv){
 
   input::environment env(argc, argv);
 	parallel::communicator comm = boost::mpi3::environment::get_world_instance();
-
+	comm.nccl_init();
+	
   if(comm.root()) printf("#  size [MB]      p2p [GB/s] agregate [GB/s]\n");
   
   for(int blocksize = 62; blocksize < 80*1024*1024 ; blocksize *= sqrt(2)){

@@ -21,18 +21,29 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <inq_config.h>
 
 #include <mpi3/communicator.hpp>
 #include <mpi3/cartesian_communicator.hpp>
 #include <mpi3/environment.hpp>
 
+#ifdef ENABLE_NCCL
+#define ncclRemoteError 1347895789
+#include <mpi3/nccl/communicator.hpp>
+#endif
+
 #include <cassert>
-#include <array>
+#include <optional>
 
 namespace inq{
 namespace parallel {
 
 class communicator : public boost::mpi3::communicator {
+
+#ifdef ENABLE_NCCL
+	std::optional<boost::mpi3::nccl::communicator> nccl_comm_;
+#endif
+	
 public:
 
 	communicator():
@@ -72,6 +83,23 @@ public:
 	auto operator=(communicator & comm) {
 		boost::mpi3::communicator::operator=(boost::mpi3::communicator(comm));
 	}
+
+	void nccl_init() {
+#ifdef ENABLE_NCCL
+		if(nccl_comm_.has_value()) return;
+		nccl_comm_ = *this;
+		assert(nccl_comm_.has_value());
+		assert(nccl_comm_->size() == this->size());
+#endif
+	}
+
+#ifdef ENABLE_NCCL
+	auto & nccl_comm() {
+		assert(nccl_comm_.has_value());
+		assert(nccl_comm_->size() == this->size());
+		return *nccl_comm_;
+	}
+#endif
 	
 };
 

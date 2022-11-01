@@ -25,11 +25,6 @@
 
 #include <cstdlib>
 
-#ifdef ENABLE_NCCL
-#define ncclRemoteError 1347895789
-#include <mpi3/nccl/communicator.hpp>
-#endif
-
 #include <math/array.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -93,14 +88,16 @@ void alltoall(ArrayType & buf, parallel::communicator & comm){
 		assert(false and "inq was compiled without nccl support");		
 #else
 		boost::mpi3::nccl::communicator ncomm{comm};
+		comm.nccl_init();
+		
 		ArrayType copy(buf);
 
 		CALI_CXX_MARK_SCOPE("alltoall:nccl");
 
 		ncclGroupStart();
 		for(int iproc = 0; iproc < comm.size(); iproc++){
-			ncclRecv(raw_pointer_cast(buf[iproc].base()), count*sizeof(type)/sizeof(double), ncclDouble, iproc, &ncomm, 0);
-			ncclSend(raw_pointer_cast(copy[iproc].base()), count*sizeof(type)/sizeof(double), ncclDouble, iproc, &ncomm, 0);
+			ncclRecv(raw_pointer_cast(buf[iproc].base()), count*sizeof(type)/sizeof(double), ncclDouble, iproc, &comm.nccl_comm(), 0);
+			ncclSend(raw_pointer_cast(copy[iproc].base()), count*sizeof(type)/sizeof(double), ncclDouble, iproc, &comm.nccl_comm(), 0);
 		}
 		ncclGroupEnd();
 
