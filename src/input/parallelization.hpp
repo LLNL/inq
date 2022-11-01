@@ -43,7 +43,8 @@ namespace input {
 			return 1;
 		}
 
-    explicit parallelization(parallel::communicator & comm):
+		template <class CommType>
+    explicit parallelization(CommType & comm):
 			nproc_kpts_(boost::mpi3::fill),
 			nproc_states_(1),
 			nproc_domains_(boost::mpi3::fill),
@@ -108,7 +109,7 @@ TEST_CASE("class input::parallelization", "[inq::input::parallelization]") {
   using namespace inq;
 	using namespace Catch::literals;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm = boost::mpi3::environment::get_world_instance();
 	
 	input::parallelization par(comm);
 	

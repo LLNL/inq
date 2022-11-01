@@ -54,8 +54,8 @@ auto numstr(long num){
 	return std::string(numcstr);				
 }
 
-template <class ArrayType>
-void save(std::string const & dirname, parallel::communicator & comm, parallel::partition const & part, ArrayType const & array){
+template <class ArrayType, class CommType>
+void save(std::string const & dirname, CommType & comm, parallel::partition const & part, ArrayType const & array){
 
 	CALI_CXX_MARK_SCOPE("save(array)");
 
@@ -94,8 +94,8 @@ void save(std::string const & dirname, parallel::communicator & comm, parallel::
 	
 }
 
-template <class ArrayType>
-auto load(std::string const & dirname, parallel::communicator & comm, parallel::partition const & part, ArrayType & array){
+template <class ArrayType, class CommType>
+auto load(std::string const & dirname, CommType & comm, parallel::partition const & part, ArrayType & array){
 
 	CALI_CXX_MARK_SCOPE("load(array)");
 
