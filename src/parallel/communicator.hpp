@@ -46,12 +46,13 @@ class communicator : public boost::mpi3::communicator {
 	
 public:
 
+	communicator(communicator const & comm) = delete;
+	
 	communicator():
 		boost::mpi3::communicator()
 	{
 	}
 	
-	communicator(communicator const & comm) = delete;
 	
   communicator(boost::mpi3::communicator & comm):
     boost::mpi3::communicator(comm)
@@ -77,7 +78,7 @@ public:
     boost::mpi3::communicator(std::move(comm))
   {
   }
-
+	
 	auto operator=(communicator const & comm) = delete;
 
 	auto operator=(communicator & comm) {
@@ -87,7 +88,7 @@ public:
 	void nccl_init() {
 #ifdef ENABLE_NCCL
 		if(nccl_comm_.has_value()) return;
-		nccl_comm_ = *this;
+		nccl_comm_.emplace(*this);
 		assert(nccl_comm_.has_value());
 		assert(nccl_comm_->size() == this->size());
 #endif
