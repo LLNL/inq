@@ -32,7 +32,48 @@
 namespace inq{
 namespace parallel {
 
-using communicator = boost::mpi3::communicator;
+class communicator : public boost::mpi3::communicator {
+public:
+
+	communicator():
+		boost::mpi3::communicator()
+	{
+	}
+	
+	communicator(communicator const & comm) = delete;
+	
+  communicator(boost::mpi3::communicator & comm):
+    boost::mpi3::communicator(comm)
+  {
+  }
+
+  communicator(boost::mpi3::communicator && comm):
+    boost::mpi3::communicator(std::move(comm))
+  {
+  }
+	
+  communicator(communicator & comm):
+    boost::mpi3::communicator(comm)
+  {
+  }
+
+	communicator(boost::mpi3::cartesian_communicator<1> & comm):
+    boost::mpi3::communicator(comm)
+  {
+  }
+
+	communicator(boost::mpi3::cartesian_communicator<1> && comm):
+    boost::mpi3::communicator(std::move(comm))
+  {
+  }
+
+	auto operator=(communicator const & comm) = delete;
+
+	auto operator=(communicator & comm) {
+		boost::mpi3::communicator::operator=(boost::mpi3::communicator(comm));
+	}
+	
+};
 
 template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
 using cartesian_communicator = boost::mpi3::cartesian_communicator<D>;
