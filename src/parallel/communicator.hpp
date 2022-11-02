@@ -48,35 +48,22 @@ class hybrid_communicator : public CommType {
 	
 public:
 
-	hybrid_communicator(hybrid_communicator const & comm) = delete;
-	
+	hybrid_communicator(hybrid_communicator const &) = delete;
+
 	hybrid_communicator():
 		CommType()
 	{
 	}
 	
-  hybrid_communicator(boost::mpi3::communicator & comm):
-    CommType(comm)
+	template <class ArgType>
+  hybrid_communicator(ArgType & arg):
+    CommType(arg)
   {
   }
 
-  hybrid_communicator(boost::mpi3::communicator && comm):
-    CommType(std::move(comm))
-  {
-  }
-	
-  hybrid_communicator(hybrid_communicator & comm):
-    CommType(comm)
-  {
-  }
-
-	hybrid_communicator(boost::mpi3::cartesian_communicator<1> & comm):
-    CommType(comm)
-  {
-  }
-
-	hybrid_communicator(boost::mpi3::cartesian_communicator<1> && comm):
-    CommType(std::move(comm))
+	template <class ArgType>
+  hybrid_communicator(ArgType && arg):
+    CommType(arg)
   {
   }
 	
