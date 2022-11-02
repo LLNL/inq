@@ -48,25 +48,26 @@ class hybrid_communicator : public CommType {
 	
 public:
 
+	using CommType::CommType;
+	
 	hybrid_communicator(hybrid_communicator const &) = delete;
 
 	hybrid_communicator():
 		CommType()
 	{
 	}
+
+  hybrid_communicator(hybrid_communicator & arg):
+    CommType(arg)
+  {
+  }
 	
 	template <class ArgType>
-  hybrid_communicator(ArgType & arg):
-    CommType(arg)
+  hybrid_communicator(ArgType && arg):
+    CommType(std::forward<ArgType>(arg))
   {
   }
 
-	template <class ArgType>
-  hybrid_communicator(ArgType && arg):
-    CommType(arg)
-  {
-  }
-	
 	auto operator=(hybrid_communicator const & comm) = delete;
 
 	auto operator=(hybrid_communicator & comm) {
@@ -95,7 +96,7 @@ public:
 using communicator = hybrid_communicator<boost::mpi3::communicator>;
 
 template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
-using cartesian_communicator = boost::mpi3::cartesian_communicator<D>;
+using cartesian_communicator = hybrid_communicator<boost::mpi3::cartesian_communicator<D>>;
 
 }
 }
