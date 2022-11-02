@@ -38,7 +38,9 @@
 namespace inq{
 namespace parallel {
 
-class communicator : public boost::mpi3::communicator {
+
+template <class CommType>
+class hybrid_communicator : public CommType {
 
 #ifdef ENABLE_NCCL
 	std::optional<boost::mpi3::nccl::communicator> nccl_comm_;
@@ -46,43 +48,42 @@ class communicator : public boost::mpi3::communicator {
 	
 public:
 
-	communicator(communicator const & comm) = delete;
+	hybrid_communicator(hybrid_communicator const & comm) = delete;
 	
-	communicator():
-		boost::mpi3::communicator()
+	hybrid_communicator():
+		CommType()
 	{
 	}
 	
-	
-  communicator(boost::mpi3::communicator & comm):
-    boost::mpi3::communicator(comm)
+  hybrid_communicator(boost::mpi3::communicator & comm):
+    CommType(comm)
   {
   }
 
-  communicator(boost::mpi3::communicator && comm):
-    boost::mpi3::communicator(std::move(comm))
-  {
-  }
-	
-  communicator(communicator & comm):
-    boost::mpi3::communicator(comm)
-  {
-  }
-
-	communicator(boost::mpi3::cartesian_communicator<1> & comm):
-    boost::mpi3::communicator(comm)
-  {
-  }
-
-	communicator(boost::mpi3::cartesian_communicator<1> && comm):
-    boost::mpi3::communicator(std::move(comm))
+  hybrid_communicator(boost::mpi3::communicator && comm):
+    CommType(std::move(comm))
   {
   }
 	
-	auto operator=(communicator const & comm) = delete;
+  hybrid_communicator(hybrid_communicator & comm):
+    CommType(comm)
+  {
+  }
 
-	auto operator=(communicator & comm) {
-		boost::mpi3::communicator::operator=(boost::mpi3::communicator(comm));
+	hybrid_communicator(boost::mpi3::cartesian_communicator<1> & comm):
+    CommType(comm)
+  {
+  }
+
+	hybrid_communicator(boost::mpi3::cartesian_communicator<1> && comm):
+    CommType(std::move(comm))
+  {
+  }
+	
+	auto operator=(hybrid_communicator const & comm) = delete;
+
+	auto operator=(hybrid_communicator & comm) {
+		CommType::operator=(CommType(comm));
 	}
 
 	void nccl_init() {
@@ -103,6 +104,8 @@ public:
 #endif
 	
 };
+
+using communicator = hybrid_communicator<boost::mpi3::communicator>;
 
 template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
 using cartesian_communicator = boost::mpi3::cartesian_communicator<D>;
