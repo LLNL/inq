@@ -44,6 +44,8 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 
 	if(phi.set_part().parallel()){
 
+		phi.set_comm().nccl_init();
+
 		// The direct copy is slow with multi right now: auto copy = phi.matrix();
 		math::array<typename FieldSetType::element_type, 2> copy({phi.basis().local_size(), phi.set_part().local_size()});
 		gpu::copy(phi.basis().local_size(), phi.set_part().local_size(), phi.matrix(), copy);
@@ -55,7 +57,14 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 			assert(block.extensions() == phi.matrix().extensions());
 
 			CALI_CXX_MARK_SCOPE("operations::rotate(2arg)_reduce");
+#ifdef ENABLE_NCCL
+			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(phi.matrix().data_elements()),
+														block.num_elements()*sizeof(typename FieldSetType::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &phi.set_comm().nccl_comm(), 0);		 
+			assert(res == ncclSuccess);
+#else
 			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi.matrix().data_elements()), std::plus<>{}, istep);
+#endif
+			gpu::sync();
 		}
 
 	} else {
@@ -177,7 +186,7 @@ TEST_CASE("function operations::rotate", "[operations::rotate]") {
 			}
 
 			operations::rotate(rot, aa);
-
+			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_set_size(); jj++){
 					auto jjg = aa.set_part().local_to_global(jj);
