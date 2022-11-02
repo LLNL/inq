@@ -139,8 +139,8 @@ public:
 		return (total_elements - size())/double(size());
 	}
 	
-	template <class ArrayType>
-	auto gather(ArrayType const & array, parallel::communicator & comm, int root) const {
+	template <class ArrayType, class CommType>
+	auto gather(ArrayType const & array, CommType & comm, int root) const {
 		if(comm.size() == 1) {
 			return array;
 		} else {

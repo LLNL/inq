@@ -63,8 +63,8 @@ template <typename Perturbation = perturbations::none>
 		{
 		}
 				
-		template <class ions_type>
-		void update_ionic_fields(parallel::communicator & comm, const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
+		template <class CommType, class ions_type>
+		void update_ionic_fields(CommType & comm, const ions_type & ions, const hamiltonian::atomic_potential & atomic_pot){
 
 			CALI_CXX_MARK_FUNCTION;
 			

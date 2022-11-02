@@ -42,7 +42,8 @@ class pulay : public base<Type> {
 		
 public:
 
-	pulay(const int arg_steps, const double arg_mix_factor, const long long dim, parallel::communicator & comm):
+	template <class CommType>
+	pulay(const int arg_steps, const double arg_mix_factor, const long long dim, CommType & comm):
 		iter_(0),
 		max_size_(arg_steps),
 		mix_factor_(arg_mix_factor),

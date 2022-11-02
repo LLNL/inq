@@ -21,18 +21,88 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <inq_config.h>
 
 #include <mpi3/communicator.hpp>
 #include <mpi3/cartesian_communicator.hpp>
 #include <mpi3/environment.hpp>
 
+#ifdef ENABLE_NCCL
+#define ncclRemoteError 1347895789
+#include <mpi3/nccl/communicator.hpp>
+#endif
+
 #include <cassert>
-#include <array>
+#include <optional>
 
 namespace inq{
 namespace parallel {
 
-using communicator = boost::mpi3::communicator;
+class communicator : public boost::mpi3::communicator {
+
+#ifdef ENABLE_NCCL
+	std::optional<boost::mpi3::nccl::communicator> nccl_comm_;
+#endif
+	
+public:
+
+	communicator(communicator const & comm) = delete;
+	
+	communicator():
+		boost::mpi3::communicator()
+	{
+	}
+	
+	
+  communicator(boost::mpi3::communicator & comm):
+    boost::mpi3::communicator(comm)
+  {
+  }
+
+  communicator(boost::mpi3::communicator && comm):
+    boost::mpi3::communicator(std::move(comm))
+  {
+  }
+	
+  communicator(communicator & comm):
+    boost::mpi3::communicator(comm)
+  {
+  }
+
+	communicator(boost::mpi3::cartesian_communicator<1> & comm):
+    boost::mpi3::communicator(comm)
+  {
+  }
+
+	communicator(boost::mpi3::cartesian_communicator<1> && comm):
+    boost::mpi3::communicator(std::move(comm))
+  {
+  }
+	
+	auto operator=(communicator const & comm) = delete;
+
+	auto operator=(communicator & comm) {
+		boost::mpi3::communicator::operator=(boost::mpi3::communicator(comm));
+	}
+
+	void nccl_init() {
+#ifdef ENABLE_NCCL
+		if(nccl_comm_.has_value()) return;
+		nccl_comm_.emplace(*this);
+		assert(nccl_comm_.has_value());
+		assert(nccl_comm_->size() == this->size());
+#endif
+	}
+
+#ifdef ENABLE_NCCL
+	auto & nccl_comm() {
+		assert(nccl_comm_.has_value());
+		assert(nccl_comm_->size() == this->size());
+		return *nccl_comm_;
+	}
+#endif
+	
+};
 
 template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
 using cartesian_communicator = boost::mpi3::cartesian_communicator<D>;

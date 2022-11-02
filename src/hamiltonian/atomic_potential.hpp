@@ -103,8 +103,8 @@ namespace hamiltonian {
 			return pseudopotential_list_.at(el.symbol());
 		}
 
-		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> local_potential(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		template <class CommType, class basis_type, class cell_type, class geo_type>
+		basis::field<basis_type, double> local_potential(CommType & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
@@ -158,8 +158,8 @@ namespace hamiltonian {
 			return potential;			
 		}
 	
-		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> ionic_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		template <class CommType, class basis_type, class cell_type, class geo_type>
+		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -197,8 +197,8 @@ namespace hamiltonian {
 			return density;			
 		}
 		
-		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> atomic_electronic_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		template <class CommType, class basis_type, class cell_type, class geo_type>
+		basis::field<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -255,8 +255,8 @@ namespace hamiltonian {
 			return has_nlcc_;
 		}
 
-		template <class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> nlcc_density(parallel::communicator & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		template <class CommType, class basis_type, class cell_type, class geo_type>
+		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -342,7 +342,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 	double const gcut = 0.785;
 
-	auto comm = boost::mpi3::environment::get_self_instance();
+	parallel::communicator comm = boost::mpi3::environment::get_self_instance();
 	
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({element("P"), element("X")});

@@ -103,8 +103,8 @@ public:
 		
 	}
 
-	template <typename EigType, typename FunctionType>
-	auto get_efermi(parallel::communicator & comm, double nelec, EigType const & eig, FunctionType function){
+	template <class CommType, typename EigType, typename FunctionType>
+	auto get_efermi(CommType & comm, double nelec, EigType const & eig, FunctionType function){
 
 			
 		int const nitmax = 200;
@@ -142,8 +142,8 @@ public:
 		return efermi;		
 	}
 	
-	template <typename EigenvalType, typename OccsType>
-	auto update_occupations(parallel::communicator & comm, EigenvalType const & eigenval, OccsType & occs) {
+	template <class CommType, typename EigenvalType, typename OccsType>
+	auto update_occupations(CommType & comm, EigenvalType const & eigenval, OccsType & occs) {
 
 		assert(sizes(eigenval) == sizes(occs));
 		

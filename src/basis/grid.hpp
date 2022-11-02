@@ -69,7 +69,7 @@ namespace basis {
 			
 		}
 		
-		grid(grid && old, parallel::communicator & new_comm):
+		grid(grid && old, parallel::communicator new_comm):
 			grid(old.cell_, old.nr_, old.spherical_g_grid_, old.double_grid_.enabled(), old.periodicity_, new_comm)
 		{
 		}
@@ -242,7 +242,7 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 
   ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm = boost::mpi3::environment::get_world_instance();
 
 	basis::grid gr(cell, {120, 45, 77}, true, false, 3, comm);
 
