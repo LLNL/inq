@@ -211,9 +211,18 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 				auto prev_proc = set_comm_.rank() - 1;
 				if(prev_proc == -1) prev_proc = set_comm_.size() - 1;
 
-				if(istep_ < set_comm_.size() - 1) {
-					//there is no need to copy for the last step
+				if(istep_ < set_comm_.size() - 1) {  //there is no need to copy for the last step
+
+					set_comm_.nccl_init();
+#ifdef ENABLE_NCCL
+					ncclGroupStart();
+					auto copy = matrix_;
+					ncclRecv(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements()*sizeof(type)/sizeof(double), ncclDouble, next_proc, &set_comm_.nccl_comm(), 0);
+					ncclSend(raw_pointer_cast(copy.data_elements()), matrix_.num_elements()*sizeof(type)/sizeof(double), ncclDouble, prev_proc, &set_comm_.nccl_comm(), 0);
+					ncclGroupEnd();
+#else
 					MPI_Sendrecv_replace(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, set_comm_.get(), MPI_STATUS_IGNORE);
+#endif
 				}
 				
 				istep_++;
