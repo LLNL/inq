@@ -101,6 +101,7 @@ void alltoall(ArrayType & buf, parallel::communicator & comm){
 		}
 		ncclGroupEnd();
 
+		gpu::sync();
 #endif
 
 	} else {
