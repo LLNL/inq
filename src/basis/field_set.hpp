@@ -220,6 +220,7 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 					ncclRecv(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements()*sizeof(type)/sizeof(double), ncclDouble, next_proc, &set_comm_.nccl_comm(), 0);
 					ncclSend(raw_pointer_cast(copy.data_elements()), matrix_.num_elements()*sizeof(type)/sizeof(double), ncclDouble, prev_proc, &set_comm_.nccl_comm(), 0);
 					ncclGroupEnd();
+					gpu::sync();
 #else
 					MPI_Sendrecv_replace(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, set_comm_.get(), MPI_STATUS_IGNORE);
 #endif

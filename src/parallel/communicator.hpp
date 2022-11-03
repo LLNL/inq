@@ -28,7 +28,6 @@
 #include <mpi3/environment.hpp>
 
 #ifdef ENABLE_NCCL
-#define ncclRemoteError 1347895789
 #include <mpi3/nccl/communicator.hpp>
 #endif
 

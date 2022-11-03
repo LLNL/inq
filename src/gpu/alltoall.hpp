@@ -87,7 +87,6 @@ void alltoall(ArrayType & buf, parallel::communicator & comm){
 #ifndef ENABLE_NCCL
 		assert(false and "inq was compiled without nccl support");		
 #else
-		boost::mpi3::nccl::communicator ncomm{comm};
 		comm.nccl_init();
 		
 		ArrayType copy(buf);
@@ -101,6 +100,7 @@ void alltoall(ArrayType & buf, parallel::communicator & comm){
 		}
 		ncclGroupEnd();
 
+		gpu::sync();
 #endif
 
 	} else {
