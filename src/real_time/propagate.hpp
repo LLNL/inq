@@ -85,7 +85,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
 
-		electrons.density_ = density::calculate(electrons);
+		electrons.density_ = observables::density::calculate(electrons);
 
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, pert);
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
@@ -124,7 +124,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			}
 			
 			//calculate the new density, energy, forces
-			electrons.density_ = density::calculate(electrons);
+			electrons.density_ = observables::density::calculate(electrons);
 			ham.scalar_potential = sc.ks_potential(electrons.density_, energy, (istep + 1.0)*dt);
 
 			auto ecalc = hamiltonian::calculate_energy(ham, electrons);

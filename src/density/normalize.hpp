@@ -30,6 +30,7 @@
 #include <utils/profiling.hpp>
 
 namespace inq {
+namespace observables {
 namespace density {
 
 template <class FieldType>
@@ -43,6 +44,7 @@ void normalize(FieldType & density, const double & total_charge){
 	
 }
 
+}
 }
 }
 
@@ -70,7 +72,7 @@ TEST_CASE("function density::normalize", "[density::normalize]") {
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value());
 
-		density::normalize(aa, 33.3);
+		observables::density::normalize(aa, 33.3);
 
 		CHECK(operations::integral(aa) == 33.3_a);
 		
@@ -84,7 +86,7 @@ TEST_CASE("function density::normalize", "[density::normalize]") {
 			aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value())*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));
 		}
 
-		density::normalize(aa, 19.2354);
+		observables::density::normalize(aa, 19.2354);
 
 		CHECK(real(operations::integral(aa)) == 19.2354_a);
 		

@@ -21,7 +21,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <density/calculate.hpp>
+#include <observables/density.hpp>
 #include <operations/gradient.hpp>
 #include <solvers/poisson.hpp>
 #include <systems/ions.hpp>
@@ -59,7 +59,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	for(auto & phi : electrons.lot()){
 		
 		auto gphi = operations::gradient(phi);
-		density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
+		observables::density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
 	
 		//the non-local potential term
 		for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){

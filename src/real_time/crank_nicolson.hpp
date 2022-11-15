@@ -22,7 +22,7 @@
 #ifndef INQ__REAL_TIME__CRANK_NICOLSON
 #define INQ__REAL_TIME__CRANK_NICOLSON
 
-#include <density/calculate.hpp>
+#include <observables/density.hpp>
 #include <operations/preconditioner.hpp>
 #include <solvers/steepest_descent.hpp>
 #include <systems/electrons.hpp>

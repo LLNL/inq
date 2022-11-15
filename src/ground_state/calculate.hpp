@@ -22,7 +22,7 @@
 #include <operations/orthogonalize.hpp>
 #include <operations/preconditioner.hpp>
 #include <operations/integral.hpp>
-#include <density/calculate.hpp>
+#include <observables/density.hpp>
 #include <density/normalize.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
@@ -135,13 +135,13 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 		double density_diff = 0.0;
 		{
-			auto new_density = density::calculate(electrons);
+			auto new_density = observables::density::calculate(electrons);
 			density_diff = operations::integral_absdiff(electrons.density_, new_density);				
 			density_diff /= electrons.states_.num_electrons();
 				
 			if(inter.self_consistent() and solver.mix_density()) {
 				mixer->operator()(electrons.density_.linear(), new_density.linear());
-				density::normalize(electrons.density_, electrons.states_.num_electrons());
+				observables::density::normalize(electrons.density_, electrons.states_.num_electrons());
 			} else {
 				electrons.density_ = std::move(new_density);
 			}
@@ -208,7 +208,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	}
 
 	//make sure we have a density consistent with phi
-	electrons.density_ = density::calculate(electrons);
+	electrons.density_ = observables::density::calculate(electrons);
 
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 

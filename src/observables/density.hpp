@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__DENSITY__CALCULATE
-#define INQ__DENSITY__CALCULATE
+#ifndef INQ__OBSERVABLES__DENSITY
+#define INQ__OBSERVABLES__DENSITY
 
 /*
  Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
@@ -30,6 +30,7 @@
 #include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
+namespace observables {
 namespace density {
 
 template<class occupations_array_type, class field_set_type>
@@ -83,16 +84,17 @@ basis::field<basis::real_space, double> calculate(const systems::electrons & ele
 
 }
 }
+}
 
-#ifdef INQ_DENSITY_CALCULATE_UNIT_TEST
-#undef INQ_DENSITY_CALCULATE_UNIT_TEST
+#ifdef INQ_OBSERVABLES_DENSITY_UNIT_TEST
+#undef INQ_OBSERVABLES_DENSITY_UNIT_TEST
 
 #include <basis/trivial.hpp>
 #include <math/complex.hpp>
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function density::calculate", "[density::calculate]") {
+TEST_CASE("function observables::density", "[observables::density]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
@@ -126,7 +128,7 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		basis::field<basis::trivial, double> dd(bas);
 		dd = 0.0;
 		
-		density::calculate_add(occ, aa, dd);
+		observables::density::calculate_add(occ, aa, dd);
 
 		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.linear().data_elements()), dd.linear().size(), std::plus<>{});
 		
@@ -151,7 +153,7 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		basis::field<basis::trivial, double> dd(bas);
 		dd = 0.0;
 		
-		density::calculate_add(occ, aa, dd);
+		observables::density::calculate_add(occ, aa, dd);
 
 		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.linear().data_elements()), dd.linear().size(), std::plus<>{});
 		

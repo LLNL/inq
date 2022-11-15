@@ -22,7 +22,7 @@
 #ifndef INQ__REAL_TIME__ETRS
 #define INQ__REAL_TIME__ETRS
 
-#include <density/calculate.hpp>
+#include <observables/density.hpp>
 #include <operations/exponential.hpp>
 #include <systems/electrons.hpp>
 #include <systems/ions.hpp>
@@ -42,7 +42,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
 		
 		//calculate H(t + dt) from the full step propagation
-		density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.density_);
+		observables::density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.density_);
 
 		iphi++;
 	}
