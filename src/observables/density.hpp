@@ -82,6 +82,17 @@ basis::field<basis::real_space, double> calculate(const systems::electrons & ele
 	return density;
 }
 
+template <class FieldType>
+void normalize(FieldType & density, const double & total_charge){
+
+	CALI_CXX_MARK_FUNCTION;
+	
+	auto qq = operations::integral(density);
+	assert(fabs(qq) > 1e-16);
+	for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
+	
+}
+
 }
 }
 }
@@ -163,6 +174,44 @@ TEST_CASE("function observables::density", "[observables::density]") {
 	
 }
 
+TEST_CASE("function observables::density::normalize", "[observables::density::normalize]") {
+
+	using namespace inq;
+	using namespace Catch::literals;
+
+	const int npoint = 100;
+
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
+	basis::trivial bas(npoint, comm);
+	
+	SECTION("double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value());
+
+		observables::density::normalize(aa, 33.3);
+
+		CHECK(operations::integral(aa) == 33.3_a);
+		
+	}
+	
+	SECTION("complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
+			aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value())*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));
+		}
+
+		observables::density::normalize(aa, 19.2354);
+
+		CHECK(real(operations::integral(aa)) == 19.2354_a);
+		
+	}
+	
+}
 
 #endif
 

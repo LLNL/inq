@@ -9,7 +9,6 @@
 #include <operations/randomize.hpp>
 #include <operations/orthogonalize.hpp>
 #include <observables/density.hpp>
-#include <density/normalize.hpp>
 #include <systems/electrons.hpp>
 
 namespace inq {

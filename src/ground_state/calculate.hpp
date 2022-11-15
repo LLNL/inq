@@ -23,7 +23,6 @@
 #include <operations/preconditioner.hpp>
 #include <operations/integral.hpp>
 #include <observables/density.hpp>
-#include <density/normalize.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
 #include <mixers/broyden.hpp>
