@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__DENSITY__CALCULATE
-#define INQ__DENSITY__CALCULATE
+#ifndef INQ__OBSERVABLES__DENSITY
+#define INQ__OBSERVABLES__DENSITY
 
 /*
  Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
@@ -30,6 +30,7 @@
 #include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
+namespace observables {
 namespace density {
 
 template<class occupations_array_type, class field_set_type>
@@ -81,18 +82,30 @@ basis::field<basis::real_space, double> calculate(const systems::electrons & ele
 	return density;
 }
 
+template <class FieldType>
+void normalize(FieldType & density, const double & total_charge){
+
+	CALI_CXX_MARK_FUNCTION;
+	
+	auto qq = operations::integral(density);
+	assert(fabs(qq) > 1e-16);
+	for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
+	
+}
+
+}
 }
 }
 
-#ifdef INQ_DENSITY_CALCULATE_UNIT_TEST
-#undef INQ_DENSITY_CALCULATE_UNIT_TEST
+#ifdef INQ_OBSERVABLES_DENSITY_UNIT_TEST
+#undef INQ_OBSERVABLES_DENSITY_UNIT_TEST
 
 #include <basis/trivial.hpp>
 #include <math/complex.hpp>
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function density::calculate", "[density::calculate]") {
+TEST_CASE("function observables::density", "[observables::density]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
@@ -126,7 +139,7 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		basis::field<basis::trivial, double> dd(bas);
 		dd = 0.0;
 		
-		density::calculate_add(occ, aa, dd);
+		observables::density::calculate_add(occ, aa, dd);
 
 		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.linear().data_elements()), dd.linear().size(), std::plus<>{});
 		
@@ -151,7 +164,7 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 		basis::field<basis::trivial, double> dd(bas);
 		dd = 0.0;
 		
-		density::calculate_add(occ, aa, dd);
+		observables::density::calculate_add(occ, aa, dd);
 
 		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.linear().data_elements()), dd.linear().size(), std::plus<>{});
 		
@@ -161,6 +174,44 @@ TEST_CASE("function density::calculate", "[density::calculate]") {
 	
 }
 
+TEST_CASE("function observables::density::normalize", "[observables::density::normalize]") {
+
+	using namespace inq;
+	using namespace Catch::literals;
+
+	const int npoint = 100;
+
+	auto comm = boost::mpi3::environment::get_world_instance();
+	
+	basis::trivial bas(npoint, comm);
+	
+	SECTION("double"){
+		
+		basis::field<basis::trivial, double> aa(bas);
+
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value());
+
+		observables::density::normalize(aa, 33.3);
+
+		CHECK(operations::integral(aa) == 33.3_a);
+		
+	}
+	
+	SECTION("complex"){
+		
+		basis::field<basis::trivial, complex> aa(bas);
+
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
+			aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value())*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));
+		}
+
+		observables::density::normalize(aa, 19.2354);
+
+		CHECK(real(operations::integral(aa)) == 19.2354_a);
+		
+	}
+	
+}
 
 #endif
 
