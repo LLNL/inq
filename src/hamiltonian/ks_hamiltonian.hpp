@@ -33,6 +33,7 @@
 #include <ions/geometry.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
+#include <operations/gradient.hpp>
 #include <states/ks_states.hpp>
 #include <states/orbital_set.hpp>
 
@@ -173,6 +174,14 @@ namespace hamiltonian {
 			non_local(phi.fields(), hphi.fields());
 
 			return hphi;
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
+
+    auto momentum(const states::orbital_set<basis::real_space, complex> & phi) const{
+			CALI_CXX_MARK_FUNCTION;
+
+			return operations::gradient(phi);
 		}
 		
 		////////////////////////////////////////////////////////////////////////////////////////////
