@@ -248,16 +248,85 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
+	template <typename OcType, typename PhiType, typename GPhiType>
+	struct force_term {
+		OcType oc;
+		PhiType phi;
+		GPhiType gphi;
+		constexpr auto operator()(int ist, int ip) const {
+			return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
+		}
+	};
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename PhiType, typename GPhiType, typename ProjectorsType, typename MetricType, typename OccsType>
 	void force(PhiType & phi, GPhiType const & gphi, ProjectorsType const & projs, MetricType const & metric,
 						 OccsType const & occs, math::array<math::vector3<double>, 1> & forces_non_local) const {
+
 		CALI_CXX_MARK_FUNCTION;
 
+		using boost::multi::blas::gemm;
+		using boost::multi::blas::transposed;
+		namespace blas = boost::multi::blas;
+		
 		for(auto proj = projs.cbegin(); proj != projs.cend(); ++proj){
-			forces_non_local[proj->iatom()] += metric.to_cartesian(proj->force(phi, gphi, occs));
+			if(proj->num_projectors() == 0) continue;
+		
+			math::vector3<double, math::covariant> force{0.0, 0.0, 0.0};
+			
+			math::array<typename PhiType::element_type, 2> sphere_phi({proj->sphere().size(), phi.local_set_size()});
+			math::array<typename GPhiType::element_type, 2> sphere_gphi({proj->sphere().size(), phi.local_set_size()});		
+			
+			{
+					CALI_CXX_MARK_SCOPE("projector_force_gather"); 
+					gpu::run(phi.local_set_size(), proj->sphere().size(),
+									 [sphi = begin(sphere_phi), sgphi = begin(sphere_gphi), phic = begin(phi.cubic()), gphic = begin(gphi.cubic()), sph = proj->sphere().ref()] GPU_LAMBDA (auto ist, auto ipoint){
+										 sphi[ipoint][ist] = phic[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ist];
+										 sgphi[ipoint][ist] = gphic[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ist];
+									 });
+			}
+			
+			math::array<typename PhiType::element_type, 2> projections({proj->num_projectors(), phi.local_set_size()});
+			
+			if(proj->sphere().size() > 0) {
+				
+				blas::real_doubled(projections) = gemm(proj->sphere().volume_element(), proj->matrix(), blas::real_doubled(sphere_phi));
+				
+				{
+					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
+					
+					gpu::run(phi.local_set_size(), proj->num_projectors(),
+									 [proj = begin(projections), coeff = begin(proj->kb_coeff())]
+									 GPU_LAMBDA (auto ist, auto iproj){
+										 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+									 });
+				}
+			} else {
+				projections.elements().fill(0.0);
+			}
+			
+			if(proj->comm().size() > 1) {
+				CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
+				proj->comm().all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+			}
+			
+			if(proj->sphere().size() > 0) {
+				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(proj->matrix()), blas::real_doubled(projections));
+
+				{
+					CALI_CXX_MARK_SCOPE("projector_force_sum");
+					force = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(proj->sphere().size()),
+													 force_term<decltype(begin(occs)), decltype(begin(sphere_phi)), decltype(begin(sphere_gphi))>{begin(occs), begin(sphere_phi), begin(sphere_gphi)});
+				}
+			}
+			
+			forces_non_local[proj->iatom()] += phi.basis().volume_element()*metric.to_cartesian(force);
 		}
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
 private:
 			
 	int nprojs_;
