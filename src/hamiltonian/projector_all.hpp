@@ -245,6 +245,19 @@ public:
 		}
 	}
 
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename PhiType, typename GPhiType, typename ProjectorsType, typename MetricType, typename OccsType>
+	void force(PhiType & phi, GPhiType const & gphi, ProjectorsType const & projs, MetricType const & metric,
+						 OccsType const & occs, math::array<math::vector3<double>, 1> & forces_non_local) const {
+		CALI_CXX_MARK_FUNCTION;
+
+		for(auto proj = projs.cbegin(); proj != projs.cend(); ++proj){
+			forces_non_local[proj->iatom()] += metric.to_cartesian(proj->force(phi, gphi, occs));
+		}
+	}
+
 private:
 			
 	int nprojs_;
