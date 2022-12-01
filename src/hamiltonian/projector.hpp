@@ -126,10 +126,6 @@ public:
 		return kb_coeff_[iproj];
 	}
 
-	auto & kb_coeff() const{
-		return kb_coeff_;
-	}
-
 	auto iatom() const {
 		return iatom_;
 	}
@@ -142,10 +138,6 @@ public:
 		return matrix_;
 	}
 
-	auto & comm() const {
-		return comm_;
-	}
-	
 	friend class projector_all;
 	
 private:

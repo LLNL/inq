@@ -269,9 +269,9 @@ public:
 		using boost::multi::blas::gemm;
 		using boost::multi::blas::transposed;
 		namespace blas = boost::multi::blas;
-		
+
+		auto iproj = 0;
 		for(auto proj = projs.cbegin(); proj != projs.cend(); ++proj){
-			if(proj->num_projectors() == 0) continue;
 		
 			math::vector3<double, math::covariant> force{0.0, 0.0, 0.0};
 			
@@ -297,18 +297,17 @@ public:
 					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
 					
 					gpu::run(phi.local_set_size(), proj->num_projectors(),
-									 [proj = begin(projections), coeff = begin(proj->kb_coeff())]
-									 GPU_LAMBDA (auto ist, auto iproj){
-										 proj[iproj][ist] = proj[iproj][ist]*coeff[iproj];
+									 [proj = begin(projections), coeff = begin(coeff_[iproj])] GPU_LAMBDA (auto ist, auto ipj){
+										 proj[ipj][ist] = proj[ipj][ist]*coeff[ipj];
 									 });
 				}
 			} else {
 				projections.elements().fill(0.0);
 			}
 			
-			if(proj->comm().size() > 1) {
+			if(comms_[iproj].size() > 1) {
 				CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				proj->comm().all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
 			}
 			
 			if(proj->sphere().size() > 0) {
@@ -322,6 +321,8 @@ public:
 			}
 			
 			forces_non_local[proj->iatom()] += phi.basis().volume_element()*metric.to_cartesian(force);
+
+			iproj++;
 		}
 	}
 
