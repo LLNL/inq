@@ -274,7 +274,8 @@ public:
 
 		math::array<typename PhiType::element_type, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		math::array<typename GPhiType::element_type, 3> sphere_gphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-
+		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
+ 
 		{ CALI_CXX_MARK_SCOPE("projector_all::force::gather");
 				
 			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
@@ -298,8 +299,10 @@ public:
 			auto sphere_gphi = sphere_gphi_all[iproj]({0, proj->sphere().size()});			
 
 			math::vector3<double, math::covariant> force{0.0, 0.0, 0.0};
+
+			assert(proj->num_projectors() == nlm_[iproj]);
 			
-			math::array<typename PhiType::element_type, 2> projections({proj->num_projectors(), phi.local_set_size()});
+			auto projections = projections_all[iproj]({0, nlm_[iproj]});
 			
 			if(proj->sphere().size() > 0) {
 				
@@ -314,12 +317,15 @@ public:
 									 });
 				}
 			} else {
-				projections.elements().fill(0.0);
+					gpu::run(phi.local_set_size(), proj->num_projectors(),
+									 [proj = begin(projections), coeff = begin(coeff_[iproj])] GPU_LAMBDA (auto ist, auto ipj){
+										 proj[ipj][ist] = 0.0;
+									 });
 			}
 			
 			if(comms_[iproj].size() > 1) {
 				CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+				comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(projections.base()), projections.num_elements(), std::plus<>{});
 			}
 			
 			if(proj->sphere().size() > 0) {
