@@ -129,7 +129,7 @@ public:
 	auto iatom() const {
 		return iatom_;
 	}
-
+	
 	auto & sphere() const {
 		return sphere_;
 	}

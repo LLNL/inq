@@ -86,6 +86,7 @@ public:
 
 			comms_[iproj] = it->comm_;
 			nlm_[iproj] = it->nproj_;
+			iatom_[iproj] = it->iatom_;
 			
       iproj++;
     }
@@ -105,7 +106,8 @@ public:
 	projector_all(ProjectorsType const & projectors):
 		nprojs_(projectors.size()),
 		comms_(nprojs_),
-		nlm_(nprojs_)
+		nlm_(nprojs_),
+		iatom_(nprojs_)
 	{
 		constructor(projectors);
 	}
@@ -270,22 +272,32 @@ public:
 		using boost::multi::blas::transposed;
 		namespace blas = boost::multi::blas;
 
+		math::array<typename PhiType::element_type, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		math::array<typename GPhiType::element_type, 3> sphere_gphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+
+		{ CALI_CXX_MARK_SCOPE("projector_all::force::gather");
+				
+			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
+							 [sgr = begin(sphere_phi_all), gsgr = begin(sphere_gphi_all), gr = begin(phi.cubic()), ggr = begin(gphi.cubic()), poi = begin(points_), pos = begin(positions_), kpoint = phi.kpoint()]
+							 GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
+								 if(poi[iproj][ipoint][0] >= 0){
+									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));
+									 sgr[iproj][ipoint][ist] = phase*gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
+									 gsgr[iproj][ipoint][ist] = phase*ggr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
+								 } else {
+									 sgr[iproj][ipoint][ist] = 0.0;
+									 gsgr[iproj][ipoint][ist] = {complex(0.0), complex(0.0), complex(0.0)};
+								 }
+							 });
+		}
+				
 		auto iproj = 0;
 		for(auto proj = projs.cbegin(); proj != projs.cend(); ++proj){
 		
+			auto sphere_phi = sphere_phi_all[iproj]({0, proj->sphere().size()});
+			auto sphere_gphi = sphere_gphi_all[iproj]({0, proj->sphere().size()});			
+
 			math::vector3<double, math::covariant> force{0.0, 0.0, 0.0};
-			
-			math::array<typename PhiType::element_type, 2> sphere_phi({proj->sphere().size(), phi.local_set_size()});
-			math::array<typename GPhiType::element_type, 2> sphere_gphi({proj->sphere().size(), phi.local_set_size()});		
-			
-			{
-					CALI_CXX_MARK_SCOPE("projector_force_gather"); 
-					gpu::run(phi.local_set_size(), proj->sphere().size(),
-									 [sphi = begin(sphere_phi), sgphi = begin(sphere_gphi), phic = begin(phi.cubic()), gphic = begin(gphi.cubic()), sph = proj->sphere().ref()] GPU_LAMBDA (auto ist, auto ipoint){
-										 sphi[ipoint][ist] = phic[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ist];
-										 sgphi[ipoint][ist] = gphic[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ist];
-									 });
-			}
 			
 			math::array<typename PhiType::element_type, 2> projections({proj->num_projectors(), phi.local_set_size()});
 			
@@ -320,7 +332,7 @@ public:
 				}
 			}
 			
-			forces_non_local[proj->iatom()] += phi.basis().volume_element()*metric.to_cartesian(force);
+			forces_non_local[iatom_[iproj]] += phi.basis().volume_element()*metric.to_cartesian(force);
 
 			iproj++;
 		}
@@ -338,7 +350,8 @@ private:
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
 	mutable boost::multi::array<parallel::communicator, 1> comms_;	
-	math::array<int, 1> nlm_;	
+	math::array<int, 1> nlm_;
+	math::array<int, 1> iatom_;
   
 };
   
