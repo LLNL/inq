@@ -101,7 +101,8 @@ public:
     max_nlm_(0) {
   }
   
-
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename ProjectorsType>
 	projector_all(ProjectorsType const & projectors):
 		nprojs_(projectors.size()),
@@ -112,6 +113,8 @@ public:
 		constructor(projectors);
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////		
+	
 	template <typename KpointType>
 	math::array<complex, 3> project(basis::field_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
     
@@ -262,8 +265,8 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
-	template <typename PhiType, typename GPhiType, typename ProjectorsType, typename MetricType, typename OccsType>
-	void force(PhiType & phi, GPhiType const & gphi, ProjectorsType const & projs, MetricType const & metric,
+	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType>
+	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric,
 						 OccsType const & occs, math::array<math::vector3<double>, 1> & forces_non_local) const {
 
 		CALI_CXX_MARK_FUNCTION;
@@ -291,57 +294,42 @@ public:
 								 }
 							 });
 		}
-				
-		auto iproj = 0;
-		for(auto proj = projs.cbegin(); proj != projs.cend(); ++proj){
-		
-			auto sphere_phi = sphere_phi_all[iproj]({0, proj->sphere().size()});
-			auto sphere_gphi = sphere_gphi_all[iproj]({0, proj->sphere().size()});			
-			auto projections = projections_all[iproj]({0, nlm_[iproj]});
-			auto matrix = matrices_[iproj]({0, nlm_[iproj]}, {0, proj->sphere().size()});
-				
-			math::vector3<double, math::covariant> force{0.0, 0.0, 0.0};
 
-			assert(proj->num_projectors() == nlm_[iproj]);
+		for(auto iproj = 0; iproj < nprojs_; iproj++){
+			blas::real_doubled(projections_all[iproj]) = gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
+		}
 			
-			if(proj->sphere().size() > 0) {
-				
-				blas::real_doubled(projections) = gemm(proj->sphere().volume_element(), matrix, blas::real_doubled(sphere_phi));
-				
-				{
-					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
-					
-					gpu::run(phi.local_set_size(), proj->num_projectors(),
-									 [proj = begin(projections), coeff = begin(coeff_[iproj])] GPU_LAMBDA (auto ist, auto ipj){
-										 proj[ipj][ist] = proj[ipj][ist]*coeff[ipj];
-									 });
-				}
-			} else {
-					gpu::run(phi.local_set_size(), proj->num_projectors(),
-									 [proj = begin(projections), coeff = begin(coeff_[iproj])] GPU_LAMBDA (auto ist, auto ipj){
-										 proj[ipj][ist] = 0.0;
-									 });
-			}
+		{ CALI_CXX_MARK_SCOPE("projector_force_scal"); 
 			
+			gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
+							 [proj = begin(projections_all), coeff = begin(coeff_)] GPU_LAMBDA (auto ist, auto ipj, auto iproj){
+								 proj[iproj][ipj][ist] *= coeff[iproj][ipj];
+							 });
+		}
+
+		for(auto iproj = 0; iproj < nprojs_; iproj++){		 		
 			if(comms_[iproj].size() > 1) {
 				CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(projections.base()), projections.num_elements(), std::plus<>{});
+				comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(projections_all[iproj].base()), projections_all[iproj].num_elements(), std::plus<>{});
 			}
-			
-			if(proj->sphere().size() > 0) {
-				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(matrix), blas::real_doubled(projections));
-
-				{
-					CALI_CXX_MARK_SCOPE("projector_force_sum");
-					force = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(proj->sphere().size()),
-													 force_term<decltype(begin(occs)), decltype(begin(sphere_phi)), decltype(begin(sphere_gphi))>{begin(occs), begin(sphere_phi), begin(sphere_gphi)});
-				}
-			}
-			
-			forces_non_local[iatom_[iproj]] += phi.basis().volume_element()*metric.to_cartesian(force);
-
-			iproj++;
 		}
+
+		for(auto iproj = 0; iproj < nprojs_; iproj++){		
+			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, transposed(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
+		}
+
+		math::array<math::vector3<double, math::covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
+			
+		for(auto iproj = 0; iproj < nprojs_; iproj++) {
+				CALI_CXX_MARK_SCOPE("projector_force_sum");
+				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_),
+																force_term<decltype(begin(occs)), decltype(begin(sphere_phi_all[iproj])), decltype(begin(sphere_gphi_all[iproj]))>{begin(occs), begin(sphere_phi_all[iproj]), begin(sphere_gphi_all[iproj])});
+		}
+
+		for(auto iproj = 0; iproj < nprojs_; iproj++) {
+			forces_non_local[iatom_[iproj]] += phi.basis().volume_element()*metric.to_cartesian(force[iproj]);
+		}
+		
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
