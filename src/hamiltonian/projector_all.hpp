@@ -297,16 +297,16 @@ public:
 		
 			auto sphere_phi = sphere_phi_all[iproj]({0, proj->sphere().size()});
 			auto sphere_gphi = sphere_gphi_all[iproj]({0, proj->sphere().size()});			
-
+			auto projections = projections_all[iproj]({0, nlm_[iproj]});
+			auto matrix = matrices_[iproj]({0, nlm_[iproj]}, {0, proj->sphere().size()});
+				
 			math::vector3<double, math::covariant> force{0.0, 0.0, 0.0};
 
 			assert(proj->num_projectors() == nlm_[iproj]);
 			
-			auto projections = projections_all[iproj]({0, nlm_[iproj]});
-			
 			if(proj->sphere().size() > 0) {
 				
-				blas::real_doubled(projections) = gemm(proj->sphere().volume_element(), proj->matrix(), blas::real_doubled(sphere_phi));
+				blas::real_doubled(projections) = gemm(proj->sphere().volume_element(), matrix, blas::real_doubled(sphere_phi));
 				
 				{
 					CALI_CXX_MARK_SCOPE("projector_force_scal"); 
@@ -329,7 +329,7 @@ public:
 			}
 			
 			if(proj->sphere().size() > 0) {
-				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(proj->matrix()), blas::real_doubled(projections));
+				blas::real_doubled(sphere_phi) = blas::gemm(1., transposed(matrix), blas::real_doubled(projections));
 
 				{
 					CALI_CXX_MARK_SCOPE("projector_force_sum");
