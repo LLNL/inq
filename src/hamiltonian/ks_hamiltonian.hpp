@@ -176,22 +176,6 @@ namespace hamiltonian {
 		
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-		int num_projectors() const {
-			int nn = 0;
-			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				nn += it->num_projectors();
-			}
-			return nn;			
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
-		auto & projectors() const {
-			return projectors_;			
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
 		auto & projectors_all() const {
 			return projectors_all_;
 		}
@@ -200,9 +184,6 @@ namespace hamiltonian {
 
     template <class output_stream>
     void info(output_stream & out) const {
-      out << "HAMILTONIAN:" << std::endl;
-      out << "  Total number of projectors = " << num_projectors() << std::endl;
-      out << std::endl;
     }	
 		
   private:
