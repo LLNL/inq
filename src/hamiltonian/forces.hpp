@@ -60,11 +60,9 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		
 		auto gphi = operations::gradient(phi);
 		observables::density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
-	
-		//the non-local potential term
-		for(auto proj = ham.projectors().cbegin(); proj != ham.projectors().cend(); ++proj){
-			forces_non_local[proj->iatom()] += ions.cell().metric().to_cartesian(proj->force(phi, gphi, electrons.occupations()[iphi]));
-		}
+
+		ham.projectors_all().force(phi, gphi, ions.cell().metric(), electrons.occupations()[iphi], forces_non_local);
+		
 		iphi++;
 	}
 	
