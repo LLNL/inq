@@ -51,8 +51,9 @@ namespace hamiltonian {
 		void update_projectors(const basis_type & basis, const ions::unit_cell & cell, const atomic_potential & pot, const ions::geometry & geo){
 			
 			CALI_CXX_MARK_FUNCTION;
+
+			std::list<projector> projectors;
 			
-			projectors_.clear();
 			projectors_fourier_map_.clear();			
 			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
@@ -61,12 +62,12 @@ namespace hamiltonian {
 																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(basis.cell().metric().to_contravariant(geo.coordinates()[iatom]));
 				} else {
-					projectors_.emplace_back(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
-					if(projectors_.back().empty()) projectors_.pop_back(); 
+					projectors.emplace_back(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
+					if(projectors.back().empty()) projectors.pop_back(); 
 				}
 			}
 
-			projectors_all_ = projector_all(projectors_);
+			projectors_all_ = projector_all(projectors);
 			
 		}
 		
@@ -176,22 +177,6 @@ namespace hamiltonian {
 		
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-		int num_projectors() const {
-			int nn = 0;
-			for(auto it = projectors_.cbegin(); it != projectors_.cend(); ++it){
-				nn += it->num_projectors();
-			}
-			return nn;			
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
-		auto & projectors() const {
-			return projectors_;			
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
 		auto & projectors_all() const {
 			return projectors_all_;
 		}
@@ -200,14 +185,10 @@ namespace hamiltonian {
 
     template <class output_stream>
     void info(output_stream & out) const {
-      out << "HAMILTONIAN:" << std::endl;
-      out << "  Total number of projectors = " << num_projectors() << std::endl;
-      out << std::endl;
     }	
 		
   private:
 
-		std::list<projector> projectors_;
 		projector_all projectors_all_;		
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
