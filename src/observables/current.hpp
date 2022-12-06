@@ -35,7 +35,7 @@ namespace inq {
 namespace observables {
 
 template <typename HamiltonianType>
-auto current_density(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
+basis::field<basis::real_space, math::vector3<double, math::covariant>> current_density(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
 
 	basis::field<basis::real_space, math::vector3<double, math::covariant>> cdensity(electrons.density_basis_);
 	cdensity = {0.0, 0.0, 0.0};
