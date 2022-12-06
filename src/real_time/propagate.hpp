@@ -75,6 +75,10 @@ public:
 	auto laser_field() const {
 		return pert_.uniform_electric_field(time_);
 	}
+
+	auto num_electrons() const {
+		return operations::integral(electrons_.density_);
+	}
 	
 };
 
