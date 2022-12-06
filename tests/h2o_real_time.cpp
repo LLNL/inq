@@ -94,27 +94,27 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 
-		for(auto phi : electrons.lot()) perturbations::kick({0.1, 0.0, 0.0}, phi.fields());
+		auto kick = perturbations::kick{{0.1, 0.0, 0.0}};
 		
 		auto dipole_file = std::ofstream("dipole_etrs.dat");
 		auto output = [&](auto data){
 			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
 	}
 	
 	{
 		electrons.load("h2o_restart");
-		
-		for(auto phi : electrons.lot()) perturbations::kick({0.1, 0.0, 0.0}, phi.fields());
+
+		auto kick = perturbations::kick{{0.1, 0.0, 0.0}};
 
 		auto dipole_file = std::ofstream("dipole_etrs.dat");
 		auto output = [&](auto data){
 			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson(), ions::propagator::fixed{}, kick);
 	}
 	
 	fftw_cleanup(); //required for valgrind

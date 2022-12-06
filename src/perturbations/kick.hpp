@@ -25,21 +25,47 @@
 
 #include <math/vector3.hpp>
 #include <basis/real_space.hpp>
-#include <basis/field_set.hpp>
+#include <states/orbital_set.hpp>
 
 namespace inq {
 namespace perturbations {
 
-void kick(math::vector3<double, math::covariant> kick_field, basis::field_set<basis::real_space, complex> & phi){
+class kick {
 
-	gpu::run(phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0],
-					 [pop = phi.basis().point_op(), ph = begin(phi.cubic()), kick_field, nst = phi.set_part().local_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
+public:
+	
+	kick(math::vector3<double> const & arg_kick_field):
+		kick_field_(arg_kick_field)
+	{
+	}	
 
-						 auto rr = pop.rvector(ix, iy, iz);
-						 auto kick_factor = exp(complex(0.0, dot(kick_field, rr)));
-						 for(int ist = 0; ist < nst; ist++) ph[ix][iy][iz][ist] *= kick_factor;
-					 });
-}
+	template <typename PhiType>
+	void zero_step(PhiType & phi) const {
+
+		auto cov_efield = phi.basis().cell().metric().to_covariant(kick_field_);
+		
+		gpu::run(phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0],
+						 [pop = phi.basis().point_op(), ph = begin(phi.cubic()), cov_efield, nst = phi.set_part().local_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 
+							 auto rr = pop.rvector(ix, iy, iz);
+							 auto kick_factor = exp(complex(0.0, dot(cov_efield, rr)));
+							 for(int ist = 0; ist < nst; ist++) ph[ix][iy][iz][ist] *= kick_factor;
+						 });
+	}
+
+	auto has_uniform_electric_field() const {
+		return false;
+	}	
+
+	auto uniform_electric_field(double time) const {
+		return math::vector3<double>{0.0, 0.0, 0.0};
+	}
+	
+private:
+
+	math::vector3<double> kick_field_;
+	
+};
 
 }
 }
@@ -90,7 +116,9 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 
 	auto phi_old = phi;
 
-	perturbations::kick({0.1, 0.0, 0.0}, phi);
+	auto kick = perturbations::kick({0.1, 0.0, 0.0});
+
+	kick.zero_step(phi);
 
 	for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
 		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
