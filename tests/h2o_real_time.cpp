@@ -109,7 +109,7 @@ int main(int argc, char ** argv){
 
 		auto kick = perturbations::kick{{0.1, 0.0, 0.0}};
 
-		auto dipole_file = std::ofstream("dipole_etrs.dat");
+		auto dipole_file = std::ofstream("dipole_cn.dat");
 		auto output = [&](auto data){
 			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
 		};
