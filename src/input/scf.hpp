@@ -57,32 +57,6 @@ namespace input {
       return mixing_.value_or(0.3);
     }
 
-    enum class mix_field { DENSITY, POTENTIAL };
-    
-    auto static density_mixing() {
-      scf solver;
-      solver.mix_field_ = mix_field::DENSITY;
-      return solver;
-    }
-
-    auto static potential_mixing() {
-      scf solver;
-      solver.mix_field_ = mix_field::POTENTIAL;
-      return solver;
-    }
-
-    auto mix_field_requested() const {
-      return mix_field_.value_or(mix_field::POTENTIAL);
-    }
-    
-    auto mix_density() const {
-      return mix_field_requested() == mix_field::DENSITY;
-    }
-
-    auto mix_potential() const {
-      return mix_field_requested() == mix_field::POTENTIAL;
-    }
-
 		auto static energy_tolerance(quantity<magnitude::energy> etol) {
 			scf solver;
       solver.energy_tol_ = etol.in_atomic_units();
@@ -161,7 +135,6 @@ namespace input {
 			scf rsolver;
 			rsolver.eigensolver_	= merge_optional(solver1.eigensolver_, solver2.eigensolver_);
 			rsolver.mixing_	= merge_optional(solver1.mixing_, solver2.mixing_);
-			rsolver.mix_field_	= merge_optional(solver1.mix_field_, solver2.mix_field_);
 			rsolver.energy_tol_	= merge_optional(solver1.energy_tol_, solver2.energy_tol_);
 			rsolver.mixing_algo_	= merge_optional(solver1.mixing_algo_, solver2.mixing_algo_);
 			rsolver.verbose_	= merge_optional(solver1.verbose_, solver2.verbose_);
@@ -175,7 +148,6 @@ namespace input {
 
     std::optional<scf_eigensolver> eigensolver_;
     std::optional<double> mixing_;
-    std::optional<mix_field> mix_field_;
 		std::optional<double> energy_tol_;
 		std::optional<mixing_algo> mixing_algo_;
 		std::optional<bool> verbose_;

@@ -138,22 +138,16 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			density_diff = operations::integral_absdiff(electrons.density_, new_density);				
 			density_diff /= electrons.states_.num_electrons();
 				
-			if(inter.self_consistent() and solver.mix_density()) {
+			if(inter.self_consistent()) {
 				mixer->operator()(electrons.density_.linear(), new_density.linear());
 				observables::density::normalize(electrons.density_, electrons.states_.num_electrons());
 			} else {
 				electrons.density_ = std::move(new_density);
 			}
 		}
-			
-		auto vks = sc.ks_potential(electrons.density_, res.energy);
-			
-		if(inter.self_consistent() and solver.mix_potential()) {
-			mixer->operator()(ham.scalar_potential.linear(), vks.linear());
-		} else {
-			ham.scalar_potential = std::move(vks);
-		}
-
+		
+		ham.scalar_potential = sc.ks_potential(electrons.density_, res.energy);
+		
 		CALI_MARK_END("mixing");
 
 		{
