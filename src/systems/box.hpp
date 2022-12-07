@@ -21,10 +21,12 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <ions/unit_cell.hpp>
 #include <magnitude/length.hpp>
 #include <magnitude/energy.hpp>
 #include <math/vector3.hpp>
 #include <utils/merge_optional.hpp>
+
 
 #include <optional>
 #include <cassert>
@@ -79,10 +81,6 @@ public:
 		return *this;
 	}
 	
-	auto & operator[](const int ii) const {
-		return lattice_vectors_[ii].value();
-	}
-
 	auto periodicity_value() const {
 		return periodicity_.value_or(3);
 	}
@@ -138,8 +136,13 @@ public:
 			and self.double_grid_         == other.double_grid_
 		;
 	}
+	
 	friend auto operator!=(box const& self, box const& other) {return not(self == other);}
 
+	auto cell() const {
+		return ions::unit_cell(*lattice_vectors_[0], *lattice_vectors_[1], *lattice_vectors_[2], periodicity_value());
+	}
+	
 private:
 
 	box(const math::vector3<double> & a0, const math::vector3<double> & a1, const math::vector3<double> & a2){
@@ -180,15 +183,15 @@ TEST_CASE("class systems::box", "[systems::box]") {
 
 		auto ci = systems::box::cubic(10.2_b);
 
-		CHECK(ci[0][0] == 10.2_a);
-		CHECK(ci[0][1] == 0.0_a);
-		CHECK(ci[0][2] == 0.0_a);
-		CHECK(ci[1][0] == 0.0_a);
-		CHECK(ci[1][1] == 10.2_a);
-		CHECK(ci[1][2] == 0.0_a);
-		CHECK(ci[2][0] == 0.0_a);
-		CHECK(ci[2][1] == 0.0_a);
-		CHECK(ci[2][2] == 10.2_a);
+		CHECK(ci.cell()[0][0] == 10.2_a);
+		CHECK(ci.cell()[0][1] == 0.0_a);
+		CHECK(ci.cell()[0][2] == 0.0_a);
+		CHECK(ci.cell()[1][0] == 0.0_a);
+		CHECK(ci.cell()[1][1] == 10.2_a);
+		CHECK(ci.cell()[1][2] == 0.0_a);
+		CHECK(ci.cell()[2][0] == 0.0_a);
+		CHECK(ci.cell()[2][1] == 0.0_a);
+		CHECK(ci.cell()[2][2] == 10.2_a);
 
 		CHECK(ci.periodicity_value() == 3);
 		
@@ -198,15 +201,15 @@ TEST_CASE("class systems::box", "[systems::box]") {
 
 		auto ci = systems::box::cubic(10.2_b).finite().spacing(0.123_b);
 
-		CHECK(ci[0][0] == 10.2_a);
-		CHECK(ci[0][1] == 0.0_a);
-		CHECK(ci[0][2] == 0.0_a);
-		CHECK(ci[1][0] == 0.0_a);
-		CHECK(ci[1][1] == 10.2_a);
-		CHECK(ci[1][2] == 0.0_a);
-		CHECK(ci[2][0] == 0.0_a);
-		CHECK(ci[2][1] == 0.0_a);
-		CHECK(ci[2][2] == 10.2_a);
+		CHECK(ci.cell()[0][0] == 10.2_a);
+		CHECK(ci.cell()[0][1] == 0.0_a);
+		CHECK(ci.cell()[0][2] == 0.0_a);
+		CHECK(ci.cell()[1][0] == 0.0_a);
+		CHECK(ci.cell()[1][1] == 10.2_a);
+		CHECK(ci.cell()[1][2] == 0.0_a);
+		CHECK(ci.cell()[2][0] == 0.0_a);
+		CHECK(ci.cell()[2][1] == 0.0_a);
+		CHECK(ci.cell()[2][2] == 10.2_a);
 		CHECK(ci.periodicity_value() == 0);
 		CHECK(ci.spacing_value() == 0.123_a);
 		CHECK(not ci.spherical_grid_value());
@@ -217,15 +220,15 @@ TEST_CASE("class systems::box", "[systems::box]") {
 
 		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha);
 
-		CHECK(ci[0][0] == 10.2_a);
-		CHECK(ci[0][1] == 0.0_a);
-		CHECK(ci[0][2] == 0.0_a);
-		CHECK(ci[1][0] == 0.0_a);
-		CHECK(ci[1][1] == 5.7_a);
-		CHECK(ci[1][2] == 0.0_a);
-		CHECK(ci[2][0] == 0.0_a);
-		CHECK(ci[2][1] == 0.0_a);
-		CHECK(ci[2][2] == 8.3_a);
+		CHECK(ci.cell()[0][0] == 10.2_a);
+		CHECK(ci.cell()[0][1] == 0.0_a);
+		CHECK(ci.cell()[0][2] == 0.0_a);
+		CHECK(ci.cell()[1][0] == 0.0_a);
+		CHECK(ci.cell()[1][1] == 5.7_a);
+		CHECK(ci.cell()[1][2] == 0.0_a);
+		CHECK(ci.cell()[2][0] == 0.0_a);
+		CHECK(ci.cell()[2][1] == 0.0_a);
+		CHECK(ci.cell()[2][2] == 8.3_a);
 		CHECK(ci.periodicity_value() == 3);
 		CHECK(ci.spacing_value() == 0.1_a);
 
@@ -235,15 +238,15 @@ TEST_CASE("class systems::box", "[systems::box]") {
 
 		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha).spherical_grid(true);
 
-		CHECK(ci[0][0] == 10.2_a);
-		CHECK(ci[0][1] == 0.0_a);
-		CHECK(ci[0][2] == 0.0_a);
-		CHECK(ci[1][0] == 0.0_a);
-		CHECK(ci[1][1] == 5.7_a);
-		CHECK(ci[1][2] == 0.0_a);
-		CHECK(ci[2][0] == 0.0_a);
-		CHECK(ci[2][1] == 0.0_a);
-		CHECK(ci[2][2] == 8.3_a);
+		CHECK(ci.cell()[0][0] == 10.2_a);
+		CHECK(ci.cell()[0][1] == 0.0_a);
+		CHECK(ci.cell()[0][2] == 0.0_a);
+		CHECK(ci.cell()[1][0] == 0.0_a);
+		CHECK(ci.cell()[1][1] == 5.7_a);
+		CHECK(ci.cell()[1][2] == 0.0_a);
+		CHECK(ci.cell()[2][0] == 0.0_a);
+		CHECK(ci.cell()[2][1] == 0.0_a);
+		CHECK(ci.cell()[2][2] == 8.3_a);
 		CHECK(ci.periodicity_value() == 3);
 		CHECK(ci.spacing_value() == 0.1_a);
 		CHECK(ci.spherical_grid_value());
@@ -254,15 +257,15 @@ TEST_CASE("class systems::box", "[systems::box]") {
 
 		auto ci = systems::box::lattice({0.0_A, 1.0_A, 1.0_A}, {1.0_A, 0.0_b, 1.0_A}, {1.0_A, 1.0_A, 0.0_A});
 
-		CHECK(ci[0][0] == 0.0_a);
-		CHECK(ci[0][1] == 1.8897261246_a);
-		CHECK(ci[0][2] == 1.8897261246_a);
-		CHECK(ci[1][0] == 1.8897261246_a);
-		CHECK(ci[1][1] == 0.0_a);
-		CHECK(ci[1][2] == 1.8897261246_a);
-		CHECK(ci[2][0] == 1.8897261246_a);
-		CHECK(ci[2][1] == 1.8897261246_a);
-		CHECK(ci[2][2] == 0.0_a);
+		CHECK(ci.cell()[0][0] == 0.0_a);
+		CHECK(ci.cell()[0][1] == 1.8897261246_a);
+		CHECK(ci.cell()[0][2] == 1.8897261246_a);
+		CHECK(ci.cell()[1][0] == 1.8897261246_a);
+		CHECK(ci.cell()[1][1] == 0.0_a);
+		CHECK(ci.cell()[1][2] == 1.8897261246_a);
+		CHECK(ci.cell()[2][0] == 1.8897261246_a);
+		CHECK(ci.cell()[2][1] == 1.8897261246_a);
+		CHECK(ci.cell()[2][2] == 0.0_a);
 		CHECK(ci.periodicity_value() == 3);
 
 	}

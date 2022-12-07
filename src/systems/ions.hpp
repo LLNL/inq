@@ -21,7 +21,7 @@ class ions {
 public:
 
 	ions(const systems::box & arg_cell_input):
-		cell_(arg_cell_input, arg_cell_input.periodicity_value())
+		cell_(arg_cell_input.cell())
 	{
 	}
 
@@ -88,7 +88,6 @@ public:
 	auto insert(std::string const & symbol, math::vector3<quantity<magnitude::fractionary>> const & pos){
 		insert(input::species(pseudo::element(symbol)), pos);
 	}
-
 	
 	inq::ions::unit_cell cell_;
 	inq::ions::geometry geo_;
