@@ -72,7 +72,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 	}
 
-	ham.scalar_potential = sc.ks_potential(electrons.density_, energy, time);
+	sc.update_hamiltonian(ham, energy, electrons.density_, time);
 
 	math::array<bool, 1> conv(electrons.lot_size());
 	

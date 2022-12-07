@@ -59,8 +59,8 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 	}
 
-	ham.scalar_potential = sc.ks_potential(electrons.density_, energy, time);
-
+	sc.update_hamiltonian(ham, energy, electrons.density_, time);
+																				 
 	//propagate the other half step with H(t + dt)
 	for(auto & phi : electrons.lot()){
 		operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);

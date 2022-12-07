@@ -77,8 +77,8 @@ template <typename Perturbation = perturbations::none>
 			core_density_ = atomic_pot.nlcc_density(comm, density_basis_, ions.cell(), ions.geo());
 		}
 		
-		template <class field_type, class energy_type>
-		field_type ks_potential(const field_type & electronic_density, energy_type & energy, double time = 0.0) const {
+	template <typename HamiltonianType, typename EnergyType, typename FieldType>
+	void update_hamiltonian(HamiltonianType & hamiltonian, EnergyType & energy, FieldType const & electronic_density, double time = 0.0) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -87,7 +87,7 @@ template <typename Perturbation = perturbations::none>
 			
 			energy.external = operations::integral_product(electronic_density, vion_);
 
-			field_type vks(vion_.skeleton());
+			FieldType vks(vion_.skeleton());
 
 			solvers::poisson poisson_solver;
 
@@ -121,7 +121,7 @@ template <typename Perturbation = perturbations::none>
 
 				auto full_density = operations::add(electronic_density, core_density_);
 				double efunc = 0.0;
-				field_type vfunc(vion_.skeleton());
+				FieldType vfunc(vion_.skeleton());
 
 				if(exchange_.true_functional()){
 					exchange_(full_density, efunc, vfunc);
@@ -139,9 +139,9 @@ template <typename Perturbation = perturbations::none>
 			}
 			
 			if(potential_basis_ == vks.basis()){
-				return vks;
+				hamiltonian.scalar_potential = std::move(vks);
 			} else {
-				return operations::transfer::coarsen(std::move(vks), potential_basis_);
+				hamiltonian.scalar_potential = operations::transfer::coarsen(std::move(vks), potential_basis_);
 			}
 			
 		}
