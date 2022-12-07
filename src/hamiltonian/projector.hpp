@@ -25,7 +25,6 @@
 
 #include <math/array.hpp>
 #include <math/vector3.hpp>
-#include <ions/unit_cell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/double_grid.hpp>
 #include <basis/real_space.hpp>
@@ -90,8 +89,8 @@ public:
 	}
 	
 public:
-	projector(const basis::real_space & basis, const ions::unit_cell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
-		sphere_(basis, cell, atom_position, ps.projector_radius()),
+	projector(const basis::real_space & basis, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
+		sphere_(basis, atom_position, ps.projector_radius()),
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
 		kb_coeff_(nproj_),
@@ -179,7 +178,7 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector proj(rs, box, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+	hamiltonian::projector proj(rs, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
 	CHECK(proj.num_projectors() == 8);
 

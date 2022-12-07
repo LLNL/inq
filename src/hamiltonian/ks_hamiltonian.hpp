@@ -49,7 +49,7 @@ namespace hamiltonian {
 		
   public:
 
-		void update_projectors(const basis_type & basis, const ions::unit_cell & cell, const atomic_potential & pot, const ions::geometry & geo){
+		void update_projectors(const basis_type & basis, const atomic_potential & pot, const ions::geometry & geo){
 			
 			CALI_CXX_MARK_FUNCTION;
 
@@ -59,11 +59,10 @@ namespace hamiltonian {
 			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				if(non_local_in_fourier_){
-					auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(),
-																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
+					auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(basis.cell().metric().to_contravariant(geo.coordinates()[iatom]));
 				} else {
-					projectors.emplace_back(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
+					projectors.emplace_back(basis, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
 					if(projectors.back().empty()) projectors.pop_back(); 
 				}
 			}
@@ -76,7 +75,7 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-    ks_hamiltonian(const basis_type & basis, const ions::unit_cell & cell, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
+    ks_hamiltonian(const basis_type & basis, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
 									 const int num_hf_orbitals, const double exchange_coefficient, parallel::cartesian_communicator<2> comm, bool use_ace = false):
 			exchange(basis, num_hf_orbitals, exchange_coefficient, use_ace, std::move(comm)),
 			scalar_potential_(basis),
@@ -84,7 +83,7 @@ namespace hamiltonian {
 			non_local_in_fourier_(fourier_pseudo)
 		{
 			scalar_potential_ = 0.0;
-			update_projectors(basis, cell, pot, geo);
+			update_projectors(basis, pot, geo);
     }
 
 		////////////////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +268,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
   states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
 
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, box, pot, false, geo, st.num_states(), 0.0, cart_comm);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, pot, false, geo, st.num_states(), 0.0, cart_comm);
 
 	SECTION("Constant function"){
 		

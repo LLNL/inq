@@ -39,12 +39,12 @@ namespace basis {
   public:
 
     real_space(systems::box const & box, parallel::communicator && comm):
-			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
+			grid(box.cell(), calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
 		{
     }
 		
     real_space(systems::box const & box, parallel::communicator & comm):
-			grid(box, calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
+			grid(box.cell(), calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
 		{
     }
 
@@ -186,7 +186,7 @@ namespace basis {
 			// make the spacing conmensurate with the grid
 			// OPTIMIZATION: we can select a good size here for the FFT
 			for(int idir = 0; idir < 3; idir++){
-				double rlength = length(box[idir]);
+				double rlength = length(box.cell()[idir]);
 				nr[idir] = round(rlength/spacing);
 			}
 			
