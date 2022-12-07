@@ -33,16 +33,21 @@ namespace perturbations {
 class kick {
 
 public:
-	
-	kick(math::vector3<double> const & arg_kick_field):
-		kick_field_(arg_kick_field)
+
+	template <typename CellType>
+	kick(CellType const & cell, math::vector3<double> const & arg_kick_field):
+		efield_(arg_kick_field),
+		vpot_(-arg_kick_field),		
+		periodicity_(cell.periodicity())
 	{
-	}	
+		for(int idir = 0; idir < periodicity_; idir++) efield_[idir] = 0.0;
+		for(int idir = periodicity_; idir < 3; idir++) vpot_[idir] = 0.0;
+	}
 
 	template <typename PhiType>
 	void zero_step(PhiType & phi) const {
 
-		auto cov_efield = phi.basis().cell().metric().to_covariant(kick_field_);
+		auto cov_efield = phi.basis().cell().metric().to_covariant(efield_);
 		
 		gpu::run(phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0],
 						 [pop = phi.basis().point_op(), ph = begin(phi.cubic()), cov_efield, nst = phi.set_part().local_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
@@ -57,14 +62,24 @@ public:
 		return false;
 	}	
 
-	auto uniform_electric_field(double time) const {
+	auto uniform_electric_field(double /*time*/) const {
 		return math::vector3<double>{0.0, 0.0, 0.0};
+	}
+	
+	auto has_uniform_vector_potential() const {
+		return true;
+	}
+	
+	auto uniform_vector_potential(double /*time*/) const {
+		return vpot_;
 	}
 	
 private:
 
-	math::vector3<double> kick_field_;
-	
+	math::vector3<double> efield_;
+	math::vector3<double> vpot_;	
+	int periodicity_;
+
 };
 
 }
@@ -88,52 +103,80 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 	using math::vector3;
-	
-	const int nvec = 12;
 
 	auto ecut = 31.2_Ha;
-	double phi_absdif = 0.0;
-	double phi_dif = 0.0;
-
-	auto comm = boost::mpi3::environment::get_world_instance();
 	
-	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(ecut);
+	SECTION("finite"){
 	
-	basis::real_space bas(box, comm);
-
-	basis::field_set<basis::real_space, complex> phi(bas, nvec);
-
-	//Construct a field
-	for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
-		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
-			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
-				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-					phi.cubic()[ix][iy][iz][ist] = complex(cos(ist+(ix+iy+iz)), 1.3*sin(ist+(cos(ix-iy-iz))));
+		const int nvec = 12;
+		
+		double phi_absdif = 0.0;
+		double phi_dif = 0.0;
+		
+		auto comm = boost::mpi3::environment::get_world_instance();
+		
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite().cutoff_energy(ecut);
+		
+		CHECK(box.periodicity_value() == 0);
+		
+		basis::real_space bas(box, comm);
+		
+		CHECK(bas.cell().periodicity() == 0);
+		
+		basis::field_set<basis::real_space, complex> phi(bas, nvec);
+		
+		//Construct a field
+		for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist+(ix+iy+iz)), 1.3*sin(ist+(cos(ix-iy-iz))));
+					}
 				}
 			}
 		}
-	}
-
-	auto phi_old = phi;
-
-	auto kick = perturbations::kick({0.1, 0.0, 0.0});
-
-	kick.zero_step(phi);
-
-	for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
-		for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
-			for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
-				for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-					phi_absdif += norm(phi.cubic()[ix][iy][iz][ist]) - norm(phi_old.cubic()[ix][iy][iz][ist]);
-					phi_dif += norm(phi.cubic()[ix][iy][iz][ist] - phi_old.cubic()[ix][iy][iz][ist]);
+		
+		auto phi_old = phi;
+		
+		auto kick = perturbations::kick(box.cell(), {0.1, 0.0, 0.0});
+		
+		kick.zero_step(phi);
+		
+		for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						phi_absdif += norm(phi.cubic()[ix][iy][iz][ist]) - norm(phi_old.cubic()[ix][iy][iz][ist]);
+						phi_dif += norm(phi.cubic()[ix][iy][iz][ist] - phi_old.cubic()[ix][iy][iz][ist]);
+					}
 				}
 			}
 		}
+		
+		CHECK(phi_absdif == Approx(0).margin(1.0e-9));
+		CHECK(phi_dif > 1.0e-9);
+	}
+	
+	SECTION("periodic"){
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(ecut);
+		auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3});
+
+		CHECK(kick.has_uniform_vector_potential());
+		CHECK(kick.uniform_vector_potential(3.0)[0] == -0.1);
+		CHECK(kick.uniform_vector_potential(2.0)[1] == -0.2);
+		CHECK(kick.uniform_vector_potential(1.0)[2] == -0.3);
 	}
 
-	CHECK(phi_absdif == Approx(0).margin(1.0e-9));
-	CHECK(phi_dif > 1.0e-9);
+	SECTION("semi periodic"){
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodicity(2).cutoff_energy(ecut);
+		auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3});
 
+		CHECK(kick.has_uniform_vector_potential());
+		CHECK(kick.uniform_vector_potential(3.0)[0] == -0.1);
+		CHECK(kick.uniform_vector_potential(2.0)[1] == -0.2);
+		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
+	}
+		
 }
 
 #endif

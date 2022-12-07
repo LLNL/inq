@@ -80,7 +80,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 
-		auto kick = perturbations::kick{{0.1, 0.0, 0.0}};
+		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
 
 		long nsteps = 101;
 		 
@@ -137,7 +137,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 
-		auto kick = perturbations::kick{{0.1, 0.0, 0.0}};
+		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
 
 		auto dipole_file = std::ofstream("dipole_cn.dat");
 		auto output = [&](auto data){
