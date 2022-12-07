@@ -134,7 +134,7 @@ namespace hamiltonian {
 			
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projectors_all_.project(phi.fields(), phi.kpoint());
+			auto proj = projectors_all_.project(phi.fields(), phi.kpoint() + uniform_vector_potential_);
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
@@ -147,7 +147,7 @@ namespace hamiltonian {
 			hamiltonian::scalar_potential_add(scalar_potential_, 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
 			exchange(phi, hphi);
 
-			projectors_all_.apply(proj, hphi.fields(), phi.kpoint());
+			projectors_all_.apply(proj, hphi.fields(), phi.kpoint() + uniform_vector_potential_);
 
 			return hphi;
 		}
@@ -160,13 +160,13 @@ namespace hamiltonian {
 
 			auto phi_rs = operations::space::to_real(phi);
 
-			auto proj = projectors_all_.project(phi_rs.fields(), phi.kpoint());
+			auto proj = projectors_all_.project(phi_rs.fields(), phi.kpoint() + uniform_vector_potential_);
 			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_, 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
  
-			projectors_all_.apply(proj, hphi_rs.fields(), phi.kpoint());
+			projectors_all_.apply(proj, hphi_rs.fields(), phi.kpoint() + uniform_vector_potential_);
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
@@ -194,11 +194,21 @@ namespace hamiltonian {
 
     template <class output_stream>
     void info(output_stream & out) const {
-    }	
+    }
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 
 		auto & scalar_potential() {
 			return scalar_potential_;
 		}
+	
+		////////////////////////////////////////////////////////////////////////////////////////////
+
+		auto & uniform_vector_potential() const {
+			return uniform_vector_potential_;
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 		
   private:
 		
