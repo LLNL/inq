@@ -103,8 +103,8 @@ namespace hamiltonian {
 			return pseudopotential_list_.at(el.symbol());
 		}
 
-		template <class CommType, class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> local_potential(CommType & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		template <class CommType, class basis_type, class geo_type>
+		basis::field<basis_type, double> local_potential(CommType & comm, const basis_type & basis, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
@@ -121,7 +121,7 @@ namespace hamiltonian {
 				auto atom_position = geo.coordinates()[iatom];
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
-				basis::spherical_grid sphere(basis, cell, atom_position, ps.short_range_potential_radius());
+				basis::spherical_grid sphere(basis, basis.cell(), atom_position, ps.short_range_potential_radius());
 
 				if(not basis.double_grid().enabled()){
 
@@ -158,8 +158,8 @@ namespace hamiltonian {
 			return potential;			
 		}
 	
-		template <class CommType, class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo, int single_atom = -1) const {
+		template <class CommType, class basis_type, class geo_type>
+		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const geo_type & geo, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -176,7 +176,7 @@ namespace hamiltonian {
 				auto atom_position = geo.coordinates()[iatom];
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
-				basis::spherical_grid sphere(basis, cell, atom_position, sep_.long_range_density_radius());
+				basis::spherical_grid sphere(basis, basis.cell(), atom_position, sep_.long_range_density_radius());
 
 				//OPTIMIZATION: this should be done in parallel for atoms too
 				gpu::run(sphere.size(),
@@ -197,8 +197,8 @@ namespace hamiltonian {
 			return density;			
 		}
 		
-		template <class CommType, class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		template <class CommType, class basis_type, class geo_type>
+		basis::field<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -216,7 +216,7 @@ namespace hamiltonian {
 
 				if(ps.has_electronic_density()){
 
-					basis::spherical_grid sphere(basis, cell, atom_position, ps.electronic_density_radius());
+					basis::spherical_grid sphere(basis, basis.cell(), atom_position, ps.electronic_density_radius());
 					
 					gpu::run(sphere.size(),
 									 [dens = begin(density.cubic()),
@@ -230,7 +230,7 @@ namespace hamiltonian {
 				} else {
 
 					//just some crude guess for now
-					basis::spherical_grid sphere(basis, cell, atom_position, 3.0);
+					basis::spherical_grid sphere(basis, basis.cell(), atom_position, 3.0);
 					
 					gpu::run(sphere.size(),
 									 [dens = begin(density.cubic()),
@@ -255,8 +255,8 @@ namespace hamiltonian {
 			return has_nlcc_;
 		}
 
-		template <class CommType, class basis_type, class cell_type, class geo_type>
-		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const cell_type & cell, const geo_type & geo) const {
+		template <class CommType, class basis_type, class geo_type>
+		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const geo_type & geo) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -276,7 +276,7 @@ namespace hamiltonian {
 
 				assert(has_nlcc());
 				
-				basis::spherical_grid sphere(basis, cell, atom_position, ps.nlcc_density_radius());
+				basis::spherical_grid sphere(basis, basis.cell(), atom_position, ps.nlcc_density_radius());
 
 				gpu::run(sphere.size(),
 								 [dens = begin(density.cubic()),
@@ -385,8 +385,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		
 		ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 		
-		auto cell = systems::box::cubic(20.0_b).cutoff_energy(20.0_Ha);
-		basis::real_space rs(cell, comm);
+		auto box = systems::box::cubic(20.0_b).cutoff_energy(20.0_Ha);
+		basis::real_space rs(box, comm);
 		
 		hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff());
 		
@@ -395,20 +395,20 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		
 		rs.info(std::cout);
 		
-		auto vv = pot.local_potential(comm, rs, cell, geo);
+		auto vv = pot.local_potential(comm, rs, geo);
 		
 		CHECK(operations::integral(vv) == -45.5744357466_a);
 		
 		CHECK(vv.cubic()[5][3][0] == -1.6226427555_a);
 		CHECK(vv.cubic()[3][1][0] == -0.2739253316_a);
 		
-		auto id = pot.ionic_density(comm, rs, cell, geo);
+		auto id = pot.ionic_density(comm, rs, geo);
 		
 		CHECK(operations::integral(id) == -30.0000000746_a);
 		CHECK(id.cubic()[5][3][0] == -0.9448936487_a);
 		CHECK(id.cubic()[3][1][0] == -0.2074502252_a);
 		
-		auto nn = pot.atomic_electronic_density(comm, rs, cell, geo);
+		auto nn = pot.atomic_electronic_density(comm, rs, geo);
 		
 		CHECK(operations::integral(nn) == 29.9562520003_a);
 		CHECK(nn.cubic()[5][3][0] == 0.1330589609_a);
@@ -416,7 +416,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		
 		CHECK(pot.has_nlcc());
 		
-		auto nlcc = pot.nlcc_density(comm, rs, cell, geo);
+		auto nlcc = pot.nlcc_density(comm, rs, geo);
 		
 		CHECK(operations::integral(nlcc) == 3.0083012065_a);
 		CHECK(nlcc.cubic()[5][3][0] == 0.6248217151_a);

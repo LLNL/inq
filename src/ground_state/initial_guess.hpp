@@ -29,7 +29,7 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 	electrons.update_occupations(electrons.eigenvalues());
 	
 	if(ions.geo().num_atoms() > 0){
-		electrons.density_ = electrons.atomic_pot_.atomic_electronic_density(electrons.states_comm_, electrons.density_basis_, ions.cell(), ions.geo());
+		electrons.density_ = electrons.atomic_pot_.atomic_electronic_density(electrons.states_comm_, electrons.density_basis_, ions.geo());
 	} else {
 		electrons.density_ = observables::density::calculate(electrons);
 	}
