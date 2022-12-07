@@ -96,9 +96,9 @@ int main(int argc, char ** argv){
 			dip[iter] = data.dipole()[0];
 			en[iter] = data.energy();			
 
-			if(iter%500 == 0 or data.last_iter()){
+			if(data.every(50)){
 				auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  
-				
+
 				std::ofstream file("spectrum.dat");
 				
 				for(int ifreq = 0; ifreq < spectrum.size(); ifreq++){

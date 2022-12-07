@@ -47,6 +47,11 @@ public:
 	auto last_iter() const {
 		return last_iter_;
 	}
+
+	auto every(int every_iter) const {
+		if(iter() == 0) return false;
+		return (iter()%every_iter == 0) or last_iter(); 
+	}
 	
 	auto time() const {
 		return time_;
