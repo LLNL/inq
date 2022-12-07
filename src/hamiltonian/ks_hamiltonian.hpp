@@ -80,6 +80,7 @@ namespace hamiltonian {
 									 const int num_hf_orbitals, const double exchange_coefficient, parallel::cartesian_communicator<2> comm, bool use_ace = false):
 			exchange(basis, num_hf_orbitals, exchange_coefficient, use_ace, std::move(comm)),
 			scalar_potential_(basis),
+			uniform_vector_potential_({0.0, 0.0, 0.0}),
 			non_local_in_fourier_(fourier_pseudo)
 		{
 			scalar_potential_ = 0.0;
@@ -133,20 +134,20 @@ namespace hamiltonian {
 			
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projectors_all_.project(phi.fields(), phi.kpoint());
+			auto proj = projectors_all_.project(phi.fields(), phi.kpoint() + uniform_vector_potential_);
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
-			auto hphi_fs = operations::laplacian(phi_fs, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint()));
+			auto hphi_fs = operations::laplacian(phi_fs, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
 
 			non_local(phi_fs.fields(), hphi_fs.fields());
 			
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			hamiltonian::scalar_potential_add(scalar_potential_, 0.5*phi.basis().cell().metric().norm(phi.kpoint()), phi, hphi);
+			hamiltonian::scalar_potential_add(scalar_potential_, 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
 			exchange(phi, hphi);
 
-			projectors_all_.apply(proj, hphi.fields(), phi.kpoint());
+			projectors_all_.apply(proj, hphi.fields(), phi.kpoint() + uniform_vector_potential_);
 
 			return hphi;
 		}
@@ -159,17 +160,17 @@ namespace hamiltonian {
 
 			auto phi_rs = operations::space::to_real(phi);
 
-			auto proj = projectors_all_.project(phi_rs.fields(), phi.kpoint());
+			auto proj = projectors_all_.project(phi_rs.fields(), phi.kpoint() + uniform_vector_potential_);
 			
-			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_, 0.5*phi.basis().cell().metric().norm(phi.kpoint()), phi_rs);
+			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_, 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
  
-			projectors_all_.apply(proj, hphi_rs.fields(), phi.kpoint());
+			projectors_all_.apply(proj, hphi_rs.fields(), phi.kpoint() + uniform_vector_potential_);
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
-			operations::laplacian_add(phi, hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint()));
+			operations::laplacian_add(phi, hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
 			non_local(phi.fields(), hphi.fields());
 
 			return hphi;
@@ -180,7 +181,7 @@ namespace hamiltonian {
     auto momentum(const states::orbital_set<basis::real_space, complex> & phi) const{
 			CALI_CXX_MARK_FUNCTION;
 
-			return operations::gradient(phi);
+			return operations::gradient(phi, /*shift = */ uniform_vector_potential_);
 		}
 		
 		////////////////////////////////////////////////////////////////////////////////////////////
@@ -193,15 +194,26 @@ namespace hamiltonian {
 
     template <class output_stream>
     void info(output_stream & out) const {
-    }	
+    }
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 
 		auto & scalar_potential() {
 			return scalar_potential_;
 		}
+	
+		////////////////////////////////////////////////////////////////////////////////////////////
+
+		auto & uniform_vector_potential() const {
+			return uniform_vector_potential_;
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
 		
   private:
 		
 		basis::field<basis::real_space, double> scalar_potential_;
+		math::vector3<double, math::covariant> uniform_vector_potential_;
 		projector_all projectors_all_;		
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;

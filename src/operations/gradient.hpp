@@ -66,13 +66,13 @@ basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(states::orbital_set<basis::fourier_space, complex> const & ff){
+states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(states::orbital_set<basis::fourier_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}){
 	states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
 
 	CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
 	gpu::run(grad.set_part().local_size(), grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
-					 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic()), kpt = ff.kpoint()]
+					 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic()), kpt = ff.kpoint() + shift]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 
 						 auto gvec = point_op.gvector(ix, iy, iz);
@@ -119,12 +119,12 @@ states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-auto gradient(states::orbital_set<basis::real_space, complex> const & ff){
+auto gradient(states::orbital_set<basis::real_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_SCOPE("gradient_real_space(orbital_set)");
 	
 	auto ff_fourier = operations::space::to_fourier(ff);
-	auto grad_fourier = gradient(ff_fourier);
+	auto grad_fourier = gradient(ff_fourier, shift);
 	return operations::space::to_real(grad_fourier);
 }
 
