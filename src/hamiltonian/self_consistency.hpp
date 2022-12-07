@@ -139,9 +139,9 @@ template <typename Perturbation = perturbations::none>
 			}
 			
 			if(potential_basis_ == vks.basis()){
-				hamiltonian.scalar_potential = std::move(vks);
+				hamiltonian.scalar_potential_ = std::move(vks);
 			} else {
-				hamiltonian.scalar_potential = operations::transfer::coarsen(std::move(vks), potential_basis_);
+				hamiltonian.scalar_potential_ = operations::transfer::coarsen(std::move(vks), potential_basis_);
 			}
 			
 		}
