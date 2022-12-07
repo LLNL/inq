@@ -41,6 +41,10 @@ public:
 	{
 	}
 
+	template <typename DummyType>
+	void zero_step(DummyType &) const {
+	}
+
 	auto has_uniform_electric_field() const {
 		return true;
 	}

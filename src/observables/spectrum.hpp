@@ -36,6 +36,7 @@ math::array<RetElementType, 1> spectrum(quantity<magnitude::energy> maxw, quanti
 	CALI_CXX_MARK_FUNCTION;
 
   assert(time.size() == time_series.size());
+	assert(time.size() >= 2);
 
   long ntime = time.size();
   long nfreq = maxw/dw + 1;

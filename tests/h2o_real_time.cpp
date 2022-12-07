@@ -18,21 +18,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <fftw3.h>
-
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <config/path.hpp>
-#include <input/parse_xyz.hpp>
-#include <utils/match.hpp>
-#include <operations/io.hpp>
-#include <perturbations/kick.hpp>
-#include <ground_state/calculate.hpp>
-#include <real_time/propagate.hpp>
-
-#include <input/environment.hpp>
-
-#include <utils/profiling.hpp>
+#include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
 
@@ -94,27 +80,71 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 
-		for(auto phi : electrons.lot()) perturbations::kick({0.1, 0.0, 0.0}, phi.fields());
-		
-		auto dipole_file = std::ofstream("dipole_etrs.dat");
+		auto kick = perturbations::kick{{0.1, 0.0, 0.0}};
+
+		long nsteps = 101;
+		 
+		math::array<double, 1> time(nsteps);
+		math::array<double, 1> dip(nsteps);
+		math::array<double, 1> en(nsteps);		
+	
 		auto output = [&](auto data){
-			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
+
+			auto iter = data.iter();
+			
+			time[iter] = data.time();
+			dip[iter] = data.dipole()[0];
+			en[iter] = data.energy();			
+
+			if(data.every(50)){
+				auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  
+
+				std::ofstream file("spectrum.dat");
+				
+				for(int ifreq = 0; ifreq < spectrum.size(); ifreq++){
+					file << ifreq*in_atomic_units(0.01_eV) << '\t' << real(spectrum[ifreq]) << '\t' << imag(spectrum[ifreq]) << std::endl;
+				}
+			}
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
+
+		match.check("ETRS kick: dipole step   0", dip[0],   -0.044597172494);
+		match.check("ETRS kick: dipole step  10", dip[10],  -0.377148810952);
+		match.check("ETRS kick: dipole step  20", dip[20],  -0.526468937415);
+		match.check("ETRS kick: dipole step  30", dip[30],  -0.552455206539);
+		match.check("ETRS kick: dipole step  40", dip[40],  -0.498816106782);
+		match.check("ETRS kick: dipole step  50", dip[50],  -0.400067846407);
+		match.check("ETRS kick: dipole step  60", dip[60],  -0.281320415502);
+		match.check("ETRS kick: dipole step  70", dip[70],  -0.163199297778);
+		match.check("ETRS kick: dipole step  80", dip[80],  -0.056761979779);
+		match.check("ETRS kick: dipole step  90", dip[90],   0.025515738794);
+		match.check("ETRS kick: dipole step 100", dip[100],  0.088155616086);		
+
+		match.check("ETRS kick: energy step   0", en[0],   -17.563614908156);
+		match.check("ETRS kick: energy step  10", en[10],  -17.563607651688);
+		match.check("ETRS kick: energy step  20", en[20],  -17.563616266981);
+		match.check("ETRS kick: energy step  30", en[30],  -17.563622641179);
+		match.check("ETRS kick: energy step  40", en[40],  -17.563630171529);
+		match.check("ETRS kick: energy step  50", en[50],  -17.563636231783);
+		match.check("ETRS kick: energy step  60", en[60],  -17.563642456027);
+		match.check("ETRS kick: energy step  70", en[70],  -17.563649390583);
+		match.check("ETRS kick: energy step  80", en[80],  -17.563655110602);
+		match.check("ETRS kick: energy step  90", en[90],  -17.563660625102);
+		match.check("ETRS kick: energy step 100", en[100], -17.563665981890);	
 	}
 	
 	{
 		electrons.load("h2o_restart");
-		
-		for(auto phi : electrons.lot()) perturbations::kick({0.1, 0.0, 0.0}, phi.fields());
 
-		auto dipole_file = std::ofstream("dipole_etrs.dat");
+		auto kick = perturbations::kick{{0.1, 0.0, 0.0}};
+
+		auto dipole_file = std::ofstream("dipole_cn.dat");
 		auto output = [&](auto data){
 			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson(), ions::propagator::fixed{}, kick);
 	}
 	
 	fftw_cleanup(); //required for valgrind

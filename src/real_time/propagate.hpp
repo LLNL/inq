@@ -47,6 +47,11 @@ public:
 	auto last_iter() const {
 		return last_iter_;
 	}
+
+	auto every(int every_iter) const {
+		if(iter() == 0) return false;
+		return (iter()%every_iter == 0) or last_iter(); 
+	}
 	
 	auto time() const {
 		return time_;
@@ -75,6 +80,10 @@ public:
 	auto laser_field() const {
 		return pert_.uniform_electric_field(time_);
 	}
+
+	auto num_electrons() const {
+		return operations::integral(electrons_.density_);
+	}
 	
 };
 
@@ -85,13 +94,15 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
 
+		for(auto & phi : electrons.lot()) pert.zero_step(phi);
+		
 		electrons.density_ = observables::density::calculate(electrons);
 
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, pert);
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, ions.cell(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
 																											 electrons.states_.num_states(), sc.exx_coefficient(), electrons.states_basis_comm_);
 		hamiltonian::energy energy;
-		
+
 		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
 		
 		ham.scalar_potential = sc.ks_potential(electrons.density_, energy, 0.0);

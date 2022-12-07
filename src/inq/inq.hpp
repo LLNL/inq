@@ -27,6 +27,7 @@
 #include <operations/io.hpp>
 #include <real_time/propagate.hpp>
 #include <utils/match.hpp>
+#include <perturbations/kick.hpp>
 #include <perturbations/laser.hpp>
 #include <observables/spectrum.hpp>
 
