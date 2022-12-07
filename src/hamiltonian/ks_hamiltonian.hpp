@@ -59,11 +59,10 @@ namespace hamiltonian {
 			
 			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 				if(non_local_in_fourier_){
-					auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(),
-																												projector_fourier(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom])));
+					auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(geo.atoms()[iatom])));
 					insert.first->second.add_coord(basis.cell().metric().to_contravariant(geo.coordinates()[iatom]));
 				} else {
-					projectors.emplace_back(basis, cell, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
+					projectors.emplace_back(basis, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
 					if(projectors.back().empty()) projectors.pop_back(); 
 				}
 			}

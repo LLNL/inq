@@ -28,7 +28,6 @@
 
 #include <math/array.hpp>
 #include <math/vector3.hpp>
-#include <ions/unit_cell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
@@ -42,7 +41,7 @@ namespace hamiltonian {
   class projector_fourier {
 
   public:
-    projector_fourier(const basis::real_space & basis, const ions::unit_cell & cell, atomic_potential::pseudopotential_type const & ps):
+    projector_fourier(const basis::real_space & basis, atomic_potential::pseudopotential_type const & ps):
       nproj_(ps.num_projectors_lm()),
 			kb_coeff_(nproj_),
 			beta_(basis::fourier_space(basis), nproj_){
@@ -175,7 +174,7 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
 
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector_fourier proj(rs, box, ps);
+	hamiltonian::projector_fourier proj(rs, ps);
 
 	CHECK(proj.num_projectors() == 8);
 	
