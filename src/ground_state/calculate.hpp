@@ -79,8 +79,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	auto old_energy = std::numeric_limits<double>::max();
 		
 	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
-		
-	ham.scalar_potential = sc.ks_potential(electrons.density_, res.energy);
+	sc.update_hamiltonian(ham, res.energy, electrons.density_);
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
@@ -138,22 +137,16 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			density_diff = operations::integral_absdiff(electrons.density_, new_density);				
 			density_diff /= electrons.states_.num_electrons();
 				
-			if(inter.self_consistent() and solver.mix_density()) {
+			if(inter.self_consistent()) {
 				mixer->operator()(electrons.density_.linear(), new_density.linear());
 				observables::density::normalize(electrons.density_, electrons.states_.num_electrons());
 			} else {
 				electrons.density_ = std::move(new_density);
 			}
 		}
-			
-		auto vks = sc.ks_potential(electrons.density_, res.energy);
-			
-		if(inter.self_consistent() and solver.mix_potential()) {
-			mixer->operator()(ham.scalar_potential.linear(), vks.linear());
-		} else {
-			ham.scalar_potential = std::move(vks);
-		}
-
+		
+		sc.update_hamiltonian(ham, res.energy, electrons.density_);
+		
 		CALI_MARK_END("mixing");
 
 		{

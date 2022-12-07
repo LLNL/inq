@@ -104,8 +104,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		hamiltonian::energy energy;
 
 		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
-		
-		ham.scalar_potential = sc.ks_potential(electrons.density_, energy, 0.0);
+		sc.update_hamiltonian(ham, energy, electrons.density_, 0.0);
 
 		auto ecalc = hamiltonian::calculate_energy(ham, electrons);
 		energy.eigenvalues = ecalc.sum_eigenvalues_;
@@ -136,8 +135,8 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			
 			//calculate the new density, energy, forces
 			electrons.density_ = observables::density::calculate(electrons);
-			ham.scalar_potential = sc.ks_potential(electrons.density_, energy, (istep + 1.0)*dt);
-
+			sc.update_hamiltonian(ham, energy, electrons.density_, (istep + 1.0)*dt);
+			
 			auto ecalc = hamiltonian::calculate_energy(ham, electrons);
 			energy.eigenvalues = ecalc.sum_eigenvalues_;
 			
