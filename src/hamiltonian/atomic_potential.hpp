@@ -121,7 +121,7 @@ namespace hamiltonian {
 				auto atom_position = geo.coordinates()[iatom];
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
-				basis::spherical_grid sphere(basis, basis.cell(), atom_position, ps.short_range_potential_radius());
+				basis::spherical_grid sphere(basis, atom_position, ps.short_range_potential_radius());
 
 				if(not basis.double_grid().enabled()){
 
@@ -176,7 +176,7 @@ namespace hamiltonian {
 				auto atom_position = geo.coordinates()[iatom];
 				
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
-				basis::spherical_grid sphere(basis, basis.cell(), atom_position, sep_.long_range_density_radius());
+				basis::spherical_grid sphere(basis, atom_position, sep_.long_range_density_radius());
 
 				//OPTIMIZATION: this should be done in parallel for atoms too
 				gpu::run(sphere.size(),
@@ -216,7 +216,7 @@ namespace hamiltonian {
 
 				if(ps.has_electronic_density()){
 
-					basis::spherical_grid sphere(basis, basis.cell(), atom_position, ps.electronic_density_radius());
+					basis::spherical_grid sphere(basis, atom_position, ps.electronic_density_radius());
 					
 					gpu::run(sphere.size(),
 									 [dens = begin(density.cubic()),
@@ -230,7 +230,7 @@ namespace hamiltonian {
 				} else {
 
 					//just some crude guess for now
-					basis::spherical_grid sphere(basis, basis.cell(), atom_position, 3.0);
+					basis::spherical_grid sphere(basis, atom_position, 3.0);
 					
 					gpu::run(sphere.size(),
 									 [dens = begin(density.cubic()),
@@ -276,7 +276,7 @@ namespace hamiltonian {
 
 				assert(has_nlcc());
 				
-				basis::spherical_grid sphere(basis, basis.cell(), atom_position, ps.nlcc_density_radius());
+				basis::spherical_grid sphere(basis, atom_position, ps.nlcc_density_radius());
 
 				gpu::run(sphere.size(),
 								 [dens = begin(density.cubic()),

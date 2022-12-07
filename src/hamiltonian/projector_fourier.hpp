@@ -51,7 +51,7 @@ namespace hamiltonian {
 
 			basis::field_set<basis::real_space, complex> beta_rs(basis, nproj_);
 			
-			basis::spherical_grid sphere(beta_rs.basis(), cell, math::vector3<double>(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
+			basis::spherical_grid sphere(beta_rs.basis(), math::vector3<double>(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
 
 			beta_rs = 0.0;
 			

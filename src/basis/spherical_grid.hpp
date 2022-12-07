@@ -70,10 +70,10 @@ namespace basis {
 
 		//we need to make an additional public function to make cuda happy
 		template <class basis>
-		void initialize(const basis & parent_grid, const ions::unit_cell & cell, const math::vector3<double> & center_point, const double radius){
+		void initialize(const basis & parent_grid, const math::vector3<double> & center_point, const double radius){
 			CALI_CXX_MARK_SCOPE("spherical_grid::initialize");
-					
-      ions::periodic_replicas rep(cell, center_point, parent_grid.diagonal_length());
+			
+			ions::periodic_replicas rep(parent_grid.cell(), center_point, parent_grid.diagonal_length());
 
 			math::vector3<int> local_sizes = parent_grid.local_sizes();
 			
@@ -173,11 +173,11 @@ namespace basis {
 		const static int dimension = 1;
 		
 		template <class basis>
-    spherical_grid(const basis & parent_grid, const ions::unit_cell & cell, const math::vector3<double> & center_point, const double radius):
+		spherical_grid(const basis & parent_grid, const math::vector3<double> & center_point, const double radius):
 			volume_element_(parent_grid.volume_element()),
 			center_(center_point){
 
-			initialize(parent_grid, cell, center_point, radius);
+			initialize(parent_grid, center_point, radius);
     }
 
 		auto create_comm(parallel::communicator & comm) const {
@@ -315,7 +315,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
   
   SECTION("Point 0 0 0"){
     
-    basis::spherical_grid sphere(pw, box, {0.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, {0.0, 0.0, 0.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -333,16 +333,16 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     sphere.scatter(subgrid, grid);
 
     double sum = 0.0;
-	for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
-	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
-	
+		for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
+		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+		
     CHECK(sum == 257.0_a);
     
   }
 
   SECTION("Point -l/2 0 0"){
     
-    basis::spherical_grid sphere(pw, box, {-ll/2.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, {-ll/2.0, 0.0, 0.0}, 2.0);
 		
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -356,26 +356,26 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
     sphere.gather(grid, subgrid);
 
     double sum = 0.0;
-	for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data_elements()[ii]);
-	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+		for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data_elements()[ii]);
+		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
 
     CHECK(sum == Approx(20.0*257.0));
     
     for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data_elements()[ii] = 0.0;
     
-	sphere.scatter(subgrid, grid);
+		sphere.scatter(subgrid, grid);
 
     sum = 0.0;
-	for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
-	comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
-
-	CHECK(sum == Approx(20.0*(pw.size() - size)));
-
+		for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
+		comm.all_reduce_in_place_n(&sum, 1, std::plus<>{});
+		
+		CHECK(sum == Approx(20.0*(pw.size() - size)));
+		
   }
 
   SECTION("Point l/2 0 0"){
     
-    basis::spherical_grid sphere(pw, box, {ll/2.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, {ll/2.0, 0.0, 0.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -392,7 +392,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point -l/2 -l/2 -l/2"){
     
-    basis::spherical_grid sphere(pw, box, {-ll/2.0, -ll/2.0, -ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, {-ll/2.0, -ll/2.0, -ll/2.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -402,7 +402,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point l/2 l/2 l/2"){
     
-    basis::spherical_grid sphere(pw, box, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -412,7 +412,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point l/2 l/2 l/2"){
     
-    basis::spherical_grid sphere(pw, box, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -422,7 +422,7 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 
   SECTION("Point l/4 l/4 l/4"){
     
-    basis::spherical_grid sphere(pw, box, {ll/4.0, ll/4.0, ll/4.0}, 2.0);
+    basis::spherical_grid sphere(pw, {ll/4.0, ll/4.0, ll/4.0}, 2.0);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});

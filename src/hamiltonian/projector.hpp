@@ -91,7 +91,7 @@ public:
 	
 public:
 	projector(const basis::real_space & basis, const ions::unit_cell & cell, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
-		sphere_(basis, cell, atom_position, ps.projector_radius()),
+		sphere_(basis, atom_position, ps.projector_radius()),
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
 		kb_coeff_(nproj_),
