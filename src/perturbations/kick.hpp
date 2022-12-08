@@ -26,6 +26,7 @@
 #include <math/vector3.hpp>
 #include <basis/real_space.hpp>
 #include <states/orbital_set.hpp>
+#include <perturbations/gauge.hpp>
 
 namespace inq {
 namespace perturbations {
@@ -35,13 +36,25 @@ class kick {
 public:
 
 	template <typename CellType>
-	kick(CellType const & cell, math::vector3<double> const & arg_kick_field):
+	kick(CellType const & cell, math::vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
 		efield_(arg_kick_field),
 		vpot_(-arg_kick_field),		
 		periodicity_(cell.periodicity())
 	{
-		for(int idir = 0; idir < periodicity_; idir++) efield_[idir] = 0.0;
-		for(int idir = periodicity_; idir < 3; idir++) vpot_[idir] = 0.0;
+		if(arg_gauge == gauge::mixed){
+			for(int idir = 0; idir < periodicity_; idir++) efield_[idir] = 0.0;
+			for(int idir = periodicity_; idir < 3; idir++) vpot_[idir] = 0.0;
+		}
+
+		if(arg_gauge == gauge::length){
+			vpot_ = {0.0, 0.0, 0.0};
+		}
+
+		if(arg_gauge == gauge::velocity){
+			efield_ = {0.0, 0.0, 0.0};
+		}
+
+		assert(efield_ - vpot_ == arg_kick_field);
 	}
 
 	template <typename PhiType>
@@ -176,7 +189,26 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 		CHECK(kick.uniform_vector_potential(2.0)[1] == -0.2);
 		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
 	}
-		
+
+	SECTION("velocity gauge"){
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite().cutoff_energy(ecut);
+		auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::velocity);
+
+		CHECK(kick.has_uniform_vector_potential());
+		CHECK(kick.uniform_vector_potential(3.0)[0] == -0.1);
+		CHECK(kick.uniform_vector_potential(2.0)[1] == -0.2);
+		CHECK(kick.uniform_vector_potential(1.0)[2] == -0.3);
+	}
+
+	SECTION("length gauge"){
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic().cutoff_energy(ecut);
+		auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::length);
+
+		CHECK(kick.has_uniform_vector_potential());
+		CHECK(kick.uniform_vector_potential(3.0)[0] == 0.0);
+		CHECK(kick.uniform_vector_potential(2.0)[1] == 0.0);
+		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
+	}
 }
 
 #endif
