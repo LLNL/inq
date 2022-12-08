@@ -53,6 +53,14 @@ public:
 		return polarization_*sin(time*frequency_);
 	}
 
+	auto has_uniform_vector_potential() const {
+		return false;
+	}
+
+	auto uniform_vector_potential(double /*time*/) const {
+		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
+	}
+	
 	template <typename OutputStream>
 	void print_info(OutputStream & out){
 		auto freq_ev = frequency_*27.211383;

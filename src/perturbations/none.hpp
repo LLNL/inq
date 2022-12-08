@@ -41,10 +41,18 @@ public:
 		return false;
 	}
 
-	auto uniform_electric_field(double time) const {
+	auto uniform_electric_field(double /*time*/) const {
 		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
 	}
+	
+	auto has_uniform_vector_potential() const {
+		return false;
+	}
 
+	auto uniform_vector_potential(double /*time*/) const {
+		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
+	}
+	
 };
 	
 }
