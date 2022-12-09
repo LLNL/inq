@@ -46,7 +46,7 @@ public:
 		vion_(density_basis),
 		core_density_(density_basis),
 		potential_basis_(potential_basis),
-			density_basis_(density_basis),
+		density_basis_(density_basis),
 		pert_(pert)
 	{
 	}
@@ -149,7 +149,13 @@ public:
 		} else {
 			hamiltonian.scalar_potential_ = operations::transfer::coarsen(std::move(vks), potential_basis_);
 		}
-			
+
+		if(pert_.has_uniform_vector_potential()){
+			hamiltonian.uniform_vector_potential_ = potential_basis_.cell().metric().to_covariant(pert_.uniform_vector_potential(time));
+		} else {
+			hamiltonian.uniform_vector_potential_ = {0.0, 0.0, 0.0};
+		}
+		
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

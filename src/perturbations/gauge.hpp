@@ -1,10 +1,10 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__PERTURBATIONS__NONE
-#define INQ__PERTURBATIONS__NONE
+#ifndef INQ__PERTURBATIONS__GAUGE
+#define INQ__PERTURBATIONS__GAUGE
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2022 Xavier Andrade
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -24,37 +24,18 @@
 #include <inq_config.h>
 
 #include <math/vector3.hpp>
-#include <magnitude/energy.hpp>
+#include <basis/real_space.hpp>
+#include <states/orbital_set.hpp>
 
 namespace inq {
 namespace perturbations {
 
-class none {
-
-public:
-
-	template <typename DummyType>
-	void zero_step(DummyType &) const {
-	}
-	
-	auto has_uniform_electric_field() const {
-		return false;
-	}
-
-	auto uniform_electric_field(double /*time*/) const {
-		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
-	}
-	
-	auto has_uniform_vector_potential() const {
-		return false;
-	}
-
-	auto uniform_vector_potential(double /*time*/) const {
-		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
-	}
-	
+enum class gauge {
+  mixed,    // length gauge in non-periodic dimensions, velocity in periodic dimensions
+  length,   // the electric field enters through the scalar potential or a phase in the orbitals, does not work for periodic dimensions
+  velocity  // the electric field is applied through a uniform vector potential
 };
-	
+
 }
 }
 
@@ -62,20 +43,19 @@ public:
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-#ifdef INQ_PERTURBATIONS_NONE_UNIT_TEST
-#undef INQ_PERTURBATIONS_NONE_UNIT_TEST
+#ifdef INQ_PERTURBATIONS_GAUGE_UNIT_TEST
+#undef INQ_PERTURBATIONS_GAUGE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 #include <ions/unit_cell.hpp>
 
 using namespace inq;
-using namespace Catch::literals;
-using namespace magnitude;
 
-TEST_CASE("perturbations::none", "[perturbations::none]") {
-	perturbations::none nop;
-	CHECK(not nop.has_uniform_electric_field());
+TEST_CASE("perturbations::gauge", "[perturbations::gauge]") {
+
+  [[maybe_unused]] auto gau = perturbations::gauge::velocity;
+
 }
 
 #endif
