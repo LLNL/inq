@@ -50,10 +50,12 @@ enum class gauge {
 #include <basis/real_space.hpp>
 #include <ions/unit_cell.hpp>
 
+using namespace inq;
+
 TEST_CASE("perturbations::gauge", "[perturbations::gauge]") {
 
-  auto gau = perturbations::gauge::velocity;
-  
+  [[maybe_unused]] auto gau = perturbations::gauge::velocity;
+
 }
 
 #endif
