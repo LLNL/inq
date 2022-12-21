@@ -37,7 +37,7 @@ public:
 
 	template <typename CellType>
 	kick(CellType const & cell, math::vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
-		efield_(arg_kick_field),
+		efield_(-arg_kick_field),
 		vpot_(-arg_kick_field),		
 		periodicity_(cell.periodicity())
 	{
@@ -54,7 +54,7 @@ public:
 			efield_ = {0.0, 0.0, 0.0};
 		}
 
-		assert(efield_ - vpot_ == arg_kick_field);
+		assert(efield_ + vpot_ == -arg_kick_field);
 	}
 
 	template <typename PhiType>
