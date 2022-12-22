@@ -161,8 +161,8 @@ set(CMAKE_BUILD_TYPE Release)
 
 FetchContent_Declare(
   spglib
-	GIT_REPOSITORY https://github.com/spglib/spglib.git
-	GIT_TAG        e8118d854a4c11dbaa8d7b2c55d4a1e74ddcaaf7
+	GIT_REPOSITORY https://gitlab.com/npneq/spglib.git
+	GIT_TAG        f04dadd3175a60279f86780630045d3b3f64b8aa
 	)
 FetchContent_MakeAvailable(spglib)
 
