@@ -10,7 +10,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "")
 
-message(STATUS "downloading Catch2 v3p3")
+message(STATUS "Downloading Catch2 v3p3")
 Include(FetchContent)
 FetchContent_Declare(
 	Catch2
@@ -150,20 +150,32 @@ link_libraries(xc)
 set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 include_directories(${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 
+########################
 # SPGLIB
-message("\nCONFIGURING SPGLIB\n")
+########################
+
+message(STATUS "Downloading spglib")
+
 set(CMAKE_BUILD_TYPE_BACKUP ${MAKE_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE Release)
-add_subdirectory(external_libs/spglib)
+
+FetchContent_Declare(
+  spglib
+	GIT_REPOSITORY https://gitlab.com/npneq/spglib.git
+	GIT_TAG        f04dadd3175a60279f86780630045d3b3f64b8aa
+	)
+FetchContent_MakeAvailable(spglib)
+
 set(CMAKE_BUILD_TYPE ${MAKE_BUILD_TYPE_BACKUP})
 
-message("\nDONE CONFIGURING SPGLIB\n")
-
-set(spglib_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/spglib/src/)
-set(spglib_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/spglib/libsymspg.a)
+set(spglib_INCLUDE_DIRS ${spglib_SOURCE_DIR}/src/)
+set(spglib_LIBRARIES ${spglib_BINARY_DIR}/libsymspg.a)
 include_directories(${spglib_INCLUDE_DIRS})
 link_libraries(symspg_static)
 
+########################
+# BOOST
+########################
 
 find_package(Boost REQUIRED COMPONENTS serialization filesystem system)
 message(STATUS "Boost actual version found " ${Boost_VERSION})
