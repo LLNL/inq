@@ -36,7 +36,8 @@ namespace observables {
 namespace berkeleygw {
 
 void save(systems::ions const & ions, systems::electrons const & electrons){
-  H5Pcreate(H5P_FILE_ACCESS);
+	auto h5file = H5Pcreate(H5P_FILE_ACCESS);
+	H5Pclose(h5file);
 }
 
 }
