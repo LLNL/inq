@@ -39,33 +39,63 @@ int main(int argc, char ** argv){
 	utils::match energy_match(2.0e-5);
 
 	auto box = systems::box::cubic(15.0_b).finite().cutoff_energy(25.0_Ha);
-	
-	systems::ions ions(box);
 
-	ions.insert("Ne" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
+	{
+		systems::ions ions(box);
+		
+		ions.insert("C" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
+		
+		input::config conf;
+		
+		conf.extra_states = 4;
+		conf.temperature = 300.0_K;
+		
+		systems::electrons electrons(env.par(), ions, box, conf);
+		
+		ground_state::initial_guess(ions, electrons);
+		
+		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-7_Ha));
+		
+		energy_match.check("total energy",        result.energy.total()    ,   -5.364150410132);
+		energy_match.check("kinetic energy",      result.energy.kinetic()  ,    3.176958399971);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,   -1.404891089837);
+		energy_match.check("Hartree energy",      result.energy.hartree,        4.371228814208);
+		energy_match.check("external energy",     result.energy.external,      -11.993822537719);
+		energy_match.check("non-local energy",    result.energy.nonlocal,        0.494166459143);
+		energy_match.check("XC energy",           result.energy.xc,             -1.412681130237);
+		energy_match.check("XC density integral", result.energy.nvxc,           -1.824651039648);
+		energy_match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
+		energy_match.check("ion-ion energy",      result.energy.ion,             0.000000000000);
 
-	input::config conf;
-	
-	conf.extra_states = 4;
-  conf.temperature = 300.0_K;
-	
-	systems::electrons electrons(env.par(), ions, box, conf);
-	
-	ground_state::initial_guess(ions, electrons);
+	}
 
-  auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-7_Ha));
-
-  energy_match.check("total energy",        result.energy.total()    ,   -5.364150410132);
-  energy_match.check("kinetic energy",      result.energy.kinetic()  ,    3.176958399971);
-  energy_match.check("eigenvalues",         result.energy.eigenvalues,   -1.404891089837);
-	energy_match.check("Hartree energy",      result.energy.hartree,        4.371228814208);
-	energy_match.check("external energy",     result.energy.external,      -11.993822537719);
-	energy_match.check("non-local energy",    result.energy.nonlocal,        0.494166459143);
-	energy_match.check("XC energy",           result.energy.xc,             -1.412681130237);
-	energy_match.check("XC density integral", result.energy.nvxc,           -1.824651039648);
-	energy_match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
-	energy_match.check("ion-ion energy",      result.energy.ion,             0.000000000000);
-	
+	{
+		systems::ions ions(box);
+		
+		ions.insert("C" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C.ccECP.upf"), {0.0_b, 0.0_b, 0.0_b});
+		
+		input::config conf;
+		
+		conf.extra_states = 4;
+		conf.temperature = 300.0_K;
+		
+		systems::electrons electrons(env.par(), ions, box, conf);
+		
+		ground_state::initial_guess(ions, electrons);
+		
+		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-7_Ha));
+		
+		energy_match.check("total energy",        result.energy.total()    ,   -5.390943622811);
+		energy_match.check("kinetic energy",      result.energy.kinetic()  ,    3.462172398908);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,   -1.409265615080);
+		energy_match.check("Hartree energy",      result.energy.hartree,        4.396050673409);
+		energy_match.check("external energy",     result.energy.external,     -12.434351444103);
+		energy_match.check("non-local energy",    result.energy.nonlocal,       0.607257102015);
+		energy_match.check("XC energy",           result.energy.xc,            -1.422072353040);
+		energy_match.check("XC density integral", result.energy.nvxc,          -1.836445018718);
+		energy_match.check("HF exchange energy",  result.energy.hf_exchange,    0.000000000000);
+		energy_match.check("ion-ion energy",      result.energy.ion,            0.000000000000);
+	}
 	return energy_match.fail();
 	
 }
