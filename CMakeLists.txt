@@ -186,7 +186,24 @@ endif()
 include_directories(Boost::serialization Boost::filesystem Boost::system) #${Boost_INCLUDE_DIRS})
 link_libraries(Boost::serialization Boost::filesystem Boost::system)
 
-# Required for inq_config.h
+#######################
+# LINK HDF5
+#######################
+
+set(HDF5_PREFER_PARALLEL true)
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+
+#filter out libraries that nvcc doesn't understand
+list(FILTER HDF5_LIBRARIES EXCLUDE REGEX .*/libpthread.a)
+list(FILTER HDF5_LIBRARIES EXCLUDE REGEX .*/libdl.a)
+
+include_directories(${HDF5_CXX_INCLUDE_DIRS})
+link_libraries(${HDF5_LIBRARIES})
+
+#######################
+# GENERATE inq_config.h
+######################
+
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 configure_file(inq_config.h.in inq_config.h)
