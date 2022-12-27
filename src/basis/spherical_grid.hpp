@@ -24,6 +24,7 @@
 #include <inq_config.h>
 
 #ifdef ENABLE_CUDA
+#include <thrust/remove.h>  // for thrust::remove_if
 #include <thrust/sort.h>
 #include <thrust/binary_search.h>
 #endif 
