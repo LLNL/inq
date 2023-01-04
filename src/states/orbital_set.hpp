@@ -40,10 +40,6 @@ namespace states {
 			 kpoint_(kpoint){
 		}
 		
-		orbital_set(Basis const & basis, int const num_vectors, parallel::cartesian_communicator<2> comm)
-		:orbital_set(basis, num_vectors, kpoint_type{0.0, 0.0, 0.0}, comm){
-		}
-		
 		orbital_set(basis::field_set<Basis, Type> && fields, kpoint_type const & kpoint)
 		:fields_(std::move(fields)),
 			 kpoint_(kpoint){
@@ -165,7 +161,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(ecut);
   basis::real_space rs(box, basis_comm);
 
-	states::orbital_set<basis::real_space, double> orb(rs, 12, cart_comm);
+	states::orbital_set<basis::real_space, double> orb(rs, 12, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, cart_comm);
 
 	CHECK(sizes(orb.fields().basis())[0] == 28);
 	CHECK(sizes(orb.fields().basis())[1] == 11);

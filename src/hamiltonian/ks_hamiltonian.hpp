@@ -266,7 +266,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-  states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), cart_comm);
+  states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, cart_comm);
 
 	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, pot, false, geo, st.num_states(), 0.0, cart_comm);
 
