@@ -24,8 +24,8 @@
 
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
+#include <operations/integral.hpp>
 #include <operations/transfer.hpp>
-#include <systems/electrons.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -65,7 +65,8 @@ void calculate_gradient_add(const occupations_array_type & occupations, field_se
 
 ///////////////////////////////////////////////////////////////
 
-basis::field<basis::real_space, double> calculate(const systems::electrons & elec){
+template <typename ElecType>
+basis::field<basis::real_space, double> calculate(ElecType & elec){
 	
 	basis::field<basis::real_space, double> density(elec.density_basis_);
 
@@ -82,6 +83,8 @@ basis::field<basis::real_space, double> calculate(const systems::electrons & ele
 	return density;
 }
 
+///////////////////////////////////////////////////////////////
+
 template <class FieldType>
 void normalize(FieldType & density, const double & total_charge){
 
@@ -91,6 +94,26 @@ void normalize(FieldType & density, const double & total_charge){
 	assert(fabs(qq) > 1e-16);
 	for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
 	
+}
+
+///////////////////////////////////////////////////////////////
+
+template <class FieldSetType>
+basis::field<basis::real_space, double> total(FieldSetType & spin_density){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(spin_density.set_size() == 1 or spin_density.set_size() == 2 or spin_density.set_size() == 4);
+	assert(spin_density.set_size() == spin_density.local_set_size());
+	
+	basis::field<basis::real_space, double> total_density(spin_density.basis());
+	
+	gpu::run(spin_density.basis().local_size(),
+					 [spi = begin(spin_density.matrix()), tot = begin(total_density.linear()), nspin = spin_density.set_size()] GPU_LAMBDA (auto ip){
+						 if(nspin == 1) tot[ip] = spi[ip][0];
+						 if(nspin == 2) tot[ip] = spi[ip][0] + spi[ip][1];
+						 if(nspin == 4) tot[ip] = spi[ip][0] + spi[ip][1] + spi[ip][2] + spi[ip][3];
+					 });
 }
 
 }
