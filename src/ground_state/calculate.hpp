@@ -79,7 +79,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	auto old_energy = std::numeric_limits<double>::max();
 		
 	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
-	sc.update_hamiltonian(ham, res.energy, electrons.density_);
+	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
@@ -134,18 +134,18 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		double density_diff = 0.0;
 		{
 			auto new_density = observables::density::calculate(electrons);
-			density_diff = operations::integral_absdiff(electrons.density_, new_density);				
+			density_diff = operations::integral_absdiff(electrons.spin_density(), new_density);
 			density_diff /= electrons.states_.num_electrons();
 				
 			if(inter.self_consistent()) {
-				mixer->operator()(electrons.density_.linear(), new_density.linear());
-				observables::density::normalize(electrons.density_, electrons.states_.num_electrons());
+				mixer->operator()(electrons.spin_density().linear(), new_density.linear());
+				observables::density::normalize(electrons.spin_density(), electrons.states_.num_electrons());
 			} else {
-				electrons.density_ = std::move(new_density);
+				electrons.spin_density() = std::move(new_density);
 			}
 		}
 		
-		sc.update_hamiltonian(ham, res.energy, electrons.density_);
+		sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
 		CALI_MARK_END("mixing");
 
@@ -200,7 +200,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	}
 
 	//make sure we have a density consistent with phi
-	electrons.density_ = observables::density::calculate(electrons);
+	electrons.spin_density() = observables::density::calculate(electrons);
 
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 

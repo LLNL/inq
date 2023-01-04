@@ -29,14 +29,14 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 	electrons.update_occupations(electrons.eigenvalues());
 	
 	if(ions.geo().num_atoms() > 0){
-		electrons.density_ = electrons.atomic_pot_.atomic_electronic_density(electrons.states_comm_, electrons.density_basis_, ions.geo());
+		electrons.spin_density() = electrons.atomic_pot_.atomic_electronic_density(electrons.states_comm_, electrons.density_basis_, ions.geo());
 	} else {
-		electrons.density_ = observables::density::calculate(electrons);
+		electrons.spin_density() = observables::density::calculate(electrons);
 	}
 
-	assert(fabs(operations::integral(electrons.density_)) > 1e-16);
+	assert(fabs(operations::integral(electrons.density())) > 1e-16);
 	
-  observables::density::normalize(electrons.density_, electrons.states_.num_electrons());
+  observables::density::normalize(electrons.spin_density(), electrons.states_.num_electrons());
 
 }
 }

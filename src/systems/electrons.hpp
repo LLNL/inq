@@ -90,7 +90,7 @@ public:
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
-		density_(density_basis_),
+		spin_density_(density_basis_),
 		lot_part_(kpts.num(), lot_comm_)
 	{
 
@@ -134,7 +134,7 @@ public:
 		states_(std::move(old_el.states_)),
 		lot_weights_(std::move(old_el.lot_weights_)),
 		max_local_size_(std::move(old_el.max_local_size_)),
-		density_(std::move(old_el.density_), density_basis_.comm()),
+		spin_density_(std::move(old_el.spin_density_), density_basis_.comm()),
 		logger_(std::move(old_el.logger_)),
 		lot_part_(std::move(old_el.lot_part_))
 	{
@@ -281,6 +281,18 @@ public:
 	auto max_local_size() const {
 		return max_local_size_;
 	}
+
+	auto & density() const {
+		return spin_density_;
+	}
+
+	auto & spin_density() const {
+		return spin_density_;
+	}
+
+	auto & spin_density() {
+		return spin_density_;
+	}
 	
 private:
 	static std::string generate_tiny_uuid(){
@@ -310,10 +322,9 @@ private:
 	math::array<double, 2> occupations_;
 	math::array<double, 1> lot_weights_;
 	long max_local_size_;
-
+	basis::field<basis::real_space, double> spin_density_;
  	
 public:
-	basis::field<basis::real_space, double> density_;
 	std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
 private:
 	std::shared_ptr<spdlog::logger> logger_;
