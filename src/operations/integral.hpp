@@ -23,14 +23,16 @@
 
 #include <cassert>
 #include <numeric>
+
+#include <basis/field.hpp>
 #include <operations/sum.hpp>
 #include <math/complex.hpp>
 
 namespace inq {
 namespace operations {
 
-template <class field_type>
-auto integral(const field_type & phi){
+template <class BasisType, class ElementType>
+auto integral(basis::field<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
@@ -40,8 +42,8 @@ auto integral(const field_type & phi){
 	return integral_value;
 }
 
-template <class field_type, class binary_op>
-auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
+template <class BasisType, class ElementType1, class ElementType2, class BinaryOp>
+auto integral(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2, BinaryOp const op){
 	CALI_CXX_MARK_FUNCTION;
 	
 	assert(phi1.basis() == phi2.basis());
@@ -53,18 +55,18 @@ auto integral(const field_type & phi1, const field_type & phi2, const binary_op 
 	return integral_value;
 }
 
-template <class field_type>
-auto integral_abs(const field_type & phi){
+template <class BasisType, class ElementType>
+auto integral_abs(basis::field<BasisType, ElementType> const & phi){
 	return integral(phi, phi, [](auto t1, auto t2){return fabs(t1);});
 }
 
-template <class field_type>
-auto integral_product(const field_type & phi1, const field_type & phi2){
+template <class BasisType, class ElementType1, class ElementType2>
+auto integral_product(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
 	return integral(phi1, phi2, std::multiplies<>());
 }
 	
-template <class field_type>
-auto integral_absdiff(const field_type & phi1, const field_type & phi2){
+template <class BasisType, class ElementType1, class ElementType2>
+auto integral_absdiff(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
 	return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
 }
 
