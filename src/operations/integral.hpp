@@ -25,6 +25,7 @@
 #include <numeric>
 
 #include <basis/field.hpp>
+#include <basis/field_set.hpp>
 #include <operations/sum.hpp>
 #include <math/complex.hpp>
 
@@ -38,6 +39,17 @@ auto integral(basis::field<BasisType, ElementType> const & phi){
 	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
 	if(phi.basis().comm().size() > 1) {
 		phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	}
+	return integral_value;
+}
+
+template <class BasisType, class ElementType>
+auto integral_sum(basis::field_set<BasisType, ElementType> const & phi){
+	CALI_CXX_MARK_FUNCTION;
+	
+	auto integral_value = phi.basis().volume_element()*sum(phi.matrix().flatted());
+	if(phi.full_comm().size() > 1) {
+		phi.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	}
 	return integral_value;
 }
@@ -125,6 +137,25 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	}
 
+	SECTION("integral_sum double"){
+
+		int nvec = 6;
+		
+		basis::field_set<basis::trivial, double> aa(bas, nvec);
+
+		aa = 1.0;
+
+		CHECK(operations::integral_sum(aa) == Approx(nvec));
+
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) {
+			for(int ist = 0; ist < nvec; ist++){
+				aa.matrix()[ii][ist] = aa.basis().part().local_to_global(ii).value();
+			}
+		}
+
+		CHECK(operations::integral_sum(aa) == Approx(nvec*0.5*N*(N - 1.0)*bas.volume_element()));
+	}
+	
 	SECTION("Integral product double"){
 		
 		basis::field<basis::trivial, double> aa(bas);
