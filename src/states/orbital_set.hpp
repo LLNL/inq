@@ -41,12 +41,6 @@ namespace states {
 			 spin_index_(spin_index){
 		}
 		
-		orbital_set(basis::field_set<Basis, Type> && fields, kpoint_type const & kpoint, int spin_index)
-		:fields_(std::move(fields)),
-			 kpoint_(kpoint),
-			 spin_index_(spin_index){
-		}
-
 		orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
 		:fields_(std::move(oldset.fields_), new_comm),
 			 kpoint_(oldset.kpoint()),
