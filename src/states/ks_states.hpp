@@ -4,7 +4,7 @@
 #define INQ__STATES__KS_STATES
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo A. Correa
+ Copyright (C) 2019-2023 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -35,12 +35,8 @@ public:
 
 	typedef complex coeff_type;
     
-	enum class spin_config {
-													UNPOLARIZED,
-													POLARIZED,
-													NON_COLLINEAR
-	};
-        
+	enum class spin_config { UNPOLARIZED, POLARIZED, NON_COLLINEAR };
+	
 	ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0, double temperature = 0.0, int nkpoints = 1):
 		temperature_(temperature),
 		nkpoints_(nkpoints)
@@ -57,8 +53,8 @@ public:
 
 		nstates_ += extra_states;
 			
-		nquantumnumbers_ = 1;
-		if(spin == spin_config::POLARIZED) nquantumnumbers_ = 2;
+		num_spin_indices_ = 1;
+		if(spin == spin_config::POLARIZED) num_spin_indices_ = 2;
 
 		num_electrons_ = nelectrons;
 
@@ -68,8 +64,8 @@ public:
 		return nstates_;
 	}
 
-	int num_quantum_numbers() const {
-		return nquantumnumbers_;
+	int num_spin_indices() const {
+		return num_spin_indices_;
 	}
 
 	template <class output_stream>
@@ -217,7 +213,7 @@ private:
 
 	double num_electrons_;
 	int nstates_;
-	int nquantumnumbers_;
+	int num_spin_indices_;
 	double temperature_;
 	double max_occ_;
 	int nkpoints_;
@@ -246,7 +242,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 12.0);
     CHECK(st.num_states() == 6);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
 		parallel::partition part(st.num_states(), comm);
 
@@ -279,7 +275,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 11.0);
     CHECK(st.num_states() == 6);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
 		parallel::partition part(st.num_states(), comm);
 
@@ -312,7 +308,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 12.0);
     CHECK(st.num_states() == 8);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
 		parallel::partition part(st.num_states(), comm);
 
@@ -349,7 +345,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 11.235);
     CHECK(st.num_states() == 8);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
 		parallel::partition part(st.num_states(), comm);
 
@@ -386,7 +382,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 4.0);    
     CHECK(st.num_states() == 6);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
 		comm.barrier();
 		
@@ -421,7 +417,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 11.0);    
     CHECK(st.num_states() == 6);
-    CHECK(st.num_quantum_numbers() == 2);
+    CHECK(st.num_spin_indices() == 2);
 
   }
 
@@ -431,7 +427,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 11.0);
     CHECK(st.num_states() == 11);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
   }
 
@@ -441,7 +437,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 12.0);
     CHECK(st.num_states() == 8);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
 		parallel::partition part(st.num_states(), comm);
 
@@ -478,7 +474,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 6.0);
     CHECK(st.num_states() == 5);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
 		parallel::partition part(st.num_states(), comm);
 
@@ -549,7 +545,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 
 		CHECK(st.num_electrons() == 5.5);
     CHECK(st.num_states() == 5);
-    CHECK(st.num_quantum_numbers() == 1);
+    CHECK(st.num_spin_indices() == 1);
 
 		parallel::partition part(st.num_states(), comm);
 
