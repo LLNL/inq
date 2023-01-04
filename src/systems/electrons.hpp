@@ -294,6 +294,10 @@ public:
 	auto & spin_density() {
 		return spin_density_;
 	}
+
+	auto & states() const {
+		return states_;
+	}
 	
 private:
 	static std::string generate_tiny_uuid(){
@@ -316,8 +320,8 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
-	states::ks_states states_;
 private:
+	states::ks_states states_;
 	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
 	math::array<double, 2> eigenvalues_;
 	math::array<double, 2> occupations_;
@@ -361,8 +365,8 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		
 	systems::electrons electrons(par, ions, box);
 
-	CHECK(electrons.states_.num_electrons() == 38.0_a);
-	CHECK(electrons.states_.num_states() == 19);
+	CHECK(electrons.states().num_electrons() == 38.0_a);
+	CHECK(electrons.states().num_states() == 19);
 
 	int iphi = 0;
 	for(auto & phi : electrons.lot()) {

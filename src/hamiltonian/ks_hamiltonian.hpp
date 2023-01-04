@@ -75,12 +75,13 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-    ks_hamiltonian(const basis_type & basis, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
+    ks_hamiltonian(const basis_type & basis, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
 									 const int num_hf_orbitals, const double exchange_coefficient, parallel::cartesian_communicator<2> comm, bool use_ace = false):
 			exchange(basis, num_hf_orbitals, exchange_coefficient, use_ace, std::move(comm)),
 			scalar_potential_(basis),
 			uniform_vector_potential_({0.0, 0.0, 0.0}),
-			non_local_in_fourier_(fourier_pseudo)
+			non_local_in_fourier_(fourier_pseudo),
+			states_(states)
 		{
 			scalar_potential_ = 0.0;
 			update_projectors(basis, pot, geo);
@@ -217,7 +218,8 @@ namespace hamiltonian {
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
-
+		states::ks_states states_;
+		
 		template <typename Perturbation>
 		friend class self_consistency;
 	
@@ -268,7 +270,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
   states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, pot, false, geo, st.num_states(), 0.0, cart_comm);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(rs, st, pot, false, geo, st.num_states(), 0.0, cart_comm);
 
 	SECTION("Constant function"){
 		

@@ -36,7 +36,7 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 
 	assert(fabs(operations::integral(electrons.density())) > 1e-16);
 	
-  observables::density::normalize(electrons.spin_density(), electrons.states_.num_electrons());
+  observables::density::normalize(electrons.spin_density(), electrons.states().num_electrons());
 
 }
 }

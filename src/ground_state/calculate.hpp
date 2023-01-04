@@ -59,8 +59,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	if(console) console->trace("calculate started");
 	hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
 	
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
-																										 electrons.states_.num_states(), sc.exx_coefficient(), electrons.states_basis_comm_, /* use_ace = */ true);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
+																										 electrons.states().num_states(), sc.exx_coefficient(), electrons.states_basis_comm_, /* use_ace = */ true);
 		
 	if(electrons.full_comm_.root()) ham.info(std::cout);
 		
@@ -135,11 +135,11 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		{
 			auto new_density = observables::density::calculate(electrons);
 			density_diff = operations::integral_absdiff(electrons.spin_density(), new_density);
-			density_diff /= electrons.states_.num_electrons();
+			density_diff /= electrons.states().num_electrons();
 				
 			if(inter.self_consistent()) {
 				mixer->operator()(electrons.spin_density().linear(), new_density.linear());
-				observables::density::normalize(electrons.spin_density(), electrons.states_.num_electrons());
+				observables::density::normalize(electrons.spin_density(), electrons.states().num_electrons());
 			} else {
 				electrons.spin_density() = std::move(new_density);
 			}
@@ -158,7 +158,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			res.energy.nonlocal = ecalc.nonlocal_;
 			res.energy.hf_exchange = ecalc.hf_exchange_;
 
-			auto energy_diff = (res.energy.eigenvalues - old_energy)/electrons.states_.num_electrons();
+			auto energy_diff = (res.energy.eigenvalues - old_energy)/electrons.states().num_electrons();
 
 			electrons.full_comm_.barrier();
 			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - iter_start_time;
@@ -180,7 +180,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				auto all_normres = electrons.lot()[ilot].fields().set_part().gather(+ecalc.normres_[ilot], comm, 0);			
 				
 				if(solver.verbose_output() and console){
-					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
+					for(int istate = 0; istate < electrons.states().num_states(); istate++){
 						console->info("	k-point {:4d} state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
 													ilot + 1, istate + 1, all_occupations[istate]/electrons.lot_weights()[ilot], real(all_eigenvalues[istate]), real(all_normres[istate]));
 					}
