@@ -35,9 +35,10 @@ namespace states {
 		using basis_type = Basis;
 		using kpoint_type = math::vector3<double, math::covariant>;
 
-		orbital_set(Basis const & basis, int const num_vectors, kpoint_type const & kpoint, parallel::cartesian_communicator<2> comm)
+		orbital_set(Basis const & basis, int const num_vectors, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
 			:fields_(basis, num_vectors, comm),
-			 kpoint_(kpoint){
+			 kpoint_(kpoint),
+			 spin_index_(spin_index){
 		}
 		
 		orbital_set(basis::field_set<Basis, Type> && fields, kpoint_type const & kpoint)
@@ -52,7 +53,7 @@ namespace states {
 		
 		template <class any_type>
 		orbital_set(inq::utils::skeleton_wrapper<orbital_set<Basis, any_type>> const & skeleton)
-			:orbital_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.kpoint(), skeleton.base.full_comm()){
+			:orbital_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm()){
 		}
 		
 		auto skeleton() const {
@@ -68,6 +69,10 @@ namespace states {
     }
 		auto & kpoint() const {
 			return kpoint_;
+		}
+
+		auto & spin_index() const {
+			return spin_index_;
 		}
 
 		auto & set_part() const {
@@ -126,6 +131,7 @@ namespace states {
 
     basis::field_set<Basis, Type> fields_;
 		kpoint_type kpoint_;
+		int spin_index_;
 		
   };
 
@@ -161,7 +167,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(ecut);
   basis::real_space rs(box, basis_comm);
 
-	states::orbital_set<basis::real_space, double> orb(rs, 12, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, cart_comm);
+	states::orbital_set<basis::real_space, double> orb(rs, 12, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 	CHECK(sizes(orb.fields().basis())[0] == 28);
 	CHECK(sizes(orb.fields().basis())[1] == 11);
@@ -170,7 +176,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orb.fields().local_set_size() == orb.local_set_size());
 	CHECK(orb.fields().set_size() == orb.set_size());
 	
-	states::orbital_set<basis::real_space, double> orbk(rs, 12, {0.4, 0.22, -0.57}, cart_comm);
+	states::orbital_set<basis::real_space, double> orbk(rs, 12, {0.4, 0.22, -0.57}, 0, cart_comm);
 
 	CHECK(sizes(orbk.fields().basis())[0] == 28);
 	CHECK(sizes(orbk.fields().basis())[1] == 11);
