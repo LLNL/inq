@@ -41,14 +41,16 @@ namespace states {
 			 spin_index_(spin_index){
 		}
 		
-		orbital_set(basis::field_set<Basis, Type> && fields, kpoint_type const & kpoint)
+		orbital_set(basis::field_set<Basis, Type> && fields, kpoint_type const & kpoint, int spin_index)
 		:fields_(std::move(fields)),
-			 kpoint_(kpoint){
+			 kpoint_(kpoint),
+			 spin_index_(spin_index){
 		}
 
 		orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
 		:fields_(std::move(oldset.fields_), new_comm),
-			 kpoint_(oldset.kpoint()){
+			 kpoint_(oldset.kpoint()),
+			 spin_index_(oldset.spin_index()){
 		}
 		
 		template <class any_type>
@@ -72,6 +74,7 @@ namespace states {
 		}
 
 		auto & spin_index() const {
+			assert(spin_index_ >= 0 and spin_index_ < 2);
 			return spin_index_;
 		}
 

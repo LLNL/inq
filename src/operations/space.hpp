@@ -444,7 +444,7 @@ states::orbital_set<basis::real_space, complex> to_real(const states::orbital_se
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 	
-	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.kpoint(), phi.spin_index(), fphi.full_comm());
+	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.spin_index(), fphi.full_comm());
 
 	to_real_array(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
 
