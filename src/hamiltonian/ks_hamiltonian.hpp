@@ -78,12 +78,12 @@ namespace hamiltonian {
     ks_hamiltonian(const basis_type & basis, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
 									 const int num_hf_orbitals, const double exchange_coefficient, parallel::cartesian_communicator<2> comm, bool use_ace = false):
 			exchange(basis, num_hf_orbitals, exchange_coefficient, use_ace, std::move(comm)),
-			scalar_potential_(basis),
+			scalar_potential_(states.num_density_components(), basis),
 			uniform_vector_potential_({0.0, 0.0, 0.0}),
 			non_local_in_fourier_(fourier_pseudo),
 			states_(states)
 		{
-			scalar_potential_ = 0.0;
+			for(auto & pot : scalar_potential_) pot = 0.0;
 			update_projectors(basis, pot, geo);
     }
 
@@ -144,7 +144,7 @@ namespace hamiltonian {
 			
 			auto hphi = operations::space::to_real(hphi_fs);
 
-			hamiltonian::scalar_potential_add(scalar_potential_, 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
+			hamiltonian::scalar_potential_add(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
 			exchange(phi, hphi);
 
 			projectors_all_.apply(proj, hphi.fields(), phi.kpoint() + uniform_vector_potential_);
@@ -162,7 +162,7 @@ namespace hamiltonian {
 
 			auto proj = projectors_all_.project(phi_rs.fields(), phi.kpoint() + uniform_vector_potential_);
 			
-			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_, 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
+			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
  
@@ -212,7 +212,7 @@ namespace hamiltonian {
 		
   private:
 		
-		basis::field<basis::real_space, double> scalar_potential_;
+		std::vector<basis::field<basis::real_space, double>> scalar_potential_;
 		math::vector3<double, math::covariant> uniform_vector_potential_;
 		projector_all projectors_all_;		
 		bool non_local_in_fourier_;
@@ -278,7 +278,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					ham.scalar_potential().cubic()[ix][iy][iz] = 0.0;
+					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.0;
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] = 1.0;
@@ -315,7 +315,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					ham.scalar_potential().cubic()[ix][iy][iz] = 0.0;
+					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.0;
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 
@@ -366,7 +366,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 					auto izg = rs.cubic_dist(2).local_to_global(iz);	
 					
 					double r2 = rs.point_op().r2(ixg, iyg, izg);
-					ham.scalar_potential().cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
+					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] = exp(-ww*r2);
@@ -405,7 +405,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					ham.scalar_potential().cubic()[ix][iy][iz] = 0.0;
+					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.0;
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 
@@ -457,7 +457,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 					auto izg = rs.cubic_dist(2).local_to_global(iz);	
 					
 					double r2 = rs.point_op().r2(ixg, iyg, izg);
-					ham.scalar_potential().cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
+					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						phi.cubic()[ix][iy][iz][ist] = exp(-ww*r2);

@@ -143,13 +143,15 @@ public:
 				energy.nvxc += operations::integral_product(electronic_density, vfunc); //the core correction does not go here
 			}
 		}
-			
-		if(potential_basis_ == vks.basis()){
-			hamiltonian.scalar_potential_ = std::move(vks);
-		} else {
-			hamiltonian.scalar_potential_ = operations::transfer::coarsen(std::move(vks), potential_basis_);
-		}
 
+		for(auto & pot : hamiltonian.scalar_potential_) {
+			if(potential_basis_ == vks.basis()){
+				pot = vks;
+			} else {
+				pot = operations::transfer::coarsen(vks, potential_basis_);
+			}
+		}
+		
 		if(pert_.has_uniform_vector_potential()){
 			hamiltonian.uniform_vector_potential_ = potential_basis_.cell().metric().to_covariant(pert_.uniform_vector_potential(time));
 		} else {
