@@ -105,17 +105,22 @@ public:
 		
 		CALI_CXX_MARK_FUNCTION;
 
-		lot_weights_.reextent({lot_part_.local_size()});
+		auto nspin = states_.num_spin_indices();
+		
+		lot_weights_.reextent({lot_part_.local_size()*nspin});
 
 		max_local_size_ = 0;
-		int ispin = 0;
-		for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
-			lot_weights_[ikpt] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
-			auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
-			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, ispin, states_basis_comm_);
-			max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
+		for(int ispin = 0; ispin < nspin; ispin++){
+			for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
+				lot_weights_[ikpt] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
+				auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
+				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, ispin, states_basis_comm_);
+				max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
+			}
 		}
 
+		lot_part_ *= nspin;
+		
 		assert(long(lot_.size()) == lot_part_.local_size());
 		assert(max_local_size_ > 0);
 		
