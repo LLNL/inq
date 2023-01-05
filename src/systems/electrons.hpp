@@ -79,7 +79,12 @@ public:
 	auto & occupations() {
 		return occupations_;
 	}
-		
+
+	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, input::kpoints const & kpts, const input::config & conf = {}):
+		electrons(dist, ions, box, conf, kpts)
+	{
+	}
+	
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm(brillouin_zone_.size())),

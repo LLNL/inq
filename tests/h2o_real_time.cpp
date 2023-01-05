@@ -35,13 +35,11 @@ int main(int argc, char ** argv){
 
 	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "water.xyz"));
 
-	input::config conf;
-
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	systems::electrons electrons(env.par().states(parstates), ions, box, conf);
+	systems::electrons electrons(env.par().states(parstates), ions, box);
 
 	// Propagation without perturbation
 	{

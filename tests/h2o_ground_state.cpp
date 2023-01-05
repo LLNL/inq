@@ -51,13 +51,11 @@ int main(int argc, char ** argv){
 
 	ions.insert(inq::input::parse_xyz(inq::config::path::unit_tests_data() + "water.xyz"));
 	
-	config conf;
-
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	inq::systems::electrons electrons(env.par().states(parstates), ions, box, conf);
+	inq::systems::electrons electrons(env.par().states(parstates), ions, box);
 
 	inq::ground_state::initial_guess(ions, electrons);
 
