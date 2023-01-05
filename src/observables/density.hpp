@@ -98,8 +98,15 @@ void normalize(FieldType & density, const double & total_charge){
 
 ///////////////////////////////////////////////////////////////
 
-template <class FieldSetType>
-basis::field<basis::real_space, double> total(FieldSetType & spin_density){
+template <class BasisType, class ElementType>
+basis::field<basis::real_space, double> total(basis::field<BasisType, ElementType> const & density){
+	return density;
+}
+
+///////////////////////////////////////////////////////////////
+
+template <class BasisType, class ElementType>
+basis::field<basis::real_space, double> total(basis::field_set<BasisType, ElementType> const & spin_density){
 
 	CALI_CXX_MARK_FUNCTION;
 
