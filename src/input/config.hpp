@@ -22,6 +22,7 @@
 */
 
 #include <magnitude/energy.hpp>
+#include <states/ks_states.hpp>
 #include <utils/merge_optional.hpp>
 
 #include <cassert>
@@ -63,6 +64,28 @@ public:
 	auto temperature_val() const {
 		return temperature_.value_or(quantity<magnitude::energy>::zero()).in_atomic_units();
 	}
+
+	static auto spin_unpolarized(){
+		config conf;
+		conf.spin_ = states::ks_states::spin_config::UNPOLARIZED;
+		return conf;
+	}
+	
+	static auto spin_polarized(){
+		config conf;
+		conf.spin_ = states::ks_states::spin_config::POLARIZED;
+		return conf;
+	}
+
+	static auto spin_orbit(){
+		config conf;
+		conf.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
+		return conf;
+	}
+	
+	auto spin_val() const {
+		return spin_.value_or(states::ks_states::spin_config::UNPOLARIZED);
+	}
 	
 	friend auto operator|(config const & conf1, config const & conf2){
 		using inq::utils::merge_optional;
@@ -71,6 +94,7 @@ public:
 		rconf.extra_states_	= merge_optional(conf1.extra_states_, conf2.extra_states_);
 		rconf.excess_charge_	= merge_optional(conf1.excess_charge_, conf2.excess_charge_);
 		rconf.temperature_	= merge_optional(conf1.temperature_, conf2.temperature_);
+		rconf.spin_	= merge_optional(conf1.spin_, conf2.spin_);		
 		return rconf;
 	}
 	
@@ -79,7 +103,7 @@ private:
 	std::optional<int> extra_states_;
 	std::optional<double> excess_charge_;
 	std::optional<quantity<magnitude::energy>> temperature_;
-
+	std::optional<states::ks_states::spin_config> spin_;
 };
 
 }
