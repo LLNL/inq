@@ -57,14 +57,9 @@ int main(int argc, char ** argv){
 
 	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "c240.xyz"));
 	
-	input::config conf;
-
 	std::string restart_dir = "c240_restart";
 	
-	conf.extra_states = 32;
-	conf.temperature = 300.0_K;
-	
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, conf);
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::extra_states(32) | input::config::temperature(300.0_K));
 
 	auto not_found_gs = groundstate_only or not electrons.load(restart_dir);
 		

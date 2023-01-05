@@ -49,12 +49,8 @@ int main(int argc, char ** argv){
 	ions.insert("C", {0.0_crys,  0.0_crys,  0.0_crys });
 	ions.insert("C", {0.25_crys, 0.25_crys, 0.25_crys});
 
-	input::config conf;
-	
-	conf.extra_states = 3;
-
 	{
-		systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({1, 1, 1}, false));
+		systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3), input::kpoints::grid({1, 1, 1}, false));
 		
 		ground_state::initial_guess(ions, electrons);
 		
@@ -79,7 +75,7 @@ int main(int argc, char ** argv){
 
 
 	{
-		systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
+		systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 		
 		ground_state::initial_guess(ions, electrons);
 		

@@ -97,12 +97,7 @@ int main(int argc, char ** argv){
 	
 	assert(int(ions.geo().num_atoms()) == int(cell.size()*product(reps)));
 				 
-	input::config conf;
-				 
-	conf.extra_states = 2*product(reps);
-	conf.temperature = 300.0_K;	
-	
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, conf);
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::extra_states(2*product(reps)) | input::config::temperature(300.0_K));
 	
 	auto restart_dir = "aluminum_" + std::to_string(reps[0]) + "_" + std::to_string(reps[1]) + "_" + std::to_string(reps[2]);
 

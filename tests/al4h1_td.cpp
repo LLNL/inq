@@ -41,12 +41,7 @@ int main(int argc, char ** argv){
 	ions.insert("Al", {0.5_crys, 0.5_crys, 0.0_crys});	
 	ions.insert("H",  {0.1_crys, 0.2_crys, 0.3_crys});
 	
-	input::config conf;
-
-	conf.extra_states = 1;
-	conf.temperature = 300.0_K;
-
-	systems::electrons electrons(env.par(), ions, box, conf, input::kpoints::grid({2, 2, 2}, true));
+	systems::electrons electrons(env.par(), ions, box,  input::config::extra_states(1) | input::config::temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
 	
 	electrons.load("al4h1_restart");
 
