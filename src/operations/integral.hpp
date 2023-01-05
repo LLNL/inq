@@ -67,6 +67,19 @@ auto integral(basis::field<BasisType, ElementType1> const & phi1, basis::field<B
 	return integral_value;
 }
 
+template <class BasisType, class ElementType1, class ElementType2, class BinaryOp>
+auto integral_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2, BinaryOp const op){
+	CALI_CXX_MARK_FUNCTION;
+	
+	assert(phi1.basis() == phi2.basis());
+
+	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.matrix().flatted(), phi2.matrix().flatted(), op);
+	if(phi1.full_comm().size() > 1) {
+		phi1.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	}
+	return integral_value;
+}
+
 template <class BasisType, class ElementType>
 auto integral_abs(basis::field<BasisType, ElementType> const & phi){
 	return integral(phi, phi, [](auto t1, auto t2){return fabs(t1);});
@@ -80,6 +93,11 @@ auto integral_product(basis::field<BasisType, ElementType1> const & phi1, basis:
 template <class BasisType, class ElementType1, class ElementType2>
 auto integral_absdiff(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
 	return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
+}
+
+template <class BasisType, class ElementType1, class ElementType2>
+auto integral_sum_absdiff(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
+	return real(integral_sum(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
 }
 
 }
@@ -242,7 +260,32 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		CHECK(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
 		
 	}
+
+	SECTION("integral_sum_absdiff double"){
+		int nvec = 6;
 		
+		basis::field_set<basis::trivial, double> aa(bas, nvec);
+		basis::field_set<basis::trivial, double> bb(bas, nvec);
+		
+		aa = -13.23;
+		bb = -13.23;
+		
+		CHECK(fabs(operations::integral_sum_absdiff(aa, bb)) < 1e-14);
+
+		double sign = 1.0;
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
+			for(int ist = 0; ist < nvec; ist++){
+				auto iig = aa.basis().part().local_to_global(ii);
+				aa.matrix()[ii][ist] = sign*2.0*(iig.value() + 1);
+				bb.matrix()[ii][ist] = sign*1.0*(iig.value() + 1);
+				sign *= -1.0;
+			}
+		}
+		
+		CHECK(operations::integral_sum_absdiff(aa, bb) == Approx(nvec*0.5*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+	
 }
 
 
