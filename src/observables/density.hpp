@@ -24,8 +24,8 @@
 
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
+#include <operations/integral.hpp>
 #include <operations/transfer.hpp>
-#include <systems/electrons.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -34,16 +34,16 @@ namespace observables {
 namespace density {
 
 template<class occupations_array_type, class field_set_type>
-void calculate_add(const occupations_array_type & occupations, field_set_type & phi, basis::field<typename field_set_type::basis_type, double> & density){
+void calculate_add(const occupations_array_type & occupations, field_set_type & phi, basis::field_set<typename field_set_type::basis_type, double> & density){
 
 	const auto nst = phi.set_part().local_size();
 	auto occupationsp = begin(occupations);
 	auto phip = begin(phi.matrix());
-	auto densityp = begin(density.linear());
+	auto densityp = begin(density.matrix());
 		
 	gpu::run(phi.basis().part().local_size(),
-					 [=] GPU_LAMBDA (auto ipoint){
-						 for(int ist = 0; ist < nst; ist++) densityp[ipoint] += occupationsp[ist]*norm(phip[ipoint][ist]);
+					 [=, ispin = phi.spin_index()] GPU_LAMBDA (auto ipoint){
+						 for(int ist = 0; ist < nst; ist++) densityp[ipoint][ispin] += occupationsp[ist]*norm(phip[ipoint][ist]);
 					 });
 
 }
@@ -65,9 +65,10 @@ void calculate_gradient_add(const occupations_array_type & occupations, field_se
 
 ///////////////////////////////////////////////////////////////
 
-basis::field<basis::real_space, double> calculate(const systems::electrons & elec){
+template <typename ElecType>
+basis::field_set<basis::real_space, double> calculate(ElecType & elec){
 	
-	basis::field<basis::real_space, double> density(elec.density_basis_);
+	basis::field_set<basis::real_space, double> density(elec.density_basis_, elec.states().num_density_components());
 
 	density = 0.0;
 
@@ -77,20 +78,45 @@ basis::field<basis::real_space, double> calculate(const systems::electrons & ele
 		iphi++;
 	}
 	
-	if(elec.lot_states_comm_.size() > 1) elec.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+	if(elec.lot_states_comm_.size() > 1) elec.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(density.matrix().data_elements()), density.matrix().size(), std::plus<>{});
 
 	return density;
 }
+
+///////////////////////////////////////////////////////////////
 
 template <class FieldType>
 void normalize(FieldType & density, const double & total_charge){
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	auto qq = operations::integral(density);
+	auto qq = operations::integral_sum(density);
 	assert(fabs(qq) > 1e-16);
-	for(int i = 0; i < density.basis().part().local_size(); i++) density.linear()[i] *= total_charge/qq;
+
+	gpu::run(density.local_set_size(), density.basis().local_size(),
+					 [den = begin(density.matrix()), factor = total_charge/qq] GPU_LAMBDA (auto ist, auto ip){ 
+						 den[ip][ist] *= factor;
+					 });
+}
+
+///////////////////////////////////////////////////////////////
+
+template <class BasisType, class ElementType>
+basis::field<BasisType, ElementType> total(basis::field_set<BasisType, ElementType> const & spin_density){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(spin_density.set_size() == spin_density.local_set_size());
 	
+	basis::field<BasisType, ElementType> total_density(spin_density.basis());
+	
+	gpu::run(spin_density.basis().local_size(),
+					 [spi = begin(spin_density.matrix()), tot = begin(total_density.linear()), nspin = spin_density.set_size()] GPU_LAMBDA (auto ip){
+						 tot[ip] = 0.0;
+						 for(int ispin = 0; ispin < nspin; ispin++) tot[ip] += spi[ip][ispin];
+					 });
+
+	return total_density;
 }
 
 }
@@ -124,7 +150,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 	
 	SECTION("double"){
 		
-		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
+		states::orbital_set<basis::trivial, double> aa(bas, nvec, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 		math::array<double, 1> occ(aa.set_part().local_size());
 		
@@ -136,20 +162,24 @@ TEST_CASE("function observables::density", "[observables::density]") {
 
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
 
-		basis::field<basis::trivial, double> dd(bas);
+		basis::field_set<basis::trivial, double> dd(bas, 1);
 		dd = 0.0;
 		
 		observables::density::calculate_add(occ, aa, dd);
 
-		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.linear().data_elements()), dd.linear().size(), std::plus<>{});
+		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.matrix().data_elements()), dd.matrix().size(), std::plus<>{});
 		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.matrix()[ii][0] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
+		auto tdd = observables::density::total(dd);
+		
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(tdd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
+		
 	}
 	
 	SECTION("complex"){
 		
-		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 		math::array<double, 1> occ(nvec);
 		
@@ -161,15 +191,19 @@ TEST_CASE("function observables::density", "[observables::density]") {
 
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
 
-		basis::field<basis::trivial, double> dd(bas);
+		basis::field_set<basis::trivial, double> dd(bas, 1);
 		dd = 0.0;
 		
 		observables::density::calculate_add(occ, aa, dd);
 
-		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.linear().data_elements()), dd.linear().size(), std::plus<>{});
+		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.matrix().data_elements()), dd.matrix().size(), std::plus<>{});
 		
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.matrix()[ii][0] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
+		auto tdd = observables::density::total(dd);
+
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(tdd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
+		
 	}
 	
 }
@@ -187,27 +221,27 @@ TEST_CASE("function observables::density::normalize", "[observables::density::no
 	
 	SECTION("double"){
 		
-		basis::field<basis::trivial, double> aa(bas);
+		basis::field_set<basis::trivial, double> aa(bas, 1);
 
-		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value());
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) aa.matrix()[ii][0] = sqrt(bas.part().local_to_global(ii).value());
 
 		observables::density::normalize(aa, 33.3);
 
-		CHECK(operations::integral(aa) == 33.3_a);
+		CHECK(operations::integral_sum(aa) == 33.3_a);
 		
 	}
 	
 	SECTION("complex"){
 		
-		basis::field<basis::trivial, complex> aa(bas);
+		basis::field_set<basis::trivial, complex> aa(bas, 1);
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
-			aa.linear()[ii] = sqrt(bas.part().local_to_global(ii).value())*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));
+			aa.matrix()[ii][0] = sqrt(bas.part().local_to_global(ii).value())*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));
 		}
 
 		observables::density::normalize(aa, 19.2354);
 
-		CHECK(real(operations::integral(aa)) == 19.2354_a);
+		CHECK(real(operations::integral_sum(aa)) == 19.2354_a);
 		
 	}
 	

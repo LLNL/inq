@@ -59,27 +59,29 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	if(console) console->trace("calculate started");
 	hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_);
 	
-	hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
-																										 electrons.states_.num_states(), sc.exx_coefficient(), electrons.states_basis_comm_, /* use_ace = */ true);
+	hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(),
+																										 electrons.states().num_states(), sc.exx_coefficient(), electrons.states_basis_comm_, /* use_ace = */ true);
 		
 	if(electrons.full_comm_.root()) ham.info(std::cout);
 		
 	ground_state::result res;
 		
 	operations::preconditioner prec;
-		
-	auto mixer = [&]()->std::unique_ptr<mixers::base<double>>{
+
+	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
+	
+	auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 		switch(solver.mixing_algorithm()){
-		case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <double>>(solver.mixing());
-		case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <double>>(4, solver.mixing(), electrons.states_basis_.part().local_size(), electrons.density_basis_.comm());
-		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<double>>(4, solver.mixing(), electrons.states_basis_.part().local_size(), electrons.density_basis_.comm());
+		case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
+		case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <mix_arr_type>>(4, solver.mixing(), electrons.states_basis_.part().local_size(), electrons.density_basis_.comm());
+		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.states_basis_.part().local_size(), electrons.density_basis_.comm());
 		} __builtin_unreachable();
 	}();
 	
 	auto old_energy = std::numeric_limits<double>::max();
 		
 	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
-	sc.update_hamiltonian(ham, res.energy, electrons.density_);
+	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
 	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
@@ -134,18 +136,20 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		double density_diff = 0.0;
 		{
 			auto new_density = observables::density::calculate(electrons);
-			density_diff = operations::integral_absdiff(electrons.density_, new_density);				
-			density_diff /= electrons.states_.num_electrons();
+			density_diff = operations::integral_sum_absdiff(electrons.spin_density(), new_density);
+			density_diff /= electrons.states().num_electrons();
 				
 			if(inter.self_consistent()) {
-				mixer->operator()(electrons.density_.linear(), new_density.linear());
-				observables::density::normalize(electrons.density_, electrons.states_.num_electrons());
+				auto tmp = +electrons.spin_density().matrix().flatted();
+				mixer->operator()(tmp, new_density.matrix().flatted());
+				electrons.spin_density().matrix().flatted() = tmp;
+				observables::density::normalize(electrons.spin_density(), electrons.states().num_electrons());
 			} else {
-				electrons.density_ = std::move(new_density);
+				electrons.spin_density() = std::move(new_density);
 			}
 		}
 		
-		sc.update_hamiltonian(ham, res.energy, electrons.density_);
+		sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
 		CALI_MARK_END("mixing");
 
@@ -158,7 +162,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			res.energy.nonlocal = ecalc.nonlocal_;
 			res.energy.hf_exchange = ecalc.hf_exchange_;
 
-			auto energy_diff = (res.energy.eigenvalues - old_energy)/electrons.states_.num_electrons();
+			auto energy_diff = (res.energy.eigenvalues - old_energy)/electrons.states().num_electrons();
 
 			electrons.full_comm_.barrier();
 			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - iter_start_time;
@@ -180,7 +184,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				auto all_normres = electrons.lot()[ilot].fields().set_part().gather(+ecalc.normres_[ilot], comm, 0);			
 				
 				if(solver.verbose_output() and console){
-					for(int istate = 0; istate < electrons.states_.num_states(); istate++){
+					for(int istate = 0; istate < electrons.states().num_states(); istate++){
 						console->info("	k-point {:4d} state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
 													ilot + 1, istate + 1, all_occupations[istate]/electrons.lot_weights()[ilot], real(all_eigenvalues[istate]), real(all_normres[istate]));
 					}
@@ -200,7 +204,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	}
 
 	//make sure we have a density consistent with phi
-	electrons.density_ = observables::density::calculate(electrons);
+	electrons.spin_density() = observables::density::calculate(electrons);
 
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 

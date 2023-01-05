@@ -23,6 +23,7 @@
 
 #include <basis/field.hpp>
 #include <solvers/poisson.hpp>
+#include <observables/density.hpp>
 #include <operations/add.hpp>
 #include <operations/integral.hpp>
 #include <input/interaction.hpp>
@@ -84,16 +85,18 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename HamiltonianType, typename EnergyType, typename FieldType>
-	void update_hamiltonian(HamiltonianType & hamiltonian, EnergyType & energy, FieldType const & electronic_density, double time = 0.0) const {
+	void update_hamiltonian(HamiltonianType & hamiltonian, EnergyType & energy, FieldType const & spin_density, double time = 0.0) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
-		assert(electronic_density.basis() == density_basis_);
-		assert(core_density_.basis() == electronic_density.basis());
-			
-		energy.external = operations::integral_product(electronic_density, vion_);
+		assert(spin_density.basis() == density_basis_);
+		assert(core_density_.basis() == spin_density.basis());
 
-		FieldType vks(vion_.skeleton());
+		auto total_density = observables::density::total(spin_density);
+			
+		energy.external = operations::integral_product(total_density, vion_);
+
+		basis::field<basis::real_space, double> vks(vion_.skeleton());
 
 		solvers::poisson poisson_solver;
 
@@ -112,8 +115,8 @@ public:
 			
 		// Hartree
 		if(interaction_.hartree_potential()){
-			auto vhartree = poisson_solver(electronic_density);
-			energy.hartree = 0.5*operations::integral_product(electronic_density, vhartree);
+			auto vhartree = poisson_solver(total_density);
+			energy.hartree = 0.5*operations::integral_product(total_density, vhartree);
 			operations::increment(vks, vhartree);
 		} else {
 			energy.hartree = 0.0;
@@ -125,31 +128,33 @@ public:
 				
 		if(exchange_.true_functional() or correlation_.true_functional()){
 
-			auto full_density = operations::add(electronic_density, core_density_);
+			auto full_density = operations::add(total_density, core_density_);
 			double efunc = 0.0;
-			FieldType vfunc(vion_.skeleton());
+			basis::field<basis::real_space, double> vfunc(vion_.skeleton());
 
 			if(exchange_.true_functional()){
 				exchange_(full_density, efunc, vfunc);
 				energy.xc += efunc;
 				operations::increment(vks, vfunc);
-				energy.nvxc += operations::integral_product(electronic_density, vfunc); //the core correction does not go here
+				energy.nvxc += operations::integral_product(total_density, vfunc); //the core correction does not go here
 			}
 				
 			if(correlation_.true_functional()){
 				correlation_(full_density, efunc, vfunc);
 				energy.xc += efunc;
 				operations::increment(vks, vfunc);
-				energy.nvxc += operations::integral_product(electronic_density, vfunc); //the core correction does not go here
+				energy.nvxc += operations::integral_product(total_density, vfunc); //the core correction does not go here
 			}
 		}
-			
-		if(potential_basis_ == vks.basis()){
-			hamiltonian.scalar_potential_ = std::move(vks);
-		} else {
-			hamiltonian.scalar_potential_ = operations::transfer::coarsen(std::move(vks), potential_basis_);
-		}
 
+		for(auto & pot : hamiltonian.scalar_potential_) {
+			if(potential_basis_ == vks.basis()){
+				pot = vks;
+			} else {
+				pot = operations::transfer::coarsen(vks, potential_basis_);
+			}
+		}
+		
 		if(pert_.has_uniform_vector_potential()){
 			hamiltonian.uniform_vector_potential_ = potential_basis_.cell().metric().to_covariant(pert_.uniform_vector_potential(time));
 		} else {

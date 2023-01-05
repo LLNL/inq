@@ -29,8 +29,8 @@
 namespace inq {
 namespace mixers {
 
-template <class Type>
-class linear : public base<Type> {
+template <class ArrayType>
+class linear : public base<ArrayType> {
 
 public:
 	
@@ -38,7 +38,7 @@ public:
 		mix_factor_(arg_mix_factor){
 	}
 	
-	void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value){
+	void operator()(ArrayType & input_value, ArrayType const & output_value){
 		//note: arguments might alias here
 		
 		CALI_CXX_MARK_SCOPE("linear_mixing");
@@ -70,11 +70,11 @@ TEST_CASE("mixers::linear", "[mixers::linear]") {
 	using namespace inq;
 	using namespace Catch::literals;
 
-  mixers::linear<double> lm(0.5);
-
   math::array<double, 1> vin({10.0, -20.0});
 	math::array<double, 1> vout({0.0,  22.2});
 
+  mixers::linear<decltype(vin)> lm(0.5);
+	
 	lm(vin, vout);
   
   CHECK(vin[0] == 5.0_a);

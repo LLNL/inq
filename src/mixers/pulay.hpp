@@ -33,14 +33,16 @@
 namespace inq {
 namespace mixers {
 
-template <class Type>
-class pulay : public base<Type> {
+template <class ArrayType>
+class pulay : public base<ArrayType> {
 	
 	/*
 		The DIIS mixing of Pulay, as described in Kresse and Furthmueller, Phys. Rev. B, 54 11169 (1996)
 	*/
 		
 public:
+
+	using element_type = typename ArrayType::element_type;
 
 	template <class CommType>
 	pulay(const int arg_steps, const double arg_mix_factor, const long long dim, CommType & comm):
@@ -53,7 +55,7 @@ public:
 		assert(comm.size() == 1);
 	}
 
-	void operator()(math::array<Type, 1> & input_value, const math::array<Type, 1> & output_value){
+	void operator()(ArrayType & input_value, ArrayType const & output_value){
 
 		CALI_CXX_MARK_SCOPE("pulay_mixing");
 		
@@ -63,8 +65,8 @@ public:
 		assert((typename math::array<double, 2>::size_type) output_value.size() == ff_[0].size());
 
 		{
-			Type aa = 0.0;
-			Type bb = 0.0;
+			element_type aa = 0.0;
+			element_type bb = 0.0;
 			for(unsigned kk = 0; kk < input_value.size(); kk++){
 				aa += fabs(input_value[kk]);
 				bb += fabs(output_value[kk]);
@@ -94,8 +96,8 @@ public:
 		}
 			
 		for(int ii = 0; ii < size; ii++){
-			Type aa = 0.0;
-			Type bb = 0.0;
+			element_type aa = 0.0;
+			element_type bb = 0.0;
 			for(unsigned kk = 0; kk < input_value.size(); kk++){
 				aa += fabs(ff_[ii][kk]);
 				bb += conj(dff_[ii][kk])*dff_[ii][kk];
@@ -106,18 +108,18 @@ public:
 		if(iter_ == 1) {
 			for(unsigned ii = 0; ii < input_value.size(); ii++)	input_value[ii] = (1.0 - mix_factor_)*input_value[ii] + mix_factor_*output_value[ii];
 
-			Type aa = 0.0;
+			element_type aa = 0.0;
 			for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
 			std::cout << "norm opt " << aa << std::endl;
 
 			return;
 		}
 
-		math::array<Type, 2> amatrix({size + 1, size + 1}, NAN);
+		math::array<element_type, 2> amatrix({size + 1, size + 1}, NAN);
 
 		for(int ii = 0; ii < size; ii++){
 			for(int jj = 0; jj < size; jj++){
-				Type aa = 0.0;
+				element_type aa = 0.0;
 				for(unsigned kk = 0; kk < input_value.size(); kk++) aa += conj(dff_[ii][kk])*dff_[jj][kk];
 				amatrix[ii][jj] = aa;
 			}
@@ -141,7 +143,7 @@ public:
 			
 		// REDUCE GRID amatrix
 
-		math::array<Type, 1> alpha(size + 1, 0.0);
+		math::array<element_type, 1> alpha(size + 1, 0.0);
 		alpha[size] = -1.0;
 
 		//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
@@ -172,7 +174,7 @@ public:
 				
 			for(int jj = 0; jj < size; jj++) for(unsigned ii = 0; ii < input_value.size(); ii++) input_value[ii] += alpha[jj]*dff_[jj][ii];
 				
-			Type aa = 0.0;
+			element_type aa = 0.0;
 			for(unsigned kk = 0; kk < input_value.size(); kk++) aa += norm(input_value[kk]);
 			std::cout << "res norm " << aa << std::endl;
 		}
@@ -185,8 +187,8 @@ public:
 			}
 		}
 
-		Type aa = 0.0;
-		Type bb = 0.0;
+		element_type aa = 0.0;
+		element_type bb = 0.0;
 		for(unsigned kk = 0; kk < input_value.size(); kk++) aa += fabs(input_value[kk]);
 		for(unsigned kk = 0; kk < input_value.size(); kk++) bb += input_value[kk];
 		std::cout << "norm opt " << aa << " " << bb << std::endl;
@@ -198,9 +200,9 @@ private:
 	int iter_;
 	int max_size_;
 	double mix_factor_;
-	math::array<Type, 2> ff_;
-	math::array<Type, 2> dff_;
-		
+	math::array<element_type, 2> ff_;
+	math::array<element_type, 2> dff_;
+	
 };
 
 }
@@ -219,11 +221,11 @@ TEST_CASE("mixers::pulay", "[mixers::pulay]") {
 	using namespace inq;
 	using namespace Catch::literals;
 
-	mixers::pulay<double> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
-
 	math::array<double, 1> vin({10.0, -20.0});
 	math::array<double, 1> vout({0.0,  22.2});
-	
+
+	mixers::pulay<decltype(vin)> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
+
 	lm(vin, vout);
   
 	CHECK(vin[0] == 5.0_a);

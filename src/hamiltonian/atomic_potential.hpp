@@ -34,8 +34,9 @@
 #include <basis/double_grid.hpp>
 #include <math/array.hpp>
 #include <operations/integral.hpp>
-#include <solvers/poisson.hpp>
 #include <parallel/partition.hpp>
+#include <solvers/poisson.hpp>
+#include <states/ks_states.hpp>
 
 #include <unordered_map>
 
@@ -157,7 +158,9 @@ namespace hamiltonian {
 			
 			return potential;			
 		}
-	
+
+		////////////////////////////////////////////////////////////////////////////////////
+		
 		template <class CommType, class basis_type, class geo_type>
 		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const geo_type & geo, int single_atom = -1) const {
 
@@ -196,15 +199,18 @@ namespace hamiltonian {
 			
 			return density;			
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////
 		
 		template <class CommType, class basis_type, class geo_type>
-		basis::field<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const geo_type & geo) const {
+		basis::field_set<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const geo_type & geo, states::ks_states const & states) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
 			parallel::partition part(natoms_, comm);
-			
-			basis::field<basis_type, double> density(basis);
+
+			auto nspin = states.num_density_components();
+			basis::field_set<basis_type, double> density(basis, nspin);
 
 			density = 0.0;
 			
@@ -218,13 +224,11 @@ namespace hamiltonian {
 
 					basis::spherical_grid sphere(basis, atom_position, ps.electronic_density_radius());
 					
-					gpu::run(sphere.size(),
-									 [dens = begin(density.cubic()),
-										sph = sphere.ref(),
-										spline = ps.electronic_density().cbegin()] GPU_LAMBDA (auto ipoint){
+					gpu::run(nspin, sphere.size(),
+									 [dens = begin(density.cubic()), sph = sphere.ref(), spline = ps.electronic_density().cbegin(), nspin] GPU_LAMBDA (auto ispin, auto ipoint){
 										 auto rr = sph.distance(ipoint);
-										 auto density_val = spline.value(rr);
-										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]], density_val);
+										 auto density_val = spline.value(rr)/nspin;
+										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin], density_val);
 									 });
 
 				} else {
@@ -232,12 +236,10 @@ namespace hamiltonian {
 					//just some crude guess for now
 					basis::spherical_grid sphere(basis, atom_position, 3.0);
 					
-					gpu::run(sphere.size(),
-									 [dens = begin(density.cubic()),
-										sph = sphere.ref(),
-										zval = ps.valence_charge()] GPU_LAMBDA (auto ipoint){
+					gpu::run(nspin, sphere.size(),
+									 [dens = begin(density.cubic()), sph = sphere.ref(), zval = ps.valence_charge(), nspin] GPU_LAMBDA (auto ispin, auto ipoint){
 										 auto rr = sph.distance(ipoint);
-										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]], zval/(M_PI)*exp(-2.0*rr));
+										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin], zval/(M_PI)*exp(-2.0*rr)/nspin);
 									 });
 					
 				}
@@ -245,15 +247,19 @@ namespace hamiltonian {
 
 			if(comm.size() > 1){
 				CALI_CXX_MARK_SCOPE("atomic_electronic_density::reduce");
-				comm.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
+				comm.all_reduce_in_place_n(raw_pointer_cast(density.matrix().data_elements()), density.matrix().size(), std::plus<>{});
 			}
 
 			return density;			
 		}
 
+		////////////////////////////////////////////////////////////////////////////////////
+
 		auto has_nlcc() const {
 			return has_nlcc_;
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////
 
 		template <class CommType, class basis_type, class geo_type>
 		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const geo_type & geo) const {
@@ -407,12 +413,26 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 		CHECK(operations::integral(id) == -30.0000000746_a);
 		CHECK(id.cubic()[5][3][0] == -0.9448936487_a);
 		CHECK(id.cubic()[3][1][0] == -0.2074502252_a);
+
+		states::ks_states unp(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 		
-		auto nn = pot.atomic_electronic_density(comm, rs, geo);
+		auto nn_unp = pot.atomic_electronic_density(comm, rs, geo, unp);
+
+		CHECK(nn_unp.set_size() == 1);		
+		CHECK(operations::integral_sum(nn_unp) == 29.9562520003_a);
+		CHECK(nn_unp.cubic()[5][3][0][0] == 0.1330589609_a);
+		CHECK(nn_unp.cubic()[3][1][0][0] == 0.1846004508_a);
+
+		states::ks_states pol(states::ks_states::spin_config::POLARIZED, 11.0);
 		
-		CHECK(operations::integral(nn) == 29.9562520003_a);
-		CHECK(nn.cubic()[5][3][0] == 0.1330589609_a);
-		CHECK(nn.cubic()[3][1][0] == 0.1846004508_a);
+		auto nn_pol = pot.atomic_electronic_density(comm, rs, geo, pol);
+
+		CHECK(nn_pol.set_size() == 2);
+		CHECK(operations::integral_sum(nn_pol) == 29.9562519176_a);
+		CHECK(nn_pol.cubic()[5][3][0][0] == 0.066529473_a);
+		CHECK(nn_pol.cubic()[3][1][0][0] == 0.0923002217_a);
+		CHECK(nn_pol.cubic()[5][3][0][1] == 0.066529473_a);
+		CHECK(nn_pol.cubic()[3][1][0][1] == 0.0923002217_a);
 		
 		CHECK(pot.has_nlcc());
 		

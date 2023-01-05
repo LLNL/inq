@@ -23,14 +23,17 @@
 
 #include <cassert>
 #include <numeric>
+
+#include <basis/field.hpp>
+#include <basis/field_set.hpp>
 #include <operations/sum.hpp>
 #include <math/complex.hpp>
 
 namespace inq {
 namespace operations {
 
-template <class field_type>
-auto integral(const field_type & phi){
+template <class BasisType, class ElementType>
+auto integral(basis::field<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
@@ -40,8 +43,19 @@ auto integral(const field_type & phi){
 	return integral_value;
 }
 
-template <class field_type, class binary_op>
-auto integral(const field_type & phi1, const field_type & phi2, const binary_op op){
+template <class BasisType, class ElementType>
+auto integral_sum(basis::field_set<BasisType, ElementType> const & phi){
+	CALI_CXX_MARK_FUNCTION;
+	
+	auto integral_value = phi.basis().volume_element()*sum(phi.matrix().flatted());
+	if(phi.full_comm().size() > 1) {
+		phi.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	}
+	return integral_value;
+}
+
+template <class BasisType, class ElementType1, class ElementType2, class BinaryOp>
+auto integral(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2, BinaryOp const op){
 	CALI_CXX_MARK_FUNCTION;
 	
 	assert(phi1.basis() == phi2.basis());
@@ -53,19 +67,37 @@ auto integral(const field_type & phi1, const field_type & phi2, const binary_op 
 	return integral_value;
 }
 
-template <class field_type>
-auto integral_abs(const field_type & phi){
+template <class BasisType, class ElementType1, class ElementType2, class BinaryOp>
+auto integral_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2, BinaryOp const op){
+	CALI_CXX_MARK_FUNCTION;
+	
+	assert(phi1.basis() == phi2.basis());
+
+	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.matrix().flatted(), phi2.matrix().flatted(), op);
+	if(phi1.full_comm().size() > 1) {
+		phi1.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	}
+	return integral_value;
+}
+
+template <class BasisType, class ElementType>
+auto integral_abs(basis::field<BasisType, ElementType> const & phi){
 	return integral(phi, phi, [](auto t1, auto t2){return fabs(t1);});
 }
 
-template <class field_type>
-auto integral_product(const field_type & phi1, const field_type & phi2){
+template <class BasisType, class ElementType1, class ElementType2>
+auto integral_product(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
 	return integral(phi1, phi2, std::multiplies<>());
 }
 	
-template <class field_type>
-auto integral_absdiff(const field_type & phi1, const field_type & phi2){
+template <class BasisType, class ElementType1, class ElementType2>
+auto integral_absdiff(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
 	return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
+}
+
+template <class BasisType, class ElementType1, class ElementType2>
+auto integral_sum_absdiff(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
+	return real(integral_sum(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
 }
 
 }
@@ -123,6 +155,25 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 
 	}
 
+	SECTION("integral_sum double"){
+
+		int nvec = 6;
+		
+		basis::field_set<basis::trivial, double> aa(bas, nvec);
+
+		aa = 1.0;
+
+		CHECK(operations::integral_sum(aa) == Approx(nvec));
+
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) {
+			for(int ist = 0; ist < nvec; ist++){
+				aa.matrix()[ii][ist] = aa.basis().part().local_to_global(ii).value();
+			}
+		}
+
+		CHECK(operations::integral_sum(aa) == Approx(nvec*0.5*N*(N - 1.0)*bas.volume_element()));
+	}
+	
 	SECTION("Integral product double"){
 		
 		basis::field<basis::trivial, double> aa(bas);
@@ -209,7 +260,32 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		CHECK(operations::integral_absdiff(aa, bb) == Approx(0.5*N*(N + 1.0)*bas.volume_element()));
 		
 	}
+
+	SECTION("integral_sum_absdiff double"){
+		int nvec = 6;
 		
+		basis::field_set<basis::trivial, double> aa(bas, nvec);
+		basis::field_set<basis::trivial, double> bb(bas, nvec);
+		
+		aa = -13.23;
+		bb = -13.23;
+		
+		CHECK(fabs(operations::integral_sum_absdiff(aa, bb)) < 1e-14);
+
+		double sign = 1.0;
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++)	{
+			for(int ist = 0; ist < nvec; ist++){
+				auto iig = aa.basis().part().local_to_global(ii);
+				aa.matrix()[ii][ist] = sign*2.0*(iig.value() + 1);
+				bb.matrix()[ii][ist] = sign*1.0*(iig.value() + 1);
+				sign *= -1.0;
+			}
+		}
+		
+		CHECK(operations::integral_sum_absdiff(aa, bb) == Approx(nvec*0.5*N*(N + 1.0)*bas.volume_element()));
+		
+	}
+	
 }
 
 

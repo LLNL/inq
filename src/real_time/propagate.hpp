@@ -82,7 +82,7 @@ public:
 	}
 
 	auto num_electrons() const {
-		return operations::integral(electrons_.density_);
+		return operations::integral(electrons_.density());
 	}
 	
 };
@@ -96,14 +96,14 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 		for(auto & phi : electrons.lot()) pert.zero_step(phi);
 		
-		electrons.density_ = observables::density::calculate(electrons);
+		electrons.spin_density() = observables::density::calculate(electrons);
 
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, pert);
-		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states_.num_states(), sc.exx_coefficient(), electrons.states_basis_comm_);
+		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), electrons.states_basis_comm_);
 		hamiltonian::energy energy;
 
 		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
-		sc.update_hamiltonian(ham, energy, electrons.density_, 0.0);
+		sc.update_hamiltonian(ham, energy, electrons.spin_density(), 0.0);
 
 		auto ecalc = hamiltonian::calculate_energy(ham, electrons);
 		energy.eigenvalues = ecalc.sum_eigenvalues_;
@@ -133,8 +133,8 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			}
 			
 			//calculate the new density, energy, forces
-			electrons.density_ = observables::density::calculate(electrons);
-			sc.update_hamiltonian(ham, energy, electrons.density_, (istep + 1.0)*dt);
+			electrons.spin_density() = observables::density::calculate(electrons);
+			sc.update_hamiltonian(ham, energy, electrons.spin_density(), (istep + 1.0)*dt);
 			
 			auto ecalc = hamiltonian::calculate_energy(ham, electrons);
 			energy.eigenvalues = ecalc.sum_eigenvalues_;

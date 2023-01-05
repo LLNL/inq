@@ -12,6 +12,7 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/energy.hpp>
 #include <ions/brillouin.hpp>
+#include <observables/density.hpp>
 #include <operations/randomize.hpp>
 #include <operations/integral.hpp>
 #include <operations/io.hpp>
@@ -90,7 +91,7 @@ public:
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
-		density_(density_basis_),
+		spin_density_(density_basis_, states_.num_density_components()),
 		lot_part_(kpts.num(), lot_comm_)
 	{
 
@@ -102,10 +103,11 @@ public:
 		lot_weights_.reextent({lot_part_.local_size()});
 
 		max_local_size_ = 0;
+		int ispin = 0;
 		for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
 			lot_weights_[ikpt] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
 			auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
-			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, states_basis_comm_);
+			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, ispin, states_basis_comm_);
 			max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
 		}
 
@@ -134,7 +136,7 @@ public:
 		states_(std::move(old_el.states_)),
 		lot_weights_(std::move(old_el.lot_weights_)),
 		max_local_size_(std::move(old_el.max_local_size_)),
-		density_(std::move(old_el.density_), density_basis_.comm()),
+		spin_density_(std::move(old_el.spin_density_), density_basis_.comm()),
 		logger_(std::move(old_el.logger_)),
 		lot_part_(std::move(old_el.lot_part_))
 	{
@@ -281,6 +283,22 @@ public:
 	auto max_local_size() const {
 		return max_local_size_;
 	}
+
+	auto density() const {
+		return observables::density::total(spin_density_);
+	}
+
+	auto & spin_density() const {
+		return spin_density_;
+	}
+
+	auto & spin_density() {
+		return spin_density_;
+	}
+
+	auto & states() const {
+		return states_;
+	}
 	
 private:
 	static std::string generate_tiny_uuid(){
@@ -303,17 +321,16 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
-	states::ks_states states_;
 private:
+	states::ks_states states_;
 	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
 	math::array<double, 2> eigenvalues_;
 	math::array<double, 2> occupations_;
 	math::array<double, 1> lot_weights_;
 	long max_local_size_;
-
+	basis::field_set<basis::real_space, double> spin_density_;
  	
 public:
-	basis::field<basis::real_space, double> density_;
 	std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
 private:
 	std::shared_ptr<spdlog::logger> logger_;
@@ -349,8 +366,8 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		
 	systems::electrons electrons(par, ions, box);
 
-	CHECK(electrons.states_.num_electrons() == 38.0_a);
-	CHECK(electrons.states_.num_states() == 19);
+	CHECK(electrons.states().num_electrons() == 38.0_a);
+	CHECK(electrons.states().num_states() == 19);
 
 	int iphi = 0;
 	for(auto & phi : electrons.lot()) {

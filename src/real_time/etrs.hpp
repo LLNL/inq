@@ -34,7 +34,7 @@ namespace real_time {
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
 void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 	
-	electrons.density_ = 0.0;
+	electrons.spin_density() = 0.0;
 	int iphi = 0;
 	for(auto & phi : electrons.lot()){
 		
@@ -42,13 +42,13 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
 		
 		//calculate H(t + dt) from the full step propagation
-		observables::density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.density_);
+		observables::density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.spin_density());
 
 		iphi++;
 	}
 
 	if(electrons.lot_states_comm_.size() > 1){
-		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.density_.linear().data_elements()), electrons.density_.linear().size(), std::plus<>{});
+		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.spin_density().matrix().data_elements()), electrons.spin_density().matrix().size(), std::plus<>{});
 	}
 
 	//propagate ionic positions to t + dt
@@ -59,7 +59,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 	}
 
-	sc.update_hamiltonian(ham, energy, electrons.density_, time);
+	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time);
 																				 
 	//propagate the other half step with H(t + dt)
 	for(auto & phi : electrons.lot()){

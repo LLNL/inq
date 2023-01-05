@@ -69,7 +69,7 @@ namespace hamiltonian {
 			el.lot_states_comm_.all_reduce_in_place_n(&hf_exchange_, 1, std::plus<>{});
 			el.lot_states_comm_.all_reduce_in_place_n(&state_conv_, 1, std::plus<>{});
 
-			state_conv_ /= el.states_.num_electrons();
+			state_conv_ /= el.states().num_electrons();
 
 	}
 
