@@ -158,7 +158,9 @@ namespace hamiltonian {
 			
 			return potential;			
 		}
-	
+
+		////////////////////////////////////////////////////////////////////////////////////
+		
 		template <class CommType, class basis_type, class geo_type>
 		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const geo_type & geo, int single_atom = -1) const {
 
@@ -195,62 +197,6 @@ namespace hamiltonian {
 				comm.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
 			}
 			
-			return density;			
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////
-		
-		template <class CommType, class basis_type, class geo_type>
-		basis::field<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const geo_type & geo) const {
-
-			CALI_CXX_MARK_FUNCTION;
-
-			parallel::partition part(natoms_, comm);
-			
-			basis::field<basis_type, double> density(basis);
-
-			density = 0.0;
-			
-			for(auto iatom = part.start(); iatom < part.end(); iatom++){
-				
-				auto atom_position = geo.coordinates()[iatom];
-				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
-
-				if(ps.has_electronic_density()){
-
-					basis::spherical_grid sphere(basis, atom_position, ps.electronic_density_radius());
-					
-					gpu::run(sphere.size(),
-									 [dens = begin(density.cubic()),
-										sph = sphere.ref(),
-										spline = ps.electronic_density().cbegin()] GPU_LAMBDA (auto ipoint){
-										 auto rr = sph.distance(ipoint);
-										 auto density_val = spline.value(rr);
-										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]], density_val);
-									 });
-
-				} else {
-
-					//just some crude guess for now
-					basis::spherical_grid sphere(basis, atom_position, 3.0);
-					
-					gpu::run(sphere.size(),
-									 [dens = begin(density.cubic()),
-										sph = sphere.ref(),
-										zval = ps.valence_charge()] GPU_LAMBDA (auto ipoint){
-										 auto rr = sph.distance(ipoint);
-										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]], zval/(M_PI)*exp(-2.0*rr));
-									 });
-					
-				}
-			}
-
-			if(comm.size() > 1){
-				CALI_CXX_MARK_SCOPE("atomic_electronic_density::reduce");
-				comm.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
-			}
-
 			return density;			
 		}
 
@@ -312,6 +258,8 @@ namespace hamiltonian {
 		auto has_nlcc() const {
 			return has_nlcc_;
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////
 
 		template <class CommType, class basis_type, class geo_type>
 		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const geo_type & geo) const {
