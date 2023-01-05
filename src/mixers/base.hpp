@@ -26,12 +26,12 @@
 namespace inq {
 namespace mixers {
 
-template <class Type>
+template <class ArrayType>
 class base {
 	
 public:
 	virtual ~base(){};
-	virtual void operator()(math::array<Type, 1> & input_value, math::array<Type, 1>  const & output_value) = 0;
+	virtual void operator()(ArrayType & input_value, ArrayType const & output_value) = 0;
 	
 };
 

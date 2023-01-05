@@ -34,10 +34,13 @@
 namespace inq {
 namespace mixers {
 
-template <class Type>
-class broyden : public base<Type> {
+template <class ArrayType>
+class broyden : public base<ArrayType> {
 	
 public:
+
+	using element_type = typename ArrayType::element_type;
+	
 	template <class CommType>
 	broyden(const int arg_steps, const double arg_mix_factor, const long long dim, CommType & comm):
 		iter_(0),
@@ -53,7 +56,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 		
-	void broyden_extrapolation(math::array<Type, 1> & input_value, int const iter_used, math::array<Type, 1> const & ff){
+	void broyden_extrapolation(ArrayType & input_value, int const iter_used, math::array<element_type, 1> const & ff){
 
 		CALI_CXX_MARK_SCOPE("broyden_extrapolation");
 		
@@ -69,21 +72,21 @@ public:
 			return;
 		}
 
-		math::array<Type, 2> beta({iter_used, iter_used}, NAN);
-		math::array<Type, 1> work(iter_used, NAN);
+		math::array<element_type, 2> beta({iter_used, iter_used}, NAN);
+		math::array<element_type, 1> work(iter_used, NAN);
 
 		//OPTIMIZATION: this should be done by gemm/gemv
 		gpu::run(iter_used,
 						 [iter_used, ivsize = input_value.size(), w0, ww, be = begin(beta), df = begin(df_), ffp = begin(ff), wo = begin(work), dfactor = 1.0/comm_.size()] GPU_LAMBDA (auto ii){
 							 for(int jj = ii + 1; jj < iter_used; jj++){
-								 Type aa = 0.0;
+								 element_type aa = 0.0;
 								 for(unsigned kk = 0; kk < ivsize; kk++) aa +=  ww*ww*conj(df[ii][kk])*df[jj][kk];
 								 be[ii][jj] = aa;
 								 be[jj][ii] = conj(aa);
 							 }
 							 be[ii][ii] = dfactor*(w0*w0 + ww*ww);
 
-							 Type aa = 0.0;
+							 element_type aa = 0.0;
 							 for(unsigned kk = 0; kk < ivsize; kk++) aa += conj(df[ii][kk])*ffp[kk];
 							 wo[ii] = aa;
 						 });
@@ -108,7 +111,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 		
-	void operator()(math::array<Type, 1> & input_value, math::array<Type, 1> const & output_value){
+	void operator()(ArrayType & input_value, ArrayType const & output_value){
 
 		CALI_CXX_MARK_SCOPE("broyden_mixing");
 		
@@ -117,7 +120,7 @@ public:
 
 		iter_++;
 
-		math::array<Type, 1> ff(input_value.size());
+		math::array<element_type, 1> ff(input_value.size());
 
 		gpu::run(input_value.size(),
 						 [iv = begin(input_value), ov = begin(output_value), ffp = begin(ff)] GPU_LAMBDA (auto ip){
@@ -173,11 +176,11 @@ private:
 	int iter_;
 	int max_size_;
 	double mix_factor_;
-	math::array<Type, 2> dv_;
-	math::array<Type, 2> df_;
-	math::array<Type, 1> f_old_;
-	math::array<Type, 1> vin_old_;
-	Type gamma_;
+	math::array<element_type, 2> dv_;
+	math::array<element_type, 2> df_;
+	math::array<element_type, 1> f_old_;
+	math::array<element_type, 1> vin_old_;
+	element_type gamma_;
 	int last_pos_;
 	mutable parallel::communicator comm_;
 	
@@ -198,10 +201,11 @@ TEST_CASE("mixers::broyden", "[mixers::broyden]") {
 	using namespace inq;
 	using namespace Catch::literals;
  
-  mixers::broyden<double> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
 
 	math::array<double, 1> vin({10.0, -20.0});
 	math::array<double, 1> vout({0.0,  22.2});
+
+  mixers::broyden<decltype(vin)> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
 	
 	lm(vin, vout);
   
