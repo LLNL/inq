@@ -12,6 +12,7 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/energy.hpp>
 #include <ions/brillouin.hpp>
+#include <observables/density.hpp>
 #include <operations/randomize.hpp>
 #include <operations/integral.hpp>
 #include <operations/io.hpp>
@@ -90,7 +91,7 @@ public:
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
-		spin_density_(density_basis_),
+		spin_density_(density_basis_, states_.num_density_components()),
 		lot_part_(kpts.num(), lot_comm_)
 	{
 
@@ -283,8 +284,8 @@ public:
 		return max_local_size_;
 	}
 
-	auto & density() const {
-		return spin_density_;
+	auto density() const {
+		return observables::density::total(spin_density_);
 	}
 
 	auto & spin_density() const {
@@ -327,7 +328,7 @@ private:
 	math::array<double, 2> occupations_;
 	math::array<double, 1> lot_weights_;
 	long max_local_size_;
-	basis::field<basis::real_space, double> spin_density_;
+	basis::field_set<basis::real_space, double> spin_density_;
  	
 public:
 	std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}

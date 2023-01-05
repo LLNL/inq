@@ -68,7 +68,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		
 	operations::preconditioner prec;
 
-	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().linear())>;
+	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
 	
 	auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 		switch(solver.mixing_algorithm()){
@@ -136,11 +136,13 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		double density_diff = 0.0;
 		{
 			auto new_density = observables::density::calculate(electrons);
-			density_diff = operations::integral_absdiff(electrons.spin_density(), new_density);
+			density_diff = operations::integral_sum_absdiff(electrons.spin_density(), new_density);
 			density_diff /= electrons.states().num_electrons();
 				
 			if(inter.self_consistent()) {
-				mixer->operator()(electrons.spin_density().linear(), new_density.linear());
+				auto tmp = +electrons.spin_density().matrix().flatted();
+				mixer->operator()(tmp, new_density.matrix().flatted());
+				electrons.spin_density().matrix().flatted() = tmp;
 				observables::density::normalize(electrons.spin_density(), electrons.states().num_electrons());
 			} else {
 				electrons.spin_density() = std::move(new_density);

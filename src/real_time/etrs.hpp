@@ -48,7 +48,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	}
 
 	if(electrons.lot_states_comm_.size() > 1){
-		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.spin_density().linear().data_elements()), electrons.spin_density().linear().size(), std::plus<>{});
+		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.spin_density().matrix().data_elements()), electrons.spin_density().matrix().size(), std::plus<>{});
 	}
 
 	//propagate ionic positions to t + dt
