@@ -56,8 +56,8 @@ public:
 	
 	self_consistency(self_consistency && old, parallel::communicator new_comm):
 		interaction_(std::move(old.interaction_)),
-		exchange_(int(interaction_.exchange())),
-		correlation_(int(interaction_.correlation())),
+		exchange_(std::move(old.exchange_)),
+		correlation_(std::move(old.correlation_)),
 		vion_(std::move(old.vion_), new_comm),
 		core_density_(std::move(old.core_density_), new_comm),
 		potential_basis_(std::move(old.potential_basis_), new_comm),
