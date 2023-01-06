@@ -54,16 +54,12 @@ int main(int argc, char ** argv){
 	ions.insert("Si", {0.75_crys, 0.25_crys, 0.75_crys});
 	ions.insert("Si", {0.0_crys,  0.5_crys,  0.5_crys });
 	ions.insert("Si", {0.25_crys, 0.75_crys, 0.75_crys});
-
-	input::config conf;
 	
-	conf.extra_states = 4;
-
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	systems::electrons electrons(env.par().states(parstates), ions, box, conf, input::kpoints::grid({1, 1, 1}, true));
+	systems::electrons electrons(env.par().states(parstates), ions, box, input::config::extra_states(4), input::kpoints::grid({1, 1, 1}, true));
 
 	ground_state::initial_guess(ions, electrons);
 	ground_state::calculate(ions, electrons, input::interaction::dft(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-4_Ha));

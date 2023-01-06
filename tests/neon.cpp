@@ -43,12 +43,8 @@ int main(int argc, char ** argv){
 	systems::ions ions(box);
 
 	ions.insert("Ne" | input::species::nofilter(), {0.0_b, 0.0_b, 0.0_b});
-	
-	input::config conf;
-	
-	conf.extra_states = 3;
-	
-	systems::electrons electrons(env.par(), ions, box, conf);
+
+	systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3));
 	
 	ground_state::initial_guess(ions, electrons);
 	

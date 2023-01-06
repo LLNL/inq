@@ -79,7 +79,12 @@ public:
 	auto & occupations() {
 		return occupations_;
 	}
-		
+
+	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, input::kpoints const & kpts, const input::config & conf = {}):
+		electrons(dist, ions, box, conf, kpts)
+	{
+	}
+	
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm(brillouin_zone_.size())),
@@ -90,7 +95,7 @@ public:
 		states_basis_(box, basis_subcomm(full_comm_)),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
-		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge, conf.extra_states, conf.temperature.in_atomic_units(), kpts.num()),
+		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.num()),
 		spin_density_(density_basis_, states_.num_density_components()),
 		lot_part_(kpts.num(), lot_comm_)
 	{
@@ -117,7 +122,7 @@ public:
 		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
 		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
 
-		if(atomic_pot_.num_electrons() + conf.excess_charge == 0) throw std::runtime_error("inq error: the system does not have any electrons");
+		if(atomic_pot_.num_electrons() + conf.excess_charge_val() == 0) throw std::runtime_error("inq error: the system does not have any electrons");
 		
 		print(ions);
 
