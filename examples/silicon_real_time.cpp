@@ -51,8 +51,6 @@ int main(int argc, char ** argv){
 	ions.insert("Si", {0.0_crys,  0.5_crys,  0.5_crys });
 	ions.insert("Si", {0.25_crys, 0.75_crys, 0.75_crys});
 	
-	input::config conf;
-	
 	systems::electrons electrons(env.par(), ions, box, input::config::extra_states(4));
 
 	real_time::propagate<>(ions, electrons, [](auto){}, input::interaction::non_interacting(), input::rt::num_steps(100) | input::rt::dt(0.055_atomictime));
