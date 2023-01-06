@@ -290,6 +290,19 @@ field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq
 	return rfield;
 }
 
+template <class VectorSpace>
+field_set<basis::real_space, math::vector3<double, VectorSpace>> real_field(field_set<basis::real_space, math::vector3<complex, VectorSpace>> const & field) {
+	
+	field_set<basis::real_space, math::vector3<double, VectorSpace>> rfield(field.skeleton());
+	
+	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
+					 [rp = begin(rfield.matrix()), cp = begin(field.matrix())] GPU_LAMBDA (auto ist, auto ii){
+						 rp[ii][ist] = real(cp[ii][ist]);
+					 });
+	
+	return rfield;
+}
+
 }
 }
 
