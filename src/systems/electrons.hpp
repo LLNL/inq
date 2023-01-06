@@ -80,6 +80,8 @@ public:
 		return occupations_;
 	}
 
+
+
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, input::kpoints const & kpts, const input::config & conf = {}):
 		electrons(dist, ions, box, conf, kpts)
 	{
@@ -95,7 +97,7 @@ public:
 		states_basis_(box, basis_subcomm(full_comm_)),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
-		states_(states::ks_states::spin_config::UNPOLARIZED, atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.num()),
+		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.num()),
 		spin_density_(density_basis_, states_.num_density_components()),
 		lot_part_(kpts.num(), lot_comm_)
 	{
@@ -105,17 +107,24 @@ public:
 		
 		CALI_CXX_MARK_FUNCTION;
 
-		lot_weights_.reextent({lot_part_.local_size()});
+		auto nspin = states_.num_spin_indices();
+		
+		lot_weights_.reextent({lot_part_.local_size()*nspin});
 
 		max_local_size_ = 0;
-		int ispin = 0;
-		for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
-			lot_weights_[ikpt] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
-			auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
-			lot_.emplace_back(states_basis_, states_.num_states(), kpoint, ispin, states_basis_comm_);
-			max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
+		auto ilot = 0;
+		for(int ispin = 0; ispin < nspin; ispin++){
+			for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
+				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
+				auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
+				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, ispin, states_basis_comm_);
+				max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
+				ilot++;
+			}
 		}
 
+		lot_part_ *= nspin;
+		
 		assert(long(lot_.size()) == lot_part_.local_size());
 		assert(max_local_size_ > 0);
 		
@@ -285,6 +294,10 @@ public:
 		return lot_weights_;
 	}
 
+	auto & lot_part() const {
+		return lot_part_;
+	}
+	
 	auto max_local_size() const {
 		return max_local_size_;
 	}

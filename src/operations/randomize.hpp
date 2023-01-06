@@ -59,9 +59,9 @@ namespace inq {
 namespace operations {
 
 	template <class field_set_type>
-	void randomize(field_set_type & phi){
+	void randomize(field_set_type & phi, int const index = 0){
 
-		auto seed = phi.basis().size()*phi.set_size();
+		auto seed = phi.basis().size()*phi.set_size() + index;
 
 		uint64_t st_start = phi.set_part().start();
 		uint64_t x_start = phi.basis().cubic_dist(0).start();
