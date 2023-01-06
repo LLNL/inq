@@ -120,7 +120,7 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 		}
 
 		auto data() const {
-			return raw_pointer_cast(matrix_.data());
+			return raw_pointer_cast(matrix_.data_elements());
 		}
 
 		auto data() {
