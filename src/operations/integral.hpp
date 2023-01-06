@@ -89,7 +89,12 @@ template <class BasisType, class ElementType1, class ElementType2>
 auto integral_product(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
 	return integral(phi1, phi2, std::multiplies<>());
 }
-	
+
+template <class BasisType, class ElementType1, class ElementType2>
+auto integral_product_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
+	return integral_sum(phi1, phi2, std::multiplies<>());
+}
+
 template <class BasisType, class ElementType1, class ElementType2>
 auto integral_absdiff(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
 	return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
