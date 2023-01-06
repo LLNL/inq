@@ -83,7 +83,22 @@ namespace hamiltonian {
 			CALI_CXX_MARK_SCOPE("xc_functional");
 			
 			field_type exc(vxc.skeleton());
-			unpolarized(density.linear().size(), density, exc, vxc);
+			
+			switch(func_.info->family) {
+				case XC_FAMILY_LDA:{
+					xc_lda_exc_vxc(&func_, density.linear().size(), density.linear().data(), exc.data(), vxc.data());
+					gpu::sync();
+					break;
+				}
+				case XC_FAMILY_GGA:{
+					ggafunctional(density.linear().size(), density, exc, vxc);
+					break;
+				}	
+				default:{
+					std::runtime_error("inq error: unsupported xc functional family");
+					break;
+				}
+			}
 
 			xc_energy = operations::integral_product(density, exc);
 
@@ -138,30 +153,6 @@ namespace hamiltonian {
 
 	private:
 		
-		template <class density_type, class exc_type, class vxc_type>
-		void unpolarized(long size, density_type const & density, exc_type & exc, vxc_type & vxc) const{
-
-			CALI_CXX_MARK_FUNCTION;
-			
-			switch(func_.info->family) {
-				case XC_FAMILY_LDA:{
-					xc_lda_exc_vxc(&func_, size, density.data(), exc.data(), vxc.data());
-					gpu::sync();
-					break;
-				}
-				case XC_FAMILY_GGA:{
-					ggafunctional(size, density, exc, vxc);
-					break;
-				}	
-				default:{
-					std::runtime_error("inq error: unsupported xc functional family");
-					break;
-				}
-			}
-		}
-
-	private:
-
 		int id_;
 		int nspin_;
 		xc_func_type func_;
