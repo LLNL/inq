@@ -349,8 +349,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					math::array<double, 1> local_density{0.5*gaussian(vec), 0.5*gaussian(vec)};
-					math::array<double, 1> local_exc{1};
-					math::array<double, 1> local_vxc{2};
+					math::array<double, 1> local_exc{NAN};
+					math::array<double, 1> local_vxc{NAN, NAN};
 					
 					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
 					gpu::sync();
