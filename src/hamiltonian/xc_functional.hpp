@@ -89,7 +89,7 @@ namespace hamiltonian {
 			
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:{
-					xc_lda_exc_vxc(&func_, spin_density.basis().local_size(), spin_density.matrix().data_elements(), exc.linear().data_elements(), vxc.matrix().data_elements());
+					xc_lda_exc_vxc(&func_, spin_density.basis().local_size(), raw_pointer_cast(spin_density.matrix().data_elements()), raw_pointer_cast(exc.linear().data_elements()), raw_pointer_cast(vxc.matrix().data_elements()));
 					gpu::sync();
 					break;
 				}
