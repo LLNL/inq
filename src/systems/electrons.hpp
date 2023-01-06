@@ -80,6 +80,8 @@ public:
 		return occupations_;
 	}
 
+
+
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, input::kpoints const & kpts, const input::config & conf = {}):
 		electrons(dist, ions, box, conf, kpts)
 	{
@@ -290,6 +292,10 @@ public:
 		return lot_weights_;
 	}
 
+	auto & lot_part() const {
+		return lot_part_;
+	}
+	
 	auto max_local_size() const {
 		return max_local_size_;
 	}

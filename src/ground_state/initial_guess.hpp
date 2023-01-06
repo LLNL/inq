@@ -18,10 +18,9 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 
 	int iphi = 0;
 	for(auto & phi : electrons.lot()) {
-		
-		operations::randomize(phi.fields());
+		operations::randomize(phi.fields(), iphi + electrons.lot_part().start());
 		operations::orthogonalize(phi.fields());
-		for(long ist = 0; ist < phi.fields().local_set_size(); ist++) electrons.eigenvalues()[iphi][ist] = ist + phi.fields().set_part().start();
+		for(long ist = 0; ist < phi.fields().local_set_size(); ist++) electrons.eigenvalues()[iphi][ist] = ist + phi.fields().set_part().start() + (iphi + electrons.lot_part().start())/double(electrons.lot_size());
 
 		iphi++;
 	}
