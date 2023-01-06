@@ -96,28 +96,31 @@ public:
 			
 		energy.external = operations::integral_product(total_density, vion_);
 
-		basis::field<basis::real_space, double> vks(vion_.skeleton());
+		std::vector<basis::field<basis::real_space, double>> vks(spin_density.set_size(), density_basis_);
 
 		solvers::poisson poisson_solver;
 
 		//IONIC POTENTIAL
-		vks = vion_;
+		for(auto & vcomp : vks) vcomp = vion_;
 
 		//Time-dependent perturbation
 		if(pert_.has_uniform_electric_field()){
 			auto efield = pert_.uniform_electric_field(time);
-			gpu::run(vks.basis().local_sizes()[2], vks.basis().local_sizes()[1], vks.basis().local_sizes()[0],
-							 [point_op = vks.basis().point_op(), efield, vk = begin(vks.cubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 auto rr = point_op.rvector_cartesian(ix, iy, iz);
-								 vk[ix][iy][iz] += -dot(efield, rr);
-							 });
+
+			for(auto & vcomp : vks) {
+				gpu::run(vcomp.basis().local_sizes()[2], vcomp.basis().local_sizes()[1], vcomp.basis().local_sizes()[0],
+								 [point_op = vcomp.basis().point_op(), efield, vk = begin(vcomp.cubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
+									 auto rr = point_op.rvector_cartesian(ix, iy, iz);
+									 vk[ix][iy][iz] += -dot(efield, rr);
+								 });
+			}
 		}
-			
+		
 		// Hartree
 		if(interaction_.hartree_potential()){
 			auto vhartree = poisson_solver(total_density);
 			energy.hartree = 0.5*operations::integral_product(total_density, vhartree);
-			operations::increment(vks, vhartree);
+			for(auto & vcomp : vks) operations::increment(vcomp, vhartree);
 		} else {
 			energy.hartree = 0.0;
 		}
@@ -135,25 +138,29 @@ public:
 			if(exchange_.true_functional()){
 				exchange_(full_density, efunc, vfunc);
 				energy.xc += efunc;
-				operations::increment(vks, vfunc);
+				for(auto & vcomp : vks) operations::increment(vcomp, vfunc);
 				energy.nvxc += operations::integral_product(total_density, vfunc); //the core correction does not go here
 			}
 				
 			if(correlation_.true_functional()){
 				correlation_(full_density, efunc, vfunc);
 				energy.xc += efunc;
-				operations::increment(vks, vfunc);
+				for(auto & vcomp : vks) operations::increment(vcomp, vfunc);
 				energy.nvxc += operations::integral_product(total_density, vfunc); //the core correction does not go here
 			}
 		}
 
-		for(auto & pot : hamiltonian.scalar_potential_) {
-			if(potential_basis_ == vks.basis()){
-				pot = vks;
-			} else {
-				pot = operations::transfer::coarsen(vks, potential_basis_);
+		// PUT THE CALCULATED POTENTIAL IN THE HAMILTONIAN
+		
+		if(potential_basis_ == vks[0].basis()){
+			hamiltonian.scalar_potential_= std::move(vks);
+		} else {
+			for(unsigned ipot = 0; ipot < vks.size(); ipot++){
+				hamiltonian.scalar_potential_[ipot] = operations::transfer::coarsen(vks[ipot], potential_basis_);
 			}
 		}
+
+		// THE VECTOR POTENTIAL
 		
 		if(pert_.has_uniform_vector_potential()){
 			hamiltonian.uniform_vector_potential_ = potential_basis_.cell().metric().to_covariant(pert_.uniform_vector_potential(time));
