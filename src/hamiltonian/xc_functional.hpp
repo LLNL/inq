@@ -43,22 +43,27 @@ namespace hamiltonian {
 			return id_ > 0;			
 		}
 		
-		xc_functional(const int functional_id):
-			id_(functional_id){
-			if(true_functional() and xc_func_init(&func_, functional_id, XC_UNPOLARIZED) != 0){
+		xc_functional(const int functional_id, int spin_components):
+			id_(functional_id),
+			nspin_(spin_components){
+
+			assert(nspin_ == 1 or nspin_ == 2);
+			
+			if(true_functional() and xc_func_init(&func_, functional_id, (nspin_==1)?XC_UNPOLARIZED:XC_POLARIZED) != 0){
 				fprintf(stderr, "Functional '%d' not found\n", functional_id);
 				exit(1);
 			}
 		}
 
 		xc_functional(xc_functional const & other):
-			xc_functional(other.id_){
+			xc_functional(other.id_, other.nspin_){
 		}
 		
 		xc_functional operator=(xc_functional const & other) {
-			if(id_ == other.id_) return *this;
+			if(id_ == other.id_ and nspin_ == other.nspin_) return *this;
 			if(true_functional()) xc_func_end(&func_);
 			id_ = other.id_;
+			nspin_ = other.nspin_;
 			if(true_functional() and xc_func_init(&func_, id_, XC_UNPOLARIZED) != 0){
 				fprintf(stderr, "Functional '%d' not found\n", id_);
 				exit(1);
@@ -158,6 +163,7 @@ namespace hamiltonian {
 	private:
 
 		int id_;
+		int nspin_;
 		xc_func_type func_;
 			
 	};
@@ -252,7 +258,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 
-		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 1);
 		basis::field<basis::real_space, double> gaussianVxc(rs);
 		double gaussianExc;
 
@@ -301,7 +307,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 							 fie[ix][iy][iz] = sqwave(vec, 3);
 						 });
 	
-		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
+		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 1);
 		basis::field<basis::real_space, double> Vxc(rs);
 		basis::field<basis::real_space, double> local_vsigma_output(rs);
 
@@ -331,8 +337,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			}
 		}
 	
-		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE);
-		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X);
+		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 1);
+		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 1);
 		basis::field<basis::real_space, double> gaussianVxcLDA(rs) , gaussianVxcGGA(rs);
 		double gaussianExcLDA, gaussianExcGGA;
 
@@ -350,8 +356,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 
 	}
 
-	inq::hamiltonian::xc_functional b3lyp(XC_HYB_GGA_XC_B3LYP);
-	inq::hamiltonian::xc_functional pbeh(XC_HYB_GGA_XC_PBEH);
+	inq::hamiltonian::xc_functional b3lyp(XC_HYB_GGA_XC_B3LYP, 1);
+	inq::hamiltonian::xc_functional pbeh(XC_HYB_GGA_XC_PBEH, 1);
 	
 	SECTION("HYBRIDS"){
 		CHECK(b3lyp.exx_coefficient() == 0.2_a);

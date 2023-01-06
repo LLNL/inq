@@ -40,10 +40,10 @@ class self_consistency {
 	
 public:
 	
-	self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis, Perturbation const & pert = {}):
+	self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis, int const spin_components, Perturbation const & pert = {}):
 		interaction_(interaction),
-		exchange_(int(interaction.exchange())),
-		correlation_(int(interaction.correlation())),
+		exchange_(int(interaction.exchange()), spin_components),
+		correlation_(int(interaction.correlation()), spin_components),
 		vion_(density_basis),
 		core_density_(density_basis),
 		potential_basis_(potential_basis),
