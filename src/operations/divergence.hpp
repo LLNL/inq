@@ -46,6 +46,21 @@ basis::field<basis::fourier_space, complex> divergence(basis::field<basis::fouri
 }
 
 template <typename VectorSpace>
+basis::field_set<basis::fourier_space, complex> divergence(basis::field_set<basis::fourier_space, math::vector3<complex, VectorSpace>> const & ff){
+	
+	basis::field_set<basis::fourier_space, complex> diverg(ff.skeleton());
+
+	gpu::run(diverg.local_set_size(), diverg.basis().local_sizes()[2], diverg.basis().local_sizes()[1], diverg.basis().local_sizes()[0],
+					 [point_op = ff.basis().point_op(), divergcub = begin(diverg.cubic()), ffcub = begin(ff.cubic())]
+					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+
+						 divergcub[ix][iy][iz][ist] = complex(0.0, 1.0)*point_op.metric().dot(point_op.gvector(ix, iy, iz), ffcub[ix][iy][iz][ist]);
+					 });
+	
+	return diverg;
+}
+
+template <typename VectorSpace>
 auto divergence(basis::field<basis::real_space, math::vector3<complex, VectorSpace>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(ff); 			
 	auto diverg_fourier = divergence(ff_fourier); 				
@@ -55,6 +70,22 @@ auto divergence(basis::field<basis::real_space, math::vector3<complex, VectorSpa
 
 template <typename VectorSpace>
 auto divergence(basis::field<basis::real_space, math::vector3<double, VectorSpace>> const & ff){
+	auto ff_fourier = operations::space::to_fourier(complex_field(ff));
+	auto diverg_fourier = divergence(ff_fourier); 
+	auto diverg_real = operations::space::to_real(diverg_fourier);
+	return real_field(diverg_real);
+}
+
+template <typename VectorSpace>
+auto divergence(basis::field_set<basis::real_space, math::vector3<complex, VectorSpace>> const & ff){
+	auto ff_fourier = operations::space::to_fourier(ff); 			
+	auto diverg_fourier = divergence(ff_fourier); 				
+	auto diverg_real = operations::space::to_real(diverg_fourier);
+	return diverg_real;
+}
+
+template <typename VectorSpace>
+auto divergence(basis::field_set<basis::real_space, math::vector3<double, VectorSpace>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(complex_field(ff));
 	auto diverg_fourier = divergence(ff_fourier); 
 	auto diverg_real = operations::space::to_real(diverg_fourier);
@@ -146,7 +177,39 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 		}
 		CHECK( diff3 < 1.0e-10 ); 
 	}
+	
+	SECTION("Vectored plane-wave - field_set"){
+		int nvec = 7;
+		basis::field_set<basis::real_space, math::vector3<complex>> vectorial_complex_field(rs, nvec);
+	
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ivec = 0; ivec < nvec; ivec++){
+						for(int idir = 0; idir < 3 ; idir++) vectorial_complex_field.cubic()[ix][iy][iz][ivec][idir] = (ivec + 1.0)*vectorial_complex_plane_wave(kvec, vec)[idir];
+					}
+				}
+			}
+		}
 
+		auto d_vectorial_complex_field = divergence(vectorial_complex_field);
+
+		double diff3 = 0.0;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ivec = 0; ivec < nvec; ivec++){
+						diff3 += fabs(d_vectorial_complex_field.cubic()[ix][iy][iz][ivec] - (ivec + 1.0)*d_vectorial_complex_plane_wave(kvec, vec));
+					}
+				}
+			}
+		}
+		
+		CHECK( diff3 < 1.0e-9 ); 
+	}
+	
 	SECTION("Vectored real function"){
 
 		basis::field<basis::real_space, math::vector3<double>> vectorial_real_field(rs);
@@ -172,6 +235,38 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 			}
 		}
 		CHECK( diff4 < 1.0e-10 ); 
+	}
+
+	SECTION("Vectored real function - field_set"){
+
+		int nvec = 4;
+		basis::field_set<basis::real_space, math::vector3<double>> vectorial_real_field(rs, nvec);
+
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ivec = 0; ivec < nvec; ivec++){
+						for(int idir = 0; idir < 3 ; idir++) vectorial_real_field.cubic()[ix][iy][iz][ivec][idir] = (ivec + 1.0)*vectorial_real_wave(kvec, vec)[idir];
+					}
+				}
+			}
+		}
+		
+		auto d_vectorial_real_field = divergence(vectorial_real_field);
+
+		double diff4 = 0.0;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ivec = 0; ivec < nvec; ivec++){
+						diff4 += fabs(d_vectorial_real_field.cubic()[ix][iy][iz][ivec] - (ivec + 1.0)*d_vectorial_real_wave(kvec, vec));
+					}
+				}
+			}
+		}
+		CHECK( diff4 < 1.0e-9 ); 
 	}
 }
 
