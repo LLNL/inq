@@ -112,12 +112,14 @@ public:
 		lot_weights_.reextent({lot_part_.local_size()*nspin});
 
 		max_local_size_ = 0;
+		auto ilot = 0;
 		for(int ispin = 0; ispin < nspin; ispin++){
 			for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
-				lot_weights_[ikpt] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
+				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
 				auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
 				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, ispin, states_basis_comm_);
 				max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
+				ilot++;
 			}
 		}
 
