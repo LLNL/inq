@@ -24,6 +24,7 @@
 #include <stdexcept>
 
 #include <xc.h>
+#include <observables/density.hpp>
 #include <operations/gradient.hpp>
 #include <operations/integral.hpp>
 #include <operations/divergence.hpp>
@@ -82,14 +83,13 @@ namespace hamiltonian {
 			
 			CALI_CXX_MARK_SCOPE("xc_functional");
 			
-			field_type exc(vxc.skeleton());
+			basis::field<basis::real_space, double>  exc(vxc.basis());
 			
-			assert(spin_density.matrix().num_elements() == exc.matrix().num_elements());
 			assert(spin_density.matrix().num_elements() == vxc.matrix().num_elements());
 			
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:{
-					xc_lda_exc_vxc(&func_, spin_density.basis().local_size(), spin_density.matrix().data_elements(), exc.matrix().data_elements(), vxc.matrix().data_elements());
+					xc_lda_exc_vxc(&func_, spin_density.basis().local_size(), spin_density.matrix().data_elements(), exc.linear().data_elements(), vxc.matrix().data_elements());
 					gpu::sync();
 					break;
 				}
@@ -103,8 +103,7 @@ namespace hamiltonian {
 				}
 			}
 
-			xc_energy = operations::integral_product_sum(spin_density, exc);
-
+			xc_energy = operations::integral_product(exc, observables::density::total(spin_density));
 		}
 
 		auto & libxc_func() const {
@@ -289,7 +288,99 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		if(rs.part().contains(rs.size() - 1)) CHECK(gaussianVxc.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -0.4326883849_a);
 
 	}
-	
+
+	SECTION("LSDA"){
+		
+		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
+		basis::real_space rs(box, cart_comm);
+
+		basis::field_set<basis::real_space, double> density_unp(rs, 2);
+		basis::field_set<basis::real_space, double> density_pol(rs, 2);		
+		
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					density_unp.cubic()[ix][iy][iz][0] = 0.5*gaussian(vec);
+					density_unp.cubic()[ix][iy][iz][1] = 0.5*gaussian(vec);
+					density_pol.cubic()[ix][iy][iz][0] = 0.3*gaussian(vec);
+					density_pol.cubic()[ix][iy][iz][1] = 0.7*gaussian(vec);					
+				}
+			}
+		}
+
+		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 2);
+
+		basis::field_set<basis::real_space, double> vxc_unp(rs, 2);
+		basis::field_set<basis::real_space, double> vxc_pol(rs, 2);		
+
+		double exc_unp, exc_pol;
+
+		CHECK(ldafunctional.exx_coefficient() == 0.0);
+		
+		ldafunctional(density_unp, exc_unp, vxc_unp);
+		ldafunctional(density_pol, exc_pol, vxc_pol);		
+
+		CHECK(exc_unp == -0.270646_a);
+		CHECK(exc_pol == -0.2804198447_a);		
+		
+		double int_exc_unp = 0.0;
+		double int_exc_pol = 0.0;		
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					math::array<double, 1> local_density{0.5*gaussian(vec), 0.5*gaussian(vec)};
+					math::array<double, 1> local_exc{1};
+					math::array<double, 1> local_vxc{2};
+					
+					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
+					gpu::sync();
+
+					CHECK(vxc_unp.cubic()[ix][iy][iz][0] == Approx(vxc_unp.cubic()[ix][iy][iz][1]));					
+					CHECK(Approx(local_vxc[0]) == vxc_unp.cubic()[ix][iy][iz][0]);
+					CHECK(Approx(local_vxc[1]) == vxc_unp.cubic()[ix][iy][iz][1]);
+
+					int_exc_unp += local_exc[0]*(local_density[0] + local_density[1])*rs.volume_element();
+					
+					local_density[0] = 0.7*gaussian(vec);
+					local_density[1] = 0.3*gaussian(vec);					
+					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
+					gpu::sync();
+
+					CHECK(Approx(local_vxc[1]) == vxc_pol.cubic()[ix][iy][iz][0]);
+					CHECK(Approx(local_vxc[0]) == vxc_pol.cubic()[ix][iy][iz][1]);
+
+					int_exc_pol += local_exc[0]*(local_density[0] + local_density[1])*rs.volume_element();
+				}
+			}
+		}
+
+		cart_comm.all_reduce_in_place_n(&int_exc_unp, 1, std::plus<>{});
+		cart_comm.all_reduce_in_place_n(&int_exc_pol, 1, std::plus<>{});
+
+		CHECK(Approx(exc_unp) == int_exc_unp);
+		CHECK(Approx(exc_pol) == int_exc_pol);
+
+		if(rs.part().contains(1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(1))][0] == -0.5111609291_a);
+		if(rs.part().contains(1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(1))][1] == -0.5111609291_a);		
+		if(rs.part().contains(8233)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(8233))][0] == -0.00406881_a);
+		if(rs.part().contains(8233)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(8233))][1] == -0.00406881_a);		
+		if(rs.part().contains(233)) CHECK(fabs(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(233))][0]) < 1e-10);
+		if(rs.part().contains(233)) CHECK(fabs(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(233))][1]) < 1e-10);		
+		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -0.4326883849_a);
+		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][1] == -0.4326883849_a);		
+
+		if(rs.part().contains(1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(1))][0] == -0.4311298248_a);
+		if(rs.part().contains(1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(1))][1] == -0.571830079_a);		
+		if(rs.part().contains(8233)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(8233))][0] == -0.0034317692_a);
+		if(rs.part().contains(8233)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(8233))][1] == -0.0045517353_a);		
+		if(rs.part().contains(233)) CHECK(fabs(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(233))][0]) < 1e-10);
+		if(rs.part().contains(233)) CHECK(fabs(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(233))][1]) < 1e-10);		
+		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -0.3649435178_a);
+		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][1] == -0.4840437116_a);
+	}
+		
 	SECTION("GGA"){
 		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(90.0_Ha);
 		basis::real_space rs(box, cart_comm);
