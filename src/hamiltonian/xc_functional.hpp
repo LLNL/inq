@@ -89,12 +89,12 @@ namespace hamiltonian {
 			
 			switch(func_.info->family) {
 				case XC_FAMILY_LDA:{
-					xc_lda_exc_vxc(&func_, spin_density.matrix().num_elements(), spin_density.matrix().data_elements(), exc.matrix().data_elements(), vxc.matrix().data_elements());
+					xc_lda_exc_vxc(&func_, spin_density.basis().local_size(), spin_density.matrix().data_elements(), exc.matrix().data_elements(), vxc.matrix().data_elements());
 					gpu::sync();
 					break;
 				}
 				case XC_FAMILY_GGA:{
-					ggafunctional(spin_density.basis().size()*spin_density.set_size(), spin_density, exc, vxc);
+					ggafunctional(spin_density, exc, vxc);
 					break;
 				}	
 				default:{
@@ -122,7 +122,7 @@ namespace hamiltonian {
 		
 		//this function has to be public because of cuda limitations
 		template <class density_type, class exc_type, class vxc_type>
-		void ggafunctional(long size, density_type const & density, exc_type & exc, vxc_type & vxc) const { 
+		void ggafunctional(density_type const & density, exc_type & exc, vxc_type & vxc) const { 
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -136,9 +136,9 @@ namespace hamiltonian {
 
 			basis::field_set<basis::real_space, double> vsigma(vxc.skeleton());
 			
-			xc_gga_exc_vxc(&func_, size, density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
+			xc_gga_exc_vxc(&func_, density.basis().local_size(), density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
 			gpu::sync();
-					
+			
 			basis::field_set<basis::real_space, math::vector3<double, math::covariant>> vxc_extra(vxc.skeleton());
 
 			gpu::run(vxc.local_set_size(), vxc.basis().local_size(),

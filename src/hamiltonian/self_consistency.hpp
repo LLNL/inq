@@ -134,7 +134,7 @@ public:
 			auto full_density = operations::add(spin_density, core_density_);
 			
 			double efunc = 0.0;
-			basis::field_set<basis::real_space, double> vfunc(full_density.skeleton());
+			basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
 
 			if(exchange_.true_functional()){
 				exchange_(full_density, efunc, vfunc);
