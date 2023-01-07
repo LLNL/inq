@@ -22,11 +22,14 @@
 */
 
 #include <inq_config.h>
+#include <basis/field.hpp>
+#include <basis/field_set.hpp>
 
 #include <cstdlib>
 #include <gpu/run.hpp>
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 namespace inq {
 namespace operations {
@@ -67,6 +70,21 @@ field_type add(const field_type & t1, const field_type & t2, const field_type & 
 	return tadd;
 }
 
+//	Returns a field_set that has the sum of the values of t1 and t2.
+template <typename FieldSetType, typename FieldType>
+FieldSetType add(FieldSetType const & t1, FieldType const & t2){
+	assert(t1.basis() == t2.basis());
+		
+	FieldSetType tadd(t1.skeleton());
+
+	gpu::run(t1.local_set_size(), t1.basis().local_size(),
+					 [t1p = begin(t1.matrix()), t2p = begin(t2.linear()), taddp = begin(tadd.matrix())] GPU_LAMBDA (auto ist, auto ip){
+						 taddp[ip][ist] = t1p[ip][ist] + t2p[ip];
+					 });
+		
+	return tadd;
+}
+
 //	Add t2 to t1.
 template <class field_type>
 void increment(field_type & t1, const field_type & t2){
@@ -77,6 +95,21 @@ void increment(field_type & t1, const field_type & t2){
 						t2p = t2.linear().begin()] GPU_LAMBDA (auto ii){
 						 t1p[ii] += t2p[ii];
 					 });
+}
+
+template <class FVectorType, class BasisType, class Type>
+void increment(FVectorType & fvector, basis::field_set<BasisType, Type> const & fset){
+
+	int ist = 0;
+	for(auto & field : fvector){
+		assert(field.basis() == fset.basis());
+		
+		gpu::run(fset.basis().local_size(),
+						 [fie = begin(field.linear()), fse = begin(fset.matrix()), ist] GPU_LAMBDA (auto ip){
+							 fie[ip] += fse[ip][ist];
+						 });
+		ist++;
+	}
 }
 
 }

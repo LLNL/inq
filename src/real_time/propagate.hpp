@@ -98,7 +98,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		
 		electrons.spin_density() = observables::density::calculate(electrons);
 
-		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, pert);
+		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, electrons.states().num_density_components(), pert);
 		hamiltonian::ks_hamiltonian<basis::real_space> ham(electrons.states_basis_, electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), electrons.states_basis_comm_);
 		hamiltonian::energy energy;
 

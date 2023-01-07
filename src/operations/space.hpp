@@ -98,6 +98,19 @@ void zero_outside_sphere(states::orbital_set<basis::fourier_space, complex>& fph
 
 ///////////////////////////////////////////////////////////////
 
+template <typename VectorSpace>
+void zero_outside_sphere(basis::field_set<basis::fourier_space, math::vector3<complex, VectorSpace>> & fphi){
+		CALI_CXX_MARK_FUNCTION;
+		
+	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
+					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
+					 (auto ist, auto iz, auto iy, auto ix){
+						 if(point_op.outside_sphere(ix, iy, iz)) fphicub[ix][iy][iz][ist] = {0.0, 0.0, 0.0};
+					 });
+}
+
+///////////////////////////////////////////////////////////////
+
 #ifdef ENABLE_HEFFTE
 template <class InArray4D, class OutArray4D>
 void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
@@ -528,6 +541,29 @@ auto to_real(const basis::field<basis::fourier_space, math::vector3<complex, Vec
 		normalize);
 
 	return phi;
+}
+
+///////////////////////////////////////////////////////////////
+
+template <class VectorSpace>
+auto to_fourier(const basis::field_set<basis::real_space, math::vector3<complex, VectorSpace>> & phi){
+
+	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
+	
+	auto & real_basis = phi.basis();
+	basis::fourier_space fourier_basis(real_basis);
+	
+	basis::field_set<basis::fourier_space, math::vector3<complex, VectorSpace>> fphi(fourier_basis, phi.set_size(), phi.full_comm());
+
+	auto &&    fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
+	auto const& phi_as_scalar = phi .cubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
+	
+	to_fourier_array(real_basis, fourier_basis, phi_as_scalar, fphi_as_scalar);
+
+	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
+			
+	return fphi;
+	
 }
 
 ///////////////////////////////////////////////////////////////

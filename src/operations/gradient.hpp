@@ -119,6 +119,18 @@ states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	auto gradient(basis::field_set<basis::real_space, double> const & ff){
+
+		CALI_CXX_MARK_SCOPE("gradient_real_space(field,double)");
+		
+		auto ff_fourier = operations::space::to_fourier(complex_field(ff));
+		auto grad_fourier = gradient(ff_fourier);
+		auto grad_real = operations::space::to_real(grad_fourier);
+		return real_field(grad_real);
+	}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 auto gradient(states::orbital_set<basis::real_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_SCOPE("gradient_real_space(orbital_set)");
@@ -316,6 +328,43 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 				
 		CHECK( diff < 1.0e-10 ); 
+	}
+
+	SECTION("Real function - field_set"){
+
+		basis::real_space rs(box, cart_comm);
+
+		auto nvec = 5;
+		
+		basis::field_set<basis::real_space, double> f_test2(rs, nvec);
+	
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ivec = 0; ivec < nvec; ivec++){
+						f_test2.cubic()[ix][iy][iz][ivec] = (ivec + 1.0)*f_analytic2(kvec, vec);
+					}
+				}
+			}
+		}
+
+		auto g_test2 = gradient(f_test2);
+		double diff = 0.0;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ivec = 0; ivec < nvec; ivec++){
+						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.basis().cell().metric().to_cartesian(g_test2.cubic()[ix][iy][iz][ivec])[idir] - (ivec + 1.0)*g_analytic2(kvec, vec)[idir]);
+					}
+				}
+			}
+		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+				
+		CHECK( diff/nvec < 1.0e-10 ); 
 	}
 }
 

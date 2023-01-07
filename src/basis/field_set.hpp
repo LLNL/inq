@@ -120,7 +120,7 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 		}
 
 		auto data() const {
-			return raw_pointer_cast(matrix_.data());
+			return raw_pointer_cast(matrix_.data_elements());
 		}
 
 		auto data() {
@@ -275,6 +275,18 @@ field_set<basis::real_space, inq::complex> complex_field(field_set<basis::real_s
 	return cfield;
 }
 
+template <class VectorSpace>
+field_set<basis::real_space, math::vector3<complex, VectorSpace>> complex_field(field_set<basis::real_space, math::vector3<double, VectorSpace>> const & field) {
+	field_set<basis::real_space, math::vector3<complex, VectorSpace>> cfield(field.skeleton());
+
+	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
+					 [fie = begin(field.matrix()), cfie = begin(cfield.matrix())] GPU_LAMBDA (auto ist, auto ii){
+						 cfie[ii][ist] = complex{1.0, 0.0}*fie[ii][ist];
+					 });
+	
+	return cfield;
+}
+
 field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq::complex> const & field) {
 	
 	field_set<basis::real_space, double> rfield(field.skeleton());
@@ -285,6 +297,19 @@ field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq
 	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
 					 [rp = begin(rfield.matrix()), cp = begin(field.matrix())] GPU_LAMBDA (auto ist, auto ii){
 						 rp[ii][ist] = inq::real(cp[ii][ist]);
+					 });
+	
+	return rfield;
+}
+
+template <class VectorSpace>
+field_set<basis::real_space, math::vector3<double, VectorSpace>> real_field(field_set<basis::real_space, math::vector3<complex, VectorSpace>> const & field) {
+	
+	field_set<basis::real_space, math::vector3<double, VectorSpace>> rfield(field.skeleton());
+	
+	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
+					 [rp = begin(rfield.matrix()), cp = begin(field.matrix())] GPU_LAMBDA (auto ist, auto ii){
+						 rp[ii][ist] = real(cp[ii][ist]);
 					 });
 	
 	return rfield;
