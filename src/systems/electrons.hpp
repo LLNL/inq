@@ -49,19 +49,19 @@ class electrons {
 public:
 	
 	static auto lot_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(0);
+		return comm.axis(input::parallelization::dimension_kpoints());
 	}
 	static auto states_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(2);
+		return comm.axis(input::parallelization::dimension_states());
 	}
 	static auto basis_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(1);
+		return comm.axis(input::parallelization::dimension_domains());
 	}
 	static auto states_basis_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.hyperplane(0);
+		return comm.hyperplane(input::parallelization::dimension_kpoints());
 	}
 	static auto lot_states_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.hyperplane(1);
+		return comm.hyperplane(input::parallelization::dimension_domains());
 	}
 	
 	auto & lot() const {

@@ -33,6 +33,18 @@ namespace input {
 
   public:
 
+		static auto dimension_kpoints(){
+			return 0;
+		}
+		
+		static auto dimension_domains(){
+			return 1;
+		}
+		
+		static auto dimension_states(){
+			return 2;
+		}
+
 		static auto optimal_nprocs(int size, int max_comm_size, double threshold){
 			for(utils::factors_reverse fac(max_comm_size); fac != fac.end(); ++fac){
 				parallel::partition part(size, *fac);
