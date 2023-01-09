@@ -99,31 +99,35 @@ public:
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.num()),
 		spin_density_(density_basis_, states_.num_density_components()),
-		lot_part_(kpts.num(), lot_comm_)
+		lot_part_(kpts.num()*states_.num_spin_indices(), lot_comm_)
 	{
+		CALI_CXX_MARK_FUNCTION;
 
 		assert(lot_part_.local_size() > 0);
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
-		
-		CALI_CXX_MARK_FUNCTION;
 
-		auto nspin = states_.num_spin_indices();
+		assert(lot_comm_.size()%states_.num_spin_indices() == 0);
 		
-		lot_weights_.reextent({lot_part_.local_size()*nspin});
+		parallel::cartesian_communicator<2> spin_kpoints_comm(lot_comm_, {states_.num_spin_indices(), kpts.num()});
+			
+		parallel::partition kpts_part(kpts.num(), spin_kpoints_comm.axis(0));
+		parallel::partition spin_part(states_.num_spin_indices(), spin_kpoints_comm.axis(1));		
+
+		assert(lot_part_.local_size() == kpts_part.local_size()*spin_part.local_size()); //this is always true because the spin size is either 1 or 2
+
+		lot_weights_.reextent({lot_part_.local_size()});
 
 		max_local_size_ = 0;
 		auto ilot = 0;
-		for(int ispin = 0; ispin < nspin; ispin++){
-			for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
-				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
-				auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
-				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, ispin, states_basis_comm_);
+		for(int ispin = 0; ispin < spin_part.local_size(); ispin++){
+			for(int ikpt = 0; ikpt < kpts_part.local_size(); ikpt++){
+				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(kpts_part.local_to_global(ikpt).value());
+				auto kpoint = brillouin_zone_.kpoint(kpts_part.local_to_global(ikpt).value());
+				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
 				max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
 				ilot++;
 			}
 		}
-
-		lot_part_ *= nspin;
 		
 		assert(long(lot_.size()) == lot_part_.local_size());
 		assert(max_local_size_ > 0);
