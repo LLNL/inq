@@ -107,21 +107,17 @@ TEST_CASE("perturbations::laser", "[perturbations::laser]") {
     CHECK(las.has_uniform_electric_field());
 	auto ecut = 31.2_Ha;
     SECTION("velocity gauge"){
-		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(ecut);
         perturbations::laser vector_potential({0.1, 0.0, 0.0}, 1.0_eV,perturbations::gauge::velocity);
 		CHECK(vector_potential.has_uniform_vector_potential());
 		CHECK(not vector_potential.has_uniform_electric_field());
 		CHECK(vector_potential.uniform_vector_potential(0.0)[0] == 0.0);
 		CHECK(vector_potential.uniform_vector_potential(0.0)[2] == 0.0);
-        //add few more test at later time at different direction
     }
     SECTION("length gauge"){
-		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic().cutoff_energy(ecut);
         perturbations::laser E_field({1.0, 0.0, 0.0}, 1.0_eV);
         CHECK(E_field.has_uniform_electric_field());
 		CHECK(not E_field.has_uniform_vector_potential());
         CHECK(E_field.uniform_electric_field(0.0)[0] == 0.0);
-        //add few more test at later time
     }
 }
 
