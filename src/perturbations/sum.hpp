@@ -31,7 +31,6 @@ namespace perturbations {
 
 
 template <typename PertTypeA, typename PertTypeB>
-
 class sum {
 
   PertTypeA perta_;
@@ -73,9 +72,13 @@ public:
     return vpotential;
 	}
 
-	
 };
-	
+
+template <typename PertTypeA, typename PertTypeB>
+auto operator+(PertTypeA perta, PertTypeB pertb){
+  return perturbations::sum(perta, pertb);
+}
+
 }
 }
 
@@ -114,8 +117,8 @@ TEST_CASE("perturbations::sum", "[perturbations::sum]") {
   CHECK(ps.uniform_vector_potential(2.0)[1] == -0.2);
   CHECK(ps.uniform_vector_potential(1.0)[2] == -0.3);
 
-  auto ps2 = perturbations::sum(kick, kick);
-
+  auto ps2 = kick + kick;
+  
   CHECK(not ps2.has_uniform_electric_field());
 
   CHECK(ps2.has_uniform_vector_potential());
