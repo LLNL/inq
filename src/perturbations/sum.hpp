@@ -125,6 +125,18 @@ TEST_CASE("perturbations::sum", "[perturbations::sum]") {
   CHECK(ps2.uniform_vector_potential(3.0)[0] == -0.2);
   CHECK(ps2.uniform_vector_potential(2.0)[1] == -0.4);
   CHECK(ps2.uniform_vector_potential(1.0)[2] == -0.6);
+
+  auto ps3 = kick + kick + perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha);
+
+  CHECK(ps3.has_uniform_electric_field());
+  CHECK(ps3.uniform_electric_field(M_PI/2.0)[0] == 1.0);
+  CHECK(ps3.uniform_electric_field(M_PI/2.0)[1] == 1.0);
+  CHECK(ps3.uniform_electric_field(M_PI/2.0)[2] == 1.0);
+  
+  CHECK(ps3.has_uniform_vector_potential());
+  CHECK(ps3.uniform_vector_potential(3.0)[0] == -0.2);
+  CHECK(ps3.uniform_vector_potential(2.0)[1] == -0.4);
+  CHECK(ps3.uniform_vector_potential(1.0)[2] == -0.6);
   
 }
 
