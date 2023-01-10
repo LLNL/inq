@@ -29,6 +29,7 @@
 #include <utils/match.hpp>
 #include <perturbations/kick.hpp>
 #include <perturbations/laser.hpp>
+#include <perturbations/sum.hpp>
 #include <observables/spectrum.hpp>
 
 #ifdef INQ_INQ_INQ_UNIT_TEST

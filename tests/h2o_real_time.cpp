@@ -135,7 +135,8 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 		
-		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}, perturbations::gauge::velocity};
+		auto kick1 = perturbations::kick{box.cell(), {0.06, 0.0, 0.0}, perturbations::gauge::velocity};
+		auto kick2 = perturbations::kick{box.cell(), {0.04, 0.0, 0.0}, perturbations::gauge::velocity};
 
 		long nsteps = 31;
 		 
@@ -162,7 +163,7 @@ int main(int argc, char ** argv){
 			}
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick1 + kick2);
 
 		match.check("ETRS velocity kick: dipole step   0", dip[0],    0.043697779520);
 		match.check("ETRS velocity kick: dipole step  10", dip[10],   0.375959983796);
