@@ -150,6 +150,10 @@ link_libraries(xc)
 set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 include_directories(${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 
+# MPI3
+set(mpi3_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
+include_directories(${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
+
 ########################
 # SPGLIB
 ########################

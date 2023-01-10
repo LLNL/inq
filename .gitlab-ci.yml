@@ -275,7 +275,7 @@ gcc-ompi-fast:
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - mpic++ --version
       - mkdir build && cd build
-      - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors -Wextra -Wno-narrowing -Wno-cast-function-type -Wno-unknown-pragmas -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors -Wextra -Wno-narrowing -Wno-cast-function-type -Wno-unknown-pragmas -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter -Wno-error=deprecated-declarations"
       - ../configure --prefix=$HOME  || cat config.log
       - time make
       - time make install
