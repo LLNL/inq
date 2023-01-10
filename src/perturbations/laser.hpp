@@ -4,18 +4,18 @@
 #define INQ__PERTURBATIONS__LASER
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019-2023 Xavier Andrade, Alfredo Correa, Yifan Yao.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
  the Free Software Foundation; either version 3 of the License, or
  (at your option) any later version.
-  
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU Lesser General Public License for more details.
-  
+
  You should have received a copy of the GNU Lesser General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -25,55 +25,66 @@
 
 #include <math/vector3.hpp>
 #include <magnitude/energy.hpp>
+#include <perturbations/gauge.hpp>
 
 namespace inq {
 namespace perturbations {
 
 class laser {
-	
-	math::vector3<double, math::cartesian> polarization_;
-	double frequency_;
-	
+
+    math::vector3<double, math::cartesian> polarization_;
+    double frequency_;
+
 public:
-	laser(math::vector3<double, math::cartesian> polarization, quantity<magnitude::energy> frequency):
-		polarization_(polarization),
-		frequency_(frequency.in_atomic_units())
-	{
-	}
+    laser(math::vector3<double, math::cartesian> polarization, quantity<magnitude::energy> frequency,gauge arg_gauge = gauge::length):
+        polarization_(polarization),
+        frequency_(frequency.in_atomic_units()),
+        gauge_(arg_gauge) {
+            assert(gauge_ != gauge::mixed);
+    }
 
-	template <typename DummyType>
-	void zero_step(DummyType &) const {
-	}
+    template <typename DummyType>
+    void zero_step(DummyType &) const {
+    }
 
-	auto has_uniform_electric_field() const {
-		return true;
-	}
+    auto has_uniform_electric_field() const {
+        if (gauge_ == gauge::length)
+            return true;
+        else if (gauge_ == gauge::velocity)
+            return false;
+    }
 
-	auto uniform_electric_field(double time) const {
-		return polarization_*sin(time*frequency_);
-	}
+    auto uniform_electric_field(double time) const {
+        return polarization_*sin(time*frequency_);
+    }
 
-	auto has_uniform_vector_potential() const {
-		return false;
-	}
+    auto has_uniform_vector_potential() const {
+        if (gauge_ == gauge::length)
+            return false;
+        else if (gauge_ == gauge::velocity)
+            return true;
+    }
 
-	auto uniform_vector_potential(double /*time*/) const {
-		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
-	}
-	
-	template <typename OutputStream>
-	void print_info(OutputStream & out){
-		auto freq_ev = frequency_*27.211383;
-		
-		out << "Frequency :    " << frequency_ << " Ha" << std::endl;
-		out << "               " << freq_ev << " eV" << std::endl;
-		out << "               " << freq_ev*241.7991 << " THz" << std::endl;
-		out << "               " << 1239.84193/freq_ev << " nm" << std::endl;
-		
-	}
-	
+    auto uniform_vector_potential(double time) const {
+        //E=-1/c*dA/dt
+        return polarization_/frequency_*(cos(time*frequency_) - 1.0);
+    }
+
+    template <typename OutputStream>
+    void print_info(OutputStream & out) {
+        auto freq_ev = frequency_*27.211383;
+
+        out << "Frequency :    " << frequency_ << " Ha" << std::endl;
+        out << "               " << freq_ev << " eV" << std::endl;
+        out << "               " << freq_ev*241.7991 << " THz" << std::endl;
+        out << "               " << 1239.84193/freq_ev << " nm" << std::endl;
+
+    }
+private:
+    gauge gauge_;
+
 };
-	
+
 }
 }
 
@@ -94,11 +105,11 @@ using namespace magnitude;
 
 TEST_CASE("perturbations::laser", "[perturbations::laser]") {
 
-	perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV);
+    perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV);
 
-	las.print_info(std::cout);
+    las.print_info(std::cout);
 
-	CHECK(las.has_uniform_electric_field());
+    CHECK(las.has_uniform_electric_field());
 }
 
 #endif
