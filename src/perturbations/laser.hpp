@@ -105,7 +105,6 @@ TEST_CASE("perturbations::laser", "[perturbations::laser]") {
     las.print_info(std::cout);
 
     CHECK(las.has_uniform_electric_field());
-	auto ecut = 31.2_Ha;
     SECTION("velocity gauge"){
         perturbations::laser vector_potential({0.1, 0.0, 0.0}, 1.0_eV,perturbations::gauge::velocity);
 		CHECK(vector_potential.has_uniform_vector_potential());
