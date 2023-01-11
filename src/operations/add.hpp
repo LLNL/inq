@@ -86,8 +86,8 @@ FieldSetType add(FieldSetType const & t1, FieldType const & t2){
 }
 
 //	Add t2 to t1.
-template <class field_type>
-void increment(field_type & t1, const field_type & t2){
+template <typename FieldType1, typename FieldType2>
+void increment(FieldType1 & t1, FieldType2 const & t2){
 	assert(t1.basis() == t2.basis());
 		
 	gpu::run(t1.linear().size(),
