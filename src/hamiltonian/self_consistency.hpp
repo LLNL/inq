@@ -96,7 +96,7 @@ public:
 			
 		energy.external = operations::integral_product(total_density, vion_);
 
-		std::vector<basis::field<basis::real_space, double>> vks(spin_density.set_size(), density_basis_);
+		std::vector<basis::field<basis::real_space, typename HamiltonianType::potential_type>> vks(spin_density.set_size(), density_basis_);
 
 		solvers::poisson poisson_solver;
 

@@ -50,6 +50,8 @@ template <typename PotentialType>
 		
   public:
 
+	using potential_type = PotentialType;
+	
 		void update_projectors(const basis::real_space & basis, const atomic_potential & pot, const ions::geometry & geo){
 			
 			CALI_CXX_MARK_FUNCTION;
