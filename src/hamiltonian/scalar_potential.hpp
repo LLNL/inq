@@ -31,8 +31,9 @@
 
 namespace inq {
 namespace hamiltonian {
-	
-void scalar_potential_add(basis::field<basis::real_space, double> const & potential, double shift, states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vphi) {
+
+template <class PotentialType, class ShiftType>
+void scalar_potential_add(basis::field<basis::real_space, PotentialType> const & potential, ShiftType shift, states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vphi) {
 
 	CALI_CXX_MARK_FUNCTION;
   
@@ -45,7 +46,8 @@ void scalar_potential_add(basis::field<basis::real_space, double> const & potent
            });
 }
 
-states::orbital_set<basis::real_space, complex> scalar_potential(basis::field<basis::real_space, double> const & potential, double shift, states::orbital_set<basis::real_space, complex> const & phi) {
+template <class PotentialType, class ShiftType>
+states::orbital_set<basis::real_space, complex> scalar_potential(basis::field<basis::real_space, PotentialType> const & potential, ShiftType shift, states::orbital_set<basis::real_space, complex> const & phi) {
 
 	CALI_CXX_MARK_FUNCTION;
 
