@@ -366,8 +366,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
 					gpu::sync();
 
-					CHECK(Approx(local_vxc[1]) == vxc_pol.cubic()[ix][iy][iz][0]);
-					CHECK(Approx(local_vxc[0]) == vxc_pol.cubic()[ix][iy][iz][1]);
+					CHECK(fabs(local_vxc[1] - vxc_pol.cubic()[ix][iy][iz][0]) < 1e-14);
+					CHECK(fabs(local_vxc[0] - vxc_pol.cubic()[ix][iy][iz][1]) < 1e-14);
 
 					int_exc_pol += local_exc[0]*(local_density[0] + local_density[1])*rs.volume_element();
 				}
