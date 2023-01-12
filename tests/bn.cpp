@@ -35,7 +35,7 @@ int main(int argc, char ** argv){
   
 	systems::ions ions(box);
 	
-	ions.insert(vasp_file.geo());
+	ions.insert(vasp_file.atoms());
   
   systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 	
