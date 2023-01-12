@@ -86,6 +86,9 @@ public:
 	auto uniform_vector_potential(double /*time*/) const {
 		return vpot_;
 	}
+    template<typename PotentialType>
+    void potential(const double time, PotentialType & potential) const {
+    }
 	
 private:
 

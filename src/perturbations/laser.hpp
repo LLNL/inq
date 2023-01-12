@@ -63,6 +63,10 @@ public:
 		//E=-1/c*dA/dt
 		return polarization_/frequency_*(cos(time*frequency_) - 1.0);
 	}
+
+    template<typename PotentialType>
+    void potential(const double time, PotentialType & potential) const {
+    }
 	
 	template <typename OutputStream>
 	void print_info(OutputStream & out) {
