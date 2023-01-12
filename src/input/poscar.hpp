@@ -50,6 +50,8 @@ public:
 		lattice_vectors_(3)
 	{
 
+		//This follows the specification from https://www.vasp.at/wiki/index.php/POSCAR
+		
 		using namespace inq::magnitude;
 
 		std::ifstream poscar_file(poscar_file_name.c_str());
@@ -64,8 +66,6 @@ public:
 		double scaling_factor;
 		
 		poscar_file >> scaling_factor;
-
-		std::cout << scaling_factor << std::endl;
 		
 		for(int idir = 0; idir < 3; idir++)	{
 			poscar_file >> lattice_vectors_[idir];
@@ -73,7 +73,7 @@ public:
 		}
 
 		std::vector<std::string> species;
-
+		
 		std::string species_line;
 		std::getline(poscar_file, species_line);
 		std::getline(poscar_file, species_line);
@@ -83,6 +83,9 @@ public:
 		std::string species_name;
 		while (std::getline(iss, species_name, ' ')){
 			species.push_back(species_name);
+			pseudo::element sp(species.back());
+			if(not sp.valid()) throw std::runtime_error("Cannot read the species from POSCAR file \'" + poscar_file_name +
+																									"\'. Make sure your file contains the optional \'Species names\' line (see\n https://www.vasp.at/wiki/index.php/POSCAR for details).");
 		}
 
 		std::vector<int> species_num(species.size());
@@ -93,11 +96,28 @@ public:
 			num_atoms += species_num[ispecies];
 		}
 
+		std::string tail;
+		std::getline(poscar_file, tail);
+		
 		std::string coordinate_type;
+		std::getline(poscar_file, coordinate_type);
 
-		poscar_file >> coordinate_type;
+		if(coordinate_type[0] == 's' or coordinate_type[0] == 'S') std::getline(poscar_file, coordinate_type); //skip the Optional selective dynamics line
 
-		if(coordinate_type == "Direct") {
+		if(coordinate_type[0] == 'C' or coordinate_type[0] == 'c' or coordinate_type[0] == 'K' or coordinate_type[0] == 'k') {
+			// Cartesian
+			for(unsigned ispecies = 0; ispecies < species_num.size(); ispecies++){
+				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
+					math::vector3<double> pos;
+					poscar_file >> pos;
+					geo_.emplace_back(input::species(species[ispecies]), scaling_factor*in_atomic_units(1.0_A*pos));
+					std::getline(poscar_file, tail);
+				}
+			}
+
+		} else {
+
+			// Direct 
 
 			ions::unit_cell cell(lattice_vectors_);
 			
@@ -106,23 +126,14 @@ public:
 					math::vector3<double, math::contravariant> pos;
 					poscar_file >> pos;
 					geo_.emplace_back(input::species(species[ispecies]), cell.metric().to_cartesian(pos));
+					std::getline(poscar_file, tail);					
 				}
 			}
 			
-		} else if(coordinate_type == "Cartesian") {
-			for(unsigned ispecies = 0; ispecies < species_num.size(); ispecies++){
-				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
-					math::vector3<double> pos;
-					poscar_file >> pos;
-					geo_.emplace_back(input::species(species[ispecies]), pos);
-				}
-			}
-		} else {
-			throw std::runtime_error("Unsupported POSCAR file");
 		}
 
 	}
-
+	
 	auto num_atoms() const {
 		return long(geo_.size());
 	}	
@@ -179,6 +190,84 @@ TEST_CASE("function ions::poscar", "[inq::input::poscar]") {
 		CHECK(vasp_file.geo()[1].position()[0] == 1.6865805662_a);
 		CHECK(vasp_file.geo()[1].position()[1] == 1.6865805662_a);
 		CHECK(vasp_file.geo()[1].position()[2] == 1.6865805662_a);		
+	}
+
+	SECTION("Al"){
+		
+		input::poscar vasp_file(config::path::unit_tests_data() + "al.poscar");
+
+		std::cout << "CARTESIAN " << std::endl;
+
+		CHECK(vasp_file.lattice_vectors()[0][0] == 7.6458319003_a);
+		CHECK(vasp_file.lattice_vectors()[0][1] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[0][2] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[1][0] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[1][1] == 7.6458319003_a);
+		CHECK(vasp_file.lattice_vectors()[1][2] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[2][0] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[2][1] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[2][2] == 7.6458319003_a);		
+		
+		CHECK(vasp_file.num_atoms() == 4);
+
+		CHECK(vasp_file.geo()[0].species() == "Al");
+		CHECK(vasp_file.geo()[1].species() == "Al");
+		CHECK(vasp_file.geo()[3].species() == "Al");
+
+		CHECK(vasp_file.geo()[0].position()[0] == 0.0_a);
+		CHECK(vasp_file.geo()[0].position()[1] == 0.0_a);
+		CHECK(vasp_file.geo()[0].position()[2] == 0.0_a);
+		CHECK(vasp_file.geo()[1].position()[0] == 3.8229159501_a);
+		CHECK(vasp_file.geo()[1].position()[1] == 3.8229159501_a);
+		CHECK(vasp_file.geo()[1].position()[2] == 0.0_a);
+		CHECK(vasp_file.geo()[2].position()[0] == 0.0_a);
+		CHECK(vasp_file.geo()[2].position()[1] == 3.8229159501_a);
+		CHECK(vasp_file.geo()[2].position()[2] == 3.8229159501_a);
+		CHECK(vasp_file.geo()[3].position()[0] == 3.8229159501_a);
+		CHECK(vasp_file.geo()[3].position()[1] == 0.0_a);
+		CHECK(vasp_file.geo()[3].position()[2] == 3.8229159501_a);
+	}
+
+	SECTION("Ni"){
+		
+		input::poscar vasp_file(config::path::unit_tests_data() + "ni.poscar");
+
+		CHECK(vasp_file.lattice_vectors()[0][0] == 3.33536661_a);
+		CHECK(vasp_file.lattice_vectors()[0][1] == 3.33536661_a);
+		CHECK(vasp_file.lattice_vectors()[0][2] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[1][0] == -3.33536661_a);
+		CHECK(vasp_file.lattice_vectors()[1][1] == 3.33536661_a);
+		CHECK(vasp_file.lattice_vectors()[1][2] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[2][0] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[2][1] == 0.0_a);
+		CHECK(vasp_file.lattice_vectors()[2][2] == 33.3536660997_a);		
+		
+		CHECK(vasp_file.num_atoms() == 5);
+
+		CHECK(vasp_file.geo()[0].species() == "Ni");
+		CHECK(vasp_file.geo()[1].species() == "Ni");
+		CHECK(vasp_file.geo()[3].species() == "Ni");
+
+		CHECK(vasp_file.geo()[0].position()[0] == 0.0_a);
+		CHECK(vasp_file.geo()[0].position()[1] == 0.0_a);
+		CHECK(vasp_file.geo()[0].position()[2] == 0.0_a);
+
+		CHECK(vasp_file.geo()[1].position()[0] == 0.0_a);
+		CHECK(vasp_file.geo()[1].position()[1] == 3.33536661_a);
+		CHECK(vasp_file.geo()[1].position()[2] == 3.33536661_a);
+
+		CHECK(vasp_file.geo()[2].position()[0] == 0.0_a);
+		CHECK(vasp_file.geo()[2].position()[1] == 0.0_a);
+		CHECK(vasp_file.geo()[2].position()[2] == 6.6707332199_a);
+
+		CHECK(vasp_file.geo()[3].position()[0] == 0.0_a);
+		CHECK(vasp_file.geo()[3].position()[1] == 3.33536661_a);
+		CHECK(vasp_file.geo()[3].position()[2] == 10.0060998299_a);
+
+		CHECK(vasp_file.geo()[4].position()[0] == 0.0_a);
+		CHECK(vasp_file.geo()[4].position()[1] == 0.0_a);
+		CHECK(vasp_file.geo()[4].position()[2] == 13.3414664399_a);
+		
 	}
 
 }
