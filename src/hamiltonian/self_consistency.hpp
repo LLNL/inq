@@ -115,6 +115,10 @@ public:
 								 });
 			}
 		}
+
+		for(auto & vcomp : vks) {
+			pert_.potential(time, vcomp);
+		}
 		
 		// Hartree
 		if(interaction_.hartree_potential()){
