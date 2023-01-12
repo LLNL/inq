@@ -138,7 +138,7 @@ public:
 		return long(geo_.size());
 	}	
 	
-	auto & lattice_vectors() const {
+	auto & lattice() const {
 		return lattice_vectors_;
 	}
 	
@@ -169,15 +169,15 @@ TEST_CASE("function ions::poscar", "[inq::input::poscar]") {
 	
 		input::poscar vasp_file(config::path::unit_tests_data() + "bn.poscar");
 
-		CHECK(vasp_file.lattice_vectors()[0][0] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[0][1] == 3.3731611325_a);
-		CHECK(vasp_file.lattice_vectors()[0][2] == 3.3731611325_a);
-		CHECK(vasp_file.lattice_vectors()[1][0] == 3.3731611325_a);
-		CHECK(vasp_file.lattice_vectors()[1][1] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[1][2] == 3.3731611325_a);
-		CHECK(vasp_file.lattice_vectors()[2][0] == 3.3731611325_a);
-		CHECK(vasp_file.lattice_vectors()[2][1] == 3.3731611325_a);
-		CHECK(vasp_file.lattice_vectors()[2][2] == 0.0_a);		
+		CHECK(vasp_file.lattice()[0][0] == 0.0_a);
+		CHECK(vasp_file.lattice()[0][1] == 3.3731611325_a);
+		CHECK(vasp_file.lattice()[0][2] == 3.3731611325_a);
+		CHECK(vasp_file.lattice()[1][0] == 3.3731611325_a);
+		CHECK(vasp_file.lattice()[1][1] == 0.0_a);
+		CHECK(vasp_file.lattice()[1][2] == 3.3731611325_a);
+		CHECK(vasp_file.lattice()[2][0] == 3.3731611325_a);
+		CHECK(vasp_file.lattice()[2][1] == 3.3731611325_a);
+		CHECK(vasp_file.lattice()[2][2] == 0.0_a);		
 		
 		CHECK(vasp_file.num_atoms() == 2);
 
@@ -198,15 +198,15 @@ TEST_CASE("function ions::poscar", "[inq::input::poscar]") {
 
 		std::cout << "CARTESIAN " << std::endl;
 
-		CHECK(vasp_file.lattice_vectors()[0][0] == 7.6458319003_a);
-		CHECK(vasp_file.lattice_vectors()[0][1] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[0][2] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[1][0] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[1][1] == 7.6458319003_a);
-		CHECK(vasp_file.lattice_vectors()[1][2] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[2][0] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[2][1] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[2][2] == 7.6458319003_a);		
+		CHECK(vasp_file.lattice()[0][0] == 7.6458319003_a);
+		CHECK(vasp_file.lattice()[0][1] == 0.0_a);
+		CHECK(vasp_file.lattice()[0][2] == 0.0_a);
+		CHECK(vasp_file.lattice()[1][0] == 0.0_a);
+		CHECK(vasp_file.lattice()[1][1] == 7.6458319003_a);
+		CHECK(vasp_file.lattice()[1][2] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][0] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][1] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][2] == 7.6458319003_a);		
 		
 		CHECK(vasp_file.num_atoms() == 4);
 
@@ -232,15 +232,15 @@ TEST_CASE("function ions::poscar", "[inq::input::poscar]") {
 		
 		input::poscar vasp_file(config::path::unit_tests_data() + "ni.poscar");
 
-		CHECK(vasp_file.lattice_vectors()[0][0] == 3.33536661_a);
-		CHECK(vasp_file.lattice_vectors()[0][1] == 3.33536661_a);
-		CHECK(vasp_file.lattice_vectors()[0][2] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[1][0] == -3.33536661_a);
-		CHECK(vasp_file.lattice_vectors()[1][1] == 3.33536661_a);
-		CHECK(vasp_file.lattice_vectors()[1][2] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[2][0] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[2][1] == 0.0_a);
-		CHECK(vasp_file.lattice_vectors()[2][2] == 33.3536660997_a);		
+		CHECK(vasp_file.lattice()[0][0] == 3.33536661_a);
+		CHECK(vasp_file.lattice()[0][1] == 3.33536661_a);
+		CHECK(vasp_file.lattice()[0][2] == 0.0_a);
+		CHECK(vasp_file.lattice()[1][0] == -3.33536661_a);
+		CHECK(vasp_file.lattice()[1][1] == 3.33536661_a);
+		CHECK(vasp_file.lattice()[1][2] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][0] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][1] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][2] == 33.3536660997_a);		
 		
 		CHECK(vasp_file.num_atoms() == 5);
 

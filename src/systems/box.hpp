@@ -63,6 +63,12 @@ public:
 			math::vector3<double>(cc[0].in_atomic_units(), cc[1].in_atomic_units(), cc[2].in_atomic_units())
 		};
 	}
+
+	template <typename LatticeType>
+	box(LatticeType const & lat):
+		box{lat[0], lat[1], lat[2]}
+	{
+	}
 	
 	auto & periodic() {
 		periodicity_ = 3;

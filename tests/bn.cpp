@@ -31,7 +31,7 @@ int main(int argc, char ** argv){
 
   input::poscar vasp_file(config::path::unit_tests_data() + "bn.poscar");
 
-	auto box = systems::box::lattice(1.0_b*vasp_file.lattice_vectors()[0], 1.0_b*vasp_file.lattice_vectors()[1], 1.0_b*vasp_file.lattice_vectors()[2]).cutoff_energy(35.0_Ha);
+	auto box = systems::box(vasp_file.lattice()).cutoff_energy(35.0_Ha);
   
 	systems::ions ions(box);
 	
