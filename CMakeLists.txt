@@ -20,6 +20,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 include_directories(${catch2_SOURCE_DIR}/src)
 
+add_library(inq INTERFACE)
+target_include_directories(inq
+ 	INTERFACE
+     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+     $<INSTALL_INTERFACE:src>
+)
+
 enable_testing()
 include(CTest)
 
@@ -119,12 +127,16 @@ set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_CXX)
 include(CheckCXXSymbolExists)
 check_cxx_symbol_exists(MPI_Isendrecv_replace mpi.h HAVE_MPI_ISENDRECV_REPLACE)
 
+target_link_libraries(inq INTERFACE MPI::MPI_CXX)
+
 #FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
-include_directories(PkgConfig::FFTW)
+#include_directories(PkgConfig::FFTW)  # commented since it always generates a spurious -I...PkgConfig::FFTW option
 link_libraries(PkgConfig::FFTW)
 cmake_print_properties(TARGETS PkgConfig::FFTW PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
+
+target_link_libraries(inq INTERFACE PkgConfig::FFTW)
 
 if(ENABLE_HEFFTE)
   find_package(Heffte REQUIRED)
@@ -135,9 +147,13 @@ endif()
 find_package(BLAS REQUIRED)
 link_libraries(${BLAS_LIBRARIES})
 
+target_link_libraries(inq INTERFACE ${BLAS_LIBRARIES})
+
 set(BLA_VENDOR Generic) # ESSL doesn't implement dgelss_, now needed in the code
 find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
+
+target_link_libraries(inq INTERFACE ${LAPACK_LIBRARIES})
 
 #LIBXC
 set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)
@@ -146,9 +162,15 @@ include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
+target_link_libraries(inq INTERFACE xc)
+target_include_directories(inq INTERFACE ${Libxc_INCLUDE_DIRS})
+
 # Multi
 set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 include_directories(${PROJECT_SOURCE_DIR}/external_libs/multi/include)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/multi)
+target_link_libraries(inq INTERFACE multi)
 
 # MPI3
 set(mpi3_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
@@ -176,6 +198,15 @@ set(spglib_INCLUDE_DIRS ${spglib_SOURCE_DIR}/src/)
 set(spglib_LIBRARIES ${spglib_BINARY_DIR}/libsymspg.a)
 include_directories(${spglib_INCLUDE_DIRS})
 link_libraries(symspg_static)
+
+target_include_directories(inq
+  INTERFACE
+  ${spglib_INCLUDE_DIRS}
+)
+# target_link_libraries(inq
+#   INTERFACE
+#   ${spglib_LIBRARIES}
+# )
 
 ########################
 # BOOST
@@ -210,6 +241,10 @@ link_libraries(${HDF5_LIBRARIES})
 
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
+
+target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
+target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/pseudopod)
+
 configure_file(inq_config.h.in inq_config.h)
 
 #Generate inc++
@@ -227,6 +262,11 @@ configure_file(scripts/run_test.sh.in scripts/run_test.sh @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 install(DIRECTORY share/ DESTINATION share/inq)
+
+# this makes this library CMake's FetchContent friendly https://www.foonathan.net/2022/06/cmake-fetchcontent/
+if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  return()
+endif()
 
 add_subdirectory(src)
 add_subdirectory(tests)
