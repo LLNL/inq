@@ -230,8 +230,8 @@ public:
 			logger()->info("  inq is running on the cpu\n");
 #endif
 			logger()->info("k-point parallelization:");
-			logger()->info("  {} k-points divided among {} partitions", lot_part_.size(), lot_part_.comm_size());
-			logger()->info("  partition 0 has {} k-points and the last partition has {} k-points\n", lot_part_.local_size(0), lot_part_.local_size(lot_part_.comm_size() - 1));
+			logger()->info("  {} k-points/spin indices divided among {} partitions", lot_part_.size(), lot_part_.comm_size());
+			logger()->info("  partition 0 has {} k-points/spin indices and the last partition has {}\n", lot_part_.local_size(0), lot_part_.local_size(lot_part_.comm_size() - 1));
 			
 			logger()->info("real-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_dist(0).size(), states_basis_.part().size(), states_basis_.cubic_dist(0).comm_size());
