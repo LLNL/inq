@@ -84,8 +84,8 @@ public:
 
 private:
 	double amplitude_;
-	double width_;
 	double mid_pos_;
+	double width_;
 };
 
 }
