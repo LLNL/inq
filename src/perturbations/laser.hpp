@@ -26,11 +26,12 @@
 #include <math/vector3.hpp>
 #include <magnitude/energy.hpp>
 #include <perturbations/gauge.hpp>
+#include <perturbations/none.hpp>
 
 namespace inq {
 namespace perturbations {
 
-class laser {
+class laser : public perturbations::none {
 
 	math::vector3<double, math::cartesian> polarization_;
 	double frequency_;
@@ -41,10 +42,6 @@ public:
 		frequency_(frequency.in_atomic_units()),
 		gauge_(arg_gauge) {
 		assert(gauge_ != gauge::mixed);
-	}
-	
-	template <typename DummyType>
-	void zero_step(DummyType &) const {
 	}
 	
 	auto has_uniform_electric_field() const {
@@ -64,10 +61,6 @@ public:
 		return polarization_/frequency_*(cos(time*frequency_) - 1.0);
 	}
 
-    template<typename PotentialType>
-    void potential(const double time, PotentialType & potential) const {
-    }
-	
 	template <typename OutputStream>
 	void print_info(OutputStream & out) {
 		auto freq_ev = frequency_*27.211383;
@@ -78,6 +71,7 @@ public:
 		out << "               " << 1239.84193/freq_ev << " nm" << std::endl;
 		
 	}
+	
 private:
 	gauge gauge_;
 
