@@ -24,6 +24,7 @@
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
 #include <input/parse_xyz.hpp>
+#include <input/poscar.hpp>
 #include <operations/io.hpp>
 #include <real_time/propagate.hpp>
 #include <utils/match.hpp>
