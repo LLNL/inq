@@ -167,12 +167,21 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 		auto & full_comm() const {
 			return full_comm_;
 		}
-		
+
+		// cubic is deprecated in favor of hypercubic and should not be used
 		auto cubic() const {
 			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 
 		auto cubic() {
+			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
+		}
+
+		auto hypercubic() const {
+			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
+		}
+
+		auto hypercubic() {
 			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 

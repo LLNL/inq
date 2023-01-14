@@ -99,13 +99,22 @@ namespace states {
 		auto & matrix() {
 			return fields_.matrix();
 		}
-		
+
+		// cubic is deprecated in favor of hypercubic and should not be used
 		auto cubic() const {
-			return fields_.cubic();
+			return fields_.hypercubic();
 		}
 
 		auto cubic() {
-			return fields_.cubic();
+			return fields_.hypercubic();
+		}
+
+		auto hypercubic() const {
+			return fields_.hypercubic();
+		}
+
+		auto hypercubic() {
+			return fields_.hypercubic();
 		}
 
 		auto & full_comm() const {
