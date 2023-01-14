@@ -58,10 +58,10 @@ public:
 		return comm.axis(input::parallelization::dimension_domains());
 	}
 	static auto states_basis_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.hyperplane(input::parallelization::dimension_kpoints());
+		return comm.plane(input::parallelization::dimension_domains(), input::parallelization::dimension_states());
 	}
 	static auto lot_states_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.hyperplane(input::parallelization::dimension_domains());
+		return comm.plane(input::parallelization::dimension_kpoints(), input::parallelization::dimension_states());
 	}
 	
 	auto & lot() const {
