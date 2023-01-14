@@ -110,9 +110,9 @@ public:
 		if(states_.num_spin_indices() == 2 and lot_comm_.size()%2 == 0) nproc_spin = 2;
 
 		parallel::cartesian_communicator<2> spin_kpoints_comm(lot_comm_, {nproc_spin, boost::mpi3::fill});
-			
-		parallel::partition kpts_part(kpts.num(), spin_kpoints_comm.axis(0));
-		parallel::partition spin_part(states_.num_spin_indices(), spin_kpoints_comm.axis(1));		
+
+		parallel::partition spin_part(states_.num_spin_indices(), spin_kpoints_comm.axis(0));
+		parallel::partition kpts_part(kpts.num(), spin_kpoints_comm.axis(1));
 
 		assert(lot_part_.local_size() == kpts_part.local_size()*spin_part.local_size()); //this is always true because the spin size is either 1 or 2
 
