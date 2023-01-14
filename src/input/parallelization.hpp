@@ -65,6 +65,8 @@ namespace input {
     }
 
 		auto cart_comm(int nspin, int nkpoints) const {
+			assert(nspin == 1 or nspin == 2);
+			
 			auto nproc_kpts = optimal_nprocs(nkpoints*nspin, comm_.size(), kpoint_efficiency_threshold);
 			if(nproc_kpts_ != boost::mpi3::fill) nproc_kpts = nproc_kpts_;
 
