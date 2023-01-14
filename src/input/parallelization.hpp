@@ -52,8 +52,8 @@ namespace input {
 		{
     }
 
-		auto cart_comm(int nkpoints) const {
-			auto nproc_kpts = optimal_nprocs(nkpoints, comm_.size(), kpoint_efficiency_threshold);
+		auto cart_comm(int nspin, int nkpoints) const {
+			auto nproc_kpts = optimal_nprocs(nkpoints*nspin, comm_.size(), kpoint_efficiency_threshold);
 			if(nproc_kpts_ != boost::mpi3::fill) nproc_kpts = nproc_kpts_;
 
 			return parallel::cartesian_communicator<3>(comm_, {nproc_kpts, nproc_domains_, nproc_states_});
@@ -113,7 +113,7 @@ TEST_CASE("class input::parallelization", "[inq::input::parallelization]") {
 	
 	input::parallelization par(comm);
 	
-	auto cart_comm = par.kpoints(1).states(comm.size()).domains(1).cart_comm(10);
+	auto cart_comm = par.kpoints(1).states(comm.size()).domains(1).cart_comm(2, 10);
 
 	CHECK(cart_comm.size() == comm.size());
 

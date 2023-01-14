@@ -87,6 +87,11 @@ public:
 		return spin_.value_or(states::ks_states::spin_config::UNPOLARIZED);
 	}
 	
+	auto num_spin_components_val() const {
+		if(spin_val() == states::ks_states::spin_config::POLARIZED) return 2;
+		return 1;
+	}
+  
 	friend auto operator|(config const & conf1, config const & conf2){
 		using inq::utils::merge_optional;
 		
