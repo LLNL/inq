@@ -27,11 +27,12 @@
 #include <basis/real_space.hpp>
 #include <states/orbital_set.hpp>
 #include <perturbations/gauge.hpp>
+#include <perturbations/none.hpp>
 
 namespace inq {
 namespace perturbations {
 
-class kick {
+class kick : public perturbations::none {
 
 public:
 
@@ -71,14 +72,6 @@ public:
 						 });
 	}
 
-	auto has_uniform_electric_field() const {
-		return false;
-	}	
-
-	auto uniform_electric_field(double /*time*/) const {
-		return math::vector3<double>{0.0, 0.0, 0.0};
-	}
-	
 	auto has_uniform_vector_potential() const {
 		return true;
 	}
@@ -86,9 +79,6 @@ public:
 	auto uniform_vector_potential(double /*time*/) const {
 		return vpot_;
 	}
-    template<typename PotentialType>
-    void potential(const double time, PotentialType & potential) const {
-    }
 	
 private:
 
