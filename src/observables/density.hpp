@@ -78,7 +78,7 @@ basis::field_set<basis::real_space, double> calculate(ElecType & elec){
 		iphi++;
 	}
 	
-	if(elec.lot_states_comm_.size() > 1) elec.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(density.matrix().data_elements()), density.matrix().size(), std::plus<>{});
+	if(elec.lot_states_comm_.size() > 1) elec.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(density.matrix().data_elements()), density.matrix().num_elements(), std::plus<>{});
 
 	return density;
 }

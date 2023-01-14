@@ -213,6 +213,9 @@ namespace hamiltonian {
 			basis::field_set<basis_type, double> density(basis, nspin);
 
 			density = 0.0;
+
+			double polarization = 1.0;
+			if(nspin == 2) polarization = 0.6;
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
@@ -225,10 +228,12 @@ namespace hamiltonian {
 					basis::spherical_grid sphere(basis, atom_position, ps.electronic_density_radius());
 					
 					gpu::run(nspin, sphere.size(),
-									 [dens = begin(density.cubic()), sph = sphere.ref(), spline = ps.electronic_density().cbegin(), nspin] GPU_LAMBDA (auto ispin, auto ipoint){
+									 [dens = begin(density.cubic()), sph = sphere.ref(), spline = ps.electronic_density().cbegin(), polarization] GPU_LAMBDA (auto ispin, auto ipoint){
 										 auto rr = sph.distance(ipoint);
-										 auto density_val = spline.value(rr)/nspin;
-										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin], density_val);
+										 auto density_val = spline.value(rr);
+										 auto pol = polarization;
+										 if(ispin == 1) pol = 1.0 - pol;
+										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin], pol*density_val);
 									 });
 
 				} else {
@@ -237,9 +242,11 @@ namespace hamiltonian {
 					basis::spherical_grid sphere(basis, atom_position, 3.0);
 					
 					gpu::run(nspin, sphere.size(),
-									 [dens = begin(density.cubic()), sph = sphere.ref(), zval = ps.valence_charge(), nspin] GPU_LAMBDA (auto ispin, auto ipoint){
+									 [dens = begin(density.cubic()), sph = sphere.ref(), zval = ps.valence_charge(), polarization] GPU_LAMBDA (auto ispin, auto ipoint){
 										 auto rr = sph.distance(ipoint);
-										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin], zval/(M_PI)*exp(-2.0*rr)/nspin);
+										 auto pol = polarization;
+										 if(ispin == 1) pol = 1.0 - pol;
+										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin], pol*zval/(M_PI)*exp(-2.0*rr));
 									 });
 					
 				}
@@ -343,6 +350,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
+	using Catch::Approx;
 	using pseudo::element;
 	using input::species;
 
@@ -429,10 +437,10 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 		CHECK(nn_pol.set_size() == 2);
 		CHECK(operations::integral_sum(nn_pol) == 29.9562519176_a);
-		CHECK(nn_pol.cubic()[5][3][0][0] == 0.066529473_a);
-		CHECK(nn_pol.cubic()[3][1][0][0] == 0.0923002217_a);
-		CHECK(nn_pol.cubic()[5][3][0][1] == 0.066529473_a);
-		CHECK(nn_pol.cubic()[3][1][0][1] == 0.0923002217_a);
+		CHECK(nn_pol.cubic()[5][3][0][0] == Approx(1.2*0.066529473));
+		CHECK(nn_pol.cubic()[3][1][0][0] == Approx(1.2*0.0923002217));
+		CHECK(nn_pol.cubic()[5][3][0][1] == Approx(0.8*0.066529473));
+		CHECK(nn_pol.cubic()[3][1][0][1] == Approx(0.8*0.0923002217));
 		
 		CHECK(pot.has_nlcc());
 		

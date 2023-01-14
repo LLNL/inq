@@ -49,19 +49,19 @@ class electrons {
 public:
 	
 	static auto lot_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(0);
+		return comm.axis(input::parallelization::dimension_kpoints());
 	}
 	static auto states_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(2);
+		return comm.axis(input::parallelization::dimension_states());
 	}
 	static auto basis_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(1);
+		return comm.axis(input::parallelization::dimension_domains());
 	}
 	static auto states_basis_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.hyperplane(0);
+		return comm.plane(input::parallelization::dimension_domains(), input::parallelization::dimension_states());
 	}
 	static auto lot_states_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.hyperplane(1);
+		return comm.plane(input::parallelization::dimension_kpoints(), input::parallelization::dimension_states());
 	}
 	
 	auto & lot() const {
@@ -89,7 +89,7 @@ public:
 	
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
-		full_comm_(dist.cart_comm(brillouin_zone_.size())),
+		full_comm_(dist.cart_comm(conf.num_spin_components_val(), brillouin_zone_.size())),
 		lot_comm_(lot_subcomm(full_comm_)),
 		lot_states_comm_(lot_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
@@ -99,31 +99,36 @@ public:
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.num()),
 		spin_density_(density_basis_, states_.num_density_components()),
-		lot_part_(kpts.num(), lot_comm_)
+		lot_part_(kpts.num()*states_.num_spin_indices(), lot_comm_)
 	{
+		CALI_CXX_MARK_FUNCTION;
 
 		assert(lot_part_.local_size() > 0);
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
-		
-		CALI_CXX_MARK_FUNCTION;
 
-		auto nspin = states_.num_spin_indices();
-		
-		lot_weights_.reextent({lot_part_.local_size()*nspin});
+		auto nproc_spin = 1;
+		if(states_.num_spin_indices() == 2 and lot_comm_.size()%2 == 0) nproc_spin = 2;
+
+		parallel::cartesian_communicator<2> spin_kpoints_comm(lot_comm_, {nproc_spin, boost::mpi3::fill});
+
+		parallel::partition spin_part(states_.num_spin_indices(), spin_kpoints_comm.axis(0));
+		parallel::partition kpts_part(kpts.num(), spin_kpoints_comm.axis(1));
+
+		assert(lot_part_.local_size() == kpts_part.local_size()*spin_part.local_size()); //this is always true because the spin size is either 1 or 2
+
+		lot_weights_.reextent({lot_part_.local_size()});
 
 		max_local_size_ = 0;
 		auto ilot = 0;
-		for(int ispin = 0; ispin < nspin; ispin++){
-			for(int ikpt = 0; ikpt < lot_part_.local_size(); ikpt++){
-				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(lot_part_.local_to_global(ikpt).value());
-				auto kpoint = brillouin_zone_.kpoint(lot_part_.local_to_global(ikpt).value());
-				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, ispin, states_basis_comm_);
+		for(int ispin = 0; ispin < spin_part.local_size(); ispin++){
+			for(int ikpt = 0; ikpt < kpts_part.local_size(); ikpt++){
+				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(kpts_part.local_to_global(ikpt).value());
+				auto kpoint = brillouin_zone_.kpoint(kpts_part.local_to_global(ikpt).value());
+				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
 				max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
 				ilot++;
 			}
 		}
-
-		lot_part_ *= nspin;
 		
 		assert(long(lot_.size()) == lot_part_.local_size());
 		assert(max_local_size_ > 0);
@@ -139,7 +144,7 @@ public:
 
 	electrons(electrons && old_el, input::parallelization const & new_dist):
 		brillouin_zone_(std::move(old_el.brillouin_zone_)),
-		full_comm_(new_dist.cart_comm(brillouin_zone_.size())),
+		full_comm_(new_dist.cart_comm(old_el.states_.num_spin_indices(), brillouin_zone_.size())),
 		lot_comm_(lot_subcomm(full_comm_)),
 		lot_states_comm_(lot_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
@@ -226,8 +231,8 @@ public:
 			logger()->info("  inq is running on the cpu\n");
 #endif
 			logger()->info("k-point parallelization:");
-			logger()->info("  {} k-points divided among {} partitions", lot_part_.size(), lot_part_.comm_size());
-			logger()->info("  partition 0 has {} k-points and the last partition has {} k-points\n", lot_part_.local_size(0), lot_part_.local_size(lot_part_.comm_size() - 1));
+			logger()->info("  {} k-points/spin indices divided among {} partitions", lot_part_.size(), lot_part_.comm_size());
+			logger()->info("  partition 0 has {} k-points/spin indices and the last partition has {}\n", lot_part_.local_size(0), lot_part_.local_size(lot_part_.comm_size() - 1));
 			
 			logger()->info("real-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_dist(0).size(), states_basis_.part().size(), states_basis_.cubic_dist(0).comm_size());
