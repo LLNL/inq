@@ -350,6 +350,7 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
+	using Catch::Approx;
 	using pseudo::element;
 	using input::species;
 
@@ -436,10 +437,10 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 		CHECK(nn_pol.set_size() == 2);
 		CHECK(operations::integral_sum(nn_pol) == 29.9562519176_a);
-		CHECK(nn_pol.cubic()[5][3][0][0] == 0.066529473_a);
-		CHECK(nn_pol.cubic()[3][1][0][0] == 0.0923002217_a);
-		CHECK(nn_pol.cubic()[5][3][0][1] == 0.066529473_a);
-		CHECK(nn_pol.cubic()[3][1][0][1] == 0.0923002217_a);
+		CHECK(nn_pol.cubic()[5][3][0][0] == Approx(1.2*0.066529473));
+		CHECK(nn_pol.cubic()[3][1][0][0] == Approx(1.2*0.0923002217));
+		CHECK(nn_pol.cubic()[5][3][0][1] == Approx(0.8*0.066529473));
+		CHECK(nn_pol.cubic()[3][1][0][1] == Approx(0.8*0.0923002217));
 		
 		CHECK(pot.has_nlcc());
 		
