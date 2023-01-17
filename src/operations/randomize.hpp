@@ -70,7 +70,7 @@ namespace operations {
 		uint64_t set_size = phi.set_size();
 		uint64_t size_z = phi.basis().sizes()[2];
 		uint64_t size_y = phi.basis().sizes()[1];
-		auto phicub = begin(phi.cubic());
+		auto phicub = begin(phi.hypercubic());
 		
 		gpu::run(phi.set_part().local_size(), phi.basis().cubic_dist(2).local_size(), phi.basis().cubic_dist(1).local_size(), phi.basis().cubic_dist(0).local_size(),
 						 [=] GPU_LAMBDA (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){

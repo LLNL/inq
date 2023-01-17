@@ -168,15 +168,6 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 			return full_comm_;
 		}
 
-		// cubic is deprecated in favor of hypercubic and should not be used
-		auto cubic() const {
-			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
-		}
-
-		auto cubic() {
-			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
-		}
-
 		auto hypercubic() const {
 			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
@@ -371,13 +362,13 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	if(ff.set_comm().size() == 4) CHECK(std::get<1>(sizes(ff.matrix())) == 3);
 	if(ff.set_comm().size() == 6) CHECK(std::get<1>(sizes(ff.matrix())) == 2);
 
-	if(ff.basis().comm().size() == 1) CHECK(std::get<0>(sizes(ff.cubic())) == 28);
-	if(ff.basis().comm().size() == 2) CHECK(std::get<0>(sizes(ff.cubic())) == 14);
-	if(ff.basis().comm().size() == 4) CHECK(std::get<0>(sizes(ff.cubic())) == 7);
-	CHECK(std::get<1>(sizes(ff.cubic())) == 11);
-	CHECK(std::get<2>(sizes(ff.cubic())) == 20);
-	if(ff.set_comm().size() == 1) CHECK(std::get<3>(sizes(ff.cubic())) == 12);
-	if(ff.set_comm().size() == 2) CHECK(std::get<3>(sizes(ff.cubic())) == 6);
+	if(ff.basis().comm().size() == 1) CHECK(std::get<0>(sizes(ff.hypercubic())) == 28);
+	if(ff.basis().comm().size() == 2) CHECK(std::get<0>(sizes(ff.hypercubic())) == 14);
+	if(ff.basis().comm().size() == 4) CHECK(std::get<0>(sizes(ff.hypercubic())) == 7);
+	CHECK(std::get<1>(sizes(ff.hypercubic())) == 11);
+	CHECK(std::get<2>(sizes(ff.hypercubic())) == 20);
+	if(ff.set_comm().size() == 1) CHECK(std::get<3>(sizes(ff.hypercubic())) == 12);
+	if(ff.set_comm().size() == 2) CHECK(std::get<3>(sizes(ff.hypercubic())) == 6);
 
 	ff = 12.2244;
 
@@ -391,8 +382,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	
 	static_assert(std::is_same<decltype(zff), basis::field_set<basis::real_space, complex>>::value, "complex() should return a complex field");
 		
-	CHECK(std::get<1>(sizes(zff.cubic())) == 11);
-	CHECK(std::get<2>(sizes(zff.cubic())) == 20);
+	CHECK(std::get<1>(sizes(zff.hypercubic())) == 11);
+	CHECK(std::get<2>(sizes(zff.hypercubic())) == 20);
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
@@ -405,8 +396,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	static_assert(std::is_same<decltype(dff), basis::field_set<basis::real_space, double>>::value, "real() should return a double field");
 
-	CHECK(std::get<1>(sizes(dff.cubic())) == 11);
-	CHECK(std::get<2>(sizes(dff.cubic())) == 20);
+	CHECK(std::get<1>(sizes(dff.hypercubic())) == 11);
+	CHECK(std::get<2>(sizes(dff.hypercubic())) == 20);
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){

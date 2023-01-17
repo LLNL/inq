@@ -82,7 +82,7 @@ void zero_outside_sphere(basis::field_set<basis::fourier_space, math::vector3<co
 		CALI_CXX_MARK_FUNCTION;
 		
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
-					 [fphicub = begin(fphi.cubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
+					 [fphicub = begin(fphi.hypercubic()), point_op = fphi.basis().point_op()] GPU_LAMBDA
 					 (auto ist, auto iz, auto iy, auto ix){
 						 if(point_op.outside_sphere(ix, iy, iz)) fphicub[ix][iy][iz][ist] = {0.0, 0.0, 0.0};
 					 });
@@ -382,7 +382,7 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 	
 	basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
-	to_fourier_array(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
+	to_fourier_array(real_basis, fourier_basis, phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
@@ -421,7 +421,7 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 	
 	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	to_real_array(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
+	to_real_array(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
 
 	return phi;
 }
@@ -534,8 +534,8 @@ auto to_fourier(const basis::field_set<basis::real_space, math::vector3<complex,
 	
 	basis::field_set<basis::fourier_space, math::vector3<complex, VectorSpace>> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
-	auto &&    fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
-	auto const& phi_as_scalar = phi .cubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
+	auto &&    fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
+	auto const& phi_as_scalar = phi .hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	
 	to_fourier_array(real_basis, fourier_basis, phi_as_scalar, fphi_as_scalar);
 
@@ -557,8 +557,8 @@ auto to_real(basis::field_set<basis::fourier_space, math::vector3<complex, Vecto
 
 	basis::field_set<basis::real_space, math::vector3<complex, VectorSpace>> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
-	auto const& fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
-	auto &&     phi_as_scalar  = phi .cubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
+	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
+	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 
 	to_real_array(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
 
@@ -617,7 +617,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++) phi.cubic()[ix][iy][iz][ist] = 0.0;
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++) phi.hypercubic()[ix][iy][iz][ist] = 0.0;
 				}
 			}
 		}
@@ -629,7 +629,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						diff += fabs(fphi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -637,7 +637,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		diff /= fphi.cubic().num_elements();
+		diff /= fphi.hypercubic().num_elements();
 
 		CHECK(diff < 1e-15);
 		
@@ -647,14 +647,14 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++)	diff += fabs(phi.cubic()[ix][iy][iz][ist]);
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++)	diff += fabs(phi.hypercubic()[ix][iy][iz][ist]);
 				}
 			}
 		}
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		diff /= phi2.cubic().num_elements();
+		diff /= phi2.hypercubic().num_elements();
 
 		CHECK(diff < 1e-15);
 		
@@ -668,7 +668,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 					double r2 = rs.point_op().r2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						phi.cubic()[ix][iy][iz][ist] = exp(-sigma*r2);
+						phi.hypercubic()[ix][iy][iz][ist] = exp(-sigma*r2);
 					}
 				}
 			}
@@ -683,7 +683,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 					double g2 = fphi.basis().point_op().g2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						diff += fabs(fphi.cubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)*exp(-0.25*g2/sigma));
+						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)*exp(-0.25*g2/sigma));
 					}
 				}
 			}
@@ -691,7 +691,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		diff /= fphi.cubic().num_elements();
+		diff /= fphi.hypercubic().num_elements();
 
 		//not sure what is wrong here
 		std::cout << "DIFF1 " << diff << std::endl;
@@ -703,7 +703,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						diff += fabs(phi.cubic()[ix][iy][iz][ist] - phi2.cubic()[ix][iy][iz][ist]);
+						diff += fabs(phi.hypercubic()[ix][iy][iz][ist] - phi2.hypercubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -711,7 +711,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 		
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});		
 
-		diff /= phi2.cubic().num_elements();
+		diff /= phi2.hypercubic().num_elements();
 		
 		CHECK(diff < 1e-15);
 		

@@ -84,7 +84,7 @@ public:
 			CALI_CXX_MARK_SCOPE("poisson_finite_kernel_periodic");
 			
 			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), scal, nst = density.local_set_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.hypercubic()), scal, nst = density.local_set_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
 								 
 								 auto g2 = point_op.g2(ix, iy, iz);
 								 
@@ -172,7 +172,7 @@ public:
 			CALI_CXX_MARK_SCOPE("poisson_in_place_kernel_slab");
 
 			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), nst = density.local_set_size(), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.hypercubic()), nst = density.local_set_size(), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
 								 
 								 if(point_op.g_is_zero(ix, iy, iz)){
 									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= scal*cutoff_radius*cutoff_radius/2.0;
@@ -242,7 +242,7 @@ public:
 			CALI_CXX_MARK_SCOPE("poisson_in_place_kernel_finite");
 
 			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), nst = density.local_set_size(), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.hypercubic()), nst = density.local_set_size(), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
 								 
 								 // this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
 								 if(point_op.g_is_zero(ix, iy, iz)){
@@ -351,11 +351,11 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						auto izg = rs.cubic_dist(2).local_to_global(iz);
 
 						density.cubic()[ix][iy][iz] = 0.0;
-						for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = 0.0;
+						for(int ist = 0; ist < nst; ist++) density_set.hypercubic()[ix][iy][iz][ist] = 0.0;
 							
 						if(ixg.value() == 0 and iyg.value() == 0 and izg.value() == 0) {
 							density.cubic()[ix][iy][iz] = -1.0;
-							for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = -(1.0 + ist);
+							for(int ist = 0; ist < nst; ist++) density_set.hypercubic()[ix][iy][iz][ist] = -(1.0 + ist);
 						}
 					}
 				}
@@ -371,8 +371,8 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						sum[0] += fabs(real(potential.cubic()[ix][iy][iz]));
 						sum[1] += fabs(imag(potential.cubic()[ix][iy][iz]));
 						for(int ist = 0; ist < nst; ist++) {
-							sum[0] += fabs(real(density_set.cubic()[ix][iy][iz][ist]))/(1.0 + ist);
-							sum[1] += fabs(imag(density_set.cubic()[ix][iy][iz][ist]))/(1.0 + ist);
+							sum[0] += fabs(real(density_set.hypercubic()[ix][iy][iz][ist]))/(1.0 + ist);
+							sum[1] += fabs(imag(density_set.hypercubic()[ix][iy][iz][ist]))/(1.0 + ist);
 						}
 					}
 				}
@@ -404,7 +404,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						
 						double xx = rs.point_op().rvector_cartesian(ixg, iyg, izg)[0];
 						density.cubic()[ix][iy][iz] = complex(cos(kk*xx), sin(kk*xx));
-						for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = (1.0 + ist)*density.cubic()[ix][iy][iz];
+						for(int ist = 0; ist < nst; ist++) density_set.hypercubic()[ix][iy][iz][ist] = (1.0 + ist)*density.cubic()[ix][iy][iz];
 					}
 				}
 			}
@@ -417,7 +417,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 						diff += fabs(potential.cubic()[ix][iy][iz] - 4*M_PI/kk/kk*density.cubic()[ix][iy][iz]);
-						for(int ist = 0; ist < nst; ist++) diff += fabs(density_set.cubic()[ix][iy][iz][ist]/(1.0 + ist) - 4*M_PI/kk/kk*density.cubic()[ix][iy][iz]);
+						for(int ist = 0; ist < nst; ist++) diff += fabs(density_set.hypercubic()[ix][iy][iz][ist]/(1.0 + ist) - 4*M_PI/kk/kk*density.cubic()[ix][iy][iz]);
 					}
 				}
 			}
@@ -498,10 +498,10 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 						density.cubic()[ix][iy][iz] = 0.0;
-						for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = 0.0;
+						for(int ist = 0; ist < nst; ist++) density_set.hypercubic()[ix][iy][iz][ist] = 0.0;
 						if(rs.point_op().r2(ix, iy, iz) < 1e-10) {
 							density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
-							for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = -(1.0 + ist)/rs.volume_element();
+							for(int ist = 0; ist < nst; ist++) density_set.hypercubic()[ix][iy][iz][ist] = -(1.0 + ist)/rs.volume_element();
 						}
 					}
 				}
@@ -525,7 +525,7 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 						// it should be close to -1/r
 						if(rr > 1) {
 							CHECK(fabs(potential.cubic()[ix][iy][iz]*rr + 1.0) < 0.025);
-							for(int ist = 0; ist < nst; ist++) CHECK(fabs(density_set.cubic()[ix][iy][iz][ist]*rr/(1.0 + ist) + 1.0) < 0.025);
+							for(int ist = 0; ist < nst; ist++) CHECK(fabs(density_set.hypercubic()[ix][iy][iz][ist]*rr/(1.0 + ist) + 1.0) < 0.025);
 						}
 						
 					}
@@ -587,10 +587,10 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					density.cubic()[ix][iy][iz] = 0.0;
-					for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = 0.0;
+					for(int ist = 0; ist < nst; ist++) density_set.hypercubic()[ix][iy][iz][ist] = 0.0;
 					if(rs.point_op().r2(ix, iy, iz) < 1e-10) {
 						density.cubic()[ix][iy][iz] = -1.0/rs.volume_element();
-						for(int ist = 0; ist < nst; ist++) density_set.cubic()[ix][iy][iz][ist] = -(1.0 + ist)/rs.volume_element();
+						for(int ist = 0; ist < nst; ist++) density_set.hypercubic()[ix][iy][iz][ist] = -(1.0 + ist)/rs.volume_element();
 					}
 				}
 			}

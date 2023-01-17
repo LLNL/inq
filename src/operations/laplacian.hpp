@@ -57,7 +57,7 @@ void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType f
 		
 	gpu::run(ff.set_part().local_size(), ff.basis().local_sizes()[2], ff.basis().local_sizes()[1], ff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
-						ffcub = begin(ff.cubic()), factor, gradcoeff] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+						ffcub = begin(ff.hypercubic()), factor, gradcoeff] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 auto lapl = factor*(-point_op.g2(ix, iy, iz) + dot(gradcoeff, point_op.gvector(ix, iy, iz)));						 
 						 ffcub[ix][iy][iz][ist] = ffcub[ix][iy][iz][ist]*lapl;
 					 });
@@ -144,7 +144,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ist = 0; ist < func.local_set_size(); ist++) func.cubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
+					for(int ist = 0; ist < func.local_set_size(); ist++) func.hypercubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
 				}
 			}
 		}
@@ -165,9 +165,9 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < func.local_set_size(); ist++){
 						auto anvalue = (ist + 1.0)*factor*laplff(kvec, vec);
-						diff += fabs(lapl.cubic()[ix][iy][iz][ist] - anvalue);
-						diff_in_place += fabs(lapl_in_place.cubic()[ix][iy][iz][ist] - anvalue);
-						diff_add += fabs(lapl_add.cubic()[ix][iy][iz][ist] - 2.0*anvalue);						
+						diff += fabs(lapl.hypercubic()[ix][iy][iz][ist] - anvalue);
+						diff_in_place += fabs(lapl_in_place.hypercubic()[ix][iy][iz][ist] - anvalue);
+						diff_add += fabs(lapl_add.hypercubic()[ix][iy][iz][ist] - 2.0*anvalue);						
 					}
 				}
 			}
@@ -212,7 +212,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ist = 0; ist < func.local_set_size(); ist++) func.cubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
+					for(int ist = 0; ist < func.local_set_size(); ist++) func.hypercubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
 				}
 			}
 		}
@@ -233,9 +233,9 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < func.local_set_size(); ist++){
 						auto anvalue = (ist + 1.0)*factor*laplff(kvec, vec);
-						diff += fabs(lapl.cubic()[ix][iy][iz][ist] - anvalue);
-						diff_in_place += fabs(lapl_in_place.cubic()[ix][iy][iz][ist] - anvalue);
-						diff_add += fabs(lapl_add.cubic()[ix][iy][iz][ist] - 2.0*anvalue);						
+						diff += fabs(lapl.hypercubic()[ix][iy][iz][ist] - anvalue);
+						diff_in_place += fabs(lapl_in_place.hypercubic()[ix][iy][iz][ist] - anvalue);
+						diff_add += fabs(lapl_add.hypercubic()[ix][iy][iz][ist] - 2.0*anvalue);						
 					}
 				}
 			}
@@ -278,7 +278,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ist = 0; ist < func.local_set_size(); ist++) func.cubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
+					for(int ist = 0; ist < func.local_set_size(); ist++) func.hypercubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
 				}
 			}
 		}
@@ -299,9 +299,9 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < func.local_set_size(); ist++){
 						auto anvalue = (ist + 1.0)*factor*laplff(kvec, vec);
-						diff += fabs(lapl.cubic()[ix][iy][iz][ist] - anvalue);
-						diff_in_place += fabs(lapl_in_place.cubic()[ix][iy][iz][ist] - anvalue);
-						diff_add += fabs(lapl_add.cubic()[ix][iy][iz][ist] - 2.0*anvalue);						
+						diff += fabs(lapl.hypercubic()[ix][iy][iz][ist] - anvalue);
+						diff_in_place += fabs(lapl_in_place.hypercubic()[ix][iy][iz][ist] - anvalue);
+						diff_add += fabs(lapl_add.hypercubic()[ix][iy][iz][ist] - 2.0*anvalue);						
 					}
 				}
 			}

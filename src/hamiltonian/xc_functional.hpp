@@ -264,7 +264,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					gaussian_field.cubic()[ix][iy][iz][0] = gaussian(vec);
+					gaussian_field.hypercubic()[ix][iy][iz][0] = gaussian(vec);
 				}
 			}
 		}
@@ -289,7 +289,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
 					gpu::sync();
 					
-					CHECK(Approx(local_vxc[0]) == gaussianVxc.cubic()[ix][iy][iz][0]);
+					CHECK(Approx(local_vxc[0]) == gaussianVxc.hypercubic()[ix][iy][iz][0]);
 
 					int_xc_energy += local_exc[0]*local_density[0]*rs.volume_element();
 				}
@@ -319,10 +319,10 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					density_unp.cubic()[ix][iy][iz][0] = 0.5*gaussian(vec);
-					density_unp.cubic()[ix][iy][iz][1] = 0.5*gaussian(vec);
-					density_pol.cubic()[ix][iy][iz][0] = 0.3*gaussian(vec);
-					density_pol.cubic()[ix][iy][iz][1] = 0.7*gaussian(vec);					
+					density_unp.hypercubic()[ix][iy][iz][0] = 0.5*gaussian(vec);
+					density_unp.hypercubic()[ix][iy][iz][1] = 0.5*gaussian(vec);
+					density_pol.hypercubic()[ix][iy][iz][0] = 0.3*gaussian(vec);
+					density_pol.hypercubic()[ix][iy][iz][1] = 0.7*gaussian(vec);					
 				}
 			}
 		}
@@ -355,9 +355,9 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
 					gpu::sync();
 
-					CHECK(vxc_unp.cubic()[ix][iy][iz][0] == Approx(vxc_unp.cubic()[ix][iy][iz][1]));					
-					CHECK(Approx(local_vxc[0]) == vxc_unp.cubic()[ix][iy][iz][0]);
-					CHECK(Approx(local_vxc[1]) == vxc_unp.cubic()[ix][iy][iz][1]);
+					CHECK(vxc_unp.hypercubic()[ix][iy][iz][0] == Approx(vxc_unp.hypercubic()[ix][iy][iz][1]));					
+					CHECK(Approx(local_vxc[0]) == vxc_unp.hypercubic()[ix][iy][iz][0]);
+					CHECK(Approx(local_vxc[1]) == vxc_unp.hypercubic()[ix][iy][iz][1]);
 
 					int_exc_unp += local_exc[0]*(local_density[0] + local_density[1])*rs.volume_element();
 					
@@ -366,8 +366,8 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
 					gpu::sync();
 
-					CHECK(fabs(local_vxc[1] - vxc_pol.cubic()[ix][iy][iz][0]) < 1e-14);
-					CHECK(fabs(local_vxc[0] - vxc_pol.cubic()[ix][iy][iz][1]) < 1e-14);
+					CHECK(fabs(local_vxc[1] - vxc_pol.hypercubic()[ix][iy][iz][0]) < 1e-14);
+					CHECK(fabs(local_vxc[0] - vxc_pol.hypercubic()[ix][iy][iz][1]) < 1e-14);
 
 					int_exc_pol += local_exc[0]*(local_density[0] + local_density[1])*rs.volume_element();
 				}
@@ -405,7 +405,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		
 		basis::field_set<basis::real_space, double> field(rs, 1);
 		gpu::run(rs.local_sizes()[2], rs.local_sizes()[1], rs.local_sizes()[0],
-						 [pop = rs.point_op(), fie = begin(field.cubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [pop = rs.point_op(), fie = begin(field.hypercubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 auto vec = pop.rvector_cartesian(ix, iy, iz);
 							 fie[ix][iy][iz][0] = sqwave(vec, 3);
 						 });
@@ -434,7 +434,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		basis::field_set<basis::real_space, double> density_pol(rs, 2);		
 		
 		gpu::run(rs.local_sizes()[2], rs.local_sizes()[1], rs.local_sizes()[0],
-						 [pop = rs.point_op(), den_unp = begin(density_unp.cubic()), den_pol = begin(density_pol.cubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [pop = rs.point_op(), den_unp = begin(density_unp.hypercubic()), den_pol = begin(density_pol.hypercubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 auto vec = pop.rvector_cartesian(ix, iy, iz);
 							 den_unp[ix][iy][iz][0] = 0.5*sqwave(vec, 3);
 							 den_unp[ix][iy][iz][1] = 0.5*sqwave(vec, 3);
@@ -481,7 +481,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					gaussian_field.cubic()[ix][iy][iz][0] = 0.393;
+					gaussian_field.hypercubic()[ix][iy][iz][0] = 0.393;
 				}
 			}
 		}
@@ -498,7 +498,7 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					CHECK(Approx(gaussianVxcLDA.cubic()[ix][iy][iz][0]) == gaussianVxcGGA.cubic()[ix][iy][iz][0]);
+					CHECK(Approx(gaussianVxcLDA.hypercubic()[ix][iy][iz][0]) == gaussianVxcGGA.hypercubic()[ix][iy][iz][0]);
 				}
 			}
 		}
