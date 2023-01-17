@@ -403,7 +403,7 @@ states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbi
 	assert(phi.set_size() == fphi.set_size());
 	assert(phi.local_set_size() == fphi.local_set_size());
 	
-	to_fourier_array(real_basis, fourier_basis, phi.cubic(), fphi.cubic());
+	to_fourier_array(real_basis, fourier_basis, phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
@@ -438,7 +438,7 @@ states::orbital_set<basis::real_space, complex> to_real(const states::orbital_se
 	
 	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.spin_index(), fphi.full_comm());
 
-	to_real_array(fourier_basis, real_basis, fphi.cubic(), phi.cubic(), normalize);
+	to_real_array(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
 
 	return phi;
 }
@@ -577,8 +577,8 @@ auto to_real(states::orbital_set<basis::fourier_space, math::vector3<complex, Ve
 
 	states::orbital_set<basis::real_space, math::vector3<complex, VectorSpace>> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.spin_index(), fphi.full_comm());
 
-	auto const& fphi_as_scalar = fphi.cubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
-	auto &&     phi_as_scalar  = phi .cubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
+	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
+	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 
 	to_real_array(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
 

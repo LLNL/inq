@@ -282,7 +282,7 @@ public:
 		{ CALI_CXX_MARK_SCOPE("projector_all::force::gather");
 				
 			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
-							 [sgr = begin(sphere_phi_all), gsgr = begin(sphere_gphi_all), gr = begin(phi.cubic()), ggr = begin(gphi.cubic()), poi = begin(points_), pos = begin(positions_), kpoint = phi.kpoint() + vector_potential]
+							 [sgr = begin(sphere_phi_all), gsgr = begin(sphere_gphi_all), gr = begin(phi.hypercubic()), ggr = begin(gphi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint = phi.kpoint() + vector_potential]
 							 GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
 								 if(poi[iproj][ipoint][0] >= 0){
 									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));

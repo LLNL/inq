@@ -40,9 +40,7 @@ void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<ba
 	CALI_CXX_MARK_FUNCTION;
 		
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
-					 [point_op = ff.basis().point_op(),
-						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic()), factor, gradcoeff]
+					 [point_op = ff.basis().point_op(), laplffcub = begin(laplff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, gradcoeff]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 auto lapl = factor*(-point_op.g2(ix, iy, iz) + dot(gradcoeff, point_op.gvector(ix, iy, iz)));
 						 laplffcub[ix][iy][iz][ist] += lapl*ffcub[ix][iy][iz][ist];
@@ -75,9 +73,7 @@ SetType<basis::fourier_space, complex> laplacian(SetType<basis::fourier_space, c
 	SetType<basis::fourier_space, complex> laplff(ff.skeleton());
 	
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
-					 [point_op = ff.basis().point_op(),
-						laplffcub = begin(laplff.cubic()),
-						ffcub = begin(ff.cubic()), factor, gradcoeff]
+					 [point_op = ff.basis().point_op(), laplffcub = begin(laplff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, gradcoeff]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 auto lapl = factor*(-point_op.g2(ix, iy, iz) + dot(gradcoeff, point_op.gvector(ix, iy, iz)));
 						 laplffcub[ix][iy][iz][ist] = lapl*ffcub[ix][iy][iz][ist];

@@ -72,7 +72,7 @@ states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant
 	CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
 	gpu::run(grad.set_part().local_size(), grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
-					 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic()), kpt = ff.kpoint() + shift]
+					 [point_op = ff.basis().point_op(), gradcub = begin(grad.hypercubic()), ffcub = begin(ff.hypercubic()), kpt = ff.kpoint() + shift]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 
 						 auto gvec = point_op.gvector(ix, iy, iz);
@@ -274,7 +274,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){					
-						f_test.cubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
+						f_test.hypercubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
 					}
 				}
 			}
@@ -288,7 +288,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ist = 0; ist < f_test.local_set_size(); ist++){
-						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.basis().cell().metric().to_cartesian(g_test.cubic()[ix][iy][iz][ist])[idir] - double(ist)*g_analytic(kvec, vec)[idir]);
+						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.basis().cell().metric().to_cartesian(g_test.hypercubic()[ix][iy][iz][ist])[idir] - double(ist)*g_analytic(kvec, vec)[idir]);
 					}
 				}
 			}
@@ -343,7 +343,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ivec = 0; ivec < nvec; ivec++){
-						f_test2.cubic()[ix][iy][iz][ivec] = (ivec + 1.0)*f_analytic2(kvec, vec);
+						f_test2.hypercubic()[ix][iy][iz][ivec] = (ivec + 1.0)*f_analytic2(kvec, vec);
 					}
 				}
 			}
@@ -356,7 +356,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
 					for(int ivec = 0; ivec < nvec; ivec++){
-						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.basis().cell().metric().to_cartesian(g_test2.cubic()[ix][iy][iz][ivec])[idir] - (ivec + 1.0)*g_analytic2(kvec, vec)[idir]);
+						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.basis().cell().metric().to_cartesian(g_test2.hypercubic()[ix][iy][iz][ivec])[idir] - (ivec + 1.0)*g_analytic2(kvec, vec)[idir]);
 					}
 				}
 			}
