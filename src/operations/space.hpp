@@ -379,7 +379,6 @@ auto to_fourier(const FieldSetType<basis::real_space, complex> & phi){
 	CALI_CXX_MARK_SCOPE("to_fourier(complex)");
 		
 	auto fphi = FieldSetType<basis::fourier_space, complex>::reciprocal(phi.skeleton());
-
 	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
@@ -389,50 +388,14 @@ auto to_fourier(const FieldSetType<basis::real_space, complex> & phi){
 
 ///////////////////////////////////////////////////////////////
 
-basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
+template <template <typename BasisType, typename Type> typename FieldSetType>		
+auto to_real(const FieldSetType<basis::fourier_space, complex> & fphi, bool const normalize = true){
 
-	CALI_CXX_MARK_SCOPE("to_real(field_set)");
+	CALI_CXX_MARK_SCOPE("to_real(complex)");
 	
-	auto & fourier_basis = fphi.basis();
-	auto real_basis = fourier_basis.reciprocal();	
-	
-	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
+	auto phi = FieldSetType<basis::real_space, complex>::reciprocal(fphi.skeleton());
+	to_real_array(fphi.basis(), phi.basis(), fphi.hypercubic(), phi.hypercubic(), normalize);
 
-	to_real_array(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
-
-	return phi;
-}
-
-
-///////////////////////////////////////////////////////////////
-
-states::orbital_set<basis::real_space, complex> to_real(const states::orbital_set<basis::fourier_space, complex> & fphi, bool const normalize = true){
-
-	CALI_CXX_MARK_SCOPE("to_real(orbital_set)");
-	
-	auto & fourier_basis = fphi.basis();
-	auto real_basis = fourier_basis.reciprocal();
-	
-	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.spin_index(), fphi.full_comm());
-
-	to_real_array(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
-
-	return phi;
-}
-
-///////////////////////////////////////////////////////////////			
-	
-basis::field<basis::real_space, complex> to_real(const basis::field<basis::fourier_space, complex> & fphi, bool normalize = true){
-
-	CALI_CXX_MARK_SCOPE("to_real(field)");
-	
-	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis);
-
-	basis::field<basis::real_space, complex> phi(real_basis);
-
-	to_real_array(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
-			
 	return phi;
 }
 
