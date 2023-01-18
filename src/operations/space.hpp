@@ -392,15 +392,9 @@ states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbi
 
 	CALI_CXX_MARK_SCOPE("to_fourier(orbital_set)");
 		
-	auto & real_basis = phi.basis();
-	auto fourier_basis = real_basis.reciprocal();
+	auto fphi = states::orbital_set<basis::fourier_space, complex>::reciprocal(phi.skeleton());
 	
-	states::orbital_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.kpoint(), phi.spin_index(), phi.full_comm());
-
-	assert(phi.set_size() == fphi.set_size());
-	assert(phi.local_set_size() == fphi.local_set_size());
-	
-	to_fourier_array(real_basis, fourier_basis, phi.hypercubic(), fphi.hypercubic());
+	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
