@@ -37,6 +37,8 @@ namespace basis {
 
   public:
 
+		using reciprocal_space = void;
+		
 		const static int dimension = 1;
 		
 		trivial(const long size, parallel::communicator comm):
