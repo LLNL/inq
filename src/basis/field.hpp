@@ -59,6 +59,11 @@ namespace basis {
 			:field(skeleton.base.basis()){
 		}
 
+		template <class OtherType>
+		static auto reciprocal(inq::utils::skeleton_wrapper<field<typename basis_type::reciprocal_space, OtherType>> const & skeleton){
+			return field<basis_type, Type>(skeleton.base.basis().reciprocal());
+		}
+		
 		template<class, class> friend class field;
 		template<typename OtherType>
 		field(field<basis_type, OtherType> const& o) 
