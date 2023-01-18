@@ -110,7 +110,12 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 		auto skeleton() const {
 			return inq::utils::skeleton_wrapper<field_set<Basis, type>>(*this);
 		}
-	
+
+		template <class OtherType>
+		static auto reciprocal(inq::utils::skeleton_wrapper<field_set<typename basis_type::reciprocal_space, OtherType>> const & skeleton){
+			return field_set<basis_type, type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
+		}
+		
 		internal_array_type & matrix() {
 			return matrix_;
 		}

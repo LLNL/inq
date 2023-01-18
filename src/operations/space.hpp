@@ -377,12 +377,9 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 
 	CALI_CXX_MARK_SCOPE("to_fourier(field_set)");
 		
-	auto & real_basis = phi.basis();
-	auto fourier_basis = real_basis.reciprocal();
-	
- 	basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
+	auto fphi = basis::field_set<basis::fourier_space, complex>::reciprocal(phi.skeleton());
 
-	to_fourier_array(real_basis, fourier_basis, phi.hypercubic(), fphi.hypercubic());
+	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
