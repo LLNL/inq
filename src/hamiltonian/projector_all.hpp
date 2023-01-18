@@ -124,7 +124,7 @@ public:
 		{ CALI_CXX_MARK_SCOPE("projector::gather");
 				
 			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
-							 [sgr = begin(sphere_phi_all), gr = begin(phi.cubic()), poi = begin(points_), pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
+							 [sgr = begin(sphere_phi_all), gr = begin(phi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
 								 if(poi[iproj][ipoint][0] >= 0){
 									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));
 									 sgr[iproj][ipoint][ist] = phase*gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
@@ -241,7 +241,7 @@ public:
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			gpu::run(vnlphi.local_set_size(), max_sphere_size_,
-							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.cubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
+							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.hypercubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
 								 if(poi[iproj][ipoint][0] >= 0){
 									 auto phase = polar(1.0, -dot(kpoint, pos[iproj][ipoint]));
 									 gpu::atomic::add(&gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist], phase*sgr[iproj][ipoint][ist]);
@@ -282,7 +282,7 @@ public:
 		{ CALI_CXX_MARK_SCOPE("projector_all::force::gather");
 				
 			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
-							 [sgr = begin(sphere_phi_all), gsgr = begin(sphere_gphi_all), gr = begin(phi.cubic()), ggr = begin(gphi.cubic()), poi = begin(points_), pos = begin(positions_), kpoint = phi.kpoint() + vector_potential]
+							 [sgr = begin(sphere_phi_all), gsgr = begin(sphere_gphi_all), gr = begin(phi.hypercubic()), ggr = begin(gphi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint = phi.kpoint() + vector_potential]
 							 GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
 								 if(poi[iproj][ipoint][0] >= 0){
 									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));

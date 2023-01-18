@@ -284,7 +284,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.0;
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = 1.0;
+						phi.hypercubic()[ix][iy][iz][ist] = 1.0;
 					}
 				}
 			}
@@ -297,7 +297,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.0);
+						diff += fabs(hphi.hypercubic()[ix][iy][iz][ist] - 0.0);
 					}
 				}
 			}
@@ -328,7 +328,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 						auto istg = phi.set_part().local_to_global(ist);
 						
 						double xx = rs.point_op().rvector_cartesian(ixg, iyg, izg)[0];
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg.value()*kk*xx), sin(istg.value()*kk*xx));
+						phi.hypercubic()[ix][iy][iz][ist] = complex(cos(istg.value()*kk*xx), sin(istg.value()*kk*xx));
 					}
 				}
 			}
@@ -342,7 +342,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						auto istg = phi.set_part().local_to_global(ist);
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg.value()*kk*istg.value()*kk*phi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(hphi.hypercubic()[ix][iy][iz][ist] - 0.5*istg.value()*kk*istg.value()*kk*phi.hypercubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -372,7 +372,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = exp(-ww*r2);
+						phi.hypercubic()[ix][iy][iz][ist] = exp(-ww*r2);
 					}
 					
 				}
@@ -386,7 +386,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 1.5*ww*phi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(hphi.hypercubic()[ix][iy][iz][ist] - 1.5*ww*phi.hypercubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -418,7 +418,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 						auto istg = phi.set_part().local_to_global(ist);
 						
 						double xx = rs.point_op().rvector_cartesian(ixg, iyg, izg)[0];
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(istg.value()*kk*xx), sin(istg.value()*kk*xx));
+						phi.hypercubic()[ix][iy][iz][ist] = complex(cos(istg.value()*kk*xx), sin(istg.value()*kk*xx));
 					}
 				}
 			}
@@ -434,7 +434,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 
 						auto istg = phi.set_part().local_to_global(ist);
 
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 0.5*istg.value()*kk*istg.value()*kk*phi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(hphi.hypercubic()[ix][iy][iz][ist] - 0.5*istg.value()*kk*istg.value()*kk*phi.hypercubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -463,7 +463,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = exp(-ww*r2);
+						phi.hypercubic()[ix][iy][iz][ist] = exp(-ww*r2);
 					}
 					
 				}
@@ -477,7 +477,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
-						diff += fabs(hphi.cubic()[ix][iy][iz][ist] - 1.5*ww*phi.cubic()[ix][iy][iz][ist]);
+						diff += fabs(hphi.hypercubic()[ix][iy][iz][ist] - 1.5*ww*phi.hypercubic()[ix][iy][iz][ist]);
 					}
 				}
 			}

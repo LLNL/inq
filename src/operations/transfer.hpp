@@ -112,17 +112,16 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 
 template <class Type, class BasisType>
 basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
-
 	CALI_CXX_MARK_FUNCTION;
 	
-			
 	basis::field_set<BasisType, Type> destination(new_basis, source.set_size(), source.full_comm());
 	destination = 0.0;
 
 	if(not source.basis().part().parallel()){
 		
 		gpu::run(source.basis().sizes()[2], source.basis().sizes()[1], source.basis().sizes()[0],
-						 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
+						 GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 
 							 auto ii = sbas.to_symmetric_range(ix, iy, iz);
 							 auto idest = dbas.from_symmetric_range(ii);
@@ -167,7 +166,7 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 					auto il1 = destination.basis().cubic_dist(1).global_to_local(parallel::global_index(idest[1]));
 					auto il2 = destination.basis().cubic_dist(2).global_to_local(parallel::global_index(idest[2]));
 
-					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[il0][il1][il2][ist] = factor*points[ip][ist];
+					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.hypercubic()[il0][il1][il2][ist] = factor*points[ip][ist];
 					ip++;
 					
 				}
@@ -261,7 +260,7 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const
 	if(not new_basis.part().parallel()) {
 			
 		gpu::run(destination.basis().sizes()[2], destination.basis().sizes()[1], destination.basis().sizes()[0],
-						 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor]
+						 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
 						 GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 
 							 auto ii = dbas.to_symmetric_range(ix, iy, iz);
@@ -303,7 +302,7 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const
 				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
 					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
 						
-						for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.cubic()[ix][iy][iz][ist] = factor*points[ip][ist];
+						for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.hypercubic()[ix][iy][iz][ist] = factor*points[ip][ist];
 						ip++;
 					}
 				}
@@ -495,7 +494,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto iyg = small.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = small.basis().cubic_dist(2).local_to_global(iz);						
 						auto rr = small.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-						small.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
+						small.hypercubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 					}
 				}
 			}
@@ -521,12 +520,12 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto ii = large.basis().to_symmetric_range(ixg, iyg, izg);
 						
 						if(outside(ii[0], small.basis().sizes()[0]) or outside(ii[1], small.basis().sizes()[1]) or outside(ii[2], small.basis().sizes()[2])){
-							CHECK(real(large.cubic()[ix][iy][iz][ist]) == 0.0_a);
-							CHECK(imag(large.cubic()[ix][iy][iz][ist]) == 0.0_a);							
+							CHECK(real(large.hypercubic()[ix][iy][iz][ist]) == 0.0_a);
+							CHECK(imag(large.hypercubic()[ix][iy][iz][ist]) == 0.0_a);							
 							count_large++;
 						} else {
 							auto rr = large.basis().point_op().rvector_cartesian(ix, iy, iz);
-							CHECK(real(large.cubic()[ix][iy][iz][ist]) == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
+							CHECK(real(large.hypercubic()[ix][iy][iz][ist]) == Approx(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])));
 							count_small++;
 						}
 						
@@ -548,7 +547,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 			for(int iy = 0; iy < small.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < small.set_part().local_size(); ist++){
-						CHECK(small2.cubic()[ix][iy][iz][ist] == small.cubic()[ix][iy][iz][ist]);
+						CHECK(small2.hypercubic()[ix][iy][iz][ist] == small.hypercubic()[ix][iy][iz][ist]);
 					}
 				}
 			}
@@ -622,7 +621,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
 						auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-						coarse.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
+						coarse.hypercubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 
 					}
 				}
@@ -650,8 +649,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
 						auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-						CHECK(fabs(real(fine.cubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
-						CHECK(fabs(imag(fine.cubic()[ix][iy][iz][ist])) < 5e-3);
+						CHECK(fabs(real(fine.hypercubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
+						CHECK(fabs(imag(fine.hypercubic()[ix][iy][iz][ist])) < 5e-3);
 						
 					}
 				}
@@ -731,7 +730,7 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
 						auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-						fine.cubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
+						fine.hypercubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 					}
 				}
 			}
@@ -758,8 +757,8 @@ TEMPLATE_TEST_CASE("function operations::transfer", "[operations::transfer]", do
 						auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
 						auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
 						auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-						CHECK(fabs(real(coarse.cubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
-						CHECK(fabs(imag(coarse.cubic()[ix][iy][iz][ist])) < 5e-3);
+						CHECK(fabs(real(coarse.hypercubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
+						CHECK(fabs(imag(coarse.hypercubic()[ix][iy][iz][ist])) < 5e-3);
 					}
 				}
 			}

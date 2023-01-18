@@ -228,7 +228,7 @@ namespace hamiltonian {
 					basis::spherical_grid sphere(basis, atom_position, ps.electronic_density_radius());
 					
 					gpu::run(nspin, sphere.size(),
-									 [dens = begin(density.cubic()), sph = sphere.ref(), spline = ps.electronic_density().cbegin(), polarization] GPU_LAMBDA (auto ispin, auto ipoint){
+									 [dens = begin(density.hypercubic()), sph = sphere.ref(), spline = ps.electronic_density().cbegin(), polarization] GPU_LAMBDA (auto ispin, auto ipoint){
 										 auto rr = sph.distance(ipoint);
 										 auto density_val = spline.value(rr);
 										 auto pol = polarization;
@@ -242,7 +242,7 @@ namespace hamiltonian {
 					basis::spherical_grid sphere(basis, atom_position, 3.0);
 					
 					gpu::run(nspin, sphere.size(),
-									 [dens = begin(density.cubic()), sph = sphere.ref(), zval = ps.valence_charge(), polarization] GPU_LAMBDA (auto ispin, auto ipoint){
+									 [dens = begin(density.hypercubic()), sph = sphere.ref(), zval = ps.valence_charge(), polarization] GPU_LAMBDA (auto ispin, auto ipoint){
 										 auto rr = sph.distance(ipoint);
 										 auto pol = polarization;
 										 if(ispin == 1) pol = 1.0 - pol;
@@ -428,8 +428,8 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 		CHECK(nn_unp.set_size() == 1);		
 		CHECK(operations::integral_sum(nn_unp) == 29.9562520003_a);
-		CHECK(nn_unp.cubic()[5][3][0][0] == 0.1330589609_a);
-		CHECK(nn_unp.cubic()[3][1][0][0] == 0.1846004508_a);
+		CHECK(nn_unp.hypercubic()[5][3][0][0] == 0.1330589609_a);
+		CHECK(nn_unp.hypercubic()[3][1][0][0] == 0.1846004508_a);
 
 		states::ks_states pol(states::ks_states::spin_config::POLARIZED, 11.0);
 		
@@ -437,10 +437,10 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 
 		CHECK(nn_pol.set_size() == 2);
 		CHECK(operations::integral_sum(nn_pol) == 29.9562519176_a);
-		CHECK(nn_pol.cubic()[5][3][0][0] == Approx(1.2*0.066529473));
-		CHECK(nn_pol.cubic()[3][1][0][0] == Approx(1.2*0.0923002217));
-		CHECK(nn_pol.cubic()[5][3][0][1] == Approx(0.8*0.066529473));
-		CHECK(nn_pol.cubic()[3][1][0][1] == Approx(0.8*0.0923002217));
+		CHECK(nn_pol.hypercubic()[5][3][0][0] == Approx(1.2*0.066529473));
+		CHECK(nn_pol.hypercubic()[3][1][0][0] == Approx(1.2*0.0923002217));
+		CHECK(nn_pol.hypercubic()[5][3][0][1] == Approx(0.8*0.066529473));
+		CHECK(nn_pol.hypercubic()[3][1][0][1] == Approx(0.8*0.0923002217));
 		
 		CHECK(pot.has_nlcc());
 		

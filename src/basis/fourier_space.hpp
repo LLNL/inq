@@ -32,9 +32,13 @@
 namespace inq {
 namespace basis {
 
+class real_space;
+
   class fourier_space : public grid{
 
   public:
+
+		using reciprocal_space = real_space;
 		
     fourier_space(const grid & grid_basis):
 			grid(grid_basis){
@@ -143,6 +147,11 @@ namespace basis {
 
 		auto point_op() const {
 			return point_operator{ng_, covspacing_, cubic_dist_, cell_.metric()};			
+		}
+
+		template <typename ReciprocalBasis = reciprocal_space>
+		auto reciprocal() const {
+			return ReciprocalBasis(*this);
 		}
 		
 	private:

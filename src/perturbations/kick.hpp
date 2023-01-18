@@ -64,7 +64,7 @@ public:
 		auto cov_efield = phi.basis().cell().metric().to_covariant(efield_);
 		
 		gpu::run(phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0],
-						 [pop = phi.basis().point_op(), ph = begin(phi.cubic()), cov_efield, nst = phi.set_part().local_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [pop = phi.basis().point_op(), ph = begin(phi.hypercubic()), cov_efield, nst = phi.set_part().local_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 
 							 auto rr = pop.rvector(ix, iy, iz);
 							 auto kick_factor = exp(complex(0.0, dot(cov_efield, rr)));
@@ -136,7 +136,7 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 			for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						phi.cubic()[ix][iy][iz][ist] = complex(cos(ist+(ix+iy+iz)), 1.3*sin(ist+(cos(ix-iy-iz))));
+						phi.hypercubic()[ix][iy][iz][ist] = complex(cos(ist+(ix+iy+iz)), 1.3*sin(ist+(cos(ix-iy-iz))));
 					}
 				}
 			}
@@ -152,8 +152,8 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 			for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						phi_absdif += norm(phi.cubic()[ix][iy][iz][ist]) - norm(phi_old.cubic()[ix][iy][iz][ist]);
-						phi_dif += norm(phi.cubic()[ix][iy][iz][ist] - phi_old.cubic()[ix][iy][iz][ist]);
+						phi_absdif += norm(phi.hypercubic()[ix][iy][iz][ist]) - norm(phi_old.hypercubic()[ix][iy][iz][ist]);
+						phi_dif += norm(phi.hypercubic()[ix][iy][iz][ist] - phi_old.hypercubic()[ix][iy][iz][ist]);
 					}
 				}
 			}

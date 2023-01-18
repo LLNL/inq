@@ -34,9 +34,13 @@
 namespace inq {
 namespace basis {
 
+class fourier_space;
+
   class real_space : public grid {
 
   public:
+
+		using reciprocal_space = fourier_space;
 
     real_space(systems::box const & box, parallel::communicator && comm):
 			grid(box.cell(), calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
@@ -175,6 +179,11 @@ namespace basis {
 
 		auto point_op() const {
 			return point_operator(nr_, conspacing_, cubic_dist_, cell_.metric());
+		}
+
+		template <typename ReciprocalBasis = reciprocal_space>
+		auto reciprocal() const {
+			return ReciprocalBasis(*this);
 		}
 		
 	private:

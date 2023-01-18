@@ -55,6 +55,11 @@ namespace states {
 		auto skeleton() const {
 			return inq::utils::skeleton_wrapper<orbital_set<Basis, Type>>(*this);
 		}
+
+		template <class OtherType>
+		static auto reciprocal(inq::utils::skeleton_wrapper<orbital_set<typename basis_type::reciprocal_space, OtherType>> const & skeleton){
+			return orbital_set<basis_type, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(),  skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm());
+		}
 		
     auto & fields() const {
       return fields_;
@@ -99,13 +104,13 @@ namespace states {
 		auto & matrix() {
 			return fields_.matrix();
 		}
-		
-		auto cubic() const {
-			return fields_.cubic();
+
+		auto hypercubic() const {
+			return fields_.hypercubic();
 		}
 
-		auto cubic() {
-			return fields_.cubic();
+		auto hypercubic() {
+			return fields_.hypercubic();
 		}
 
 		auto & full_comm() const {

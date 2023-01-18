@@ -59,6 +59,11 @@ namespace basis {
 			:field(skeleton.base.basis()){
 		}
 
+		template <class OtherType>
+		static auto reciprocal(inq::utils::skeleton_wrapper<field<typename basis_type::reciprocal_space, OtherType>> const & skeleton){
+			return field<basis_type, Type>(skeleton.base.basis().reciprocal());
+		}
+		
 		template<class, class> friend class field;
 		template<typename OtherType>
 		field(field<basis_type, OtherType> const& o) 
@@ -120,14 +125,6 @@ namespace basis {
 			return linear_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
 		}
 		
-		auto hypercubic() const {
-			return cubic().template reinterpret_array_cast<Type const>(1);
-		}
-		
-		auto hypercubic() {
-			return cubic().template reinterpret_array_cast<Type>(1);
-		}
-		
 		auto data() {
 			return raw_pointer_cast(linear_.data_elements());
 		}
@@ -142,6 +139,32 @@ namespace basis {
 
 		auto & linear() {
 			return linear_;
+		}
+
+		// emulate a field_set
+
+		auto hypercubic() const {
+			return cubic().template reinterpret_array_cast<Type const>(1);
+		}
+		
+		auto hypercubic() {
+			return cubic().template reinterpret_array_cast<Type>(1);
+		}
+
+		auto matrix() const {
+			return linear().template reinterpret_array_cast<Type const>(1);
+		}
+		
+		auto matrix() {
+			return linear().template reinterpret_array_cast<Type>(1);
+		}
+		
+		constexpr auto set_size() const {
+			return 1;
+		}
+
+		constexpr auto local_set_size() const {
+			return 1;
 		}
 
 		template <int dir = 2>
