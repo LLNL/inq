@@ -258,6 +258,11 @@ __global__ void cuda_run_kernel_4(unsigned sizex, unsigned sizey, unsigned sizez
  
 template <class kernel_type>
 void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type kernel){
+
+	if(sizex == 1){
+		run(sizey, sizez, sizew, [kernel] GPU_LAMBDA (auto iy, auto iz, auto iw){ kernel(0, iy, iz, iw); });
+		return;
+	}
 	
 #ifdef ENABLE_CUDA
 	if(sizex == 0 or sizey == 0 or sizez == 0 or sizew == 0) return;
@@ -437,8 +442,9 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 		if(comm.rank() == 18%comm.size()) CHECK(check_run(32, 23, 45, 18) == 0);
 		if(comm.rank() == 19%comm.size()) CHECK(check_run(35, 213, 27, 78) == 0);
 		if(comm.rank() == 20%comm.size()) CHECK(check_run(2500, 10, 11, 12) == 0);
-		if(comm.rank() == 21%comm.size()) CHECK(check_run(7, 1023, 11, 12) == 0);	
-		if(comm.rank() == 22%comm.size()) CHECK(check_run(1, 1, 11, 1229) == 0);	
+		if(comm.rank() == 21%comm.size()) CHECK(check_run(7, 1023, 11, 12) == 0);
+		if(comm.rank() == 22%comm.size()) CHECK(check_run(1, 1, 11, 1229) == 0);
+		if(comm.rank() == 23%comm.size()) CHECK(check_run(1, 1023, 11, 12) == 0);
 	}
 
 }
