@@ -378,7 +378,7 @@ basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_se
 	CALI_CXX_MARK_SCOPE("to_fourier(field_set)");
 		
 	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis);
+	auto fourier_basis = real_basis.reciprocal();
 	
 	basis::field_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
@@ -396,7 +396,7 @@ states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbi
 	CALI_CXX_MARK_SCOPE("to_fourier(orbital_set)");
 		
 	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis);
+	auto fourier_basis = real_basis.reciprocal();
 	
 	states::orbital_set<basis::fourier_space, complex> fphi(fourier_basis, phi.set_size(), phi.kpoint(), phi.spin_index(), phi.full_comm());
 
@@ -417,7 +417,7 @@ basis::field_set<basis::real_space, complex> to_real(const basis::field_set<basi
 	CALI_CXX_MARK_SCOPE("to_real(field_set)");
 	
 	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis);
+	auto real_basis = fourier_basis.reciprocal();	
 	
 	basis::field_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
@@ -434,7 +434,7 @@ states::orbital_set<basis::real_space, complex> to_real(const states::orbital_se
 	CALI_CXX_MARK_SCOPE("to_real(orbital_set)");
 	
 	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis);
+	auto real_basis = fourier_basis.reciprocal();
 	
 	states::orbital_set<basis::real_space, complex> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.spin_index(), fphi.full_comm());
 
@@ -451,7 +451,7 @@ basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis:
 	CALI_CXX_MARK_SCOPE("to_fourier(field)");
 	
 	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis);
+	auto fourier_basis = real_basis.reciprocal();
 	
 	basis::field<basis::fourier_space, complex> fphi(fourier_basis);
 
