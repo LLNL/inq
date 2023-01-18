@@ -372,28 +372,14 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 #endif
 
 ///////////////////////////////////////////////////////////////
-		
-basis::field_set<basis::fourier_space, complex> to_fourier(const basis::field_set<basis::real_space, complex> & phi){
 
-	CALI_CXX_MARK_SCOPE("to_fourier(field_set)");
-		
-	auto fphi = basis::field_set<basis::fourier_space, complex>::reciprocal(phi.skeleton());
+template <template <typename BasisType, typename Type> typename FieldSetType>		
+auto to_fourier(const FieldSetType<basis::real_space, complex> & phi){
 
-	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
-	
-	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
-	
-	return fphi;
-}
-
-///////////////////////////////////////////////////////////////
+	CALI_CXX_MARK_SCOPE("to_fourier(complex)");
 		
-states::orbital_set<basis::fourier_space, complex> to_fourier(const states::orbital_set<basis::real_space, complex> & phi){
+	auto fphi = FieldSetType<basis::fourier_space, complex>::reciprocal(phi.skeleton());
 
-	CALI_CXX_MARK_SCOPE("to_fourier(orbital_set)");
-		
-	auto fphi = states::orbital_set<basis::fourier_space, complex>::reciprocal(phi.skeleton());
-	
 	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
@@ -432,23 +418,6 @@ states::orbital_set<basis::real_space, complex> to_real(const states::orbital_se
 	to_real_array(fourier_basis, real_basis, fphi.hypercubic(), phi.hypercubic(), normalize);
 
 	return phi;
-}
-
-
-///////////////////////////////////////////////////////////////
-
-basis::field<basis::fourier_space, complex> to_fourier(const basis::field<basis::real_space, complex> & phi){
-
-	CALI_CXX_MARK_SCOPE("to_fourier(field)");
-	
-	auto fphi = basis::field<basis::fourier_space, complex>::reciprocal(phi.skeleton());
-	
-	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
-	
-	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
-			
-	return fphi;
-	
 }
 
 ///////////////////////////////////////////////////////////////			
