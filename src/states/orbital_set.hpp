@@ -66,13 +66,6 @@ namespace states {
 			fields_.fill(scalar);			
 		}
 		
-    auto & fields() const {
-      return fields_;
-    }
-
-    auto & fields() {
-      return fields_;
-    }
 		auto & kpoint() const {
 			return kpoint_;
 		}
