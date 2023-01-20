@@ -113,7 +113,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		}
 		
 		for(auto & phi : electrons.lot()) {
-			auto fphi = operations::space::to_fourier(phi);
+			auto fphi = operations::space::to_fourier(std::move(phi));
 				
 			switch(solver.eigensolver()){
 					
@@ -125,10 +125,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				assert(false);
 			}
 
-			//This fails, I don't know why. XA
-			// phi = operations::space::to_real(fphi);			
-
-			phi.fields() = operations::space::to_real(fphi.fields());
+			phi = operations::space::to_real(std::move(fphi));
 		}
 
 		CALI_MARK_BEGIN("mixing");
