@@ -92,11 +92,12 @@ namespace basis {
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
-
-		//set to a scalar value
-		field& operator=(element_type const& value){
-			linear_.fill(value);
-			return *this;
+		
+		template <typename ScalarType>
+		void fill(ScalarType const & scalar) {
+			CALI_CXX_MARK_SCOPE("fill(field_set)");
+			
+			linear_.fill(scalar);
 		}
 
 		template<typename OtherType>
@@ -266,7 +267,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	basis::field<basis::real_space, complex> ff_complex = complex_field(ff);
 	basis::field<basis::real_space, double> ff2 = real_field(ff_complex);
 
-	ff2 = 0.;
+	ff2.fill(0.0);
 
 	CHECK(( sizes(rs) == decltype(sizes(rs)){28, 11, 20} ));
 
@@ -280,7 +281,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	CHECK(std::get<1>(sizes(ff.cubic())) == 11);
 	CHECK(std::get<2>(sizes(ff.cubic())) == 20);
 
-	ff = 12.2244;
+	ff.fill(12.2244);
 
 	for(int ii = 0; ii < rs.part().local_size(); ii++) CHECK(ff.linear()[ii] == 12.2244_a);	
 

@@ -45,7 +45,7 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 	CALI_CXX_MARK_FUNCTION;
 	
 	FieldType destination(new_basis);
-	destination = 0.0;
+	destination.fill(0.0);
 	
 	if(not source.basis().part().parallel()){
 
@@ -188,7 +188,7 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 	
 	FieldType destination(new_basis);
 			
-	destination = 0.0;
+	destination.fill(0.0);
 		
 	if(not new_basis.part().parallel()) {
 

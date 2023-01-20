@@ -86,7 +86,7 @@ template <typename PotentialType>
 			non_local_in_fourier_(fourier_pseudo),
 			states_(states)
 		{
-			for(auto & pot : scalar_potential_) pot = 0.0;
+			for(auto & pot : scalar_potential_) pot.fill(0.0);
 			update_projectors(basis, pot, geo);
     }
 

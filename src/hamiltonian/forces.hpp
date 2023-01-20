@@ -51,7 +51,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	CALI_CXX_MARK_FUNCTION;
 
 	basis::field<basis::real_space, math::vector3<double, math::covariant>> gdensity(electrons.density_basis_);
-	gdensity = {0.0, 0.0, 0.0};
+	gdensity.fill(math::vector3<double, math::covariant>{0.0, 0.0, 0.0});
 
   math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 

@@ -131,7 +131,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		
 		basis::field<basis::trivial, double> aa(bas);
 
-		aa = 1.0;
+		aa.fill(1.0);
 
 		CHECK(operations::integral(aa) == 1.0_a);
 
@@ -145,7 +145,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		
 		basis::field<basis::trivial, complex> aa(bas);
 
-		aa = complex(1.0, 1.0);
+		aa.fill(complex(1.0, 1.0));
 
 		CHECK(real(operations::integral(aa)) == 1.0_a);
 		CHECK(imag(operations::integral(aa)) == 1.0_a);
@@ -184,8 +184,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		basis::field<basis::trivial, double> aa(bas);
 		basis::field<basis::trivial, double> bb(bas);
 		
-		aa = 2.0;
-		bb = 0.8;
+		aa.fill(2.0);
+		bb.fill(0.8);
 		
 		CHECK(operations::integral_product(aa, bb) == 1.6_a);
 		
@@ -204,8 +204,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		basis::field<basis::trivial, complex> aa(bas);
 		basis::field<basis::trivial, complex> bb(bas);
 		
-		aa = complex(2.0, -0.3);
-		bb = complex(0.8, 0.01);
+		aa.fill(complex(2.0, -0.3));
+		bb.fill(complex(0.8, 0.01));
 		
 		CHECK(real(operations::integral_product(aa, bb)) == 1.603_a);
 		CHECK(imag(operations::integral_product(aa, bb)) == -0.22_a);
@@ -227,8 +227,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		basis::field<basis::trivial, double> aa(bas);
 		basis::field<basis::trivial, double> bb(bas);
 		
-		aa = -13.23;
-		bb = -13.23;
+		aa.fill(-13.23);
+		bb.fill(-13.23);
 		
 		CHECK(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
 
@@ -249,8 +249,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		basis::field<basis::trivial, complex> aa(bas);
 		basis::field<basis::trivial, complex> bb(bas);
 		
-		aa = -13.23*exp(complex(0.0, M_PI/3.63));
-		bb = -13.23*exp(complex(0.0, M_PI/3.63));
+		aa.fill(-13.23*exp(complex(0.0, M_PI/3.63)));
+		bb.fill(-13.23*exp(complex(0.0, M_PI/3.63)));
 		
 		CHECK(fabs(operations::integral_absdiff(aa, bb)) < 1e-14);
 

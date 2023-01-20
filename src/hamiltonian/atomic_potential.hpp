@@ -113,7 +113,7 @@ namespace hamiltonian {
 
 			parallel::partition part(natoms_, comm);
 			
-			potential = 0.0;
+			potential.fill(0.0);
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 
@@ -170,7 +170,7 @@ namespace hamiltonian {
 			
 			basis::field<basis_type, double> density(basis);
 			
-			density = 0.0;
+			density.fill(0.0);
 
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 
@@ -277,7 +277,7 @@ namespace hamiltonian {
 			
 			basis::field<basis_type, double> density(basis);
 
-			density = 0.0;
+			density.fill(0.0);
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
