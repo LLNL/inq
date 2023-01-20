@@ -125,7 +125,7 @@ public:
 				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(kpts_part.local_to_global(ikpt).value());
 				auto kpoint = brillouin_zone_.kpoint(kpts_part.local_to_global(ikpt).value());
 				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
-				max_local_size_ = std::max(max_local_size_, lot_[ikpt].fields().local_set_size());
+				max_local_size_ = std::max(max_local_size_, lot_[ikpt].local_set_size());
 				ilot++;
 			}
 		}
@@ -165,7 +165,7 @@ public:
 		max_local_size_ = 0;
 		for(auto & oldphi : old_el.lot_){
 			lot_.emplace_back(std::move(oldphi), states_basis_comm_);
-			max_local_size_ = std::max(max_local_size_, lot_.back().fields().local_set_size());
+			max_local_size_ = std::max(max_local_size_, lot_.back().local_set_size());
 		}
 
 		assert(lot_.size() == old_el.lot_.size());
@@ -245,8 +245,8 @@ public:
 										 fourier_basis.part().local_size(0), fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1));
 
 			logger()->info("state parallelization:");
-			logger()->info("  {} states divided among {} partitions", lot()[0].fields().set_part().size(), lot()[0].fields().set_part().comm_size());
-			logger()->info("  partition 0 has {} states and the last partition has {} states\n", lot()[0].fields().set_part().local_size(0), lot()[0].fields().set_part().local_size(lot()[0].fields().set_part().comm_size() - 1));
+			logger()->info("  {} states divided among {} partitions", lot()[0].set_part().size(), lot()[0].set_part().comm_size());
+			logger()->info("  partition 0 has {} states and the last partition has {} states\n", lot()[0].set_part().local_size(0), lot()[0].set_part().local_size(lot()[0].set_part().comm_size() - 1));
 				
 		}
 	}
@@ -261,7 +261,7 @@ public:
 		for(auto & phi : lot()){
 			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
 			operations::io::save(basedir + "/states", phi);
-			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), +occupations()[iphi]);	
+			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].set_part(), +occupations()[iphi]);	
 			iphi++;
 		}
 	}
@@ -274,8 +274,8 @@ public:
 			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
 			success = success and operations::io::load(basedir + "/states", phi.fields());
 
-			math::array<double, 1> tmpocc(lot()[iphi].fields().set_part().local_size());
-			success = success and operations::io::load(basedir + "/occupations", states_comm_, lot()[iphi].fields().set_part(), tmpocc);
+			math::array<double, 1> tmpocc(lot()[iphi].set_part().local_size());
+			success = success and operations::io::load(basedir + "/occupations", states_comm_, lot()[iphi].set_part(), tmpocc);
 			occupations()[iphi] = tmpocc;
 			
 			iphi++;
@@ -395,14 +395,14 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	int iphi = 0;
 	for(auto & phi : electrons.lot()) {
 		
-		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
-			auto istg = phi.fields().set_part().local_to_global(ist);
+		for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+			auto istg = phi.set_part().local_to_global(ist);
 			
 			electrons.occupations()[iphi][ist] = cos(istg.value());
 			
-			for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
-				auto ipg = phi.fields().basis().part().local_to_global(ip);
-				phi.fields().matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
+			for(int ip = 0; ip < phi.basis().local_size(); ip++){
+				auto ipg = phi.basis().part().local_to_global(ip);
+				phi.matrix()[ip][ist] = 20.0*(ipg.value() + 1)*sqrt(istg.value());
 			}
 		}
 		iphi++;
@@ -419,10 +419,10 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 	iphi = 0;
 	for(auto & phi : electrons.lot()) {
 		
-		for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
+		for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 			CHECK(electrons.occupations()[iphi][ist] == electrons_read.occupations()[0][ist]);
-			for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
-				CHECK(phi.fields().matrix()[ip][ist] == electrons_read.lot()[iphi].fields().matrix()[ip][ist]);
+			for(int ip = 0; ip < phi.basis().local_size(); ip++){
+				CHECK(phi.matrix()[ip][ist] == electrons_read.lot()[iphi].matrix()[ip][ist]);
 			}
 		}
 		iphi++;
@@ -442,10 +442,10 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		iphi = 0;
 		for(auto & phi : electrons.lot()) {
 			
-			for(int ist = 0; ist < phi.fields().set_part().local_size(); ist++){
+			for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 				CHECK(electrons.occupations()[iphi][ist] == newel_read.occupations()[0][ist]);
-				for(int ip = 0; ip < phi.fields().basis().local_size(); ip++){
-					CHECK(phi.fields().matrix()[ip][ist] == newel_read.lot()[iphi].fields().matrix()[ip][ist]);
+				for(int ip = 0; ip < phi.basis().local_size(); ip++){
+					CHECK(phi.matrix()[ip][ist] == newel_read.lot()[iphi].matrix()[ip][ist]);
 				}
 			}
 			iphi++;
