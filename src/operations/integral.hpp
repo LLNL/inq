@@ -166,7 +166,7 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		
 		basis::field_set<basis::trivial, double> aa(bas, nvec);
 
-		aa = 1.0;
+		aa.fill(1.0);
 
 		CHECK(operations::integral_sum(aa) == Approx(nvec));
 
@@ -272,8 +272,8 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 		basis::field_set<basis::trivial, double> aa(bas, nvec);
 		basis::field_set<basis::trivial, double> bb(bas, nvec);
 		
-		aa = -13.23;
-		bb = -13.23;
+		aa.fill(-13.23);
+		bb.fill(-13.23);
 		
 		CHECK(fabs(operations::integral_sum_absdiff(aa, bb)) < 1e-14);
 

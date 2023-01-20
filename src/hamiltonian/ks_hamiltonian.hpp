@@ -112,7 +112,7 @@ template <typename PotentialType>
 				auto phi_fs = operations::space::to_fourier(phi);
 				states::orbital_set<basis::fourier_space, complex> vnlphi_fs(phi_fs.skeleton());
 
-				vnlphi_fs.fields() = 0.0;
+				vnlphi_fs.fill(0.0);
 				non_local(phi_fs.fields(), vnlphi_fs.fields());
 				return operations::space::to_real(vnlphi_fs);
 					
@@ -121,7 +121,7 @@ template <typename PotentialType>
 				auto proj = projectors_all_.project(phi.fields(), phi.kpoint());
 				
 				states::orbital_set<basis::real_space, complex> vnlphi(phi.skeleton());
-				vnlphi.fields() = 0.0;
+				vnlphi.fill(0.0);
 
 				projectors_all_.apply(proj, vnlphi.fields(), phi.kpoint());
 			

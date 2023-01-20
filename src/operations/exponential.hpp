@@ -118,7 +118,7 @@ TEST_CASE("operations::exponential", "[operations::exponential]") {
 		
 		basis::field_set<basis::trivial, double> phi(bas, nvec);
 		
-		phi = 0.0;
+		phi.fill(0.0);
 		
 		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
 		
@@ -184,7 +184,7 @@ TEST_CASE("operations::exponential", "[operations::exponential]") {
 		
 		basis::field_set<basis::trivial, complex> phi(bas, nvec);
 		
-		phi = 0.0;
+		phi.fill(0.0);
 		
 		for(int ivec = 0; ivec < nvec; ivec++) phi.matrix()[ivec][ivec] = 1.0;
 

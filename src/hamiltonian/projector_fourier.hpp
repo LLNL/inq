@@ -52,7 +52,7 @@ namespace hamiltonian {
 			
 			basis::spherical_grid sphere(beta_rs.basis(), math::vector3<double>(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
 
-			beta_rs = 0.0;
+			beta_rs.fill(0.0);
 			
 			int iproj_lm = 0;
       for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){

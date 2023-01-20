@@ -34,7 +34,7 @@ namespace real_time {
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
 void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 	
-	electrons.spin_density() = 0.0;
+	electrons.spin_density().fill(0.0);
 	int iphi = 0;
 	for(auto & phi : electrons.lot()){
 		

@@ -63,7 +63,7 @@ namespace states {
 
 		template <typename ScalarType>
 		auto fill(ScalarType const & scalar){
-			fields_ = scalar;			
+			fields_.fill(scalar);			
 		}
 		
     auto & fields() const {

@@ -135,18 +135,14 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 		auto num_elements() const {
 			return matrix_.num_elements();
 		}
-		
-		//set to a scalar value
-		field_set & operator=(const type value) {
 
-			CALI_CXX_MARK_SCOPE("field_set=scalar");
+		template <typename ScalarType>
+		void fill(ScalarType const & scalar) {
+			CALI_CXX_MARK_SCOPE("fill(field_set)");
 
-			gpu::run(matrix_.num_elements(),
-							 [lin = raw_pointer_cast(matrix_.data_elements()), value] GPU_LAMBDA (auto ii){
-								 lin[ii] = value;
-							 });
-		
-			return *this;
+			gpu::run(matrix_.num_elements(), [lin = raw_pointer_cast(matrix_.data_elements()), scalar] GPU_LAMBDA (auto ii){
+								 lin[ii] = scalar;
+			});
 		}
 		
 		const basis_type & basis() const {
@@ -375,7 +371,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	if(ff.set_comm().size() == 1) CHECK(std::get<3>(sizes(ff.hypercubic())) == 12);
 	if(ff.set_comm().size() == 2) CHECK(std::get<3>(sizes(ff.hypercubic())) == 6);
 
-	ff = 12.2244;
+	ff.fill(12.2244);
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
@@ -410,7 +406,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 		}
 	}
 
-	dff = 0.0;
+	dff.fill(0.0);
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
@@ -418,7 +414,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 		}
 	}
 	
-	zff = 0.0;
+	zff.fill(0.0);
 	
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
