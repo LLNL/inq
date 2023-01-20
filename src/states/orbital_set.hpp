@@ -60,6 +60,11 @@ namespace states {
 		static auto reciprocal(inq::utils::skeleton_wrapper<orbital_set<typename basis_type::reciprocal_space, OtherType>> const & skeleton){
 			return orbital_set<basis_type, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(),  skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm());
 		}
+
+		template <typename ScalarType>
+		auto fill(ScalarType const & scalar){
+			fields_ = scalar;			
+		}
 		
     auto & fields() const {
       return fields_;
