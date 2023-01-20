@@ -82,7 +82,7 @@ namespace hamiltonian {
 			coords_.push_back(coord);
 		}
 
-    void operator()(basis::field_set<basis::fourier_space, complex> const & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
+    void operator()(states::orbital_set<basis::fourier_space, complex> const & phi, states::orbital_set<basis::fourier_space, complex> & vnlphi) const {
 
 			CALI_CXX_MARK_SCOPE("projector_fourier");
 

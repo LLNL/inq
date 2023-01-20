@@ -116,7 +116,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////		
 	
 	template <typename KpointType>
-	math::array<complex, 3> project(basis::field_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+	math::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
     
 		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
@@ -235,7 +235,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////		
 
 	template <typename SpherePhiType, typename KpointType>
-	void apply(SpherePhiType & sphere_vnlphi, basis::field_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
+	void apply(SpherePhiType & sphere_vnlphi, states::orbital_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
