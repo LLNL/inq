@@ -272,7 +272,7 @@ public:
 		int iphi = 0;
 		for(auto & phi : lot()){
 			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
-			success = success and operations::io::load(basedir + "/states", phi.fields());
+			success = success and operations::io::load(basedir + "/states", phi);
 
 			math::array<double, 1> tmpocc(lot()[iphi].set_part().local_size());
 			success = success and operations::io::load(basedir + "/occupations", states_comm_, lot()[iphi].set_part(), tmpocc);

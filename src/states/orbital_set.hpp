@@ -127,11 +127,11 @@ namespace states {
 		}
 
 		auto par_set_begin() const {
-			return fields().par_set_begin();
+			return fields_.par_set_begin();
 		}
 
 		auto par_set_end() const {
-			return fields().par_set_end();
+			return fields_.par_set_end();
 		}
 		
 	private:
@@ -176,32 +176,32 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 
 	states::orbital_set<basis::real_space, double> orb(rs, 12, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-	CHECK(sizes(orb.fields().basis())[0] == 28);
-	CHECK(sizes(orb.fields().basis())[1] == 11);
-	CHECK(sizes(orb.fields().basis())[2] == 20);
+	CHECK(sizes(orb.basis())[0] == 28);
+	CHECK(sizes(orb.basis())[1] == 11);
+	CHECK(sizes(orb.basis())[2] == 20);
 
-	CHECK(orb.fields().local_set_size() == orb.local_set_size());
-	CHECK(orb.fields().set_size() == orb.set_size());
+	CHECK(orb.local_set_size() == orb.local_set_size());
+	CHECK(orb.set_size() == orb.set_size());
 	
 	states::orbital_set<basis::real_space, double> orbk(rs, 12, {0.4, 0.22, -0.57}, 0, cart_comm);
 
-	CHECK(sizes(orbk.fields().basis())[0] == 28);
-	CHECK(sizes(orbk.fields().basis())[1] == 11);
-	CHECK(sizes(orbk.fields().basis())[2] == 20);
+	CHECK(sizes(orbk.basis())[0] == 28);
+	CHECK(sizes(orbk.basis())[1] == 11);
+	CHECK(sizes(orbk.basis())[2] == 20);
 
 	CHECK(orbk.kpoint()[0] == 0.4_a);
 	CHECK(orbk.kpoint()[1] == 0.22_a);
 	CHECK(orbk.kpoint()[2] == -0.57_a);
 
-	CHECK(orbk.fields().local_set_size() == orb.local_set_size());
-	CHECK(orbk.fields().set_size() == orb.set_size());
+	CHECK(orbk.local_set_size() == orb.local_set_size());
+	CHECK(orbk.set_size() == orb.set_size());
 
 	states::orbital_set<basis::real_space, double> orb_copy(orbk.skeleton());
 
-	CHECK(sizes(orb_copy.fields().basis()) == sizes(orbk.fields().basis()));
+	CHECK(sizes(orb_copy.basis()) == sizes(orbk.basis()));
 	CHECK(orb_copy.kpoint() == orbk.kpoint());
-	CHECK(orb_copy.fields().local_set_size() == orbk.local_set_size());
-	CHECK(orb_copy.fields().set_size() == orbk.set_size());
+	CHECK(orb_copy.local_set_size() == orbk.local_set_size());
+	CHECK(orb_copy.set_size() == orbk.set_size());
 	
 }
 

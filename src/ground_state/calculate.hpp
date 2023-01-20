@@ -177,11 +177,11 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			
 			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
 
-				auto comm = electrons.lot()[ilot].fields().set_comm();
+				auto comm = electrons.lot()[ilot].set_comm();
 				
-				auto all_eigenvalues = electrons.lot()[ilot].fields().set_part().gather(+ecalc.eigenvalues_[ilot],comm, 0);
-				auto all_occupations = electrons.lot()[ilot].fields().set_part().gather(+electrons.occupations()[ilot], comm, 0);
-				auto all_normres = electrons.lot()[ilot].fields().set_part().gather(+ecalc.normres_[ilot], comm, 0);			
+				auto all_eigenvalues = electrons.lot()[ilot].set_part().gather(+ecalc.eigenvalues_[ilot],comm, 0);
+				auto all_occupations = electrons.lot()[ilot].set_part().gather(+electrons.occupations()[ilot], comm, 0);
+				auto all_normres = electrons.lot()[ilot].set_part().gather(+ecalc.normres_[ilot], comm, 0);			
 				
 				if(solver.verbose_output() and console){
 					for(int istate = 0; istate < electrons.states().num_states(); istate++){

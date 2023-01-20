@@ -41,7 +41,7 @@ struct crank_nicolson_op {
 	PhiType operator()(PhiType const & phi) const {
 		auto opphi = op(phi);
 		
-		gpu::run(opphi.fields().local_set_size(), opphi.fields().basis().local_size(),
+		gpu::run(opphi.local_set_size(), opphi.basis().local_size(),
 						 [opph = begin(opphi.matrix()), ph = begin(phi.matrix()), fac = factor] GPU_LAMBDA (auto ist, auto ip){
 							 opph[ip][ist] = ph[ip][ist] + fac*opph[ip][ist];
 						 });

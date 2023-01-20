@@ -66,7 +66,7 @@ public:
 
 		CALI_MARK_BEGIN("preconditioner_reduction");
 		
-		auto kinetic = operations::overlap_diagonal_normalized(laplacian(phi.fields(), -0.5), phi.fields());
+		auto kinetic = operations::overlap_diagonal_normalized(laplacian(phi, -0.5), phi);
 
 		CALI_MARK_END("preconditioner_reduction");
 		
