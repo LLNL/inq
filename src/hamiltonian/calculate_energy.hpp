@@ -48,7 +48,7 @@ namespace hamiltonian {
 			
 				auto residual = ham(phi);
 				eigenvalues_[iphi] = operations::overlap_diagonal_normalized(residual, phi);
-				operations::shift(-1.0, eigenvalues_[iphi], phi.fields(), residual);
+				operations::shift(-1.0, eigenvalues_[iphi], phi, residual);
 				
 				normres_[iphi] = operations::overlap_diagonal(residual);
 				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);

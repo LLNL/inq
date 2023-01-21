@@ -86,13 +86,13 @@ template <typename PotentialType>
 			non_local_in_fourier_(fourier_pseudo),
 			states_(states)
 		{
-			for(auto & pot : scalar_potential_) pot = 0.0;
+			for(auto & pot : scalar_potential_) pot.fill(0.0);
 			update_projectors(basis, pot, geo);
     }
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
-		void non_local(const basis::field_set<basis::fourier_space, complex> & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
+		void non_local(const states::orbital_set<basis::fourier_space, complex> & phi, states::orbital_set<basis::fourier_space, complex> & vnlphi) const {
 
 			if(not non_local_in_fourier_) return;
 			
@@ -112,18 +112,18 @@ template <typename PotentialType>
 				auto phi_fs = operations::space::to_fourier(phi);
 				states::orbital_set<basis::fourier_space, complex> vnlphi_fs(phi_fs.skeleton());
 
-				vnlphi_fs.fields() = 0.0;
-				non_local(phi_fs.fields(), vnlphi_fs.fields());
+				vnlphi_fs.fill(0.0);
+				non_local(phi_fs, vnlphi_fs);
 				return operations::space::to_real(vnlphi_fs);
 					
 			} else {
 				
-				auto proj = projectors_all_.project(phi.fields(), phi.kpoint());
+				auto proj = projectors_all_.project(phi, phi.kpoint());
 				
 				states::orbital_set<basis::real_space, complex> vnlphi(phi.skeleton());
-				vnlphi.fields() = 0.0;
+				vnlphi.fill(0.0);
 
-				projectors_all_.apply(proj, vnlphi.fields(), phi.kpoint());
+				projectors_all_.apply(proj, vnlphi, phi.kpoint());
 			
 				return vnlphi;
 							
@@ -137,20 +137,20 @@ template <typename PotentialType>
 			
 			CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			auto proj = projectors_all_.project(phi.fields(), phi.kpoint() + uniform_vector_potential_);
+			auto proj = projectors_all_.project(phi, phi.kpoint() + uniform_vector_potential_);
 			
 			auto phi_fs = operations::space::to_fourier(phi);
 		
 			auto hphi_fs = operations::laplacian(phi_fs, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
 
-			non_local(phi_fs.fields(), hphi_fs.fields());
+			non_local(phi_fs, hphi_fs);
 			
 			auto hphi = operations::space::to_real(hphi_fs);
 
 			hamiltonian::scalar_potential_add(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
 			exchange(phi, hphi);
 
-			projectors_all_.apply(proj, hphi.fields(), phi.kpoint() + uniform_vector_potential_);
+			projectors_all_.apply(proj, hphi, phi.kpoint() + uniform_vector_potential_);
 
 			return hphi;
 		}
@@ -163,18 +163,18 @@ template <typename PotentialType>
 
 			auto phi_rs = operations::space::to_real(phi);
 
-			auto proj = projectors_all_.project(phi_rs.fields(), phi.kpoint() + uniform_vector_potential_);
+			auto proj = projectors_all_.project(phi_rs, phi.kpoint() + uniform_vector_potential_);
 			
 			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
 			exchange(phi_rs, hphi_rs);
  
-			projectors_all_.apply(proj, hphi_rs.fields(), phi.kpoint() + uniform_vector_potential_);
+			projectors_all_.apply(proj, hphi_rs, phi.kpoint() + uniform_vector_potential_);
 			
 			auto hphi = operations::space::to_fourier(hphi_rs);
 
 			operations::laplacian_add(phi, hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
-			non_local(phi.fields(), hphi.fields());
+			non_local(phi, hphi);
 
 			return hphi;
 		}

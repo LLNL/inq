@@ -62,10 +62,10 @@ namespace hamiltonian {
 
 			hf_occupations.reextent(phi.local_set_size());
 			hf_occupations = el.occupations()[0];
-			hf_orbitals->fields() = phi.fields();
+			hf_orbitals->matrix() = phi.matrix();
 			
 			*xi_ = direct(phi, -1.0);
-
+ 
 			auto exx_matrix = operations::overlap(*xi_, phi);
 
 			double energy = -0.5*real(operations::sum_product(hf_occupations, exx_matrix.diagonal()));
@@ -81,7 +81,7 @@ namespace hamiltonian {
 		
 		auto direct(const states::orbital_set<basis::real_space, complex> & phi, double scale = 1.0) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
-			exxphi.fields() = 0.0;
+			exxphi.fill(0.0);
 			direct(phi, exxphi, scale);
 			return exxphi;
 		}
@@ -141,7 +141,7 @@ namespace hamiltonian {
 		
 		auto ace(const states::orbital_set<basis::real_space, complex> & phi) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
-			exxphi.fields() = 0.0;
+			exxphi.fill(0.0);
 			ace(phi, exxphi);
 			return exxphi;
 		}
@@ -150,7 +150,7 @@ namespace hamiltonian {
 		
 		auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
 			states::orbital_set<basis::real_space, complex> exxphi(phi.skeleton());
-			exxphi.fields() = 0.0;
+			exxphi.fill(0.0);
 			operator()(phi, exxphi);
 			return exxphi;
 		}

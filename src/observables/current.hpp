@@ -38,7 +38,7 @@ template <typename HamiltonianType>
 basis::field<basis::real_space, math::vector3<double, math::covariant>> current_density(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
 
 	basis::field<basis::real_space, math::vector3<double, math::covariant>> cdensity(electrons.density_basis_);
-	cdensity = {0.0, 0.0, 0.0};
+	cdensity.fill(math::vector3<double, math::covariant>{0.0, 0.0, 0.0});
 
 	auto iphi = 0;
 	for(auto & phi : electrons.lot()){

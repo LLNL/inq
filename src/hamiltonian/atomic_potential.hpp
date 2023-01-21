@@ -113,7 +113,7 @@ namespace hamiltonian {
 
 			parallel::partition part(natoms_, comm);
 			
-			potential = 0.0;
+			potential.fill(0.0);
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 
@@ -170,7 +170,7 @@ namespace hamiltonian {
 			
 			basis::field<basis_type, double> density(basis);
 			
-			density = 0.0;
+			density.fill(0.0);
 
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 
@@ -212,7 +212,7 @@ namespace hamiltonian {
 			auto nspin = states.num_density_components();
 			basis::field_set<basis_type, double> density(basis, nspin);
 
-			density = 0.0;
+			density.fill(0.0);
 
 			double polarization = 1.0;
 			if(nspin == 2) polarization = 0.6;
@@ -277,7 +277,7 @@ namespace hamiltonian {
 			
 			basis::field<basis_type, double> density(basis);
 
-			density = 0.0;
+			density.fill(0.0);
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				

@@ -45,7 +45,7 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 	CALI_CXX_MARK_FUNCTION;
 	
 	FieldType destination(new_basis);
-	destination = 0.0;
+	destination.fill(0.0);
 	
 	if(not source.basis().part().parallel()){
 
@@ -115,7 +115,7 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 	CALI_CXX_MARK_FUNCTION;
 	
 	basis::field_set<BasisType, Type> destination(new_basis, source.set_size(), source.full_comm());
-	destination = 0.0;
+	destination.fill(0.0);
 
 	if(not source.basis().part().parallel()){
 		
@@ -188,7 +188,7 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 	
 	FieldType destination(new_basis);
 			
-	destination = 0.0;
+	destination.fill(0.0);
 		
 	if(not new_basis.part().parallel()) {
 
@@ -256,7 +256,7 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const
 	
 	basis::field_set<BasisType, Type> destination(new_basis, source.set_size(), source.full_comm());
 			
-	destination = 0.0;
+	destination.fill(0.0);
 	if(not new_basis.part().parallel()) {
 			
 		gpu::run(destination.basis().sizes()[2], destination.basis().sizes()[1], destination.basis().sizes()[0],

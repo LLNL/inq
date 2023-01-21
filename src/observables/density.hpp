@@ -70,7 +70,7 @@ basis::field_set<basis::real_space, double> calculate(ElecType & elec){
 	
 	basis::field_set<basis::real_space, double> density(elec.density_basis_, elec.states().num_density_components());
 
-	density = 0.0;
+	density.fill(0.0);
 
 	int iphi = 0;
 	for(auto & phi : elec.lot()) {
@@ -163,7 +163,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
 
 		basis::field_set<basis::trivial, double> dd(bas, 1);
-		dd = 0.0;
+		dd.fill(0.0);
 		
 		observables::density::calculate_add(occ, aa, dd);
 
@@ -192,7 +192,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
 
 		basis::field_set<basis::trivial, double> dd(bas, 1);
-		dd = 0.0;
+		dd.fill(0.0);
 		
 		observables::density::calculate_add(occ, aa, dd);
 

@@ -90,12 +90,8 @@ public:
 
 		std::vector<int> species_num(species.size());
 
-		auto num_atoms = 0;
-		for(unsigned ispecies = 0; ispecies < species.size(); ispecies++){
-			poscar_file >> species_num[ispecies];
-			num_atoms += species_num[ispecies];
-		}
-
+		for(unsigned ispecies = 0; ispecies < species.size(); ispecies++) poscar_file >> species_num[ispecies];
+		
 		std::string tail;
 		std::getline(poscar_file, tail);
 		

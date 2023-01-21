@@ -52,7 +52,7 @@ namespace hamiltonian {
 			
 			basis::spherical_grid sphere(beta_rs.basis(), math::vector3<double>(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
 
-			beta_rs = 0.0;
+			beta_rs.fill(0.0);
 			
 			int iproj_lm = 0;
       for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
@@ -82,7 +82,7 @@ namespace hamiltonian {
 			coords_.push_back(coord);
 		}
 
-    void operator()(basis::field_set<basis::fourier_space, complex> const & phi, basis::field_set<basis::fourier_space, complex> & vnlphi) const {
+    void operator()(states::orbital_set<basis::fourier_space, complex> const & phi, states::orbital_set<basis::fourier_space, complex> & vnlphi) const {
 
 			CALI_CXX_MARK_SCOPE("projector_fourier");
 

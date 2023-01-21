@@ -113,7 +113,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 	SECTION("double"){
 		basis::field_set<basis::real_space, double> aa(bas, nst, cart_comm);
 
-		aa = 0.0;
+		aa.fill(0.0);
 		
 		operations::randomize(aa);
 		
@@ -142,7 +142,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 		
 		basis::field_set<basis::real_space, complex> aa(bas, nst, cart_comm);
 
-		aa = 0.0;
+		aa.fill(0.0);
 		
 		operations::randomize(aa);
 		

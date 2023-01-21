@@ -140,8 +140,8 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		basis::field<basis::trivial, double> bb(bas);
 		basis::field<basis::trivial, double> cc(bas);
 
-		aa = 1.0;
-		bb = 2.5;
+		aa.fill(1.0);
+		bb.fill(2.5);
 
 		cc = operations::add(aa, bb);
 		
@@ -155,8 +155,8 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		basis::field<basis::trivial, complex> bb(bas);
 		basis::field<basis::trivial, complex> cc(bas);
 
-		aa = complex(1.0, -20.2);
-		bb = complex(2.5, 1.2);
+		aa.fill(complex(1.0, -20.2));
+		bb.fill(complex(2.5, 1.2));
 
 		cc = operations::add(aa, bb);
 		
@@ -174,9 +174,9 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		basis::field<basis::trivial, double> cc(bas);
 		basis::field<basis::trivial, double> dd(bas);
 
-		aa = 1.0;
-		bb = 2.5;
-		cc = -4.0;
+		aa.fill(1.0);
+		bb.fill(2.5);
+		cc.fill(-4.0);
 
 		dd = operations::add(aa, bb, cc);
 		
@@ -191,9 +191,9 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		basis::field<basis::trivial, complex> cc(bas);
 		basis::field<basis::trivial, complex> dd(bas);
 
-		aa = complex(1.0, -20.2);
-		bb = complex(2.5, 1.2);
-		cc = complex(-2.7, 8.6);
+		aa.fill(complex(1.0, -20.2));
+		bb.fill(complex(2.5, 1.2));
+		cc.fill(complex(-2.7, 8.6));
 
 		dd = operations::add(aa, bb, cc);
 		
@@ -209,8 +209,8 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		basis::field<basis::trivial, double> aa(bas);
 		basis::field<basis::trivial, double> bb(bas);
 
-		aa = 1.0;
-		bb = 2.5;
+		aa.fill(1.0);
+		bb.fill(2.5);
 
 		operations::increment(aa, bb);
 		
@@ -223,9 +223,9 @@ TEST_CASE("function operations::add", "[operations::add]") {
 		basis::field<basis::trivial, complex> aa(bas);
 		basis::field<basis::trivial, complex> bb(bas);
 
-		aa = complex(1.0, -20.2);
-		bb = complex(2.5, 1.2);
-
+		aa.fill(complex(1.0, -20.2));
+		bb.fill(complex(2.5, 1.2));
+		
 		operations::increment(aa, bb);
 		
 		for(int ii = 0; ii < aa.linear().size(); ii++){
