@@ -31,7 +31,7 @@
 #include <inq_config.h>
 #include <mpi.h>
 #include <parallel/communicator.hpp>
-
+#include <gpu/run.hpp>
 
 namespace inq {
 namespace gpu {
