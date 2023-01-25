@@ -150,7 +150,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 	
 	SECTION("double"){
 		
-		states::orbital_set<basis::trivial, double> aa(bas, nvec, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+		states::orbital_set<basis::trivial, double> aa(bas, nvec, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 		math::array<double, 1> occ(aa.set_part().local_size());
 		
@@ -179,7 +179,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 	
 	SECTION("complex"){
 		
-		states::orbital_set<basis::trivial, complex> aa(bas, nvec, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 		math::array<double, 1> occ(nvec);
 		

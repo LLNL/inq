@@ -495,8 +495,8 @@ auto to_real(states::orbital_set<basis::fourier_space, math::vector3<complex, Ve
 	auto const& fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
-	states::orbital_set<basis::real_space, math::vector3<complex, VectorSpace>> phi(real_basis, fphi.set_size(), fphi.kpoint(), fphi.spin_index(), fphi.full_comm());
-
+	auto phi = states::orbital_set<basis::real_space, math::vector3<complex, VectorSpace>>::reciprocal(fphi.skeleton());
+	
 	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 
