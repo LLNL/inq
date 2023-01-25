@@ -59,6 +59,9 @@ public:
 		num_density_components_ = 1;
 		if(spin == spin_config::POLARIZED) num_density_components_ = 2;
 		if(spin == spin_config::NON_COLLINEAR) num_density_components_ = 4;		
+
+		spinor_dim_ = 1;
+		if(spin == spin_config::NON_COLLINEAR) spinor_dim_ = 2;
 		
 		num_electrons_ = nelectrons;
 
@@ -74,6 +77,10 @@ public:
 
 	int num_density_components() const {
 		return num_density_components_;
+	}
+
+	auto spinor_dim() const {
+		return spinor_dim_;
 	}
 	
 	template <class output_stream>
@@ -223,6 +230,7 @@ private:
 	int nstates_;
 	int num_spin_indices_;
 	int num_density_components_;
+	int spinor_dim_;
 	double temperature_;
 	double max_occ_;
 	int nkpoints_;
@@ -253,7 +261,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 1);
-
+		CHECK(st.spinor_dim() == 1);
+		
 		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({1, part.local_size()});
@@ -287,6 +296,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 1);
+		CHECK(st.spinor_dim() == 1);
 		
 		parallel::partition part(st.num_states(), comm);
 
@@ -321,6 +331,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 8);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 1);
+		CHECK(st.spinor_dim() == 1);
 		
 		parallel::partition part(st.num_states(), comm);
 
@@ -359,7 +370,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 8);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 1);		
-
+		CHECK(st.spinor_dim() == 1);
+		
 		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({1, part.local_size()});
@@ -397,7 +409,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 6);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 1);		
-
+		CHECK(st.spinor_dim() == 1);
+		
 		comm.barrier();
 		
 		parallel::partition part(st.num_states(), comm);
@@ -432,7 +445,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
 		CHECK(st.num_electrons() == 11.0);    
     CHECK(st.num_states() == 6);
     CHECK(st.num_spin_indices() == 2);
-		CHECK(st.num_density_components() == 2);		
+		CHECK(st.num_density_components() == 2);
+		CHECK(st.spinor_dim() == 1);		
 
   }
 
@@ -444,7 +458,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 11);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 4);		
-
+		CHECK(st.spinor_dim() == 2);
+		
   }
 
   SECTION("Spin unpolarized even extra"){
@@ -455,7 +470,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 8);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 1);
-
+		CHECK(st.spinor_dim() == 1);
+		
 		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({1, part.local_size()});
@@ -493,7 +509,8 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 5);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 1);		
-
+		CHECK(st.spinor_dim() == 1);
+		
 		parallel::partition part(st.num_states(), comm);
 
 		math::array<double, 2> eigenvalues({3, part.local_size()});
@@ -565,6 +582,7 @@ TEST_CASE("Class states::ks_states", "[ks_states]"){
     CHECK(st.num_states() == 5);
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 1);
+		CHECK(st.spinor_dim() == 1);
 		
 		parallel::partition part(st.num_states(), comm);
 
