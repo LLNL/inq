@@ -186,6 +186,14 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 
 	CHECK(orb.local_set_size() == orb.local_set_size());
 	CHECK(orb.set_size() == orb.set_size());
+
+	CHECK(orb.matrix().size() == orb.basis().local_size());
+	CHECK(orb.matrix().transposed().size() ==  orb.local_set_size());
+
+	CHECK(orb.hypercubic().size() == sizes(orb.basis())[0]);
+	CHECK(orb.hypercubic().rotated().size() == sizes(orb.basis())[1]);
+	CHECK(orb.hypercubic().rotated().rotated().size() == sizes(orb.basis())[2]);	
+	CHECK(orb.hypercubic().rotated().rotated().rotated().size() == orb.local_set_size());
 	
 	states::orbital_set<basis::real_space, double> orbk(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
 
@@ -197,15 +205,22 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orbk.kpoint()[1] == 0.22_a);
 	CHECK(orbk.kpoint()[2] == -0.57_a);
 
-	CHECK(orbk.local_set_size() == orb.local_set_size());
-	CHECK(orbk.set_size() == orb.set_size());
+	CHECK(orbk.local_set_size() == orbk.local_set_size());
+	CHECK(orbk.set_size() == orbk.set_size());
 
+	CHECK(orbk.matrix().size() == orb.basis().local_size());
+	CHECK(orbk.matrix().transposed().size() ==  orb.local_set_size());
+	
 	states::orbital_set<basis::real_space, double> orb_copy(orbk.skeleton());
 
 	CHECK(sizes(orb_copy.basis()) == sizes(orbk.basis()));
 	CHECK(orb_copy.kpoint() == orbk.kpoint());
 	CHECK(orb_copy.local_set_size() == orbk.local_set_size());
 	CHECK(orb_copy.set_size() == orbk.set_size());
+
+	CHECK(orb_copy.matrix().size() == orb_copy.basis().local_size());
+	CHECK(orb_copy.matrix().transposed().size() ==  orb_copy.local_set_size());
+
 	
 	states::orbital_set<basis::real_space, double> rr(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
 	rr.fill(1.0/set_comm.size());
