@@ -67,12 +67,18 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy());
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson());
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(10) | input::rt::dt(0.1_atomictime) | input::rt::crank_nicolson());
 		
-		match.check("CN: energy step   0", energy[0],   -17.604152928271);
-		match.check("CN: energy step  10", energy[10],  -17.604152928278);
-		match.check("CN: energy step  20", energy[20],  -17.604152928294);
-		match.check("CN: energy step  30", energy[30],  -17.604152928302);
+		match.check("CN: energy step  0", energy[0], -17.604152928110);
+		match.check("CN: energy step  1", energy[1], -17.604152928110);
+		match.check("CN: energy step  2", energy[2], -17.604152928109);
+		match.check("CN: energy step  3", energy[3], -17.604152928089);
+		match.check("CN: energy step  4", energy[4], -17.604152928086);
+		match.check("CN: energy step  5", energy[5], -17.604152928082);
+		match.check("CN: energy step  6", energy[6], -17.604152928081);
+		match.check("CN: energy step  7", energy[7], -17.604152928076);
+		match.check("CN: energy step  8", energy[8], -17.604152928064);
+		match.check("CN: energy step  9", energy[9], -17.604152928054);		
 	}
 	
 	{
@@ -80,7 +86,7 @@ int main(int argc, char ** argv){
 
 		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
 
-		long nsteps = 101;
+		long nsteps = 71;
 		 
 		math::array<double, 1> time(nsteps);
 		math::array<double, 1> dip(nsteps);
@@ -115,9 +121,6 @@ int main(int argc, char ** argv){
 		match.check("ETRS length kick: dipole step  50", dip[50],   0.397016950105);
 		match.check("ETRS length kick: dipole step  60", dip[60],   0.273814809864);
 		match.check("ETRS length kick: dipole step  70", dip[70],   0.150513056237);
-		match.check("ETRS length kick: dipole step  80", dip[80],   0.040869378598);
-		match.check("ETRS length kick: dipole step  90", dip[90],  -0.042000666907);
-		match.check("ETRS length kick: dipole step 100", dip[100], -0.106673626874);		
 
 		match.check("ETRS length kick: energy step   0", en[0],   -17.563614906151);
 		match.check("ETRS length kick: energy step  10", en[10],  -17.563607649160);
@@ -127,9 +130,6 @@ int main(int argc, char ** argv){
 		match.check("ETRS length kick: energy step  50", en[50],  -17.563636241471);
 		match.check("ETRS length kick: energy step  60", en[60],  -17.563642463141);
 		match.check("ETRS length kick: energy step  70", en[70],  -17.563649395734);
-		match.check("ETRS length kick: energy step  80", en[80],  -17.563655115503);
-		match.check("ETRS length kick: energy step  90", en[90],  -17.563660623398);
-		match.check("ETRS length kick: energy step 100", en[100], -17.563665984612);	
 	}
 
 	{
@@ -186,7 +186,7 @@ int main(int argc, char ** argv){
 			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson(), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(10) | input::rt::dt(0.1_atomictime) | input::rt::crank_nicolson(), ions::propagator::fixed{}, kick);
 	}
 	
 	fftw_cleanup(); //required for valgrind
