@@ -43,12 +43,12 @@ basis::field<basis::real_space, math::vector3<double, math::covariant>> current_
 	auto iphi = 0;
 	for(auto & phi : electrons.lot()){
 		
-		auto gphi = ham.momentun(phi);
+		auto gphi = operations::gradient(phi);
     
     gpu::run(phi.basis().part().local_size(),
              [nst = phi.set_part().local_size(), occ = begin(electrons.occupations()[iphi]),
               ph = begin(phi.matrix()), gph = begin(gphi.matrix()), cdens = begin(cdensity.linear())] GPU_LAMBDA (auto ip){
-               for(int ist = 0; ist < nst; ist++) cdens[ip] += 0.5*occ[ist]*imag(real(conj(ph[ip][ist])*gph[ip][ist]) - conj(gph[ip][ist])*ph[ip][ist]);
+               for(int ist = 0; ist < nst; ist++) cdens[ip] += 0.5*occ[ist]*imag(conj(ph[ip][ist])*gph[ip][ist] - conj(gph[ip][ist])*ph[ip][ist]);
              });
 		iphi++;
 	}
