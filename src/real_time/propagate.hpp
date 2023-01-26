@@ -53,7 +53,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		
 		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
-		func(real_time::viewables{false, 0, 0.0, ions, electrons, energy, forces, pert});
+		func(real_time::viewables{false, 0, 0.0, ions, electrons, energy, forces, ham, pert});
 		
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
@@ -81,7 +81,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
 
-			func(real_time::viewables{istep == numsteps - 1, istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert});			
+			func(real_time::viewables{istep == numsteps - 1, istep, (istep + 1.0)*dt, ions, electrons, energy, forces, ham, pert});			
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;

@@ -11,6 +11,7 @@
 #include <hamiltonian/forces.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <observables/dipole.hpp>
+#include <observables/current.hpp>
 #include <perturbations/none.hpp>
 #include <ions/propagator.hpp>
 #include <systems/electrons.hpp>
@@ -23,7 +24,7 @@
 namespace inq {
 namespace real_time {
 
-template <class ForcesType, class Perturbation>
+template <class ForcesType, class HamiltonianType, class Perturbation>
 class viewables {
 	bool last_iter_;
 	int iter_;
@@ -32,12 +33,13 @@ class viewables {
 	systems::electrons & electrons_;
 	hamiltonian::energy & energy_;
 	ForcesType & forces_;
+  HamiltonianType const & ham_;
 	Perturbation const & pert_;
 	
 public:
 
-	viewables(bool last_iter, int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces, Perturbation const & pert)
-		:last_iter_(last_iter), iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces), pert_(pert){
+	viewables(bool last_iter, int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces, HamiltonianType const & ham, Perturbation const & pert)
+		:last_iter_(last_iter), iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces), ham_(ham), pert_(pert){
 	}
 
 	auto iter() const {
@@ -88,6 +90,10 @@ public:
 	auto num_electrons() const {
 		return operations::integral(electrons_.density());
 	}
+
+  auto current() const {
+    return observables::current(ions_, electrons_, ham_);
+  }
 	
 };
 
