@@ -36,14 +36,9 @@ namespace density {
 template<class occupations_array_type, class field_set_type>
 void calculate_add(const occupations_array_type & occupations, field_set_type & phi, basis::field_set<typename field_set_type::basis_type, double> & density){
 
-	const auto nst = phi.set_part().local_size();
-	auto occupationsp = begin(occupations);
-	auto phip = begin(phi.matrix());
-	auto densityp = begin(density.matrix());
-		
 	gpu::run(phi.basis().part().local_size(),
-					 [=, ispin = phi.spin_index()] GPU_LAMBDA (auto ipoint){
-						 for(int ist = 0; ist < nst; ist++) densityp[ipoint][ispin] += occupationsp[ist]*norm(phip[ipoint][ist]);
+					 [nst = phi.set_part().local_size(), occ = begin(occupations), ph = begin(phi.matrix()), den = begin(density.matrix()), ispin = phi.spin_index()] GPU_LAMBDA (auto ipoint){
+						 for(int ist = 0; ist < nst; ist++) den[ipoint][ispin] += occ[ist]*norm(ph[ipoint][ist]);
 					 });
 
 }
@@ -54,7 +49,7 @@ template<class occupations_array_type, class field_set_type, class vector_field_
 void calculate_gradient_add(const occupations_array_type & occupations, field_set_type const & phi, vector_field_set_type const & gphi, basis::field<typename vector_field_set_type::basis_type, vector3<double, VectorSpace>> & gdensity){
 
 	CALI_CXX_MARK_SCOPE("density::calculate_gradient");
- 
+
 	gpu::run(phi.basis().part().local_size(),
 					 [nst = phi.set_part().local_size(), occs = begin(occupations),
             phip = begin(phi.matrix()), gphip = begin(gphi.matrix()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip){
