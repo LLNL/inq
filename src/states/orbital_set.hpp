@@ -26,114 +26,120 @@
 namespace inq {
 namespace states {
 	
-	template<class Basis, class Type>
-  class orbital_set {
+template<class Basis, class Type>
+class orbital_set {
 
-  public:
+public:
+	
+	using element_type = Type;
+	using basis_type = Basis;
+	using kpoint_type = math::vector3<double, math::covariant>;
+	
+	orbital_set(Basis const & basis, int const num_vectors, int const spinor_dim, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
+		:fields_(basis, num_vectors, comm),
+		 spinor_dim_(spinor_dim),
+		 kpoint_(kpoint),
+		 spin_index_(spin_index){
+	}
+	
+	orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
+	:fields_(std::move(oldset.fields_), new_comm),
+		 kpoint_(oldset.kpoint()),
+		 spin_index_(oldset.spin_index()){
+	}
+	
+	template <class any_type>
+	orbital_set(inq::utils::skeleton_wrapper<orbital_set<Basis, any_type>> const & skeleton)
+		:orbital_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm()){
+	}
+	
+	auto skeleton() const {
+		return inq::utils::skeleton_wrapper<orbital_set<Basis, Type>>(*this);
+	}
+	
+	template <class OtherType>
+	static auto reciprocal(inq::utils::skeleton_wrapper<orbital_set<typename basis_type::reciprocal_space, OtherType>> const & skeleton){
+		return orbital_set<basis_type, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm());
+	}
+	
+	template <typename ScalarType>
+	auto fill(ScalarType const & scalar){
+		fields_.fill(scalar);			
+	}
 
-		using element_type = Type;
-		using basis_type = Basis;
-		using kpoint_type = math::vector3<double, math::covariant>;
-
-		orbital_set(Basis const & basis, int const num_vectors, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
-			:fields_(basis, num_vectors, comm),
-			 kpoint_(kpoint),
-			 spin_index_(spin_index){
-		}
-		
-		orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
-		:fields_(std::move(oldset.fields_), new_comm),
-			 kpoint_(oldset.kpoint()),
-			 spin_index_(oldset.spin_index()){
-		}
-		
-		template <class any_type>
-		orbital_set(inq::utils::skeleton_wrapper<orbital_set<Basis, any_type>> const & skeleton)
-			:orbital_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm()){
-		}
-		
-		auto skeleton() const {
-			return inq::utils::skeleton_wrapper<orbital_set<Basis, Type>>(*this);
-		}
-
-		template <class OtherType>
-		static auto reciprocal(inq::utils::skeleton_wrapper<orbital_set<typename basis_type::reciprocal_space, OtherType>> const & skeleton){
-			return orbital_set<basis_type, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(),  skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm());
-		}
-
-		template <typename ScalarType>
-		auto fill(ScalarType const & scalar){
-			fields_.fill(scalar);			
-		}
-		
-		auto & kpoint() const {
-			return kpoint_;
-		}
-
-		auto & spin_index() const {
+	auto & spinor_dim() const {
+		return spinor_dim_;
+	}
+	
+	auto & kpoint() const {
+		return kpoint_;
+	}
+	
+	auto & spin_index() const {
 			assert(spin_index_ >= 0 and spin_index_ < 2);
 			return spin_index_;
-		}
+	}
+	
+	auto & set_part() const {
+		return fields_.set_part();
+	}
+	
+	auto local_set_size() const {
+		return fields_.local_set_size();
+	}
+	
+	auto set_size() const {
+		return fields_.set_size();
+	}
+	
+	auto & basis() const {
+		return fields_.basis();
+	}
+	
+	auto & basis() {
+		return fields_.basis();
+	}
+	
+	auto & matrix() const {
+		return fields_.matrix();
+	}
+	
+	auto & matrix() {
+		return fields_.matrix();
+	}
+	
+	auto hypercubic() const {
+		return fields_.hypercubic();
+	}
+	
+	auto hypercubic() {
+		return fields_.hypercubic();
+	}
+	
+	auto & full_comm() const {
+		return fields_.full_comm();
+	}
+	
+	auto & set_comm() const {
+		return fields_.set_comm();
+	}
 
-		auto & set_part() const {
-			return fields_.set_part();
-		}
+	auto par_set_begin() const {
+		return fields_.par_set_begin();
+	}
+	
+	auto par_set_end() const {
+		return fields_.par_set_end();
+	}
+	
+private:
 
-		auto local_set_size() const {
-			return fields_.local_set_size();
-		}
+	basis::field_set<Basis, Type> fields_;
+	int spinor_dim_;
+	kpoint_type kpoint_;
+	int spin_index_;
 		
-		auto set_size() const {
-			return fields_.set_size();
-		}
-		
-		auto & basis() const {
-			return fields_.basis();
-		}
-
-		auto & basis() {
-			return fields_.basis();
-		}
-		
-		auto & matrix() const {
-			return fields_.matrix();
-		}
-
-		auto & matrix() {
-			return fields_.matrix();
-		}
-
-		auto hypercubic() const {
-			return fields_.hypercubic();
-		}
-
-		auto hypercubic() {
-			return fields_.hypercubic();
-		}
-
-		auto & full_comm() const {
-			return fields_.full_comm();
-		}
-
-		auto & set_comm() const {
-			return fields_.set_comm();
-		}
-
-		auto par_set_begin() const {
-			return fields_.par_set_begin();
-		}
-
-		auto par_set_end() const {
-			return fields_.par_set_end();
-		}
-		
-	private:
-
-    basis::field_set<Basis, Type> fields_;
-		kpoint_type kpoint_;
-		int spin_index_;
-		
-  };
+};
 
 }
 }
@@ -167,7 +173,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(ecut);
   basis::real_space rs(box, basis_comm);
 
-	states::orbital_set<basis::real_space, double> orb(rs, 12, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+	states::orbital_set<basis::real_space, double> orb(rs, 12, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 	CHECK(sizes(orb.basis())[0] == 28);
 	CHECK(sizes(orb.basis())[1] == 11);
@@ -176,7 +182,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orb.local_set_size() == orb.local_set_size());
 	CHECK(orb.set_size() == orb.set_size());
 	
-	states::orbital_set<basis::real_space, double> orbk(rs, 12, {0.4, 0.22, -0.57}, 0, cart_comm);
+	states::orbital_set<basis::real_space, double> orbk(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
 
 	CHECK(sizes(orbk.basis())[0] == 28);
 	CHECK(sizes(orbk.basis())[1] == 11);

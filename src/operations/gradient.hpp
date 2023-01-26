@@ -267,7 +267,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 
 		basis::real_space rs(box, basis_comm);
 		
-		states::orbital_set<basis::real_space, complex> f_test(rs, 13, {0.0, 0.0, 0.0}, 0, cart_comm);
+		states::orbital_set<basis::real_space, complex> f_test(rs, 13, 1, {0.0, 0.0, 0.0}, 0, cart_comm);
 	
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){

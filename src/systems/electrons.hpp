@@ -115,7 +115,7 @@ public:
 		parallel::partition kpts_part(kpts.num(), spin_kpoints_comm.axis(1));
 
 		assert(lot_part_.local_size() == kpts_part.local_size()*spin_part.local_size()); //this is always true because the spin size is either 1 or 2
-
+		
 		lot_weights_.reextent({lot_part_.local_size()});
 
 		max_local_size_ = 0;
@@ -124,7 +124,7 @@ public:
 			for(int ikpt = 0; ikpt < kpts_part.local_size(); ikpt++){
 				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(kpts_part.local_to_global(ikpt).value());
 				auto kpoint = brillouin_zone_.kpoint(kpts_part.local_to_global(ikpt).value());
-				lot_.emplace_back(states_basis_, states_.num_states(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
+				lot_.emplace_back(states_basis_, states_.num_states(), states_.spinor_dim(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
 				max_local_size_ = std::max(max_local_size_, lot_[ikpt].local_set_size());
 				ilot++;
 			}

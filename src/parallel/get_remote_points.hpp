@@ -184,8 +184,8 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
   return remote_points;
 }
 
-template <class BasisType, class ElementType, class ArrayType>
-math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, ElementType> const & source, ArrayType const & point_list){
+template <class BasisType, class ElementType, class ArrayType, template <typename BT, typename T> typename FieldSetType>
+math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementType> const & source, ArrayType const & point_list){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -240,8 +240,8 @@ math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, Elemen
   return remote_points;
 }
 
-template <class BasisType, class ElementType, class ArrayType>
-math::array<ElementType, 2> get_remote_points(basis::field_set<BasisType, ElementType> const & source, ArrayType const & point_list, ArrayType const & state_list){
+template <class BasisType, class ElementType, class ArrayType, template <typename BT, typename T> typename FieldSetType>
+math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementType> const & source, ArrayType const & point_list, ArrayType const & state_list){
 
 	CALI_CXX_MARK_FUNCTION;
 

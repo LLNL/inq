@@ -52,7 +52,8 @@ public:
     arr_(part.block_size()),
     istep_(0)
   {
-    arr_({0, part_.local_size()}) = arr;
+		assert(arr.size() == part_.local_size());
+		arr_({0, part_.local_size()}) = arr;
   }
 
   auto operator!=(end_type) const {
