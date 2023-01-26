@@ -29,16 +29,16 @@ class viewables {
 	bool last_iter_;
 	int iter_;
 	double time_;
-	systems::ions & ions_;
-	systems::electrons & electrons_;
-	hamiltonian::energy & energy_;
-	ForcesType & forces_;
+	systems::ions const & ions_;
+	systems::electrons const & electrons_;
+	hamiltonian::energy const & energy_;
+	ForcesType const & forces_;
   HamiltonianType const & ham_;
 	Perturbation const & pert_;
 	
 public:
 
-	viewables(bool last_iter, int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces, HamiltonianType const & ham, Perturbation const & pert)
+	viewables(bool last_iter, int iter, double time, systems::ions const & ions, systems::electrons const & electrons, hamiltonian::energy const & energy, ForcesType const & forces, HamiltonianType const & ham, Perturbation const & pert)
 		:last_iter_(last_iter), iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces), ham_(ham), pert_(pert){
 	}
 
