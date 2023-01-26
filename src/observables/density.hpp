@@ -35,12 +35,31 @@ namespace density {
 
 template<class occupations_array_type, class field_set_type>
 void calculate_add(const occupations_array_type & occupations, field_set_type & phi, basis::field_set<typename field_set_type::basis_type, double> & density){
+	
+	if(not phi.spinors()){
 
-	gpu::run(phi.basis().part().local_size(),
-					 [nst = phi.set_part().local_size(), occ = begin(occupations), ph = begin(phi.matrix()), den = begin(density.matrix()), ispin = phi.spin_index()] GPU_LAMBDA (auto ipoint){
-						 for(int ist = 0; ist < nst; ist++) den[ipoint][ispin] += occ[ist]*norm(ph[ipoint][ist]);
-					 });
-
+		assert(phi.spin_index() < density.set_size());
+		
+		gpu::run(phi.basis().part().local_size(),
+						 [nst = phi.set_part().local_size(), occ = begin(occupations), ph = begin(phi.matrix()), den = begin(density.matrix()), ispin = phi.spin_index()] GPU_LAMBDA (auto ipoint){
+							 for(int ist = 0; ist < nst; ist++) den[ipoint][ispin] += occ[ist]*norm(ph[ipoint][ist]);
+						 });
+	} else {
+		
+		assert(density.set_size() == 4);
+		
+		gpu::run(phi.basis().part().local_size(),
+						 [nst = phi.spinor_local_set_size(), occ = begin(occupations), ph = begin(phi.spinor_matrix()), den = begin(density.matrix())] GPU_LAMBDA (auto ipoint){
+							 for(int ist = 0; ist < nst; ist++) {
+								 den[ipoint][0] += occ[ist]*norm(ph[ipoint][ist][0]);
+								 den[ipoint][1] += occ[ist]*norm(ph[ipoint][ist][1]);								 
+								 auto crossterm = occ[ist]*ph[ipoint][ist][0]*conj(ph[ipoint][ist][1]);
+								 den[ipoint][2] += real(crossterm);
+								 den[ipoint][3] += imag(crossterm);
+							 }
+						 });
+	}
+		
 }
 
 ///////////////////////////////////////////////////////////////
@@ -101,14 +120,15 @@ basis::field<BasisType, ElementType> total(basis::field_set<BasisType, ElementTy
 
 	CALI_CXX_MARK_FUNCTION;
 
+	assert(spin_density.set_size() == 1 or spin_density.set_size() == 2 or spin_density.set_size() == 4);
 	assert(spin_density.set_size() == spin_density.local_set_size());
 	
 	basis::field<BasisType, ElementType> total_density(spin_density.basis());
-	
+
 	gpu::run(spin_density.basis().local_size(),
 					 [spi = begin(spin_density.matrix()), tot = begin(total_density.linear()), nspin = spin_density.set_size()] GPU_LAMBDA (auto ip){
-						 tot[ip] = 0.0;
-						 for(int ispin = 0; ispin < nspin; ispin++) tot[ip] += spi[ip][ispin];
+						 if(nspin == 1) tot[ip] = spi[ip][0];
+						 else tot[ip] = spi[ip][0] + spi[ip][1];
 					 });
 
 	return total_density;
@@ -198,6 +218,42 @@ TEST_CASE("function observables::density", "[observables::density]") {
 		auto tdd = observables::density::total(dd);
 
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(tdd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
+		
+	}
+	
+	SECTION("spinor"){
+		int nvec = 1;
+		
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 2, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+
+		math::array<double, 1> occ(nvec);
+		
+		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
+			for(int jj = 0; jj < aa.spinor_local_set_size(); jj++){
+				aa.spinor_matrix()[ii][jj][0] = sqrt(bas.part().local_to_global(ii).value())*(aa.set_part().local_to_global(jj).value() + 1)*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));
+				aa.spinor_matrix()[ii][jj][1] = sqrt(bas.part().local_to_global(ii).value())*(aa.set_part().local_to_global(jj).value() + 1)*exp(complex(0.0, M_PI/65.0*bas.part().local_to_global(ii).value()));				
+			}
+		}
+
+		for(int jj = 0; jj < aa.spinor_local_set_size(); jj++) occ[jj] = 1.0/(aa.set_part().local_to_global(jj).value() + 1);
+
+		basis::field_set<basis::trivial, double> dd(bas, 4);
+		dd.fill(0.0);
+		
+		observables::density::calculate_add(occ, aa, dd);
+
+		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.matrix().data_elements()), dd.matrix().size(), std::plus<>{});
+		
+		for(int ii = 0; ii < dd.basis().part().local_size(); ii++) {
+			CHECK(dd.matrix()[ii][0] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
+			CHECK(dd.matrix()[ii][1] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
+			CHECK(dd.matrix()[ii][2] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
+			CHECK(dd.matrix()[ii][3] == Approx(0.0));
+		}
+
+		auto tdd = observables::density::total(dd);
+
+		for(int ii = 0; ii < dd.basis().part().local_size(); ii++) CHECK(tdd.linear()[ii] == Approx(2.0*0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 		
 	}
 }
