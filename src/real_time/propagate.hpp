@@ -16,80 +16,13 @@
 #include <systems/electrons.hpp>
 #include <real_time/crank_nicolson.hpp>
 #include <real_time/etrs.hpp>
+#include <real_time/viewables.hpp>
 #include <utils/profiling.hpp>
 
 #include <chrono>
 
 namespace inq {
 namespace real_time {
-
-template <class ForcesType, class Perturbation>
-class real_time_data {
-	bool last_iter_;
-	int iter_;
-	double time_;
-	systems::ions & ions_;
-	systems::electrons & electrons_;
-	hamiltonian::energy & energy_;
-	ForcesType & forces_;
-	Perturbation const & pert_;
-	
-public:
-
-	real_time_data(bool last_iter, int iter, double time, systems::ions & ions, systems::electrons & electrons, hamiltonian::energy & energy, ForcesType & forces, Perturbation const & pert)
-		:last_iter_(last_iter), iter_(iter), time_(time), ions_(ions), electrons_(electrons), energy_(energy), forces_(forces), pert_(pert){
-	}
-
-	auto iter() const {
-		return iter_;
-	}
-
-	auto last_iter() const {
-		return last_iter_;
-	}
-
-	auto every(int every_iter) const {
-		if(iter() == 0) return false;
-		return (iter()%every_iter == 0) or last_iter(); 
-	}
-	
-	auto time() const {
-		return time_;
-	}
-	
-	auto coordinates(int iatom) const {
-		return ions_.geo().coordinates()[iatom];
-	}
-	
-	auto velocities(int iatom) const {
-		return ions_.geo().velocities()[iatom];
-	}
-
-	auto forces(int iatom) const {
-		return forces_[iatom];
-	}
-
-	auto energy() const {
-		return energy_.total();
-	}
-
-	auto dipole() const {
-		return observables::dipole(ions_, electrons_);
-	}
-
-	auto laser_field() const {
-		return pert_.uniform_electric_field(time_);
-	}
-
-	auto vector_field() const{
-		return pert_.uniform_vector_potential(time_);
-	}
-
-	auto num_electrons() const {
-		return operations::integral(electrons_.density());
-	}
-	
-};
 
 template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed, typename Perturbation = perturbations::none>
 void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}, Perturbation const & pert = {}){
@@ -120,7 +53,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		
 		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
-		func(real_time_data{false, 0, 0.0, ions, electrons, energy, forces, pert});
+		func(real_time::viewables{false, 0, 0.0, ions, electrons, energy, forces, pert});
 		
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
@@ -148,8 +81,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
 
-			//func(real_time_data<decltype(forces)>{istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert_});
-			func(real_time_data{istep == numsteps - 1, istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert});			
+			func(real_time::viewables{istep == numsteps - 1, istep, (istep + 1.0)*dt, ions, electrons, energy, forces, pert});			
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
