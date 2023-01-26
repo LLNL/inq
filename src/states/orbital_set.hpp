@@ -40,6 +40,8 @@ public:
 		 spinor_dim_(spinor_dim),
 		 kpoint_(kpoint),
 		 spin_index_(spin_index){
+		assert(spinor_dim_ == 1 or spinor_dim_ == 2);
+		assert(fields_.local_set_size()%2 == 0);
 	}
 	
 	orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
@@ -70,6 +72,10 @@ public:
 	auto & spinor_dim() const {
 		return spinor_dim_;
 	}
+
+	bool spinors() const {
+		return spinor_dim_ - 1;
+	}
 	
 	auto & kpoint() const {
 		return kpoint_;
@@ -86,6 +92,10 @@ public:
 	
 	auto local_set_size() const {
 		return fields_.local_set_size();
+	}
+
+	auto spinor_local_set_size() const {
+		return fields_.local_set_size()/2;
 	}
 	
 	auto set_size() const {
@@ -187,7 +197,8 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
   basis::real_space rs(box, basis_comm);
 
 	states::orbital_set<basis::real_space, double> orb(rs, 12, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
-
+	CHECK(not orb.spinors());
+	
 	CHECK(sizes(orb.basis())[0] == 28);
 	CHECK(sizes(orb.basis())[1] == 11);
 	CHECK(sizes(orb.basis())[2] == 20);
@@ -205,6 +216,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	
 	states::orbital_set<basis::real_space, double> orbk(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
 
+	CHECK(not orbk.spinors());
 	CHECK(sizes(orbk.basis())[0] == 28);
 	CHECK(sizes(orbk.basis())[1] == 11);
 	CHECK(sizes(orbk.basis())[2] == 20);
@@ -221,6 +233,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	
 	states::orbital_set<basis::real_space, double> orb_copy(orbk.skeleton());
 
+	CHECK(not orb_copy.spinors());
 	CHECK(sizes(orb_copy.basis()) == sizes(orbk.basis()));
 	CHECK(orb_copy.kpoint() == orbk.kpoint());
 	CHECK(orb_copy.local_set_size() == orbk.local_set_size());
@@ -231,6 +244,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 
 	states::orbital_set<basis::real_space, double> sporb(rs, 12, 2, {0.4, 0.22, -0.57}, 0, cart_comm);
 
+	CHECK(sporb.spinors());
 	CHECK(sizes(sporb.basis())[0] == 28);
 	CHECK(sizes(sporb.basis())[1] == 11);
 	CHECK(sizes(sporb.basis())[2] == 20);
