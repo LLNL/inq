@@ -41,7 +41,7 @@ public:
 		 kpoint_(kpoint),
 		 spin_index_(spin_index){
 		assert(spinor_dim_ == 1 or spinor_dim_ == 2);
-		assert(fields_.local_set_size()%2 == 0);
+		assert(fields_.local_set_size()%spinor_dim_ == 0);
 	}
 	
 	orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
