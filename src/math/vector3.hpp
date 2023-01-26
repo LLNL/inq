@@ -23,6 +23,7 @@
 
 #include <gpu/run.hpp>
 #include <math/complex.hpp>
+#include <parallel/communicator.hpp>
 
 #include <inq_config.h>
 
@@ -278,6 +279,9 @@ private:
 
 }
 }
+
+template<typename T, typename Space> struct boost::mpi3::datatype<inq::math::vector3<T, Space>> : boost::mpi3::struct_<T, T, T>{};
+
 
 namespace std{
 template<class T> // workaround for types that recursively have a TDC workaround
