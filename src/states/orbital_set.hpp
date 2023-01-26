@@ -36,7 +36,7 @@ public:
 	using kpoint_type = math::vector3<double, math::covariant>;
 	
 	orbital_set(Basis const & basis, int const num_vectors, int const spinor_dim, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
-		:fields_(basis, num_vectors, comm),
+		:fields_(basis, spinor_dim*num_vectors, comm),
 		 spinor_dim_(spinor_dim),
 		 kpoint_(kpoint),
 		 spin_index_(spin_index){
@@ -106,6 +106,14 @@ public:
 	
 	auto & matrix() {
 		return fields_.matrix();
+	}
+
+	auto spinor_matrix() const {
+		return fields_.matrix().rotated().partitioned(2).transposed().unrotated();
+	}
+	
+	auto spinor_matrix() {
+		return fields_.matrix().rotated().partitioned(2).transposed().unrotated();
 	}
 	
 	auto hypercubic() const {
@@ -221,6 +229,30 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orb_copy.matrix().size() == orb_copy.basis().local_size());
 	CHECK(orb_copy.matrix().transposed().size() ==  orb_copy.local_set_size());
 
+	states::orbital_set<basis::real_space, double> sporb(rs, 12, 2, {0.4, 0.22, -0.57}, 0, cart_comm);
+
+	CHECK(sizes(sporb.basis())[0] == 28);
+	CHECK(sizes(sporb.basis())[1] == 11);
+	CHECK(sizes(sporb.basis())[2] == 20);
+
+	CHECK(sporb.kpoint()[0] == 0.4_a);
+	CHECK(sporb.kpoint()[1] == 0.22_a);
+	CHECK(sporb.kpoint()[2] == -0.57_a);
+
+	CHECK(sporb.matrix().size() == sporb.basis().local_size());
+	CHECK(sporb.matrix().transposed().size() == 24);
+
+	CHECK(std::get<0>(sizes(sporb.spinor_matrix())) == sporb.basis().local_size());
+	CHECK(std::get<1>(sizes(sporb.spinor_matrix())) == 12);
+	CHECK(std::get<2>(sizes(sporb.spinor_matrix())) == 2);
+
+	//CHECK THE ORDER IS CORRECT IN THE SPINOR MATRIX
+	for(int ii = 0; ii < 12; ii++){
+		sporb.spinor_matrix()[0][ii][0] = ii + 1.0;
+		sporb.spinor_matrix()[0][ii][1] = ii + 1.0;
+	}
+
+	for(int ii = 0; ii < 24; ii++) CHECK(sporb.matrix()[0][ii] == ii%12 + 1.0);
 	
 	states::orbital_set<basis::real_space, double> rr(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
 	rr.fill(1.0/set_comm.size());
