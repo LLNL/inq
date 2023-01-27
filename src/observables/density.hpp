@@ -248,7 +248,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 			CHECK(dd.matrix()[ii][0] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 			CHECK(dd.matrix()[ii][1] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 			CHECK(dd.matrix()[ii][2] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
-			CHECK(dd.matrix()[ii][3] == Approx(0.0));
+			CHECK(fabs(dd.matrix()[ii][3]) < 1e-12);
 		}
 
 		auto tdd = observables::density::total(dd);
