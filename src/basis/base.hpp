@@ -76,8 +76,7 @@ TEST_CASE("class basis::base", "[basis::base]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
-  
+
 }
 #endif
 

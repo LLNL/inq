@@ -210,7 +210,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	if(ions.cell().periodicity() == 0){
 		res.dipole = observables::dipole(ions, electrons);
 	} else {
-		res.dipole = math::vector3<double>(0.);
+		res.dipole = vector3<double>(0.);
 	}
 
 

@@ -35,7 +35,7 @@ namespace operations {
 
 
 template <template<typename, typename> class SetType, typename FactorType = double>
-void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -51,7 +51,7 @@ void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<ba
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <template<typename, typename> class SetType, typename FactorType = double>
-void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -66,7 +66,7 @@ void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType f
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <template<typename, typename> class SetType, typename FactorType = double>
-SetType<basis::fourier_space, complex> laplacian(SetType<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, math::vector3<double, math::contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+SetType<basis::fourier_space, complex> laplacian(SetType<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -110,8 +110,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	using namespace Catch::literals;
 	using namespace operations;
 	using Catch::Approx;
-	using math::vector3;
-
+	
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	

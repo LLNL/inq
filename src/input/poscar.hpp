@@ -41,7 +41,7 @@ namespace input {
 
 class poscar {
 
-	std::vector<math::vector3<double>> lattice_vectors_;
+	std::vector<vector3<double>> lattice_vectors_;
 	std::vector<input::atom> geo_;
 	
 public:
@@ -104,7 +104,7 @@ public:
 			// Cartesian
 			for(unsigned ispecies = 0; ispecies < species_num.size(); ispecies++){
 				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
-					math::vector3<double> pos;
+					vector3<double> pos;
 					poscar_file >> pos;
 					geo_.emplace_back(input::species(species[ispecies]), scaling_factor*in_atomic_units(1.0_A*pos));
 					std::getline(poscar_file, tail);
@@ -119,7 +119,7 @@ public:
 			
 			for(unsigned ispecies = 0; ispecies < species_num.size(); ispecies++){
 				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
-					math::vector3<double, math::contravariant> pos;
+					vector3<double, contravariant> pos;
 					poscar_file >> pos;
 					geo_.emplace_back(input::species(species[ispecies]), cell.metric().to_cartesian(pos));
 					std::getline(poscar_file, tail);					

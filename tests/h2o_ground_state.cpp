@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 	using namespace inq::input;
 	using namespace inq::systems;
 	using namespace inq::magnitude;
-	using inq::math::vector3;
+	using inq::vector3;
 	
 	inq::input::environment env(argc, argv);
 	

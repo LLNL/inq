@@ -136,13 +136,13 @@ GPU_FUNCTION auto in_atomic_units(double const & value) {
 	return value;
 }
 
-GPU_FUNCTION auto in_atomic_units(math::vector3<double> const & value) {
+GPU_FUNCTION auto in_atomic_units(vector3<double> const & value) {
 	return value;
 }
 
 template <typename MagnitudeType>
-GPU_FUNCTION auto in_atomic_units(math::vector3<MagnitudeType> const & quant) {
-	return math::vector3<double>{quant[0].in_atomic_units(), quant[1].in_atomic_units(), quant[2].in_atomic_units()};
+GPU_FUNCTION auto in_atomic_units(vector3<MagnitudeType> const & quant) {
+	return vector3<double>{quant[0].in_atomic_units(), quant[1].in_atomic_units(), quant[2].in_atomic_units()};
 }
 
 }
@@ -191,9 +191,9 @@ TEST_CASE("inq::quantity", "[inq::quantity]") {
 
 	CHECK(in_atomic_units(10.0) == 10.0_a);
 
-	CHECK(in_atomic_units({10.0, -2.1, 4.6}) == math::vector3<double>{10.0, -2.1, 4.6});
+	CHECK(in_atomic_units({10.0, -2.1, 4.6}) == vector3<double>{10.0, -2.1, 4.6});
 
-	CHECK(in_atomic_units(math::vector3<decltype(rr)>{rr, rr, rr}) == math::vector3<double>{127.5, 127.5, 127.5});
+	CHECK(in_atomic_units(vector3<decltype(rr)>{rr, rr, rr}) == vector3<double>{127.5, 127.5, 127.5});
 
 }
 

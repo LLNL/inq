@@ -283,8 +283,8 @@ field_set<basis::real_space, inq::complex> complex_field(field_set<basis::real_s
 }
 
 template <class VectorSpace>
-field_set<basis::real_space, math::vector3<complex, VectorSpace>> complex_field(field_set<basis::real_space, math::vector3<double, VectorSpace>> const & field) {
-	field_set<basis::real_space, math::vector3<complex, VectorSpace>> cfield(field.skeleton());
+field_set<basis::real_space, vector3<complex, VectorSpace>> complex_field(field_set<basis::real_space, vector3<double, VectorSpace>> const & field) {
+	field_set<basis::real_space, vector3<complex, VectorSpace>> cfield(field.skeleton());
 
 	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
 					 [fie = begin(field.matrix()), cfie = begin(cfield.matrix())] GPU_LAMBDA (auto ist, auto ii){
@@ -310,9 +310,9 @@ field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq
 }
 
 template <class VectorSpace>
-field_set<basis::real_space, math::vector3<double, VectorSpace>> real_field(field_set<basis::real_space, math::vector3<complex, VectorSpace>> const & field) {
+field_set<basis::real_space, vector3<double, VectorSpace>> real_field(field_set<basis::real_space, vector3<complex, VectorSpace>> const & field) {
 	
-	field_set<basis::real_space, math::vector3<double, VectorSpace>> rfield(field.skeleton());
+	field_set<basis::real_space, vector3<double, VectorSpace>> rfield(field.skeleton());
 	
 	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
 					 [rp = begin(rfield.matrix()), cp = begin(field.matrix())] GPU_LAMBDA (auto ist, auto ii){
@@ -340,8 +340,7 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
-  using math::vector3;
-  
+	
 	auto comm = boost::mpi3::environment::get_world_instance();
 
 	parallel::cartesian_communicator<2> cart_comm(comm, {});

@@ -85,37 +85,37 @@ namespace utils {
 #include <math/vector3.hpp>
 #include <complex>
 
-	auto gaussian_func(inq::math::vector3<double> rr){
+	auto gaussian_func(inq::vector3<double> rr){
 		return pow(M_PI, -1.5)*exp(-norm(rr)); // sigma = 1/sqrt(2)
 	}
 
-	auto linear_func(inq::math::vector3<double> rr){
+	auto linear_func(inq::vector3<double> rr){
 		return 4.5*(rr[0] + rr[1] + rr[2]);
 	}
 
-	auto quadratic_func(inq::math::vector3<double> rr){
+	auto quadratic_func(inq::vector3<double> rr){
 		return -4.35*norm(rr);
 	}
 
-	auto dgaussian_func(inq::math::vector3<double> rr){
-		inq::math::vector3<double> ff;
+	auto dgaussian_func(inq::vector3<double> rr){
+		inq::vector3<double> ff;
 		for(int idir = 0; idir < 3 ; idir++) ff[idir] = -2.0*rr[idir]*gaussian_func(rr);
 		return ff;
 	}
 
-	auto dlinear_func(inq::math::vector3<double> rr){
-		inq::math::vector3<double> ff;
+	auto dlinear_func(inq::vector3<double> rr){
+		inq::vector3<double> ff;
 		for(int idir = 0; idir < 3 ; idir++) ff[idir] = 4.5;
 		return ff;
 	}
 
-	auto dquadratic_func(inq::math::vector3<double> rr){
-		inq::math::vector3<double> ff;
+	auto dquadratic_func(inq::vector3<double> rr){
+		inq::vector3<double> ff;
 		for(int idir = 0; idir < 3 ; idir++) ff[idir] = -8.7*rr[idir];
 		return ff;
 	}
 
-	auto laplacian_gaussian_func(inq::math::vector3<double> rr){
+	auto laplacian_gaussian_func(inq::vector3<double> rr){
 		return 4.0*dot(rr, rr)*gaussian_func(rr) - 6.0*gaussian_func(rr);
 	}
 
@@ -126,9 +126,8 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 	using Catch::Approx;
 
 	using namespace inq::utils;
-	using math::vector3;
-
-	inq::math::vector3<double> vec;
+	
+	inq::vector3<double> vec;
 
 	auto grad = [&] (auto point){
 		return inq::utils::finite_difference_gradient5p(gaussian_func, point);

@@ -41,7 +41,7 @@ public:
 
 	static auto cubic(quantity<magnitude::length> lat_par){
 		auto aa = lat_par.in_atomic_units();
-		return box(math::vector3<double>(aa, 0.0, 0.0), math::vector3<double>(0.0, aa, 0.0), math::vector3<double>(0.0, 0.0, aa));
+		return box(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
 	}
 
 	static box orthorhombic(
@@ -50,17 +50,17 @@ public:
 		quantity<magnitude::length> cc
 	){
 		return {
-			math::vector3<double>(aa.in_atomic_units(), 0.0, 0.0), 
-			math::vector3<double>(0.0, bb.in_atomic_units(), 0.0), 
-			math::vector3<double>(0.0, 0.0, cc.in_atomic_units())
+			vector3<double>(aa.in_atomic_units(), 0.0, 0.0), 
+			vector3<double>(0.0, bb.in_atomic_units(), 0.0), 
+			vector3<double>(0.0, 0.0, cc.in_atomic_units())
 		};
 	}
 	
-	static box lattice(math::vector3<quantity<magnitude::length>> aa, math::vector3<quantity<magnitude::length>> bb, math::vector3<quantity<magnitude::length>> cc){
+	static box lattice(vector3<quantity<magnitude::length>> aa, vector3<quantity<magnitude::length>> bb, vector3<quantity<magnitude::length>> cc){
 		return {
-			math::vector3<double>(aa[0].in_atomic_units(), aa[1].in_atomic_units(), aa[2].in_atomic_units()), 
-			math::vector3<double>(bb[0].in_atomic_units(), bb[1].in_atomic_units(), bb[2].in_atomic_units()), 
-			math::vector3<double>(cc[0].in_atomic_units(), cc[1].in_atomic_units(), cc[2].in_atomic_units())
+			vector3<double>(aa[0].in_atomic_units(), aa[1].in_atomic_units(), aa[2].in_atomic_units()), 
+			vector3<double>(bb[0].in_atomic_units(), bb[1].in_atomic_units(), bb[2].in_atomic_units()), 
+			vector3<double>(cc[0].in_atomic_units(), cc[1].in_atomic_units(), cc[2].in_atomic_units())
 		};
 	}
 
@@ -151,7 +151,7 @@ public:
 	
 private:
 
-	box(const math::vector3<double> & a0, const math::vector3<double> & a1, const math::vector3<double> & a2){
+	box(const vector3<double> & a0, const vector3<double> & a1, const vector3<double> & a2){
 		lattice_vectors_[0] = a0;
 		lattice_vectors_[1] = a1;
 		lattice_vectors_[2] = a2;
@@ -160,7 +160,7 @@ private:
 	box(){
 	}
 
-	std::array<std::optional<math::vector3<double>>, 3> lattice_vectors_;
+	std::array<std::optional<vector3<double>>, 3> lattice_vectors_;
 	std::optional<int> periodicity_;
 	std::optional<double> spacing_;
 	std::optional<bool> spherical_grid_;

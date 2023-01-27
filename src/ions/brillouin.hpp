@@ -70,7 +70,7 @@ public:
   }
 
   auto kpoint(int ik) const {
-    return 2.0*M_PI*math::vector3<double, math::covariant>{
+    return 2.0*M_PI*vector3<double, covariant>{
       (grid_address_[3*ik + 0] + 0.5*is_shifted_[0])/grid_.dims()[0],
       (grid_address_[3*ik + 1] + 0.5*is_shifted_[1])/grid_.dims()[1],
       (grid_address_[3*ik + 2] + 0.5*is_shifted_[2])/grid_.dims()[2]};
@@ -85,7 +85,7 @@ private:
   input::kpoints grid_;
   std::vector<int> grid_address_;
   std::vector<int> map_;
-  math::vector3<int> is_shifted_;
+  vector3<int> is_shifted_;
   
 };
 

@@ -54,8 +54,8 @@ auto operator "" _crys(long double val){
   return inq::quantity<fractionary>::from_atomic_units(val);
 }  
 
-GPU_FUNCTION auto in_atomic_units(math::vector3<quantity<magnitude::fractionary>> const & quant) {
-	return math::vector3<double, math::contravariant>{quant[0].in_atomic_units(), quant[1].in_atomic_units(), quant[2].in_atomic_units()};
+GPU_FUNCTION auto in_atomic_units(vector3<quantity<magnitude::fractionary>> const & quant) {
+	return vector3<double, contravariant>{quant[0].in_atomic_units(), quant[1].in_atomic_units(), quant[2].in_atomic_units()};
 }
 
 

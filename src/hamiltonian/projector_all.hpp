@@ -267,7 +267,7 @@ public:
 	
 	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType>
 	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric,
-						 OccsType const & occs, math::vector3<double, math::covariant> const & vector_potential, math::array<math::vector3<double>, 1> & forces_non_local) const {
+						 OccsType const & occs, vector3<double, covariant> const & vector_potential, math::array<vector3<double>, 1> & forces_non_local) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -318,7 +318,7 @@ public:
 			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, transposed(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
 
-		math::array<math::vector3<double, math::covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
+		math::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
 			
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
@@ -421,8 +421,8 @@ private:
 	int nprojs_;
 	long max_sphere_size_;
 	int max_nlm_;
-	math::array<math::vector3<int>, 2> points_;
-	math::array<math::vector3<double, math::contravariant>, 2> positions_;
+	math::array<vector3<int>, 2> points_;
+	math::array<vector3<double, contravariant>, 2> positions_;
 	math::array<double, 2> coeff_;
 	math::array<double, 3> matrices_;
 	mutable boost::multi::array<parallel::communicator, 1> comms_;	
@@ -447,8 +447,7 @@ TEST_CASE("class hamiltonian::projector_all", "[hamiltonian::projector_all]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-	using math::vector3;
-
+	
 }
 
 #endif

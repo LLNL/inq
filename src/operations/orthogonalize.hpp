@@ -62,8 +62,7 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-	using math::vector3;
-
+	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	systems::box box = systems::box::cubic(6.3_b).cutoff_energy(25.0_Ha);

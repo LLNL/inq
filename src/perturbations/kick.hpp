@@ -37,7 +37,7 @@ class kick : public perturbations::none {
 public:
 
 	template <typename CellType>
-	kick(CellType const & cell, math::vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
+	kick(CellType const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
 		efield_(-arg_kick_field),
 		vpot_(-arg_kick_field),		
 		periodicity_(cell.periodicity())
@@ -82,8 +82,8 @@ public:
 	
 private:
 
-	math::vector3<double> efield_;
-	math::vector3<double> vpot_;	
+	vector3<double> efield_;
+	vector3<double> vpot_;	
 	int periodicity_;
 
 };
@@ -108,8 +108,7 @@ TEST_CASE("perturbations::kick", "[perturbations::kick]") {
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
-	using math::vector3;
-
+	
 	auto ecut = 31.2_Ha;
 	
 	SECTION("finite"){

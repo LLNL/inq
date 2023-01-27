@@ -13,8 +13,8 @@ namespace ground_state {
 class result {
 public:
 	hamiltonian::energy energy;
-	math::vector3<double> dipole;
-	math::array<math::vector3<double>, 1> forces;
+	vector3<double> dipole;
+	math::array<vector3<double>, 1> forces;
 };
 
 }

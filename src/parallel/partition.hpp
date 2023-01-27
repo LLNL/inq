@@ -190,8 +190,7 @@ TEST_CASE("class parallel::partition", "[parallel::partition]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
-
+  
   const int NN = 1033;
 
   auto comm = boost::mpi3::environment::get_world_instance();

@@ -49,7 +49,7 @@ public:
 	
 	template<typename PotentialType>
 	void potential(const double time, PotentialType & potential) const {
-		auto Vcap = [mid_pos = mid_pos_, width = width_, amplitude = amplitude_](inq::math::vector3<double, math::contravariant> rr) {
+		auto Vcap = [mid_pos = mid_pos_, width = width_, amplitude = amplitude_](inq::vector3<double, contravariant> rr) {
 			if (rr[2] > mid_pos - width/2 && rr[2] < mid_pos + width/2) {
 				return complex(0.0, amplitude*pow(sin((rr[2] - (mid_pos - width/2))*M_PI/2/(width/2)),2));
 			} else {

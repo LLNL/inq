@@ -31,7 +31,7 @@ namespace inq {
 namespace operations {
 
 template <typename VectorSpace>
-basis::field<basis::fourier_space, complex> divergence(basis::field<basis::fourier_space, math::vector3<complex, VectorSpace>> const & ff){
+basis::field<basis::fourier_space, complex> divergence(basis::field<basis::fourier_space, vector3<complex, VectorSpace>> const & ff){
 	
 	basis::field<basis::fourier_space, complex> diverg(ff.basis());
 
@@ -46,7 +46,7 @@ basis::field<basis::fourier_space, complex> divergence(basis::field<basis::fouri
 }
 
 template <typename VectorSpace>
-basis::field_set<basis::fourier_space, complex> divergence(basis::field_set<basis::fourier_space, math::vector3<complex, VectorSpace>> const & ff){
+basis::field_set<basis::fourier_space, complex> divergence(basis::field_set<basis::fourier_space, vector3<complex, VectorSpace>> const & ff){
 	
 	basis::field_set<basis::fourier_space, complex> diverg(ff.skeleton());
 
@@ -61,7 +61,7 @@ basis::field_set<basis::fourier_space, complex> divergence(basis::field_set<basi
 }
 
 template <typename VectorSpace>
-auto divergence(basis::field<basis::real_space, math::vector3<complex, VectorSpace>> const & ff){
+auto divergence(basis::field<basis::real_space, vector3<complex, VectorSpace>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(ff); 			
 	auto diverg_fourier = divergence(ff_fourier); 				
 	auto diverg_real = operations::space::to_real(diverg_fourier);
@@ -69,7 +69,7 @@ auto divergence(basis::field<basis::real_space, math::vector3<complex, VectorSpa
 }
 
 template <typename VectorSpace>
-auto divergence(basis::field<basis::real_space, math::vector3<double, VectorSpace>> const & ff){
+auto divergence(basis::field<basis::real_space, vector3<double, VectorSpace>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(complex_field(ff));
 	auto diverg_fourier = divergence(ff_fourier); 
 	auto diverg_real = operations::space::to_real(diverg_fourier);
@@ -77,7 +77,7 @@ auto divergence(basis::field<basis::real_space, math::vector3<double, VectorSpac
 }
 
 template <typename VectorSpace>
-auto divergence(basis::field_set<basis::real_space, math::vector3<complex, VectorSpace>> const & ff){
+auto divergence(basis::field_set<basis::real_space, vector3<complex, VectorSpace>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(ff); 			
 	auto diverg_fourier = divergence(ff_fourier); 				
 	auto diverg_real = operations::space::to_real(diverg_fourier);
@@ -85,7 +85,7 @@ auto divergence(basis::field_set<basis::real_space, math::vector3<complex, Vecto
 }
 
 template <typename VectorSpace>
-auto divergence(basis::field_set<basis::real_space, math::vector3<double, VectorSpace>> const & ff){
+auto divergence(basis::field_set<basis::real_space, vector3<double, VectorSpace>> const & ff){
 	auto ff_fourier = operations::space::to_fourier(complex_field(ff));
 	auto diverg_fourier = divergence(ff_fourier); 
 	auto diverg_real = operations::space::to_real(diverg_fourier);
@@ -105,7 +105,7 @@ auto divergence(basis::field_set<basis::real_space, math::vector3<double, Vector
 #include <catch2/catch_all.hpp>
 #include <math/vector3.hpp>
 
-auto vectorial_complex_plane_wave(inq::math::vector3<double> k, inq::math::vector3<double> r){
+auto vectorial_complex_plane_wave(inq::vector3<double> k, inq::vector3<double> r){
 	std::array<inq::complex, 3> f;
 	f[0] = 1.0*exp(inq::complex(0.0, 1.0)*dot(k, r));
 	f[1] = -2.3*exp(inq::complex(0.0, 1.0)*dot(k, r));
@@ -113,12 +113,12 @@ auto vectorial_complex_plane_wave(inq::math::vector3<double> k, inq::math::vecto
 	return f;
 }
 
-auto d_vectorial_complex_plane_wave(inq::math::vector3<double> k, inq::math::vector3<double> r){
+auto d_vectorial_complex_plane_wave(inq::vector3<double> k, inq::vector3<double> r){
 	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0,1.0)*dot(k, r));
 	return factor*(1.0*k[0] - 2.3*k[1] + 3.4*k[2]);
 }
 
-auto vectorial_real_wave(inq::math::vector3<double> k, inq::math::vector3<double> r){
+auto vectorial_real_wave(inq::vector3<double> k, inq::vector3<double> r){
 	std::array<double, 3> f;
 
 	f[0] = 1.0*sin(dot(k, r));
@@ -127,7 +127,7 @@ auto vectorial_real_wave(inq::math::vector3<double> k, inq::math::vector3<double
 	return f;
 }
 
-auto d_vectorial_real_wave (inq::math::vector3<double> k, inq::math::vector3<double> r){
+auto d_vectorial_real_wave (inq::vector3<double> k, inq::vector3<double> r){
 	return 1.0*k[0]*cos(dot(k, r)) + 2.5*k[1]*sin(dot(k, r)) + 3.3*k[2]*cos(dot(k, r));
 }
 
@@ -137,8 +137,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using namespace operations;
-	using math::vector3;
-
+	
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;
@@ -153,7 +152,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	auto kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
 	
 	SECTION("Vectored plane-wave"){ 
-		basis::field<basis::real_space, math::vector3<complex>> vectorial_complex_field(rs);
+		basis::field<basis::real_space, vector3<complex>> vectorial_complex_field(rs);
 	
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -180,7 +179,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	
 	SECTION("Vectored plane-wave - field_set"){
 		int nvec = 7;
-		basis::field_set<basis::real_space, math::vector3<complex>> vectorial_complex_field(rs, nvec);
+		basis::field_set<basis::real_space, vector3<complex>> vectorial_complex_field(rs, nvec);
 	
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -212,7 +211,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	
 	SECTION("Vectored real function"){
 
-		basis::field<basis::real_space, math::vector3<double>> vectorial_real_field(rs);
+		basis::field<basis::real_space, vector3<double>> vectorial_real_field(rs);
 
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){ 			// Iterating over each x-,y- and z- components of the input field 
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -240,7 +239,7 @@ TEST_CASE("function operations::divergence", "[operations::divergence]") {
 	SECTION("Vectored real function - field_set"){
 
 		int nvec = 4;
-		basis::field_set<basis::real_space, math::vector3<double>> vectorial_real_field(rs, nvec);
+		basis::field_set<basis::real_space, vector3<double>> vectorial_real_field(rs, nvec);
 
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){

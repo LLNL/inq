@@ -97,8 +97,7 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-  using math::vector3;
-
+  
 	const int nst = 12;
 
 	auto comm = boost::mpi3::environment::get_world_instance();

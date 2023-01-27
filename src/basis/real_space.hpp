@@ -77,7 +77,7 @@ class fourier_space;
 
 		public:
 
-			point_operator(std::array<int, 3> const & nr, math::vector3<double, math::contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
+			point_operator(std::array<int, 3> const & nr, vector3<double, contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
 				nr_(nr),
 				rspacing_(rspacing),
 				cubic_dist_(dist),
@@ -89,13 +89,13 @@ class fourier_space;
 				return grid::to_symmetric_range(nr_, ix, iy, iz);
 			}
 			
-			GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
+			GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
 				return grid::from_symmetric_range(nr_, ii);
 			}
 
 			GPU_FUNCTION auto rvector(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 				auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
-				return math::vector3<int, math::contravariant>{ii[0], ii[1], ii[2]}*rspacing_;
+				return vector3<int, contravariant>{ii[0], ii[1], ii[2]}*rspacing_;
 			}
 			
 			GPU_FUNCTION auto rvector(int ix, int iy, int iz) const {
@@ -140,7 +140,7 @@ class fourier_space;
 		private:
 			
 			std::array<int, 3> nr_;
-			math::vector3<double, math::contravariant> rspacing_;
+			vector3<double, contravariant> rspacing_;
 			std::array<inq::parallel::partition, 3> cubic_dist_;
 			ions::unit_cell::cell_metric metric_;
 			
@@ -158,7 +158,7 @@ class fourier_space;
 			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, double_grid_.enabled(), periodicity_, this->comm()));
 		}
 
-		auto enlarge(math::vector3<int> factor) const {
+		auto enlarge(vector3<int> factor) const {
 			return real_space(grid(cell_.enlarge(factor), {factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]}, spherical_g_grid_, double_grid_.enabled(), periodicity_, this->comm()));
 		}
 		
@@ -220,8 +220,7 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-	using math::vector3;
-
+	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
   {

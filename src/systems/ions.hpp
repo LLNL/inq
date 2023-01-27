@@ -68,11 +68,11 @@ public:
 		return cell_;
 	}
 
-	auto insert(std::string const & symbol, math::vector3<quantity<magnitude::length>> const & pos){
+	auto insert(std::string const & symbol, vector3<quantity<magnitude::length>> const & pos){
 		geo_.add_atom(input::species(pseudo::element(symbol)), pos);
 	}
 	
-	auto insert(input::species const & sp, math::vector3<quantity<magnitude::length>> const & pos){
+	auto insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
 		geo_.add_atom(sp, pos);
 	}
 
@@ -81,11 +81,11 @@ public:
 		for(auto atom : container) geo_.add_atom(atom.species(), atom.position());
 	}
 
-	auto insert(input::species const & sp, math::vector3<quantity<magnitude::fractionary>> const & pos){
+	auto insert(input::species const & sp, vector3<quantity<magnitude::fractionary>> const & pos){
 		geo_.add_atom(sp, cell_.metric().to_cartesian(in_atomic_units(pos)));
 	}
 
-	auto insert(std::string const & symbol, math::vector3<quantity<magnitude::fractionary>> const & pos){
+	auto insert(std::string const & symbol, vector3<quantity<magnitude::fractionary>> const & pos){
 		insert(input::species(pseudo::element(symbol)), pos);
 	}
 	

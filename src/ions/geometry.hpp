@@ -54,7 +54,7 @@ public:
 		for(auto it = atom_container.begin(); it != atom_container.end(); it++){
 			atoms_.push_back(it->species());
 			coordinates_.push_back(it->position());
-			velocities_.push_back(math::vector3<double>(0.0, 0.0, 0.0));			
+			velocities_.push_back(vector3<double>(0.0, 0.0, 0.0));			
 		}
 			
 	}
@@ -67,7 +67,7 @@ public:
 	void add_atom(input::species const & element, PositionType const & position){
 		atoms_.push_back(element);
 		coordinates_.push_back(in_atomic_units(position));
-		velocities_.push_back(math::vector3<double>(0.0, 0.0, 0.0));					
+		velocities_.push_back(vector3<double>(0.0, 0.0, 0.0));					
 	}
 
 	auto & atoms() const {
@@ -106,8 +106,8 @@ public:
 private:
 
 	std::vector<input::species> atoms_;
-	std::vector<math::vector3<double>> coordinates_;
-	std::vector<math::vector3<double>> velocities_;	
+	std::vector<vector3<double>> coordinates_;
+	std::vector<vector3<double>> velocities_;	
     
 };
 }
@@ -130,7 +130,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
 
     CHECK(geo.num_atoms() == 0);
 
-    geo.add_atom(pseudo::element("Xe"), math::vector3<double>(1000.0, -200.0, 6.0));
+    geo.add_atom(pseudo::element("Xe"), vector3<double>(1000.0, -200.0, 6.0));
 
     CHECK(geo.num_atoms() == 1);
     CHECK(geo.atoms()[0].atomic_number() == 54);
@@ -177,7 +177,7 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
 
 		assert(geo.velocities().size() == geo.coordinates().size());
 		
-    geo.add_atom(pseudo::element("Cl"), math::vector3<double>(-3.0, 4.0, 5.0));
+    geo.add_atom(pseudo::element("Cl"), vector3<double>(-3.0, 4.0, 5.0));
 
     CHECK(geo.num_atoms() == 13);
     CHECK(geo.atoms()[12].atomic_number() == 17);

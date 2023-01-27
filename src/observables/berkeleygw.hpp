@@ -60,8 +60,7 @@ TEST_CASE("observables::berkeleygw", "[observables::berkeleygw]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-	using math::vector3;
-
+	
 
 }
 

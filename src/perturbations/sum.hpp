@@ -55,7 +55,7 @@ public:
 	}
 
 	auto uniform_electric_field(double time) const {
-    math::vector3<double> efield({0.0, 0.0, 0.0});
+    vector3<double> efield({0.0, 0.0, 0.0});
     if(perta_.has_uniform_electric_field()) efield += perta_.uniform_electric_field(time);
     if(pertb_.has_uniform_electric_field()) efield += pertb_.uniform_electric_field(time);
     return efield;
@@ -66,7 +66,7 @@ public:
 	}
 
 	auto uniform_vector_potential(double time) const {
-    math::vector3<double> vpotential({0.0, 0.0, 0.0});
+    vector3<double> vpotential({0.0, 0.0, 0.0});
     if(perta_.has_uniform_vector_potential()) vpotential += perta_.uniform_vector_potential(time);
     if(pertb_.has_uniform_vector_potential()) vpotential += pertb_.uniform_vector_potential(time);
     return vpotential;

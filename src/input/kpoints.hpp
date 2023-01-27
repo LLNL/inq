@@ -37,7 +37,7 @@ public:
     return kpoints({1, 1, 1}, false);
   }
   
-  static auto grid(math::vector3<int> const & dims, bool shifted = false) { 
+  static auto grid(vector3<int> const & dims, bool shifted = false) { 
     return kpoints(dims, shifted);
   }
 	
@@ -49,20 +49,20 @@ public:
     return product(dims_);
   }
 
-	math::vector3<int> is_shifted() const {
+	vector3<int> is_shifted() const {
 		if(shifted_) return {1, 1, 1};
 		return {0, 0, 0};
 	}
   
 private:
 	
-  kpoints(math::vector3<int> const & dims, bool shifted):
+  kpoints(vector3<int> const & dims, bool shifted):
     dims_(dims),
 		shifted_(shifted)
 	{
 	}
 	
-	math::vector3<int> dims_;
+	vector3<int> dims_;
 	bool shifted_;
 	
 };
