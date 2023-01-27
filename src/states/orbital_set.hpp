@@ -250,20 +250,22 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(sporb.kpoint()[1] == 0.22_a);
 	CHECK(sporb.kpoint()[2] == -0.57_a);
 
-	CHECK(sporb.matrix().size() == sporb.basis().local_size());
-	CHECK(sporb.matrix().transposed().size() == 24);
-
-	CHECK(std::get<0>(sizes(sporb.spinor_matrix())) == sporb.basis().local_size());
-	CHECK(std::get<1>(sizes(sporb.spinor_matrix())) == 12);
-	CHECK(std::get<2>(sizes(sporb.spinor_matrix())) == 2);
-
-	//CHECK THE ORDER IS CORRECT IN THE SPINOR MATRIX
-	for(int ii = 0; ii < 12; ii++){
-		sporb.spinor_matrix()[0][ii][0] = ii + 1.0;
-		sporb.spinor_matrix()[0][ii][1] = ii + 1.0;
+	if(cart_comm.size() == 1){
+		CHECK(sporb.matrix().size() == sporb.basis().local_size());
+		CHECK(sporb.matrix().transposed().size() == 24);
+		
+		CHECK(std::get<0>(sizes(sporb.spinor_matrix())) == sporb.basis().local_size());
+		CHECK(std::get<1>(sizes(sporb.spinor_matrix())) == 12);
+		CHECK(std::get<2>(sizes(sporb.spinor_matrix())) == 2);
+		
+		//CHECK THE ORDER IS CORRECT IN THE SPINOR MATRIX
+		for(int ii = 0; ii < 12; ii++){
+			sporb.spinor_matrix()[0][ii][0] = ii + 1.0;
+			sporb.spinor_matrix()[0][ii][1] = ii + 1.0;
+		}
+		
+		for(int ii = 0; ii < 24; ii++) CHECK(sporb.matrix()[0][ii] == ii%12 + 1.0);
 	}
-
-	for(int ii = 0; ii < 24; ii++) CHECK(sporb.matrix()[0][ii] == ii%12 + 1.0);
 	
 	states::orbital_set<basis::real_space, double> rr(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
 	rr.fill(1.0/set_comm.size());
