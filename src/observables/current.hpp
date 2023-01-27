@@ -43,7 +43,7 @@ basis::field<basis::real_space, math::vector3<double, math::covariant>> current_
 	auto iphi = 0;
 	for(auto & phi : electrons.lot()){
 		
-		auto gphi = operations::gradient(phi);
+		auto gphi = operations::gradient(phi, /* shift = */ ham.uniform_vector_potential());
     
     gpu::run(phi.basis().part().local_size(),
              [nst = phi.set_part().local_size(), occ = begin(electrons.occupations()[iphi]),
