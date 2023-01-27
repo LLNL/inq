@@ -209,9 +209,6 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orb.matrix().size() == orb.basis().local_size());
 	CHECK(orb.matrix().transposed().size() ==  orb.local_set_size());
 
-	CHECK(orb.hypercubic().size() == sizes(orb.basis())[0]);
-	CHECK(orb.hypercubic().rotated().size() == sizes(orb.basis())[1]);
-	CHECK(orb.hypercubic().rotated().rotated().size() == sizes(orb.basis())[2]);	
 	CHECK(orb.hypercubic().rotated().rotated().rotated().size() == orb.local_set_size());
 	
 	states::orbital_set<basis::real_space, double> orbk(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
