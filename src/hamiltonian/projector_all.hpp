@@ -333,7 +333,8 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
+	// Calculates |cphi> += [Vnl, r] | phi>
+	////////////////////////////////////////////////////////////////////////////////////////////	
 	template <typename KpointType>
 	void position_commutator(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, math::vector3<complex, math::covariant>> & cphi, KpointType const & kpoint) const {
 
@@ -405,7 +406,7 @@ public:
 							 GPU_LAMBDA (auto ist, auto ipoint){
 								 if(poi[iproj][ipoint][0] >= 0){
 									 auto phase = polar(1.0, -dot(kpoint, pos[iproj][ipoint]));
-									 auto commutator = phase*metric.to_covariant(sgr[iproj][ipoint][ist]*pos[iproj][ipoint] - srphi[iproj][ipoint][ist]);
+									 auto commutator = phase*metric.to_covariant(srphi[iproj][ipoint][ist] - pos[iproj][ipoint]*sgr[iproj][ipoint][ist]);
 									 gpu::atomic::add(&gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist], commutator);
 								 }
 							 });
