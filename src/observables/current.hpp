@@ -43,7 +43,7 @@ basis::field<basis::real_space, math::vector3<double, math::covariant>> current_
 	auto iphi = 0;
 	for(auto & phi : electrons.lot()){
 		
-		auto gphi = operations::gradient(phi, /* shift = */ ham.uniform_vector_potential());		
+		auto gphi = operations::gradient(phi, /* shift = */ ham.uniform_vector_potential(), /* factor = */ -1.0);		
 
 		ham.projectors_all().position_commutator(phi, gphi, phi.kpoint() + ham.uniform_vector_potential());
 		
