@@ -53,11 +53,11 @@ int main(int argc, char ** argv){
 
 	if(not electrons.load("silicon_restart")){
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-8_Ha));
 		electrons.save("silicon_restart");
 	}
 
-	auto kick = perturbations::kick{box.cell(), {0.06, 0.1, 0.0}, perturbations::gauge::velocity};
+	auto kick = perturbations::kick{box.cell(), {0.01, 0.0, 0.0}, perturbations::gauge::velocity};
 	
 	long nsteps = 10001;
 	
@@ -88,7 +88,7 @@ int main(int argc, char ** argv){
 		}
 	};
 	
-	real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, input::interaction::pbe(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
 	
 	return energy_match.fail();
 	

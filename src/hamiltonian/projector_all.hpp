@@ -333,7 +333,89 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
+	// Calculates |cphi> += [Vnl, r] | phi>
+	////////////////////////////////////////////////////////////////////////////////////////////	
+	template <typename KpointType>
+	void position_commutator(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, math::vector3<complex, math::covariant>> & cphi, KpointType const & kpoint) const {
+
+		using math::vector3;
+		
+		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		math::array<math::vector3<complex, math::contravariant>, 3> sphere_rphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});		
+
+		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
+		math::array<math::vector3<complex, math::contravariant>, 3> rprojections_all({nprojs_, max_nlm_, phi.local_set_size()});		
+
+		{ CALI_CXX_MARK_SCOPE("position_commutator::gather");
+				
+			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
+							 [sphi = begin(sphere_phi_all), srphi = begin(sphere_rphi_all), gr = begin(phi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
+								 if(poi[iproj][ipoint][0] >= 0){
+									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));
+									 sphi[iproj][ipoint][ist] = phase*gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
+								 } else {
+									 sphi[iproj][ipoint][ist] = complex(0.0, 0.0);
+								 }
+								 srphi[iproj][ipoint][ist] = pos[iproj][ipoint]*sphi[iproj][ipoint][ist];
+							 });
+		}
+
+	 	for(auto iproj = 0; iproj < nprojs_; iproj++){
+			CALI_CXX_MARK_SCOPE("position_commutator_gemm_1");
+			
+			namespace blas = boost::multi::blas;
+			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
+
+			auto rpa = rprojections_all[iproj].template reinterpret_array_cast<complex>(3).rotated().flatted().unrotated();
+			auto sra = sphere_rphi_all[iproj].template reinterpret_array_cast<complex>(3).rotated().flatted().unrotated();
+
+			blas::real_doubled(rpa) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sra));
+		}
+
+    { CALI_CXX_MARK_SCOPE("position_commutator_scal");
+				
+      gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
+               [proj = begin(projections_all), rproj = begin(rprojections_all), coe = begin(coeff_)]
+               GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+                 proj[iproj][ilm][ist] *= coe[iproj][ilm];
+                 proj[iproj][ilm][ist] *= coe[iproj][ilm];								 
+               });
+		}
+
+		for(auto iproj = 0; iproj < nprojs_; iproj++){
+			CALI_CXX_MARK_SCOPE("position_commutator_mpi_reduce");
+
+			if(comms_[iproj].size() == 1) continue;
+			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&projections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});
+			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&rprojections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});			
+		}
+
+		for(auto iproj = 0; iproj < nprojs_; iproj++) {
+			CALI_CXX_MARK_SCOPE("position_commutator_gemm_2");
+			namespace blas = boost::multi::blas;
+			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1., blas::T(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
+
+			auto rpa = rprojections_all[iproj].template reinterpret_array_cast<complex>(3).rotated().flatted().unrotated();
+			auto sra = sphere_rphi_all[iproj].template reinterpret_array_cast<complex>(3).rotated().flatted().unrotated();
+			blas::real_doubled(sra) = blas::gemm(1., blas::T(matrices_[iproj]), blas::real_doubled(rpa));			
+		}
+
+		for(auto iproj = 0; iproj < nprojs_; iproj++){
+			gpu::run(phi.local_set_size(), max_sphere_size_,
+							 [sgr = begin(sphere_phi_all), srphi = begin(sphere_rphi_all), gr = begin(cphi.hypercubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint, metric = phi.basis().cell().metric()]
+							 GPU_LAMBDA (auto ist, auto ipoint){
+								 if(poi[iproj][ipoint][0] >= 0){
+									 auto phase = polar(1.0, -dot(kpoint, pos[iproj][ipoint]));
+									 auto commutator = phase*metric.to_covariant(srphi[iproj][ipoint][ist] - pos[iproj][ipoint]*sgr[iproj][ipoint][ist]);
+									 gpu::atomic::add(&gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist], commutator);
+								 }
+							 });
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////		
+
+
 private:
 			
 	int nprojs_;

@@ -66,17 +66,19 @@ basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(states::orbital_set<basis::fourier_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}){
+states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>>
+gradient(states::orbital_set<basis::fourier_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}, double factor = 1.0){
+
 	states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
 
 	CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
 	gpu::run(grad.set_part().local_size(), grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
-					 [point_op = ff.basis().point_op(), gradcub = begin(grad.hypercubic()), ffcub = begin(ff.hypercubic()), kpt = ff.kpoint() + shift]
+					 [point_op = ff.basis().point_op(), gradcub = begin(grad.hypercubic()), ffcub = begin(ff.hypercubic()), kpt = ff.kpoint() + shift, factor]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 
 						 auto gvec = point_op.gvector(ix, iy, iz);
-						 gradcub[ix][iy][iz][ist] = complex(0.0, 1.0)*(gvec + kpt)*ffcub[ix][iy][iz][ist];
+						 gradcub[ix][iy][iz][ist] = factor*complex(0.0, 1.0)*(gvec + kpt)*ffcub[ix][iy][iz][ist];
 					 });
 	
 	return grad;
@@ -131,12 +133,12 @@ states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-auto gradient(states::orbital_set<basis::real_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}){
+auto gradient(states::orbital_set<basis::real_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}, double factor = 1.0){
 
 	CALI_CXX_MARK_SCOPE("gradient_real_space(orbital_set)");
 	
 	auto ff_fourier = operations::space::to_fourier(ff);
-	auto grad_fourier = gradient(ff_fourier, shift);
+	auto grad_fourier = gradient(ff_fourier, shift, factor);
 	return operations::space::to_real(grad_fourier);
 }
 

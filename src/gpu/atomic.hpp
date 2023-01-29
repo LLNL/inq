@@ -25,6 +25,7 @@
 
 #include <gpu/run.hpp>
 #include <math/complex.hpp>
+#include <math/vector3.hpp>
 
 namespace inq {
 namespace gpu {
@@ -48,6 +49,14 @@ GPU_FUNCTION inline complex add(complex * val, complex const & incr){
 	auto re = add((double *) val, real(incr));
 	auto im = add(((double *) val) + 1, imag(incr));
 	return complex(re, im);
+}
+
+template <typename Type, typename Space>
+GPU_FUNCTION inline auto add(math::vector3<Type, Space> * val, math::vector3<Type, Space> const & incr){
+	auto v0 = add((Type *) val + 0, incr[0]) ;
+	auto v1 = add((Type *) val + 1, incr[1]) ;
+	auto v2 = add((Type *) val + 2, incr[2]) ;
+	return math::vector3<Type, Space>{v0, v1, v2};
 }
 
 #ifdef ENABLE_CUDA
