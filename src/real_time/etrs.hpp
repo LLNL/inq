@@ -33,6 +33,9 @@ namespace real_time {
 
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
 void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
+
+	int const nscf = 5;
+	double const scf_threshold = 5e-5;
 	
 	electrons.spin_density().fill(0.0);
 	int iphi = 0;
@@ -61,14 +64,27 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 
-	//propagate the other half step with H(t + dt)
-	for(auto & phi : electrons.lot()){
-		operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
+	//propagate the other half step with H(t + dt) self-consistently
+	for(int iscf = 0; iscf < nscf; iscf++){
+
+		for(auto & phi : electrons.lot()) operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
+		
+		auto old_density = electrons.spin_density();
+		electrons.spin_density() = observables::density::calculate(electrons);
+
+		double delta = operations::integral_sum_absdiff(old_density, electrons.spin_density());
+		auto done = (delta < scf_threshold) or (iscf == nscf - 1);
+		
+		//if we are not converged propagate back
+		if(not done) {
+			for(auto & phi : electrons.lot())	operations::exponential_in_place(ham, complex(0.0, -dt/2.0), phi);
+		}
+		
+		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
+
+		if(done) break;
 	}
 	
-	electrons.spin_density() = observables::density::calculate(electrons);
-	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-
 }
 
 }
