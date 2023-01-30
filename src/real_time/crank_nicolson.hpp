@@ -95,6 +95,9 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		
 		if(all_conv) break;
 	}
+
+	electrons.spin_density() = observables::density::calculate(electrons);
+	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 	
 }
 
