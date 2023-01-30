@@ -59,7 +59,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 	}
 
-	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time);
+	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 																				 
 	//propagate the other half step with H(t + dt)
 	for(auto & phi : electrons.lot()){
