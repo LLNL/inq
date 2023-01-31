@@ -50,10 +50,8 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		iphi++;
 	}
 
-	if(electrons.lot_states_comm_.size() > 1){
-		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(electrons.spin_density().matrix().data_elements()), electrons.spin_density().matrix().num_elements(), std::plus<>{});
-	}
-
+	electrons.spin_density().all_reduce(electrons.lot_states_comm_);
+	
 	//propagate ionic positions to t + dt
 	ion_propagator.propagate_positions(dt, ions, forces);
 	if(not ion_propagator.static_ions) {

@@ -53,12 +53,8 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 						 });
 
 	}
-	
-	if(electrons.lot_states_comm_.size() > 1){
-		CALI_CXX_MARK_SCOPE("kinetic_energy_density::reduce");
-		electrons.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
-	}
 
+	density.all_reduce(electrons.lot_states_comm_);
 	return density;
 	
 }
