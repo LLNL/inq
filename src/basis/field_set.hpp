@@ -438,8 +438,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	rr.fill(1.0/cart_comm.size());
 	rr.all_reduce(cart_comm);
 
-	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
-		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
+	for(int ii = 0; ii < rr.basis().part().local_size(); ii++){
+		for(int jj = 0; jj < rr.set_part().local_size(); jj++){
 			CHECK(rr.matrix()[ii][jj] == 1.0_a);
 		}
 	}
