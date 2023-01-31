@@ -68,11 +68,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 				crank_nicolson(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
 				break;
 			}
-			
-			//calculate the new density, energy, forces
-			electrons.spin_density() = observables::density::calculate(electrons);
-			sc.update_hamiltonian(ham, energy, electrons.spin_density(), (istep + 1.0)*dt);
-			
+
 			auto ecalc = hamiltonian::calculate_energy(ham, electrons);
 			energy.eigenvalues = ecalc.sum_eigenvalues_;
 			

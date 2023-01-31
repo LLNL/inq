@@ -72,7 +72,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 	}
 
-	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time);
+	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 
 	math::array<bool, 1> conv(electrons.lot_size());
 	
@@ -95,6 +95,9 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		
 		if(all_conv) break;
 	}
+
+	electrons.spin_density() = observables::density::calculate(electrons);
+	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 	
 }
 

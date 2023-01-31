@@ -84,7 +84,7 @@ public:
 	}
 
 	auto vector_field() const{
-		return pert_.uniform_vector_potential(time_);
+		return ham_.uniform_vector_potential();
 	}
 
 	auto num_electrons() const {
