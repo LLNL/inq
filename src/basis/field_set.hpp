@@ -435,8 +435,8 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	CHECK(red.local_set_size() == (~red.matrix()).size());
 
 	basis::field_set<basis::real_space, double> rr(rs, 12, cart_comm);
-	rr.fill(1.0/cart_comm.size());
-	rr.all_reduce(cart_comm);
+	rr.fill(1.0/set_comm.size());
+	rr.all_reduce(set_comm);
 
 	for(int ii = 0; ii < rr.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < rr.set_part().local_size(); jj++){

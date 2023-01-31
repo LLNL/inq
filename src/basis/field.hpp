@@ -329,12 +329,11 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 		if(ff.basis().part().contains(ip)) CHECK(red.linear()[ip] == ff.linear()[ff.basis().part().global_to_local(ipg)]);
 	}
 	
-	basis::field<basis::real_space, double> rr(rs);
-	rr.fill(1.0/comm.size());
-	rr.all_reduce(comm);
+	red.fill(1.0/comm.size());
+	red.all_reduce(comm);
 
-	for(int ii = 0; ii < rr.basis().part().local_size(); ii++){
-		CHECK(rr.linear()[ii] == 1.0_a);
+	for(int ii = 0; ii < red.basis().part().local_size(); ii++){
+		CHECK(red.linear()[ii] == 1.0_a);
 	}
 	
 }

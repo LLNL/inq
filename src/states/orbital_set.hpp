@@ -208,8 +208,8 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(orb_copy.set_size() == orbk.set_size());
 	
 	states::orbital_set<basis::real_space, double> rr(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
-	rr.fill(1.0/cart_comm.size());
-	rr.all_reduce(cart_comm);
+	rr.fill(1.0/set_comm.size());
+	rr.all_reduce(set_comm);
 
 	for(int ii = 0; ii < rr.basis().local_size(); ii++){
 		for(int jj = 0; jj < rr.local_set_size(); jj++){
