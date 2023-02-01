@@ -101,11 +101,11 @@ gcc-ompi-coverage:
       - time make
       - time make install
       - cd ../
-      - tar -cvjf gcc-ompi-coverage.tar.bz2 build/
-      - ls -lh gcc-ompi-coverage.tar.bz2
+      - time tar -Ipixz -cvf gcc-ompi-coverage.tar.xz build/
+      - ls -lh gcc-ompi-coverage.tar.xz
     artifacts:
       paths:
-      - gcc-ompi-coverage.tar.bz2
+      - gcc-ompi-coverage.tar.xz
 
 gcc-ompi-coverage-1p:
     stage: test
@@ -113,7 +113,7 @@ gcc-ompi-coverage-1p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev python2 libhdf5-dev libhdf5-openmpi-dev
-      - tar -xvjf gcc-ompi-coverage.tar.bz2
+      - time tar -Ipixz -xvf gcc-ompi-coverage.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd src; ctest --output-on-failure --timeout 2000; cd ..
@@ -127,7 +127,7 @@ gcc-ompi-coverage-4p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev python2 libhdf5-dev libhdf5-openmpi-dev
-      - tar -xvjf gcc-ompi-coverage.tar.bz2
+      - time tar -Ipixz -xvf gcc-ompi-coverage.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
@@ -152,10 +152,10 @@ gcc-mpich:
       - time make install
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - cd ../
-      - tar -cvzf gcc-mpich-build.tar.gz build/
+      - time tar -Ipixz -cvf gcc-mpich-build.tar.xz build/
     artifacts:
       paths:
-      - gcc-mpich-build.tar.gz
+      - gcc-mpich-build.tar.xz
 
 gcc-mpich-valgrind-utests-1p:
     stage: test
@@ -163,7 +163,7 @@ gcc-mpich-valgrind-utests-1p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - tar -xvzf gcc-mpich-build.tar.gz
+      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
@@ -175,7 +175,7 @@ gcc-mpich-valgrind-itests-1p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - tar -xvzf gcc-mpich-build.tar.gz
+      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
@@ -188,7 +188,7 @@ gcc-mpich-1p:
     needs: ["gcc-mpich"]
     script:
       - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - tar -xvzf gcc-mpich-build.tar.gz
+      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 360
@@ -201,7 +201,7 @@ gcc-mpich-2p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - tar -xvzf gcc-mpich-build.tar.gz
+      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 3600
@@ -212,7 +212,7 @@ gcc-mpich-3p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - tar -xvzf gcc-mpich-build.tar.gz
+      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun -np 3" ctest --output-on-failure --timeout 3600
@@ -223,7 +223,7 @@ gcc-mpich-4p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - tar -xvzf gcc-mpich-build.tar.gz
+      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600
@@ -234,7 +234,7 @@ gcc-mpich-5p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - tar -xvzf gcc-mpich-build.tar.gz
+      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600; cd ..
@@ -330,10 +330,10 @@ clang-ompi:
       - time make install
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - cd ../
-      - tar -cvzf clang-ompi-build.tar.gz build/
+      - time tar -Ipixz -cvf clang-ompi-build.tar.xz build/
     artifacts:
       paths:
-      - clang-ompi-build.tar.gz
+      - clang-ompi-build.tar.xz
 
 clang-ompi-1p:
     stage: test
@@ -341,7 +341,7 @@ clang-ompi-1p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 360
@@ -353,7 +353,7 @@ clang-ompi-2p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
@@ -364,7 +364,7 @@ clang-ompi-3p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
@@ -375,7 +375,7 @@ clang-ompi-4p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
@@ -386,7 +386,7 @@ clang-ompi-5p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
@@ -408,10 +408,10 @@ clang-ompi-fast:
       - time make -j4 install
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - cd ../
-      - tar -cvzf clang-ompi-fast-build.tar.gz build/
+      - time tar -Ipixz -cvf clang-ompi-fast-build.tar.xz build/
     artifacts:
       paths:
-      - clang-ompi-fast-build.tar.gz
+      - clang-ompi-fast-build.tar.xz
 
 clang-ompi-fast-1p:
     stage: test
@@ -420,7 +420,7 @@ clang-ompi-fast-1p:
       - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-fast-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast      
       - ctest --output-on-failure --timeout 360
@@ -433,7 +433,7 @@ clang-ompi-fast-2p:
       - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-fast-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
@@ -445,7 +445,7 @@ clang-ompi-fast-3p:
       - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-fast-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
@@ -457,7 +457,7 @@ clang-ompi-fast-4p:
       - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-fast-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
@@ -469,7 +469,7 @@ clang-ompi-fast-5p:
       - export INQ_COMM="point"      
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf clang-ompi-fast-build.tar.gz
+      - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
@@ -503,10 +503,10 @@ intel-mpich:
       - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - ldd tests/nitrogen
       - cd ../
-      - tar -cvzf intel-mpich-build.tar.gz build/
+      - time tar -Ipixz -cvf intel-mpich-build.tar.xz build/
     artifacts:
       paths:
-      - intel-mpich-build.tar.gz
+      - intel-mpich-build.tar.xz
 
 intel-mpich-1p:
     stage: test
@@ -514,7 +514,7 @@ intel-mpich-1p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf intel-mpich-build.tar.gz
+      - time tar -Ipixz -xvf intel-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd src/; ctest --output-on-failure --timeout 360; cd ../
@@ -528,7 +528,7 @@ intel-mpich-2p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf intel-mpich-build.tar.gz
+      - time tar -Ipixz -xvf intel-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 7200; cd ../
@@ -540,7 +540,7 @@ intel-mpich-3p:
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang-9 make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev libboost-serialization-dev libboost-filesystem-dev python2
-      - tar -xvzf intel-mpich-build.tar.gz
+      - time tar -Ipixz -xvf intel-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd src/; INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 7200; cd ../
