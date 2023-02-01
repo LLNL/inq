@@ -189,6 +189,12 @@ namespace basis {
 		void prefetch() const {
 			math::prefetch(linear_);
 		}
+		
+		template <typename CommunicatorType, typename OpType = std::plus<>>
+		void all_reduce(CommunicatorType & comm, OpType op = OpType{}){
+			if(comm.size() < 2) return;
+			comm.all_reduce_in_place_n(raw_pointer_cast(linear().data_elements()), linear().num_elements(), op);
+		}
 
 	private:
 		internal_array_type linear_;
@@ -321,6 +327,13 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	for(long ip = 0; ip < red.basis().local_size(); ip++){
 		parallel::global_index ipg(ip);
 		if(ff.basis().part().contains(ip)) CHECK(red.linear()[ip] == ff.linear()[ff.basis().part().global_to_local(ipg)]);
+	}
+	
+	red.fill(1.0/comm.size());
+	red.all_reduce(comm);
+
+	for(int ii = 0; ii < red.basis().part().local_size(); ii++){
+		CHECK(red.linear()[ii] == 1.0_a);
 	}
 	
 }

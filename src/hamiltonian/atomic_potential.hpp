@@ -151,11 +151,7 @@ namespace hamiltonian {
 				}
 			}
 			
-			if(comm.size() > 1){
-				CALI_CXX_MARK_SCOPE("atomic_potential::local_potential::reduce");
-				comm.all_reduce_in_place_n(raw_pointer_cast(potential.linear().data_elements()), potential.linear().size(), std::plus<>{});
-			}
-			
+			potential.all_reduce(comm);
 			return potential;			
 		}
 
@@ -191,12 +187,8 @@ namespace hamiltonian {
 									 gpu::atomic::add(&dns[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]], chrg*sp.long_range_density(rr));
 								 });
 			}
-			
-			if(comm.size() > 1){
-				CALI_CXX_MARK_SCOPE("ionic_density::reduce");
-				comm.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
-			}
-			
+
+			density.all_reduce(comm);
 			return density;			
 		}
 
@@ -252,11 +244,7 @@ namespace hamiltonian {
 				}
 			}
 
-			if(comm.size() > 1){
-				CALI_CXX_MARK_SCOPE("atomic_electronic_density::reduce");
-				comm.all_reduce_in_place_n(raw_pointer_cast(density.matrix().data_elements()), density.matrix().size(), std::plus<>{});
-			}
-
+			density.all_reduce(comm);
 			return density;			
 		}
 
@@ -302,11 +290,7 @@ namespace hamiltonian {
 				
 			}
 
-			if(comm.size() > 1){
-				CALI_CXX_MARK_SCOPE("nlcc_density::reduce");
-				comm.all_reduce_in_place_n(raw_pointer_cast(density.linear().data_elements()), density.linear().size(), std::plus<>{});
-			}
-			
+			density.all_reduce(comm);
 			return density;			
 		}
 		

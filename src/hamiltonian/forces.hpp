@@ -65,7 +65,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		
 		iphi++;
 	}
-	
+
 	if(electrons.lot_states_comm_.size() > 1){
 		CALI_CXX_MARK_SCOPE("forces::gdensity::reduce");
 		electrons.lot_states_comm_.all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(gdensity.linear().data_elements())), 3*gdensity.linear().size(), std::plus<>{});

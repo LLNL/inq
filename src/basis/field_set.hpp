@@ -253,6 +253,12 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 		auto par_set_end() const {
 			return set_comm_.size();
 		}
+
+		template <typename CommunicatorType, typename OpType = std::plus<>>
+		void all_reduce(CommunicatorType & comm, OpType op = OpType{}){
+			if(comm.size() < 2) return;
+			comm.all_reduce_in_place_n(raw_pointer_cast(matrix().data_elements()), matrix().num_elements(), op);
+		}
 		
 	private:
 
@@ -427,6 +433,16 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 
 	CHECK(red.basis().local_size() == red.matrix().size());
 	CHECK(red.local_set_size() == (~red.matrix()).size());
+
+	basis::field_set<basis::real_space, double> rr(rs, 12, cart_comm);
+	rr.fill(1.0/set_comm.size());
+	rr.all_reduce(set_comm);
+
+	for(int ii = 0; ii < rr.basis().part().local_size(); ii++){
+		for(int jj = 0; jj < rr.set_part().local_size(); jj++){
+			CHECK(rr.matrix()[ii][jj] == 1.0_a);
+		}
+	}
 	
 }
 

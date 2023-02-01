@@ -77,8 +77,8 @@ basis::field_set<basis::real_space, double> calculate(ElecType & elec){
 		density::calculate_add(elec.occupations()[iphi], phi, density);
 		iphi++;
 	}
-	
-	if(elec.lot_states_comm_.size() > 1) elec.lot_states_comm_.all_reduce_in_place_n(raw_pointer_cast(density.matrix().data_elements()), density.matrix().num_elements(), std::plus<>{});
+
+	density.all_reduce(elec.lot_states_comm_);
 
 	return density;
 }
@@ -167,7 +167,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 		
 		observables::density::calculate_add(occ, aa, dd);
 
-		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.matrix().data_elements()), dd.matrix().size(), std::plus<>{});
+		dd.all_reduce(aa.set_comm());
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.matrix()[ii][0] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
@@ -196,7 +196,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 		
 		observables::density::calculate_add(occ, aa, dd);
 
-		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.matrix().data_elements()), dd.matrix().size(), std::plus<>{});
+		dd.all_reduce(aa.set_comm());
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(dd.matrix()[ii][0] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 
