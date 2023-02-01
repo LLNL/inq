@@ -62,10 +62,18 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 
+	//save the state of the half step for the self consistency
+	auto save = electrons.lot();
+	
 	//propagate the other half step with H(t + dt) self-consistently
 	for(int iscf = 0; iscf < nscf; iscf++){
 
-		for(auto & phi : electrons.lot()) operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
+		int iphi = 0;
+		for(auto & phi : electrons.lot()) {
+			if(iscf != 0) phi = save[iphi];
+			operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
+			iphi++;
+		}
 		
 		auto old_density = electrons.spin_density();
 		electrons.spin_density() = observables::density::calculate(electrons);
@@ -73,10 +81,11 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		double delta = operations::integral_sum_absdiff(old_density, electrons.spin_density());
 		auto done = (delta < scf_threshold) or (iscf == nscf - 1);
 		
-		//if we are not converged propagate back
-		if(not done) {
-			for(auto & phi : electrons.lot())	operations::exponential_in_place(ham, complex(0.0, -dt/2.0), phi);
-		}
+		// This is an alternative approach, but it is not numerically exact so I don't want to use it until we test it exhaustively
+ 		// //if we are not converged propagate back
+		// if(not done) {
+		//	for(auto & phi : electrons.lot())	operations::exponential_in_place(ham, complex(0.0, -dt/2.0), phi);
+		//}
 		
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 

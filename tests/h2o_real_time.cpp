@@ -113,23 +113,23 @@ int main(int argc, char ** argv){
 		
 		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
 
-		match.check("ETRS length kick: dipole step   0", dip[0],    0.043955102932);
-		match.check("ETRS length kick: dipole step  10", dip[10],   0.376347925882);
-		match.check("ETRS length kick: dipole step  20", dip[20],   0.525428390792);
-		match.check("ETRS length kick: dipole step  30", dip[30],   0.550931444557);
-		match.check("ETRS length kick: dipole step  40", dip[40],   0.497454742178);
-		match.check("ETRS length kick: dipole step  50", dip[50],   0.397014962050);
-		match.check("ETRS length kick: dipole step  60", dip[60],   0.273822734950);
-		match.check("ETRS length kick: dipole step  70", dip[70],   0.150516269346);
+		match.check("ETRS length kick: dipole step   0", dip[0],   0.043955375747);
+		match.check("ETRS length kick: dipole step  10", dip[10],  0.376347806791);
+		match.check("ETRS length kick: dipole step  20", dip[20],  0.525427259213);
+		match.check("ETRS length kick: dipole step  30", dip[30],  0.550931744154);
+		match.check("ETRS length kick: dipole step  40", dip[40],  0.497454787505);
+		match.check("ETRS length kick: dipole step  50", dip[50],  0.397016815641);
+		match.check("ETRS length kick: dipole step  60", dip[60],  0.273814233337);
+		match.check("ETRS length kick: dipole step  70", dip[70],  0.150512273021);
 
-		match.check("ETRS length kick: energy step   0", en[0],   -17.563615649009);
-		match.check("ETRS length kick: energy step  10", en[10],  -17.563615382735);
-		match.check("ETRS length kick: energy step  20", en[20],  -17.563630261556);
-		match.check("ETRS length kick: energy step  30", en[30],  -17.563640944592);
-		match.check("ETRS length kick: energy step  40", en[40],  -17.563653420614);
-		match.check("ETRS length kick: energy step  50", en[50],  -17.563663830708);
-		match.check("ETRS length kick: energy step  60", en[60],  -17.563673934214);
-		match.check("ETRS length kick: energy step  70", en[70],  -17.563684356007);
+		match.check("ETRS length kick: energy step   0", en[0],   -17.563614846419);
+		match.check("ETRS length kick: energy step  10", en[10],  -17.563607131141);
+		match.check("ETRS length kick: energy step  20", en[20],  -17.563615606337);
+		match.check("ETRS length kick: energy step  30", en[30],  -17.563621943406);
+		match.check("ETRS length kick: energy step  40", en[40],  -17.563629437416);
+		match.check("ETRS length kick: energy step  50", en[50],  -17.563635432990);
+		match.check("ETRS length kick: energy step  60", en[60],  -17.563641616526);
+		match.check("ETRS length kick: energy step  70", en[70],  -17.563648522511);
 	}
 
 	{
@@ -165,15 +165,15 @@ int main(int argc, char ** argv){
 		
 		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick1 + kick2);
 
-		match.check("ETRS velocity kick: dipole step   0", dip[0],   0.043697635032);
-		match.check("ETRS velocity kick: dipole step  10", dip[10],  0.375961121545);
-		match.check("ETRS velocity kick: dipole step  20", dip[20],  0.525287647225);
-		match.check("ETRS velocity kick: dipole step  30", dip[30],  0.551308998120);
+		match.check("ETRS velocity kick: dipole step   0", dip[0],   0.043697788108);
+		match.check("ETRS velocity kick: dipole step  10", dip[10],  0.375961176642);
+		match.check("ETRS velocity kick: dipole step  20", dip[20],  0.525287483544);
+		match.check("ETRS velocity kick: dipole step  30", dip[30],  0.551308944304);
 
-		match.check("ETRS velocity kick: energy step   0", en[0],   -17.563918857038);
-		match.check("ETRS velocity kick: energy step  10", en[10],  -17.563910876489);
-		match.check("ETRS velocity kick: energy step  20", en[20],  -17.563916148234);
-		match.check("ETRS velocity kick: energy step  30", en[30],  -17.563918743496);
+		match.check("ETRS velocity kick: energy step   0", en[0],   -17.563918466246);
+		match.check("ETRS velocity kick: energy step  10", en[10],  -17.563906778220);
+		match.check("ETRS velocity kick: energy step  20", en[20],  -17.563911508759);
+		match.check("ETRS velocity kick: energy step  30", en[30],  -17.563914263774);
 	}
 		
 	{
