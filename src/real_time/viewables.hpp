@@ -92,7 +92,7 @@ public:
 	}
 
   auto current() const {
-    return observables::current(ions_, electrons_, ham_);
+    return ions_.cell().metric().to_cartesian(observables::current(ions_, electrons_, ham_));
   }
 	
 };
