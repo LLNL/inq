@@ -51,7 +51,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, box, input::kpoints::grid({2, 2, 2}, true));
 
-	if(not electrons.load("silicon_restart")){
+	if(not electrons.try_load("silicon_restart")){
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-8_Ha));
 		electrons.save("silicon_restart");

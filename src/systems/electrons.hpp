@@ -266,7 +266,7 @@ public:
 		}
 	}
 		
-	auto load(std::string const & dirname) {
+	auto try_load(std::string const & dirname) {
 		auto success = true;
 
 		int iphi = 0;
@@ -283,6 +283,11 @@ public:
 		return success;
 	}
 
+	void load(std::string const & dirname) {
+		auto success = try_load(dirname);
+		if(not success) throw std::runtime_error("\n\nERROR: INQ CAN'T LOAD RESTART INFORMATION FROM THE PATH '" + dirname + "'.\n");
+	}
+	
 	auto & eigenvalues() const {
 		return eigenvalues_;
 	}
@@ -453,7 +458,7 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 
 	}
 
-	CHECK(not electrons.load("directory_that_doesnt_exist"));
+	CHECK(not electrons.try_load("directory_that_doesnt_exist"));
 	
 }
 
