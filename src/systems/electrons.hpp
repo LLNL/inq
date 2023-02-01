@@ -458,8 +458,10 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 
 	}
 
-	CHECK(not electrons.try_load("directory_that_doesnt_exist"));
-	
+	SECTION("Restart errors"){
+		CHECK(not electrons.try_load("directory_that_doesnt_exist"));
+		CHECK_THROWS(electrons.load("directory_that_doesnt_exist"));
+	}
 }
 
 #endif
