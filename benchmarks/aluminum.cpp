@@ -101,7 +101,7 @@ int main(int argc, char ** argv){
 	
 	auto restart_dir = "aluminum_" + std::to_string(reps[0]) + "_" + std::to_string(reps[1]) + "_" + std::to_string(reps[2]);
 
-	auto not_found_gs = groundstate_only or not electrons.load(restart_dir);
+	auto not_found_gs = groundstate_only or not electrons.try_load(restart_dir);
 
 	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);

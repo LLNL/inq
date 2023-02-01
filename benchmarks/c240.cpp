@@ -61,7 +61,7 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::extra_states(32) | input::config::temperature(300.0_K));
 
-	auto not_found_gs = groundstate_only or not electrons.load(restart_dir);
+	auto not_found_gs = groundstate_only or not electrons.try_load(restart_dir);
 		
 	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);
