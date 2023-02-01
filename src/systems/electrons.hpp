@@ -327,6 +327,10 @@ public:
 	auto & states() const {
 		return states_;
 	}
+
+	auto root() const {
+		return full_comm_.root();
+	}
 	
 private:
 	static std::string generate_tiny_uuid(){
