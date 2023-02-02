@@ -232,7 +232,7 @@ find_package(HDF5 REQUIRED COMPONENTS C)
 list(FILTER HDF5_LIBRARIES EXCLUDE REGEX .*/libpthread.a)
 list(FILTER HDF5_LIBRARIES EXCLUDE REGEX .*/libdl.a)
 
-include_directories(${HDF5_CXX_INCLUDE_DIRS})
+include_directories(${HDF5_INCLUDE_DIRS})
 link_libraries(${HDF5_LIBRARIES})
 
 #######################
