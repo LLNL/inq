@@ -185,7 +185,7 @@ int main(int argc, char ** argv){
 		if(electrons.root()) dipole_file.open("dipole_cn.dat");
 		
 		auto output = [&](auto data){
-			if(data.root()) dipole_file << data.time() << '\t' << data.dipole() << std::endl;
+			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
 		};
 		
 		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(10) | input::rt::dt(0.1_atomictime) | input::rt::crank_nicolson(), ions::propagator::fixed{}, kick);
