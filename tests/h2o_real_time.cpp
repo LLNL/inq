@@ -100,7 +100,7 @@ int main(int argc, char ** argv){
 			dip[iter] = data.dipole()[0];
 			en[iter] = data.energy();			
 
-			if(data.every(50)){
+			if(data.root() and data.every(50)){
 				auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  
 
 				std::ofstream file("spectrum.dat");
@@ -152,7 +152,7 @@ int main(int argc, char ** argv){
 			dip[iter] = data.dipole()[0];
 			en[iter] = data.energy();			
 
-			if(data.every(50)){
+			if(data.root() and data.every(50)){
 				auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  
 
 				std::ofstream file("spectrum.dat");
@@ -181,7 +181,9 @@ int main(int argc, char ** argv){
 
 		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
 
-		auto dipole_file = std::ofstream("dipole_cn.dat");
+		std::ofstream dipole_file;
+		if(electrons.root()) dipole_file.open("dipole_cn.dat");
+		
 		auto output = [&](auto data){
 			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
 		};

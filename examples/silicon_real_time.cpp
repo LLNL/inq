@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 
 	auto a = 10.18_b;
 
-	auto box = systems::box::cubic(a).cutoff_energy(25.0_Ha);
+	auto box = systems::box::cubic(a).cutoff_energy(30.0_Ha);
 	
 	systems::ions ions(box);
 	
@@ -49,7 +49,7 @@ int main(int argc, char ** argv){
 	int kpoint_par = 1;
 	if(env.par().size()%2 == 0) kpoint_par = 2;
 	
-	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, box, input::kpoints::grid({2, 2, 2}, true));
+	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, box, input::kpoints::grid({4, 4, 4}, true));
 
 	if(not electrons.try_load("silicon_restart")){
 		ground_state::initial_guess(ions, electrons);
@@ -65,7 +65,8 @@ int main(int argc, char ** argv){
 	math::array<double, 1> cur(nsteps);
 	math::array<double, 1> en(nsteps);		
 
-	auto file = std::ofstream("current.dat");
+	std::ofstream file;
+	if(electrons.root()) file.open("current.dat");
 	
 	auto output = [&](auto data){
 		
@@ -75,9 +76,9 @@ int main(int argc, char ** argv){
 		cur[iter] = data.current()[0];
 		en[iter] = data.energy();
 
-		file << time[iter] << '\t' << cur[iter] << std::endl;
+		if(data.root()) file << time[iter] << '\t' << cur[iter] << std::endl;
 		
-		if(data.every(50)){
+		if(data.root() and data.every(50)){
 			auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), cur({0, iter - 1}));  
 			
 			std::ofstream file("spectrum.dat");

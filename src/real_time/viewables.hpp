@@ -54,6 +54,10 @@ public:
 		if(iter() == 0) return false;
 		return (iter()%every_iter == 0) or last_iter(); 
 	}
+
+	auto root() const {
+		return electrons_.full_comm_.root();
+	}
 	
 	auto time() const {
 		return time_;

@@ -68,9 +68,11 @@ int main(int argc, char ** argv){
 	
 	//		EHRENFEST HASN'T BEEN TESTED YET
 
-	auto ofs = std::ofstream{"td_coordinates.dat"};
+	std::ofstream ofs;
+	if(electrons.root()) ofs.open("td_coordinates.dat");
+	
 	auto process = [&ofs](auto data){
-		ofs << data.time() << '\t' << data.coordinates(0) << '\t' << data.velocities(0) << '\t' << data.forces(0) << std::endl;		
+		if(data.root()) ofs << data.time() << '\t' << data.coordinates(0) << '\t' << data.velocities(0) << '\t' << data.forces(0) << std::endl;		
 	};
 	
 	auto dt = 0.025_atomictime;
