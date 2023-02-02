@@ -30,7 +30,7 @@
 #include <systems/electrons.hpp>
 #include <physics/constants.hpp>
 
-#include <hdf5/serial/hdf5.h>
+#include <hdf5.h>
 
 namespace inq {
 namespace observables {
