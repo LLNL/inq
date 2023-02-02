@@ -226,7 +226,7 @@ link_libraries(Boost::serialization Boost::filesystem Boost::system)
 #######################
 
 set(HDF5_PREFER_PARALLEL true)
-find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+find_package(HDF5 REQUIRED COMPONENTS C)
 
 #filter out libraries that nvcc doesn't understand
 list(FILTER HDF5_LIBRARIES EXCLUDE REGEX .*/libpthread.a)
