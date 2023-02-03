@@ -53,12 +53,12 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 		typedef math::array<type, 2> internal_array_type;
 		typedef type element_type;
 
-		field_set(const basis_type & basis, const int num_vectors, parallel::cartesian_communicator<2> comm)
+		field_set(const basis_type & basis, const int num_vectors, parallel::cartesian_communicator<2> comm, int factor = 1)
 			:full_comm_(std::move(comm)),
 			 set_comm_(basis::set_subcomm(full_comm_)),
-			 set_part_(num_vectors, set_comm_),
+			 set_part_(factor*parallel::partition(num_vectors, set_comm_)),
 			 matrix_({basis.part().local_size(), set_part_.local_size()}),
-			 num_vectors_(num_vectors),
+			 num_vectors_(factor*num_vectors),
 			 basis_(basis)
 		{
 			prefetch();
