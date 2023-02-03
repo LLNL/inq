@@ -29,7 +29,8 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <physics/constants.hpp>
-#include <H5Cpp.h>
+
+#include <hdf5.h>
 
 namespace inq {
 namespace observables {
