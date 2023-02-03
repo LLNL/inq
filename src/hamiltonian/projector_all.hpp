@@ -336,15 +336,13 @@ public:
 	// Calculates |cphi> += [Vnl, r] | phi>
 	////////////////////////////////////////////////////////////////////////////////////////////	
 	template <typename KpointType>
-	void position_commutator(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, math::vector3<complex, math::covariant>> & cphi, KpointType const & kpoint) const {
-
-		using math::vector3;
+	void position_commutator(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, vector3<complex, covariant>> & cphi, KpointType const & kpoint) const {
 		
 		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-		math::array<math::vector3<complex, math::contravariant>, 3> sphere_rphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});		
+		math::array<vector3<complex, contravariant>, 3> sphere_rphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});		
 
 		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
-		math::array<math::vector3<complex, math::contravariant>, 3> rprojections_all({nprojs_, max_nlm_, phi.local_set_size()});		
+		math::array<vector3<complex, contravariant>, 3> rprojections_all({nprojs_, max_nlm_, phi.local_set_size()});		
 
 		{ CALI_CXX_MARK_SCOPE("position_commutator::gather");
 				

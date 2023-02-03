@@ -52,11 +52,11 @@ GPU_FUNCTION inline complex add(complex * val, complex const & incr){
 }
 
 template <typename Type, typename Space>
-GPU_FUNCTION inline auto add(math::vector3<Type, Space> * val, math::vector3<Type, Space> const & incr){
+GPU_FUNCTION inline auto add(vector3<Type, Space> * val, vector3<Type, Space> const & incr){
 	auto v0 = add((Type *) val + 0, incr[0]) ;
 	auto v1 = add((Type *) val + 1, incr[1]) ;
 	auto v2 = add((Type *) val + 2, incr[2]) ;
-	return math::vector3<Type, Space>{v0, v1, v2};
+	return vector3<Type, Space>{v0, v1, v2};
 }
 
 #ifdef ENABLE_CUDA
