@@ -47,8 +47,8 @@ math::vector3<double> dipole(basis::field<basis::real_space, double> const & den
 		}
 	}
 
-	if(density.basis().comm().size() > 1) density.basis().comm().all_reduce_in_place_n(dip.data(), dip.size(), std::plus<>{});
-	
+	if(density.basis().comm().size() > 1) density.basis().comm().all_reduce_n(dip.data(), dip.size());
+
 	return dip*density.basis().volume_element();
 	
 }
