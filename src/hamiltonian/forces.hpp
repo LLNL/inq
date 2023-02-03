@@ -68,12 +68,12 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 
 	if(electrons.lot_states_comm_.size() > 1){
 		CALI_CXX_MARK_SCOPE("forces::gdensity::reduce");
-		electrons.lot_states_comm_.all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(gdensity.linear().data_elements())), 3*gdensity.linear().size(), std::plus<>{});
+		electrons.lot_states_comm_.all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(gdensity.linear().data_elements())), 3*gdensity.linear().size());
 	}
 	
 	if(electrons.full_comm_.size() > 1){
 		CALI_CXX_MARK_SCOPE("forces_nonlocal::reduce");
-		electrons.full_comm_.all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_non_local.data_elements())), 3*forces_non_local.size(), std::plus<>{});
+		electrons.full_comm_.all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces_non_local.data_elements())), 3*forces_non_local.size());
 	}
 	
 	//ionic force
@@ -100,7 +100,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 
 		if(electrons.density_basis_.comm().size() > 1){
 			CALI_CXX_MARK_SCOPE("forces_local::reduce");
-			electrons.density_basis_.comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size(), std::plus<>{});
+			electrons.density_basis_.comm().all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size());
 		}
 		
 	}

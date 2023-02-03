@@ -64,10 +64,10 @@ namespace hamiltonian {
 				iphi++;
 			}
 
-			el.lot_states_comm_.all_reduce_in_place_n(&sum_eigenvalues_, 1, std::plus<>{});
-			el.lot_states_comm_.all_reduce_in_place_n(&nonlocal_, 1, std::plus<>{});
-			el.lot_states_comm_.all_reduce_in_place_n(&hf_exchange_, 1, std::plus<>{});
-			el.lot_states_comm_.all_reduce_in_place_n(&state_conv_, 1, std::plus<>{});
+			el.lot_states_comm_.all_reduce_n(&sum_eigenvalues_, 1);
+			el.lot_states_comm_.all_reduce_n(&nonlocal_       , 1);
+			el.lot_states_comm_.all_reduce_n(&hf_exchange_    , 1);
+			el.lot_states_comm_.all_reduce_n(&state_conv_     , 1);
 
 			state_conv_ /= el.states().num_electrons();
 
