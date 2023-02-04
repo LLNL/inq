@@ -35,10 +35,10 @@ namespace inq {
 namespace observables {
 
 template <typename HamiltonianType>
-basis::field<basis::real_space, math::vector3<double, math::covariant>> current_density(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham){
+basis::field<basis::real_space, vector3<double, covariant>> current_density(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham){
 
-	basis::field<basis::real_space, math::vector3<double, math::covariant>> cdensity(electrons.density_basis_);
-	cdensity.fill(math::vector3<double, math::covariant>{0.0, 0.0, 0.0});
+	basis::field<basis::real_space, vector3<double, covariant>> cdensity(electrons.density_basis_);
+	cdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 
 	auto iphi = 0;
 	for(auto & phi : electrons.lot()){
@@ -81,8 +81,7 @@ TEST_CASE("observables::current", "[observables::current]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-	using math::vector3;
-
+	
 }
 
 #endif

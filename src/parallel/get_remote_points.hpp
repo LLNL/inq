@@ -292,8 +292,7 @@ TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using Catch::Approx;
-	using math::vector3;
-
+	
   parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	

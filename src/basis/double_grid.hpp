@@ -67,7 +67,7 @@ public:
 		}
 		
 		template <class Function>
-		GPU_FUNCTION auto value(Function const & func, math::vector3<double> spacing, math::vector3<double> pos) const {
+		GPU_FUNCTION auto value(Function const & func, vector3<double> spacing, vector3<double> pos) const {
 			
 			if(min_ == 0) return func(pos);
 			
@@ -82,7 +82,7 @@ public:
 						for(int i0 = -1; i0 <= 1; i0++){
 							for(int i1 = -1; i1 <= 1; i1++){
 								for(int i2 = -1; i2 <= 1; i2++){
-									val += fac*func(pos + spacing*math::vector3<double>{i0*(1.0/3.0 - k0), i1*(1.0/3.0 - k1), i2*(1.0/3.0 - k2)});
+									val += fac*func(pos + spacing*vector3<double>{i0*(1.0/3.0 - k0), i1*(1.0/3.0 - k1), i2*(1.0/3.0 - k2)});
 								}
 							}
 						}
@@ -140,8 +140,7 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
-
+	
 	SECTION("disabled"){
 		
 		basis::double_grid dg(false);

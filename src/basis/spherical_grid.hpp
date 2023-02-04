@@ -53,9 +53,9 @@ namespace basis {
 	public:
 #endif
 		struct point_data {
-			math::vector3<int> coords_;
+			vector3<int> coords_;
 			float distance_; //I don't think we need additional precision for this, and we get aligned memory
-			math::vector3<double, math::contravariant> relative_pos_;
+			vector3<double, contravariant> relative_pos_;
 
 			GPU_FUNCTION friend auto operator<(point_data const & aa, point_data const & bb){
 				if(aa.coords_[0] < bb.coords_[0]) return true;
@@ -71,18 +71,18 @@ namespace basis {
 
 		//we need to make an additional public function to make cuda happy
 		template <class basis>
-		void initialize(const basis & parent_grid, const math::vector3<double> & center_point, const double radius){
+		void initialize(const basis & parent_grid, const vector3<double> & center_point, const double radius){
 			CALI_CXX_MARK_SCOPE("spherical_grid::initialize");
 			
 			ions::periodic_replicas rep(parent_grid.cell(), center_point, parent_grid.diagonal_length());
 
-			math::vector3<int> local_sizes = parent_grid.local_sizes();
+			vector3<int> local_sizes = parent_grid.local_sizes();
 			
 			long upper_count = 0;
 
 			//FIRST PASS: we count the cubes, this gives us an upper bound for the memory allocation
 			for(unsigned irep = 0; irep < rep.size(); irep++){
-				math::vector3<int> lo, hi;
+				vector3<int> lo, hi;
 				containing_cube(parent_grid, rep[irep], radius, lo, hi);
 				upper_count += (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);
 			}
@@ -92,7 +92,7 @@ namespace basis {
 			upper_count = 0;
 			for(unsigned irep = 0; irep < rep.size(); irep++){
 
-				math::vector3<int> lo, hi;
+				vector3<int> lo, hi;
 				containing_cube(parent_grid, rep[irep], radius, lo, hi);
 
 				auto cubesize = hi - lo;
@@ -174,7 +174,7 @@ namespace basis {
 		const static int dimension = 1;
 		
 		template <class basis>
-		spherical_grid(const basis & parent_grid, const math::vector3<double> & center_point, const double radius):
+		spherical_grid(const basis & parent_grid, const vector3<double> & center_point, const double radius):
 			volume_element_(parent_grid.volume_element()),
 			center_(center_point){
 
@@ -282,7 +282,7 @@ namespace basis {
 
 		math::array<point_data, 1> points_;
 		double volume_element_;
-		math::vector3<double> center_;
+		vector3<double> center_;
 		int size_;
 		
   };
@@ -304,8 +304,6 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
-
-	using math::vector3;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 

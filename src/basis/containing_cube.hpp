@@ -30,7 +30,7 @@ namespace basis {
 
 //returns the cube that contains the sphere, this makes the initialization O(1) instead of O(N)
 template <class BasisType, typename PosType>
-void containing_cube(const BasisType & grid, PosType const & pos, double radius, math::vector3<int> & lo, math::vector3<int> & hi){
+void containing_cube(const BasisType & grid, PosType const & pos, double radius, vector3<int> & lo, vector3<int> & hi){
 
 	for(int idir = 0; idir < 3; idir++){
 		auto rec = grid.cell().reciprocal(idir);
@@ -75,18 +75,16 @@ TEST_CASE("class basis::containing_cube", "[basis::containing_cube]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-	using math::vector3;
-
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	SECTION("Orthogonal box"){
 		systems::box box = systems::box::orthorhombic(12.0_b, 14.0_b, 16.0_b).cutoff_energy(45.0_Ha);
 		basis::real_space rs(box, comm);
 
-		auto center = math::vector3{3.0, 2.0, 1.0};
+		auto center = vector3{3.0, 2.0, 1.0};
 		auto radius = 3.0;
 
-		math::vector3<int> lo, hi;
+		vector3<int> lo, hi;
 		containing_cube(rs, center, radius, lo, hi);
 
 		CHECK(lo[0] == 0);
@@ -119,10 +117,10 @@ TEST_CASE("class basis::containing_cube", "[basis::containing_cube]") {
 		systems::box box = systems::box::lattice({0.0_b, aa/2.0, aa/2.0}, {aa/2, 0.0_b, aa/2.0}, {aa/2.0, aa/2.0, 0.0_b}).cutoff_energy(75.0_Ha);
 		basis::real_space rs(box, comm);
 
-		auto center = math::vector3{-0.5, 0.666, -1.0};
+		auto center = vector3{-0.5, 0.666, -1.0};
 		auto radius = 4.2;
 
-		math::vector3<int> lo, hi;
+		vector3<int> lo, hi;
 		containing_cube(rs, center, radius, lo, hi);
 
 		CHECK(lo[0] == -20);
@@ -156,10 +154,10 @@ TEST_CASE("class basis::containing_cube", "[basis::containing_cube]") {
 		systems::box box = systems::box::lattice({0.0_b, aa/2.0, aa/2.0}, {aa/2, 0.0_b, aa/2.0}, {aa/2.0, aa/2.0, 0.0_b}).cutoff_energy(102.0_Ha);
 		basis::real_space rs(box, comm);
 
-		auto center = math::vector3{-0.5, 0.666, -1.0};
+		auto center = vector3{-0.5, 0.666, -1.0};
 		auto radius = 4.2;
 
-		math::vector3<int> lo, hi;
+		vector3<int> lo, hi;
 		containing_cube(rs, center, radius, lo, hi);
 
 		CHECK(lo[0] == -9);

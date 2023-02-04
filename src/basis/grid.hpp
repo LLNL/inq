@@ -74,7 +74,7 @@ namespace basis {
 		{
 		}
 		
-    GPU_FUNCTION const math::vector3<double> & rspacing() const{
+    GPU_FUNCTION const vector3<double> & rspacing() const{
       return rspacing_;
     }
 
@@ -86,7 +86,7 @@ namespace basis {
 			return length(rlength_);
 		}
 		
-    GPU_FUNCTION const math::vector3<double> & rlength() const{
+    GPU_FUNCTION const vector3<double> & rlength() const{
       return rlength_;
     }
 
@@ -140,7 +140,7 @@ namespace basis {
 		}
 
 		GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, const int ix, const int iy, const int iz) {
-			math::vector3<int> ii{ix, iy, iz};
+			vector3<int> ii{ix, iy, iz};
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] >= (nr[idir] + 1)/2) ii[idir] -= nr[idir];
 			}
@@ -151,7 +151,7 @@ namespace basis {
 			return to_symmetric_range(nr, ix.value(), iy.value(), iz.value());
 		}
 
-		GPU_FUNCTION static auto from_symmetric_range(std::array<int, 3> const & nr, math::vector3<int> ii) {
+		GPU_FUNCTION static auto from_symmetric_range(std::array<int, 3> const & nr, vector3<int> ii) {
 			for(int idir = 0; idir < 3; idir++) {
 				if(ii[idir] < 0) ii[idir] += nr[idir];
 			}
@@ -166,7 +166,7 @@ namespace basis {
 			return to_symmetric_range(nr_, ix.value(), iy.value(), iz.value());
 		}
 			
-		GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
+		GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
 			return from_symmetric_range(nr_, ii);
 		}
 
@@ -182,7 +182,7 @@ namespace basis {
 			return (ix*nr_[1] + iy)*nr_[2] + iz;
 		}
 
-		auto local_contains(math::vector3<int> const & ii) const {
+		auto local_contains(vector3<int> const & ii) const {
 			bool contains = true;
 			for(int idir = 0; idir < 3; idir++){
 				contains = contains and cubic_dist_[idir].contains(ii[idir]);
@@ -209,11 +209,11 @@ namespace basis {
 		
     std::array<int, 3> ng_;
 
-    math::vector3<double> rspacing_;
-    math::vector3<double, math::contravariant> conspacing_;
-    math::vector3<double, math::covariant> covspacing_;
+    vector3<double> rspacing_;
+    vector3<double, contravariant> conspacing_;
+    vector3<double, covariant> covspacing_;
 		
-    math::vector3<double> rlength_;
+    vector3<double> rlength_;
 
 		long npoints_;
 
@@ -238,8 +238,7 @@ TEST_CASE("class basis::grid", "[basis::grid]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
-
+  
   ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
 
 	parallel::communicator comm = boost::mpi3::environment::get_world_instance();

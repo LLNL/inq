@@ -85,7 +85,6 @@ TEST_CASE("class basis::trivial", "[basis::trivial]") {
   
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
   
 }
 #endif

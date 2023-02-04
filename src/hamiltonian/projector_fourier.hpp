@@ -50,7 +50,7 @@ namespace hamiltonian {
 
 			basis::field_set<basis::real_space, complex> beta_rs(basis, nproj_);
 			
-			basis::spherical_grid sphere(beta_rs.basis(), math::vector3<double>(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
+			basis::spherical_grid sphere(beta_rs.basis(), vector3<double>(0.0, 0.0, 0.0), 1.5*ps.projector_radius());
 
 			beta_rs.fill(0.0);
 			
@@ -78,7 +78,7 @@ namespace hamiltonian {
 			
     }
 		
-		void add_coord(math::vector3<double, math::contravariant> const & coord){
+		void add_coord(vector3<double, contravariant> const & coord){
 			coords_.push_back(coord);
 		}
 
@@ -146,7 +146,7 @@ namespace hamiltonian {
     int nproj_;
 		math::array<double, 1> kb_coeff_;
     basis::field_set<basis::fourier_space, complex> beta_;
-		std::vector<math::vector3<double, math::contravariant>> coords_;
+		std::vector<vector3<double, contravariant>> coords_;
 		
   };
   
@@ -163,8 +163,7 @@ TEST_CASE("class hamiltonian::projector_fourier", "[hamiltonian::projector_fouri
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
-  using math::vector3;
-
+  
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	pseudo::math::erf_range_separation const sep(0.625);

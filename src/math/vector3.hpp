@@ -30,7 +30,6 @@
 #include<array>
 
 namespace inq {
-namespace math {
 
 struct cartesian {
   using DualSpace = cartesian;
@@ -278,14 +277,12 @@ private:
 };
 
 }
-}
 
-template<typename T, typename Space> struct boost::mpi3::datatype<inq::math::vector3<T, Space>> : boost::mpi3::struct_<T, T, T>{};
-
+template<typename T, typename Space> struct boost::mpi3::datatype<inq::vector3<T, Space>> : boost::mpi3::struct_<T, T, T>{};
 
 namespace std{
 template<class T> // workaround for types that recursively have a TDC workaround
-struct is_trivially_default_constructible<inq::math::vector3<T>> : 
+struct is_trivially_default_constructible<inq::vector3<T>> : 
 		is_trivially_default_constructible<T>{};
 }
 
@@ -296,18 +293,18 @@ struct is_trivially_default_constructible<inq::math::vector3<T>> :
 
 #include <iostream>
 
-TEST_CASE("function math::vector3", "[math::vector3]") {
+TEST_CASE("function vector3", "[vector3]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;
 
 	SECTION("Default initialization"){
-		math::vector3<int> vv; (void)vv;
+		vector3<int> vv; (void)vv;
 	}
 
 	SECTION("Scalar"){
-		math::vector3<double> vv(-45.677);
+		vector3<double> vv(-45.677);
 		
 		CHECK(vv[0] == -45.677);
 		CHECK(vv[1] == -45.677);
@@ -315,7 +312,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	}
 		
 	SECTION("Initializer list"){
-		math::vector3<int> vv({10, 20, 30});
+		vector3<int> vv({10, 20, 30});
 		
 		CHECK(vv[0] == 10);
 		CHECK(vv[1] == 20);
@@ -323,7 +320,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	}
 
 	SECTION("Initialization by element"){
-		math::vector3<int> vv{1000, 2000, 3000};
+		vector3<int> vv{1000, 2000, 3000};
 		
 		CHECK(vv[0] == 1000);
 		CHECK(vv[1] == 2000);
@@ -338,7 +335,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		arr[1] = 600;
 		arr[2] = 700;
 		
-		math::vector3<int> vv(arr);
+		vector3<int> vv(arr);
 		
 		CHECK(vv[0] == 500);
 		CHECK(vv[1] == 600);
@@ -347,14 +344,14 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	
 	SECTION("Copy, assignment and comparison"){
 
-		math::vector3<double> vv({0.1, 0.2, 0.3});
-		math::vector3<double> vv2(vv);
+		vector3<double> vv({0.1, 0.2, 0.3});
+		vector3<double> vv2(vv);
 		
 		CHECK(vv2[0] == 0.1);
 		CHECK(vv2[1] == 0.2);
 		CHECK(vv2[2] == 0.3);
 
-		math::vector3<double> vv3;
+		vector3<double> vv3;
 
 		vv3 = vv;
 
@@ -365,18 +362,18 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK(vv == vv2);
 		CHECK(not (vv != vv2));
 		
-		math::vector3<double> vv4({20.1, 0.32, 0.53});
+		vector3<double> vv4({20.1, 0.32, 0.53});
 		
 		CHECK(vv4 != vv2);
 
-		CHECK(vv4 == math::vector3<double>{20.1, 0.32, 0.53});
+		CHECK(vv4 == vector3<double>{20.1, 0.32, 0.53});
 		
 	}
 		
 	SECTION("Addition and substraction"){
 		
-		math::vector3<double> vv1({10.0, 5.0, -3.4});
-		math::vector3<double> vv2({1.0, -7.8, 5.6});
+		vector3<double> vv1({10.0, 5.0, -3.4});
+		vector3<double> vv2({1.0, -7.8, 5.6});
 
 		CHECK((vv1 + vv2)[0] == 11.0_a);
 		CHECK((vv1 + vv2)[1] == -2.8_a);
@@ -386,7 +383,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		CHECK((vv1 - vv2)[1] == 12.8_a);
 		CHECK((vv1 - vv2)[2] == -9.0_a);
 		
-		math::vector3<double> vv3 = vv1;
+		vector3<double> vv3 = vv1;
 
 		vv3 += vv2;
 
@@ -401,8 +398,8 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 		
 	SECTION("Multiplication"){
 		
-		math::vector3<double> vv1({10.0, 5.0, -3.4});
-		math::vector3<int> vv2({12, -3, 4});
+		vector3<double> vv1({10.0, 5.0, -3.4});
+		vector3<int> vv2({12, -3, 4});
 
 		auto vv3 = vv1*vv2;
 		
@@ -436,12 +433,12 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	}
 
 	SECTION("Vector operations"){
-		math::vector3<double> dv(3.0, -1.1, 0.1);
+		vector3<double> dv(3.0, -1.1, 0.1);
 
 		CHECK( dot(dv, dv) == norm(dv));		
 
-		math::vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
-		math::vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
+		vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
+		vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
 		
 		CHECK(dot(vv1, vv2) == conj(dot(vv2, vv1)));
 		CHECK(dot(vv1, vv2) == vv1.dot(vv2));
@@ -468,8 +465,8 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	
 	SECTION("Elementwise Multiplication same type"){
 
-		math::vector3<double> vv1 = {10.0,  5.0, -3.4};
-		math::vector3<double> vv2 = {12.0, -3.0,  4.0};
+		vector3<double> vv1 = {10.0,  5.0, -3.4};
+		vector3<double> vv2 = {12.0, -3.0,  4.0};
 
 		CHECK( (vv1*vv2)[0] == vv1[0]*vv2[0] );
 		CHECK( (2.*vv1)[0] == 2.*vv1[0] );
@@ -478,8 +475,8 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	
 	SECTION("Elementwise Multiplication cross type"){
 		
-		math::vector3<double> vv1 = {10.0,  5.0, -3.4};
-		math::vector3<complex> vv2 = {12.0, -3.0,  4.0};
+		vector3<double> vv1 = {10.0,  5.0, -3.4};
+		vector3<complex> vv2 = {12.0, -3.0,  4.0};
 		
 		CHECK( (vv1*vv2)[0] == vv1[0]*vv2[0] );
 		CHECK( (complex{2.}*vv1)[0] == complex{2.}*vv1[0] );
@@ -488,8 +485,8 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 
 	SECTION("Old vector3<double> tests"){
 	
-		math::vector3<double> x1{1.0, 2.0, 3.0};
-		math::vector3<double> x2{0.1, 0.2, 0.3};
+		vector3<double> x1{1.0, 2.0, 3.0};
+		vector3<double> x2{0.1, 0.2, 0.3};
 
 		CHECK(x1[0] == 1.0_a);
 		CHECK(x1[1] == 2.0_a);
@@ -508,7 +505,7 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 
 		CHECK(-x1 == -1.0*x1);
 	
-		math::vector3<double> x3 = x1 + x2;
+		vector3<double> x3 = x1 + x2;
 
 		CHECK(x3[0] == 1.1_a);
 		CHECK(x3[1] == 2.2_a);
@@ -532,13 +529,13 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 	
 		CHECK(dot(x1, x2) == 1.4_a);
 
-		auto crss = cross(x1, math::vector3<double>{-1.0, -0.5, 3.33});
+		auto crss = cross(x1, vector3<double>{-1.0, -0.5, 3.33});
 
 		CHECK(crss[0] == 8.16_a);
 		CHECK(crss[1] == -6.33_a);
 		CHECK(crss[2] == 1.5_a);
 
-		math::vector3<double> scal(6.66);
+		vector3<double> scal(6.66);
 
 		CHECK(scal[0] == 6.66_a);
 		CHECK(scal[1] == 6.66_a);
@@ -546,13 +543,13 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 
 		double arr[] = {-45.0, 0.2277, 3.1};
 
-		math::vector3<double> x4(arr);
+		vector3<double> x4(arr);
 
 		CHECK(x4[0] == -45.0_a);
 		CHECK(x4[1] == 0.2277_a);
 		CHECK(x4[2] == 3.1_a);
 
-		x4 = math::vector3<double>(-3.3);
+		x4 = vector3<double>(-3.3);
 	
 		CHECK(x4[0] == -3.3_a);
 		CHECK(x4[1] == -3.3_a);
@@ -562,8 +559,8 @@ TEST_CASE("function math::vector3", "[math::vector3]") {
 
 	SECTION("contravariant and covariant"){
 
-		math::vector3<double, math::contravariant> vec(2.0, 3.0, 5.0);
-		math::vector3<double, math::covariant> covec(4.1, 0.76, 2.4);
+		vector3<double, contravariant> vec(2.0, 3.0, 5.0);
+		vector3<double, covariant> covec(4.1, 0.76, 2.4);
 
 		CHECK(dot(covec, vec) == 22.48_a);
 		

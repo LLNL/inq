@@ -36,7 +36,7 @@ class periodic_replicas{
 public:
 
 	template <class cell_array>
-	periodic_replicas(const cell_array & cell, math::vector3<double> position, const double range){
+	periodic_replicas(const cell_array & cell, vector3<double> position, const double range){
 
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -46,7 +46,7 @@ public:
 
 		replicas_.push_back(position);		
 		
-		math::vector3<int> neigh_max{0, 0, 0};
+		vector3<int> neigh_max{0, 0, 0};
 		//we should use floor here, but since we check later, round is more reliable
 		for(int idir = 0; idir < cell.periodicity(); idir++) neigh_max[idir] = round(range/sqrt(norm(cell[idir])));
 		
@@ -56,7 +56,7 @@ public:
 
 					if(ix == 0 and iy == 0 and iz == 0) continue;
 					
-					math::vector3<double> reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
+					vector3<double> reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
             
 					if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
 				}
@@ -75,7 +75,7 @@ public:
     
 private:
 
-	std::vector<math::vector3<double>> replicas_;
+	std::vector<vector3<double>> replicas_;
 
 };    
   
@@ -93,8 +93,7 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-	using math::vector3;
-
+	
   {
     ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 

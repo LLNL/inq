@@ -33,7 +33,7 @@ public:
 	
 	using element_type = Type;
 	using basis_type = Basis;
-	using kpoint_type = math::vector3<double, math::covariant>;
+	using kpoint_type = vector3<double, covariant>;
 	
 	orbital_set(Basis const & basis, int const num_vectors, int const spinor_dim, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
 		:fields_(basis, num_vectors, comm, spinor_dim),
@@ -182,8 +182,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
-  using math::vector3;
-  
+    
   auto ecut = 40.0_Ha;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
@@ -196,7 +195,7 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(ecut);
   basis::real_space rs(box, basis_comm);
 
-	states::orbital_set<basis::real_space, double> orb(rs, 12, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+	states::orbital_set<basis::real_space, double> orb(rs, 12, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 	CHECK(not orb.spinors());
 	
 	CHECK(sizes(orb.basis())[0] == 28);

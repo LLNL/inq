@@ -215,8 +215,8 @@ field<basis::real_space, complex> complex_field(field<basis::real_space, double>
 }
 
 template <class VectorSpace>
-field<basis::real_space, math::vector3<inq::complex, VectorSpace>> complex_field(field<basis::real_space, math::vector3<double, VectorSpace>> const & rfield) {
-	field<basis::real_space, math::vector3<inq::complex, VectorSpace>> cfield(rfield.skeleton());
+field<basis::real_space, vector3<inq::complex, VectorSpace>> complex_field(field<basis::real_space, vector3<double, VectorSpace>> const & rfield) {
+	field<basis::real_space, vector3<inq::complex, VectorSpace>> cfield(rfield.skeleton());
 	
 	gpu::run(3, rfield.basis().part().local_size(),
 					 [cp = begin(cfield.linear()), rp = begin(rfield.linear())] GPU_LAMBDA (auto idir, auto ip){
@@ -233,8 +233,8 @@ field<basis::real_space, double> real_field(field<basis::real_space, complex> co
 }
 
 template <class VectorSpace>
-field<basis::real_space, math::vector3<double, VectorSpace>> real_field(field<basis::real_space, math::vector3<complex, VectorSpace>> const & cfield) {
-	field<basis::real_space, math::vector3<double, VectorSpace>> rfield(cfield.skeleton());		
+field<basis::real_space, vector3<double, VectorSpace>> real_field(field<basis::real_space, vector3<complex, VectorSpace>> const & cfield) {
+	field<basis::real_space, vector3<double, VectorSpace>> rfield(cfield.skeleton());		
 	
 	gpu::run(3, cfield.basis().part().local_size(),
 					 [rp = begin(rfield.linear()), cp = begin(cfield.linear())] GPU_LAMBDA (auto idir, auto ip){
@@ -261,8 +261,7 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
-	using math::vector3;
-
+	
 	auto comm = boost::mpi3::environment::get_world_instance();
 
 	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(40.0_Ha);

@@ -35,7 +35,7 @@ class atom {
 
 public:
 		
-	atom(const input::species & arg_spec, const math::vector3<double> & arg_position):
+	atom(const input::species & arg_spec, const vector3<double> & arg_position):
 		species_(arg_spec),
 		position_(arg_position){
 	}
@@ -63,21 +63,21 @@ public:
 private:
 
 	input::species species_;
-	math::vector3<double> position_;
+	vector3<double> position_;
 
 };
 }
 }
 
-auto operator|(const inq::input::species & arg_spec, const inq::math::vector3<double> & arg_position){
+auto operator|(const inq::input::species & arg_spec, const inq::vector3<double> & arg_position){
 	return inq::input::atom(arg_spec, arg_position);
 }
 
-auto operator|(const pseudo::element & arg_element, const inq::math::vector3<double> & arg_position){
+auto operator|(const pseudo::element & arg_element, const inq::vector3<double> & arg_position){
 	return inq::input::atom(arg_element, arg_position);
 }
 
-auto operator|(const std::string & arg_symbol, const inq::math::vector3<double> & arg_position){
+auto operator|(const std::string & arg_symbol, const inq::vector3<double> & arg_position){
 	return inq::input::atom(pseudo::element(arg_symbol), arg_position);
 }
 
@@ -91,7 +91,7 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 	using namespace Catch::literals;
 
 	SECTION("Constructor"){
-		inq::input::atom at(pseudo::element("H"), inq::math::vector3<double>(1.0, 2.0, 3.0));
+		inq::input::atom at(pseudo::element("H"), inq::vector3<double>(1.0, 2.0, 3.0));
 
 		CHECK(at.species().atomic_number() == 1);
 		CHECK(at.position()[0] == 1.0_a);
@@ -101,7 +101,7 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 	}
 	
 	SECTION("Species composition"){
-		auto at = inq::input::species(pseudo::element("C")) | inq::math::vector3<double>(1.0, 2.0, 3.0);
+		auto at = inq::input::species(pseudo::element("C")) | inq::vector3<double>(1.0, 2.0, 3.0);
 
 		CHECK(at.species().symbol() == "C");
 		CHECK(at.position()[0] == 1.0_a);
@@ -112,7 +112,7 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 	
 	SECTION("Species option composition"){
 		
-		auto at = pseudo::element("C") | inq::input::species::symbol("C1") | inq::math::vector3<double>(1.0, 2.0, 3.0);
+		auto at = pseudo::element("C") | inq::input::species::symbol("C1") | inq::vector3<double>(1.0, 2.0, 3.0);
 		
 		CHECK(at.species().symbol() == "C1");
 		CHECK(at.position()[0] == 1.0_a);
@@ -123,7 +123,7 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 
 	SECTION("Element composition"){
 		
-		auto at = pseudo::element("W") | inq::math::vector3<double>(1.0, 2.0, 3.0);
+		auto at = pseudo::element("W") | inq::vector3<double>(1.0, 2.0, 3.0);
 		
 		CHECK(at.species().symbol() == "W");
 		CHECK(at.position()[0] == 1.0_a);
@@ -134,7 +134,7 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 
 	SECTION("String composition"){
 		
-		auto at = std::string("Xe") | inq::math::vector3<double>(1.0, 2.0, 3.0);
+		auto at = std::string("Xe") | inq::vector3<double>(1.0, 2.0, 3.0);
 		
 		CHECK(at.species().symbol() == "Xe");
 		CHECK(at.position()[0] == 1.0_a);
@@ -145,7 +145,7 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 	
 	SECTION("Char * composition"){
 		
-		inq::input::atom at = "Tc" | inq::math::vector3<double>(1.0, 2.0, 3.0);
+		inq::input::atom at = "Tc" | inq::vector3<double>(1.0, 2.0, 3.0);
 		
 		CHECK(at.species().symbol() == "Tc");
 		CHECK(at.position()[0] == 1.0_a);
@@ -155,8 +155,8 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 
 	SECTION("Equality") {
 
-		inq::input::atom at1{pseudo::element("H"), inq::math::vector3<double>(1.0, 2.0, 3.0)};
-		inq::input::atom at2{pseudo::element("H"), inq::math::vector3<double>(1.0, 2.0, 3.0)};
+		inq::input::atom at1{pseudo::element("H"), inq::vector3<double>(1.0, 2.0, 3.0)};
+		inq::input::atom at2{pseudo::element("H"), inq::vector3<double>(1.0, 2.0, 3.0)};
 
 		CHECK( at1 == at2 );
 	}

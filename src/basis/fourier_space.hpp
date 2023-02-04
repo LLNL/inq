@@ -63,7 +63,7 @@ class real_space;
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, math::vector3<double, math::covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
+			point_operator(std::array<int, 3> const & ng, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
 				cubic_dist_(dist),
@@ -77,7 +77,7 @@ class real_space;
 				//grid from -pi/h to pi/h
 				
 				auto ii = grid::to_symmetric_range(ng_, ix, iy, iz);
-				return math::vector3<double, math::covariant>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
+				return vector3<double, covariant>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
 			}
 
 			GPU_FUNCTION auto gvector(int ix, int iy, int iz) const {
@@ -132,14 +132,14 @@ class real_space;
 				return grid::to_symmetric_range(ng_, ix, iy, iz);
 			}
 			
-			GPU_FUNCTION auto from_symmetric_range(math::vector3<int> ii) const {
+			GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
 				return grid::from_symmetric_range(ng_, ii);
 			}
 			
 		private:
 			
 			std::array<int, 3> ng_;
-			math::vector3<double, math::covariant> gspacing_;
+			vector3<double, covariant> gspacing_;
 			std::array<inq::parallel::partition, 3> cubic_dist_;
 			ions::unit_cell::cell_metric metric_;
 			

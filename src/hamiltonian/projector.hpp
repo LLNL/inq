@@ -89,7 +89,7 @@ public:
 	}
 	
 public:
-	projector(const basis::real_space & basis, atomic_potential::pseudopotential_type const & ps, math::vector3<double> atom_position, int iatom):
+	projector(const basis::real_space & basis, atomic_potential::pseudopotential_type const & ps, vector3<double> atom_position, int iatom):
 		sphere_(basis, atom_position, ps.projector_radius()),
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
@@ -166,7 +166,6 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-  using math::vector3;
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 

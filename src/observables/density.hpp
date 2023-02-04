@@ -51,7 +51,7 @@ void calculate_add(const occupations_array_type & occupations, field_set_type & 
 ///////////////////////////////////////////////////////////////
 
 template<class occupations_array_type, class field_set_type, class vector_field_set_type, typename VectorSpace>
-void calculate_gradient_add(const occupations_array_type & occupations, field_set_type const & phi, vector_field_set_type const & gphi, basis::field<typename vector_field_set_type::basis_type, math::vector3<double, VectorSpace>> & gdensity){
+void calculate_gradient_add(const occupations_array_type & occupations, field_set_type const & phi, vector_field_set_type const & gphi, basis::field<typename vector_field_set_type::basis_type, vector3<double, VectorSpace>> & gdensity){
 
 	CALI_CXX_MARK_SCOPE("density::calculate_gradient");
  
@@ -150,7 +150,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 	
 	SECTION("double"){
 		
-		states::orbital_set<basis::trivial, double> aa(bas, nvec, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+		states::orbital_set<basis::trivial, double> aa(bas, nvec, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 		math::array<double, 1> occ(aa.set_part().local_size());
 		
@@ -179,7 +179,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 	
 	SECTION("complex"){
 		
-		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 		math::array<double, 1> occ(nvec);
 		
@@ -205,7 +205,6 @@ TEST_CASE("function observables::density", "[observables::density]") {
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++) CHECK(tdd.linear()[ii] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
 		
 	}
-	
 }
 
 TEST_CASE("function observables::density::normalize", "[observables::density::normalize]") {

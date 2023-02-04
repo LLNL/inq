@@ -53,7 +53,7 @@ auto parse_xyz(const std::string & xyz_file_name, quantity<magnitude::length> un
 	std::getline(xyz_file, comment_line);
   
 	std::string atom_name;
-	math::vector3<double> atom_position;
+	vector3<double> atom_position;
   
 	for(int iatom = 0; iatom < natoms; iatom++){
 		xyz_file >> atom_name >> atom_position;
@@ -97,7 +97,7 @@ TEST_CASE("function ions::parse_xyz", "[inq::input::parse_xyz]") {
   CHECK(geo[11].position()[1] == 2.343260364_a);
   CHECK(geo[11].position()[2] == 0.0_a);
 
-  geo.push_back("Cl" | math::vector3<double>(-3.0, 4.0, 5.0));
+  geo.push_back("Cl" | vector3<double>(-3.0, 4.0, 5.0));
 
   CHECK(geo.size() == 13);
   CHECK(geo[12].species() == pseudo::element("Cl"));

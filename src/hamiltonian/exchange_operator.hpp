@@ -44,8 +44,8 @@ namespace hamiltonian {
 
 			assert(basis.comm() == basis::basis_subcomm(comm));
 
-			if(exchange_coefficient_ != 0.0) hf_orbitals.emplace(basis, num_hf_orbitals, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, comm);	
-			if(exchange_coefficient_ != 0.0) xi_.emplace(basis, num_hf_orbitals, 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, std::move(comm));		
+			if(exchange_coefficient_ != 0.0) hf_orbitals.emplace(basis, num_hf_orbitals, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, comm);	
+			if(exchange_coefficient_ != 0.0) xi_.emplace(basis, num_hf_orbitals, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, std::move(comm));		
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
@@ -206,8 +206,7 @@ TEST_CASE("Class hamiltonian::exchange", "[hamiltonian::exchange]"){
 
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
-  /*
+    /*
   auto ecut = 20.0_Ha;
   double ll = 10.0;
 	*/

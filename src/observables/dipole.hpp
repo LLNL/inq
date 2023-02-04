@@ -33,11 +33,11 @@
 namespace inq {
 namespace observables {
 
-math::vector3<double> dipole(basis::field<basis::real_space, double> const & density){
+vector3<double> dipole(basis::field<basis::real_space, double> const & density){
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	math::vector3<double> dip = {0.0, 0.0, 0.0};
+	vector3<double> dip = {0.0, 0.0, 0.0};
 
 	for(int ix = 0; ix < density.basis().local_sizes()[0]; ix++){
 		for(int iy = 0; iy < density.basis().local_sizes()[1]; iy++){
@@ -53,11 +53,11 @@ math::vector3<double> dipole(basis::field<basis::real_space, double> const & den
 	
 }
 
-math::vector3<double> dipole(ions::geometry const & geo, const hamiltonian::atomic_potential & atomic_pot){
+vector3<double> dipole(ions::geometry const & geo, const hamiltonian::atomic_potential & atomic_pot){
 
 	using physics::constants::proton_charge;
 	
-	math::vector3<double> dip = {0.0, 0.0, 0.0};
+	vector3<double> dip = {0.0, 0.0, 0.0};
 
 	for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
 		auto zval = atomic_pot.pseudo_for_element(geo.atoms()[iatom]).valence_charge();
@@ -67,7 +67,7 @@ math::vector3<double> dipole(ions::geometry const & geo, const hamiltonian::atom
 	return dip;
 }
 
-math::vector3<double> dipole(systems::ions const & ions, systems::electrons const & electrons){
+vector3<double> dipole(systems::ions const & ions, systems::electrons const & electrons){
 	return dipole(ions.geo_, electrons.atomic_pot_) + dipole(electrons.density());
 }
 
@@ -90,8 +90,7 @@ TEST_CASE("observables::dipole", "[observables::dipole]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-	using math::vector3;
-
+	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	
 	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(31.2_Ha);

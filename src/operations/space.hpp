@@ -65,7 +65,7 @@ void zero_outside_sphere(FieldSetType<basis::fourier_space, complex>& fphi){
 ///////////////////////////////////////////////////////////////
 
 template <typename VectorSpace>
-void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<complex, VectorSpace>> & fphi){
+void zero_outside_sphere(basis::field<basis::fourier_space, vector3<complex, VectorSpace>> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
 	gpu::run(fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
@@ -78,7 +78,7 @@ void zero_outside_sphere(basis::field<basis::fourier_space, math::vector3<comple
 ///////////////////////////////////////////////////////////////
 
 template <typename VectorSpace>
-void zero_outside_sphere(basis::field_set<basis::fourier_space, math::vector3<complex, VectorSpace>> & fphi){
+void zero_outside_sphere(basis::field_set<basis::fourier_space, vector3<complex, VectorSpace>> & fphi){
 		CALI_CXX_MARK_FUNCTION;
 		
 	gpu::run(fphi.set_part().local_size(), fphi.basis().local_sizes()[2], fphi.basis().local_sizes()[1], fphi.basis().local_sizes()[0],
@@ -402,14 +402,14 @@ auto to_real(const FieldSetType<basis::fourier_space, complex> & fphi, bool cons
 ///////////////////////////////////////////////////////////////
 
 template <class VectorSpace>
-auto to_fourier(const basis::field<basis::real_space, math::vector3<complex, VectorSpace>> & phi){
+auto to_fourier(const basis::field<basis::real_space, vector3<complex, VectorSpace>> & phi){
 
 	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
 	
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
-	basis::field<basis::fourier_space, math::vector3<complex, VectorSpace>> fphi(fourier_basis);
+	basis::field<basis::fourier_space, vector3<complex, VectorSpace>> fphi(fourier_basis);
 	
 	to_fourier_array(real_basis, fourier_basis, 
 		phi .cubic().template reinterpret_array_cast<complex const>(3), 
@@ -425,14 +425,14 @@ auto to_fourier(const basis::field<basis::real_space, math::vector3<complex, Vec
 ///////////////////////////////////////////////////////////////
 
 template <class VectorSpace>
-auto to_real(const basis::field<basis::fourier_space, math::vector3<complex, VectorSpace>> & fphi, bool normalize = true){
+auto to_real(const basis::field<basis::fourier_space, vector3<complex, VectorSpace>> & fphi, bool normalize = true){
 
 	CALI_CXX_MARK_SCOPE("to_real(vector_field)");
 	
 	auto & fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
-	basis::field<basis::real_space, math::vector3<complex, VectorSpace>> phi(real_basis);
+	basis::field<basis::real_space, vector3<complex, VectorSpace>> phi(real_basis);
 
 	to_real_array(fourier_basis, real_basis, 
 		fphi.cubic().template reinterpret_array_cast<complex const>(3), 
@@ -445,14 +445,14 @@ auto to_real(const basis::field<basis::fourier_space, math::vector3<complex, Vec
 ///////////////////////////////////////////////////////////////
 
 template <class VectorSpace>
-auto to_fourier(const basis::field_set<basis::real_space, math::vector3<complex, VectorSpace>> & phi){
+auto to_fourier(const basis::field_set<basis::real_space, vector3<complex, VectorSpace>> & phi){
 
 	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
 	
 	auto & real_basis = phi.basis();
 	basis::fourier_space fourier_basis(real_basis);
 	
-	basis::field_set<basis::fourier_space, math::vector3<complex, VectorSpace>> fphi(fourier_basis, phi.set_size(), phi.full_comm());
+	basis::field_set<basis::fourier_space, vector3<complex, VectorSpace>> fphi(fourier_basis, phi.set_size(), phi.full_comm());
 
 	auto &&    fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 	auto const& phi_as_scalar = phi .hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
@@ -468,14 +468,14 @@ auto to_fourier(const basis::field_set<basis::real_space, math::vector3<complex,
 ///////////////////////////////////////////////////////////////
 
 template <class VectorSpace>
-auto to_real(basis::field_set<basis::fourier_space, math::vector3<complex, VectorSpace>> const& fphi, bool normalize = true){
+auto to_real(basis::field_set<basis::fourier_space, vector3<complex, VectorSpace>> const& fphi, bool normalize = true){
 
 	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
 
 	auto const& fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
-	basis::field_set<basis::real_space, math::vector3<complex, VectorSpace>> phi(real_basis, fphi.set_size(), fphi.full_comm());
+	basis::field_set<basis::real_space, vector3<complex, VectorSpace>> phi(real_basis, fphi.set_size(), fphi.full_comm());
 
 	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
@@ -488,14 +488,14 @@ auto to_real(basis::field_set<basis::fourier_space, math::vector3<complex, Vecto
 ///////////////////////////////////////////////////////////////
 
 template <class VectorSpace>
-auto to_real(states::orbital_set<basis::fourier_space, math::vector3<complex, VectorSpace>> const& fphi, bool normalize = true){
+auto to_real(states::orbital_set<basis::fourier_space, vector3<complex, VectorSpace>> const& fphi, bool normalize = true){
 
 	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
 
 	auto const& fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
-	auto phi = states::orbital_set<basis::real_space, math::vector3<complex, VectorSpace>>::reciprocal(fphi.skeleton());
+	auto phi = states::orbital_set<basis::real_space, vector3<complex, VectorSpace>>::reciprocal(fphi.skeleton());
 	
 	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
@@ -521,8 +521,7 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
-	using math::vector3;
-
+	
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 
 	auto basis_comm = basis::basis_subcomm(cart_comm);

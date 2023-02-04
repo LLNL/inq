@@ -96,7 +96,7 @@ TEST_CASE("observables::spectrum", "[observables::spectrum]") {
 
   math::array<double, 1> time(ntime);
   math::array<double, 1> tseries(ntime);
-  math::array<math::vector3<double>, 1> vtseries(ntime);
+  math::array<vector3<double>, 1> vtseries(ntime);
   
   double freq1 = 10.0;
   double freq2 = 6.39;
@@ -107,7 +107,7 @@ TEST_CASE("observables::spectrum", "[observables::spectrum]") {
     time[itime] = dtime*itime;
     auto func = amp1*cos(time[itime]*freq1) + amp2*sin(time[itime]*freq2);
     tseries[itime] = func;
-    vtseries[itime] = math::vector3<double>{-1.0*func, 20.0*func, -0.3*func};
+    vtseries[itime] = vector3<double>{-1.0*func, 20.0*func, -0.3*func};
   }
 
   auto maxw = 20.0_Ha;

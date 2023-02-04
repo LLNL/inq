@@ -31,7 +31,7 @@ int main(int argc, char ** argv){
 
 	int pardomains = 1;
 	bool groundstate_only = false;
-	math::vector3<int> reps{2, 2, 2};
+	vector3<int> reps{2, 2, 2};
 	int niter = 10;
 	
 	auto functional = input::interaction::pbe();
@@ -71,7 +71,7 @@ int main(int argc, char ** argv){
 	
 	auto alat = 7.6524459_bohr;
 
-	using frac_coord = math::vector3<decltype(0.0_crys)>;
+	using frac_coord = vector3<decltype(0.0_crys)>;
 	
 	std::vector<frac_coord> cell;
 

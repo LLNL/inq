@@ -33,11 +33,11 @@ namespace perturbations {
 
 class laser : public perturbations::none {
 
-	math::vector3<double, math::cartesian> polarization_;
+	vector3<double, cartesian> polarization_;
 	double frequency_;
 	
 public:
-	laser(math::vector3<double, math::cartesian> polarization, quantity<magnitude::energy> frequency,gauge arg_gauge = gauge::length):
+	laser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency,gauge arg_gauge = gauge::length):
 		polarization_(polarization),
 		frequency_(frequency.in_atomic_units()),
 		gauge_(arg_gauge) {
@@ -94,7 +94,6 @@ private:
 using namespace inq;
 using namespace Catch::literals;
 using namespace magnitude;
-using math::vector3;
 
 TEST_CASE("perturbations::laser", "[perturbations::laser]") {
 

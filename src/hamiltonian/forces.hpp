@@ -46,14 +46,14 @@ struct loc_pot {
 
 
 template <typename HamiltonianType>
-math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
+math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
 
 	CALI_CXX_MARK_FUNCTION;
 
-	basis::field<basis::real_space, math::vector3<double, math::covariant>> gdensity(electrons.density_basis_);
-	gdensity.fill(math::vector3<double, math::covariant>{0.0, 0.0, 0.0});
+	basis::field<basis::real_space, vector3<double, covariant>> gdensity(electrons.density_basis_);
+	gdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 
-  math::array<math::vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
+  math::array<vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 
 	auto iphi = 0;
 	for(auto & phi : electrons.lot()){
@@ -76,7 +76,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 	//ionic force
 	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
-	math::array<math::vector3<double>, 1> forces_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
+	math::array<vector3<double>, 1> forces_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 
 	{
 		CALI_CXX_MARK_SCOPE("forces_local");
@@ -102,7 +102,7 @@ math::array<math::vector3<double>, 1> calculate_forces(const systems::ions & ion
 		
 	}
 
-	math::array<math::vector3<double>, 1> forces(ions.geo().num_atoms());
+	math::array<vector3<double>, 1> forces(ions.geo().num_atoms());
   for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
     forces[iatom] = ionic_forces[iatom] + forces_local[iatom] + forces_non_local[iatom];
   }

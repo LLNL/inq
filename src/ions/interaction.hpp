@@ -41,7 +41,7 @@ auto interaction_energy(const cell_type & cell, const geometry_type & geo, const
 	CALI_CXX_MARK_FUNCTION;
 
 	double energy;
-	boost::multi::array<math::vector3<double>, 1> forces(geo.num_atoms());
+	boost::multi::array<vector3<double>, 1> forces(geo.num_atoms());
 	boost::multi::array<double, 1> charges(geo.num_atoms());
 
 	for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
@@ -59,7 +59,7 @@ auto interaction_forces(const cell_type & cell, const geometry_type & geo, const
 	CALI_CXX_MARK_FUNCTION;
 
 	double energy;
-	boost::multi::array<math::vector3<double>, 1> forces(geo.num_atoms());
+	boost::multi::array<vector3<double>, 1> forces(geo.num_atoms());
 	boost::multi::array<double, 1> charges(geo.num_atoms());
 
 	for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
@@ -90,8 +90,7 @@ void interaction_energy(const int natoms, const cell_type & cell, const array_ch
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void interaction_energy_finite(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
 															 double & energy, array_forces & forces){
-	using math::vector3;
-
+	
 	energy = 0.0;
 	for(int iatom = 0; iatom < natoms; iatom++) forces[iatom] = vector3<double>{0.0, 0.0, 0.0};
 	
@@ -119,8 +118,7 @@ void interaction_energy_finite(const int natoms, const cell_type & cell, const a
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void ewald_fourier_3d(const int natoms, const cell_type & cell, const array_charge & charge, double total_charge, const array_positions & positions, double alpha,
 											double & efs, array_forces & forces){
-	using math::vector3;
- 
+	 
 	// G = 0 energy
 	efs = -M_PI*total_charge*total_charge/(2.0*alpha*alpha*cell.volume());
 
@@ -176,8 +174,7 @@ void ewald_fourier_3d(const int natoms, const cell_type & cell, const array_char
 template <class cell_type, class array_charge, class array_positions, class array_forces>
 void ewald_fourier_2d(const int natoms, const cell_type & cell, const array_charge & charge, double total_charge, const array_positions & positions, double alpha,
 											double & efs, array_forces & forces){
-	using math::vector3;
-
+	
 	//	In-Chul Yeh and Max L. Berkowitz, J. Chem. Phys. 111, 3155 (1999).
 
 	auto dz_max = 0.0;
@@ -295,8 +292,7 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 
 	assert(periodicity == 2 or periodicity == 3);
 	
-	using math::vector3;
-
+	
 	const double alpha = 0.21;
 
 	double ers = 0.0;
@@ -381,8 +377,7 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
 	using namespace inq;
 	using namespace Catch::literals;
-  using math::vector3;
-	const pseudo::math::erf_range_separation sep(0.625);
+  	const pseudo::math::erf_range_separation sep(0.625);
  
   SECTION("Aluminum cubic cell"){
   
@@ -417,8 +412,8 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
     const double charge[2] = {4.0, 4.0};
     
     std::vector<vector3<double>> positions(2);
-    positions[0] = cell.metric().to_cartesian(vector3<double, math::contravariant>(0.0,  0.0,  0.0 ));
-    positions[1] = cell.metric().to_cartesian(vector3<double, math::contravariant>(0.25, 0.25, 0.25));
+    positions[0] = cell.metric().to_cartesian(vector3<double, contravariant>(0.0,  0.0,  0.0 ));
+    positions[1] = cell.metric().to_cartesian(vector3<double, contravariant>(0.25, 0.25, 0.25));
     
     double energy;
     std::vector<vector3<double>> forces(2);
@@ -551,70 +546,70 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
 
     std::vector<vector3<double>> positions;
 		
-		positions.push_back(math::vector3<double>(  alat*0.000000000,   alat*0.000000000,    alat*0.000000000));
-	  positions.push_back(math::vector3<double>(  alat*0.000000000,   alat*0.000000000,    alat*0.500000000));
-	  positions.push_back(math::vector3<double>(  alat*0.000000000,   alat*0.500000000,    alat*0.000000000));
-	  positions.push_back(math::vector3<double>(  alat*0.000000000,   alat*0.500000000,    alat*0.500000000));
-	  positions.push_back(math::vector3<double>(  alat*0.500000000,   alat*0.000000000,    alat*0.000000000));
-	  positions.push_back(math::vector3<double>(  alat*0.500000000,   alat*0.000000000,    alat*0.500000000));
-	  positions.push_back(math::vector3<double>(  alat*0.500000000,   alat*0.500000000,    alat*0.000000000));
-	  positions.push_back(math::vector3<double>(  alat*0.500000000,   alat*0.500000000,    alat*0.500000000));
-	  positions.push_back(math::vector3<double>(  alat*0.000000000,   alat*0.250000000,    alat*0.250000000));
-	  positions.push_back(math::vector3<double>(  alat*0.000000000,   alat*0.250000000,    alat*0.750000000));
-	  positions.push_back(math::vector3<double>(  alat*0.000000000,   alat*0.750000000,    alat*0.250000000));
-	  positions.push_back(math::vector3<double>(  alat*0.000000000,   alat*0.750000000,    alat*0.750000000));
-	  positions.push_back(math::vector3<double>(  alat*0.500000000,   alat*0.250000000,    alat*0.250000000));
-	  positions.push_back(math::vector3<double>(  alat*0.500000000,   alat*0.250000000,    alat*0.750000000));
-	  positions.push_back(math::vector3<double>(  alat*0.500000000,   alat*0.750000000,    alat*0.250000000));
-	  positions.push_back(math::vector3<double>(  alat*0.500000000,   alat*0.750000000,    alat*0.750000000));
-	  positions.push_back(math::vector3<double>(  alat*0.250000000,   alat*0.250000000,    alat*0.000000000));
-	  positions.push_back(math::vector3<double>(  alat*0.250000000,   alat*0.250000000,    alat*0.500000000));
-	  positions.push_back(math::vector3<double>(  alat*0.250000000,   alat*0.750000000,    alat*0.000000000));
-	  positions.push_back(math::vector3<double>(  alat*0.250000000,   alat*0.750000000,    alat*0.500000000));
-	  positions.push_back(math::vector3<double>(  alat*0.750000000,   alat*0.250000000,    alat*0.000000000));
-	  positions.push_back(math::vector3<double>(  alat*0.750000000,   alat*0.250000000,    alat*0.500000000));
-	  positions.push_back(math::vector3<double>(  alat*0.750000000,   alat*0.750000000,    alat*0.000000000));
-	  positions.push_back(math::vector3<double>(  alat*0.750000000,   alat*0.750000000,    alat*0.500000000));
-	  positions.push_back(math::vector3<double>(  alat*0.250000000,   alat*0.000000000,    alat*0.250000000));
-	  positions.push_back(math::vector3<double>(  alat*0.250000000,   alat*0.000000000,    alat*0.750000000));
-	  positions.push_back(math::vector3<double>(  alat*0.250000000,   alat*0.500000000,    alat*0.250000000));
-	  positions.push_back(math::vector3<double>(  alat*0.250000000,   alat*0.500000000,    alat*0.750000000));
-	  positions.push_back(math::vector3<double>(  alat*0.750000000,   alat*0.000000000,    alat*0.250000000));
-	  positions.push_back(math::vector3<double>(  alat*0.750000000,   alat*0.000000000,    alat*0.750000000));
-	  positions.push_back(math::vector3<double>(  alat*0.750000000,   alat*0.500000000,    alat*0.250000000));
-	  positions.push_back(math::vector3<double>(  alat*0.750000000,   alat*0.500000000,    alat*0.750000000));
-	  positions.push_back(math::vector3<double>(  alat*0.375000000,   alat*0.125000000,    alat*0.375000000));
-	  positions.push_back(math::vector3<double>(  alat*0.375000000,   alat*0.125000000,    alat*0.875000000));
-	  positions.push_back(math::vector3<double>(  alat*0.375000000,   alat*0.625000000,    alat*0.375000000));
-	  positions.push_back(math::vector3<double>(  alat*0.375000000,   alat*0.625000000,    alat*0.875000000));
-	  positions.push_back(math::vector3<double>(  alat*0.875000000,   alat*0.125000000,    alat*0.375000000));
-	  positions.push_back(math::vector3<double>(  alat*0.875000000,   alat*0.125000000,    alat*0.875000000));
-	  positions.push_back(math::vector3<double>(  alat*0.875000000,   alat*0.625000000,    alat*0.375000000));
-	  positions.push_back(math::vector3<double>(  alat*0.875000000,   alat*0.625000000,    alat*0.875000000));
-	  positions.push_back(math::vector3<double>(  alat*0.125000000,   alat*0.125000000,    alat*0.125000000));
-	  positions.push_back(math::vector3<double>(  alat*0.125000000,   alat*0.125000000,    alat*0.625000000));
-	  positions.push_back(math::vector3<double>(  alat*0.125000000,   alat*0.625000000,    alat*0.125000000));
-	  positions.push_back(math::vector3<double>(  alat*0.125000000,   alat*0.625000000,    alat*0.625000000));
-	  positions.push_back(math::vector3<double>(  alat*0.625000000,   alat*0.125000000,    alat*0.125000000));
-	  positions.push_back(math::vector3<double>(  alat*0.625000000,   alat*0.125000000,    alat*0.625000000));
-	  positions.push_back(math::vector3<double>(  alat*0.625000000,   alat*0.625000000,    alat*0.125000000));
-	  positions.push_back(math::vector3<double>(  alat*0.625000000,   alat*0.625000000,    alat*0.625000000));
-	  positions.push_back(math::vector3<double>(  alat*0.125000000,   alat*0.375000000,    alat*0.375000000));
-	  positions.push_back(math::vector3<double>(  alat*0.125000000,   alat*0.375000000,    alat*0.875000000));
-	  positions.push_back(math::vector3<double>(  alat*0.125000000,   alat*0.875000000,    alat*0.375000000));
-	  positions.push_back(math::vector3<double>(  alat*0.125000000,   alat*0.875000000,    alat*0.875000000));
-	  positions.push_back(math::vector3<double>(  alat*0.625000000,   alat*0.375000000,    alat*0.375000000));
-	  positions.push_back(math::vector3<double>(  alat*0.625000000,   alat*0.375000000,    alat*0.875000000));
-	  positions.push_back(math::vector3<double>(  alat*0.625000000,   alat*0.875000000,    alat*0.375000000));
-	  positions.push_back(math::vector3<double>(  alat*0.625000000,   alat*0.875000000,    alat*0.875000000));
-	  positions.push_back(math::vector3<double>(  alat*0.375000000,   alat*0.375000000,    alat*0.125000000));
-	  positions.push_back(math::vector3<double>(  alat*0.375000000,   alat*0.375000000,    alat*0.625000000));
-	  positions.push_back(math::vector3<double>(  alat*0.375000000,   alat*0.875000000,    alat*0.125000000));
-	  positions.push_back(math::vector3<double>(  alat*0.375000000,   alat*0.875000000,    alat*0.625000000));
-	  positions.push_back(math::vector3<double>(  alat*0.875000000,   alat*0.375000000,    alat*0.125000000));
-	  positions.push_back(math::vector3<double>(  alat*0.875000000,   alat*0.375000000,    alat*0.625000000));
-	  positions.push_back(math::vector3<double>(  alat*0.875000000,   alat*0.875000000,    alat*0.125000000));
-	  positions.push_back(math::vector3<double>(  alat*0.875000000,   alat*0.875000000,    alat*0.625000000));
+		positions.push_back(vector3<double>(  alat*0.000000000,   alat*0.000000000,    alat*0.000000000));
+	  positions.push_back(vector3<double>(  alat*0.000000000,   alat*0.000000000,    alat*0.500000000));
+	  positions.push_back(vector3<double>(  alat*0.000000000,   alat*0.500000000,    alat*0.000000000));
+	  positions.push_back(vector3<double>(  alat*0.000000000,   alat*0.500000000,    alat*0.500000000));
+	  positions.push_back(vector3<double>(  alat*0.500000000,   alat*0.000000000,    alat*0.000000000));
+	  positions.push_back(vector3<double>(  alat*0.500000000,   alat*0.000000000,    alat*0.500000000));
+	  positions.push_back(vector3<double>(  alat*0.500000000,   alat*0.500000000,    alat*0.000000000));
+	  positions.push_back(vector3<double>(  alat*0.500000000,   alat*0.500000000,    alat*0.500000000));
+	  positions.push_back(vector3<double>(  alat*0.000000000,   alat*0.250000000,    alat*0.250000000));
+	  positions.push_back(vector3<double>(  alat*0.000000000,   alat*0.250000000,    alat*0.750000000));
+	  positions.push_back(vector3<double>(  alat*0.000000000,   alat*0.750000000,    alat*0.250000000));
+	  positions.push_back(vector3<double>(  alat*0.000000000,   alat*0.750000000,    alat*0.750000000));
+	  positions.push_back(vector3<double>(  alat*0.500000000,   alat*0.250000000,    alat*0.250000000));
+	  positions.push_back(vector3<double>(  alat*0.500000000,   alat*0.250000000,    alat*0.750000000));
+	  positions.push_back(vector3<double>(  alat*0.500000000,   alat*0.750000000,    alat*0.250000000));
+	  positions.push_back(vector3<double>(  alat*0.500000000,   alat*0.750000000,    alat*0.750000000));
+	  positions.push_back(vector3<double>(  alat*0.250000000,   alat*0.250000000,    alat*0.000000000));
+	  positions.push_back(vector3<double>(  alat*0.250000000,   alat*0.250000000,    alat*0.500000000));
+	  positions.push_back(vector3<double>(  alat*0.250000000,   alat*0.750000000,    alat*0.000000000));
+	  positions.push_back(vector3<double>(  alat*0.250000000,   alat*0.750000000,    alat*0.500000000));
+	  positions.push_back(vector3<double>(  alat*0.750000000,   alat*0.250000000,    alat*0.000000000));
+	  positions.push_back(vector3<double>(  alat*0.750000000,   alat*0.250000000,    alat*0.500000000));
+	  positions.push_back(vector3<double>(  alat*0.750000000,   alat*0.750000000,    alat*0.000000000));
+	  positions.push_back(vector3<double>(  alat*0.750000000,   alat*0.750000000,    alat*0.500000000));
+	  positions.push_back(vector3<double>(  alat*0.250000000,   alat*0.000000000,    alat*0.250000000));
+	  positions.push_back(vector3<double>(  alat*0.250000000,   alat*0.000000000,    alat*0.750000000));
+	  positions.push_back(vector3<double>(  alat*0.250000000,   alat*0.500000000,    alat*0.250000000));
+	  positions.push_back(vector3<double>(  alat*0.250000000,   alat*0.500000000,    alat*0.750000000));
+	  positions.push_back(vector3<double>(  alat*0.750000000,   alat*0.000000000,    alat*0.250000000));
+	  positions.push_back(vector3<double>(  alat*0.750000000,   alat*0.000000000,    alat*0.750000000));
+	  positions.push_back(vector3<double>(  alat*0.750000000,   alat*0.500000000,    alat*0.250000000));
+	  positions.push_back(vector3<double>(  alat*0.750000000,   alat*0.500000000,    alat*0.750000000));
+	  positions.push_back(vector3<double>(  alat*0.375000000,   alat*0.125000000,    alat*0.375000000));
+	  positions.push_back(vector3<double>(  alat*0.375000000,   alat*0.125000000,    alat*0.875000000));
+	  positions.push_back(vector3<double>(  alat*0.375000000,   alat*0.625000000,    alat*0.375000000));
+	  positions.push_back(vector3<double>(  alat*0.375000000,   alat*0.625000000,    alat*0.875000000));
+	  positions.push_back(vector3<double>(  alat*0.875000000,   alat*0.125000000,    alat*0.375000000));
+	  positions.push_back(vector3<double>(  alat*0.875000000,   alat*0.125000000,    alat*0.875000000));
+	  positions.push_back(vector3<double>(  alat*0.875000000,   alat*0.625000000,    alat*0.375000000));
+	  positions.push_back(vector3<double>(  alat*0.875000000,   alat*0.625000000,    alat*0.875000000));
+	  positions.push_back(vector3<double>(  alat*0.125000000,   alat*0.125000000,    alat*0.125000000));
+	  positions.push_back(vector3<double>(  alat*0.125000000,   alat*0.125000000,    alat*0.625000000));
+	  positions.push_back(vector3<double>(  alat*0.125000000,   alat*0.625000000,    alat*0.125000000));
+	  positions.push_back(vector3<double>(  alat*0.125000000,   alat*0.625000000,    alat*0.625000000));
+	  positions.push_back(vector3<double>(  alat*0.625000000,   alat*0.125000000,    alat*0.125000000));
+	  positions.push_back(vector3<double>(  alat*0.625000000,   alat*0.125000000,    alat*0.625000000));
+	  positions.push_back(vector3<double>(  alat*0.625000000,   alat*0.625000000,    alat*0.125000000));
+	  positions.push_back(vector3<double>(  alat*0.625000000,   alat*0.625000000,    alat*0.625000000));
+	  positions.push_back(vector3<double>(  alat*0.125000000,   alat*0.375000000,    alat*0.375000000));
+	  positions.push_back(vector3<double>(  alat*0.125000000,   alat*0.375000000,    alat*0.875000000));
+	  positions.push_back(vector3<double>(  alat*0.125000000,   alat*0.875000000,    alat*0.375000000));
+	  positions.push_back(vector3<double>(  alat*0.125000000,   alat*0.875000000,    alat*0.875000000));
+	  positions.push_back(vector3<double>(  alat*0.625000000,   alat*0.375000000,    alat*0.375000000));
+	  positions.push_back(vector3<double>(  alat*0.625000000,   alat*0.375000000,    alat*0.875000000));
+	  positions.push_back(vector3<double>(  alat*0.625000000,   alat*0.875000000,    alat*0.375000000));
+	  positions.push_back(vector3<double>(  alat*0.625000000,   alat*0.875000000,    alat*0.875000000));
+	  positions.push_back(vector3<double>(  alat*0.375000000,   alat*0.375000000,    alat*0.125000000));
+	  positions.push_back(vector3<double>(  alat*0.375000000,   alat*0.375000000,    alat*0.625000000));
+	  positions.push_back(vector3<double>(  alat*0.375000000,   alat*0.875000000,    alat*0.125000000));
+	  positions.push_back(vector3<double>(  alat*0.375000000,   alat*0.875000000,    alat*0.625000000));
+	  positions.push_back(vector3<double>(  alat*0.875000000,   alat*0.375000000,    alat*0.125000000));
+	  positions.push_back(vector3<double>(  alat*0.875000000,   alat*0.375000000,    alat*0.625000000));
+	  positions.push_back(vector3<double>(  alat*0.875000000,   alat*0.875000000,    alat*0.125000000));
+	  positions.push_back(vector3<double>(  alat*0.875000000,   alat*0.875000000,    alat*0.625000000));
 		
     double energy;
     std::vector<vector3<double>> forces(64);

@@ -37,18 +37,18 @@ auto zero(){
 }
 
 template <>
-auto zero<math::vector3<double>>(){
-  return math::vector3<double>{0.0, 0.0, 0.0};
+auto zero<vector3<double>>(){
+  return vector3<double>{0.0, 0.0, 0.0};
 }
 
 template <>
-auto zero<math::vector3<double, math::covariant>>(){
-  return math::vector3<double, math::covariant>{0.0, 0.0, 0.0};
+auto zero<vector3<double, covariant>>(){
+  return vector3<double, covariant>{0.0, 0.0, 0.0};
 }
 
 template <>
-auto zero<math::vector3<double, math::contravariant>>(){
-  return math::vector3<double, math::contravariant>{0.0, 0.0, 0.0};
+auto zero<vector3<double, contravariant>>(){
+  return vector3<double, contravariant>{0.0, 0.0, 0.0};
 }
 
 }

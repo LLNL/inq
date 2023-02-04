@@ -43,7 +43,7 @@ public:
 
 	auto uniform_electric_field(double /*time*/) const {
 		throw std::logic_error("This function should not be called");
-		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
+		return vector3<double, cartesian>{0.0, 0.0, 0.0};
 	}
 	
 	auto has_uniform_vector_potential() const {
@@ -52,7 +52,7 @@ public:
 
 	auto uniform_vector_potential(double /*time*/) const {
 		throw std::logic_error("This function should not be called");
-		return math::vector3<double, math::cartesian>{0.0, 0.0, 0.0};
+		return vector3<double, cartesian>{0.0, 0.0, 0.0};
 	}
 	
 	template<typename PotentialType>

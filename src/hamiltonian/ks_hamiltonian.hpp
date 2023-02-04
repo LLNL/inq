@@ -216,7 +216,7 @@ template <typename PotentialType>
   private:
 		
 		std::vector<basis::field<basis::real_space, PotentialType>> scalar_potential_;
-		math::vector3<double, math::covariant> uniform_vector_potential_;
+		vector3<double, covariant> uniform_vector_potential_;
 		projector_all projectors_all_;		
 		bool non_local_in_fourier_;
 		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
@@ -247,8 +247,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
-  using math::vector3;
-
+  
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 
 	auto set_comm = basis::set_subcomm(cart_comm);
@@ -271,7 +270,7 @@ TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
-  states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), 1, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+  states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 	hamiltonian::ks_hamiltonian<double> ham(rs, st, pot, false, geo, st.num_states(), 0.0, cart_comm);
 

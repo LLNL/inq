@@ -30,8 +30,8 @@
 namespace inq {
 namespace operations {
 
-basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(basis::field<basis::fourier_space, complex> const & ff){
-		basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
+basis::field<basis::fourier_space, vector3<complex, covariant>> gradient(basis::field<basis::fourier_space, complex> const & ff){
+		basis::field<basis::fourier_space, vector3<complex, covariant>> grad(ff.skeleton());
 
 		CALI_CXX_MARK_SCOPE("gradient_fourier(field)");
  
@@ -48,8 +48,8 @@ basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	basis::field_set<basis::fourier_space, math::vector3<complex, math::covariant>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
-		basis::field_set<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
+	basis::field_set<basis::fourier_space, vector3<complex, covariant>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
+		basis::field_set<basis::fourier_space, vector3<complex, covariant>> grad(ff.skeleton());
 
 		CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
@@ -66,10 +66,10 @@ basis::field<basis::fourier_space, math::vector3<complex, math::covariant>> grad
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>>
-gradient(states::orbital_set<basis::fourier_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}, double factor = 1.0){
+states::orbital_set<basis::fourier_space, vector3<complex, covariant>>
+gradient(states::orbital_set<basis::fourier_space, complex> const & ff, vector3<double, covariant> const & shift = {0.0, 0.0, 0.0}, double factor = 1.0){
 
-	states::orbital_set<basis::fourier_space, math::vector3<complex, math::covariant>> grad(ff.skeleton());
+	states::orbital_set<basis::fourier_space, vector3<complex, covariant>> grad(ff.skeleton());
 
 	CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
  
@@ -133,7 +133,7 @@ gradient(states::orbital_set<basis::fourier_space, complex> const & ff, math::ve
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-auto gradient(states::orbital_set<basis::real_space, complex> const & ff, math::vector3<double, math::covariant> const & shift = {0.0, 0.0, 0.0}, double factor = 1.0){
+auto gradient(states::orbital_set<basis::real_space, complex> const & ff, vector3<double, covariant> const & shift = {0.0, 0.0, 0.0}, double factor = 1.0){
 
 	CALI_CXX_MARK_SCOPE("gradient_real_space(orbital_set)");
 	
@@ -157,23 +157,23 @@ auto gradient(states::orbital_set<basis::real_space, complex> const & ff, math::
 #include <catch2/catch_all.hpp>
 #include <math/vector3.hpp>
 
-auto f_analytic(inq::math::vector3<double> kk, inq::math::vector3<double> rr){
+auto f_analytic(inq::vector3<double> kk, inq::vector3<double> rr){
 	return exp(inq::complex(0.0,1.0)*dot(kk, rr));
 }
 
-auto g_analytic(inq::math::vector3<double> kk, inq::math::vector3<double> rr) {
-	inq::math::vector3<inq::complex> gg;
+auto g_analytic(inq::vector3<double> kk, inq::vector3<double> rr) {
+	inq::vector3<inq::complex> gg;
 	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0, 1.0)*dot(kk, rr));
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = factor*kk[idir] ;
 	return gg;
 }
 
-auto f_analytic2(inq::math::vector3<double> kk, inq::math::vector3<double> rr){
+auto f_analytic2(inq::vector3<double> kk, inq::vector3<double> rr){
 	return sin(dot(kk, rr));
 }
 
-auto g_analytic2(inq::math::vector3<double> kk , inq::math::vector3<double> rr) {
-	inq::math::vector3<double> gg;
+auto g_analytic2(inq::vector3<double> kk , inq::vector3<double> rr) {
+	inq::vector3<double> gg;
 	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(dot(kk, rr));
 	return gg;
 }
@@ -184,8 +184,7 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using namespace operations;
-	using math::vector3;
-
+	
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
