@@ -222,9 +222,8 @@ TEST_CASE("function observables::density", "[observables::density]") {
 	}
 	
 	SECTION("spinor"){
-		int nvec = 1;
-		
-		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 2, math::vector3<double, math::covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
+
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 2, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
 		math::array<double, 1> occ(nvec);
 		
@@ -242,7 +241,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 		
 		observables::density::calculate_add(occ, aa, dd);
 
-		aa.set_comm().all_reduce_in_place_n(raw_pointer_cast(dd.matrix().data_elements()), dd.matrix().size(), std::plus<>{});
+		dd.all_reduce(aa.set_comm());
 		
 		for(int ii = 0; ii < dd.basis().part().local_size(); ii++) {
 			CHECK(dd.matrix()[ii][0] == Approx(0.5*bas.part().local_to_global(ii).value()*nvec*(nvec + 1)));
