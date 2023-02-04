@@ -97,7 +97,7 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 
 		if(electrons.density_basis_.comm().size() > 1){
 			CALI_CXX_MARK_SCOPE("forces_local::reduce");
-			electrons.density_basis_.comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size(), std::plus<>{});
+			electrons.density_basis_.comm().all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size());
 		}
 		
 	}

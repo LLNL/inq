@@ -4,7 +4,7 @@
 #define INQ__OBSERVABLES__DIPOLE
 
 /*
- Copyright (C) 2019 Xavier Andrade, Alfredo Correa.
+ Copyright (C) 2019-2023 Xavier Andrade, Alfredo A. Correa.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -47,8 +47,8 @@ vector3<double> dipole(basis::field<basis::real_space, double> const & density){
 		}
 	}
 
-	if(density.basis().comm().size() > 1) density.basis().comm().all_reduce_in_place_n(dip.data(), dip.size(), std::plus<>{});
-	
+	if(density.basis().comm().size() > 1) density.basis().comm().all_reduce_n(dip.data(), dip.size());
+
 	return dip*density.basis().volume_element();
 	
 }
