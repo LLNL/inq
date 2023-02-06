@@ -152,7 +152,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto exx_coefficient(){
-		if(xc_.exchange_.true_functional()) return xc_.exchange_.exx_coefficient();
+		if(xc_.exchange().true_functional()) return xc_.exchange().exx_coefficient();
 		return interaction_.exchange_coefficient();
 	}
 

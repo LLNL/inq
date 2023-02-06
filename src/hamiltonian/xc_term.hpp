@@ -45,6 +45,8 @@ public:
 	{
 	}
 
+  ////////////////////////////////////////////////////////////////////////////////////////////
+	
   template <typename SpinDensityType, typename CoreDensityType, typename VKSType>
   void operator()(SpinDensityType const & spin_density, CoreDensityType const & core_density_, VKSType & vks, double & exc, double & nvxc) const {
     
@@ -73,9 +75,16 @@ public:
 			}
 		}
   }
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////////
-  
+	
+	auto & exchange() const {
+		return exchange_;
+	}
+	
+  ////////////////////////////////////////////////////////////////////////////////////////////
+	
+private:
 	hamiltonian::xc_functional exchange_;
 	hamiltonian::xc_functional correlation_;
 	
