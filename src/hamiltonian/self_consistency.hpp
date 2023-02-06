@@ -128,33 +128,9 @@ public:
 		}
 
 		// XC
-		energy.xc = 0.0;
-		energy.nvxc = 0.0;
-				
-		if(xc_.exchange_.true_functional() or xc_.correlation_.true_functional()){
-
-			auto full_density = operations::add(spin_density, core_density_);
-			
-			double efunc = 0.0;
-			basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
-
-			if(xc_.exchange_.true_functional()){
-				xc_.exchange_(full_density, efunc, vfunc);
-				energy.xc += efunc;
-				operations::increment(vks, vfunc);
-				energy.nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
-			}
-				
-			if(xc_.correlation_.true_functional()){
-				xc_.correlation_(full_density, efunc, vfunc);
-				energy.xc += efunc;
-				operations::increment(vks, vfunc);
-				energy.nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
-			}
-		}
+		xc_(spin_density, core_density_, vks, energy.xc, energy.nvxc);
 
 		// PUT THE CALCULATED POTENTIAL IN THE HAMILTONIAN
-		
 		if(potential_basis_ == vks[0].basis()){
 			hamiltonian.scalar_potential_= std::move(vks);
 		} else {

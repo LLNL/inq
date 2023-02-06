@@ -44,6 +44,35 @@ public:
 		correlation_(int(interaction.correlation()), spin_components)
 	{
 	}
+
+  template <typename SpinDensityType, typename CoreDensityType, typename VKSType>
+  void operator()(SpinDensityType const & spin_density, CoreDensityType const & core_density_, VKSType & vks, double & exc, double & nvxc) const {
+    
+    exc = 0.0;
+		nvxc = 0.0;
+		
+		if(exchange_.true_functional() or correlation_.true_functional()){
+
+			auto full_density = operations::add(spin_density, core_density_);
+			
+			double efunc = 0.0;
+			basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
+
+			if(exchange_.true_functional()){
+				exchange_(full_density, efunc, vfunc);
+				exc += efunc;
+				operations::increment(vks, vfunc);
+				nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
+			}
+				
+			if(correlation_.true_functional()){
+				correlation_(full_density, efunc, vfunc);
+				exc += efunc;
+				operations::increment(vks, vfunc);
+				nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
+			}
+		}
+  }
   
   ////////////////////////////////////////////////////////////////////////////////////////////
   
