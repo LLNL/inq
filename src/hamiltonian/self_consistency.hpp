@@ -27,7 +27,7 @@
 #include <operations/add.hpp>
 #include <operations/integral.hpp>
 #include <input/interaction.hpp>
-#include <hamiltonian/xc_functional.hpp>
+#include <hamiltonian/xc_term.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <perturbations/none.hpp>
 #include <utils/profiling.hpp>
@@ -42,8 +42,7 @@ public:
 	
 	self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis, int const spin_components, Perturbation const & pert = {}):
 		interaction_(interaction),
-		exchange_(int(interaction.exchange()), spin_components),
-		correlation_(int(interaction.correlation()), spin_components),
+		xc_(interaction, spin_components),
 		vion_(density_basis),
 		core_density_(density_basis),
 		potential_basis_(potential_basis),
@@ -56,8 +55,7 @@ public:
 	
 	self_consistency(self_consistency && old, parallel::communicator new_comm):
 		interaction_(std::move(old.interaction_)),
-		exchange_(std::move(old.exchange_)),
-		correlation_(std::move(old.correlation_)),
+		xc_(std::move(old.xc_)),
 		vion_(std::move(old.vion_), new_comm),
 		core_density_(std::move(old.core_density_), new_comm),
 		potential_basis_(std::move(old.potential_basis_), new_comm),
@@ -133,22 +131,22 @@ public:
 		energy.xc = 0.0;
 		energy.nvxc = 0.0;
 				
-		if(exchange_.true_functional() or correlation_.true_functional()){
+		if(xc_.exchange_.true_functional() or xc_.correlation_.true_functional()){
 
 			auto full_density = operations::add(spin_density, core_density_);
 			
 			double efunc = 0.0;
 			basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
 
-			if(exchange_.true_functional()){
-				exchange_(full_density, efunc, vfunc);
+			if(xc_.exchange_.true_functional()){
+				xc_.exchange_(full_density, efunc, vfunc);
 				energy.xc += efunc;
 				operations::increment(vks, vfunc);
 				energy.nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 			}
 				
-			if(correlation_.true_functional()){
-				correlation_(full_density, efunc, vfunc);
+			if(xc_.correlation_.true_functional()){
+				xc_.correlation_(full_density, efunc, vfunc);
 				energy.xc += efunc;
 				operations::increment(vks, vfunc);
 				energy.nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
@@ -178,7 +176,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto exx_coefficient(){
-		if(exchange_.true_functional()) return exchange_.exx_coefficient();
+		if(xc_.exchange_.true_functional()) return xc_.exchange_.exx_coefficient();
 		return interaction_.exchange_coefficient();
 	}
 
@@ -187,8 +185,7 @@ public:
 private:
 	
 	input::interaction interaction_;
-	hamiltonian::xc_functional exchange_;
-	hamiltonian::xc_functional correlation_;
+	hamiltonian::xc_term xc_;
 	basis::field<basis::real_space, double> vion_;
 	basis::field<basis::real_space, double> core_density_;
 	basis::real_space potential_basis_;
