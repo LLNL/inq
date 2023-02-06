@@ -263,7 +263,7 @@ TEST_CASE("function observables::density", "[observables::density]") {
 
 		for(int ii = 0; ii < dd.basis().part().local_size(); ii++) {
 			auto iig = bas.part().local_to_global(ii).value();
-			//			CHECK(tdd.linear()[ii] == Approx(2.0*0.5*iig*nvec*(nvec + 1)));
+			CHECK(tdd.linear()[ii] == Approx(2.0*0.5*iig*nvec*(nvec + 1)));
 		}
 		
 	}
