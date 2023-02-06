@@ -39,7 +39,8 @@ public:
 		:fields_(basis, num_vectors, comm, spinor_dim),
 		 spinor_dim_(spinor_dim),
 		 kpoint_(kpoint),
-		 spin_index_(spin_index){
+		 spin_index_(spin_index),
+		 spinor_set_part_(num_vectors, fields_.set_comm()){
 		assert(spinor_dim_ == 1 or spinor_dim_ == 2);
 		assert(fields_.local_set_size()%spinor_dim_ == 0);
 	}
@@ -154,6 +155,10 @@ public:
 	void all_reduce(CommunicatorType & comm, OpType op = OpType{}){
 		fields_.all_reduce(comm, op);
 	}
+
+	auto & spinor_set_part() const {
+		return spinor_set_part_;
+	}
 	
 private:
 
@@ -161,6 +166,7 @@ private:
 	int spinor_dim_;
 	kpoint_type kpoint_;
 	int spin_index_;
+	parallel::partition spinor_set_part_;
 		
 };
 
@@ -248,6 +254,8 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	CHECK(sporb.kpoint()[0] == 0.4_a);
 	CHECK(sporb.kpoint()[1] == 0.22_a);
 	CHECK(sporb.kpoint()[2] == -0.57_a);
+
+	CHECK(sporb.set_part().local_size() == sporb.spinor_set_part().local_size()*sporb.spinor_dim());
 
 	if(cart_comm.size() == 1){
 		CHECK(sporb.matrix().size() == sporb.basis().local_size());
