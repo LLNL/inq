@@ -75,7 +75,19 @@ namespace hamiltonian {
 		~xc_functional(){
 			if(true_functional()) xc_func_end(&func_);
 		}
+		
+		auto & family() const {
+			return func_.info->family;
+		}
 
+		auto & libxc_func() const {
+			return func_;
+		}
+		
+		auto libxc_func_ptr() const {
+			return &func_;
+		}
+		
 		template <class field_type>
 		void operator()(field_type const & spin_density, double & xc_energy, field_type & vxc) const {
 
@@ -87,9 +99,9 @@ namespace hamiltonian {
 			
 			assert(spin_density.matrix().num_elements() == vxc.matrix().num_elements());
 			
-			switch(func_.info->family) {
+			switch(family()) {
 				case XC_FAMILY_LDA:{
-					xc_lda_exc_vxc(&func_, spin_density.basis().local_size(), raw_pointer_cast(spin_density.matrix().data_elements()), raw_pointer_cast(exc.linear().data_elements()), raw_pointer_cast(vxc.matrix().data_elements()));
+					xc_lda_exc_vxc(libxc_func_ptr(), spin_density.basis().local_size(), raw_pointer_cast(spin_density.matrix().data_elements()), raw_pointer_cast(exc.linear().data_elements()), raw_pointer_cast(vxc.matrix().data_elements()));
 					gpu::sync();
 					break;
 				}
@@ -106,16 +118,8 @@ namespace hamiltonian {
 			xc_energy = operations::integral_product(exc, observables::density::total(spin_density));
 		}
 
-		auto & libxc_func() const {
-			return func_;
-		}
-		
-		auto libxc_func_ptr() const {
-			return &func_;
-		}
-
 		auto exx_coefficient() const {
-			if(xc_hyb_type(&func_) == XC_HYB_HYBRID) return xc_hyb_exx_coef(&func_);
+			if(xc_hyb_type(libxc_func_ptr()) == XC_HYB_HYBRID) return xc_hyb_exx_coef(libxc_func_ptr());
 			return 0.0;
 		}
 		
@@ -148,7 +152,7 @@ namespace hamiltonian {
 
 			basis::field_set<basis::real_space, double> vsigma(vxc.basis(), nsigma);
 			
-			xc_gga_exc_vxc(&func_, density.basis().local_size(), density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
+			xc_gga_exc_vxc(libxc_func_ptr(), density.basis().local_size(), density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
 			gpu::sync();
 			
 			basis::field_set<basis::real_space, vector3<double, covariant>> vxc_extra(vxc.skeleton());
