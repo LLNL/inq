@@ -48,9 +48,10 @@ public:
 	orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
 	:fields_(std::move(oldset.fields_), new_comm),
 		 kpoint_(oldset.kpoint()),
-		 spin_index_(oldset.spin_index()){
+		 spin_index_(oldset.spin_index()),
+		 spinor_set_part_(std::move(oldset.spinor_set_part_)){
 	}
-	
+			 
 	template <class any_type>
 	orbital_set(inq::utils::skeleton_wrapper<orbital_set<Basis, any_type>> const & skeleton)
 		:orbital_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm()){
