@@ -78,6 +78,14 @@ public:
 		return inter;
 	}
 
+	static auto hartree(){
+		interaction inter;
+		inter.hartree_potential_ = true;
+		inter.exchange_ = exchange_functional::NONE;
+		inter.correlation_ = correlation_functional::NONE;		
+		return inter;
+	}
+	
 	static auto hartree_fock(){
 		interaction inter;
 		inter.hartree_potential_ = true;
