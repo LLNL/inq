@@ -96,6 +96,24 @@ public:
   auto current() const {
     return ions_.cell().metric().to_cartesian(observables::current(ions_, electrons_, ham_));
   }
+	auto projected_occupation(const systems::electrons & gs) {
+		auto calc = [](auto occ, auto v) {
+			return occ*norm(v);
+		};
+		math::array<double, 2> occ({gs.lot_size(), gs.lot()[0].set_size()});
+		for(int ilot=0; ilot<gs.lot_size(); ilot++) {
+			auto ortho = operations::overlap(electrons_.lot()[ilot], gs.lot()[ilot]).array();
+			for (int it=0; it<std::get<0>(sizes(ortho)); it++) {
+				auto start = electrons_.lot()[ilot].set_part().start();
+				auto end = electrons_.lot()[ilot].set_part().end();
+				occ[ilot][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, end}), calc);
+				if(electrons_.lot_states_comm_.size() > 1){
+					electrons_.lot_states_comm_.all_reduce_in_place_n(&occ[ilot][it], 1, std::plus<>{});
+				}
+			}
+		}
+		return occ;
+	}
 	
 };
 
