@@ -51,7 +51,11 @@ public:
 		PBE = 130,
 		LYP = 131
 	};
-
+	
+	enum class induced_vector_potential {
+		NONE,
+		GAUGE_FIELD
+	};
 
 	interaction(){
 	}
@@ -156,6 +160,16 @@ public:
 		return fourier_pseudo_.value_or(false);
 	}
 
+	static auto gauge_field(){
+		interaction inter;
+		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
+		return inter;
+	}
+	
+	auto induced_vector_potential_value() const {
+		return induced_vecpot_.value_or(induced_vector_potential::NONE);
+	}
+	
 	friend auto operator|(const interaction & inter1, const interaction & inter2){
 		using inq::utils::merge_optional;
 		
@@ -164,6 +178,7 @@ public:
 		rinter.exchange_	= merge_optional(inter1.exchange_, inter2.exchange_);
 		rinter.correlation_	= merge_optional(inter1.correlation_, inter2.correlation_);
 		rinter.fourier_pseudo_	= merge_optional(inter1.fourier_pseudo_, inter2.fourier_pseudo_);
+		rinter.induced_vecpot_ = merge_optional(inter1.induced_vecpot_, inter2.induced_vecpot_);
 		return rinter;
 	}
 
@@ -172,6 +187,7 @@ private:
 	std::optional<bool> hartree_potential_;
 	std::optional<exchange_functional> exchange_;
 	std::optional<correlation_functional> correlation_;
+	std::optional<induced_vector_potential> induced_vecpot_;
 	std::optional<bool> fourier_pseudo_;
 		
 };
