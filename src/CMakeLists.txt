@@ -31,3 +31,8 @@ add_executable(all_unit_tests)
 target_sources(all_unit_tests PRIVATE all_unit_tests.cpp)
 target_link_libraries(all_unit_tests PRIVATE unit_tests_main Catch2::Catch2)
 add_test(NAME unit_tests COMMAND ${PROJECT_BINARY_DIR}/scripts/run_test.sh ./all_unit_tests)
+
+if(ENABLE_CUDA)
+	set_source_files_properties(all_unit_tests PROPERTIES LANGUAGE CUDA)
+endif()
+
