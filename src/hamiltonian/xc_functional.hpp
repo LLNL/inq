@@ -239,7 +239,7 @@ auto laplacian_gaussian(inq::vector3<double> rr){
 	return 4.0*dot(rr, rr)*gaussian(rr) - 6.0*gaussian(rr);
 }
 
-TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;	

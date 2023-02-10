@@ -114,7 +114,7 @@ public:
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function operations::precondition", "[precondition]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

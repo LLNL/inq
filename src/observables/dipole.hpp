@@ -82,7 +82,7 @@ vector3<double> dipole(systems::ions const & ions, systems::electrons const & el
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("observables::dipole", "[observables::dipole]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

@@ -116,7 +116,7 @@ auto integral_sum_absdiff(basis::field_set<BasisType, ElementType1> const & phi1
 #include <catch2/catch_all.hpp>
 #include <basis/trivial.hpp>
 
-TEST_CASE("function operations::integral", "[operations::integral]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

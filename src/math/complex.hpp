@@ -58,7 +58,7 @@ GPU_FUNCTION inline auto fabs(complex const & z){
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("Class math::complex", "[math::complex]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace Catch::literals;

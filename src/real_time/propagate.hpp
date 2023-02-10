@@ -95,7 +95,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("real_time::propagate", "[real_time::propagate]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;

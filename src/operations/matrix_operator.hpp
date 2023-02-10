@@ -71,7 +71,7 @@ private:
 #include <basis/field_set.hpp>
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

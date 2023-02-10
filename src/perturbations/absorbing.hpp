@@ -85,7 +85,7 @@ using namespace inq;
 using namespace Catch::literals;
 using namespace magnitude;
 
-TEST_CASE("perturbations::absorbing", "[perturbations::absorbing]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     perturbations::absorbing nop(1.0_Ha, 0.3, 0.1);
     CHECK(not nop.has_uniform_electric_field());
 }

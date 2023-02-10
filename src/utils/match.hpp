@@ -83,7 +83,7 @@ namespace utils {
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("class utils::match", "[utils::match]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	inq::utils::match mtc(1e-7);
 

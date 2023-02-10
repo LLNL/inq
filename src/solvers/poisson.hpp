@@ -309,7 +309,7 @@ private:
 #include <ions/unit_cell.hpp>
 #include <operations/integral.hpp>
 
-TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 
 	using namespace inq;

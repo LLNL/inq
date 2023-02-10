@@ -163,7 +163,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal_normalize
 #include <basis/field_set.hpp>
 #include <basis/trivial.hpp>
 
-TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagonal]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	using namespace inq;
 	using namespace Catch::literals;

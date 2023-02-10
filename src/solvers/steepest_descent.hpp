@@ -114,7 +114,7 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

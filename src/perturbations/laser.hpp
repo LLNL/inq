@@ -92,7 +92,7 @@ using namespace inq;
 using namespace Catch::literals;
 using namespace magnitude;
 
-TEST_CASE("perturbations::laser", "[perturbations::laser]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV);
 

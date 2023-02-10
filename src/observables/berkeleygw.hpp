@@ -55,7 +55,7 @@ void save(systems::ions const & ions, systems::electrons const & electrons){
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("observables::berkeleygw", "[observables::berkeleygw]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

@@ -78,7 +78,7 @@ states::orbital_set<basis::real_space, complex> scalar_potential(basis::field<ba
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function hamiltonian::scalar_potential", "[hamiltonian::scalar_potential]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

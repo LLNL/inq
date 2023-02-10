@@ -112,7 +112,7 @@ void cholesky(matrix_type && matrix, bool nocheck = false){
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function solvers::cholesky", "[solvers::cholesky]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Complex 2x2"){
     

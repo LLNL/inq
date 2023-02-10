@@ -123,7 +123,7 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
-TEST_CASE("Class hamiltonian::forces", "[forces]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace Catch::literals;

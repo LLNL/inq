@@ -175,7 +175,7 @@ auto g_analytic2(inq::vector3<double> kk , inq::vector3<double> rr) {
 	return gg;
 }
 
-TEST_CASE("function operations::gradient", "[operations::gradient]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;	

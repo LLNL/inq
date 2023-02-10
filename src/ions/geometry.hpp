@@ -121,7 +121,7 @@ private:
 
 #include <input/parse_xyz.hpp>
 
-TEST_CASE("Class ions::geometry", "[geometry]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

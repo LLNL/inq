@@ -235,7 +235,7 @@ namespace ions {
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

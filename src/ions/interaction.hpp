@@ -374,7 +374,7 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 #include <math/array.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

@@ -180,7 +180,7 @@ private:
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
-TEST_CASE("Class hamiltonian::self_consistency", "[self_consistency]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace Catch::literals;

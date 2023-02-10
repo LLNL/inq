@@ -520,7 +520,7 @@ struct prod3 {
   }
 };
 
-TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	using namespace inq;
 	using namespace Catch::literals;

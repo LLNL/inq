@@ -102,7 +102,7 @@ private:
 #include <catch2/catch_all.hpp>
 #include <mpi3/environment.hpp>
 
-TEST_CASE("math::subspace_matrix", "[math::subspace_matrix]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;

@@ -49,7 +49,7 @@ enum class gauge {
 
 using namespace inq;
 
-TEST_CASE("perturbations::gauge", "[perturbations::gauge]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   [[maybe_unused]] auto gau = perturbations::gauge::velocity;
 

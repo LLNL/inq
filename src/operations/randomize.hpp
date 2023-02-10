@@ -92,7 +92,7 @@ namespace operations {
 #include <catch2/catch_all.hpp>
 #include <operations/overlap_diagonal.hpp>
 
-TEST_CASE("function operations::randomize", "[operations::randomize]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

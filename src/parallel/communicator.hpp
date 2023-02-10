@@ -106,7 +106,7 @@ using cartesian_communicator = hybrid_communicator<boost::mpi3::cartesian_commun
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("class parallel::communicator", "[parallel::communicator]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 }
 #endif

@@ -295,7 +295,7 @@ struct is_trivially_default_constructible<inq::vector3<T>> :
 
 #include <iostream>
 
-TEST_CASE("function vector3", "[vector3]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

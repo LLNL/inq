@@ -39,7 +39,7 @@ auto raw_pointer_cast(Type * ptr){
 
 using namespace inq;
 
-TEMPLATE_TEST_CASE("function raw_pointer_cast", "[raw_pointer_cast]", int, double, int const, double const, complex, complex const) {
+TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, int, double, int const, double const, complex, complex const) {
 
 	TestType a = 1;
 	

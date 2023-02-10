@@ -73,7 +73,7 @@ auto current(const systems::ions & ions, systems::electrons const & electrons, H
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("observables::current", "[observables::current]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

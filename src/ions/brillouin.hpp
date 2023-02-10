@@ -98,7 +98,7 @@ private:
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function ions::brillouin", "[ions::brillouin]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 }
 #endif
