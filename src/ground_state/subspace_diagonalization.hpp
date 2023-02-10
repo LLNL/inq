@@ -51,7 +51,7 @@ auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 
 #include <operations/randomize.hpp>
 
-TEST_CASE("function operations::subspace_diagonalization", "[subspace_diagonalization]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

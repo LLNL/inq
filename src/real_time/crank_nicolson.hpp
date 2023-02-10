@@ -110,7 +110,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("real_time::crank_nicolson", "[real_time::crank_nicolson]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;

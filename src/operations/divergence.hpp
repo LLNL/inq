@@ -128,7 +128,7 @@ auto d_vectorial_real_wave (inq::vector3<double> k, inq::vector3<double> r){
 	return 1.0*k[0]*cos(dot(k, r)) + 2.5*k[1]*sin(dot(k, r)) + 3.3*k[2]*cos(dot(k, r));
 }
 
-TEST_CASE("function operations::divergence", "[operations::divergence]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

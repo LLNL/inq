@@ -66,7 +66,7 @@ void shift(typename FieldSetType1::element_type const & factor, const FieldSetTy
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function operations::shift", "[operations::shift]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

@@ -247,7 +247,7 @@ private:
 #include <catch2/catch_all.hpp>
 #include <mpi3/environment.hpp>
 
-TEST_CASE("Class states::ks_states", "[ks_states]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace Catch::literals;
 	using namespace inq;

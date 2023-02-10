@@ -69,7 +69,7 @@ void linear_symmetric(matrix_type && matrix, vector_type & vector){
 
 #include <math/array.hpp>
 
-TEST_CASE("function solvers::linear", "[solvers::linear]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Diagonal real 2x2"){
 	

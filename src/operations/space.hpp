@@ -517,7 +517,7 @@ auto to_real(states::orbital_set<basis::fourier_space, vector3<complex, VectorSp
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function operations::space", "[operations::space]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

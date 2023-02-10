@@ -72,7 +72,7 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function solvers::least_squares", "[solvers::least_squares]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Diagonal real 2x2"){
 	

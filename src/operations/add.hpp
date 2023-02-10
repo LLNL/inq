@@ -124,7 +124,7 @@ void increment(FVectorType & fvector, basis::field_set<BasisType, Type> const & 
 #include <catch2/catch_all.hpp>
 #include <basis/trivial.hpp>
 
-TEST_CASE("function operations::add", "[operations::add]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

@@ -218,7 +218,7 @@ auto diagonalize(MatrixType & matrix){
 #include <operations/randomize.hpp>
 #include <math/array.hpp>
 
-TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	auto comm = boost::mpi3::environment::get_world_instance();
 	inq::parallel::cartesian_communicator<2> cart_comm(comm, {});

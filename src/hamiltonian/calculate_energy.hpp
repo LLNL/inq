@@ -96,7 +96,7 @@ namespace hamiltonian {
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
-TEST_CASE("Class hamiltonian::calculate_energy", "[calculate_energy]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace Catch::literals;

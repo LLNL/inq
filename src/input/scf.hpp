@@ -165,7 +165,7 @@ namespace input {
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("class input::scf", "[input::scf]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	using namespace inq;
 	using namespace Catch::literals;

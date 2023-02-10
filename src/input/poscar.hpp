@@ -156,7 +156,7 @@ public:
 
 #include <config/path.hpp>
 
-TEST_CASE("function ions::poscar", "[inq::input::poscar]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

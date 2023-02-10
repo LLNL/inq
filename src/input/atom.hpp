@@ -87,7 +87,7 @@ auto operator|(const std::string & arg_symbol, const inq::vector3<double> & arg_
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("class ions::atom", "[inq::input::atom]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace Catch::literals;
 

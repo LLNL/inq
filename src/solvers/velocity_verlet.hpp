@@ -67,7 +67,7 @@ void propagate_velocities(double dt, AccelType const & accel, VelType & velociti
 
 using namespace inq;
 
-TEST_CASE("function solvers::velocity_verlet", "[solvers::velocity_verlet]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Cosine"){
 

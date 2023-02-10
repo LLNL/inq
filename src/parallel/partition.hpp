@@ -186,7 +186,7 @@ protected:
 
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class parallel::partition", "[parallel::partition]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	using namespace inq;
 	using namespace Catch::literals;

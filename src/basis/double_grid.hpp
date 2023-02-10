@@ -137,7 +137,7 @@ private:
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	using namespace inq;
 	using namespace Catch::literals;

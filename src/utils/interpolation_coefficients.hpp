@@ -52,7 +52,7 @@ auto interpolation_coefficients(PointsType const & points, double const pos = 0.
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function utils::interpolation_coefficients", "utils") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

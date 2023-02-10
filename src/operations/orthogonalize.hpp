@@ -55,7 +55,7 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 #include <catch2/catch_all.hpp>
 #include <operations/randomize.hpp>
 
-TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

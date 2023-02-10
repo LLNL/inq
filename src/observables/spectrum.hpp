@@ -86,7 +86,7 @@ using namespace inq;
 using namespace magnitude;
 using namespace Catch::literals;
 
-TEST_CASE("observables::spectrum", "[observables::spectrum]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   int ntime = 1000;
   double dtime = 0.1;

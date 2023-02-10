@@ -167,7 +167,7 @@ void prefetch_cpu(ArrayType const &
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("math::array", "[math::array]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;

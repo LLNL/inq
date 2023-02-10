@@ -103,7 +103,7 @@ private:
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("class input::rt", "[input::rt]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   using namespace inq;
   using namespace inq::magnitude;	

@@ -41,7 +41,7 @@ struct path {
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("class config::path", "[path]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   SECTION("Share path"){
     CHECK(inq::config::path::share() == SHARE_DIR + std::string("/"));
   }

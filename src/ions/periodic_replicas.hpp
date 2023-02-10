@@ -89,7 +89,7 @@ private:
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

@@ -59,7 +59,7 @@ auto zero<vector3<double, contravariant>>(){
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("class math::match", "[math::match]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 }
 #endif

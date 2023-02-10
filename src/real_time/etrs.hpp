@@ -103,7 +103,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("real_time::etrs", "[real_time::etrs]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;

@@ -115,7 +115,7 @@ namespace utils {
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("class utils::factors", "[utils::factors]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 
   SECTION("Factors of 10"){

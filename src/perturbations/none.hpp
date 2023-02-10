@@ -76,7 +76,7 @@ using namespace inq;
 using namespace Catch::literals;
 using namespace magnitude;
 
-TEST_CASE("perturbations::none", "[perturbations::none]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	perturbations::none nop;
 	CHECK(not nop.has_uniform_electric_field());
 }
