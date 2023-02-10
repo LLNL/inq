@@ -75,7 +75,7 @@ public:
 									dg = basis.double_grid().ref(), spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint, auto m) {
 									 
 									 if(ipoint == 0) kb_[iproj_lm + m] = coe;
-									 mat[iproj_lm + m][ipoint] = dg.value([spline, l, m] GPU_LAMBDA(auto pos) { return spline.value(length(pos))*pseudo::math::spherical_harmonic(l, m - l, pos);}, spac, metric.to_cartesian(sph.point_pos(ipoint)));
+									 mat[iproj_lm + m][ipoint] = dg.value([spline, l, m] GPU_LAMBDA(auto pos) { return spline.value(pos.length())*pseudo::math::spherical_harmonic(l, m - l, pos);}, spac, metric.to_cartesian(sph.point_pos(ipoint)));
 								 });
 				
 			}
