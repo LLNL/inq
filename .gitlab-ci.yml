@@ -167,7 +167,7 @@ gcc-mpich-valgrind-utests-1p:
       - cd build
       - cmake --build . --target install/fast
       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
-      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 1200; cd ..
+      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 7200; cd ..
 
 gcc-mpich-valgrind-itests-1p:
     stage: test
