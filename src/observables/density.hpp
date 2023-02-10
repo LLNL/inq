@@ -268,20 +268,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 		
 	}
-}
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
-
-	using namespace inq;
-	using namespace Catch::literals;
-
-	const int npoint = 100;
-
-	auto comm = boost::mpi3::environment::get_world_instance();
-	
-	basis::trivial bas(npoint, comm);
-	
-	SECTION("double"){
+	SECTION("normalize double"){
 		
 		basis::field_set<basis::trivial, double> aa(bas, 1);
 
@@ -293,7 +281,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 	}
 	
-	SECTION("complex"){
+	SECTION("normalize complex"){
 		
 		basis::field_set<basis::trivial, complex> aa(bas, 1);
 
