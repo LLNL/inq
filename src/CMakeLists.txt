@@ -31,7 +31,7 @@ foreach(TEST_FILE ${INCLUDE_FILES})
 		APPEND)
 
   #maybe we should run individualized tests 
-  #target_include_directories(all_unit_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+	add_test(NAME unit_tests::${dir}::${name} COMMAND	${PROJECT_BINARY_DIR}/scripts/run_test.sh ./all_unit_tests ${TEST_FILE})
 endforeach()
 
 if(ENABLE_CUDA)
@@ -41,6 +41,6 @@ endif()
 add_executable(all_unit_tests)
 target_sources(all_unit_tests PRIVATE all_unit_tests.cpp)
 target_link_libraries(all_unit_tests PRIVATE unit_tests_main Catch2::Catch2)
-add_test(NAME unit_tests COMMAND ${PROJECT_BINARY_DIR}/scripts/run_test.sh ./all_unit_tests)
+
 
 
