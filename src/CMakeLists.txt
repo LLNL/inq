@@ -19,10 +19,14 @@ foreach(TEST_FILE ${INCLUDE_FILES})
 	string(TOUPPER INQ_${dir}_${name}_UNIT_TEST test_macro)
   add_custom_command(OUTPUT all_unit_tests.cpp
     COMMAND echo ARGS \\\#define ${test_macro} >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
+    COMMAND echo ARGS \\\#define INQ_TEST_FILE \\\"${TEST_FILE}\\\" >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
+    COMMAND echo ARGS \\\#define INQ_TEST_TAG \\\"[${dir}][${name}]\\\" >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
     COMMAND echo ARGS \\\#include \\\"${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE}\\\" >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
     COMMAND echo ARGS \\\#ifdef ${test_macro} >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
     COMMAND echo ARGS \\\#error NO TEST INCLUDED, MACRO ${test_macro} STILL DEFINED >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
-    COMMAND echo ARGS \\\#endif >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp    
+    COMMAND echo ARGS \\\#endif >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
+    COMMAND echo ARGS \\\#undef INQ_TEST_FILE >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
+    COMMAND echo ARGS \\\#undef INQ_TEST_TAG >> ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests.cpp
 		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE}
 		APPEND)
 
