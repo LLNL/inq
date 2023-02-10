@@ -30,8 +30,7 @@ foreach(TEST_FILE ${INCLUDE_FILES})
 		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE}
 		APPEND)
 
-  #maybe we should run individualized tests 
-	add_test(NAME unit_tests::${dir}::${name} COMMAND	${PROJECT_BINARY_DIR}/scripts/run_test.sh ./all_unit_tests ${TEST_FILE})
+	add_test(NAME unit_tests::${dir}::${name} COMMAND	${PROJECT_BINARY_DIR}/scripts/run_test.sh ./all_unit_tests [${dir}][${name}])
 endforeach()
 
 if(ENABLE_CUDA)
