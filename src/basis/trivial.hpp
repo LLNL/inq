@@ -74,6 +74,7 @@ namespace basis {
 
 }
 }
+#endif
 
 #ifdef INQ_BASIS_TRIVIAL_UNIT_TEST
 #undef INQ_BASIS_TRIVIAL_UNIT_TEST
@@ -87,7 +88,4 @@ TEST_CASE("class basis::trivial", "[basis::trivial]") {
 	using namespace Catch::literals;
   
 }
-#endif
-
-    
 #endif

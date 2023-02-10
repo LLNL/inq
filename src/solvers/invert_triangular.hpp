@@ -69,6 +69,7 @@ void invert_triangular(math::subspace_matrix<complex> & matrix){
 
 }
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
@@ -127,7 +128,4 @@ TEST_CASE("function solvers::invert_triangular", "[solvers::invert_triangular]")
   }
   
 }
-
-#endif
-
 #endif

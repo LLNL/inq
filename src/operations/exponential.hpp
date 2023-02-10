@@ -82,6 +82,7 @@ namespace operations {
 
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_EXPONENTIAL_UNIT_TEST
 #undef INQ_OPERATIONS_EXPONENTIAL_UNIT_TEST
@@ -245,6 +246,4 @@ TEST_CASE("operations::exponential", "[operations::exponential]") {
 	}
 	
 }
-
-#endif
 #endif

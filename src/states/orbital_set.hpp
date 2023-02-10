@@ -173,6 +173,7 @@ private:
 
 }
 }
+#endif
 
 #ifdef INQ_STATES_ORBITAL_SET_UNIT_TEST
 #undef INQ_STATES_ORBITAL_SET_UNIT_TEST
@@ -286,7 +287,4 @@ TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
 	}
 	
 }
-
-#endif
-
 #endif

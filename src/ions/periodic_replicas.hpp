@@ -77,11 +77,11 @@ private:
 
 	std::vector<vector3<double>> replicas_;
 
-};    
+};
   
 }
 }
-
+#endif
 
 #ifdef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
 #undef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
@@ -275,9 +275,4 @@ TEST_CASE("class ions::periodic_replicas", "[periodic_replicas]") {
   }
 
 }
-
-
-#endif
-
-
 #endif

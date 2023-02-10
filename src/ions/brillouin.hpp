@@ -91,6 +91,7 @@ private:
 
 }
 }
+#endif
 
 #ifdef INQ_IONS_BRILLOUIN_UNIT_TEST
 #undef INQ_IONS_BRILLOUIN_UNIT_TEST
@@ -100,7 +101,4 @@ private:
 TEST_CASE("function ions::brillouin", "[ions::brillouin]") {
 
 }
-
-#endif
-
 #endif

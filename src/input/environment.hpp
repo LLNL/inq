@@ -94,8 +94,7 @@ class environment {
 
 }
 }
-
-////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_INPUT_ENVIRONMENT_UNIT_TEST
 #undef INQ_INPUT_ENVIRONMENT_UNIT_TEST
@@ -107,6 +106,4 @@ TEST_CASE("input::environment", "[input::environment]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

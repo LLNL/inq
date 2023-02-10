@@ -107,6 +107,7 @@ public:
 
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_PRECONDITIONER_UNIT_TEST
 #undef INQ_OPERATIONS_PRECONDITIONER_UNIT_TEST
@@ -119,8 +120,4 @@ TEST_CASE("function operations::precondition", "[precondition]") {
 	using namespace Catch::literals;
 
 }
-
-
-#endif
-
 #endif

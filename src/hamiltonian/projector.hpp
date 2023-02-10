@@ -152,6 +152,7 @@ private:
   
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_PROJECTOR_UNIT_TEST
 #undef INQ_HAMILTONIAN_PROJECTOR_UNIT_TEST
@@ -195,7 +196,5 @@ TEST_CASE("class hamiltonian::projector", "[hamiltonian::projector]") {
 	CHECK(proj.iatom() == 77);
 	
 }
-#endif
-
 #endif
 

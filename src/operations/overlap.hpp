@@ -80,7 +80,7 @@ auto overlap(const FieldSetType & phi){
 
 }
 }
-
+#endif
 
 #ifdef INQ_OPERATIONS_OVERLAP_UNIT_TEST
 #undef INQ_OPERATIONS_OVERLAP_UNIT_TEST
@@ -234,6 +234,4 @@ TEST_CASE("function operations::overlap", "[operations::overlap]") {
 		}
 
 }
-
-#endif
 #endif

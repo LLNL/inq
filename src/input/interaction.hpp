@@ -170,10 +170,7 @@ private:
     
 }
 }
-
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_INPUT_INTERACTION_UNIT_TEST
 #undef INQ_INPUT_INTERACTION_UNIT_TEST
@@ -212,7 +209,4 @@ TEST_CASE("class input::interaction", "[input::interaction]") {
   }
 
 }
-
-#endif
-   
 #endif

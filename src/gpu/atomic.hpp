@@ -75,6 +75,7 @@ GPU_FUNCTION inline long add(size_t * val, Type2 const & incr){
 }
 }
 }
+#endif
 
 #ifdef INQ_GPU_ATOMIC_UNIT_TEST
 #undef INQ_GPU_ATOMIC_UNIT_TEST
@@ -88,4 +89,4 @@ TEST_CASE("gpu::atomic", "[gpu::atomic]") {
 }
 
 #endif
-#endif
+

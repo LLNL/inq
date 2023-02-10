@@ -51,6 +51,7 @@ GPU_FUNCTION inline auto fabs(complex const & z){
 }
 
 }
+#endif
 
 #ifdef INQ_MATH_COMPLEX_UNIT_TEST
 #undef INQ_MATH_COMPLEX_UNIT_TEST
@@ -77,6 +78,4 @@ TEST_CASE("Class math::complex", "[math::complex]"){
 	CHECK(fabs(zz) == 1105.1735_a);
 
 }
-
-#endif
 #endif

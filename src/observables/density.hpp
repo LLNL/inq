@@ -139,6 +139,7 @@ basis::field<BasisType, ElementType> total(basis::field_set<BasisType, ElementTy
 }
 }
 }
+#endif
 
 #ifdef INQ_OBSERVABLES_DENSITY_UNIT_TEST
 #undef INQ_OBSERVABLES_DENSITY_UNIT_TEST
@@ -307,7 +308,4 @@ TEST_CASE("function observables::density::normalize", "[observables::density::no
 	}
 	
 }
-
-#endif
-
 #endif

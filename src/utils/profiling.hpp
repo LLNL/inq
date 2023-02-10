@@ -22,6 +22,7 @@
 */
 
 #include <kalimotxo/cali.h>
+#endif
 
 #ifdef INQ_UTILS_PROFILING_UNIT_TEST
 #undef INQ_UTILS_PROFILING_UNIT_TEST
@@ -32,6 +33,4 @@ TEST_CASE("utils::profiling", "[utils::profiling]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

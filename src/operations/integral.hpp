@@ -107,6 +107,7 @@ auto integral_sum_absdiff(basis::field_set<BasisType, ElementType1> const & phi1
 
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_INTEGRAL_UNIT_TEST
 #undef INQ_OPERATIONS_INTEGRAL_UNIT_TEST
@@ -292,7 +293,4 @@ TEST_CASE("function operations::integral", "[operations::integral]") {
 	}
 	
 }
-
-
-#endif
 #endif

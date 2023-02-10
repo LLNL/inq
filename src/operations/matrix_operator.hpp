@@ -62,6 +62,7 @@ private:
 
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_MATRIX_OPERATOR_UNIT_TEST
 #undef INQ_OPERATIONS_MATRIX_OPERATOR_UNIT_TEST
@@ -217,8 +218,4 @@ TEST_CASE("function operations::matrix_operator", "[operations::matrix_operator]
   }
   
 }
-
-
-#endif
-
 #endif

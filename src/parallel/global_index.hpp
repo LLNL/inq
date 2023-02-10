@@ -49,6 +49,7 @@ class global_index {
 
 }
 }
+#endif
 
 #ifdef INQ_PARALLEL_GLOBAL_INDEX_UNIT_TEST
 #undef INQ_PARALLEL_GLOBAL_INDEX_UNIT_TEST
@@ -68,7 +69,4 @@ TEST_CASE("class parallel::global_index", "[parallel::global_index]") {
 	CHECK(gi.value() == 10);
 	
 }
-#endif
-
-    
 #endif

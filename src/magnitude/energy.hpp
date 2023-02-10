@@ -76,6 +76,7 @@ auto operator "" _kelvin(long double val){
 	
 }
 }
+#endif
 
 #ifdef INQ_MAGNITUDE_ENERGY_UNIT_TEST
 #undef INQ_MAGNITUDE_ENERGY_UNIT_TEST
@@ -134,8 +135,5 @@ TEST_CASE("magnitude::energy", "[magnitude::energy]") {
 	}
 	
 }
-
-#endif
-
 #endif
 

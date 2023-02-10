@@ -37,6 +37,7 @@ public:
 
 }
 }
+#endif
 
 #ifdef INQ_MIXERS_BASE_UNIT_TEST
 #undef INQ_MIXERS_BASE_UNIT_TEST
@@ -48,6 +49,4 @@ TEST_CASE("mixers::base", "[mixers::base]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

@@ -147,6 +147,7 @@ public:
 
 }
 }
+#endif
 
 #ifdef INQ_INPUT_POSCAR_UNIT_TEST
 #undef INQ_INPUT_POSCAR_UNIT_TEST
@@ -267,8 +268,4 @@ TEST_CASE("function ions::poscar", "[inq::input::poscar]") {
 	}
 
 }
-
-
-#endif
-
 #endif

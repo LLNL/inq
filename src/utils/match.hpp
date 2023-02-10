@@ -76,6 +76,7 @@ namespace utils {
   };
 }
 }
+#endif
 
 #ifdef INQ_UTILS_MATCH_UNIT_TEST
 #undef INQ_UTILS_MATCH_UNIT_TEST
@@ -100,8 +101,4 @@ TEST_CASE("class utils::match", "[utils::match]") {
   CHECK(mtc.fail());
   
 }
-
-#endif
-
-    
 #endif

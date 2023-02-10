@@ -88,6 +88,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 	}
 }
 }
+#endif
 
 #ifdef INQ_REAL_TIME_PROPAGATE_UNIT_TEST
 #undef INQ_REAL_TIME_PROPAGATE_UNIT_TEST
@@ -99,6 +100,4 @@ TEST_CASE("real_time::propagate", "[real_time::propagate]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

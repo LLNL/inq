@@ -188,6 +188,7 @@ private:
 	
 }
 }
+#endif
 
 #ifdef INQ_MIXERS_BROYDEN_UNIT_TEST
 #undef INQ_MIXERS_BROYDEN_UNIT_TEST
@@ -220,8 +221,4 @@ TEST_CASE("mixers::broyden", "[mixers::broyden]") {
   CHECK(vin[1] == 3.5554591594_a);
 
 }
-
-#endif
-
-
 #endif

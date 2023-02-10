@@ -59,6 +59,7 @@ void containing_cube(const BasisType & grid, PosType const & pos, double radius,
 
 }
 }
+#endif
 
 #ifdef INQ_BASIS_CONTAINING_CUBE_UNIT_TEST
 #undef INQ_BASIS_CONTAINING_CUBE_UNIT_TEST
@@ -185,7 +186,5 @@ TEST_CASE("class basis::containing_cube", "[basis::containing_cube]") {
 	}
 
 }
-#endif
-
 #endif
 

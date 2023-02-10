@@ -94,6 +94,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 
 }
 }
+#endif
 
 #ifdef INQ_EIGENSOLVERS_STEEPEST_DESCENT_UNIT_TEST
 #undef INQ_EIGENSOLVERS_STEEPEST_DESCENT_UNIT_TEST
@@ -226,9 +227,4 @@ TEST_CASE("eigensolvers::steepest_descent", "[eigensolvers::steepest_descent]") 
 #endif 	
 
 }
-
-
-#endif
-
-
 #endif

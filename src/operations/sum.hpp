@@ -62,6 +62,7 @@ auto sum_product(ArrayType1 & phi1, ArrayType2 const & phi2){
 	
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_SUM_UNIT_TEST
 #undef INQ_OPERATIONS_SUM_UNIT_TEST
@@ -148,10 +149,5 @@ TEST_CASE("function operations::sum", "[operations::sum]") {
 		CHECK(real(operations::sum_product(aa, bb)) == Approx(sqrt(2.0)*0.25*N*(N + 1.0)));
 		
 	}
-	
-	
 }
-
-
-#endif
 #endif

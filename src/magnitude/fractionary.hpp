@@ -61,6 +61,7 @@ GPU_FUNCTION auto in_atomic_units(vector3<quantity<magnitude::fractionary>> cons
 
 }
 }
+#endif
 
 #ifdef INQ_MAGNITUDE_FRACTIONARY_UNIT_TEST
 #undef INQ_MAGNITUDE_FRACTIONARY_UNIT_TEST
@@ -72,11 +73,7 @@ TEST_CASE("magnitude::fractionary", "[magnitude::fractionary]") {
 	using namespace inq;
 	using namespace Catch::literals;
 	using namespace magnitude;
-
   
 }
-
-#endif
-
 #endif
 

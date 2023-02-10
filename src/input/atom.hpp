@@ -80,6 +80,7 @@ auto operator|(const pseudo::element & arg_element, const inq::vector3<double> &
 auto operator|(const std::string & arg_symbol, const inq::vector3<double> & arg_position){
 	return inq::input::atom(pseudo::element(arg_symbol), arg_position);
 }
+#endif
 
 #ifdef INQ_INPUT_ATOM_UNIT_TEST
 #undef INQ_INPUT_ATOM_UNIT_TEST
@@ -161,8 +162,4 @@ TEST_CASE("class ions::atom", "[inq::input::atom]") {
 		CHECK( at1 == at2 );
 	}
 }
-
-
-#endif
-
 #endif

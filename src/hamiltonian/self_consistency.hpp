@@ -171,6 +171,7 @@ private:
 };
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_SELF_CONSISTENCY_UNIT_TEST
 #undef INQ_HAMILTONIAN_SELF_CONSISTENCY_UNIT_TEST
@@ -185,7 +186,4 @@ TEST_CASE("Class hamiltonian::self_consistency", "[self_consistency]"){
 	using namespace Catch::literals;
 	
 }
-
-#endif
-
 #endif

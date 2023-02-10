@@ -103,6 +103,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 
 }
 }
+#endif
 
 #ifdef INQ_REAL_TIME_CRANK_NICOLSON_UNIT_TEST
 #undef INQ_REAL_TIME_CRANK_NICOLSON_UNIT_TEST
@@ -114,6 +115,4 @@ TEST_CASE("real_time::crank_nicolson", "[real_time::crank_nicolson]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

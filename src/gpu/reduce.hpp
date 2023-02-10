@@ -494,12 +494,12 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 
 }
 }
+#endif
 
 #ifdef INQ_GPU_REDUCE_UNIT_TEST
 #undef INQ_GPU_REDUCE_UNIT_TEST
 
 #include <mpi3/environment.hpp>
-
 #include <catch2/catch_all.hpp>
 
 struct ident {
@@ -632,7 +632,5 @@ TEST_CASE("function gpu::reduce", "[gpu::reduce]") {
 
 	
 }
-
-#endif
 #endif
 

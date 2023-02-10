@@ -247,6 +247,7 @@ field<basis::real_space, vector3<double, VectorSpace>> real_field(field<basis::r
 
 }
 }
+#endif
 
 #ifdef INQ_BASIS_FIELD_UNIT_TEST
 #undef INQ_BASIS_FIELD_UNIT_TEST
@@ -336,7 +337,4 @@ TEST_CASE("Class basis::field", "[basis::field]"){
 	}
 	
 }
-
-#endif
-
 #endif

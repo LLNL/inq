@@ -62,9 +62,9 @@ auto operator "" _pm(long double val){
 	return val*1.0_picometer;
 }
 
-
 }
 }
+#endif
 
 #ifdef INQ_MAGNITUDE_LENGTH_UNIT_TEST
 #undef INQ_MAGNITUDE_LENGTH_UNIT_TEST
@@ -116,12 +116,5 @@ TEST_CASE("magnitude::length", "[magnitude::length]") {
     auto le = 23.333_pm;
     CHECK(le.in_atomic_units() == 0.440929796659773_a);
   }
-
-  
-  
 }
-
 #endif
-
-#endif
-

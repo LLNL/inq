@@ -207,7 +207,7 @@ private:
 
 }
 }
-
+#endif
 
 #ifdef INQ_MIXERS_PULAY_UNIT_TEST
 #undef INQ_MIXERS_PULAY_UNIT_TEST
@@ -239,9 +239,4 @@ TEST_CASE("mixers::pulay", "[mixers::pulay]") {
   CHECK(vin[1] == 3.550631855_a);
 
 }
-
-
-#endif
-
-
 #endif

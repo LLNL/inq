@@ -185,9 +185,7 @@ namespace hamiltonian {
 
 }
 }
-
-
-///////////////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_HAMILTONIAN_XC_FUNCTIONAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_XC_FUNCTIONAL_UNIT_TEST
@@ -532,6 +530,5 @@ TEST_CASE("function hamiltonian::xc_functional", "[hamiltonian::xc_functional]")
 	}
 	
 }
+#endif
 
-#endif
-#endif

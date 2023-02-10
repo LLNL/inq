@@ -228,6 +228,7 @@ namespace ions {
 
 }
 }
+#endif
 
 #ifdef INQ_IONS_UNIT_CELL_UNIT_TEST
 #undef INQ_IONS_UNIT_CELL_UNIT_TEST
@@ -535,5 +536,4 @@ TEST_CASE("Class ions::unit_cell", "[unit_cell]") {
     }
   }
 }
-#endif
 #endif

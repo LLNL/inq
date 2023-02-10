@@ -57,6 +57,7 @@ void shift(typename FieldSetType1::element_type const & factor, const FieldSetTy
 
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_SHIFT_UNIT_TEST
 #undef INQ_OPERATIONS_SHIFT_UNIT_TEST
@@ -161,8 +162,4 @@ TEST_CASE("function operations::shift", "[operations::shift]") {
 	}
 	
 }
-
-
-#endif
-
 #endif

@@ -146,6 +146,7 @@ GPU_FUNCTION auto in_atomic_units(vector3<MagnitudeType> const & quant) {
 }
 
 }
+#endif
 
 #ifdef INQ_INQ_QUANTITY_UNIT_TEST
 #undef INQ_INQ_QUANTITY_UNIT_TEST
@@ -196,8 +197,5 @@ TEST_CASE("inq::quantity", "[inq::quantity]") {
 	CHECK(in_atomic_units(vector3<decltype(rr)>{rr, rr, rr}) == vector3<double>{127.5, 127.5, 127.5});
 
 }
-
-#endif
-
 #endif
 

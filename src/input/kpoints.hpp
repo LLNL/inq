@@ -68,6 +68,7 @@ private:
 };
 }
 }
+#endif
 
 #ifdef INQ_INPUT_KPOINTS_UNIT_TEST
 #undef INQ_INPUT_KPOINTS_UNIT_TEST
@@ -115,8 +116,4 @@ TEST_CASE("class ions::kpoints", "[inq::input::kpoints]") {
     
 	}
 }
-
-
-#endif
-
 #endif

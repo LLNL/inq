@@ -319,6 +319,7 @@ namespace hamiltonian {
 
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
@@ -437,7 +438,4 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 	}
 	
 }
-
-#endif
-	
 #endif

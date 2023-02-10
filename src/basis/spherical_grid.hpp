@@ -289,6 +289,7 @@ namespace basis {
 
 }
 }
+#endif
 
 #ifdef INQ_BASIS_SPHERICAL_GRID_UNIT_TEST
 #undef INQ_BASIS_SPHERICAL_GRID_UNIT_TEST
@@ -430,7 +431,5 @@ TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
   }
   
 }
-#endif
-
 #endif
 

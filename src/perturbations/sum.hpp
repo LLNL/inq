@@ -86,6 +86,7 @@ auto operator+(PertTypeA perta, PertTypeB pertb){
 
 }
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -144,6 +145,4 @@ TEST_CASE("perturbations::sum", "[perturbations::sum]") {
   CHECK(ps3.uniform_vector_potential(1.0)[2] == -0.6);
   
 }
-
-#endif
 #endif

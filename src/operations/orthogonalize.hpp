@@ -33,8 +33,6 @@
 #include <cstdlib>
 #include <utils/profiling.hpp>
 
-
-
 namespace inq {
 namespace operations {
 
@@ -49,12 +47,12 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_ORTHOGONALIZE_UNIT_TEST
 #undef INQ_OPERATIONS_ORTHOGONALIZE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-
 #include <operations/randomize.hpp>
 
 TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
@@ -166,8 +164,4 @@ TEST_CASE("function operations::orthogonalize", "[operations::orthogonalize]") {
 	}
 	
 }
-
-
-#endif
-
 #endif

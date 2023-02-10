@@ -298,6 +298,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 
 }
 }
+#endif
 
 #ifdef INQ_GPU_RUN_UNIT_TEST
 #undef INQ_GPU_RUN_UNIT_TEST
@@ -449,5 +450,4 @@ TEST_CASE("function gpu::run", "[gpu::run]") {
 
 }
 
-#endif
 #endif

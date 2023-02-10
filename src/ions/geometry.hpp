@@ -112,7 +112,8 @@ private:
 };
 }
 }
-  
+#endif
+
 #ifdef INQ_IONS_GEOMETRY_UNIT_TEST
 #undef INQ_IONS_GEOMETRY_UNIT_TEST
 
@@ -196,6 +197,4 @@ TEST_CASE("Class ions::geometry", "[geometry]") {
   }
 
 }
-#endif
-
 #endif

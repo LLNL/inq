@@ -362,6 +362,7 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 
 }
 }
+#endif
 
 #ifdef INQ_IONS_INTERACTION_UNIT_TEST
 #undef INQ_IONS_INTERACTION_UNIT_TEST
@@ -797,6 +798,4 @@ TEST_CASE("Function ions::interaction_energy", "[ions::interaction_energy]") {
   }	
 	
 }
-#endif
-
 #endif

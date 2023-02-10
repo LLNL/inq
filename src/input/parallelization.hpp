@@ -109,8 +109,7 @@ namespace input {
     
 }
 }
-
-////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_INPUT_PARALLELIZATION_UNIT_TEST
 #undef INQ_INPUT_PARALLELIZATION_UNIT_TEST
@@ -142,7 +141,4 @@ TEST_CASE("class input::parallelization", "[inq::input::parallelization]") {
 	}
 	
 }
-
-#endif
-   
 #endif

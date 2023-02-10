@@ -99,6 +99,7 @@ using cartesian_communicator = hybrid_communicator<boost::mpi3::cartesian_commun
 
 }
 }
+#endif
 
 #ifdef INQ_PARALLEL_COMMUNICATOR_UNIT_TEST
 #undef INQ_PARALLEL_COMMUNICATOR_UNIT_TEST
@@ -108,7 +109,4 @@ using cartesian_communicator = hybrid_communicator<boost::mpi3::cartesian_commun
 TEST_CASE("class parallel::communicator", "[parallel::communicator]") {
   
 }
-#endif
-
-    
 #endif

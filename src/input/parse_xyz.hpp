@@ -69,6 +69,7 @@ auto parse_xyz(const std::string & xyz_file_name, quantity<magnitude::length> un
 
 }
 }
+#endif
 
 #ifdef INQ_INPUT_PARSE_XYZ_UNIT_TEST
 #undef INQ_INPUT_PARSE_XYZ_UNIT_TEST
@@ -106,8 +107,4 @@ TEST_CASE("function ions::parse_xyz", "[inq::input::parse_xyz]") {
   CHECK(geo[12].position()[2] == 5.0_a);
 
 }
-
-
-#endif
-
 #endif

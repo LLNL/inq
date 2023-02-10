@@ -96,6 +96,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 }
 }
+#endif
 
 #ifdef INQ_REAL_TIME_ETRS_UNIT_TEST
 #undef INQ_REAL_TIME_ETRS_UNIT_TEST
@@ -107,6 +108,4 @@ TEST_CASE("real_time::etrs", "[real_time::etrs]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

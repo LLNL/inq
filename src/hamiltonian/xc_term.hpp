@@ -91,6 +91,7 @@ private:
 };
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_XC_TERM_UNIT_TEST
 #undef INQ_HAMILTONIAN_XC_TERM_UNIT_TEST
@@ -105,7 +106,4 @@ TEST_CASE("Class hamiltonian::xc_term", "[xc_term]"){
 	using namespace Catch::literals;
 	
 }
-
-#endif
-
 #endif

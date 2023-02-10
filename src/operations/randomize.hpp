@@ -29,7 +29,6 @@
 #include <math/complex.hpp>
 #include <operations/overlap.hpp>
 
-
 template<class T>
 struct uniform_distribution;
 
@@ -85,6 +84,7 @@ namespace operations {
 
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_RANDOMIZE_UNIT_TEST
 #undef INQ_OPERATIONS_RANDOMIZE_UNIT_TEST
@@ -168,8 +168,6 @@ TEST_CASE("function operations::randomize", "[operations::randomize]") {
 
 	
 }
-
-#endif
 #endif
 
 
