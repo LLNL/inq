@@ -96,6 +96,7 @@ public:
 };
 }
 }
+#endif
 
 #ifdef INQ_PARALLEL_ARRAY_ITERATOR_UNIT_TEST
 #undef INQ_PARALLEL_ARRAY_ITERATOR_UNIT_TEST
@@ -135,7 +136,4 @@ TEST_CASE("class parallel::array_iterator", "[parallel::array_iterator]") {
   
   
 }
-#endif
-
-    
 #endif

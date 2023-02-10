@@ -72,10 +72,7 @@ private:
 
 }
 }
-
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_PERTURBATIONS_ABSORBING_UNIT_TEST
 #undef INQ_PERTURBATIONS_ABSORBING_UNIT_TEST
@@ -92,6 +89,4 @@ TEST_CASE("perturbations::absorbing", "[perturbations::absorbing]") {
     perturbations::absorbing nop(1.0_Ha, 0.3, 0.1);
     CHECK(not nop.has_uniform_electric_field());
 }
-
-#endif
 #endif

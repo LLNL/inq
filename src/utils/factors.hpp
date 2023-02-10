@@ -108,6 +108,7 @@ namespace utils {
 
 }
 }
+#endif
 
 #ifdef INQ_UTILS_FACTORS_UNIT_TEST
 #undef INQ_UTILS_FACTORS_UNIT_TEST
@@ -183,8 +184,4 @@ TEST_CASE("class utils::factors", "[utils::factors]") {
 
 
 }
-
-#endif
-
-    
 #endif

@@ -299,7 +299,7 @@ private:
 	
 }
 }
-
+#endif
 
 #ifdef INQ_SOLVERS_POISSON_UNIT_TEST
 #undef INQ_SOLVERS_POISSON_UNIT_TEST
@@ -617,9 +617,4 @@ TEST_CASE("class solvers::poisson", "[solvers::poisson]") {
 		
 	}
 }
-
-
-#endif
-
-
 #endif

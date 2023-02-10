@@ -129,6 +129,7 @@ private:
 }
 }
 
+#endif
 
 #ifdef INQ_BASIS_DOUBLE_GRID_UNIT_TEST
 #undef INQ_BASIS_DOUBLE_GRID_UNIT_TEST
@@ -165,4 +166,3 @@ TEST_CASE("class basis::double_grid", "[basis::double_grid]") {
 }
 #endif
 
-#endif

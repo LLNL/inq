@@ -275,6 +275,7 @@ math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementTyp
 
 }
 }
+#endif
 
 #ifdef INQ_PARALLEL_GET_REMOTE_POINTS_UNIT_TEST
 #undef INQ_PARALLEL_GET_REMOTE_POINTS_UNIT_TEST
@@ -371,9 +372,4 @@ TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
 	}
 	
 }
-
-
 #endif
-#endif
-
-

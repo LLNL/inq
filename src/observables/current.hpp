@@ -65,10 +65,7 @@ auto current(const systems::ions & ions, systems::electrons const & electrons, H
 
 }
 }
-
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_OBSERVABLES_CURRENT_UNIT_TEST
 #undef INQ_OBSERVABLES_CURRENT_UNIT_TEST
@@ -83,6 +80,4 @@ TEST_CASE("observables::current", "[observables::current]") {
 	using namespace Catch::literals;
 	
 }
-
-#endif
 #endif

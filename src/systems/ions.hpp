@@ -96,6 +96,7 @@ public:
 
 }
 }
+#endif
 
 #ifdef INQ_SYSTEMS_IONS_UNIT_TEST
 #undef INQ_SYSTEMS_IONS_UNIT_TEST
@@ -107,6 +108,4 @@ TEST_CASE("systems::ions", "[systems::ions]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

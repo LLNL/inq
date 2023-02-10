@@ -172,6 +172,7 @@ private:
 
 }
 }
+#endif
 
 #ifdef INQ_SYSTEMS_BOX_UNIT_TEST
 #undef INQ_SYSTEMS_BOX_UNIT_TEST
@@ -285,7 +286,4 @@ TEST_CASE("class systems::box", "[systems::box]") {
 		CHECK( not (ci1 != ci2) );
 	}
 }
-#endif
-
-    
 #endif

@@ -153,7 +153,7 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal_normalize
 	
 }
 }
-
+#endif
 
 #ifdef INQ_OPERATIONS_OVERLAP_DIAGONAL_UNIT_TEST
 #undef INQ_OPERATIONS_OVERLAP_DIAGONAL_UNIT_TEST
@@ -295,6 +295,4 @@ TEST_CASE("function operations::overlap_diagonal", "[operations::overlap_diagona
 	}
 
 }
-
-#endif
 #endif

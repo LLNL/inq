@@ -38,7 +38,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(ENABLE_NCCL FALSE)
 if(ENABLE_CUDA)
-  set(SRC_EXT cu)
   enable_language(CUDA)
   find_package(CUDA 11.0.0 REQUIRED) # deprecated in 3.17 replaced by FindCudaToolkit
 
@@ -98,9 +97,6 @@ if(ENABLE_CUDA)
 		include_directories(${NCCL_INCLUDE_DIRS})
 		link_libraries(${NCCL_LIBRARIES})
 	endif()
-	
-else()
-  set(SRC_EXT cpp)
 endif()
 
 link_libraries(m)

@@ -63,6 +63,7 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 
 }
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////
 
@@ -137,7 +138,4 @@ TEST_CASE("function solvers::least_squares", "[solvers::least_squares]") {
   }
 
 }
-
-#endif
-
 #endif

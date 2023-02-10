@@ -57,6 +57,7 @@ private:
 
 }
 }
+#endif
 
 #ifdef INQ_MIXERS_LINEAR_UNIT_TEST
 #undef INQ_MIXERS_LINEAR_UNIT_TEST
@@ -81,9 +82,4 @@ TEST_CASE("mixers::linear", "[mixers::linear]") {
   CHECK(vin[1] == 1.1_a);
   
 }
-
-
-#endif
-
-
 #endif

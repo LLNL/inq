@@ -194,6 +194,7 @@ namespace hamiltonian {
 
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_EXCHANGE_OPERATOR_UNIT_TEST
 #undef INQ_HAMILTONIAN_EXCHANGE_OPERATOR_UNIT_TEST
@@ -225,7 +226,4 @@ TEST_CASE("Class hamiltonian::exchange", "[hamiltonian::exchange]"){
 	hamiltonian::exchange<basis::real_space> ham(rs, cell, pot, geo, st.num_states(), 0.0);
 	*/
 }
-
-#endif
-
 #endif

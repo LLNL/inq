@@ -87,6 +87,7 @@ namespace hamiltonian {
 
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_CALCULATE_ENERGY_UNIT_TEST
 #undef INQ_HAMILTONIAN_CALCULATE_ENERGY_UNIT_TEST
@@ -101,8 +102,5 @@ TEST_CASE("Class hamiltonian::calculate_energy", "[calculate_energy]"){
 	using namespace Catch::literals;
 	
 }
-
-#endif
-
 #endif
 

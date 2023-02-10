@@ -206,6 +206,7 @@ class fourier_space;
 
 }
 }
+#endif
 
 #ifdef INQ_BASIS_REAL_SPACE_UNIT_TEST
 #undef INQ_BASIS_REAL_SPACE_UNIT_TEST
@@ -324,7 +325,4 @@ TEST_CASE("class basis::real_space", "[basis::real_space]") {
 
   }
 }
-#endif
-
-    
 #endif

@@ -146,7 +146,7 @@ namespace hamiltonian {
 										dg = basis.double_grid().ref(),
 										spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint){
 										 gpu::atomic::add(&pot[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]],
-																			dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(length(pos)); }, spac, metric.to_cartesian(sph.point_pos(ipoint))));
+																			dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(pos.length()); }, spac, metric.to_cartesian(sph.point_pos(ipoint))));
 									 });
 				}
 			}
@@ -319,6 +319,7 @@ namespace hamiltonian {
 
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
@@ -437,7 +438,4 @@ TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential
 	}
 	
 }
-
-#endif
-	
 #endif

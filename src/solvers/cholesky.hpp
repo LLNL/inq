@@ -103,8 +103,7 @@ void cholesky(matrix_type && matrix, bool nocheck = false){
 
 }
 }
-
-///////////////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_SOLVERS_CHOLESKY_UNIT_TEST
 #undef INQ_SOLVERS_CHOLESKY_UNIT_TEST
@@ -135,9 +134,5 @@ TEST_CASE("function solvers::cholesky", "[solvers::cholesky]") {
     CHECK(real(matrix[1][1]) == 0.0824620974_a);    
 		
   }
-  
 }
-
-#endif
-
 #endif

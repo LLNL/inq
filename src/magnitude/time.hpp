@@ -73,6 +73,7 @@ auto operator/(double num, quantity<energy> den){
 
 }
 }
+#endif
 
 #ifdef INQ_MAGNITUDE_TIME_UNIT_TEST
 #undef INQ_MAGNITUDE_TIME_UNIT_TEST
@@ -141,8 +142,5 @@ TEST_CASE("magnitude::time", "[magnitude::time]") {
   }
   
 }
-
-#endif
-
 #endif
 

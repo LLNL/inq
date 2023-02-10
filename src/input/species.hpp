@@ -148,6 +148,7 @@ private:
 
 }
 }
+#endif
 
 #ifdef INQ_INPUT_SPECIES_UNIT_TEST
 #undef INQ_INPUT_SPECIES_UNIT_TEST
@@ -208,9 +209,4 @@ TEST_CASE("class input::species", "[input::species]") {
 	
 	
 }
-
-
-#endif
-
-
 #endif

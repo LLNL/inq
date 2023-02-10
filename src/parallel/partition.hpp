@@ -21,7 +21,6 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include <parallel/global_index.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -177,6 +176,7 @@ protected:
 };
 }
 }
+#endif
 
 #ifdef INQ_PARALLEL_PARTITION_UNIT_TEST
 #undef INQ_PARALLEL_PARTITION_UNIT_TEST
@@ -386,7 +386,4 @@ TEST_CASE("class parallel::partition", "[parallel::partition]") {
 	}
 
 }
-#endif
-
-    
 #endif

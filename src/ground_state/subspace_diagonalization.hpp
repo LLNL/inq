@@ -42,6 +42,7 @@ auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 
 }
 }
+#endif
 
 #ifdef INQ_GROUND_STATE_SUBSPACE_DIAGONALIZATION_UNIT_TEST
 #undef INQ_GROUND_STATE_SUBSPACE_DIAGONALIZATION_UNIT_TEST
@@ -56,7 +57,4 @@ TEST_CASE("function operations::subspace_diagonalization", "[subspace_diagonaliz
 	using namespace Catch::literals;
 	
 }
-
-#endif
-
 #endif

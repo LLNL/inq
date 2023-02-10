@@ -96,8 +96,7 @@ private:
     
 }
 }
-
-////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_INPUT_RT_UNIT_TEST
 #undef INQ_INPUT_RT_UNIT_TEST
@@ -130,7 +129,4 @@ TEST_CASE("class input::rt", "[input::rt]") {
   }
 
 }
-
-#endif
-   
 #endif

@@ -32,6 +32,7 @@
 #include <perturbations/laser.hpp>
 #include <perturbations/sum.hpp>
 #include <observables/spectrum.hpp>
+#endif
 
 #ifdef INQ_INQ_INQ_UNIT_TEST
 #undef INQ_INQ_INQ_UNIT_TEST
@@ -43,6 +44,4 @@ TEST_CASE("inq::inq", "[inq::inq]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

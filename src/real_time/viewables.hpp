@@ -103,6 +103,7 @@ public:
 
 }
 }
+#endif
 
 #ifdef INQ_REAL_TIME_VIEWABLES_UNIT_TEST
 #undef INQ_REAL_TIME_VIEWABLES_UNIT_TEST
@@ -114,6 +115,4 @@ TEST_CASE("real_time::viewables", "[real_time::viewables]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

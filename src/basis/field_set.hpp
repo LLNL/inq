@@ -324,6 +324,7 @@ field_set<basis::real_space, vector3<double, VectorSpace>> real_field(field_set<
 
 }
 }
+#endif
 
 #ifdef INQ_BASIS_FIELD_SET_UNIT_TEST
 #undef INQ_BASIS_FIELD_SET_UNIT_TEST
@@ -444,7 +445,4 @@ TEST_CASE("Class basis::field_set", "[basis::field_set]"){
 	}
 	
 }
-
-#endif
-
 #endif

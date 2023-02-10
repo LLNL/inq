@@ -156,11 +156,9 @@ namespace input {
 		std::optional<bool> calc_forces_;
 		
   };
-    
 }
 }
-
-////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_INPUT_SCF_UNIT_TEST
 #undef INQ_INPUT_SCF_UNIT_TEST
@@ -191,7 +189,4 @@ TEST_CASE("class input::scf", "[input::scf]") {
   }
 
 }
-
-#endif
-   
 #endif

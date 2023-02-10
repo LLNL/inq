@@ -114,6 +114,7 @@ void increment(FVectorType & fvector, basis::field_set<BasisType, Type> const & 
 
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_ADD_UNIT_TEST
 #undef INQ_OPERATIONS_ADD_UNIT_TEST
@@ -236,8 +237,4 @@ TEST_CASE("function operations::add", "[operations::add]") {
 	}
 	
 }
-
-
-#endif
-
 #endif

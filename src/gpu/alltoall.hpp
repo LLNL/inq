@@ -110,6 +110,7 @@ void alltoall(ArrayType & buf, parallel::communicator & comm){
 
 }
 }
+#endif
 
 #ifdef INQ_GPU_ALLTOALL_UNIT_TEST
 #undef INQ_GPU_ALLTOALL_UNIT_TEST
@@ -141,6 +142,4 @@ TEST_CASE("function gpu::alltoall", "[gpu::alltoall]"){
 
 }
 
-
-#endif
 #endif

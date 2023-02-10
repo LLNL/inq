@@ -61,6 +61,7 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 
 }
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -79,6 +80,4 @@ TEST_CASE("observables::kinetic_energy_density", "[observables::kinetic_energy_d
 	using namespace Catch::literals;
 
 }
-
-#endif
 #endif

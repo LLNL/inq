@@ -373,6 +373,7 @@ private:
 
 }
 }
+#endif
 
 #ifdef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
 #undef INQ_SYSTEMS_ELECTRONS_UNIT_TEST
@@ -467,8 +468,5 @@ TEST_CASE("class system::electrons", "[system::electrons]") {
 		CHECK_THROWS(electrons.load("directory_that_doesnt_exist"));
 	}
 }
-
-#endif
-
 #endif
 

@@ -286,6 +286,8 @@ struct is_trivially_default_constructible<inq::vector3<T>> :
 		is_trivially_default_constructible<T>{};
 }
 
+#endif
+
 #ifdef INQ_MATH_VECTOR3_UNIT_TEST
 #undef INQ_MATH_VECTOR3_UNIT_TEST
 
@@ -566,6 +568,4 @@ TEST_CASE("function vector3", "[vector3]") {
 		
 	}
 }
-
-#endif
 #endif

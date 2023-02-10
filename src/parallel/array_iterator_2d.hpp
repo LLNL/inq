@@ -133,6 +133,7 @@ public:
 };
 }
 }
+#endif
 
 #ifdef INQ_PARALLEL_ARRAY_ITERATOR_2D_UNIT_TEST
 #undef INQ_PARALLEL_ARRAY_ITERATOR_2D_UNIT_TEST
@@ -209,7 +210,4 @@ TEST_CASE("class parallel::array_iterator_2d", "[parallel::array_iterator_2d]") 
   }
   
 }
-#endif
-
-    
 #endif

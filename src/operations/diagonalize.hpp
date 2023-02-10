@@ -206,6 +206,7 @@ auto diagonalize(MatrixType & matrix){
 
 }
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////
 
@@ -334,9 +335,4 @@ TEST_CASE("function operations::diagonalize", "[operations::diagonalize]") {
 
 	}
 }
-
-
-
-#endif
-
 #endif

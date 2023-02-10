@@ -75,6 +75,7 @@ namespace utils {
 
 }
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////
 
@@ -175,9 +176,4 @@ TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
 	CHECK(Approx(laplacian_gaussian_func(vec) - finite_difference_divergence5p(grad, vec)).margin(1.0e-7) == 0.0);
 
 }
-
 #endif
-#endif
-
-
-

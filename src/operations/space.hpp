@@ -510,6 +510,7 @@ auto to_real(states::orbital_set<basis::fourier_space, vector3<complex, VectorSp
 }
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_SPACE_UNIT_TEST
 #undef INQ_OPERATIONS_SPACE_UNIT_TEST
@@ -637,9 +638,5 @@ TEST_CASE("function operations::space", "[operations::space]") {
 	}
 	
 }
-
-
-#endif
-
 #endif
 

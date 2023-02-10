@@ -93,6 +93,7 @@ auto laplacian(SetType<basis::real_space, complex> const & ff, FactorType factor
 
 }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +104,7 @@ auto laplacian(SetType<basis::real_space, complex> const & ff, FactorType factor
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function operations::gradient", "[operations::gradient]") {
+TEST_CASE("function operations::laplacian", "[operations::laplacian]") {
 
 	using namespace inq;
 	using namespace inq::magnitude;	
@@ -317,8 +318,5 @@ TEST_CASE("function operations::gradient", "[operations::gradient]") {
 	}
 	
 }
-
-#endif
-
 #endif
 

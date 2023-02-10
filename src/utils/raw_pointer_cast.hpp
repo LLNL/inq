@@ -29,6 +29,7 @@ auto raw_pointer_cast(Type * ptr){
 }
 
 }
+#endif
 
 #ifdef INQ_UTILS_RAW_POINTER_CAST_UNIT_TEST
 #undef INQ_UTILS_RAW_POINTER_CAST_UNIT_TEST
@@ -46,9 +47,5 @@ TEMPLATE_TEST_CASE("function raw_pointer_cast", "[raw_pointer_cast]", int, doubl
 	CHECK(raw_pointer_cast(&a) == &a);
 	
 }
-
-#endif
-
-    
 #endif
 

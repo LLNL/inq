@@ -113,8 +113,7 @@ private:
 
 }
 }
-
-////////////////////////////////////////////////////////
+#endif
 
 #ifdef INQ_INPUT_CONFIG_UNIT_TEST
 #undef INQ_INPUT_CONFIG_UNIT_TEST
@@ -126,6 +125,4 @@ TEST_CASE("input::config", "[input::config]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

@@ -58,6 +58,7 @@ void linear_symmetric(matrix_type && matrix, vector_type & vector){
 
 }
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////
 
@@ -133,7 +134,4 @@ TEST_CASE("function solvers::linear", "[solvers::linear]") {
 		
   }
 }
-
-#endif
-
 #endif

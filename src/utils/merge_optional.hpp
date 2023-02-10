@@ -33,6 +33,7 @@ opt_type merge_optional(const opt_type & option1, const opt_type & option2){
 
 }
 }
+#endif
 
 #ifdef INQ_UTILS_MERGE_OPTIONAL_UNIT_TEST
 #undef INQ_UTILS_MERGE_OPTIONAL_UNIT_TEST
@@ -44,6 +45,4 @@ TEST_CASE("utils::merge_optional", "[utils::merge_optional]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

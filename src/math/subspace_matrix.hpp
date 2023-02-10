@@ -94,6 +94,7 @@ private:
 
 }
 }
+#endif
 
 #ifdef INQ_MATH_SUBSPACE_MATRIX_UNIT_TEST
 #undef INQ_MATH_SUBSPACE_MATRIX_UNIT_TEST
@@ -129,6 +130,4 @@ TEST_CASE("math::subspace_matrix", "[math::subspace_matrix]") {
   if(mm.part().contains(1)) CHECK(dd[mm.part().global_to_local(parallel::global_index(1))] == 2.0);	
   
 }
-
-#endif
 #endif

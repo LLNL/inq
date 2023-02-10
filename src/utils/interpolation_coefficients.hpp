@@ -45,6 +45,7 @@ auto interpolation_coefficients(PointsType const & points, double const pos = 0.
 
 }
 }
+#endif
 
 #ifdef INQ_UTILS_INTERPOLATION_COEFFICIENTS_UNIT_TEST
 #undef INQ_UTILS_INTERPOLATION_COEFFICIENTS_UNIT_TEST
@@ -86,9 +87,6 @@ TEST_CASE("function utils::interpolation_coefficients", "utils") {
   }
   
 }
-
-#endif
-
 #endif
 
 

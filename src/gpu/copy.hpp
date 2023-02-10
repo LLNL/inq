@@ -39,6 +39,7 @@ void copy(long dim1, long dim2, SourceType const & source, DestinationType & des
 
 }
 }
+#endif
 
 #ifdef INQ_GPU_COPY_UNIT_TEST
 #undef INQ_GPU_COPY_UNIT_TEST
@@ -71,13 +72,7 @@ TEST_CASE("gpu::copy", "[gpu::copy]") {
         CHECK(dest[in][im] == in + nn*im);        
       }
     }
-      
-    
   }
-    
-
   
 }
-
-#endif
 #endif

@@ -103,6 +103,7 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 
 }
 }
+#endif
 
 #ifdef INQ_SOLVERS_STEEPEST_DESCENT_UNIT_TEST
 #undef INQ_SOLVERS_STEEPEST_DESCENT_UNIT_TEST
@@ -180,9 +181,5 @@ TEST_CASE("solvers::steepest_descent", "[solvers::steepest_descent]") {
 
 
 }
-
-
 #endif
 
-
-#endif

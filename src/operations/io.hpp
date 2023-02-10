@@ -228,6 +228,7 @@ auto load(std::string const & dirname, FieldSet & phi){
 }
 }
 }
+#endif
 
 #ifdef INQ_OPERATIONS_IO_UNIT_TEST
 #undef INQ_OPERATIONS_IO_UNIT_TEST
@@ -305,7 +306,4 @@ TEST_CASE("function operations::io", "[operations::io]") {
 		
 	}
 }
-
-
-#endif
 #endif

@@ -431,6 +431,7 @@ private:
   
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_PROJECTOR_ALL_UNIT_TEST
 #undef INQ_HAMILTONIAN_PROJECTOR_ALL_UNIT_TEST
@@ -447,8 +448,4 @@ TEST_CASE("class hamiltonian::projector_all", "[hamiltonian::projector_all]") {
 	using namespace Catch::literals;
 	
 }
-
 #endif
-
-#endif
-

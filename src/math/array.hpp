@@ -160,6 +160,7 @@ void prefetch_cpu(ArrayType const &
 
 }
 }
+#endif
 
 #ifdef INQ_MATH_ARRAY_UNIT_TEST
 #undef INQ_MATH_ARRAY_UNIT_TEST
@@ -171,6 +172,4 @@ TEST_CASE("math::array", "[math::array]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

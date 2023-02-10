@@ -52,6 +52,7 @@ auto zero<vector3<double, contravariant>>(){
 }
 
 }
+#endif
 
 #ifdef INQ_MATH_ZERO_UNIT_TEST
 #undef INQ_MATH_ZERO_UNIT_TEST
@@ -61,8 +62,4 @@ auto zero<vector3<double, contravariant>>(){
 TEST_CASE("class math::match", "[math::match]") {
   
 }
-
-#endif
-
-    
 #endif

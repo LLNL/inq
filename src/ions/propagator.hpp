@@ -74,6 +74,7 @@ struct molecular_dynamics{
 }
 }
 }
+#endif
 
 #ifdef INQ_IONS_PROPAGATOR_UNIT_TEST
 #undef INQ_IONS_PROPAGATOR_UNIT_TEST
@@ -85,6 +86,4 @@ TEST_CASE("ions::propagator", "[ions::progagator]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif

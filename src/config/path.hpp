@@ -34,6 +34,7 @@ struct path {
 
 }
 }
+#endif
 
 #ifdef INQ_CONFIG_PATH_UNIT_TEST
 #undef INQ_CONFIG_PATH_UNIT_TEST
@@ -45,7 +46,5 @@ TEST_CASE("class config::path", "[path]") {
     CHECK(inq::config::path::share() == SHARE_DIR + std::string("/"));
   }
 }
-
-#endif
 
 #endif

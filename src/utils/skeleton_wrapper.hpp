@@ -35,6 +35,7 @@ namespace utils {
 
 }
 }
+#endif
 
 #ifdef INQ_UTILS_SKELETON_WRAPPER_UNIT_TEST
 #undef INQ_UTILS_SKELETON_WRAPPER_UNIT_TEST
@@ -46,7 +47,5 @@ TEST_CASE("utils::skeleton_wrapper", "[utils::skeleton_wrapper]") {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
-
-#endif
 #endif
 

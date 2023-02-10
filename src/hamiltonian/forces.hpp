@@ -114,6 +114,7 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 
 }
 }
+#endif
 
 #ifdef INQ_HAMILTONIAN_FORCES_UNIT_TEST
 #undef INQ_HAMILTONIAN_FORCES_UNIT_TEST
@@ -128,8 +129,5 @@ TEST_CASE("Class hamiltonian::forces", "[forces]"){
 	using namespace Catch::literals;
 	
 }
-
-#endif
-
 #endif
 

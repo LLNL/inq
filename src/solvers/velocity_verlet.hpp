@@ -54,6 +54,7 @@ void propagate_velocities(double dt, AccelType const & accel, VelType & velociti
 }
 }
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////
 
@@ -103,7 +104,4 @@ TEST_CASE("function solvers::velocity_verlet", "[solvers::velocity_verlet]") {
   }
 	
 }
-
-#endif
-
 #endif
