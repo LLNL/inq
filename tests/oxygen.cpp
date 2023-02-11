@@ -51,13 +51,13 @@ int main(int argc, char ** argv){
 		
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe());
 	
-	match.check("total energy",        result.energy.total()    ,  -34.829848079842);
-	match.check("kinetic energy",      result.energy.kinetic()  ,   21.076601720040);
-	match.check("eigenvalues",         result.energy.eigenvalues,   -7.304540681975);
-	match.check("external energy",     result.energy.external   ,  -99.306470054754);
-	match.check("non-local energy",    result.energy.nonlocal   ,   -4.538047573763);
-	match.check("XC energy",           result.energy.xc,           -10.061335310136);
-	match.check("XC density integral", result.energy.nvxc,          -9.047200319683);
+	match.check("total energy",        result.energy.total()    ,  -32.983196226397);
+	match.check("kinetic energy",      result.energy.kinetic()  ,   21.076732147146);
+	match.check("eigenvalues",         result.energy.eigenvalues,   -7.232487578320);
+	match.check("external energy",     result.energy.external   ,  -99.281141080731);
+	match.check("non-local energy",    result.energy.nonlocal   ,   -4.566070376579);
+	match.check("XC energy",           result.energy.xc,            -8.207555501083);
+	match.check("XC density integral", result.energy.nvxc,          -8.963454706499);
 	match.check("HF exchange energy",  result.energy.hf_exchange,    0.000000000000);
 	match.check("ion-ion energy",      result.energy.ion,           15.744115365679);
 
