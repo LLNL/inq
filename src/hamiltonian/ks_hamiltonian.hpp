@@ -79,8 +79,8 @@ template <typename PotentialType>
 		////////////////////////////////////////////////////////////////////////////////////////////
 		
     ks_hamiltonian(const basis::real_space & basis, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
-									 const int num_hf_orbitals, const double exchange_coefficient, parallel::cartesian_communicator<2> comm, bool use_ace = false):
-			exchange(basis, num_hf_orbitals, exchange_coefficient, use_ace, std::move(comm)),
+									 const int num_hf_orbitals, const double exchange_coefficient, bool use_ace = false):
+			exchange(exchange_coefficient, use_ace),
 			scalar_potential_(states.num_density_components(), basis),
 			uniform_vector_potential_({0.0, 0.0, 0.0}),
 			non_local_in_fourier_(fourier_pseudo),
@@ -272,7 +272,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
   states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-	hamiltonian::ks_hamiltonian<double> ham(rs, st, pot, false, geo, st.num_states(), 0.0, cart_comm);
+	hamiltonian::ks_hamiltonian<double> ham(rs, st, pot, false, geo, st.num_states(), 0.0);
 
 	SECTION("Constant function"){
 		

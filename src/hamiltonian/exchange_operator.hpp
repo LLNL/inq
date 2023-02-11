@@ -38,11 +38,9 @@ namespace hamiltonian {
 		
   public:
 
-		exchange_operator(const basis::real_space & basis, const int num_hf_orbitals, const double exchange_coefficient, bool const use_ace, parallel::cartesian_communicator<2> comm):
+		exchange_operator(double const exchange_coefficient, bool const use_ace):
 			exchange_coefficient_(exchange_coefficient),
 			use_ace_(use_ace){
-
-			assert(basis.comm() == basis::basis_subcomm(comm));
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
