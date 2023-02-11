@@ -44,8 +44,8 @@ namespace hamiltonian {
 
 			assert(basis.comm() == basis::basis_subcomm(comm));
 
-			if(exchange_coefficient_ != 0.0) hf_orbitals.emplace(basis, num_hf_orbitals, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, comm);	
-			if(exchange_coefficient_ != 0.0) xi_.emplace(basis, num_hf_orbitals, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, std::move(comm));		
+			if(exchange_coefficient_ != 0.0) orbitals_.emplace(basis, num_hf_orbitals, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, comm);	
+			if(exchange_coefficient_ != 0.0) ace_orbitals_.emplace(basis, num_hf_orbitals, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, std::move(comm));		
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
@@ -54,25 +54,25 @@ namespace hamiltonian {
 		double update(ElectronsType const & el){
 			if(not enabled()) return 0.0;
 
-			CALI_CXX_MARK_SCOPE("hf_update");
+			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
 			assert(el.lot_size() == 1);			
 
 			auto & phi = el.lot()[0];
 
-			hf_occupations.reextent(phi.local_set_size());
-			hf_occupations = el.occupations()[0];
-			hf_orbitals->matrix() = phi.matrix();
+			occupations_.reextent(phi.local_set_size());
+			occupations_ = el.occupations()[0];
+			orbitals_->matrix() = phi.matrix();
 			
-			*xi_ = direct(phi, -1.0);
+			*ace_orbitals_ = direct(phi, -1.0);
  
-			auto exx_matrix = operations::overlap(*xi_, phi);
+			auto exx_matrix = operations::overlap(*ace_orbitals_, phi);
 
-			double energy = -0.5*real(operations::sum_product(hf_occupations, exx_matrix.diagonal()));
+			double energy = -0.5*real(operations::sum_product(occupations_, exx_matrix.diagonal()));
 			el.lot_states_comm_.all_reduce_n(&energy, 1);
 
 			solvers::cholesky(exx_matrix.array());
-			operations::rotate_trs(exx_matrix, *xi_);
+			operations::rotate_trs(exx_matrix, *ace_orbitals_);
 			
 			return energy;
 		}
@@ -125,12 +125,12 @@ namespace hamiltonian {
 			
 			double factor = -0.5*scale*exchange_coefficient_;
 
-			if(not hf_orbitals->set_part().parallel()){
-				block_exchange(factor, phi.basis(), hf_orbitals->matrix(), hf_occupations, phi.matrix(), exxphi.matrix());
+			if(not orbitals_->set_part().parallel()){
+				block_exchange(factor, phi.basis(), orbitals_->matrix(), occupations_, phi.matrix(), exxphi.matrix());
 			} else {
 
-				auto occ_it = parallel::array_iterator(hf_orbitals->set_part(), hf_orbitals->set_comm(), hf_occupations);
-				for(auto hfo_it = hf_orbitals->par_set_begin(); hfo_it != hf_orbitals->par_set_end(); ++hfo_it){
+				auto occ_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), occupations_);
+				for(auto hfo_it = orbitals_->par_set_begin(); hfo_it != orbitals_->par_set_end(); ++hfo_it){
 					block_exchange(factor, phi.basis(), hfo_it.matrix(), *occ_it, phi.matrix(), exxphi.matrix());
 					++occ_it;
 				}
@@ -170,22 +170,22 @@ namespace hamiltonian {
 			if(not enabled()) return;
 			namespace blas = boost::multi::blas;
 
-			auto olap = operations::overlap(*xi_, phi);
-			operations::rotate(olap, *xi_, exxphi, -1.0, 1.0);
+			auto olap = operations::overlap(*ace_orbitals_, phi);
+			operations::rotate(olap, *ace_orbitals_, exxphi, -1.0, 1.0);
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
 		
 		bool enabled() const {
-			return hf_orbitals.has_value() or xi_.has_value();
+			return orbitals_.has_value() or ace_orbitals_.has_value();
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
 
 	private:
-		math::array<double, 1> hf_occupations;
-		std::optional<states::orbital_set<basis::real_space, complex>> hf_orbitals;
-		std::optional<states::orbital_set<basis::real_space, complex>> xi_;		
+		math::array<double, 1> occupations_;
+		std::optional<states::orbital_set<basis::real_space, complex>> orbitals_;
+		std::optional<states::orbital_set<basis::real_space, complex>> ace_orbitals_;
 		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
 		bool use_ace_;
