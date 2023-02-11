@@ -242,7 +242,7 @@ template <typename PotentialType>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
-TEST_CASE("Class hamiltonian::ks_hamiltonian", "[hamiltonian::ks_hamiltonian]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace inq::magnitude;	

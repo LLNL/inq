@@ -68,7 +68,7 @@ GPU_FUNCTION auto in_atomic_units(vector3<quantity<magnitude::fractionary>> cons
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("magnitude::fractionary", "[magnitude::fractionary]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

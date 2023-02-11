@@ -330,7 +330,7 @@ namespace hamiltonian {
 #include <basis/real_space.hpp>
 #include <systems/box.hpp>
 
-TEST_CASE("Class hamiltonian::atomic_potential", "[hamiltonian::atomic_potential]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace inq::magnitude;

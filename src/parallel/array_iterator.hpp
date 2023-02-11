@@ -107,7 +107,7 @@ public:
 
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class parallel::array_iterator", "[parallel::array_iterator]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	using namespace inq;
 	using namespace Catch::literals;

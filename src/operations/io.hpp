@@ -238,7 +238,7 @@ auto load(std::string const & dirname, FieldSet & phi){
 #include <basis/field_set.hpp>
 #include <basis/trivial.hpp>
 
-TEST_CASE("function operations::io", "[operations::io]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	using namespace inq;
 	using namespace Catch::literals;

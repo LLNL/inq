@@ -336,7 +336,7 @@ field_set<basis::real_space, vector3<double, VectorSpace>> real_field(field_set<
 
 #include <parallel/communicator.hpp>
 
-TEST_CASE("Class basis::field_set", "[basis::field_set]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   
 	using namespace inq;
 	using namespace inq::magnitude;	

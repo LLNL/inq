@@ -149,7 +149,7 @@ basis::field<BasisType, ElementType> total(basis::field_set<BasisType, ElementTy
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("function observables::density", "[observables::density]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;
@@ -268,20 +268,8 @@ TEST_CASE("function observables::density", "[observables::density]") {
 		}
 		
 	}
-}
 
-TEST_CASE("function observables::density::normalize", "[observables::density::normalize]") {
-
-	using namespace inq;
-	using namespace Catch::literals;
-
-	const int npoint = 100;
-
-	auto comm = boost::mpi3::environment::get_world_instance();
-	
-	basis::trivial bas(npoint, comm);
-	
-	SECTION("double"){
+	SECTION("normalize double"){
 		
 		basis::field_set<basis::trivial, double> aa(bas, 1);
 
@@ -293,7 +281,7 @@ TEST_CASE("function observables::density::normalize", "[observables::density::no
 		
 	}
 	
-	SECTION("complex"){
+	SECTION("normalize complex"){
 		
 		basis::field_set<basis::trivial, complex> aa(bas, 1);
 

@@ -216,7 +216,7 @@ private:
 #include <basis/real_space.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("mixers::pulay", "[mixers::pulay]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

@@ -99,7 +99,7 @@ private:
 #include <basis/real_space.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("perturbations::kick", "[perturbations::kick]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

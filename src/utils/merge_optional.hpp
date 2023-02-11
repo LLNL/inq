@@ -40,7 +40,7 @@ opt_type merge_optional(const opt_type & option1, const opt_type & option2){
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("utils::merge_optional", "[utils::merge_optional]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;

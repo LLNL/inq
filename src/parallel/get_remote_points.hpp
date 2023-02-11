@@ -287,7 +287,7 @@ math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementTyp
 #include <catch2/catch_all.hpp>
 #include <parallel/communicator.hpp>
 
-TEST_CASE("Class parallel::get_remote_points", "[parallel::get_remote_points]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace inq::magnitude;	

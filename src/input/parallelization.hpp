@@ -117,7 +117,7 @@ namespace input {
 #include <catch2/catch_all.hpp>
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class input::parallelization", "[inq::input::parallelization]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   using namespace inq;
 	using namespace Catch::literals;

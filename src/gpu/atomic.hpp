@@ -82,7 +82,7 @@ GPU_FUNCTION inline long add(size_t * val, Type2 const & incr){
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE("gpu::atomic", "[gpu::atomic]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;

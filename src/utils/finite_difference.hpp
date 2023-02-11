@@ -120,7 +120,7 @@ namespace utils {
 		return 4.0*dot(rr, rr)*gaussian_func(rr) - 6.0*gaussian_func(rr);
 	}
 
-TEST_CASE("utils::finite_difference", "[utils::finite_difference]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

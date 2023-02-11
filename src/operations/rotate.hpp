@@ -148,7 +148,7 @@ void rotate_trs(MatrixType const & rotation, FieldSetType & phi){
 #include <operations/orthogonalize.hpp>
 #include <operations/randomize.hpp>
 
-TEST_CASE("function operations::rotate", "[operations::rotate]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	using namespace inq;
 	using namespace Catch::literals;

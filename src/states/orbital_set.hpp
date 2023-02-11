@@ -185,7 +185,7 @@ private:
 
 #include <parallel/communicator.hpp>
 
-TEST_CASE("Class states::orbital_set", "[states::orbital_set]"){
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   
 	using namespace inq;
 	using namespace inq::magnitude;	

@@ -106,7 +106,7 @@ using namespace inq;
 using namespace Catch::literals;
 using namespace magnitude;
 
-TEST_CASE("perturbations::sum", "[perturbations::sum]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic().cutoff_energy(10.3_Ry);
   auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::velocity);

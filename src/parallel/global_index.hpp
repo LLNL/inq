@@ -59,7 +59,7 @@ class global_index {
 
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class parallel::global_index", "[parallel::global_index]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	using namespace inq;
 	using namespace Catch::literals;

@@ -299,7 +299,7 @@ namespace basis {
 #include <math/array.hpp>
 #include <math/complex.hpp>
 
-TEST_CASE("class basis::spherical_grid", "[basis::spherical_grid]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

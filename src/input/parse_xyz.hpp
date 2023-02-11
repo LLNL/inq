@@ -78,7 +78,7 @@ auto parse_xyz(const std::string & xyz_file_name, quantity<magnitude::length> un
 
 #include <config/path.hpp>
 
-TEST_CASE("function ions::parse_xyz", "[inq::input::parse_xyz]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;

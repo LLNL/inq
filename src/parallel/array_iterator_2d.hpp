@@ -144,7 +144,7 @@ public:
 
 #include <mpi3/environment.hpp>
 
-TEST_CASE("class parallel::array_iterator_2d", "[parallel::array_iterator_2d]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	using namespace inq;
 	using namespace Catch::literals;

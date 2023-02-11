@@ -73,7 +73,7 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("observables::kinetic_energy_density", "[observables::kinetic_energy_density]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace inq::magnitude;

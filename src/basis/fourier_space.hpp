@@ -168,7 +168,7 @@ class real_space;
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
 
-TEST_CASE("class basis::fourier_space", "[fourier_space]") {
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 }
 #endif
