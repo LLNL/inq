@@ -30,6 +30,7 @@
 #include <parallel/array_iterator.hpp>
 #include <solvers/cholesky.hpp>
 #include <solvers/poisson.hpp>
+#include <states/index.hpp>
 #include <states/orbital_set.hpp>
 
 #include <optional>
@@ -47,6 +48,7 @@ namespace hamiltonian {
 		double exchange_coefficient_;
 		bool use_ace_;
 		singularity_correction sing_;
+		states::index orbital_index_;
 		
   public:
 
@@ -66,13 +68,19 @@ namespace hamiltonian {
 
 			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), el.states_comm());
 
+			auto iphi = 0;
+			for(auto & phi: el.kpin()){
+				orbital_index_[phi.key()] = iphi;				
+				iphi++;
+			}
+			
 			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
 			
 			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.states_basis_comm());
 			
-			auto iphi = 0;
+			iphi = 0;
 			auto ist = 0;
 			for(auto & phi : el.kpin()){
 				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
