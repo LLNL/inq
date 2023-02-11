@@ -43,9 +43,6 @@ namespace hamiltonian {
 			use_ace_(use_ace){
 
 			assert(basis.comm() == basis::basis_subcomm(comm));
-
-			if(exchange_coefficient_ != 0.0) orbitals_.emplace(basis, num_hf_orbitals, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, comm);	
-			if(exchange_coefficient_ != 0.0) ace_orbitals_.emplace(basis, num_hf_orbitals, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, std::move(comm));		
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
@@ -59,6 +56,9 @@ namespace hamiltonian {
 			assert(el.lot_size() == 1);			
 
 			auto & phi = el.lot()[0];
+
+			if(not orbitals_.has_value()) orbitals_.emplace(phi.skeleton());
+			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(phi.skeleton());
 
 			occupations_.reextent(phi.local_set_size());
 			occupations_ = el.occupations()[0];
@@ -177,7 +177,7 @@ namespace hamiltonian {
 		//////////////////////////////////////////////////////////////////////////////////
 		
 		bool enabled() const {
-			return orbitals_.has_value() or ace_orbitals_.has_value();
+			return fabs(exchange_coefficient_) > 1.0e-14;
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
