@@ -205,23 +205,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace Catch::literals;
-    /*
-  auto ecut = 20.0_Ha;
-  double ll = 10.0;
-	*/
-	/*
-	ions::geometry geo;
-  ions::unit_cell cell(vector3<double>(ll, 0.0, 0.0), vector3<double>(0.0, ll, 0.0), vector3<double>(0.0, 0.0, ll));
-  basis::real_space rs(cell, input::basis::cutoff_energy(ecut));
-
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms());
 	
-	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
-
-  states::orbital_set<basis::real_space, complex> phi(rs, st.num_states());
-	states::orbital_set<basis::real_space, complex> hphi(rs, st.num_states());
-	
-	hamiltonian::exchange<basis::real_space> ham(rs, cell, pot, geo, st.num_states(), 0.0);
-	*/
 }
 #endif
