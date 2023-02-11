@@ -22,6 +22,7 @@
 */
 
 #include <basis/field_set.hpp>
+#include <states/index.hpp>
 
 namespace inq {
 namespace states {
@@ -159,6 +160,10 @@ public:
 
 	auto & spinor_set_part() const {
 		return spinor_set_part_;
+	}
+	
+	auto key() const {
+		return states::key{kpoint(), spin_index()};
 	}
 	
 private:
