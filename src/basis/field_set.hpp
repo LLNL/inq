@@ -44,14 +44,14 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 	return comm.axis(0);
 }
 
-template<class Basis, class type>
+template<class BasisType, class ElementType>
 class field_set {
 
 public:
 
-	typedef Basis basis_type;
-	typedef math::array<type, 2> internal_array_type;
-	typedef type element_type;
+	typedef BasisType basis_type;
+	typedef math::array<ElementType, 2> internal_array_type;
+	typedef ElementType element_type;
 
 	field_set(const basis_type & basis, const int num_vectors, parallel::cartesian_communicator<2> comm, int factor = 1)
 		:full_comm_(std::move(comm)),
@@ -73,7 +73,7 @@ public:
 	}
 
 	template <class any_type>
-	field_set(inq::utils::skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
+	field_set(inq::utils::skeleton_wrapper<field_set<BasisType, any_type>> const & skeleton)
 		:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
 	}
 		
@@ -87,7 +87,7 @@ public:
 	field_set(field_set && coeff) = default;
 
 	field_set(field_set && oldset, parallel::cartesian_communicator<2> new_comm):
-		field_set(Basis{Basis{oldset.basis()}, basis_subcomm(new_comm)}, oldset.set_size(), new_comm)
+		field_set(BasisType{BasisType{oldset.basis()}, basis_subcomm(new_comm)}, oldset.set_size(), new_comm)
 	{
 		math::array<int, 1> rem_points(basis().local_size());
 		math::array<int, 1> rem_states(local_set_size());
@@ -108,12 +108,12 @@ public:
 	field_set & operator=(field_set && coeff) = default;
 
 	auto skeleton() const {
-		return inq::utils::skeleton_wrapper<field_set<Basis, type>>(*this);
+		return inq::utils::skeleton_wrapper<field_set<BasisType, ElementType>>(*this);
 	}
 
 	template <class OtherType>
 	static auto reciprocal(inq::utils::skeleton_wrapper<field_set<basis_type, OtherType>> const & skeleton){
-		return field_set<typename basis_type::reciprocal_space, type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
+		return field_set<typename basis_type::reciprocal_space, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
 	}
 	
 	internal_array_type & matrix() {
@@ -218,8 +218,8 @@ public:
 #ifdef ENABLE_NCCL
 				ncclGroupStart();
 				auto copy = matrix_;
-				ncclRecv(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements()*sizeof(type)/sizeof(double), ncclDouble, next_proc, &set_comm_.nccl_comm(), 0);
-				ncclSend(raw_pointer_cast(copy.data_elements()), matrix_.num_elements()*sizeof(type)/sizeof(double), ncclDouble, prev_proc, &set_comm_.nccl_comm(), 0);
+				ncclRecv(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements()*sizeof(ElementType)/sizeof(double), ncclDouble, next_proc, &set_comm_.nccl_comm(), 0);
+				ncclSend(raw_pointer_cast(copy.data_elements()), matrix_.num_elements()*sizeof(ElementType)/sizeof(double), ncclDouble, prev_proc, &set_comm_.nccl_comm(), 0);
 				ncclGroupEnd();
 				gpu::sync();
 #else
