@@ -55,7 +55,7 @@ public:
     partx_(std::move(partx)),
     party_(std::move(party)),
     comm_(std::move(comm)),
-    arr_({partx.block_size(), party.block_size()}),
+    arr_({partx.max_local_size(), party.max_local_size()}),
     step_(0),
     xpart_(comm_.coordinates()[0]),
     ypart_(comm_.coordinates()[1])
