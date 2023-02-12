@@ -89,7 +89,7 @@ int main(int argc, char ** argv){
 		}
 	};
 	
-	real_time::propagate<>(ions, electrons, output, input::interaction::pbe(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, input::interaction::pbe() | input::interaction::gauge_field(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
 	
 	return energy_match.fail();
 	
