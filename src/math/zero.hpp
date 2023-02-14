@@ -32,22 +32,22 @@
 namespace inq {
 
 template <typename Type>
-auto zero(){
+GPU_FUNCTION auto zero(){
   return Type{0.0};
 }
 
 template <>
-auto zero<vector3<double>>(){
+GPU_FUNCTION auto zero<vector3<double>>(){
   return vector3<double>{0.0, 0.0, 0.0};
 }
 
 template <>
-auto zero<vector3<double, covariant>>(){
+GPU_FUNCTION auto zero<vector3<double, covariant>>(){
   return vector3<double, covariant>{0.0, 0.0, 0.0};
 }
 
 template <>
-auto zero<vector3<double, contravariant>>(){
+GPU_FUNCTION auto zero<vector3<double, contravariant>>(){
   return vector3<double, contravariant>{0.0, 0.0, 0.0};
 }
 
