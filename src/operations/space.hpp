@@ -373,12 +373,12 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 ///////////////////////////////////////////////////////////////
 
-template <template <typename BasisType, typename Type> typename FieldSetType>		
-auto to_fourier(const FieldSetType<basis::real_space, complex> & phi){
+template <class FieldSetType, int Dummy = 0, class=std::enable_if_t<not is_vector3<typename FieldSetType::element_type>{}>>
+auto to_fourier(const FieldSetType & phi){
 
 	CALI_CXX_MARK_SCOPE("to_fourier(complex)");
 		
-	auto fphi = FieldSetType<basis::real_space, complex>::reciprocal(phi.skeleton());
+	auto fphi = FieldSetType::reciprocal(phi.skeleton());
 	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
@@ -388,12 +388,12 @@ auto to_fourier(const FieldSetType<basis::real_space, complex> & phi){
 
 ///////////////////////////////////////////////////////////////
 
-template <template <typename BasisType, typename Type> typename FieldSetType>		
-auto to_real(const FieldSetType<basis::fourier_space, complex> & fphi, bool const normalize = true){
+template <class FieldSetType, int Dummy = 0, class=std::enable_if_t<not is_vector3<typename FieldSetType::element_type>{}>>
+auto to_real(const FieldSetType & fphi, bool const normalize = true){
 
 	CALI_CXX_MARK_SCOPE("to_real(complex)");
 	
-	auto phi = FieldSetType<basis::fourier_space, complex>::reciprocal(fphi.skeleton());
+	auto phi = FieldSetType::reciprocal(fphi.skeleton());
 	to_real_array(fphi.basis(), phi.basis(), fphi.hypercubic(), phi.hypercubic(), normalize);
 
 	return phi;
