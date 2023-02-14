@@ -34,8 +34,9 @@ namespace inq {
 namespace operations {
 
 
-template <template<typename, typename> class SetType, typename FactorType = double>
-void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <typename FieldSetType, typename FactorType = double,
+					typename std::enable_if<std::is_same<typename FieldSetType::basis_type, basis::fourier_space>::value, int>::type = 0> //only enable for fourier_space
+void laplacian_add(FieldSetType const & ff, FieldSetType & laplff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -50,8 +51,9 @@ void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<ba
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <template<typename, typename> class SetType, typename FactorType = double>
-void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <typename FieldSetType, typename FactorType = double,
+					typename std::enable_if<std::is_same<typename FieldSetType::basis_type, basis::fourier_space>::value, int>::type = 0> //only enable for fourier_space
+void laplacian_in_place(FieldSetType & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 		
@@ -65,12 +67,13 @@ void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType f
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <template<typename, typename> class SetType, typename FactorType = double>
-SetType<basis::fourier_space, complex> laplacian(SetType<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <typename FieldSetType, typename FactorType = double,
+					typename std::enable_if<std::is_same<typename FieldSetType::basis_type, basis::fourier_space>::value, int>::type = 0> //only enable for fourier_space
+FieldSetType laplacian(FieldSetType const & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	SetType<basis::fourier_space, complex> laplff(ff.skeleton());
+	FieldSetType laplff(ff.skeleton());
 	
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(), laplffcub = begin(laplff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, gradcoeff]
@@ -85,8 +88,10 @@ SetType<basis::fourier_space, complex> laplacian(SetType<basis::fourier_space, c
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <template<typename, typename> class SetType, typename FactorType = double>
-auto laplacian(SetType<basis::real_space, complex> const & ff, FactorType factor = 1.0){
+template <typename FieldSetType, typename FactorType = double,
+					typename std::enable_if<std::is_same<typename FieldSetType::basis_type, basis::real_space>::value, int>::type = 0, // only enable for real_space
+					typename std::enable_if<std::is_same<typename FieldSetType::element_type, complex>::value, int>::type = 0>         // and complex
+auto laplacian(FieldSetType const & ff, FactorType factor = 1.0){
 
 	return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff), factor));
 }
