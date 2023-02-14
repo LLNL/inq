@@ -33,8 +33,8 @@
 namespace inq {
 
 namespace basis {
-template<class Basis, typename Type> class field;
-template<class Basis, typename Type> class field_set;
+template<class BasisType, typename ElementType> class field;
+template<class BasisType, typename ElementType, class PartitionType> class field_set;
 }
 
 namespace parallel {

@@ -44,7 +44,7 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 	return comm.axis(0);
 }
 
-template<class BasisType, class ElementType>
+template<class BasisType, class ElementType, class PartitionType = inq::parallel::partition>
 class field_set {
 
 public:
@@ -264,7 +264,7 @@ private:
 
 	mutable parallel::cartesian_communicator<2> full_comm_;
 	mutable parallel::cartesian_communicator<1> set_comm_;
-	inq::parallel::partition set_part_;
+	PartitionType set_part_;
 	internal_array_type matrix_;
 	int num_vectors_;
 	basis_type basis_;
