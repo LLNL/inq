@@ -402,29 +402,6 @@ auto to_real(const FieldSetType<basis::fourier_space, complex> & fphi, bool cons
 ///////////////////////////////////////////////////////////////
 
 template <class VectorSpace>
-auto to_fourier(const basis::field<basis::real_space, vector3<complex, VectorSpace>> & phi){
-
-	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
-	
-	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis);
-	
-	basis::field<basis::fourier_space, vector3<complex, VectorSpace>> fphi(fourier_basis);
-	
-	to_fourier_array(real_basis, fourier_basis, 
-		phi .cubic().template reinterpret_array_cast<complex const>(3), 
-		fphi.cubic().template reinterpret_array_cast<complex      >(3)
-	);
-
-	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
-			
-	return fphi;
-	
-}
-
-///////////////////////////////////////////////////////////////
-
-template <class VectorSpace>
 auto to_real(const basis::field<basis::fourier_space, vector3<complex, VectorSpace>> & fphi, bool normalize = true){
 
 	CALI_CXX_MARK_SCOPE("to_real(vector_field)");
@@ -444,20 +421,17 @@ auto to_real(const basis::field<basis::fourier_space, vector3<complex, VectorSpa
 
 ///////////////////////////////////////////////////////////////
 
-template <class VectorSpace>
-auto to_fourier(const basis::field_set<basis::real_space, vector3<complex, VectorSpace>> & phi){
+template <class FieldSet, class=std::enable_if_t<is_vector3<typename FieldSet::element_type>{}>>
+auto to_fourier(FieldSet const & phi){
 
 	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
 	
-	auto & real_basis = phi.basis();
-	basis::fourier_space fourier_basis(real_basis);
-	
-	basis::field_set<basis::fourier_space, vector3<complex, VectorSpace>> fphi(fourier_basis, phi.set_size(), phi.full_comm());
+	auto fphi = FieldSet::reciprocal(phi.skeleton());	
 
 	auto &&    fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 	auto const& phi_as_scalar = phi .hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	
-	to_fourier_array(real_basis, fourier_basis, phi_as_scalar, fphi_as_scalar);
+	to_fourier_array(phi.basis(), fphi.basis(), phi_as_scalar, fphi_as_scalar);
 
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 			
