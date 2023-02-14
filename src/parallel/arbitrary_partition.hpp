@@ -85,7 +85,7 @@ public:
 		return end_;
 	}
 	
-	constexpr auto local_size(int part) const {
+	auto local_size(int part) const {
 		return lsizes_[part];
 	}
 	
