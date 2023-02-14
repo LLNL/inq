@@ -401,32 +401,12 @@ auto to_real(const FieldSetType<basis::fourier_space, complex> & fphi, bool cons
 
 ///////////////////////////////////////////////////////////////
 
-template <class VectorSpace>
-auto to_real(const basis::field<basis::fourier_space, vector3<complex, VectorSpace>> & fphi, bool normalize = true){
-
-	CALI_CXX_MARK_SCOPE("to_real(vector_field)");
-	
-	auto & fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis);
-
-	basis::field<basis::real_space, vector3<complex, VectorSpace>> phi(real_basis);
-
-	to_real_array(fourier_basis, real_basis, 
-		fphi.cubic().template reinterpret_array_cast<complex const>(3), 
-		phi .cubic().template reinterpret_array_cast<complex      >(3), 
-		normalize);
-
-	return phi;
-}
-
-///////////////////////////////////////////////////////////////
-
-template <class FieldSet, class=std::enable_if_t<is_vector3<typename FieldSet::element_type>{}>>
-auto to_fourier(FieldSet const & phi){
+template <class FieldSetType, class=std::enable_if_t<is_vector3<typename FieldSetType::element_type>{}>>
+auto to_fourier(FieldSetType const & phi){
 
 	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
 	
-	auto fphi = FieldSet::reciprocal(phi.skeleton());	
+	auto fphi = FieldSetType::reciprocal(phi.skeleton());	
 
 	auto &&    fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 	auto const& phi_as_scalar = phi .hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
@@ -441,41 +421,18 @@ auto to_fourier(FieldSet const & phi){
 
 ///////////////////////////////////////////////////////////////
 
-template <class VectorSpace>
-auto to_real(basis::field_set<basis::fourier_space, vector3<complex, VectorSpace>> const& fphi, bool normalize = true){
+template <class FieldSetType, class=std::enable_if_t<is_vector3<typename FieldSetType::element_type>{}>>
+auto to_real(FieldSetType const & fphi, bool normalize = true){
 
 	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
 
-	auto const& fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis);
-
-	basis::field_set<basis::real_space, vector3<complex, VectorSpace>> phi(real_basis, fphi.set_size(), fphi.full_comm());
-
-	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
-	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
-
-	to_real_array(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
-
-	return phi;
-}
-
-///////////////////////////////////////////////////////////////
-
-template <class VectorSpace>
-auto to_real(states::orbital_set<basis::fourier_space, vector3<complex, VectorSpace>> const& fphi, bool normalize = true){
-
-	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
-
-	auto const& fourier_basis = fphi.basis();
-	basis::real_space real_basis(fourier_basis);
-
-	auto phi = states::orbital_set<basis::fourier_space, vector3<complex, VectorSpace>>::reciprocal(fphi.skeleton());
+	auto phi = FieldSetType::reciprocal(fphi.skeleton());
 	
 	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
 
-	to_real_array(fourier_basis, real_basis, fphi_as_scalar, phi_as_scalar, normalize);
-
+	to_real_array(fphi.basis(), phi.basis(), fphi_as_scalar, phi_as_scalar, normalize);
+	
 	return phi;
 }
 
