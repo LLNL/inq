@@ -378,7 +378,7 @@ auto to_fourier(const FieldSetType<basis::real_space, complex> & phi){
 
 	CALI_CXX_MARK_SCOPE("to_fourier(complex)");
 		
-	auto fphi = FieldSetType<basis::fourier_space, complex>::reciprocal(phi.skeleton());
+	auto fphi = FieldSetType<basis::real_space, complex>::reciprocal(phi.skeleton());
 	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
@@ -393,7 +393,7 @@ auto to_real(const FieldSetType<basis::fourier_space, complex> & fphi, bool cons
 
 	CALI_CXX_MARK_SCOPE("to_real(complex)");
 	
-	auto phi = FieldSetType<basis::real_space, complex>::reciprocal(fphi.skeleton());
+	auto phi = FieldSetType<basis::fourier_space, complex>::reciprocal(fphi.skeleton());
 	to_real_array(fphi.basis(), phi.basis(), fphi.hypercubic(), phi.hypercubic(), normalize);
 
 	return phi;
@@ -495,7 +495,7 @@ auto to_real(states::orbital_set<basis::fourier_space, vector3<complex, VectorSp
 	auto const& fourier_basis = fphi.basis();
 	basis::real_space real_basis(fourier_basis);
 
-	auto phi = states::orbital_set<basis::real_space, vector3<complex, VectorSpace>>::reciprocal(fphi.skeleton());
+	auto phi = states::orbital_set<basis::fourier_space, vector3<complex, VectorSpace>>::reciprocal(fphi.skeleton());
 	
 	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
 	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
