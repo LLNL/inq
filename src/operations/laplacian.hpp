@@ -35,7 +35,7 @@ namespace operations {
 
 
 template <typename FieldSetType, typename FactorType = double,
-					typename std::enable_if<std::is_same<typename FieldSetType::basis_type, basis::fourier_space>::value, int>::type = 0> //only enable for fourier_space
+					std::enable_if_t<std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, int> = 0> //only enable for fourier_space
 void laplacian_add(FieldSetType const & ff, FieldSetType & laplff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
@@ -52,7 +52,7 @@ void laplacian_add(FieldSetType const & ff, FieldSetType & laplff, FactorType fa
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FieldSetType, typename FactorType = double,
-					typename std::enable_if<std::is_same<typename FieldSetType::basis_type, basis::fourier_space>::value, int>::type = 0> //only enable for fourier_space
+					std::enable_if_t<std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, int> = 0> //only enable for fourier_space
 void laplacian_in_place(FieldSetType & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
@@ -68,7 +68,7 @@ void laplacian_in_place(FieldSetType & ff, FactorType factor = 1.0, vector3<doub
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FieldSetType, typename FactorType = double,
-					typename std::enable_if<std::is_same<typename FieldSetType::basis_type, basis::fourier_space>::value, int>::type = 0> //only enable for fourier_space
+					std::enable_if_t<std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, int> = 0> //only enable for fourier_space
 FieldSetType laplacian(FieldSetType const & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
@@ -89,8 +89,8 @@ FieldSetType laplacian(FieldSetType const & ff, FactorType factor = 1.0, vector3
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FieldSetType, typename FactorType = double,
-					typename std::enable_if<std::is_same<typename FieldSetType::basis_type, basis::real_space>::value, int>::type = 0, // only enable for real_space
-					typename std::enable_if<std::is_same<typename FieldSetType::element_type, complex>::value, int>::type = 0>         // and complex
+					std::enable_if_t<std::is_same_v<typename FieldSetType::basis_type, basis::real_space>, int> = 0, // only enable for real_space
+					std::enable_if_t<std::is_same_v<typename FieldSetType::element_type, complex>, int> = 0>         // and complex
 auto laplacian(FieldSetType const & ff, FactorType factor = 1.0){
 
 	return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff), factor));

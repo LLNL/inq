@@ -347,7 +347,7 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 ///////////////////////////////////////////////////////////////
 
-template <class FieldSetType, int Dummy = 0, class=std::enable_if_t<not is_vector3<typename FieldSetType::element_type>{}>>
+template <class FieldSetType, std::enable_if_t<not is_vector3<typename FieldSetType::element_type>{}, int> = 0>
 auto to_fourier(const FieldSetType & phi){
 
 	static_assert(std::is_same<typename FieldSetType::element_type, complex>::value, "Only implemented for complex");
@@ -364,7 +364,7 @@ auto to_fourier(const FieldSetType & phi){
 
 ///////////////////////////////////////////////////////////////
 
-template <class FieldSetType, int Dummy = 0, class=std::enable_if_t<not is_vector3<typename FieldSetType::element_type>{}>>
+template <class FieldSetType, std::enable_if_t<not is_vector3<typename FieldSetType::element_type>{}, int> = 0>
 auto to_real(const FieldSetType & fphi, bool const normalize = true){
 
 	static_assert(std::is_same<typename FieldSetType::element_type, complex>::value, "Only implemented for complex");
@@ -379,12 +379,12 @@ auto to_real(const FieldSetType & fphi, bool const normalize = true){
 
 ///////////////////////////////////////////////////////////////
 
-template <class FieldSetType, class=std::enable_if_t<is_vector3<typename FieldSetType::element_type>{}>>
+template <class FieldSetType, std::enable_if_t<is_vector3<typename FieldSetType::element_type>{}, int> = 0>
 auto to_fourier(FieldSetType const & phi){
 
 	static_assert(std::is_same<typename FieldSetType::element_type::element_type, complex>::value, "Only implemented for complex vector3s");
 	
-	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
+	CALI_CXX_MARK_SCOPE("to_fourier(vector)");
 	
 	auto fphi = FieldSetType::reciprocal(phi.skeleton());	
 
@@ -401,12 +401,12 @@ auto to_fourier(FieldSetType const & phi){
 
 ///////////////////////////////////////////////////////////////
 
-template <class FieldSetType, class=std::enable_if_t<is_vector3<typename FieldSetType::element_type>{}>>
+template <class FieldSetType, std::enable_if_t<is_vector3<typename FieldSetType::element_type>{}, int> = 0>
 auto to_real(FieldSetType const & fphi, bool normalize = true){
 
 	static_assert(std::is_same<typename FieldSetType::element_type::element_type, complex>::value, "Only implemented for complex vector3s");
 	
-	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
+	CALI_CXX_MARK_SCOPE("to_real(vector)");
 
 	auto phi = FieldSetType::reciprocal(fphi.skeleton());
 	
