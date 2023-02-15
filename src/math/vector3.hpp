@@ -54,6 +54,8 @@ class vector3 {
 	
 public:
 
+	using element_type = Type;
+
 	vector3() = default;
 
 	explicit GPU_FUNCTION vector3(Type const & scal){

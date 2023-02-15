@@ -316,10 +316,13 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const
 		
 //////////////////////////////////////////////////////////
 
-template <class FieldType>
+template <class FieldType,
+					typename std::enable_if<std::is_same<typename FieldType::element_type, complex>::value, int>::type = 0>
 auto refine(FieldType const & source, typename basis::real_space const & new_basis){
 
 	static_assert(std::is_same<typename FieldType::basis_type, basis::real_space>::value, "Only implemented for real space");
+	static_assert(std::is_same<typename FieldType::element_type, complex>::value, "Only works for complex");
+	
 	assert(new_basis.size() == 8*source.basis().size()); //only a factor of 2 has been tested
 	assert(not source.basis().part().parallel());
 			
@@ -330,8 +333,9 @@ auto refine(FieldType const & source, typename basis::real_space const & new_bas
 
 //////////////////////////////////////////////////////////
 
-template <template<class, class> class FieldType>
-auto refine(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
+template <typename FieldType,
+					typename std::enable_if<std::is_same<typename FieldType::element_type, double>::value, int>::type = 0>
+auto refine(FieldType const & source, typename basis::real_space const & new_basis){
 
 	auto complex_refine = refine(complex_field(source), new_basis);
 	return real_field(complex_refine);
@@ -339,7 +343,8 @@ auto refine(FieldType<basis::real_space, double> const & source, typename basis:
 
 //////////////////////////////////////////////////////////
 		
-template <class FieldType>
+template <class FieldType,
+					typename std::enable_if<std::is_same<typename FieldType::element_type, complex>::value, int>::type = 0>
 auto coarsen(FieldType const & source, typename basis::real_space const & new_basis){
 
 	assert(8*new_basis.size() == source.basis().size()); //only a factor of 2 has been tested		
@@ -352,8 +357,9 @@ auto coarsen(FieldType const & source, typename basis::real_space const & new_ba
 
 //////////////////////////////////////////////////////////
 
-template <template<class, class> class FieldType>		
-auto coarsen(FieldType<basis::real_space, double> const & source, typename basis::real_space const & new_basis){
+template <typename FieldType,
+					typename std::enable_if<std::is_same<typename FieldType::element_type, double>::value, int>::type = 0>
+auto coarsen(FieldType const & source, typename basis::real_space const & new_basis){
 
 	auto complex_coarsen = coarsen(complex_field(source), new_basis);
 	return real_field(complex_coarsen);

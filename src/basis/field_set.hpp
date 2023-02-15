@@ -44,232 +44,232 @@ auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
 	return comm.axis(0);
 }
 
-	template<class Basis, class type>
-  class field_set {
+template<class BasisType, class ElementType, class PartitionType = inq::parallel::partition>
+class field_set {
 
-  public:
+public:
 
-		typedef Basis basis_type;
-		typedef math::array<type, 2> internal_array_type;
-		typedef type element_type;
+	typedef BasisType basis_type;
+	typedef math::array<ElementType, 2> internal_array_type;
+	typedef ElementType element_type;
 
-		field_set(const basis_type & basis, const int num_vectors, parallel::cartesian_communicator<2> comm, int factor = 1)
-			:full_comm_(std::move(comm)),
-			 set_comm_(basis::set_subcomm(full_comm_)),
-			 set_part_(factor*parallel::partition(num_vectors, set_comm_)),
-			 matrix_({basis.part().local_size(), set_part_.local_size()}),
-			 num_vectors_(factor*num_vectors),
-			 basis_(basis)
-		{
-			prefetch();
-			assert(basis_.part().comm_size() == basis::basis_subcomm(full_comm_).size());
-			assert(local_set_size() > 0);
-		}
+	field_set(const basis_type & basis, const int num_vectors, parallel::cartesian_communicator<2> comm, int factor = 1)
+		:full_comm_(std::move(comm)),
+		 set_comm_(basis::set_subcomm(full_comm_)),
+		 set_part_(factor*parallel::partition(num_vectors, set_comm_)),
+		 matrix_({basis.part().local_size(), set_part_.local_size()}),
+		 num_vectors_(factor*num_vectors),
+		 basis_(basis)
+	{
+		prefetch();
+		assert(basis_.part().comm_size() == basis::basis_subcomm(full_comm_).size());
+		assert(local_set_size() > 0);
+	}
 
-		//when no communicator is given, use the basis communicator
-		field_set(const basis_type & basis, const int num_vectors)			
-			:field_set(basis, num_vectors, parallel::cartesian_communicator<2>(basis.comm(), {basis.comm().size(), 1}))
-		{
-		}
+	//when no communicator is given, use the basis communicator
+	field_set(const basis_type & basis, const int num_vectors)			
+		:field_set(basis, num_vectors, parallel::cartesian_communicator<2>(basis.comm(), {basis.comm().size(), 1}))
+	{
+	}
 
-		template <class any_type>
-		field_set(inq::utils::skeleton_wrapper<field_set<Basis, any_type>> const & skeleton)
-			:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
-		}
+	template <class any_type>
+	field_set(inq::utils::skeleton_wrapper<field_set<BasisType, any_type>> const & skeleton)
+		:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
+	}
 		
-		// Avoid the default copy constructor since the multi copy constructor is slow
-		//		field_set(const field_set & coeff) = default;
-		field_set(field_set const & other)
-			:field_set(other.skeleton()){
-			matrix_ = other.matrix_;
-		}
+	// Avoid the default copy constructor since the multi copy constructor is slow
+	//		field_set(const field_set & coeff) = default;
+	field_set(field_set const & other)
+		:field_set(other.skeleton()){
+		matrix_ = other.matrix_;
+	}
 
-		field_set(field_set && coeff) = default;
+	field_set(field_set && coeff) = default;
 
-		field_set(field_set && oldset, parallel::cartesian_communicator<2> new_comm):
-			field_set(Basis{Basis{oldset.basis()}, basis_subcomm(new_comm)}, oldset.set_size(), new_comm)
-		{
-			math::array<int, 1> rem_points(basis().local_size());
-			math::array<int, 1> rem_states(local_set_size());
-			for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
-			for(long ist = 0; ist < local_set_size(); ist++) rem_states[ist] = set_part().local_to_global(ist).value();
-			matrix_ = parallel::get_remote_points(oldset, rem_points, rem_states);
-		}
+	field_set(field_set && oldset, parallel::cartesian_communicator<2> new_comm):
+		field_set(BasisType{BasisType{oldset.basis()}, basis_subcomm(new_comm)}, oldset.set_size(), new_comm)
+	{
+		math::array<int, 1> rem_points(basis().local_size());
+		math::array<int, 1> rem_states(local_set_size());
+		for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
+		for(long ist = 0; ist < local_set_size(); ist++) rem_states[ist] = set_part().local_to_global(ist).value();
+		matrix_ = parallel::get_remote_points(oldset, rem_points, rem_states);
+	}
 				
-		field_set & operator=(field_set const& other){
-			full_comm_ = other.full_comm_;
-			set_comm_  = other.set_comm_;
-			set_part_  = other.set_part_;
-			matrix_    = other.matrix_;
-			num_vectors_ = other.num_vectors_;
-			basis_     = other.basis_;
-			return *this;
-		}
-		field_set & operator=(field_set && coeff) = default;
+	field_set & operator=(field_set const& other){
+		full_comm_ = other.full_comm_;
+		set_comm_  = other.set_comm_;
+		set_part_  = other.set_part_;
+		matrix_    = other.matrix_;
+		num_vectors_ = other.num_vectors_;
+		basis_     = other.basis_;
+		return *this;
+	}
+	field_set & operator=(field_set && coeff) = default;
 
-		auto skeleton() const {
-			return inq::utils::skeleton_wrapper<field_set<Basis, type>>(*this);
-		}
+	auto skeleton() const {
+		return inq::utils::skeleton_wrapper<field_set<BasisType, ElementType>>(*this);
+	}
 
-		template <class OtherType>
-		static auto reciprocal(inq::utils::skeleton_wrapper<field_set<basis_type, OtherType>> const & skeleton){
-			return field_set<typename basis_type::reciprocal_space, type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
-		}
+	template <class OtherType>
+	static auto reciprocal(inq::utils::skeleton_wrapper<field_set<basis_type, OtherType>> const & skeleton){
+		return field_set<typename basis_type::reciprocal_space, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
+	}
+	
+	internal_array_type & matrix() {
+		return matrix_;
+	}
+
+	internal_array_type const & matrix() const{
+		return matrix_;
+	}
+
+	auto data() const {
+		return raw_pointer_cast(matrix_.data_elements());
+	}
+
+	auto data() {
+		return raw_pointer_cast(matrix_.data_elements());
+	}
+
+	auto num_elements() const {
+		return matrix_.num_elements();
+	}
+
+	template <typename ScalarType>
+	void fill(ScalarType const & scalar) {
+		CALI_CXX_MARK_SCOPE("fill(field_set)");
+
+		gpu::run(matrix_.num_elements(), [lin = raw_pointer_cast(matrix_.data_elements()), scalar] GPU_LAMBDA (auto ii){
+			lin[ii] = scalar;
+		});
+	}
 		
-		internal_array_type & matrix() {
-			return matrix_;
-		}
+	const basis_type & basis() const {
+		return basis_;
+	}
 
-		internal_array_type const & matrix() const{
-			return matrix_;
-		}
+	const int & set_size() const {
+		return num_vectors_;
+	}
 
-		auto data() const {
-			return raw_pointer_cast(matrix_.data_elements());
-		}
-
-		auto data() {
-			return raw_pointer_cast(matrix_.data_elements());
-		}
-
-		auto num_elements() const {
-			return matrix_.num_elements();
-		}
-
-		template <typename ScalarType>
-		void fill(ScalarType const & scalar) {
-			CALI_CXX_MARK_SCOPE("fill(field_set)");
-
-			gpu::run(matrix_.num_elements(), [lin = raw_pointer_cast(matrix_.data_elements()), scalar] GPU_LAMBDA (auto ii){
-								 lin[ii] = scalar;
-			});
-		}
+	auto local_set_size() const {
+		return set_part_.local_size();
+	}
 		
-		const basis_type & basis() const {
-			return basis_;
-		}
-
-		const int & set_size() const {
-			return num_vectors_;
-		}
-
-		auto local_set_size() const {
-			return set_part_.local_size();
-		}
+	auto & set_part() const {
+		return set_part_;
+	}
 		
-		auto & set_part() const {
-			return set_part_;
-		}
-		
-		auto & set_comm() const {
-			return set_comm_;
-		}
+	auto & set_comm() const {
+		return set_comm_;
+	}
 				
-		auto & full_comm() const {
-			return full_comm_;
-		}
+	auto & full_comm() const {
+		return full_comm_;
+	}
 
-		auto hypercubic() const {
-			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
-		}
+	auto hypercubic() const {
+		return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
+	}
 
-		auto hypercubic() {
-			return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
-		}
+	auto hypercubic() {
+		return matrix_.partitioned(basis_.cubic_dist(1).local_size()*basis_.cubic_dist(0).local_size()).partitioned(basis_.cubic_dist(0).local_size());
+	}
 
-		void prefetch() const {
-			math::prefetch(matrix_);
-		}
+	void prefetch() const {
+		math::prefetch(matrix_);
+	}
 
-		class parallel_set_iterator {
+	class parallel_set_iterator {
 			
-			internal_array_type matrix_;
-			int istep_;
-			mutable parallel::cartesian_communicator<1> set_comm_;
-			parallel::partition set_part_;
-
-		public:
-			
-			parallel_set_iterator(long basis_local_size, parallel::partition set_part, parallel::cartesian_communicator<1> set_comm, internal_array_type const & data):
-				matrix_({basis_local_size, set_part.max_local_size()}),
-				istep_(0),
-				set_comm_(std::move(set_comm)),
-				set_part_(std::move(set_part)){
-
-				CALI_CXX_MARK_SCOPE("field_set_iterator_constructor");
- 
-				gpu::copy(basis_local_size, set_part.local_size(), data, matrix_);
-			};
-			
-			void operator++(){
-
-				CALI_CXX_MARK_SCOPE("field_set_iterator++");
-				
-				auto mpi_type = boost::mpi3::detail::basic_datatype<element_type>();
-				
-				auto next_proc = set_comm_.rank() + 1;
-				if(next_proc == set_comm_.size()) next_proc = 0;
-				auto prev_proc = set_comm_.rank() - 1;
-				if(prev_proc == -1) prev_proc = set_comm_.size() - 1;
-
-				if(istep_ < set_comm_.size() - 1) {  //there is no need to copy for the last step
-
-					set_comm_.nccl_init();
-#ifdef ENABLE_NCCL
-					ncclGroupStart();
-					auto copy = matrix_;
-					ncclRecv(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements()*sizeof(type)/sizeof(double), ncclDouble, next_proc, &set_comm_.nccl_comm(), 0);
-					ncclSend(raw_pointer_cast(copy.data_elements()), matrix_.num_elements()*sizeof(type)/sizeof(double), ncclDouble, prev_proc, &set_comm_.nccl_comm(), 0);
-					ncclGroupEnd();
-					gpu::sync();
-#else
-					MPI_Sendrecv_replace(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, set_comm_.get(), MPI_STATUS_IGNORE);
-#endif
-				}
-				
-				istep_++;
-			}
-
-			bool operator!=(int it_istep){
-				return istep_ != it_istep;
-			}
-
-			auto matrix() const {
-				return matrix_(boost::multi::ALL, {0, set_part_.local_size(set_ipart())});
-			}
-
-			auto set_ipart() const {
-				auto ip = istep_ + set_comm_.rank();
-				if(ip >= set_comm_.size()) ip -= set_comm_.size();
-				return ip;
-			}
-			
-		};
-
-		auto par_set_begin() const {
-			return parallel_set_iterator(basis().local_size(), set_part_, set_comm_, matrix());
-		}
-
-		auto par_set_end() const {
-			return set_comm_.size();
-		}
-
-		template <typename CommunicatorType, typename OpType = std::plus<>>
-		void all_reduce(CommunicatorType & comm, OpType op = OpType{}){
-			if(comm.size() < 2) return;
-			comm.all_reduce_n(raw_pointer_cast(matrix().data_elements()), matrix().num_elements(), op);
-		}
-		
-	private:
-
-		mutable parallel::cartesian_communicator<2> full_comm_;
-		mutable parallel::cartesian_communicator<1> set_comm_;
-		inq::parallel::partition set_part_;
 		internal_array_type matrix_;
-		int num_vectors_;
-		basis_type basis_;
+		int istep_;
+		mutable parallel::cartesian_communicator<1> set_comm_;
+		parallel::partition set_part_;
 
-  };
+	public:
+			
+		parallel_set_iterator(long basis_local_size, parallel::partition set_part, parallel::cartesian_communicator<1> set_comm, internal_array_type const & data):
+			matrix_({basis_local_size, set_part.max_local_size()}),
+			istep_(0),
+			set_comm_(std::move(set_comm)),
+			set_part_(std::move(set_part)){
+
+			CALI_CXX_MARK_SCOPE("field_set_iterator_constructor");
+ 
+			gpu::copy(basis_local_size, set_part.local_size(), data, matrix_);
+		};
+			
+		void operator++(){
+
+			CALI_CXX_MARK_SCOPE("field_set_iterator++");
+				
+			auto mpi_type = boost::mpi3::detail::basic_datatype<element_type>();
+				
+			auto next_proc = set_comm_.rank() + 1;
+			if(next_proc == set_comm_.size()) next_proc = 0;
+			auto prev_proc = set_comm_.rank() - 1;
+			if(prev_proc == -1) prev_proc = set_comm_.size() - 1;
+
+			if(istep_ < set_comm_.size() - 1) {  //there is no need to copy for the last step
+
+				set_comm_.nccl_init();
+#ifdef ENABLE_NCCL
+				ncclGroupStart();
+				auto copy = matrix_;
+				ncclRecv(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements()*sizeof(ElementType)/sizeof(double), ncclDouble, next_proc, &set_comm_.nccl_comm(), 0);
+				ncclSend(raw_pointer_cast(copy.data_elements()), matrix_.num_elements()*sizeof(ElementType)/sizeof(double), ncclDouble, prev_proc, &set_comm_.nccl_comm(), 0);
+				ncclGroupEnd();
+				gpu::sync();
+#else
+				MPI_Sendrecv_replace(raw_pointer_cast(matrix_.data_elements()), matrix_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, set_comm_.get(), MPI_STATUS_IGNORE);
+#endif
+			}
+				
+			istep_++;
+		}
+
+		bool operator!=(int it_istep){
+			return istep_ != it_istep;
+		}
+
+		auto matrix() const {
+			return matrix_(boost::multi::ALL, {0, set_part_.local_size(set_ipart())});
+		}
+
+		auto set_ipart() const {
+			auto ip = istep_ + set_comm_.rank();
+			if(ip >= set_comm_.size()) ip -= set_comm_.size();
+			return ip;
+		}
+			
+	};
+
+	auto par_set_begin() const {
+		return parallel_set_iterator(basis().local_size(), set_part_, set_comm_, matrix());
+	}
+
+	auto par_set_end() const {
+		return set_comm_.size();
+	}
+
+	template <typename CommunicatorType, typename OpType = std::plus<>>
+	void all_reduce(CommunicatorType & comm, OpType op = OpType{}){
+		if(comm.size() < 2) return;
+		comm.all_reduce_n(raw_pointer_cast(matrix().data_elements()), matrix().num_elements(), op);
+	}
+		
+private:
+
+	mutable parallel::cartesian_communicator<2> full_comm_;
+	mutable parallel::cartesian_communicator<1> set_comm_;
+	PartitionType set_part_;
+	internal_array_type matrix_;
+	int num_vectors_;
+	basis_type basis_;
+
+};
 
 field_set<basis::real_space, inq::complex> complex_field(field_set<basis::real_space, double> const & field) {
 	field_set<basis::real_space, inq::complex> cfield(field.skeleton());

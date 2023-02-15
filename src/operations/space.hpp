@@ -347,13 +347,29 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 ///////////////////////////////////////////////////////////////
 
-template <class FieldSetType, int Dummy = 0, class=std::enable_if_t<not is_vector3<typename FieldSetType::element_type>{}>>
+template <class FieldSetType>
 auto to_fourier(const FieldSetType & phi){
 
-	CALI_CXX_MARK_SCOPE("to_fourier(complex)");
-		
+	CALI_CXX_MARK_SCOPE("to_fourier");
+
 	auto fphi = FieldSetType::reciprocal(phi.skeleton());
-	to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
+
+	using type = typename FieldSetType::element_type;
+	
+	if constexpr (not is_vector3<type>::value){
+		static_assert(std::is_same<type, complex>::value, "Only implemented for complex");
+		
+		to_fourier_array(phi.basis(), fphi.basis(), phi.hypercubic(), fphi.hypercubic());
+
+	} else {
+
+		static_assert(std::is_same<typename type::element_type, complex>::value, "Only implemented for complex vector3");
+		
+		auto &&    fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
+		auto const& phi_as_scalar = phi .hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
+
+		to_fourier_array(phi.basis(), fphi.basis(), phi_as_scalar, fphi_as_scalar);
+	}
 	
 	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
 	
@@ -362,50 +378,31 @@ auto to_fourier(const FieldSetType & phi){
 
 ///////////////////////////////////////////////////////////////
 
-template <class FieldSetType, int Dummy = 0, class=std::enable_if_t<not is_vector3<typename FieldSetType::element_type>{}>>
+template <class FieldSetType>
 auto to_real(const FieldSetType & fphi, bool const normalize = true){
 
-	CALI_CXX_MARK_SCOPE("to_real(complex)");
-	
-	auto phi = FieldSetType::reciprocal(fphi.skeleton());
-	to_real_array(fphi.basis(), phi.basis(), fphi.hypercubic(), phi.hypercubic(), normalize);
-
-	return phi;
-}
-
-///////////////////////////////////////////////////////////////
-
-template <class FieldSetType, class=std::enable_if_t<is_vector3<typename FieldSetType::element_type>{}>>
-auto to_fourier(FieldSetType const & phi){
-
-	CALI_CXX_MARK_SCOPE("to_fourier(vector_field)");
-	
-	auto fphi = FieldSetType::reciprocal(phi.skeleton());	
-
-	auto &&    fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
-	auto const& phi_as_scalar = phi .hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
-	
-	to_fourier_array(phi.basis(), fphi.basis(), phi_as_scalar, fphi_as_scalar);
-
-	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
-			
-	return fphi;
-	
-}
-
-///////////////////////////////////////////////////////////////
-
-template <class FieldSetType, class=std::enable_if_t<is_vector3<typename FieldSetType::element_type>{}>>
-auto to_real(FieldSetType const & fphi, bool normalize = true){
-
-	CALI_CXX_MARK_SCOPE("to_real(vector_field_set)");
+	CALI_CXX_MARK_SCOPE("to_real");
 
 	auto phi = FieldSetType::reciprocal(fphi.skeleton());
 	
-	auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
-	auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
+	using type = typename FieldSetType::element_type;
+	
+	if constexpr (not is_vector3<type>::value){
 
-	to_real_array(fphi.basis(), phi.basis(), fphi_as_scalar, phi_as_scalar, normalize);
+		static_assert(std::is_same<type, complex>::value, "Only valid for complex");
+		
+		to_real_array(fphi.basis(), phi.basis(), fphi.hypercubic(), phi.hypercubic(), normalize);
+
+	} else {
+
+		static_assert(std::is_same<typename type::element_type, complex>::value, "Only valid for complex vector3");
+		
+		auto const& fphi_as_scalar = fphi.hypercubic().template reinterpret_array_cast<complex const>(3).rotated().rotated().rotated().flatted().rotated();
+		auto &&     phi_as_scalar  = phi .hypercubic().template reinterpret_array_cast<complex      >(3).rotated().rotated().rotated().flatted().rotated();
+		
+		to_real_array(fphi.basis(), phi.basis(), fphi_as_scalar, phi_as_scalar, normalize);
+
+	}
 	
 	return phi;
 }

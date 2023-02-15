@@ -34,11 +34,13 @@ namespace inq {
 namespace operations {
 
 
-template <template<typename, typename> class SetType, typename FactorType = double>
-void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<basis::fourier_space, complex>& laplff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <typename FieldSetType, typename FactorType = double>
+void laplacian_add(FieldSetType const & ff, FieldSetType & laplff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
-		
+
+	static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only implemented for fourier_space");
+			
 	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(), laplffcub = begin(laplff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, gradcoeff]
 					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
@@ -50,11 +52,13 @@ void laplacian_add(SetType<basis::fourier_space, complex> const & ff, SetType<ba
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <template<typename, typename> class SetType, typename FactorType = double>
-void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <typename FieldSetType, typename FactorType = double>
+void laplacian_in_place(FieldSetType & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
-		
+
+	static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only implemented for fourier_space");
+
 	gpu::run(ff.set_part().local_size(), ff.basis().local_sizes()[2], ff.basis().local_sizes()[1], ff.basis().local_sizes()[0],
 					 [point_op = ff.basis().point_op(),
 						ffcub = begin(ff.hypercubic()), factor, gradcoeff] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
@@ -65,30 +69,28 @@ void laplacian_in_place(SetType<basis::fourier_space, complex>& ff, FactorType f
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <template<typename, typename> class SetType, typename FactorType = double>
-SetType<basis::fourier_space, complex> laplacian(SetType<basis::fourier_space, complex> const & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+template <typename FieldSetType, typename FactorType = double>
+FieldSetType laplacian(FieldSetType const & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
-	
-	SetType<basis::fourier_space, complex> laplff(ff.skeleton());
-	
-	gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
-					 [point_op = ff.basis().point_op(), laplffcub = begin(laplff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, gradcoeff]
-					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+
+	if constexpr(std::is_same_v<typename FieldSetType::basis_type, basis::real_space>) {
+		return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff), factor));		
+	} else {
+		
+		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only implemented for real or fourier_space");
+		
+		FieldSetType laplff(ff.skeleton());
+		
+		gpu::run(laplff.set_part().local_size(), laplff.basis().local_sizes()[2], laplff.basis().local_sizes()[1], laplff.basis().local_sizes()[0],
+						 [point_op = ff.basis().point_op(), laplffcub = begin(laplff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, gradcoeff]
+						 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
 						 auto lapl = factor*(-point_op.g2(ix, iy, iz) + dot(gradcoeff, point_op.gvector(ix, iy, iz)));
 						 laplffcub[ix][iy][iz][ist] = lapl*ffcub[ix][iy][iz][ist];
-					 });
-
-	return laplff;
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-template <template<typename, typename> class SetType, typename FactorType = double>
-auto laplacian(SetType<basis::real_space, complex> const & ff, FactorType factor = 1.0){
-
-	return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff), factor));
+						 });
+		
+		return laplff;
+	}
 }
 
 }
