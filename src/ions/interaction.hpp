@@ -291,8 +291,7 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 																 double & energy, array_forces & forces){
 
 	assert(periodicity == 2 or periodicity == 3);
-	
-	
+
 	const double alpha = 0.21;
 
 	double ers = 0.0;
@@ -346,6 +345,9 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 		ewald_fourier_3d(natoms, cell, charge, total_charge, positions, alpha, efs, forces);
 	} else 	if(cell.periodicity() == 2){
 		ewald_fourier_2d(natoms, cell, charge, total_charge, positions, alpha, efs, forces);
+	} else {
+		efs = 0.0;
+		assert(false);
 	}
 
 	double epseudo = 0.0;

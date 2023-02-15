@@ -125,7 +125,7 @@ public:
 		return comm_size_;
 	}
 
-	auto block_size() const {
+	auto max_local_size() const {
 		return bsize_;
 	}
 	
@@ -134,7 +134,7 @@ public:
 	}
 
 	auto waste() const {
-		auto total_elements = block_size()*comm_size();
+		auto total_elements = bsize_*comm_size();
 		return (total_elements - size())/double(size());
 	}
 	
@@ -310,7 +310,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Check partition sizes 16 in 4"){
 		inq::parallel::partition part(16, 4, 0);
 
-		CHECK(part.block_size() == 4);
+		CHECK(part.max_local_size() == 4);
 		CHECK(part.local_size() == 4);
 		
 		CHECK(part.local_size(0) == 4);
@@ -334,7 +334,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Check partition sizes 16 in 5"){
 		inq::parallel::partition part(16, 5, 0);
 
-		CHECK(part.block_size() == 4);
+		CHECK(part.max_local_size() == 4);
 		CHECK(part.local_size() == 4);
 		
 		CHECK(part.local_size(0) == 4);
@@ -361,7 +361,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Check partition sizes 17 in 5"){
 		inq::parallel::partition part(17, 5, 0);
 
-		CHECK(part.block_size() == 4);
+		CHECK(part.max_local_size() == 4);
 		CHECK(part.local_size() == 4);
 		
 		CHECK(part.local_size(0) == 4);
