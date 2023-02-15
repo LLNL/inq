@@ -184,16 +184,16 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
   return remote_points;
 }
 
-template <class BasisType, class ElementType, class ArrayType, template <typename BT, typename T> typename FieldSetType>
-math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementType> const & source, ArrayType const & point_list){
+template <typename FieldSetType, typename ArrayType>
+math::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetType const & source, ArrayType const & point_list){
 
 	CALI_CXX_MARK_FUNCTION;
 
 	auto const nset = source.local_set_size();
 	auto const num_proc = source.basis().comm().size();
- 
+	
 	if(num_proc == 1){
-		math::array<ElementType, 2> remote_points({point_list.size(), nset});
+		math::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), nset});
 		
 		gpu::run(nset, point_list.size(),
 						 [rem = begin(remote_points), sou = begin(source.matrix()), poi = begin(point_list)] GPU_LAMBDA (auto ist, auto ip){
@@ -206,8 +206,8 @@ math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementTyp
 	remote_points_table rp(source.basis(), point_list);
 	
 	// send the value of the request points
-	math::array<ElementType, 2> value_points_requested({rp.total_requested, nset});
-	math::array<ElementType, 2> value_points_needed({rp.total_needed, nset});
+	math::array<typename FieldSetType::element_type, 2> value_points_requested({rp.total_requested, nset});
+	math::array<typename FieldSetType::element_type, 2> value_points_needed({rp.total_needed, nset});
 
 	gpu::run(nset, rp.total_requested,
 					 [par =  source.basis().part(), lreq = begin(rp.list_points_requested), vreq = begin(value_points_requested), sou = begin(source.matrix())] GPU_LAMBDA (auto iset, auto ip){
@@ -216,7 +216,7 @@ math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementTyp
 					 });
 	
 	MPI_Datatype mpi_type;
-	MPI_Type_contiguous(nset, boost::mpi3::detail::basic_datatype<ElementType>(), &mpi_type);
+	MPI_Type_contiguous(nset, boost::mpi3::detail::basic_datatype<typename FieldSetType::element_type>(), &mpi_type);
 	MPI_Type_commit(&mpi_type);
 	
 	MPI_Alltoallv(raw_pointer_cast(value_points_requested.data_elements()), raw_pointer_cast(rp.list_sizes_requested.data_elements()), raw_pointer_cast(rp.list_displs_requested.data_elements()), mpi_type,
@@ -225,7 +225,7 @@ math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementTyp
 	MPI_Type_free(&mpi_type);
 	
 	// Finally copy the values to the return array in the proper order
-	math::array<ElementType, 2> remote_points({point_list.size(), nset});
+	math::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), nset});
 
 	long ip = 0;
 	for(int iproc = 0; iproc < num_proc; iproc++){
@@ -240,12 +240,12 @@ math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementTyp
   return remote_points;
 }
 
-template <class BasisType, class ElementType, class ArrayType, template <typename BT, typename T> typename FieldSetType>
-math::array<ElementType, 2> get_remote_points(FieldSetType<BasisType, ElementType> const & source, ArrayType const & point_list, ArrayType const & state_list){
+template <typename FieldSetType, typename ArrayType>
+math::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetType const & source, ArrayType const & point_list, ArrayType const & state_list){
 
 	CALI_CXX_MARK_FUNCTION;
 
-	math::array<ElementType, 2> remote_points({point_list.size(), state_list.size()});
+	math::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), state_list.size()});
 	
 	if(source.full_comm().size() == 1) {
 		gpu::run(state_list.size(), point_list.size(),

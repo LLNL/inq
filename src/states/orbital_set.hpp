@@ -62,8 +62,8 @@ public:
 	}
 	
 	template <class OtherType>
-	static auto reciprocal(inq::utils::skeleton_wrapper<orbital_set<typename basis_type::reciprocal_space, OtherType>> const & skeleton){
-		return orbital_set<basis_type, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm());
+	static auto reciprocal(inq::utils::skeleton_wrapper<orbital_set<basis_type, OtherType>> const & skeleton){
+		return orbital_set<typename basis_type::reciprocal_space, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm());
 	}
 	
 	template <typename ScalarType>

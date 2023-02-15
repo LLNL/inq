@@ -31,6 +31,10 @@
 
 namespace inq {
 
+template <class Type, class Space> class vector3;
+template<class> struct is_vector3 : std::false_type{};
+template<class Type, class Space> struct is_vector3<vector3<Type, Space>> : std::true_type {};
+
 struct cartesian {
   using DualSpace = cartesian;
 };
@@ -158,23 +162,17 @@ public:
 	}
 
 	//scalar multiplication and division
-private:
-	template<class   > struct is_vector              : std::false_type{};
-	template<class TT> struct is_vector<vector3<TT, Space>> : std::true_type {};
-
-public:
-
-	template<class TypeA, class=std::enable_if_t<not is_vector<TypeA>{}>>
+	template<class TypeA, class=std::enable_if_t<not is_vector3<TypeA>{}>>
 	friend GPU_FUNCTION vector3<decltype(TypeA()*Type()), Space> operator*(TypeA const& scalar, vector3 const& vv){
 		return {scalar*vv[0], scalar*vv[1], scalar*vv[2]};
 	}
 		
-	template<class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
+	template<class TypeB, class=std::enable_if_t<not is_vector3<TypeB>{}> >
 	friend GPU_FUNCTION vector3<decltype(Type()*TypeB()), Space> operator*(vector3 const& vv, TypeB const& scalar){
 		return {vv[0]*scalar, vv[1]*scalar, vv[2]*scalar};
 	}
 		
-	template <class TypeB, class=std::enable_if_t<not is_vector<TypeB>{}> >
+	template <class TypeB, class=std::enable_if_t<not is_vector3<TypeB>{}> >
 	friend GPU_FUNCTION vector3<decltype(Type()/TypeB()), Space> operator/(const vector3 & vv, const TypeB & scalar){
 		return {vv[0]/scalar, vv[1]/scalar, vv[2]/scalar};
 	}
