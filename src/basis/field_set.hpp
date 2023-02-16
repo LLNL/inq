@@ -62,6 +62,7 @@ public:
 		 basis_(basis)
 	{
 		prefetch();
+		assert(part.comm_size() == basis::set_subcomm(full_comm_).size());
 		assert(basis_.part().comm_size() == basis::basis_subcomm(full_comm_).size());
 		assert(local_set_size() > 0);
 	}
