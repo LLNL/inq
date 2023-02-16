@@ -121,6 +121,10 @@ public:
 		return start() <= index and index < end();
 	}
 
+	auto contains(long index, int part) const {
+		return start(part) <= index and index < end(part);
+	}
+	
 	constexpr auto local_to_global(long local_i) const {
 		return global_index(start_ + local_i);
 	}
@@ -241,6 +245,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		for(int ii = 0; ii < part.size(); ii++){
 			CHECK(apart.contains(ii) == part.contains(ii));
+			for(int ipart = 0; ipart < comm.size(); ipart++) CHECK(apart.contains(ii, ipart) == part.contains(ii, ipart));
 		}
 			
 	}
