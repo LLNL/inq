@@ -22,11 +22,8 @@
 */
 
 #include <parallel/global_index.hpp>
-#include <utils/raw_pointer_cast.hpp>
-
 #include <parallel/communicator.hpp>
-#include <mpi3/environment.hpp>
-#include <mpi3/detail/datatype.hpp>
+#include <parallel/partition.hpp>
 
 #include <cassert>
 #include <array>
@@ -73,6 +70,19 @@ public:
 			if(ipart < (unsigned) comm.rank()) start_ += lsizes_[ipart];
 		}
 		end_ = start_ + local_size_;
+	}
+	
+	arbitrary_partition(parallel::partition const & part):
+		local_size_(part.local_size()),
+		lsizes_(part.comm_size()),
+		comm_size_(part.comm_size())
+	{
+		for(unsigned ipart = 0; ipart < lsizes_.size(); ipart++) lsizes_[ipart] = part.local_size(ipart);
+
+		size_ = part.size();
+		max_local_size_ = part.max_local_size();
+		start_ = part.start();
+		end_ = part.end();
 	}
 	
 	auto size() const {
@@ -212,5 +222,27 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     }
   }
 
+	SECTION("Construct from parallel:partition"){
+
+		inq::parallel::partition part(1384, comm);
+
+		auto apart = parallel::arbitrary_partition(part);
+
+		CHECK(apart.size() == part.size());
+		CHECK(apart.local_size() == part.local_size());
+		CHECK(apart.start() == part.start());
+		CHECK(apart.end() == part.end());
+
+		for(int ipart = 0; ipart < comm.size(); ipart++){
+			CHECK(apart.local_size(ipart) == part.local_size(ipart));
+			CHECK(apart.start(ipart) == part.start(ipart));
+			CHECK(apart.end(ipart) == part.end(ipart));
+		}
+
+		for(int ii = 0; ii < part.size(); ii++){
+			CHECK(apart.contains(ii) == part.contains(ii));
+		}
+			
+	}
 }
 #endif
