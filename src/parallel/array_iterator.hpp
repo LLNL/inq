@@ -33,10 +33,10 @@
 namespace inq{
 namespace parallel {
 
-template <typename ArrayType>
+template <typename ArrayType, typename PartitionType>
 class array_iterator {
 
-  partition part_;
+  PartitionType part_;
   mutable parallel::cartesian_communicator<1> comm_;
   ArrayType arr_;
   long istep_;
@@ -46,7 +46,7 @@ class array_iterator {
   
 public:
 
-  array_iterator(partition part, parallel::cartesian_communicator<1> comm, ArrayType const & arr):
+  array_iterator(PartitionType part, parallel::cartesian_communicator<1> comm, ArrayType const & arr):
     part_(std::move(part)),
     comm_(std::move(comm)),
     arr_(part.max_local_size()),

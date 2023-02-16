@@ -53,17 +53,21 @@ public:
 	typedef math::array<ElementType, 2> internal_array_type;
 	typedef ElementType element_type;
 
-	field_set(const basis_type & basis, const int num_vectors, parallel::cartesian_communicator<2> comm, int factor = 1)
+	field_set(const basis_type & basis, PartitionType && part, parallel::cartesian_communicator<2> comm)
 		:full_comm_(std::move(comm)),
 		 set_comm_(basis::set_subcomm(full_comm_)),
-		 set_part_(factor*parallel::partition(num_vectors, set_comm_)),
+		 set_part_(part),
 		 matrix_({basis.part().local_size(), set_part_.local_size()}),
-		 num_vectors_(factor*num_vectors),
+		 num_vectors_(set_part_.size()),
 		 basis_(basis)
 	{
 		prefetch();
 		assert(basis_.part().comm_size() == basis::basis_subcomm(full_comm_).size());
 		assert(local_set_size() > 0);
+	}
+
+	field_set(const basis_type & basis, const int num_vectors, parallel::cartesian_communicator<2> comm)
+		:field_set(basis, parallel::partition(num_vectors, set_subcomm(comm)), comm){
 	}
 
 	//when no communicator is given, use the basis communicator
@@ -72,8 +76,8 @@ public:
 	{
 	}
 
-	template <class any_type>
-	field_set(inq::utils::skeleton_wrapper<field_set<BasisType, any_type>> const & skeleton)
+	template <class AnyType, class AnyPartType>
+	field_set(inq::utils::skeleton_wrapper<field_set<BasisType, AnyType, AnyPartType>> const & skeleton)
 		:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
 	}
 		
@@ -108,12 +112,12 @@ public:
 	field_set & operator=(field_set && coeff) = default;
 
 	auto skeleton() const {
-		return inq::utils::skeleton_wrapper<field_set<BasisType, ElementType>>(*this);
+		return inq::utils::skeleton_wrapper<field_set<BasisType, ElementType, PartitionType>>(*this);
 	}
 
-	template <class OtherType>
-	static auto reciprocal(inq::utils::skeleton_wrapper<field_set<basis_type, OtherType>> const & skeleton){
-		return field_set<typename basis_type::reciprocal_space, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
+	template <class OtherType, class AnyPartType>
+	static auto reciprocal(inq::utils::skeleton_wrapper<field_set<basis_type, OtherType, AnyPartType>> const & skeleton){
+		return field_set<typename basis_type::reciprocal_space, element_type, PartitionType>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
 	}
 	
 	internal_array_type & matrix() {
@@ -186,11 +190,11 @@ public:
 		internal_array_type matrix_;
 		int istep_;
 		mutable parallel::cartesian_communicator<1> set_comm_;
-		parallel::partition set_part_;
-
+		PartitionType set_part_;
+		
 	public:
 			
-		parallel_set_iterator(long basis_local_size, parallel::partition set_part, parallel::cartesian_communicator<1> set_comm, internal_array_type const & data):
+		parallel_set_iterator(long basis_local_size, PartitionType set_part, parallel::cartesian_communicator<1> set_comm, internal_array_type const & data):
 			matrix_({basis_local_size, set_part.max_local_size()}),
 			istep_(0),
 			set_comm_(std::move(set_comm)),

@@ -28,7 +28,6 @@
 #include <parallel/communicator.hpp>
 #include <mpi3/detail/datatype.hpp>
 
-#include <parallel/partition.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -54,8 +53,8 @@ auto numstr(long num){
 	return std::string(numcstr);				
 }
 
-template <class ArrayType, class CommType>
-void save(std::string const & dirname, CommType & comm, parallel::partition const & part, ArrayType const & array){
+template <class ArrayType, class PartType, class CommType>
+void save(std::string const & dirname, CommType & comm, PartType const & part, ArrayType const & array){
 
 	CALI_CXX_MARK_SCOPE("save(array)");
 
@@ -94,8 +93,8 @@ void save(std::string const & dirname, CommType & comm, parallel::partition cons
 	
 }
 
-template <class ArrayType, class CommType>
-auto load(std::string const & dirname, CommType & comm, parallel::partition const & part, ArrayType & array){
+template <class ArrayType, class PartType, class CommType>
+auto load(std::string const & dirname, CommType & comm, PartType const & part, ArrayType & array){
 
 	CALI_CXX_MARK_SCOPE("load(array)");
 
