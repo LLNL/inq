@@ -36,7 +36,7 @@ public:
 	using kpoint_type = vector3<double, covariant>;
 	
 	orbital_set(Basis const & basis, int const num_vectors, int const spinor_dim, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
-		:fields_(basis, num_vectors, comm, spinor_dim),
+		:fields_(basis, spinor_dim*parallel::partition(num_vectors, basis::set_subcomm(comm)), comm),
 		 spinor_dim_(spinor_dim),
 		 kpoint_(kpoint),
 		 spin_index_(spin_index),
