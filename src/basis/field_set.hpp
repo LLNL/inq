@@ -76,8 +76,8 @@ public:
 	{
 	}
 
-	template <class any_type>
-	field_set(inq::utils::skeleton_wrapper<field_set<BasisType, any_type>> const & skeleton)
+	template <class AnyType, class AnyPartType>
+	field_set(inq::utils::skeleton_wrapper<field_set<BasisType, AnyType, AnyPartType>> const & skeleton)
 		:field_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.full_comm()){
 	}
 		
@@ -112,12 +112,12 @@ public:
 	field_set & operator=(field_set && coeff) = default;
 
 	auto skeleton() const {
-		return inq::utils::skeleton_wrapper<field_set<BasisType, ElementType>>(*this);
+		return inq::utils::skeleton_wrapper<field_set<BasisType, ElementType, PartitionType>>(*this);
 	}
 
-	template <class OtherType>
-	static auto reciprocal(inq::utils::skeleton_wrapper<field_set<basis_type, OtherType>> const & skeleton){
-		return field_set<typename basis_type::reciprocal_space, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
+	template <class OtherType, class AnyPartType>
+	static auto reciprocal(inq::utils::skeleton_wrapper<field_set<basis_type, OtherType, AnyPartType>> const & skeleton){
+		return field_set<typename basis_type::reciprocal_space, element_type, PartitionType>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
 	}
 	
 	internal_array_type & matrix() {
