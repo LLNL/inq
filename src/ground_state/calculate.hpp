@@ -23,6 +23,7 @@
 #include <operations/preconditioner.hpp>
 #include <operations/integral.hpp>
 #include <observables/density.hpp>
+#include <parallel/gather.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/pulay.hpp>
 #include <mixers/broyden.hpp>
@@ -175,9 +176,9 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 				auto comm = electrons.lot()[ilot].set_comm();
 				
-				auto all_eigenvalues = electrons.lot()[ilot].set_part().gather(+ecalc.eigenvalues_[ilot],comm, 0);
-				auto all_occupations = electrons.lot()[ilot].set_part().gather(+electrons.occupations()[ilot], comm, 0);
-				auto all_normres = electrons.lot()[ilot].set_part().gather(+ecalc.normres_[ilot], comm, 0);			
+				auto all_eigenvalues = parallel::gather(+ecalc.eigenvalues_[ilot], electrons.lot()[ilot].set_part(), comm, 0);
+				auto all_occupations = parallel::gather(+electrons.occupations()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
+				auto all_normres = parallel::gather(+ecalc.normres_[ilot], electrons.lot()[ilot].set_part(), comm, 0);
 				
 				if(solver.verbose_output() and console){
 					for(int istate = 0; istate < electrons.states().num_states(); istate++){
