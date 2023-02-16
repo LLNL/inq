@@ -49,8 +49,9 @@ public:
 	auto local_size() const {
 		return local_size_;
 	}
-	
-	arbitrary_partition(long const local_size, parallel::communicator & comm):
+
+	template <typename CommType>
+	arbitrary_partition(long const local_size, CommType comm):
 		local_size_(local_size),
 		lsizes_(comm.size()),
 		comm_size_(comm.size())
