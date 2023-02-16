@@ -33,11 +33,11 @@
 namespace inq{
 namespace parallel {
 
-template <typename ArrayType>
+template <typename ArrayType, typename PartXType, typename PartYType>
 class array_iterator_2d {
 
-  partition partx_;
-  partition party_;  
+  PartXType partx_;
+  PartYType party_;  
   mutable parallel::cartesian_communicator<2> comm_;
   ArrayType arr_;
   int step_;
@@ -51,7 +51,7 @@ class array_iterator_2d {
   
 public:
 
-  array_iterator_2d(partition partx, partition party, parallel::cartesian_communicator<2> comm, ArrayType const & arr):
+  array_iterator_2d(PartXType partx, PartYType party, parallel::cartesian_communicator<2> comm, ArrayType const & arr):
     partx_(std::move(partx)),
     party_(std::move(party)),
     comm_(std::move(comm)),
