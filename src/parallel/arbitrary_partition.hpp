@@ -38,6 +38,7 @@ class arbitrary_partition {
 
 	long local_size_;
 	std::vector<long> lsizes_;
+	std::vector<long> starts;
 	long size_;
 	long max_local_size_;
 	long comm_size_;
@@ -82,8 +83,20 @@ public:
 		return start_;
 	}
 
+	auto start(int part) const {
+		long val = 0;
+		for(int ipart = 0; ipart < part; ipart++) val += lsizes_[ipart];
+		return val;
+	}
+	
 	constexpr auto end() const {
 		return end_;
+	}
+
+	auto end(int part) const {
+		long val = 0;
+		for(int ipart = 0; ipart <= part; ipart++) val += lsizes_[ipart];
+		return val;
 	}
 	
 	auto local_size(int part) const {
@@ -161,6 +174,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     comm.all_reduce_in_place_n(&calculated_size, 1, std::plus<>{});
     
     CHECK(total_size == calculated_size);
+
+		CHECK(part.start() == part.start(comm.rank()));
+		CHECK(part.end() == part.end(comm.rank()));
 		
   }
 
