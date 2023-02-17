@@ -10,6 +10,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "")
 
+Include(FetchContent)
+
 add_library(inq INTERFACE)
 target_include_directories(inq
  	INTERFACE
@@ -258,7 +260,6 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 message(STATUS "Downloading Catch2 v3p3")
-Include(FetchContent)
 FetchContent_Declare(
 	Catch2
 	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
