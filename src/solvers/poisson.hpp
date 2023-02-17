@@ -36,6 +36,8 @@ namespace solvers {
 
 class poisson {
 
+public:
+	
 	template <typename FieldSetType>
 	void poisson_apply_kernel(FieldSetType & density) const {
 
@@ -58,10 +60,13 @@ class poisson {
 							 
 						 });
 	}
-			
-public:
 
-	basis::field<basis::real_space, complex> poisson_solve_periodic(basis::field<basis::real_space, complex> const & density) const {
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+private:
+	
+	auto poisson_solve_periodic(basis::field<basis::real_space, complex> const & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -70,27 +75,12 @@ public:
 
 		auto potential_fs = operations::space::to_fourier(density);
 			
-		const double scal = (-4.0*M_PI)/fourier_basis.size();
-
-		{
-			CALI_CXX_MARK_SCOPE("poisson_finite_kernel_periodic");
-			
-			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), scal] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 auto g2 = point_op.g2(ix, iy, iz);
-								 
-								 if(point_op.g_is_zero(ix, iy, iz)){
-									 pfs[ix][iy][iz] = complex(0.0, 0.0);
-								 } else {
-									 pfs[ix][iy][iz] *= -scal/g2;
-								 }
-								 
-							 });
-		}
+		poisson_apply_kernel(potential_fs);
 		
-		return operations::space::to_real(potential_fs,  /*normalize = */ false);
+		return operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	void poisson_solve_in_place_periodic(basis::field_set<basis::real_space, complex> & density) const {
 
@@ -105,9 +95,6 @@ public:
 		
 		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
-
-
-private:
 
 	GPU_FUNCTION auto static poisson_slab_cutoff(vector3<double, cartesian> gg, double const & rc){
 		auto gpar = hypot(gg[0], gg[1]);
