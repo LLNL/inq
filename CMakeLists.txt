@@ -10,15 +10,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "")
 
-message(STATUS "Downloading Catch2 v3p3")
 Include(FetchContent)
-FetchContent_Declare(
-	Catch2
-	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-	GIT_TAG        7cf2f88e50f0d1de324489c31db0314188423b6d
-	)
-FetchContent_MakeAvailable(Catch2)
-include_directories(${catch2_SOURCE_DIR}/src)
 
 add_library(inq INTERFACE)
 target_include_directories(inq
@@ -267,10 +259,17 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   return()
 endif()
 
+message(STATUS "Downloading Catch2 v3p3")
+FetchContent_Declare(
+	Catch2
+	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+	GIT_TAG        7cf2f88e50f0d1de324489c31db0314188423b6d
+	)
+FetchContent_MakeAvailable(Catch2)
+include_directories(${catch2_SOURCE_DIR}/src)
+
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(speed_tests)
 add_subdirectory(examples)
 add_subdirectory(benchmarks)
-
-
