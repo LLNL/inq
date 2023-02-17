@@ -37,27 +37,31 @@ namespace solvers {
 class poisson {
 
 public:
-	
-	template <typename FieldSetType>
-	void poisson_apply_kernel(FieldSetType & density) const {
 
-		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only makes sense in real_space");
+	struct poisson_kernel_periodic {
+		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
+			auto g2 = norm(gg);
+			if(g2 < 1e-15) return 0.0;
+			return 1.0/g2;
+		}
+	};
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	template <typename KernelType, typename FieldSetType>
+	void poisson_apply_kernel(KernelType const kernel, FieldSetType & density) const {
+
+		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only makes sense in fourier_space");
 		
 		CALI_CXX_MARK_FUNCTION;
 		
 		const double scal = (-4.0*M_PI)/density.basis().size();
 		
 		gpu::run(density.basis().local_sizes()[2], density.basis().local_sizes()[1], density.basis().local_sizes()[0],
-						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size(), kernel] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 
-							 auto g2 = point_op.g2(ix, iy, iz);
-								 
-							 if(point_op.g_is_zero(ix, iy, iz)){
-								 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] = complex(0.0, 0.0);
-							 } else {
-								 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] *= -scal/g2;
-							 }
-							 
+							 auto kerg = kernel(point_op.gvector_cartesian(ix, iy, iz));
+							 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] *= -scal*kerg;
 						 });
 	}
 
@@ -75,7 +79,7 @@ private:
 
 		auto potential_fs = operations::space::to_fourier(density);
 			
-		poisson_apply_kernel(potential_fs);
+		poisson_apply_kernel(poisson_kernel_periodic{}, potential_fs);
 		
 		return operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
@@ -91,7 +95,7 @@ private:
 
 		auto potential_fs = operations::space::to_fourier(std::move(density));
 
-		poisson_apply_kernel(potential_fs);
+		poisson_apply_kernel(poisson_kernel_periodic{}, potential_fs);
 		
 		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
