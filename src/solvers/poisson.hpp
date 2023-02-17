@@ -38,114 +38,98 @@ class poisson {
 
 public:
 
-	basis::field<basis::real_space, complex> poisson_solve_periodic(basis::field<basis::real_space, complex> const & density) const {
-
-		CALI_CXX_MARK_FUNCTION;
-		
-		const basis::real_space & real_space = density.basis();
-		basis::fourier_space fourier_basis(real_space);
-
-		auto potential_fs = operations::space::to_fourier(density);
-			
-		const double scal = (-4.0*M_PI)/fourier_basis.size();
-
-		{
-			CALI_CXX_MARK_SCOPE("poisson_finite_kernel_periodic");
-			
-			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), scal] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 auto g2 = point_op.g2(ix, iy, iz);
-								 
-								 if(point_op.g_is_zero(ix, iy, iz)){
-									 pfs[ix][iy][iz] = complex(0.0, 0.0);
-								 } else {
-									 pfs[ix][iy][iz] *= -scal/g2;
-								 }
-								 
-							 });
+	struct poisson_kernel_3d {
+		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
+			auto g2 = norm(gg);
+			if(g2 < 1e-15) return 0.0;
+			return -1.0/g2;
 		}
+	};
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	struct poisson_kernel_2d {
+		double rc_;
 		
-		return operations::space::to_real(potential_fs,  /*normalize = */ false);
-	}
+		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
+			auto gpar = hypot(gg[0], gg[1]);
+			auto gz = fabs(gg[2]);
+			auto g2 = norm(gg);
+			
+			if(g2 < 1e-15) return 0.5*rc_*rc_;
+			if(gpar < 1e-12) return -(1.0 - cos(gz*rc_) - gz*rc_*sin(gz*rc_))/g2;
+			return -(1.0 + exp(-gpar*rc_)*(gz*sin(gz*rc_)/gpar - cos(gz*rc_)))/g2;
+		}
+	};
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	struct poisson_kernel_0d {
+		double rc_;
+		
+		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
+			auto g2 = norm(gg);
+
+			// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
+			if(g2 < 1e-15) return -0.5*rc_*rc_;
+			return -(1.0 - cos(rc_*sqrt(g2)))/g2;
+		}
+	};
 	
-	void poisson_solve_in_place_periodic(basis::field_set<basis::real_space, complex> & density) const {
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	template <typename KernelType, typename FieldSetType>
+	void poisson_apply_kernel(KernelType const kernel, FieldSetType & density) const {
 
+		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only makes sense in fourier_space");
+		
 		CALI_CXX_MARK_FUNCTION;
 		
-		const basis::real_space & real_space = density.basis();
-		basis::fourier_space fourier_basis(real_space);
-
-		auto potential_fs = operations::space::to_fourier(std::move(density));
-			
-		const double scal = (-4.0*M_PI)/fourier_basis.size();
-
-		{
-			CALI_CXX_MARK_SCOPE("poisson_finite_kernel_periodic");
-			
-			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.hypercubic()), scal, nst = density.local_set_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 auto g2 = point_op.g2(ix, iy, iz);
-								 
-								 if(point_op.g_is_zero(ix, iy, iz)){
-									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] = complex(0.0, 0.0);
-								 } else {
-									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= -scal/g2;
-								 }
-								 
-							 });
-		}
+		const double scal = (-4.0*M_PI)/density.basis().size();
 		
-		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+		gpu::run(density.basis().local_sizes()[2], density.basis().local_sizes()[1], density.basis().local_sizes()[0],
+						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size(), kernel] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 
+							 auto kerg = kernel(point_op.gvector_cartesian(ix, iy, iz));
+							 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] *= scal*kerg;
+						 });
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 private:
-
-	GPU_FUNCTION auto static poisson_slab_cutoff(vector3<double, cartesian> gg, double const & rc){
-		auto gpar = hypot(gg[0], gg[1]);
-		auto gz = fabs(gg[2]);
-		
-		if(gpar < 1e-12){
-			return 1.0 - cos(gz*rc) - gz*rc*sin(gz*rc);
-		} else {
-			return 1.0 + exp(-gpar*rc)*(gz*sin(gz*rc)/gpar - cos(gz*rc));
-		}
-	}
 	
-public:
+	auto poisson_solve_3d(basis::field<basis::real_space, complex> const & density) const {
+
+		CALI_CXX_MARK_FUNCTION;
+		
+		auto potential_fs = operations::space::to_fourier(density);
+		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs);
+		return operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density) const {
+
+		CALI_CXX_MARK_FUNCTION;
+		
+		auto potential_fs = operations::space::to_fourier(std::move(density));
+		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs);
+		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	basis::field<basis::real_space, complex> poisson_solve_slab(basis::field<basis::real_space, complex> const & density) const {
+	basis::field<basis::real_space, complex> poisson_solve_2d(basis::field<basis::real_space, complex> const & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge({1, 1, 2}));
 		auto potential_fs = operations::space::to_fourier(potential2x);
-			
-		auto fourier_basis = potential_fs.basis();
 
-		const auto scal = (-4.0*M_PI)/fourier_basis.size();
 		const auto cutoff_radius = density.basis().rlength()[2];
-
-		{
-			CALI_CXX_MARK_SCOPE("poisson_solve_kernel_slab");
-
-			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 if(point_op.g_is_zero(ix, iy, iz)){
-									 pfs[ix][iy][iz] *= scal*cutoff_radius*cutoff_radius/2.0;
-									 return;
-								 }
-
-								 auto gg = point_op.gvector_cartesian(ix, iy, iz);
-								 auto g2 = point_op.g2(ix, iy, iz);
-								 pfs[ix][iy][iz] *= -scal*poisson_slab_cutoff(gg, cutoff_radius)/g2;
-							 });
-		}
+		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs);
 
 		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
 		auto potential = operations::transfer::shrink(potential2x, density.basis());
@@ -153,37 +137,51 @@ public:
 		return potential;
 	}
 
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_slab(basis::field_set<basis::real_space, complex> & density) const {
+	void poisson_solve_in_place_2d(basis::field_set<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge({1, 1, 2}));
 		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
 			
-		auto fourier_basis = potential_fs.basis();
-
-		const auto scal = (-4.0*M_PI)/fourier_basis.size();
 		const auto cutoff_radius = density.basis().rlength()[2];
+		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs);
+		
+		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+		density = operations::transfer::shrink(potential2x, density.basis());
+	}
 
-		{
-			CALI_CXX_MARK_SCOPE("poisson_in_place_kernel_slab");
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	basis::field<basis::real_space, complex> poisson_solve_0d(basis::field<basis::real_space, complex> const & density) const {
 
-			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.hypercubic()), nst = density.local_set_size(), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 if(point_op.g_is_zero(ix, iy, iz)){
-									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= scal*cutoff_radius*cutoff_radius/2.0;
-									 return;
-								 }
+		CALI_CXX_MARK_FUNCTION;
 
-								 auto gg = point_op.gvector_cartesian(ix, iy, iz);								 
-								 auto g2 = point_op.g2(ix, iy, iz);
-								 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= -scal*poisson_slab_cutoff(gg, cutoff_radius)/g2;
-							 });
-		}
+		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
+		auto potential_fs = operations::space::to_fourier(potential2x);
+			
+		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
+		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs);
+		
+		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
+		auto potential = operations::transfer::shrink(potential2x, density.basis());
+
+		return potential;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	void poisson_solve_in_place_0d(basis::field_set<basis::real_space, complex> & density) const {
+
+		CALI_CXX_MARK_FUNCTION;
+
+		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
+		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
+			
+		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
+		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs);
 
 		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
@@ -191,99 +189,37 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	basis::field<basis::real_space, complex> poisson_solve_finite(basis::field<basis::real_space, complex> const & density) const {
-
-		CALI_CXX_MARK_FUNCTION;
-
-		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
-		auto potential_fs = operations::space::to_fourier(potential2x);
-			
-		auto fourier_basis = potential_fs.basis();
-
-		const auto scal = (-4.0*M_PI)/fourier_basis.size();
-		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
-
-		{
-			CALI_CXX_MARK_SCOPE("poisson_finite_kernel_finite");
-
-			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.cubic()), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 // this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
-								 if(point_op.g_is_zero(ix, iy, iz)){
-									 pfs[ix][iy][iz] *= -scal*cutoff_radius*cutoff_radius/2.0;
-									 return;
-								 }
-								 
-								 auto g2 = point_op.g2(ix, iy, iz);
-								 pfs[ix][iy][iz] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
-							 });
-		}
-
-		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
-		auto potential = operations::transfer::shrink(potential2x, density.basis());
-
-		return potential;
-	}
-	
-	void poisson_solve_in_place_finite(basis::field_set<basis::real_space, complex> & density) const {
-
-		CALI_CXX_MARK_FUNCTION;
-
-		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
-		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
-			
-		auto fourier_basis = potential_fs.basis();
-
-		const auto scal = (-4.0*M_PI)/fourier_basis.size();
-		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
-
-		{
-			CALI_CXX_MARK_SCOPE("poisson_in_place_kernel_finite");
-
-			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.hypercubic()), nst = density.local_set_size(), scal, cutoff_radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 // this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
-								 if(point_op.g_is_zero(ix, iy, iz)){
-									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= -scal*cutoff_radius*cutoff_radius/2.0;
-									 return;
-								 }
-								 
-								 auto g2 = point_op.g2(ix, iy, iz);
-								 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= -scal*(1.0 - cos(cutoff_radius*sqrt(g2)))/g2;
-							 });
-		}
-
-		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
-		density = operations::transfer::shrink(potential2x, density.basis());
-	}
+public:
 	
 	auto operator()(const basis::field<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
 		if(density.basis().periodicity() == 3){
-			return poisson_solve_periodic(density);
+			return poisson_solve_3d(density);
 		} else if(density.basis().periodicity() == 2){
-			return poisson_solve_slab(density);
+			return poisson_solve_2d(density);
 		} else {
-			return poisson_solve_finite(density);
+			return poisson_solve_0d(density);
 		}
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	void in_place(basis::field_set<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
 		if(density.basis().periodicity() == 3){
-			poisson_solve_in_place_periodic(density);
+			poisson_solve_in_place_3d(density);
 		} else if(density.basis().periodicity() == 2){
-			return poisson_solve_in_place_slab(density);
+			return poisson_solve_in_place_2d(density);
 		} else {
-			poisson_solve_in_place_finite(density);
+			poisson_solve_in_place_0d(density);
 		}
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	basis::field<basis::real_space, double> operator()(const basis::field<basis::real_space, double> & density) const {
 
