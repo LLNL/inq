@@ -66,12 +66,21 @@ public:
     auto prev_proc = comm_.rank() - 1;
     if(prev_proc == -1) prev_proc = comm_.size() - 1;
 
-    auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
-
-    if(istep_ < comm_.size() - 1){
-      MPI_Sendrecv_replace(raw_pointer_cast(arr_.data_elements()), arr_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, comm_.get(), MPI_STATUS_IGNORE);
-    }
-    
+		if constexpr(not is_vector3<typename ArrayType::element_type>::value){
+			auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
+			
+			if(istep_ < comm_.size() - 1){
+				MPI_Sendrecv_replace(raw_pointer_cast(arr_.data_elements()), arr_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, comm_.get(), MPI_STATUS_IGNORE);
+			}
+		} else {
+			using base_type = typename ArrayType::element_type::element_type;
+			auto mpi_type = boost::mpi3::detail::basic_datatype<base_type>();
+			
+			if(istep_ < comm_.size() - 1){
+				MPI_Sendrecv_replace((base_type *) raw_pointer_cast(arr_.data_elements()), 3*arr_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, comm_.get(), MPI_STATUS_IGNORE);
+			}
+		}
+			
     istep_++;
   }
 
@@ -118,22 +127,47 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
   parallel::partition part(size, comm);
 
-  math::array<double, 1> arr(part.local_size(), double(comm.rank() + 1.0));
+	SECTION("double"){
+		
+		math::array<double, 1> arr(part.local_size(), double(comm.rank() + 1.0));
+		
+		auto ipart = comm.rank();
+		for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){
+			
+			CHECK(ipart == pai.ipart());
+			CHECK(pai->size() == part.local_size(ipart)); 
+			
+			for(int ii = 0; ii < pai->size(); ii++){
+				CHECK((*pai)[ii] == ipart + 1.0);
+			}
+			
+			ipart++;
+			if(ipart == comm.size()) ipart = 0;
+		}
 
-  auto ipart = comm.rank();
-  for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){
+	}
 
-    CHECK(ipart == pai.ipart());
-    CHECK(pai->size() == part.local_size(ipart)); 
+	SECTION("vector3"){
+		
+		math::array<vector3<double>, 1> arr(part.local_size(), {comm.rank() + 1.0, comm.rank()*2.0, comm.rank() - 5.0});
+		
+		auto ipart = comm.rank();
+		for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){
+			
+			CHECK(ipart == pai.ipart());
+			CHECK(pai->size() == part.local_size(ipart)); 
+			
+			for(int ii = 0; ii < pai->size(); ii++){
+				CHECK((*pai)[ii][0] == ipart + 1.0);
+				CHECK((*pai)[ii][1] == ipart*2.0);
+				CHECK((*pai)[ii][2] == ipart - 5.0);
+			}
+			
+			ipart++;
+			if(ipart == comm.size()) ipart = 0;
+		}
 
-    for(int ii = 0; ii < pai->size(); ii++){
-      CHECK((*pai)[ii] == ipart + 1.0);
-    }
+	}
     
-    ipart++;
-    if(ipart == comm.size()) ipart = 0;
-  }
-  
-  
 }
 #endif
