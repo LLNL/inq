@@ -38,7 +38,7 @@ class poisson {
 
 public:
 
-	struct poisson_kernel_periodic {
+	struct poisson_kernel_3d {
 		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
 			auto g2 = norm(gg);
 			if(g2 < 1e-15) return 0.0;
@@ -48,7 +48,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	struct poisson_kernel_slab {
+	struct poisson_kernel_2d {
 		double rc_;
 		
 		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
@@ -64,7 +64,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	struct poisson_kernel_finite {
+	struct poisson_kernel_0d {
 		double rc_;
 		
 		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
@@ -99,37 +99,29 @@ public:
 
 private:
 	
-	auto poisson_solve_periodic(basis::field<basis::real_space, complex> const & density) const {
+	auto poisson_solve_3d(basis::field<basis::real_space, complex> const & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 		
-		const basis::real_space & real_space = density.basis();
-
 		auto potential_fs = operations::space::to_fourier(density);
-			
-		poisson_apply_kernel(poisson_kernel_periodic{}, potential_fs);
-		
+		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs);
 		return operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_periodic(basis::field_set<basis::real_space, complex> & density) const {
+	void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 		
-		const basis::real_space & real_space = density.basis();
-
 		auto potential_fs = operations::space::to_fourier(std::move(density));
-
-		poisson_apply_kernel(poisson_kernel_periodic{}, potential_fs);
-		
+		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs);
 		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	basis::field<basis::real_space, complex> poisson_solve_slab(basis::field<basis::real_space, complex> const & density) const {
+	basis::field<basis::real_space, complex> poisson_solve_2d(basis::field<basis::real_space, complex> const & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -137,11 +129,9 @@ private:
 		auto potential_fs = operations::space::to_fourier(potential2x);
 
 		const auto cutoff_radius = density.basis().rlength()[2];
-
-		poisson_apply_kernel(poisson_kernel_slab{cutoff_radius}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs);
 
 		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
-
 		auto potential = operations::transfer::shrink(potential2x, density.basis());
 
 		return potential;
@@ -149,7 +139,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_slab(basis::field_set<basis::real_space, complex> & density) const {
+	void poisson_solve_in_place_2d(basis::field_set<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -157,7 +147,7 @@ private:
 		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
 			
 		const auto cutoff_radius = density.basis().rlength()[2];
-		poisson_apply_kernel(poisson_kernel_slab{cutoff_radius}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs);
 		
 		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
@@ -165,7 +155,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	basis::field<basis::real_space, complex> poisson_solve_finite(basis::field<basis::real_space, complex> const & density) const {
+	basis::field<basis::real_space, complex> poisson_solve_0d(basis::field<basis::real_space, complex> const & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -173,7 +163,7 @@ private:
 		auto potential_fs = operations::space::to_fourier(potential2x);
 			
 		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
-		poisson_apply_kernel(poisson_kernel_finite{cutoff_radius}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs);
 		
 		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
 		auto potential = operations::transfer::shrink(potential2x, density.basis());
@@ -183,7 +173,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_finite(basis::field_set<basis::real_space, complex> & density) const {
+	void poisson_solve_in_place_0d(basis::field_set<basis::real_space, complex> & density) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -191,7 +181,7 @@ private:
 		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
 			
 		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
-		poisson_apply_kernel(poisson_kernel_finite{cutoff_radius}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs);
 
 		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
@@ -206,11 +196,11 @@ public:
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
 		if(density.basis().periodicity() == 3){
-			return poisson_solve_periodic(density);
+			return poisson_solve_3d(density);
 		} else if(density.basis().periodicity() == 2){
-			return poisson_solve_slab(density);
+			return poisson_solve_2d(density);
 		} else {
-			return poisson_solve_finite(density);
+			return poisson_solve_0d(density);
 		}
 	}
 
@@ -221,11 +211,11 @@ public:
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
 		if(density.basis().periodicity() == 3){
-			poisson_solve_in_place_periodic(density);
+			poisson_solve_in_place_3d(density);
 		} else if(density.basis().periodicity() == 2){
-			return poisson_solve_in_place_slab(density);
+			return poisson_solve_in_place_2d(density);
 		} else {
-			poisson_solve_in_place_finite(density);
+			poisson_solve_in_place_0d(density);
 		}
 	}
 
