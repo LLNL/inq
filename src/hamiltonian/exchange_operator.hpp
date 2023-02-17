@@ -25,6 +25,7 @@
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <operations/rotate.hpp>
+#include <parallel/arbitrary_partition.hpp>
 #include <parallel/array_iterator.hpp>
 #include <solvers/cholesky.hpp>
 #include <solvers/poisson.hpp>
@@ -51,27 +52,38 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
-			assert(el.lot_size() == 1);			
+			auto part = parallel::arbitrary_partition(el.max_local_size()*el.lot_size(), el.states_comm_);
 
-			auto & phi = el.lot()[0];
-
-			if(not orbitals_.has_value()) orbitals_.emplace(phi.skeleton());
-			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(phi.skeleton());
-
-			occupations_.reextent(phi.local_set_size());
-			occupations_ = el.occupations()[0];
-			orbitals_->matrix() = phi.matrix();
+			occupations_.reextent(part.local_size());
+			kpoints_.reextent(part.local_size());
 			
-			*ace_orbitals_ = direct(phi, -1.0);
- 
-			auto exx_matrix = operations::overlap(*ace_orbitals_, phi);
+			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
+			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
+			
+			auto iphi = 0;
+			auto ist = 0;
+			for(auto & phi : el.lot()){
 
+				occupations_({ist, ist + phi.local_set_size()}) = el.occupations()[iphi];
+				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
+
+				orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
+
+				auto exxphi = direct(phi, -1.0);
+
+				ace_orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = exxphi.matrix();
+				
+				iphi++;
+				ist += phi.local_set_size();
+			}
+
+			auto exx_matrix = operations::overlap(*ace_orbitals_, *orbitals_);
 			double energy = -0.5*real(operations::sum_product(occupations_, exx_matrix.diagonal()));
 			el.lot_states_comm_.all_reduce_n(&energy, 1);
-
+				
 			solvers::cholesky(exx_matrix.array());
 			operations::rotate_trs(exx_matrix, *ace_orbitals_);
-			
+
 			return energy;
 		}
 
@@ -182,8 +194,9 @@ namespace hamiltonian {
 
 	private:
 		math::array<double, 1> occupations_;
-		std::optional<states::orbital_set<basis::real_space, complex>> orbitals_;
-		std::optional<states::orbital_set<basis::real_space, complex>> ace_orbitals_;
+		math::array<vector3<double, covariant>, 1> kpoints_;		
+		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
+		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> ace_orbitals_;
 		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
 		bool use_ace_;

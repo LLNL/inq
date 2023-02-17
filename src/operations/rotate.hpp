@@ -74,8 +74,8 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 }
 //////////////////////////////////////////////////////////////////////////////////
 
-template <class MatrixType, class FieldSetType>
-void rotate(MatrixType const & rotation, FieldSetType const & phi, FieldSetType & rotphi, typename FieldSetType::element_type const & alpha = 1.0, typename FieldSetType::element_type const & beta = 0.0){
+template <class MatrixType, class FieldSetType1, class FieldSetType2>
+void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType2 & rotphi, typename FieldSetType1::element_type const & alpha = 1.0, typename FieldSetType1::element_type const & beta = 0.0){
 	namespace blas = boost::multi::blas;
 
 	CALI_CXX_MARK_SCOPE("operations::rotate(5arg)");

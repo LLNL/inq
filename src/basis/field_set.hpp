@@ -53,15 +53,16 @@ public:
 	typedef math::array<ElementType, 2> internal_array_type;
 	typedef ElementType element_type;
 
-	field_set(const basis_type & basis, PartitionType && part, parallel::cartesian_communicator<2> comm)
+	field_set(const basis_type & basis, PartitionType part, parallel::cartesian_communicator<2> comm)
 		:full_comm_(std::move(comm)),
 		 set_comm_(basis::set_subcomm(full_comm_)),
-		 set_part_(part),
+		 set_part_(std::move(part)),
 		 matrix_({basis.part().local_size(), set_part_.local_size()}),
 		 num_vectors_(set_part_.size()),
 		 basis_(basis)
 	{
 		prefetch();
+		assert(part.comm_size() == basis::set_subcomm(full_comm_).size());
 		assert(basis_.part().comm_size() == basis::basis_subcomm(full_comm_).size());
 		assert(local_set_size() > 0);
 	}
