@@ -58,7 +58,6 @@ namespace hamiltonian {
 			kpoints_.reextent(part.local_size());
 			
 			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
-			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
 			
 			auto iphi = 0;
 			auto ist = 0;
@@ -66,11 +65,19 @@ namespace hamiltonian {
 
 				occupations_({ist, ist + phi.local_set_size()}) = el.occupations()[iphi];
 				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
-
 				orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
 
-				auto exxphi = direct(phi, -1.0);
+				iphi++;
+				ist += phi.local_set_size();			
+			}
 
+			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
+			
+			iphi = 0;
+			ist = 0;
+			for(auto & phi : el.lot()){
+
+				auto exxphi = direct(phi, -1.0);
 				ace_orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = exxphi.matrix();
 				
 				iphi++;
@@ -98,27 +105,27 @@ namespace hamiltonian {
 
 		//////////////////////////////////////////////////////////////////////////////////
 		
-		template <class BasisType, class HFType, class HFOccType, class PhiType, class ExxphiType>
-		void block_exchange(double factor, BasisType const & basis, HFType const & hf, HFOccType const & hfocc, PhiType const & phi, ExxphiType & exxphi) const {
+		template <class HFType, class HFOccType, class KptType, class PhiType, class ExxphiType>
+		void block_exchange(double factor, HFType const & hf, HFOccType const & hfocc, KptType const & kpt, PhiType const & phi, ExxphiType & exxphi) const {
 
-			auto nst = (~phi).size();
+			auto nst = phi.local_set_size();
 			auto nhf = (~hf).size();
-			basis::field_set<basis::real_space, complex> rhoij(basis, nst);
+			basis::field_set<basis::real_space, complex> rhoij(phi.basis(), nst);
 			
 			for(int jj = 0; jj < nhf; jj++){
 				
 				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_gen_dens");
-					gpu::run(nst, basis.local_size(),
-									 [rho = begin(rhoij.matrix()), hfo = begin(hf), ph = begin(phi), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
+					gpu::run(nst, phi.basis().local_size(),
+									 [rho = begin(rhoij.matrix()), hfo = begin(hf), ph = begin(phi.matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
 										 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
 									 });
 				}
-				
-				poisson_solver_.in_place(rhoij);
+
+				poisson_solver_.in_place(rhoij, -phi.kpoint() + kpt[jj]);
 				
 				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_mul_pot");
-					gpu::run(nst, basis.local_size(),
-									 [pot = begin(rhoij.matrix()), hfo = begin(hf), exph = begin(exxphi), occ = begin(hfocc), jj, factor]
+					gpu::run(nst, exxphi.basis().local_size(),
+									 [pot = begin(rhoij.matrix()), hfo = begin(hf), exph = begin(exxphi.matrix()), occ = begin(hfocc), jj, factor]
 									 GPU_LAMBDA (auto ist, auto ipoint){
 										 exph[ipoint][ist] += factor*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
 									 });
@@ -136,13 +143,15 @@ namespace hamiltonian {
 			double factor = -0.5*scale*exchange_coefficient_;
 
 			if(not orbitals_->set_part().parallel()){
-				block_exchange(factor, phi.basis(), orbitals_->matrix(), occupations_, phi.matrix(), exxphi.matrix());
+				block_exchange(factor, orbitals_->matrix(), occupations_, kpoints_, phi, exxphi);
 			} else {
 
 				auto occ_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), occupations_);
+				auto kpt_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoints_);
 				for(auto hfo_it = orbitals_->par_set_begin(); hfo_it != orbitals_->par_set_end(); ++hfo_it){
-					block_exchange(factor, phi.basis(), hfo_it.matrix(), *occ_it, phi.matrix(), exxphi.matrix());
+					block_exchange(factor, hfo_it.matrix(), *occ_it, *kpt_it, phi, exxphi);
 					++occ_it;
+					++kpt_it;
 				}
 			}
 		}
