@@ -36,6 +36,29 @@ namespace solvers {
 
 class poisson {
 
+	template <typename FieldSetType>
+	void poisson_apply_kernel(FieldSetType & density) const {
+
+		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only makes sense in real_space");
+		
+		CALI_CXX_MARK_FUNCTION;
+		
+		const double scal = (-4.0*M_PI)/density.basis().size();
+		
+		gpu::run(density.basis().local_sizes()[2], density.basis().local_sizes()[1], density.basis().local_sizes()[0],
+						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
+							 
+							 auto g2 = point_op.g2(ix, iy, iz);
+								 
+							 if(point_op.g_is_zero(ix, iy, iz)){
+								 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] = complex(0.0, 0.0);
+							 } else {
+								 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] *= -scal/g2;
+							 }
+							 
+						 });
+	}
+			
 public:
 
 	basis::field<basis::real_space, complex> poisson_solve_periodic(basis::field<basis::real_space, complex> const & density) const {
@@ -77,25 +100,8 @@ public:
 		basis::fourier_space fourier_basis(real_space);
 
 		auto potential_fs = operations::space::to_fourier(std::move(density));
-			
-		const double scal = (-4.0*M_PI)/fourier_basis.size();
 
-		{
-			CALI_CXX_MARK_SCOPE("poisson_finite_kernel_periodic");
-			
-			gpu::run(fourier_basis.local_sizes()[2], fourier_basis.local_sizes()[1], fourier_basis.local_sizes()[0],
-							 [point_op = fourier_basis.point_op(), pfs = begin(potential_fs.hypercubic()), scal, nst = density.local_set_size()] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 auto g2 = point_op.g2(ix, iy, iz);
-								 
-								 if(point_op.g_is_zero(ix, iy, iz)){
-									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] = complex(0.0, 0.0);
-								 } else {
-									 for(int ist = 0; ist < nst; ist++) pfs[ix][iy][iz][ist] *= -scal/g2;
-								 }
-								 
-							 });
-		}
+		poisson_apply_kernel(potential_fs);
 		
 		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
