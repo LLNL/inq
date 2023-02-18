@@ -41,7 +41,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par(), ions, box);
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), input::scf::energy_tolerance(1e-8_Ha) | input::scf::calculate_forces());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), input::scf::energy_tolerance(1e-9_Ha) | input::scf::calculate_forces());
 
 	for(int iatom = 0; iatom < result.forces.size(); iatom++){
 		printf("Force atom %d = %20.14f %20.14f %20.14f\n", iatom, result.forces[iatom][0], result.forces[iatom][1], result.forces[iatom][2]);
@@ -50,21 +50,21 @@ int main(int argc, char ** argv){
 	energy_match.check("ion-ion energy",      result.energy.ion,             -1.517434464849);
 
 	energy_match.check("total energy",        result.energy.total(),         -20.642638450082);
-	energy_match.check("kinetic energy",      result.energy.kinetic(),        13.163479201031);
-	energy_match.check("eigenvalues",         result.energy.eigenvalues,      -5.266545173082);
-	energy_match.check("Hartree energy",      result.energy.hartree,          14.494239381895);
-	energy_match.check("external energy",     result.energy.external,        -39.444396051787);
-	energy_match.check("non-local energy",    result.energy.nonlocal,         -1.620128452378);
-	energy_match.check("XC energy",           result.energy.xc,               -5.718398063994);
-	energy_match.check("XC density integral", result.energy.nvxc,             -6.353978633738);
+	energy_match.check("kinetic energy",      result.energy.kinetic(),        13.163479200329);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues,      -5.266545154146);
+	energy_match.check("Hartree energy",      result.energy.hartree,          14.494239402365);
+	energy_match.check("external energy",     result.energy.external,        -39.444396066271);
+	energy_match.check("non-local energy",    result.energy.nonlocal,         -1.620128454760);
+	energy_match.check("XC energy",           result.energy.xc,               -5.718398066896);
+	energy_match.check("XC density integral", result.energy.nvxc,             -6.353978638174);
 	energy_match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
 	
-	energy_match.check("force 1 x",           result.forces[0][0],             0.00000000516220);
-	energy_match.check("force 1 y",           result.forces[0][1],             0.00000001909934);
-	energy_match.check("force 1 z",           result.forces[0][2],             0.14573044507129);
-	energy_match.check("force 2 x",           result.forces[1][0],             0.00000001039003);
-	energy_match.check("force 2 y",           result.forces[1][1],             0.00000002036321);
-	energy_match.check("force 2 z",           result.forces[1][2],            -0.14573095235185);
+	energy_match.check("force 1 x",           result.forces[0][0],            -0.00000000250910);
+	energy_match.check("force 1 y",           result.forces[0][1],            -0.00000000185763);
+	energy_match.check("force 1 z",           result.forces[0][2],             0.14573092924241);
+	energy_match.check("force 2 x",           result.forces[1][0],             0.00000000341961);
+	energy_match.check("force 2 y",           result.forces[1][1],             0.00000000029088);
+	energy_match.check("force 2 z",           result.forces[1][2],            -0.14573050416125);
 	
 	//		EHRENFEST HASN'T BEEN TESTED YET
 
