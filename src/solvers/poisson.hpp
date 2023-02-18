@@ -79,7 +79,7 @@ public:
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename KernelType, typename FieldSetType>
-	void poisson_apply_kernel(KernelType const kernel, FieldSetType & density) const {
+	void poisson_apply_kernel(KernelType const kernel, FieldSetType & density, vector3<double> const & gshift = {0.0, 0.0, 0.0}) const {
 
 		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only makes sense in fourier_space");
 		
@@ -88,9 +88,9 @@ public:
 		const double scal = (-4.0*M_PI)/density.basis().size();
 		
 		gpu::run(density.basis().local_sizes()[2], density.basis().local_sizes()[1], density.basis().local_sizes()[0],
-						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size(), kernel] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size(), kernel, gshift] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 
-							 auto kerg = kernel(point_op.gvector_cartesian(ix, iy, iz));
+							 auto kerg = kernel(point_op.gvector_cartesian(ix, iy, iz) + gshift);
 							 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] *= scal*kerg;
 						 });
 	}
@@ -110,7 +110,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density) const {
+	void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift) const {
 
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -139,7 +139,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_2d(basis::field_set<basis::real_space, complex> & density) const {
+	void poisson_solve_in_place_2d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -173,7 +173,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_0d(basis::field_set<basis::real_space, complex> & density) const {
+	void poisson_solve_in_place_0d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -205,17 +205,20 @@ public:
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	void in_place(basis::field_set<basis::real_space, complex> & density) const {
+
+	template <typename Space = cartesian>
+	void in_place(basis::field_set<basis::real_space, complex> & density, vector3<double, Space> const & gshift = {0.0, 0.0, 0.0}) const {
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
+
+		auto gshift_cart = density.basis().cell().metric().to_cartesian(gshift);
 		
 		if(density.basis().periodicity() == 3){
-			poisson_solve_in_place_3d(density);
+			poisson_solve_in_place_3d(density, gshift_cart);
 		} else if(density.basis().periodicity() == 2){
-			return poisson_solve_in_place_2d(density);
+			return poisson_solve_in_place_2d(density, gshift_cart);
 		} else {
-			poisson_solve_in_place_0d(density);
+			poisson_solve_in_place_0d(density, gshift_cart);
 		}
 	}
 
