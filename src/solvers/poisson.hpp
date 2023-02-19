@@ -231,8 +231,6 @@ public:
 		auto complex_potential = operator()(complex_field(density));
 		return real_field(complex_potential);
 	}
-
-private:
 		
 };    
 	
@@ -487,21 +485,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				if(part.contains(612909)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(612909))][ist])/(1.0 + ist) ==  -0.2275712710_a);
 				if(part.contains(368648)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(368648))][ist])/(1.0 + ist) ==  -0.1844298173_a);
 			}
-
-				
-			/*
-			std::ofstream ofile("pot.dat");
-			
-			//			double sumreal = 0.0;
-			// double sumimag = 0.0;
-			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-				auto rr = rs.rvector_cartesian(ix, 0, 0);
-				ofile << rr[0] << "\t" << real(potential.cubic()[ix][0][0]) << std::endl;						
-			}
-			*/
-
 		}
-
 	}
 
 	SECTION("Point charge 2d periodic"){

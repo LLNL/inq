@@ -59,7 +59,6 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
 
-			//propagate using the chosen method
 			switch(options.propagator()){
 			case input::rt::electron_propagator::ETRS :
 				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);

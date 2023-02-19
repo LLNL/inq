@@ -123,15 +123,10 @@ namespace hamiltonian {
 			return 0.0;
 		}
 		
-		//this function has to be public because of cuda limitations
 		template <class density_type, class exc_type, class vxc_type>
 		void ggafunctional(density_type const & density, exc_type & exc, vxc_type & vxc) const { 
 
-			// Info about this implementation:
-			//
-			//   https://tddft.org/programs/libxc/manual/libxc-5.1.x/
-			//   
-			
+			// Info about this implementation: https://tddft.org/programs/libxc/manual/libxc-5.1.x/
 			CALI_CXX_MARK_FUNCTION;
 
 			auto grad_real = operations::gradient(density);
@@ -225,7 +220,7 @@ auto gaussiansigma(inq::vector3<double> rr, double sigma){
 	return  pow(2*M_PI, -1.5)*pow(sigma, -3.0)*exp(-0.5*norm(rr)*pow(sigma, -2.0));
 }
 
-auto gaussian(inq::vector3<double> rr){  // sigma = 1/sqrt(2)
+auto gaussian(inq::vector3<double> rr){ 
 	return  pow(M_PI, -1.5)*exp(-norm(rr));
 }
 

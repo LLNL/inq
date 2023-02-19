@@ -31,8 +31,6 @@ namespace inq {
 namespace utils {
 
   class factors {
-
-  private:
    
     int number_;
     int current_;
@@ -69,8 +67,6 @@ namespace utils {
   };
 
   class factors_reverse {
-
-  private:
    
     int number_;
     int current_;
@@ -181,7 +177,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     ++fac; //check that it doesn't enter an infinite loop
   }
-
 
 }
 #endif

@@ -45,7 +45,6 @@ public:
 	{
 	}
 
-
   ////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename SpinDensityType, typename CoreDensityType>
@@ -90,27 +89,25 @@ public:
     
     exc = 0.0;
 		nvxc = 0.0;
+		if(not exchange_.true_functional() and not correlation_.true_functional()) return;
 		
-		if(exchange_.true_functional() or correlation_.true_functional()){
-
-			auto full_density = process_density(spin_density, core_density);
-			
-			double efunc = 0.0;
-			basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
-
-			if(exchange_.true_functional()){
-				exchange_(full_density, efunc, vfunc);
-				exc += efunc;
-				operations::increment(vks, vfunc);
-				nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
-			}
-				
-			if(correlation_.true_functional()){
-				correlation_(full_density, efunc, vfunc);
-				exc += efunc;
-				operations::increment(vks, vfunc);
-				nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
-			}
+		auto full_density = process_density(spin_density, core_density);
+		
+		double efunc = 0.0;
+		basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
+		
+		if(exchange_.true_functional()){
+			exchange_(full_density, efunc, vfunc);
+			exc += efunc;
+			operations::increment(vks, vfunc);
+			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
+		}
+		
+		if(correlation_.true_functional()){
+			correlation_(full_density, efunc, vfunc);
+			exc += efunc;
+			operations::increment(vks, vfunc);
+			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 		}
   }
 

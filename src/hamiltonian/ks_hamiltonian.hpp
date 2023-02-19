@@ -46,188 +46,184 @@ namespace inq {
 namespace hamiltonian {
 
 template <typename PotentialType>
-  class ks_hamiltonian {
+class ks_hamiltonian {
 		
-  public:
+public:
 
 	using potential_type = PotentialType;
 	
-		void update_projectors(const basis::real_space & basis, const atomic_potential & pot, const ions::geometry & geo){
+	void update_projectors(const basis::real_space & basis, const atomic_potential & pot, const ions::geometry & geo){
 			
-			CALI_CXX_MARK_FUNCTION;
+		CALI_CXX_MARK_FUNCTION;
 
-			std::list<projector> projectors;
+		std::list<projector> projectors;
 			
-			projectors_fourier_map_.clear();			
+		projectors_fourier_map_.clear();			
 			
-			for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
-				if(non_local_in_fourier_){
-					auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(geo.atoms()[iatom])));
-					insert.first->second.add_coord(basis.cell().metric().to_contravariant(geo.coordinates()[iatom]));
-				} else {
-					projectors.emplace_back(basis, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
-					if(projectors.back().empty()) projectors.pop_back(); 
-				}
-			}
-
-			projectors_all_ = projector_all(projectors);
-			
-		}
-		
-		exchange_operator exchange;
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
-    ks_hamiltonian(const basis::real_space & basis, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
-									 const int num_hf_orbitals, const double exchange_coefficient, bool use_ace = false):
-			exchange(exchange_coefficient, use_ace),
-			scalar_potential_(states.num_density_components(), basis),
-			uniform_vector_potential_({0.0, 0.0, 0.0}),
-			non_local_in_fourier_(fourier_pseudo),
-			states_(states)
-		{
-			for(auto & pot : scalar_potential_) pot.fill(0.0);
-			update_projectors(basis, pot, geo);
-    }
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
-		void non_local(const states::orbital_set<basis::fourier_space, complex> & phi, states::orbital_set<basis::fourier_space, complex> & vnlphi) const {
-
-			if(not non_local_in_fourier_) return;
-			
-			for(auto it = projectors_fourier_map_.cbegin(); it != projectors_fourier_map_.cend(); ++it){
-				it->second(phi, vnlphi);
-			}
-		}
-		
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
-		auto non_local(const states::orbital_set<basis::real_space, complex> & phi) const {
-
-			CALI_CXX_MARK_FUNCTION;
- 
-			if(non_local_in_fourier_) {
-
-				auto phi_fs = operations::space::to_fourier(phi);
-				states::orbital_set<basis::fourier_space, complex> vnlphi_fs(phi_fs.skeleton());
-
-				vnlphi_fs.fill(0.0);
-				non_local(phi_fs, vnlphi_fs);
-				return operations::space::to_real(vnlphi_fs);
-					
+		for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+			if(non_local_in_fourier_){
+				auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(geo.atoms()[iatom])));
+				insert.first->second.add_coord(basis.cell().metric().to_contravariant(geo.coordinates()[iatom]));
 			} else {
-				
-				auto proj = projectors_all_.project(phi, phi.kpoint());
-				
-				states::orbital_set<basis::real_space, complex> vnlphi(phi.skeleton());
-				vnlphi.fill(0.0);
-
-				projectors_all_.apply(proj, vnlphi, phi.kpoint());
-			
-				return vnlphi;
-							
+				projectors.emplace_back(basis, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
+				if(projectors.back().empty()) projectors.pop_back(); 
 			}
-			
 		}
 
-		////////////////////////////////////////////////////////////////////////////////////////////
-
-    auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
-			
-			CALI_CXX_MARK_SCOPE("hamiltonian_real");
-
-			auto proj = projectors_all_.project(phi, phi.kpoint() + uniform_vector_potential_);
-			
-			auto phi_fs = operations::space::to_fourier(phi);
+		projectors_all_ = projector_all(projectors);
+	}
 		
-			auto hphi_fs = operations::laplacian(phi_fs, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
+	exchange_operator exchange;
 
-			non_local(phi_fs, hphi_fs);
+	////////////////////////////////////////////////////////////////////////////////////////////
+		
+	ks_hamiltonian(const basis::real_space & basis, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
+								 const int num_hf_orbitals, const double exchange_coefficient, bool use_ace = false):
+		exchange(exchange_coefficient, use_ace),
+		scalar_potential_(states.num_density_components(), basis),
+		uniform_vector_potential_({0.0, 0.0, 0.0}),
+		non_local_in_fourier_(fourier_pseudo),
+		states_(states)
+	{
+		for(auto & pot : scalar_potential_) pot.fill(0.0);
+		update_projectors(basis, pot, geo);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+		
+	void non_local(const states::orbital_set<basis::fourier_space, complex> & phi, states::orbital_set<basis::fourier_space, complex> & vnlphi) const {
+
+		if(not non_local_in_fourier_) return;
 			
-			auto hphi = operations::space::to_real(hphi_fs);
-
-			hamiltonian::scalar_potential_add(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
-			exchange(phi, hphi);
-
-			projectors_all_.apply(proj, hphi, phi.kpoint() + uniform_vector_potential_);
-
-			return hphi;
+		for(auto it = projectors_fourier_map_.cbegin(); it != projectors_fourier_map_.cend(); ++it){
+			it->second(phi, vnlphi);
 		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-
-    auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const{
-			
-			CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
-
-			auto phi_rs = operations::space::to_real(phi);
-
-			auto proj = projectors_all_.project(phi_rs, phi.kpoint() + uniform_vector_potential_);
-			
-			auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
+	}
 		
-			exchange(phi_rs, hphi_rs);
+	////////////////////////////////////////////////////////////////////////////////////////////
+		
+	auto non_local(const states::orbital_set<basis::real_space, complex> & phi) const {
+
+		CALI_CXX_MARK_FUNCTION;
  
-			projectors_all_.apply(proj, hphi_rs, phi.kpoint() + uniform_vector_potential_);
+		if(non_local_in_fourier_) {
+
+			auto phi_fs = operations::space::to_fourier(phi);
+			states::orbital_set<basis::fourier_space, complex> vnlphi_fs(phi_fs.skeleton());
+
+			vnlphi_fs.fill(0.0);
+			non_local(phi_fs, vnlphi_fs);
+			return operations::space::to_real(vnlphi_fs);
+					
+		} else {
+				
+			auto proj = projectors_all_.project(phi, phi.kpoint());
+				
+			states::orbital_set<basis::real_space, complex> vnlphi(phi.skeleton());
+			vnlphi.fill(0.0);
+
+			projectors_all_.apply(proj, vnlphi, phi.kpoint());
 			
-			auto hphi = operations::space::to_fourier(hphi_rs);
-
-			operations::laplacian_add(phi, hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
-			non_local(phi, hphi);
-
-			return hphi;
+			return vnlphi;
 		}
+	}
 
-		////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
-    auto momentum(const states::orbital_set<basis::real_space, complex> & phi) const{
-			CALI_CXX_MARK_FUNCTION;
+	auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
+			
+		CALI_CXX_MARK_SCOPE("hamiltonian_real");
 
-			return operations::gradient(phi, /*shift = */ uniform_vector_potential_);
-		}
+		auto proj = projectors_all_.project(phi, phi.kpoint() + uniform_vector_potential_);
+			
+		auto phi_fs = operations::space::to_fourier(phi);
 		
-		////////////////////////////////////////////////////////////////////////////////////////////
+		auto hphi_fs = operations::laplacian(phi_fs, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
+
+		non_local(phi_fs, hphi_fs);
+			
+		auto hphi = operations::space::to_real(hphi_fs);
+
+		hamiltonian::scalar_potential_add(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
+		exchange(phi, hphi);
+
+		projectors_all_.apply(proj, hphi, phi.kpoint() + uniform_vector_potential_);
+
+		return hphi;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const{
+			
+		CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
+
+		auto phi_rs = operations::space::to_real(phi);
+
+		auto proj = projectors_all_.project(phi_rs, phi.kpoint() + uniform_vector_potential_);
+			
+		auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
-		auto & projectors_all() const {
-			return projectors_all_;
-		}
+		exchange(phi_rs, hphi_rs);
+ 
+		projectors_all_.apply(proj, hphi_rs, phi.kpoint() + uniform_vector_potential_);
+			
+		auto hphi = operations::space::to_fourier(hphi_rs);
 
-		////////////////////////////////////////////////////////////////////////////////////////////
+		operations::laplacian_add(phi, hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
+		non_local(phi, hphi);
 
-    template <class output_stream>
-    void info(output_stream & out) const {
-    }
+		return hphi;
+	}
 
-		////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
-		auto & scalar_potential() {
-			return scalar_potential_;
-		}
+	auto momentum(const states::orbital_set<basis::real_space, complex> & phi) const{
+		CALI_CXX_MARK_FUNCTION;
+
+		return operations::gradient(phi, /*shift = */ uniform_vector_potential_);
+	}
+		
+	////////////////////////////////////////////////////////////////////////////////////////////
+		
+	auto & projectors_all() const {
+		return projectors_all_;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <class output_stream>
+	void info(output_stream & out) const {
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto & scalar_potential() {
+		return scalar_potential_;
+	}
 	
-		////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
-		auto & uniform_vector_potential() const {
-			return uniform_vector_potential_;
-		}
+	auto & uniform_vector_potential() const {
+		return uniform_vector_potential_;
+	}
 
-		////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 		
-  private:
+private:
 		
-		std::vector<basis::field<basis::real_space, PotentialType>> scalar_potential_;
-		vector3<double, covariant> uniform_vector_potential_;
-		projector_all projectors_all_;		
-		bool non_local_in_fourier_;
-		std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
-		std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
-		states::ks_states states_;
+	std::vector<basis::field<basis::real_space, PotentialType>> scalar_potential_;
+	vector3<double, covariant> uniform_vector_potential_;
+	projector_all projectors_all_;		
+	bool non_local_in_fourier_;
+	std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
+	std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
+	states::ks_states states_;
 		
-		template <typename Perturbation>
-		friend class self_consistency;
+	template <typename Perturbation>
+	friend class self_consistency;
 	
-  };
-
+};
 }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -353,7 +349,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(diff < 1e-14);
 		
 	}
-
 
 	SECTION("Harmonic oscillator"){
 
