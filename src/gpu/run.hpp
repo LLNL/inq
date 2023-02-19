@@ -106,15 +106,11 @@ void run(kernel_type kernel){
 
 	cuda_run_kernel_0<<<1, 1>>>(kernel);
 	check_error(cudaGetLastError());
-	
 	sync();
 	
 #else
-	
 	kernel();
-	
 #endif
-  
 }
 
 #ifdef ENABLE_CUDA
@@ -145,9 +141,7 @@ void run(size_t size, kernel_type kernel){
 	sync();
 	
 #else
-	
 	for(size_t ii = 0; ii < size; ii++) kernel(ii);
-	
 #endif
   
 }
@@ -195,7 +189,6 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 		}
 	}
 #endif
-  
 }
 
 #ifdef ENABLE_CUDA
@@ -229,7 +222,6 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	sync();
 	
 #else
-
 	for(size_t iz = 0; iz < sizez; iz++){
 		for(size_t iy = 0; iy < sizey; iy++){
 			for(size_t ix = 0; ix < sizex; ix++){
@@ -237,9 +229,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 			}
 		}
 	}
-		
 #endif
-    
 }
 	
 #ifdef ENABLE_CUDA
@@ -281,7 +271,6 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 	sync();
 
 #else
-	
 	for(size_t iw = 0; iw < sizew; iw++){
 		for(size_t iz = 0; iz < sizez; iz++){
 			for(size_t iy = 0; iy < sizey; iy++){
@@ -291,9 +280,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 			}
 		}
 	}
-	
 #endif
-  
 }
 
 }
@@ -304,32 +291,29 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 #undef INQ_GPU_RUN_UNIT_TEST
 
 #include <math/array.hpp>
-
 #include <mpi3/environment.hpp>
-
 #include <catch2/catch_all.hpp>
-
 #include <gpu/atomic.hpp>
 
-size_t check_run(size_t size){
+long check_run(long size){
 	
-	inq::math::array<size_t, 1> list(size, size_t{0});
+	inq::math::array<long, 1> list(size, 0l);
 
 	inq::gpu::run(size,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii){
 						 inq::gpu::atomic::add(&(itlist[ii]), ii + 1);
 					 });
 	
-	size_t diff = 0;
-	for(size_t ii = 0; ii < size; ii++) {
+	long diff = 0;
+	for(long ii = 0; ii < size; ii++) {
 		diff += ii + 1 - list[ii];
 	}
 	return diff;
 }
 
-size_t check_run(size_t size1, size_t size2){
+long check_run(long size1, long size2){
 	
-	inq::math::array<size_t, 3> list({size1, size2, 2}, size_t{0});
+	inq::math::array<long, 3> list({size1, size2, 2}, 0l);
 	
 	inq::gpu::run(size1, size2, 
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj){
@@ -337,21 +321,20 @@ size_t check_run(size_t size1, size_t size2){
 						 inq::gpu::atomic::add(&(itlist[ii][jj][1]), jj + 1);
 					 });
 	
-	size_t diff = 0;
-	for(size_t ii = 0; ii < size1; ii++) {
-		for(size_t jj = 0; jj < size2; jj++) {
+	long diff = 0;
+	for(long ii = 0; ii < size1; ii++) {
+		for(long jj = 0; jj < size2; jj++) {
 			diff += ii + 1 - list[ii][jj][0];
 			diff += jj + 1 - list[ii][jj][1];
 		}
 	}
 		
 	return diff;
-		
 }
 
-size_t check_run(size_t size1, size_t size2, size_t size3){
+long check_run(long size1, long size2, long size3){
 	
-	inq::math::array<size_t, 4> list({size1, size2, size3, 3}, size_t{0});
+	inq::math::array<long, 4> list({size1, size2, size3, 3}, 0l);
 
 	inq::gpu::run(size1, size2, size3,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk){
@@ -360,10 +343,10 @@ size_t check_run(size_t size1, size_t size2, size_t size3){
 						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][2]), kk + 1);
 					 });
 		
-	size_t diff = 0;
-	for(size_t ii = 0; ii < size1; ii++) {
-		for(size_t jj = 0; jj < size2; jj++) {
-			for(size_t kk = 0; kk < size3; kk++) {
+	long diff = 0;
+	for(long ii = 0; ii < size1; ii++) {
+		for(long jj = 0; jj < size2; jj++) {
+			for(long kk = 0; kk < size3; kk++) {
 				diff += ii + 1 - list[ii][jj][kk][0];
 				diff += jj + 1 - list[ii][jj][kk][1];
 				diff += kk + 1 - list[ii][jj][kk][2];
@@ -372,12 +355,11 @@ size_t check_run(size_t size1, size_t size2, size_t size3){
 	}
 
 	return diff;
-
 }
 	
-size_t check_run(size_t size1, size_t size2, size_t size3, size_t size4){
+long check_run(long size1, long size2, long size3, long size4){
 
-	inq::math::array<size_t, 5> list({size1, size2, size3, size4, 4}, size_t{0});
+	inq::math::array<long, 5> list({size1, size2, size3, size4, 4}, 0l);
 
 	inq::gpu::run(size1, size2, size3, size4,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk, auto ll){
@@ -387,11 +369,11 @@ size_t check_run(size_t size1, size_t size2, size_t size3, size_t size4){
 						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][3]), ll + 1);
 					 });
 		
-	size_t diff = 0;
-	for(size_t ii = 0; ii < size1; ii++) {
-		for(size_t jj = 0; jj < size2; jj++) {
-			for(size_t kk = 0; kk < size3; kk++) {
-				for(size_t ll = 0; ll < size4; ll++) {
+	long diff = 0;
+	for(long ii = 0; ii < size1; ii++) {
+		for(long jj = 0; jj < size2; jj++) {
+			for(long kk = 0; kk < size3; kk++) {
+				for(long ll = 0; ll < size4; ll++) {
 					diff += ii + 1 - list[ii][jj][kk][ll][0];
 					diff += jj + 1 - list[ii][jj][kk][ll][1];
 					diff += kk + 1 - list[ii][jj][kk][ll][2];
@@ -402,7 +384,6 @@ size_t check_run(size_t size1, size_t size2, size_t size3, size_t size4){
 	}
 
 	return diff;
-
 }
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
