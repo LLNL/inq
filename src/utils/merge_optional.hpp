@@ -27,8 +27,7 @@ namespace utils {
 template <class opt_type>
 opt_type merge_optional(const opt_type & option1, const opt_type & option2){
 	if(option2) return option2;
-	if(option1) return option1;
-	return opt_type{};
+	return option1;
 }
 
 }
@@ -44,5 +43,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;
+
+
+	CHECK(utils::merge_optional(std::optional<bool>{}, std::optional<bool>{}).has_value() == false);
+	CHECK(utils::merge_optional(std::optional<int>{2}, std::optional<int>{}).value() == 2);
+	CHECK(utils::merge_optional(std::optional<double>{}, std::optional<double>{3.4}).value() == 3.4_a);
+	CHECK(utils::merge_optional(std::optional<std::string>{"uno"}, std::optional<std::string>{"dos"}).value() == "dos");
+	
 }
 #endif
