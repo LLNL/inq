@@ -202,8 +202,6 @@ namespace basis {
 			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 
-			math::prefetch(subgrid);
-			
 			gpu::run(nst, size(),
 							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 sgr[ipoint][ist] = gr[poi[ipoint].coords_[0]][poi[ipoint].coords_[1]][poi[ipoint].coords_[2]][ist];
