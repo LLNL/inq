@@ -87,9 +87,14 @@ namespace hamiltonian {
 		auto libxc_func_ptr() const {
 			return &func_;
 		}
+
+		auto requires_gradient() const {
+			if(not true_functional()) return false;
+			return family() != XC_FAMILY_LDA;
+		}
 		
-		template <class DensityType, class VxcType>
-		void operator()(DensityType const & spin_density, double & xc_energy, VxcType & vxc) const {
+		template <class DensityType, class DensityGradientType, class VxcType>
+		void operator()(DensityType const & spin_density, DensityGradientType const & density_gradient, double & xc_energy, VxcType & vxc) const {
 
 			assert(true_functional());
 			
@@ -106,7 +111,8 @@ namespace hamiltonian {
 					break;
 				}
 				case XC_FAMILY_GGA:{
-					ggafunctional(spin_density, exc, vxc);
+					assert(density_gradient.has_value());
+					ggafunctional(spin_density, *density_gradient, exc, vxc);
 					break;
 				}	
 				default:{
@@ -123,13 +129,11 @@ namespace hamiltonian {
 			return 0.0;
 		}
 		
-		template <class DensityType, class ExcType, class VxcType>
-		void ggafunctional(DensityType const & density, ExcType & exc, VxcType & vxc) const { 
+		template <class DensityType, class DensityGradientType, class ExcType, class VxcType>
+		void ggafunctional(DensityType const & density, DensityGradientType const & density_gradient, ExcType & exc, VxcType & vxc) const { 
 
 			// Info about this implementation: https://tddft.org/programs/libxc/manual/libxc-5.1.x/
 			CALI_CXX_MARK_FUNCTION;
-
-			auto grad_real = operations::gradient(density);
 
 			auto nsigma = 1;
 			if(nspin_ > 1) nsigma = 3;
@@ -137,7 +141,7 @@ namespace hamiltonian {
 			basis::field_set<basis::real_space, double> sigma(vxc.basis(), nsigma);
 
 			gpu::run(vxc.basis().local_size(),
-							 [sig = begin(sigma.matrix()), grad = begin(grad_real.matrix()), metric = density.basis().cell().metric(), nsigma] GPU_LAMBDA (auto ip){
+							 [sig = begin(sigma.matrix()), grad = begin(density_gradient.matrix()), metric = density.basis().cell().metric(), nsigma] GPU_LAMBDA (auto ip){
 								 sig[ip][0] = metric.norm(grad[ip][0]);
 								 if(nsigma > 1) {
 									 sig[ip][1] = metric.dot(grad[ip][0], grad[ip][1]);
@@ -153,7 +157,7 @@ namespace hamiltonian {
 			basis::field_set<basis::real_space, vector3<double, covariant>> vxc_extra(vxc.skeleton());
 
 			gpu::run(vxc.basis().local_size(),
-							 [vex = begin(vxc_extra.matrix()), vsig = begin(vsigma.matrix()), grad = begin(grad_real.matrix()), nsigma] GPU_LAMBDA (auto ip){
+							 [vex = begin(vxc_extra.matrix()), vsig = begin(vsigma.matrix()), grad = begin(density_gradient.matrix()), nsigma] GPU_LAMBDA (auto ip){
 								 if(nsigma == 1) {
 										vex[ip][0] = 2.0*vsig[ip][0]*grad[ip][0];
 								 } else {
@@ -175,7 +179,6 @@ namespace hamiltonian {
 		int id_;
 		int nspin_;
 		xc_func_type func_;
-			
 	};
 
 }
@@ -253,13 +256,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
 		basis::real_space rs(box, cart_comm);
 
-		basis::field_set<basis::real_space, double> gaussian_field(rs, 1);
+		basis::field_set<basis::real_space, double> gaussian_density(rs, 1);
 		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					gaussian_field.hypercubic()[ix][iy][iz][0] = gaussian(vec);
+					gaussian_density.hypercubic()[ix][iy][iz][0] = gaussian(vec);
 				}
 			}
 		}
@@ -269,8 +272,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		double gaussianExc;
 
 		CHECK(ldafunctional.exx_coefficient() == 0.0);
+
+		auto grad = std::optional<basis::field_set<basis::real_space, vector3<double, covariant>>>{};
 		
-		ldafunctional(gaussian_field, gaussianExc, gaussianVxc);
+		ldafunctional(gaussian_density, grad, gaussianExc, gaussianVxc);
 		CHECK(gaussianExc == -0.270646_a);
 
 		double int_xc_energy = 0.0;
@@ -299,7 +304,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		if(rs.part().contains(8233)) CHECK(gaussianVxc.matrix()[rs.part().global_to_local(parallel::global_index(8233))][0] == -0.00406881_a);
 		if(rs.part().contains(233)) CHECK(fabs(gaussianVxc.matrix()[rs.part().global_to_local(parallel::global_index(233))][0]) < 1e-10);
 		if(rs.part().contains(rs.size() - 1)) CHECK(gaussianVxc.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -0.4326883849_a);
-
 	}
 
 	SECTION("LSDA"){
@@ -330,9 +334,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		double exc_unp, exc_pol;
 
 		CHECK(ldafunctional.exx_coefficient() == 0.0);
+
+		auto grad = std::optional<basis::field_set<basis::real_space, vector3<double, covariant>>>{};
 		
-		ldafunctional(density_unp, exc_unp, vxc_unp);
-		ldafunctional(density_pol, exc_pol, vxc_pol);		
+		ldafunctional(density_unp, grad, exc_unp, vxc_unp);
+		ldafunctional(density_pol, grad, exc_pol, vxc_pol);		
 
 		CHECK(exc_unp == -0.270646_a);
 		CHECK(exc_pol == -0.2804198447_a);		
@@ -409,9 +415,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		basis::field_set<basis::real_space, double> Vxc(rs, 1);
 
 		CHECK(ggafunctional.exx_coefficient() == 0.0);
+
+		auto grad = std::optional{operations::gradient(field)};
 		
 		double Exc = 0.0;
-		ggafunctional(field, Exc, Vxc);
+		ggafunctional(field, grad, Exc, Vxc);
 
 		CHECK(Exc == -393.4604748792_a);
 		
@@ -445,9 +453,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ggafunctional.exx_coefficient() == 0.0);
 		
 		double exc_unp, exc_pol;
+
+		auto grad_unp = std::optional{operations::gradient(density_unp)};
+		auto grad_pol = std::optional{operations::gradient(density_pol)};		
 		
-		ggafunctional(density_unp, exc_unp, vxc_unp);
-		ggafunctional(density_pol, exc_pol, vxc_pol);		
+		ggafunctional(density_unp, grad_unp, exc_unp, vxc_unp);
+		ggafunctional(density_pol, grad_pol, exc_pol, vxc_pol);		
 
 		CHECK(exc_unp == -393.4604748792_a);
 		CHECK(exc_pol == -406.0224635643_a);
@@ -471,12 +482,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
 		basis::real_space rs(box, cart_comm);
 		
-		basis::field_set<basis::real_space, double> gaussian_field(rs, 1);
+		basis::field_set<basis::real_space, double> gaussian_density(rs, 1);
 		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					gaussian_field.hypercubic()[ix][iy][iz][0] = 0.393;
+					gaussian_density.hypercubic()[ix][iy][iz][0] = 0.393;
 				}
 			}
 		}
@@ -486,8 +497,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		basis::field_set<basis::real_space, double> gaussianVxcLDA(rs, 1), gaussianVxcGGA(rs, 1);
 		double gaussianExcLDA, gaussianExcGGA;
 
-		ggafunctional(gaussian_field, gaussianExcLDA, gaussianVxcLDA);
-		ldafunctional(gaussian_field, gaussianExcGGA, gaussianVxcGGA);
+		auto grad = std::optional{operations::gradient(gaussian_density)};
+		
+		ggafunctional(gaussian_density, grad, gaussianExcLDA, gaussianVxcLDA);
+		ldafunctional(gaussian_density, grad, gaussianExcGGA, gaussianVxcGGA);
 		CHECK(gaussianExcLDA == gaussianExcGGA);
 		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -520,7 +533,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		copy2 = std::move(b3lyp);
 		CHECK(copy2.exx_coefficient() == 0.2_a);
-		
 	}
 	
 }
