@@ -190,7 +190,6 @@ namespace hamiltonian {
 #include <operations/gradient.hpp>
 #include <basis/field.hpp>
 #include <math/array.hpp>
-#include <utils/finite_difference.hpp>
 #include <ions/geometry.hpp>
 
 #include <iostream>
