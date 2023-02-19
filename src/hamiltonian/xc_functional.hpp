@@ -88,14 +88,14 @@ namespace hamiltonian {
 			return &func_;
 		}
 		
-		template <class field_type>
-		void operator()(field_type const & spin_density, double & xc_energy, field_type & vxc) const {
+		template <class DensityType, class VxcType>
+		void operator()(DensityType const & spin_density, double & xc_energy, VxcType & vxc) const {
 
 			assert(true_functional());
 			
 			CALI_CXX_MARK_SCOPE("xc_functional");
 			
-			basis::field<basis::real_space, double>  exc(vxc.basis());
+			basis::field<basis::real_space, double> exc(vxc.basis());
 			
 			assert(spin_density.matrix().num_elements() == vxc.matrix().num_elements());
 			
@@ -123,8 +123,8 @@ namespace hamiltonian {
 			return 0.0;
 		}
 		
-		template <class density_type, class exc_type, class vxc_type>
-		void ggafunctional(density_type const & density, exc_type & exc, vxc_type & vxc) const { 
+		template <class DensityType, class ExcType, class VxcType>
+		void ggafunctional(DensityType const & density, ExcType & exc, VxcType & vxc) const { 
 
 			// Info about this implementation: https://tddft.org/programs/libxc/manual/libxc-5.1.x/
 			CALI_CXX_MARK_FUNCTION;
