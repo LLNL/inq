@@ -68,7 +68,6 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		
 		return overlap_matrix;
 	}
-	
 
 }
 
@@ -230,8 +229,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 		CHECK(real(cc.array()[0][0]) == Approx(400.0*0.5*npoint*(npoint + 1.0)*bas.volume_element()));
 		CHECK(fabs(imag(cc.array()[0][0])) < 1e-13);
-
-		}
+	}
 
 }
 #endif

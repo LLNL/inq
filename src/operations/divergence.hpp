@@ -141,8 +141,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
 
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
-	//	auto set_comm = basis::set_subcomm(cart_comm);
-	//	auto basis_comm = basis::basis_subcomm(cart_comm);
 
 	basis::real_space rs(box, cart_comm);
 

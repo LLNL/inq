@@ -33,7 +33,7 @@ template<class T>
 struct uniform_distribution;
 
 template<>
-struct uniform_distribution<double>{// : std::uniform_real_distribution<double>{
+struct uniform_distribution<double>{
 	template<class Generator>
 	auto operator()(Generator& g) GPU_FUNCTION {
 		static double const max = std::numeric_limits<typename Generator::result_type>::max() + 1.;
@@ -79,7 +79,6 @@ namespace operations {
 						rng.discard(step*dist.rngs_per_sample);
 						phicub[ix][iy][iz][ist] = dist(rng);
 					});
-	
   }
 
 }
@@ -118,10 +117,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		auto norms = operations::overlap_diagonal(aa);
 
-		/*for(int ist = 0; ist < aa.set_part().local_size(); ist++){
-			std::cout << norms[ist] << std::endl;
-			}*/
-
 		if(aa.set_part().contains(0))  CHECK(norms[aa.set_part().global_to_local(parallel::global_index(0))] == 330.1381395023_a);
 		if(aa.set_part().contains(1))  CHECK(norms[aa.set_part().global_to_local(parallel::global_index(1))] == 330.5444105287_a);
 		if(aa.set_part().contains(2))  CHECK(norms[aa.set_part().global_to_local(parallel::global_index(2))] == 331.5435469092_a);
@@ -146,10 +141,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		operations::randomize(aa);
 		
 		auto norms = operations::overlap_diagonal(aa);
-
-		/*		for(int ist = 0; ist < aa.set_part().local_size(); ist++){
-			std::cout << std::scientific << real(norms[ist])<< std::endl;
-			}*/
 
 		if(aa.set_part().contains(0))  CHECK(real(norms[aa.set_part().global_to_local(parallel::global_index(0))]) == 669.1459385544_a);
 		if(aa.set_part().contains(1))  CHECK(real(norms[aa.set_part().global_to_local(parallel::global_index(1))]) == 664.8544595319_a);

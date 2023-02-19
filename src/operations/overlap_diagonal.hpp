@@ -44,9 +44,7 @@ struct overlap_diagonal_mult {
 	GPU_FUNCTION auto operator()(long ist, long ip) const {
 		return factor*conj(mat1[ip][ist])*mat2[ip][ist];
 	}
-	
 };
-
 
 template <class field_set_type>
 math::array<typename field_set_type::element_type, 1> overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
@@ -67,7 +65,6 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal(const fie
 	} else {
 		
 		overlap_vector = gpu::run(phi1.local_set_size(), gpu::reduce(phi1.basis().part().local_size()), overlap_diagonal_mult<decltype(begin(phi1.matrix()))>{phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix())});
-
 	}
 
 	if(phi1.basis().comm().size() > 1){
