@@ -100,11 +100,8 @@ namespace input {
 		int nproc_kpts_;
 		int nproc_states_;
 		int nproc_domains_;
-
     mutable parallel::communicator comm_;
-
 		constexpr static double const kpoint_efficiency_threshold = 0.1;
-		
   };
     
 }

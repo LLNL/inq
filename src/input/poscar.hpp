@@ -112,11 +112,8 @@ public:
 			}
 
 		} else {
-
 			// Direct 
-
 			ions::unit_cell cell(lattice_vectors_);
-			
 			for(unsigned ispecies = 0; ispecies < species_num.size(); ispecies++){
 				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
 					vector3<double, contravariant> pos;
@@ -125,9 +122,8 @@ public:
 					std::getline(poscar_file, tail);					
 				}
 			}
-			
 		}
-
+		
 	}
 	
 	auto num_atoms() const {

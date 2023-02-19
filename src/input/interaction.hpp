@@ -34,7 +34,7 @@ class interaction {
 
 public:
 
-	// these numbers match the libxc definition
+	// these numbers must match the libxc definition
 	enum class exchange_functional {
 		NONE = 0,
 		LDA = 1,

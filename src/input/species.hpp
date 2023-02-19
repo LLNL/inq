@@ -32,7 +32,7 @@ namespace input {
 
 class species : public pseudo::element {
 
-	struct options;
+	class options;
 		
 public:
 
@@ -112,17 +112,13 @@ public:
 				
 private:
 
-	struct options {
-	private:
+	class options {
 			
 		std::optional<std::string> symbol_;
 		std::optional<std::string> pseudo_file_;		
 		std::optional<double> mass_;
 		std::optional<bool> filter_;
 			
-		options(){
-		}
-
 	public:
 
 		friend options operator|(const options & opt1, const options & opt2){
@@ -139,7 +135,6 @@ private:
 		}
 
 		friend class species;
-			
 	};
 
 	options opts;
@@ -166,7 +161,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
-
 	}
 
 	SECTION("Constructor with options"){
@@ -176,7 +170,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
 		CHECK(s.mass() == 36457.77_a);
-		
 	}
 
 	SECTION("Option mass"){
@@ -185,7 +178,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(s.symbol() == "U");
 		CHECK(s.mass() == 428378.7975_a);
-		
 	}
 	
 	SECTION("Option symbol"){
@@ -194,7 +186,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(s.symbol() == "U235");
 		CHECK(s.mass() == 428378.7975_a);
-		
 	}
 
 	SECTION("Option pseudopotential"){
@@ -204,7 +195,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(s.symbol() == "He");
 		CHECK(s.has_file());
 		CHECK(s.file_path() == "hola");
-		
 	}
 	
 	

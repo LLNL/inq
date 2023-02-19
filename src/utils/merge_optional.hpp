@@ -44,11 +44,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-
 	CHECK(utils::merge_optional(std::optional<bool>{}, std::optional<bool>{}).has_value() == false);
 	CHECK(utils::merge_optional(std::optional<int>{2}, std::optional<int>{}).value() == 2);
 	CHECK(utils::merge_optional(std::optional<double>{}, std::optional<double>{3.4}).value() == 3.4_a);
 	CHECK(utils::merge_optional(std::optional<std::string>{"uno"}, std::optional<std::string>{"dos"}).value() == "dos");
-	
 }
 #endif
