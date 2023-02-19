@@ -64,12 +64,10 @@ math::array<RetElementType, 1> spectrum(quantity<magnitude::energy> maxw, quanti
              //sum += 0.5*(tim[ntime - 1] - tim[ntime - 2])*exp(complex{0.0, 1.0}*ww*tim[ntime - 1])*tse[ntime - 1];
              
              fse[ifreq] = sum;
-           }
-           );
+           });
 
   return freq_series;
 }
-
 
 }
 }

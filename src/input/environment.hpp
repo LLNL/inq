@@ -89,7 +89,6 @@ class environment {
     boost::mpi3::environment mpi_env_;
 		cali::ConfigManager calimgr_;
     mutable parallel::communicator base_comm_;		
-
 };
 
 }

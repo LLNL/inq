@@ -98,7 +98,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(at.position()[0] == 1.0_a);
 		CHECK(at.position()[1] == 2.0_a);
 		CHECK(at.position()[2] == 3.0_a);
-
 	}
 	
 	SECTION("Species composition"){
@@ -108,7 +107,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(at.position()[0] == 1.0_a);
 		CHECK(at.position()[1] == 2.0_a);
 		CHECK(at.position()[2] == 3.0_a);
-
 	}
 	
 	SECTION("Species option composition"){
@@ -119,7 +117,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(at.position()[0] == 1.0_a);
 		CHECK(at.position()[1] == 2.0_a);
 		CHECK(at.position()[2] == 3.0_a);
-
 	}
 
 	SECTION("Element composition"){
@@ -130,7 +127,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(at.position()[0] == 1.0_a);
 		CHECK(at.position()[1] == 2.0_a);
 		CHECK(at.position()[2] == 3.0_a);
-
 	}
 
 	SECTION("String composition"){
@@ -141,7 +137,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(at.position()[0] == 1.0_a);
 		CHECK(at.position()[1] == 2.0_a);
 		CHECK(at.position()[2] == 3.0_a);
-		
 	}
 	
 	SECTION("Char * composition"){

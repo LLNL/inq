@@ -191,17 +191,6 @@ namespace basis {
       return size_;
     }
     
-    template <class array_3d, class array_1d>
-    void gather(const array_3d & grid, array_1d && subgrid) const {
-
-			CALI_CXX_MARK_SCOPE("spherical_grid::gather(3d)");
-				
-			std::transform(points_.begin(), points_.end(), subgrid.begin(),
-										 [& grid](auto point){
-											 return grid[point_data(point).coords_[0]][point_data(point).coords_[1]][point_data(point).coords_[2]];
-										 });
-		}
-
 		template <class array_4d>
 		math::array<typename array_4d::element, 2> gather(const array_4d & grid) const {
 
@@ -213,8 +202,6 @@ namespace basis {
 			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 
-			math::prefetch(subgrid);
-			
 			gpu::run(nst, size(),
 							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 sgr[ipoint][ist] = gr[poi[ipoint].coords_[0]][poi[ipoint].coords_[1]][poi[ipoint].coords_[2]][ist];
@@ -231,16 +218,6 @@ namespace basis {
 							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 gr[poi[ipoint].coords_[0]][poi[ipoint].coords_[1]][poi[ipoint].coords_[2]][ist] += sgr[ipoint][ist];
 							 });
-    }
-    
-    template <class array_1d, class array_3d>
-    void scatter(const array_1d & subgrid, array_3d && grid) const{
-
-			CALI_CXX_MARK_SCOPE("spherical_grid::scatter");
-			
-      for(int ipoint = 0; ipoint < size(); ipoint++){
-				grid[point_data(points_[ipoint]).coords_[0]][point_data(points_[ipoint]).coords_[1]][point_data(points_[ipoint]).coords_[2]] = subgrid[ipoint];
-      }
     }
 
 		const double & volume_element() const {
@@ -321,16 +298,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
     CHECK(size == 257);
 
-    math::array<complex, 3> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2]});
-    std::vector<complex> subgrid(sphere.size());
+    math::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 1});
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data_elements()[ii] = 0.0;
     
-    sphere.gather(grid, subgrid);
+    auto subgrid = sphere.gather(grid);
 
-    for(unsigned ii = 0; ii < subgrid.size(); ii++) subgrid[ii] = 1.0; 
+    for(unsigned ii = 0; ii < subgrid.size(); ii++) subgrid[ii][0] = 1.0; 
     
-    sphere.scatter(subgrid, grid);
+    sphere.scatter_add(subgrid, grid);
 
     double sum = 0.0;
 		for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
@@ -349,11 +325,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(size == 257);
     
     math::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 20}, 0.0);
-    math::array<complex, 2> subgrid({sphere.size(), 20}, 0.0);
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data_elements()[ii] = 1.0;
     
-    sphere.gather(grid, subgrid);
+    auto subgrid = sphere.gather(grid);
 
     double sum = 0.0;
 		for(long ii = 0; ii < subgrid.num_elements(); ii++) sum += real(subgrid.data_elements()[ii]);
@@ -361,9 +336,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(sum == Approx(20.0*257.0));
     
-    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data_elements()[ii] = 0.0;
+    for(long ii = 0; ii < subgrid.num_elements(); ii++) subgrid.data_elements()[ii] = -1.0;
     
-		sphere.scatter(subgrid, grid);
+		sphere.scatter_add(subgrid, grid);
 
     sum = 0.0;
 		for(long ii = 0; ii < grid.num_elements(); ii++) sum += real(grid.data_elements()[ii]);
@@ -381,13 +356,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
     CHECK(size == 257);
 
-    math::array<complex, 6> grid({1, pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 2, 20}, 0.0);
-    math::array<complex, 3> subgrid({sphere.size(), 2, 20}, 0.0);
-
-    sphere.gather(grid[0], subgrid);
-
-    sphere.scatter(subgrid, grid[0]);
-    
   }
 
   SECTION("Point -l/2 -l/2 -l/2"){

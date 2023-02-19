@@ -41,9 +41,7 @@ struct loc_pot {
 	GPU_FUNCTION auto operator()(long ip) const {
 		return (v1[ip] + v2[ip])*gdensityp[ip];
 	}
-
 };
-
 
 template <typename HamiltonianType>
 math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
@@ -73,13 +71,11 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 		electrons.full_comm_.all_reduce_in_place_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
 	}
 	
-	//ionic force
 	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot_);
 
 	math::array<vector3<double>, 1> forces_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 
-	{
-		CALI_CXX_MARK_SCOPE("forces_local");
+	{ CALI_CXX_MARK_SCOPE("forces_local");
 		
 		solvers::poisson poisson_solver;
 		
@@ -99,7 +95,6 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 			CALI_CXX_MARK_SCOPE("forces_local::reduce");
 			electrons.density_basis_.comm().all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size());
 		}
-		
 	}
 
 	math::array<vector3<double>, 1> forces(ions.geo().num_atoms());

@@ -64,7 +64,6 @@ public:
 		if(spin == spin_config::NON_COLLINEAR) spinor_dim_ = 2;
 		
 		num_electrons_ = nelectrons;
-
 	}
 
 	int num_states() const {
@@ -116,7 +115,6 @@ public:
 
 	template <class CommType, typename EigType, typename FunctionType>
 	auto get_efermi(CommType & comm, double nelec, EigType const & eig, FunctionType function){
-
 			
 		int const nitmax = 200;
 		double const tol = 1e-10;
@@ -147,9 +145,7 @@ public:
 			if(fabs(sumq - nelec) <= tol) break;
 			if(sumq <= nelec) emin = efermi;
 			if(sumq >= nelec) emax = efermi;
-			
 		}
-
 		return efermi;		
 	}
 	
@@ -213,7 +209,6 @@ public:
 			for(long ie = 0; ie < feig.size(); ie++){
 				focc[ie] = max_occ_*func(efermi, feig[ie]);
 			}
-			
 		}
 
 		for(long ie = 0; ie < feig.size(); ie++) focc[ie] /= nkpoints_;
@@ -221,7 +216,6 @@ public:
 		assert(fabs(comm.all_reduce_value(operations::sum(focc)) - num_electrons_) <= 1e-10);
 		
 		return efermi;
-		
 	}
 	
 private:

@@ -29,7 +29,6 @@ template <class PointsType>
 auto interpolation_coefficients(PointsType const & points, double const pos = 0.0){
 
   int nn = points.size();
-
   PointsType coeff(nn);
 
   for(auto ii = 0; ii < nn; ii++){
@@ -39,7 +38,6 @@ auto interpolation_coefficients(PointsType const & points, double const pos = 0.
       coeff[ii] = coeff[ii]*(pos - points[kk])/(points[ii] - points[kk]);
     }
   }
-
   return coeff;
 }
 

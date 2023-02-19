@@ -89,7 +89,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(kpts.is_shifted()[0] == 0);
     CHECK(kpts.is_shifted()[1] == 0);
     CHECK(kpts.is_shifted()[2] == 0);
-    
 	}
   
 	SECTION("Grid - one argument"){
@@ -101,7 +100,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(kpts.is_shifted()[0] == 0);
     CHECK(kpts.is_shifted()[1] == 0);
     CHECK(kpts.is_shifted()[2] == 0);
-    
 	}
 	
 	SECTION("Grid - two arguments"){
@@ -113,7 +111,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(kpts.is_shifted()[0] == 1);
     CHECK(kpts.is_shifted()[1] == 1);
     CHECK(kpts.is_shifted()[2] == 1);
-    
 	}
 }
 #endif

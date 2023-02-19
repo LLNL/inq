@@ -132,15 +132,6 @@ public:
 
 		amatrix[size][size] = 0.0;
 			
-		//std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << std::endl;
-		//std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << std::endl;
-
-		/*
-			std::cout << amatrix[0][0] << '\t' << amatrix[0][1] << '\t' << amatrix[0][2] << std::endl;
-			std::cout << amatrix[1][0] << '\t' << amatrix[1][1] << '\t' << amatrix[1][2] << std::endl;
-			std::cout << amatrix[2][0] << '\t' << amatrix[2][1] << '\t' << amatrix[2][2] << std::endl;
-		*/
-			
 		// REDUCE GRID amatrix
 
 		math::array<element_type, 1> alpha(size + 1, 0.0);
@@ -165,10 +156,6 @@ public:
 		std::cout << std::endl;
 		std::cout << "sumalpha = " << sumalpha << std::endl;
 
-		//			for(int ii = 0; ii < size; ii++) alpha[ii] = 0.0;
-		/*			alpha[size - 2] = 1.0 - mix_factor_;
-						alpha[size - 1] = mix_factor_;*/
-	
 		{
 			std::fill(input_value.begin(), input_value.end(), 0.0);
 				

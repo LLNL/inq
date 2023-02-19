@@ -71,7 +71,6 @@ vector3<double> dipole(systems::ions const & ions, systems::electrons const & el
 	return dipole(ions.geo_, electrons.atomic_pot_) + dipole(electrons.density());
 }
 
-
 }
 }
 #endif

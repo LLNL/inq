@@ -154,7 +154,6 @@ namespace input {
 		std::optional<bool> subspace_diag_;
 		std::optional<int> scf_steps_;
 		std::optional<bool> calc_forces_;
-		
   };
 }
 }
@@ -176,7 +175,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(solver.eigensolver() == input::scf::scf_eigensolver::STEEPEST_DESCENT);
     CHECK(solver.mixing() == 0.3_a);
-    
   }
 
   SECTION("Composition"){
@@ -185,8 +183,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(solver.calc_forces());
     CHECK(solver.mixing() == 0.05_a);
-    
   }
-
 }
 #endif

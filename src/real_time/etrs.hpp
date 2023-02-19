@@ -81,12 +81,6 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		double delta = operations::integral_sum_absdiff(old_density, electrons.spin_density());
 		auto done = (delta < scf_threshold) or (iscf == nscf - 1);
 		
-		// This is an alternative approach, but it is not numerically exact so I don't want to use it until we test it exhaustively
- 		// //if we are not converged propagate back
-		// if(not done) {
-		//	for(auto & phi : electrons.lot())	operations::exponential_in_place(ham, complex(0.0, -dt/2.0), phi);
-		//}
-		
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 
 		if(done) break;

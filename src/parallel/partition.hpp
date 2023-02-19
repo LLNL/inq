@@ -225,7 +225,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		for(long ig = part.start(); ig < part.end(); ig++){
 			CHECK(part.location(ig) == comm.rank());
 		}
-		
 	}
 
 	long factor = 13;
@@ -273,7 +272,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		for(long ig = part.start(); ig < part.end(); ig++){
 			CHECK(part.location(ig) == comm.rank());
 		}
-		
 	}
 
 	SECTION("Small sizes"){

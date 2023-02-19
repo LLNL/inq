@@ -183,9 +183,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace operations;
 	
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
-	auto set_comm = basis::set_subcomm(cart_comm);
-	auto basis_comm = basis::basis_subcomm(cart_comm);	
-
+	auto basis_comm = basis::basis_subcomm(cart_comm);
+ 
 	double lx = 9;
 	double ly = 12;
 	double lz = 10;

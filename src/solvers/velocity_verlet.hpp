@@ -45,10 +45,7 @@ void propagate_velocities(double dt, AccelType const & accel, VelType & velociti
 
 	assert(long(accel.size()) == long(velocities.size()));
 
-	for(long ii = 0; ii < long(accel.size()); ii++){
-		velocities[ii] += 0.5*dt*accel[ii];
-	}
-	
+	for(long ii = 0; ii < long(accel.size()); ii++) velocities[ii] += 0.5*dt*accel[ii];
 }
 
 }

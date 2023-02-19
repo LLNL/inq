@@ -50,7 +50,6 @@ struct crank_nicolson_op {
 	}
 };
 
-
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
 void crank_nicolson(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 
@@ -98,7 +97,6 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 
 	electrons.spin_density() = observables::density::calculate(electrons);
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-	
 }
 
 }
