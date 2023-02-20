@@ -95,16 +95,21 @@ public:
 		
 		double efunc = 0.0;
 		basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
-		
+
+		auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
+		if(exchange_.requires_gradient() or correlation_.requires_gradient()){
+			density_gradient.emplace(operations::gradient(full_density));
+		}
+			
 		if(exchange_.true_functional()){
-			exchange_(full_density, efunc, vfunc);
+			exchange_(full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 		}
 		
 		if(correlation_.true_functional()){
-			correlation_(full_density, efunc, vfunc);
+			correlation_(full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
