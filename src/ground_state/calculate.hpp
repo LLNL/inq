@@ -1,6 +1,6 @@
 /* -*- indent-tabs-mode: t -*- */
 
-//  Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
+//  Copyright (C) 2019-2023 Xavier Andrade, Alfredo A. Correa
 
 #ifndef INQ__GROUND_STATE__CALCULATE
 #define INQ__GROUND_STATE__CALCULATE
@@ -11,7 +11,6 @@
 #include <basis/real_space.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <states/ks_states.hpp>
-#include <hamiltonian/calculate_energy.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/energy.hpp>
@@ -165,14 +164,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		CALI_MARK_END("mixing");
 
 		{
-			CALI_CXX_MARK_SCOPE("energy_calculation");
-
-			auto ecalc = hamiltonian::calculate_energy(ham, electrons);
-			
-			res.energy.eigenvalues = ecalc.sum_eigenvalues_;
-			res.energy.nonlocal = ecalc.nonlocal_;
-			res.energy.hf_exchange = ecalc.hf_exchange_;
-
+			auto normres = res.energy.calculate(ham, electrons);
 			auto energy_diff = (res.energy.eigenvalues - old_energy)/electrons.states().num_electrons();
 
 			electrons.full_comm_.barrier();
@@ -183,7 +175,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 			if(solver.verbose_output() and console){
 				console->info("SCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
-											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_convergence(electrons, ecalc.normres_));
+											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_convergence(electrons, normres));
 			}
 			
 			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
@@ -192,7 +184,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				
 				auto all_eigenvalues = parallel::gather(+electrons.eigenvalues()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
 				auto all_occupations = parallel::gather(+electrons.occupations()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
-				auto all_normres = parallel::gather(+ecalc.normres_[ilot], electrons.lot()[ilot].set_part(), comm, 0);
+				auto all_normres = parallel::gather(+normres[ilot], electrons.lot()[ilot].set_part(), comm, 0);
 				
 				if(solver.verbose_output() and console){
 					for(int istate = 0; istate < electrons.states().num_states(); istate++){
@@ -217,11 +209,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	//make sure we have a density consistent with phi
 	electrons.spin_density() = observables::density::calculate(electrons);
 	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
-	
-	auto ecalc = hamiltonian::calculate_energy(ham, electrons);
-	res.energy.eigenvalues = ecalc.sum_eigenvalues_;
-	res.energy.nonlocal = ecalc.nonlocal_;
-	res.energy.hf_exchange = ecalc.hf_exchange_;
+	res.energy.calculate(ham, electrons);
 	
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
@@ -232,8 +220,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	} else {
 		res.dipole = vector3<double>(0.);
 	}
-
-
+	
 	if(console) console->trace("calculate ended normally");
 	return res;
 }
