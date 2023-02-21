@@ -33,9 +33,8 @@ class calculate_energy{
 public:
 
 	template <typename HamType>
-	calculate_energy(HamType const & ham, systems::electrons const & el) :
-		normres_    ({static_cast<size_type>(el.lot().size()), el.max_local_size()}),
-		eigenvalues_({static_cast<size_type>(el.lot().size()), el.max_local_size()})
+	calculate_energy(HamType const & ham, systems::electrons & el) :
+		normres_    ({static_cast<size_type>(el.lot().size()), el.max_local_size()})
 	{
 			
 		sum_eigenvalues_ = 0.0;
@@ -47,8 +46,8 @@ public:
 		for(auto & phi : el.lot()){
 			
 			auto residual = ham(phi);
-			eigenvalues_[iphi] = operations::overlap_diagonal_normalized(residual, phi);
-			operations::shift(-1.0, eigenvalues_[iphi], phi, residual);
+			el.eigenvalues()[iphi] = operations::overlap_diagonal_normalized(residual, phi, [] GPU_FUNCTION (auto xx){ return real(xx);});
+			operations::shift(-1.0, el.eigenvalues()[iphi], phi, residual);
 				
 			normres_[iphi] = operations::overlap_diagonal(residual);
 			auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);
@@ -56,7 +55,7 @@ public:
 				
 			auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 				
-			sum_eigenvalues_ += operations::sum(el.occupations()[iphi], eigenvalues_[iphi], energy_term);
+			sum_eigenvalues_ += operations::sum(el.occupations()[iphi], el.eigenvalues()[iphi], energy_term);
 			nonlocal_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
 			hf_exchange_ += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
 			state_conv_ += operations::sum(el.occupations()[iphi], normres_[iphi], [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
@@ -74,7 +73,6 @@ public:
 	}
 
 	math::array<complex, 2> normres_;
-	math::array<complex, 2> eigenvalues_;
 
 	using size_type = math::array<complex, 2>::size_type;
 	using extensions_type = math::array<complex, 2>::extensions_type;

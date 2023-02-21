@@ -176,7 +176,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 				auto comm = electrons.lot()[ilot].set_comm();
 				
-				auto all_eigenvalues = parallel::gather(+ecalc.eigenvalues_[ilot], electrons.lot()[ilot].set_part(), comm, 0);
+				auto all_eigenvalues = parallel::gather(+electrons.eigenvalues()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
 				auto all_occupations = parallel::gather(+electrons.occupations()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
 				auto all_normres = parallel::gather(+ecalc.normres_[ilot], electrons.lot()[ilot].set_part(), comm, 0);
 				
