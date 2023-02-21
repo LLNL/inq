@@ -66,7 +66,7 @@ namespace hamiltonian {
 			for(auto & phi : el.lot()){
 				
 				auto residual = ham(phi);
-				el.eigenvalues()[iphi] = operations::overlap_diagonal_normalized(residual, phi, [] GPU_FUNCTION (auto xx){ return real(xx);});
+				el.eigenvalues()[iphi] = operations::overlap_diagonal_normalized(residual, phi, operations::real_part{});
 				operations::shift(-1.0, el.eigenvalues()[iphi], phi, residual);
 				
 				normres[iphi] = operations::overlap_diagonal(residual);

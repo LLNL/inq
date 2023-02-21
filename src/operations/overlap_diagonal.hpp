@@ -129,6 +129,13 @@ struct identity {
 	}
 };
 
+struct real_part {
+	template <typename Type>
+	GPU_FUNCTION auto operator()(Type const tt) const {
+		return real(tt);
+	}
+};
+
 template <class field_set_type, typename Transform = identity>
 auto overlap_diagonal_normalized(const field_set_type & phi1, const field_set_type & phi2, Transform trans = {}) -> math::array<decltype(trans(typename field_set_type::element_type{})), 1> {
 
