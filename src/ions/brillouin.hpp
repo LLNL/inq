@@ -79,7 +79,19 @@ public:
   auto kpoint_weight(int ik) const {
     return 1.0/grid_.num();
   }
-  
+	
+	template<class OStream>
+	friend OStream& operator<<(OStream& os, brillouin const & self){
+		os << std::endl;		
+		os << "  Number of kpoints = " << self.size() << std::endl;
+		for(int ikpt = 0; ikpt < self.size(); ikpt++){
+			os << "  k-point\t" << ikpt << " =\t" << self.kpoint(ikpt)/(2.0*M_PI) << "\tweight =\t" << self.kpoint_weight(ikpt) << std::endl;
+		}
+		os << std::endl;
+		return os;
+	}
+	
+	
 private:
 
   input::kpoints grid_;
