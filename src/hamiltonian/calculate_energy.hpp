@@ -40,7 +40,6 @@ public:
 		sum_eigenvalues_ = 0.0;
 		nonlocal_ = 0.0;
 		hf_exchange_ = 0.0;
-		state_conv_ = 0.0;
 
 		int iphi = 0;
 		for(auto & phi : el.lot()){
@@ -58,7 +57,6 @@ public:
 			sum_eigenvalues_ += operations::sum(el.occupations()[iphi], el.eigenvalues()[iphi], energy_term);
 			nonlocal_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
 			hf_exchange_ += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
-			state_conv_ += operations::sum(el.occupations()[iphi], normres_[iphi], [](auto occ, auto nres){ return fabs(occ)*fabs(nres); });
 
 			iphi++;
 		}
@@ -66,12 +64,21 @@ public:
 		el.lot_states_comm_.all_reduce_n(&sum_eigenvalues_, 1);
 		el.lot_states_comm_.all_reduce_n(&nonlocal_       , 1);
 		el.lot_states_comm_.all_reduce_n(&hf_exchange_    , 1);
-		el.lot_states_comm_.all_reduce_n(&state_conv_     , 1);
-
-		state_conv_ /= el.states().num_electrons();
-
 	}
 
+	auto state_convergence(systems::electrons & el) const {
+		auto state_conv = 0.0;
+
+		for(int iphi = 0; iphi < el.lot_size(); iphi++){
+			state_conv += operations::sum(el.occupations()[iphi], normres_[iphi], [](auto occ, auto nres){ return fabs(occ*nres); });
+		}
+		
+		el.lot_states_comm_.all_reduce_n(&state_conv, 1);
+		state_conv /= el.states().num_electrons();
+
+		return state_conv;
+	}
+	
 	math::array<complex, 2> normres_;
 
 	using size_type = math::array<complex, 2>::size_type;
@@ -80,7 +87,7 @@ public:
 	double sum_eigenvalues_;
 	double nonlocal_;
 	double hf_exchange_;
-	double state_conv_;
+
 };
 
 }

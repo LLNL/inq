@@ -166,10 +166,10 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 			electrons.full_comm_.barrier();
 			iter_start_time = std::chrono::high_resolution_clock::now();
-			
+
 			if(solver.verbose_output() and console){
 				console->info("SCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
-											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_conv_);
+											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_convergence(electrons));
 			}
 			
 			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
