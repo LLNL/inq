@@ -50,6 +50,20 @@
 namespace inq {
 namespace ground_state {
 
+template <typename NormResType>
+auto state_convergence(systems::electrons & el, NormResType const & normres) {
+	auto state_conv = 0.0;
+	
+	for(int iphi = 0; iphi < el.lot_size(); iphi++){
+		state_conv += operations::sum(el.occupations()[iphi], normres[iphi], [](auto occ, auto nres){ return fabs(occ*nres); });
+	}
+	
+	el.lot_states_comm_.all_reduce_n(&state_conv, 1);
+	state_conv /= el.states().num_electrons();
+	
+	return state_conv;
+}
+
 ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {}){
 
 	CALI_CXX_MARK_FUNCTION;
@@ -169,7 +183,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 			if(solver.verbose_output() and console){
 				console->info("SCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
-											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, ecalc.state_convergence(electrons));
+											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_convergence(electrons, ecalc.normres_));
 			}
 			
 			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){

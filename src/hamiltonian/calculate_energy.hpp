@@ -65,19 +65,6 @@ public:
 		el.lot_states_comm_.all_reduce_n(&nonlocal_       , 1);
 		el.lot_states_comm_.all_reduce_n(&hf_exchange_    , 1);
 	}
-
-	auto state_convergence(systems::electrons & el) const {
-		auto state_conv = 0.0;
-
-		for(int iphi = 0; iphi < el.lot_size(); iphi++){
-			state_conv += operations::sum(el.occupations()[iphi], normres_[iphi], [](auto occ, auto nres){ return fabs(occ*nres); });
-		}
-		
-		el.lot_states_comm_.all_reduce_n(&state_conv, 1);
-		state_conv /= el.states().num_electrons();
-
-		return state_conv;
-	}
 	
 	math::array<complex, 2> normres_;
 
