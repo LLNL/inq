@@ -122,8 +122,15 @@ struct overlap_diagonal_normalized_mult {
 	
 };
 
-template <class field_set_type>
-math::array<typename field_set_type::element_type, 1> overlap_diagonal_normalized(const field_set_type & phi1, const field_set_type & phi2){
+struct identity {
+	template <typename Type>
+	GPU_FUNCTION auto operator()(Type const tt) const {
+		return tt;
+	}
+};
+
+template <class field_set_type, typename Transform = identity>
+auto overlap_diagonal_normalized(const field_set_type & phi1, const field_set_type & phi2, Transform trans = {}) -> math::array<decltype(trans(typename field_set_type::element_type{})), 1> {
 
 	CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized");
 
@@ -138,11 +145,11 @@ math::array<typename field_set_type::element_type, 1> overlap_diagonal_normalize
 		phi1.basis().comm().all_reduce_in_place_n(reinterpret_cast<type *>(raw_pointer_cast(overlap_and_norm.data_elements())), 2*overlap_and_norm.size(), std::plus<>{});
 	}
 
-	math::array<type, 1> overlap_vector(phi1.set_part().local_size());
+	math::array<decltype(trans(typename field_set_type::element_type{})), 1> overlap_vector(phi1.set_part().local_size());
 
 	gpu::run(overlap_vector.size(),
-					 [olp = begin(overlap_vector), olpnrm = begin(overlap_and_norm)] GPU_LAMBDA (auto ii){
-						 olp[ii] = olpnrm[ii].value/olpnrm[ii].norm;
+					 [olp = begin(overlap_vector), olpnrm = begin(overlap_and_norm), trans] GPU_LAMBDA (auto ii){
+						 olp[ii] = trans(olpnrm[ii].value/olpnrm[ii].norm);
 					 });
 
 	return overlap_vector;
