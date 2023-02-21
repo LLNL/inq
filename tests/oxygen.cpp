@@ -49,7 +49,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par(), ions, box, input::config::spin_polarized() | input::config::temperature(1000.0_K) | input::config::extra_states(3));
 	ground_state::initial_guess(ions, electrons);
 		
-	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe());
+	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-9_Ha));
 	
 	match.check("total energy",        result.energy.total()    ,  -32.983196226397);
 	match.check("kinetic energy",      result.energy.kinetic()  ,   21.076732147146);

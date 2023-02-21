@@ -202,7 +202,13 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 	//make sure we have a density consistent with phi
 	electrons.spin_density() = observables::density::calculate(electrons);
-
+	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
+	
+	auto ecalc = hamiltonian::calculate_energy(ham, electrons);
+	res.energy.eigenvalues = ecalc.sum_eigenvalues_;
+	res.energy.nonlocal = ecalc.nonlocal_;
+	res.energy.hf_exchange = ecalc.hf_exchange_;
+	
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 	if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
