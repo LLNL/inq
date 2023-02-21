@@ -212,7 +212,8 @@ public:
 		if(logger()){
 			logger()->info("constructed with geometry {}", ions.geo_);
 			logger()->info("constructed with cell {}", ions.cell_);
-			if(ions.geo().num_atoms() > 0) logger()->info("system symmetries: " + ions.symmetry_string());	
+			if(ions.geo().num_atoms() > 0) logger()->info("system symmetries: " + ions.symmetry_string());
+			logger()->info("constructed with Brillouin zone sampling {}", brillouin_zone_);
 		}
 
 		auto myid = gpu::id();
