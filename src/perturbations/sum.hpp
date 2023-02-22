@@ -64,6 +64,13 @@ public:
 		perta_.potential(time, potential);
 		pertb_.potential(time, potential);
     }
+	void uniform_induced_potential(vector3<double,covariant> & induced, vector3<double,covariant> & velocity, vector3<double,covariant> & accel, double const dt, const double volume, vector3<double,covariant> const & current) const {
+		perta_.uniform_induced_potential(induced, velocity, accel, dt, volume, current);
+		pertb_.uniform_induced_potential(induced, velocity, accel, dt, volume, current);
+	}
+	auto has_uniform_induced_potential() const {
+		return perta_.has_uniform_induced_potential() or pertb_.has_uniform_induced_potential();
+	}
 
 };
 

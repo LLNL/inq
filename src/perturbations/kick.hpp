@@ -16,6 +16,7 @@
 #include <states/orbital_set.hpp>
 #include <perturbations/gauge.hpp>
 #include <perturbations/none.hpp>
+#include <perturbations/dynamics.hpp>
 
 namespace inq {
 namespace perturbations {
@@ -25,10 +26,12 @@ class kick : public perturbations::none {
 public:
 
 	template <typename CellType>
-	kick(CellType const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
+	kick(CellType const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed, dynamics arg_dynamics = dynamics::none, const double alpha = -4*M_PI):
 		efield_(-arg_kick_field),
 		vpot_(-arg_kick_field),		
-		periodicity_(cell.periodicity())
+		periodicity_(cell.periodicity()),
+		dynamics_(arg_dynamics),
+		alpha_(alpha) 
 	{
 		if(arg_gauge == gauge::mixed){
 			for(int idir = 0; idir < periodicity_; idir++) efield_[idir] = 0.0;
@@ -68,11 +71,34 @@ public:
 		return vpot_;
 	}
 	
+	auto has_induced_vector_potential() const {
+		return dynamics_ == dynamics::polarization;
+	}
+	void uniform_induced_potential(vector3<double,covariant> & induced, vector3<double,covariant> & velocity, vector3<double,covariant> & accel, double const dt, const double volume, vector3<double,covariant> const & current) const {
+		if(dynamics_==dynamics::polarization){
+			induced += 0.5*dt*velocity;
+			velocity += 0.5*dt*accel;
+
+//			std::cout<< "volume="<< volume <<std::endl;
+//			std::cout<< "current="<< current <<std::endl;
+
+			accel = alpha_*(-current)/volume;
+
+//			std::cout<< "accel="<< accel <<std::endl;
+
+			velocity += 0.5*dt*accel;
+			induced += 0.5*dt*velocity;
+		}
+	}
+
 private:
 
 	vector3<double> efield_;
 	vector3<double> vpot_;	
 	int periodicity_;
+
+	dynamics dynamics_;
+	double alpha_;
 
 };
 
