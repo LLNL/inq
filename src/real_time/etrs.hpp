@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <observables/density.hpp>
+#include <observables/current.hpp>
 #include <operations/exponential.hpp>
 #include <systems/electrons.hpp>
 #include <systems/ions.hpp>
@@ -18,8 +19,8 @@
 namespace inq {
 namespace real_time {
 
-template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
-void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
+template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType, class PertType>
+void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy, PertType & pert){
 
 	int const nscf = 5;
 	double const scf_threshold = 5e-5;
@@ -46,9 +47,23 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
 	}
 
+	auto orig_current = observables::current(ions, electrons, ham);
+	auto orig_induced=ham.vp_induced;
+	auto orig_velocity=ham.vp_velocity;
+	auto orig_accel=ham.vp_accel;
+	pert.uniform_induced_potential(orig_induced, orig_velocity, orig_accel, dt, ions.cell().volume(), orig_current);
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 	ham.exchange.update(electrons);
 	
+	auto orig_vp=ham.uniform_vector_potential();
+
+	auto tmp_current = observables::current(ions, electrons, ham);
+	auto tmp_induced=ham.vp_induced;
+	auto tmp_velocity=ham.vp_velocity;
+	auto tmp_accel=ham.vp_accel;
+	pert.uniform_induced_potential(tmp_induced, tmp_velocity, tmp_accel, dt, ions.cell().volume(), tmp_current);
+	ham.uniform_vector_potential()+=tmp_induced;
+
 	electrons.kpin() = save;
 	
 	//propagate the other half step with H(t + dt) self-consistently
@@ -70,9 +85,20 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 		ham.exchange.update(electrons);
 		
+		tmp_current = observables::current(ions, electrons, ham);
+		tmp_induced=ham.vp_induced;
+		tmp_velocity=ham.vp_velocity;
+		tmp_accel=ham.vp_accel;
+		pert.uniform_induced_potential(tmp_induced, tmp_velocity, tmp_accel, dt, ions.cell().volume(), tmp_current);
+		ham.uniform_vector_potential()+=tmp_induced;
+
 		if(done) break;
 	}
 	
+	ham.uniform_vector_potential()=orig_vp+orig_induced;
+	ham.vp_induced=orig_induced;
+	ham.vp_velocity=orig_velocity;
+	ham.vp_accel=orig_accel;
 }
 
 }
