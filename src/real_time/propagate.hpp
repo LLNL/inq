@@ -1,12 +1,11 @@
 /* -*- indent-tabs-mode: t -*- */
 
-//  Copyright (C) 2020-2021 Xavier Andrade, Alfredo A. Correa
+//  Copyright (C) 2020-2023 Xavier Andrade, Alfredo A. Correa
 
 #ifndef INQ__REAL_TIME__PROPAGATE
 #define INQ__REAL_TIME__PROPAGATE
 
 #include <systems/ions.hpp>
-#include <hamiltonian/calculate_energy.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/forces.hpp>
 #include <operations/overlap_diagonal.hpp>
@@ -42,9 +41,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), 0.0);
 
-		auto ecalc = hamiltonian::calculate_energy(ham, electrons);
-		energy.eigenvalues = ecalc.sum_eigenvalues_;
-		
+		energy.calculate(ham, electrons);
 		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
 		
 		if(electrons.full_comm_.root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
@@ -68,8 +65,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 				break;
 			}
 
-			auto ecalc = hamiltonian::calculate_energy(ham, electrons);
-			energy.eigenvalues = ecalc.sum_eigenvalues_;
+			energy.calculate(ham, electrons);
 			
 			if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 			

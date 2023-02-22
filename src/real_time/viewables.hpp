@@ -1,13 +1,11 @@
 /* -*- indent-tabs-mode: t -*- */
 
-//  Copyright (C) 2020-2021 Xavier Andrade, Alfredo A. Correa
+//  Copyright (C) 2020-2023 Xavier Andrade, Alfredo A. Correa
 
 #ifndef INQ__REAL_TIME__VIEWABLES
 #define INQ__REAL_TIME__VIEWABLES
 
 #include <systems/ions.hpp>
-#include <hamiltonian/calculate_energy.hpp>
-#include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/forces.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <observables/dipole.hpp>
