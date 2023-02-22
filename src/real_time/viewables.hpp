@@ -121,6 +121,17 @@ public:
 		return occ;
 	}
 	
+	auto induced_field() const{
+		return ham_.vp_induced;
+	}
+
+	auto induced_field_vel() const{
+		return ham_.vp_velocity;
+	}
+	auto induced_field_accel() const{
+		return ham_.vp_accel;
+	}
+
 };
 
 }
