@@ -68,7 +68,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 			switch(options.propagator()){
 			case input::rt::electron_propagator::ETRS :
-				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
+				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy, pert);
 				break;
 			case input::rt::electron_propagator::CRANK_NICOLSON :
 				crank_nicolson(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
