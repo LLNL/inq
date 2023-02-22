@@ -21,11 +21,13 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <utils/merge_optional.hpp>
+
 #include <cassert>
 #include <optional>
 #include <stdexcept>
 
-#include <utils/merge_optional.hpp>
+#include <xc.h>
 
 namespace inq {
 namespace input {
@@ -34,22 +36,21 @@ class interaction {
 
 public:
 
-	// these numbers must match the libxc definition
 	enum class exchange_functional {
 		NONE = 0,
-		LDA = 1,
-		PBE = 101,
-		B = 106,
-		B3LYP = 402,
-		PBE0 = 406,
+		LDA = XC_LDA_X,
+		PBE = XC_GGA_X_PBE,
+		B = XC_GGA_X_B88,
+		B3LYP = XC_HYB_GGA_XC_B3LYP,
+		PBE0 = XC_HYB_GGA_XC_PBEH,
 		HARTREE_FOCK = -1
 	};
 
 	enum class correlation_functional {
 		NONE = 0,
-		LDA_PZ = 9,
-		PBE = 130,
-		LYP = 131
+		LDA_PZ = XC_LDA_C_PZ,
+		PBE = XC_GGA_C_PBE,
+		LYP = XC_GGA_C_LYP
 	};
 	
 	enum class induced_vector_potential {
