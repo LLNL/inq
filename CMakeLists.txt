@@ -194,10 +194,10 @@ target_include_directories(inq
   INTERFACE
   ${spglib_INCLUDE_DIRS}
 )
-# target_link_libraries(inq
-#   INTERFACE
-#   ${spglib_LIBRARIES}
-# )
+target_link_libraries(inq
+   INTERFACE
+   ${spglib_LIBRARIES}
+)
 
 ########################
 # BOOST
