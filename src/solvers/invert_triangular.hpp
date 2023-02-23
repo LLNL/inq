@@ -40,32 +40,24 @@ extern "C" void  ztrtri(const char * uplo, const char * diag, const int * n, inq
 namespace inq {
 namespace solvers {
 
-void invert_triangular(math::subspace_matrix<double> & matrix){
+template <typename Type>
+void invert_triangular(math::subspace_matrix<Type> & matrix){
   CALI_CXX_MARK_SCOPE("invert_triangular_double");
 
 	int nn = std::get<0>(sizes(matrix.array()));
 	int info;
-  dtrtri("U", "N", &nn, raw_pointer_cast(matrix.array().data_elements()), &nn, &info);
 
+	if constexpr (std::is_same_v<Type, double>){
+		dtrtri("U", "N", &nn, raw_pointer_cast(matrix.array().data_elements()), &nn, &info);
+	} else {
+		static_assert(std::is_same_v<Type, complex>, "invert_triangular is only implemented for double and complex");
+		ztrtri("U", "N", &nn, raw_pointer_cast(matrix.array().data_elements()), &nn, &info);
+	}
+	
 	gpu::run(nn, nn, [mat = begin(matrix.array())] GPU_LAMBDA (auto ii, auto jj){
 		if(ii < jj) mat[ii][jj] = 0.0;
 	});
 }
-
-///////////////////////////////////////////////////////////////////
-
-void invert_triangular(math::subspace_matrix<complex> & matrix){
-  CALI_CXX_MARK_SCOPE("invert_triangular_complex");
-
-	int nn = std::get<0>(sizes(matrix.array()));
-	int info;
-  ztrtri("U", "N", &nn, raw_pointer_cast(matrix.array().data_elements()), &nn, &info);
-
-	gpu::run(nn, nn, [mat = begin(matrix.array())] GPU_LAMBDA (auto ii, auto jj){
-		if(ii < jj) mat[ii][jj] = 0.0;
-	});
-}
-
 
 }
 }
