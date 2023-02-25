@@ -114,5 +114,93 @@ public:
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
+	using namespace inq;
+	using namespace inq::magnitude;
+	using Catch::Approx;
+	using namespace Catch::literals;
+
+	SECTION("Diamond"){
+
+		auto a =  3.567095_A;
+
+		auto box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(35.0_Ha);
+		auto ions = systems::ions(box);
+		
+		ions.insert("C", {0.0_crys,  0.0_crys,  0.0_crys });
+		ions.insert("C", {0.25_crys, 0.25_crys, 0.25_crys});
+
+		auto bz1 = ions::brillouin(ions, input::kpoints::gamma());
+
+		CHECK(bz1.size() == 1);
+		CHECK(bz1.kpoint(0)[0] == 0.0_a);
+		CHECK(bz1.kpoint(0)[1] == 0.0_a);
+		CHECK(bz1.kpoint(0)[2] == 0.0_a);
+
+		auto bz2 = ions::brillouin(ions, input::kpoints::grid({1, 2, 3}));
+
+		CHECK(bz2.size() == 6);
+
+		CHECK(bz2.kpoint(0)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(0)[1]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(0)[2]/(2*M_PI) == 0.0_a);
+		
+		CHECK(bz2.kpoint(1)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(1)[1]/(2*M_PI) == -0.5_a);
+		CHECK(bz2.kpoint(1)[2]/(2*M_PI) == 0.0_a);
+		
+		CHECK(bz2.kpoint(2)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(2)[1]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(2)[2]/(2*M_PI) == 0.3333333333_a);
+		
+		CHECK(bz2.kpoint(3)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(3)[1]/(2*M_PI) == -0.5_a);
+		CHECK(bz2.kpoint(3)[2]/(2*M_PI) == 0.3333333333_a);
+		
+		CHECK(bz2.kpoint(4)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(4)[1]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(4)[2]/(2*M_PI) == -0.3333333333_a);
+		
+		CHECK(bz2.kpoint(5)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(5)[1]/(2*M_PI) == -0.5_a);
+		CHECK(bz2.kpoint(5)[2]/(2*M_PI) == -0.3333333333_a);
+
+		auto bz3 = ions::brillouin(ions, input::kpoints::grid({2, 2, 2}, true));
+
+		CHECK(bz3.size() == 8);
+
+		CHECK(bz3.kpoint(0)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(0)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(0)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(bz3.kpoint(1)[0]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(1)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(1)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(bz3.kpoint(2)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(2)[1]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(2)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(bz3.kpoint(3)[0]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(3)[1]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(3)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(bz3.kpoint(4)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(4)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(4)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(bz3.kpoint(5)[0]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(5)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(5)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(bz3.kpoint(6)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(6)[1]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(6)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(bz3.kpoint(7)[0]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(7)[1]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(7)[2]/(2*M_PI) == -0.25_a);
+		
+	}
+
 }
 #endif
