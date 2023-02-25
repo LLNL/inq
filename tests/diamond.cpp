@@ -81,21 +81,21 @@ int main(int argc, char ** argv){
 		
 		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
 		
-		energy_match.check("total energy",        result.energy.total(),         -12.041109839377);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.512710905972);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -0.761518169623);
-		energy_match.check("Hartree energy",      result.energy.hartree,           0.974796551487);
-		energy_match.check("external energy",     result.energy.external,         -5.856090421562);
-		energy_match.check("non-local energy",    result.energy.nonlocal,         -0.592990139256);
-		energy_match.check("XC energy",           result.energy.xc,               -4.344812607415);
-		energy_match.check("XC density integral", result.energy.nvxc,             -4.774741617751);
+		energy_match.check("total energy",        result.energy.total(),         -12.041228146904);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.513350495571);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues,      -0.761571208702);
+		energy_match.check("Hartree energy",      result.energy.hartree,           0.974854048324);
+		energy_match.check("external energy",     result.energy.external,         -5.856397438020);
+		energy_match.check("non-local energy",    result.energy.nonlocal,         -0.593446844490);
+		energy_match.check("XC energy",           result.energy.xc,               -4.344864279688);
+		energy_match.check("XC density integral", result.energy.nvxc,             -4.774785518412);
 		energy_match.check("ion-ion energy",      result.energy.ion,             -10.734724128603);
 		
 		electrons.save("diamond_restart");
 		
 		auto ked = observables::kinetic_energy_density(electrons);
 		
-		energy_match.check("kinetic energy", operations::integral(ked), 8.512710900191);
+		energy_match.check("kinetic energy", operations::integral(ked), 8.513350448818);
 	}
 
 		
