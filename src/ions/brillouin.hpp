@@ -29,6 +29,18 @@ namespace ions {
 
 class brillouin {
 
+  input::kpoints grid_;
+  std::vector<int> grid_address_;
+  std::vector<int> map_;
+  vector3<int> is_shifted_;
+
+	auto kpoint_raw(int ik) const {
+    return vector3<double, covariant>{
+			(grid_address_[3*ik + 0] + 0.5*is_shifted_[0])/grid_.dims()[0],
+      (grid_address_[3*ik + 1] + 0.5*is_shifted_[1])/grid_.dims()[1],
+      (grid_address_[3*ik + 2] + 0.5*is_shifted_[2])/grid_.dims()[2]};
+	}
+	
 public:
   
   brillouin(inq::systems::ions const & ions, input::kpoints const & kpts):
@@ -70,10 +82,9 @@ public:
   }
 
   auto kpoint(int ik) const {
-    return 2.0*M_PI*vector3<double, covariant>{
-      (grid_address_[3*ik + 0] + 0.5*is_shifted_[0])/grid_.dims()[0],
-      (grid_address_[3*ik + 1] + 0.5*is_shifted_[1])/grid_.dims()[1],
-      (grid_address_[3*ik + 2] + 0.5*is_shifted_[2])/grid_.dims()[2]};
+		auto kpr = kpoint_raw(ik);
+		kpr.transform([](auto xx){ return (xx >= 0.5) ? xx - 1.0 : xx; });
+    return 2.0*M_PI*kpr;
   }
   
   auto kpoint_weight(int ik) const {
@@ -90,15 +101,6 @@ public:
 		os << std::endl;
 		return os;
 	}
-	
-	
-private:
-
-  input::kpoints grid_;
-  std::vector<int> grid_address_;
-  std::vector<int> map_;
-  vector3<int> is_shifted_;
-  
 };
 
 }
