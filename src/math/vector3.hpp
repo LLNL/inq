@@ -51,6 +51,8 @@ struct covariant {
 
 template <class Type, class Space = cartesian>
 class vector3 {
+
+	Type vec_[3];
 	
 public:
 
@@ -108,8 +110,15 @@ public:
 		return 3;
 	}
 		
+	//TRANSFORMATION
+	template <typename Kernel>
+	void transform(Kernel transformation){
+		vec_[0] = transformation(vec_[0]);
+		vec_[1] = transformation(vec_[1]);
+		vec_[2] = transformation(vec_[2]);		
+	}
+	
 	//COMPARISON
-		
 	GPU_FUNCTION bool operator==(const vector3 & other) const {
 		return vec_[0] == other.vec_[0] && vec_[1] == other.vec_[1] && vec_[2] == other.vec_[2];
 	}
@@ -119,7 +128,6 @@ public:
 	}
 
 	//ADDITION AND SUBSTRACTION
-		
 	GPU_FUNCTION vector3 & operator+=(const vector3 & other){
 		vec_[0] += other.vec_[0];
 		vec_[1] += other.vec_[1];
@@ -259,7 +267,6 @@ public:
 	}
 		
 	// INPUT OUTPUT
-		
 	friend std::ostream& operator <<(std::ostream & out, vector3 const & vv){
 		out << vv.vec_[0] << '\t' << vv.vec_[1] << '\t' << vv.vec_[2];
 		return out;
@@ -269,10 +276,6 @@ public:
 		in >> vv.vec_[0] >> vv.vec_[1] >> vv.vec_[2] ;
 		return in;
 	}
-
-private:
-
-	Type vec_[3];
 
 };
 
@@ -460,6 +463,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(imag(vv1)[0] ==  2.0_a);
 		CHECK(real(vv1)[1] ==  0.2_a);
 		CHECK(imag(vv1)[1] == -1.1_a);
+	SECTION("contravariant and covariant"){
+
+		vector3<double, contravariant> vec(2.0, 3.0, 5.0);
+		vector3<double, covariant> covec(4.1, 0.76, 2.4);
+
+		CHECK(dot(covec, vec) == 22.48_a);
+		
+	}
 		CHECK(real(vv1)[2] ==  0.1_a);
 		CHECK(imag(vv1)[2] ==  0.1_a);
 
@@ -566,6 +577,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(dot(covec, vec) == 22.48_a);
 		
+	}
+	
+	SECTION("transformation"){
+
+		vector3<double> vec(2.0, -3.0, 5.0);
+		vec.transform([](auto xx){ return std::max(xx, 0.0); });
+		
+		CHECK(vec[0] == 2.0_a);
+		CHECK(vec[1] == 0.0_a);
+		CHECK(vec[2] == 5.0_a);
 	}
 }
 #endif
