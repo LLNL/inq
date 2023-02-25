@@ -29,6 +29,18 @@ namespace ions {
 
 class brillouin {
 
+  input::kpoints grid_;
+  std::vector<int> grid_address_;
+  std::vector<int> map_;
+  vector3<int> is_shifted_;
+
+	auto kpoint_raw(int ik) const {
+    return vector3<double, covariant>{
+			(grid_address_[3*ik + 0] + 0.5*is_shifted_[0])/grid_.dims()[0],
+      (grid_address_[3*ik + 1] + 0.5*is_shifted_[1])/grid_.dims()[1],
+      (grid_address_[3*ik + 2] + 0.5*is_shifted_[2])/grid_.dims()[2]};
+	}
+	
 public:
   
   brillouin(inq::systems::ions const & ions, input::kpoints const & kpts):
@@ -70,10 +82,9 @@ public:
   }
 
   auto kpoint(int ik) const {
-    return 2.0*M_PI*vector3<double, covariant>{
-      (grid_address_[3*ik + 0] + 0.5*is_shifted_[0])/grid_.dims()[0],
-      (grid_address_[3*ik + 1] + 0.5*is_shifted_[1])/grid_.dims()[1],
-      (grid_address_[3*ik + 2] + 0.5*is_shifted_[2])/grid_.dims()[2]};
+		auto kpr = kpoint_raw(ik);
+		kpr.transform([](auto xx){ return (xx >= 0.5) ? xx - 1.0 : xx; });
+    return 2.0*M_PI*kpr;
   }
   
   auto kpoint_weight(int ik) const {
@@ -90,15 +101,6 @@ public:
 		os << std::endl;
 		return os;
 	}
-	
-	
-private:
-
-  input::kpoints grid_;
-  std::vector<int> grid_address_;
-  std::vector<int> map_;
-  vector3<int> is_shifted_;
-  
 };
 
 }
@@ -111,6 +113,94 @@ private:
 #include <catch2/catch_all.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+
+	using namespace inq;
+	using namespace inq::magnitude;
+	using Catch::Approx;
+	using namespace Catch::literals;
+
+	SECTION("Diamond"){
+
+		auto a =  3.567095_A;
+
+		auto box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(35.0_Ha);
+		auto ions = systems::ions(box);
+		
+		ions.insert("C", {0.0_crys,  0.0_crys,  0.0_crys });
+		ions.insert("C", {0.25_crys, 0.25_crys, 0.25_crys});
+
+		auto bz1 = ions::brillouin(ions, input::kpoints::gamma());
+
+		CHECK(bz1.size() == 1);
+		CHECK(bz1.kpoint(0)[0] == 0.0_a);
+		CHECK(bz1.kpoint(0)[1] == 0.0_a);
+		CHECK(bz1.kpoint(0)[2] == 0.0_a);
+
+		auto bz2 = ions::brillouin(ions, input::kpoints::grid({1, 2, 3}));
+
+		CHECK(bz2.size() == 6);
+
+		CHECK(bz2.kpoint(0)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(0)[1]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(0)[2]/(2*M_PI) == 0.0_a);
+		
+		CHECK(bz2.kpoint(1)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(1)[1]/(2*M_PI) == -0.5_a);
+		CHECK(bz2.kpoint(1)[2]/(2*M_PI) == 0.0_a);
+		
+		CHECK(bz2.kpoint(2)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(2)[1]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(2)[2]/(2*M_PI) == 0.3333333333_a);
+		
+		CHECK(bz2.kpoint(3)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(3)[1]/(2*M_PI) == -0.5_a);
+		CHECK(bz2.kpoint(3)[2]/(2*M_PI) == 0.3333333333_a);
+		
+		CHECK(bz2.kpoint(4)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(4)[1]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(4)[2]/(2*M_PI) == -0.3333333333_a);
+		
+		CHECK(bz2.kpoint(5)[0]/(2*M_PI) == 0.0_a);
+		CHECK(bz2.kpoint(5)[1]/(2*M_PI) == -0.5_a);
+		CHECK(bz2.kpoint(5)[2]/(2*M_PI) == -0.3333333333_a);
+
+		auto bz3 = ions::brillouin(ions, input::kpoints::grid({2, 2, 2}, true));
+
+		CHECK(bz3.size() == 8);
+
+		CHECK(bz3.kpoint(0)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(0)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(0)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(bz3.kpoint(1)[0]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(1)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(1)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(bz3.kpoint(2)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(2)[1]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(2)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(bz3.kpoint(3)[0]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(3)[1]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(3)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(bz3.kpoint(4)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(4)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(4)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(bz3.kpoint(5)[0]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(5)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(5)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(bz3.kpoint(6)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(bz3.kpoint(6)[1]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(6)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(bz3.kpoint(7)[0]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(7)[1]/(2*M_PI) == -0.25_a);
+		CHECK(bz3.kpoint(7)[2]/(2*M_PI) == -0.25_a);
+		
+	}
 
 }
 #endif
