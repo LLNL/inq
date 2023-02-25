@@ -114,7 +114,7 @@ namespace hamiltonian {
 			
 			for(int jj = 0; jj < nhf; jj++){
 				
-				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_gen_dens");
+				{ CALI_CXX_MARK_SCOPE("exchange_operator::generate_density");
 					gpu::run(nst, phi.basis().local_size(),
 									 [rho = begin(rhoij.matrix()), hfo = begin(hf), ph = begin(phi.matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
 										 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
@@ -123,7 +123,7 @@ namespace hamiltonian {
 
 				poisson_solver_.in_place(rhoij, -phi.kpoint() + kpt[jj]);
 				
-				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_mul_pot");
+				{ CALI_CXX_MARK_SCOPE("exchange_operator::mulitplication");
 					gpu::run(nst, exxphi.basis().local_size(),
 									 [pot = begin(rhoij.matrix()), hfo = begin(hf), exph = begin(exxphi.matrix()), occ = begin(hfocc), jj, factor]
 									 GPU_LAMBDA (auto ist, auto ipoint){
@@ -138,7 +138,7 @@ namespace hamiltonian {
 		void direct(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi, double scale = 1.0) const {
 			if(not enabled()) return;
 			
-			CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
+			CALI_CXX_MARK_SCOPE("exchange_operator::direct");
 			
 			double factor = -0.5*scale*exchange_coefficient_;
 
@@ -185,7 +185,9 @@ namespace hamiltonian {
 
 		//////////////////////////////////////////////////////////////////////////////////
 		
-		void ace(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {			
+		void ace(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
+			CALI_CXX_MARK_SCOPE("exchange_operator::ace");
+			
 			if(not enabled()) return;
 			namespace blas = boost::multi::blas;
 
