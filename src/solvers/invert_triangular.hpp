@@ -48,32 +48,19 @@ void invert_triangular(math::subspace_matrix<Type> & matrix){
 	
 	int nn = std::get<0>(sizes(matrix.array()));
 
-#ifndef ENABLE_CUDA
-	
-	auto matrix_data = raw_pointer_cast(matrix.array().data_elements());
-	int info;
-	
-	if constexpr (std::is_same_v<Type, double>){
-		dtrtri("U", "N", &nn, matrix_data, &nn, &info);
-	} else {
-		ztrtri("U", "N", &nn, matrix_data, &nn, &info);
-	}
+	math::array<Type, 2> inverse({nn, nn});
 
-	gpu::run(nn, nn, [mat = begin(matrix.array())] GPU_LAMBDA (auto ii, auto jj){
-		if(ii < jj) mat[ii][jj] = 0.0;
-	});
-	
-#else
-
-	auto copy = matrix.array();
-
-	gpu::run(nn, nn, [mat = begin(mat.array())] GPU_LAMBDA (auto ii, auto jj){
-		mat[ii][jj] = (ii == jj) ? 1.0 : 0.0;
+	gpu::run(nn, nn, [inv = begin(inverse)] GPU_LAMBDA (auto jj, auto ii){
+		inv[ii][jj] = (ii == jj) ? 1.0 : 0.0;
 	});
 
-	boost::multi::blas::trsm(blas::side::right, blas::filling::upper, 1.0, copy, matrix.array());
-	
-#endif
+	namespace blas = boost::multi::blas;
+	blas::trsm(blas::side::right, blas::filling::upper, 1.0, blas::H(matrix.array()), inverse);
+
+	gpu::run(nn, nn, [mat = begin(matrix.array()), inv = begin(inverse)] GPU_LAMBDA (auto ii, auto jj){
+		mat[ii][jj] = conj(inv[jj][ii]);
+	});
+
 }
 
 }
@@ -133,13 +120,14 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
 				} else {
 					matrix.array()[ii][jj] = cos(ii)*(jj + 0.1) + sin(jj - 0.25)*(ii + 1.0);
 				}
+				if constexpr (std::is_same_v<TestType, complex>) matrix.array()[ii][jj]*= exp(complex(0.0, (ii + 1.0)*(cos(jj) - 0.25)));
 			}
 		}
 
 		auto orig = matrix;
 		
 		solvers::invert_triangular(matrix);
-
+		
 		auto mul = +boost::multi::blas::gemm(1.0, matrix.array(), orig.array());
 
 		for(int ii = 0; ii < nn; ii++){
