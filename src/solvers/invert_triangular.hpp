@@ -48,6 +48,8 @@ void invert_triangular(math::subspace_matrix<Type> & matrix){
 	
 	int nn = std::get<0>(sizes(matrix.array()));
 
+#ifndef ENABLE_CUDA
+	
 	auto matrix_data = raw_pointer_cast(matrix.array().data_elements());
 	int info;
 	
@@ -60,6 +62,18 @@ void invert_triangular(math::subspace_matrix<Type> & matrix){
 	gpu::run(nn, nn, [mat = begin(matrix.array())] GPU_LAMBDA (auto ii, auto jj){
 		if(ii < jj) mat[ii][jj] = 0.0;
 	});
+	
+#else
+
+	auto copy = matrix.array();
+
+	gpu::run(nn, nn, [mat = begin(mat.array())] GPU_LAMBDA (auto ii, auto jj){
+		mat[ii][jj] = (ii == jj) ? 1.0 : 0.0;
+	});
+
+	boost::multi::blas::trsm(blas::side::right, blas::filling::upper, 1.0, copy, matrix.array());
+	
+#endif
 }
 
 }
