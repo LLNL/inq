@@ -79,17 +79,17 @@ void invert_triangular(math::subspace_matrix<Type> & matrix){
 
 #include <math/array.hpp>
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
 
   auto comm = boost::mpi3::environment::get_world_instance();
 	inq::parallel::cartesian_communicator<2> cart_comm(comm, {});
 
-	SECTION("Real 2x2"){
+	SECTION("2x2"){
 	
 		using namespace inq;
 		using namespace Catch::literals;
 
-    math::subspace_matrix<double> matrix(cart_comm, 2);
+    math::subspace_matrix<TestType> matrix(cart_comm, 2);
 		
 		matrix.array()[0][0] = 4.0;
 		matrix.array()[1][0] = -1.0;
@@ -103,33 +103,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(matrix.array()[1][1] == 0.5);
   }
 
-  SECTION("Complex 2x2"){
-	
-		using namespace inq;
-		using namespace Catch::literals;
-
-    math::subspace_matrix<complex> matrix(cart_comm, 2);
-		
-		matrix.array()[0][0] = 4.0;
-		matrix.array()[1][0] = -1.0;
-		matrix.array()[1][1] = 2.0;
-
-		solvers::invert_triangular(matrix);
-    
-    CHECK(matrix.array()[0][0] == 0.25);
-		CHECK(matrix.array()[0][1] == 0.0);
-    CHECK(matrix.array()[1][0] == 0.125);
-    CHECK(matrix.array()[1][1] == 0.5);
-  }
-	
-	SECTION("Complex NxN"){
+	SECTION("NxN"){
 	
 		using namespace inq;
 		using namespace Catch::literals;
 
 		auto nn = 15;
 
-    math::subspace_matrix<complex> matrix(cart_comm, nn);
+    math::subspace_matrix<TestType> matrix(cart_comm, nn);
 		
 		for(int ii = 0; ii < nn; ii++){
 			for(int jj = 0; jj < nn; jj++){
