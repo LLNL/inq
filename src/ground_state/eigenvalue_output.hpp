@@ -79,7 +79,7 @@ public:
 
 	static std::string spin_string(int index){
 		if(index == 0) return "\u21D1";
-		if(index == 1) return "\u21D3";
+		return "\u21D3";
 	}
 
 	template <class OStream>
@@ -96,10 +96,9 @@ public:
 		//define the LUMO as the first state with ocupation below 0.1 (this is only for output purposes)
 		auto lumo_index = order.size() - 1;
 		for(int iorder = 0; iorder < order.size(); iorder++) {
-			if(self.all_occupations[order[iorder]] < 0.1) {
-				lumo_index = iorder;
-				break;
-			}
+			if(self.all_occupations[order[iorder]] >= 0.1) continue;
+			lumo_index = iorder;
+			break;
 		}
 		
 		int skipped = 0;
@@ -117,14 +116,14 @@ public:
 			}
 			
 			if(skipped > 0) {
-				tfm::format(out, "    [output of %5d eigenvalues suppressed,  minres = %5.0e  maxres = %5.0e]\n", skipped, minres, maxres);
+				tfm::format(out, "    [output of %d eigenvalues suppressed,  minres = %5.0e  maxres = %5.0e]\n", skipped, minres, maxres);
 				skipped = 0;
 				minres = 1000.0;
 				maxres = 0.0;			
 			}
 			
-			if(self.nkpoints_ > 1) tfm::format(out, "  kp = %4d", self.all_kpoint_index[ieig] + 1);
-			if(self.nspin_    > 1) tfm::format(out, "  sp = %s", spin_string(self.all_spin_index[ieig]));
+			if(self.nkpoints_ > 1) tfm::format(out, "  kpt = %4d", self.all_kpoint_index[ieig] + 1);
+			if(self.nspin_    > 1) tfm::format(out, "  spin = %s", spin_string(self.all_spin_index[ieig]));
 			tfm::format(out, "  st = %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
 									self.all_states_index[ieig] + 1, self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), fabs(self.all_normres[ieig]));
 		}
