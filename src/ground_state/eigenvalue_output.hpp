@@ -33,6 +33,8 @@ namespace ground_state {
 
 class eigenvalues_output {
 
+	int nspin_;
+	int nkpoints_;
 	math::array<int, 1> all_kpoint_index;
 	math::array<int, 1> all_spin_index;
 	math::array<int, 1> all_states_index;
@@ -43,7 +45,10 @@ class eigenvalues_output {
 public:
 	
 	template <typename NormResType>
-	eigenvalues_output(systems::electrons const & el, NormResType const & normres){
+	eigenvalues_output(systems::electrons const & el, NormResType const & normres):
+		nspin_(el.states().num_spin_indices()),
+		nkpoints_(el.brillouin_zone().size())
+	{
 		
 		math::array<int, 2> kpoint_index({el.lot_part().local_size(), el.max_local_set_size()});
 		math::array<int, 2> spin_index({el.lot_part().local_size(), el.max_local_set_size()});
@@ -70,6 +75,11 @@ public:
 		all_occupations = parallel::gather(+occs.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
 		all_normres = parallel::gather(+normres.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
 		
+	}
+
+	static std::string spin_string(int index){
+		if(index == 0) return "\u21D1";
+		if(index == 1) return "\u21D3";
 	}
 
 	template <class OStream>
@@ -107,14 +117,16 @@ public:
 			}
 			
 			if(skipped > 0) {
-				tfm::format(out, "  [output of %5d eigenvalues suppressed,  minres = %5.0e  maxres = %5.0e]\n", skipped, minres, maxres);
+				tfm::format(out, "    [output of %5d eigenvalues suppressed,  minres = %5.0e  maxres = %5.0e]\n", skipped, minres, maxres);
 				skipped = 0;
 				minres = 1000.0;
 				maxres = 0.0;			
 			}
 			
-			tfm::format(out, "kp = %4d  sp = %2d  st = %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
-									self.all_kpoint_index[ieig], self.all_spin_index[ieig], self.all_states_index[ieig], self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), fabs(self.all_normres[ieig]));
+			if(self.nkpoints_ > 1) tfm::format(out, "  kp = %4d", self.all_kpoint_index[ieig]);
+			if(self.nspin_    > 1) tfm::format(out, "  sp = %s", spin_string(self.all_spin_index[ieig]));
+			tfm::format(out, "  st = %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
+									self.all_states_index[ieig], self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), fabs(self.all_normres[ieig]));
 		}
 
 		return out;
