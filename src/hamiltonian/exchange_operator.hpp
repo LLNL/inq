@@ -123,9 +123,9 @@ namespace hamiltonian {
 				
 				{ CALI_CXX_MARK_SCOPE("exchange_operator::mulitplication");
 					gpu::run(nst, exxphi.basis().local_size(),
-									 [pot = begin(rhoij.matrix()), hfo = begin(hf), exph = begin(exxphi.matrix()), occ = begin(hfocc), jj, factor]
+									 [pot = begin(rhoij.matrix()), hfo = begin(hf), exph = begin(exxphi.matrix()), scal = factor*hfocc[jj], jj]
 									 GPU_LAMBDA (auto ist, auto ipoint){
-										 exph[ipoint][ist] += factor*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
+										 exph[ipoint][ist] += scal*hfo[ipoint][jj]*pot[ipoint][ist];
 									 });
 				}
 			}
