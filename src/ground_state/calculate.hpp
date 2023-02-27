@@ -80,7 +80,7 @@ auto state_convergence(systems::electrons & el, NormResType const & normres) {
 }
 
 template <typename NormResType, typename ConsoleType>
-void output_eigenvalue(systems::electrons const & el, NormResType const & normres, ConsoleType & console){
+void output_eigenvalues(systems::electrons const & el, NormResType const & normres, ConsoleType & console){
 
 	math::array<int, 2> kpoint_index({el.lot_part().local_size(), el.max_local_set_size()});
 	math::array<int, 2> spin_index({el.lot_part().local_size(), el.max_local_set_size()});
@@ -108,7 +108,14 @@ void output_eigenvalue(systems::electrons const & el, NormResType const & normre
 
 	if(not console) return;
 
-	for(int ieig = 0; ieig < all_eigenvalues().size(); ieig++){
+	auto order = math::array<int, 1>(all_eigenvalues().size());
+	
+	for(int iorder = 0; iorder < order.size(); iorder++) order[iorder] = iorder;
+
+	std::sort(order.begin(), order.end(), [evs = all_eigenvalues](auto io, auto jo){ return evs[io] < evs[jo]; });
+	
+	for(int iorder = 0; iorder < order.size(); iorder++) {
+		auto ieig = order[iorder];
 		console->info(" kp = {:4d}  sp = {:2d}  st = {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
 									all_kpoint_index[ieig], all_spin_index[ieig], all_states_index[ieig], all_occupations[ieig], real(all_eigenvalues[ieig]), real(all_normres[ieig]));
 	}
@@ -232,7 +239,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_conv);
 			}
 
-			if(solver.verbose_output()) output_eigenvalue(electrons, normres, console);
+			if(solver.verbose_output()) output_eigenvalues(electrons, normres, console);
 				
 			if(fabs(energy_diff) < solver.energy_tolerance()){
 				conv_count++;
