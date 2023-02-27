@@ -114,11 +114,41 @@ void output_eigenvalues(systems::electrons const & el, NormResType const & normr
 	for(int iorder = 0; iorder < order.size(); iorder++) order[iorder] = iorder;
 
 	std::sort(order.begin(), order.end(), [evs = all_eigenvalues](auto io, auto jo){ return evs[io] < evs[jo]; });
-	
+
+	auto const print_range = 8;
+
+	//define the LUMO as the first state with ocupation below 0.1 (this is only for output purposes)
+	auto lumo_index = order.size() - 1;
+	for(int iorder = 0; iorder < order.size(); iorder++) {
+		if(all_occupations[order[iorder]] < 0.1) {
+			lumo_index = iorder;
+			break;
+		}
+	}
+
+	int skipped = 0;
+	double minres = 1000.0;
+	double maxres = 0.0;
 	for(int iorder = 0; iorder < order.size(); iorder++) {
 		auto ieig = order[iorder];
-		console->info(" kp = {:4d}  sp = {:2d}  st = {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-									all_kpoint_index[ieig], all_spin_index[ieig], all_states_index[ieig], all_occupations[ieig], real(all_eigenvalues[ieig]), real(all_normres[ieig]));
+		auto print = (iorder < print_range) or (abs(iorder - lumo_index) < print_range) or (order.size() - 1 - iorder < print_range);
+		
+		if(not print) {
+			skipped++;
+			minres = std::min(minres, fabs(all_normres[ieig]));
+			maxres = std::max(minres, fabs(all_normres[ieig]));
+			continue;
+		}
+
+		if(skipped > 0) {
+			console->info("  [output of {:5d} eigenvalues suppressed,  minres = {:5.0e}  maxres = {:5.0e}]", skipped, minres, maxres);
+			skipped = 0;
+			minres = 1000.0;
+			maxres = 0.0;			
+		}
+
+		console->info("kp = {:4d}  sp = {:2d}  st = {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
+									all_kpoint_index[ieig], all_spin_index[ieig], all_states_index[ieig], all_occupations[ieig], real(all_eigenvalues[ieig]), fabs(all_normres[ieig]));
 	}
 
 }
@@ -236,12 +266,12 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			auto state_conv = state_convergence(electrons, normres);
 
 			if(solver.verbose_output() and console){
+				console->info("=============================================================================================");
 				console->info("SCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
 											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_conv);
 			}
-
 			if(solver.verbose_output()) output_eigenvalues(electrons, normres, console);
-				
+			
 			if(fabs(energy_diff) < solver.energy_tolerance()){
 				conv_count++;
 				if(conv_count > 2 and exe_diff < solver.energy_tolerance()) break;
@@ -261,7 +291,9 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
-	if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
+	if(solver.verbose_output() and console) {
+		console->info("\nSCF iters ended with result energies {}", res.energy);
+	}
 
 	if(ions.cell().periodicity() == 0){
 		res.dipole = observables::dipole(ions, electrons);
