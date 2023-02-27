@@ -94,7 +94,8 @@ void output_eigenvalues(systems::electrons const & el, NormResType const & normr
 			kpoint_index[iphi][ist] = ik;
 			spin_index[iphi][ist] = phi.spin_index();
 			state_index[iphi][ist] = ist;
-			occs[iphi][ist] = +el.occupations()[iphi][ist]/el.lot_weights()[iphi];
+			occs[iphi][ist] = 0.0;
+			if(fabs(el.lot_weights()[iphi]) > 1e-14) occs[iphi][ist] = el.occupations()[iphi][ist]/el.lot_weights()[iphi];
 		}
 		iphi++;
 	}
