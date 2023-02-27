@@ -48,6 +48,8 @@ public:
 		return local_size_;
 	}
 
+	arbitrary_partition() = default;
+	
 	template <typename CommType>
 	arbitrary_partition(long const local_size, CommType comm):
 		local_size_(local_size),
