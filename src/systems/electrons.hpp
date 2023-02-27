@@ -334,6 +334,21 @@ public:
 	auto root() const {
 		return full_comm_.root();
 	}
+
+	auto kpoint_index(states::orbital_set<basis::real_space, complex> const & phi) const {
+
+		CALI_CXX_MARK_FUNCTION;
+		
+		for(auto ik = 0; ik < brillouin_zone_.size(); ik++){
+			if(phi.basis().cell().metric().norm(phi.kpoint() - brillouin_zone_.kpoint(ik)) < 1e-10) return ik;
+		}
+		assert(false);
+		return 0;
+	}
+
+	auto & brillouin_zone() const {
+		return brillouin_zone_;
+	}
 	
 private:
 	static std::string generate_tiny_uuid(){
@@ -474,6 +489,27 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Restart errors"){
 		CHECK(not electrons.try_load("directory_that_doesnt_exist"));
 		CHECK_THROWS(electrons.load("directory_that_doesnt_exist"));
+	}
+
+	SECTION("Electrons with kpoints"){
+		systems::electrons electrons(par, ions, box, input::kpoints::grid({2, 1, 1}, true));
+		
+		CHECK(electrons.states().num_electrons() == 38.0_a);
+		CHECK(electrons.states().num_states() == 19);
+		
+		CHECK(electrons.lot_part().local_size()*electrons.max_local_set_size() == electrons.lot_states_part().local_size());
+		
+		for(auto & phi : electrons.lot()) {
+			
+			CHECK(electrons.lot_part().local_size()*phi.local_set_size() == electrons.lot_states_part().local_size());
+
+			auto kpoint_index = electrons.kpoint_index(phi);
+
+			CHECK(phi.kpoint()[0] == electrons.brillouin_zone().kpoint(kpoint_index)[0]);
+			CHECK(phi.kpoint()[1] == electrons.brillouin_zone().kpoint(kpoint_index)[1]);
+			CHECK(phi.kpoint()[2] == electrons.brillouin_zone().kpoint(kpoint_index)[2]);
+		}
+		
 	}
 }
 #endif
