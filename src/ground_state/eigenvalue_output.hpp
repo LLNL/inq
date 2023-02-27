@@ -123,10 +123,10 @@ public:
 				maxres = 0.0;			
 			}
 			
-			if(self.nkpoints_ > 1) tfm::format(out, "  kp = %4d", self.all_kpoint_index[ieig]);
+			if(self.nkpoints_ > 1) tfm::format(out, "  kp = %4d", self.all_kpoint_index[ieig] + 1);
 			if(self.nspin_    > 1) tfm::format(out, "  sp = %s", spin_string(self.all_spin_index[ieig]));
 			tfm::format(out, "  st = %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
-									self.all_states_index[ieig], self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), fabs(self.all_normres[ieig]));
+									self.all_states_index[ieig] + 1, self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), fabs(self.all_normres[ieig]));
 		}
 
 		return out;
