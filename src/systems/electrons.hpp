@@ -118,23 +118,23 @@ public:
 		
 		lot_weights_.reextent({lot_part_.local_size()});
 
-		max_local_size_ = 0;
+		max_local_set_size_ = 0;
 		auto ilot = 0;
 		for(int ispin = 0; ispin < spin_part.local_size(); ispin++){
 			for(int ikpt = 0; ikpt < kpts_part.local_size(); ikpt++){
 				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(kpts_part.local_to_global(ikpt).value());
 				auto kpoint = brillouin_zone_.kpoint(kpts_part.local_to_global(ikpt).value());
 				lot_.emplace_back(states_basis_, states_.num_states(), states_.spinor_dim(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
-				max_local_size_ = std::max(max_local_size_, lot_[ikpt].local_set_size());
+				max_local_set_size_ = std::max(max_local_set_size_, lot_[ikpt].local_set_size());
 				ilot++;
 			}
 		}
 		
 		assert(long(lot_.size()) == lot_part_.local_size());
-		assert(max_local_size_ > 0);
+		assert(max_local_set_size_ > 0);
 		
-		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
-		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_set_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_set_size_});
 
 		if(atomic_pot_.num_electrons() + conf.excess_charge_val() == 0) throw std::runtime_error("inq error: the system does not have any electrons");
 		
@@ -154,7 +154,7 @@ public:
 		atomic_pot_(std::move(old_el.atomic_pot_)),
 		states_(std::move(old_el.states_)),
 		lot_weights_(std::move(old_el.lot_weights_)),
-		max_local_size_(std::move(old_el.max_local_size_)),
+		max_local_set_size_(std::move(old_el.max_local_set_size_)),
 		spin_density_(std::move(old_el.spin_density_), density_basis_.comm()),
 		logger_(std::move(old_el.logger_)),
 		lot_part_(std::move(old_el.lot_part_))
@@ -162,16 +162,16 @@ public:
 
 		assert(lot_comm_ == old_el.lot_comm_); //resizing of k points not supported for the moment
 
-		max_local_size_ = 0;
+		max_local_set_size_ = 0;
 		for(auto & oldphi : old_el.lot_){
 			lot_.emplace_back(std::move(oldphi), states_basis_comm_);
-			max_local_size_ = std::max(max_local_size_, lot_.back().local_set_size());
+			max_local_set_size_ = std::max(max_local_set_size_, lot_.back().local_set_size());
 		}
 
 		assert(lot_.size() == old_el.lot_.size());
 
-		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
-		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_set_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_set_size_});
 		
 		for(unsigned ilot = 0; ilot < lot_.size(); ilot++){
 
@@ -309,8 +309,8 @@ public:
 		return lot_part_;
 	}
 	
-	auto max_local_size() const {
-		return max_local_size_;
+	auto max_local_set_size() const {
+		return max_local_set_size_;
 	}
 
 	auto density() const {
@@ -360,7 +360,7 @@ private:
 	math::array<double, 2> eigenvalues_;
 	math::array<double, 2> occupations_;
 	math::array<double, 1> lot_weights_;
-	long max_local_size_;
+	long max_local_set_size_;
 	basis::field_set<basis::real_space, double> spin_density_;
  	
 public:

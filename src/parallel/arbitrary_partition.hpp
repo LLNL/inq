@@ -37,7 +37,7 @@ class arbitrary_partition {
 	std::vector<long> lsizes_;
 	std::vector<long> starts;
 	long size_;
-	long max_local_size_;
+	long max_local_set_size_;
 	long comm_size_;
 	long start_;
 	long end_;
@@ -60,13 +60,13 @@ public:
 		assert(lsizes_[comm.rank()] == local_size);
 		
 		size_ = 0;
-		max_local_size_ = 0;
+		max_local_set_size_ = 0;
 		start_ = 0;
 		end_ = 0;
 		
 		for(unsigned ipart = 0; ipart < lsizes_.size(); ipart++){
 			size_ += lsizes_[ipart];
-			max_local_size_ = std::max(max_local_size_, lsizes_[ipart]);
+			max_local_set_size_ = std::max(max_local_set_size_, lsizes_[ipart]);
 			if(ipart < (unsigned) comm.rank()) start_ += lsizes_[ipart];
 		}
 		end_ = start_ + local_size_;
@@ -80,7 +80,7 @@ public:
 		for(unsigned ipart = 0; ipart < lsizes_.size(); ipart++) lsizes_[ipart] = part.local_size(ipart);
 
 		size_ = part.size();
-		max_local_size_ = part.max_local_size();
+		max_local_set_size_ = part.max_local_set_size();
 		start_ = part.start();
 		end_ = part.end();
 	}
@@ -137,12 +137,12 @@ public:
 		return comm_size_;
 	}
 
-	auto max_local_size() const {
-		return max_local_size_;
+	auto max_local_set_size() const {
+		return max_local_set_size_;
 	}
 	
 	auto waste() const {
-		auto total_elements = max_local_size()*comm_size();
+		auto total_elements = max_local_set_size()*comm_size();
 		return (total_elements - size())/double(size());
 	}
 	
