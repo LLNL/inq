@@ -80,8 +80,6 @@ public:
 		return occupations_;
 	}
 
-
-
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, input::kpoints const & kpts, const input::config & conf = {}):
 		electrons(dist, ions, box, conf, kpts)
 	{
@@ -129,6 +127,8 @@ public:
 				ilot++;
 			}
 		}
+
+		lot_states_part_ = parallel::arbitrary_partition(lot_part_.local_size()*max_local_set_size_, lot_states_comm_);
 		
 		assert(long(lot_.size()) == lot_part_.local_size());
 		assert(max_local_set_size_ > 0);
@@ -181,7 +181,7 @@ public:
 			parallel::array_iterator occit(part, states_subcomm(old_el.full_comm_), +old_el.occupations_[ilot]);
 
 			for(; eigit != eigit.end(); ++eigit){
-				
+ 				
 				for(int ist = 0; ist < eigenvalues_[ilot].size(); ist++){
 					auto istg = lot_[ilot].set_part().local_to_global(ist);
 					if(part.contains(istg.value())){
@@ -192,9 +192,7 @@ public:
 				
 				++occit;
 			}
-			
 		}		
-		
 	}
 
 	void print(const inq::systems::ions & ions){
@@ -308,6 +306,10 @@ public:
 	auto & lot_part() const {
 		return lot_part_;
 	}
+
+	auto & lot_states_part() const {
+		return lot_states_part_;
+	}
 	
 	auto max_local_set_size() const {
 		return max_local_set_size_;
@@ -368,8 +370,9 @@ public:
 private:
 	std::shared_ptr<spdlog::logger> logger_;
 
-	inq::parallel::partition lot_part_;
-
+	parallel::partition lot_part_;
+	parallel::arbitrary_partition lot_states_part_;
+	
 };
 
 }
@@ -403,8 +406,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(electrons.states().num_electrons() == 38.0_a);
 	CHECK(electrons.states().num_states() == 19);
 
+	CHECK(electrons.lot_part().local_size()*electrons.max_local_set_size() == electrons.lot_states_part().local_size());
+	
 	int iphi = 0;
 	for(auto & phi : electrons.lot()) {
+
+		CHECK(electrons.lot_part().local_size()*phi.local_set_size() == electrons.lot_states_part().local_size());
 		
 		for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 			auto istg = phi.set_part().local_to_global(ist);
