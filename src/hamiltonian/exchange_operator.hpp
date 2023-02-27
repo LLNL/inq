@@ -54,7 +54,7 @@ namespace hamiltonian {
 
 			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.lot_size(), el.states_comm_);
 
-			occupations_.reextent(part.local_size());
+			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
 			
 			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
@@ -62,8 +62,6 @@ namespace hamiltonian {
 			auto iphi = 0;
 			auto ist = 0;
 			for(auto & phi : el.lot()){
-
-				occupations_({ist, ist + phi.local_set_size()}) = el.occupations()[iphi];
 				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
 				orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
 
