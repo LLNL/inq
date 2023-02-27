@@ -81,21 +81,36 @@ auto state_convergence(systems::electrons & el, NormResType const & normres) {
 
 template <typename NormResType, typename ConsoleType>
 void output_eigenvalue(systems::electrons const & el, NormResType const & normres, ConsoleType & console){
-	
-	for(int ilot = 0; ilot < el.lot_size(); ilot++){
-		
-		auto comm = el.lot()[ilot].set_comm();
-		
-		auto all_eigenvalues = parallel::gather(+el.eigenvalues()[ilot], el.lot()[ilot].set_part(), comm, 0);
-		auto all_occupations = parallel::gather(+el.occupations()[ilot], el.lot()[ilot].set_part(), comm, 0);
-		auto all_normres = parallel::gather(+normres[ilot], el.lot()[ilot].set_part(), comm, 0);
-		
-		if(console){
-			for(int istate = 0; istate < el.states().num_states(); istate++){
-				console->info("	k-point {:4d} state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-											ilot + 1, istate + 1, all_occupations[istate]/el.lot_weights()[ilot], real(all_eigenvalues[istate]), real(all_normres[istate]));
-			}
+
+	math::array<int, 2> kpoint_index({el.lot_part().local_size(), el.max_local_set_size()});
+	math::array<int, 2> spin_index({el.lot_part().local_size(), el.max_local_set_size()});
+	math::array<int, 2> state_index({el.lot_part().local_size(), el.max_local_set_size()});
+	math::array<double, 2> occs({el.lot_part().local_size(), el.max_local_set_size()});
+
+	auto iphi = 0;
+	for(auto & phi : el.lot()){
+		auto ik = el.kpoint_index(phi);
+		for(int ist = 0; ist < el.max_local_set_size(); ist++){
+			kpoint_index[iphi][ist] = ik;
+			spin_index[iphi][ist] = phi.spin_index();
+			state_index[iphi][ist] = ist;
+			occs[iphi][ist] = +el.occupations()[iphi][ist]/el.lot_weights()[iphi];
 		}
+		iphi++;
+	}
+	
+	auto all_kpoint_index = parallel::gather(+kpoint_index.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
+	auto all_spin_index = parallel::gather(+spin_index.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
+	auto all_states_index = parallel::gather(+state_index.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
+	auto all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
+	auto all_occupations = parallel::gather(+occs.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
+	auto all_normres = parallel::gather(+normres.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
+
+	if(not console) return;
+
+	for(int ieig = 0; ieig < all_eigenvalues().size(); ieig++){
+		console->info(" kp = {:4d}  sp = {:2d}  st = {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
+									all_kpoint_index[ieig], all_spin_index[ieig], all_states_index[ieig], all_occupations[ieig], real(all_eigenvalues[ieig]), real(all_normres[ieig]));
 	}
 
 }
