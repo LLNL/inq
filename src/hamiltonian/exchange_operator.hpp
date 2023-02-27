@@ -52,7 +52,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
-			auto part = parallel::arbitrary_partition(el.max_local_size()*el.lot_size(), el.states_comm_);
+			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.lot_size(), el.states_comm_);
 
 			occupations_.reextent(part.local_size());
 			kpoints_.reextent(part.local_size());

@@ -50,6 +50,7 @@
 #include <input/scf.hpp>
 #include <observables/dipole.hpp>
 #include <systems/electrons.hpp>
+#include <ground_state/eigenvalue_output.hpp>
 #include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
@@ -190,28 +191,13 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			iter_start_time = std::chrono::high_resolution_clock::now();
 
 			auto state_conv = state_convergence(electrons, normres);
-
+			auto ev_out = eigenvalues_output(electrons, normres);
+			
 			if(solver.verbose_output() and console){
-				console->info("SCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
-											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_conv);
+				console->info("\nSCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}\n{}", 
+											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_conv, ev_out);
 			}
 			
-			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
-
-				auto comm = electrons.lot()[ilot].set_comm();
-				
-				auto all_eigenvalues = parallel::gather(+electrons.eigenvalues()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
-				auto all_occupations = parallel::gather(+electrons.occupations()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
-				auto all_normres = parallel::gather(+normres[ilot], electrons.lot()[ilot].set_part(), comm, 0);
-				
-				if(solver.verbose_output() and console){
-					for(int istate = 0; istate < electrons.states().num_states(); istate++){
-						console->info("	k-point {:4d} state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-													ilot + 1, istate + 1, all_occupations[istate]/electrons.lot_weights()[ilot], real(all_eigenvalues[istate]), real(all_normres[istate]));
-					}
-				}
-			}
-				
 			if(fabs(energy_diff) < solver.energy_tolerance()){
 				conv_count++;
 				if(conv_count > 2 and exe_diff < solver.energy_tolerance()) break;
@@ -231,7 +217,9 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
-	if(solver.verbose_output() and console) console->info("SCF iters ended with result energies {}", res.energy);
+	if(solver.verbose_output() and console) {
+		console->info("\nSCF iters ended with result energies {}", res.energy);
+	}
 
 	if(ions.cell().periodicity() == 0){
 		res.dipole = observables::dipole(ions, electrons);
