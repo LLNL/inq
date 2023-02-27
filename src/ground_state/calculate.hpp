@@ -79,6 +79,27 @@ auto state_convergence(systems::electrons & el, NormResType const & normres) {
 	return state_conv;
 }
 
+template <typename NormResType, typename ConsoleType>
+void output_eigenvalue(systems::electrons const & el, NormResType const & normres, ConsoleType & console){
+	
+	for(int ilot = 0; ilot < el.lot_size(); ilot++){
+		
+		auto comm = el.lot()[ilot].set_comm();
+		
+		auto all_eigenvalues = parallel::gather(+el.eigenvalues()[ilot], el.lot()[ilot].set_part(), comm, 0);
+		auto all_occupations = parallel::gather(+el.occupations()[ilot], el.lot()[ilot].set_part(), comm, 0);
+		auto all_normres = parallel::gather(+normres[ilot], el.lot()[ilot].set_part(), comm, 0);
+		
+		if(console){
+			for(int istate = 0; istate < el.states().num_states(); istate++){
+				console->info("	k-point {:4d} state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
+											ilot + 1, istate + 1, all_occupations[istate]/el.lot_weights()[ilot], real(all_eigenvalues[istate]), real(all_normres[istate]));
+			}
+		}
+	}
+
+}
+
 ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {}){
 
 	CALI_CXX_MARK_FUNCTION;
@@ -195,22 +216,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				console->info("SCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}", 
 											iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_conv);
 			}
-			
-			for(int ilot = 0; ilot < electrons.lot_size(); ilot++){
 
-				auto comm = electrons.lot()[ilot].set_comm();
-				
-				auto all_eigenvalues = parallel::gather(+electrons.eigenvalues()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
-				auto all_occupations = parallel::gather(+electrons.occupations()[ilot], electrons.lot()[ilot].set_part(), comm, 0);
-				auto all_normres = parallel::gather(+normres[ilot], electrons.lot()[ilot].set_part(), comm, 0);
-				
-				if(solver.verbose_output() and console){
-					for(int istate = 0; istate < electrons.states().num_states(); istate++){
-						console->info("	k-point {:4d} state {:4d}  occ = {:4.3f}  evalue = {:18.12f}  res = {:5.0e}",
-													ilot + 1, istate + 1, all_occupations[istate]/electrons.lot_weights()[ilot], real(all_eigenvalues[istate]), real(all_normres[istate]));
-					}
-				}
-			}
+			if(solver.verbose_output()) output_eigenvalue(electrons, normres, console);
 				
 			if(fabs(energy_diff) < solver.energy_tolerance()){
 				conv_count++;
