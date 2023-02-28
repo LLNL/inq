@@ -72,11 +72,15 @@ see other possibilities in [`.gitlab-ci.yml`](https://gitlab.com/npneq/inq/blob/
 
 ## Reference
 
-- [INQ, a modern GPU-accelerated computational framework for (time-dependent) density functional theory, `arXiv:2106.03872 [cond-mat.mtrl-sci]` (2021)](https://arxiv.org/abs/2106.03872)
+- **INQ, a Modern GPU-Accelerated Computational Framework for (Time-Dependent) Density Functional Theory**.\
+Xavier Andrade, Chaitanya Das Pemmaraju, Alexey Kartsev, Jun Xiao, Aaron Lindenberg, Sangeeta Rajpurohit, Liang Z. Tan, Tadashi Ogitsu, and Alfredo A. Correa\
+[_J. Chem. Theory Comput._ 2021, 17, 12, 7447–7467](https://pubs.acs.org/doi/10.1021/acs.jctc.1c00562) (open access)
 
 ## Introductory material
 
-(video) [INQ: a state-of-the art implementation of (TD)DFT for GPUs](https://www.youtube.com/watch?v=pM4wwYjb5Vo) at the MolSSI 2022 Workshop
+- (video) [INQ: a state-of-the art implementation of (TD)DFT for GPUs](https://www.youtube.com/watch?v=pM4wwYjb5Vo) at the MolSSI 2022 Workshop
+
+- (video) [INQ: a state-of-the-art implemention of desnsity functional theory](https://www.youtube.com/watch?v=ufzOBKn9ocU&t=3195s) at 2021 USAfrI Workshop on Electronic Structure
 
 ## Release information 
 
