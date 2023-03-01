@@ -55,8 +55,7 @@ basis::field<basis::real_space, vector3<double, covariant>> current_density(cons
 		iphi++;
 	}
   
-	cdensity.all_reduce(electrons.lot_comm_);
-	cdensity.all_reduce(electrons.states_comm_);
+	cdensity.all_reduce(electrons.lot_states_comm_);
 	return cdensity;
 }
 
