@@ -105,7 +105,7 @@ public:
     }
 
     fzero_ *= 8.0*M_PI/pow(2.0*M_PI, 3);
-    fzero_ += 7.7955541794415*pow(cell.volume(), 2.0/3.0)/M_PI/cell.volume()*length;
+    fzero_ += 4.0*M_PI*pow(3.0/(4.0*M_PI), 1.0/3.0)*pow(cell.volume(), 2.0/3.0)/M_PI/cell.volume()*length;
   }
 
   auto fk(int ik) const {
