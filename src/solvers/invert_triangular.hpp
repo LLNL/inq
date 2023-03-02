@@ -40,32 +40,28 @@ extern "C" void  ztrtri(const char * uplo, const char * diag, const int * n, inq
 namespace inq {
 namespace solvers {
 
-void invert_triangular(math::subspace_matrix<double> & matrix){
+template <typename Type>
+void invert_triangular(math::subspace_matrix<Type> & matrix){
   CALI_CXX_MARK_SCOPE("invert_triangular_double");
 
+	static_assert(std::is_same_v<Type, double> or std::is_same_v<Type, complex>, "invert_triangular is only implemented for double and complex");
+	
 	int nn = std::get<0>(sizes(matrix.array()));
-	int info;
-  dtrtri("U", "N", &nn, raw_pointer_cast(matrix.array().data_elements()), &nn, &info);
 
-	gpu::run(nn, nn, [mat = begin(matrix.array())] GPU_LAMBDA (auto ii, auto jj){
-		if(ii < jj) mat[ii][jj] = 0.0;
+	math::array<Type, 2> inverse({nn, nn});
+
+	gpu::run(nn, nn, [inv = begin(inverse)] GPU_LAMBDA (auto jj, auto ii){
+		inv[ii][jj] = (ii == jj) ? 1.0 : 0.0;
 	});
-}
 
-///////////////////////////////////////////////////////////////////
+	namespace blas = boost::multi::blas;
+	blas::trsm(blas::side::right, blas::filling::upper, 1.0, blas::H(matrix.array()), inverse);
 
-void invert_triangular(math::subspace_matrix<complex> & matrix){
-  CALI_CXX_MARK_SCOPE("invert_triangular_complex");
-
-	int nn = std::get<0>(sizes(matrix.array()));
-	int info;
-  ztrtri("U", "N", &nn, raw_pointer_cast(matrix.array().data_elements()), &nn, &info);
-
-	gpu::run(nn, nn, [mat = begin(matrix.array())] GPU_LAMBDA (auto ii, auto jj){
-		if(ii < jj) mat[ii][jj] = 0.0;
+	gpu::run(nn, nn, [mat = begin(matrix.array()), inv = begin(inverse)] GPU_LAMBDA (auto ii, auto jj){
+		mat[ii][jj] = conj(inv[jj][ii]);
 	});
-}
 
+}
 
 }
 }
@@ -84,17 +80,17 @@ void invert_triangular(math::subspace_matrix<complex> & matrix){
 
 #include <math/array.hpp>
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
 
   auto comm = boost::mpi3::environment::get_world_instance();
 	inq::parallel::cartesian_communicator<2> cart_comm(comm, {});
-  
-	SECTION("Real 2x2"){
+
+	SECTION("2x2"){
 	
 		using namespace inq;
 		using namespace Catch::literals;
 
-    math::subspace_matrix<double> matrix(cart_comm, 2);
+    math::subspace_matrix<TestType> matrix(cart_comm, 2);
 		
 		matrix.array()[0][0] = 4.0;
 		matrix.array()[1][0] = -1.0;
@@ -108,24 +104,43 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(matrix.array()[1][1] == 0.5);
   }
 
-  SECTION("Complex 2x2"){
+	SECTION("NxN"){
 	
 		using namespace inq;
 		using namespace Catch::literals;
 
-    math::subspace_matrix<complex> matrix(cart_comm, 2);
-		
-		matrix.array()[0][0] = 4.0;
-		matrix.array()[1][0] = -1.0;
-		matrix.array()[1][1] = 2.0;
+		auto nn = 15;
 
+    math::subspace_matrix<TestType> matrix(cart_comm, nn);
+		
+		for(int ii = 0; ii < nn; ii++){
+			for(int jj = 0; jj < nn; jj++){
+				if(ii < jj) {
+					matrix.array()[ii][jj] = 0.0;
+				} else {
+					matrix.array()[ii][jj] = cos(ii)*(jj + 0.1) + sin(jj - 0.25)*(ii + 1.0);
+				}
+				if constexpr (std::is_same_v<TestType, complex>) matrix.array()[ii][jj]*= exp(complex(0.0, (ii + 1.0)*(cos(jj) - 0.25)));
+			}
+		}
+
+		auto orig = matrix;
+		
 		solvers::invert_triangular(matrix);
-    
-    CHECK(matrix.array()[0][0] == 0.25);
-		CHECK(matrix.array()[0][1] == 0.0);
-    CHECK(matrix.array()[1][0] == 0.125);
-    CHECK(matrix.array()[1][1] == 0.5);
+		
+		auto mul = +boost::multi::blas::gemm(1.0, matrix.array(), orig.array());
+
+		for(int ii = 0; ii < nn; ii++){
+			for(int jj = 0; jj < nn; jj++){
+				if(ii == jj) {
+					CHECK(real(mul[ii][jj]) == 1.0_a);
+					CHECK(imag(mul[ii][jj]) < 1e-12);					
+				} else {
+					CHECK(fabs(mul[ii][jj]) < 1e-12);
+				}
+			}
+		}
+				
   }
-  
 }
 #endif

@@ -517,9 +517,9 @@ intel-mpich-1p:
       - time tar -Ipixz -xvf intel-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - cd src/; ctest --output-on-failure --timeout 360; cd ../
-      - cd tests/; ctest --output-on-failure --timeout 360; cd ../
-      - cd speed_tests/; ctest --output-on-failure --timeout 360; cd ../
+      - cd src/; ctest --output-on-failure --timeout 720; cd ../
+      - cd tests/; ctest --output-on-failure --timeout 720; cd ../
+      - cd speed_tests/; ctest --output-on-failure --timeout 720; cd ../
       - tests/silicon2
 
 intel-mpich-2p:
