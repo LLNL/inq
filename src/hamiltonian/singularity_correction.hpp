@@ -64,7 +64,58 @@ public:
     return 4*M_PI*M_PI/val;
   }
 
-public:
+  singularity_correction(ions::unit_cell const & cell, ions::brillouin const & bzone):
+    fk_(bzone.size())
+  {
+    for(int ik = 0; ik < bzone.size(); ik++){
+
+      fk_[ik] = 0.0;
+      
+      for(int ik2 = 0; ik2 < bzone.size(); ik2++){
+        auto qpoint = bzone.kpoint(ik) - bzone.kpoint(ik2);
+        if(cell.metric().norm(qpoint) < 1e-6) continue;
+
+        fk_[ik] += bzone.kpoint_weight(ik)*auxiliary(cell, qpoint);
+      }
+      fk_[ik] *= 4.0*M_PI/cell.volume();
+    }
+
+    auto const nsteps = 7;
+    auto const nk = 60;
+    
+    fzero_ = 0.0;
+    auto length = 1.0;
+    auto kvol_element = pow(2.0*M_PI/(2.0*nk + 1.0), 3)/cell.volume();
+    
+    for(int istep = 0; istep < nsteps; istep++){
+
+      for(auto ikx = 0; ikx <= nk; ikx++){
+        for(auto iky = -nk; iky <= nk; iky++){
+          for(auto ikz = -nk; ikz <= nk; ikz++){          
+            if(fabs(ikx) <= nk/3 and fabs(iky) <= nk/3 and fabs(ikz) <= nk/3) continue;
+            
+            auto qpoint = 2.0*M_PI*vector3<int, covariant>(ikx, iky, ikz)*length/(2.0*nk);
+            fzero_ += kvol_element*auxiliary(cell, qpoint);
+          }
+        }
+      }
+      if(istep < nsteps - 1){
+        length /= 3.0;
+        kvol_element /= 27.0;
+      }
+    }
+
+    fzero_ *= 8.0*M_PI/pow(2.0*M_PI, 3);
+    fzero_ += 7.7955541794415*pow(cell.volume(), 2.0/3.0)/M_PI/cell.volume()*length;
+  }
+
+  auto fk(int ik) const {
+    return fk_[ik];
+  }
+
+  auto fzero() const {
+    return fzero_;
+  }  
   
 };
 }
@@ -81,16 +132,28 @@ public:
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
-	using namespace inq;
+  using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
+	using Catch::Approx;
 
   SECTION("Auxiliary function cubic"){
-    auto aa = 10.18;
-    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    auto aa = 10.18_b;
 
+		auto box = systems::box::lattice({aa, 0.0_b, 0.0_b}, {0.0_b, aa, 0.0_b}, {0.0_b, 0.0_b, aa}).cutoff_energy(35.0_Ha);
+		auto ions = systems::ions(box);
+    auto const & cell = ions.cell();    
+
+    auto bzone = ions::brillouin(ions, input::kpoints::grid({2, 2, 2}));
+        
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{0.0, -0.5, 0.0}) == 25.9081_a);
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{8.3333333333333332E-003, 7.4999999999999997E-002, 0.26666666666666666}) == 42.650855183181122_a);
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{0.11666666666666667, 0.20000000000000001, 0.21666666666666667}) == 29.780683447124286_a);    
+    
+    auto sing = hamiltonian::singularity_correction(cell, bzone);
+
+    CHECK(sing.fzero() == 0.30983869660201141_a);
+    
   }
   /*
     This doesn't work, I have to figure out why
