@@ -67,19 +67,18 @@ public:
   singularity_correction(ions::unit_cell const & cell, ions::brillouin const & bzone):
     fk_(bzone.size())
   {
+    
     for(int ik = 0; ik < bzone.size(); ik++){
-
-      fk_[ik] = 0.0;
       
+      fk_[ik] = 0.0;
       for(int ik2 = 0; ik2 < bzone.size(); ik2++){
         auto qpoint = bzone.kpoint(ik) - bzone.kpoint(ik2);
         if(cell.metric().norm(qpoint) < 1e-6) continue;
-
-        fk_[ik] += bzone.kpoint_weight(ik)*auxiliary(cell, qpoint);
+        fk_[ik] += bzone.kpoint_weight(ik2)*auxiliary(cell, qpoint);
       }
       fk_[ik] *= 4.0*M_PI/cell.volume();
     }
-
+    
     auto const nsteps = 7;
     auto const nk = 60;
     
@@ -153,6 +152,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
     auto sing = hamiltonian::singularity_correction(cell, bzone);
 
     CHECK(sing.fzero() == 0.30983869660201141_a);
+
+    CHECK(sing.fk(0) == 0.18644848345224296_a);
+    CHECK(sing.fk(1) == 0.18644848345224296_a);
+    CHECK(sing.fk(2) == 0.18644848345224296_a);
+    CHECK(sing.fk(3) == 0.18644848345224296_a);
+    CHECK(sing.fk(4) == 0.18644848345224296_a);
+    CHECK(sing.fk(5) == 0.18644848345224296_a);
+    CHECK(sing.fk(6) == 0.18644848345224296_a);
+    CHECK(sing.fk(7) == 0.18644848345224296_a);
     
   }
   /*
