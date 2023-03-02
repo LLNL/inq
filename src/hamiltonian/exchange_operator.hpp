@@ -39,7 +39,8 @@ namespace hamiltonian {
   class exchange_operator {
 		
 		math::array<double, 1> occupations_;
-		math::array<vector3<double, covariant>, 1> kpoints_;		
+		math::array<vector3<double, covariant>, 1> kpoints_;
+		math::array<int, 1> kpoint_indices_;
 		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
 		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> ace_orbitals_;
 		solvers::poisson poisson_solver_;
@@ -67,6 +68,7 @@ namespace hamiltonian {
 
 			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
+			kpoint_indices_.reextent(part.local_size());
 			
 			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
 			
@@ -74,10 +76,12 @@ namespace hamiltonian {
 			auto ist = 0;
 			for(auto & phi : el.lot()){
 				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
+				kpoint_indices_({ist, ist + phi.local_set_size()}).fill(el.kpoint_index(phi));
+																																
 				orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
 
 				iphi++;
-				ist += phi.local_set_size();			
+				ist += phi.local_set_size();
 			}
 
 			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
