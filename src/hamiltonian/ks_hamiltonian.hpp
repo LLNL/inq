@@ -77,9 +77,9 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 		
-	ks_hamiltonian(const basis::real_space & basis, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
+	ks_hamiltonian(const basis::real_space & basis, ions::brillouin const & bzone, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
 								 const int num_hf_orbitals, const double exchange_coefficient, bool use_ace = false):
-		exchange(exchange_coefficient, use_ace),
+		exchange(basis.cell(), bzone, exchange_coefficient, use_ace),
 		scalar_potential_(states.num_density_components(), basis),
 		uniform_vector_potential_({0.0, 0.0, 0.0}),
 		non_local_in_fourier_(fourier_pseudo),
@@ -249,8 +249,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
-	ions::geometry geo;
 	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
+	auto ions = systems::ions(box);
+
   basis::real_space rs(box, basis_comm);
 
 	SECTION("Basis"){
@@ -262,13 +263,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff());
+	hamiltonian::atomic_potential pot(ions.geo().num_atoms(), ions.geo().atoms(), rs.gcutoff());
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
   states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-	hamiltonian::ks_hamiltonian<double> ham(rs, st, pot, false, geo, st.num_states(), 0.0);
+	auto bzone = ions::brillouin(ions, input::kpoints::gamma());
+	
+	hamiltonian::ks_hamiltonian<double> ham(rs, bzone, st, pot, false, ions.geo(), st.num_states(), 0.0);
 
 	SECTION("Constant function"){
 		

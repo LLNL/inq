@@ -22,6 +22,7 @@
 */
 
 #include <basis/real_space.hpp>
+#include <hamiltonian/singularity_correction.hpp>
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <operations/rotate.hpp>
@@ -37,11 +38,21 @@ namespace inq {
 namespace hamiltonian {
   class exchange_operator {
 		
+		math::array<double, 1> occupations_;
+		math::array<vector3<double, covariant>, 1> kpoints_;		
+		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
+		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> ace_orbitals_;
+		solvers::poisson poisson_solver_;
+		double exchange_coefficient_;
+		bool use_ace_;
+		singularity_correction sing_;
+		
   public:
 
-		exchange_operator(double const exchange_coefficient, bool const use_ace):
+		exchange_operator(ions::unit_cell const & cell, ions::brillouin const & bzone, double const exchange_coefficient, bool const use_ace):
 			exchange_coefficient_(exchange_coefficient),
-			use_ace_(use_ace){
+			use_ace_(use_ace),
+			sing_(cell, bzone){
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
@@ -199,17 +210,6 @@ namespace hamiltonian {
 			return fabs(exchange_coefficient_) > 1.0e-14;
 		}
 
-		//////////////////////////////////////////////////////////////////////////////////
-
-	private:
-		math::array<double, 1> occupations_;
-		math::array<vector3<double, covariant>, 1> kpoints_;		
-		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
-		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> ace_orbitals_;
-		solvers::poisson poisson_solver_;
-		double exchange_coefficient_;
-		bool use_ace_;
-		
   };
 
 }

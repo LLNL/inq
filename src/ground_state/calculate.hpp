@@ -90,7 +90,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	if(console) console->trace("calculate started");
 	hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, electrons.states().num_density_components());
 	
-	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis_, electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
+	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis_, electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
 	
 	if(electrons.full_comm_.root()) ham.info(std::cout);
 		
