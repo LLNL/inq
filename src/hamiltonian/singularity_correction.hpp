@@ -42,6 +42,8 @@ class singularity_correction {
 
   math::array<double, 1> fk_;
   double fzero_;
+  int nkpoints_;
+  double cell_volume_;
 
 public:
 
@@ -65,7 +67,9 @@ public:
   }
 
   singularity_correction(ions::unit_cell const & cell, ions::brillouin const & bzone):
-    fk_(bzone.size())
+    fk_(bzone.size()),
+    nkpoints_(bzone.size()),
+    cell_volume_(cell.volume())
   {
     
     for(int ik = 0; ik < bzone.size(); ik++){
@@ -115,6 +119,10 @@ public:
   auto fzero() const {
     return fzero_;
   }  
+
+  auto operator()(int ik) const {
+    return -nkpoints_*cell_volume_*(fk(ik) - fzero());
+  }
   
 };
 }
@@ -161,6 +169,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
     CHECK(sing.fk(5) == 0.18644848345224296_a);
     CHECK(sing.fk(6) == 0.18644848345224296_a);
     CHECK(sing.fk(7) == 0.18644848345224296_a);
+    
+    CHECK(sing(0) == 1041.3915164701_a);
+    CHECK(sing(1) == 1041.3915164701_a);
+    CHECK(sing(2) == 1041.3915164701_a);
+    CHECK(sing(3) == 1041.3915164701_a);
+    CHECK(sing(4) == 1041.3915164701_a);
+    CHECK(sing(5) == 1041.3915164701_a);
+    CHECK(sing(6) == 1041.3915164701_a);
+    CHECK(sing(7) == 1041.3915164701_a);
     
   }
   /*
