@@ -61,10 +61,20 @@ namespace ions {
 			unit_cell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodicity){
 		}
 
-		vector_type const& operator[](int i) const {return lattice_[i];}
+		vector_type const& operator[](int ii) const {
+			assert(ii >= 0 and ii < 3);			
+			return lattice_[ii];
+		}
     
-    vector_type const& lattice(int i) const { return lattice_[i]; }
-		vector_type const& reciprocal(int i) const { return reciprocal_[i]; }
+    vector_type const& lattice(int ii) const {
+			assert(ii >= 0 and ii < 3);
+			return lattice_[ii];
+		}
+		
+		vector_type const& reciprocal(int ii) const {
+			assert(ii >= 0 and ii < 3);
+			return reciprocal_[ii];
+		}
 		
 		auto enlarge(int factor) const {
 			return unit_cell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodicity_);
