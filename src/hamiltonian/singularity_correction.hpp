@@ -180,8 +180,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
     CHECK(sing(7) == 1041.3915164701_a);
     
   }
-  /*
-    This doesn't work, I have to figure out why
     
     SECTION("Auxiliary function non-orthogonal"){
     auto aa = 6.7408326;
@@ -191,6 +189,5 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{0.12500000000000000,-0.20833333333333334, -0.23333333333333334}) == 3.6560191647005245_a);
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{ 0.14999999999999999, 0.25000000000000000, -3.3333333333333333E-002}) == 5.8717108336249790_a);
   }  
-  */
 }
 #endif
