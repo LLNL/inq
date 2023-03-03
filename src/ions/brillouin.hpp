@@ -50,8 +50,16 @@ public:
     is_shifted_(grid_.is_shifted())
   {
 
-		std::vector<int> types(ions.geo().num_atoms());
-		std::vector<double> positions(3*ions.geo().num_atoms());
+		auto num_atoms = std::max(1, ions.geo().num_atoms());
+		
+		std::vector<int> types(num_atoms);
+		std::vector<double> positions(3*num_atoms);
+
+		//add a dummy atom, since spg doesn't work without atoms
+		types[0] = 0;
+		positions[0] = 0.0;
+		positions[1] = 0.0;
+		positions[2] = 0.0;		
 		
 		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
 			types[iatom] = ions.geo().atoms()[iatom].atomic_number();
@@ -73,8 +81,8 @@ public:
 		amat[8] = ions.cell().lattice(2)[2];
 		
 		spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address_.data()), map_.data(), (int const *) &grid_.dims(), (int const *) &is_shifted_, 0,
-															 reinterpret_cast<double (*)[3]>(amat), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), ions.geo().num_atoms(), 1e-4);
-
+															 reinterpret_cast<double (*)[3]>(amat), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), num_atoms, 1e-4);
+		
   }
 
   auto size() const {
