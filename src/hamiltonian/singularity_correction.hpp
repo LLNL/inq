@@ -50,19 +50,19 @@ public:
   // the function defined in Eq. 16
   static auto auxiliary(ions::unit_cell const & cell, vector3<double, covariant> const & qpoint){
     auto val = 0.0;
-    auto const & metric = cell.metric();
-    
+		    auto const & metric = cell.metric();
+
     for(int jj = 0; jj < 3; jj++){
       auto jjp1 = jj + 1;
-      if(jj == 3) jj = 0;
+      if(jjp1 == 3) jjp1 = 0;
 
       auto v1 = cell.reciprocal(jj)  *sin(metric.dot(cell.lattice(jj)  , 0.5*qpoint));
-      auto v2 = cell.reciprocal(jj)  *sin(metric.dot(cell.lattice(jj)  ,     qpoint));
-      auto v3 = cell.reciprocal(jjp1)*sin(metric.dot(cell.lattice(jjp1),     qpoint));
+			auto v2 = cell.reciprocal(jj)  *sin(metric.dot(cell.lattice(jj)  ,     qpoint));
+			auto v3 = cell.reciprocal(jjp1)*sin(metric.dot(cell.lattice(jjp1),     qpoint));
       
-      val += 4.0*metric.dot(v1, v1) + 2*metric.dot(v2, v3);
+      val += 4.0*metric.dot(v1, v1) + 2.0*metric.dot(v2, v3);
     }
-
+		
     return 4*M_PI*M_PI/val;
   }
 
@@ -71,18 +71,18 @@ public:
     nkpoints_(bzone.size()),
     cell_volume_(cell.volume())
   {
-    
+
     for(int ik = 0; ik < bzone.size(); ik++){
       
       fk_[ik] = 0.0;
-      for(int ik2 = 0; ik2 < bzone.size(); ik2++){
+			for(int ik2 = 0; ik2 < bzone.size(); ik2++){
         auto qpoint = bzone.kpoint(ik) - bzone.kpoint(ik2);
         if(cell.metric().norm(qpoint) < 1e-6) continue;
         fk_[ik] += bzone.kpoint_weight(ik2)*auxiliary(cell, qpoint);
-      }
+				}
       fk_[ik] *= 4.0*M_PI/cell.volume();
     }
-    
+
     auto const nsteps = 7;
     auto const nk = 60;
     
