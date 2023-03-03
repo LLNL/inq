@@ -118,8 +118,8 @@ namespace hamiltonian {
 
 		//////////////////////////////////////////////////////////////////////////////////
 		
-		template <class HFType, class HFOccType, class KptType, class PhiType, class ExxphiType>
-		void block_exchange(double factor, HFType const & hf, HFOccType const & hfocc, KptType const & kpt, PhiType const & phi, ExxphiType & exxphi) const {
+		template <class HFType, class HFOccType, class KptType, class IdxType, class PhiType, class ExxphiType>
+		void block_exchange(double factor, HFType const & hf, HFOccType const & hfocc, KptType const & kpt, IdxType const & idx, PhiType const & phi, ExxphiType & exxphi) const {
 
 			auto nst = phi.local_set_size();
 			auto nhf = (~hf).size();
@@ -134,7 +134,7 @@ namespace hamiltonian {
 									 });
 				}
 
-				poisson_solver_.in_place(rhoij, -phi.kpoint() + kpt[jj]);
+				poisson_solver_.in_place(rhoij, -phi.kpoint() + kpt[jj], sing_(idx[jj]));
 				
 				{ CALI_CXX_MARK_SCOPE("exchange_operator::mulitplication");
 					gpu::run(nst, exxphi.basis().local_size(),
@@ -156,13 +156,14 @@ namespace hamiltonian {
 			double factor = -0.5*scale*exchange_coefficient_;
 
 			if(not orbitals_->set_part().parallel()){
-				block_exchange(factor, orbitals_->matrix(), occupations_, kpoints_, phi, exxphi);
+				block_exchange(factor, orbitals_->matrix(), occupations_, kpoints_, kpoint_indices_, phi, exxphi);
 			} else {
 
 				auto occ_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), occupations_);
 				auto kpt_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoints_);
+				auto idx_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoint_indices_);				
 				for(auto hfo_it = orbitals_->par_set_begin(); hfo_it != orbitals_->par_set_end(); ++hfo_it){
-					block_exchange(factor, hfo_it.matrix(), *occ_it, *kpt_it, phi, exxphi);
+					block_exchange(factor, hfo_it.matrix(), *occ_it, *kpt_it, *idx_it, phi, exxphi);
 					++occ_it;
 					++kpt_it;
 				}
