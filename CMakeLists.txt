@@ -9,7 +9,7 @@ project(inq VERSION 0.1)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "")
-
+set(FETCHCONTENT_QUIET FALSE)
 Include(FetchContent)
 
 add_library(inq INTERFACE)
@@ -180,6 +180,7 @@ FetchContent_Declare(
   spglib
 	GIT_REPOSITORY https://gitlab.com/npneq/spglib.git
 	GIT_TAG        f04dadd3175a60279f86780630045d3b3f64b8aa
+  GIT_PROGRESS TRUE
 	)
 FetchContent_MakeAvailable(spglib)
 
@@ -264,6 +265,7 @@ FetchContent_Declare(
 	Catch2
 	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
 	GIT_TAG        7cf2f88e50f0d1de324489c31db0314188423b6d
+  GIT_PROGRESS TRUE	
 	)
 FetchContent_MakeAvailable(Catch2)
 include_directories(${catch2_SOURCE_DIR}/src)
