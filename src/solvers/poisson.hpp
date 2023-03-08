@@ -82,7 +82,7 @@ public:
 	void poisson_apply_kernel(KernelType const kernel, FieldSetType & density, vector3<double> const & gshift = {0.0, 0.0, 0.0}, double const zeroterm = 0.0) const {
 
 		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only makes sense in fourier_space");
-		
+
 		CALI_CXX_MARK_FUNCTION;
 		
 		const double scal = (-4.0*M_PI)/density.basis().size();
@@ -113,9 +113,9 @@ private:
 	void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) const {
 
 		CALI_CXX_MARK_FUNCTION;
-		
+
 		auto potential_fs = operations::space::to_fourier(std::move(density));
-		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs, gshift, zeroterm);
 		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
 	
@@ -147,7 +147,7 @@ private:
 		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
 			
 		const auto cutoff_radius = density.basis().rlength()[2];
-		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs, gshift, zeroterm);
 		
 		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
@@ -181,7 +181,7 @@ private:
 		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
 			
 		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
-		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs, gshift, zeroterm);
 
 		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
