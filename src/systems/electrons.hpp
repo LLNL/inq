@@ -46,6 +46,26 @@ namespace systems {
 
 class electrons {
 	
+	inq::ions::brillouin brillouin_zone_;	
+	mutable parallel::cartesian_communicator<3> full_comm_;
+	mutable parallel::cartesian_communicator<1> lot_comm_;
+	mutable parallel::cartesian_communicator<2> lot_states_comm_;
+	mutable parallel::cartesian_communicator<1> states_comm_;
+	mutable parallel::cartesian_communicator<2> states_basis_comm_;
+	basis::real_space states_basis_;
+	basis::real_space density_basis_;
+	hamiltonian::atomic_potential atomic_pot_;
+	states::ks_states states_;
+	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
+	math::array<double, 2> eigenvalues_;
+	math::array<double, 2> occupations_;
+	math::array<double, 1> lot_weights_;
+	long max_local_set_size_;
+	basis::field_set<basis::real_space, double> spin_density_;
+	std::shared_ptr<spdlog::logger> logger_;
+	parallel::partition lot_part_;
+	parallel::arbitrary_partition lot_states_part_;
+	
 public:
 	
 	static auto lot_subcomm(parallel::cartesian_communicator<3> & comm){
@@ -395,26 +415,6 @@ private:
 		using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
 		return std::string(it((unsigned char*)&tiny), it((unsigned char*)&tiny+sizeof(tiny)));//.append((3-sizeof(tiny)%3)%3,'=');
 	}
-	
-	inq::ions::brillouin brillouin_zone_;	
-	mutable parallel::cartesian_communicator<3> full_comm_;
-	mutable parallel::cartesian_communicator<1> lot_comm_;
-	mutable parallel::cartesian_communicator<2> lot_states_comm_;
-	mutable parallel::cartesian_communicator<1> states_comm_;
-	mutable parallel::cartesian_communicator<2> states_basis_comm_;
-	basis::real_space states_basis_;
-	basis::real_space density_basis_;
-	hamiltonian::atomic_potential atomic_pot_;
-	states::ks_states states_;
-	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
-	math::array<double, 2> eigenvalues_;
-	math::array<double, 2> occupations_;
-	math::array<double, 1> lot_weights_;
-	long max_local_set_size_;
-	basis::field_set<basis::real_space, double> spin_density_;
-	std::shared_ptr<spdlog::logger> logger_;
-	parallel::partition lot_part_;
-	parallel::arbitrary_partition lot_states_part_;
 	
 };
 
