@@ -22,6 +22,7 @@
 */
 
 #include <basis/real_space.hpp>
+#include <hamiltonian/singularity_correction.hpp>
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <operations/rotate.hpp>
@@ -37,11 +38,22 @@ namespace inq {
 namespace hamiltonian {
   class exchange_operator {
 		
+		math::array<double, 1> occupations_;
+		math::array<vector3<double, covariant>, 1> kpoints_;
+		math::array<int, 1> kpoint_indices_;
+		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
+		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> ace_orbitals_;
+		solvers::poisson poisson_solver_;
+		double exchange_coefficient_;
+		bool use_ace_;
+		singularity_correction sing_;
+		
   public:
 
-		exchange_operator(double const exchange_coefficient, bool const use_ace):
+		exchange_operator(ions::unit_cell const & cell, ions::brillouin const & bzone, double const exchange_coefficient, bool const use_ace):
 			exchange_coefficient_(exchange_coefficient),
-			use_ace_(use_ace){
+			use_ace_(use_ace),
+			sing_(cell, bzone){
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
@@ -54,21 +66,22 @@ namespace hamiltonian {
 
 			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.lot_size(), el.states_comm_);
 
-			occupations_.reextent(part.local_size());
+			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
+			kpoint_indices_.reextent(part.local_size());
 			
 			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
 			
 			auto iphi = 0;
 			auto ist = 0;
 			for(auto & phi : el.lot()){
-
-				occupations_({ist, ist + phi.local_set_size()}) = el.occupations()[iphi];
 				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
+				kpoint_indices_({ist, ist + phi.local_set_size()}).fill(el.kpoint_index(phi));
+																																
 				orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
 
 				iphi++;
-				ist += phi.local_set_size();			
+				ist += phi.local_set_size();
 			}
 
 			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
@@ -105,8 +118,8 @@ namespace hamiltonian {
 
 		//////////////////////////////////////////////////////////////////////////////////
 		
-		template <class HFType, class HFOccType, class KptType, class PhiType, class ExxphiType>
-		void block_exchange(double factor, HFType const & hf, HFOccType const & hfocc, KptType const & kpt, PhiType const & phi, ExxphiType & exxphi) const {
+		template <class HFType, class HFOccType, class KptType, class IdxType, class PhiType, class ExxphiType>
+		void block_exchange(double factor, HFType const & hf, HFOccType const & hfocc, KptType const & kpt, IdxType const & idx, PhiType const & phi, ExxphiType & exxphi) const {
 
 			auto nst = phi.local_set_size();
 			auto nhf = (~hf).size();
@@ -114,20 +127,20 @@ namespace hamiltonian {
 			
 			for(int jj = 0; jj < nhf; jj++){
 				
-				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_gen_dens");
+				{ CALI_CXX_MARK_SCOPE("exchange_operator::generate_density");
 					gpu::run(nst, phi.basis().local_size(),
 									 [rho = begin(rhoij.matrix()), hfo = begin(hf), ph = begin(phi.matrix()), jj] GPU_LAMBDA (auto ist, auto ipoint){ 
 										 rho[ipoint][ist] = conj(hfo[ipoint][jj])*ph[ipoint][ist];
 									 });
 				}
 
-				poisson_solver_.in_place(rhoij, -phi.kpoint() + kpt[jj]);
+				poisson_solver_.in_place(rhoij, -phi.kpoint() + kpt[jj], sing_(idx[jj]));
 				
-				{ CALI_CXX_MARK_SCOPE("hartree_fock_exchange_mul_pot");
+				{ CALI_CXX_MARK_SCOPE("exchange_operator::mulitplication");
 					gpu::run(nst, exxphi.basis().local_size(),
-									 [pot = begin(rhoij.matrix()), hfo = begin(hf), exph = begin(exxphi.matrix()), occ = begin(hfocc), jj, factor]
+									 [pot = begin(rhoij.matrix()), hfo = begin(hf), exph = begin(exxphi.matrix()), scal = factor*hfocc[jj], jj]
 									 GPU_LAMBDA (auto ist, auto ipoint){
-										 exph[ipoint][ist] += factor*occ[jj]*hfo[ipoint][jj]*pot[ipoint][ist];
+										 exph[ipoint][ist] += scal*hfo[ipoint][jj]*pot[ipoint][ist];
 									 });
 				}
 			}
@@ -138,18 +151,19 @@ namespace hamiltonian {
 		void direct(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi, double scale = 1.0) const {
 			if(not enabled()) return;
 			
-			CALI_CXX_MARK_SCOPE("hartree_fock_exchange");
+			CALI_CXX_MARK_SCOPE("exchange_operator::direct");
 			
 			double factor = -0.5*scale*exchange_coefficient_;
 
 			if(not orbitals_->set_part().parallel()){
-				block_exchange(factor, orbitals_->matrix(), occupations_, kpoints_, phi, exxphi);
+				block_exchange(factor, orbitals_->matrix(), occupations_, kpoints_, kpoint_indices_, phi, exxphi);
 			} else {
 
 				auto occ_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), occupations_);
 				auto kpt_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoints_);
+				auto idx_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoint_indices_);				
 				for(auto hfo_it = orbitals_->par_set_begin(); hfo_it != orbitals_->par_set_end(); ++hfo_it){
-					block_exchange(factor, hfo_it.matrix(), *occ_it, *kpt_it, phi, exxphi);
+					block_exchange(factor, hfo_it.matrix(), *occ_it, *kpt_it, *idx_it, phi, exxphi);
 					++occ_it;
 					++kpt_it;
 				}
@@ -185,7 +199,9 @@ namespace hamiltonian {
 
 		//////////////////////////////////////////////////////////////////////////////////
 		
-		void ace(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {			
+		void ace(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
+			CALI_CXX_MARK_SCOPE("exchange_operator::ace");
+			
 			if(not enabled()) return;
 			namespace blas = boost::multi::blas;
 
@@ -199,17 +215,6 @@ namespace hamiltonian {
 			return fabs(exchange_coefficient_) > 1.0e-14;
 		}
 
-		//////////////////////////////////////////////////////////////////////////////////
-
-	private:
-		math::array<double, 1> occupations_;
-		math::array<vector3<double, covariant>, 1> kpoints_;		
-		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
-		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> ace_orbitals_;
-		solvers::poisson poisson_solver_;
-		double exchange_coefficient_;
-		bool use_ace_;
-		
   };
 
 }

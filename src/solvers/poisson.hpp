@@ -39,9 +39,9 @@ class poisson {
 public:
 
 	struct poisson_kernel_3d {
-		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
+		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg, double const zeroterm) const {
 			auto g2 = norm(gg);
-			if(g2 < 1e-15) return 0.0;
+			if(g2 < 1e-6) return zeroterm;
 			return -1.0/g2;
 		}
 	};
@@ -51,12 +51,12 @@ public:
 	struct poisson_kernel_2d {
 		double rc_;
 		
-		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
+		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg, double const) const {
 			auto gpar = hypot(gg[0], gg[1]);
 			auto gz = fabs(gg[2]);
 			auto g2 = norm(gg);
 			
-			if(g2 < 1e-15) return 0.5*rc_*rc_;
+			if(g2 < 1e-6) return 0.5*rc_*rc_;
 			if(gpar < 1e-12) return -(1.0 - cos(gz*rc_) - gz*rc_*sin(gz*rc_))/g2;
 			return -(1.0 + exp(-gpar*rc_)*(gz*sin(gz*rc_)/gpar - cos(gz*rc_)))/g2;
 		}
@@ -67,11 +67,11 @@ public:
 	struct poisson_kernel_0d {
 		double rc_;
 		
-		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg) const {
+		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg, double const) const {
 			auto g2 = norm(gg);
 
 			// this is the kernel of C. A. Rozzi et al., Phys. Rev. B 73, 205119 (2006).
-			if(g2 < 1e-15) return -0.5*rc_*rc_;
+			if(g2 < 1e-6) return -0.5*rc_*rc_;
 			return -(1.0 - cos(rc_*sqrt(g2)))/g2;
 		}
 	};
@@ -79,18 +79,18 @@ public:
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename KernelType, typename FieldSetType>
-	void poisson_apply_kernel(KernelType const kernel, FieldSetType & density, vector3<double> const & gshift = {0.0, 0.0, 0.0}) const {
+	void poisson_apply_kernel(KernelType const kernel, FieldSetType & density, vector3<double> const & gshift = {0.0, 0.0, 0.0}, double const zeroterm = 0.0) const {
 
 		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only makes sense in fourier_space");
-		
+
 		CALI_CXX_MARK_FUNCTION;
 		
 		const double scal = (-4.0*M_PI)/density.basis().size();
 		
 		gpu::run(density.basis().local_sizes()[2], density.basis().local_sizes()[1], density.basis().local_sizes()[0],
-						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size(), kernel, gshift] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size(), kernel, gshift, zeroterm] GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 
-							 auto kerg = kernel(point_op.gvector_cartesian(ix, iy, iz) + gshift);
+							 auto kerg = kernel(point_op.gvector_cartesian(ix, iy, iz) + gshift, zeroterm/(-4*M_PI));
 							 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] *= scal*kerg;
 						 });
 	}
@@ -110,12 +110,12 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift) const {
+	void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) const {
 
 		CALI_CXX_MARK_FUNCTION;
-		
+
 		auto potential_fs = operations::space::to_fourier(std::move(density));
-		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs, gshift, zeroterm);
 		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
 	
@@ -139,7 +139,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_2d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift) const {
+	void poisson_solve_in_place_2d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -147,7 +147,7 @@ private:
 		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
 			
 		const auto cutoff_radius = density.basis().rlength()[2];
-		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs, gshift, zeroterm);
 		
 		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
@@ -173,7 +173,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_0d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift) const {
+	void poisson_solve_in_place_0d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -181,7 +181,7 @@ private:
 		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
 			
 		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
-		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs);
+		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs, gshift, zeroterm);
 
 		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
@@ -207,18 +207,18 @@ public:
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename Space = cartesian>
-	void in_place(basis::field_set<basis::real_space, complex> & density, vector3<double, Space> const & gshift = {0.0, 0.0, 0.0}) const {
+	void in_place(basis::field_set<basis::real_space, complex> & density, vector3<double, Space> const & gshift = {0.0, 0.0, 0.0}, double const zeroterm = 0.0) const {
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 
 		auto gshift_cart = density.basis().cell().metric().to_cartesian(gshift);
 		
 		if(density.basis().periodicity() == 3){
-			poisson_solve_in_place_3d(density, gshift_cart);
+			poisson_solve_in_place_3d(density, gshift_cart, zeroterm);
 		} else if(density.basis().periodicity() == 2){
-			return poisson_solve_in_place_2d(density, gshift_cart);
+			return poisson_solve_in_place_2d(density, gshift_cart, zeroterm);
 		} else {
-			poisson_solve_in_place_0d(density, gshift_cart);
+			poisson_solve_in_place_0d(density, gshift_cart, zeroterm);
 		}
 	}
 

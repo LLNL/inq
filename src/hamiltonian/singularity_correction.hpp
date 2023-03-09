@@ -21,17 +21,8 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <basis/real_space.hpp>
-#include <operations/overlap.hpp>
-#include <operations/overlap_diagonal.hpp>
-#include <operations/rotate.hpp>
-#include <parallel/arbitrary_partition.hpp>
-#include <parallel/array_iterator.hpp>
-#include <solvers/cholesky.hpp>
-#include <solvers/poisson.hpp>
-#include <states/orbital_set.hpp>
-
-#include <optional>
+#include <ions/unit_cell.hpp>
+#include <ions/brillouin.hpp>
 
 namespace inq {
 namespace hamiltonian {
