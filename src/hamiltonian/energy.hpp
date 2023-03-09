@@ -31,7 +31,6 @@ namespace hamiltonian {
 	class energy {
 		
 		double ion_;
-		double ion_sr_lr_;
 		double eigenvalues_;
 		double external_;
 		double nonlocal_;
