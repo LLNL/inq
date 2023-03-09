@@ -283,9 +283,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-						auto ixg = rs.cubic_dist(0).local_to_global(ix);
-						auto iyg = rs.cubic_dist(1).local_to_global(iy);
-						auto izg = rs.cubic_dist(2).local_to_global(iz);
+						auto ixg = rs.cubic_part(0).local_to_global(ix);
+						auto iyg = rs.cubic_part(1).local_to_global(iy);
+						auto izg = rs.cubic_part(2).local_to_global(iz);
 
 						density.cubic()[ix][iy][iz] = 0.0;
 						for(int ist = 0; ist < nst; ist++) density_set.hypercubic()[ix][iy][iz][ist] = 0.0;
@@ -324,7 +324,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(sum[0]/(nst + 1.0) == 82.9383793318_a);
 			CHECK(fabs(sum[1])/(nst + 1.0) <= 5e-12);
 		
-			if(rs.cubic_dist(0).start() == 0 and rs.cubic_dist(1).start() == 0 and rs.cubic_dist(2).start() == 0) CHECK(real(potential.cubic()[0][0][0]) == -0.0241804443_a);
+			if(rs.cubic_part(0).start() == 0 and rs.cubic_part(1).start() == 0 and rs.cubic_part(2).start() == 0) CHECK(real(potential.cubic()[0][0][0]) == -0.0241804443_a);
 		}
 
 		SECTION("Plane wave"){
@@ -335,9 +335,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 						
-						auto ixg = rs.cubic_dist(0).local_to_global(ix);
-						auto iyg = rs.cubic_dist(1).local_to_global(iy);
-						auto izg = rs.cubic_dist(2).local_to_global(iz);
+						auto ixg = rs.cubic_part(0).local_to_global(ix);
+						auto iyg = rs.cubic_part(1).local_to_global(iy);
+						auto izg = rs.cubic_part(2).local_to_global(iz);
 						
 						double xx = rs.point_op().rvector_cartesian(ixg, iyg, izg)[0];
 						density.cubic()[ix][iy][iz] = complex(cos(kk*xx), sin(kk*xx));
@@ -377,9 +377,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 						
-						auto ixg = rs.cubic_dist(0).local_to_global(ix);
-						auto iyg = rs.cubic_dist(1).local_to_global(iy);
-						auto izg = rs.cubic_dist(2).local_to_global(iz);						
+						auto ixg = rs.cubic_part(0).local_to_global(ix);
+						auto iyg = rs.cubic_part(1).local_to_global(iy);
+						auto izg = rs.cubic_part(2).local_to_global(iz);						
 						double yy = rs.point_op().rvector_cartesian(ixg, iyg, izg)[1];
 						rdensity.cubic()[ix][iy][iz] = cos(kk*yy);
 					}
@@ -453,9 +453,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 						
-						auto ixg = rs.cubic_dist(0).local_to_global(ix);
-						auto iyg = rs.cubic_dist(1).local_to_global(iy);
-						auto izg = rs.cubic_dist(2).local_to_global(iz);
+						auto ixg = rs.cubic_part(0).local_to_global(ix);
+						auto iyg = rs.cubic_part(1).local_to_global(iy);
+						auto izg = rs.cubic_part(2).local_to_global(iz);
 
 						auto rr = rs.point_op().rlength(ixg, iyg, izg);
 

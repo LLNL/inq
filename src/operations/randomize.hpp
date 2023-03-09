@@ -63,15 +63,15 @@ namespace operations {
 		auto seed = phi.basis().size()*phi.set_size() + index;
 
 		uint64_t st_start = phi.set_part().start();
-		uint64_t x_start = phi.basis().cubic_dist(0).start();
-		uint64_t y_start = phi.basis().cubic_dist(1).start();
-		uint64_t z_start = phi.basis().cubic_dist(2).start();
+		uint64_t x_start = phi.basis().cubic_part(0).start();
+		uint64_t y_start = phi.basis().cubic_part(1).start();
+		uint64_t z_start = phi.basis().cubic_part(2).start();
 		uint64_t set_size = phi.set_size();
 		uint64_t size_z = phi.basis().sizes()[2];
 		uint64_t size_y = phi.basis().sizes()[1];
 		auto phicub = begin(phi.hypercubic());
 		
-		gpu::run(phi.set_part().local_size(), phi.basis().cubic_dist(2).local_size(), phi.basis().cubic_dist(1).local_size(), phi.basis().cubic_dist(0).local_size(),
+		gpu::run(phi.set_part().local_size(), phi.basis().cubic_part(2).local_size(), phi.basis().cubic_part(1).local_size(), phi.basis().cubic_part(0).local_size(),
 						 [=] GPU_LAMBDA (uint64_t ist, uint64_t iz, uint64_t iy, uint64_t ix){
 						uniform_distribution<typename field_set_type::element_type> dist;
 						uint64_t step = ist + st_start + set_size*(iz + z_start + size_z*(iy + y_start + (ix + x_start)*size_y));
