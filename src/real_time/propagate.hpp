@@ -35,14 +35,14 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		electrons.spin_density() = observables::density::calculate(electrons);
 
 		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, electrons.states().num_density_components(), pert);
-		hamiltonian::ks_hamiltonian<complex> ham(electrons.states_basis_, electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient());
+		hamiltonian::ks_hamiltonian<complex> ham(electrons.states_basis_, electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient());
 		hamiltonian::energy energy;
 
-		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
+		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot());
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), 0.0);
 
 		energy.calculate(ham, electrons);
-		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_));
+		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
 		
 		if(electrons.full_comm_.root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
 

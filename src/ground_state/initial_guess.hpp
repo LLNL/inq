@@ -28,7 +28,7 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 	electrons.update_occupations(electrons.eigenvalues());
 	
 	if(ions.geo().num_atoms() > 0){
-		electrons.spin_density() = electrons.atomic_pot_.atomic_electronic_density(electrons.states_comm_, electrons.density_basis_, ions.geo(), electrons.states());
+		electrons.spin_density() = electrons.atomic_pot().atomic_electronic_density(electrons.states_comm_, electrons.density_basis_, ions.geo(), electrons.states());
 	} else {
 		electrons.spin_density() = observables::density::calculate(electrons);
 	}

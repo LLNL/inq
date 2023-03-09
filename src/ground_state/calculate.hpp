@@ -90,7 +90,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	if(console) console->trace("calculate started");
 	hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, electrons.states().num_density_components());
 	
-	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis_, electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
+	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis_, electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
 	
 	if(electrons.full_comm_.root()) ham.info(std::cout);
 		
@@ -110,10 +110,10 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	
 	auto old_energy = std::numeric_limits<double>::max();
 		
-	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
+	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot());
 	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
-	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_));
+	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
 
 	double old_exe = ham.exchange.update(electrons);
 	double exe_diff = fabs(old_exe);

@@ -349,6 +349,10 @@ public:
 	auto & brillouin_zone() const {
 		return brillouin_zone_;
 	}
+
+	auto & atomic_pot() const {
+		return atomic_pot_;
+	}
 	
 private:
 	static std::string generate_tiny_uuid(){
@@ -370,8 +374,8 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	mutable parallel::cartesian_communicator<2> states_basis_comm_;
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
-	hamiltonian::atomic_potential atomic_pot_;
 private:
+	hamiltonian::atomic_potential atomic_pot_;
 	states::ks_states states_;
 	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
 	math::array<double, 2> eigenvalues_;
