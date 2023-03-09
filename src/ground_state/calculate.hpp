@@ -74,7 +74,7 @@ auto state_convergence(systems::electrons & el, NormResType const & normres) {
 		state_conv += operations::sum(el.occupations()[iphi], normres[iphi], [](auto occ, auto nres){ return fabs(occ*nres); });
 	}
 	
-	el.lot_states_comm_.all_reduce_n(&state_conv, 1);
+	el.lot_states_comm().all_reduce_n(&state_conv, 1);
 	state_conv /= el.states().num_electrons();
 	
 	return state_conv;
@@ -84,15 +84,15 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 	CALI_CXX_MARK_FUNCTION;
 
-	assert(electrons.lot()[0].full_comm() == electrons.states_basis_comm_);
+	assert(electrons.lot()[0].full_comm() == electrons.states_basis_comm());
 	
 	auto console = electrons.logger();
 	if(console) console->trace("calculate started");
-	hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, electrons.states().num_density_components());
+	hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components());
 	
-	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis_, electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
+	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
 	
-	if(electrons.full_comm_.root()) ham.info(std::cout);
+	if(electrons.full_comm().root()) ham.info(std::cout);
 		
 	ground_state::result res;
 		
@@ -103,23 +103,23 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 		switch(solver.mixing_algorithm()){
 		case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
-		case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis_.comm());
-		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis_.comm());
+		case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 		} __builtin_unreachable();
 	}();
 	
 	auto old_energy = std::numeric_limits<double>::max();
 		
-	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
+	sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
-	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
 
 	double old_exe = ham.exchange.update(electrons);
 	double exe_diff = fabs(old_exe);
 	auto update_hf = false;
 
-	electrons.full_comm_.barrier();
+	electrons.full_comm().barrier();
 	auto iter_start_time = std::chrono::high_resolution_clock::now();
 
 	int conv_count = 0;
@@ -182,12 +182,12 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 		{
 			auto normres = res.energy.calculate(ham, electrons);
-			auto energy_diff = (res.energy.eigenvalues - old_energy)/electrons.states().num_electrons();
+			auto energy_diff = (res.energy.eigenvalues() - old_energy)/electrons.states().num_electrons();
 
-			electrons.full_comm_.barrier();
+			electrons.full_comm().barrier();
 			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - iter_start_time;
 
-			electrons.full_comm_.barrier();
+			electrons.full_comm().barrier();
 			iter_start_time = std::chrono::high_resolution_clock::now();
 
 			auto state_conv = state_convergence(electrons, normres);
@@ -206,7 +206,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				conv_count = 0; 
 			}
 
-			old_energy = res.energy.eigenvalues;
+			old_energy = res.energy.eigenvalues();
 		}
 	}
 

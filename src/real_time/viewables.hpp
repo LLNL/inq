@@ -54,7 +54,7 @@ public:
 	}
 
 	auto root() const {
-		return electrons_.full_comm_.root();
+		return electrons_.full_comm().root();
 	}
 	
 	auto time() const {
@@ -107,8 +107,8 @@ public:
 				auto start = electrons_.lot()[ilot].set_part().start();
 				auto end = electrons_.lot()[ilot].set_part().end();
 				occ[ilot][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, end}), calc);
-				if(electrons_.lot_states_comm_.size() > 1){
-					electrons_.lot_states_comm_.all_reduce_in_place_n(&occ[ilot][it], 1, std::plus<>{});
+				if(electrons_.lot_states_comm().size() > 1){
+					electrons_.lot_states_comm().all_reduce_in_place_n(&occ[ilot][it], 1, std::plus<>{});
 				}
 			}
 		}

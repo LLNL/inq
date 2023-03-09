@@ -64,14 +64,14 @@ int main(int argc, char ** argv){
 	
 	match.check("total energy",        result.energy.total(),       -17.604152928272);
 	match.check("kinetic energy",      result.energy.kinetic(),      12.055655438508);
-	match.check("eigenvalues",         result.energy.eigenvalues,    -4.066598396189);
-	match.check("Hartree energy",      result.energy.hartree,        21.255019237963);
-	match.check("external energy",     result.energy.external,      -50.404984581658);
-	match.check("non-local energy",    result.energy.nonlocal,       -2.732670183975);
-	match.check("XC energy",           result.energy.xc,             -4.762296148152);
-	match.check("XC density integral", result.energy.nvxc,           -5.494637544989);
-	match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
-	match.check("ion-ion energy",      result.energy.ion,             6.985123238808);
+	match.check("eigenvalues",         result.energy.eigenvalues(),  -4.066598396189);
+	match.check("Hartree energy",      result.energy.hartree(),      21.255019237963);
+	match.check("external energy",     result.energy.external(),    -50.404984581658);
+	match.check("non-local energy",    result.energy.nonlocal(),     -2.732670183975);
+	match.check("XC energy",           result.energy.xc(),           -4.762296148152);
+	match.check("XC density integral", result.energy.nvxc(),         -5.494637544989);
+	match.check("HF exchange energy",  result.energy.hf_exchange(),   0.000000000000);
+	match.check("ion-ion energy",      result.energy.ion(),           6.985123238808);
 
 	std::cout << result.dipole << std::endl;
 	

@@ -34,17 +34,17 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		
 		electrons.spin_density() = observables::density::calculate(electrons);
 
-		hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, electrons.states().num_density_components(), pert);
-		hamiltonian::ks_hamiltonian<complex> ham(electrons.states_basis_, electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot_, inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient());
+		hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components(), pert);
+		hamiltonian::ks_hamiltonian<complex> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient());
 		hamiltonian::energy energy;
 
-		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
+		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), 0.0);
 
 		energy.calculate(ham, electrons);
-		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
 		
-		if(electrons.full_comm_.root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
+		if(electrons.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
 
 		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
 		
@@ -76,7 +76,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
-			if(electrons.full_comm_.root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f  wtime = %9.3f\n", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
+			if(electrons.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f  wtime = %9.3f\n", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
 
 			iter_start_time = new_time;
 		}

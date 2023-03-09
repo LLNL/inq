@@ -68,7 +68,7 @@ vector3<double> dipole(ions::geometry const & geo, const hamiltonian::atomic_pot
 }
 
 vector3<double> dipole(systems::ions const & ions, systems::electrons const & electrons){
-	return dipole(ions.geo_, electrons.atomic_pot_) + dipole(electrons.density());
+	return dipole(ions.geo_, electrons.atomic_pot()) + dipole(electrons.density());
 }
 
 }

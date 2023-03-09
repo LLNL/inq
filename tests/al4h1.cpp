@@ -46,16 +46,16 @@ int main(int argc, char ** argv){
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::energy_tolerance(1e-8_Ha) | input::scf::calculate_forces());
 	
-	energy_match.check("ion-ion energy",      result.energy.ion,           -10.318372113231);
+	energy_match.check("ion-ion energy",      result.energy.ion(),         -10.318372113231);
 	energy_match.check("total energy",        result.energy.total(),        -9.802338589416);
 	energy_match.check("kinetic energy",      result.energy.kinetic(),       4.200431340049);
-	energy_match.check("eigenvalues",         result.energy.eigenvalues,     0.602436500615);
-	energy_match.check("Hartree energy",      result.energy.hartree,         0.219185817806);
-	energy_match.check("external energy",     result.energy.external,       -0.562805143373);
-	energy_match.check("non-local energy",    result.energy.nonlocal,        1.427216975992);
-	energy_match.check("XC energy",           result.energy.xc,             -4.767995466659);
-	energy_match.check("XC density integral", result.energy.nvxc,           -4.900778307666);
-	energy_match.check("HF exchange energy",  result.energy.hf_exchange,     0.000000000000);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues(),   0.602436500615);
+	energy_match.check("Hartree energy",      result.energy.hartree(),       0.219185817806);
+	energy_match.check("external energy",     result.energy.external(),     -0.562805143373);
+	energy_match.check("non-local energy",    result.energy.nonlocal(),      1.427216975992);
+	energy_match.check("XC energy",           result.energy.xc(),           -4.767995466659);
+	energy_match.check("XC density integral", result.energy.nvxc(),         -4.900778307666);
+	energy_match.check("HF exchange energy",  result.energy.hf_exchange(),   0.000000000000);
 	
 	energy_match.check("force 1 x",           result.forces[0][0],          -0.022483431037);
 	energy_match.check("force 1 y",           result.forces[0][1],          -0.041215997171);

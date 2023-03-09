@@ -68,12 +68,12 @@ public:
 			iphi++;
 		}
 		
-		all_kpoint_index = parallel::gather(+kpoint_index.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
-		all_spin_index = parallel::gather(+spin_index.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
-		all_states_index = parallel::gather(+state_index.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
-		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
-		all_occupations = parallel::gather(+occs.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
-		all_normres = parallel::gather(+normres.flatted(), el.lot_states_part(), el.lot_states_comm_, 0);
+		all_kpoint_index = parallel::gather(+kpoint_index.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
+		all_spin_index = parallel::gather(+spin_index.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
+		all_states_index = parallel::gather(+state_index.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
+		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
+		all_occupations = parallel::gather(+occs.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
+		all_normres = parallel::gather(+normres.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
 		
 	}
 

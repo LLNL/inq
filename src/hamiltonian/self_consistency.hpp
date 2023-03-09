@@ -92,7 +92,7 @@ public:
 
 		auto total_density = observables::density::total(spin_density);
 			
-		energy.external = operations::integral_product(total_density, vion_);
+		energy.external(operations::integral_product(total_density, vion_));
 
 		std::vector<basis::field<basis::real_space, typename HamiltonianType::potential_type>> vks(spin_density.set_size(), density_basis_);
 
@@ -121,14 +121,17 @@ public:
 		// Hartree
 		if(interaction_.hartree_potential()){
 			auto vhartree = poisson_solver(total_density);
-			energy.hartree = 0.5*operations::integral_product(total_density, vhartree);
+			energy.hartree(0.5*operations::integral_product(total_density, vhartree));
 			for(auto & vcomp : vks) operations::increment(vcomp, vhartree);
 		} else {
-			energy.hartree = 0.0;
+			energy.hartree(0.0);
 		}
 
 		// XC
-		xc_(spin_density, core_density_, vks, energy.xc, energy.nvxc);
+		double exc, nvxc;
+		xc_(spin_density, core_density_, vks, exc, nvxc);
+		energy.xc(exc);
+		energy.nvxc(nvxc);
 
 		// PUT THE CALCULATED POTENTIAL IN THE HAMILTONIAN
 		if(potential_basis_ == vks[0].basis()){

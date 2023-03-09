@@ -44,12 +44,12 @@ int main(int argc, char ** argv){
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), inq::input::scf::energy_tolerance(1e-9_Ha));
 		
-		energy_match.check("total energy",        result.energy.total()    , -0.567967321401);
-		energy_match.check("kinetic energy",      result.energy.kinetic()  ,  2.485678165423);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues, -1.488505428934);
-		energy_match.check("hartree",             result.energy.hartree    ,  0.000000732036);	
-		energy_match.check("XC energy",           result.energy.xc         , -3.053646218860);
-		energy_match.check("XC density integral", result.energy.nvxc       , -3.974185058430);
+		energy_match.check("total energy",        result.energy.total()      , -0.567967321401);
+		energy_match.check("kinetic energy",      result.energy.kinetic()    ,  2.485678165423);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues(), -1.488505428934);
+		energy_match.check("hartree",             result.energy.hartree()    ,  0.000000732036);	
+		energy_match.check("XC energy",           result.energy.xc()         , -3.053646218860);
+		energy_match.check("XC density integral", result.energy.nvxc()       , -3.974185058430);
 	}
 
 	{
@@ -62,12 +62,12 @@ int main(int argc, char ** argv){
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), inq::input::scf::energy_tolerance(1e-9_Ha));
 		
-		energy_match.check("total energy",        result.energy.total()    , -0.567967370592);
-		energy_match.check("kinetic energy",      result.energy.kinetic()  ,  2.485678162550);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues, -1.488505616755);
-		energy_match.check("hartree",             result.energy.hartree    ,  0.000000551815);	
-		energy_match.check("XC energy",           result.energy.xc         , -3.053646084957);
-		energy_match.check("XC density integral", result.energy.nvxc       , -3.974184882934);
+		energy_match.check("total energy",        result.energy.total()      , -0.567967370592);
+		energy_match.check("kinetic energy",      result.energy.kinetic()    ,  2.485678162550);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues(), -1.488505616755);
+		energy_match.check("hartree",             result.energy.hartree()    ,  0.000000551815);	
+		energy_match.check("XC energy",           result.energy.xc()         , -3.053646084957);
+		energy_match.check("XC density integral", result.energy.nvxc()       , -3.974184882934);
 	}
 
 	{
@@ -80,12 +80,12 @@ int main(int argc, char ** argv){
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), inq::input::scf::energy_tolerance(1e-9_Ha));
 		
-		energy_match.check("total energy",        result.energy.total()    ,  3.023858102368);
-		energy_match.check("kinetic energy",      result.energy.kinetic()  ,  9.474820227644);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues,  1.054657729496);
-		energy_match.check("hartree",             result.energy.hartree    ,  0.000000000177);	
-		energy_match.check("XC energy",           result.energy.xc         , -6.450962125453);
-		energy_match.check("XC density integral", result.energy.nvxc       , -8.420162498501);
+		energy_match.check("total energy",        result.energy.total()      ,  3.023858102368);
+		energy_match.check("kinetic energy",      result.energy.kinetic()    ,  9.474820227644);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues(),  1.054657729496);
+		energy_match.check("hartree",             result.energy.hartree()    ,  0.000000000177);	
+		energy_match.check("XC energy",           result.energy.xc()         , -6.450962125453);
+		energy_match.check("XC density integral", result.energy.nvxc()       , -8.420162498501);
 	}
 		
 	return energy_match.fail();

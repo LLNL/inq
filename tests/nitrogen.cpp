@@ -47,17 +47,17 @@ int main(int argc, char ** argv){
 		printf("Force atom %d = %20.14f %20.14f %20.14f\n", iatom, result.forces[iatom][0], result.forces[iatom][1], result.forces[iatom][2]);
 	}
 	
-	energy_match.check("ion-ion energy",      result.energy.ion,             -1.517434464849);
+	energy_match.check("ion-ion energy",      result.energy.ion(),           -1.517434464849);
 
 	energy_match.check("total energy",        result.energy.total(),         -20.642638450082);
 	energy_match.check("kinetic energy",      result.energy.kinetic(),        13.163479200329);
-	energy_match.check("eigenvalues",         result.energy.eigenvalues,      -5.266545154146);
-	energy_match.check("Hartree energy",      result.energy.hartree,          14.494239402365);
-	energy_match.check("external energy",     result.energy.external,        -39.444396066271);
-	energy_match.check("non-local energy",    result.energy.nonlocal,         -1.620128454760);
-	energy_match.check("XC energy",           result.energy.xc,               -5.718398066896);
-	energy_match.check("XC density integral", result.energy.nvxc,             -6.353978638174);
-	energy_match.check("HF exchange energy",  result.energy.hf_exchange,       0.0);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -5.266545154146);
+	energy_match.check("Hartree energy",      result.energy.hartree(),        14.494239402365);
+	energy_match.check("external energy",     result.energy.external(),      -39.444396066271);
+	energy_match.check("non-local energy",    result.energy.nonlocal(),       -1.620128454760);
+	energy_match.check("XC energy",           result.energy.xc(),             -5.718398066896);
+	energy_match.check("XC density integral", result.energy.nvxc(),           -6.353978638174);
+	energy_match.check("HF exchange energy",  result.energy.hf_exchange(),     0.0);
 	
 	energy_match.check("force 1 x",           result.forces[0][0],            -0.00000000250910);
 	energy_match.check("force 1 y",           result.forces[0][1],            -0.00000000185763);

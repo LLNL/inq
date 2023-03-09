@@ -50,14 +50,14 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		iphi++;
 	}
 
-	electrons.spin_density().all_reduce(electrons.lot_states_comm_);
+	electrons.spin_density().all_reduce(electrons.lot_states_comm());
 	
 	//propagate ionic positions to t + dt
 	ion_propagator.propagate_positions(dt, ions, forces);
 	if(not ion_propagator.static_ions) {
-		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
-		ham.update_projectors(electrons.states_basis_, electrons.atomic_pot_, ions.geo());
-		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
+		ham.update_projectors(electrons.states_basis(), electrons.atomic_pot(), ions.geo());
+		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
 	}
 
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
