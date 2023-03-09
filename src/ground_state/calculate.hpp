@@ -74,7 +74,7 @@ auto state_convergence(systems::electrons & el, NormResType const & normres) {
 		state_conv += operations::sum(el.occupations()[iphi], normres[iphi], [](auto occ, auto nres){ return fabs(occ*nres); });
 	}
 	
-	el.lot_states_comm_.all_reduce_n(&state_conv, 1);
+	el.lot_states_comm().all_reduce_n(&state_conv, 1);
 	state_conv /= el.states().num_electrons();
 	
 	return state_conv;
@@ -84,7 +84,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 	CALI_CXX_MARK_FUNCTION;
 
-	assert(electrons.lot()[0].full_comm() == electrons.states_basis_comm_);
+	assert(electrons.lot()[0].full_comm() == electrons.states_basis_comm());
 	
 	auto console = electrons.logger();
 	if(console) console->trace("calculate started");
@@ -92,7 +92,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	
 	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
 	
-	if(electrons.full_comm_.root()) ham.info(std::cout);
+	if(electrons.full_comm().root()) ham.info(std::cout);
 		
 	ground_state::result res;
 		
@@ -110,7 +110,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	
 	auto old_energy = std::numeric_limits<double>::max();
 		
-	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot());
+	sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
 	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
@@ -119,7 +119,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	double exe_diff = fabs(old_exe);
 	auto update_hf = false;
 
-	electrons.full_comm_.barrier();
+	electrons.full_comm().barrier();
 	auto iter_start_time = std::chrono::high_resolution_clock::now();
 
 	int conv_count = 0;
@@ -184,10 +184,10 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			auto normres = res.energy.calculate(ham, electrons);
 			auto energy_diff = (res.energy.eigenvalues() - old_energy)/electrons.states().num_electrons();
 
-			electrons.full_comm_.barrier();
+			electrons.full_comm().barrier();
 			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - iter_start_time;
 
-			electrons.full_comm_.barrier();
+			electrons.full_comm().barrier();
 			iter_start_time = std::chrono::high_resolution_clock::now();
 
 			auto state_conv = state_convergence(electrons, normres);

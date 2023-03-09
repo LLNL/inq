@@ -361,8 +361,33 @@ public:
 	auto & density_basis() const {
 		return density_basis_;
 	}
+
+	auto & full_comm() const {
+		return full_comm_;
+	}
 	
+	auto & lot_comm() const {
+		return lot_comm_;
+	}
+	
+	auto & lot_states_comm() const {
+		return lot_states_comm_;
+	}
+	
+	auto & states_comm() const {
+		return states_comm_;
+	}
+	
+	auto & states_basis_comm() const {
+		return states_basis_comm_;
+	}
+
+	std::shared_ptr<spdlog::logger> const& logger() const{
+		return logger_;
+	}
+
 private:
+	
 	static std::string generate_tiny_uuid(){
 		auto uuid = boost::uuids::random_generator{}();
 		uint32_t tiny = hash_value(uuid) % std::numeric_limits<uint32_t>::max();
@@ -370,18 +395,13 @@ private:
 		using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
 		return std::string(it((unsigned char*)&tiny), it((unsigned char*)&tiny+sizeof(tiny)));//.append((3-sizeof(tiny)%3)%3,'=');
 	}
-
-	inq::ions::brillouin brillouin_zone_;	
 	
-public: //temporary hack to be able to apply a kick from main and avoid a bug in nvcc
-
+	inq::ions::brillouin brillouin_zone_;	
 	mutable parallel::cartesian_communicator<3> full_comm_;
 	mutable parallel::cartesian_communicator<1> lot_comm_;
 	mutable parallel::cartesian_communicator<2> lot_states_comm_;
 	mutable parallel::cartesian_communicator<1> states_comm_;
 	mutable parallel::cartesian_communicator<2> states_basis_comm_;
-private:
-
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
@@ -392,12 +412,7 @@ private:
 	math::array<double, 1> lot_weights_;
 	long max_local_set_size_;
 	basis::field_set<basis::real_space, double> spin_density_;
- 	
-public:
-	std::shared_ptr<spdlog::logger> const& logger() const{return logger_;}
-private:
 	std::shared_ptr<spdlog::logger> logger_;
-
 	parallel::partition lot_part_;
 	parallel::arbitrary_partition lot_states_part_;
 	

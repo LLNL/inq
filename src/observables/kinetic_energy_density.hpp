@@ -54,7 +54,7 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 
 	}
 
-	density.all_reduce(electrons.lot_states_comm_);
+	density.all_reduce(electrons.lot_states_comm());
 	return density;
 	
 }

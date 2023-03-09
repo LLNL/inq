@@ -66,7 +66,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 	//propagate ionic positions to t + dt
 	ion_propagator.propagate_positions(dt, ions, forces);
 	if(not ion_propagator.static_ions) {
-		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot());
+		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 		ham.update_projectors(electrons.states_basis(), electrons.atomic_pot(), ions.geo());
 		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
 	}
@@ -90,7 +90,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 			all_conv = all_conv and iconv;
 		}
 
-		if(electrons.lot_states_comm_.size() > 1) electrons.lot_states_comm_.all_reduce_in_place_n(&all_conv, 1, std::logical_and<>{});
+		if(electrons.lot_states_comm().size() > 1) electrons.lot_states_comm().all_reduce_in_place_n(&all_conv, 1, std::logical_and<>{});
 		
 		if(all_conv) break;
 	}

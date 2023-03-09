@@ -83,9 +83,9 @@ namespace hamiltonian {
 				iphi++;
 			}
 
-			el.lot_states_comm_.all_reduce_n(&eigenvalues_, 1);
-			el.lot_states_comm_.all_reduce_n(&nonlocal_, 1);
-			el.lot_states_comm_.all_reduce_n(&hf_exchange_, 1);
+			el.lot_states_comm().all_reduce_n(&eigenvalues_, 1);
+			el.lot_states_comm().all_reduce_n(&nonlocal_, 1);
+			el.lot_states_comm().all_reduce_n(&hf_exchange_, 1);
 
 			return normres;
 		}

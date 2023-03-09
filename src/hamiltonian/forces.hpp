@@ -64,11 +64,11 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 		iphi++;
 	}
 
-	gdensity.all_reduce(electrons.lot_states_comm_);
+	gdensity.all_reduce(electrons.lot_states_comm());
 	
-	if(electrons.full_comm_.size() > 1){
+	if(electrons.full_comm().size() > 1){
 		CALI_CXX_MARK_SCOPE("forces_nonlocal::reduce");
-		electrons.full_comm_.all_reduce_in_place_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
+		electrons.full_comm().all_reduce_in_place_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
 	}
 	
 	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot());
@@ -81,8 +81,8 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 		
 		//the force from the local potential
 		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-			auto ionic_long_range = poisson_solver(electrons.atomic_pot().ionic_density(electrons.states_comm_, electrons.density_basis(), ions.geo(), iatom));
-			auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm_, electrons.density_basis(), ions.geo(), iatom);
+			auto ionic_long_range = poisson_solver(electrons.atomic_pot().ionic_density(electrons.states_comm(), electrons.density_basis(), ions.geo(), iatom));
+			auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm(), electrons.density_basis(), ions.geo(), iatom);
 
 			auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis().local_size()),
 																 loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>

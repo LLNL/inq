@@ -94,7 +94,7 @@ basis::field_set<basis::real_space, double> calculate(ElecType & elec){
 		iphi++;
 	}
 
-	density.all_reduce(elec.lot_states_comm_);
+	density.all_reduce(elec.lot_states_comm());
 
 	return density;
 }

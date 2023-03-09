@@ -64,13 +64,13 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
-			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.lot_size(), el.states_comm_);
+			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.lot_size(), el.states_comm());
 
 			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
 			
-			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.states_basis_comm_);
+			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.states_basis_comm());
 			
 			auto iphi = 0;
 			auto ist = 0;
@@ -84,7 +84,7 @@ namespace hamiltonian {
 				ist += phi.local_set_size();
 			}
 
-			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis(), part, el.states_basis_comm_);
+			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis(), part, el.states_basis_comm());
 			
 			iphi = 0;
 			ist = 0;
@@ -99,7 +99,7 @@ namespace hamiltonian {
 
 			auto exx_matrix = operations::overlap(*ace_orbitals_, *orbitals_);
 			double energy = -0.5*real(operations::sum_product(occupations_, exx_matrix.diagonal()));
-			el.lot_states_comm_.all_reduce_n(&energy, 1);
+			el.lot_states_comm().all_reduce_n(&energy, 1);
 				
 			solvers::cholesky(exx_matrix.array());
 			operations::rotate_trs(exx_matrix, *ace_orbitals_);
