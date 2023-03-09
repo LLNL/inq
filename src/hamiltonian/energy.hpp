@@ -28,27 +28,29 @@
 namespace inq {
 namespace hamiltonian {
 
-	struct energy {
+	class energy {
 		
-		double ion;
-		double ion_sr_lr;
-		double eigenvalues;
-		double external;
-		double nonlocal;
-		double hartree;
-		double xc;
-		double nvxc;
-		double hf_exchange;
+		double ion_;
+		double ion_sr_lr_;
+		double eigenvalues_;
+		double external_;
+		double nonlocal_;
+		double hartree_;
+		double xc_;
+		double nvxc_;
+		double hf_exchange_;
 
+	public:
+		
 		energy(){
-			ion = 0.0;
-			eigenvalues = 0.0;
-			external = 0.0;
-			nonlocal = 0.0;
-			hartree = 0.0;
-			xc = 0.0;
-			nvxc = 0.0;
-			hf_exchange = 0.0;
+			ion_ = 0.0;
+			eigenvalues_ = 0.0;
+			external_ = 0.0;
+			nonlocal_ = 0.0;
+			hartree_ = 0.0;
+			xc_ = 0.0;
+			nvxc_ = 0.0;
+			hf_exchange_ = 0.0;
 		}
 
 		template <typename HamType, typename ElType>
@@ -58,9 +60,9 @@ namespace hamiltonian {
 
 			auto normres = math::array<complex, 2>({el.lot().size(), el.max_local_set_size()});
 			
-			eigenvalues = 0.0;
-			nonlocal = 0.0;
-			hf_exchange = 0.0;
+			eigenvalues_ = 0.0;
+			nonlocal_ = 0.0;
+			hf_exchange_ = 0.0;
 			
 			int iphi = 0;
 			for(auto & phi : el.lot()){
@@ -75,42 +77,106 @@ namespace hamiltonian {
 				
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 				
-				eigenvalues += operations::sum(el.occupations()[iphi], el.eigenvalues()[iphi], energy_term);
-				nonlocal += operations::sum(el.occupations()[iphi], nl_me, energy_term);
-				hf_exchange += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
+				eigenvalues_ += operations::sum(el.occupations()[iphi], el.eigenvalues()[iphi], energy_term);
+				nonlocal_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
+				hf_exchange_ += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
 				
 				iphi++;
 			}
 
-			el.lot_states_comm_.all_reduce_n(&eigenvalues, 1);
-			el.lot_states_comm_.all_reduce_n(&nonlocal, 1);
-			el.lot_states_comm_.all_reduce_n(&hf_exchange, 1);
+			el.lot_states_comm_.all_reduce_n(&eigenvalues_, 1);
+			el.lot_states_comm_.all_reduce_n(&nonlocal_, 1);
+			el.lot_states_comm_.all_reduce_n(&hf_exchange_, 1);
 
 			return normres;
 		}
 	
 		auto kinetic() const {
-			return eigenvalues - 2.0*hartree - nvxc - 2.0*hf_exchange - external - nonlocal;
+			return eigenvalues_ - 2.0*hartree_ - nvxc_ - 2.0*hf_exchange_ - external_ - nonlocal_;
 		}
 		
 		auto total() const {
-			return kinetic() + hartree + external + nonlocal + xc + hf_exchange + ion;
+			return kinetic() + hartree_ + external_ + nonlocal_ + xc_ + hf_exchange_ + ion_;
 		}
 
+		auto & eigenvalues() const {
+			return eigenvalues_;
+		}
+		
+		void eigenvalues(double const & val) {
+			eigenvalues_ = val;
+		}
+
+		auto & hartree() const {
+			return hartree_;
+		}
+
+		void hartree(double const & val) {
+			hartree_ = val;
+		}
+
+		auto & external() const {
+			return external_;
+		}
+
+		void external(double const & val) {
+			external_ = val;
+		}
+
+		auto & nonlocal() const {
+			return nonlocal_;
+		}
+
+		void nonlocal(double const & val) {
+			nonlocal_ = val;
+		}
+
+		auto & xc() const {
+			return xc_;
+		}
+
+		void xc(double const & val) {
+			xc_ = val;
+		}
+
+		auto & nvxc() const {
+			return nvxc_;
+		}
+
+		void nvxc(double const & val) {
+			nvxc_ = val;
+		}
+
+		auto & hf_exchange() const {
+			return hf_exchange_;
+		}
+
+		void hf_exchange(double const & val) {
+			hf_exchange_ = val;
+		}
+
+		auto & ion() const {
+			return ion_;
+		}
+
+		void ion(double const & val) {
+			ion_ = val;
+		}
+		
 		template <class out_type>
 		void print(out_type & out) const {
 
 			tfm::format(out, "\n");
 			tfm::format(out, "  total          = %20.12f\n", total());			
 			tfm::format(out, "  kinetic        = %20.12f\n", kinetic());
-			tfm::format(out, "  eigenvalues    = %20.12f\n", eigenvalues);
-			tfm::format(out, "  hartree        = %20.12f\n", hartree);
-			tfm::format(out, "  external       = %20.12f\n", external);
-			tfm::format(out, "  nonlocal       = %20.12f\n", nonlocal);
-			tfm::format(out, "  xc             = %20.12f\n", xc);
-			tfm::format(out, "  intnvxc        = %20.12f\n", nvxc);
-			tfm::format(out, "  HF exchange    = %20.12f\n", hf_exchange);
-			tfm::format(out, "  ion            = %20.12f\n", ion);
+			tfm::format(out, "  eigenvalues    = %20.12f\n", eigenvalues_);
+			tfm::format(out, "  hartree        = %20.12f\n", hartree_);
+			tfm::format(out, "  external       = %20.12f\n", external_);
+			tfm::format(out, "  nonlocal       = %20.12f\n", nonlocal_);
+			tfm::format(out, "  xc             = %20.12f\n", xc_);
+			tfm::format(out, "  intnvxc        = %20.12f\n", nvxc_);
+			tfm::format(out, "  HF exchange    = %20.12f\n", hf_exchange_);
+			tfm::format(out, "  ion            = %20.12f\n", ion_);
 			tfm::format(out, "\n");
 
 		}

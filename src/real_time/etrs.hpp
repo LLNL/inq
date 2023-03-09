@@ -57,7 +57,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	if(not ion_propagator.static_ions) {
 		sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
 		ham.update_projectors(electrons.states_basis_, electrons.atomic_pot_, ions.geo());
-		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_));
 	}
 
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);

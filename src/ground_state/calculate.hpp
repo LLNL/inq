@@ -113,7 +113,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	sc.update_ionic_fields(electrons.states_comm_, ions, electrons.atomic_pot_);
 	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
-	res.energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_));
 
 	double old_exe = ham.exchange.update(electrons);
 	double exe_diff = fabs(old_exe);
@@ -182,7 +182,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 		{
 			auto normres = res.energy.calculate(ham, electrons);
-			auto energy_diff = (res.energy.eigenvalues - old_energy)/electrons.states().num_electrons();
+			auto energy_diff = (res.energy.eigenvalues() - old_energy)/electrons.states().num_electrons();
 
 			electrons.full_comm_.barrier();
 			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - iter_start_time;
@@ -206,7 +206,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				conv_count = 0; 
 			}
 
-			old_energy = res.energy.eigenvalues;
+			old_energy = res.energy.eigenvalues();
 		}
 	}
 

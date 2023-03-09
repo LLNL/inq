@@ -65,13 +65,13 @@ int main(int argc, char ** argv){
 	ground_state::calculate(ions, electrons, input::interaction::dft(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-4_Ha));
  	auto result = ground_state::calculate(ions, electrons, input::interaction::hartree_fock(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
 	
-	energy_match.check("total energy",     result.energy.total()    , -30.495900918097);
-	energy_match.check("kinetic energy",   result.energy.kinetic()  ,  13.234089373454);
-	energy_match.check("eigenvalues",      result.energy.eigenvalues,  -6.187488598514);
-	energy_match.check("external energy",  result.energy.external   ,  -9.170795172150);
-	energy_match.check("non-local energy", result.energy.nonlocal   ,   4.099633551216);
-	energy_match.check("hf exchange",      result.energy.hf_exchange,  -9.636982906989);
-	energy_match.check("ion-ion energy",   result.energy.ion        , -31.483620495100);
+	energy_match.check("total energy",     result.energy.total()      , -30.495900918097);
+	energy_match.check("kinetic energy",   result.energy.kinetic()    ,  13.234089373454);
+	energy_match.check("eigenvalues",      result.energy.eigenvalues(),  -6.187488598514);
+	energy_match.check("external energy",  result.energy.external()   ,  -9.170795172150);
+	energy_match.check("non-local energy", result.energy.nonlocal()   ,   4.099633551216);
+	energy_match.check("hf exchange",      result.energy.hf_exchange(),  -9.636982906989);
+	energy_match.check("ion-ion energy",   result.energy.ion()        , -31.483620495100);
 	
 	electrons.save("silicon_restart");
 

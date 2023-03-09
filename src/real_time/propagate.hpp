@@ -42,7 +42,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), 0.0);
 
 		energy.calculate(ham, electrons);
-		energy.ion = inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_);
+		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot_));
 		
 		if(electrons.full_comm_.root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
 
