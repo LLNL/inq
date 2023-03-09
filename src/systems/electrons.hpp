@@ -48,27 +48,27 @@ class electrons {
 	
 	inq::ions::brillouin brillouin_zone_;	
 	mutable parallel::cartesian_communicator<3> full_comm_;
-	mutable parallel::cartesian_communicator<1> lot_comm_;
-	mutable parallel::cartesian_communicator<2> lot_states_comm_;
+	mutable parallel::cartesian_communicator<1> kpin_comm_;
+	mutable parallel::cartesian_communicator<2> kpin_states_comm_;
 	mutable parallel::cartesian_communicator<1> states_comm_;
 	mutable parallel::cartesian_communicator<2> states_basis_comm_;
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
 	states::ks_states states_;
-	std::vector<states::orbital_set<basis::real_space, complex>> lot_;
+	std::vector<states::orbital_set<basis::real_space, complex>> kpin_;
 	math::array<double, 2> eigenvalues_;
 	math::array<double, 2> occupations_;
-	math::array<double, 1> lot_weights_;
+	math::array<double, 1> kpin_weights_;
 	long max_local_set_size_;
 	basis::field_set<basis::real_space, double> spin_density_;
 	std::shared_ptr<spdlog::logger> logger_;
-	parallel::partition lot_part_;
-	parallel::arbitrary_partition lot_states_part_;
+	parallel::partition kpin_part_;
+	parallel::arbitrary_partition kpin_states_part_;
 	
 public:
 	
-	static auto lot_subcomm(parallel::cartesian_communicator<3> & comm){
+	static auto kpin_subcomm(parallel::cartesian_communicator<3> & comm){
 		return comm.axis(input::parallelization::dimension_kpoints());
 	}
 	static auto states_subcomm(parallel::cartesian_communicator<3> & comm){
@@ -80,16 +80,16 @@ public:
 	static auto states_basis_subcomm(parallel::cartesian_communicator<3> & comm){
 		return comm.plane(input::parallelization::dimension_domains(), input::parallelization::dimension_states());
 	}
-	static auto lot_states_subcomm(parallel::cartesian_communicator<3> & comm){
+	static auto kpin_states_subcomm(parallel::cartesian_communicator<3> & comm){
 		return comm.plane(input::parallelization::dimension_kpoints(), input::parallelization::dimension_states());
 	}
 	
-	auto & lot() const {
-		return lot_;
+	auto & kpin() const {
+		return kpin_;
 	}
 
-	auto & lot() {
-		return lot_;
+	auto & kpin() {
+		return kpin_;
 	}
 
 	auto & occupations() const {
@@ -108,8 +108,8 @@ public:
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, input::kpoints const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm(conf.num_spin_components_val(), brillouin_zone_.size())),
-		lot_comm_(lot_subcomm(full_comm_)),
-		lot_states_comm_(lot_states_subcomm(full_comm_)),
+		kpin_comm_(kpin_subcomm(full_comm_)),
+		kpin_states_comm_(kpin_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
 		states_basis_(box, basis_subcomm(full_comm_)),
@@ -117,44 +117,44 @@ public:
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
 		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.num()),
 		spin_density_(density_basis_, states_.num_density_components()),
-		lot_part_(kpts.num()*states_.num_spin_indices(), lot_comm_)
+		kpin_part_(kpts.num()*states_.num_spin_indices(), kpin_comm_)
 	{
 		CALI_CXX_MARK_FUNCTION;
 
-		assert(lot_part_.local_size() > 0);
+		assert(kpin_part_.local_size() > 0);
 		assert(density_basis_.comm().size() == states_basis_.comm().size());
 
 		auto nproc_spin = 1;
-		if(states_.num_spin_indices() == 2 and lot_comm_.size()%2 == 0) nproc_spin = 2;
+		if(states_.num_spin_indices() == 2 and kpin_comm_.size()%2 == 0) nproc_spin = 2;
 
-		parallel::cartesian_communicator<2> spin_kpoints_comm(lot_comm_, {nproc_spin, boost::mpi3::fill});
+		parallel::cartesian_communicator<2> spin_kpoints_comm(kpin_comm_, {nproc_spin, boost::mpi3::fill});
 
 		parallel::partition spin_part(states_.num_spin_indices(), spin_kpoints_comm.axis(0));
 		parallel::partition kpts_part(kpts.num(), spin_kpoints_comm.axis(1));
 
-		assert(lot_part_.local_size() == kpts_part.local_size()*spin_part.local_size()); //this is always true because the spin size is either 1 or 2
+		assert(kpin_part_.local_size() == kpts_part.local_size()*spin_part.local_size()); //this is always true because the spin size is either 1 or 2
 		
-		lot_weights_.reextent({lot_part_.local_size()});
+		kpin_weights_.reextent({kpin_part_.local_size()});
 
 		max_local_set_size_ = 0;
 		auto ilot = 0;
 		for(int ispin = 0; ispin < spin_part.local_size(); ispin++){
 			for(int ikpt = 0; ikpt < kpts_part.local_size(); ikpt++){
-				lot_weights_[ilot] = brillouin_zone_.kpoint_weight(kpts_part.local_to_global(ikpt).value());
+				kpin_weights_[ilot] = brillouin_zone_.kpoint_weight(kpts_part.local_to_global(ikpt).value());
 				auto kpoint = brillouin_zone_.kpoint(kpts_part.local_to_global(ikpt).value());
-				lot_.emplace_back(states_basis_, states_.num_states(), states_.spinor_dim(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
-				max_local_set_size_ = std::max(max_local_set_size_, lot_[ikpt].local_set_size());
+				kpin_.emplace_back(states_basis_, states_.num_states(), states_.spinor_dim(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
+				max_local_set_size_ = std::max(max_local_set_size_, kpin_[ikpt].local_set_size());
 				ilot++;
 			}
 		}
 
-		lot_states_part_ = parallel::arbitrary_partition(lot_part_.local_size()*max_local_set_size_, lot_states_comm_);
+		kpin_states_part_ = parallel::arbitrary_partition(kpin_part_.local_size()*max_local_set_size_, kpin_states_comm_);
 		
-		assert(long(lot_.size()) == lot_part_.local_size());
+		assert(long(kpin_.size()) == kpin_part_.local_size());
 		assert(max_local_set_size_ > 0);
 		
-		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_set_size_});
-		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_set_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
 
 		if(atomic_pot_.num_electrons() + conf.excess_charge_val() == 0) throw std::runtime_error("inq error: the system does not have any electrons");
 		
@@ -165,37 +165,37 @@ public:
 	electrons(electrons && old_el, input::parallelization const & new_dist):
 		brillouin_zone_(std::move(old_el.brillouin_zone_)),
 		full_comm_(new_dist.cart_comm(old_el.states_.num_spin_indices(), brillouin_zone_.size())),
-		lot_comm_(lot_subcomm(full_comm_)),
-		lot_states_comm_(lot_states_subcomm(full_comm_)),
+		kpin_comm_(kpin_subcomm(full_comm_)),
+		kpin_states_comm_(kpin_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
 		states_basis_(std::move(old_el.states_basis_), basis_subcomm(full_comm_)),
 		density_basis_(std::move(old_el.density_basis_), basis_subcomm(full_comm_)),
 		atomic_pot_(std::move(old_el.atomic_pot_)),
 		states_(std::move(old_el.states_)),
-		lot_weights_(std::move(old_el.lot_weights_)),
+		kpin_weights_(std::move(old_el.kpin_weights_)),
 		max_local_set_size_(std::move(old_el.max_local_set_size_)),
 		spin_density_(std::move(old_el.spin_density_), density_basis_.comm()),
 		logger_(std::move(old_el.logger_)),
-		lot_part_(std::move(old_el.lot_part_))
+		kpin_part_(std::move(old_el.kpin_part_))
 	{
 
-		assert(lot_comm_ == old_el.lot_comm_); //resizing of k points not supported for the moment
+		assert(kpin_comm_ == old_el.kpin_comm_); //resizing of k points not supported for the moment
 
 		max_local_set_size_ = 0;
-		for(auto & oldphi : old_el.lot_){
-			lot_.emplace_back(std::move(oldphi), states_basis_comm_);
-			max_local_set_size_ = std::max(max_local_set_size_, lot_.back().local_set_size());
+		for(auto & oldphi : old_el.kpin_){
+			kpin_.emplace_back(std::move(oldphi), states_basis_comm_);
+			max_local_set_size_ = std::max(max_local_set_size_, kpin_.back().local_set_size());
 		}
 
-		assert(lot_.size() == old_el.lot_.size());
+		assert(kpin_.size() == old_el.kpin_.size());
 
-		eigenvalues_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_set_size_});
-		occupations_.reextent({static_cast<boost::multi::size_t>(lot_.size()), max_local_set_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
 		
-		for(unsigned ilot = 0; ilot < lot_.size(); ilot++){
+		for(unsigned ilot = 0; ilot < kpin_.size(); ilot++){
 
-			parallel::partition part(lot_[ilot].set_size(), states_subcomm(old_el.full_comm_));
+			parallel::partition part(kpin_[ilot].set_size(), states_subcomm(old_el.full_comm_));
 			
 			parallel::array_iterator eigit(part, states_subcomm(old_el.full_comm_), +old_el.eigenvalues_[ilot]);
 			parallel::array_iterator occit(part, states_subcomm(old_el.full_comm_), +old_el.occupations_[ilot]);
@@ -203,7 +203,7 @@ public:
 			for(; eigit != eigit.end(); ++eigit){
  				
 				for(int ist = 0; ist < eigenvalues_[ilot].size(); ist++){
-					auto istg = lot_[ilot].set_part().local_to_global(ist);
+					auto istg = kpin_[ilot].set_part().local_to_global(ist);
 					if(part.contains(istg.value())){
 						eigenvalues_[ilot][ist] = (*eigit)[part.global_to_local(istg)];
 						occupations_[ilot][ist] = (*occit)[part.global_to_local(istg)];
@@ -250,37 +250,37 @@ public:
 			logger()->info("  inq is running on the cpu\n");
 #endif
 			logger()->info("k-point parallelization:");
-			logger()->info("  {} k-points/spin indices divided among {} partitions", lot_part_.size(), lot_part_.comm_size());
-			logger()->info("  partition 0 has {} k-points/spin indices and the last partition has {}\n", lot_part_.local_size(0), lot_part_.local_size(lot_part_.comm_size() - 1));
+			logger()->info("  {} k-points/spin indices divided among {} partitions", kpin_part_.size(), kpin_part_.comm_size());
+			logger()->info("  partition 0 has {} k-points/spin indices and the last partition has {}\n", kpin_part_.local_size(0), kpin_part_.local_size(kpin_part_.comm_size() - 1));
 			
 			logger()->info("real-space parallelization:");
-			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_dist(0).size(), states_basis_.part().size(), states_basis_.cubic_dist(0).comm_size());
-			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)", states_basis_.cubic_dist(0).local_size(0), states_basis_.cubic_dist(0).local_size(states_basis_.part().comm_size() - 1),
+			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_part(0).size(), states_basis_.part().size(), states_basis_.cubic_part(0).comm_size());
+			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)", states_basis_.cubic_part(0).local_size(0), states_basis_.cubic_part(0).local_size(states_basis_.part().comm_size() - 1),
 										 states_basis_.part().local_size(0), states_basis_.part().local_size(states_basis_.part().comm_size() - 1));
 
 			logger()->info("fourier-space parallelization:");
-			logger()->info("  {} slices ({} points) divided among {} partitions", fourier_basis.cubic_dist(2).size(), fourier_basis.part().size(), fourier_basis.cubic_dist(2).comm_size());
-			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n", fourier_basis.cubic_dist(2).local_size(0), fourier_basis.cubic_dist(2).local_size(fourier_basis.part().comm_size() - 1),
+			logger()->info("  {} slices ({} points) divided among {} partitions", fourier_basis.cubic_part(2).size(), fourier_basis.part().size(), fourier_basis.cubic_part(2).comm_size());
+			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n", fourier_basis.cubic_part(2).local_size(0), fourier_basis.cubic_part(2).local_size(fourier_basis.part().comm_size() - 1),
 										 fourier_basis.part().local_size(0), fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1));
 
 			logger()->info("state parallelization:");
-			logger()->info("  {} states divided among {} partitions", lot()[0].set_part().size(), lot()[0].set_part().comm_size());
-			logger()->info("  partition 0 has {} states and the last partition has {} states\n", lot()[0].set_part().local_size(0), lot()[0].set_part().local_size(lot()[0].set_part().comm_size() - 1));
+			logger()->info("  {} states divided among {} partitions", kpin()[0].set_part().size(), kpin()[0].set_part().comm_size());
+			logger()->info("  partition 0 has {} states and the last partition has {} states\n", kpin()[0].set_part().local_size(0), kpin()[0].set_part().local_size(kpin()[0].set_part().comm_size() - 1));
 				
 		}
 	}
 
 	template <typename ArrayType>
 	void update_occupations(ArrayType const eigenval) {
-		states_.update_occupations(lot_states_comm_, eigenval, occupations_);
+		states_.update_occupations(kpin_states_comm_, eigenval, occupations_);
 	}
 
 	void save(std::string const & dirname) const {
 		int iphi = 0;
-		for(auto & phi : lot()){
-			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
+		for(auto & phi : kpin()){
+			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + kpin_part_.start());
 			operations::io::save(basedir + "/states", phi);
-			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, lot()[iphi].set_part(), +occupations()[iphi]);	
+			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), +occupations()[iphi]);	
 			iphi++;
 		}
 	}
@@ -289,12 +289,12 @@ public:
 		auto success = true;
 
 		int iphi = 0;
-		for(auto & phi : lot()){
-			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + lot_part_.start());
+		for(auto & phi : kpin()){
+			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + kpin_part_.start());
 			success = success and operations::io::load(basedir + "/states", phi);
 
-			math::array<double, 1> tmpocc(lot()[iphi].set_part().local_size());
-			success = success and operations::io::load(basedir + "/occupations", states_comm_, lot()[iphi].set_part(), tmpocc);
+			math::array<double, 1> tmpocc(kpin()[iphi].set_part().local_size());
+			success = success and operations::io::load(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), tmpocc);
 			occupations()[iphi] = tmpocc;
 			
 			iphi++;
@@ -315,20 +315,20 @@ public:
 		return eigenvalues_;
 	}
 
-	long lot_size() const {
-		return lot().size();
+	long kpin_size() const {
+		return kpin().size();
 	}
 
-	auto & lot_weights() const {
-		return lot_weights_;
+	auto & kpin_weights() const {
+		return kpin_weights_;
 	}
 
-	auto & lot_part() const {
-		return lot_part_;
+	auto & kpin_part() const {
+		return kpin_part_;
 	}
 
-	auto & lot_states_part() const {
-		return lot_states_part_;
+	auto & kpin_states_part() const {
+		return kpin_states_part_;
 	}
 	
 	auto max_local_set_size() const {
@@ -386,12 +386,12 @@ public:
 		return full_comm_;
 	}
 	
-	auto & lot_comm() const {
-		return lot_comm_;
+	auto & kpin_comm() const {
+		return kpin_comm_;
 	}
 	
-	auto & lot_states_comm() const {
-		return lot_states_comm_;
+	auto & kpin_states_comm() const {
+		return kpin_states_comm_;
 	}
 	
 	auto & states_comm() const {
@@ -449,12 +449,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(electrons.states().num_electrons() == 38.0_a);
 	CHECK(electrons.states().num_states() == 19);
 
-	CHECK(electrons.lot_part().local_size()*electrons.max_local_set_size() == electrons.lot_states_part().local_size());
+	CHECK(electrons.kpin_part().local_size()*electrons.max_local_set_size() == electrons.kpin_states_part().local_size());
 	
 	int iphi = 0;
-	for(auto & phi : electrons.lot()) {
+	for(auto & phi : electrons.kpin()) {
 
-		CHECK(electrons.lot_part().local_size()*phi.local_set_size() == electrons.lot_states_part().local_size());
+		CHECK(electrons.kpin_part().local_size()*phi.local_set_size() == electrons.kpin_states_part().local_size());
 		
 		for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 			auto istg = phi.set_part().local_to_global(ist);
@@ -475,15 +475,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	electrons_read.load("electron_restart");
 	
-	CHECK(electrons.lot_size() == electrons_read.lot_size());
+	CHECK(electrons.kpin_size() == electrons_read.kpin_size());
 	
 	iphi = 0;
-	for(auto & phi : electrons.lot()) {
+	for(auto & phi : electrons.kpin()) {
 		
 		for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 			CHECK(electrons.occupations()[iphi][ist] == electrons_read.occupations()[0][ist]);
 			for(int ip = 0; ip < phi.basis().local_size(); ip++){
-				CHECK(phi.matrix()[ip][ist] == electrons_read.lot()[iphi].matrix()[ip][ist]);
+				CHECK(phi.matrix()[ip][ist] == electrons_read.kpin()[iphi].matrix()[ip][ist]);
 			}
 		}
 		iphi++;
@@ -498,15 +498,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		systems::electrons newel_read(par, ions, box);
 		newel_read.load("newel_restart");
 		
-		CHECK(electrons.lot_size() == newel_read.lot_size());
+		CHECK(electrons.kpin_size() == newel_read.kpin_size());
 		
 		iphi = 0;
-		for(auto & phi : electrons.lot()) {
+		for(auto & phi : electrons.kpin()) {
 			
 			for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 				CHECK(electrons.occupations()[iphi][ist] == newel_read.occupations()[0][ist]);
 				for(int ip = 0; ip < phi.basis().local_size(); ip++){
-					CHECK(phi.matrix()[ip][ist] == newel_read.lot()[iphi].matrix()[ip][ist]);
+					CHECK(phi.matrix()[ip][ist] == newel_read.kpin()[iphi].matrix()[ip][ist]);
 				}
 			}
 			iphi++;
@@ -525,11 +525,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(electrons.states().num_electrons() == 38.0_a);
 		CHECK(electrons.states().num_states() == 19);
 		
-		CHECK(electrons.lot_part().local_size()*electrons.max_local_set_size() == electrons.lot_states_part().local_size());
+		CHECK(electrons.kpin_part().local_size()*electrons.max_local_set_size() == electrons.kpin_states_part().local_size());
 		
-		for(auto & phi : electrons.lot()) {
+		for(auto & phi : electrons.kpin()) {
 			
-			CHECK(electrons.lot_part().local_size()*phi.local_set_size() == electrons.lot_states_part().local_size());
+			CHECK(electrons.kpin_part().local_size()*phi.local_set_size() == electrons.kpin_states_part().local_size());
 
 			auto kpoint_index = electrons.kpoint_index(phi);
 

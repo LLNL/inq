@@ -43,12 +43,12 @@ class real_space;
     fourier_space(const grid & grid_basis):
 			grid(grid_basis){
 			
-			cubic_dist_ = {inq::parallel::partition(nr_[0]), inq::parallel::partition(nr_[1]), inq::parallel::partition(nr_[2], comm())};
+			cubic_part_ = {inq::parallel::partition(nr_[0]), inq::parallel::partition(nr_[1]), inq::parallel::partition(nr_[2], comm())};
 
-			base::part_ = cubic_dist_[2];
+			base::part_ = cubic_part_[2];
 			base::part_ *= nr_[0]*long(nr_[1]);
 			
-			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();			
+			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();			
     }
 
 		bool spherical() const {
@@ -66,7 +66,7 @@ class real_space;
 			point_operator(std::array<int, 3> const & ng, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
-				cubic_dist_(dist),
+				cubic_part_(dist),
 				metric_(metric)
 			{
 			}
@@ -81,9 +81,9 @@ class real_space;
 			}
 
 			GPU_FUNCTION auto gvector(int ix, int iy, int iz) const {
-				auto ixg = cubic_dist_[0].local_to_global(ix);
-				auto iyg = cubic_dist_[1].local_to_global(iy);
-				auto izg = cubic_dist_[2].local_to_global(iz);
+				auto ixg = cubic_part_[0].local_to_global(ix);
+				auto iyg = cubic_part_[1].local_to_global(iy);
+				auto izg = cubic_part_[2].local_to_global(iz);
 				
 				return gvector(ixg, iyg, izg);
 			}
@@ -109,9 +109,9 @@ class real_space;
 			}
 
 			GPU_FUNCTION bool g_is_zero(int ix, int iy, int iz) const {
-				auto ixg = cubic_dist_[0].local_to_global(ix);
-				auto iyg = cubic_dist_[1].local_to_global(iy);
-				auto izg = cubic_dist_[2].local_to_global(iz);
+				auto ixg = cubic_part_[0].local_to_global(ix);
+				auto iyg = cubic_part_[1].local_to_global(iy);
+				auto izg = cubic_part_[2].local_to_global(iz);
 				
 				return g_is_zero(ixg, iyg, izg);
 			}
@@ -140,13 +140,13 @@ class real_space;
 			
 			std::array<int, 3> ng_;
 			vector3<double, covariant> gspacing_;
-			std::array<inq::parallel::partition, 3> cubic_dist_;
+			std::array<inq::parallel::partition, 3> cubic_part_;
 			ions::unit_cell::cell_metric metric_;
 			
 		};
 
 		auto point_op() const {
-			return point_operator{ng_, covspacing_, cubic_dist_, cell_.metric()};			
+			return point_operator{ng_, covspacing_, cubic_part_, cell_.metric()};			
 		}
 
 		template <typename ReciprocalBasis = reciprocal_space>

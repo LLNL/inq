@@ -41,7 +41,7 @@ namespace basis {
 		
 		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodicity, parallel::communicator & comm) :
 			base(nr[0], comm),
-			cubic_dist_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
+			cubic_part_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
@@ -65,7 +65,7 @@ namespace basis {
 			
 			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
 
-			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_dist_[idir].local_size();
+			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
 			
 		}
 		
@@ -135,8 +135,8 @@ namespace basis {
 			return os;
 		}
 
-		constexpr auto & cubic_dist(int dim) const {
-			return cubic_dist_[dim];
+		constexpr auto & cubic_part(int dim) const {
+			return cubic_part_[dim];
 		}
 
 		GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, const int ix, const int iy, const int iz) {
@@ -185,7 +185,7 @@ namespace basis {
 		auto local_contains(vector3<int> const & ii) const {
 			bool contains = true;
 			for(int idir = 0; idir < 3; idir++){
-				contains = contains and cubic_dist_[idir].contains(ii[idir]);
+				contains = contains and cubic_part_[idir].contains(ii[idir]);
 			}
 			return contains;
 		}
@@ -200,7 +200,7 @@ namespace basis {
 
 	protected:
 
-		std::array<inq::parallel::partition, 3> cubic_dist_;
+		std::array<inq::parallel::partition, 3> cubic_part_;
 		ions::unit_cell cell_;
 
     std::array<int, 3> nr_;
@@ -250,17 +250,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(gr.sizes()[1] == 45);
 	CHECK(gr.sizes()[2] == 77);
 
-	if(comm.size() == 1) CHECK(gr.cubic_dist(0).local_size() == 120);
-	if(comm.size() == 2) CHECK(gr.cubic_dist(0).local_size() == 60);
-	if(comm.size() == 3) CHECK(gr.cubic_dist(0).local_size() == 40);
-	if(comm.size() == 4) CHECK(gr.cubic_dist(0).local_size() == 30);
-	if(comm.size() == 5) CHECK(gr.cubic_dist(0).local_size() == 24);
-	if(comm.size() == 6) CHECK(gr.cubic_dist(0).local_size() == 20);
-	if(comm.size() == 8) CHECK(gr.cubic_dist(0).local_size() == 15);
-	if(comm.size() == 10) CHECK(gr.cubic_dist(0).local_size() == 12);
-	if(comm.size() == 12) CHECK(gr.cubic_dist(0).local_size() == 10);
-	CHECK(gr.cubic_dist(1).local_size() == 45);
-	CHECK(gr.cubic_dist(2).local_size() == 77);
+	if(comm.size() == 1) CHECK(gr.cubic_part(0).local_size() == 120);
+	if(comm.size() == 2) CHECK(gr.cubic_part(0).local_size() == 60);
+	if(comm.size() == 3) CHECK(gr.cubic_part(0).local_size() == 40);
+	if(comm.size() == 4) CHECK(gr.cubic_part(0).local_size() == 30);
+	if(comm.size() == 5) CHECK(gr.cubic_part(0).local_size() == 24);
+	if(comm.size() == 6) CHECK(gr.cubic_part(0).local_size() == 20);
+	if(comm.size() == 8) CHECK(gr.cubic_part(0).local_size() == 15);
+	if(comm.size() == 10) CHECK(gr.cubic_part(0).local_size() == 12);
+	if(comm.size() == 12) CHECK(gr.cubic_part(0).local_size() == 10);
+	CHECK(gr.cubic_part(1).local_size() == 45);
+	CHECK(gr.cubic_part(2).local_size() == 77);
 
 	for(int ix = 0; ix < gr.local_sizes()[0]; ix++){
 		for(int iy = 0; iy < gr.local_sizes()[1]; iy++){

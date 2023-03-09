@@ -91,9 +91,9 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 
 					if(not destination.basis().local_contains(idest)) continue;
 
-					auto il0 = destination.basis().cubic_dist(0).global_to_local(parallel::global_index(idest[0]));
-					auto il1 = destination.basis().cubic_dist(1).global_to_local(parallel::global_index(idest[1]));
-					auto il2 = destination.basis().cubic_dist(2).global_to_local(parallel::global_index(idest[2]));
+					auto il0 = destination.basis().cubic_part(0).global_to_local(parallel::global_index(idest[0]));
+					auto il1 = destination.basis().cubic_part(1).global_to_local(parallel::global_index(idest[1]));
+					auto il2 = destination.basis().cubic_part(2).global_to_local(parallel::global_index(idest[2]));
 
 					destination.cubic()[il0][il1][il2] = factor*points[ip];
 					ip++;
@@ -162,9 +162,9 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 
 					if(not destination.basis().local_contains(idest)) continue;
 
-					auto il0 = destination.basis().cubic_dist(0).global_to_local(parallel::global_index(idest[0]));
-					auto il1 = destination.basis().cubic_dist(1).global_to_local(parallel::global_index(idest[1]));
-					auto il2 = destination.basis().cubic_dist(2).global_to_local(parallel::global_index(idest[2]));
+					auto il0 = destination.basis().cubic_part(0).global_to_local(parallel::global_index(idest[0]));
+					auto il1 = destination.basis().cubic_part(1).global_to_local(parallel::global_index(idest[1]));
+					auto il2 = destination.basis().cubic_part(2).global_to_local(parallel::global_index(idest[2]));
 
 					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.hypercubic()[il0][il1][il2][ist] = factor*points[ip][ist];
 					ip++;
@@ -211,9 +211,9 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
 					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
 
-						auto ixg = destination.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = destination.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = destination.basis().cubic_dist(2).local_to_global(iz);						
+						auto ixg = destination.basis().cubic_part(0).local_to_global(ix);
+						auto iyg = destination.basis().cubic_part(1).local_to_global(iy);
+						auto izg = destination.basis().cubic_part(2).local_to_global(iz);						
 						
 						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
 						auto isource = source.basis().from_symmetric_range(ii);
@@ -278,9 +278,9 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const
 				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
 					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
 						
-						auto ixg = destination.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = destination.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = destination.basis().cubic_dist(2).local_to_global(iz);						
+						auto ixg = destination.basis().cubic_part(0).local_to_global(ix);
+						auto iyg = destination.basis().cubic_part(1).local_to_global(iy);
+						auto izg = destination.basis().cubic_part(2).local_to_global(iz);						
 						
 						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
 						auto isource = source.basis().from_symmetric_range(ii);
@@ -440,9 +440,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 			for(int iy = 0; iy < large.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < large.basis().local_sizes()[2]; iz++){
 				
-					auto ixg = large.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = large.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = large.basis().cubic_dist(2).local_to_global(iz);						
+					auto ixg = large.basis().cubic_part(0).local_to_global(ix);
+					auto iyg = large.basis().cubic_part(1).local_to_global(iy);
+					auto izg = large.basis().cubic_part(2).local_to_global(iz);						
 
 					auto ii = large.basis().to_symmetric_range(ixg, iyg, izg);
 
@@ -493,9 +493,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 				for(int iz = 0; iz < small.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < small.set_part().local_size(); ist++){
 							
-						auto ixg = small.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = small.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = small.basis().cubic_dist(2).local_to_global(iz);						
+						auto ixg = small.basis().cubic_part(0).local_to_global(ix);
+						auto iyg = small.basis().cubic_part(1).local_to_global(iy);
+						auto izg = small.basis().cubic_part(2).local_to_global(iz);						
 						auto rr = small.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						small.hypercubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 					}
@@ -516,9 +516,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 				for(int iz = 0; iz < large.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < large.set_part().local_size(); ist++){
 						
-						auto ixg = large.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = large.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = large.basis().cubic_dist(2).local_to_global(iz);						
+						auto ixg = large.basis().cubic_part(0).local_to_global(ix);
+						auto iyg = large.basis().cubic_part(1).local_to_global(iy);
+						auto izg = large.basis().cubic_part(2).local_to_global(iz);						
 						
 						auto ii = large.basis().to_symmetric_range(ixg, iyg, izg);
 						
@@ -567,9 +567,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 			for(int iy = 0; iy < coarse.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < coarse.basis().local_sizes()[2]; iz++){
 					
-					auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
+					auto ixg = coarse.basis().cubic_part(0).local_to_global(ix);
+					auto iyg = coarse.basis().cubic_part(1).local_to_global(iy);
+					auto izg = coarse.basis().cubic_part(2).local_to_global(iz);						
 					auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 					coarse.cubic()[ix][iy][iz] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 				}
@@ -598,9 +598,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 			for(int iy = 0; iy < fine.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < fine.basis().local_sizes()[2]; iz++){
 					
-					auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
+					auto ixg = fine.basis().cubic_part(0).local_to_global(ix);
+					auto iyg = fine.basis().cubic_part(1).local_to_global(iy);
+					auto izg = fine.basis().cubic_part(2).local_to_global(iz);						
 					auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 					CHECK(fabs(real(fine.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 					CHECK(fabs(imag(fine.cubic()[ix][iy][iz])) < 5e-3);
@@ -620,9 +620,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 				for(int iz = 0; iz < coarse.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < coarse.set_part().local_size(); ist++){
 						
-						auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
+						auto ixg = coarse.basis().cubic_part(0).local_to_global(ix);
+						auto iyg = coarse.basis().cubic_part(1).local_to_global(iy);
+						auto izg = coarse.basis().cubic_part(2).local_to_global(iz);						
 						auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						coarse.hypercubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 
@@ -648,9 +648,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 				for(int iz = 0; iz < fine.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < fine.set_part().local_size(); ist++){
 							
-						auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
+						auto ixg = fine.basis().cubic_part(0).local_to_global(ix);
+						auto iyg = fine.basis().cubic_part(1).local_to_global(iy);
+						auto izg = fine.basis().cubic_part(2).local_to_global(iz);						
 						auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						CHECK(fabs(real(fine.hypercubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 						CHECK(fabs(imag(fine.hypercubic()[ix][iy][iz][ist])) < 5e-3);
@@ -674,9 +674,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 			for(int iy = 0; iy < fine.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < fine.basis().local_sizes()[2]; iz++){
 					
-					auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
+					auto ixg = fine.basis().cubic_part(0).local_to_global(ix);
+					auto iyg = fine.basis().cubic_part(1).local_to_global(iy);
+					auto izg = fine.basis().cubic_part(2).local_to_global(iz);						
 					auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 					fine.cubic()[ix][iy][iz] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 				}
@@ -705,9 +705,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 			for(int iy = 0; iy < coarse.basis().local_sizes()[1]; iy++){
 				for(int iz = 0; iz < coarse.basis().local_sizes()[2]; iz++){
 					
-					auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
-					auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
-					auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
+					auto ixg = coarse.basis().cubic_part(0).local_to_global(ix);
+					auto iyg = coarse.basis().cubic_part(1).local_to_global(iy);
+					auto izg = coarse.basis().cubic_part(2).local_to_global(iz);						
 					auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 					CHECK(fabs(real(coarse.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 					CHECK(fabs(imag(coarse.cubic()[ix][iy][iz])) < 5e-3);
@@ -729,9 +729,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 				for(int iz = 0; iz < fine.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < fine.set_part().local_size(); ist++){
 						
-						auto ixg = fine.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = fine.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = fine.basis().cubic_dist(2).local_to_global(iz);						
+						auto ixg = fine.basis().cubic_part(0).local_to_global(ix);
+						auto iyg = fine.basis().cubic_part(1).local_to_global(iy);
+						auto izg = fine.basis().cubic_part(2).local_to_global(iz);						
 						auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						fine.hypercubic()[ix][iy][iz][ist] = exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2]);
 					}
@@ -756,9 +756,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 				for(int iz = 0; iz < coarse.basis().local_sizes()[2]; iz++){
 					for(int ist = 0; ist < fine.set_part().local_size(); ist++){
 						
-						auto ixg = coarse.basis().cubic_dist(0).local_to_global(ix);
-						auto iyg = coarse.basis().cubic_dist(1).local_to_global(iy);
-						auto izg = coarse.basis().cubic_dist(2).local_to_global(iz);						
+						auto ixg = coarse.basis().cubic_part(0).local_to_global(ix);
+						auto iyg = coarse.basis().cubic_part(1).local_to_global(iy);
+						auto izg = coarse.basis().cubic_part(2).local_to_global(iz);						
 						auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
 						CHECK(fabs(real(coarse.hypercubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
 						CHECK(fabs(imag(coarse.hypercubic()[ix][iy][iz][ist])) < 5e-3);

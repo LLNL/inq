@@ -320,9 +320,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 
-						auto ixg = rs.cubic_dist(0).local_to_global(ix);
-						auto iyg = rs.cubic_dist(1).local_to_global(iy);
-						auto izg = rs.cubic_dist(2).local_to_global(iz);	
+						auto ixg = rs.cubic_part(0).local_to_global(ix);
+						auto iyg = rs.cubic_part(1).local_to_global(iy);
+						auto izg = rs.cubic_part(2).local_to_global(iz);	
 						auto istg = phi.set_part().local_to_global(ist);
 						
 						double xx = rs.point_op().rvector_cartesian(ixg, iyg, izg)[0];
@@ -361,9 +361,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					auto ixg = rs.cubic_dist(0).local_to_global(ix);
-					auto iyg = rs.cubic_dist(1).local_to_global(iy);
-					auto izg = rs.cubic_dist(2).local_to_global(iz);	
+					auto ixg = rs.cubic_part(0).local_to_global(ix);
+					auto iyg = rs.cubic_part(1).local_to_global(iy);
+					auto izg = rs.cubic_part(2).local_to_global(iz);	
 					
 					double r2 = rs.point_op().r2(ixg, iyg, izg);
 					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
@@ -409,9 +409,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 
-						auto ixg = rs.cubic_dist(0).local_to_global(ix);
-						auto iyg = rs.cubic_dist(1).local_to_global(iy);
-						auto izg = rs.cubic_dist(2).local_to_global(iz);	
+						auto ixg = rs.cubic_part(0).local_to_global(ix);
+						auto iyg = rs.cubic_part(1).local_to_global(iy);
+						auto izg = rs.cubic_part(2).local_to_global(iz);	
 						auto istg = phi.set_part().local_to_global(ist);
 						
 						double xx = rs.point_op().rvector_cartesian(ixg, iyg, izg)[0];
@@ -452,9 +452,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					auto ixg = rs.cubic_dist(0).local_to_global(ix);
-					auto iyg = rs.cubic_dist(1).local_to_global(iy);
-					auto izg = rs.cubic_dist(2).local_to_global(iz);	
+					auto ixg = rs.cubic_part(0).local_to_global(ix);
+					auto iyg = rs.cubic_part(1).local_to_global(iy);
+					auto izg = rs.cubic_part(2).local_to_global(iz);	
 					
 					double r2 = rs.point_op().r2(ixg, iyg, izg);
 					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.5*ww*ww*r2;

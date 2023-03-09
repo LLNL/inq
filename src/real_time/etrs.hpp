@@ -39,7 +39,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	
 	electrons.spin_density().fill(0.0);
 	int iphi = 0;
-	for(auto & phi : electrons.lot()){
+	for(auto & phi : electrons.kpin()){
 		
 		//propagate half step and full step with H(t)
 		auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
@@ -50,7 +50,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		iphi++;
 	}
 
-	electrons.spin_density().all_reduce(electrons.lot_states_comm());
+	electrons.spin_density().all_reduce(electrons.kpin_states_comm());
 	
 	//propagate ionic positions to t + dt
 	ion_propagator.propagate_positions(dt, ions, forces);
@@ -63,13 +63,13 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 
 	//save the state of the half step for the self consistency
-	auto save = electrons.lot();
+	auto save = electrons.kpin();
 	
 	//propagate the other half step with H(t + dt) self-consistently
 	for(int iscf = 0; iscf < nscf; iscf++){
 
 		int iphi = 0;
-		for(auto & phi : electrons.lot()) {
+		for(auto & phi : electrons.kpin()) {
 			if(iscf != 0) phi = save[iphi];
 			operations::exponential_in_place(ham, complex(0.0, dt/2.0), phi);
 			iphi++;

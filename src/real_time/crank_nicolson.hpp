@@ -60,8 +60,8 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 	
 	//calculate the right hand side with H(t)
 	std::vector<states::orbital_set<basis::real_space, complex>> rhs; 
-	rhs.reserve(electrons.lot_size());	
-	for(auto & phi : electrons.lot()) rhs.emplace_back(op_rhs(phi));
+	rhs.reserve(electrons.kpin_size());	
+	for(auto & phi : electrons.kpin()) rhs.emplace_back(op_rhs(phi));
 	
 	//propagate ionic positions to t + dt
 	ion_propagator.propagate_positions(dt, ions, forces);
@@ -73,13 +73,13 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 
-	math::array<bool, 1> conv(electrons.lot_size());
+	math::array<bool, 1> conv(electrons.kpin_size());
 	
 	//now calculate the wave functions in t + dt by solving a linear equation
 	for(int istep = 0; istep < 200; istep++) {
 		
 		auto iphi = 0;
-		for(auto & phi : electrons.lot()){
+		for(auto & phi : electrons.kpin()){
 			auto res = solvers::steepest_descent(op, operations::no_preconditioner{}, rhs[iphi], phi);
 			conv[iphi] = res < tol;
 			iphi++;
@@ -90,7 +90,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 			all_conv = all_conv and iconv;
 		}
 
-		if(electrons.lot_states_comm().size() > 1) electrons.lot_states_comm().all_reduce_in_place_n(&all_conv, 1, std::logical_and<>{});
+		if(electrons.kpin_states_comm().size() > 1) electrons.kpin_states_comm().all_reduce_in_place_n(&all_conv, 1, std::logical_and<>{});
 		
 		if(all_conv) break;
 	}

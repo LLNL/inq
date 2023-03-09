@@ -30,7 +30,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
 
-		for(auto & phi : electrons.lot()) pert.zero_step(phi);
+		for(auto & phi : electrons.kpin()) pert.zero_step(phi);
 		
 		electrons.spin_density() = observables::density::calculate(electrons);
 

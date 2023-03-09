@@ -50,30 +50,30 @@ public:
 		nkpoints_(el.brillouin_zone().size())
 	{
 		
-		math::array<int, 2> kpoint_index({el.lot_part().local_size(), el.max_local_set_size()});
-		math::array<int, 2> spin_index({el.lot_part().local_size(), el.max_local_set_size()});
-		math::array<int, 2> state_index({el.lot_part().local_size(), el.max_local_set_size()});
-		math::array<double, 2> occs({el.lot_part().local_size(), el.max_local_set_size()});
+		math::array<int, 2> kpoint_index({el.kpin_part().local_size(), el.max_local_set_size()});
+		math::array<int, 2> spin_index({el.kpin_part().local_size(), el.max_local_set_size()});
+		math::array<int, 2> state_index({el.kpin_part().local_size(), el.max_local_set_size()});
+		math::array<double, 2> occs({el.kpin_part().local_size(), el.max_local_set_size()});
 		
 		auto iphi = 0;
-		for(auto & phi : el.lot()){
+		for(auto & phi : el.kpin()){
 			auto ik = el.kpoint_index(phi);
 			for(int ist = 0; ist < el.max_local_set_size(); ist++){
 				kpoint_index[iphi][ist] = ik;
 				spin_index[iphi][ist] = phi.spin_index();
 			state_index[iphi][ist] = ist;
 			occs[iphi][ist] = 0.0;
-			if(fabs(el.lot_weights()[iphi]) > 1e-14) occs[iphi][ist] = el.occupations()[iphi][ist]/el.lot_weights()[iphi];
+			if(fabs(el.kpin_weights()[iphi]) > 1e-14) occs[iphi][ist] = el.occupations()[iphi][ist]/el.kpin_weights()[iphi];
 			}
 			iphi++;
 		}
 		
-		all_kpoint_index = parallel::gather(+kpoint_index.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
-		all_spin_index = parallel::gather(+spin_index.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
-		all_states_index = parallel::gather(+state_index.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
-		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
-		all_occupations = parallel::gather(+occs.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
-		all_normres = parallel::gather(+normres.flatted(), el.lot_states_part(), el.lot_states_comm(), 0);
+		all_kpoint_index = parallel::gather(+kpoint_index.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
+		all_spin_index = parallel::gather(+spin_index.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
+		all_states_index = parallel::gather(+state_index.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
+		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
+		all_occupations = parallel::gather(+occs.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
+		all_normres = parallel::gather(+normres.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
 		
 	}
 
