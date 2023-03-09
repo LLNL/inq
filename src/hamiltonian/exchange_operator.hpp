@@ -64,7 +64,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
-			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.lot_size(), el.states_comm());
+			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), el.states_comm());
 
 			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
@@ -74,7 +74,7 @@ namespace hamiltonian {
 			
 			auto iphi = 0;
 			auto ist = 0;
-			for(auto & phi : el.lot()){
+			for(auto & phi : el.kpin()){
 				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
 				kpoint_indices_({ist, ist + phi.local_set_size()}).fill(el.kpoint_index(phi));
 																																
@@ -88,7 +88,7 @@ namespace hamiltonian {
 			
 			iphi = 0;
 			ist = 0;
-			for(auto & phi : el.lot()){
+			for(auto & phi : el.kpin()){
 
 				auto exxphi = direct(phi, -1.0);
 				ace_orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = exxphi.matrix();
@@ -99,7 +99,7 @@ namespace hamiltonian {
 
 			auto exx_matrix = operations::overlap(*ace_orbitals_, *orbitals_);
 			double energy = -0.5*real(operations::sum_product(occupations_, exx_matrix.diagonal()));
-			el.lot_states_comm().all_reduce_n(&energy, 1);
+			el.kpin_states_comm().all_reduce_n(&energy, 1);
 				
 			solvers::cholesky(exx_matrix.array());
 			operations::rotate_trs(exx_matrix, *ace_orbitals_);

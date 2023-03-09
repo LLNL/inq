@@ -70,11 +70,11 @@ template <typename NormResType>
 auto state_convergence(systems::electrons & el, NormResType const & normres) {
 	auto state_conv = 0.0;
 	
-	for(int iphi = 0; iphi < el.lot_size(); iphi++){
+	for(int iphi = 0; iphi < el.kpin_size(); iphi++){
 		state_conv += operations::sum(el.occupations()[iphi], normres[iphi], [](auto occ, auto nres){ return fabs(occ*nres); });
 	}
 	
-	el.lot_states_comm().all_reduce_n(&state_conv, 1);
+	el.kpin_states_comm().all_reduce_n(&state_conv, 1);
 	state_conv /= el.states().num_electrons();
 	
 	return state_conv;
@@ -84,7 +84,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 	CALI_CXX_MARK_FUNCTION;
 
-	assert(electrons.lot()[0].full_comm() == electrons.states_basis_comm());
+	assert(electrons.kpin()[0].full_comm() == electrons.states_basis_comm());
 	
 	auto console = electrons.logger();
 	if(console) console->trace("calculate started");
@@ -129,7 +129,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 
 		if(solver.subspace_diag()) {
 			int ilot = 0;
-			for(auto & phi : electrons.lot()) {
+			for(auto & phi : electrons.kpin()) {
 				electrons.eigenvalues()[ilot] = subspace_diagonalization(ham, phi);
 				ilot++;
 			}
@@ -142,7 +142,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 			old_exe = exe;
 		}
 		
-		for(auto & phi : electrons.lot()) {
+		for(auto & phi : electrons.kpin()) {
 			auto fphi = operations::space::to_fourier(std::move(phi));
 				
 			switch(solver.eigensolver()){

@@ -41,7 +41,7 @@ basis::field<basis::real_space, vector3<double, covariant>> current_density(cons
 	cdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 
 	auto iphi = 0;
-	for(auto & phi : electrons.lot()){
+	for(auto & phi : electrons.kpin()){
 		
 		auto gphi = operations::gradient(phi, /* shift = */ ham.uniform_vector_potential(), /* factor = */ -1.0);		
 
@@ -55,7 +55,7 @@ basis::field<basis::real_space, vector3<double, covariant>> current_density(cons
 		iphi++;
 	}
   
-	cdensity.all_reduce(electrons.lot_states_comm());
+	cdensity.all_reduce(electrons.kpin_states_comm());
 	return cdensity;
 }
 

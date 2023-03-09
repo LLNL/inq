@@ -54,7 +54,7 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
   math::array<vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
 
 	auto iphi = 0;
-	for(auto & phi : electrons.lot()){
+	for(auto & phi : electrons.kpin()){
 		
 		auto gphi = operations::gradient(phi);
 		observables::density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
@@ -64,7 +64,7 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 		iphi++;
 	}
 
-	gdensity.all_reduce(electrons.lot_states_comm());
+	gdensity.all_reduce(electrons.kpin_states_comm());
 	
 	if(electrons.full_comm().size() > 1){
 		CALI_CXX_MARK_SCOPE("forces_nonlocal::reduce");

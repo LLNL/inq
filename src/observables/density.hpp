@@ -89,12 +89,12 @@ basis::field_set<basis::real_space, double> calculate(ElecType & elec){
 	density.fill(0.0);
 
 	int iphi = 0;
-	for(auto & phi : elec.lot()) {
+	for(auto & phi : elec.kpin()) {
 		density::calculate_add(elec.occupations()[iphi], phi, density);
 		iphi++;
 	}
 
-	density.all_reduce(elec.lot_states_comm());
+	density.all_reduce(elec.kpin_states_comm());
 
 	return density;
 }

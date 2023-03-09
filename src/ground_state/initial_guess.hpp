@@ -17,10 +17,10 @@ namespace ground_state {
 void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 
 	int iphi = 0;
-	for(auto & phi : electrons.lot()) {
-		operations::randomize(phi, iphi + electrons.lot_part().start());
+	for(auto & phi : electrons.kpin()) {
+		operations::randomize(phi, iphi + electrons.kpin_part().start());
 		operations::orthogonalize(phi);
-		for(long ist = 0; ist < phi.local_set_size(); ist++) electrons.eigenvalues()[iphi][ist] = ist + phi.set_part().start() + (iphi + electrons.lot_part().start())/double(electrons.lot_size());
+		for(long ist = 0; ist < phi.local_set_size(); ist++) electrons.eigenvalues()[iphi][ist] = ist + phi.set_part().start() + (iphi + electrons.kpin_part().start())/double(electrons.kpin_size());
 
 		iphi++;
 	}

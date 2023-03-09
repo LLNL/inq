@@ -57,14 +57,14 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("energy::calculate");
 
-			auto normres = math::array<complex, 2>({el.lot().size(), el.max_local_set_size()});
+			auto normres = math::array<complex, 2>({el.kpin().size(), el.max_local_set_size()});
 			
 			eigenvalues_ = 0.0;
 			nonlocal_ = 0.0;
 			hf_exchange_ = 0.0;
 			
 			int iphi = 0;
-			for(auto & phi : el.lot()){
+			for(auto & phi : el.kpin()){
 				
 				auto residual = ham(phi);
 				el.eigenvalues()[iphi] = operations::overlap_diagonal_normalized(residual, phi, operations::real_part{});
@@ -83,9 +83,9 @@ namespace hamiltonian {
 				iphi++;
 			}
 
-			el.lot_states_comm().all_reduce_n(&eigenvalues_, 1);
-			el.lot_states_comm().all_reduce_n(&nonlocal_, 1);
-			el.lot_states_comm().all_reduce_n(&hf_exchange_, 1);
+			el.kpin_states_comm().all_reduce_n(&eigenvalues_, 1);
+			el.kpin_states_comm().all_reduce_n(&nonlocal_, 1);
+			el.kpin_states_comm().all_reduce_n(&hf_exchange_, 1);
 
 			return normres;
 		}
