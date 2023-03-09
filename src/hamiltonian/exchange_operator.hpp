@@ -70,7 +70,7 @@ namespace hamiltonian {
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
 			
-			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
+			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.states_basis_comm_);
 			
 			auto iphi = 0;
 			auto ist = 0;
@@ -84,7 +84,7 @@ namespace hamiltonian {
 				ist += phi.local_set_size();
 			}
 
-			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis_, part, el.states_basis_comm_);
+			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis(), part, el.states_basis_comm_);
 			
 			iphi = 0;
 			ist = 0;

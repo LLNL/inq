@@ -88,9 +88,9 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	
 	auto console = electrons.logger();
 	if(console) console->trace("calculate started");
-	hamiltonian::self_consistency sc(inter, electrons.states_basis_, electrons.density_basis_, electrons.states().num_density_components());
+	hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components());
 	
-	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis_, electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
+	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
 	
 	if(electrons.full_comm_.root()) ham.info(std::cout);
 		
@@ -103,8 +103,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 		switch(solver.mixing_algorithm()){
 		case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
-		case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis_.comm());
-		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis_.comm());
+		case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 		} __builtin_unreachable();
 	}();
 	

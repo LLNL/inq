@@ -353,6 +353,14 @@ public:
 	auto & atomic_pot() const {
 		return atomic_pot_;
 	}
+
+	auto & states_basis() const {
+		return states_basis_;
+	}
+
+	auto & density_basis() const {
+		return density_basis_;
+	}
 	
 private:
 	static std::string generate_tiny_uuid(){
@@ -372,9 +380,10 @@ public: //temporary hack to be able to apply a kick from main and avoid a bug in
 	mutable parallel::cartesian_communicator<2> lot_states_comm_;
 	mutable parallel::cartesian_communicator<1> states_comm_;
 	mutable parallel::cartesian_communicator<2> states_basis_comm_;
+private:
+
 	basis::real_space states_basis_;
 	basis::real_space density_basis_;
-private:
 	hamiltonian::atomic_potential atomic_pot_;
 	states::ks_states states_;
 	std::vector<states::orbital_set<basis::real_space, complex>> lot_;

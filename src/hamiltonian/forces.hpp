@@ -48,7 +48,7 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 
 	CALI_CXX_MARK_FUNCTION;
 
-	basis::field<basis::real_space, vector3<double, covariant>> gdensity(electrons.density_basis_);
+	basis::field<basis::real_space, vector3<double, covariant>> gdensity(electrons.density_basis());
 	gdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 
   math::array<vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
@@ -81,19 +81,19 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 		
 		//the force from the local potential
 		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-			auto ionic_long_range = poisson_solver(electrons.atomic_pot().ionic_density(electrons.states_comm_, electrons.density_basis_, ions.geo(), iatom));
-			auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm_, electrons.density_basis_, ions.geo(), iatom);
+			auto ionic_long_range = poisson_solver(electrons.atomic_pot().ionic_density(electrons.states_comm_, electrons.density_basis(), ions.geo(), iatom));
+			auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm_, electrons.density_basis(), ions.geo(), iatom);
 
-			auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis_.local_size()),
+			auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis().local_size()),
 																 loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>
 																 {begin(ionic_long_range.linear()), begin(ionic_short_range.linear()), begin(gdensity.linear())});
 			
-			forces_local[iatom] = electrons.density_basis_.volume_element()*ions.cell().metric().to_cartesian(force_cov);
+			forces_local[iatom] = electrons.density_basis().volume_element()*ions.cell().metric().to_cartesian(force_cov);
 		}
 
-		if(electrons.density_basis_.comm().size() > 1){
+		if(electrons.density_basis().comm().size() > 1){
 			CALI_CXX_MARK_SCOPE("forces_local::reduce");
-			electrons.density_basis_.comm().all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size());
+			electrons.density_basis().comm().all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size());
 		}
 	}
 

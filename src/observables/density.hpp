@@ -84,7 +84,7 @@ void calculate_gradient_add(const occupations_array_type & occupations, field_se
 template <typename ElecType>
 basis::field_set<basis::real_space, double> calculate(ElecType & elec){
 	
-	basis::field_set<basis::real_space, double> density(elec.density_basis_, elec.states().num_density_components());
+	basis::field_set<basis::real_space, double> density(elec.density_basis(), elec.states().num_density_components());
 
 	density.fill(0.0);
 

@@ -35,7 +35,7 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 
 	CALI_CXX_MARK_FUNCTION;
 
-	basis::field<basis::real_space, double> density(electrons.states_basis_);
+	basis::field<basis::real_space, double> density(electrons.states_basis());
 
 	density.fill(0.0);
 	
