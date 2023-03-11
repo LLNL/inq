@@ -278,7 +278,7 @@ public:
 	void save(std::string const & dirname) const {
 		int iphi = 0;
 		for(auto & phi : kpin()){
-			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + kpin_part_.start());
+			auto basedir = dirname + "/kpin" + operations::io::numstr(iphi + kpin_part_.start());
 			operations::io::save(basedir + "/states", phi);
 			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), +occupations()[iphi]);	
 			iphi++;
@@ -291,7 +291,7 @@ public:
 
 		int iphi = 0;
 		for(auto & phi : kpin()){
-			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + kpin_part_.start());
+			auto basedir = dirname + "/kpin" + operations::io::numstr(iphi + kpin_part_.start());
 			success = success and operations::io::load(basedir + "/states", phi);
 
 			math::array<double, 1> tmpocc(kpin()[iphi].set_part().local_size());
