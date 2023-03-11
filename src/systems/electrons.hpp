@@ -474,7 +474,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	electrons.spin_density() = observables::density::calculate(electrons);
-	CHECK(operations::integral_sum(electrons.spin_density()) == -1315151005.0813345909);
+	CHECK(operations::integral_sum(electrons.spin_density()) == -1315151005.0813348293_a);
 	
 	electrons.save("electron_restart");
 	
@@ -482,7 +482,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	electrons_read.load("electron_restart");
 
-	CHECK(operations::integral_sum(electrons_read.spin_density()) == -1315151005.0813345909);
+	CHECK(operations::integral_sum(electrons_read.spin_density()) == -1315151005.0813348293_a);
+	CHECK(operations::integral_sum(electrons.spin_density()) == Catch::Approx(operations::integral_sum(electrons.spin_density())));
 	CHECK(electrons.kpin_size() == electrons_read.kpin_size());
 	
 	iphi = 0;
