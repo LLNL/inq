@@ -43,7 +43,7 @@ namespace hamiltonian {
 		math::array<vector3<double, covariant>, 1> kpoints_;
 		math::array<int, 1> kpoint_indices_;
 		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
-		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> ace_orbitals_;
+		std::vector<states::orbital_set<basis::real_space, complex>> ace_orbitals_;
 		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
 		bool use_ace_;
@@ -92,26 +92,30 @@ namespace hamiltonian {
 				ist += phi.local_set_size();
 			}
 
-			if(not ace_orbitals_.has_value()) ace_orbitals_.emplace(el.states_basis(), part, el.states_basis_comm());
-			
+			ace_orbitals_.clear();
+
+
+			auto energy = 0.0;
 			iphi = 0;
 			ist = 0;
 			for(auto & phi : el.kpin()){
-
+				
 				auto exxphi = direct(phi, -1.0);
-				ace_orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = exxphi.matrix();
+				auto exx_matrix = operations::overlap(exxphi, phi);
+
+				energy += -0.5*real(operations::sum_product(el.occupations()[iphi], exx_matrix.diagonal()));
+				
+				solvers::cholesky(exx_matrix.array());
+				operations::rotate_trs(exx_matrix, exxphi);
+
+				ace_orbitals_.emplace_back(std::move(exxphi));
 				
 				iphi++;
 				ist += phi.local_set_size();
 			}
 
-			auto exx_matrix = operations::overlap(*ace_orbitals_, *orbitals_);
-			double energy = -0.5*real(operations::sum_product(occupations_, exx_matrix.diagonal()));
 			el.kpin_states_comm().all_reduce_n(&energy, 1);
-				
-			solvers::cholesky(exx_matrix.array());
-			operations::rotate_trs(exx_matrix, *ace_orbitals_);
-
+			
 			return energy;
 		}
 
@@ -213,8 +217,13 @@ namespace hamiltonian {
 			if(not enabled()) return;
 			namespace blas = boost::multi::blas;
 
-			auto olap = operations::overlap(*ace_orbitals_, phi);
-			operations::rotate(olap, *ace_orbitals_, exxphi, -1.0, 1.0);
+			auto index = orbital_index_.at(phi.key());
+
+			assert(phi.kpoint() == ace_orbitals_[index].kpoint());
+			assert(phi.spin_index() == ace_orbitals_[index].spin_index());
+			
+			auto olap = operations::overlap(ace_orbitals_[index], phi);
+			operations::rotate(olap, ace_orbitals_[index], exxphi, -1.0, 1.0);
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////

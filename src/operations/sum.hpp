@@ -56,7 +56,7 @@ auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op)
 }
 
 template <class ArrayType1, class ArrayType2>
-auto sum_product(ArrayType1 & phi1, ArrayType2 const & phi2){
+auto sum_product(ArrayType1 const & phi1, ArrayType2 const & phi2){
 	return sum(phi1, phi2, std::multiplies<>());
 }
 	
