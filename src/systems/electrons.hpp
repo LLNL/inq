@@ -278,11 +278,12 @@ public:
 	void save(std::string const & dirname) const {
 		int iphi = 0;
 		for(auto & phi : kpin()){
-			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + kpin_part_.start());
+			auto basedir = dirname + "/kpin" + operations::io::numstr(iphi + kpin_part_.start());
 			operations::io::save(basedir + "/states", phi);
 			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), +occupations()[iphi]);	
 			iphi++;
 		}
+		operations::io::save(dirname + "/spin_density", spin_density_);
 	}
 		
 	auto try_load(std::string const & dirname) {
@@ -290,7 +291,7 @@ public:
 
 		int iphi = 0;
 		for(auto & phi : kpin()){
-			auto basedir = dirname + "/lot" + operations::io::numstr(iphi + kpin_part_.start());
+			auto basedir = dirname + "/kpin" + operations::io::numstr(iphi + kpin_part_.start());
 			success = success and operations::io::load(basedir + "/states", phi);
 
 			math::array<double, 1> tmpocc(kpin()[iphi].set_part().local_size());
@@ -299,6 +300,9 @@ public:
 			
 			iphi++;
 		}
+
+		success = success and operations::io::load(dirname + "/spin_density",	spin_density_);
+		
 		return success;
 	}
 
@@ -469,12 +473,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		iphi++;
 	}
 
+	electrons.spin_density() = observables::density::calculate(electrons);
+	CHECK(operations::integral_sum(electrons.spin_density()) == -1315151005.0813348293_a);
+	
 	electrons.save("electron_restart");
 	
 	systems::electrons electrons_read(par, ions, box);
 	
 	electrons_read.load("electron_restart");
-	
+
+	CHECK(operations::integral_sum(electrons_read.spin_density()) == -1315151005.0813348293_a);
+	CHECK(operations::integral_sum(electrons.spin_density()) == Catch::Approx(operations::integral_sum(electrons.spin_density())));
 	CHECK(electrons.kpin_size() == electrons_read.kpin_size());
 	
 	iphi = 0;
