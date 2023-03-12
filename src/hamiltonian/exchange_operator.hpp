@@ -175,6 +175,7 @@ namespace hamiltonian {
 					block_exchange(factor, hfo_it.matrix(), *occ_it, *kpt_it, *idx_it, phi, exxphi);
 					++occ_it;
 					++kpt_it;
+					++idx_it;
 				}
 			}
 		}
