@@ -138,6 +138,8 @@ namespace hamiltonian {
 			basis::field_set<basis::real_space, complex> rhoij(phi.basis(), nst);
 			
 			for(int jj = 0; jj < nhf; jj++){
+
+				if(fabs(hfocc[jj]) < 1e-10) continue;
 				
 				{ CALI_CXX_MARK_SCOPE("exchange_operator::generate_density");
 					gpu::run(nst, phi.basis().local_size(),
