@@ -67,51 +67,46 @@ namespace hamiltonian {
 			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
 			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), el.states_comm());
-
-			auto iphi = 0;
-			for(auto & phi: el.kpin()){
-				orbital_index_[phi.key()] = iphi;				
-				iphi++;
-			}
 			
 			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
 			
 			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.states_basis_comm());
-			
-			iphi = 0;
-			auto ist = 0;
-			for(auto & phi : el.kpin()){
-				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
-				kpoint_indices_({ist, ist + phi.local_set_size()}).fill(el.kpoint_index(phi));
-																																
-				orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
 
-				iphi++;
-				ist += phi.local_set_size();
+			{
+				auto ist = 0;
+				for(auto & phi : el.kpin()){
+					kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
+					kpoint_indices_({ist, ist + phi.local_set_size()}).fill(el.kpoint_index(phi));
+					
+					orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
+					
+					ist += phi.local_set_size();
+				}
 			}
-
+			
 			ace_orbitals_.clear();
-
-
+			
 			auto energy = 0.0;
-			iphi = 0;
-			ist = 0;
-			for(auto & phi : el.kpin()){
-				
-				auto exxphi = direct(phi, -1.0);
-				auto exx_matrix = operations::overlap(exxphi, phi);
-
-				energy += -0.5*real(operations::sum_product(el.occupations()[iphi], exx_matrix.diagonal()));
-				
-				solvers::cholesky(exx_matrix.array());
-				operations::rotate_trs(exx_matrix, exxphi);
-
-				ace_orbitals_.emplace_back(std::move(exxphi));
-				
-				iphi++;
-				ist += phi.local_set_size();
+			{
+				auto iphi = 0;
+				for(auto & phi : el.kpin()){
+					
+					orbital_index_[phi.key()] = iphi;
+					
+					auto exxphi = direct(phi, -1.0);
+					auto exx_matrix = operations::overlap(exxphi, phi);
+					
+					energy += -0.5*real(operations::sum_product(el.occupations()[iphi], exx_matrix.diagonal()));
+					
+					solvers::cholesky(exx_matrix.array());
+					operations::rotate_trs(exx_matrix, exxphi);
+					
+					ace_orbitals_.emplace_back(std::move(exxphi));
+					
+					iphi++;
+				}
 			}
 
 			el.kpin_states_comm().all_reduce_n(&energy, 1);
