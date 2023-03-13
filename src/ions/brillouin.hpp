@@ -104,7 +104,8 @@ public:
 		os << std::endl;		
 		os << "  Number of kpoints = " << self.size() << std::endl;
 		for(int ikpt = 0; ikpt < self.size(); ikpt++){
-			os << "  k-point\t" << ikpt << " =\t" << self.kpoint(ikpt)/(2.0*M_PI) << "\tweight =\t" << self.kpoint_weight(ikpt) << std::endl;
+			auto kk = self.kpoint(ikpt)/(2.0*M_PI);
+			tfm::format(os, "  k-point %7d = %7.3f %7.3f %7.3f   weight = %5.3f\n", ikpt, kk[0], kk[1], kk[2], self.kpoint_weight(ikpt));
 		}
 		os << std::endl;
 		return os;

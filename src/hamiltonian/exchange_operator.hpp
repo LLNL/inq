@@ -23,6 +23,7 @@
 
 #include <basis/real_space.hpp>
 #include <hamiltonian/singularity_correction.hpp>
+#include <input/parallelization.hpp>
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <operations/rotate.hpp>
@@ -66,56 +67,55 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
-			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), el.states_comm());
-
-			auto iphi = 0;
-			for(auto & phi: el.kpin()){
-				orbital_index_[phi.key()] = iphi;				
-				iphi++;
-			}
+			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), el.kpin_states_comm());
 			
 			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
-			
-			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.states_basis_comm());
-			
-			iphi = 0;
-			auto ist = 0;
-			for(auto & phi : el.kpin()){
-				kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
-				kpoint_indices_({ist, ist + phi.local_set_size()}).fill(el.kpoint_index(phi));
-																																
-				orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
 
-				iphi++;
-				ist += phi.local_set_size();
+			assert(el.states_comm().size() == 1 or el.kpin_comm().size() == 1); //this is not supported right now since we don't have a way to construct the communicator with combined dimensions
+			auto par_dim = input::parallelization::dimension_kpoints();
+			if(el.kpin_comm().size() == 1) par_dim = input::parallelization::dimension_states();
+			
+			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.full_comm().plane(input::parallelization::dimension_domains(), par_dim));
+
+			{
+				auto ist = 0;
+				for(auto & phi : el.kpin()){
+					kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
+					kpoint_indices_({ist, ist + phi.local_set_size()}).fill(el.kpoint_index(phi));
+					
+					orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
+					
+					ist += phi.local_set_size();
+				}
 			}
-
+			
 			ace_orbitals_.clear();
-
-
+			
 			auto energy = 0.0;
-			iphi = 0;
-			ist = 0;
-			for(auto & phi : el.kpin()){
-				
-				auto exxphi = direct(phi, -1.0);
-				auto exx_matrix = operations::overlap(exxphi, phi);
-
-				energy += -0.5*real(operations::sum_product(el.occupations()[iphi], exx_matrix.diagonal()));
-				
-				solvers::cholesky(exx_matrix.array());
-				operations::rotate_trs(exx_matrix, exxphi);
-
-				ace_orbitals_.emplace_back(std::move(exxphi));
-				
-				iphi++;
-				ist += phi.local_set_size();
+			{
+				auto iphi = 0;
+				for(auto & phi : el.kpin()){
+					
+					orbital_index_[phi.key()] = iphi;
+					
+					auto exxphi = direct(phi, -1.0);
+					auto exx_matrix = operations::overlap(exxphi, phi);
+					
+					energy += -0.5*real(operations::sum_product(el.occupations()[iphi], exx_matrix.diagonal()));
+					
+					solvers::cholesky(exx_matrix.array());
+					operations::rotate_trs(exx_matrix, exxphi);
+					
+					ace_orbitals_.emplace_back(std::move(exxphi));
+					
+					iphi++;
+				}
 			}
 
 			el.kpin_states_comm().all_reduce_n(&energy, 1);
-			
+
 			return energy;
 		}
 
@@ -138,6 +138,8 @@ namespace hamiltonian {
 			basis::field_set<basis::real_space, complex> rhoij(phi.basis(), nst);
 			
 			for(int jj = 0; jj < nhf; jj++){
+
+				if(fabs(hfocc[jj]) < 1e-10) continue;
 				
 				{ CALI_CXX_MARK_SCOPE("exchange_operator::generate_density");
 					gpu::run(nst, phi.basis().local_size(),
@@ -170,7 +172,6 @@ namespace hamiltonian {
 			if(not orbitals_->set_part().parallel()){
 				block_exchange(factor, orbitals_->matrix(), occupations_, kpoints_, kpoint_indices_, phi, exxphi);
 			} else {
-
 				auto occ_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), occupations_);
 				auto kpt_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoints_);
 				auto idx_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoint_indices_);				
@@ -178,6 +179,7 @@ namespace hamiltonian {
 					block_exchange(factor, hfo_it.matrix(), *occ_it, *kpt_it, *idx_it, phi, exxphi);
 					++occ_it;
 					++kpt_it;
+					++idx_it;
 				}
 			}
 		}
