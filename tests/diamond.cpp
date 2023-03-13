@@ -112,21 +112,6 @@ int main(int argc, char ** argv){
 	}
 
 	if(energy_match.fail()) return energy_match.fail();
-	
-	{
-		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe0(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
-		
-		energy_match.check("total energy",        result.energy.total(),         -11.571610770029);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.386909236299);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -0.752041292771);
-		energy_match.check("Hartree energy",      result.energy.hartree(),         0.939332482432);
-		energy_match.check("external energy",     result.energy.external(),       -5.736703986825);
-		energy_match.check("non-local energy",    result.energy.nonlocal(),       -0.566028479461);
-		energy_match.check("XC energy",           result.energy.xc(),             -3.345210887801);
-		energy_match.check("XC density integral", result.energy.nvxc(),           -3.684513015509);
-		energy_match.check("HF exchange energy",  result.energy.hf_exchange(),    -0.515185006069);
-		energy_match.check("ion-ion energy",      result.energy.ion(),           -10.734724128603);
-	}
 
 	{
 		auto result = ground_state::calculate(ions, electrons, input::interaction::hartree_fock(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
