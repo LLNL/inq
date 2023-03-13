@@ -34,15 +34,15 @@ namespace input {
   public:
 
 		static auto dimension_kpoints(){
-			return 0;
+			return 2;
 		}
 		
 		static auto dimension_domains(){
-			return 1;
+			return 0;
 		}
 		
 		static auto dimension_states(){
-			return 2;
+			return 1;
 		}
 
 		static auto optimal_nprocs(int size, int max_comm_size, double threshold){
