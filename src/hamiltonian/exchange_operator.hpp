@@ -73,8 +73,11 @@ namespace hamiltonian {
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
 
-			assert(el.states_comm().size() == 1); //this is not supported right now since we don't have a way to construct the communicator 
-			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.full_comm().plane(input::parallelization::dimension_domains(), input::parallelization::dimension_kpoints()));
+			assert(el.states_comm().size() == 1 or el.kpin_comm().size() == 1); //this is not supported right now since we don't have a way to construct the communicator with combined dimensions
+			auto par_dim = input::parallelization::dimension_kpoints();
+			if(el.kpin_comm().size() == 1) par_dim = input::parallelization::dimension_states();
+			
+			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.full_comm().plane(input::parallelization::dimension_domains(), par_dim));
 
 			{
 				auto ist = 0;
