@@ -94,6 +94,8 @@ int main(int argc, char ** argv){
 		energy_match.check("kinetic energy", operations::integral(ked), 8.513350448818);
 	}
 
+	if(energy_match.fail()) return energy_match.fail();		
+
 	{
 		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe0(), inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(0));
 		
@@ -108,6 +110,8 @@ int main(int argc, char ** argv){
 		energy_match.check("HF exchange energy",  result.energy.hf_exchange(),    -0.515173266198);
 		energy_match.check("ion-ion energy",      result.energy.ion(),           -10.734724128603);
 	}
+
+	if(energy_match.fail()) return energy_match.fail();
 	
 	{
 		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe0(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
