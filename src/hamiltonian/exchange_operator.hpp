@@ -23,6 +23,7 @@
 
 #include <basis/real_space.hpp>
 #include <hamiltonian/singularity_correction.hpp>
+#include <input/parallelization.hpp>
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <operations/rotate.hpp>
@@ -66,13 +67,14 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
-			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), el.states_comm());
+			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), el.kpin_states_comm());
 			
 			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
-			
-			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.states_basis_comm());
+
+			assert(el.states_comm().size() == 1); //this is not supported right now since we don't have a way to construct the communicator 
+			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.full_comm().plane(input::parallelization::dimension_domains(), input::parallelization::dimension_kpoints()));
 
 			{
 				auto ist = 0;
@@ -110,7 +112,7 @@ namespace hamiltonian {
 			}
 
 			el.kpin_states_comm().all_reduce_n(&energy, 1);
-			
+
 			return energy;
 		}
 
@@ -167,7 +169,6 @@ namespace hamiltonian {
 			if(not orbitals_->set_part().parallel()){
 				block_exchange(factor, orbitals_->matrix(), occupations_, kpoints_, kpoint_indices_, phi, exxphi);
 			} else {
-
 				auto occ_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), occupations_);
 				auto kpt_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoints_);
 				auto idx_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoint_indices_);				
