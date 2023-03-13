@@ -70,7 +70,12 @@ namespace input {
 			auto nproc_kpts = optimal_nprocs(nkpoints*nspin, comm_.size(), kpoint_efficiency_threshold);
 			if(nproc_kpts_ != boost::mpi3::fill) nproc_kpts = nproc_kpts_;
 
-			return parallel::cartesian_communicator<3>(comm_, {nproc_kpts, nproc_domains_, nproc_states_});
+			std::array<int, 3> nprocs;
+			nprocs[dimension_kpoints()] = nproc_kpts;
+			nprocs[dimension_domains()] = nproc_domains_;
+			nprocs[dimension_states()] = nproc_states_;
+			
+			return parallel::cartesian_communicator<3>(comm_, nprocs);
     }
 
 		auto states(int num = boost::mpi3::fill){
