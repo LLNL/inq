@@ -45,6 +45,12 @@ namespace inq {
 namespace systems {
 
 class electrons {
+
+public:
+
+	using kpin_type = std::vector<states::orbital_set<basis::real_space, complex>>;
+
+private:
 	
 	inq::ions::brillouin brillouin_zone_;	
 	mutable parallel::cartesian_communicator<3> full_comm_;
@@ -56,7 +62,7 @@ class electrons {
 	basis::real_space density_basis_;
 	hamiltonian::atomic_potential atomic_pot_;
 	states::ks_states states_;
-	std::vector<states::orbital_set<basis::real_space, complex>> kpin_;
+	kpin_type kpin_;
 	math::array<double, 2> eigenvalues_;
 	math::array<double, 2> occupations_;
 	math::array<double, 1> kpin_weights_;
