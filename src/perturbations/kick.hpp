@@ -74,18 +74,12 @@ public:
 	auto has_induced_vector_potential() const {
 		return dynamics_ == dynamics::polarization;
 	}
+
 	void uniform_induced_potential(vector3<double,covariant> & induced, vector3<double,covariant> & velocity, vector3<double,covariant> & accel, double const dt, const double volume, vector3<double,covariant> const & current) const {
 		if(dynamics_==dynamics::polarization){
 			induced += 0.5*dt*velocity;
 			velocity += 0.5*dt*accel;
-
-//			std::cout<< "volume="<< volume <<std::endl;
-//			std::cout<< "current="<< current <<std::endl;
-
 			accel = alpha_*(-current)/volume;
-
-//			std::cout<< "accel="<< accel <<std::endl;
-
 			velocity += 0.5*dt*accel;
 			induced += 0.5*dt*velocity;
 		}
@@ -212,5 +206,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.uniform_vector_potential(2.0)[1] == 0.0);
 		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
 	}
+
+	SECTION("polarization dynamics"){
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite().cutoff_energy(ecut);
+		auto kick = perturbations::kick{box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::velocity, perturbations::dynamics::polarization, 0.2};
+		CHECK(kick.has_uniform_vector_potential());
+		CHECK(kick.has_induced_vector_potential());
+		vector3<double,covariant> induced{0.0, 0.0, 0.1};
+		vector3<double,covariant> velocity{0.0, 0.0, 0.2};
+		vector3<double,covariant> accel{0.0, 0.0, 0.3};
+		vector3<double,covariant> current{0.0, 0.0, 0.4};
+		const double dt = 0.1;
+		const double volume = 10;
+		kick.uniform_induced_potential(induced, velocity, accel, dt, volume, current);
+		CHECK(accel[2] == Approx(-0.008));
+		CHECK(velocity[2] == Approx(0.2146));
+		CHECK(induced[2] == Approx(0.12073));
+		CHECK(induced[0] == Approx(0.0));
+	}
+
 }
 #endif
