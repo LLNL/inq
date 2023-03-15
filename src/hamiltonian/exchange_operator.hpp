@@ -90,6 +90,8 @@ namespace hamiltonian {
 					ist += phi.local_set_size();
 				}
 			}
+
+			if(not use_ace_) return 0.0;
 			
 			ace_orbitals_.clear();
 			
@@ -214,13 +216,14 @@ namespace hamiltonian {
 		//////////////////////////////////////////////////////////////////////////////////
 		
 		void ace(const states::orbital_set<basis::real_space, complex> & phi, states::orbital_set<basis::real_space, complex> & exxphi) const {
-			CALI_CXX_MARK_SCOPE("exchange_operator::ace");
-			
 			if(not enabled()) return;
+
+			CALI_CXX_MARK_SCOPE("exchange_operator::ace");
 			namespace blas = boost::multi::blas;
 
 			auto index = orbital_index_.at(phi.key());
 
+			assert(ace_orbitals_.size() > 0);
 			assert(phi.kpoint() == ace_orbitals_[index].kpoint());
 			assert(phi.spin_index() == ace_orbitals_[index].spin_index());
 			

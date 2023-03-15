@@ -36,21 +36,20 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	int const nscf = 5;
 	double const scf_threshold = 5e-5;
+
+	systems::electrons::kpin_type save;
 	
-	electrons.spin_density().fill(0.0);
 	int iphi = 0;
 	for(auto & phi : electrons.kpin()){
 		
 		//propagate half step and full step with H(t)
-		auto fullstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt), complex(0.0, dt/2.0), phi);
-		
-		//calculate H(t + dt) from the full step propagation
-		observables::density::calculate_add(electrons.occupations()[iphi], fullstep_phi, electrons.spin_density());
-
+		auto halfstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt/2.0), complex(0.0, dt), phi);
+		save.emplace_back(std::move(halfstep_phi));
+									 		
 		iphi++;
 	}
 
-	electrons.spin_density().all_reduce(electrons.kpin_states_comm());
+	electrons.spin_density() = observables::density::calculate(electrons);
 	
 	//propagate ionic positions to t + dt
 	ion_propagator.propagate_positions(dt, ions, forces);
@@ -61,9 +60,9 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	}
 
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-
-	//save the state of the half step for the self consistency
-	auto save = electrons.kpin();
+	ham.exchange.update(electrons);
+	
+	electrons.kpin() = save;
 	
 	//propagate the other half step with H(t + dt) self-consistently
 	for(int iscf = 0; iscf < nscf; iscf++){
@@ -82,7 +81,8 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		auto done = (delta < scf_threshold) or (iscf == nscf - 1);
 		
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-
+		ham.exchange.update(electrons);
+		
 		if(done) break;
 	}
 	
