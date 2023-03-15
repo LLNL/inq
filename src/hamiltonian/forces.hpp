@@ -68,7 +68,7 @@ math::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, sys
 	
 	if(electrons.full_comm().size() > 1){
 		CALI_CXX_MARK_SCOPE("forces_nonlocal::reduce");
-		electrons.full_comm().all_reduce_in_place_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
+		electrons.full_comm().all_reduce_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
 	}
 	
 	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot());

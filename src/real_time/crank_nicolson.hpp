@@ -90,7 +90,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 			all_conv = all_conv and iconv;
 		}
 
-		if(electrons.kpin_states_comm().size() > 1) electrons.kpin_states_comm().all_reduce_in_place_n(&all_conv, 1, std::logical_and<>{});
+		if(electrons.kpin_states_comm().size() > 1) electrons.kpin_states_comm().all_reduce_n(&all_conv, 1, std::logical_and<>{});
 		
 		if(all_conv) break;
 	}
