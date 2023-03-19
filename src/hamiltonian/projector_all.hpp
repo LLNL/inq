@@ -310,7 +310,7 @@ public:
 		for(auto iproj = 0; iproj < nprojs_; iproj++){		 		
 			if(comms_[iproj].size() > 1) {
 				CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(projections_all[iproj].base()), projections_all[iproj].num_elements(), std::plus<>{});
+				comms_[iproj].all_reduce_n(raw_pointer_cast(projections_all[iproj].base()), projections_all[iproj].num_elements(), std::plus<>{});
 			}
 		}
 

@@ -108,7 +108,7 @@ public:
 				auto end = electrons_.kpin()[ilot].set_part().end();
 				occ[ilot][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, end}), calc);
 				if(electrons_.kpin_states_comm().size() > 1){
-					electrons_.kpin_states_comm().all_reduce_in_place_n(&occ[ilot][it], 1, std::plus<>{});
+					electrons_.kpin_states_comm().all_reduce_n(&occ[ilot][it], 1, std::plus<>{});
 				}
 			}
 		}
