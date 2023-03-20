@@ -105,7 +105,7 @@ void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType
 			CALI_CXX_MARK_SCOPE("operations::rotate(5arg)_reduce");
 #ifdef ENABLE_NCCL
 			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(rotphi.matrix().data_elements()),
-														block.num_elements()*sizeof(typename FieldSetType::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &phi.set_comm().nccl_comm(), 0);		 
+														block.num_elements()*sizeof(typename FieldSetType1::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &phi.set_comm().nccl_comm(), 0);		 
 			assert(res == ncclSuccess);
 			gpu::sync();			
 #else
