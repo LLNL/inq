@@ -40,6 +40,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), 0.0);
+		ham.exchange.update(electrons);
 
 		energy.calculate(ham, electrons);
 		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
