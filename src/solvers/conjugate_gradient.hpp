@@ -36,7 +36,7 @@ namespace inq {
 namespace solvers {
 
 template <class operator_type, class preconditioner_type, class field_set_type>
-auto conjugate_gradient(const operator_type & op, const preconditioner_type &, field_set_type & bb, field_set_type & xx){
+double conjugate_gradient(const operator_type & op, const preconditioner_type &, field_set_type & bb, field_set_type & xx){
 	CALI_CXX_MARK_SCOPE("solver::conjugate_gradient");
 
 	auto const num_steps = 5;
@@ -70,6 +70,18 @@ auto conjugate_gradient(const operator_type & op, const preconditioner_type &, f
 		
 	}
 
+	auto normres = operations::overlap_diagonal(residual);
+
+  auto maxloc =
+#ifdef HAVE_CUDA
+		thrust::
+#else
+		std   ::
+#endif
+    max_element(normres.begin(), normres.end(), [] GPU_LAMBDA (auto aa, auto bb) {return fabs(aa) < fabs(bb); });
+  
+  if(maxloc == normres.end()) return 0.0;
+  return fabs(*maxloc);
 }
 
 }
