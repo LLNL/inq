@@ -57,7 +57,8 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 	crank_nicolson_op<decltype(ham)> op_rhs{ham, complex{0.0, -0.5*dt}};
 
 	auto const st_tol = 1e-10;
-	auto const dens_tol = 1e-5;	
+	auto const dens_tol = 1e-5;
+	auto const exxe_tol = 1e-6;
 
 	//calculate the right hand side with H(t)
 	std::vector<states::orbital_set<basis::real_space, complex>> rhs; 
@@ -74,14 +75,24 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 
 	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
 	auto mixer = mixers::broyden<mix_arr_type>(4, 0.3, electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+
+	auto old_exxe = 0.0;
+	auto update_hf = true;
+	auto exxe_diff = 1.0;
 	
 	//now calculate the wave functions in t + dt by solving a self-consistent linear equation
-	for(int istep = 0; istep < 200; istep++) {
+	for(int istep = 0; istep < 300; istep++) {
 		CALI_CXX_MARK_SCOPE("crank_nicolson:iteration");
 
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-		ham.exchange.update(electrons);
 
+		if(update_hf) {
+			auto exxe = ham.exchange.update(electrons);
+			exxe_diff = fabs(exxe - old_exxe);
+			old_exxe = exxe;
+			update_hf = false;
+		}
+		
 		auto res = 0.0;
 		auto iphi = 0;
 		for(auto & phi : electrons.kpin()){
@@ -95,9 +106,12 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		auto new_density = observables::density::calculate(electrons);
 		auto density_diff = operations::integral_sum_absdiff(electrons.spin_density(), new_density)/electrons.states().num_electrons();
 		
-		std::cout << istep << '\t' << density_diff << '\t' << res << std::endl;
+		std::cout << istep << '\t' << density_diff << '\t' << res << '\t' << exxe_diff << std::endl;
 		
-		if(res < st_tol and density_diff < dens_tol) break;
+		if(density_diff < dens_tol) {
+			update_hf = true;
+			if(exxe_diff < exxe_tol) break;
+		}
 		
 		auto tmp = +electrons.spin_density().matrix().flatted();
 		mixer(tmp, new_density.matrix().flatted());
