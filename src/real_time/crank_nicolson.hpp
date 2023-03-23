@@ -56,7 +56,6 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 	crank_nicolson_op<decltype(ham)> op{ham, complex{0.0, 0.5*dt}};
 	crank_nicolson_op<decltype(ham)> op_rhs{ham, complex{0.0, -0.5*dt}};
 
-	auto const st_tol = 1e-10;
 	auto const dens_tol = 1e-5;
 	auto const exxe_tol = 1e-6;
 
