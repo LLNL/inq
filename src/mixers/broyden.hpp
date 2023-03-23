@@ -72,25 +72,22 @@ public:
 			return;
 		}
 
-		math::array<element_type, 2> beta({iter_used, iter_used}, NAN);
 		math::array<element_type, 1> work(iter_used, NAN);
 
-		//OPTIMIZATION: this should be done by gemm/gemv
+		namespace blas = boost::multi::blas;
+		
+		auto subdf = df_({0, iter_used}, {0, input_value.size()});
+		auto beta = +blas::gemm(ww*ww, subdf, blas::H(subdf));
+
 		gpu::run(iter_used,
 						 [iter_used, ivsize = input_value.size(), w0, ww, be = begin(beta), df = begin(df_), ffp = begin(ff), wo = begin(work), dfactor = 1.0/comm_.size()] GPU_LAMBDA (auto ii){
-							 for(int jj = ii + 1; jj < iter_used; jj++){
-								 element_type aa = 0.0;
-								 for(unsigned kk = 0; kk < ivsize; kk++) aa +=  ww*ww*conj(df[ii][kk])*df[jj][kk];
-								 be[ii][jj] = aa;
-								 be[jj][ii] = conj(aa);
-							 }
 							 be[ii][ii] = dfactor*(w0*w0 + ww*ww);
-
+								 
 							 element_type aa = 0.0;
-							 for(unsigned kk = 0; kk < ivsize; kk++) aa += conj(df[ii][kk])*ffp[kk];
-							 wo[ii] = aa;
+								 for(unsigned kk = 0; kk < ivsize; kk++) aa += conj(df[ii][kk])*ffp[kk];
+								 wo[ii] = aa;
 						 });
-
+		
 		if(comm_.size() > 1){
 			CALI_CXX_MARK_SCOPE("broyden_extrapolation::reduce");
 			comm_.all_reduce_n(raw_pointer_cast(beta.data_elements()), beta.num_elements());
