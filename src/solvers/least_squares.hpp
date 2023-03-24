@@ -39,6 +39,8 @@ namespace solvers {
 template <class matrix_type, class vector_type>
 void least_squares(matrix_type && matrix, vector_type & rhs){
 
+	CALI_CXX_MARK_FUNCTION;
+	
 	int mm = std::get<0>(sizes(matrix));
 	int nn = std::get<1>(sizes(matrix));
 
