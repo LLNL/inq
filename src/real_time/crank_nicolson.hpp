@@ -56,8 +56,9 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 	crank_nicolson_op<decltype(ham)> op{ham, complex{0.0, 0.5*dt}};
 	crank_nicolson_op<decltype(ham)> op_rhs{ham, complex{0.0, -0.5*dt}};
 
-	double const tol = 1e-12;
-	
+	auto const dens_tol = 1e-5;
+	auto const exxe_tol = 1e-6;
+
 	//calculate the right hand side with H(t)
 	std::vector<states::orbital_set<basis::real_space, complex>> rhs; 
 	rhs.reserve(electrons.kpin_size());	
@@ -71,32 +72,56 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
 	}
 
-	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
+	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
+	auto mixer = mixers::broyden<mix_arr_type>(4, 0.3, electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 
-	math::array<bool, 1> conv(electrons.kpin_size());
+	auto old_exxe = 0.0;
+	auto update_hf = true;
+	auto exxe_diff = 1.0;
 	
-	//now calculate the wave functions in t + dt by solving a linear equation
-	for(int istep = 0; istep < 200; istep++) {
+	//now calculate the wave functions in t + dt by solving a self-consistent linear equation
+	for(int istep = 0; istep < 300; istep++) {
+		CALI_CXX_MARK_SCOPE("crank_nicolson:iteration");
+
+		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
+
+		if(update_hf) {
+			auto exxe = ham.exchange.update(electrons);
+			exxe_diff = fabs(exxe - old_exxe);
+			old_exxe = exxe;
+			update_hf = false;
+		}
 		
+		auto res = 0.0;
 		auto iphi = 0;
 		for(auto & phi : electrons.kpin()){
-			auto res = solvers::steepest_descent(op, operations::no_preconditioner{}, rhs[iphi], phi);
-			conv[iphi] = res < tol;
+			auto ires = solvers::steepest_descent(op, operations::no_preconditioner{}, rhs[iphi], phi);
+			res += ires*electrons.kpin_weights()[iphi];
 			iphi++;
 		}
 
-		bool all_conv = true;
-		for(auto & iconv : conv) {
-			all_conv = all_conv and iconv;
-		}
-
-		if(electrons.kpin_states_comm().size() > 1) electrons.kpin_states_comm().all_reduce_n(&all_conv, 1, std::logical_and<>{});
+		if(electrons.kpin_states_comm().size() > 1) electrons.kpin_states_comm().all_reduce_n(&res, 1, std::plus<>{});
 		
-		if(all_conv) break;
+		auto new_density = observables::density::calculate(electrons);
+		auto density_diff = operations::integral_sum_absdiff(electrons.spin_density(), new_density)/electrons.states().num_electrons();
+		
+		std::cout << istep << '\t' << density_diff << '\t' << res << '\t' << exxe_diff << std::endl;
+		
+		if(density_diff < dens_tol) {
+			update_hf = true;
+			if(exxe_diff < exxe_tol) break;
+		}
+		
+		auto tmp = +electrons.spin_density().matrix().flatted();
+		mixer(tmp, new_density.matrix().flatted());
+		electrons.spin_density().matrix().flatted() = tmp;
+		observables::density::normalize(electrons.spin_density(), electrons.states().num_electrons());
 	}
 
 	electrons.spin_density() = observables::density::calculate(electrons);
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
+	ham.exchange.update(electrons);
+	 
 }
 
 }

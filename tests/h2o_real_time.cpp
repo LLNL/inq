@@ -181,14 +181,33 @@ int main(int argc, char ** argv){
 
 		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
 
-		std::ofstream dipole_file;
-		if(electrons.root()) dipole_file.open("dipole_cn.dat");
+		long nsteps = 21;
 		
+		math::array<double, 1> time(nsteps);
+		math::array<double, 1> dip(nsteps);
+		math::array<double, 1> en(nsteps);		
+	
 		auto output = [&](auto data){
-			dipole_file << data.time() << '\t' << data.dipole() << std::endl;
+			
+			auto iter = data.iter();
+			
+			time[iter] = data.time();
+			dip[iter] = data.dipole()[0];
+			en[iter] = data.energy();			
+
+			if(data.root() and data.every(50)){
+				auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  
+
+				std::ofstream file("spectrum.dat");
+				
+				for(int ifreq = 0; ifreq < spectrum.size(); ifreq++){
+					file << ifreq*in_atomic_units(0.01_eV) << '\t' << real(spectrum[ifreq]) << '\t' << imag(spectrum[ifreq]) << std::endl;
+				}
+			}
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(10) | input::rt::dt(0.1_atomictime) | input::rt::crank_nicolson(), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson(), ions::propagator::fixed{}, kick);
+		
 	}
 	
 	fftw_cleanup(); //required for valgrind
