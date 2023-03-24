@@ -72,21 +72,17 @@ public:
 			return;
 		}
 
-		math::array<element_type, 1> work(iter_used, NAN);
-
 		namespace blas = boost::multi::blas;
 		
 		auto subdf = df_({0, iter_used}, {0, input_value.size()});
 		auto beta = +blas::gemm(ww*ww, subdf, blas::H(subdf));
 
-		gpu::run(iter_used,
-						 [iter_used, ivsize = input_value.size(), w0, ww, be = begin(beta), df = begin(df_), ffp = begin(ff), wo = begin(work), dfactor = 1.0/comm_.size()] GPU_LAMBDA (auto ii){
-							 be[ii][ii] = dfactor*(w0*w0 + ww*ww);
-								 
-							 element_type aa = 0.0;
-								 for(unsigned kk = 0; kk < ivsize; kk++) aa += conj(df[ii][kk])*ffp[kk];
-								 wo[ii] = aa;
-						 });
+		auto matff = math::array<element_type, 2>({iter_used, input_value.size()}); //for some reason this has to be iter_used and not 1. 
+		matff[0] = ff({0, input_value.size()});
+		auto workmat = +blas::gemm(1.0, matff, blas::H(subdf));
+		auto work = +workmat[0];
+		
+		gpu::run(iter_used, [w0, ww, be = begin(beta), dfactor = 1.0/comm_.size()] GPU_LAMBDA (auto ii){ be[ii][ii] = dfactor*(w0*w0 + ww*ww); });
 		
 		if(comm_.size() > 1){
 			CALI_CXX_MARK_SCOPE("broyden_extrapolation::reduce");
