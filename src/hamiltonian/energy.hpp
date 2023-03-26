@@ -57,7 +57,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("energy::calculate");
 
-			auto normres = math::array<complex, 2>({el.kpin().size(), el.max_local_set_size()});
+			auto normres = math::array<complex, 2>({static_cast<math::array<complex, 2>::size_type>(el.kpin().size()), el.max_local_set_size()});
 			
 			eigenvalues_ = 0.0;
 			nonlocal_ = 0.0;
