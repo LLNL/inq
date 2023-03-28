@@ -105,7 +105,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		auto new_density = observables::density::calculate(electrons);
 		auto density_diff = operations::integral_sum_absdiff(electrons.spin_density(), new_density)/electrons.states().num_electrons();
 		
-		std::cout << istep << '\t' << density_diff << '\t' << res << '\t' << exxe_diff << std::endl;
+		if(electrons.full_comm().root()) std::cout << istep << '\t' << density_diff << '\t' << res << '\t' << exxe_diff << std::endl;
 		
 		if(density_diff < dens_tol) {
 			update_hf = true;
