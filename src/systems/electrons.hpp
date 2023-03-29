@@ -284,6 +284,11 @@ public:
 	}
 
 	void save(std::string const & dirname) const {
+
+		full_comm_.barrier();
+		if(logger()) logger()->info("saving electrons to '{}/'", dirname);
+		full_comm_.barrier();
+
 		int iphi = 0;
 		for(auto & phi : kpin()){
 			auto basedir = dirname + "/kpin" + operations::io::numstr(iphi + kpin_part_.start());
@@ -291,11 +296,21 @@ public:
 			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), +occupations()[iphi]);	
 			iphi++;
 		}
-		operations::io::save(dirname + "/spin_density", spin_density_);
+
+		if(kpin_states_comm_.root()) operations::io::save(dirname + "/spin_density", spin_density_);
+
+		full_comm_.barrier();
+		if(logger()) logger()->info("  saving done.", dirname);
+		full_comm_.barrier();
+
 	}
 		
 	auto try_load(std::string const & dirname) {
 		auto success = true;
+
+		full_comm_.barrier();
+		if(logger()) logger()->info("loading electrons from '{}/'", dirname);
+		full_comm_.barrier();
 
 		int iphi = 0;
 		for(auto & phi : kpin()){
@@ -310,7 +325,15 @@ public:
 		}
 
 		success = success and operations::io::load(dirname + "/spin_density",	spin_density_);
+
+		full_comm_.all_reduce_n(&success, 1, std::logical_and<>{});
 		
+		if(success) {
+			if(logger()) logger()->info("  loading successful");
+		} else {
+			if(logger()) logger()->info("  loading failed");
+		}
+
 		return success;
 	}
 
