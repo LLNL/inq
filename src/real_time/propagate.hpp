@@ -27,6 +27,9 @@ template <typename ProcessFunction, typename IonSubPropagator = ions::propagator
 void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}, Perturbation const & pert = {}){
 		CALI_CXX_MARK_FUNCTION;
 		
+		auto console = electrons.logger();
+		if(console) console->trace("initializing real-time propagation");
+
 		const double dt = options.dt();
 		const int numsteps = options.num_steps();
 
