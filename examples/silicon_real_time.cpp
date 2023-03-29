@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 
 	auto a = 10.18_b;
 
-	auto box = systems::box::cubic(a).cutoff_energy(30.0_Ha);
+	auto box = systems::box::cubic(a).spacing(a/24);
 	
 	systems::ions ions(box);
 	
@@ -46,20 +46,23 @@ int main(int argc, char ** argv){
 	ions.insert("Si", {0.0_crys,  0.5_crys,  0.5_crys });
 	ions.insert("Si", {0.25_crys, 0.75_crys, 0.75_crys});
 
-	int kpoint_par = 1;
-	if(env.par().size()%2 == 0) kpoint_par = 2;
+	auto nk = 2;
 	
-	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, box, input::kpoints::grid({4, 4, 4}, true));
+	systems::electrons electrons(env.par(), ions, box, input::kpoints::grid({nk, nk, nk}, true));
 
+	auto functional = input::interaction::pbe();
+	
 	if(not electrons.try_load("silicon_restart")){
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-8_Ha));
+		ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-4_Ha));
+		ground_state::calculate(ions, electrons, functional, inq::input::scf::energy_tolerance(1e-8_Ha));
 		electrons.save("silicon_restart");
 	}
 
 	auto kick = perturbations::kick{box.cell(), {0.01, 0.0, 0.0}, perturbations::gauge::velocity};
 	
-	long nsteps = 10001;
+	auto const dt = 0.065;
+	long nsteps = 413.41373/dt;
 	
 	math::array<double, 1> time(nsteps);
 	math::array<double, 1> cur(nsteps);
@@ -74,6 +77,7 @@ int main(int argc, char ** argv){
 		
 		time[iter] = data.time();
 		cur[iter] = data.current()[0];
+
 		en[iter] = data.energy();
 
 		if(data.root()) file << time[iter] << '\t' << cur[iter] << std::endl;
@@ -89,7 +93,7 @@ int main(int argc, char ** argv){
 		}
 	};
 	
-	real_time::propagate<>(ions, electrons, output, input::interaction::pbe() | input::interaction::gauge_field(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, functional, input::rt::num_steps(nsteps) | input::rt::dt(dt*1.0_atomictime) | input::rt::etrs(), ions::propagator::fixed{}, kick);
 	
 	return energy_match.fail();
 	
