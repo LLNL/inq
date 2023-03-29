@@ -44,19 +44,21 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), 0.0);
+
 		ham.exchange.update(electrons);
 
 		energy.calculate(ham, electrons);
 		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
-		
-		if(electrons.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f\n", 0, 0.0, energy.total());
 
 		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
 		
 		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 		func(real_time::viewables{false, 0, 0.0, ions, electrons, energy, forces, ham, pert});
-		
+
+		if(console) console->trace("starting real-time propagation");
+		if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}", 0, 0.0, energy.total());
+
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
@@ -81,10 +83,13 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
-			if(electrons.full_comm().root()) tfm::format(std::cout, "step %9d :  t =  %9.3f  e = %.12f  wtime = %9.3f\n", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
+			
+			if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}  wtime = {:9.3f}", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
 
 			iter_start_time = new_time;
 		}
+
+		if(console) console->trace("real-time propafation ended normally");
 	}
 }
 }
