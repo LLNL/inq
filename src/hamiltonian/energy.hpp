@@ -29,28 +29,19 @@ namespace inq {
 namespace hamiltonian {
 
 	class energy {
-		
-		double ion_;
-		double eigenvalues_;
-		double external_;
-		double nonlocal_;
-		double hartree_;
-		double xc_;
-		double nvxc_;
-		double hf_exchange_;
+
+		double ion_ = 0.0;
+		double eigenvalues_ = 0.0;
+		double external_ = 0.0;
+		double nonlocal_ = 0.0;
+		double hartree_ = 0.0;
+		double xc_ = 0.0;
+		double nvxc_ = 0.0;
+		double hf_exchange_ = 0.0;
 
 	public:
 		
-		energy(){
-			ion_ = 0.0;
-			eigenvalues_ = 0.0;
-			external_ = 0.0;
-			nonlocal_ = 0.0;
-			hartree_ = 0.0;
-			xc_ = 0.0;
-			nvxc_ = 0.0;
-			hf_exchange_ = 0.0;
-		}
+		energy() = default;
 
 		template <typename HamType, typename ElType>
 		auto calculate(HamType const & ham, ElType & el) {
