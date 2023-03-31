@@ -69,21 +69,28 @@ struct caching_allocator : Base_ {
 
   // using Base_::allocate;
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n) -> typename std::allocator_traits<Base_>::pointer {
+		CALI_CXX_MARK_SCOPE("allocate");
     auto ret = std::allocator_traits<Base_>::allocate(*this, n);
-    prefetch_to_device(ret, n*sizeof(T), get_current_device());
+		prefetch_to_device(ret, n*sizeof(T), get_current_device());
     return ret;
   }
 
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n, typename std::allocator_traits<Base_>::const_void_pointer hint) -> typename std::allocator_traits<Base_>::pointer {
+		CALI_CXX_MARK_SCOPE("allocate_with_hint");
     auto ret = std::allocator_traits<Base_>::allocate(*this, n);
     if(not hint) {
-      prefetch_to_device(ret, n*sizeof(T), get_current_device());
+			prefetch_to_device(ret, n*sizeof(T), get_current_device());
       return ret;
     }
-    prefetch_to_device(ret, n*sizeof(T), get_device(hint));
+		prefetch_to_device(ret, n*sizeof(T), get_device(hint));
     return ret;
   }
-
+	
+	constexpr void deallocate(typename std::allocator_traits<Base_>::pointer p, typename std::allocator_traits<Base_>::size_type n) {
+		CALI_CXX_MARK_SCOPE("deallocate");
+		Base_::deallocate(p, n);
+	}
+	
 private:
   using device_index = int;
   static auto get_current_device() -> device_index {
