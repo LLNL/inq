@@ -14,7 +14,7 @@ Include(FetchContent)
 
 add_library(inq INTERFACE)
 target_include_directories(inq
- 	INTERFACE
+    INTERFACE
      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
      $<INSTALL_INTERFACE:src>
@@ -150,8 +150,8 @@ include_directories(${Libxc_INCLUDE_DIRS})
 link_libraries(${Libxc_LIBRARIES})
 link_libraries(xc)
 
-target_link_libraries(inq INTERFACE xc)
 target_include_directories(inq INTERFACE ${Libxc_INCLUDE_DIRS})
+target_link_libraries(inq INTERFACE ${Libxc_LIBRARIES} xc)
 
 # Multi
 set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/include)
@@ -265,7 +265,7 @@ FetchContent_Declare(
 	Catch2
 	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
 	GIT_TAG        7cf2f88e50f0d1de324489c31db0314188423b6d
-  GIT_PROGRESS TRUE	
+  GIT_PROGRESS TRUE 
 	)
 FetchContent_MakeAvailable(Catch2)
 include_directories(${catch2_SOURCE_DIR}/src)
