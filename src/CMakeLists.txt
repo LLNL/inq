@@ -39,4 +39,4 @@ endif()
 
 add_executable(all_unit_tests)
 target_sources(all_unit_tests PRIVATE all_unit_tests.cpp)
-target_link_libraries(all_unit_tests PRIVATE unit_tests_main Catch2::Catch2)
+target_link_libraries(all_unit_tests PRIVATE unit_tests_main Catch2::Catch2 inq)
