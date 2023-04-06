@@ -65,22 +65,37 @@ if(ENABLE_CUDA)
     include_directories("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
     link_directories   ("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
     link_libraries("-lcufft")
+
+    target_include_directories(inq INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
+    target_link_directories   (inq INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
+    target_link_libraries     (inq INTERFACE "-lcufft")
   else()
     link_libraries(${CUDA_CUFFT_LIBRARIES})
+    target_link_libraries(inq INTERFACE ${CUDA_CUFFT_LIBRARIES})
   endif()
   if(${CUDA_cusolver_LIBRARY} STREQUAL "CUDA_cusolver_LIBRARY-NOTFOUND")
     include_directories("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
     link_directories   ("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
     link_libraries("-lcusolver")
+
+    target_include_directories(inq INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
+    target_link_directories   (inq INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
+    target_link_libraries     (inq INTERFACE "-lcusolver")
   else()
     link_libraries(${CUDA_cusolver_LIBRARY})
+    target_link_libraries(inq INTERFACE ${CUDA_cusolver_LIBRARY})
   endif()
   if(${CUDA_cublas_LIBRARY} STREQUAL "CUDA_cublas_LIBRARY-NOTFOUND")
     include_directories("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
     link_directories   ("${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
     link_libraries("-lcublas")
+
+    target_include_directories(inq INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
+    target_link_directories   (inq INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
+    target_link_libraries     (inq INTERFACE "-lcublas")
   else()
     link_libraries(${CUDA_cublas_LIBRARY})
+    target_link_libraries(inq INTERFACE ${CUDA_cublas_LIBRARY})
   endif()
 	find_package(NCCL)
 
@@ -88,7 +103,11 @@ if(ENABLE_CUDA)
 	if(${ENABLE_NCCL})
 		include_directories(${NCCL_INCLUDE_DIRS})
 		link_libraries(${NCCL_LIBRARIES})
-	endif()
+
+		target_include_directories(inq INTERFACE ${NCCL_INCLUDE_DIRS})
+		target_link_libraries(inq INTERFACE ${NCCL_LIBRARIES})
+
+  endif()
 endif()
 
 link_libraries(m)
@@ -104,6 +123,9 @@ FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 find_package(MPI REQUIRED COMPONENTS CXX)
 include_directories(${MPI_CXX_INCLUDE_PATH})
 link_libraries(MPI::MPI_CXX) # needs cmake 3.9
+
+target_link_libraries(inq INTERFACE MPI::MPI_CXX)
+
 message(STATUS "MPI Executable for running programs:" ${MPIEXEC_EXECUTABLE})
 message(STATUS "MPI number of processors detected on the host system: " ${MPIEXEC_MAX_NUMPROCS})
 include(CMakePrintHelpers)
@@ -115,7 +137,6 @@ set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_CXX)
 include(CheckCXXSymbolExists)
 check_cxx_symbol_exists(MPI_Isendrecv_replace mpi.h HAVE_MPI_ISENDRECV_REPLACE)
 
-target_link_libraries(inq INTERFACE MPI::MPI_CXX)
 
 #FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
 find_package(PkgConfig REQUIRED)
@@ -130,6 +151,7 @@ if(ENABLE_HEFFTE)
   find_package(Heffte REQUIRED)
   #get_target_property(HEFFTE_INCLUDE_DIRS Heffte::Heffte INTERFACE_INCLUDE_DIRECTORIES)
   link_libraries(Heffte::Heffte)
+  target_link_libraries(inq INTERFACE Heffte::Heffte)
 endif()
 
 find_package(BLAS REQUIRED)
@@ -195,6 +217,7 @@ target_include_directories(inq
   INTERFACE
   ${spglib_INCLUDE_DIRS}
 )
+target_link_libraries(inq INTERFACE symspg_static)
 target_link_libraries(inq
    INTERFACE
    ${spglib_LIBRARIES}
@@ -213,6 +236,9 @@ endif()
 include_directories(Boost::serialization Boost::filesystem Boost::system) #${Boost_INCLUDE_DIRS})
 link_libraries(Boost::serialization Boost::filesystem Boost::system)
 
+target_include_directories(inq INTERFACE Boost::serialization Boost::filesystem Boost::system) #${Boost_INCLUDE_DIRS})
+target_link_libraries(inq INTERFACE Boost::serialization Boost::filesystem Boost::system)
+
 #######################
 # LINK HDF5
 #######################
@@ -227,6 +253,9 @@ list(FILTER HDF5_LIBRARIES EXCLUDE REGEX .*/libdl.a)
 include_directories(${HDF5_INCLUDE_DIRS})
 link_libraries(${HDF5_LIBRARIES})
 
+target_include_directories(inq INTERFACE ${HDF5_INCLUDE_DIRS})
+target_link_libraries(inq INTERFACE ${HDF5_LIBRARIES})
+
 #######################
 # GENERATE inq_config.h
 ######################
@@ -234,7 +263,8 @@ link_libraries(${HDF5_LIBRARIES})
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 
-target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
+target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR})
+# target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
 target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 
 configure_file(inq_config.h.in inq_config.h)
