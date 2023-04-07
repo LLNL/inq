@@ -262,7 +262,7 @@ include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 
 target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR})
-# target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
+target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
 target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 
 configure_file(inq_config.h.in inq_config.h)
