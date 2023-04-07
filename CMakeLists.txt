@@ -169,8 +169,6 @@ target_link_libraries(inq INTERFACE ${LAPACK_LIBRARIES})
 set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)
 set(Libxc_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/libxc/libxc.a)
 include_directories(${Libxc_INCLUDE_DIRS})
-link_libraries(${Libxc_LIBRARIES})
-link_libraries(xc)
 
 target_include_directories(inq INTERFACE ${Libxc_INCLUDE_DIRS})
 target_link_libraries(inq INTERFACE ${Libxc_LIBRARIES} xc)
