@@ -115,7 +115,7 @@ public:
 	void transform(Kernel transformation){
 		vec_[0] = transformation(vec_[0]);
 		vec_[1] = transformation(vec_[1]);
-		vec_[2] = transformation(vec_[2]);		
+		vec_[2] = transformation(vec_[2]);      
 	}
 	
 	//COMPARISON
@@ -232,12 +232,12 @@ public:
 	//internal product
 	template <class OtherType>
 	friend GPU_FUNCTION auto dot(vector3 const & vv1, vector3<OtherType, typename Space::DualSpace> const & vv2) {
-		return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];			
+		return conj(vv1[0])*vv2[0] + conj(vv1[1])*vv2[1] + conj(vv1[2])*vv2[2];         
 	}
 
 	template <class OtherType>
 	GPU_FUNCTION auto dot(vector3<OtherType, typename Space::DualSpace> const & vv2) const {
-		return conj(vec_[0])*vv2[0] + conj(vec_[1])*vv2[1] + conj(vec_[2])*vv2[2];			
+		return conj(vec_[0])*vv2[0] + conj(vec_[1])*vv2[1] + conj(vec_[2])*vv2[2];          
 	}
 	
 	//cross product
@@ -279,6 +279,20 @@ public:
 
 };
 
+template<std::size_t Index, class T>
+T const& get(inq::vector3<T, inq::cartesian> const& v3) {
+	static_assert(Index >=0 and Index < 3);
+	return v3[Index];
+}
+
+}
+
+namespace std {
+	template<class T>
+	struct tuple_size<inq::vector3<T, inq::cartesian> > : integral_constant<size_t, 3> {};
+
+	template<std::size_t N, class T>
+	struct tuple_element<N, inq::vector3<T, inq::cartesian> > {using type = T;};
 }
 
 template<typename T, typename Space> struct boost::mpi3::datatype<inq::vector3<T, Space>> : boost::mpi3::struct_<T, T, T>{};
@@ -440,7 +454,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Vector operations"){
 		vector3<double> dv(3.0, -1.1, 0.1);
 
-		CHECK( dot(dv, dv) == norm(dv));		
+		CHECK( dot(dv, dv) == norm(dv));        
 
 		vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
 		vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
@@ -588,5 +602,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(vec[1] == 0.0_a);
 		CHECK(vec[2] == 5.0_a);
 	}
+
+	SECTION("structured bindings"){
+		vector3<double> vec{2.0, -3.0, 5.0};
+		auto const [x, y, z] = vec;
+		CHECK(x ==  2.0_a);
+		CHECK(y == -3.0_a);
+		CHECK(z ==  5.0_a);
+	}
+
 }
 #endif
