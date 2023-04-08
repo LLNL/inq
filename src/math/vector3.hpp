@@ -4,7 +4,7 @@
 #define INQ__MATH__VECTOR3
 
 /*
- Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
+ Copyright (C) 2019-2023 Xavier Andrade, Alfredo A. Correa
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -280,9 +280,27 @@ public:
 };
 
 template<std::size_t Index, class T>
-T const& get(inq::vector3<T, inq::cartesian> const& v3) {
+decltype(auto) get(inq::vector3<T, inq::cartesian>& self) {
 	static_assert(Index >=0 and Index < 3);
-	return v3[Index];
+	return self[Index];
+}
+
+template<std::size_t Index, class T>
+decltype(auto) get(inq::vector3<T, inq::cartesian>&& self) {
+	static_assert(Index >=0 and Index < 3);
+	return std::move(self)[Index];
+}
+
+template<std::size_t Index, class T>
+decltype(auto) get(inq::vector3<T, inq::cartesian> const& self) {
+	static_assert(Index >=0 and Index < 3);
+	return self[Index];
+}
+
+template<std::size_t Index, class T>
+decltype(auto) get(inq::vector3<T, inq::cartesian> const&& self) {
+	static_assert(Index >=0 and Index < 3);
+	return self[Index];
 }
 
 }
