@@ -20,6 +20,12 @@ target_include_directories(inq
      $<INSTALL_INTERFACE:src>
 )
 
+target_compile_options(inq INTERFACE
+  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+  --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe=--display_error_number -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
+  >
+)
+
 enable_testing()
 include(CTest)
 
@@ -262,7 +268,7 @@ include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 
 target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR})
-# target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
+target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
 target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 
 configure_file(inq_config.h.in inq_config.h)
