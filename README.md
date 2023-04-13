@@ -84,7 +84,7 @@ Xavier Andrade, Chaitanya Das Pemmaraju, Alexey Kartsev, Jun Xiao, Aaron Lindenb
 
 ## Release information 
 
-INQ is licensed under the terms of the [LGPL v3 License](/COPYING).
+INQ is licensed under the terms of the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/) (MPL).
 
 ``LLNL-CODE-803817``
 
