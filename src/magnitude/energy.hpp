@@ -61,7 +61,9 @@ auto operator "" _K(long double val){
 auto operator "" _kelvin(long double val){
 	return val*1.0_K;
 }
-	
+
+static auto const Ha = inq::magnitude::operator""_Ha(1);
+
 }
 }
 #endif
