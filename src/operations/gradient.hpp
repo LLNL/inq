@@ -1,145 +1,53 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__OPERATIONS__GRADIENT
-#define INQ__OPERATIONS__GRADIENT
+#ifndef OPERATIONS__GRADIENT
+#define OPERATIONS__GRADIENT
 
-/*
- Copyright (C) 2020 Xavier Andrade, Alfredo A. Correa, Alexey Karstev.
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 3 of the License, or
- (at your option) any later version.
-  
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
-  
- You should have received a copy of the GNU Lesser General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
-#include <basis/field.hpp>
-#include <basis/fourier_space.hpp>
-#include <operations/space.hpp>
+// Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <cassert>
+
+#include <gpu/run.hpp>
+#include <basis/field_set.hpp>
+#include <basis/fourier_space.hpp>
+#include <math/vector3.hpp>
+#include <operations/space.hpp>
+#include <utils/profiling.hpp>
 
 namespace inq {
 namespace operations {
 
-basis::field<basis::fourier_space, vector3<complex, covariant>> gradient(basis::field<basis::fourier_space, complex> const & ff){
-		basis::field<basis::fourier_space, vector3<complex, covariant>> grad(ff.skeleton());
 
-		CALI_CXX_MARK_SCOPE("gradient_fourier(field)");
- 
-		gpu::run(grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
-						 [point_op = ff.basis().point_op(), gradcub = begin(grad.cubic()), ffcub = begin(ff.cubic())]
-						 GPU_LAMBDA (auto iz, auto iy, auto ix){
+template <typename FieldSetType, typename FactorType = double,
+					typename ResultType = typename FieldSetType::template template_type<typename FieldSetType::basis_type, vector3<typename FieldSetType::element_type, covariant>>>
+ResultType gradient(FieldSetType const & ff, double factor = 1.0, vector3<double, covariant> const & shift = {0.0, 0.0, 0.0}){
 
-							 auto gvec = point_op.gvector(ix, iy, iz);
-							 gradcub[ix][iy][iz] = complex(0.0, 1.0)*gvec*ffcub[ix][iy][iz];
-						 });
+	CALI_CXX_MARK_FUNCTION;
 
-		return grad;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	basis::field_set<basis::fourier_space, vector3<complex, covariant>> gradient(basis::field_set<basis::fourier_space, complex> const & ff){
-		basis::field_set<basis::fourier_space, vector3<complex, covariant>> grad(ff.skeleton());
-
-		CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
- 
-		gpu::run(grad.set_part().local_size(), grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
-						 [point_op = ff.basis().point_op(), gradcub = begin(grad.hypercubic()), ffcub = begin(ff.hypercubic())]
+	if constexpr(std::is_same_v<typename FieldSetType::basis_type, basis::real_space>) {
+		if constexpr(std::is_same_v<typename FieldSetType::element_type, double>) {		
+			return real_field(operations::space::to_real(operations::gradient(operations::space::to_fourier(complex_field(ff)), factor, shift)));
+		} else {
+			return operations::space::to_real(operations::gradient(operations::space::to_fourier(ff), factor, shift));
+		}
+	} else {
+		
+		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only implemented for real or fourier_space");
+		
+		ResultType gradff(ff.skeleton());
+		
+		gpu::run(gradff.set_part().local_size(), gradff.basis().local_sizes()[2], gradff.basis().local_sizes()[1], gradff.basis().local_sizes()[0],
+						 [point_op = ff.basis().point_op(), gradffcub = begin(gradff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, shift]
 						 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-							 
-							 auto gvec = point_op.gvector(ix, iy, iz);
-							 gradcub[ix][iy][iz][ist] = complex(0.0, 1.0)*gvec*ffcub[ix][iy][iz][ist];
+							 auto grad = factor*complex(0.0, 1.0)*(point_op.gvector(ix, iy, iz) + shift);
+							 gradffcub[ix][iy][iz][ist] = grad*ffcub[ix][iy][iz][ist];
 						 });
-
-		return grad;
+		return gradff;
 	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-states::orbital_set<basis::fourier_space, vector3<complex, covariant>>
-gradient(states::orbital_set<basis::fourier_space, complex> const & ff, vector3<double, covariant> const & shift = {0.0, 0.0, 0.0}, double factor = 1.0){
-
-	states::orbital_set<basis::fourier_space, vector3<complex, covariant>> grad(ff.skeleton());
-
-	CALI_CXX_MARK_SCOPE("gradient_fourier(field_set)");
- 
-	gpu::run(grad.set_part().local_size(), grad.basis().local_sizes()[2], grad.basis().local_sizes()[1], grad.basis().local_sizes()[0],
-					 [point_op = ff.basis().point_op(), gradcub = begin(grad.hypercubic()), ffcub = begin(ff.hypercubic()), kpt = ff.kpoint() + shift, factor]
-					 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-						 
-						 auto gvec = point_op.gvector(ix, iy, iz);
-						 gradcub[ix][iy][iz][ist] = factor*complex(0.0, 1.0)*(gvec + kpt)*ffcub[ix][iy][iz][ist];
-					 });
-	
-	return grad;
-}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	auto gradient(basis::field<basis::real_space, complex> const & ff){
-
-		CALI_CXX_MARK_SCOPE("gradient_real_space(field)");
-		
-		auto ff_fourier = operations::space::to_fourier(ff);
-		auto grad_fourier = gradient(ff_fourier);
-		auto grad_real = operations::space::to_real(grad_fourier);
-		return grad_real;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	auto gradient(basis::field<basis::real_space, double> const & ff){
-
-		CALI_CXX_MARK_SCOPE("gradient_real_space(field,double)");
-		
-		auto ff_fourier = operations::space::to_fourier(complex_field(ff));
-		auto grad_fourier = gradient(ff_fourier);
-		auto grad_real = operations::space::to_real(grad_fourier);
-		return real_field(grad_real);
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	auto gradient(basis::field_set<basis::real_space, complex> const & ff){
-
-		CALI_CXX_MARK_SCOPE("gradient_real_space(field_set)");
-		
-		auto ff_fourier = operations::space::to_fourier(ff);
-		auto grad_fourier = gradient(ff_fourier);
-		return operations::space::to_real(grad_fourier);
-	}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	auto gradient(basis::field_set<basis::real_space, double> const & ff){
-
-		CALI_CXX_MARK_SCOPE("gradient_real_space(field,double)");
-		
-		auto ff_fourier = operations::space::to_fourier(complex_field(ff));
-		auto grad_fourier = gradient(ff_fourier);
-		auto grad_real = operations::space::to_real(grad_fourier);
-		return real_field(grad_real);
-	}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-auto gradient(states::orbital_set<basis::real_space, complex> const & ff, vector3<double, covariant> const & shift = {0.0, 0.0, 0.0}, double factor = 1.0){
-
-	CALI_CXX_MARK_SCOPE("gradient_real_space(orbital_set)");
-	
-	auto ff_fourier = operations::space::to_fourier(ff);
-	auto grad_fourier = gradient(ff_fourier, shift, factor);
-	return operations::space::to_real(grad_fourier);
 }
 
 }
@@ -149,31 +57,7 @@ auto gradient(states::orbital_set<basis::real_space, complex> const & ff, vector
 #ifdef INQ_OPERATIONS_GRADIENT_UNIT_TEST
 #undef INQ_OPERATIONS_GRADIENT_UNIT_TEST
 
-#include <ions/geometry.hpp>
-
 #include <catch2/catch_all.hpp>
-#include <math/vector3.hpp>
-
-auto f_analytic(inq::vector3<double> kk, inq::vector3<double> rr){
-	return exp(inq::complex(0.0,1.0)*dot(kk, rr));
-}
-
-auto g_analytic(inq::vector3<double> kk, inq::vector3<double> rr) {
-	inq::vector3<inq::complex> gg;
-	auto factor = inq::complex(0.0, 1.0)*exp(inq::complex(0.0, 1.0)*dot(kk, rr));
-	for(int idir = 0; idir < 3 ; idir++) gg[idir] = factor*kk[idir] ;
-	return gg;
-}
-
-auto f_analytic2(inq::vector3<double> kk, inq::vector3<double> rr){
-	return sin(dot(kk, rr));
-}
-
-auto g_analytic2(inq::vector3<double> kk , inq::vector3<double> rr) {
-	inq::vector3<double> gg;
-	for(int idir = 0; idir < 3 ; idir++) gg[idir] = kk[idir]*cos(dot(kk, rr));
-	return gg;
-}
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
@@ -181,75 +65,55 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	using namespace operations;
+	using Catch::Approx;
 	
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
-	auto basis_comm = basis::basis_subcomm(cart_comm);
- 
-	double lx = 9;
-	double ly = 12;
-	double lz = 10;
-	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);	
-
-	auto kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
-	
-	SECTION("Plane-wave -- field"){ 
-
-		basis::real_space rs(box, cart_comm);
-	
-		basis::field<basis::real_space, complex> f_test(rs);
-	
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					f_test.cubic()[ix][iy][iz] = f_analytic(kvec, vec);
-				}
-			}
-		}
-
-		auto g_test = gradient(f_test);
-
-		double diff = 0.0;
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.basis().cell().metric().to_cartesian(g_test.cubic()[ix][iy][iz])[idir] - g_analytic (kvec, vec)[idir]);
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
-				
-		CHECK( diff < 1.0e-10 ); 
-	}
+	auto set_comm = basis::set_subcomm(cart_comm);
+	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
 	SECTION("Plane-wave -- field_set"){
-
+		
+		double lx = 9;
+		double ly = 12;
+		double lz = 10;
+		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
+		
+		double factor = 0.673214;
+	
 		basis::real_space rs(box, basis_comm);
 		
-		basis::field_set<basis::real_space, complex> f_test(rs, 13, cart_comm);
+		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
 	
+		//Define k-vector for test function
+		auto kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
+		
+		auto ff = [] (auto & kk, auto & rr){
+			return exp(inq::complex(0.0, 1.0)*dot(kk, rr));
+		};
+		
+		auto gradff = [ff] (auto & kk, auto & rr) {
+			return complex(0.0, 1.0)*kk*ff(kk, rr);
+		};
+		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ist = 0; ist < f_test.local_set_size(); ist++){					
-						f_test.hypercubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
-					}
+					for(int ist = 0; ist < func.local_set_size(); ist++) func.hypercubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
 				}
 			}
 		}
 
-		auto g_test = gradient(f_test);
-
-		double diff = 0.0;
+		auto grad = operations::gradient(func, factor);
+		
+		auto diff = vector3<double, covariant>(0.0, 0.0, 0.0);		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ist = 0; ist < f_test.local_set_size(); ist++){
-						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.basis().cell().metric().to_cartesian(g_test.hypercubic()[ix][iy][iz][ist])[idir] - double(ist)*g_analytic(kvec, vec)[idir]);
+					for(int ist = 0; ist < func.local_set_size(); ist++){
+						auto anvalue = rs.cell().metric().to_covariant((ist + 1.0)*factor*gradff(kvec, vec));
+						diff += fabs(grad.hypercubic()[ix][iy][iz][ist] - anvalue);
 					}
 				}
 			}
@@ -257,35 +121,110 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		CHECK( diff < 1.0e-8 ); 
-	}
+		CHECK(diff[0] < 1.0e-8) ;
+		CHECK(diff[1] < 1.0e-8) ;
+		CHECK(diff[2] < 1.0e-8) ;
 		
-	SECTION("Plane-wave -- orbital_set"){
-
+	}
+	
+	SECTION("Plane-wave -- rotated"){
+		
+		double ll = 9;
+		systems::box box = systems::box::lattice({ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {-ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {0.0_b, 0.0_b, ll*1.0_b}).cutoff_energy(20.0_Ha);
+		
+		double factor = 0.673214;
+	
 		basis::real_space rs(box, basis_comm);
+
+		CHECK(rs.cell().volume() == ll*ll*ll);
 		
-		states::orbital_set<basis::real_space, complex> f_test(rs, 13, 1, {0.0, 0.0, 0.0}, 0, cart_comm);
+		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
 	
+		auto kvec = 2.0*M_PI*vector3<double>(sqrt(2.0)/ll, sqrt(2.0)/ll, 0.0);
+		
+		auto ff = [] (auto & kk, auto & rr){
+			return exp(inq::complex(0.0, 1.0)*dot(kk, rr));
+		};
+		
+		auto gradff = [ff] (auto & kk, auto & rr) {
+			return complex(0.0, 1.0)*kk*ff(kk, rr);			
+		};
+
+		CHECK(norm(kvec) == Approx(rs.cell().metric().norm(rs.cell().metric().to_covariant(kvec))));
+		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ist = 0; ist < f_test.local_set_size(); ist++){					
-						f_test.hypercubic()[ix][iy][iz][ist] = double(ist)*f_analytic(kvec, vec);
+					for(int ist = 0; ist < func.local_set_size(); ist++) func.hypercubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
+				}
+			}
+		}
+
+		auto grad = operations::gradient(func, factor);
+		
+		auto diff = vector3<double, covariant>(0.0, 0.0, 0.0);
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ist = 0; ist < func.local_set_size(); ist++){
+						auto anvalue = rs.cell().metric().to_covariant((ist + 1.0)*factor*gradff(kvec, vec));
+						diff += fabs(grad.hypercubic()[ix][iy][iz][ist] - anvalue);
 					}
 				}
 			}
 		}
 
-		auto g_test = gradient(f_test);
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		
+		CHECK(diff[0] < 1.0e-8);
+		CHECK(diff[1] < 1.0e-8);
+		CHECK(diff[2] < 1.0e-8);		
+	}
+	
+	SECTION("Plane-wave -- non-orthogonal"){
+		
+		double ll = 5.89;
+		systems::box box = systems::box::lattice({0.0_b, ll*1.0_b, ll*1.0_b}, {ll*1.0_b, 0.0_b, ll*1.0_b}, {ll*1.0_b, ll*1.0_b, 0.0_b}).cutoff_energy(20.0_Ha);
+		
+		double factor = 0.673214;
+	
+		basis::real_space rs(box, basis_comm);
 
-		double diff = 0.0;
+		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
+	
+		auto kvec = rs.cell().metric().to_cartesian(2.0*rs.cell().reciprocal(2) + 3.0*rs.cell().reciprocal(2) - 1.0*rs.cell().reciprocal(2));
+		
+		auto ff = [] (auto & kk, auto & rr){
+			return exp(inq::complex(0.0, 1.0)*dot(kk, rr));
+		};
+		
+		auto gradff = [ff] (auto & kk, auto & rr) {
+			return complex(0.0, 1.0)*kk*ff(kk, rr);
+		};
+
+		CHECK(norm(kvec) == Approx(rs.cell().metric().norm(rs.cell().metric().to_covariant(kvec))));
+		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ist = 0; ist < f_test.local_set_size(); ist++){
-						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test.basis().cell().metric().to_cartesian(g_test.hypercubic()[ix][iy][iz][ist])[idir] - double(ist)*g_analytic(kvec, vec)[idir]);
+					for(int ist = 0; ist < func.local_set_size(); ist++) func.hypercubic()[ix][iy][iz][ist] = (ist + 1.0)*ff(kvec, vec);
+				}
+			}
+		}
+
+		auto grad = operations::gradient(func, factor);
+
+		auto diff = vector3<double, covariant>(0.0, 0.0, 0.0);
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
+					for(int ist = 0; ist < func.local_set_size(); ist++){
+						auto anvalue = rs.cell().metric().to_covariant((ist + 1.0)*factor*gradff(kvec, vec));
+						diff += fabs(grad.hypercubic()[ix][iy][iz][ist] - anvalue);
 					}
 				}
 			}
@@ -293,75 +232,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		CHECK( diff < 1.0e-8 ); 
+		CHECK(diff[0] < 1.0e-7);
+		CHECK(diff[1] < 1.0e-7);
+		CHECK(diff[2] < 1.0e-7);
 	}
 	
-	SECTION("Real function"){
-
-		basis::real_space rs(box, cart_comm);
-		
-		basis::field<basis::real_space, double> f_test2(rs);
-	
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					f_test2.cubic()[ix][iy][iz] = f_analytic2(kvec, vec);
-				}
-			}
-		}
-
-		auto g_test2 = gradient(f_test2);
-		double diff = 0.0;
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.basis().cell().metric().to_cartesian(g_test2.cubic()[ix][iy][iz])[idir] - g_analytic2(kvec, vec)[idir]);
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
-				
-		CHECK( diff < 1.0e-10 ); 
-	}
-
-	SECTION("Real function - field_set"){
-
-		basis::real_space rs(box, cart_comm);
-
-		auto nvec = 5;
-		
-		basis::field_set<basis::real_space, double> f_test2(rs, nvec);
-	
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ivec = 0; ivec < nvec; ivec++){
-						f_test2.hypercubic()[ix][iy][iz][ivec] = (ivec + 1.0)*f_analytic2(kvec, vec);
-					}
-				}
-			}
-		}
-
-		auto g_test2 = gradient(f_test2);
-		double diff = 0.0;
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					for(int ivec = 0; ivec < nvec; ivec++){
-						for(int idir = 0; idir < 3 ; idir++) diff += fabs(g_test2.basis().cell().metric().to_cartesian(g_test2.hypercubic()[ix][iy][iz][ivec])[idir] - (ivec + 1.0)*g_analytic2(kvec, vec)[idir]);
-					}
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
-				
-		CHECK( diff/nvec < 1.0e-10 ); 
-	}
 }
 #endif
+

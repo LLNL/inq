@@ -41,6 +41,9 @@ public:
 	typedef math::array<ElementType, 2> internal_array_type;
 	typedef ElementType element_type;
 
+	template <typename BType, typename EType>
+	using template_type = field_set<BType, EType>;
+	
 	field_set(const basis_type & basis, PartitionType part, parallel::cartesian_communicator<2> comm)
 		:full_comm_(std::move(comm)),
 		 set_comm_(basis::set_subcomm(full_comm_)),

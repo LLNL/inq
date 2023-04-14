@@ -169,7 +169,7 @@ public:
 	auto momentum(const states::orbital_set<basis::real_space, complex> & phi) const{
 		CALI_CXX_MARK_FUNCTION;
 
-		return operations::gradient(phi, /*shift = */ uniform_vector_potential_);
+		return operations::gradient(phi, /* factor = */ 1.0, /*shift = */ phi.kpoint() + uniform_vector_potential_);
 	}
 		
 	////////////////////////////////////////////////////////////////////////////////////////////
