@@ -31,7 +31,7 @@ basis::field<basis::real_space, vector3<double, covariant>> current_density(cons
 	auto iphi = 0;
 	for(auto & phi : electrons.kpin()){
 		
-		auto gphi = operations::gradient(phi, /* shift = */ ham.uniform_vector_potential(), /* factor = */ -1.0);		
+		auto gphi = operations::gradient(phi, /* factor = */ -1.0, /* shift = */ phi.kpoint() + ham.uniform_vector_potential());
 
 		ham.projectors_all().position_commutator(phi, gphi, phi.kpoint() + ham.uniform_vector_potential());
 		
