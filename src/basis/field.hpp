@@ -33,6 +33,9 @@ namespace basis {
 		using element_type = Type;
 		using basis_type = Basis;
 		using internal_array_type = math::array<element_type, 1>;
+
+		template <typename BType, typename EType>
+		using template_type = field<BType, EType>;
 		
 		field(const basis_type & basis):
 			linear_(basis.part().local_size()),

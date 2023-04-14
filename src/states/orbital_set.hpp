@@ -23,6 +23,9 @@ public:
 	using element_type = Type;
 	using basis_type = Basis;
 	using kpoint_type = vector3<double, covariant>;
+
+	template <typename BType, typename EType>
+	using template_type = orbital_set<BType, EType>;
 	
 	orbital_set(Basis const & basis, int const num_vectors, int const spinor_dim, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
 		:fields_(basis, spinor_dim*parallel::partition(num_vectors, basis::set_subcomm(comm)), comm),
