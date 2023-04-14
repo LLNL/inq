@@ -50,6 +50,11 @@ auto operator "" _pm(long double val){
 	return val*1.0_picometer;
 }
 
+static auto const bohr     = inq::magnitude::operator""_bohr(1);
+
+static auto const angstrom = inq::magnitude::operator""_angstrom(1); // Å, AA, Angstrom
+static auto const A        = inq::magnitude::operator""_A(1);        // Å, AA, Angstrom
+
 }
 }
 #endif
