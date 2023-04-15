@@ -114,15 +114,50 @@ public:
 		auto edens = basis::field<basis::real_space, double>(density.basis());
 		
 		if(functional.family() == XC_FAMILY_LDA){
+			
 			xc_lda_exc_vxc(functional.libxc_func_ptr(), density.basis().local_size(), raw_pointer_cast(density.matrix().data_elements()),
 										 raw_pointer_cast(edens.linear().data_elements()), raw_pointer_cast(vfunctional.matrix().data_elements()));
 			gpu::sync();
-			efunctional = operations::integral_product(edens, observables::density::total(density));
+			
 		} else if(functional.family() == XC_FAMILY_GGA){
-			functional(density, density_gradient, efunctional, vfunctional);
+
+			auto nsig = (density.set_size() > 1) ? 3:1;
+			
+			basis::field_set<basis::real_space, double> sig(density.basis(), nsig);
+			basis::field_set<basis::real_space, double> vsig(sig.skeleton());
+
+			gpu::run(density.basis().local_size(),
+							 [gr = begin(density_gradient->matrix()), si = begin(sig.matrix()), metric = density.basis().cell().metric(), nsig] GPU_LAMBDA (auto ip){
+								 si[ip][0] = metric.norm(gr[ip][0]);
+								 if(nsig > 1) si[ip][1] = metric.dot(gr[ip][0], gr[ip][1]);
+								 if(nsig > 1) si[ip][2] = metric.norm(gr[ip][1]);
+							 });
+
+			xc_gga_exc_vxc(functional.libxc_func_ptr(), density.basis().local_size(), raw_pointer_cast(density.matrix().data_elements()), raw_pointer_cast(sig.matrix().data_elements()),
+										 raw_pointer_cast(edens.linear().data_elements()), raw_pointer_cast(vfunctional.matrix().data_elements()), raw_pointer_cast(vsig.matrix().data_elements()));
+			gpu::sync();
+
+			basis::field_set<basis::real_space, vector3<double, covariant>> term(vfunctional.skeleton());
+
+			gpu::run(density.basis().local_size(),
+							 [vs = begin(vsig.matrix()), gr = begin(density_gradient->matrix()), te = begin(term.matrix()), nsig] GPU_LAMBDA (auto ip){
+								 if(nsig == 1) te[ip][0] = -2.0*vs[ip][0]*gr[ip][0];
+								 if(nsig == 3) te[ip][0] = -2.0*vs[ip][0]*gr[ip][0] - vs[ip][1]*gr[ip][1];
+								 if(nsig == 3) te[ip][1] = -2.0*vs[ip][2]*gr[ip][1] - vs[ip][1]*gr[ip][0];
+							 });
+
+			auto div_term = operations::divergence(term);
+
+			gpu::run(density.local_set_size(), density.basis().local_size(),
+							 [di = begin(div_term.matrix()), vf = begin(vfunctional.matrix())] GPU_LAMBDA (auto ispin, auto ip){
+								 vf[ip][ispin] += di[ip][ispin];
+							 });
+
 		} else {
 			std::runtime_error("inq error: unsupported exchange correlation functional type");
 		}
+		
+		efunctional = operations::integral_product(edens, observables::density::total(density));
 		
 	}
 	
