@@ -93,85 +93,9 @@ namespace hamiltonian {
 			return family() != XC_FAMILY_LDA;
 		}
 		
-		template <class DensityType, class DensityGradientType, class VxcType>
-		void operator()(DensityType const & spin_density, DensityGradientType const & density_gradient, double & xc_energy, VxcType & vxc) const {
-
-			assert(true_functional());
-			
-			CALI_CXX_MARK_SCOPE("xc_functional");
-			
-			basis::field<basis::real_space, double> exc(vxc.basis());
-			
-			assert(spin_density.matrix().num_elements() == vxc.matrix().num_elements());
-			
-			switch(family()) {
-				case XC_FAMILY_LDA:{
-					xc_lda_exc_vxc(libxc_func_ptr(), spin_density.basis().local_size(), raw_pointer_cast(spin_density.matrix().data_elements()), raw_pointer_cast(exc.linear().data_elements()), raw_pointer_cast(vxc.matrix().data_elements()));
-					gpu::sync();
-					break;
-				}
-				case XC_FAMILY_GGA:{
-					assert(density_gradient.has_value());
-					ggafunctional(spin_density, *density_gradient, exc, vxc);
-					break;
-				}	
-				default:{
-					std::runtime_error("inq error: unsupported xc functional family");
-					break;
-				}
-			}
-
-			xc_energy = operations::integral_product(exc, observables::density::total(spin_density));
-		}
-
 		auto exx_coefficient() const {
 			if(xc_hyb_type(libxc_func_ptr()) == XC_HYB_HYBRID) return xc_hyb_exx_coef(libxc_func_ptr());
 			return 0.0;
-		}
-		
-		template <class DensityType, class DensityGradientType, class ExcType, class VxcType>
-		void ggafunctional(DensityType const & density, DensityGradientType const & density_gradient, ExcType & exc, VxcType & vxc) const { 
-
-			// Info about this implementation: https://tddft.org/programs/libxc/manual/libxc-5.1.x/
-			CALI_CXX_MARK_FUNCTION;
-
-			auto nsigma = 1;
-			if(nspin_ > 1) nsigma = 3;
-			
-			basis::field_set<basis::real_space, double> sigma(vxc.basis(), nsigma);
-
-			gpu::run(vxc.basis().local_size(),
-							 [sig = begin(sigma.matrix()), grad = begin(density_gradient.matrix()), metric = density.basis().cell().metric(), nsigma] GPU_LAMBDA (auto ip){
-								 sig[ip][0] = metric.norm(grad[ip][0]);
-								 if(nsigma > 1) {
-									 sig[ip][1] = metric.dot(grad[ip][0], grad[ip][1]);
-									 sig[ip][2] = metric.norm(grad[ip][1]);
-								 }
-							 });
-
-			basis::field_set<basis::real_space, double> vsigma(vxc.basis(), nsigma);
-			
-			xc_gga_exc_vxc(libxc_func_ptr(), density.basis().local_size(), density.data(), sigma.data(), exc.data(), vxc.data(), vsigma.data());
-			gpu::sync();
-			
-			basis::field_set<basis::real_space, vector3<double, covariant>> vxc_extra(vxc.skeleton());
-
-			gpu::run(vxc.basis().local_size(),
-							 [vex = begin(vxc_extra.matrix()), vsig = begin(vsigma.matrix()), grad = begin(density_gradient.matrix()), nsigma] GPU_LAMBDA (auto ip){
-								 if(nsigma == 1) {
-										vex[ip][0] = 2.0*vsig[ip][0]*grad[ip][0];
-								 } else {
-										vex[ip][0] = 2.0*vsig[ip][0]*grad[ip][0] + vsig[ip][1]*grad[ip][1];
-										vex[ip][1] = 2.0*vsig[ip][2]*grad[ip][1] + vsig[ip][1]*grad[ip][0];
-								 }
-							 });
-
-			auto divvxcextra = operations::divergence(vxc_extra);
-
-			gpu::run(vxc.local_set_size(), vxc.basis().local_size(),
-							 [vv = begin(vxc.matrix()), div = begin(divvxcextra.matrix())] GPU_LAMBDA (auto ispin, auto ip){
-								 vv[ip][ispin] -= div[ip][ispin];
-							 });
 		}
 
 	private:
@@ -189,52 +113,6 @@ namespace hamiltonian {
 #undef INQ_HAMILTONIAN_XC_FUNCTIONAL_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <operations/randomize.hpp>
-#include <operations/gradient.hpp>
-#include <basis/field.hpp>
-#include <math/array.hpp>
-#include <ions/geometry.hpp>
-
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-
-GPU_FUNCTION auto sqwave(inq::vector3<double> rr, int n){
-	auto kvec = 2.0*M_PI*inq::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
-	return  sin(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
-}
-
-auto laplacian_sqwave(inq::vector3<double> rr, int n){
-	auto kvec = 2.0*M_PI*inq::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
-	auto ff = 0.0;
-	for(int idir = 0; idir < 3 ; idir++) ff += 2*n*n*kvec[idir]*kvec[idir]*cos(2*n*dot(kvec, rr));
-	return ff;
-}
-
-auto gradient_sqwave(inq::vector3<double> rr, int n){
-	auto kvec = 2.0*M_PI*inq::vector3<double>(1.0/9.0, 1.0/12.0, 1.0/10.0);
-	inq::vector3<double> ff;
-	for(int idir = 0; idir < 3 ; idir++) ff[idir] = 2*n*kvec[idir]*cos(n*dot(kvec, rr))*sin(n*dot(kvec, rr));
-	return ff;
-}
-
-auto gaussiansigma(inq::vector3<double> rr, double sigma){
-	return  pow(2*M_PI, -1.5)*pow(sigma, -3.0)*exp(-0.5*norm(rr)*pow(sigma, -2.0));
-}
-
-auto gaussian(inq::vector3<double> rr){ 
-	return  pow(M_PI, -1.5)*exp(-norm(rr));
-}
-
-auto dgaussian(inq::vector3<double> rr){
-	inq::vector3<double> ff;
-	for(int idir = 0; idir < 3 ; idir++) ff[idir] = -2.0*rr[idir]*gaussian(rr);
-	return ff;
-}
-
-auto laplacian_gaussian(inq::vector3<double> rr){
-	return 4.0*dot(rr, rr)*gaussian(rr) - 6.0*gaussian(rr);
-}
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
@@ -243,274 +121,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-	using namespace operations;
-	using namespace inq::utils;
-	
-	double lx = 9;
-	double ly = 12;
-	double lz = 10;
-
-	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
-
 	SECTION("LDA"){
-		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
-		basis::real_space rs(box, cart_comm);
-
-		basis::field_set<basis::real_space, double> gaussian_density(rs, 1);
-		
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					gaussian_density.hypercubic()[ix][iy][iz][0] = gaussian(vec);
-				}
-			}
-		}
-
 		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 1);
-		basis::field_set<basis::real_space, double> gaussianVxc(rs, 1);
-		double gaussianExc;
-
 		CHECK(ldafunctional.exx_coefficient() == 0.0);
-
-		auto grad = std::optional<basis::field_set<basis::real_space, vector3<double, covariant>>>{};
-		
-		ldafunctional(gaussian_density, grad, gaussianExc, gaussianVxc);
-		CHECK(gaussianExc == -0.270646_a);
-
-		double int_xc_energy = 0.0;
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					math::array<double, 1> local_density{gaussian(vec)};
-					math::array<double, 1> local_exc{1};
-					math::array<double, 1> local_vxc{1};
-					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
-					gpu::sync();
-					
-					CHECK(Approx(local_vxc[0]) == gaussianVxc.hypercubic()[ix][iy][iz][0]);
-
-					int_xc_energy += local_exc[0]*local_density[0]*rs.volume_element();
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&int_xc_energy, 1, std::plus<>{});
-		
-		CHECK(Approx(gaussianExc) == int_xc_energy);
-
-		if(rs.part().contains(1)) CHECK(gaussianVxc.matrix()[rs.part().global_to_local(parallel::global_index(1))][0] == -0.5111609291_a);
-		if(rs.part().contains(8233)) CHECK(gaussianVxc.matrix()[rs.part().global_to_local(parallel::global_index(8233))][0] == -0.00406881_a);
-		if(rs.part().contains(233)) CHECK(fabs(gaussianVxc.matrix()[rs.part().global_to_local(parallel::global_index(233))][0]) < 1e-10);
-		if(rs.part().contains(rs.size() - 1)) CHECK(gaussianVxc.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -0.4326883849_a);
 	}
 
 	SECTION("LSDA"){
-		
-		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
-		basis::real_space rs(box, cart_comm);
-
-		basis::field_set<basis::real_space, double> density_unp(rs, 2);
-		basis::field_set<basis::real_space, double> density_pol(rs, 2);		
-		
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					density_unp.hypercubic()[ix][iy][iz][0] = 0.5*gaussian(vec);
-					density_unp.hypercubic()[ix][iy][iz][1] = 0.5*gaussian(vec);
-					density_pol.hypercubic()[ix][iy][iz][0] = 0.3*gaussian(vec);
-					density_pol.hypercubic()[ix][iy][iz][1] = 0.7*gaussian(vec);					
-				}
-			}
-		}
-
 		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 2);
-
-		basis::field_set<basis::real_space, double> vxc_unp(rs, 2);
-		basis::field_set<basis::real_space, double> vxc_pol(rs, 2);		
-
-		double exc_unp, exc_pol;
-
 		CHECK(ldafunctional.exx_coefficient() == 0.0);
-
-		auto grad = std::optional<basis::field_set<basis::real_space, vector3<double, covariant>>>{};
-		
-		ldafunctional(density_unp, grad, exc_unp, vxc_unp);
-		ldafunctional(density_pol, grad, exc_pol, vxc_pol);		
-
-		CHECK(exc_unp == -0.270646_a);
-		CHECK(exc_pol == -0.2804198447_a);		
-		
-		double int_exc_unp = 0.0;
-		double int_exc_pol = 0.0;		
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					auto vec = rs.point_op().rvector_cartesian(ix, iy, iz);
-					math::array<double, 1> local_density{0.5*gaussian(vec), 0.5*gaussian(vec)};
-					math::array<double, 1> local_exc{NAN};
-					math::array<double, 1> local_vxc{NAN, NAN};
-					
-					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
-					gpu::sync();
-
-					CHECK(vxc_unp.hypercubic()[ix][iy][iz][0] == Approx(vxc_unp.hypercubic()[ix][iy][iz][1]));					
-					CHECK(Approx(local_vxc[0]) == vxc_unp.hypercubic()[ix][iy][iz][0]);
-					CHECK(Approx(local_vxc[1]) == vxc_unp.hypercubic()[ix][iy][iz][1]);
-
-					int_exc_unp += local_exc[0]*(local_density[0] + local_density[1])*rs.volume_element();
-					
-					local_density[0] = 0.7*gaussian(vec);
-					local_density[1] = 0.3*gaussian(vec);					
-					xc_lda_exc_vxc(ldafunctional.libxc_func_ptr(), 1, raw_pointer_cast(local_density.data_elements()), raw_pointer_cast(local_exc.data_elements()), raw_pointer_cast(local_vxc.data_elements()));
-					gpu::sync();
-
-					CHECK(fabs(local_vxc[1] - vxc_pol.hypercubic()[ix][iy][iz][0]) < 1e-14);
-					CHECK(fabs(local_vxc[0] - vxc_pol.hypercubic()[ix][iy][iz][1]) < 1e-14);
-
-					int_exc_pol += local_exc[0]*(local_density[0] + local_density[1])*rs.volume_element();
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&int_exc_unp, 1, std::plus<>{});
-		cart_comm.all_reduce_in_place_n(&int_exc_pol, 1, std::plus<>{});
-
-		CHECK(Approx(exc_unp) == int_exc_unp);
-		CHECK(Approx(exc_pol) == int_exc_pol);
-
-		if(rs.part().contains(1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(1))][0] == -0.5111609291_a);
-		if(rs.part().contains(1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(1))][1] == -0.5111609291_a);		
-		if(rs.part().contains(8233)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(8233))][0] == -0.00406881_a);
-		if(rs.part().contains(8233)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(8233))][1] == -0.00406881_a);		
-		if(rs.part().contains(233)) CHECK(fabs(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(233))][0]) < 1e-10);
-		if(rs.part().contains(233)) CHECK(fabs(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(233))][1]) < 1e-10);		
-		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -0.4326883849_a);
-		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][1] == -0.4326883849_a);		
-
-		if(rs.part().contains(1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(1))][0] == -0.4311298248_a);
-		if(rs.part().contains(1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(1))][1] == -0.571830079_a);		
-		if(rs.part().contains(8233)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(8233))][0] == -0.0034317692_a);
-		if(rs.part().contains(8233)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(8233))][1] == -0.0045517353_a);		
-		if(rs.part().contains(233)) CHECK(fabs(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(233))][0]) < 1e-10);
-		if(rs.part().contains(233)) CHECK(fabs(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(233))][1]) < 1e-10);		
-		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -0.3649435178_a);
-		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][1] == -0.4840437116_a);
 	}
 		
 	SECTION("GGA"){
-		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(90.0_Ha);
-		basis::real_space rs(box, cart_comm);
-		
-		basis::field_set<basis::real_space, double> field(rs, 1);
-		gpu::run(rs.local_sizes()[2], rs.local_sizes()[1], rs.local_sizes()[0],
-						 [pop = rs.point_op(), fie = begin(field.hypercubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
-							 auto vec = pop.rvector_cartesian(ix, iy, iz);
-							 fie[ix][iy][iz][0] = sqwave(vec, 3);
-						 });
-	
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 1);
-		basis::field_set<basis::real_space, double> Vxc(rs, 1);
-
 		CHECK(ggafunctional.exx_coefficient() == 0.0);
-
-		auto grad = std::optional{operations::gradient(field)};
-		
-		double Exc = 0.0;
-		ggafunctional(field, grad, Exc, Vxc);
-
-		CHECK(Exc == -393.4604748792_a);
-		
-		if(rs.part().contains(1)) CHECK(Vxc.matrix()[rs.part().global_to_local(parallel::global_index(1))][0] == -0.5607887985_a);
-		if(rs.part().contains(33)) CHECK(Vxc.matrix()[rs.part().global_to_local(parallel::global_index(33))][0] == -1.1329131862_a);
-		if(rs.part().contains(rs.size() - 1)) CHECK(Vxc.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -1.1461742979_a);
 	}
 
 	SECTION("Spin GGA"){
-		
-		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(90.0_Ha);
-		basis::real_space rs(box, cart_comm);
-		
-		basis::field_set<basis::real_space, double> density_unp(rs, 2);
-		basis::field_set<basis::real_space, double> density_pol(rs, 2);		
-		
-		gpu::run(rs.local_sizes()[2], rs.local_sizes()[1], rs.local_sizes()[0],
-						 [pop = rs.point_op(), den_unp = begin(density_unp.hypercubic()), den_pol = begin(density_pol.hypercubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
-							 auto vec = pop.rvector_cartesian(ix, iy, iz);
-							 den_unp[ix][iy][iz][0] = 0.5*sqwave(vec, 3);
-							 den_unp[ix][iy][iz][1] = 0.5*sqwave(vec, 3);
-							 den_pol[ix][iy][iz][0] = 0.3*sqwave(vec, 3);
-							 den_pol[ix][iy][iz][1] = 0.7*sqwave(vec, 3);							 
-						 });
-	
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 2);
-		
-		basis::field_set<basis::real_space, double> vxc_unp(rs, 2);
-		basis::field_set<basis::real_space, double> vxc_pol(rs, 2);
-
 		CHECK(ggafunctional.exx_coefficient() == 0.0);
-		
-		double exc_unp, exc_pol;
-
-		auto grad_unp = std::optional{operations::gradient(density_unp)};
-		auto grad_pol = std::optional{operations::gradient(density_pol)};		
-		
-		ggafunctional(density_unp, grad_unp, exc_unp, vxc_unp);
-		ggafunctional(density_pol, grad_pol, exc_pol, vxc_pol);		
-
-		CHECK(exc_unp == -393.4604748792_a);
-		CHECK(exc_pol == -406.0224635643_a);
-		
-		if(rs.part().contains(1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(1))][0] == -0.5607887985_a);
-		if(rs.part().contains(1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(1))][1] == -0.5607887985_a);		
-		if(rs.part().contains(33)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(33))][0] == -1.1329131862_a);
-		if(rs.part().contains(33)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(33))][1] == -1.1329131862_a);		
-		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -1.1461742979_a);
-		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_unp.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][1] == -1.1461742979_a);
-
-		if(rs.part().contains(1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(1))][0] == -0.4941651943_a);
-		if(rs.part().contains(1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(1))][1] == -0.6129310854_a);		
-		if(rs.part().contains(33)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(33))][0] == -0.9675738833_a);
-		if(rs.part().contains(33)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(33))][1] == -1.2504476169_a);		
-		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][0] == -1.0006730841_a);
-		if(rs.part().contains(rs.size() - 1)) CHECK(vxc_pol.matrix()[rs.part().global_to_local(parallel::global_index(rs.size() - 1))][1] == -1.252993172_a);		
-	}
-	
-	SECTION("Uniform"){
-		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(20.0_Ha);
-		basis::real_space rs(box, cart_comm);
-		
-		basis::field_set<basis::real_space, double> gaussian_density(rs, 1);
-		
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					gaussian_density.hypercubic()[ix][iy][iz][0] = 0.393;
-				}
-			}
-		}
-	
-		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 1);
-		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 1);
-		basis::field_set<basis::real_space, double> gaussianVxcLDA(rs, 1), gaussianVxcGGA(rs, 1);
-		double gaussianExcLDA, gaussianExcGGA;
-
-		auto grad = std::optional{operations::gradient(gaussian_density)};
-		
-		ggafunctional(gaussian_density, grad, gaussianExcLDA, gaussianVxcLDA);
-		ldafunctional(gaussian_density, grad, gaussianExcGGA, gaussianVxcGGA);
-		CHECK(gaussianExcLDA == gaussianExcGGA);
-		
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					CHECK(Approx(gaussianVxcLDA.hypercubic()[ix][iy][iz][0]) == gaussianVxcGGA.hypercubic()[ix][iy][iz][0]);
-				}
-			}
-		}
-
 	}
 
 	inq::hamiltonian::xc_functional b3lyp(XC_HYB_GGA_XC_B3LYP, 1);

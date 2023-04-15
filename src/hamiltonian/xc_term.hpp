@@ -90,20 +90,77 @@ public:
 		}
 			
 		if(exchange_.true_functional()){
-			exchange_(full_density, density_gradient, efunc, vfunc);
+			evaluate_functional(exchange_, full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 		}
 		
 		if(correlation_.true_functional()){
-			correlation_(full_density, density_gradient, efunc, vfunc);
+			evaluate_functional(correlation_, full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 		}
   }
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename DensityType, typename DensityGradientType>
+	static void evaluate_functional(hamiltonian::xc_functional const & functional, DensityType const & density, DensityGradientType const & density_gradient,
+													 double & efunctional, basis::field_set<basis::real_space, double> & vfunctional){
+		CALI_CXX_MARK_FUNCTION;
+
+		auto edens = basis::field<basis::real_space, double>(density.basis());
+		
+		if(functional.family() == XC_FAMILY_LDA){
+			
+			xc_lda_exc_vxc(functional.libxc_func_ptr(), density.basis().local_size(), raw_pointer_cast(density.matrix().data_elements()),
+										 raw_pointer_cast(edens.linear().data_elements()), raw_pointer_cast(vfunctional.matrix().data_elements()));
+			gpu::sync();
+			
+		} else if(functional.family() == XC_FAMILY_GGA){
+
+			auto nsig = (density.set_size() > 1) ? 3:1;
+			
+			basis::field_set<basis::real_space, double> sig(density.basis(), nsig);
+			basis::field_set<basis::real_space, double> vsig(sig.skeleton());
+
+			gpu::run(density.basis().local_size(),
+							 [gr = begin(density_gradient->matrix()), si = begin(sig.matrix()), metric = density.basis().cell().metric(), nsig] GPU_LAMBDA (auto ip){
+								 si[ip][0] = metric.norm(gr[ip][0]);
+								 if(nsig > 1) si[ip][1] = metric.dot(gr[ip][0], gr[ip][1]);
+								 if(nsig > 1) si[ip][2] = metric.norm(gr[ip][1]);
+							 });
+
+			xc_gga_exc_vxc(functional.libxc_func_ptr(), density.basis().local_size(), raw_pointer_cast(density.matrix().data_elements()), raw_pointer_cast(sig.matrix().data_elements()),
+										 raw_pointer_cast(edens.linear().data_elements()), raw_pointer_cast(vfunctional.matrix().data_elements()), raw_pointer_cast(vsig.matrix().data_elements()));
+			gpu::sync();
+
+			basis::field_set<basis::real_space, vector3<double, covariant>> term(vfunctional.skeleton());
+
+			gpu::run(density.basis().local_size(),
+							 [vs = begin(vsig.matrix()), gr = begin(density_gradient->matrix()), te = begin(term.matrix()), nsig] GPU_LAMBDA (auto ip){
+								 if(nsig == 1) te[ip][0] = -2.0*vs[ip][0]*gr[ip][0];
+								 if(nsig == 3) te[ip][0] = -2.0*vs[ip][0]*gr[ip][0] - vs[ip][1]*gr[ip][1];
+								 if(nsig == 3) te[ip][1] = -2.0*vs[ip][2]*gr[ip][1] - vs[ip][1]*gr[ip][0];
+							 });
+
+			auto div_term = operations::divergence(term);
+
+			gpu::run(density.local_set_size(), density.basis().local_size(),
+							 [di = begin(div_term.matrix()), vf = begin(vfunctional.matrix())] GPU_LAMBDA (auto ispin, auto ip){
+								 vf[ip][ispin] += di[ip][ispin];
+							 });
+
+		} else {
+			std::runtime_error("inq error: unsupported exchange correlation functional type");
+		}
+		
+		efunctional = operations::integral_product(edens, observables::density::total(density));
+		
+	}
+	
   ////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto & exchange() const {
@@ -131,7 +188,149 @@ private:
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
+	using namespace operations;
+	using Catch::Approx;
 	
+	auto comm = boost::mpi3::environment::get_world_instance();
+
+	auto lx = 10.3;
+	auto ly = 13.8;
+	auto lz =  4.5;
+	
+	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(30.0_Ha);
+	basis::real_space bas(box, comm);
+
+	basis::field_set<basis::real_space, double> density_unp(bas, 1);	
+	basis::field_set<basis::real_space, double> density_pol(bas, 2);
+	
+	//Define k-vector for test function
+	auto kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
+	
+	auto ff = [] (auto & kk, auto & rr){
+		return std::max(0.0, cos(dot(kk, rr)) + 1.0);
+	};
+
+	for(int ix = 0; ix < bas.local_sizes()[0]; ix++){
+		for(int iy = 0; iy < bas.local_sizes()[1]; iy++){
+			for(int iz = 0; iz < bas.local_sizes()[2]; iz++){
+				auto vec = bas.point_op().rvector_cartesian(ix, iy, iz);
+				density_unp.hypercubic()[ix][iy][iz][0] = ff(kvec, vec);
+				auto pol = sin(norm(vec)/100.0);
+				density_pol.hypercubic()[ix][iy][iz][0] = (1.0 - pol)*ff(kvec, vec);
+				density_pol.hypercubic()[ix][iy][iz][1] = pol*ff(kvec, vec);
+			}
+		}
+	}
+
+	observables::density::normalize(density_unp, 42.0);
+	observables::density::normalize(density_pol, 42.0);
+	
+	CHECK(operations::integral_sum(density_unp) == 42.0_a);
+	CHECK(operations::integral_sum(density_pol) == 42.0_a);	
+	
+	auto grad_unp = std::optional{operations::gradient(density_unp)};
+	auto grad_pol = std::optional{operations::gradient(density_pol)};
+
+	if(bas.part().contains(5439)) {
+		auto index = bas.part().global_to_local(parallel::global_index(5439));
+		CHECK(density_unp.matrix()[index][0] == 0.0024885602_a);
+		CHECK(density_pol.matrix()[index][0] == 0.0009452194_a);
+		CHECK(density_pol.matrix()[index][1] == 0.0015433408_a);
+	}
+
+	basis::field_set<basis::real_space, double> vfunc_unp(bas, 1);	
+	basis::field_set<basis::real_space, double> vfunc_pol(bas, 2);
+	
+	SECTION("LDA_X"){
+		
+		hamiltonian::xc_functional func_unp(XC_LDA_X, 1);
+		hamiltonian::xc_functional func_pol(XC_LDA_X, 2);
+		
+		double efunc_unp = NAN;
+		double efunc_pol = NAN;
+		
+		hamiltonian::xc_term::evaluate_functional(func_unp, density_unp, grad_unp, efunc_unp, vfunc_unp);
+		hamiltonian::xc_term::evaluate_functional(func_pol, density_pol, grad_pol, efunc_pol, vfunc_pol);
+
+		CHECK(efunc_unp == -14.0558385758_a);
+		CHECK(efunc_pol == -15.1704508993_a);
+
+		if(bas.part().contains(5439)) {
+			auto index = bas.part().global_to_local(parallel::global_index(5439));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.1334462916_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.1217618773_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.1433797225_a);
+		}
+
+		if(bas.part().contains(4444)) {
+			auto index = bas.part().global_to_local(parallel::global_index(4444));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.3276348215_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.3784052378_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.2527984139_a);
+		}
+
+	}
+
+	SECTION("PBE_C"){
+		
+		hamiltonian::xc_functional func_unp(XC_GGA_C_PBE, 1);
+		hamiltonian::xc_functional func_pol(XC_GGA_C_PBE, 2);
+		
+		double efunc_unp = NAN;
+		double efunc_pol = NAN;
+		
+		hamiltonian::xc_term::evaluate_functional(func_unp, density_unp, grad_unp, efunc_unp, vfunc_unp);
+		hamiltonian::xc_term::evaluate_functional(func_pol, density_pol, grad_pol, efunc_pol, vfunc_pol);
+
+		CHECK(efunc_unp == -1.8220292936_a);
+		CHECK(efunc_pol == -1.5664843681_a);
+
+		if(bas.part().contains(5439)) {
+			auto index = bas.part().global_to_local(parallel::global_index(5439));
+			CHECK(vfunc_unp.matrix()[index][0] == 0.0005467193_a);
+			CHECK(vfunc_pol.matrix()[index][0] == 0.0005956583_a);
+			CHECK(vfunc_pol.matrix()[index][1] == 0.0005978958_a);
+		}
+
+		if(bas.part().contains(4444)) {
+			auto index = bas.part().global_to_local(parallel::global_index(4444));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.0798456253_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.0667968142_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.0830118308_a);
+		}
+
+	}
+
+	SECTION("B3LYP"){
+		
+		hamiltonian::xc_functional func_unp(XC_HYB_GGA_XC_B3LYP, 1);
+		hamiltonian::xc_functional func_pol(XC_HYB_GGA_XC_B3LYP, 2);
+		
+		double efunc_unp = NAN;
+		double efunc_pol = NAN;
+		
+		hamiltonian::xc_term::evaluate_functional(func_unp, density_unp, grad_unp, efunc_unp, vfunc_unp);
+		hamiltonian::xc_term::evaluate_functional(func_pol, density_pol, grad_pol, efunc_pol, vfunc_pol);
+
+		CHECK(efunc_unp == -13.2435562623_a);
+		CHECK(efunc_pol == -13.8397387159_a);
+
+		if(bas.part().contains(5439)) {
+			auto index = bas.part().global_to_local(parallel::global_index(5439));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.6495909727_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.6398010386_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.6142058762_a);
+		}
+
+		if(bas.part().contains(4444)) {
+			auto index = bas.part().global_to_local(parallel::global_index(4444));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.2879332051_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.3195127242_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.2368583776_a);
+		}
+
+	}
 }
 #endif
