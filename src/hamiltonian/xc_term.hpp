@@ -196,7 +196,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	basis::field_set<basis::real_space, double> vfunc_unp(bas, 1);	
 	basis::field_set<basis::real_space, double> vfunc_pol(bas, 2);
 	
-	SECTION("LDA"){
+	SECTION("LDA_X"){
 		
 		hamiltonian::xc_functional func_unp(XC_LDA_X, 1);
 		hamiltonian::xc_functional func_pol(XC_LDA_X, 2);
@@ -225,6 +225,65 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		}
 
 	}
-	
+
+	SECTION("PBE_C"){
+		
+		hamiltonian::xc_functional func_unp(XC_GGA_C_PBE, 1);
+		hamiltonian::xc_functional func_pol(XC_GGA_C_PBE, 2);
+		
+		double efunc_unp = NAN;
+		double efunc_pol = NAN;
+		
+		hamiltonian::xc_term::evaluate_functional(func_unp, density_unp, grad_unp, efunc_unp, vfunc_unp);
+		hamiltonian::xc_term::evaluate_functional(func_pol, density_pol, grad_pol, efunc_pol, vfunc_pol);
+
+		CHECK(efunc_unp == -1.8220292936_a);
+		CHECK(efunc_pol == -1.5664843681_a);
+
+		if(bas.part().contains(5439)) {
+			auto index = bas.part().global_to_local(parallel::global_index(5439));
+			CHECK(vfunc_unp.matrix()[index][0] == 0.0005467193_a);
+			CHECK(vfunc_pol.matrix()[index][0] == 0.0005956583_a);
+			CHECK(vfunc_pol.matrix()[index][1] == 0.0005978958_a);
+		}
+
+		if(bas.part().contains(4444)) {
+			auto index = bas.part().global_to_local(parallel::global_index(4444));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.0798456253_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.0667968142_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.0830118308_a);
+		}
+
+	}
+
+	SECTION("B3LYP"){
+		
+		hamiltonian::xc_functional func_unp(XC_HYB_GGA_XC_B3LYP, 1);
+		hamiltonian::xc_functional func_pol(XC_HYB_GGA_XC_B3LYP, 2);
+		
+		double efunc_unp = NAN;
+		double efunc_pol = NAN;
+		
+		hamiltonian::xc_term::evaluate_functional(func_unp, density_unp, grad_unp, efunc_unp, vfunc_unp);
+		hamiltonian::xc_term::evaluate_functional(func_pol, density_pol, grad_pol, efunc_pol, vfunc_pol);
+
+		CHECK(efunc_unp == -13.2435562623_a);
+		CHECK(efunc_pol == -13.8397387159_a);
+
+		if(bas.part().contains(5439)) {
+			auto index = bas.part().global_to_local(parallel::global_index(5439));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.6495909727_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.6398010386_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.6142058762_a);
+		}
+
+		if(bas.part().contains(4444)) {
+			auto index = bas.part().global_to_local(parallel::global_index(4444));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.2879332051_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.3195127242_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.2368583776_a);
+		}
+
+	}
 }
 #endif
