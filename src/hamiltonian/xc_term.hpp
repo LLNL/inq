@@ -141,7 +141,90 @@ private:
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
+	using namespace inq::magnitude;	
 	using namespace Catch::literals;
+	using namespace operations;
+	using Catch::Approx;
+	
+	auto comm = boost::mpi3::environment::get_world_instance();
+
+	auto lx = 10.3;
+	auto ly = 13.8;
+	auto lz =  4.5;
+	
+	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b).cutoff_energy(30.0_Ha);
+	basis::real_space bas(box, comm);
+
+	basis::field_set<basis::real_space, double> density_unp(bas, 1);	
+	basis::field_set<basis::real_space, double> density_pol(bas, 2);
+	
+	//Define k-vector for test function
+	auto kvec = 2.0*M_PI*vector3<double>(1.0/lx, 1.0/ly, 1.0/lz);
+	
+	auto ff = [] (auto & kk, auto & rr){
+		return std::max(0.0, cos(dot(kk, rr)) + 1.0);
+	};
+
+	for(int ix = 0; ix < bas.local_sizes()[0]; ix++){
+		for(int iy = 0; iy < bas.local_sizes()[1]; iy++){
+			for(int iz = 0; iz < bas.local_sizes()[2]; iz++){
+				auto vec = bas.point_op().rvector_cartesian(ix, iy, iz);
+				density_unp.hypercubic()[ix][iy][iz][0] = ff(kvec, vec);
+				auto pol = sin(norm(vec)/100.0);
+				density_pol.hypercubic()[ix][iy][iz][0] = (1.0 - pol)*ff(kvec, vec);
+				density_pol.hypercubic()[ix][iy][iz][1] = pol*ff(kvec, vec);
+			}
+		}
+	}
+
+	observables::density::normalize(density_unp, 42.0);
+	observables::density::normalize(density_pol, 42.0);
+	
+	CHECK(operations::integral_sum(density_unp) == 42.0_a);
+	CHECK(operations::integral_sum(density_pol) == 42.0_a);	
+	
+	auto grad_unp = std::optional{operations::gradient(density_unp)};
+	auto grad_pol = std::optional{operations::gradient(density_pol)};
+
+	if(bas.part().contains(5439)) {
+		auto index = bas.part().global_to_local(parallel::global_index(5439));
+		CHECK(density_unp.matrix()[index][0] == 0.0024885602_a);
+		CHECK(density_pol.matrix()[index][0] == 0.0009452194_a);
+		CHECK(density_pol.matrix()[index][1] == 0.0015433408_a);
+	}
+
+	basis::field_set<basis::real_space, double> vfunc_unp(bas, 1);	
+	basis::field_set<basis::real_space, double> vfunc_pol(bas, 2);
+	
+	SECTION("LDA"){
+		
+		hamiltonian::xc_functional func_unp(XC_LDA_X, 1);
+		hamiltonian::xc_functional func_pol(XC_LDA_X, 2);
+		
+		double efunc_unp = NAN;
+		double efunc_pol = NAN;
+		
+		hamiltonian::xc_term::evaluate_functional(func_unp, density_unp, grad_unp, efunc_unp, vfunc_unp);
+		hamiltonian::xc_term::evaluate_functional(func_pol, density_pol, grad_pol, efunc_pol, vfunc_pol);
+
+		CHECK(efunc_unp == -14.0558385758_a);
+		CHECK(efunc_pol == -15.1704508993_a);
+
+		if(bas.part().contains(5439)) {
+			auto index = bas.part().global_to_local(parallel::global_index(5439));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.1334462916_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.1217618773_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.1433797225_a);
+		}
+
+		if(bas.part().contains(4444)) {
+			auto index = bas.part().global_to_local(parallel::global_index(4444));
+			CHECK(vfunc_unp.matrix()[index][0] == -0.3276348215_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.3784052378_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.2527984139_a);
+		}
+
+	}
 	
 }
 #endif
