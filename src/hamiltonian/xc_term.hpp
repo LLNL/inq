@@ -90,20 +90,30 @@ public:
 		}
 			
 		if(exchange_.true_functional()){
-			exchange_(full_density, density_gradient, efunc, vfunc);
+			evaluate_functional(exchange_, full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 		}
 		
 		if(correlation_.true_functional()){
-			correlation_(full_density, density_gradient, efunc, vfunc);
+			evaluate_functional(correlation_, full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 		}
   }
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename DensityType, typename DensityGradientType>
+	static void evaluate_functional(hamiltonian::xc_functional const & functional,	DensityType const & density, DensityGradientType const & density_gradient,
+													 double & efunctional, basis::field_set<basis::real_space, double> & vfunctional){
+		CALI_CXX_MARK_FUNCTION;
+
+		functional(density, density_gradient, efunctional, vfunctional);
+	}
+	
   ////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto & exchange() const {
