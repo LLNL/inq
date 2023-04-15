@@ -107,11 +107,23 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename DensityType, typename DensityGradientType>
-	static void evaluate_functional(hamiltonian::xc_functional const & functional,	DensityType const & density, DensityGradientType const & density_gradient,
+	static void evaluate_functional(hamiltonian::xc_functional const & functional, DensityType const & density, DensityGradientType const & density_gradient,
 													 double & efunctional, basis::field_set<basis::real_space, double> & vfunctional){
 		CALI_CXX_MARK_FUNCTION;
 
-		functional(density, density_gradient, efunctional, vfunctional);
+		auto edens = basis::field<basis::real_space, double>(density.basis());
+		
+		if(functional.family() == XC_FAMILY_LDA){
+			xc_lda_exc_vxc(functional.libxc_func_ptr(), density.basis().local_size(), raw_pointer_cast(density.matrix().data_elements()),
+										 raw_pointer_cast(edens.linear().data_elements()), raw_pointer_cast(vfunctional.matrix().data_elements()));
+			gpu::sync();
+			efunctional = operations::integral_product(edens, observables::density::total(density));
+		} else if(functional.family() == XC_FAMILY_GGA){
+			functional(density, density_gradient, efunctional, vfunctional);
+		} else {
+			std::runtime_error("inq error: unsupported exchange correlation functional type");
+		}
+		
 	}
 	
   ////////////////////////////////////////////////////////////////////////////////////////////
