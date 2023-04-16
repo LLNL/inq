@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <pseudopod/spherical_harmonic.hpp>
+#include <pseudopod/math/sharmonic.hpp>
 
 #include <math/array.hpp>
 #include <math/vector3.hpp>
@@ -51,7 +51,7 @@ public:
 									metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint, auto m) {
 									 
 									 if(ipoint == 0) kb_[iproj_lm + m] = coe;
-									 mat[iproj_lm + m][ipoint] = spline.value(sph.distance(ipoint))*pseudo::math::spherical_harmonic(l, m - l, metric.to_cartesian(sph.point_pos(ipoint)));
+									 mat[iproj_lm + m][ipoint] = spline.value(sph.distance(ipoint))*pseudo::math::sharmonic(l, m - l, metric.to_cartesian(sph.point_pos(ipoint)));
 								 });
 				
 			} else {
@@ -63,7 +63,7 @@ public:
 									dg = basis.double_grid().ref(), spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint, auto m) {
 									 
 									 if(ipoint == 0) kb_[iproj_lm + m] = coe;
-									 mat[iproj_lm + m][ipoint] = dg.value([spline, l, m] GPU_LAMBDA(auto pos) { return spline.value(pos.length())*pseudo::math::spherical_harmonic(l, m - l, pos);}, spac, metric.to_cartesian(sph.point_pos(ipoint)));
+									 mat[iproj_lm + m][ipoint] = dg.value([spline, l, m] GPU_LAMBDA(auto pos) { return spline.value(pos.length())*pseudo::math::sharmonic(l, m - l, pos);}, spac, metric.to_cartesian(sph.point_pos(ipoint)));
 								 });
 				
 			}
