@@ -115,9 +115,9 @@ namespace hamiltonian {
 					gpu::run(sphere.size(),
 									 [pot = begin(potential.cubic()),
 										sph = sphere.ref(),
-										spline = ps.short_range_potential().cbegin()] GPU_LAMBDA (auto ipoint){
+										spline = ps.short_range_potential().function()] GPU_LAMBDA (auto ipoint){
 										 auto rr = sph.distance(ipoint);
-										 auto potential_val = spline.value(rr);
+										 auto potential_val = spline(rr);
 										 gpu::atomic::add(&pot[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]], potential_val);
 									 });
 
@@ -128,11 +128,11 @@ namespace hamiltonian {
 					gpu::run(sphere.size(),
 									 [pot = begin(potential.cubic()),
 										sph = sphere.ref(),
-										spline = ps.short_range_potential().cbegin(),
+										spline = ps.short_range_potential().function(),
 										dg = basis.double_grid().ref(),
 										spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint){
 										 gpu::atomic::add(&pot[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]],
-																			dg.value([spline] GPU_LAMBDA (auto pos) { return spline.value(pos.length()); }, spac, metric.to_cartesian(sph.point_pos(ipoint))));
+																			dg.value([spline] GPU_LAMBDA (auto pos) { return spline(pos.length()); }, spac, metric.to_cartesian(sph.point_pos(ipoint))));
 									 });
 				}
 			}
@@ -206,9 +206,9 @@ namespace hamiltonian {
 					basis::spherical_grid sphere(basis, atom_position, ps.electronic_density_radius());
 					
 					gpu::run(nspin, sphere.size(),
-									 [dens = begin(density.hypercubic()), sph = sphere.ref(), spline = ps.electronic_density().cbegin(), polarization] GPU_LAMBDA (auto ispin, auto ipoint){
+									 [dens = begin(density.hypercubic()), sph = sphere.ref(), spline = ps.electronic_density().function(), polarization] GPU_LAMBDA (auto ispin, auto ipoint){
 										 auto rr = sph.distance(ipoint);
-										 auto density_val = spline.value(rr);
+										 auto density_val = spline(rr);
 										 auto pol = polarization;
 										 if(ispin == 1) pol = 1.0 - pol;
 										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin], pol*density_val);
@@ -268,9 +268,9 @@ namespace hamiltonian {
 				gpu::run(sphere.size(),
 								 [dens = begin(density.cubic()),
 									sph = sphere.ref(),
-									spline = ps.nlcc_density().cbegin()] GPU_LAMBDA (auto ipoint){
+									spline = ps.nlcc_density().function()] GPU_LAMBDA (auto ipoint){
 									 auto rr = sph.distance(ipoint);
-									 auto density_val = spline.value(rr);
+									 auto density_val = spline(rr);
 									 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]], density_val);
 								 });
 				
