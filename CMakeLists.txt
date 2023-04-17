@@ -158,6 +158,9 @@ if(FFTW_FOUND)
   cmake_print_properties(TARGETS PkgConfig::FFTW PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
   target_link_libraries(inq INTERFACE PkgConfig::FFTW)
 else()  # some systems do not have fftw3 registered in pkg-config, in this case it falls back to good old -lfftw3 which can fail later
+  if(NOT DEFINED FFTW_LIBRARIES)
+    message(FATAL_ERROR "FFTW not detected by pkg-config, defined -DFFTW_LIBRARIES (e.g. =-lfftw3) and -DFFTW_INCLUDE_DIRS (e.g. =/usr/include)")
+  endif()
   link_libraries(${FFTW_LIBRARIES})
   include_directories(${FFTW_INCLUDE_DIRS})  # commented since it always generates a spurious -I...PkgConfig::FFTW option
   target_link_libraries(inq INTERFACE ${FFTW_LIBRARIES})
