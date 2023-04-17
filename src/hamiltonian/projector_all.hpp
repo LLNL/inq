@@ -9,8 +9,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <pseudopod/spherical_harmonic.hpp>
-
 #include <math/array.hpp>
 #include <math/vector3.hpp>
 #include <ions/unit_cell.hpp>
