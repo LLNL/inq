@@ -34,14 +34,14 @@ int main(int argc, char ** argv){
 	
 	systems::ions ions(box);
 	
-	ions.insert("Si", {0.0_crys,  0.0_crys,  0.0_crys });
-	ions.insert("Si", {0.25_crys, 0.25_crys, 0.25_crys});
-	ions.insert("Si", {0.5_crys,  0.5_crys,  0.0_crys });
-	ions.insert("Si", {0.75_crys, 0.75_crys, 0.25_crys});
-	ions.insert("Si", {0.5_crys,  0.0_crys,  0.5_crys });
-	ions.insert("Si", {0.75_crys, 0.25_crys, 0.75_crys});
-	ions.insert("Si", {0.0_crys,  0.5_crys,  0.5_crys });
-	ions.insert("Si", {0.25_crys, 0.75_crys, 0.75_crys});
+	ions.insert_fractional("Si", {0.0,  0.0,  0.0 });
+	ions.insert_fractional("Si", {0.25, 0.25, 0.25});
+	ions.insert_fractional("Si", {0.5,  0.5,  0.0 });
+	ions.insert_fractional("Si", {0.75, 0.75, 0.25});
+	ions.insert_fractional("Si", {0.5,  0.0,  0.5 });
+	ions.insert_fractional("Si", {0.75, 0.25, 0.75});
+	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
+	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
 	int kpoint_par = 1;
 	if(env.par().size()%2 == 0) kpoint_par = 2;

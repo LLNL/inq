@@ -15,7 +15,6 @@
 
 #include <ions/geometry.hpp>
 #include <ions/unit_cell.hpp>
-#include <magnitude/fractionary.hpp>
 #include <math/array.hpp>
 #include <systems/box.hpp>
 
@@ -87,12 +86,12 @@ public:
 		for(auto atom : container) geo_.add_atom(atom.species(), atom.position());
 	}
 
-	auto insert(input::species const & sp, vector3<quantity<magnitude::fractionary>> const & pos){
-		geo_.add_atom(sp, cell_.metric().to_cartesian(in_atomic_units(pos)));
+	auto insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos){
+		geo_.add_atom(sp, cell_.metric().to_cartesian(pos));
 	}
 
-	auto insert(std::string const & symbol, vector3<quantity<magnitude::fractionary>> const & pos){
-		insert(input::species(pseudo::element(symbol)), pos);
+	auto insert_fractional(std::string const & symbol, vector3<double, contravariant> const & pos){
+		insert_fractional(input::species(pseudo::element(symbol)), pos);
 	}
 	
 	inq::ions::unit_cell cell_;

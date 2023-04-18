@@ -22,11 +22,11 @@ int main(int argc, char ** argv){
 	systems::box box = systems::box::cubic(alat).cutoff_energy(30.0_Ha);
 	systems::ions ions(box);
 
-	ions.insert("Al", {0.0_crys, 0.0_crys, 0.0_crys});
-	ions.insert("Al", {0.0_crys, 0.5_crys, 0.5_crys});
-	ions.insert("Al", {0.5_crys, 0.0_crys, 0.5_crys});
-	ions.insert("Al", {0.5_crys, 0.5_crys, 0.0_crys});	
-	ions.insert("H",  {0.1_crys, 0.2_crys, 0.3_crys});
+	ions.insert_fractional("Al", {0.0, 0.0, 0.0});
+	ions.insert_fractional("Al", {0.0, 0.5, 0.5});
+	ions.insert_fractional("Al", {0.5, 0.0, 0.5});
+	ions.insert_fractional("Al", {0.5, 0.5, 0.0});	
+	ions.insert_fractional("H",  {0.1, 0.2, 0.3});
 	
 	systems::electrons electrons(env.par(), ions, box, input::config::extra_states(1) | input::config::temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
 	

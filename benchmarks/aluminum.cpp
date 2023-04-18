@@ -19,7 +19,7 @@ int main(int argc, char ** argv){
 
 	int pardomains = 1;
 	bool groundstate_only = false;
-	vector3<int> reps{2, 2, 2};
+	vector3<int, contravariant> reps{2, 2, 2};
 	int niter = 10;
 	
 	auto functional = input::interaction::pbe();
@@ -59,14 +59,14 @@ int main(int argc, char ** argv){
 	
 	auto alat = 7.6524459_bohr;
 
-	using frac_coord = vector3<decltype(0.0_crys)>;
+	using frac_coord = vector3<double, contravariant>;
 	
 	std::vector<frac_coord> cell;
 
-	cell.emplace_back(frac_coord{0.0_crys, 0.0_crys, 0.0_crys});
-	cell.emplace_back(frac_coord{0.0_crys, 0.5_crys, 0.5_crys});
-	cell.emplace_back(frac_coord{0.5_crys, 0.0_crys, 0.5_crys});
-	cell.emplace_back(frac_coord{0.5_crys, 0.5_crys, 0.0_crys});
+	cell.emplace_back(frac_coord{0.0, 0.0, 0.0});
+	cell.emplace_back(frac_coord{0.0, 0.5, 0.5});
+	cell.emplace_back(frac_coord{0.5, 0.0, 0.5});
+	cell.emplace_back(frac_coord{0.5, 0.5, 0.0});
 	
 	systems::box box = systems::box::orthorhombic(reps[0]*alat, reps[1]*alat, reps[2]*alat).spacing(alat/20);
 	
@@ -75,9 +75,9 @@ int main(int argc, char ** argv){
 	for(int ix = 0; ix < reps[0]; ix++){
 		for(int iy = 0; iy < reps[1]; iy++){
 			for(int iz = 0; iz < reps[2]; iz++){
-				frac_coord base{ix*1.0_crys, iy*1.0_crys, iz*1.0_crys};
+				auto base = frac_coord{double(ix), double(iy), double(iz)};
 				for(unsigned iatom = 0; iatom < cell.size(); iatom++){
-					ions.insert("Al", (base + cell[iatom])/reps);
+					ions.insert_fractional("Al", (base + cell[iatom])/reps);
 				}
 			}
 		}

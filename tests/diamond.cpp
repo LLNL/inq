@@ -34,8 +34,8 @@ int main(int argc, char ** argv){
 	
 	systems::ions ions(box);
 	
-	ions.insert("C", {0.0_crys,  0.0_crys,  0.0_crys });
-	ions.insert("C", {0.25_crys, 0.25_crys, 0.25_crys});
+	ions.insert_fractional("C", {0.0,  0.0,  0.0 });
+	ions.insert_fractional("C", {0.25, 0.25, 0.25});
 
 	{
 		systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3), input::kpoints::grid({1, 1, 1}, false));
