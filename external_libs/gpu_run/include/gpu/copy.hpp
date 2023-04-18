@@ -14,7 +14,6 @@
 #include <gpu/run.hpp>
 #include <math/complex.hpp>
 
-namespace inq {
 namespace gpu {
 
 template <typename SourceType, typename DestinationType>
@@ -25,7 +24,6 @@ void copy(long dim1, long dim2, SourceType const & source, DestinationType & des
            });
 }
 
-}
 }
 #endif
 

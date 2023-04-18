@@ -35,7 +35,6 @@
 #include <boost/archive/iterators/base64_from_binary.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
 
-namespace inq {
 namespace gpu {
 
 void sync(){
@@ -272,7 +271,6 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 }
 
 }
-}
 #endif
 
 #ifdef INQ_GPU_RUN_UNIT_TEST
@@ -376,7 +374,6 @@ long check_run(long size1, long size2, long size3, long size4){
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
-	using namespace inq;
 	using namespace Catch::literals;
 
 	auto comm = boost::mpi3::environment::get_world_instance();

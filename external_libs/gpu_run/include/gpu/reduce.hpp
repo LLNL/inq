@@ -20,7 +20,6 @@
 #include <gpu/run.hpp>
 #include <math/array.hpp>
 
-namespace inq {
 namespace gpu {
 
 struct reduce {
@@ -98,7 +97,7 @@ auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
 	const int blocksize = 1024;
 
 	unsigned nblock = (size + blocksize - 1)/blocksize;
-	math::array<type, 1> result(nblock);
+	inq::math::array<type, 1> result(nblock);
 
   reduce_kernel_r<<<nblock, blocksize, blocksize*sizeof(type)>>>(size, kernel, begin(result));	
   check_error(cudaGetLastError());
@@ -173,7 +172,7 @@ auto run(reduce const & redx, reduce const & redy, kernel_type kernel) -> declty
 	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
 	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
 	
-	math::array<type, 2> result({nblockx, nblocky});
+	inq::math::array<type, 2> result({nblockx, nblocky});
 
   reduce_kernel_rr<<<{nblockx, nblocky}, {bsizex, bsizey}, bsizex*bsizey*sizeof(type)>>>(sizex, sizey, kernel, begin(result));	
   check_error(cudaGetLastError());
@@ -249,7 +248,7 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 #else
 
 	int mingridsize, blocksize;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_rrr<kernel_type, decltype(begin(std::declval<math::array<type, 3>&>()))>));
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_rrr<kernel_type, decltype(begin(std::declval<inq::math::array<type, 3>&>()))>));
 
 	const unsigned bsizex = blocksize;
 	const unsigned bsizey = 1;
@@ -259,7 +258,7 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
 	unsigned nblockz = (sizez + bsizez - 1)/bsizez;
 
-	math::array<type, 3> result({nblockx, nblocky, nblockz});
+	inq::math::array<type, 3> result({nblockx, nblocky, nblockz});
 
 	reduce_kernel_rrr<<<{nblockx, nblocky, nblockz}, {bsizex, bsizey, bsizez}, bsizex*bsizey*bsizez*sizeof(type)>>>(sizex, sizey, sizez, kernel, begin(result));
 	check_error(cudaGetLastError());
@@ -312,7 +311,7 @@ __global__ void reduce_kernel_vr(long sizex, long sizey, kernel_type kernel, arr
 
 
 template <class kernel_type>
-auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<decltype(kernel(0, 0)), 1> {
+auto run(long sizex, reduce const & redy, kernel_type kernel) -> inq::math::array<decltype(kernel(0, 0)), 1> {
 
 	auto const sizey = redy.size;	
 	
@@ -320,7 +319,7 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<dec
 
 #ifndef ENABLE_CUDA
 
-  math::array<type, 1> accumulator(sizex, 0.0);
+  inq::math::array<type, 1> accumulator(sizex, 0.0);
 
   for(long iy = 0; iy < sizey; iy++){
     for(long ix = 0; ix < sizex; ix++){
@@ -332,7 +331,7 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> math::array<dec
   
 #else
 
-	math::array<type, 2> result;
+	inq::math::array<type, 2> result;
 	
 	int mingridsize = 0;
 	int blocksize = 0;
@@ -411,7 +410,7 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, kernel_type
 #endif
 
 template <class kernel_type>
-auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kernel) -> math::array<decltype(kernel(0, 0, 0)), 1> {
+auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kernel) -> inq::math::array<decltype(kernel(0, 0, 0)), 1> {
 
 	auto const sizey = redy.size;
 	auto const sizez = redz.size;	
@@ -420,7 +419,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 
 #ifndef ENABLE_CUDA
 
-  math::array<type, 1> accumulator(sizex, 0.0);
+  inq::math::array<type, 1> accumulator(sizex, 0.0);
 
 	for(long iz = 0; iz < sizez; iz++){
 		for(long iy = 0; iy < sizey; iy++){
@@ -434,7 +433,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
   
 #else
 
-	math::array<type, 3> result;
+	inq::math::array<type, 3> result;
 	
 	int mingridsize = 0;
 	int blocksize = 0;
@@ -481,7 +480,6 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 }
 
 }
-}
 #endif
 
 #ifdef INQ_GPU_REDUCE_UNIT_TEST
@@ -510,7 +508,6 @@ struct prod3 {
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
-	using namespace inq;
 	using namespace Catch::literals;
 
 	auto comm = boost::mpi3::environment::get_world_instance();
@@ -581,7 +578,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				if(comm.rank() == rank%comm.size()){
 					auto res = gpu::run(nx, gpu::reduce(ny), prod{});
 					
-					CHECK(typeid(decltype(res)) == typeid(math::array<double, 1>));
+					CHECK(typeid(decltype(res)) == typeid(inq::math::array<double, 1>));
 					
 					CHECK(res.size() == nx);
 					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
@@ -605,7 +602,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 					if(comm.rank() == rank%comm.size()){
 						auto res = gpu::run(nx, gpu::reduce(ny), gpu::reduce(nz), prod3{});
 						
-						CHECK(typeid(decltype(res)) == typeid(math::array<double, 1>));
+						CHECK(typeid(decltype(res)) == typeid(inq::math::array<double, 1>));
 						
 						CHECK(res.size() == nx);
 						for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
