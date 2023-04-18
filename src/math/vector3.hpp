@@ -59,7 +59,10 @@ public:
 		vec_[1] = v1;
 		vec_[2] = v2;
 	}
-		
+	
+	template<class OtherType, class = decltype(Type{std::declval<OtherType const&>()})>
+	vector3(OtherType const & v0, OtherType const & v1, OtherType const & v2) : vector3(Type{v0}, Type{v1}, Type{v2}) {}
+
 	GPU_FUNCTION vector3(std::initializer_list<Type> const & list){
 		vec_[0] = list.begin()[0];
 		vec_[1] = list.begin()[1];
