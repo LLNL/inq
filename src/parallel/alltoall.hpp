@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__GPU__ALLTOALL
-#define INQ__GPU__ALLTOALL
+#ifndef INQ__PARALLEL__ALLTOALL
+#define INQ__PARALLEL__ALLTOALL
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -22,7 +22,7 @@
 #include <gpu/run.hpp>
 
 namespace inq {
-namespace gpu {
+namespace parallel {
 
 template <typename ArrayType>
 void alltoall(ArrayType & buf, parallel::communicator & comm){
@@ -100,8 +100,8 @@ void alltoall(ArrayType & buf, parallel::communicator & comm){
 }
 #endif
 
-#ifdef INQ_GPU_ALLTOALL_UNIT_TEST
-#undef INQ_GPU_ALLTOALL_UNIT_TEST
+#ifdef INQ_PARALLEL_ALLTOALL_UNIT_TEST
+#undef INQ_PARALLEL_ALLTOALL_UNIT_TEST
 
 #include <gpu/run.hpp>
 #include <mpi3/environment.hpp>
@@ -119,7 +119,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   
   math::array<int, 2> buffer({comm.size(), blocksize}, comm.rank());
 
-  gpu::alltoall(buffer, comm);
+  parallel::alltoall(buffer, comm);
 	gpu::sync();
 
   for(int iproc = 0; iproc < comm.size(); iproc++){
