@@ -11,6 +11,10 @@
 
 #include <inq/quantity.hpp>
 
+#include <boost/units/systems/si.hpp>
+#include <boost/units/systems/si/io.hpp>
+#include <boost/units/systems/si/prefixes.hpp>
+
 namespace inq {
 namespace magnitude {
 
@@ -56,7 +60,19 @@ static auto const angstrom = inq::magnitude::operator""_angstrom(1); // Å, AA, 
 static auto const A        = inq::magnitude::operator""_A(1);        // Å, AA, Angstrom
 
 }
+
+template<> template<class Quantity, class>
+quantity<magnitude::length, double>::quantity(Quantity const& ell)
+: quantity{from_atomic_units(((decltype(1.0 * boost::units::si::pico*boost::units::si::meter)(ell)).value()*0.01*inq::magnitude::A).in_atomic_units())}
+{}
+
+template<> template<class Quantity>
+quantity<magnitude::length, double>::operator Quantity() const {
+  return Quantity( (decltype(1.0 * boost::units::si::pico*boost::units::si::meter)::from_value( in_atomic_units()/1.88972612462938*100.0) ) ) ;
 }
+
+}
+
 #endif
 
 #ifdef INQ_MAGNITUDE_LENGTH_UNIT_TEST
@@ -108,6 +124,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   {
     auto le = 23.333_pm;
     CHECK(le.in_atomic_units() == 0.440929796659773_a);
+  }
+  {
+    auto L1 = 1.0 * boost::units::si::pico*boost::units::si::meter;
+    inq::quantity<inq::magnitude::length> q(L1);
+    auto L2 = static_cast<decltype(L1)>(q);
+    CHECK(L1 == L2);
   }
 }
 #endif
