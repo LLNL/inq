@@ -15,7 +15,6 @@
 
 #include <ions/geometry.hpp>
 #include <ions/unit_cell.hpp>
-#include <magnitude/fractionary.hpp>
 #include <math/array.hpp>
 #include <systems/box.hpp>
 
