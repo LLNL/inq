@@ -510,14 +510,12 @@ TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
   
 	using namespace Catch::literals;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
-
 	SECTION("r"){
 		const long maxsize = 129140163;
-
+		
 		int rank = 0;
 		for(long nn = 1; nn <= maxsize; nn *= 3){
-			if(comm.rank() == rank%comm.size()) CHECK(gpu::run(gpu::reduce(nn), ident{}) == (nn*(nn - 1.0)/2.0));
+			CHECK(gpu::run(gpu::reduce(nn), ident{}) == (nn*(nn - 1.0)/2.0));
 			rank++;
 		}
 	}
@@ -530,13 +528,10 @@ TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 		for(long nx = 1; nx <= maxsize; nx *= 5){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 
-				if(comm.rank() == rank%comm.size()){
-					auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), prod{});
-					
-					CHECK(typeid(decltype(res)) == typeid(double));
-					CHECK(res == nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0);
-				}
+				auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), prod{});
 				
+				CHECK(typeid(decltype(res)) == typeid(double));
+				CHECK(res == nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0);
 				rank++;
 			}
 		}
@@ -552,14 +547,10 @@ TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 				for(long nz = 1; nz <= maxsize; nz *= 5){
 					
-					if(comm.rank() == rank%comm.size()){
-						auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), gpu::reduce(nz), prod3{});
-						
-						CHECK(typeid(decltype(res)) == typeid(double));
-						CHECK(res == nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
-						
-					}
+					auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), gpu::reduce(nz), prod3{});
 					
+					CHECK(typeid(decltype(res)) == typeid(double));
+					CHECK(res == nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
 					rank++;
 				}
 			}
@@ -575,15 +566,11 @@ TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 		for(long nx = 1; nx <= 10000; nx *= 10){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 
-				if(comm.rank() == rank%comm.size()){
-					auto res = gpu::run(nx, gpu::reduce(ny), prod{});
+				auto res = gpu::run(nx, gpu::reduce(ny), prod{});
 					
-					CHECK(typeid(decltype(res)) == typeid(inq::math::array<double, 1>));
-					
-					CHECK(res.size() == nx);
-					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
-				}
-				
+				CHECK(typeid(decltype(res)) == typeid(inq::math::array<double, 1>));
+				CHECK(res.size() == nx);
+				for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
 				rank++;
 			}
 		}
@@ -599,15 +586,12 @@ TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 				for(long nz = 1; nz <= maxsize; nz *= 5){
 					
-					if(comm.rank() == rank%comm.size()){
-						auto res = gpu::run(nx, gpu::reduce(ny), gpu::reduce(nz), prod3{});
-						
-						CHECK(typeid(decltype(res)) == typeid(inq::math::array<double, 1>));
-						
-						CHECK(res.size() == nx);
-						for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
-					}
+					auto res = gpu::run(nx, gpu::reduce(ny), gpu::reduce(nz), prod3{});
 					
+					CHECK(typeid(decltype(res)) == typeid(inq::math::array<double, 1>));
+					
+					CHECK(res.size() == nx);
+					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
 					rank++;
 				}
 			}
@@ -615,7 +599,6 @@ TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 		
   }
 
-	
 }
 #endif
 

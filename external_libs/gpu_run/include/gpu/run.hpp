@@ -376,42 +376,40 @@ TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 
 	using namespace Catch::literals;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
-
 	SECTION("1D"){
-		if(comm.rank() == 0) CHECK(check_run(200) == 0);
-		if(comm.rank() == 1%comm.size()) CHECK(check_run(1024) == 0);
-		if(comm.rank() == 2%comm.size()) CHECK(check_run(6666) == 0);
+		CHECK(check_run(200) == 0);
+		CHECK(check_run(1024) == 0);
+		CHECK(check_run(6666) == 0);
 	}
 	
 	SECTION("2D"){
-		if(comm.rank() == 3%comm.size()) CHECK(check_run(200, 200) == 0);
-		if(comm.rank() == 4%comm.size()) CHECK(check_run(256, 1200) == 0);
-		if(comm.rank() == 5%comm.size()) CHECK(check_run(2023, 4) == 0);
-		if(comm.rank() == 6%comm.size()) CHECK(check_run(7, 57*57*57) == 0);
+		CHECK(check_run(200, 200) == 0);
+		CHECK(check_run(256, 1200) == 0);
+		CHECK(check_run(2023, 4) == 0);
+		CHECK(check_run(7, 57*57*57) == 0);
 	}
 
 	SECTION("3D"){
-		if(comm.rank() == 7%comm.size()) CHECK(check_run(2, 2, 2) == 0);
-		if(comm.rank() == 8%comm.size()) CHECK(check_run(7, 2, 2) == 0);
-		if(comm.rank() == 9%comm.size()) CHECK(check_run(7, 57, 57) == 0);
-		if(comm.rank() == 10%comm.size()) CHECK(check_run(32, 23, 18) == 0);
-		if(comm.rank() == 11%comm.size()) CHECK(check_run(213, 27, 78) == 0);
-		if(comm.rank() == 12%comm.size()) CHECK(check_run(2500, 10, 12) == 0);
-		if(comm.rank() == 13%comm.size()) CHECK(check_run(7, 1023, 12) == 0);	
-		if(comm.rank() == 14%comm.size()) CHECK(check_run(1, 11, 1229) == 0);	
+		CHECK(check_run(2, 2, 2) == 0);
+		CHECK(check_run(7, 2, 2) == 0);
+		CHECK(check_run(7, 57, 57) == 0);
+		CHECK(check_run(32, 23, 18) == 0);
+		CHECK(check_run(213, 27, 78) == 0);
+		CHECK(check_run(2500, 10, 12) == 0);
+		CHECK(check_run(7, 1023, 12) == 0);	
+		CHECK(check_run(1, 11, 1229) == 0);	
 	}
 	
 	SECTION("4D"){
-		if(comm.rank() == 15%comm.size()) CHECK(check_run(2, 2, 2, 2) == 0);
-		if(comm.rank() == 16%comm.size()) CHECK(check_run(7, 2, 2, 2) == 0);
-		if(comm.rank() == 17%comm.size()) CHECK(check_run(7, 57, 57, 57) == 0);
-		if(comm.rank() == 18%comm.size()) CHECK(check_run(32, 23, 45, 18) == 0);
-		if(comm.rank() == 19%comm.size()) CHECK(check_run(35, 213, 27, 78) == 0);
-		if(comm.rank() == 20%comm.size()) CHECK(check_run(2500, 10, 11, 12) == 0);
-		if(comm.rank() == 21%comm.size()) CHECK(check_run(7, 1023, 11, 12) == 0);
-		if(comm.rank() == 22%comm.size()) CHECK(check_run(1, 1, 11, 1229) == 0);
-		if(comm.rank() == 23%comm.size()) CHECK(check_run(1, 1023, 11, 12) == 0);
+		CHECK(check_run(2, 2, 2, 2) == 0);
+		CHECK(check_run(7, 2, 2, 2) == 0);
+		CHECK(check_run(7, 57, 57, 57) == 0);
+		CHECK(check_run(32, 23, 45, 18) == 0);
+		CHECK(check_run(35, 213, 27, 78) == 0);
+		CHECK(check_run(2500, 10, 11, 12) == 0);
+		CHECK(check_run(7, 1023, 11, 12) == 0);
+		CHECK(check_run(1, 1, 11, 1229) == 0);
+		CHECK(check_run(1, 1023, 11, 12) == 0);
 	}
 
 }
