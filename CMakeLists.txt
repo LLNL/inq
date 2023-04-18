@@ -149,15 +149,23 @@ set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_CXX)
 include(CheckCXXSymbolExists)
 check_cxx_symbol_exists(MPI_Isendrecv_replace mpi.h HAVE_MPI_ISENDRECV_REPLACE)
 
-
-#FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
+#FFTW has to go before blas to avoid unscrupulous (i.e. MKL) implementations that include FFTW and don't implement the full FFTW interface
 find_package(PkgConfig REQUIRED)
-pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
-#include_directories(PkgConfig::FFTW)  # commented since it always generates a spurious -I...PkgConfig::FFTW option
-link_libraries(PkgConfig::FFTW)
-cmake_print_properties(TARGETS PkgConfig::FFTW PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
-
-target_link_libraries(inq INTERFACE PkgConfig::FFTW)
+pkg_search_module(FFTW fftw3 IMPORTED_TARGET)
+if(FFTW_FOUND)
+  link_libraries(PkgConfig::FFTW)
+  #include_directories(PkgConfig::FFTW)  # commented since it always generates a spurious -I...PkgConfig::FFTW option
+  cmake_print_properties(TARGETS PkgConfig::FFTW PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
+  target_link_libraries(inq INTERFACE PkgConfig::FFTW)
+else()  # some systems do not have fftw3 registered in pkg-config, in this case it falls back to good old -lfftw3 which can fail later
+  if(NOT DEFINED FFTW_LIBRARIES)
+    message(FATAL_ERROR "FFTW not detected by pkg-config, defined -DFFTW_LIBRARIES (e.g. =-lfftw3) and -DFFTW_INCLUDE_DIRS (e.g. =/usr/include)")
+  endif()
+  link_libraries(${FFTW_LIBRARIES})
+  include_directories(${FFTW_INCLUDE_DIRS})  # commented since it always generates a spurious -I...PkgConfig::FFTW option
+  target_link_libraries(inq INTERFACE ${FFTW_LIBRARIES})
+  target_include_directories(inq INTERFACE ${FFTW_INCLUDE_DIRS})
+endif()
 
 if(ENABLE_HEFFTE)
   find_package(Heffte REQUIRED)
@@ -239,7 +247,7 @@ target_link_libraries(inq
 
 find_package(Boost REQUIRED COMPONENTS serialization filesystem system)
 message(STATUS "Boost actual version found " ${Boost_VERSION})
-if(Boost_VERSION LESS_EQUAL 105300) # may be higher than 1.53.0
+if(Boost_VERSION LESS_EQUAL "1.53.0")  # 105300
 	message(STATUS "Applying option BOOST_NO_AUTO_PTR to patch for old Boost")
 	add_compile_options(-DBOOST_NO_AUTO_PTR)
 endif()
