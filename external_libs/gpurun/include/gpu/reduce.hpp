@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef GPU_RUN__GPU__REDUCE
-#define GPU_RUN__GPU__REDUCE
+#ifndef GPURUN__GPU__REDUCE
+#define GPURUN__GPU__REDUCE
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -482,8 +482,8 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 }
 #endif
 
-#ifdef GPU_RUN__REDUCE__UNIT_TEST
-#undef GPU_RUN__REDUCE__UNIT_TEST
+#ifdef GPURUN__REDUCE__UNIT_TEST
+#undef GPURUN__REDUCE__UNIT_TEST
 
 #include <mpi3/environment.hpp>
 #include <catch2/catch_all.hpp>
@@ -506,7 +506,7 @@ struct prod3 {
   }
 };
 
-TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
+TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
   
 	using namespace Catch::literals;
 

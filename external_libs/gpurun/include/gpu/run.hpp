@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef GPU_RUN__GPU__RUN
-#define GPU_RUN__GPU__RUN
+#ifndef GPURUN__GPU__RUN
+#define GPURUN__GPU__RUN
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -273,8 +273,8 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 }
 #endif
 
-#ifdef GPU_RUN__RUN__UNIT_TEST
-#undef GPU_RUN__RUN__UNIT_TEST
+#ifdef GPURUN__RUN__UNIT_TEST
+#undef GPURUN__RUN__UNIT_TEST
 
 #include <math/array.hpp>
 #include <mpi3/environment.hpp>
@@ -372,7 +372,7 @@ long check_run(long size1, long size2, long size3, long size4){
 	return diff;
 }
 
-TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
+TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 
 	using namespace Catch::literals;
 

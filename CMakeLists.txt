@@ -186,9 +186,9 @@ link_libraries(${LAPACK_LIBRARIES})
 target_link_libraries(inq INTERFACE ${LAPACK_LIBRARIES})
 
 #GPU::RUN
-add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/gpu_run)
-set(gpurun_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/gpu_run/include)
-target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/gpu_run/include)
+add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/gpurun)
+set(gpurun_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/gpurun/include)
+target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/gpurun/include)
 
 #LIBXC
 set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)

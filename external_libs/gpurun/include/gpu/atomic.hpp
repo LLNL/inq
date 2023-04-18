@@ -63,12 +63,12 @@ GPU_FUNCTION inline long add(size_t * val, Type2 const & incr){
 }
 #endif
 
-#ifdef GPU_RUN__ATOMIC__UNIT_TEST
-#undef GPU_RUN__ATOMIC__UNIT_TEST
+#ifdef GPURUN__ATOMIC__UNIT_TEST
+#undef GPURUN__ATOMIC__UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
+TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }
