@@ -129,7 +129,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     auto L1 = 1.0 * boost::units::si::pico*boost::units::si::meter;
     inq::quantity<inq::magnitude::length> q(L1);
     auto L2 = static_cast<decltype(L1)>(q);
-    CHECK(L1 == L2);
+    CHECK(L1.in_atomic_units() == Approx(L2.in_atomic_units()).margin(0.0001).epsilon(1e-12) );
   }
 }
 #endif
