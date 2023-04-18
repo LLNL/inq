@@ -25,7 +25,7 @@ int main(int argc, char ** argv){
 	
 	utils::match match(3.0e-5);
 
-	auto box = systems::box::cubic(15.0_b).finite().cutoff_energy(30.0_Ha);
+	auto box = systems::box::cubic(10.0_b).finite().spacing(0.43_b);
 
 	systems::ions ions(box);
 
@@ -34,21 +34,21 @@ int main(int argc, char ** argv){
 	ions.insert("O", {-distance/2, 0.0_b, 0.0_b});
 	ions.insert("O", {distance/2, 0.0_b, 0.0_b});	
 
-	systems::electrons electrons(env.par(), ions, box, input::config::spin_polarized() | input::config::temperature(1000.0_K) | input::config::extra_states(3));
+	systems::electrons electrons(env.par(), ions, box, input::config::spin_polarized() | input::config::temperature(1000.0_K) | input::config::extra_states(2));
 	ground_state::initial_guess(ions, electrons);
 		
-	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::mixing(0.1) | input::scf::energy_tolerance(1e-8_Ha));
+	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::mixing(0.2) | input::scf::energy_tolerance(1e-8_Ha));
 	
-	match.check("total energy",        result.energy.total()    ,  -32.983194928900);
-	match.check("kinetic energy",      result.energy.kinetic()   ,  21.076512293160);
-	match.check("eigenvalues",         result.energy.eigenvalues(), -7.232750608632);
-	match.check("hartree energy",      result.energy.hartree(),     42.250517388010);
-	match.check("external energy",     result.energy.external(),   -99.280824027265);
-	match.check("non-local energy",    result.energy.nonlocal(),    -4.566033144402);
-	match.check("XC energy",           result.energy.xc(),          -8.207482804083);
-	match.check("XC density integral", result.energy.nvxc(),        -8.963440506145);
-	match.check("HF exchange energy",  result.energy.hf_exchange(),  0.000000000000);
-	match.check("ion-ion energy",      result.energy.ion(),         15.744115365679);
+	match.check("total energy",        result.energy.total()    ,   -32.885878270495);
+	match.check("kinetic energy",      result.energy.kinetic()   ,   20.663840649123);
+	match.check("eigenvalues",         result.energy.eigenvalues(),  -7.271345986319);
+	match.check("hartree energy",      result.energy.hartree(),      42.107413515539);
+	match.check("external energy",     result.energy.external(),    -98.967748472806);
+	match.check("non-local energy",    result.energy.nonlocal(),     -4.258411086657);
+	match.check("XC energy",           result.energy.xc(),           -8.175088241373);
+	match.check("XC density integral", result.energy.nvxc(),         -8.923854107057);
+	match.check("HF exchange energy",  result.energy.hf_exchange(),   0.000000000000);
+	match.check("ion-ion energy",      result.energy.ion(),          15.744115365679);
 
 	return match.fail();
 	
