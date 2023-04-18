@@ -123,8 +123,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(35.0_Ha);
 		auto ions = systems::ions(box);
 		
-		ions.insert("C", {0.0_crys,  0.0_crys,  0.0_crys });
-		ions.insert("C", {0.25_crys, 0.25_crys, 0.25_crys});
+		ions.insert_fractional("C", {0.0 , 0.0 , 0.0 });
+		ions.insert_fractional("C", {0.25, 0.25, 0.25});
 
 		auto bz1 = ions::brillouin(ions, input::kpoints::gamma());
 
