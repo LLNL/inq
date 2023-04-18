@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__GPU__ATOMIC
-#define INQ__GPU__ATOMIC
+#ifndef GPU__ATOMIC
+#define GPU__ATOMIC
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -63,12 +63,12 @@ GPU_FUNCTION inline long add(size_t * val, Type2 const & incr){
 }
 #endif
 
-#ifdef INQ_GPU_ATOMIC_UNIT_TEST
-#undef INQ_GPU_ATOMIC_UNIT_TEST
+#ifdef GPU_RUN__ATOMIC__UNIT_TEST
+#undef GPU_RUN__ATOMIC__UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }

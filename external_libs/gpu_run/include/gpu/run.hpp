@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__GPU__RUN
-#define INQ__GPU__RUN
+#ifndef GPU_RUN__GPU__RUN
+#define GPU_RUN__GPU__RUN
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -273,8 +273,8 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 }
 #endif
 
-#ifdef INQ_GPU_RUN_UNIT_TEST
-#undef INQ_GPU_RUN_UNIT_TEST
+#ifdef GPU_RUN__RUN__UNIT_TEST
+#undef GPU_RUN__RUN__UNIT_TEST
 
 #include <math/array.hpp>
 #include <mpi3/environment.hpp>
@@ -285,9 +285,9 @@ long check_run(long size){
 	
 	inq::math::array<long, 1> list(size, 0l);
 
-	inq::gpu::run(size,
+	gpu::run(size,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii){
-						 inq::gpu::atomic::add(&(itlist[ii]), ii + 1);
+						 gpu::atomic::add(&(itlist[ii]), ii + 1);
 					 });
 	
 	long diff = 0;
@@ -301,10 +301,10 @@ long check_run(long size1, long size2){
 	
 	inq::math::array<long, 3> list({size1, size2, 2}, 0l);
 	
-	inq::gpu::run(size1, size2, 
+	gpu::run(size1, size2, 
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj){
-						 inq::gpu::atomic::add(&(itlist[ii][jj][0]), ii + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][1]), jj + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][0]), ii + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][1]), jj + 1);
 					 });
 	
 	long diff = 0;
@@ -322,11 +322,11 @@ long check_run(long size1, long size2, long size3){
 	
 	inq::math::array<long, 4> list({size1, size2, size3, 3}, 0l);
 
-	inq::gpu::run(size1, size2, size3,
+	gpu::run(size1, size2, size3,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk){
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][0]), ii + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][1]), jj + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][2]), kk + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][0]), ii + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][1]), jj + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][2]), kk + 1);
 					 });
 		
 	long diff = 0;
@@ -347,12 +347,12 @@ long check_run(long size1, long size2, long size3, long size4){
 
 	inq::math::array<long, 5> list({size1, size2, size3, size4, 4}, 0l);
 
-	inq::gpu::run(size1, size2, size3, size4,
+	gpu::run(size1, size2, size3, size4,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk, auto ll){
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][0]), ii + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][1]), jj + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][2]), kk + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][3]), ll + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][ll][0]), ii + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][ll][1]), jj + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][ll][2]), kk + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][ll][3]), ll + 1);
 					 });
 		
 	long diff = 0;
@@ -372,7 +372,7 @@ long check_run(long size1, long size2, long size3, long size4){
 	return diff;
 }
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 
 	using namespace Catch::literals;
 

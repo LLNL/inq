@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__GPU__COPY
-#define INQ__GPU__COPY
+#ifndef GPU_RUN__GPU__COPY
+#define GPU_RUN__GPU__COPY
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -27,13 +27,13 @@ void copy(long dim1, long dim2, SourceType const & source, DestinationType & des
 }
 #endif
 
-#ifdef INQ_GPU_COPY_UNIT_TEST
-#undef INQ_GPU_COPY_UNIT_TEST
+#ifdef GPU_RUN__COPY__UNIT_TEST
+#undef GPU_RUN__COPY__UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 #include <math/array.hpp>
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+TEST_CASE(GPU_RUN_TEST_FILE, GPU_RUN_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;

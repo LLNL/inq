@@ -186,6 +186,7 @@ link_libraries(${LAPACK_LIBRARIES})
 target_link_libraries(inq INTERFACE ${LAPACK_LIBRARIES})
 
 #GPU::RUN
+add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/gpu_run)
 target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/gpu_run/include)
 
 #LIBXC
