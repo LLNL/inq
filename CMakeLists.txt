@@ -164,11 +164,17 @@ else()  # some systems do not have fftw3 registered in pkg-config, in this case 
     include_directories(${FFTW_INCLUDE_DIRS})  # commented since it always generates a spurious -I...PkgConfig::FFTW option
     target_link_libraries(inq INTERFACE fftw3)
     target_include_directories(inq INTERFACE ${FFTW_INCLUDE_DIRS})
+  else()
+    link_libraries(${FFTW_LIBRARIES})
+    include_directories(${FFTW_INCLUDE_DIRS})  # commented since it always generates a spurious -I...PkgConfig::FFTW option
+    target_link_libraries(inq INTERFACE ${FFTW_LIBRARIES})
+    target_include_directories(inq INTERFACE ${FFTW_INCLUDE_DIRS})
   endif()
-  link_libraries(${FFTW_LIBRARIES})
-  include_directories(${FFTW_INCLUDE_DIRS})  # commented since it always generates a spurious -I...PkgConfig::FFTW option
-  target_link_libraries(inq INTERFACE ${FFTW_LIBRARIES})
-  target_include_directories(inq INTERFACE ${FFTW_INCLUDE_DIRS})
+  check_cxx_symbol_exists(fftw_plan_dft_1d fftw3.h FFTW3_CHECKED)
+  if(FFTW_FOUND)
+  else()
+    message(WARNING "FFTW not found")
+  end()
 endif()
 
 if(ENABLE_HEFFTE)
