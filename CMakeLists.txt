@@ -174,7 +174,7 @@ else()  # some systems do not have fftw3 registered in pkg-config, in this case 
   if(FFTW_FOUND)
   else()
     message(WARNING "FFTW not found")
-  end()
+  endif()
 endif()
 
 if(ENABLE_HEFFTE)
