@@ -19,7 +19,7 @@ namespace hamiltonian {
 // https://doi.org/10.1103/PhysRevB.75.205126
 class singularity_correction {
 
-  math::array<double, 1> fk_;
+  gpu::array<double, 1> fk_;
   double fzero_;
   int nkpoints_;
   double cell_volume_;

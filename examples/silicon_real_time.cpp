@@ -52,9 +52,9 @@ int main(int argc, char ** argv){
 	auto const dt = 0.065;
 	long nsteps = 413.41373/dt;
 	
-	math::array<double, 1> time(nsteps);
-	math::array<double, 1> cur(nsteps);
-	math::array<double, 1> en(nsteps);		
+	gpu::array<double, 1> time(nsteps);
+	gpu::array<double, 1> cur(nsteps);
+	gpu::array<double, 1> en(nsteps);		
 
 	std::ofstream file;
 	if(electrons.root()) file.open("current.dat");

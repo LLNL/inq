@@ -11,7 +11,7 @@
 
 #include <math/complex.hpp>
 #include <math/vector3.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
 #include <operations/orthogonalize.hpp>
@@ -45,7 +45,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 
 		prec(residual);
 
-		auto mm = math::array<typename field_set_type::element_type, 2>({6, phi.local_set_size()});
+		auto mm = gpu::array<typename field_set_type::element_type, 2>({6, phi.local_set_size()});
 
 		{
 			auto hresidual = ham(residual);
@@ -103,7 +103,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
   basis::trivial bas(npoint, boost::mpi3::environment::get_self_instance());
 	
-	math::array<complex, 2> identity_matrix({npoint, npoint});
+	gpu::array<complex, 2> identity_matrix({npoint, npoint});
   
 	for(int ip = 0; ip < npoint; ip++){
 		for(int jp = 0; jp < npoint; jp++){
@@ -116,7 +116,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Diagonal matrix complex"){
   
-    math::array<complex, 2> diagonal_matrix({npoint, npoint});
+    gpu::array<complex, 2> diagonal_matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){
@@ -180,7 +180,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 #if 0
 	SECTION("Periodic Laplacian matrix complex"){
 		
-    math::array<complex, 2> laplacian_matrix({npoint, npoint});
+    gpu::array<complex, 2> laplacian_matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){

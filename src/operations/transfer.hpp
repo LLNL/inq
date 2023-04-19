@@ -65,7 +65,7 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 			}
 		}
 
-		math::array<long, 1> list(point_list.begin(), point_list.end());
+		gpu::array<long, 1> list(point_list.begin(), point_list.end());
 		
 		auto points = parallel::get_remote_points(source, list);
 		
@@ -136,7 +136,7 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 			}
 		}
 
-		math::array<long, 1> list(point_list.begin(), point_list.end());
+		gpu::array<long, 1> list(point_list.begin(), point_list.end());
 		
 		auto points = parallel::get_remote_points(source, list);
 		
@@ -191,7 +191,7 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 
 	} else {
 
-		math::array<long, 1> point_list(destination.basis().local_size());
+		gpu::array<long, 1> point_list(destination.basis().local_size());
 
 		{
 			long ip = 0;
@@ -258,7 +258,7 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const
 		
 	} else {
 
-		math::array<long, 1> point_list(destination.basis().local_size());
+		gpu::array<long, 1> point_list(destination.basis().local_size());
 		
 		{
 			long ip = 0;

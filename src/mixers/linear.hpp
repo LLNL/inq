@@ -11,7 +11,7 @@
 
 #include <math/complex.hpp>
 #include <math/vector3.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <mixers/base.hpp>
 
 namespace inq {
@@ -59,8 +59,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
-  math::array<double, 1> vin({10.0, -20.0});
-	math::array<double, 1> vout({0.0,  22.2});
+  gpu::array<double, 1> vin({10.0, -20.0});
+	gpu::array<double, 1> vout({0.0,  22.2});
 
   mixers::linear<decltype(vin)> lm(0.5);
 	

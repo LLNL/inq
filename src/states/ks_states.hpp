@@ -10,7 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <math/complex.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <operations/sum.hpp>
 #include <parallel/partition.hpp>
 
@@ -248,8 +248,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		parallel::partition part(st.num_states(), comm);
 
-		math::array<double, 2> eigenvalues({1, part.local_size()});
-		math::array<double, 2> occupations({1, part.local_size()});
+		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
 		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
@@ -283,8 +283,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		parallel::partition part(st.num_states(), comm);
 
-		math::array<double, 2> eigenvalues({1, part.local_size()});
-		math::array<double, 2> occupations({1, part.local_size()});
+		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
 		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
@@ -318,8 +318,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		parallel::partition part(st.num_states(), comm);
 
-		math::array<double, 2> eigenvalues({1, part.local_size()});
-		math::array<double, 2> occupations({1, part.local_size()});
+		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
 		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
@@ -357,8 +357,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		parallel::partition part(st.num_states(), comm);
 
-		math::array<double, 2> eigenvalues({1, part.local_size()});
-		math::array<double, 2> occupations({1, part.local_size()});
+		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
 		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 1.0;
@@ -398,8 +398,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		parallel::partition part(st.num_states(), comm);
 		
-		math::array<double, 2> eigenvalues({1, part.local_size()});
-		math::array<double, 2> occupations({1, part.local_size()});
+		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.0;
 		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
@@ -457,8 +457,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		parallel::partition part(st.num_states(), comm);
 
-		math::array<double, 2> eigenvalues({1, part.local_size()});
-		math::array<double, 2> occupations({1, part.local_size()});
+		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
 		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
@@ -496,8 +496,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		parallel::partition part(st.num_states(), comm);
 
-		math::array<double, 2> eigenvalues({3, part.local_size()});
-		math::array<double, 2> occupations({3, part.local_size()});
+		gpu::array<double, 2> eigenvalues({3, part.local_size()});
+		gpu::array<double, 2> occupations({3, part.local_size()});
 
 		if(part.contains(0)) {
 			eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.11;
@@ -569,8 +569,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		parallel::partition part(st.num_states(), comm);
 
-		math::array<double, 2> eigenvalues({3, part.local_size()});
-		math::array<double, 2> occupations({3, part.local_size()});
+		gpu::array<double, 2> eigenvalues({3, part.local_size()});
+		gpu::array<double, 2> occupations({3, part.local_size()});
 
 		if(part.contains(0)) {
 			eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.11;

@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <gpu/run.hpp>
 #include <parallel/partition.hpp>
 
@@ -23,7 +23,7 @@ class subspace_matrix {
 
 public:
   
-  using array_type = math::array<Type, 2>;
+  using array_type = gpu::array<Type, 2>;
   
   subspace_matrix(parallel::cartesian_communicator<2> & comm, long size):
     comm_(comm),
@@ -55,8 +55,8 @@ public:
     return array_;
   }
 
-  math::array<Type, 1> diagonal() const {
-    math::array<Type, 1> diag(part_.local_size());
+  gpu::array<Type, 1> diagonal() const {
+    gpu::array<Type, 1> diag(part_.local_size());
     gpu::run(part_.local_size(), [dia = begin(diag), arr = begin(array_), pa = part_] GPU_LAMBDA (auto ii){
 			auto iig = pa.start() + ii;
 			dia[ii] = arr[iig][iig];
@@ -98,7 +98,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   auto comm = boost::mpi3::environment::get_world_instance();
 	parallel::cartesian_communicator<2> cart_comm(comm, {});
   
-  math::array<double, 2> matrix({2, 2});
+  gpu::array<double, 2> matrix({2, 2});
   
   matrix[0][0] = 4.0;
   matrix[0][1] = 0.0;

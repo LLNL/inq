@@ -127,7 +127,7 @@ public:
 
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 #include <mpi3/environment.hpp>
 
@@ -144,7 +144,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   parallel::partition partx(sizex, comm.axis(0));
   parallel::partition party(sizey, comm.axis(1));
 
-  math::array<double, 2> arr({partx.local_size(), party.local_size()}, comm.axis(1).rank() + 1.0 + 10000.0*(comm.axis(0).rank() + 1.0));
+  gpu::array<double, 2> arr({partx.local_size(), party.local_size()}, comm.axis(1).rank() + 1.0 + 10000.0*(comm.axis(0).rank() + 1.0));
   
   {
     parallel::array_iterator_2d pai(partx, party, comm, arr);

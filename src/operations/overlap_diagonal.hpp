@@ -11,7 +11,7 @@
 
 #include <inq_config.h>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <cassert>
 #include <operations/integral.hpp>
 
@@ -35,13 +35,13 @@ struct overlap_diagonal_mult {
 };
 
 template <class field_set_type>
-math::array<typename field_set_type::element_type, 1> overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
+gpu::array<typename field_set_type::element_type, 1> overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
 
 	CALI_CXX_MARK_SCOPE("overlap_diagonal(2arg)");
 	
 	using type = typename field_set_type::element_type;
 		
-	math::array<type, 1> overlap_vector(phi1.set_part().local_size());
+	gpu::array<type, 1> overlap_vector(phi1.set_part().local_size());
 
 	assert(size(overlap_vector) == phi2.set_part().local_size());
 
@@ -125,7 +125,7 @@ struct real_part {
 };
 
 template <class field_set_type, typename Transform = identity>
-auto overlap_diagonal_normalized(const field_set_type & phi1, const field_set_type & phi2, Transform trans = {}) -> math::array<decltype(trans(typename field_set_type::element_type{})), 1> {
+auto overlap_diagonal_normalized(const field_set_type & phi1, const field_set_type & phi2, Transform trans = {}) -> gpu::array<decltype(trans(typename field_set_type::element_type{})), 1> {
 
 	CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized");
 
@@ -140,7 +140,7 @@ auto overlap_diagonal_normalized(const field_set_type & phi1, const field_set_ty
 		phi1.basis().comm().all_reduce_in_place_n(reinterpret_cast<type *>(raw_pointer_cast(overlap_and_norm.data_elements())), 2*overlap_and_norm.size(), std::plus<>{});
 	}
 
-	math::array<decltype(trans(typename field_set_type::element_type{})), 1> overlap_vector(phi1.set_part().local_size());
+	gpu::array<decltype(trans(typename field_set_type::element_type{})), 1> overlap_vector(phi1.set_part().local_size());
 
 	gpu::run(overlap_vector.size(),
 					 [olp = begin(overlap_vector), olpnrm = begin(overlap_and_norm), trans] GPU_LAMBDA (auto ii){
@@ -197,7 +197,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		auto dd = operations::overlap_diagonal(aa, bb);
 		
-		CHECK(typeid(decltype(dd)) == typeid(math::array<double, 1>));
+		CHECK(typeid(decltype(dd)) == typeid(gpu::array<double, 1>));
 		
 		for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(-jj - 1));
 
@@ -214,7 +214,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		{
 			auto ee = operations::overlap_diagonal(cc);
 
-			CHECK(typeid(decltype(ee)) == typeid(math::array<double, 1>));
+			CHECK(typeid(decltype(ee)) == typeid(gpu::array<double, 1>));
 								
 			for(int jj = 0; jj < nvec; jj++) CHECK(ee[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
 		}
@@ -223,7 +223,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto ff = operations::overlap_diagonal_normalized(aa, bb);
 			auto gg = operations::overlap_diagonal(bb);
 			
-			CHECK(typeid(decltype(ff)) == typeid(math::array<double, 1>));
+			CHECK(typeid(decltype(ff)) == typeid(gpu::array<double, 1>));
 			
 			CHECK(std::get<0>(sizes(ff)) == nvec);
 			
@@ -248,7 +248,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		auto dd = operations::overlap_diagonal(aa, bb);
 		
-		CHECK(typeid(decltype(dd)) == typeid(math::array<complex, 1>));
+		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
 		
 		CHECK(std::get<0>(sizes(dd)) == nvec);
 		
@@ -270,7 +270,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		{
 			auto ee = operations::overlap_diagonal(cc);
 
-			CHECK(typeid(decltype(ee)) == typeid(math::array<complex, 1>));
+			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
 			
 			CHECK(std::get<0>(sizes(ee)) == nvec);
 				
@@ -281,7 +281,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto ff = operations::overlap_diagonal_normalized(aa, bb);
 			auto gg = operations::overlap_diagonal(bb);
 
-			CHECK(typeid(decltype(ff)) == typeid(math::array<complex, 1>));
+			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
 			
 			CHECK(std::get<0>(sizes(ff)) == nvec);
 				

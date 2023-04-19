@@ -10,7 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <gpu/reduce.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/zero.hpp>
 
 #include <cassert>
@@ -70,7 +70,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Sum double"){
 
-		math::array<double, 1> aa(N);
+		gpu::array<double, 1> aa(N);
 
 		aa.fill(1.0);
 
@@ -84,7 +84,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Sum complex"){
 		
-		math::array<complex, 1> aa(N);
+		gpu::array<complex, 1> aa(N);
 		
 		aa.fill(complex(1.0, 1.0));
 
@@ -100,8 +100,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Sum product double"){
 
-		math::array<double, 1> aa(N);
-		math::array<double, 1> bb(N);
+		gpu::array<double, 1> aa(N);
+		gpu::array<double, 1> bb(N);
 
 		aa.fill(2.0);
 		bb.fill(0.8);
@@ -119,8 +119,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Sum product complex"){
 
-		math::array<complex, 1> aa(N);
-		math::array<complex, 1> bb(N);
+		gpu::array<complex, 1> aa(N);
+		gpu::array<complex, 1> bb(N);
 		
 		aa.fill(complex(2.0, -0.3));
 		bb.fill(complex(0.8, 0.01));

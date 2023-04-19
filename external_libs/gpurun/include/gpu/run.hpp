@@ -276,14 +276,14 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 #ifdef GPURUN__RUN__UNIT_TEST
 #undef GPURUN__RUN__UNIT_TEST
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <mpi3/environment.hpp>
 #include <catch2/catch_all.hpp>
 #include <gpu/atomic.hpp>
 
 long check_run(long size){
 	
-	inq::math::array<long, 1> list(size, 0l);
+	gpu::array<long, 1> list(size, 0l);
 
 	gpu::run(size,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii){
@@ -299,7 +299,7 @@ long check_run(long size){
 
 long check_run(long size1, long size2){
 	
-	inq::math::array<long, 3> list({size1, size2, 2}, 0l);
+	gpu::array<long, 3> list({size1, size2, 2}, 0l);
 	
 	gpu::run(size1, size2, 
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj){
@@ -320,7 +320,7 @@ long check_run(long size1, long size2){
 
 long check_run(long size1, long size2, long size3){
 	
-	inq::math::array<long, 4> list({size1, size2, size3, 3}, 0l);
+	gpu::array<long, 4> list({size1, size2, size3, 3}, 0l);
 
 	gpu::run(size1, size2, size3,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk){
@@ -345,7 +345,7 @@ long check_run(long size1, long size2, long size3){
 	
 long check_run(long size1, long size2, long size3, long size4){
 
-	inq::math::array<long, 5> list({size1, size2, size3, size4, 4}, 0l);
+	gpu::array<long, 5> list({size1, size2, size3, size4, 4}, 0l);
 
 	gpu::run(size1, size2, size3, size4,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk, auto ll){

@@ -13,7 +13,7 @@
 
 #include <mpi3/environment.hpp>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/vector3.hpp>
 #include <utils/interpolation_coefficients.hpp>
 #include <parallel/partition.hpp>
@@ -37,7 +37,7 @@ public:
 		}
 		
     auto npoints = max_ - min_ + 1;
-    math::array<double, 1> points(npoints);
+    gpu::array<double, 1> points(npoints);
     for(auto ii = 0; ii < npoints; ii++) points[ii] = min_ + ii;
     coeff_ = utils::interpolation_coefficients(points, 1.0/3.0);
 
@@ -47,7 +47,7 @@ public:
 
 	public:
 
-		reference(int min, int max, math::array<double, 1>::const_iterator && coeff):
+		reference(int min, int max, gpu::array<double, 1>::const_iterator && coeff):
 			min_(min),
 			max_(max),
 			coeff_(std::move(coeff))
@@ -87,7 +87,7 @@ public:
 		
 		int min_;
 		int max_;
-		math::array<double, 1>::const_iterator coeff_;
+		gpu::array<double, 1>::const_iterator coeff_;
 		
   };
 		
@@ -108,7 +108,7 @@ private:
 
   int min_;
   int max_;
-  math::array<double, 1> coeff_;
+  gpu::array<double, 1> coeff_;
   bool enabled_;
   
 };

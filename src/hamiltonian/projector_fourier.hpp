@@ -14,7 +14,7 @@
 
 #include <pseudopod/math/sharmonic.hpp>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/vector3.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
@@ -78,7 +78,7 @@ namespace hamiltonian {
 
 			for(unsigned icoord = 0; icoord < coords_.size(); icoord++){
 			
-				math::array<complex, 2> projections({nproj_, phi.set_part().local_size()}, 0.0);
+				gpu::array<complex, 2> projections({nproj_, phi.set_part().local_size()}, 0.0);
 			
 				basis::field<basis::fourier_space, complex> eigr(phi.basis());
 
@@ -132,7 +132,7 @@ namespace hamiltonian {
   private:
 
     int nproj_;
-		math::array<double, 1> kb_coeff_;
+		gpu::array<double, 1> kb_coeff_;
     basis::field_set<basis::fourier_space, complex> beta_;
 		std::vector<vector3<double, contravariant>> coords_;
 		

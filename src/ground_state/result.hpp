@@ -10,7 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <hamiltonian/energy.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/vector3.hpp>
 
 namespace inq {
@@ -20,7 +20,7 @@ class result {
 public:
 	hamiltonian::energy energy;
 	vector3<double> dipole;
-	math::array<vector3<double>, 1> forces;
+	gpu::array<vector3<double>, 1> forces;
 };
 
 }

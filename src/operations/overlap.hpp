@@ -11,7 +11,7 @@
 
 #include <inq_config.h>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/subspace_matrix.hpp>
 #include <operations/integral.hpp>
 #include <utils/profiling.hpp>

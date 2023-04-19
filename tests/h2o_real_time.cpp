@@ -79,9 +79,9 @@ int main(int argc, char ** argv){
 
 		long nsteps = 71;
 		 
-		math::array<double, 1> time(nsteps);
-		math::array<double, 1> dip(nsteps);
-		math::array<double, 1> en(nsteps);		
+		gpu::array<double, 1> time(nsteps);
+		gpu::array<double, 1> dip(nsteps);
+		gpu::array<double, 1> en(nsteps);		
 	
 		auto output = [&](auto data){
 
@@ -131,9 +131,9 @@ int main(int argc, char ** argv){
 
 		long nsteps = 31;
 		 
-		math::array<double, 1> time(nsteps);
-		math::array<double, 1> dip(nsteps);
-		math::array<double, 1> en(nsteps);		
+		gpu::array<double, 1> time(nsteps);
+		gpu::array<double, 1> dip(nsteps);
+		gpu::array<double, 1> en(nsteps);		
 	
 		auto output = [&](auto data){
 
@@ -174,9 +174,9 @@ int main(int argc, char ** argv){
 
 		long nsteps = 21;
 		
-		math::array<double, 1> time(nsteps);
-		math::array<double, 1> dip(nsteps);
-		math::array<double, 1> en(nsteps);		
+		gpu::array<double, 1> time(nsteps);
+		gpu::array<double, 1> dip(nsteps);
+		gpu::array<double, 1> en(nsteps);		
 	
 		auto output = [&](auto data){
 			

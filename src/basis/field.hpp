@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <tinyformat/tinyformat.h>
 #include <algorithm>
 #include <utils/skeleton_wrapper.hpp>
@@ -32,7 +32,7 @@ namespace basis {
 
 		using element_type = Type;
 		using basis_type = Basis;
-		using internal_array_type = math::array<element_type, 1>;
+		using internal_array_type = gpu::array<element_type, 1>;
 
 		template <typename BType, typename EType>
 		using template_type = field<BType, EType>;
@@ -72,7 +72,7 @@ namespace basis {
 				return;
 			}
 			
-			math::array<int, 1> rem_points(basis().local_size());
+			gpu::array<int, 1> rem_points(basis().local_size());
 			for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
 			linear_ = parallel::get_remote_points(old, rem_points);
 		}
@@ -176,7 +176,7 @@ namespace basis {
 		}
 
 		void prefetch() const {
-			math::prefetch(linear_);
+			gpu::prefetch(linear_);
 		}
 		
 		template <typename CommunicatorType, typename OpType = std::plus<>>

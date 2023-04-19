@@ -27,7 +27,7 @@ int main(int argc, char ** argv){
   
   for(int blocksize = 62; blocksize < 80*1024*1024 ; blocksize *= sqrt(2)){
     
-    math::array<complex, 2> buffer({comm.size(), blocksize}, double(comm.rank()));
+    gpu::array<complex, 2> buffer({comm.size(), blocksize}, double(comm.rank()));
 
     parallel::alltoall(buffer, comm);
 

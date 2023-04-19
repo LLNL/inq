@@ -69,9 +69,9 @@ private:
 	hamiltonian::atomic_potential atomic_pot_;
 	states::ks_states states_;
 	kpin_type kpin_;
-	math::array<double, 2> eigenvalues_;
-	math::array<double, 2> occupations_;
-	math::array<double, 1> kpin_weights_;
+	gpu::array<double, 2> eigenvalues_;
+	gpu::array<double, 2> occupations_;
+	gpu::array<double, 1> kpin_weights_;
 	long max_local_set_size_;
 	basis::field_set<basis::real_space, double> spin_density_;
 	std::shared_ptr<spdlog::logger> logger_;
@@ -323,7 +323,7 @@ public:
 			auto basedir = dirname + "/kpin" + operations::io::numstr(iphi + kpin_part_.start());
 			success = success and operations::io::load(basedir + "/states", phi);
 
-			math::array<double, 1> tmpocc(kpin()[iphi].set_part().local_size());
+			gpu::array<double, 1> tmpocc(kpin()[iphi].set_part().local_size());
 			success = success and operations::io::load(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), tmpocc);
 			occupations()[iphi] = tmpocc;
 			

@@ -57,7 +57,7 @@ auto gather(ArrayType const & array, PartType const & part, CommType & comm, int
 
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 #include <mpi3/environment.hpp>
 #include <parallel/arbitrary_partition.hpp>
@@ -72,7 +72,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   auto nn = 15;
   parallel::arbitrary_partition part(nn*(comm.rank() + 1), comm);
   
-  math::array<double, 1> local_array(part.local_size(), double(comm.rank() + 1.0));
+  gpu::array<double, 1> local_array(part.local_size(), double(comm.rank() + 1.0));
 
   auto array = gather(local_array, part, comm, comm.size() - 1);
 

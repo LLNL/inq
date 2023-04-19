@@ -48,7 +48,7 @@ void propagate_velocities(double dt, AccelType const & accel, VelType & velociti
 
 #include <catch2/catch_all.hpp>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 using namespace inq;
 

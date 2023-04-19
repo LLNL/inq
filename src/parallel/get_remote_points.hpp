@@ -10,7 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <gpu/run.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <parallel/communicator.hpp>
 #include <parallel/array_iterator_2d.hpp>
 #include <parallel/partition.hpp>
@@ -37,12 +37,12 @@ struct remote_points_table {
 	std::vector<std::vector<point_position>> points_needed;
 	int total_needed;
 	int total_requested;
-	math::array<int, 1> list_points_requested;
-	math::array<int, 1> list_sizes_requested;
-	math::array<int, 1> list_sizes_needed;	
-	math::array<int, 1> list_needed;
-	math::array<int, 1> list_displs_needed;
-	math::array<int, 1> list_displs_requested;	
+	gpu::array<int, 1> list_points_requested;
+	gpu::array<int, 1> list_sizes_requested;
+	gpu::array<int, 1> list_sizes_needed;	
+	gpu::array<int, 1> list_needed;
+	gpu::array<int, 1> list_displs_needed;
+	gpu::array<int, 1> list_displs_requested;	
 	
 	template <class BasisType, class ArrayType>
 	remote_points_table(BasisType & basis, ArrayType const & point_list){
@@ -122,14 +122,14 @@ struct remote_points_table {
 };
 
 template <class BasisType, class ElementType, class ArrayType>
-math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementType> const & source, ArrayType const & point_list){
+gpu::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementType> const & source, ArrayType const & point_list){
 
 	CALI_CXX_MARK_FUNCTION;
 
 	auto const num_proc = source.basis().comm().size();
  
 	if(num_proc == 1){
-		math::array<ElementType, 1> remote_points(point_list.size());
+		gpu::array<ElementType, 1> remote_points(point_list.size());
 		
 		gpu::run(point_list.size(),
 						 [rem = begin(remote_points), sou = begin(source.linear()), poi = begin(point_list)] GPU_LAMBDA (auto ip){
@@ -142,8 +142,8 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
 	remote_points_table rp(source.basis(), point_list);
 	
 	// send the value of the request points
-	math::array<ElementType, 1> value_points_requested(rp.total_requested);
-	math::array<ElementType, 1> value_points_needed(rp.total_needed);
+	gpu::array<ElementType, 1> value_points_requested(rp.total_requested);
+	gpu::array<ElementType, 1> value_points_needed(rp.total_needed);
 
 	gpu::run(rp.total_requested,
 					 [par =  source.basis().part(), lreq = begin(rp.list_points_requested), vreq = begin(value_points_requested), sou = begin(source.linear())] GPU_LAMBDA (auto ip){
@@ -157,7 +157,7 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
 								raw_pointer_cast(value_points_needed.data_elements()), raw_pointer_cast(rp.list_sizes_needed.data_elements()), raw_pointer_cast(rp.list_displs_needed.data_elements()), mpi_type, source.basis().comm().get());
 
 	// Finally copy the values to the return array in the proper order
-	math::array<ElementType, 1> remote_points(point_list.size());
+	gpu::array<ElementType, 1> remote_points(point_list.size());
 
 	long ip = 0;
 	for(int iproc = 0; iproc < num_proc; iproc++){
@@ -173,7 +173,7 @@ math::array<ElementType, 1> get_remote_points(basis::field<BasisType, ElementTyp
 }
 
 template <typename FieldSetType, typename ArrayType>
-math::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetType const & source, ArrayType const & point_list){
+gpu::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetType const & source, ArrayType const & point_list){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -181,7 +181,7 @@ math::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetTy
 	auto const num_proc = source.basis().comm().size();
 	
 	if(num_proc == 1){
-		math::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), nset});
+		gpu::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), nset});
 		
 		gpu::run(nset, point_list.size(),
 						 [rem = begin(remote_points), sou = begin(source.matrix()), poi = begin(point_list)] GPU_LAMBDA (auto ist, auto ip){
@@ -194,8 +194,8 @@ math::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetTy
 	remote_points_table rp(source.basis(), point_list);
 	
 	// send the value of the request points
-	math::array<typename FieldSetType::element_type, 2> value_points_requested({rp.total_requested, nset});
-	math::array<typename FieldSetType::element_type, 2> value_points_needed({rp.total_needed, nset});
+	gpu::array<typename FieldSetType::element_type, 2> value_points_requested({rp.total_requested, nset});
+	gpu::array<typename FieldSetType::element_type, 2> value_points_needed({rp.total_needed, nset});
 
 	gpu::run(nset, rp.total_requested,
 					 [par =  source.basis().part(), lreq = begin(rp.list_points_requested), vreq = begin(value_points_requested), sou = begin(source.matrix())] GPU_LAMBDA (auto iset, auto ip){
@@ -213,7 +213,7 @@ math::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetTy
 	MPI_Type_free(&mpi_type);
 	
 	// Finally copy the values to the return array in the proper order
-	math::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), nset});
+	gpu::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), nset});
 
 	long ip = 0;
 	for(int iproc = 0; iproc < num_proc; iproc++){
@@ -229,11 +229,11 @@ math::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetTy
 }
 
 template <typename FieldSetType, typename ArrayType>
-math::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetType const & source, ArrayType const & point_list, ArrayType const & state_list){
+gpu::array<typename FieldSetType::element_type, 2> get_remote_points(FieldSetType const & source, ArrayType const & point_list, ArrayType const & state_list){
 
 	CALI_CXX_MARK_FUNCTION;
 
-	math::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), state_list.size()});
+	gpu::array<typename FieldSetType::element_type, 2> remote_points({point_list.size(), state_list.size()});
 	
 	if(source.full_comm().size() == 1) {
 		gpu::run(state_list.size(), point_list.size(),
@@ -306,7 +306,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	assert(npoints > 0);
 	assert(npoints <= rs.size());
 	
-	math::array<long, 1> list(npoints);
+	gpu::array<long, 1> list(npoints);
 	
 	for(long ip = 0; ip < npoints; ip++){
 		list[ip] = drand48()*(rs.size() - 1);
@@ -337,7 +337,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	assert(nst > 0);
 	assert(nst <= nvec);
 		
-	math::array<long, 1> stlist(nst);
+	gpu::array<long, 1> stlist(nst);
 	
 	for(long ist = 0; ist < nst; ist++){
 		stlist[ist] = drand48()*(nvec - 1);

@@ -14,7 +14,7 @@
 #include <tuple> //std::get
 #include <cassert>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/complex.hpp>
 #include <math/subspace_matrix.hpp>
 #include <utils/raw_pointer_cast.hpp>
@@ -36,7 +36,7 @@ void invert_triangular(math::subspace_matrix<Type> & matrix){
 	
 	int nn = std::get<0>(sizes(matrix.array()));
 
-	math::array<Type, 2> inverse({nn, nn});
+	gpu::array<Type, 2> inverse({nn, nn});
 
 	gpu::run(nn, nn, [inv = begin(inverse)] GPU_LAMBDA (auto jj, auto ii){
 		inv[ii][jj] = (ii == jj) ? 1.0 : 0.0;
@@ -66,7 +66,7 @@ void invert_triangular(math::subspace_matrix<Type> & matrix){
 
 #include <mpi3/environment.hpp>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
 

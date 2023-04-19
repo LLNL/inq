@@ -11,7 +11,7 @@
 
 #include <math/complex.hpp>
 #include <math/vector3.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
 #include <operations/orthogonalize.hpp>
@@ -95,7 +95,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
   basis::trivial bas(npoint, boost::mpi3::environment::get_self_instance());
 	
-	math::array<complex, 2> identity_matrix({npoint, npoint});
+	gpu::array<complex, 2> identity_matrix({npoint, npoint});
   
 	for(int ip = 0; ip < npoint; ip++){
 		for(int jp = 0; jp < npoint; jp++){
@@ -108,7 +108,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Diagonal matrix complex"){
   
-    math::array<complex, 2> diagonal_matrix({npoint, npoint});
+    gpu::array<complex, 2> diagonal_matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){

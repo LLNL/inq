@@ -361,7 +361,7 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 
 #include <vector>
 #include <valarray>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
@@ -533,7 +533,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     ions::unit_cell cell(vector3<double>(alat, 0.0, 0.0), vector3<double>(0.0, alat, 0.0), vector3<double>(0.0, 0.0, alat));
 
-		math::array<double, 1> charge(64, 4.0);
+		gpu::array<double, 1> charge(64, 4.0);
 
     std::vector<vector3<double>> positions;
 		

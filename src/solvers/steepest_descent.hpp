@@ -11,7 +11,7 @@
 
 #include <math/complex.hpp>
 #include <math/vector3.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <operations/shift.hpp>
 #include <operations/orthogonalize.hpp>
@@ -29,9 +29,9 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 
 	const int num_steps = 5;
 
-	auto mm = math::array<typename field_set_type::element_type, 2>({3, phi.local_set_size()});
-	auto lambda = math::array<typename field_set_type::element_type, 1>(phi.local_set_size());
-	auto normres = math::array<double, 1>(phi.local_set_size());
+	auto mm = gpu::array<typename field_set_type::element_type, 2>({3, phi.local_set_size()});
+	auto lambda = gpu::array<typename field_set_type::element_type, 1>(phi.local_set_size());
+	auto normres = gpu::array<double, 1>(phi.local_set_size());
 
 	for(int istep = 0; istep < num_steps; istep++){
     
@@ -112,7 +112,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
   basis::trivial bas(npoint, boost::mpi3::environment::get_self_instance());
 	
-	math::array<complex, 2> identity_matrix({npoint, npoint});
+	gpu::array<complex, 2> identity_matrix({npoint, npoint});
   
 	for(int ip = 0; ip < npoint; ip++){
 		for(int jp = 0; jp < npoint; jp++){
@@ -125,7 +125,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Diagonal matrix complex"){
   
-    math::array<complex, 2> diagonal_matrix({npoint, npoint});
+    gpu::array<complex, 2> diagonal_matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){

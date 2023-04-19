@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__MATH__ARRAY
-#define INQ__MATH__ARRAY
+#ifndef GPURUN__MATH__ARRAY
+#define GPURUN__MATH__ARRAY
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -33,8 +33,7 @@
 #endif
 #include <multi/adaptors/blas.hpp>
 
-namespace inq {
-namespace math {
+namespace gpu {
 
 #ifdef ENABLE_CUDA
 template<typename Upstream, typename Bookkeeper>
@@ -154,16 +153,14 @@ void prefetch_cpu(ArrayType const &
 }
 
 }
-}
 #endif
 
-#ifdef INQ_MATH_ARRAY_UNIT_TEST
-#undef INQ_MATH_ARRAY_UNIT_TEST
+#ifdef GPURUN__ARRAY__UNIT_TEST
+#undef GPURUN__ARRAY__UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
-	using namespace inq;
+TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 }

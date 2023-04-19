@@ -31,7 +31,7 @@ void copy(long dim1, long dim2, SourceType const & source, DestinationType & des
 #undef GPURUN__COPY__UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 	using namespace inq;
@@ -42,8 +42,8 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
     long nn = 1000;
     long mm = 450;
     
-    math::array<double, 2> src({nn + 2, mm + 2}, 10.0);
-    math::array<double, 2> dest({nn, mm}, 0.0);
+    gpu::array<double, 2> src({nn + 2, mm + 2}, 10.0);
+    gpu::array<double, 2> dest({nn, mm}, 0.0);
 
     for(int in = 0; in < nn; in++){
       for(int im = 0; im < mm; im++){

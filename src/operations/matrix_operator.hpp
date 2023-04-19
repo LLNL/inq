@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 #include <cstdlib>
 
@@ -21,7 +21,7 @@ class matrix_operator {
 	
 public:
 
-	matrix_operator(math::array<type, 2> && matrix):
+	matrix_operator(gpu::array<type, 2> && matrix):
 		matrix_(matrix){
 
 		assert(std::get<0>(sizes(matrix_)) == std::get<1>(sizes(matrix_)));
@@ -44,7 +44,7 @@ public:
 
 private:
 
-	math::array<type, 2> matrix_;
+	gpu::array<type, 2> matrix_;
     
 };
 
@@ -72,7 +72,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Diagonal matrix real"){
 
-    math::array<double, 2> matrix({npoint, npoint});
+    gpu::array<double, 2> matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){
@@ -103,7 +103,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Laplacian matrix real"){
   
-    math::array<double, 2> matrix({npoint, npoint});
+    gpu::array<double, 2> matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){
@@ -135,7 +135,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Diagonal matrix complex"){
 
-    math::array<complex, 2> matrix({npoint, npoint});
+    gpu::array<complex, 2> matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){
@@ -167,7 +167,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Periodic Laplacian matrix complex"){
   
-    math::array<complex, 2> matrix({npoint, npoint});
+    gpu::array<complex, 2> matrix({npoint, npoint});
     
     for(int ip = 0; ip < npoint; ip++){
       for(int jp = 0; jp < npoint; jp++){

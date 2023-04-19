@@ -19,7 +19,7 @@
 
 #include <basis/spherical_grid.hpp>
 #include <basis/double_grid.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <operations/integral.hpp>
 #include <parallel/partition.hpp>
 #include <solvers/poisson.hpp>
@@ -38,7 +38,7 @@ namespace hamiltonian {
 
 	public:
 
-		using pseudopotential_type = pseudo::pseudopotential<math::array<double, 1>>;
+		using pseudopotential_type = pseudo::pseudopotential<gpu::array<double, 1>>;
 		
 		template <class atom_array>
 		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff):

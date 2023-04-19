@@ -11,7 +11,7 @@
 
 #include <pseudopod/math/sharmonic.hpp>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/vector3.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/double_grid.hpp>
@@ -131,8 +131,8 @@ private:
 
 	basis::spherical_grid sphere_;
 	int nproj_;
-	math::array<double, 2> matrix_;
-	math::array<double, 1> kb_coeff_;
+	gpu::array<double, 2> matrix_;
+	gpu::array<double, 1> kb_coeff_;
 	mutable parallel::communicator comm_;
 	int iatom_;
     

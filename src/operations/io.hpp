@@ -11,7 +11,7 @@
 
 #include <inq_config.h>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 #include <parallel/communicator.hpp>
 #include <mpi3/detail/datatype.hpp>
@@ -126,7 +126,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 	using Type = typename FieldSet::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
 	
-	math::array<Type, 1> buffer(phi.basis().part().local_size());
+	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	if(phi.full_comm().rank() == 0) boost::filesystem::create_directories(dirname);
 	phi.full_comm().barrier();
@@ -172,7 +172,7 @@ auto load(std::string const & dirname, FieldSet & phi){
 	using Type = typename FieldSet::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
 	
-	math::array<Type, 1> buffer(phi.basis().part().local_size());
+	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	DIR* dir = opendir(dirname.c_str());
 	if (!dir) {
@@ -238,7 +238,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		parallel::partition part(size, comm);
 
-		math::array<int, 1> arr(part.local_size());
+		gpu::array<int, 1> arr(part.local_size());
 
 		for(int ii = 0; ii < part.local_size(); ii++){
 			arr[ii] = part.local_to_global(ii).value();
@@ -246,7 +246,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		operations::io::save("array_restart", comm, part, arr);
 		
-		math::array<int, 1> arr2(part.local_size());
+		gpu::array<int, 1> arr2(part.local_size());
 
 		CHECK(operations::io::load("array_restart", comm, part, arr2));
 

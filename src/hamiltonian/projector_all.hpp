@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/vector3.hpp>
 #include <ions/unit_cell.hpp>
 #include <ions/periodic_replicas.hpp>
@@ -102,10 +102,10 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////		
 	
 	template <typename KpointType>
-	math::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
     
-		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
+		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
 
 		{ CALI_CXX_MARK_SCOPE("projector::gather");
 				
@@ -253,7 +253,7 @@ public:
 	
 	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType>
 	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric,
-						 OccsType const & occs, vector3<double, covariant> const & vector_potential, math::array<vector3<double>, 1> & forces_non_local) const {
+						 OccsType const & occs, vector3<double, covariant> const & vector_potential, gpu::array<vector3<double>, 1> & forces_non_local) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -261,9 +261,9 @@ public:
 		using boost::multi::blas::transposed;
 		namespace blas = boost::multi::blas;
 
-		math::array<typename PhiType::element_type, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-		math::array<typename GPhiType::element_type, 3> sphere_gphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
+		gpu::array<typename PhiType::element_type, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		gpu::array<typename GPhiType::element_type, 3> sphere_gphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
  
 		{ CALI_CXX_MARK_SCOPE("projector_all::force::gather");
 				
@@ -304,7 +304,7 @@ public:
 			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, transposed(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
 
-		math::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
+		gpu::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
 			
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
@@ -324,11 +324,11 @@ public:
 	template <typename KpointType>
 	void position_commutator(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, vector3<complex, covariant>> & cphi, KpointType const & kpoint) const {
 		
-		math::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-		math::array<vector3<complex, contravariant>, 3> sphere_rphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});		
+		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		gpu::array<vector3<complex, contravariant>, 3> sphere_rphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});		
 
-		math::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
-		math::array<vector3<complex, contravariant>, 3> rprojections_all({nprojs_, max_nlm_, phi.local_set_size()});		
+		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
+		gpu::array<vector3<complex, contravariant>, 3> rprojections_all({nprojs_, max_nlm_, phi.local_set_size()});		
 
 		{ CALI_CXX_MARK_SCOPE("position_commutator::gather");
 				
@@ -405,13 +405,13 @@ private:
 	int nprojs_;
 	long max_sphere_size_;
 	int max_nlm_;
-	math::array<vector3<int>, 2> points_;
-	math::array<vector3<double, contravariant>, 2> positions_;
-	math::array<double, 2> coeff_;
-	math::array<double, 3> matrices_;
+	gpu::array<vector3<int>, 2> points_;
+	gpu::array<vector3<double, contravariant>, 2> positions_;
+	gpu::array<double, 2> coeff_;
+	gpu::array<double, 3> matrices_;
 	mutable boost::multi::array<parallel::communicator, 1> comms_;	
-	math::array<int, 1> nlm_;
-	math::array<int, 1> iatom_;
+	gpu::array<int, 1> nlm_;
+	gpu::array<int, 1> iatom_;
   
 };
   
