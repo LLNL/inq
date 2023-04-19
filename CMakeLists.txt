@@ -173,7 +173,7 @@ else()  # some systems do not have fftw3 registered in pkg-config, in this case 
   check_cxx_symbol_exists(fftw_plan_dft_1d fftw3.h FFTW3_CHECKED)
   if(FFTW_FOUND)
   else()
-    message(WARNING "FFTW not found")
+    message(FATAL_ERROR "FFTW not found")
   endif()
 endif()
 
