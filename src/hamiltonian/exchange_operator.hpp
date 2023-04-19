@@ -28,9 +28,9 @@ namespace inq {
 namespace hamiltonian {
   class exchange_operator {
 		
-		math::array<double, 1> occupations_;
-		math::array<vector3<double, covariant>, 1> kpoints_;
-		math::array<int, 1> kpoint_indices_;
+		gpu::array<double, 1> occupations_;
+		gpu::array<vector3<double, covariant>, 1> kpoints_;
+		gpu::array<int, 1> kpoint_indices_;
 		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
 		std::vector<states::orbital_set<basis::real_space, complex>> ace_orbitals_;
 		solvers::poisson poisson_solver_;

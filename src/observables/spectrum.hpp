@@ -12,14 +12,14 @@
 #include <inq_config.h>
 
 #include <magnitude/energy.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/complex.hpp>
 
 namespace inq {
 namespace observables {
 
 template <typename TimeType, typename TimeSeriesType, typename RetElementType = decltype(exp(complex{0.0, 1.0})*TimeSeriesType{}[0])>
-math::array<RetElementType, 1> spectrum(quantity<magnitude::energy> maxw, quantity<magnitude::energy> dw, TimeType const & time, TimeSeriesType const & time_series) {
+gpu::array<RetElementType, 1> spectrum(quantity<magnitude::energy> maxw, quantity<magnitude::energy> dw, TimeType const & time, TimeSeriesType const & time_series) {
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -29,7 +29,7 @@ math::array<RetElementType, 1> spectrum(quantity<magnitude::energy> maxw, quanti
   long ntime = time.size();
   long nfreq = maxw/dw + 1;
   
-  math::array<RetElementType, 1> freq_series(nfreq);
+  gpu::array<RetElementType, 1> freq_series(nfreq);
 
   assert(freq_series.size() == nfreq);
 
@@ -77,9 +77,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   int ntime = 1000;
   double dtime = 0.1;
 
-  math::array<double, 1> time(ntime);
-  math::array<double, 1> tseries(ntime);
-  math::array<vector3<double>, 1> vtseries(ntime);
+  gpu::array<double, 1> time(ntime);
+  gpu::array<double, 1> tseries(ntime);
+  gpu::array<vector3<double>, 1> vtseries(ntime);
   
   double freq1 = 10.0;
   double freq2 = 6.39;

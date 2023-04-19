@@ -99,7 +99,7 @@ public:
 
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 #include <mpi3/environment.hpp>
 
@@ -116,7 +116,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("double"){
 		
-		math::array<double, 1> arr(part.local_size(), double(comm.rank() + 1.0));
+		gpu::array<double, 1> arr(part.local_size(), double(comm.rank() + 1.0));
 		
 		auto ipart = comm.rank();
 		for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){
@@ -136,7 +136,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("vector3"){
 		
-		math::array<vector3<double>, 1> arr(part.local_size(), {comm.rank() + 1.0, comm.rank()*2.0, comm.rank() - 5.0});
+		gpu::array<vector3<double>, 1> arr(part.local_size(), {comm.rank() + 1.0, comm.rank()*2.0, comm.rank() - 5.0});
 		
 		auto ipart = comm.rank();
 		for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){

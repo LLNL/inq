@@ -84,10 +84,10 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 		return;
 	}
 	
-	math::array<complex, 1> input(fft.size_inbox());
-	math::prefetch(input);
-	math::array<complex, 1> output(fft.size_outbox());	
-	math::prefetch(output);
+	gpu::array<complex, 1> input(fft.size_inbox());
+	gpu::prefetch(input);
+	gpu::array<complex, 1> output(fft.size_outbox());	
+	gpu::prefetch(output);
 
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
@@ -141,9 +141,9 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 		assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
  		auto last_dim = std::get<3>(sizes(array_rs));
 
-		math::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
+		gpu::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
 		
-		math::prefetch(tmp);
+		gpu::prefetch(tmp);
 		
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_2d");
@@ -154,7 +154,7 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 		}
 		
 		CALI_MARK_BEGIN("fft_forward_transpose");		
-		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
+		gpu::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
 
 		for(int i4 = 0; i4 < comm.size(); i4++){
 			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
@@ -224,10 +224,10 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 		return;
 	}
 	
-	math::array<complex, 1> input(fft.size_inbox());
-	math::prefetch(input);	
-	math::array<complex, 1> output(fft.size_outbox());	
-	math::prefetch(output);
+	gpu::array<complex, 1> input(fft.size_inbox());
+	gpu::prefetch(input);	
+	gpu::array<complex, 1> output(fft.size_outbox());	
+	gpu::prefetch(output);
 	
 	for(int ist = 0; ist < size(array_rs[0][0][0]); ist++){
 
@@ -273,8 +273,8 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 		int zblock = fourier_basis.cubic_part(2).max_local_set_size();
 		auto last_dim = std::get<3>(sizes(array_fs));
 		
-		math::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
-		math::prefetch(buffer);
+		gpu::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
+		gpu::prefetch(buffer);
 		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_2d");
@@ -288,8 +288,8 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 			parallel::alltoall(buffer, comm);
 		}
 		
-		math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
-		math::prefetch(tmp);
+		gpu::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
+		gpu::prefetch(tmp);
 		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_transpose");

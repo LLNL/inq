@@ -76,7 +76,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
 
-		math::array<double, 1> factor(aa.set_part().local_size());
+		gpu::array<double, 1> factor(aa.set_part().local_size());
 		
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			auto jjg = aa.set_part().local_to_global(jj);
@@ -100,7 +100,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
-		math::array<complex, 1> factor(aa.set_part().local_size());
+		gpu::array<complex, 1> factor(aa.set_part().local_size());
 		
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			auto jjg = aa.set_part().local_to_global(jj);
@@ -126,7 +126,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
-		math::array<double, 1> factor(aa.set_part().local_size());
+		gpu::array<double, 1> factor(aa.set_part().local_size());
 		
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			auto jjg = aa.set_part().local_to_global(jj);

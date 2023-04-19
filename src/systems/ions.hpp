@@ -15,7 +15,7 @@
 
 #include <ions/geometry.hpp>
 #include <ions/unit_cell.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <systems/box.hpp>
 
 namespace inq {

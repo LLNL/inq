@@ -11,7 +11,7 @@
 
 #include <math/complex.hpp>
 #include <math/vector3.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <solvers/least_squares.hpp>
 #include <mixers/base.hpp>
 
@@ -44,7 +44,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 		
-	void broyden_extrapolation(ArrayType & input_value, int const iter_used, math::array<element_type, 1> const & ff){
+	void broyden_extrapolation(ArrayType & input_value, int const iter_used, gpu::array<element_type, 1> const & ff){
 
 		CALI_CXX_MARK_SCOPE("broyden_extrapolation");
 		
@@ -65,7 +65,7 @@ public:
 		auto subdf = df_({0, iter_used}, {0, input_value.size()});
 		auto beta = +blas::gemm(ww*ww, subdf, blas::H(subdf));
 
-		auto matff = math::array<element_type, 2>({iter_used, input_value.size()}); //for some reason this has to be iter_used and not 1. 
+		auto matff = gpu::array<element_type, 2>({iter_used, input_value.size()}); //for some reason this has to be iter_used and not 1. 
 		matff[0] = ff({0, input_value.size()});
 		auto workmat = +blas::gemm(1.0, matff, blas::H(subdf));
 		auto work = +workmat[0];
@@ -96,12 +96,12 @@ public:
 
 		CALI_CXX_MARK_SCOPE("broyden_mixing");
 		
-		assert((typename math::array<double, 2>::size_type) input_value.size() == dv_[0].size());
-		assert((typename math::array<double, 2>::size_type) output_value.size() == dv_[0].size());
+		assert((typename gpu::array<double, 2>::size_type) input_value.size() == dv_[0].size());
+		assert((typename gpu::array<double, 2>::size_type) output_value.size() == dv_[0].size());
 
 		iter_++;
 
-		math::array<element_type, 1> ff(input_value.size());
+		gpu::array<element_type, 1> ff(input_value.size());
 
 		gpu::run(input_value.size(),
 						 [iv = begin(input_value), ov = begin(output_value), ffp = begin(ff)] GPU_LAMBDA (auto ip){
@@ -157,10 +157,10 @@ private:
 	int iter_;
 	int max_size_;
 	double mix_factor_;
-	math::array<element_type, 2> dv_;
-	math::array<element_type, 2> df_;
-	math::array<element_type, 1> f_old_;
-	math::array<element_type, 1> vin_old_;
+	gpu::array<element_type, 2> dv_;
+	gpu::array<element_type, 2> df_;
+	gpu::array<element_type, 1> f_old_;
+	gpu::array<element_type, 1> vin_old_;
 	element_type gamma_;
 	int last_pos_;
 	mutable parallel::communicator comm_;
@@ -184,8 +184,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
  
 
-	math::array<double, 1> vin({10.0, -20.0});
-	math::array<double, 1> vout({0.0,  22.2});
+	gpu::array<double, 1> vin({10.0, -20.0});
+	gpu::array<double, 1> vout({0.0,  22.2});
 
   mixers::broyden<decltype(vin)> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
 	
@@ -194,7 +194,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(vin[0] == 5.0_a);
   CHECK(vin[1] == 1.1_a);
 
-	vout = math::array<double, 1>({4.0, 5.5});
+	vout = gpu::array<double, 1>({4.0, 5.5});
 
 	lm(vin, vout);
 

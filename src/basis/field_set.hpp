@@ -12,7 +12,7 @@
 #include <basis/real_space.hpp>
 #include <parallel/partition.hpp>
 #include <parallel/get_remote_points.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <algorithm>
 
 #include <mpi3/environment.hpp>
@@ -38,7 +38,7 @@ class field_set {
 public:
 
 	typedef BasisType basis_type;
-	typedef math::array<ElementType, 2> internal_array_type;
+	typedef gpu::array<ElementType, 2> internal_array_type;
 	typedef ElementType element_type;
 
 	template <typename BType, typename EType>
@@ -85,8 +85,8 @@ public:
 	field_set(field_set && oldset, parallel::cartesian_communicator<2> new_comm):
 		field_set(BasisType{BasisType{oldset.basis()}, basis_subcomm(new_comm)}, oldset.set_size(), new_comm)
 	{
-		math::array<int, 1> rem_points(basis().local_size());
-		math::array<int, 1> rem_states(local_set_size());
+		gpu::array<int, 1> rem_points(basis().local_size());
+		gpu::array<int, 1> rem_states(local_set_size());
 		for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
 		for(long ist = 0; ist < local_set_size(); ist++) rem_states[ist] = set_part().local_to_global(ist).value();
 		matrix_ = parallel::get_remote_points(oldset, rem_points, rem_states);
@@ -174,7 +174,7 @@ public:
 	}
 
 	void prefetch() const {
-		math::prefetch(matrix_);
+		gpu::prefetch(matrix_);
 	}
 
 	class parallel_set_iterator {

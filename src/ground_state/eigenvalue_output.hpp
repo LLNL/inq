@@ -23,12 +23,12 @@ class eigenvalues_output {
 
 	int nspin_;
 	int nkpoints_;
-	math::array<int, 1> all_kpoint_index;
-	math::array<int, 1> all_spin_index;
-	math::array<int, 1> all_states_index;
-	math::array<double, 1> all_eigenvalues;
-	math::array<double, 1> all_occupations;
-	math::array<complex, 1> all_normres;
+	gpu::array<int, 1> all_kpoint_index;
+	gpu::array<int, 1> all_spin_index;
+	gpu::array<int, 1> all_states_index;
+	gpu::array<double, 1> all_eigenvalues;
+	gpu::array<double, 1> all_occupations;
+	gpu::array<complex, 1> all_normres;
 
 public:
 	
@@ -38,10 +38,10 @@ public:
 		nkpoints_(el.brillouin_zone().size())
 	{
 		
-		math::array<int, 2> kpoint_index({el.kpin_part().local_size(), el.max_local_set_size()});
-		math::array<int, 2> spin_index({el.kpin_part().local_size(), el.max_local_set_size()});
-		math::array<int, 2> state_index({el.kpin_part().local_size(), el.max_local_set_size()});
-		math::array<double, 2> occs({el.kpin_part().local_size(), el.max_local_set_size()});
+		gpu::array<int, 2> kpoint_index({el.kpin_part().local_size(), el.max_local_set_size()});
+		gpu::array<int, 2> spin_index({el.kpin_part().local_size(), el.max_local_set_size()});
+		gpu::array<int, 2> state_index({el.kpin_part().local_size(), el.max_local_set_size()});
+		gpu::array<double, 2> occs({el.kpin_part().local_size(), el.max_local_set_size()});
 		
 		auto iphi = 0;
 		for(auto & phi : el.kpin()){
@@ -73,7 +73,7 @@ public:
 	template <class OStream>
 	friend OStream& operator<<(OStream & out, eigenvalues_output const & self){
 
-		auto order = math::array<int, 1>(self.all_eigenvalues().size());
+		auto order = gpu::array<int, 1>(self.all_eigenvalues().size());
 		
 		for(int iorder = 0; iorder < order.size(); iorder++) order[iorder] = iorder;
 		

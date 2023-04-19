@@ -8,7 +8,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <gpu/copy.hpp>
 #include <mpi3/environment.hpp>
 
@@ -28,11 +28,11 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 			long nn = 8000;
 
 			// WARMUP POOL MEMORY, IF ANY
-			std::vector<math::array<complex, 2>> warmup(10, math::array<complex, 2>({nn, nn}, complex{1.0, 2.0}));
+			std::vector<gpu::array<complex, 2>> warmup(10, gpu::array<complex, 2>({nn, nn}, complex{1.0, 2.0}));
 			CHECK( warmup[5][nn-1][nn-1] == complex{1.0, 2.0} );
 
-			math::array<complex, 2> src({nn, nn});
-			math::array<complex, 2> dest({nn, nn});
+			gpu::array<complex, 2> src({nn, nn});
+			gpu::array<complex, 2> dest({nn, nn});
 			
 			gpu::run(nn, nn, [sr = begin(src), de = begin(dest)] GPU_LAMBDA (auto i1, auto i2){
 				sr[i2][i1] = 1.0;

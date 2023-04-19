@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
 #include <FC.h>
@@ -31,7 +31,7 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 	int mm = std::get<0>(sizes(matrix));
 	int nn = std::get<1>(sizes(matrix));
 
-	math::array<double, 1> ss(mm);
+	gpu::array<double, 1> ss(mm);
 
 	int rank, info;
 	double dwork;
@@ -68,14 +68,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		using namespace inq;
 	using namespace Catch::literals;
 		
-		math::array<double, 2> matrix({2, 2});
+		gpu::array<double, 2> matrix({2, 2});
 		
 		matrix[0][0] = 4.0;
 		matrix[0][1] = 0.0;
 		matrix[1][0] = 0.0;
 		matrix[1][1] = 2.0;
 
-		math::array<double, 1> vector = {0.0, 1.0, };
+		gpu::array<double, 1> vector = {0.0, 1.0, };
 		
 		solvers::least_squares(matrix, vector);
 
@@ -89,14 +89,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		using namespace inq;
 	using namespace Catch::literals;
 		
-		math::array<double, 2> matrix({2, 2});
+		gpu::array<double, 2> matrix({2, 2});
 		
 		matrix[0][0] = 0.89653;
 		matrix[0][1] = 0.41072;
 		matrix[1][0] = 0.41072;
 		matrix[1][1] = 0.69479;
 
-		math::array<double, 1> vector = {0.21563, 0.40103, };
+		gpu::array<double, 1> vector = {0.21563, 0.40103, };
 		
 		solvers::least_squares(matrix, vector);
 
@@ -110,14 +110,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		using namespace inq;
 	using namespace Catch::literals;
 		
-		math::array<double, 2> matrix({2, 2});
+		gpu::array<double, 2> matrix({2, 2});
 		
 		matrix[0][0] = 6432.12;
 		matrix[0][1] = 4502.48;
 		matrix[1][0] = 4502.48;
 		matrix[1][1] = 3151.74;
 
-		math::array<double, 1> vector({1.0, 1.0});
+		gpu::array<double, 1> vector({1.0, 1.0});
 		
 		solvers::least_squares(matrix, vector);
 

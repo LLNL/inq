@@ -12,7 +12,7 @@
 #include <inq_config.h>
 
 #include <gpu/copy.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <utils/profiling.hpp>
 #include <solvers/invert_triangular.hpp>
 
@@ -35,7 +35,7 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 		phi.set_comm().nccl_init();
 
 		// The direct copy is slow with multi right now: auto copy = phi.matrix();
-		math::array<typename FieldSetType::element_type, 2> copy({phi.basis().local_size(), phi.set_part().local_size()});
+		gpu::array<typename FieldSetType::element_type, 2> copy({phi.basis().local_size(), phi.set_part().local_size()});
 		gpu::copy(phi.basis().local_size(), phi.set_part().local_size(), phi.matrix(), copy);
 		
 		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){

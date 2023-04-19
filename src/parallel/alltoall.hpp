@@ -13,7 +13,7 @@
 
 #include <cstdlib>
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
 #include <inq_config.h>
@@ -117,7 +117,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   
   int blocksize = 100;
   
-  math::array<int, 2> buffer({comm.size(), blocksize}, comm.rank());
+  gpu::array<int, 2> buffer({comm.size(), blocksize}, comm.rank());
 
   parallel::alltoall(buffer, comm);
 	gpu::sync();

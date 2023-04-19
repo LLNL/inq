@@ -104,7 +104,7 @@ public:
 		auto calc = [](auto occ, auto v) {
 			return occ*norm(v);
 		};
-		math::array<double, 2> occ({gs.kpin_size(), gs.kpin()[0].set_size()});
+		gpu::array<double, 2> occ({gs.kpin_size(), gs.kpin()[0].set_size()});
 		for(int ilot=0; ilot<gs.kpin_size(); ilot++) {
 			auto ortho = operations::overlap(electrons_.kpin()[ilot], gs.kpin()[ilot]).array();
 			for (int it=0; it<std::get<0>(sizes(ortho)); it++) {

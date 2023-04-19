@@ -157,7 +157,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		states::orbital_set<basis::trivial, double> aa(bas, nvec, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-		math::array<double, 1> occ(aa.set_part().local_size());
+		gpu::array<double, 1> occ(aa.set_part().local_size());
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
@@ -186,7 +186,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-		math::array<double, 1> occ(nvec);
+		gpu::array<double, 1> occ(nvec);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
@@ -215,7 +215,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 2, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-		math::array<double, 1> occ(nvec);
+		gpu::array<double, 1> occ(nvec);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
 			for(int jj = 0; jj < aa.spinor_local_set_size(); jj++){

@@ -28,7 +28,7 @@
 #include <basis/real_space.hpp>
 #include <cassert>
 #include <array>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 #include <utils/profiling.hpp>
 
@@ -180,14 +180,14 @@ namespace basis {
     }
     
 		template <class array_4d>
-		math::array<typename array_4d::element, 2> gather(const array_4d & grid) const {
+		gpu::array<typename array_4d::element, 2> gather(const array_4d & grid) const {
 
 			CALI_CXX_MARK_SCOPE("spherical_grid::gather(4d)");
 			
 			const int nst = std::get<3>(sizes(grid));
 
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
-			math::array<typename array_4d::element, 2> subgrid({this->size(), nst});
+			gpu::array<typename array_4d::element, 2> subgrid({this->size(), nst});
 			CALI_MARK_END("spherical_grid::gather(4d)::allocation");
 
 			gpu::run(nst, size(),
@@ -245,7 +245,7 @@ namespace basis {
 		
   private:
 
-		math::array<point_data, 1> points_;
+		gpu::array<point_data, 1> points_;
 		double volume_element_;
 		vector3<double> center_;
 		int size_;
@@ -261,7 +261,7 @@ namespace basis {
 
 #include <catch2/catch_all.hpp>
 #include <ions/unit_cell.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <math/complex.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
@@ -286,7 +286,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
     CHECK(size == 257);
 
-    math::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 1});
+    gpu::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 1});
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data_elements()[ii] = 0.0;
     
@@ -312,7 +312,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
     CHECK(size == 257);
     
-    math::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 20}, 0.0);
+    gpu::array<complex, 4> grid({pw.local_sizes()[0], pw.local_sizes()[1], pw.local_sizes()[2], 20}, 0.0);
 
     for(long ii = 0; ii < grid.num_elements(); ii++) grid.data_elements()[ii] = 1.0;
     

@@ -11,7 +11,7 @@
 
 #include <math/complex.hpp>
 #include <math/vector3.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <basis/field.hpp>
 #include <basis/fourier_space.hpp>
 #include <operations/space.hpp>

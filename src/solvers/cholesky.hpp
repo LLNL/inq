@@ -95,7 +95,7 @@ void cholesky(matrix_type && matrix, bool nocheck = false){
 #ifdef INQ_SOLVERS_CHOLESKY_UNIT_TEST
 #undef INQ_SOLVERS_CHOLESKY_UNIT_TEST
 
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -106,7 +106,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		using namespace inq;
     using namespace Catch::literals;
 		
-		math::array<complex, 2> matrix({2, 2});
+		gpu::array<complex, 2> matrix({2, 2});
 		
 		matrix[0][0] = 6432.12;
 		matrix[0][1] = 4502.48;

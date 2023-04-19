@@ -11,7 +11,7 @@
 
 #include <math/complex.hpp>
 #include <math/vector3.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 #include <solvers/least_squares.hpp>
 #include <mixers/base.hpp>
 
@@ -49,8 +49,8 @@ public:
 		
 		const double residual_coeff = 0.05;
 			
-		assert((typename math::array<double, 2>::size_type) input_value.size() == ff_[0].size());
-		assert((typename math::array<double, 2>::size_type) output_value.size() == ff_[0].size());
+		assert((typename gpu::array<double, 2>::size_type) input_value.size() == ff_[0].size());
+		assert((typename gpu::array<double, 2>::size_type) output_value.size() == ff_[0].size());
 
 		{
 			element_type aa = 0.0;
@@ -103,7 +103,7 @@ public:
 			return;
 		}
 
-		math::array<element_type, 2> amatrix({size + 1, size + 1}, NAN);
+		gpu::array<element_type, 2> amatrix({size + 1, size + 1}, NAN);
 
 		for(int ii = 0; ii < size; ii++){
 			for(int jj = 0; jj < size; jj++){
@@ -122,7 +122,7 @@ public:
 			
 		// REDUCE GRID amatrix
 
-		math::array<element_type, 1> alpha(size + 1, 0.0);
+		gpu::array<element_type, 1> alpha(size + 1, 0.0);
 		alpha[size] = -1.0;
 
 		//std::cout << "alpha = " << alpha[0] << '\t' << alpha[1] << std::endl;
@@ -175,8 +175,8 @@ private:
 	int iter_;
 	int max_size_;
 	double mix_factor_;
-	math::array<element_type, 2> ff_;
-	math::array<element_type, 2> dff_;
+	gpu::array<element_type, 2> ff_;
+	gpu::array<element_type, 2> dff_;
 	
 };
 
@@ -196,8 +196,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
-	math::array<double, 1> vin({10.0, -20.0});
-	math::array<double, 1> vout({0.0,  22.2});
+	gpu::array<double, 1> vin({10.0, -20.0});
+	gpu::array<double, 1> vout({0.0,  22.2});
 
 	mixers::pulay<decltype(vin)> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
 
@@ -206,7 +206,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(vin[0] == 5.0_a);
   CHECK(vin[1] == 1.1_a);
 
-	vout = math::array<double, 1>({4.0, 5.5});
+	vout = gpu::array<double, 1>({4.0, 5.5});
 
 	lm(vin, vout);
 

@@ -34,7 +34,7 @@ namespace inq {
 namespace operations {
 
 template<class Alloc>
-auto diagonalize_raw(math::array<double, 2, Alloc>& matrix){
+auto diagonalize_raw(gpu::array<double, 2, Alloc>& matrix){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -43,7 +43,7 @@ auto diagonalize_raw(math::array<double, 2, Alloc>& matrix){
 
 	int nn = std::get<0>(sizes(matrix));
     
-	math::array<double, 1> eigenvalues(nn);
+	gpu::array<double, 1> eigenvalues(nn);
 
 #ifdef ENABLE_CUDA
 	{
@@ -99,7 +99,7 @@ auto diagonalize_raw(math::array<double, 2, Alloc>& matrix){
 }
 
 template<class Alloc>
-auto diagonalize_raw(math::array<complex, 2, Alloc>& matrix){
+auto diagonalize_raw(gpu::array<complex, 2, Alloc>& matrix){
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -108,7 +108,7 @@ auto diagonalize_raw(math::array<complex, 2, Alloc>& matrix){
 
 	int nn = std::get<0>(sizes(matrix));
     
-	math::array<double, 1> eigenvalues(nn);
+	gpu::array<double, 1> eigenvalues(nn);
 
 #ifdef ENABLE_CUDA
 	{
@@ -169,7 +169,7 @@ auto diagonalize(MatrixType & matrix){
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	math::array<double, 1> eigenvalues;
+	gpu::array<double, 1> eigenvalues;
 
 	//Dense matrix diagonalization is unstable with respect to small
 	//differences in the input. This can cause problems in parallel when
@@ -179,7 +179,7 @@ auto diagonalize(MatrixType & matrix){
 	if(matrix.comm().rank() == 0){
 		eigenvalues = diagonalize_raw(matrix.array());
 	} else {
-		eigenvalues = math::array<double, 1>(matrix.size());
+		eigenvalues = gpu::array<double, 1>(matrix.size());
 	}
 	
 	if(matrix.comm().size() > 1){
@@ -204,7 +204,7 @@ auto diagonalize(MatrixType & matrix){
 #include <catch2/catch_all.hpp>
 
 #include <operations/randomize.hpp>
-#include <math/array.hpp>
+#include <gpu/array.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
@@ -216,7 +216,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		using namespace inq;
 		using namespace Catch::literals;
 		
-		math::array<double, 2> array({2, 2});
+		gpu::array<double, 2> array({2, 2});
 		
 		array[0][0] = 4.0;
 		array[0][1] = 0.0;
@@ -242,7 +242,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		using namespace inq;
 		using namespace Catch::literals;
 		
-		math::array<complex, 2> array({2, 2});
+		gpu::array<complex, 2> array({2, 2});
 		
 		array[0][0] = 4.0;
 		array[0][1] = 0.0;
@@ -275,7 +275,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		using namespace inq;
 		using namespace Catch::literals;
 		
-		math::array<double, 2> array({3, 3});
+		gpu::array<double, 2> array({3, 3});
 		
 		array[0][0] = 0.088958;
 		array[0][1] = 1.183407;
@@ -301,7 +301,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		using namespace inq;
 		using namespace Catch::literals;
 		
-		math::array<complex, 2> array({3, 3});
+		gpu::array<complex, 2> array({3, 3});
 		
 		array[0][0] = complex(0.088958,  0.00000);
 		array[0][1] = complex(1.183407,  0.08285);

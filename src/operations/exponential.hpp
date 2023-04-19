@@ -94,7 +94,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Diagonal double"){
 		
-		math::array<double, 2> diagonal_matrix({npoint, npoint});
+		gpu::array<double, 2> diagonal_matrix({npoint, npoint});
 		
 		for(int ip = 0; ip < npoint; ip++){
 			for(int jp = 0; jp < npoint; jp++){
@@ -160,7 +160,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Diagonal complex"){
 		
-		math::array<complex, 2> diagonal_matrix({npoint, npoint});
+		gpu::array<complex, 2> diagonal_matrix({npoint, npoint});
 		
 		for(int ip = 0; ip < npoint; ip++){
 			for(int jp = 0; jp < npoint; jp++){
