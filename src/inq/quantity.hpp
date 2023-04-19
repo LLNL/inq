@@ -21,6 +21,17 @@ namespace inq {
 		using element_type = ElementType;
 
 	public:
+		template<
+			class Other,
+			class = std::enable_if_t<not std::is_base_of<quantity, Other>::value, int>
+		>
+		quantity(Other const&) {static_assert(sizeof(Other*) and false, "deleted");}
+
+		template<class Other>
+		explicit operator Other() const {static_assert(sizeof(Other*) and false, "deleted"); return Other{};}
+
+		quantity() = default;
+		quantity(quantity const&) = default;
 		
 		GPU_FUNCTION static auto from_atomic_units(element_type const & au_value){
 			quantity qq;
@@ -168,10 +179,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(rr3 == rr);
 
 	rr3 = -rr2;
-	CHECK(rr3.in_atomic_units() == -102.0_a);	
+	CHECK(rr3.in_atomic_units() == -102.0_a); 
 
 	rr3 *= -0.4;
-	CHECK(rr3.in_atomic_units() == 40.8_a);	
+	CHECK(rr3.in_atomic_units() == 40.8_a); 
 
 	auto rr4 = rr - rr;
 	CHECK(rr4.in_atomic_units() == 0.0_a);
