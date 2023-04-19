@@ -12,7 +12,7 @@
 #include <inq_config.h> //for ENABLE_HEFFTE
 
 #include <gpu/run.hpp>
-#include <gpu/alltoall.hpp>
+#include <parallel/alltoall.hpp>
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
@@ -173,7 +173,7 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_alltoall");
-			gpu::alltoall(buffer, comm);
+			parallel::alltoall(buffer, comm);
 		}
 
 		{
@@ -285,7 +285,7 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_alltoall");
-			gpu::alltoall(buffer, comm);
+			parallel::alltoall(buffer, comm);
 		}
 		
 		math::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});

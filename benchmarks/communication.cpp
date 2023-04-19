@@ -9,8 +9,6 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <utils/match.hpp>
-#include <ground_state/initial_guess.hpp>
-#include <ground_state/calculate.hpp>
 
 #include <input/environment.hpp>
 
@@ -31,7 +29,7 @@ int main(int argc, char ** argv){
     
     math::array<complex, 2> buffer({comm.size(), blocksize}, double(comm.rank()));
 
-    gpu::alltoall(buffer, comm);
+    parallel::alltoall(buffer, comm);
 
     auto ok = true;
     for(int iproc = 0; iproc < comm.size(); iproc++){
@@ -46,7 +44,7 @@ int main(int argc, char ** argv){
     }
 
     auto start_time = std::chrono::high_resolution_clock::now();
-    for(int irep = 0; irep < reps; irep++) gpu::alltoall(buffer, comm);
+    for(int irep = 0; irep < reps; irep++) parallel::alltoall(buffer, comm);
     std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
 
     auto ttime = comm.all_reduce_value(time.count(), boost::mpi3::plus<>{});

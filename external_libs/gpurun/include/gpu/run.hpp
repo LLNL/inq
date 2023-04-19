@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__GPU__RUN
-#define INQ__GPU__RUN
+#ifndef GPURUN__GPU__RUN
+#define GPURUN__GPU__RUN
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -35,7 +35,6 @@
 #include <boost/archive/iterators/base64_from_binary.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
 
-namespace inq {
 namespace gpu {
 
 void sync(){
@@ -272,11 +271,10 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 }
 
 }
-}
 #endif
 
-#ifdef INQ_GPU_RUN_UNIT_TEST
-#undef INQ_GPU_RUN_UNIT_TEST
+#ifdef GPURUN__RUN__UNIT_TEST
+#undef GPURUN__RUN__UNIT_TEST
 
 #include <math/array.hpp>
 #include <mpi3/environment.hpp>
@@ -287,9 +285,9 @@ long check_run(long size){
 	
 	inq::math::array<long, 1> list(size, 0l);
 
-	inq::gpu::run(size,
+	gpu::run(size,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii){
-						 inq::gpu::atomic::add(&(itlist[ii]), ii + 1);
+						 gpu::atomic::add(&(itlist[ii]), ii + 1);
 					 });
 	
 	long diff = 0;
@@ -303,10 +301,10 @@ long check_run(long size1, long size2){
 	
 	inq::math::array<long, 3> list({size1, size2, 2}, 0l);
 	
-	inq::gpu::run(size1, size2, 
+	gpu::run(size1, size2, 
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj){
-						 inq::gpu::atomic::add(&(itlist[ii][jj][0]), ii + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][1]), jj + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][0]), ii + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][1]), jj + 1);
 					 });
 	
 	long diff = 0;
@@ -324,11 +322,11 @@ long check_run(long size1, long size2, long size3){
 	
 	inq::math::array<long, 4> list({size1, size2, size3, 3}, 0l);
 
-	inq::gpu::run(size1, size2, size3,
+	gpu::run(size1, size2, size3,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk){
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][0]), ii + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][1]), jj + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][2]), kk + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][0]), ii + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][1]), jj + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][2]), kk + 1);
 					 });
 		
 	long diff = 0;
@@ -349,12 +347,12 @@ long check_run(long size1, long size2, long size3, long size4){
 
 	inq::math::array<long, 5> list({size1, size2, size3, size4, 4}, 0l);
 
-	inq::gpu::run(size1, size2, size3, size4,
+	gpu::run(size1, size2, size3, size4,
 					 [itlist = begin(list)] GPU_LAMBDA (auto ii, auto jj, auto kk, auto ll){
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][0]), ii + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][1]), jj + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][2]), kk + 1);
-						 inq::gpu::atomic::add(&(itlist[ii][jj][kk][ll][3]), ll + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][ll][0]), ii + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][ll][1]), jj + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][ll][2]), kk + 1);
+						 gpu::atomic::add(&(itlist[ii][jj][kk][ll][3]), ll + 1);
 					 });
 		
 	long diff = 0;
@@ -374,47 +372,44 @@ long check_run(long size1, long size2, long size3, long size4){
 	return diff;
 }
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 
-	using namespace inq;
 	using namespace Catch::literals;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
-
 	SECTION("1D"){
-		if(comm.rank() == 0) CHECK(check_run(200) == 0);
-		if(comm.rank() == 1%comm.size()) CHECK(check_run(1024) == 0);
-		if(comm.rank() == 2%comm.size()) CHECK(check_run(6666) == 0);
+		CHECK(check_run(200) == 0);
+		CHECK(check_run(1024) == 0);
+		CHECK(check_run(6666) == 0);
 	}
 	
 	SECTION("2D"){
-		if(comm.rank() == 3%comm.size()) CHECK(check_run(200, 200) == 0);
-		if(comm.rank() == 4%comm.size()) CHECK(check_run(256, 1200) == 0);
-		if(comm.rank() == 5%comm.size()) CHECK(check_run(2023, 4) == 0);
-		if(comm.rank() == 6%comm.size()) CHECK(check_run(7, 57*57*57) == 0);
+		CHECK(check_run(200, 200) == 0);
+		CHECK(check_run(256, 1200) == 0);
+		CHECK(check_run(2023, 4) == 0);
+		CHECK(check_run(7, 57*57*57) == 0);
 	}
 
 	SECTION("3D"){
-		if(comm.rank() == 7%comm.size()) CHECK(check_run(2, 2, 2) == 0);
-		if(comm.rank() == 8%comm.size()) CHECK(check_run(7, 2, 2) == 0);
-		if(comm.rank() == 9%comm.size()) CHECK(check_run(7, 57, 57) == 0);
-		if(comm.rank() == 10%comm.size()) CHECK(check_run(32, 23, 18) == 0);
-		if(comm.rank() == 11%comm.size()) CHECK(check_run(213, 27, 78) == 0);
-		if(comm.rank() == 12%comm.size()) CHECK(check_run(2500, 10, 12) == 0);
-		if(comm.rank() == 13%comm.size()) CHECK(check_run(7, 1023, 12) == 0);	
-		if(comm.rank() == 14%comm.size()) CHECK(check_run(1, 11, 1229) == 0);	
+		CHECK(check_run(2, 2, 2) == 0);
+		CHECK(check_run(7, 2, 2) == 0);
+		CHECK(check_run(7, 57, 57) == 0);
+		CHECK(check_run(32, 23, 18) == 0);
+		CHECK(check_run(213, 27, 78) == 0);
+		CHECK(check_run(2500, 10, 12) == 0);
+		CHECK(check_run(7, 1023, 12) == 0);	
+		CHECK(check_run(1, 11, 1229) == 0);	
 	}
 	
 	SECTION("4D"){
-		if(comm.rank() == 15%comm.size()) CHECK(check_run(2, 2, 2, 2) == 0);
-		if(comm.rank() == 16%comm.size()) CHECK(check_run(7, 2, 2, 2) == 0);
-		if(comm.rank() == 17%comm.size()) CHECK(check_run(7, 57, 57, 57) == 0);
-		if(comm.rank() == 18%comm.size()) CHECK(check_run(32, 23, 45, 18) == 0);
-		if(comm.rank() == 19%comm.size()) CHECK(check_run(35, 213, 27, 78) == 0);
-		if(comm.rank() == 20%comm.size()) CHECK(check_run(2500, 10, 11, 12) == 0);
-		if(comm.rank() == 21%comm.size()) CHECK(check_run(7, 1023, 11, 12) == 0);
-		if(comm.rank() == 22%comm.size()) CHECK(check_run(1, 1, 11, 1229) == 0);
-		if(comm.rank() == 23%comm.size()) CHECK(check_run(1, 1023, 11, 12) == 0);
+		CHECK(check_run(2, 2, 2, 2) == 0);
+		CHECK(check_run(7, 2, 2, 2) == 0);
+		CHECK(check_run(7, 57, 57, 57) == 0);
+		CHECK(check_run(32, 23, 45, 18) == 0);
+		CHECK(check_run(35, 213, 27, 78) == 0);
+		CHECK(check_run(2500, 10, 11, 12) == 0);
+		CHECK(check_run(7, 1023, 11, 12) == 0);
+		CHECK(check_run(1, 1, 11, 1229) == 0);
+		CHECK(check_run(1, 1023, 11, 12) == 0);
 	}
 
 }
