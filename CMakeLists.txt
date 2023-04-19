@@ -159,12 +159,22 @@ if(FFTW_FOUND)
   target_link_libraries(inq INTERFACE PkgConfig::FFTW)
 else()  # some systems do not have fftw3 registered in pkg-config, in this case it falls back to good old -lfftw3 which can fail later
   if(NOT DEFINED FFTW_LIBRARIES)
-    message(FATAL_ERROR "FFTW not detected by pkg-config, defined -DFFTW_LIBRARIES (e.g. =-lfftw3) and -DFFTW_INCLUDE_DIRS (e.g. =/usr/include)")
+    message(WARNING "FFTW not detected by pkg-config, using fftw3 or define -DFFTW_LIBRARIES (e.g. =-lfftw3) and -DFFTW_INCLUDE_DIRS (e.g. =/usr/include)")
+    link_libraries(fftw3)
+    include_directories(${FFTW_INCLUDE_DIRS})  # commented since it always generates a spurious -I...PkgConfig::FFTW option
+    target_link_libraries(inq INTERFACE fftw3)
+    target_include_directories(inq INTERFACE ${FFTW_INCLUDE_DIRS})
+  else()
+    link_libraries(${FFTW_LIBRARIES})
+    include_directories(${FFTW_INCLUDE_DIRS})  # commented since it always generates a spurious -I...PkgConfig::FFTW option
+    target_link_libraries(inq INTERFACE ${FFTW_LIBRARIES})
+    target_include_directories(inq INTERFACE ${FFTW_INCLUDE_DIRS})
   endif()
-  link_libraries(${FFTW_LIBRARIES})
-  include_directories(${FFTW_INCLUDE_DIRS})  # commented since it always generates a spurious -I...PkgConfig::FFTW option
-  target_link_libraries(inq INTERFACE ${FFTW_LIBRARIES})
-  target_include_directories(inq INTERFACE ${FFTW_INCLUDE_DIRS})
+  check_cxx_symbol_exists(fftw_plan_dft_1d fftw3.h FFTW3_CHECKED)
+  if(FFTW_FOUND)
+  else()
+    message(FATAL_ERROR "FFTW not found")
+  endif()
 endif()
 
 if(ENABLE_HEFFTE)
@@ -179,7 +189,7 @@ link_libraries(${BLAS_LIBRARIES})
 
 target_link_libraries(inq INTERFACE ${BLAS_LIBRARIES})
 
-set(BLA_VENDOR Generic) # ESSL doesn't implement dgelss_, now needed in the code
+# ESSL doesn't implement dgelss_, needed in the code, may need to override set(BLA_VENDOR Generic)
 find_package(LAPACK REQUIRED)
 link_libraries(${LAPACK_LIBRARIES})
 
