@@ -23,7 +23,7 @@ namespace input {
   public:
 
     enum class scf_eigensolver { STEEPEST_DESCENT };
-    enum class mixing_algo { LINEAR, PULAY, BROYDEN };
+    enum class mixing_algo { LINEAR, BROYDEN };
 
     static auto steepest_descent(){
       scf solver;
@@ -58,12 +58,6 @@ namespace input {
 		auto static linear_mixing(){
 			scf solver;
       solver.mixing_algo_ = mixing_algo::LINEAR;
-      return solver;
-		}
-
-		auto static pulay_mixing(){
-			scf solver;
-      solver.mixing_algo_ = mixing_algo::PULAY;
       return solver;
 		}
 
