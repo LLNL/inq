@@ -742,6 +742,7 @@ nvcc-mpich-debug-clean:
 
 gcc-mpich-template:
     stage: template
+    needs: []
     script:
       - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - mkdir inq_template_dir
