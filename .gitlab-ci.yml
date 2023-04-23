@@ -749,13 +749,35 @@ gcc-mpich-template:
       - git clone https://gitlab.com/npneq/inq_template.git
       - cd inq_template
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release
       - time make -j2
       - time make -j2 install
       - cd example
       - ls
       - make nitrogen
       - mpirun -np 2 ./nitrogen
+
+#######################################################################################################################
+
+nvcc-mpich-template:
+    stage: template
+    needs: []
+    tags:
+      - cuda_gpu
+    script:
+      - mkdir inq_template_dir
+      - cd inq_template_dir
+      - git clone https://gitlab.com/npneq/inq_template.git
+      - cd inq_template
+      - mkdir build && cd build
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=70
+      - time make -j2
+      - time make -j2 install
+      - cd example
+      - ls
+      - make nitrogen
+      - mpirun -np 2 ./nitrogen
+
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
