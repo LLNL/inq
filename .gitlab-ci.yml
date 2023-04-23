@@ -741,6 +741,8 @@ nvcc-mpich-debug-clean:
 #######################################################################################################################
 
 gcc-mpich-template:
+    variables:
+      GIT_STRATEGY: none
     stage: template
     needs: []
     script:
@@ -761,6 +763,8 @@ gcc-mpich-template:
 #######################################################################################################################
 
 nvcc-mpich-template:
+    variables:
+      GIT_STRATEGY: none
     stage: template
     needs: []
     tags:
@@ -779,6 +783,32 @@ nvcc-mpich-template:
       - make nitrogen
       - mpirun -np 2 ./nitrogen
 
+#######################################################################################################################
+
+clang-ompi-template:
+    variables:
+      GIT_STRATEGY: none
+    stage: template
+    needs: []
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2 wget
+      - mkdir inq_template_dir
+      - cd inq_template_dir
+      - wget https://gitlab.com/npneq/inq_template/-/archive/main/inq_template-main.tar.gz
+      - tar -xvzf inq_template-main.tar.gz
+      - cd inq_template-main
+      - mkdir build && cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - export CXX=clang++
+      - export CC=clang
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70
+      - time make -j2
+      - time make -j2 install
+      - cd example
+      - ls
+      - make nitrogen
+      - mpirun -np 2 ./nitrogen
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
