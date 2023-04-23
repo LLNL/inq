@@ -28,7 +28,6 @@
 #include <observables/density.hpp>
 #include <parallel/gather.hpp>
 #include <mixers/linear.hpp>
-#include <mixers/pulay.hpp>
 #include <mixers/broyden.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
@@ -91,7 +90,6 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 		switch(solver.mixing_algorithm()){
 		case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
-		case input::scf::mixing_algo::PULAY  : return std::make_unique<mixers::pulay  <mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 		} __builtin_unreachable();
 	}();
