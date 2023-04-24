@@ -9,17 +9,18 @@ default:
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CXXFLAGS: "-O3 -pipe"
-  OMPI_ALLOW_RUN_AS_ROOT: 1
-  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
-# avoid the annoying messages from openmpi over docker, https://github.com/open-mpi/ompi/issues/4948  
-  OMPI_MCA_btl_vader_single_copy_mechanism: none
-  OMPI_MCA_rmaps_base_oversubscribe: 1
+  OMPI_ALLOW_RUN_AS_ROOT: "1"
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
+# avoid the annoying messages from openmpi over docker, https://github.com/open-mpi/ompi/issues/4948
+  OMPI_MCA_btl_vader_single_copy_mechanism: "none"
+  OMPI_MCA_rmaps_base_oversubscribe: "1" 
   CODECOV_TOKEN: "5855e536-b784-400e-b0b2-b1d01c2287a9"
 
 stages:
   - build
   - test
   - clean
+  - template
 
 #########################################################################################################################
 # CHECK MISSING LIBRARY DETECTION 
@@ -738,6 +739,76 @@ nvcc-mpich-debug-clean:
       - rm -vfr $PREFIX
 
 #######################################################################################################################
+
+gcc-mpich-template:
+    variables:
+      GIT_STRATEGY: none
+    stage: template
+    needs: []
+    script:
+      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev python2 libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
+      - mkdir inq_template_dir
+      - cd inq_template_dir
+      - git clone https://gitlab.com/npneq/inq_template.git
+      - cd inq_template
+      - mkdir build && cd build
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release
+      - time make -j2
+      - time make -j2 install
+      - cd example
+      - ls
+      - make nitrogen
+      - mpirun -np 2 ./nitrogen
+
+#######################################################################################################################
+
+nvcc-mpich-template:
+    variables:
+      GIT_STRATEGY: none
+    stage: template
+    needs: []
+    tags:
+      - cuda_gpu
+    script:
+      - mkdir inq_template_dir
+      - cd inq_template_dir
+      - git clone https://gitlab.com/npneq/inq_template.git
+      - cd inq_template
+      - mkdir build && cd build
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=70
+      - time make -j2
+      - time make -j2 install
+      - cd example
+      - ls
+      - make nitrogen
+      - mpirun -np 2 ./nitrogen
+
+#######################################################################################################################
+
+clang-ompi-template:
+    variables:
+      GIT_STRATEGY: none
+    stage: template
+    needs: []
+    script:
+      - time apt update -qq
+      - time apt install --no-install-recommends -y -qq git ca-certificates ssh gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev python2 wget
+      - mkdir inq_template_dir
+      - cd inq_template_dir
+      - wget https://gitlab.com/npneq/inq_template/-/archive/main/inq_template-main.tar.gz
+      - tar -xvzf inq_template-main.tar.gz
+      - cd inq_template-main
+      - mkdir build && cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - export CXX=clang++
+      - export CC=clang
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70
+      - time make -j2
+      - time make -j2 install
+      - cd example
+      - ls
+      - make nitrogen
+      - mpirun -np 2 ./nitrogen
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
