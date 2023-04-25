@@ -755,9 +755,7 @@ gcc-mpich-template:
       - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release
       - time make -j2
       - time make -j2 install
-      - cd example
-      - ls
-      - make nitrogen
+      - cd runs
       - mpirun -np 2 ./nitrogen
 
 #######################################################################################################################
@@ -778,9 +776,7 @@ nvcc-mpich-template:
       - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j2
       - time make -j2 install
-      - cd example
-      - ls
-      - make nitrogen
+      - cd runs
       - mpirun -np 2 ./nitrogen
 
 #######################################################################################################################
@@ -805,9 +801,7 @@ clang-ompi-template:
       - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j2
       - time make -j2 install
-      - cd example
-      - ls
-      - make nitrogen
+      - cd runs
       - mpirun -np 2 ./nitrogen
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
