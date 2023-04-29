@@ -13,10 +13,18 @@
 #include <utils/merge_optional.hpp>
 #include <utils/profiling.hpp>
 
+#include <inq_config.h>  // for ENABLE_CUDA macro
+
 #include <mpi3/environment.hpp>
 
-#include <optional>
+#ifdef ENABLE_CUDA
+#include <multi/array.hpp>  // for multi::array
+#include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::allocator
+#include <csignal>  // for std::signal
+#endif
+
 #include <cassert>
+#include <optional>
 
 namespace inq {
 namespace input {
@@ -35,7 +43,29 @@ class environment {
 		static auto const & threaded() {
 			return threaded_impl();
 		}
-		
+
+	#ifdef ENABLE_CUDA
+	static inline volatile std::sig_atomic_t check_cuda_signal_status;
+	static void check_cuda_signal_handler(int sig) {
+		check_cuda_signal_status = sig;
+		throw std::runtime_error{"Basic MPI operation produces segmentation fault on CUDA memory. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};
+	}
+
+	static void check_cuda_support(boost::mpi3::environment& env) {
+		namespace multi = ::boost::multi;
+		multi::array<int, 1, thrust::cuda::allocator<int>> const gpu_ones ({1}, 1);
+		multi::array<int, 1, thrust::cuda::allocator<int>>       gpu_check({1}, 0);
+
+		auto const original_handler = std::signal(SIGSEGV, check_cuda_signal_handler);
+		env.get_world_instance().reduce_n(raw_pointer_cast(gpu_ones.data_elements()), 1, raw_pointer_cast(gpu_check.data_elements()));
+		std::signal(SIGSEGV, original_handler);
+
+		if(check_cuda_signal_status) {throw std::runtime_error{"Basic MPI operation produces segmentation fault on CUDA memory. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};}
+
+		if(gpu_check[0] != env.get_world_instance().size()) {throw std::runtime_error{"Basic MPI operation produces incorrect result. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};}
+	}
+	#endif
+
     environment(int argc, char** argv, bool use_threads = false):
       mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
 			base_comm_(mpi_env_.get_world_instance())
@@ -51,8 +81,11 @@ class environment {
 				calimgr_.start();
 			}
 
+		#ifdef ENABLE_CUDA
+		check_cuda_support(mpi_env_);
+		#endif
+
 			CALI_MARK_BEGIN("inq_environment");
-			
     }
 
 		~environment(){
