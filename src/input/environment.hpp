@@ -45,10 +45,8 @@ class environment {
 		}
 
 	#ifdef ENABLE_CUDA
-	static inline volatile std::sig_atomic_t check_cuda_signal_status;
-	static void check_cuda_signal_handler(int sig) {
-		check_cuda_signal_status = sig;
-		throw std::runtime_error{"Basic MPI operation produces segmentation fault on CUDA memory. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};
+	static void check_cuda_signal_handler(int /*signal*/) {
+		throw std::runtime_error{"Basic MPI operation produces segmentation fault on CUDA memory. INQ-GPU assumes CUDA-aware MPI when running in more than one process. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};
 	}
 
 	static void check_cuda_support(boost::mpi3::environment& env) {
@@ -60,7 +58,7 @@ class environment {
 		env.get_world_instance().reduce_n(raw_pointer_cast(gpu_ones.data_elements()), 1, raw_pointer_cast(gpu_check.data_elements()));
 		std::signal(SIGSEGV, original_handler);
 
-		if(gpu_check[0] != env.get_world_instance().size()) {throw std::runtime_error{"Basic MPI operation produces incorrect result. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};}
+		if(gpu_check[0] != env.get_world_instance().size()) {throw std::runtime_error{"Basic MPI operation produces incorrect result. INQ-GPU assumes CUDA-aware MPI when running in more than one process. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};}
 	}
 	#endif
 
@@ -80,7 +78,7 @@ class environment {
 			}
 
 		#ifdef ENABLE_CUDA
-		check_cuda_support(mpi_env_);
+		if(mpi_env_.get_world_instance().size() > 1) {check_cuda_support(mpi_env_);}
 		#endif
 
 			CALI_MARK_BEGIN("inq_environment");
