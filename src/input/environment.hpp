@@ -60,8 +60,6 @@ class environment {
 		env.get_world_instance().reduce_n(raw_pointer_cast(gpu_ones.data_elements()), 1, raw_pointer_cast(gpu_check.data_elements()));
 		std::signal(SIGSEGV, original_handler);
 
-		if(check_cuda_signal_status) {throw std::runtime_error{"Basic MPI operation produces segmentation fault on CUDA memory. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};}
-
 		if(gpu_check[0] != env.get_world_instance().size()) {throw std::runtime_error{"Basic MPI operation produces incorrect result. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};}
 	}
 	#endif
