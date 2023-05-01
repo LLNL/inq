@@ -719,7 +719,7 @@ nvcc-mpich-debug-5p:
     tags:
       - cuda_gpu
     script:
-      - export INQ_COMM="point"      
+      - export INQ_COMM="point"
       - PREFIX=`cat nvcc-mpich-debug-path`
       - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j1"
 
@@ -736,6 +736,103 @@ nvcc-mpich-debug-clean:
       - cuda_gpu
     script:
       - PREFIX=`cat nvcc-mpich-debug-path`
+      - rm -vfr $PREFIX
+
+#########################################################################################################################
+# NVIDIA MPICH NCCL
+#########################################################################################################################
+
+nvcc-mpich-nccl:
+    stage: build
+    needs: []
+    tags:
+      - cuda_gpu
+    script:
+      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
+      - export SRCDIR=`pwd`
+      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - export PATH=/usr/local/cuda/bin:$PATH
+      - cmake --version
+      - nvcc -V
+      - mkdir -p $PREFIX/build
+      - cd $PREFIX/build
+      - $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DNCCL_ROOT=/usr/local/nccl
+      - time make -j16
+      - time make -j16 install
+      - cd $SRCDIR
+      - echo $PREFIX > nvcc-mpich-nccl-path
+    artifacts:
+      paths:
+      - nvcc-mpich-nccl-path
+
+nvcc-mpich-nccl-1p:
+    stage: test
+    needs: ["nvcc-mpich-nccl"]
+    tags:
+      - cuda_gpu
+    script:
+      - export INQ_COMM="nccl"    
+      - PREFIX=`cat nvcc-mpich-nccl-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j8"
+
+nvcc-mpich-nccl-2p:
+    stage: test
+    needs: ["nvcc-mpich-nccl"]
+    tags:
+      - cuda_gpu
+    script:
+      - export INQ_COMM="nccl"
+      - PREFIX=`cat nvcc-mpich-nccl-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 /usr/local/bin/gpubind" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 /usr/local/bin/gpubind" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
+
+nvcc-mpich-nccl-3p:
+    stage: test
+    needs: ["nvcc-mpich-nccl"]
+    tags:
+      - cuda_gpu
+    script:
+      - export INQ_COMM="nccl"    
+      - PREFIX=`cat nvcc-mpich-nccl-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 /usr/local/bin/gpubind" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 /usr/local/bin/gpubind" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
+
+nvcc-mpich-nccl-4p:
+    stage: test
+    needs: ["nvcc-mpich-nccl"]
+    tags:
+      - cuda_gpu
+    script:
+      - export INQ_COMM="nccl"    
+      - PREFIX=`cat nvcc-mpich-nccl-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 /usr/local/bin/gpubind" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 /usr/local/bin/gpubind" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
+
+nvcc-mpich-nccl-5p:
+    stage: test
+    needs: ["nvcc-mpich-nccl"]
+    tags:
+      - cuda_gpu
+    script:
+      - export INQ_COMM="nccl"    
+      - PREFIX=`cat nvcc-mpich-nccl-path`
+      - INQ_EXEC_ENV="mpirun.mpich -np 5 /usr/local/bin/gpubind" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j1"
+
+nvcc-mpich-nccl-clean:
+    stage: clean
+    needs:
+     - nvcc-mpich-nccl
+     - nvcc-mpich-nccl-1p
+     - nvcc-mpich-nccl-2p
+     - nvcc-mpich-nccl-3p
+     - nvcc-mpich-nccl-4p
+     - nvcc-mpich-nccl-5p
+    tags:
+      - cuda_gpu
+    script:
+      - PREFIX=`cat nvcc-mpich-nccl-path`
       - rm -vfr $PREFIX
 
 #######################################################################################################################
