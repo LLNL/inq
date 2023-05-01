@@ -14,6 +14,7 @@
 #include <mpi3/communicator.hpp>
 #include <mpi3/cartesian_communicator.hpp>
 #include <mpi3/environment.hpp>
+#include <utils/profiling.hpp>
 
 #ifdef ENABLE_NCCL
 #include <mpi3/nccl/communicator.hpp>
@@ -65,6 +66,8 @@ public:
 	void nccl_init() {
 #ifdef ENABLE_NCCL
 		if(nccl_comm_.has_value()) return;
+
+		CALI_CXX_MARK_FUNCTION;
 		nccl_comm_.emplace(*this);
 		assert(nccl_comm_.has_value());
 		assert(nccl_comm_->size() == this->size());
