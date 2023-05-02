@@ -13,6 +13,8 @@
 #include <utils/merge_optional.hpp>
 #include <utils/profiling.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include <inq_config.h>  // for ENABLE_CUDA macro
 
 #include <mpi3/environment.hpp>
@@ -20,7 +22,8 @@
 #ifdef ENABLE_CUDA
 #include <multi/array.hpp>  // for multi::array
 #include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::allocator
-#include <csignal>  // for std::signal
+#include <csetjmp>
+#include <csignal>
 #endif
 
 #include <cassert>
@@ -45,9 +48,14 @@ class environment {
 		}
 
 	#ifdef ENABLE_CUDA
+	static inline std::jmp_buf check_cuda_recover;
+
 	static void check_cuda_signal_handler(int /*signal*/) {
-		throw std::runtime_error{"Basic MPI operation produces segmentation fault on CUDA memory. INQ-GPU assumes CUDA-aware MPI when running in more than one process. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};
+		spdlog::warn("CUDA-aware MPI is not available. Basic MPI operation produces segmentation fault on CUDA memory. INQ-GPU assumes CUDA-aware MPI when running in more than one process. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`.");
+		std::longjmp(check_cuda_recover, 1);
 	}
+
+	static inline bool cuda_support = false;
 
 	static void check_cuda_support(boost::mpi3::environment& env) {
 		namespace multi = ::boost::multi;
@@ -55,10 +63,12 @@ class environment {
 		multi::array<int, 1, thrust::cuda::allocator<int>>       gpu_check({1}, 0);
 
 		auto const original_handler = std::signal(SIGSEGV, check_cuda_signal_handler);
-		env.get_world_instance().reduce_n(raw_pointer_cast(gpu_ones.data_elements()), 1, raw_pointer_cast(gpu_check.data_elements()));
+		if(not setjmp(check_cuda_recover)) {
+			env.get_world_instance().reduce_n(raw_pointer_cast(gpu_ones.data_elements()), 1, raw_pointer_cast(gpu_check.data_elements()));
+			cuda_support = true;
+			if(gpu_check[0] != env.get_world_instance().size()) {throw std::runtime_error{"Basic MPI operation produces incorrect result. INQ-GPU assumes CUDA-aware MPI when running in more than one process. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};}
+		}
 		std::signal(SIGSEGV, original_handler);
-
-		if(gpu_check[0] != env.get_world_instance().size()) {throw std::runtime_error{"Basic MPI operation produces incorrect result. INQ-GPU assumes CUDA-aware MPI when running in more than one process. Try enabling CUDA aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."};}
 	}
 	#endif
 
@@ -78,7 +88,7 @@ class environment {
 			}
 
 		#ifdef ENABLE_CUDA
-		if(mpi_env_.get_world_instance().size() > 1) {check_cuda_support(mpi_env_);}
+		check_cuda_support(mpi_env_);
 		#endif
 
 			CALI_MARK_BEGIN("inq_environment");
@@ -93,6 +103,8 @@ class environment {
 			if(not threaded() and base_comm_.rank() == 0){
 				calimgr_.flush(); // write performance results
 			}
+
+			if(not cuda_support) { spdlog::warn("CUDA-aware MPI was not available during run. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."); }
 		}
 
 		auto par() const {
