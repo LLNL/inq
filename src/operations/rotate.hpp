@@ -68,7 +68,6 @@ void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType
 
 	CALI_CXX_MARK_SCOPE("operations::rotate(5arg)");
 
-	
 	if(not phi.set_part().parallel()){
 
 		assert(beta == 1.0); //there is a bug in multi that doesn't allow us to use a general value
@@ -76,6 +75,8 @@ void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType
 		rotphi.matrix() += blas::gemm(alpha, phi.matrix(), blas::H(rotation.array()));
 		
 	} else {
+
+		phi.set_comm().nccl_init();
 		
 		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
 				

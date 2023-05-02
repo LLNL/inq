@@ -26,10 +26,10 @@ namespace inq {
 namespace basis {
 
 auto set_subcomm(parallel::cartesian_communicator<2> & comm){
-	return comm.axis(1);
+	return parallel::cartesian_communicator<1>(comm.axis(1));
 }
 auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
-	return comm.axis(0);
+	return parallel::cartesian_communicator<1>(comm.axis(0));
 }
 
 template<class BasisType, class ElementType, class PartitionType = inq::parallel::partition>
@@ -195,8 +195,9 @@ public:
 			CALI_CXX_MARK_SCOPE("field_set_iterator_constructor");
  
 			gpu::copy(basis_local_size, set_part.local_size(), data, matrix_);
+			set_comm_.nccl_init();
 		};
-			
+		
 		void operator++(){
 
 			CALI_CXX_MARK_SCOPE("field_set_iterator++");
@@ -210,7 +211,6 @@ public:
 
 			if(istep_ < set_comm_.size() - 1) {  //there is no need to copy for the last step
 
-				set_comm_.nccl_init();
 #ifdef ENABLE_NCCL
 				ncclGroupStart();
 				auto copy = matrix_;

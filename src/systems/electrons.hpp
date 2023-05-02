@@ -81,21 +81,21 @@ private:
 public:
 	
 	static auto kpin_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(input::parallelization::dimension_kpoints());
+		return parallel::cartesian_communicator<1>(comm.axis(input::parallelization::dimension_kpoints()));
 	}
 	static auto states_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(input::parallelization::dimension_states());
+		return parallel::cartesian_communicator<1>(comm.axis(input::parallelization::dimension_states()));
 	}
 	static auto basis_subcomm(parallel::cartesian_communicator<3> & comm){
-		return comm.axis(input::parallelization::dimension_domains());
+		return parallel::cartesian_communicator<1>(comm.axis(input::parallelization::dimension_domains()));
 	}
 	static auto states_basis_subcomm(parallel::cartesian_communicator<3> & comm){
 		assert(input::parallelization::dimension_domains() < input::parallelization::dimension_states());		
-		return comm.plane(input::parallelization::dimension_domains(), input::parallelization::dimension_states());
+		return parallel::cartesian_communicator<2>(comm.plane(input::parallelization::dimension_domains(), input::parallelization::dimension_states()));
 	}
 	static auto kpin_states_subcomm(parallel::cartesian_communicator<3> & comm){
 		assert(input::parallelization::dimension_states() < input::parallelization::dimension_kpoints());
-		return comm.plane(input::parallelization::dimension_states(), input::parallelization::dimension_kpoints());
+		return parallel::cartesian_communicator<2>(comm.plane(input::parallelization::dimension_states(), input::parallelization::dimension_kpoints()));
 	}
 	
 	auto & kpin() const {

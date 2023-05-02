@@ -14,13 +14,14 @@
 #include <mpi3/communicator.hpp>
 #include <mpi3/cartesian_communicator.hpp>
 #include <mpi3/environment.hpp>
+#include <utils/profiling.hpp>
 
 #ifdef ENABLE_NCCL
 #include <mpi3/nccl/communicator.hpp>
 #endif
 
 #include <cassert>
-#include <optional>
+#include <memory>
 
 namespace inq{
 namespace parallel {
@@ -30,7 +31,7 @@ template <class CommType>
 class hybrid_communicator : public CommType {
 
 #ifdef ENABLE_NCCL
-	std::optional<boost::mpi3::nccl::communicator> nccl_comm_;
+	std::shared_ptr<boost::mpi3::nccl::communicator> nccl_comm_;
 #endif
 	
 public:
@@ -47,6 +48,9 @@ public:
 
   hybrid_communicator(hybrid_communicator & arg):
     CommType(arg)
+#ifdef ENABLE_NCCL
+		, nccl_comm_(arg.nccl_comm_)
+#endif
   {
   }
 	
@@ -60,20 +64,25 @@ public:
 
 	auto operator=(hybrid_communicator & comm) {
 		CommType::operator=(CommType(comm));
+#ifdef ENABLE_NCCL
+		nccl_comm_ = comm.nccl_comm_;
+#endif
 	}
 
 	void nccl_init() {
 #ifdef ENABLE_NCCL
-		if(nccl_comm_.has_value()) return;
-		nccl_comm_.emplace(*this);
-		assert(nccl_comm_.has_value());
+		if(nccl_comm_) return;
+
+		CALI_CXX_MARK_FUNCTION;
+		nccl_comm_ = std::make_shared<boost::mpi3::nccl::communicator>(*this);
+		assert(nccl_comm_);
 		assert(nccl_comm_->size() == this->size());
 #endif
 	}
 
 #ifdef ENABLE_NCCL
 	auto & nccl_comm() {
-		assert(nccl_comm_.has_value());
+		assert(nccl_comm_);
 		assert(nccl_comm_->size() == this->size());
 		return *nccl_comm_;
 	}
