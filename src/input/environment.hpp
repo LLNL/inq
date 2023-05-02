@@ -51,7 +51,7 @@ class environment {
 	static inline std::jmp_buf check_cuda_recover;
 
 	static void check_cuda_signal_handler(int /*signal*/) {
-		spdlog::warn("CUDA-aware MPI is not available. Basic MPI operation produces segmentation fault on CUDA memory. INQ-GPU assumes CUDA-aware MPI when running in more than one process. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`.");
+		spdlog::warn("CUDA-aware MPI is not detected. INQ will run correctly but at a lower performance when running with more than one GPU. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`");
 		std::longjmp(check_cuda_recover, 1);
 	}
 
@@ -99,12 +99,14 @@ class environment {
 			CALI_MARK_END("inq_environment");
 
 			base_comm_.barrier();
-			
+
 			if(not threaded() and base_comm_.rank() == 0){
 				calimgr_.flush(); // write performance results
 			}
 
-			if(not cuda_support) { spdlog::warn("CUDA-aware MPI was not available during run. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."); }
+			#ifdef ENABLE_CUDA
+			if(not cuda_support) { spdlog::warn("CUDA-aware MPI was not detected. INQ ran at a lower performance if running with more than one GPU. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."); }
+			#endif
 		}
 
 		auto par() const {
