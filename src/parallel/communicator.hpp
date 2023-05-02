@@ -21,7 +21,7 @@
 #endif
 
 #include <cassert>
-#include <optional>
+#include <memory>
 
 namespace inq{
 namespace parallel {
@@ -31,7 +31,7 @@ template <class CommType>
 class hybrid_communicator : public CommType {
 
 #ifdef ENABLE_NCCL
-	std::optional<boost::mpi3::nccl::communicator> nccl_comm_;
+	std::shared_ptr<boost::mpi3::nccl::communicator> nccl_comm_;
 #endif
 	
 public:
@@ -65,18 +65,18 @@ public:
 
 	void nccl_init() {
 #ifdef ENABLE_NCCL
-		if(nccl_comm_.has_value()) return;
+		if(nccl_comm_) return;
 
 		CALI_CXX_MARK_FUNCTION;
-		nccl_comm_.emplace(*this);
-		assert(nccl_comm_.has_value());
+		nccl_comm_ = std::make_shared<boost::mpi3::nccl::communicator>(*this);
+		assert(nccl_comm_);
 		assert(nccl_comm_->size() == this->size());
 #endif
 	}
 
 #ifdef ENABLE_NCCL
 	auto & nccl_comm() {
-		assert(nccl_comm_.has_value());
+		assert(nccl_comm_);
 		assert(nccl_comm_->size() == this->size());
 		return *nccl_comm_;
 	}
