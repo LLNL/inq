@@ -38,7 +38,8 @@ public:
 	using CommType::CommType;
 	
 	hybrid_communicator(hybrid_communicator const &) = delete;
-
+	hybrid_communicator(hybrid_communicator &&) = default;
+	
 	hybrid_communicator():
 		CommType()
 	{
@@ -49,7 +50,7 @@ public:
   {
   }
 	
-	template <class ArgType>
+	template <class ArgType, class = std::enable_if_t<not std::is_base_of<hybrid_communicator, ArgType>::value>>
   hybrid_communicator(ArgType && arg):
     CommType(std::forward<ArgType>(arg))
   {
