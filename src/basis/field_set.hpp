@@ -26,10 +26,10 @@ namespace inq {
 namespace basis {
 
 auto set_subcomm(parallel::cartesian_communicator<2> & comm){
-	return comm.axis(1);
+	return parallel::cartesian_communicator<1>(comm.axis(1));
 }
 auto basis_subcomm(parallel::cartesian_communicator<2> & comm){
-	return comm.axis(0);
+	return parallel::cartesian_communicator<1>(comm.axis(0));
 }
 
 template<class BasisType, class ElementType, class PartitionType = inq::parallel::partition>
