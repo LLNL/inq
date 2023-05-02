@@ -48,6 +48,9 @@ public:
 
   hybrid_communicator(hybrid_communicator & arg):
     CommType(arg)
+#ifdef ENABLE_NCCL
+		, nccl_comm_(arg.nccl_comm_)
+#endif
   {
   }
 	
@@ -61,6 +64,9 @@ public:
 
 	auto operator=(hybrid_communicator & comm) {
 		CommType::operator=(CommType(comm));
+#ifdef ENABLE_NCCL
+		nccl_comm_ = comm.nccl_comm_;
+#endif
 	}
 
 	void nccl_init() {
