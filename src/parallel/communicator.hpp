@@ -127,16 +127,16 @@ public:
   {
   }
 	
-  cartesian_communicator(boost::mpi3::cartesian_communicator<D> && arg):
+  explicit cartesian_communicator(boost::mpi3::cartesian_communicator<D> && arg):
     base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg))
   {
   }
 
-  cartesian_communicator(boost::mpi3::cartesian_communicator<D> & arg):
+  explicit cartesian_communicator(boost::mpi3::cartesian_communicator<D> & arg):
     base_comm(arg)
   {
   }
-	
+
 	auto operator=(cartesian_communicator const & comm) = delete;
 
 	auto operator=(cartesian_communicator & comm) {
@@ -164,7 +164,14 @@ public:
 		return *nccl_comm_;
 	}
 #endif
+
+	auto axis(int d1){
+		return cartesian_communicator<1>(base_comm::axis(d1));
+	}
 	
+	auto plane(int d1, int d2){
+		return cartesian_communicator<2>(base_comm::plane(d1, d2));
+	}
 };
 
 }
