@@ -78,11 +78,9 @@ public:
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
 		kb_coeff_(nproj_),
-		comm_(sphere_.create_comm(basis.comm())),
 		iatom_(iatom){
 
 		build(basis, ps);
-
 	}
 
 	projector(projector const &) = delete;		
@@ -133,7 +131,6 @@ private:
 	int nproj_;
 	gpu::array<double, 2> matrix_;
 	gpu::array<double, 1> kb_coeff_;
-	mutable parallel::communicator comm_;
 	int iatom_;
     
 };

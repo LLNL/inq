@@ -70,7 +70,6 @@ public:
 								 
       coeff_[iproj]({0, it->nproj_}) = it->kb_coeff_;
 
-			comms_[iproj] = it->comm_;
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
 			locally_empty_[iproj] = it->locally_empty();
@@ -93,7 +92,6 @@ public:
 	template <typename ProjectorsType>
 	projector_all(ProjectorsType const & projectors):
 		nprojs_(projectors.size()),
-		comms_(nprojs_),
 		nlm_(nprojs_),
 		iatom_(nprojs_),
 		locally_empty_(nprojs_)
@@ -424,7 +422,6 @@ private:
 	gpu::array<vector3<double, contravariant>, 2> positions_;
 	gpu::array<double, 2> coeff_;
 	gpu::array<double, 3> matrices_;
-	mutable boost::multi::array<parallel::communicator, 1> comms_;	
 	gpu::array<int, 1> nlm_;
 	gpu::array<int, 1> iatom_;
 	gpu::array<bool, 1> locally_empty_;
