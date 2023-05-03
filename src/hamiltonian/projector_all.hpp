@@ -172,13 +172,8 @@ public:
                });
 		}
 
-		for(auto iproj = 0; iproj < nprojs_; iproj++){
-			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
-
-			if(locally_empty_[iproj]) continue;
-			
-			if(comms_[iproj].size() == 1) continue;
-			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&projections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});
+		if(phi.basis().comm().size() > 1) {
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
 		}
 
 #ifndef ENABLE_CUDA
@@ -275,7 +270,7 @@ public:
 
 		gpu::array<typename PhiType::element_type, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		gpu::array<typename GPhiType::element_type, 3> sphere_gphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
+		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()}, 0.0);
  
 		{ CALI_CXX_MARK_SCOPE("projector_all::force::gather");
 				
@@ -307,15 +302,10 @@ public:
 							 });
 		}
 
-		for(auto iproj = 0; iproj < nprojs_; iproj++){
-			if(locally_empty_[iproj]) continue;
-			
-			if(comms_[iproj].size() > 1) {
-				CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
-				comms_[iproj].all_reduce_n(raw_pointer_cast(projections_all[iproj].base()), projections_all[iproj].num_elements(), std::plus<>{});
-			}
+		if(phi.basis().comm().size() > 1) {
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
 		}
-
+		
 		for(auto iproj = 0; iproj < nprojs_; iproj++){		
 			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, transposed(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
@@ -347,8 +337,8 @@ public:
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		gpu::array<vector3<complex, contravariant>, 3> sphere_rphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});		
 
-		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
-		gpu::array<vector3<complex, contravariant>, 3> rprojections_all({nprojs_, max_nlm_, phi.local_set_size()});		
+		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()}, 0.0);
+		gpu::array<vector3<complex, contravariant>, 3> rprojections_all({nprojs_, max_nlm_, phi.local_set_size()}, zero<vector3<complex, contravariant>>());
 
 		{ CALI_CXX_MARK_SCOPE("position_commutator::gather");
 				
@@ -388,16 +378,11 @@ public:
                });
 		}
 
-		for(auto iproj = 0; iproj < nprojs_; iproj++){
-			CALI_CXX_MARK_SCOPE("position_commutator_mpi_reduce");
-
-			if(locally_empty_[iproj]) continue;
-			
-			if(comms_[iproj].size() == 1) continue;
-			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&projections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});
-			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&rprojections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});			
+		if(phi.basis().comm().size() > 1) {
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(rprojections_all.data_elements()), rprojections_all.num_elements(), std::plus<>{});
 		}
-
+		
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 			CALI_CXX_MARK_SCOPE("position_commutator_gemm_2");
 
