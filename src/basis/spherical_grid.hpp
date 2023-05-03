@@ -168,12 +168,6 @@ namespace basis {
 
 			initialize(parent_grid, center_point, radius);
     }
-
-		auto create_comm(parallel::communicator & comm) const {
-			auto color = MPI_UNDEFINED;
-			if(size() != 0) color = 1;
-			return comm.split(color, 0);
-		}
 		
     long size() const {
       return size_;
