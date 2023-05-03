@@ -93,7 +93,83 @@ public:
 using communicator = hybrid_communicator<boost::mpi3::communicator>;
 
 template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
-using cartesian_communicator = hybrid_communicator<boost::mpi3::cartesian_communicator<D>>;
+class cartesian_communicator : public boost::mpi3::cartesian_communicator<D> {
+
+#ifdef ENABLE_NCCL
+	std::shared_ptr<boost::mpi3::nccl::communicator> nccl_comm_;
+#endif
+	
+public:
+
+	using base_comm = boost::mpi3::cartesian_communicator<D>;
+	
+	cartesian_communicator():
+		base_comm()
+	{
+	}
+
+	cartesian_communicator(cartesian_communicator const &) = delete;
+
+	cartesian_communicator(cartesian_communicator &&) = default;
+
+  cartesian_communicator(cartesian_communicator & arg):
+    base_comm(arg)
+#ifdef ENABLE_NCCL
+		, nccl_comm_(arg.nccl_comm_)
+#endif
+  {
+  }
+
+	template <typename ShapeType>
+  cartesian_communicator(boost::mpi3::communicator & comm, ShapeType const & shape):
+    base_comm(comm, shape)
+  {
+  }
+	
+  cartesian_communicator(boost::mpi3::communicator & comm, std::array<int, D> shape):
+    base_comm(comm, shape)
+  {
+  }
+	
+  cartesian_communicator(boost::mpi3::cartesian_communicator<D> && arg):
+    base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg))
+  {
+  }
+
+  cartesian_communicator(boost::mpi3::cartesian_communicator<D> & arg):
+    base_comm(arg)
+  {
+  }
+	
+	auto operator=(cartesian_communicator const & comm) = delete;
+
+	auto operator=(cartesian_communicator & comm) {
+		base_comm::operator=(base_comm(comm));
+#ifdef ENABLE_NCCL
+		nccl_comm_ = comm.nccl_comm_;
+#endif
+	}
+
+	void nccl_init() {
+#ifdef ENABLE_NCCL
+		if(nccl_comm_) return;
+
+		CALI_CXX_MARK_FUNCTION;
+		nccl_comm_ = std::make_shared<boost::mpi3::nccl::communicator>(*this);
+		assert(nccl_comm_);
+		assert(nccl_comm_->size() == this->size());
+#endif
+	}
+
+#ifdef ENABLE_NCCL
+	auto & nccl_comm() {
+		assert(nccl_comm_);
+		assert(nccl_comm_->size() == this->size());
+		return *nccl_comm_;
+	}
+#endif
+	
+};
 
 }
 }
