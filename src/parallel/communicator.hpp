@@ -51,13 +51,29 @@ public:
 #endif
   {
   }
-	
-	template <class ArgType, class = std::enable_if_t<not std::is_base_of<communicator, ArgType>::value>>
-  communicator(ArgType && arg):
-    base_comm(std::forward<ArgType>(arg))
+
+  communicator(boost::mpi3::communicator && arg):
+    base_comm(std::forward<boost::mpi3::communicator>(arg))
   {
   }
 
+  communicator(boost::mpi3::communicator & arg):
+    base_comm(arg)
+  {
+  }
+
+	template <boost::mpi3::dimensionality_type D>
+	communicator(boost::mpi3::cartesian_communicator<D> && arg):
+    base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg))
+  {
+  }
+
+	template <boost::mpi3::dimensionality_type D>
+	communicator(boost::mpi3::cartesian_communicator<D> & arg):
+    base_comm(arg)
+  {
+  }
+	
 	auto operator=(communicator const & comm) = delete;
 
 	auto operator=(communicator & comm) {
