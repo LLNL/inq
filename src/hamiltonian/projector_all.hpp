@@ -171,6 +171,7 @@ public:
 		}
 
 		if(phi.basis().comm().size() > 1) {
+			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
 			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
 		}
 
