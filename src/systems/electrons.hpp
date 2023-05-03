@@ -189,7 +189,7 @@ public:
 		states_(std::move(old_el.states_)),
 		kpin_weights_(std::move(old_el.kpin_weights_)),
 		max_local_set_size_(std::move(old_el.max_local_set_size_)),
-		spin_density_(std::move(old_el.spin_density_), density_basis_.comm()),
+		spin_density_(std::move(old_el.spin_density_), {density_basis_.comm(), {density_basis_.comm().size(), 1}}),
 		logger_(std::move(old_el.logger_)),
 		kpin_part_(std::move(old_el.kpin_part_))
 	{
