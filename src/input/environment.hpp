@@ -59,6 +59,7 @@ class environment {
 	static inline bool cuda_support() {return cuda_support_;}
 
 	static void check_cuda_support(boost::mpi3::environment& env) {
+		#if 0
 		namespace multi = ::boost::multi;
 		multi::array<int, 1, thrust::cuda::allocator<int>> const gpu_ones ({1}, 1);
 		multi::array<int, 1, thrust::cuda::allocator<int>>       gpu_check({1}, 0);
@@ -74,6 +75,7 @@ class environment {
 			}
 		}
 		std::signal(SIGSEGV, original_handler);
+		#endif
 	}
 	#endif
 
@@ -110,7 +112,9 @@ class environment {
 			}
 
 			#ifdef ENABLE_CUDA
+			#if 0
 			if(not cuda_support()) { spdlog::warn("CUDA-aware MPI was not detected. INQ ran at a lower performance if running with more than one GPU. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."); }
+			#endif
 			#endif
 		}
 
