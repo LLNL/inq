@@ -130,7 +130,7 @@ public:
 			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
 		}
 #else
-		if(nprojs_ > 0) {
+		if(max_sphere_size_ > 0) {
 			CALI_CXX_MARK_SCOPE("projector_gemm_1");			
 
 			const double zero = 0.0;
@@ -184,7 +184,7 @@ public:
 			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1., blas::T(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
 #else
-		if(nprojs_ > 0) {
+		if(max_sphere_size_ > 0) {
 			CALI_CXX_MARK_SCOPE("projector_gemm_2");
 
 			const double zero = 0.0;
