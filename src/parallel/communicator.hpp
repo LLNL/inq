@@ -26,9 +26,7 @@
 namespace inq{
 namespace parallel {
 
-
-template <class CommType>
-class hybrid_communicator : public CommType {
+class communicator : public boost::mpi3::communicator {
 
 #ifdef ENABLE_NCCL
 	std::shared_ptr<boost::mpi3::nccl::communicator> nccl_comm_;
@@ -36,34 +34,34 @@ class hybrid_communicator : public CommType {
 	
 public:
 
-	using CommType::CommType;
+	using base_comm = boost::mpi3::communicator;
 	
-	hybrid_communicator(hybrid_communicator const &) = delete;
-	hybrid_communicator(hybrid_communicator &&) = default;
+	communicator(communicator const &) = delete;
+	communicator(communicator &&) = default;
 	
-	hybrid_communicator():
-		CommType()
+	communicator():
+		base_comm()
 	{
 	}
 
-  hybrid_communicator(hybrid_communicator & arg):
-    CommType(arg)
+  communicator(communicator & arg):
+    base_comm(arg)
 #ifdef ENABLE_NCCL
 		, nccl_comm_(arg.nccl_comm_)
 #endif
   {
   }
 	
-	template <class ArgType, class = std::enable_if_t<not std::is_base_of<hybrid_communicator, ArgType>::value>>
-  hybrid_communicator(ArgType && arg):
-    CommType(std::forward<ArgType>(arg))
+	template <class ArgType, class = std::enable_if_t<not std::is_base_of<communicator, ArgType>::value>>
+  communicator(ArgType && arg):
+    base_comm(std::forward<ArgType>(arg))
   {
   }
 
-	auto operator=(hybrid_communicator const & comm) = delete;
+	auto operator=(communicator const & comm) = delete;
 
-	auto operator=(hybrid_communicator & comm) {
-		CommType::operator=(CommType(comm));
+	auto operator=(communicator & comm) {
+		base_comm::operator=(base_comm(comm));
 #ifdef ENABLE_NCCL
 		nccl_comm_ = comm.nccl_comm_;
 #endif
@@ -89,8 +87,6 @@ public:
 #endif
 	
 };
-
-using communicator = hybrid_communicator<boost::mpi3::communicator>;
 
 template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
 class cartesian_communicator : public boost::mpi3::cartesian_communicator<D> {
