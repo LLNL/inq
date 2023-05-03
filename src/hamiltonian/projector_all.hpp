@@ -73,6 +73,7 @@ public:
 			comms_[iproj] = it->comm_;
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
+			locally_empty_[iproj] = it->locally_empty();
 			
       iproj++;
     }
@@ -94,7 +95,8 @@ public:
 		nprojs_(projectors.size()),
 		comms_(nprojs_),
 		nlm_(nprojs_),
-		iatom_(nprojs_)
+		iatom_(nprojs_),
+		locally_empty_(nprojs_)
 	{
 		constructor(projectors);
 	}
@@ -105,7 +107,7 @@ public:
 	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
     
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()});
+		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()}, 0.0);
 
 		{ CALI_CXX_MARK_SCOPE("projector::gather");
 				
@@ -123,6 +125,8 @@ public:
 #ifndef ENABLE_CUDA
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			CALI_CXX_MARK_SCOPE("projector_gemm_1");
+
+			if(locally_empty_[iproj]) continue;
 			
 			namespace blas = boost::multi::blas;
 			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
@@ -171,6 +175,8 @@ public:
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			CALI_CXX_MARK_SCOPE("projector_mpi_reduce");
 
+			if(locally_empty_[iproj]) continue;
+			
 			if(comms_[iproj].size() == 1) continue;
 			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&projections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});
 		}
@@ -178,6 +184,9 @@ public:
 #ifndef ENABLE_CUDA
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 			CALI_CXX_MARK_SCOPE("projector_gemm_2");
+
+			if(locally_empty_[iproj]) continue;
+			
 			namespace blas = boost::multi::blas;
 			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1., blas::T(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
@@ -226,6 +235,9 @@ public:
 		CALI_CXX_MARK_FUNCTION;
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
+
+			if(locally_empty_[iproj]) continue;
+			
 			gpu::run(vnlphi.local_set_size(), max_sphere_size_,
 							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.hypercubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
 								 if(poi[iproj][ipoint][0] >= 0){
@@ -282,6 +294,8 @@ public:
 		}
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
+			if(locally_empty_[iproj]) continue;
+			
 			blas::real_doubled(projections_all[iproj]) = gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
 		}
 			
@@ -293,7 +307,9 @@ public:
 							 });
 		}
 
-		for(auto iproj = 0; iproj < nprojs_; iproj++){		 		
+		for(auto iproj = 0; iproj < nprojs_; iproj++){
+			if(locally_empty_[iproj]) continue;
+			
 			if(comms_[iproj].size() > 1) {
 				CALI_CXX_MARK_SCOPE("projector::force_mpi_reduce_1");
 				comms_[iproj].all_reduce_n(raw_pointer_cast(projections_all[iproj].base()), projections_all[iproj].num_elements(), std::plus<>{});
@@ -307,12 +323,16 @@ public:
 		gpu::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
 			
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
+			if(locally_empty_[iproj]) continue;
+			
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
 				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_),
 																force_term<decltype(begin(occs)), decltype(begin(sphere_phi_all[iproj])), decltype(begin(sphere_gphi_all[iproj]))>{begin(occs), begin(sphere_phi_all[iproj]), begin(sphere_gphi_all[iproj])});
 		}
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
+			if(locally_empty_[iproj]) continue;
+			
 			forces_non_local[iatom_[iproj]] += phi.basis().volume_element()*metric.to_cartesian(force[iproj]);
 		}
 		
@@ -346,6 +366,8 @@ public:
 
 	 	for(auto iproj = 0; iproj < nprojs_; iproj++){
 			CALI_CXX_MARK_SCOPE("position_commutator_gemm_1");
+
+			if(locally_empty_[iproj]) continue;
 			
 			namespace blas = boost::multi::blas;
 			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
@@ -369,6 +391,8 @@ public:
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			CALI_CXX_MARK_SCOPE("position_commutator_mpi_reduce");
 
+			if(locally_empty_[iproj]) continue;
+			
 			if(comms_[iproj].size() == 1) continue;
 			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&projections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});
 			comms_[iproj].all_reduce_in_place_n(raw_pointer_cast(&rprojections_all[iproj][0][0]), nlm_[iproj]*phi.local_set_size(), std::plus<>{});			
@@ -376,6 +400,9 @@ public:
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 			CALI_CXX_MARK_SCOPE("position_commutator_gemm_2");
+
+			if(locally_empty_[iproj]) continue;
+			
 			namespace blas = boost::multi::blas;
 			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1., blas::T(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 
@@ -385,6 +412,9 @@ public:
 		}
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
+
+			if(locally_empty_[iproj]) continue;
+			
 			gpu::run(phi.local_set_size(), max_sphere_size_,
 							 [sgr = begin(sphere_phi_all), srphi = begin(sphere_rphi_all), gr = begin(cphi.hypercubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint, metric = phi.basis().cell().metric()]
 							 GPU_LAMBDA (auto ist, auto ipoint){
@@ -412,6 +442,7 @@ private:
 	mutable boost::multi::array<parallel::communicator, 1> comms_;	
 	gpu::array<int, 1> nlm_;
 	gpu::array<int, 1> iatom_;
+	gpu::array<bool, 1> locally_empty_;
   
 };
   
