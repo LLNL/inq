@@ -40,8 +40,7 @@ public:
 	communicator(communicator &&) = default;
 	
 	communicator():
-		base_comm()
-	{
+		base_comm() {
 	}
 
   communicator(communicator & arg):
@@ -53,13 +52,11 @@ public:
   }
 
   explicit communicator(boost::mpi3::communicator && arg):
-    base_comm(std::forward<boost::mpi3::communicator>(arg))
-  {
+    base_comm(std::forward<boost::mpi3::communicator>(arg)) {
   }
 
   explicit communicator(boost::mpi3::communicator & arg):
-    base_comm(arg)
-  {
+    base_comm(arg) {
   }
 
 	template <boost::mpi3::dimensionality_type D>
@@ -70,8 +67,7 @@ public:
 
 	template <boost::mpi3::dimensionality_type D>
 	communicator(boost::mpi3::cartesian_communicator<D> & arg):
-    base_comm(arg)
-  {
+    base_comm(arg) {
   }
 	
 	auto operator=(communicator const & comm) = delete;
@@ -116,8 +112,7 @@ public:
 	using base_comm = boost::mpi3::cartesian_communicator<D>;
 	
 	cartesian_communicator():
-		base_comm()
-	{
+		base_comm() {
 	}
 
 	cartesian_communicator(cartesian_communicator const &) = delete;
@@ -134,23 +129,19 @@ public:
 
 	template <typename ShapeType>
   cartesian_communicator(boost::mpi3::communicator & comm, ShapeType const & shape):
-    base_comm(comm, shape)
-  {
+    base_comm(comm, shape) {
   }
 	
   cartesian_communicator(boost::mpi3::communicator & comm, std::array<int, D> shape):
-    base_comm(comm, shape)
-  {
+    base_comm(comm, shape) {
   }
 	
   explicit cartesian_communicator(boost::mpi3::cartesian_communicator<D> && arg):
-    base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg))
-  {
+    base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg)) {
   }
 
   explicit cartesian_communicator(boost::mpi3::cartesian_communicator<D> & arg):
-    base_comm(arg)
-  {
+    base_comm(arg) {
   }
 
 	auto operator=(cartesian_communicator const & comm) = delete;
