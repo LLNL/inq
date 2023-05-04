@@ -39,6 +39,8 @@ public:
 				
 			int l = ps.projector_l(iproj_l);
 
+			for(auto mm = 0; mm < 2*l + 1; mm++) kb_coeff_[iproj_lm + mm] = ps.kb_coeff(iproj_l);
+			
 			if(not basis.double_grid().enabled()) {
 				
 				// now construct the projector with the spherical harmonics
@@ -46,11 +48,7 @@ public:
 								 [mat = begin(matrix_),
 									spline = ps.projector(iproj_l).function(),
 									sph = sphere_.ref(), l, iproj_lm,
-									kb_ = begin(kb_coeff_),
-									coe = ps.kb_coeff(iproj_l),
 									metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint, auto m) {
-									 
-									 if(ipoint == 0) kb_[iproj_lm + m] = coe;
 									 mat[iproj_lm + m][ipoint] = spline(sph.distance(ipoint))*pseudo::math::sharmonic(l, m - l, metric.to_cartesian(sph.point_pos(ipoint)));
 								 });
 				
@@ -59,10 +57,8 @@ public:
 				CALI_CXX_MARK_SCOPE("projector::double_grid");
 				
 				gpu::run(sphere_.size(), 2*l + 1,
-								 [mat = begin(matrix_), spline = ps.projector(iproj_l).function(), sph = sphere_.ref(), l, iproj_lm, kb_ = begin(kb_coeff_), coe = ps.kb_coeff(iproj_l),
+								 [mat = begin(matrix_), spline = ps.projector(iproj_l).function(), sph = sphere_.ref(), l, iproj_lm,
 									dg = basis.double_grid().ref(), spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint, auto m) {
-									 
-									 if(ipoint == 0) kb_[iproj_lm + m] = coe;
 									 mat[iproj_lm + m][ipoint] = dg.value([spline, l, m] GPU_LAMBDA(auto pos) { return spline(pos.length())*pseudo::math::sharmonic(l, m - l, pos);}, spac, metric.to_cartesian(sph.point_pos(ipoint)));
 								 });
 				
@@ -82,16 +78,18 @@ public:
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
 		kb_coeff_(nproj_),
-		comm_(sphere_.create_comm(basis.comm())),
 		iatom_(iatom){
 
 		build(basis, ps);
-
 	}
 
 	projector(projector const &) = delete;		
 
 	auto empty() const {
+		return nproj_ == 0;
+	}
+	
+	auto locally_empty() const {
 		return nproj_ == 0 or sphere_.size() == 0;
 	}
 
@@ -133,7 +131,6 @@ private:
 	int nproj_;
 	gpu::array<double, 2> matrix_;
 	gpu::array<double, 1> kb_coeff_;
-	mutable parallel::communicator comm_;
 	int iatom_;
     
 };
