@@ -228,20 +228,14 @@ public:
 
 		CALI_CXX_MARK_SCOPE("projector_all::apply");
 
-		for(auto iproj = 0; iproj < nprojs_; iproj++){
-
-			if(locally_empty_[iproj]) continue;
-			
-			gpu::run(vnlphi.local_set_size(), max_sphere_size_,
-							 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.hypercubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
-								 if(poi[iproj][ipoint][0] >= 0){
-									 auto phase = polar(1.0, -dot(kpoint, pos[iproj][ipoint]));
-									 gpu::atomic::add(&gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist], phase*sgr[iproj][ipoint][ist]);
-								 }
-							 });
-		}
+		gpu::run(vnlphi.local_set_size(), max_sphere_size_, nprojs_,
+						 [sgr = begin(sphere_vnlphi), gr = begin(vnlphi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint, empty = begin(locally_empty_)] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
+							 if(not empty[iproj] and poi[iproj][ipoint][0] >= 0){
+								 auto phase = polar(1.0, -dot(kpoint, pos[iproj][ipoint]));
+								 gpu::atomic::add(&gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist], phase*sgr[iproj][ipoint][ist]);
+							 }
+						 });
 	}
-
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
