@@ -85,7 +85,7 @@ int main(int argc, char ** argv){
 	
 	assert(int(ions.geo().num_atoms()) == int(cell.size()*product(reps)));
 				 
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::extra_states(2*product(reps)) | input::config::temperature(300.0_K));
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::extra_states(2*product(reps)) | input::config::temperature(1000.0_K));
 	
 	auto restart_dir = "aluminum_" + std::to_string(reps[0]) + "_" + std::to_string(reps[1]) + "_" + std::to_string(reps[2]);
 
@@ -93,7 +93,7 @@ int main(int argc, char ** argv){
 
 	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, functional, inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(niter));
+		auto result = ground_state::calculate(ions, electrons, functional, inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(niter) | inq::input::scf::mixing(0.1));
 		if(not groundstate_only) electrons.save(restart_dir);
 	}
 

@@ -49,7 +49,7 @@ public:
 			for(int ist = 0; ist < el.max_local_set_size(); ist++){
 				kpoint_index[iphi][ist] = ik;
 				spin_index[iphi][ist] = phi.spin_index();
-			state_index[iphi][ist] = ist;
+				state_index[iphi][ist] = phi.set_part().local_to_global(ist).value();
 			occs[iphi][ist] = 0.0;
 			if(fabs(el.kpin_weights()[iphi]) > 1e-14) occs[iphi][ist] = el.occupations()[iphi][ist]/el.kpin_weights()[iphi];
 			}
