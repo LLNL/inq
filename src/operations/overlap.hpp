@@ -86,7 +86,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	const int npoint = 100;
 	const int nvec = 16;
 			
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	auto parstates = comm.size();
 	if(comm.size() >= 5) parstates = 1;

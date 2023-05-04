@@ -64,7 +64,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	SECTION("Orthogonal box"){
 		systems::box box = systems::box::orthorhombic(12.0_b, 14.0_b, 16.0_b).cutoff_energy(45.0_Ha);

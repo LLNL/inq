@@ -252,7 +252,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
 	
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(40.0_Ha);
 	basis::real_space rs(box, comm);
@@ -309,7 +309,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(std::get<1>(strd) >= std::get<2>(strd));
 	CHECK(std::get<2>(strd) >= std::get<3>(strd));
 	
-	basis::field<basis::real_space, double> red(basis::field<basis::real_space, double>(ff), boost::mpi3::environment::get_self_instance());
+	basis::field<basis::real_space, double> red(basis::field<basis::real_space, double>(ff), parallel::communicator{boost::mpi3::environment::get_self_instance()});
 
 	CHECK(red.basis().local_size() == red.linear().size());
 	

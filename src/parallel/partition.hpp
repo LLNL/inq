@@ -154,7 +154,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
   const int NN = 1033;
 
-  auto comm = boost::mpi3::environment::get_world_instance();
+  parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
   
 	inq::parallel::partition part(NN, comm);
 

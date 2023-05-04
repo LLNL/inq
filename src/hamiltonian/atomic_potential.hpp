@@ -327,7 +327,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	double const gcut = 0.785;
 
-	parallel::communicator comm = boost::mpi3::environment::get_self_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_self_instance()};
 	
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({element("P"), element("X")});

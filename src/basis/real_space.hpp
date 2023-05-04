@@ -209,7 +209,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using Catch::Approx;
 
 	
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
   {
     
@@ -230,7 +230,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
       CHECK(rs.sizes()[1] == 20);
       CHECK(rs.sizes()[2] == 20);
 			
-			basis::real_space new_rs(basis::real_space(rs), boost::mpi3::environment::get_self_instance());
+			basis::real_space new_rs(basis::real_space(rs), parallel::communicator{boost::mpi3::environment::get_self_instance()});
 			
 			CHECK(rs.sizes() == new_rs.sizes());
 			CHECK(new_rs.local_sizes() == new_rs.sizes());	

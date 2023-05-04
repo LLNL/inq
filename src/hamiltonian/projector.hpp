@@ -155,7 +155,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	ions::geometry geo;
 	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);

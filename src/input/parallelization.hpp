@@ -112,7 +112,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   using namespace inq;
 	using namespace Catch::literals;
 
-	parallel::communicator comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	input::parallelization par(comm);
 	

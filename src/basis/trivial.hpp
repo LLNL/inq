@@ -33,6 +33,10 @@ namespace basis {
 			base(size, comm),
       size_(size){
 		}
+				
+		trivial(const long size, boost::mpi3::communicator comm):
+			trivial(size, parallel::communicator{std::move(comm)}){
+		}
 		
     long size() const {
       return size_;

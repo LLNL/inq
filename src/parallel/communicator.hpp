@@ -52,12 +52,12 @@ public:
   {
   }
 
-  communicator(boost::mpi3::communicator && arg):
+  explicit communicator(boost::mpi3::communicator && arg):
     base_comm(std::forward<boost::mpi3::communicator>(arg))
   {
   }
 
-  communicator(boost::mpi3::communicator & arg):
+  explicit communicator(boost::mpi3::communicator & arg):
     base_comm(arg)
   {
   }

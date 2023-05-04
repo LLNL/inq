@@ -90,7 +90,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   const int npoint = 100;
   const int nvec = 12;
 
-	basis::trivial bas(npoint, boost::mpi3::environment::get_self_instance());
+	basis::trivial bas(npoint, parallel::communicator{boost::mpi3::environment::get_self_instance()});
 
 	SECTION("Diagonal double"){
 		

@@ -47,7 +47,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	systems::box box = systems::box::cubic(6.3_b).cutoff_energy(25.0_Ha);
 	basis::real_space pw(box, comm);

@@ -119,7 +119,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	const int N = 100;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
  
 	basis::trivial bas(N, comm);
 
