@@ -35,7 +35,7 @@ namespace input {
 
 		static auto optimal_nprocs(int size, int max_comm_size, double threshold){
 			for(utils::factors_reverse fac(max_comm_size); fac != fac.end(); ++fac){
-				parallel::partition part(size, *fac);
+				parallel::partition part(size, *fac, 0);
 
 				if(part.local_size(*fac - 1) == 0) continue; //avoid empty partitions
 				if(part.waste() <= threshold) return *fac;

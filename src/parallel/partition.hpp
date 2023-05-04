@@ -30,7 +30,7 @@ public:
 		return end_ - start_;
 	}
 	
-	partition(const long size, int comm_size = 1, int comm_rank = 0)
+	partition(const long size, int comm_size, int comm_rank)
 		:comm_size_(comm_size),
 		 size_(size)
 	{
@@ -46,9 +46,14 @@ public:
 		assert(end_ >= start_);
 		assert(end_ <= size);
 	}
-	
-	partition(const long size, const parallel::communicator & comm)
+
+	template <typename CommType>
+	partition(const long size, CommType const & comm)
 		:partition(size, comm.size(), comm.rank()){
+	}
+	
+	partition(const long size)
+		:partition(size, 1, 0){
 	}
 	
 	auto operator*=(const long factor) {
