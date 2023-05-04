@@ -813,6 +813,9 @@ gcc-mpich-template:
       - cd inq_template_dir
       - git clone https://gitlab.com/npneq/inq_template.git
       - cd inq_template
+      - echo $CI_COMMIT_SHA
+      - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
+      - cat CMakeLists.txt
       - mkdir build && cd build
       - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release
       - time make -j2
@@ -834,6 +837,9 @@ nvcc-mpich-template:
       - cd inq_template_dir
       - git clone https://gitlab.com/npneq/inq_template.git
       - cd inq_template
+      - echo $CI_COMMIT_SHA
+      - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
+      - cat CMakeLists.txt
       - mkdir build && cd build
       - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j2
@@ -856,6 +862,9 @@ clang-ompi-template:
       - wget https://gitlab.com/npneq/inq_template/-/archive/main/inq_template-main.tar.gz
       - tar -xvzf inq_template-main.tar.gz
       - cd inq_template-main
+      - echo $CI_COMMIT_SHA
+      - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
+      - cat CMakeLists.txt
       - mkdir build && cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
       - export CXX=clang++
