@@ -87,7 +87,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	const int nst = 12;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	parallel::cartesian_communicator<2> cart_comm(comm, {});
 

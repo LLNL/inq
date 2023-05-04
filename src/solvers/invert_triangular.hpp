@@ -70,7 +70,7 @@ void invert_triangular(math::subspace_matrix<Type> & matrix){
 
 TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
 
-  auto comm = boost::mpi3::environment::get_world_instance();
+  parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	inq::parallel::cartesian_communicator<2> cart_comm(comm, {});
 
 	SECTION("2x2"){

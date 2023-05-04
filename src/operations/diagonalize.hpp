@@ -208,7 +208,7 @@ auto diagonalize(MatrixType & matrix){
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	inq::parallel::cartesian_communicator<2> cart_comm(comm, {});
 	
 	SECTION("Real diagonal 2x2"){

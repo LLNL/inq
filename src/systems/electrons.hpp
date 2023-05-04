@@ -81,21 +81,21 @@ private:
 public:
 	
 	static auto kpin_subcomm(parallel::cartesian_communicator<3> & comm){
-		return parallel::cartesian_communicator<1>(comm.axis(input::parallelization::dimension_kpoints()));
+		return comm.axis(input::parallelization::dimension_kpoints());
 	}
 	static auto states_subcomm(parallel::cartesian_communicator<3> & comm){
-		return parallel::cartesian_communicator<1>(comm.axis(input::parallelization::dimension_states()));
+		return comm.axis(input::parallelization::dimension_states());
 	}
 	static auto basis_subcomm(parallel::cartesian_communicator<3> & comm){
-		return parallel::cartesian_communicator<1>(comm.axis(input::parallelization::dimension_domains()));
+		return comm.axis(input::parallelization::dimension_domains());
 	}
 	static auto states_basis_subcomm(parallel::cartesian_communicator<3> & comm){
 		assert(input::parallelization::dimension_domains() < input::parallelization::dimension_states());		
-		return parallel::cartesian_communicator<2>(comm.plane(input::parallelization::dimension_domains(), input::parallelization::dimension_states()));
+		return comm.plane(input::parallelization::dimension_domains(), input::parallelization::dimension_states());
 	}
 	static auto kpin_states_subcomm(parallel::cartesian_communicator<3> & comm){
 		assert(input::parallelization::dimension_states() < input::parallelization::dimension_kpoints());
-		return parallel::cartesian_communicator<2>(comm.plane(input::parallelization::dimension_states(), input::parallelization::dimension_kpoints()));
+		return comm.plane(input::parallelization::dimension_states(), input::parallelization::dimension_kpoints());
 	}
 	
 	auto & kpin() const {
@@ -189,7 +189,7 @@ public:
 		states_(std::move(old_el.states_)),
 		kpin_weights_(std::move(old_el.kpin_weights_)),
 		max_local_set_size_(std::move(old_el.max_local_set_size_)),
-		spin_density_(std::move(old_el.spin_density_), density_basis_.comm()),
+		spin_density_(std::move(old_el.spin_density_), {density_basis_.comm(), {density_basis_.comm().size(), 1}}),
 		logger_(std::move(old_el.logger_)),
 		kpin_part_(std::move(old_el.kpin_part_))
 	{
@@ -474,7 +474,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	systems::box box = systems::box::orthorhombic(6.0_b, 1.0_b, 6.0_b).cutoff_energy(15.0_Ha);
 	

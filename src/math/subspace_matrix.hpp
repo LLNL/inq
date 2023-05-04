@@ -95,7 +95,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-  auto comm = boost::mpi3::environment::get_world_instance();
+  parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	parallel::cartesian_communicator<2> cart_comm(comm, {});
   
   gpu::array<double, 2> matrix({2, 2});

@@ -229,7 +229,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
   ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
 
-	parallel::communicator comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	basis::grid gr(cell, {120, 45, 77}, true, false, 3, comm);
 
@@ -274,7 +274,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	CHECK(gr.double_grid().enabled() == false);
 
-	auto new_gr = basis::grid(basis::grid(gr), boost::mpi3::environment::get_self_instance());
+	auto new_gr = basis::grid(basis::grid(gr), parallel::communicator{boost::mpi3::environment::get_self_instance()});
 
 	CHECK(gr.sizes() == new_gr.sizes());
 	CHECK(new_gr.local_sizes() == new_gr.sizes());	

@@ -391,7 +391,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);
 
-	auto self_comm = boost::mpi3::environment::get_self_instance();
+	parallel::communicator self_comm{boost::mpi3::environment::get_self_instance()};
 	
 	vector3<double> ll{6.66, 7.77, 9.99};
 	

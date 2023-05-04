@@ -243,7 +243,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	namespace multi = boost::multi;
 	using namespace basis;
 
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	{
 

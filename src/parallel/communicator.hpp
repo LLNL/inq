@@ -26,9 +26,9 @@
 namespace inq{
 namespace parallel {
 
+template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent> class cartesian_communicator;
 
-template <class CommType>
-class hybrid_communicator : public CommType {
+class communicator : public boost::mpi3::communicator {
 
 #ifdef ENABLE_NCCL
 	std::shared_ptr<boost::mpi3::nccl::communicator> nccl_comm_;
@@ -36,34 +36,57 @@ class hybrid_communicator : public CommType {
 	
 public:
 
-	using CommType::CommType;
+	using base_comm = boost::mpi3::communicator;
 	
-	hybrid_communicator(hybrid_communicator const &) = delete;
-	hybrid_communicator(hybrid_communicator &&) = default;
+	communicator(communicator const &) = delete;
+	communicator(communicator &&) = default;
 	
-	hybrid_communicator():
-		CommType()
-	{
+	communicator():
+		base_comm() {
 	}
 
-  hybrid_communicator(hybrid_communicator & arg):
-    CommType(arg)
+  communicator(communicator & arg):
+    base_comm(arg)
 #ifdef ENABLE_NCCL
 		, nccl_comm_(arg.nccl_comm_)
 #endif
   {
   }
-	
-	template <class ArgType, class = std::enable_if_t<not std::is_base_of<hybrid_communicator, ArgType>::value>>
-  hybrid_communicator(ArgType && arg):
-    CommType(std::forward<ArgType>(arg))
+
+  explicit communicator(boost::mpi3::communicator && arg):
+    base_comm(std::forward<boost::mpi3::communicator>(arg)) {
+  }
+
+  explicit communicator(boost::mpi3::communicator & arg):
+    base_comm(arg) {
+  }
+
+	template <boost::mpi3::dimensionality_type D>
+	communicator(boost::mpi3::cartesian_communicator<D> && arg):
+    base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg))
   {
   }
 
-	auto operator=(hybrid_communicator const & comm) = delete;
+	template <boost::mpi3::dimensionality_type D>
+	communicator(boost::mpi3::cartesian_communicator<D> & arg):
+    base_comm(arg) {
+  }
 
-	auto operator=(hybrid_communicator & comm) {
-		CommType::operator=(CommType(comm));
+	template <boost::mpi3::dimensionality_type D>
+	communicator(cartesian_communicator<D> && arg):
+    base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg))
+  {
+  }
+
+	template <boost::mpi3::dimensionality_type D>
+	communicator(cartesian_communicator<D> & arg):
+    base_comm(arg) {
+  }
+	
+	auto operator=(communicator const & comm) = delete;
+
+	auto operator=(communicator & comm) {
+		base_comm::operator=(base_comm(comm));
 #ifdef ENABLE_NCCL
 		nccl_comm_ = comm.nccl_comm_;
 #endif
@@ -90,10 +113,86 @@ public:
 	
 };
 
-using communicator = hybrid_communicator<boost::mpi3::communicator>;
+template<boost::mpi3::dimensionality_type D>
+class cartesian_communicator : public boost::mpi3::cartesian_communicator<D> {
 
-template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
-using cartesian_communicator = hybrid_communicator<boost::mpi3::cartesian_communicator<D>>;
+#ifdef ENABLE_NCCL
+	std::shared_ptr<boost::mpi3::nccl::communicator> nccl_comm_;
+#endif
+	
+public:
+
+	using base_comm = boost::mpi3::cartesian_communicator<D>;
+	
+	cartesian_communicator():
+		base_comm() {
+	}
+
+	cartesian_communicator(cartesian_communicator const &) = delete;
+
+	cartesian_communicator(cartesian_communicator &&) = default;
+
+  cartesian_communicator(cartesian_communicator & arg):
+    base_comm(arg)
+#ifdef ENABLE_NCCL
+		, nccl_comm_(arg.nccl_comm_)
+#endif
+  {
+  }
+
+	template <typename ShapeType>
+  cartesian_communicator(boost::mpi3::communicator & comm, ShapeType const & shape):
+    base_comm(comm, shape) {
+  }
+	
+  cartesian_communicator(boost::mpi3::communicator & comm, std::array<int, D> shape):
+    base_comm(comm, shape) {
+  }
+	
+  explicit cartesian_communicator(boost::mpi3::cartesian_communicator<D> && arg):
+    base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg)) {
+  }
+
+  explicit cartesian_communicator(boost::mpi3::cartesian_communicator<D> & arg):
+    base_comm(arg) {
+  }
+
+	auto operator=(cartesian_communicator const & comm) = delete;
+
+	auto operator=(cartesian_communicator & comm) {
+		base_comm::operator=(base_comm(comm));
+#ifdef ENABLE_NCCL
+		nccl_comm_ = comm.nccl_comm_;
+#endif
+	}
+
+	void nccl_init() {
+#ifdef ENABLE_NCCL
+		if(nccl_comm_) return;
+
+		CALI_CXX_MARK_FUNCTION;
+		nccl_comm_ = std::make_shared<boost::mpi3::nccl::communicator>(*this);
+		assert(nccl_comm_);
+		assert(nccl_comm_->size() == this->size());
+#endif
+	}
+
+#ifdef ENABLE_NCCL
+	auto & nccl_comm() {
+		assert(nccl_comm_);
+		assert(nccl_comm_->size() == this->size());
+		return *nccl_comm_;
+	}
+#endif
+
+	auto axis(int d1){
+		return cartesian_communicator<1>(base_comm::axis(d1));
+	}
+	
+	auto plane(int d1, int d2){
+		return cartesian_communicator<2>(base_comm::plane(d1, d2));
+	}
+};
 
 }
 }

@@ -103,7 +103,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		double phi_absdif = 0.0;
 		double phi_dif = 0.0;
 		
-		auto comm = boost::mpi3::environment::get_world_instance();
+		parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 		
 		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite().cutoff_energy(ecut);
 		

@@ -193,7 +193,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	using namespace operations;
 	using Catch::Approx;
 	
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	auto lx = 10.3;
 	auto ly = 13.8;

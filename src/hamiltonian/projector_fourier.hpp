@@ -153,7 +153,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
   
-	auto comm = boost::mpi3::environment::get_world_instance();
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 
