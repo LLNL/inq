@@ -26,6 +26,8 @@
 namespace inq{
 namespace parallel {
 
+template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent> class cartesian_communicator;
+
 class communicator : public boost::mpi3::communicator {
 
 #ifdef ENABLE_NCCL
@@ -69,6 +71,17 @@ public:
 	communicator(boost::mpi3::cartesian_communicator<D> & arg):
     base_comm(arg) {
   }
+
+	template <boost::mpi3::dimensionality_type D>
+	communicator(cartesian_communicator<D> && arg):
+    base_comm(std::forward<boost::mpi3::cartesian_communicator<D>>(arg))
+  {
+  }
+
+	template <boost::mpi3::dimensionality_type D>
+	communicator(cartesian_communicator<D> & arg):
+    base_comm(arg) {
+  }
 	
 	auto operator=(communicator const & comm) = delete;
 
@@ -100,7 +113,7 @@ public:
 	
 };
 
-template<boost::mpi3::dimensionality_type D = boost::mpi3::dynamic_extent>
+template<boost::mpi3::dimensionality_type D>
 class cartesian_communicator : public boost::mpi3::cartesian_communicator<D> {
 
 #ifdef ENABLE_NCCL
