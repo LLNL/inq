@@ -226,7 +226,7 @@ public:
 	template <typename SpherePhiType, typename KpointType>
 	void apply(SpherePhiType & sphere_vnlphi, states::orbital_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
 
-		CALI_CXX_MARK_FUNCTION;
+		CALI_CXX_MARK_SCOPE("projector_all::apply");
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 
