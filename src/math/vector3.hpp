@@ -268,6 +268,12 @@ public:
 		return in;
 	}
 
+	// CAST
+	template <typename NewType>
+	explicit GPU_FUNCTION operator vector3<NewType, Space>() const{
+		return {static_cast<NewType>(vec_[0]), static_cast<NewType>(vec_[1]), static_cast<NewType>(vec_[2])};
+	}
+
 };
 
 template<std::size_t Index, class T>
@@ -618,6 +624,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(x ==  2.0_a);
 		CHECK(y == -3.0_a);
 		CHECK(z ==  5.0_a);
+	}
+
+	SECTION("cast"){
+		vector3<double> vec{-12.0, -66.0, 77.0};
+		auto vecf = static_cast<vector3<float>>(vec);
+
+		CHECK(vecf[0] == Approx(-12.0f));
+		CHECK(vecf[1] == Approx(-66.0f));
+		CHECK(vecf[2] == Approx( 77.0f));
 	}
 
 }
