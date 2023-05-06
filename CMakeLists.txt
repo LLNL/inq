@@ -124,8 +124,6 @@ endif()
 
 link_libraries(m)
 
-add_subdirectory(external_libs)
-
 enable_language(Fortran)
 
 include(FortranCInterface)
@@ -200,7 +198,17 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/gpurun)
 set(gpurun_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/gpurun/include)
 target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/gpurun/include)
 
+#PSEUDOPOD
+add_subdirectory(external_libs/pseudopod)
+include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
+target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/pseudopod)
+
 #LIBXC
+message("\nCONFIGURING LIBXC\n")
+set(DISABLE_FXC ON)
+set(BUILD_TESTING OFF)
+add_subdirectory(external_libs/libxc)
+message("\nDONE CONFIGURING LIBXC\n")
 set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)
 set(Libxc_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/libxc/libxc.a)
 include_directories(${Libxc_INCLUDE_DIRS})
@@ -294,11 +302,9 @@ target_link_libraries(inq INTERFACE ${HDF5_LIBRARIES})
 ######################
 
 include_directories(${PROJECT_BINARY_DIR})
-include_directories(${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 
 target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR})
 target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
-target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/pseudopod)
 
 configure_file(inq_config.h.in inq_config.h)
 
