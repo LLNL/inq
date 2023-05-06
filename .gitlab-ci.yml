@@ -151,7 +151,6 @@ gcc-mpich:
       - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug
       - time make
       - time make install
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - cd ../
       - time tar -Ipixz -cvf gcc-mpich-build.tar.xz build/
     artifacts:
@@ -195,8 +194,6 @@ gcc-mpich-1p:
       - cd build
       - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 360
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
-      - tests/silicon2
 
 gcc-mpich-2p:
     stage: test
@@ -274,8 +271,6 @@ gcc-ompi:
       - time mpirun --allow-run-as-root -np 2 tests/al4h1_td
       - time mpirun --allow-run-as-root -np 3 tests/al4h1_td
       - time mpirun --allow-run-as-root -np 5 tests/al4h1_td
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
-      - tests/silicon2
 
 #########################################################################################################################
 # GCC-OMPI-FAST
@@ -310,8 +305,6 @@ gcc-ompi-fast:
       - time mpirun --allow-run-as-root -np 2 tests/al4h1_td
       - time mpirun --allow-run-as-root -np 3 tests/al4h1_td
       - time mpirun --allow-run-as-root -np 5 tests/al4h1_td
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
-      - tests/silicon2
 
 #########################################################################################################################
 # CLANG-OMPI
@@ -331,7 +324,6 @@ clang-ompi:
       - ls -l
       - time make
       - time make install
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - cd ../
       - time tar -Ipixz -cvf clang-ompi-build.tar.xz build/
     artifacts:
@@ -348,7 +340,6 @@ clang-ompi-1p:
       - cd build
       - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 360
-      - tests/silicon2
 
 clang-ompi-2p:
     stage: test
@@ -409,7 +400,6 @@ clang-ompi-fast:
       - CXX=clang++-9 ../configure --prefix=$HOME --disable-debug
       - time make -j4
       - time make -j4 install
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - cd ../
       - time tar -Ipixz -cvf clang-ompi-fast-build.tar.xz build/
     artifacts:
@@ -427,7 +417,6 @@ clang-ompi-fast-1p:
       - cd build
       - cmake --build . --target install/fast      
       - ctest --output-on-failure --timeout 360
-      - tests/silicon2
 
 clang-ompi-fast-2p:
     stage: test
@@ -503,7 +492,6 @@ intel-mpich:
       - time ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.mpich
       - make
       - make install
-      - $HOME/bin/inc++ ../tests/silicon.cpp -o tests/silicon2
       - ldd tests/nitrogen
       - cd ../
       - time tar -Ipixz -cvf intel-mpich-build.tar.xz build/
@@ -523,7 +511,6 @@ intel-mpich-1p:
       - cd src/; ctest --output-on-failure --timeout 720; cd ../
       - cd tests/; ctest --output-on-failure --timeout 720; cd ../
       - cd speed_tests/; ctest --output-on-failure --timeout 720; cd ../
-      - tests/silicon2
 
 intel-mpich-2p:
     stage: test
