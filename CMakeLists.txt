@@ -307,20 +307,7 @@ target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR})
 target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs)
 
 configure_file(inq_config.h.in inq_config.h)
-
-#Generate inc++
-set(INCXX scripts/inc++)
-if(ENABLE_CUDA)
-set(INCPP_COMPILER ${CMAKE_CUDA_COMPILER})
-set(INCPP_FLAGS ${CMAKE_CUDA_FLAGS})
-else()
-set(INCPP_COMPILER ${CMAKE_CXX_COMPILER})
-set(INCPP_FLAGS ${CMAKE_CXX_FLAGS})
-endif()
-configure_file(${INCXX}.bash.in ${INCXX} @ONLY)
 configure_file(scripts/run_test.sh.in scripts/run_test.sh @ONLY)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${INCXX} DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 install(DIRECTORY share/ DESTINATION share/inq)
 
