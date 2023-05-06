@@ -43,7 +43,7 @@ namespace basis {
 		struct point_data {
 			vector3<int> coords_;
 			float distance_; //I don't think we need additional precision for this, and we get aligned memory
-			vector3<double, contravariant> relative_pos_;
+			vector3<float, contravariant> relative_pos_;
 
 			GPU_FUNCTION friend auto operator<(point_data const & aa, point_data const & bb){
 				if(aa.coords_[0] < bb.coords_[0]) return true;
@@ -123,7 +123,7 @@ namespace basis {
 									 
 									 (&buf[ix][iy][iz])->coords_ = {ixl, iyl, izl};
 									 (&buf[ix][iy][iz])->distance_ = sqrt(n2);
-									 (&buf[ix][iy][iz])->relative_pos_ = point_op.metric().to_contravariant(rpoint - re);
+									 (&buf[ix][iy][iz])->relative_pos_ = static_cast<vector3<float, contravariant>>(point_op.metric().to_contravariant(rpoint - re));
 								 });
 				
 				upper_count += upper_local;
