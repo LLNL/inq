@@ -338,12 +338,16 @@ public:
 			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
 							 [sphi = begin(sphere_phi_all), srphi = begin(sphere_rphi_all), gr = begin(phi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
 								 if(poi[iproj][ipoint][0] >= 0){
-									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));
+									 auto rr = static_cast<vector3<double, contravariant>>(pos[iproj][ipoint]);
+									 auto phase = polar(1.0, dot(kpoint, rr));
 									 sphi[iproj][ipoint][ist] = phase*gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
+									 srphi[iproj][ipoint][ist] = rr*sphi[iproj][ipoint][ist];
 								 } else {
-									 sphi[iproj][ipoint][ist] = complex(0.0, 0.0);
+									 sphi[iproj][ipoint][ist]     = complex(0.0, 0.0);
+									 srphi[iproj][ipoint][ist][0] = complex(0.0, 0.0);
+									 srphi[iproj][ipoint][ist][1] = complex(0.0, 0.0);
+									 srphi[iproj][ipoint][ist][2] = complex(0.0, 0.0);
 								 }
-								 srphi[iproj][ipoint][ist] = pos[iproj][ipoint]*sphi[iproj][ipoint][ist];
 							 });
 		}
 
@@ -397,8 +401,9 @@ public:
 							 [sgr = begin(sphere_phi_all), srphi = begin(sphere_rphi_all), gr = begin(cphi.hypercubic()), poi = begin(points_), iproj, pos = begin(positions_), kpoint, metric = phi.basis().cell().metric()]
 							 GPU_LAMBDA (auto ist, auto ipoint){
 								 if(poi[iproj][ipoint][0] >= 0){
-									 auto phase = polar(1.0, -dot(kpoint, pos[iproj][ipoint]));
-									 auto commutator = phase*metric.to_covariant(srphi[iproj][ipoint][ist] - pos[iproj][ipoint]*sgr[iproj][ipoint][ist]);
+									 auto rr = static_cast<vector3<double, contravariant>>(pos[iproj][ipoint]);
+									 auto phase = polar(1.0, -dot(kpoint, rr));
+									 auto commutator = phase*metric.to_covariant(srphi[iproj][ipoint][ist] - rr*sgr[iproj][ipoint][ist]);
 									 gpu::atomic::add(&gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist], commutator);
 								 }
 							 });
@@ -414,7 +419,7 @@ private:
 	long max_sphere_size_;
 	int max_nlm_;
 	gpu::array<vector3<int>, 2> points_;
-	gpu::array<vector3<double, contravariant>, 2> positions_;
+	gpu::array<vector3<float, contravariant>, 2> positions_;
 	gpu::array<double, 2> coeff_;
 	gpu::array<double, 3> matrices_;
 	gpu::array<int, 1> nlm_;
