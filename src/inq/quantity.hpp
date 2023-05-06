@@ -32,6 +32,7 @@ namespace inq {
 
 		quantity() = default;
 		quantity(quantity const&) = default;
+		quantity & operator=(quantity const&) = default;
 		
 		GPU_FUNCTION static auto from_atomic_units(element_type const & au_value){
 			quantity qq;
