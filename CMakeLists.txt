@@ -210,7 +210,6 @@ set(BUILD_TESTING OFF)
 add_subdirectory(external_libs/libxc)
 message("\nDONE CONFIGURING LIBXC\n")
 set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)
-set(Libxc_LIBRARIES ${PROJECT_BINARY_DIR}/external_libs/libxc/libxc.a)
 include_directories(${Libxc_INCLUDE_DIRS})
 
 target_include_directories(inq INTERFACE ${Libxc_INCLUDE_DIRS})
@@ -250,7 +249,6 @@ FetchContent_MakeAvailable(spglib)
 set(CMAKE_BUILD_TYPE ${MAKE_BUILD_TYPE_BACKUP})
 
 set(spglib_INCLUDE_DIRS ${spglib_SOURCE_DIR}/src/)
-set(spglib_LIBRARIES ${spglib_BINARY_DIR}/libsymspg.a)
 include_directories(${spglib_INCLUDE_DIRS})
 link_libraries(symspg_static)
 
