@@ -230,9 +230,27 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/mpi3)
 target_link_libraries(inq INTERFACE mpi3)
 
 ########################
-# SPGLIB
+# SPDLOG
 ########################
 
+message(STATUS "Downloading spdlog")
+
+FetchContent_Declare(
+  spdlog
+	GIT_REPOSITORY https://github.com/gabime/spdlog.git
+	GIT_TAG        v1.11.0
+  GIT_PROGRESS TRUE
+	)
+	FetchContent_MakeAvailable(spdlog)
+	
+set(spdlog_INCLUDE_DIRS ${spdlog_SOURCE_DIR}/include/)
+include_directories(${spdlog_INCLUDE_DIRS})
+target_include_directories(inq INTERFACE ${spdlog_INCLUDE_DIRS})
+target_link_libraries(inq INTERFACE spdlog)
+
+########################
+# SPGLIB
+########################
 message(STATUS "Downloading spglib")
 
 set(CMAKE_BUILD_TYPE_BACKUP ${MAKE_BUILD_TYPE})
