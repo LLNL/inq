@@ -105,7 +105,11 @@ public:
 	auto contains(long index, int part) const {
 		return start(part) <= index and index < end(part);
 	}
-	
+
+	auto contains(parallel::global_index index) const {
+		return start() <= index.value() and index.value() < end();
+	}
+
 	constexpr auto local_to_global(long local_i) const {
 		return global_index(start_ + local_i);
 	}
@@ -126,6 +130,10 @@ public:
 		return global_i/bsize_;
 	}
 
+	auto location(global_index global_i) const {
+		return global_i.value()/bsize_;
+	}
+	
 	auto waste() const {
 		auto total_elements = bsize_*comm_size();
 		return (total_elements - size())/double(size());
