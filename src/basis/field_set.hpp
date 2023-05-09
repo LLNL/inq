@@ -187,7 +187,7 @@ public:
 	public:
 			
 		parallel_set_iterator(long basis_local_size, PartitionType set_part, parallel::cartesian_communicator<1> set_comm, internal_array_type const & data):
-			matrix_({basis_local_size, set_part.max_local_set_size()}),
+			matrix_({basis_local_size, set_part.max_local_size()}),
 			istep_(0),
 			set_comm_(std::move(set_comm)),
 			set_part_(std::move(set_part)){

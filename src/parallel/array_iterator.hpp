@@ -36,7 +36,7 @@ public:
   array_iterator(PartitionType part, parallel::cartesian_communicator<1> comm, ArrayType const & arr):
     part_(std::move(part)),
     comm_(std::move(comm)),
-    arr_(part.max_local_set_size()),
+    arr_(part.max_local_size()),
     istep_(0)
   {
 		assert(arr.size() == part_.local_size());

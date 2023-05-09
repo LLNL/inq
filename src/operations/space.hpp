@@ -136,8 +136,8 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 		auto & comm = real_basis.comm();
 		
-		int xblock = real_basis.cubic_part(0).max_local_set_size();
-		int zblock = fourier_basis.cubic_part(2).max_local_set_size();
+		int xblock = real_basis.cubic_part(0).max_local_size();
+		int zblock = fourier_basis.cubic_part(2).max_local_size();
 		assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
  		auto last_dim = std::get<3>(sizes(array_rs));
 
@@ -269,8 +269,8 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 		auto & comm = fourier_basis.comm();
 
-		int xblock = real_basis.cubic_part(0).max_local_set_size();
-		int zblock = fourier_basis.cubic_part(2).max_local_set_size();
+		int xblock = real_basis.cubic_part(0).max_local_size();
+		int zblock = fourier_basis.cubic_part(2).max_local_size();
 		auto last_dim = std::get<3>(sizes(array_fs));
 		
 		gpu::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
