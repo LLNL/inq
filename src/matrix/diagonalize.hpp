@@ -33,7 +33,7 @@ auto diagonalize(DistributedMatrix & matrix) {
   
   assert(eigenvalues.size() == matrix.sizex());
   
-  matrix = matrix::scatter(matrix.comm(), full_matrix);
+	matrix::scatter(full_matrix, matrix);
   
   matrix.comm().broadcast_n(raw_pointer_cast(eigenvalues.data_elements()), eigenvalues.num_elements(), 0);
   matrix.comm().barrier();

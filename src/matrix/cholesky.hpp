@@ -23,7 +23,7 @@ void cholesky(DistributedMatrix & matrix) {
   
   auto full_matrix = matrix::gather(matrix);
   if(matrix.comm().root()) solvers::cholesky(full_matrix);
-  matrix = matrix::scatter(matrix.comm(), full_matrix);
+  matrix::scatter(full_matrix, matrix);
 
 }
 
