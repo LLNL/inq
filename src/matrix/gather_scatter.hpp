@@ -55,14 +55,12 @@ auto gather(DistributedType const & matrix) -> gpu::array<typename DistributedTy
       auto coords = matrix.comm().coordinates(iproc);
       auto xsize = matrix.partx().local_size(coords[0]);
       auto ysize = matrix.party().local_size(coords[1]);
-			
-      for(int ix = 0; ix < xsize; ix++){
-        for(int iy = 0; iy < ysize; iy++){
-					full_matrix[matrix.partx().start(coords[0]) + ix][matrix.party().start(coords[1]) + iy] = recvbuffer[displs[iproc] + ix*ysize + iy];
-        }
-      }
+
+			gpu::run(ysize, xsize, [ful = begin(full_matrix), rec = begin(recvbuffer), startx = matrix.partx().start(coords[0]), starty = matrix.party().start(coords[1]), disp = displs[iproc], ysize]
+							 GPU_LAMBDA (auto iy, auto ix){
+				ful[startx + ix][starty + iy] = rec[disp + ix*ysize + iy];
+			});
 		}
-		
   }
 	
   return full_matrix;
