@@ -23,17 +23,19 @@ class distributed {
   using array_type = gpu::array<Type, 2>;
 
   mutable parallel::cartesian_communicator<2> comm_;
-  array_type block_;
 	parallel::partition partx_;
 	parallel::partition party_;	
+  array_type block_;
 	
 public:
-  
+	
+	using element_type = Type;
+	
   distributed(parallel::cartesian_communicator<2> comm, long sizex, long sizey):
     comm_(std::move(comm)),
-    block_({sizex, sizey}),
 		partx_(sizex, comm_.axis(0)),
-		party_(sizey, comm_.axis(1)){
+		party_(sizey, comm_.axis(1)),
+		block_({partx_.local_size(), party_.local_size()}) {
   }
 
   auto & block() const {
@@ -44,7 +46,7 @@ public:
     return block_;
   }
 
-  auto comm() const {
+  auto & comm() const {
     return comm_;
   }
 
