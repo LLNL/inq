@@ -66,6 +66,66 @@ auto gather(DistributedType const & matrix) -> gpu::array<typename DistributedTy
   return full_matrix;
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+
+template <typename ArrayType>
+auto scatter(parallel::cartesian_communicator<2> comm, ArrayType const & full_matrix) -> matrix::distributed<typename ArrayType::element_type>{
+
+	CALI_CXX_MARK_SCOPE("matrix::scatter");
+
+  using type = typename ArrayType::element_type;
+  auto mpi_type = boost::mpi3::detail::basic_datatype<type>{};
+
+	int szs[2];
+	if(comm.root()){
+		szs[0] = std::get<0>(sizes(full_matrix));
+		szs[1] = std::get<1>(sizes(full_matrix));
+	}
+
+	comm.broadcast_n(szs, 2);
+	comm.barrier();
+	
+	auto matrix = matrix::distributed<type>(comm, szs[0], szs[1]);
+	auto sendbuffer = gpu::array<type, 1>{};
+  
+	std::vector<int> sendcounts;
+  std::vector<int> displs;
+	
+  int pos = 0;
+  for(int iproc = 0; iproc < matrix.comm().size(); iproc++){
+    auto coords = matrix.comm().coordinates(iproc);
+    auto size = matrix.partx().local_size(coords[0])*matrix.party().local_size(coords[1]);
+    sendcounts.emplace_back(size);
+    displs.emplace_back(pos);
+    pos += size;
+  }
+
+  assert(pos == matrix.sizex()*matrix.sizey());
+  assert(int(sendcounts.size()) == matrix.comm().size());
+  assert(sendcounts[matrix.comm().rank()] == matrix.block().num_elements()); 
+	
+	if(matrix.comm().root()) {
+		sendbuffer.reextent(matrix.sizex()*matrix.sizey());			
+		
+		for(int iproc = 0; iproc < matrix.comm().size(); iproc++){
+      auto coords = matrix.comm().coordinates(iproc);
+      auto xsize = matrix.partx().local_size(coords[0]);
+      auto ysize = matrix.party().local_size(coords[1]);
+
+			gpu::run(ysize, xsize, [ful = begin(full_matrix), sen = begin(sendbuffer), startx = matrix.partx().start(coords[0]), starty = matrix.party().start(coords[1]), disp = displs[iproc], ysize]
+							 GPU_LAMBDA (auto iy, auto ix){
+				sen[disp + ix*ysize + iy] = ful[startx + ix][starty + iy];
+			});
+		}
+  }
+
+	MPI_Scatterv(raw_pointer_cast(sendbuffer.data_elements()), sendcounts.data(), displs.data(), mpi_type,
+							 raw_pointer_cast(matrix.block().data_elements()), matrix.block().num_elements(), mpi_type, 0, matrix.comm().get());
+
+	return matrix;
+}
+
+
 }
 }
 #endif
@@ -110,8 +170,19 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		for(int ix = 0; ix < mat.sizex(); ix++){
 			for(int iy = 0; iy < mat.sizey(); iy++){
-				CHECK(full_mat[ix][iy] == Approx(element(ix, iy)));
+				CHECK(full_mat[ix][iy] == element(ix, iy));
 			}
+		}
+	}
+
+	auto mat2 = matrix::scatter(cart_comm, full_mat);	
+
+	CHECK(mat2.sizex() == mm);
+	CHECK(mat2.sizey() == nn);	
+
+	for(int ix = 0; ix < mat.partx().local_size(); ix++){
+		for(int iy = 0; iy < mat.party().local_size(); iy++){
+			CHECK(mat2.block()[ix][iy] == mat.block()[ix][iy]);
 		}
 	}
     
