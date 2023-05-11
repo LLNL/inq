@@ -46,7 +46,7 @@ public:
     return block_;
   }
 
-  auto comm() const {
+  auto & comm() const {
     return comm_;
   }
 
