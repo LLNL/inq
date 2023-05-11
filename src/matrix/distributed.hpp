@@ -29,6 +29,8 @@ class distributed {
 	
 public:
 	
+	using element_type = Type;
+	
   distributed(parallel::cartesian_communicator<2> comm, long sizex, long sizey):
     comm_(std::move(comm)),
 		partx_(sizex, comm_.axis(0)),
