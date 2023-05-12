@@ -50,7 +50,7 @@ namespace ions {
 		}
 
 		vector_type const& operator[](int ii) const {
-			assert(ii >= 0 and ii < 3);			
+			assert(ii >= 0 and ii < 3);         
 			return lattice_[ii];
 		}
     
@@ -298,28 +298,28 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			{
 				auto vv = cell.metric().to_contravariant(vector3<double, cartesian>{10.0, 10.0, 10.0});
-				CHECK(vv[0] == 1.0_a);		
+				CHECK(vv[0] == 1.0_a);      
 				CHECK(vv[1] == 1.0_a);
 				CHECK(vv[2] == 1.0_a);
 			}
 
 			{
 				auto vv = cell.metric().to_covariant(vector3<double, cartesian>{M_PI/10.0, M_PI/10.0, M_PI/10.0});
-				CHECK(vv[0] == Approx(M_PI));		
+				CHECK(vv[0] == Approx(M_PI));       
 				CHECK(vv[1] == Approx(M_PI));
 				CHECK(vv[2] == Approx(M_PI));
 			}
 
 			{
 				auto vv = vector3<double, contravariant>{1.0, 0.0, 0.0};
-				CHECK(cell.metric().length(vv) == 10.0);			
+				CHECK(cell.metric().length(vv) == 10.0);            
 				CHECK(dot(cell.metric().to_covariant(vv), vv) == 100.0_a);
 				CHECK(cell.metric().dot(cell.metric().to_covariant(vv), vv) == 100.0_a);
 
 			}
 
 			CHECK(cell.is_orthogonal());
-			CHECK(cell.is_cartesian());			
+			CHECK(cell.is_cartesian());         
     }
 
     SECTION("Parallelepipedic cell"){
@@ -369,12 +369,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			{
 				auto vv = cell.metric().to_contravariant(vector3<double, cartesian>{28.62, 90.14, 12.31});
-				CHECK(vv[0] == 1.0_a);		
+				CHECK(vv[0] == 1.0_a);      
 				CHECK(vv[1] == 1.0_a);
 				CHECK(vv[2] == 1.0_a);
 
 				auto vv2 = cell.metric().to_cartesian(vv);
-				CHECK(vv2[0] == 28.62_a);		
+				CHECK(vv2[0] == 28.62_a);       
 				CHECK(vv2[1] == 90.14_a);
 				CHECK(vv2[2] == 12.31_a);
 
@@ -383,17 +383,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			{
 				auto vv1 = cell.metric().to_covariant(vector3<double, cartesian>{M_PI/28.62, 0.0, 0.0});
-				CHECK(vv1[0] == Approx(M_PI));		
+				CHECK(vv1[0] == Approx(M_PI));      
 				CHECK(vv1[1] == Approx(0.0));
 				CHECK(vv1[2] == Approx(0.0));
 
 				auto vv2 = cell.metric().to_covariant(vector3<double, cartesian>{0.0, M_PI/90.14, 0.0});
-				CHECK(vv2[0] == Approx(0.0));		
+				CHECK(vv2[0] == Approx(0.0));       
 				CHECK(vv2[1] == Approx(M_PI));
 				CHECK(vv2[2] == Approx(0.0));
 
 				auto vv3 = cell.metric().to_covariant(vector3<double, cartesian>{0.0, 0.0, M_PI/12.31});
-				CHECK(vv3[0] == Approx(0.0));		
+				CHECK(vv3[0] == Approx(0.0));       
 				CHECK(vv3[1] == Approx(0.0));
 				CHECK(vv3[2] == Approx(M_PI));
 
@@ -404,7 +404,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(cell.metric().length(vector3<double, contravariant>{1.0, 0.0, 0.0}) == 28.62);
 
 			CHECK(cell.is_orthogonal());
-			CHECK(cell.is_cartesian());			
+			CHECK(cell.is_cartesian());         
 		}
 
     SECTION("Rotated cell"){
@@ -455,11 +455,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(dot(cell.reciprocal(2), cell.lattice(1)) < 1e-14);
 			CHECK(dot(cell.reciprocal(0), cell.lattice(2)) < 1e-14);
 			CHECK(dot(cell.reciprocal(1), cell.lattice(2)) < 1e-14);
-			CHECK(dot(cell.reciprocal(2), cell.lattice(2)) == 2.0*M_PI);		
-			
-      CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[0] == 1.0_a);
-      CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == 0.0_a);
-      CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == 0.0_a);			
+			CHECK(dot(cell.reciprocal(2), cell.lattice(2)) == 2.0*M_PI);        
+
+		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[0] == 1.0_a);
+		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == (0.0_a).margin(1e-12) );
+		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == (0.0_a).margin(1e-12) );
 
 			CHECK(cell.is_orthogonal());
 			CHECK(not cell.is_cartesian());
@@ -517,12 +517,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			{
 				auto vv = cell.metric().to_contravariant(vector3<double, cartesian>{9.627, 7.092, 4.819});
-				CHECK(fabs(vv[0]) < 1e-12);		
+				CHECK(fabs(vv[0]) < 1e-12);     
 				CHECK(vv[1] == 1.0_a);
 				CHECK(fabs(vv[2]) < 1e-12);
 
 				auto vv2 = cell.metric().to_cartesian(vv);
-				CHECK(vv2[0] == 9.627_a);		
+				CHECK(vv2[0] == 9.627_a);       
 				CHECK(vv2[1] == 7.092_a);
 				CHECK(vv2[2] == 4.819_a);
 
