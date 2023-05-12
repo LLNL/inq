@@ -458,8 +458,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(dot(cell.reciprocal(2), cell.lattice(2)) == 2.0*M_PI);        
 
 		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[0] == 1.0_a);
-		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == 0.0_a.margin(1e-12) );
-		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == 0.0_a.margin(1e-12) );
+		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == (0.0_a).margin(1e-12) );
+		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == (0.0_a).margin(1e-12) );
 
 			CHECK(cell.is_orthogonal());
 			CHECK(not cell.is_cartesian());
