@@ -19,12 +19,6 @@
 #include <math/subspace_matrix.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
-#define dtrtri FC_GLOBAL(dtrtri, DTRTRI) 
-extern "C" void  dtrtri(const char * uplo, const char * diag, const int * n, double * a, const int * lda, int * info);
-
-#define ztrtri FC_GLOBAL(ztrtri, ZTRTRI) 
-extern "C" void  ztrtri(const char * uplo, const char * diag, const int * n, inq::complex * a, const int * lda, int * info);
-
 namespace inq {
 namespace solvers {
 
