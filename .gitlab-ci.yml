@@ -166,7 +166,7 @@ gcc-mpich-valgrind-utests-1p:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
+      - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../../.valgrind_suppressions"
       - ulimit -n ; ulimit -n 1024  # neededed by valgrind in docker running in Fedora
       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 7200; cd ..
 
@@ -180,7 +180,7 @@ gcc-mpich-valgrind-itests-1p:
       - cd build
       - cmake --build . --target install/fast
       - ulimit -n ; ulimit -n 1024  # neededed by valgrind in docker running in Fedora
-      - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all"
+      - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=../../.valgrind_suppressions"
       - time $VALGRIND tests/h2o_ground_state
       - time $VALGRIND tests/h2o_real_time
       
