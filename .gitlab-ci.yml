@@ -316,11 +316,11 @@ clang-ompi:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++-9 --version
+      - clang++ --version
       - mkdir build
       - cd build
       - CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CXX=clang++-9 CC=clang ../configure --prefix=$HOME
+      - CXX=clang++ CC=clang ../configure --prefix=$HOME
       - ls -l
       - time make
       - time make install
@@ -395,9 +395,9 @@ clang-ompi-fast:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - clang++-9 --version
+      - clang++ --version
       - mkdir build && cd build
-      - CXX=clang++-9 ../configure --prefix=$HOME --disable-debug
+      - CXX=clang++ ../configure --prefix=$HOME --disable-debug
       - time make -j4
       - time make -j4 install
       - cd ../
