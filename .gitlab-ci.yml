@@ -91,7 +91,7 @@ build-nohdf5:
 #########################################################################################################################
 
 gcc-ompi-coverage:
-    stage: test
+    stage: build
     needs: []
     script:
       - time apt update -qq
