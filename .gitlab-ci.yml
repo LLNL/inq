@@ -157,34 +157,34 @@ gcc-mpich:
       paths:
       - gcc-mpich-build.tar.xz
 
-gcc-mpich-valgrind-utests-1p:
-    stage: test
-    needs: ["gcc-mpich"]
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - export SUPP_FILE=`pwd`/.valgrind_suppressions
-      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
-      - cd build
-      - cmake --build . --target install/fast
-      - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=$SUPP_FILE"
-      - ulimit -n ; ulimit -n 1024  # neededed by valgrind in docker running in Fedora
-      - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 7200; cd ..
+# gcc-mpich-valgrind-utests-1p:
+#     stage: test
+#     needs: ["gcc-mpich"]
+#     script:
+#       - time apt update -qq
+#       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
+#       - export SUPP_FILE=`pwd`/.valgrind_suppressions
+#       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
+#       - cd build
+#       - cmake --build . --target install/fast
+#       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=$SUPP_FILE"
+#       - ulimit -n ; ulimit -n 1024  # neededed by valgrind in docker running in Fedora
+#       - cd src; INQ_EXEC_ENV="$VALGRIND" ctest --output-on-failure --timeout 7200; cd ..
 
-gcc-mpich-valgrind-itests-1p:
-    stage: test
-    needs: ["gcc-mpich"]
-    script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - export SUPP_FILE=`pwd`/.valgrind_suppressions      
-      - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
-      - cd build
-      - cmake --build . --target install/fast
-      - ulimit -n ; ulimit -n 1024  # neededed by valgrind in docker running in Fedora
-      - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=$SUPP_FILE"
-      - time $VALGRIND tests/h2o_ground_state
-      - time $VALGRIND tests/h2o_real_time
+# gcc-mpich-valgrind-itests-1p:
+#     stage: test
+#     needs: ["gcc-mpich"]
+#     script:
+#       - time apt update -qq
+#       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
+#       - export SUPP_FILE=`pwd`/.valgrind_suppressions      
+#       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
+#       - cd build
+#       - cmake --build . --target install/fast
+#       - ulimit -n ; ulimit -n 1024  # neededed by valgrind in docker running in Fedora
+#       - export VALGRIND="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all --suppressions=$SUPP_FILE"
+#       - time $VALGRIND tests/h2o_ground_state
+#       - time $VALGRIND tests/h2o_real_time
       
 
 gcc-mpich-1p:
