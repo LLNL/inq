@@ -745,13 +745,18 @@ gcc-mpich-template:
 #######################################################################################################################
 
 nvcc-mpich-template:
+    image: debian:bookworm
     variables:
       GIT_STRATEGY: none
     stage: template
     needs: []
     tags:
-      - cuda_gpu
+      - cuda-docker
     script:
+      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
+      - apt-get -qq update
+      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - nvidia-smi
       - mkdir inq_template_dir
       - cd inq_template_dir
       - git clone https://gitlab.com/npneq/inq_template.git
@@ -763,8 +768,9 @@ nvcc-mpich-template:
       - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j2
       - time make -j2 install
+      - export GPUBIND=`pwd`/_deps/inq-src/scripts/gpubind
       - cd runs
-      - mpirun -np 2 ./nitrogen
+      - mpirun -np 2 $GPUBIND ./nitrogen
 
 #######################################################################################################################
 

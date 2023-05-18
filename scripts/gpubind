@@ -1,0 +1,13 @@
+#!/bin/bash
+ngpu=`nvidia-smi --list-gpus | wc -l`
+
+if [ -n "$OMPI_COMM_WORLD_LOCAL_RANK" ]; then
+    rank=$OMPI_COMM_WORLD_LOCAL_RANK
+fi
+
+if [ -n "$MPI_LOCALRANKID" ]; then
+    rank=$MPI_LOCALRANKID
+fi
+
+export CUDA_VISIBLE_DEVICES=$(($rank%$ngpu))
+$@
