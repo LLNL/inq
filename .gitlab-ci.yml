@@ -105,8 +105,6 @@ gcc-ompi-coverage-1p:
     stage: test
     needs: ["gcc-ompi-coverage"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev libhdf5-dev libhdf5-openmpi-dev
       - time tar -Ipixz -xvf gcc-ompi-coverage.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -119,8 +117,6 @@ gcc-ompi-coverage-4p:
     stage: test
     needs: ["gcc-ompi-coverage"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev libhdf5-dev libhdf5-openmpi-dev
       - time tar -Ipixz -xvf gcc-ompi-coverage.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -182,7 +178,6 @@ gcc-mpich-1p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -192,8 +187,6 @@ gcc-mpich-2p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -203,8 +196,6 @@ gcc-mpich-3p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -214,8 +205,6 @@ gcc-mpich-4p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -225,8 +214,6 @@ gcc-mpich-5p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -240,9 +227,7 @@ gcc-ompi:
     stage: test
     needs: []
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - mpic++ --version
+      - mpic++.openmpi --version
       - mkdir build && cd build
       - ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
       - time make
@@ -272,9 +257,7 @@ gcc-ompi-fast:
     stage: test
     needs: []
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran  make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - mpic++ --version
+      - mpic++.openmpi --version
       - mkdir build && cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors -Wextra -Wno-narrowing -Wno-cast-function-type -Wno-unknown-pragmas -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter -Wno-error=deprecated-declarations"
       - ../configure --prefix=$HOME --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
@@ -322,8 +305,6 @@ clang-ompi-1p:
     stage: test
     needs: ["clang-ompi"]    
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -333,8 +314,6 @@ clang-ompi-2p:
     stage: test
     needs: ["clang-ompi"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -344,8 +323,6 @@ clang-ompi-3p:
     stage: test
     needs: ["clang-ompi"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -355,8 +332,6 @@ clang-ompi-4p:
     stage: test
     needs: ["clang-ompi"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -366,8 +341,6 @@ clang-ompi-5p:
     stage: test
     needs: ["clang-ompi"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -396,8 +369,6 @@ clang-ompi-fast-1p:
     needs: ["clang-ompi-fast"]
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast      
@@ -408,8 +379,6 @@ clang-ompi-fast-2p:
     needs: ["clang-ompi-fast"]    
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -420,8 +389,6 @@ clang-ompi-fast-3p:
     needs: ["clang-ompi-fast"]    
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -432,8 +399,6 @@ clang-ompi-fast-4p:
     needs: ["clang-ompi-fast"]    
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -444,8 +409,6 @@ clang-ompi-fast-5p:
     needs: ["clang-ompi-fast"]    
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -461,10 +424,9 @@ nvcc-mpich-fast:
     tags:
       - cuda-docker
     script:
-      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
-      - apt-get -qq update
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
-      - apt purge -y -qq clang
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev      
+      - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
       - export GPUBIND=`pwd`/scripts/gpubind
@@ -489,10 +451,9 @@ nvcc-mpich-debug:
     tags:
       - cuda-docker
     script:
-      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
-      - apt-get -qq update
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
-      - apt purge -y -qq clang
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
       - export GPUBIND=`pwd`/scripts/gpubind
@@ -576,7 +537,6 @@ gcc-mpich-template:
     stage: template
     needs: []
     script:
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - mkdir inq_template_dir
       - cd inq_template_dir
       - git clone https://gitlab.com/npneq/inq_template.git
@@ -601,10 +561,9 @@ nvcc-mpich-template:
     tags:
       - cuda-docker
     script:
-      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
-      - apt-get -qq update
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
-      - apt purge -y -qq clang
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvidia-smi
       - mkdir inq_template_dir
@@ -631,7 +590,7 @@ clang-ompi-template:
     needs: []
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev wget
+      - time apt install --no-install-recommends -y -qq wget
       - mkdir inq_template_dir
       - cd inq_template_dir
       - wget https://gitlab.com/npneq/inq_template/-/archive/main/inq_template-main.tar.gz
