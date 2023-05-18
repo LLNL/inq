@@ -488,108 +488,37 @@ nvcc-mpich-fast:
       - ../configure --prefix=$HOME --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
-      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2
-      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 1800 -j1
-      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 1800 -j1
-      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 1800 -j1
-      - cd tests ; INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 1800 -j1; cd ..
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 1800 -j4
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2
+      - cd tests ; INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2; cd ..
 
 #########################################################################################################################
 # NVIDIA MPICH DEBUG
 #########################################################################################################################
 
 nvcc-mpich-debug:
-    stage: build
+    stage: test
     needs: []
     tags:
-      - cuda_gpu
+      - cuda-docker
     script:
-      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
-      - export SRCDIR=`pwd`
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - export PATH=/usr/local/cuda/bin:$PATH
-      - cmake --version
+      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
+      - apt-get -qq update
+      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
       - nvcc -V
-      - mkdir -p $PREFIX/build
-      - cd $PREFIX/build
-      - $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich
-      - time make -j16
-      - time make -j16 install
-      - cd $SRCDIR
-      - echo $PREFIX > nvcc-mpich-debug-path
-    artifacts:
-      paths:
-      - nvcc-mpich-debug-path
-
-nvcc-mpich-debug-1p:
-    stage: test
-    needs: ["nvcc-mpich-debug"]
-    tags:
-      - cuda_gpu
-    script:
-      - export INQ_COMM="point"
-      - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j8"
-
-nvcc-mpich-debug-2p:
-    stage: test
-    needs: ["nvcc-mpich-debug"]
-    tags:
-      - cuda_gpu
-    script:
-      - export INQ_COMM="point"      
-      - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
-      - INQ_EXEC_ENV="mpirun.mpich -np 2" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"      
-
-nvcc-mpich-debug-3p:
-    stage: test
-    needs: ["nvcc-mpich-debug"]
-    tags:
-      - cuda_gpu
-    script:
-      - export INQ_COMM="point"      
-      - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
-      - INQ_EXEC_ENV="mpirun.mpich -np 3" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"
-
-nvcc-mpich-debug-4p:
-    stage: test
-    needs: ["nvcc-mpich-debug"]
-    tags:
-      - cuda_gpu
-    script:
-      - export INQ_COMM="point"      
-      - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j2"
-      - INQ_EXEC_ENV="mpirun.mpich -np 4" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j2"      
-
-nvcc-mpich-debug-5p:
-    stage: test
-    needs: ["nvcc-mpich-debug"]
-    tags:
-      - cuda_gpu
-    script:
-      - export INQ_COMM="point"
-      - PREFIX=`cat nvcc-mpich-debug-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 5" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j1"
-
-nvcc-mpich-debug-clean:
-    stage: clean
-    needs:
-     - nvcc-mpich-debug
-     - nvcc-mpich-debug-1p
-     - nvcc-mpich-debug-2p
-     - nvcc-mpich-debug-3p
-     - nvcc-mpich-debug-4p
-     - nvcc-mpich-debug-5p
-    tags:
-      - cuda_gpu
-    script:
-      - PREFIX=`cat nvcc-mpich-debug-path`
-      - rm -vfr $PREFIX
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - mkdir build
+      - cd build
+      - ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - time make -j2
+      - time make -j2 install
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 1800 -j4
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2
+      - cd tests ; INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2; cd ..
 
 #########################################################################################################################
 # NVIDIA MPICH NCCL
