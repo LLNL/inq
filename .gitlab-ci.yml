@@ -762,14 +762,15 @@ nvcc-mpich-template:
       - git clone https://gitlab.com/npneq/inq_template.git
       - cd inq_template
       - echo $CI_COMMIT_SHA
-      - echo perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
+      - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
       - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=70
       - time make -j2
       - time make -j2 install
+      - export GPUBIND=`pwd`/_deps/inq-src/scripts/gpubind
       - cd runs
-      - mpirun -np 2 ./nitrogen
+      - mpirun -np 2 $GPUBIND ./nitrogen
 
 #######################################################################################################################
 
