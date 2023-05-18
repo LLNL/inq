@@ -29,8 +29,6 @@ stages:
 build-noblas:
     stage: build
     script:
-      - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - apt purge -y -qq libblas-dev
       - apt autoremove -y -qq      
       - mpic++ --version
@@ -42,8 +40,6 @@ build-noblas:
 build-noboost:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev
       - apt purge -y -qq libboost-serialization-dev libboost-filesystem-dev
       - apt autoremove -y -qq      
       - mpic++ --version
@@ -55,8 +51,6 @@ build-noboost:
 build-nofftw:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - apt purge -y -qq libfftw3-dev
       - apt autoremove -y -qq      
       - mpic++ --version
@@ -68,8 +62,6 @@ build-nofftw:
 build-nolapack:
     stage: build
     script:
-      - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - apt purge -y -qq liblapack-dev
       - apt autoremove -y -qq      
       - mpic++ --version
@@ -81,8 +73,6 @@ build-nolapack:
 build-nohdf5:
     stage: build
     script:
-      - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev
       - apt purge -y -qq libhdf5-dev libhdf5-openmpi-dev libhdf5-mpich-dev
       - apt autoremove -y -qq
       - mpic++ --version
@@ -99,8 +89,6 @@ gcc-ompi-coverage:
     stage: build
     needs: []
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev libhdf5-dev libhdf5-openmpi-dev
       - mkdir build && cd build
       - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
       - ../configure --disable-debug --prefix=$HOME --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi
@@ -148,7 +136,6 @@ gcc-ompi-coverage-4p:
 gcc-mpich:
     stage: build
     script:
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - c++ --version
       - mpichversion
       - mkdir build && cd build
@@ -317,8 +304,6 @@ gcc-ompi-fast:
 clang-ompi:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - clang++ --version
       - mkdir build
       - cd build
@@ -395,8 +380,6 @@ clang-ompi-5p:
 clang-ompi-fast:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - clang++ --version
       - mkdir build && cd build
       - CXX=clang++ ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi
