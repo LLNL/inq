@@ -1,6 +1,6 @@
 # Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
-image: debian:bookworm
+image: npneq/debian_inq_deps:bookworm
 
 default:
   artifacts:
@@ -608,7 +608,6 @@ gcc-mpich-template:
 #######################################################################################################################
 
 nvcc-mpich-template:
-    image: debian:bookworm
     variables:
       GIT_STRATEGY: none
     stage: template
