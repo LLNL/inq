@@ -481,6 +481,8 @@ nvcc-mpich-fast:
       - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
       - apt-get -qq update
       - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang
+      - apt autoremove -y -qq
       - nvcc -V
       - export GPUBIND=`pwd`/scripts/gpubind
       - mkdir build
@@ -507,6 +509,8 @@ nvcc-mpich-debug:
       - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
       - apt-get -qq update
       - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang
+      - apt autoremove -y -qq
       - nvcc -V
       - export GPUBIND=`pwd`/scripts/gpubind
       - mkdir build
@@ -617,6 +621,8 @@ nvcc-mpich-template:
       - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
       - apt-get -qq update
       - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang
+      - apt autoremove -y -qq
       - nvidia-smi
       - mkdir inq_template_dir
       - cd inq_template_dir
