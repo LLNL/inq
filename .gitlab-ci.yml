@@ -1,6 +1,6 @@
 # Copyright (C) 2019-2020 Xavier Andrade, Alfredo A. Correa
 
-image: debian:bookworm
+image: npneq/debian_inq_deps:bookworm
 
 default:
   artifacts:
@@ -29,9 +29,8 @@ stages:
 build-noblas:
     stage: build
     script:
-      - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq libblas-dev
+      - apt autoremove -y -qq      
       - mpic++ --version
       - mkdir build
       - cd build
@@ -41,9 +40,8 @@ build-noblas:
 build-noboost:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq libboost-serialization-dev libboost-filesystem-dev
+      - apt autoremove -y -qq      
       - mpic++ --version
       - mkdir build
       - cd build
@@ -53,9 +51,8 @@ build-noboost:
 build-nofftw:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq libfftw3-dev
+      - apt autoremove -y -qq      
       - mpic++ --version
       - mkdir build
       - cd build
@@ -65,9 +62,8 @@ build-nofftw:
 build-nolapack:
     stage: build
     script:
-      - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq liblapack-dev
+      - apt autoremove -y -qq      
       - mpic++ --version
       - mkdir build
       - cd build
@@ -77,9 +73,8 @@ build-nolapack:
 build-nohdf5:
     stage: build
     script:
-      - time apt update -qq 
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq libhdf5-dev libhdf5-openmpi-dev libhdf5-mpich-dev
+      - apt autoremove -y -qq
       - mpic++ --version
       - mkdir build
       - cd build
@@ -94,11 +89,9 @@ gcc-ompi-coverage:
     stage: build
     needs: []
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev libhdf5-dev libhdf5-openmpi-dev
       - mkdir build && cd build
       - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
-      - ../configure --disable-debug --prefix=$HOME
+      - ../configure --disable-debug --prefix=$HOME --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi
       - time make
       - time make install
       - cd ../
@@ -112,8 +105,6 @@ gcc-ompi-coverage-1p:
     stage: test
     needs: ["gcc-ompi-coverage"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev libhdf5-dev libhdf5-openmpi-dev
       - time tar -Ipixz -xvf gcc-ompi-coverage.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -126,14 +117,12 @@ gcc-ompi-coverage-4p:
     stage: test
     needs: ["gcc-ompi-coverage"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev libhdf5-dev libhdf5-openmpi-dev
       - time tar -Ipixz -xvf gcc-ompi-coverage.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - cd src; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
-      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000; cd ..
-      - cd speed_tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 2000 || echo "Ignoring failed speed test"; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun.openmpi -np 4" ctest --output-on-failure --timeout 2000; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun.openmpi -np 4" ctest --output-on-failure --timeout 2000; cd ..
+      - cd speed_tests; INQ_EXEC_ENV="mpirun.openmpi -np 4" ctest --output-on-failure --timeout 2000 || echo "Ignoring failed speed test"; cd ..
       - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'      
 
 #############################################################################################
@@ -143,12 +132,10 @@ gcc-ompi-coverage-4p:
 gcc-mpich:
     stage: build
     script:
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - c++ --version
       - mpichversion
       - mkdir build && cd build
-      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug
+      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make
       - time make install
       - cd ../
@@ -191,7 +178,6 @@ gcc-mpich-1p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -201,45 +187,37 @@ gcc-mpich-2p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-3p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 3" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-4p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-5p:
     stage: test
     needs: ["gcc-mpich"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
 # GCC-OMPI
@@ -249,30 +227,27 @@ gcc-ompi:
     stage: test
     needs: []
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mpic++ --version
+      - mpic++.openmpi --version
       - mkdir build && cd build
-      - ../configure --prefix=$HOME --disable-debug || cat config.log
+      - ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
       - time make
       - time make install
       - ctest --output-on-failure --timeout 1000
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 2" ctest --output-on-failure --timeout 1000; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 3" ctest --output-on-failure --timeout 1000; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 4" ctest --output-on-failure --timeout 1000; cd ..
-      - time mpirun --allow-run-as-root -np 2 tests/silicon
-      - time mpirun --allow-run-as-root -np 3 tests/silicon
-      - time mpirun --allow-run-as-root -np 5 tests/silicon
-      - time mpirun --allow-run-as-root -np 2 tests/nitrogen
-      - time mpirun --allow-run-as-root -np 3 tests/nitrogen
-      - time mpirun --allow-run-as-root -np 5 tests/nitrogen
-      - time mpirun --allow-run-as-root -np 2 tests/al4h1
-      - time mpirun --allow-run-as-root -np 3 tests/al4h1
-      - time mpirun --allow-run-as-root -np 5 tests/al4h1
-      - time mpirun --allow-run-as-root -np 2 tests/al4h1_td
-      - time mpirun --allow-run-as-root -np 3 tests/al4h1_td
-      - time mpirun --allow-run-as-root -np 5 tests/al4h1_td
+      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 1000; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 1000; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 1000; cd ..
+      - time mpirun.openmpi --allow-run-as-root -np 2 tests/silicon
+      - time mpirun.openmpi --allow-run-as-root -np 3 tests/silicon
+      - time mpirun.openmpi --allow-run-as-root -np 5 tests/silicon
+      - time mpirun.openmpi --allow-run-as-root -np 2 tests/nitrogen
+      - time mpirun.openmpi --allow-run-as-root -np 3 tests/nitrogen
+      - time mpirun.openmpi --allow-run-as-root -np 5 tests/nitrogen
+      - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1
+      - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1
+      - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1
+      - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1_td
+      - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1_td
+      - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1_td
 
 #########################################################################################################################
 # GCC-OMPI-FAST
@@ -282,31 +257,28 @@ gcc-ompi-fast:
     stage: test
     needs: []
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran  make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
-      - mpic++ --version
+      - mpic++.openmpi --version
       - mkdir build && cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors -Wextra -Wno-narrowing -Wno-cast-function-type -Wno-unknown-pragmas -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter -Wno-error=deprecated-declarations"
-      - ../configure --prefix=$HOME  || cat config.log
+      - ../configure --prefix=$HOME --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
       - time make
       - time make install
       - ctest --output-on-failure --timeout 360
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 2" ctest --output-on-failure --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 3" ctest --output-on-failure --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 4" ctest --output-on-failure --timeout 360; cd ..
-      - time mpirun --allow-run-as-root -np 2 tests/silicon
-      - time mpirun --allow-run-as-root -np 3 tests/silicon
-      - time mpirun --allow-run-as-root -np 5 tests/silicon
-      - time mpirun --allow-run-as-root -np 2 tests/nitrogen
-      - time mpirun --allow-run-as-root -np 3 tests/nitrogen
-      - time mpirun --allow-run-as-root -np 5 tests/nitrogen
-      - time mpirun --allow-run-as-root -np 2 tests/al4h1
-      - time mpirun --allow-run-as-root -np 3 tests/al4h1
-      - time mpirun --allow-run-as-root -np 5 tests/al4h1
-      - time mpirun --allow-run-as-root -np 2 tests/al4h1_td
-      - time mpirun --allow-run-as-root -np 3 tests/al4h1_td
-      - time mpirun --allow-run-as-root -np 5 tests/al4h1_td
+      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 360; cd ..
+      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 360; cd ..
+      - time mpirun.openmpi --allow-run-as-root -np 2 tests/silicon
+      - time mpirun.openmpi --allow-run-as-root -np 3 tests/silicon
+      - time mpirun.openmpi --allow-run-as-root -np 5 tests/silicon
+      - time mpirun.openmpi --allow-run-as-root -np 2 tests/nitrogen
+      - time mpirun.openmpi --allow-run-as-root -np 3 tests/nitrogen
+      - time mpirun.openmpi --allow-run-as-root -np 5 tests/nitrogen
+      - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1
+      - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1
+      - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1
+      - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1_td
+      - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1_td
+      - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1_td
 
 #########################################################################################################################
 # CLANG-OMPI
@@ -315,14 +287,11 @@ gcc-ompi-fast:
 clang-ompi:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - mkdir build
       - cd build
       - CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CXX=clang++ CC=clang ../configure --prefix=$HOME
+      - CXX=clang++ CC=clang ../configure --prefix=$HOME --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi
       - ls -l
       - time make
       - time make install
@@ -336,8 +305,6 @@ clang-ompi-1p:
     stage: test
     needs: ["clang-ompi"]    
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -347,45 +314,37 @@ clang-ompi-2p:
     stage: test
     needs: ["clang-ompi"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
       
 clang-ompi-3p:
     stage: test
     needs: ["clang-ompi"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
 
 clang-ompi-4p:
     stage: test
     needs: ["clang-ompi"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
 
 clang-ompi-5p:
     stage: test
     needs: ["clang-ompi"]
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - cd tests; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
 # CLANG-OMPI-FAST
@@ -394,12 +353,9 @@ clang-ompi-5p:
 clang-ompi-fast:
     stage: build
     script:
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - clang++ --version
       - mkdir build && cd build
-      - CXX=clang++ ../configure --prefix=$HOME --disable-debug
+      - CXX=clang++ ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.openmpi
       - time make -j4
       - time make -j4 install
       - cd ../
@@ -413,8 +369,6 @@ clang-ompi-fast-1p:
     needs: ["clang-ompi-fast"]
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast      
@@ -425,48 +379,40 @@ clang-ompi-fast-2p:
     needs: ["clang-ompi-fast"]    
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
 
 clang-ompi-fast-3p:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
 
 clang-ompi-fast-4p:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
       
 clang-ompi-fast-5p:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
       - export INQ_COMM="point"      
-      - time apt update -qq
-      - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - cd tests; INQ_EXEC_ENV="mpirun --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
 # NVIDIA MPICH FAST
@@ -478,9 +424,10 @@ nvcc-mpich-fast:
     tags:
       - cuda-docker
     script:
-      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
-      - apt-get -qq update
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev      
+      - apt purge -y -qq clang clang-14
+      - apt autoremove -y -qq
       - nvcc -V
       - export GPUBIND=`pwd`/scripts/gpubind
       - mkdir build
@@ -504,9 +451,10 @@ nvcc-mpich-debug:
     tags:
       - cuda-docker
     script:
-      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
-      - apt-get -qq update
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang clang-14
+      - apt autoremove -y -qq
       - nvcc -V
       - export GPUBIND=`pwd`/scripts/gpubind
       - mkdir build
@@ -532,7 +480,6 @@ nvcc-mpich-nccl:
     script:
       - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
       - export SRCDIR=`pwd`
-      - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
       - export PATH=/usr/local/cuda/bin:$PATH
       - cmake --version
       - nvcc -V
@@ -590,7 +537,6 @@ gcc-mpich-template:
     stage: template
     needs: []
     script:
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev
       - mkdir inq_template_dir
       - cd inq_template_dir
       - git clone https://gitlab.com/npneq/inq_template.git
@@ -599,16 +545,15 @@ gcc-mpich-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
       - cd runs
-      - mpirun -np 2 ./nitrogen
+      - mpirun.mpich -np 2 ./nitrogen
 
 #######################################################################################################################
 
 nvcc-mpich-template:
-    image: debian:bookworm
     variables:
       GIT_STRATEGY: none
     stage: template
@@ -616,9 +561,10 @@ nvcc-mpich-template:
     tags:
       - cuda-docker
     script:
-      - perl -pi -e 's/main/main contrib non-free/g' /etc/apt/sources.list.d/debian.sources
-      - apt-get -qq update
-      - apt update -qq && apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libboost-filesystem-dev libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang clang-14
+      - apt autoremove -y -qq
       - nvidia-smi
       - mkdir inq_template_dir
       - cd inq_template_dir
@@ -628,12 +574,12 @@ nvcc-mpich-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="70"
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
       - export GPUBIND=`pwd`/_deps/inq-src/scripts/gpubind
       - cd runs
-      - mpirun -np 2 $GPUBIND ./nitrogen
+      - mpirun.mpich -np 2 $GPUBIND ./nitrogen
 
 #######################################################################################################################
 
@@ -644,7 +590,7 @@ clang-ompi-template:
     needs: []
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq git ca-certificates ssh gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev wget
+      - time apt install --no-install-recommends -y -qq wget
       - mkdir inq_template_dir
       - cd inq_template_dir
       - wget https://gitlab.com/npneq/inq_template/-/archive/main/inq_template-main.tar.gz
@@ -657,11 +603,11 @@ clang-ompi-template:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
       - export CXX=clang++
       - export CC=clang
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.openmpi
       - time make -j2
       - time make -j2 install
       - cd runs
-      - mpirun -np 2 ./nitrogen
+      - mpirun.openmpi -np 2 ./nitrogen
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
 
