@@ -32,6 +32,8 @@ build-noblas:
       - time apt update -qq 
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq libblas-dev
+      - apt autoremove -y -qq      
       - mpic++ --version
       - mkdir build
       - cd build
@@ -44,6 +46,8 @@ build-noboost:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq libboost-serialization-dev libboost-filesystem-dev
+      - apt autoremove -y -qq      
       - mpic++ --version
       - mkdir build
       - cd build
@@ -56,6 +60,8 @@ build-nofftw:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq libfftw3-dev
+      - apt autoremove -y -qq      
       - mpic++ --version
       - mkdir build
       - cd build
@@ -68,6 +74,8 @@ build-nolapack:
       - time apt update -qq 
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev libhdf5-openmpi-dev libboost-serialization-dev libboost-filesystem-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq liblapack-dev
+      - apt autoremove -y -qq      
       - mpic++ --version
       - mkdir build
       - cd build
@@ -80,6 +88,8 @@ build-nohdf5:
       - time apt update -qq 
       - time apt install --no-install-recommends -y -qq pixz git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-serialization-dev libboost-filesystem-dev
       - if [ -v UPDATE_MULTI ] ; then cd external_libs/multi && git checkout master && git pull && cd - ; fi
+      - apt purge -y -qq libhdf5-dev libhdf5-openmpi-dev libhdf5-mpich-dev
+      - apt autoremove -y -qq
       - mpic++ --version
       - mkdir build
       - cd build
