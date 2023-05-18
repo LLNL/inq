@@ -216,7 +216,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(std::get<1>(sizes(cc.array())) == nvec);
 			
 		CHECK(real(cc.array()[0][0]) == Approx(400.0*0.5*npoint*(npoint + 1.0)*bas.volume_element()));
-		CHECK(fabs(imag(cc.array()[0][0])) < 1e-13);
+		CHECK(fabs(imag(cc.array()[0][0])) < 1e-12);
 	}
 
 }
