@@ -152,7 +152,7 @@ gcc-mpich:
       - c++ --version
       - mpichversion
       - mkdir build && cd build
-      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug
+      - CXXFLAGS="-ffast-math" ../configure --prefix=$HOME --disable-debug --pass-thru -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make
       - time make install
       - cd ../
@@ -210,7 +210,7 @@ gcc-mpich-2p:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 2" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-3p:
     stage: test
@@ -221,7 +221,7 @@ gcc-mpich-3p:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 3" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-4p:
     stage: test
@@ -232,7 +232,7 @@ gcc-mpich-4p:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-5p:
     stage: test
@@ -243,7 +243,7 @@ gcc-mpich-5p:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - cd tests; INQ_EXEC_ENV="mpirun -np 4" ctest --output-on-failure --timeout 3600; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
 # GCC-OMPI
@@ -598,11 +598,11 @@ gcc-mpich-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
       - cd runs
-      - mpirun -np 2 ./nitrogen
+      - mpirun.mpich -np 2 ./nitrogen
 
 #######################################################################################################################
 
@@ -626,12 +626,12 @@ nvcc-mpich-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="70"
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
       - export GPUBIND=`pwd`/_deps/inq-src/scripts/gpubind
       - cd runs
-      - mpirun -np 2 $GPUBIND ./nitrogen
+      - mpirun.mpich -np 2 $GPUBIND ./nitrogen
 
 #######################################################################################################################
 
