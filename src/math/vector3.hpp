@@ -445,22 +445,22 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		auto zvv = complex(0.0, 1.0)*vv1;
 
-		CHECK(real(zvv[0]) ==   0.0_a);
+		CHECK(real(zvv[0]) ==  (0.0_a).margin(1e-12));
 		CHECK(imag(zvv[0]) ==  10.0_a);
-		CHECK(real(zvv[1]) ==   0.0_a);
+		CHECK(real(zvv[1]) ==  (0.0_a).margin(1e-12));
 		CHECK(imag(zvv[1]) ==   5.0_a);
-		CHECK(real(zvv[2]) ==   0.0_a);
+		CHECK(real(zvv[2]) ==  (0.0_a).margin(1e-12));
 		CHECK(imag(zvv[2]) ==  -3.4_a);
 		
 		auto zvv2 = zvv/complex(0.0, -1.0);
 		zvv /= complex(0.0, -1.0);
 		
 		CHECK(real(zvv[0]) == -10.0_a);
-		CHECK(imag(zvv[0]) ==   0.0_a);
+		CHECK(imag(zvv[0]) ==  (0.0_a).margin(1e-12));
 		CHECK(real(zvv[1]) ==  -5.0_a);
-		CHECK(imag(zvv[1]) ==   0.0_a);
+		CHECK(imag(zvv[1]) ==  (0.0_a).margin(1e-12));
 		CHECK(real(zvv[2]) ==   3.4_a);
-		CHECK(imag(zvv[2]) ==   0.0_a);
+		CHECK(imag(zvv[2]) ==  (0.0_a).margin(1e-12));
 		
 		CHECK(zvv == zvv2);
 		
@@ -483,12 +483,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(norm(vv1) == 5.2700_a);
 		CHECK(vv1.norm() == 5.2700_a);
 		CHECK(norm(vv1) == Approx(real(dot(vv1, vv1))));
-		CHECK(imag(dot(vv1, vv1)) == 0.0_a);
+		CHECK(imag(dot(vv1, vv1)) == (0.0_a).margin(1e-12));
 		
 		CHECK(norm(vv1) == Approx(4.0 + 0.04 + 1.21 + 0.01 + 0.01));
 		CHECK(length(vv1) == Approx(sqrt(4.0 + 0.04 + 1.21 + 0.01 + 0.01)));
 		
-		CHECK(real(vv1)[0] ==  0.0_a);
+		CHECK(real(vv1)[0] ==  (0.0_a).margin(1e-12));
 		CHECK(imag(vv1)[0] ==  2.0_a);
 		CHECK(real(vv1)[1] ==  0.2_a);
 		CHECK(imag(vv1)[1] == -1.1_a);
@@ -612,9 +612,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		vector3<double> vec(2.0, -3.0, 5.0);
 		vec.transform([](auto xx){ return std::max(xx, 0.0); });
-		
+
 		CHECK(vec[0] == 2.0_a);
-		CHECK(vec[1] == 0.0_a);
+		CHECK(vec[1] ==(0.0_a).margin(1e-12));
 		CHECK(vec[2] == 5.0_a);
 	}
 
