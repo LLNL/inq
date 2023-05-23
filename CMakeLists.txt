@@ -40,7 +40,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(ENABLE_NCCL FALSE)
 if(ENABLE_CUDA)
   enable_language(CUDA)
   find_package(CUDA 11.0.0 REQUIRED) # deprecated in 3.17 replaced by FindCudaToolkit
@@ -109,16 +108,14 @@ if(ENABLE_CUDA)
     link_libraries(${CUDA_cublas_LIBRARY})
     target_link_libraries(inq INTERFACE ${CUDA_cublas_LIBRARY})
   endif()
-	find_package(NCCL)
 
-	set(ENABLE_NCCL ${NCCL_FOUND})
-	if(${ENABLE_NCCL})
+	if(ENABLE_NCCL)
+		find_package(NCCL REQUIRED)
 		include_directories(${NCCL_INCLUDE_DIRS})
 		link_libraries(${NCCL_LIBRARIES})
 
 		target_include_directories(inq INTERFACE ${NCCL_INCLUDE_DIRS})
 		target_link_libraries(inq INTERFACE ${NCCL_LIBRARIES})
-
   endif()
 endif()
 
