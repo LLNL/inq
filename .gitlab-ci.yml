@@ -81,6 +81,14 @@ config-no-hdf5:
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
+
+config-no-cuda:
+    stage: build
+    script:
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - eval ! ../configure --prefix=$HOME --enable-cuda
       
 #########################################################################################################################
 # GCC OMPI COVERAGE
