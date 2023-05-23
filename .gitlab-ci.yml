@@ -89,7 +89,20 @@ config-no-cuda:
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME --enable-cuda
-      
+
+config-no-nccl:
+    stage: config-check
+    needs: []
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang clang-14
+      - apt autoremove -y -qq
+      - nvcc -V
+      - mkdir build
+      - cd build
+      -  eval ! ../configure --prefix=$HOME --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES
+
 #########################################################################################################################
 # GCC OMPI COVERAGE
 #########################################################################################################################
