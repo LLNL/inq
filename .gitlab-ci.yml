@@ -17,7 +17,7 @@ variables:
   CODECOV_TOKEN: "5855e536-b784-400e-b0b2-b1d01c2287a9"
 
 stages:
-  - config
+  - config-check
   - build
   - test
   - clean
@@ -28,7 +28,7 @@ stages:
 #########################################################################################################################
 
 config-no-blas:
-    stage: build
+    stage: config-check
     script:
       - apt purge -y -qq libblas-dev
       - apt autoremove -y -qq      
@@ -39,7 +39,7 @@ config-no-blas:
       - eval ! ../configure --prefix=$HOME
 
 config-no-boost:
-    stage: build
+    stage: config-check
     script:
       - apt purge -y -qq libboost-serialization-dev libboost-filesystem-dev
       - apt autoremove -y -qq      
@@ -50,7 +50,7 @@ config-no-boost:
       - eval ! ../configure --prefix=$HOME
 
 config-no-fftw:
-    stage: build
+    stage: config-check
     script:
       - apt purge -y -qq libfftw3-dev
       - apt autoremove -y -qq      
@@ -61,7 +61,7 @@ config-no-fftw:
       - eval ! ../configure --prefix=$HOME
 
 config-no-lapack:
-    stage: build
+    stage: config-check
     script:
       - apt purge -y -qq liblapack-dev
       - apt autoremove -y -qq      
@@ -72,7 +72,7 @@ config-no-lapack:
       - eval ! ../configure --prefix=$HOME
 
 config-no-hdf5:
-    stage: build
+    stage: config-check
     script:
       - apt purge -y -qq libhdf5-dev libhdf5-openmpi-dev libhdf5-mpich-dev
       - apt autoremove -y -qq
@@ -83,7 +83,7 @@ config-no-hdf5:
       - eval ! ../configure --prefix=$HOME
 
 config-no-cuda:
-    stage: build
+    stage: config-check
     script:
       - mkdir build
       - cd build
