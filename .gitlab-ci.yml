@@ -500,62 +500,24 @@ nvcc-mpich-debug:
 # NVIDIA MPICH NCCL
 #########################################################################################################################
 
-nvcc-mpich-nccl:
-    stage: build
+nccl-mpich:
+    stage: test
     needs: []
     tags:
       - cuda_gpu
     script:
-      - export PREFIX=`mktemp -d /tmp/inq-build-XXXXXXXXXXXXXX`
-      - export SRCDIR=`pwd`
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - export INQ_COMM="nccl"
+      - mkdir build
+      - cd build
       - export PATH=/usr/local/cuda/bin:$PATH
-      - cmake --version
       - nvcc -V
-      - mkdir -p $PREFIX/build
-      - cd $PREFIX/build
-      - $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES -DNCCL_ROOT=/usr/local/nccl
+      - ../configure --prefix=../install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES -DNCCL_ROOT=/usr/local/nccl
       - time make -j16
       - time make -j16 install
-      - cd $SRCDIR
-      - echo $PREFIX > nvcc-mpich-nccl-path
-    artifacts:
-      paths:
-      - nvcc-mpich-nccl-path
-
-nvcc-mpich-nccl-1p:
-    stage: test
-    needs: ["nvcc-mpich-nccl"]
-    tags:
-      - cuda_gpu
-    script:
-      - export INQ_COMM="nccl"    
-      - PREFIX=`cat nvcc-mpich-nccl-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j8"
-      - INQ_EXEC_ENV="mpirun.mpich -np 1" make test -C $PREFIX/build/speed_tests ARGS="--output-on-failure --timeout 1800 -j8"
-
-nvcc-mpich-nccl-2p:
-    stage: test
-    needs: ["nvcc-mpich-nccl"]
-    tags:
-      - cuda_gpu
-    script:
-      - export INQ_COMM="nccl"
-      - PREFIX=`cat nvcc-mpich-nccl-path`
-      - INQ_EXEC_ENV="mpirun.mpich -np 2 /usr/local/bin/gpubind" make test -C $PREFIX/build/src ARGS="--output-on-failure --timeout 600 -j4"
-      - INQ_EXEC_ENV="mpirun.mpich -np 2 /usr/local/bin/gpubind" make test -C $PREFIX/build/tests ARGS="--output-on-failure --timeout 1800 -j4"
-
-nvcc-mpich-nccl-clean:
-    stage: clean
-    needs:
-     - nvcc-mpich-nccl
-     - nvcc-mpich-nccl-1p
-     - nvcc-mpich-nccl-2p
-    tags:
-      - cuda_gpu
-    script:
-      - PREFIX=`cat nvcc-mpich-nccl-path`
-      - rm -vfr $PREFIX
+      - INQ_EXEC_ENV="mpirun.mpich -np 1" ctest --output-on-failure --timeout 600 -j4
+      - cd src ; INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 600 -j2; cd ..
+      - cd tests ; INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 1800 -j2; cd ..
 
 #######################################################################################################################
 
