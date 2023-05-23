@@ -17,6 +17,7 @@ variables:
   CODECOV_TOKEN: "5855e536-b784-400e-b0b2-b1d01c2287a9"
 
 stages:
+  - config-check
   - build
   - test
   - clean
@@ -26,8 +27,8 @@ stages:
 # CHECK MISSING LIBRARY DETECTION 
 #########################################################################################################################
 
-build-noblas:
-    stage: build
+config-no-blas:
+    stage: config-check
     script:
       - apt purge -y -qq libblas-dev
       - apt autoremove -y -qq      
@@ -37,8 +38,8 @@ build-noblas:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-build-noboost:
-    stage: build
+config-no-boost:
+    stage: config-check
     script:
       - apt purge -y -qq libboost-serialization-dev libboost-filesystem-dev
       - apt autoremove -y -qq      
@@ -48,8 +49,8 @@ build-noboost:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-build-nofftw:
-    stage: build
+config-no-fftw:
+    stage: config-check
     script:
       - apt purge -y -qq libfftw3-dev
       - apt autoremove -y -qq      
@@ -59,8 +60,8 @@ build-nofftw:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-build-nolapack:
-    stage: build
+config-no-lapack:
+    stage: config-check
     script:
       - apt purge -y -qq liblapack-dev
       - apt autoremove -y -qq      
@@ -70,8 +71,8 @@ build-nolapack:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-build-nohdf5:
-    stage: build
+config-no-hdf5:
+    stage: config-check
     script:
       - apt purge -y -qq libhdf5-dev libhdf5-openmpi-dev libhdf5-mpich-dev
       - apt autoremove -y -qq
@@ -81,6 +82,14 @@ build-nohdf5:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
+config-no-cuda:
+    stage: config-check
+    script:
+      - mkdir build
+      - cd build
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
+      - eval ! ../configure --prefix=$HOME --enable-cuda
+      
 #########################################################################################################################
 # GCC OMPI COVERAGE
 #########################################################################################################################
