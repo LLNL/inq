@@ -513,7 +513,7 @@ nvcc-mpich-nccl:
       - nvcc -V
       - mkdir -p $PREFIX/build
       - cd $PREFIX/build
-      - $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DNCCL_ROOT=/usr/local/nccl
+      - $SRCDIR/configure --prefix=$PREFIX/install --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES -DNCCL_ROOT=/usr/local/nccl
       - time make -j16
       - time make -j16 install
       - cd $SRCDIR
