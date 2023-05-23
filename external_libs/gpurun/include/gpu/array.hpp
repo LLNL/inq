@@ -14,10 +14,33 @@
 #include <utils/profiling.hpp>
 
 #include <multi/array.hpp>
-#include <multi/detail/fix_complex_traits.hpp>
+// #include <multi/detail/fix_complex_traits.hpp>
+
+#include <complex>
+
+#ifdef __NVCC__
+template<>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<double>> = true;
+template<>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<float>> = true;
+#else  // vvv nvcc (12.1?) doesn't support this kind of customization: "error: expected initializer before ‘<’"
+template<class T>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
+#endif
 
 #ifdef ENABLE_CUDA
-#include <multi/adaptors/thrust/fix_complex_traits.hpp>
+#include<thrust/complex.h>
+
+#ifdef __NVCC__
+template<>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<double>> = true;
+template<>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<float>> = true;
+#else  // vvv nvcc (12.1?) doesn't support this kind of customization: "error: expected initializer before ‘<’"
+template<class T>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<T>> = std::is_trivially_default_constructible<T>::value;
+#endif
+
 #include <multi/adaptors/thrust.hpp>
 #endif
 
