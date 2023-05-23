@@ -17,6 +17,7 @@ variables:
   CODECOV_TOKEN: "5855e536-b784-400e-b0b2-b1d01c2287a9"
 
 stages:
+  - config
   - build
   - test
   - clean
@@ -26,7 +27,7 @@ stages:
 # CHECK MISSING LIBRARY DETECTION 
 #########################################################################################################################
 
-build-noblas:
+config-no-blas:
     stage: build
     script:
       - apt purge -y -qq libblas-dev
@@ -37,7 +38,7 @@ build-noblas:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-build-noboost:
+config-no-boost:
     stage: build
     script:
       - apt purge -y -qq libboost-serialization-dev libboost-filesystem-dev
@@ -48,7 +49,7 @@ build-noboost:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-build-nofftw:
+config-no-fftw:
     stage: build
     script:
       - apt purge -y -qq libfftw3-dev
@@ -59,7 +60,7 @@ build-nofftw:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-build-nolapack:
+config-no-lapack:
     stage: build
     script:
       - apt purge -y -qq liblapack-dev
@@ -70,7 +71,7 @@ build-nolapack:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
 
-build-nohdf5:
+config-no-hdf5:
     stage: build
     script:
       - apt purge -y -qq libhdf5-dev libhdf5-openmpi-dev libhdf5-mpich-dev
@@ -80,7 +81,7 @@ build-nohdf5:
       - cd build
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! ../configure --prefix=$HOME
-
+      
 #########################################################################################################################
 # GCC OMPI COVERAGE
 #########################################################################################################################
