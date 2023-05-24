@@ -204,7 +204,7 @@ target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/pse
 message("\nCONFIGURING LIBXC\n")
 set(DISABLE_FXC ON)
 set(BUILD_TESTING OFF)
-add_subdirectory(external_libs/libxc)
+add_subdirectory(external_libs/libxc EXCLUDE_FROM_ALL)
 message("\nDONE CONFIGURING LIBXC\n")
 set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_BINARY_DIR}/external_libs/libxc ${PROJECT_BINARY_DIR}/external_libs/libxc/gen_funcidx)
 include_directories(${Libxc_INCLUDE_DIRS})
@@ -260,6 +260,8 @@ FetchContent_Declare(
   GIT_PROGRESS TRUE
 	)
 FetchContent_MakeAvailable(spglib)
+
+set_property(DIRECTORY ${spglib_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL YES)
 
 set(CMAKE_BUILD_TYPE ${MAKE_BUILD_TYPE_BACKUP})
 
