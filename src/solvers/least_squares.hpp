@@ -17,8 +17,8 @@
 #include <stdexcept>
 #include <tuple> //for get
 
-#define dgelss FC_GLOBAL(dgelss, DGELSS) 
-extern "C" void dgelss(const int & m, const int & n, const int & nrhs, double * a, const int & lda, double * b, const int & ldb, double * s, const double & rcond, int & rank, double * work, const int & lwork, int & info);
+#define dgelsd FC_GLOBAL(dgelsd, DGELSD) 
+extern "C" void dgelsd(const int & m, const int & n, const int & nrhs, double * a, const int & lda, double * b, const int & ldb, double * s, const double & rcond, int & rank, double * work, const int & lwork, int * iwork, int & info);
 
 namespace inq {
 namespace solvers {
@@ -35,19 +35,22 @@ void least_squares(matrix_type && matrix, vector_type & rhs){
 
 	int rank, info;
 	double dwork;
-		
-	dgelss(mm, nn, 1, raw_pointer_cast(matrix.data_elements()), mm, raw_pointer_cast(rhs.data_elements()), mm, raw_pointer_cast(ss.base()), -1.0, rank, &dwork, -1, info);
+	int iwork_size;
+	
+	dgelsd(mm, nn, 1, raw_pointer_cast(matrix.data_elements()), mm, raw_pointer_cast(rhs.data_elements()), mm, raw_pointer_cast(ss.base()), -1.0, rank, &dwork, -1, &iwork_size, info);
 
 	if(info != 0) std::runtime_error("inq error: dgelss in least_squares failed with info = " + std::to_string(info));
 	
 	auto work = (double *) malloc(int(dwork)*sizeof(double));
+	auto iwork = (int *) malloc(iwork_size*sizeof(int));
 
-	dgelss(mm, nn, 1, raw_pointer_cast(matrix.data_elements()), mm, raw_pointer_cast(rhs.data_elements()), mm, raw_pointer_cast(ss.data_elements()), -1.0, rank, work, int(dwork), info);
+	dgelsd(mm, nn, 1, raw_pointer_cast(matrix.data_elements()), mm, raw_pointer_cast(rhs.data_elements()), mm, raw_pointer_cast(ss.data_elements()), -1.0, rank, work, int(dwork), iwork, info);
 
 	if(info != 0) std::runtime_error("inq error: dgelss in least_squares failed with info = " + std::to_string(info));
 		
 	free(work);
-		
+	free(iwork);
+	
 }
 
 }
