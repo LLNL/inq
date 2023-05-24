@@ -457,7 +457,7 @@ nvcc-mpich-fast:
 # NVIDIA MPICH DEBUG
 #########################################################################################################################
 
-nvcc-mpich-debug:
+cuda-mpich-debug-utests:
     stage: test
     needs: []
     tags:
@@ -474,15 +474,40 @@ nvcc-mpich-debug:
       - ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
+      - cd speed_tests; INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2; cd ../
+      - cd external_libs; INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2; cd ../
+      - cd src/
       - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      - cd src; INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1; cd ..
-      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1; cd ..
-      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1; cd ..
-      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1; cd ..
-      - cd tests ; INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1; cd ..
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - cd ..
 
+cuda-mpich-debug-itests:
+    stage: test
+    needs: []
+    tags:
+      - cuda-docker
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt purge -y -qq clang clang-14
+      - apt autoremove -y -qq
+      - nvcc -V
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - mkdir build
+      - cd build
+      - ../configure --prefix=$HOME --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - time make -j2
+      - time make -j2 install
+      - cd tests/;
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - cd ../
+      
 #########################################################################################################################
 # NVIDIA MPICH NCCL
 #########################################################################################################################
