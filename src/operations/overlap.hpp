@@ -13,7 +13,6 @@
 
 #include <gpu/array.hpp>
 #include <matrix/gather_scatter.hpp>
-#include <math/subspace_matrix.hpp>
 #include <operations/integral.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>

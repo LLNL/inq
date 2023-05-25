@@ -137,7 +137,6 @@ void rotate_trs(MatrixType const & rotation, FieldSetType & phi){
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/trivial.hpp>
-#include <math/subspace_matrix.hpp>
 #include <operations/orthogonalize.hpp>
 #include <operations/randomize.hpp>
 
