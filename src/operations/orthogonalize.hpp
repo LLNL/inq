@@ -11,8 +11,8 @@
 
 #include <inq_config.h>
 #include <basis/field_set.hpp>
+#include <matrix/cholesky.hpp>
 #include <math/complex.hpp>
-#include <solvers/cholesky.hpp>
 #include <operations/overlap.hpp>
 #include <operations/rotate.hpp>
 
@@ -27,7 +27,7 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	CALI_CXX_MARK_FUNCTION;
 
 	auto olap = overlap(phi);
-	solvers::cholesky(olap.array());
+	matrix::cholesky(olap);
 	operations::rotate_trs(olap, phi);
 }
 
@@ -60,21 +60,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		operations::orthogonalize(phi);
 		
 		auto olap = operations::overlap(phi);
-		
-		std::cout << "------" << std::endl;
-		
-		std::cout << olap.array()[0][0] << '\t' << olap.array()[0][1] << '\t' << olap.array()[0][2] << std::endl;
-		std::cout << olap.array()[1][0] << '\t' << olap.array()[1][1] << '\t' << olap.array()[1][2] << std::endl;
-		std::cout << olap.array()[2][0] << '\t' << olap.array()[2][1] << '\t' << olap.array()[2][2] << std::endl;
-		
+		auto olap_array = matrix::all_gather(olap);
 		
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					CHECK(real(olap.array()[ii][ii]) == 1.0_a);
-					CHECK(fabs(imag(olap.array()[ii][ii])) < 1e-14);
+					CHECK(real(olap_array[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap_array[ii][ii])) < 1e-14);
 			} else {
-					CHECK(fabs(olap.array()[ii][jj]) < 1e-14);
+					CHECK(fabs(olap_array[ii][jj]) < 1e-14);
 				}
 			}
 		}
@@ -87,7 +81,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		int nbasis = std::get<0>(sizes(phi.matrix()));
 		
-	        for(int ii = 0 ; ii < phi.set_size(); ii++){
+		for(int ii = 0 ; ii < phi.set_size(); ii++){
 		  for(int jj = 0; jj < nbasis; jj++){
 		    phi.matrix().transposed()[ii][jj]=0.0;
 		    //if(ii == jj) phi.matrix().transposed()[ii][jj] = 1.0;
@@ -100,9 +94,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		//auto olap = operations::overlap(phi);
 		
-		std::cout << "------" << std::endl;
-		
-		
 	}
 
 	SECTION("Dimension 100"){
@@ -113,14 +104,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		operations::orthogonalize(phi);
 		
 		auto olap = operations::overlap(phi);
-		
+		auto olap_array = matrix::all_gather(olap);
+				
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					CHECK(real(olap.array()[ii][ii]) == 1.0_a);
-					CHECK(fabs(imag(olap.array()[ii][ii])) < 1e-14);
+					CHECK(real(olap_array[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap_array[ii][ii])) < 1e-14);
 				} else {
-					CHECK(fabs(olap.array()[ii][jj]) < 1e-13);
+					CHECK(fabs(olap_array[ii][jj]) < 1e-13);
 				}
 			}
 		}
@@ -136,14 +128,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		operations::orthogonalize(phi);
 		
 		auto olap = operations::overlap(phi);
+		auto olap_array = matrix::all_gather(olap);
 		
 		for(int ii = 0; ii < phi.set_size(); ii++){
 			for(int jj = 0; jj < phi.set_size(); jj++){
 				if(ii == jj) {
-					CHECK(real(olap.array()[ii][ii]) == 1.0_a);
-					CHECK(fabs(imag(olap.array()[ii][ii])) < 1e-16);
+					CHECK(real(olap_array[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap_array[ii][ii])) < 1e-16);
 				} else {
-					CHECK(fabs(olap.array()[ii][jj]) < 5e-16);
+					CHECK(fabs(olap_array[ii][jj]) < 5e-16);
 				}
 			}
 		}
