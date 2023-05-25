@@ -19,7 +19,6 @@
 #include <operations/rotate.hpp>
 #include <parallel/arbitrary_partition.hpp>
 #include <parallel/array_iterator.hpp>
-#include <solvers/cholesky.hpp>
 #include <solvers/poisson.hpp>
 #include <states/index.hpp>
 #include <states/orbital_set.hpp>
