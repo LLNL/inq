@@ -33,7 +33,7 @@ auto diagonalize(DistributedMatrix & matrix) {
   
   assert(eigenvalues.size() == matrix.sizex());
   
-	matrix::scatter(full_matrix, matrix);
+	matrix::scatter(full_matrix, matrix, /* root = */ 0);
   
   matrix.comm().broadcast_n(raw_pointer_cast(eigenvalues.data_elements()), eigenvalues.num_elements(), 0);
   matrix.comm().barrier();
@@ -72,7 +72,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		array[1][0] = 0.0;
 		array[1][1] = 2.0;
 
-		matrix::distributed matrix = matrix::scatter(cart_comm, array);
+		matrix::distributed matrix = matrix::scatter(cart_comm, array, /* root = */ 0);
 		
 		auto evalues = matrix::diagonalize(matrix);
 
@@ -97,7 +97,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		array[1][0] = 0.0;
 		array[1][1] = 2.0;
 
-		matrix::distributed matrix = matrix::scatter(cart_comm, array);
+		matrix::distributed matrix = matrix::scatter(cart_comm, array, /* root = */ 0);
 		
 		auto evalues = matrix::diagonalize(matrix);
 
@@ -134,7 +134,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		array[2][1] = 0.705297;
 		array[2][2] = 0.392459;
 
-		matrix::distributed matrix = matrix::scatter(cart_comm, array);
+		matrix::distributed matrix = matrix::scatter(cart_comm, array, /* root = */ 0);
 		
 		auto evalues = matrix::diagonalize(matrix);
 		
@@ -157,7 +157,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		array[2][1] = complex(0.705297, -0.12840);
 		array[2][2] = complex(0.392459,  0.00000);
 
-		matrix::distributed matrix = matrix::scatter(cart_comm, array);
+		matrix::distributed matrix = matrix::scatter(cart_comm, array, /* root = */ 0);
 		
 		auto evalues = matrix::diagonalize(matrix);
 		

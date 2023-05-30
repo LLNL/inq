@@ -81,11 +81,11 @@ auto all_gather(DistributedType const & matrix) {
 ////////////////////////////////////////////////////////////////////////////////////
 
 template <typename ArrayType, typename Type>
-void scatter(ArrayType const & full_matrix, matrix::distributed<Type> & matrix) {
+void scatter(ArrayType const & full_matrix, matrix::distributed<Type> & matrix, int root) {
 
 	CALI_CXX_MARK_SCOPE("matrix::scatter");
 
-	if(matrix.comm().root()){
+	if(matrix.comm().rank() == root){
 		assert(matrix.sizex() == std::get<0>(sizes(full_matrix)));
 		assert(matrix.sizey() == std::get<1>(sizes(full_matrix)));
 	}
@@ -111,7 +111,7 @@ void scatter(ArrayType const & full_matrix, matrix::distributed<Type> & matrix) 
   assert(int(sendcounts.size()) == matrix.comm().size());
   assert(sendcounts[matrix.comm().rank()] == matrix.block().num_elements()); 
 	
-	if(matrix.comm().root()) {
+	if(matrix.comm().rank() == root) {
 		sendbuffer.reextent(matrix.sizex()*matrix.sizey());			
 		
 		for(int iproc = 0; iproc < matrix.comm().size(); iproc++){
@@ -127,29 +127,29 @@ void scatter(ArrayType const & full_matrix, matrix::distributed<Type> & matrix) 
   }
 
 	MPI_Scatterv(raw_pointer_cast(sendbuffer.data_elements()), sendcounts.data(), displs.data(), mpi_type,
-							 raw_pointer_cast(matrix.block().data_elements()), matrix.block().num_elements(), mpi_type, 0, matrix.comm().get());
+							 raw_pointer_cast(matrix.block().data_elements()), matrix.block().num_elements(), mpi_type, root, matrix.comm().get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 template <typename ArrayType>
-auto scatter(parallel::cartesian_communicator<2> comm, ArrayType const & full_matrix){
+auto scatter(parallel::cartesian_communicator<2> comm, ArrayType const & full_matrix, int root){
 
 	CALI_CXX_MARK_SCOPE("matrix::scatter");
 
   using type = typename ArrayType::element_type;
 
 	int szs[2];
-	if(comm.root()){
+	if(comm.rank() == root){
 		szs[0] = std::get<0>(sizes(full_matrix));
 		szs[1] = std::get<1>(sizes(full_matrix));
 	}
 
-	comm.broadcast_n(szs, 2);
+	comm.broadcast_n(szs, 2, root);
 	comm.barrier();
 	
 	auto matrix = matrix::distributed<type>(comm, szs[0], szs[1]);
-	scatter(full_matrix, matrix);
+	scatter(full_matrix, matrix, root);
 	return matrix;
 }
 
@@ -219,7 +219,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 	}
 
-	auto mat2 = matrix::scatter(cart_comm, full_mat);	
+	auto mat2 = matrix::scatter(cart_comm, full_mat, /* root = */ 0);	
 
 	CHECK(mat2.sizex() == mm);
 	CHECK(mat2.sizey() == nn);	
@@ -232,7 +232,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	matrix::distributed<double> mat3(cart_comm, mm, nn);
 
-	matrix::scatter(full_mat, mat3);	
+	matrix::scatter(full_mat, mat3, /* root = */ 0);
 
 	for(int ix = 0; ix < mat.partx().local_size(); ix++){
 		for(int iy = 0; iy < mat.party().local_size(); iy++){

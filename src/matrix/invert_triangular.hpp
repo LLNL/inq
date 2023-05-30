@@ -46,7 +46,7 @@ void invert_triangular(DistributedMatrix & matrix) {
     });
   }
   
-  matrix::scatter(full_matrix, matrix);
+  matrix::scatter(full_matrix, matrix, /* root = */ 0);
 
 }
 
@@ -78,7 +78,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
 		array[1][0] = -1.0;
 		array[1][1] = 2.0;
 
-		matrix::distributed matrix = matrix::scatter(cart_comm, array);
+		matrix::distributed matrix = matrix::scatter(cart_comm, array, /* root = */ 0);
 		
 		matrix::invert_triangular(matrix);
 
@@ -107,7 +107,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
 			}
 		}
 
-    matrix::distributed matrix = matrix::scatter(cart_comm, array);
+    matrix::distributed matrix = matrix::scatter(cart_comm, array, /* root = */ 0);
       
 		matrix::invert_triangular(matrix);
 

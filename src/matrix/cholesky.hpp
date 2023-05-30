@@ -23,7 +23,7 @@ void cholesky(DistributedMatrix & matrix) {
   
   auto full_matrix = matrix::gather(matrix, /* root = */ 0);
   if(matrix.comm().root()) solvers::cholesky(full_matrix);
-  matrix::scatter(full_matrix, matrix);
+  matrix::scatter(full_matrix, matrix, /* root = */ 0);
 
 }
 
@@ -62,7 +62,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		array[1][0] = 4502.48;
 		array[1][1] = 3151.74;
 
-		matrix::distributed matrix = matrix::scatter(cart_comm, array);
+		matrix::distributed matrix = matrix::scatter(cart_comm, array, /* root = */ 0);
 		
 		matrix::cholesky(matrix);
 
