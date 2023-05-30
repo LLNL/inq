@@ -106,7 +106,9 @@ public:
 		};
 		gpu::array<double, 2> occ({gs.kpin_size(), gs.kpin()[0].set_size()});
 		for(int ilot=0; ilot<gs.kpin_size(); ilot++) {
-			auto ortho = operations::overlap(electrons_.kpin()[ilot], gs.kpin()[ilot]).array();
+
+			auto ortho = matrix::all_gather(operations::overlap(electrons_.kpin()[ilot], gs.kpin()[ilot]));
+			
 			for (int it=0; it<std::get<0>(sizes(ortho)); it++) {
 				auto start = electrons_.kpin()[ilot].set_part().start();
 				auto end = electrons_.kpin()[ilot].set_part().end();

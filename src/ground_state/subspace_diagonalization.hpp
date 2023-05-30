@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <inq_config.h>
+#include <matrix/diagonalize.hpp>
 #include <operations/diagonalize.hpp>
 #include <operations/overlap.hpp>
 #include <operations/rotate.hpp>
@@ -23,7 +24,7 @@ auto subspace_diagonalization(const hamiltonian_type & ham, field_set_type & phi
 	CALI_CXX_MARK_FUNCTION;
 
 	auto subspace_hamiltonian = operations::overlap(phi, ham(phi));
-	auto eigenvalues = operations::diagonalize(subspace_hamiltonian);
+	auto eigenvalues = matrix::diagonalize(subspace_hamiltonian);
 	operations::rotate(subspace_hamiltonian, phi);
 	return +eigenvalues({phi.set_part().start(), phi.set_part().end()});
 }

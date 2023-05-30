@@ -12,6 +12,8 @@
 #include <basis/real_space.hpp>
 #include <hamiltonian/singularity_correction.hpp>
 #include <input/parallelization.hpp>
+#include <matrix/diagonal.hpp>
+#include <matrix/cholesky.hpp>
 #include <operations/overlap.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <operations/rotate.hpp>
@@ -93,9 +95,9 @@ namespace hamiltonian {
 					auto exxphi = direct(phi, -1.0);
 					auto exx_matrix = operations::overlap(exxphi, phi);
 					
-					energy += -0.5*real(operations::sum_product(el.occupations()[iphi], exx_matrix.diagonal()));
+					energy += -0.5*real(operations::sum_product(el.occupations()[iphi], matrix::diagonal(exx_matrix)));
 					
-					solvers::cholesky(exx_matrix.array());
+					matrix::cholesky(exx_matrix);
 					operations::rotate_trs(exx_matrix, exxphi);
 					
 					ace_orbitals_.emplace_back(std::move(exxphi));

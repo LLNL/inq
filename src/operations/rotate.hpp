@@ -13,8 +13,8 @@
 
 #include <gpu/copy.hpp>
 #include <gpu/array.hpp>
+#include <matrix/invert_triangular.hpp>
 #include <utils/profiling.hpp>
-#include <solvers/invert_triangular.hpp>
 
 #include <cassert>
 
@@ -30,6 +30,8 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 
 	namespace blas = boost::multi::blas;
 
+	auto rotation_array = matrix::all_gather(rotation);
+	
 	if(phi.set_part().parallel()){
 
 		phi.set_comm().nccl_init();
@@ -40,7 +42,7 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 		
 		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
 			
-			auto block = +blas::gemm(1.0, copy, blas::H(rotation.array()({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()}))); 
+			auto block = +blas::gemm(1.0, copy, blas::H(rotation_array({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()}))); 
 			
 			assert(block.extensions() == phi.matrix().extensions());
 
@@ -56,7 +58,7 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 		}
 
 	} else {
-		phi.matrix() = +blas::gemm(1., phi.matrix(), blas::H(rotation.array()));
+		phi.matrix() = +blas::gemm(1., phi.matrix(), blas::H(rotation_array));
 	}
 	
 }
@@ -68,11 +70,13 @@ void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType
 
 	CALI_CXX_MARK_SCOPE("operations::rotate(5arg)");
 
+	auto rotation_array = matrix::all_gather(rotation);
+	
 	if(not phi.set_part().parallel()){
 
 		assert(beta == 1.0); //there is a bug in multi that doesn't allow us to use a general value
-		// blas::gemm(alpha, phi.matrix(), blas::H(rotation.array(), beta, rotphi.matrix())); // <- this doesn't work on the GPU
-		rotphi.matrix() += blas::gemm(alpha, phi.matrix(), blas::H(rotation.array()));
+		// blas::gemm(alpha, phi.matrix(), blas::H(rotation_array, beta, rotphi.matrix())); // <- this doesn't work on the GPU
+		rotphi.matrix() += blas::gemm(alpha, phi.matrix(), blas::H(rotation_array));
 		
 	} else {
 
@@ -80,7 +84,7 @@ void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType
 		
 		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
 				
-			auto block = +blas::gemm(alpha, phi.matrix(), blas::H(rotation.array()({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()})));
+			auto block = +blas::gemm(alpha, phi.matrix(), blas::H(rotation_array({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()})));
 			
 			assert(block.extensions() == phi.matrix().extensions());
 
@@ -115,7 +119,7 @@ void rotate_trs(MatrixType const & rotation, FieldSetType & phi){
 	auto invrot = rotation;
 	
 	namespace blas = boost::multi::blas;
-	solvers::invert_triangular(invrot);
+	matrix::invert_triangular(invrot);
 	rotate(invrot, phi);
 }
 
@@ -160,14 +164,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		SECTION("rotate double"){
 			
-			math::subspace_matrix<double> rot(cart_comm, nvec, 0.0);
+			gpu::array<double, 2> rot_array({nvec, nvec}, 0.0);
 			
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					rot.array()[ii][jj] = ii + 1;
+					rot_array[ii][jj] = ii + 1;
 				}
 			}
 
+			auto rot = matrix::scatter(cart_comm, rot_array, /* root = */ 0);
+			
 			basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
@@ -192,14 +198,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		SECTION("rotate complex"){
 		
-			math::subspace_matrix<complex> rot(cart_comm, nvec, 0.0);
+			gpu::array<complex, 2> rot_array({nvec, nvec}, 0.0);
 		
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					rot.array()[ii][jj] = ii + 1;
+					rot_array[ii][jj] = ii + 1;
 				}
 			}
-		
+
+			auto rot = matrix::scatter(cart_comm, rot_array, /* root = */ 0);
+			
 			basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
@@ -225,14 +233,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		SECTION("rotate_trs double"){
 			
-			math::subspace_matrix<double> rot(cart_comm, nvec, 0.0);
+			gpu::array<double, 2> rot_array({nvec, nvec}, 0.0);;
 			
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					rot.array()[ii][jj] = 1.0;
+					rot_array[ii][jj] = 1.0;
 				}
 			}
 
+			auto rot = matrix::scatter(cart_comm, rot_array, /* root = */ 0);
+			
 			basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
@@ -256,14 +266,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		SECTION("rotate_trs complex"){
 			
-			math::subspace_matrix<complex> rot(cart_comm, nvec, 0.0);
+			gpu::array<complex, 2> rot_array({nvec, nvec}, 0.0);
 			
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){
-					rot.array()[ii][jj] = 1.0;
+					rot_array[ii][jj] = 1.0;
 				}
 			}
 
+			auto rot = matrix::scatter(cart_comm, rot_array, /* root = */ 0);
+			
 			basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
