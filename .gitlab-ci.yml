@@ -239,7 +239,7 @@ gcc-mpich-5p:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 3600; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
 # GCC-OMPI
