@@ -13,7 +13,6 @@
 
 #include <gpu/array.hpp>
 #include <matrix/gather_scatter.hpp>
-#include <solvers/invert_triangular.hpp>
 
 namespace inq {
 namespace matrix {

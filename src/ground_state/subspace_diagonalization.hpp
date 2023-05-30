@@ -11,7 +11,6 @@
 
 #include <inq_config.h>
 #include <matrix/diagonalize.hpp>
-#include <operations/diagonalize.hpp>
 #include <operations/overlap.hpp>
 #include <operations/rotate.hpp>
 #include <utils/profiling.hpp>
