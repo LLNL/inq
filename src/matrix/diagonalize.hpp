@@ -23,7 +23,7 @@ auto diagonalize(DistributedMatrix & matrix) {
   
   gpu::array<double, 1> eigenvalues;
 
-  auto full_matrix = matrix::gather(matrix);
+  auto full_matrix = matrix::gather(matrix, /* root = */ 0);
   
   if(matrix.comm().root()) {
     eigenvalues = operations::diagonalize_raw(full_matrix);
@@ -76,14 +76,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		auto evalues = matrix::diagonalize(matrix);
 
-    array = matrix::gather(matrix);
+    array = matrix::all_gather(matrix);
 
-    if(cart_comm.root()){
-      CHECK(array[0][0] == 0.0_a);
-      CHECK(array[0][1] == 1.0_a);
-      CHECK(array[1][0] == 1.0_a);
-      CHECK(array[0][0] == 0.0_a);
-    }
+		CHECK(array[0][0] == 0.0_a);
+		CHECK(array[0][1] == 1.0_a);
+		CHECK(array[1][0] == 1.0_a);
+		CHECK(array[0][0] == 0.0_a);
 
     CHECK(evalues[0] == 2.0_a);
     CHECK(evalues[1] == 4.0_a);
@@ -103,22 +101,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		auto evalues = matrix::diagonalize(matrix);
 
-    array = matrix::gather(matrix);
+    array = matrix::all_gather(matrix);
 
-    if(cart_comm.root()){
-      CHECK(real(array[0][0]) == 0.0_a);
-      CHECK(imag(array[0][0]) == 0.0_a);
-      
-      CHECK(real(array[0][1]) == 1.0_a);
-      CHECK(imag(array[0][1]) == 0.0_a);
-      
-      CHECK(real(array[1][0]) == 1.0_a);
-      CHECK(imag(array[1][0]) == 0.0_a);
-      
-      CHECK(real(array[0][0]) == 0.0_a);
-      CHECK(imag(array[0][0]) == 0.0_a);
-    }
-
+		CHECK(real(array[0][0]) == 0.0_a);
+		CHECK(imag(array[0][0]) == 0.0_a);
+    
+		CHECK(real(array[0][1]) == 1.0_a);
+		CHECK(imag(array[0][1]) == 0.0_a);
+    
+		CHECK(real(array[1][0]) == 1.0_a);
+		CHECK(imag(array[1][0]) == 0.0_a);
+    
+		CHECK(real(array[0][0]) == 0.0_a);
+		CHECK(imag(array[0][0]) == 0.0_a);
+		
     CHECK(evalues[0] == 2.0_a);
 		CHECK(evalues[1] == 4.0_a);
 

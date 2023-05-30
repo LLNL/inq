@@ -21,7 +21,7 @@ void cholesky(DistributedMatrix & matrix) {
 
   assert(matrix.sizex() == matrix.sizey());
   
-  auto full_matrix = matrix::gather(matrix);
+  auto full_matrix = matrix::gather(matrix, /* root = */ 0);
   if(matrix.comm().root()) solvers::cholesky(full_matrix);
   matrix::scatter(full_matrix, matrix);
 
@@ -66,14 +66,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		matrix::cholesky(matrix);
 
-    array = matrix::gather(matrix);
-
-    if(cart_comm.root()){
-      CHECK(real(array[0][0]) == 80.2005_a);
-      CHECK(real(array[0][1]) == 0.0_a);
-      CHECK(real(array[1][0]) == 56.1402992511_a);
-      CHECK(real(array[1][1]) == 0.0824620974_a);    
-		}
+    array = matrix::all_gather(matrix);
+	 
+		CHECK(real(array[0][0]) == 80.2005_a);
+		CHECK(real(array[0][1]) == 0.0_a);
+		CHECK(real(array[1][0]) == 56.1402992511_a);
+		CHECK(real(array[1][1]) == 0.0824620974_a);    
   }
 
 }

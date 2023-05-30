@@ -25,7 +25,7 @@ void invert_triangular(DistributedMatrix & matrix) {
 
   using type = typename DistributedMatrix::element_type;
   
-  auto full_matrix = matrix::gather(matrix);
+  auto full_matrix = matrix::gather(matrix, /* root = */ 0);
 
 	static_assert(std::is_same_v<type, double> or std::is_same_v<type, complex>, "invert_triangular is only implemented for double and complex");
 
@@ -82,15 +82,12 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
 		
 		matrix::invert_triangular(matrix);
 
-    array = matrix::gather(matrix);
+    array = matrix::all_gather(matrix);
 
-    if(cart_comm.root()){
-      CHECK(array[0][0] == 0.25);
-      CHECK(array[0][1] == 0.0);
-      CHECK(array[1][0] == 0.125);
-      CHECK(array[1][1] == 0.5);
-    }
-
+		CHECK(array[0][0] == 0.25);
+		CHECK(array[0][1] == 0.0);
+		CHECK(array[1][0] == 0.125);
+		CHECK(array[1][1] == 0.5);
   }
 
 	SECTION("NxN"){
@@ -114,23 +111,21 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, complex) {
       
 		matrix::invert_triangular(matrix);
 
-    auto inverse = matrix::gather(matrix);
+    auto inverse = matrix::all_gather(matrix);
 
-    if(cart_comm.root()){
-      auto mul = +boost::multi::blas::gemm(1.0, inverse, array);
-      
-      for(int ii = 0; ii < nn; ii++){
-        for(int jj = 0; jj < nn; jj++){
-          if(ii == jj) {
-            CHECK(real(mul[ii][jj]) == 1.0_a);
-            CHECK(imag(mul[ii][jj]) < 1e-12);					
-          } else {
-            CHECK(fabs(mul[ii][jj]) < 1e-12);
-          }
-        }
-      }
+		auto mul = +boost::multi::blas::gemm(1.0, inverse, array);
+    
+		for(int ii = 0; ii < nn; ii++){
+			for(int jj = 0; jj < nn; jj++){
+				if(ii == jj) {
+					CHECK(real(mul[ii][jj]) == 1.0_a);
+					CHECK(imag(mul[ii][jj]) < 1e-12);					
+				} else {
+					CHECK(fabs(mul[ii][jj]) < 1e-12);
+				}
+			}
+		}
 			
-    }
   }
 }
 

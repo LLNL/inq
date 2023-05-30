@@ -17,7 +17,7 @@ namespace inq {
 namespace matrix {
 
 template <class DistributedType>
-auto gather(DistributedType const & matrix) -> gpu::array<typename DistributedType::element_type, 2> {
+auto gather(DistributedType const & matrix, int root) -> gpu::array<typename DistributedType::element_type, 2> {
 
 	CALI_CXX_MARK_SCOPE("matrix::gather");
 	
@@ -43,27 +43,39 @@ auto gather(DistributedType const & matrix) -> gpu::array<typename DistributedTy
   assert(int(recvcounts.size()) == matrix.comm().size());
   assert(recvcounts[matrix.comm().rank()] == matrix.block().num_elements()); 
   
-	if(matrix.comm().root()) recvbuffer.reextent(matrix.sizex()*matrix.sizey());
+	if(root < 0 or matrix.comm().rank() == root) recvbuffer.reextent(matrix.sizex()*matrix.sizey());
 
-	MPI_Gatherv(raw_pointer_cast(matrix.block().data_elements()), matrix.block().num_elements(), mpi_type,
-							raw_pointer_cast(recvbuffer.data_elements()), recvcounts.data(), displs.data(), mpi_type, 0, matrix.comm().get());
-	
-	if(matrix.comm().root()) {
+	if(root >= 0) {
+		MPI_Gatherv(raw_pointer_cast(matrix.block().data_elements()), matrix.block().num_elements(), mpi_type,
+								raw_pointer_cast(recvbuffer.data_elements()), recvcounts.data(), displs.data(), mpi_type, root, matrix.comm().get());
+	} else {
+		MPI_Allgatherv(raw_pointer_cast(matrix.block().data_elements()), matrix.block().num_elements(), mpi_type,
+									 raw_pointer_cast(recvbuffer.data_elements()), recvcounts.data(), displs.data(), mpi_type, matrix.comm().get());
+	}
+		
+	if(root < 0 or  matrix.comm().rank() == root) {
 		full_matrix.reextent({matrix.sizex(), matrix.sizey()});
-
+		
 		for(int iproc = 0; iproc < matrix.comm().size(); iproc++){
-      auto coords = matrix.comm().coordinates(iproc);
+			auto coords = matrix.comm().coordinates(iproc);
       auto xsize = matrix.partx().local_size(coords[0]);
       auto ysize = matrix.party().local_size(coords[1]);
-
+			
 			gpu::run(ysize, xsize, [ful = begin(full_matrix), rec = begin(recvbuffer), startx = matrix.partx().start(coords[0]), starty = matrix.party().start(coords[1]), disp = displs[iproc], ysize]
 							 GPU_LAMBDA (auto iy, auto ix){
 				ful[startx + ix][starty + iy] = rec[disp + ix*ysize + iy];
 			});
 		}
-  }
+	}
 	
   return full_matrix;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+template <class DistributedType>
+auto all_gather(DistributedType const & matrix) {
+	return gather(matrix, -1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +189,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     }
   }
 
-  auto full_mat = matrix::gather(mat);
+  auto full_mat = matrix::gather(mat, /* root = */ 0);
 	
 	if(cart_comm.root()){
 
@@ -187,6 +199,22 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		for(int ix = 0; ix < mat.sizex(); ix++){
 			for(int iy = 0; iy < mat.sizey(); iy++){
 				CHECK(full_mat[ix][iy] == element(ix, iy));
+			}
+		}
+	} else {
+		CHECK(full_mat.size() == 0);
+		CHECK((~full_mat).size() == 0);
+	}
+
+	{
+		auto full_mat_all = matrix::all_gather(mat);
+	
+		CHECK(full_mat_all.size() == mat.sizex());
+		CHECK((~full_mat_all).size() == mat.sizey());
+		
+		for(int ix = 0; ix < mat.sizex(); ix++){
+			for(int iy = 0; iy < mat.sizey(); iy++){
+				CHECK(full_mat_all[ix][iy] == element(ix, iy));
 			}
 		}
 	}
