@@ -239,7 +239,7 @@ gcc-mpich-5p:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
-      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 3600; cd ..
+      - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
 # GCC-OMPI
@@ -492,7 +492,6 @@ cuda-mpich-fast-itests:
       -   time make -j2
       -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
       -   INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       -   INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       -   INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       - cd ../
@@ -555,7 +554,6 @@ cuda-mpich-debug-itests:
       -   INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       -   INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       -   INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       - cd ../
       
 #########################################################################################################################
