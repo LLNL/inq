@@ -29,33 +29,37 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 	namespace blas = boost::multi::blas;
 
+	auto matrix = matrix::distributed<typename FieldSetType1::element_type>(phi1.full_comm(), phi2.set_size(), phi1.set_size());
+	
 	if(not phi1.set_part().parallel()){
 		
-		auto overlap_matrix =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
-		
+		auto array =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
+
 		if(phi1.basis().comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
-			phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
+			phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(array.data_elements()), array.num_elements(), std::plus<>{});
 		}
 
-		return matrix::scatter(phi1.full_comm(), overlap_matrix, /* root = */ 0);
+		matrix::scatter(array, matrix, /* root = */ 0);
 		
 	} else {
 
-		gpu::array<typename FieldSetType1::element_type, 2> overlap_matrix({phi2.set_size(), phi1.set_size()}, 0.0);
+		gpu::array<typename FieldSetType1::element_type, 2> array({phi2.set_size(), phi1.set_size()}, 0.0);
 
 		for(auto it = phi1.par_set_begin(); it != phi1.par_set_end(); ++it){
 			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), it.matrix());
-			overlap_matrix({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(it.set_ipart()), phi1.set_part().end(it.set_ipart())}) = block;
+			array({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(it.set_ipart()), phi1.set_part().end(it.set_ipart())}) = block;
 		}
 		
 		if(phi1.full_comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
-			phi1.full_comm().all_reduce_in_place_n(raw_pointer_cast(overlap_matrix.data_elements()), overlap_matrix.num_elements(), std::plus<>{});
+			phi1.full_comm().all_reduce_in_place_n(raw_pointer_cast(array.data_elements()), array.num_elements(), std::plus<>{});
 		}
-		
-		return matrix::scatter(phi1.full_comm(), overlap_matrix, /* root = */ 0);
+
+		matrix::scatter(array, matrix, /* root = */ 0);		
 	}
+
+	return matrix;
 	
 }
 
