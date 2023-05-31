@@ -30,17 +30,21 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 	namespace blas = boost::multi::blas;
 
 	auto matrix = matrix::distributed<typename FieldSetType1::element_type>(phi1.full_comm(), phi2.set_size(), phi1.set_size());
-	
-	if(not phi1.set_part().parallel()){
+
+	if(matrix.comm().size() == 1) {
+
+		matrix.block() = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
+
+	} else if(not phi1.set_part().parallel()) {
+
+		auto array = +blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
 		
-		auto array =+ blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
+		for(int ipart = 0; ipart < matrix.partx().comm_size(); ipart++){
+			CALI_CXX_MARK_SCOPE("overlap_domains_reduce");
 
-		if(phi1.basis().comm().size() > 1) {
-			CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
-			phi1.basis().comm().all_reduce_in_place_n(raw_pointer_cast(array.data_elements()), array.num_elements(), std::plus<>{});
+			auto tmp = array({matrix.partx().start(ipart), matrix.partx().end(ipart)}, {0, matrix.party().size()});
+			matrix.comm().reduce_n(raw_pointer_cast(tmp.base()), tmp.num_elements(), raw_pointer_cast(matrix.block().data_elements()), std::plus<>{}, ipart);
 		}
-
-		matrix::scatter(array, matrix, /* root = */ 0);
 		
 	} else {
 
@@ -52,7 +56,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		}
 		
 		if(phi1.full_comm().size() > 1) {
-			CALI_CXX_MARK_SCOPE("overlap(2arg)_mpi_reduce");	
+			CALI_CXX_MARK_SCOPE("overlap_reduce");
 			phi1.full_comm().all_reduce_in_place_n(raw_pointer_cast(array.data_elements()), array.num_elements(), std::plus<>{});
 		}
 
