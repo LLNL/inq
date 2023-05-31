@@ -29,15 +29,15 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 	namespace blas = boost::multi::blas;
 
-	auto matrix = matrix::distributed<typename FieldSetType1::element_type>(phi1.full_comm(), phi2.set_size(), phi1.set_size());
+	auto matrix = matrix::distributed<typename FieldSetType1::element_type>(phi1.full_comm(), phi1.set_size(), phi2.set_size());
 
 	if(matrix.comm().size() == 1) {
 
-		matrix.block() = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
+		matrix.block() = blas::gemm(phi1.basis().volume_element(), blas::H(phi1.matrix()), phi2.matrix());
 
 	} else if(not phi1.set_part().parallel()) {
 
-		auto array = +blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), phi1.matrix());
+		auto array = +blas::gemm(phi1.basis().volume_element(), blas::H(phi1.matrix()), phi2.matrix());
 		
 		for(int ipart = 0; ipart < matrix.partx().comm_size(); ipart++){
 			CALI_CXX_MARK_SCOPE("overlap_domains_reduce");
@@ -48,11 +48,11 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		
 	} else {
 
-		gpu::array<typename FieldSetType1::element_type, 2> array({phi2.set_size(), phi1.set_size()}, 0.0);
+		gpu::array<typename FieldSetType1::element_type, 2> array({phi1.set_size(), phi2.set_size()}, 0.0);
 
 		for(auto it = phi1.par_set_begin(); it != phi1.par_set_end(); ++it){
-			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(phi2.matrix()), it.matrix());
-			array({phi2.set_part().start(), phi2.set_part().end()}, {phi1.set_part().start(it.set_ipart()), phi1.set_part().end(it.set_ipart())}) = block;
+			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(it.matrix()), phi2.matrix());
+			array({phi1.set_part().start(it.set_ipart()), phi2.set_part().end(it.set_ipart())}, {phi1.set_part().start(), phi1.set_part().end()}) = block;
 		}
 		
 		if(phi1.full_comm().size() > 1) {
@@ -60,7 +60,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 			phi1.full_comm().all_reduce_in_place_n(raw_pointer_cast(array.data_elements()), array.num_elements(), std::plus<>{});
 		}
 
-		matrix::scatter(array, matrix, /* root = */ 0);		
+		matrix.block() = array({matrix.partx().start(), matrix.partx().end()}, {matrix.party().start(), matrix.party().end()});
 	}
 
 	return matrix;
@@ -97,6 +97,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	auto parstates = comm.size();
+	if(comm.size() == 4) parstates = 2;
 	if(comm.size() >= 5) parstates = 1;
 	
 	parallel::cartesian_communicator<2> cart_comm(comm, {boost::mpi3::fill, parstates});
@@ -159,8 +160,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.local_set_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
-				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
 			}
 		}
 

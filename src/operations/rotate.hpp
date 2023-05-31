@@ -74,9 +74,7 @@ void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType
 	
 	if(not phi.set_part().parallel()){
 
-		assert(beta == 1.0); //there is a bug in multi that doesn't allow us to use a general value
-		// blas::gemm(alpha, phi.matrix(), blas::H(rotation_array, beta, rotphi.matrix())); // <- this doesn't work on the GPU
-		rotphi.matrix() += blas::gemm(alpha, phi.matrix(), blas::H(rotation_array));
+		blas::gemm(alpha, phi.matrix(), rotation_array, beta, rotphi.matrix());
 		
 	} else {
 
@@ -84,7 +82,7 @@ void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType
 		
 		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
 				
-			auto block = +blas::gemm(alpha, phi.matrix(), blas::H(rotation_array({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()})));
+			auto block = +blas::gemm(alpha, phi.matrix(), rotation_array({phi.set_part().start(), phi.set_part().end()}, {phi.set_part().start(istep), phi.set_part().end(istep)}));
 			
 			assert(block.extensions() == phi.matrix().extensions());
 
