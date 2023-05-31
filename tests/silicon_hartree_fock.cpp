@@ -42,7 +42,7 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.75, 0.25, 0.75});
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
-	
+
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();
 	if(comm.size() == 4) parstates = 2;	
@@ -54,13 +54,16 @@ int main(int argc, char ** argv){
 	ground_state::calculate(ions, electrons, input::interaction::dft(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-4_Ha));
  	auto result = ground_state::calculate(ions, electrons, input::interaction::hartree_fock(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
 	
-	energy_match.check("total energy",     result.energy.total()      , -30.495900918097);
-	energy_match.check("kinetic energy",   result.energy.kinetic()    ,  13.234089373454);
-	energy_match.check("eigenvalues",      result.energy.eigenvalues(),  -6.187488598514);
-	energy_match.check("external energy",  result.energy.external()   ,  -9.170795172150);
-	energy_match.check("non-local energy", result.energy.nonlocal()   ,   4.099633551216);
-	energy_match.check("hf exchange",      result.energy.hf_exchange(),  -9.636982906989);
-	energy_match.check("ion-ion energy",   result.energy.ion()        , -31.483620495100);
+	energy_match.check("total energy",        result.energy.total(),       -30.495900907055);
+	energy_match.check("kinetic energy",      result.energy.kinetic(),      13.234089410583);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues(),  -6.187488553120);
+	energy_match.check("hartree energy",      result.energy.hartree(),       2.461774760792);
+	energy_match.check("external energy",     result.energy.external(),     -9.170795269265);
+	energy_match.check("non-local energy",    result.energy.nonlocal(),      4.099633587891);
+	energy_match.check("XC energy",           result.energy.xc(),            0.000000000000);
+	energy_match.check("XC density integral", result.energy.nvxc(),          0.000000000000);
+	energy_match.check("HF exchange energy",  result.energy.hf_exchange(),  -9.636982901957);
+	energy_match.check("ion-ion energy",      result.energy.ion(),         -31.483620495100);
 	
 	electrons.save("silicon_restart");
 
@@ -68,7 +71,7 @@ int main(int argc, char ** argv){
 
 	energy_match.check("kinetic energy", operations::integral(ked), 13.234089398748);
 	
-	fftw_cleanup(); //required for valgrid
+	fftw_cleanup(); //required for valgrind
 	
 	return energy_match.fail();
 	
