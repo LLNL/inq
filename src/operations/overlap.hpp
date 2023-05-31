@@ -60,7 +60,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 			phi1.full_comm().all_reduce_in_place_n(raw_pointer_cast(array.data_elements()), array.num_elements(), std::plus<>{});
 		}
 
-		matrix::scatter(array, matrix, /* root = */ 0);		
+		matrix.block() = array({matrix.partx().start(), matrix.partx().end()}, {matrix.party().start(), matrix.party().end()});
 	}
 
 	return matrix;
@@ -97,6 +97,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	auto parstates = comm.size();
+	if(comm.size() == 4) parstates = 2;
 	if(comm.size() >= 5) parstates = 1;
 	
 	parallel::cartesian_communicator<2> cart_comm(comm, {boost::mpi3::fill, parstates});
