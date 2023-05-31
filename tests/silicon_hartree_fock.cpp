@@ -45,6 +45,7 @@ int main(int argc, char ** argv){
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();
+	if(comm.size() == 4) parstates = 2;	
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
 	systems::electrons electrons(env.par().states(parstates), ions, box, input::config::extra_states(4), input::kpoints::grid({1, 1, 1}, true));
