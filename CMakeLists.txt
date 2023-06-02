@@ -236,10 +236,11 @@ FetchContent_Declare(
   spdlog
 	GIT_REPOSITORY https://github.com/gabime/spdlog.git
 	GIT_TAG        v1.11.0
-  GIT_PROGRESS TRUE
-	)
-	FetchContent_MakeAvailable(spdlog)
-	
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(spdlog)
+
 set(spdlog_INCLUDE_DIRS ${spdlog_SOURCE_DIR}/include/)
 include_directories(${spdlog_INCLUDE_DIRS})
 target_include_directories(inq INTERFACE ${spdlog_INCLUDE_DIRS})
@@ -257,8 +258,9 @@ FetchContent_Declare(
   spglib
 	GIT_REPOSITORY https://gitlab.com/npneq/spglib.git
 	GIT_TAG        f04dadd3175a60279f86780630045d3b3f64b8aa
-  GIT_PROGRESS TRUE
-	)
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+)
 FetchContent_MakeAvailable(spglib)
 
 set_property(DIRECTORY ${spglib_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL YES)
@@ -336,8 +338,9 @@ FetchContent_Declare(
 	Catch2
 	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
 	GIT_TAG        7cf2f88e50f0d1de324489c31db0314188423b6d
-  GIT_PROGRESS TRUE 
-	)
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+)
 FetchContent_MakeAvailable(Catch2)
 include_directories(${catch2_SOURCE_DIR}/src)
 
