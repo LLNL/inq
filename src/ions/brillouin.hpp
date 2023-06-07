@@ -17,32 +17,20 @@ namespace ions {
 
 class brillouin {
 
-  input::kpoints grid_;
-  std::vector<int> grid_address_;
-  std::vector<int> map_;
-  vector3<int> is_shifted_;
-
-	auto kpoint_raw(int ik) const {
-    return vector3<double, covariant>{
-			(grid_address_[3*ik + 0] + 0.5*is_shifted_[0])/grid_.dims()[0],
-      (grid_address_[3*ik + 1] + 0.5*is_shifted_[1])/grid_.dims()[1],
-      (grid_address_[3*ik + 2] + 0.5*is_shifted_[2])/grid_.dims()[2]};
-	}
+	std::vector<vector3<double, covariant>> kpoints_;
+	std::vector<double> weights_;	
 	
 public:
   
   brillouin(inq::systems::ions const & ions, input::kpoints const & kpts):
-    grid_(kpts),
-    grid_address_(3*grid_.num()),
-    map_(grid_.num()),
-    is_shifted_(grid_.is_shifted())
+		kpoints_(kpts.num()),
+		weights_(kpts.num())
   {
-
 		auto num_atoms = std::max(1, ions.geo().num_atoms());
 		
 		std::vector<int> types(num_atoms);
 		std::vector<double> positions(3*num_atoms);
-
+		
 		//add a dummy atom, since spg doesn't work without atoms
 		types[0] = 0;
 		positions[0] = 0.0;
@@ -67,24 +55,36 @@ public:
 		amat[6] = ions.cell().lattice(2)[0];
 		amat[7] = ions.cell().lattice(2)[1];
 		amat[8] = ions.cell().lattice(2)[2];
+
+		auto is_shifted = kpts.is_shifted();
+		auto grid_address = std::vector<int>(3*kpts.num());
+    auto map = std::vector<int>(kpts.num());
 		
-		spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address_.data()), map_.data(), (int const *) &grid_.dims(), (int const *) &is_shifted_, 0,
+		spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address.data()), map.data(), (int const *) &kpts.dims(), (int const *) &is_shifted, 0,
 															 reinterpret_cast<double (*)[3]>(amat), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), num_atoms, 1e-4);
+		
+		for(int ik = 0; ik < kpts.num(); ik++){
+			auto kpr = vector3<double, covariant>{
+				(grid_address[3*ik + 0] + 0.5*is_shifted[0])/kpts.dims()[0],
+				(grid_address[3*ik + 1] + 0.5*is_shifted[1])/kpts.dims()[1],
+				(grid_address[3*ik + 2] + 0.5*is_shifted[2])/kpts.dims()[2]};
+			kpr.transform([](auto xx){ return (xx >= 0.5) ? xx - 1.0 : xx; });
+			kpoints_[ik] = 2.0*M_PI*kpr;
+			weights_[ik] = 1.0/kpts.num();
+		}
 		
   }
 
   auto size() const {
-    return grid_.num();
+    return (long) kpoints_.size();
   }
 
   auto kpoint(int ik) const {
-		auto kpr = kpoint_raw(ik);
-		kpr.transform([](auto xx){ return (xx >= 0.5) ? xx - 1.0 : xx; });
-    return 2.0*M_PI*kpr;
+		return kpoints_[ik];
   }
   
   auto kpoint_weight(int ik) const {
-    return 1.0/grid_.num();
+    return weights_[ik];
   }
 	
 	template<class OStream>
