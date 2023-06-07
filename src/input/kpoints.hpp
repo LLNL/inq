@@ -72,7 +72,9 @@ public:
 };
 
 auto gamma(){
-	return grid({1, 1, 1}, false);
+	auto kpts = input::kpoints::list();
+	kpts.insert({0.0, 0.0, 0.0}, 1.0);
+	return kpts;
 }
 
 }
@@ -93,12 +95,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Gamma - no arguments"){
 		auto kpts = input::kpoints::gamma();
 
-    CHECK(kpts.dims()[0] == 1);
-    CHECK(kpts.dims()[1] == 1);
-    CHECK(kpts.dims()[2] == 1);
-    CHECK(kpts.is_shifted()[0] == 0);
-    CHECK(kpts.is_shifted()[1] == 0);
-    CHECK(kpts.is_shifted()[2] == 0);
+		CHECK(kpts.size() == 1);
+
+		CHECK(kpts.kpoint(0)[0] == 0.0_a);
+		CHECK(kpts.kpoint(0)[1] == 0.0_a);
+		CHECK(kpts.kpoint(0)[2] == 0.0_a);
+
+		CHECK(kpts.weight(0) ==  1.0_a);
 	}
   
 	SECTION("Grid - one argument"){

@@ -114,13 +114,13 @@ public:
 		return occupations_;
 	}
 
-	template <typename KptsType = input::kpoints::grid>
+	template <typename KptsType = input::kpoints::list>
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, KptsType const & kpts, const input::config & conf = {}):
 		electrons(dist, ions, box, conf, kpts)
 	{
 	}
 
-	template <typename KptsType = input::kpoints::grid>	
+	template <typename KptsType = input::kpoints::list>	
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm(conf.num_spin_components_val(), brillouin_zone_.size())),
