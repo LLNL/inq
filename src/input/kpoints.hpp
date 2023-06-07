@@ -16,17 +16,18 @@
 
 namespace inq {
 namespace input {
+namespace kpoints {
 
-class kpoints {
-
+class grid {
+	
+	vector3<int> dims_;
+	bool shifted_;
+	
 public:
-
-  static auto gamma(){
-    return kpoints({1, 1, 1}, false);
-  }
-  
-  static auto grid(vector3<int> const & dims, bool shifted = false) { 
-    return kpoints(dims, shifted);
+	
+  grid(vector3<int> const & dims, bool shifted = false):
+    dims_(dims),
+		shifted_(shifted){
   }
 	
   auto & dims() const {
@@ -41,19 +42,14 @@ public:
 		if(shifted_) return {1, 1, 1};
 		return {0, 0, 0};
 	}
-  
-private:
-	
-  kpoints(vector3<int> const & dims, bool shifted):
-    dims_(dims),
-		shifted_(shifted)
-	{
-	}
-	
-	vector3<int> dims_;
-	bool shifted_;
-	
+
 };
+
+auto gamma(){
+	return grid({1, 1, 1}, false);
+}
+
+}
 }
 }
 #endif

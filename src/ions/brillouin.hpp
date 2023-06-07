@@ -22,7 +22,7 @@ class brillouin {
 	
 public:
   
-  brillouin(inq::systems::ions const & ions, input::kpoints const & kpts):
+  brillouin(inq::systems::ions const & ions, input::kpoints::grid const & kpts):
 		kpoints_(kpts.num()),
 		weights_(kpts.num())
   {
