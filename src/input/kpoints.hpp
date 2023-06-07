@@ -68,6 +68,14 @@ public:
   auto weight(int ik) const {
     return weights_[ik];
   }
+
+	auto operator+(list const & other){
+		auto new_list = *this;
+		for(int ik = 0; ik < other.size(); ik++){
+			new_list.insert(other.kpoint(ik), other.weight(ik));
+		}
+		return new_list;
+	}
 	
 };
 
@@ -150,7 +158,23 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kpts.weight(1) ==  0.7_a);
 		
 	}
+	
+	SECTION("Sum"){
+		auto kpts = input::kpoints::gamma() + input::kpoints::single({-0.5, -0.5, -0.5}, 0.0);
 
+		CHECK(kpts.size() == 2);
+
+		CHECK(kpts.kpoint(0)[0] ==  0.0_a);
+		CHECK(kpts.kpoint(0)[1] ==  0.0_a);
+		CHECK(kpts.kpoint(0)[2] ==  0.0_a);
+		CHECK(kpts.kpoint(1)[0] == -0.5_a);
+		CHECK(kpts.kpoint(1)[1] == -0.5_a);
+		CHECK(kpts.kpoint(1)[2] == -0.5_a);
+
+		CHECK(kpts.weight(0) ==  1.0_a);
+		CHECK(kpts.weight(1) ==  0.0_a);
+		
+	}
 	
 }
 #endif
