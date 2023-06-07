@@ -16,24 +16,25 @@
 
 namespace inq {
 namespace input {
+namespace kpoints {
 
-class kpoints {
-
+class grid {
+	
+	vector3<int> dims_;
+	bool shifted_;
+	
 public:
-
-  static auto gamma(){
-    return kpoints({1, 1, 1}, false);
-  }
-  
-  static auto grid(vector3<int> const & dims, bool shifted = false) { 
-    return kpoints(dims, shifted);
+	
+  grid(vector3<int> const & dims, bool shifted = false):
+    dims_(dims),
+		shifted_(shifted){
   }
 	
   auto & dims() const {
     return dims_;
   }
 	
-  auto num() const {
+  auto size() const {
     return product(dims_);
   }
 
@@ -41,19 +42,55 @@ public:
 		if(shifted_) return {1, 1, 1};
 		return {0, 0, 0};
 	}
-  
-private:
+
+};
+
+class list {
 	
-  kpoints(vector3<int> const & dims, bool shifted):
-    dims_(dims),
-		shifted_(shifted)
-	{
+	std::vector<vector3<double, covariant>> kpoints_;
+	std::vector<double> weights_;
+
+public:
+
+	void insert(vector3<double, covariant> const & kpoint, double const & weight = 1.0){
+		kpoints_.push_back(kpoint);
+		weights_.push_back(weight);
+	}
+
+	auto size() const {
+		return (long) kpoints_.size();
+	}
+
+	auto kpoint(int ik) const {
+		return kpoints_[ik];
+  }
+  
+  auto weight(int ik) const {
+    return weights_[ik];
+  }
+
+	auto operator+(list const & other){
+		auto new_list = *this;
+		for(int ik = 0; ik < other.size(); ik++){
+			new_list.insert(other.kpoint(ik), other.weight(ik));
+		}
+		return new_list;
 	}
 	
-	vector3<int> dims_;
-	bool shifted_;
-	
 };
+
+auto point(vector3<double, covariant> const & kpoint, double const & weight = 1.0){
+	auto kpts = input::kpoints::list();
+	kpts.insert(kpoint, weight);
+	return kpts;
+}
+
+auto gamma(){
+	return point({0.0, 0.0, 0.0}, 1.0);
+}
+
+
+}
 }
 }
 #endif
@@ -71,12 +108,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Gamma - no arguments"){
 		auto kpts = input::kpoints::gamma();
 
-    CHECK(kpts.dims()[0] == 1);
-    CHECK(kpts.dims()[1] == 1);
-    CHECK(kpts.dims()[2] == 1);
-    CHECK(kpts.is_shifted()[0] == 0);
-    CHECK(kpts.is_shifted()[1] == 0);
-    CHECK(kpts.is_shifted()[2] == 0);
+		CHECK(kpts.size() == 1);
+
+		CHECK(kpts.kpoint(0)[0] == 0.0_a);
+		CHECK(kpts.kpoint(0)[1] == 0.0_a);
+		CHECK(kpts.kpoint(0)[2] == 0.0_a);
+
+		CHECK(kpts.weight(0) ==  1.0_a);
 	}
   
 	SECTION("Grid - one argument"){
@@ -100,5 +138,43 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(kpts.is_shifted()[1] == 1);
     CHECK(kpts.is_shifted()[2] == 1);
 	}
+
+	SECTION("List"){
+		auto kpts = input::kpoints::list();
+
+		kpts.insert({0.5, 0.5, -0.5}, 0.3);
+		kpts.insert({0.1, 0.2,  0.3}, 0.7);
+
+		CHECK(kpts.size() == 2);
+
+		CHECK(kpts.kpoint(0)[0] ==  0.5_a);
+		CHECK(kpts.kpoint(0)[1] ==  0.5_a);
+		CHECK(kpts.kpoint(0)[2] == -0.5_a);
+		CHECK(kpts.kpoint(1)[0] ==  0.1_a);
+		CHECK(kpts.kpoint(1)[1] ==  0.2_a);
+		CHECK(kpts.kpoint(1)[2] ==  0.3_a);
+
+		CHECK(kpts.weight(0) ==  0.3_a);
+		CHECK(kpts.weight(1) ==  0.7_a);
+		
+	}
+	
+	SECTION("Sum"){
+		auto kpts = input::kpoints::gamma() + input::kpoints::point({-0.5, -0.5, -0.5}, 0.0);
+
+		CHECK(kpts.size() == 2);
+
+		CHECK(kpts.kpoint(0)[0] ==  0.0_a);
+		CHECK(kpts.kpoint(0)[1] ==  0.0_a);
+		CHECK(kpts.kpoint(0)[2] ==  0.0_a);
+		CHECK(kpts.kpoint(1)[0] == -0.5_a);
+		CHECK(kpts.kpoint(1)[1] == -0.5_a);
+		CHECK(kpts.kpoint(1)[2] == -0.5_a);
+
+		CHECK(kpts.weight(0) ==  1.0_a);
+		CHECK(kpts.weight(1) ==  0.0_a);
+		
+	}
+	
 }
 #endif
