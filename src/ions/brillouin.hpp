@@ -74,7 +74,27 @@ public:
 		}
 		
   }
+	
+  brillouin(inq::systems::ions const & ions, input::kpoints::list const & kpts):
+		kpoints_(kpts.size()),
+		weights_(kpts.size())
+  {
 
+		double totalw = 0.0;
+		for(int ik = 0; ik < kpts.size(); ik++){
+			auto kpr = kpts.kpoint(ik);
+			kpr.transform([](auto xx){ return (xx >= 0.5) ? xx - 1.0 : xx; });
+			kpoints_[ik] = 2.0*M_PI*kpr;
+			weights_[ik] = kpts.weight(ik);
+			totalw += weights_[ik];
+		}
+
+		if(totalw < 1.0e-15) throw std::runtime_error("inq error: the k-points have zero total weight");
+
+		for(int ik = 0; ik < kpts.size(); ik++) weights_[ik] /= totalw;
+
+  }
+	
   auto size() const {
     return (long) kpoints_.size();
   }
@@ -196,6 +216,32 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz3.kpoint(7)[0]/(2*M_PI) == -0.25_a);
 		CHECK(bz3.kpoint(7)[1]/(2*M_PI) == -0.25_a);
 		CHECK(bz3.kpoint(7)[2]/(2*M_PI) == -0.25_a);
+
+		auto kpts = input::kpoints::list();
+		
+		kpts.insert({0.5, 0.5, -0.5}, 1.0);
+		kpts.insert({0.1, 0.2,  0.3}, 2.0);
+		kpts.insert({1.0, -0.01, 0.0}, 0.0);
+		
+		auto bz4 = ions::brillouin(ions, kpts);
+
+		CHECK(bz4.size() == 3);
+
+		CHECK(bz4.kpoint(0)[0]/(2*M_PI) == -0.5_a);
+		CHECK(bz4.kpoint(0)[1]/(2*M_PI) == -0.5_a);
+		CHECK(bz4.kpoint(0)[2]/(2*M_PI) == -0.5_a);
+		
+		CHECK(bz4.kpoint(1)[0]/(2*M_PI) ==  0.1_a);
+		CHECK(bz4.kpoint(1)[1]/(2*M_PI) ==  0.2_a);
+		CHECK(bz4.kpoint(1)[2]/(2*M_PI) ==  0.3_a);
+		
+		CHECK(bz4.kpoint(2)[0]/(2*M_PI) ==  0.0_a);
+		CHECK(bz4.kpoint(2)[1]/(2*M_PI) == -0.01_a);
+		CHECK(bz4.kpoint(2)[2]/(2*M_PI) ==  0.0_a);
+
+		CHECK(bz4.kpoint_weight(0) ==  0.33333333_a);
+		CHECK(bz4.kpoint_weight(1) ==  0.66666666_a);
+		CHECK(bz4.kpoint_weight(2) ==  0.0_a);
 		
 	}
 
