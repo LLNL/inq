@@ -21,7 +21,10 @@ class brillouin {
   std::vector<int> grid_address_;
   std::vector<int> map_;
   vector3<int> is_shifted_;
-
+	
+	std::vector<vector3<double, covariant>> kpoints_;
+	std::vector<double> weights_;	
+	
 	auto kpoint_raw(int ik) const {
     return vector3<double, covariant>{
 			(grid_address_[3*ik + 0] + 0.5*is_shifted_[0])/grid_.dims()[0],
@@ -35,7 +38,9 @@ public:
     grid_(kpts),
     grid_address_(3*grid_.num()),
     map_(grid_.num()),
-    is_shifted_(grid_.is_shifted())
+    is_shifted_(grid_.is_shifted()),
+		kpoints_(kpts.num()),
+		weights_(kpts.num())
   {
 
 		auto num_atoms = std::max(1, ions.geo().num_atoms());
@@ -70,21 +75,26 @@ public:
 		
 		spg_get_ir_reciprocal_mesh(reinterpret_cast<int (*)[3]>(grid_address_.data()), map_.data(), (int const *) &grid_.dims(), (int const *) &is_shifted_, 0,
 															 reinterpret_cast<double (*)[3]>(amat), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), num_atoms, 1e-4);
+
+		for(int ik = 0; ik < kpts.num(); ik++){
+			auto kpr = kpoint_raw(ik);
+			kpr.transform([](auto xx){ return (xx >= 0.5) ? xx - 1.0 : xx; });
+			kpoints_[ik] = 2.0*M_PI*kpr;
+			weights_[ik] = 1.0/grid_.num();
+		}
 		
   }
 
   auto size() const {
-    return grid_.num();
+    return (long) kpoints_.size();
   }
 
   auto kpoint(int ik) const {
-		auto kpr = kpoint_raw(ik);
-		kpr.transform([](auto xx){ return (xx >= 0.5) ? xx - 1.0 : xx; });
-    return 2.0*M_PI*kpr;
+		return kpoints_[ik];
   }
   
   auto kpoint_weight(int ik) const {
-    return 1.0/grid_.num();
+    return weights_[ik];
   }
 	
 	template<class OStream>
