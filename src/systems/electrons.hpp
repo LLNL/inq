@@ -131,9 +131,9 @@ public:
 		states_basis_(box, basis_subcomm(full_comm_)),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(arg_basis_input.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff()),
-		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.num()),
+		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
 		spin_density_(density_basis_, states_.num_density_components()),
-		kpin_part_(kpts.num()*states_.num_spin_indices(), kpin_comm_)
+		kpin_part_(kpts.size()*states_.num_spin_indices(), kpin_comm_)
 	{
 		CALI_CXX_MARK_FUNCTION;
 
@@ -146,7 +146,7 @@ public:
 		parallel::cartesian_communicator<2> spin_kpoints_comm(kpin_comm_, {nproc_spin, boost::mpi3::fill});
 
 		parallel::partition spin_part(states_.num_spin_indices(), spin_kpoints_comm.axis(0));
-		parallel::partition kpts_part(kpts.num(), spin_kpoints_comm.axis(1));
+		parallel::partition kpts_part(kpts.size(), spin_kpoints_comm.axis(1));
 
 		assert(kpin_part_.local_size() == kpts_part.local_size()*spin_part.local_size()); //this is always true because the spin size is either 1 or 2
 		

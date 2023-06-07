@@ -34,7 +34,7 @@ public:
     return dims_;
   }
 	
-  auto num() const {
+  auto size() const {
     return product(dims_);
   }
 
