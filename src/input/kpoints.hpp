@@ -52,7 +52,7 @@ class list {
 
 public:
 
-	void insert(vector3<double, covariant> const & kpoint, double const & weight){
+	void insert(vector3<double, covariant> const & kpoint, double const & weight = 1.0){
 		kpoints_.push_back(kpoint);
 		weights_.push_back(weight);
 	}
@@ -71,11 +71,16 @@ public:
 	
 };
 
-auto gamma(){
+auto single(vector3<double, covariant> const & kpoint, double const & weight = 1.0){
 	auto kpts = input::kpoints::list();
-	kpts.insert({0.0, 0.0, 0.0}, 1.0);
+	kpts.insert(kpoint, weight);
 	return kpts;
 }
+
+auto gamma(){
+	return single({0.0, 0.0, 0.0}, 1.0);
+}
+
 
 }
 }
