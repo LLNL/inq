@@ -45,6 +45,32 @@ public:
 
 };
 
+class list {
+	
+	std::vector<vector3<double, covariant>> kpoints_;
+	std::vector<double> weights_;
+
+public:
+
+	void insert(vector3<double, covariant> const & kpoint, double const & weight){
+		kpoints_.push_back(kpoint);
+		weights_.push_back(weight);
+	}
+
+	auto size() const {
+		return (long) kpoints_.size();
+	}
+
+	auto kpoint(int ik) const {
+		return kpoints_[ik];
+  }
+  
+  auto weight(int ik) const {
+    return weights_[ik];
+  }
+	
+};
+
 auto gamma(){
 	return grid({1, 1, 1}, false);
 }
@@ -96,5 +122,27 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(kpts.is_shifted()[1] == 1);
     CHECK(kpts.is_shifted()[2] == 1);
 	}
+
+	SECTION("List"){
+		auto kpts = input::kpoints::list();
+
+		kpts.insert({0.5, 0.5, -0.5}, 0.3);
+		kpts.insert({0.1, 0.2,  0.3}, 0.7);
+
+		CHECK(kpts.size() == 2);
+
+		CHECK(kpts.kpoint(0)[0] ==  0.5_a);
+		CHECK(kpts.kpoint(0)[1] ==  0.5_a);
+		CHECK(kpts.kpoint(0)[2] == -0.5_a);
+		CHECK(kpts.kpoint(1)[0] ==  0.1_a);
+		CHECK(kpts.kpoint(1)[1] ==  0.2_a);
+		CHECK(kpts.kpoint(1)[2] ==  0.3_a);
+
+		CHECK(kpts.weight(0) ==  0.3_a);
+		CHECK(kpts.weight(1) ==  0.7_a);
+		
+	}
+
+	
 }
 #endif
