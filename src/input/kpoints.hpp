@@ -79,14 +79,14 @@ public:
 	
 };
 
-auto single(vector3<double, covariant> const & kpoint, double const & weight = 1.0){
+auto point(vector3<double, covariant> const & kpoint, double const & weight = 1.0){
 	auto kpts = input::kpoints::list();
 	kpts.insert(kpoint, weight);
 	return kpts;
 }
 
 auto gamma(){
-	return single({0.0, 0.0, 0.0}, 1.0);
+	return point({0.0, 0.0, 0.0}, 1.0);
 }
 
 
@@ -160,7 +160,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 	
 	SECTION("Sum"){
-		auto kpts = input::kpoints::gamma() + input::kpoints::single({-0.5, -0.5, -0.5}, 0.0);
+		auto kpts = input::kpoints::gamma() + input::kpoints::point({-0.5, -0.5, -0.5}, 0.0);
 
 		CHECK(kpts.size() == 2);
 
