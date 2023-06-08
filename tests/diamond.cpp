@@ -54,12 +54,15 @@ int main(int argc, char ** argv){
 		energy_match.check("XC density integral", result.energy.nvxc(),           -5.032540803244);
 		energy_match.check("ion-ion energy",      result.energy.ion(),           -10.734724128603);
 
-		
-		energy_match.check("gamma homo",          electrons.eigenvalues()[0][3],  0.303880260047);
-		energy_match.check("gamma lumo",          electrons.eigenvalues()[0][4],  0.496554623841);
-		energy_match.check("0.5,0.5,0.5 homo",    electrons.eigenvalues()[1][3],  0.195774173500);
-		energy_match.check("0.5,0.5,0.5 lumo",    electrons.eigenvalues()[1][4],  0.597476824600);
-		
+		auto all_eigenvalues = parallel::gather(+electrons.eigenvalues().flatted(), electrons.kpin_states_part(), electrons.kpin_states_comm(), 0);
+
+		if(electrons.kpin_states_comm().root()){
+			energy_match.check("gamma homo",          all_eigenvalues[3],  0.303880260047);
+			energy_match.check("gamma lumo",          all_eigenvalues[4],  0.496554623841);
+			energy_match.check("0.5,0.5,0.5 homo",    all_eigenvalues[7 + 3],  0.195774173500);
+			energy_match.check("0.5,0.5,0.5 lumo",    all_eigenvalues[7 + 4],  0.597476824600);
+		}
+
 		auto ked = observables::kinetic_energy_density(electrons);
 		
 		energy_match.check("kinetic energy", operations::integral(ked), 11.411455188639);
