@@ -288,7 +288,7 @@ public:
 
 	template <typename ArrayType>
 	void update_occupations(ArrayType const eigenval) {
-		states_.update_occupations(kpin_states_comm_, eigenval, occupations_);
+		states_.update_occupations(kpin_states_comm_, eigenval, kpin_weights_, occupations_);
 	}
 
 	void save(std::string const & dirname) const {

@@ -101,8 +101,8 @@ public:
 		
 	}
 
-	template <class CommType, typename EigType, typename FunctionType>
-	auto get_efermi(CommType & comm, double nelec, EigType const & eig, FunctionType function){
+	template <class CommType, typename EigType, typename KwType, typename FunctionType>
+	auto get_efermi(CommType & comm, double nelec, EigType const & eig, KwType const & kw, FunctionType function){
 			
 		int const nitmax = 200;
 		double const tol = 1e-10;
@@ -126,7 +126,7 @@ public:
 
 			double sumq = 0.0;
 			for(long ie = 0; ie < eig.size(); ie++){
-				sumq = sumq + max_occ_*function(efermi, real(eig[ie]));
+				sumq = sumq + max_occ_*kw[ie]*function(efermi, real(eig[ie]));
 			}
 			comm.all_reduce_in_place_n(&sumq, 1, std::plus<>{});
 			
@@ -137,8 +137,8 @@ public:
 		return efermi;		
 	}
 	
-	template <class CommType, typename EigenvalType, typename OccsType>
-	auto update_occupations(CommType & comm, EigenvalType const & eigenval, OccsType & occs) {
+	template <class CommType, typename EigenvalType, typename KpinWeightsType, typename OccsType>
+	auto update_occupations(CommType & comm, EigenvalType const & eigenval, KpinWeightsType const & kpin_weights, OccsType & occs) {
 
 		assert(sizes(eigenval) == sizes(occs));
 		
@@ -146,6 +146,13 @@ public:
 		
 		auto feig = eigenval.flatted();
 		auto focc = occs.flatted();
+
+		auto kweights = gpu::array<double, 2>{occs.extensions()};
+		gpu::run((~kweights).size(), kweights.size(),
+						 [kw = begin(kweights), kp = begin(kpin_weights)] GPU_LAMBDA (auto ii, auto jj){
+							 kw[jj][ii] = kp[jj];
+						 });
+		auto fkw = kweights.flatted();
 		
 		if(temperature_ == 0.0){
 
@@ -153,14 +160,14 @@ public:
 				return (eig <= efermi) ? 1.0 :  0.0;
 			};
 
-			auto nelec = ceil(nkpoints_*num_electrons_/max_occ_)*max_occ_; 
+			auto nelec = ceil(num_electrons_/max_occ_)*max_occ_; 
 
-			efermi = get_efermi(comm, nelec, feig, func);
+			efermi = get_efermi(comm, nelec, feig, fkw, func);
 
 			double homo = std::numeric_limits<double>::lowest();
 			int homoloc = 0;
 			for(long ie = 0; ie < feig.size(); ie++){
-				focc[ie] = max_occ_*func(efermi, feig[ie]);
+				focc[ie] = max_occ_*fkw[ie]*func(efermi, feig[ie]);
 				if(func(efermi, feig[ie]) > 0.0 and feig[ie] >= homo){
 					homo = feig[ie];
 					homoloc = ie;
@@ -179,7 +186,7 @@ public:
 
 			if(comm.rank() == -out.index) {
 				assert(out.value == homo);
-				focc[homoloc] -= nelec - nkpoints_*num_electrons_;
+				focc[homoloc] -= nelec - num_electrons_;
 			} else {
 				assert(out.value >= homo);
 			}
@@ -192,15 +199,13 @@ public:
 				return smear_function((efermi - eig)/dsmear);
 			};
 			
-			efermi = get_efermi(comm, nkpoints_*num_electrons_, feig, func);
+			efermi = get_efermi(comm, num_electrons_, feig, fkw, func);
 			
 			for(long ie = 0; ie < feig.size(); ie++){
-				focc[ie] = max_occ_*func(efermi, feig[ie]);
+				focc[ie] = max_occ_*fkw[ie]*func(efermi, feig[ie]);
 			}
 		}
-
-		for(long ie = 0; ie < feig.size(); ie++) focc[ie] /= nkpoints_;
-
+		
 		assert(fabs(comm.all_reduce_value(operations::sum(focc)) - num_electrons_) <= 1e-10);
 		
 		return efermi;
@@ -249,6 +254,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		parallel::partition part(st.num_states(), comm);
 
 		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 1> kweights(1, 1.0);
 		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
@@ -258,7 +264,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
 		
-		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
 
 		CHECK(efermi == 3.4032608849_a);
 		
@@ -284,6 +290,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		parallel::partition part(st.num_states(), comm);
 
 		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 1> kweights(1, 1.0);		
 		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
@@ -293,7 +300,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
 		
-		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
 
 		CHECK(efermi == 3.4032608849_a);
 		
@@ -319,6 +326,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		parallel::partition part(st.num_states(), comm);
 
 		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 1> kweights(1, 1.0);
 		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
@@ -330,7 +338,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		if(part.contains(6)) eigenvalues[0][part.global_to_local(parallel::global_index(6))] = 1.1;
 		if(part.contains(7)) eigenvalues[0][part.global_to_local(parallel::global_index(7))] = 1.3;		
 		
-		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
 
 		CHECK(efermi == 1.0660326106_a);
 		
@@ -358,6 +366,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		parallel::partition part(st.num_states(), comm);
 
 		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 1> kweights(1, 1.0);		
 		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
@@ -369,7 +378,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		if(part.contains(6)) eigenvalues[0][part.global_to_local(parallel::global_index(6))] = 1.1;
 		if(part.contains(7)) eigenvalues[0][part.global_to_local(parallel::global_index(7))] = 1.3;		
 		
-		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
 
 		CHECK(efermi == 1.0660326106_a);
 		
@@ -399,6 +408,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		parallel::partition part(st.num_states(), comm);
 		
 		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 1> kweights(1, 1.0);
 		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.0;
@@ -408,7 +418,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
 		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
 		
-		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
 
 		CHECK(efermi == 0.246510327_a);
 		
@@ -458,6 +468,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		parallel::partition part(st.num_states(), comm);
 
 		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 1> kweights(1, 1.0);		
 		gpu::array<double, 2> occupations({1, part.local_size()});
 
 		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
@@ -469,7 +480,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		if(part.contains(6)) eigenvalues[0][part.global_to_local(parallel::global_index(6))] = 1.1;
 		if(part.contains(7)) eigenvalues[0][part.global_to_local(parallel::global_index(7))] = 1.3;		
 		
-		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
 
 		CHECK(efermi == 1.0660326106_a);
 		
@@ -497,6 +508,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		parallel::partition part(st.num_states(), comm);
 
 		gpu::array<double, 2> eigenvalues({3, part.local_size()});
+		gpu::array<double, 1> kweights(3, 1.0/3.0);		
 		gpu::array<double, 2> occupations({3, part.local_size()});
 
 		if(part.contains(0)) {
@@ -525,7 +537,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			eigenvalues[2][part.global_to_local(parallel::global_index(4))] = 0.53;
 		}
 		
-		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
 
 		CHECK(efermi == 0.3413536007_a);
 		
@@ -570,6 +582,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		parallel::partition part(st.num_states(), comm);
 
 		gpu::array<double, 2> eigenvalues({3, part.local_size()});
+		gpu::array<double, 1> kweights(3, 1.0/3.0);		
 		gpu::array<double, 2> occupations({3, part.local_size()});
 
 		if(part.contains(0)) {
@@ -598,7 +611,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			eigenvalues[2][part.global_to_local(parallel::global_index(4))] = 0.53;
 		}
 		
-		auto efermi = st.update_occupations(comm, eigenvalues, occupations);
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
 
 		CHECK(efermi == 0.3413536007_a);
 		
