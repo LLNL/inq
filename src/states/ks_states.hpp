@@ -138,7 +138,7 @@ public:
 	}
 	
 	template <class CommType, typename EigenvalType, typename KpinWeightsType, typename OccsType>
-	auto update_occupations(CommType & comm, EigenvalType const & eigenval, KpinWeightsType const & kpin_weights, OccsType & occs) {
+	double update_occupations(CommType & comm, EigenvalType const & eigenval, KpinWeightsType const & kpin_weights, OccsType & occs) {
 
 		assert(sizes(eigenval) == sizes(occs));
 		
