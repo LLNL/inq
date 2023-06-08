@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("C", {0.25, 0.25, 0.25});
 
 	{
-		systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3), input::kpoints::grid({1, 1, 1}, false));
+		systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3), input::kpoints::gamma() + input::kpoints::point({-0.5, -0.5, -0.5}, 0.0));
 		
 		ground_state::initial_guess(ions, electrons);
 		
@@ -53,12 +53,21 @@ int main(int argc, char ** argv){
 		energy_match.check("XC energy",           result.energy.xc(),             -4.568604147920);
 		energy_match.check("XC density integral", result.energy.nvxc(),           -5.032540803244);
 		energy_match.check("ion-ion energy",      result.energy.ion(),           -10.734724128603);
-		
+
+		auto all_eigenvalues = parallel::gather(+electrons.eigenvalues().flatted(), electrons.kpin_states_part(), electrons.kpin_states_comm(), 0);
+
+		if(electrons.kpin_states_comm().root()){
+			energy_match.check("gamma homo",          all_eigenvalues[3],  0.303880260047);
+			energy_match.check("gamma lumo",          all_eigenvalues[4],  0.496554623841);
+			energy_match.check("0.5,0.5,0.5 homo",    all_eigenvalues[7 + 3],  0.195774173500);
+			energy_match.check("0.5,0.5,0.5 lumo",    all_eigenvalues[7 + 4],  0.597476824600);
+		}
+
 		auto ked = observables::kinetic_energy_density(electrons);
 		
 		energy_match.check("kinetic energy", operations::integral(ked), 11.411455188639);
 	}
-
+	
 	systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 	
 	ground_state::initial_guess(ions, electrons);
