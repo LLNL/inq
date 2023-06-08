@@ -26,13 +26,14 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 	basis::field<basis::real_space, double> density(electrons.states_basis());
 
 	density.fill(0.0);
-	
+
+	auto iphi = 0;
 	for(auto & phi : electrons.kpin()){
 		auto gphi = operations::gradient(phi, /*factor = */ 1.0, /* shift = */ phi.kpoint());
 		
 		gpu::run(density.basis().part().local_size(),
 						 [nst = gphi.set_part().local_size(),
-							occ = begin(electrons.occupations()[0]),
+							occ = begin(electrons.occupations()[iphi]),
 							gph = begin(gphi.matrix()),
 							den = begin(density.linear()),
 							metric = density.basis().cell().metric()]
@@ -40,6 +41,7 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 							 for(int ist = 0; ist < nst; ist++) den[ipoint] += 0.5*occ[ist]*metric.norm(gph[ipoint][ist]);
 						 });
 
+		iphi++;
 	}
 
 	density.all_reduce(electrons.kpin_states_comm());
