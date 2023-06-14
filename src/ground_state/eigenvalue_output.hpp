@@ -139,14 +139,24 @@ public:
 		
 		template <class OStream>
 		friend OStream& operator<<(OStream & out, full_ const & self){
+			auto curkpoint = -1;
+			auto curspin = -1;
 			
 			for(int ieig = 0; ieig < self.all_eigenvalues().size(); ieig++) {
+
+				if(curkpoint != self.all_kpoint_index[ieig] or curspin != self.all_spin_index[ieig]){
+
+					curkpoint = self.all_kpoint_index[ieig];
+					curspin = self.all_spin_index[ieig];
+
+					auto kpoint = self.electrons_.brillouin_zone().kpoint(self.all_kpoint_index[ieig])/(2.0*M_PI);
+
+					if(self.nkpoints_ > 1) tfm::format(out, "  kpt = (%5.2f,%5.2f,%5.2f)", kpoint[0], kpoint[1], kpoint[2]);
+					if(self.nspin_    > 1) tfm::format(out, "  spin = %s", spin_string(self.all_spin_index[ieig]));
+					if(self.nkpoints_ > 1 or self.nspin_    > 1) tfm::format(out, "\n");
+				}
 				
-				auto kpoint = self.electrons_.brillouin_zone().kpoint(self.all_kpoint_index[ieig])/(2.0*M_PI);
-				
-				if(self.nkpoints_ > 1) tfm::format(out, "  kpt = (%5.2f,%5.2f,%5.2f)", kpoint[0], kpoint[1], kpoint[2]);
-				if(self.nspin_    > 1) tfm::format(out, "  spin = %s", spin_string(self.all_spin_index[ieig]));
-				tfm::format(out, "  st = %4d  occ = %4.3f  evalue = %18.12f Ha (%18.12f eV)  res = %5.0e\n",
+				tfm::format(out, "    st = %4d  occ = %4.3f  evalue = %18.12f Ha (%18.12f eV)  res = %5.0e\n",
 										self.all_states_index[ieig] + 1, self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), real(self.all_eigenvalues[ieig])*27.211383, fabs(self.all_normres[ieig]));
 			}
 			
