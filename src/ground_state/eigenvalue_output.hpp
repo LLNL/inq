@@ -19,8 +19,13 @@
 namespace inq {
 namespace ground_state {
 
+template <class>
+class full_eigenvalues_output;
+
 class eigenvalues_output {
 
+protected:
+	
 	int nspin_;
 	int nkpoints_;
 	gpu::array<int, 1> all_kpoint_index;
@@ -29,13 +34,15 @@ class eigenvalues_output {
 	gpu::array<double, 1> all_eigenvalues;
 	gpu::array<double, 1> all_occupations;
 	gpu::array<complex, 1> all_normres;
-
+	systems::electrons const & electrons_;
+	
 public:
 	
 	template <typename NormResType>
 	eigenvalues_output(systems::electrons const & el, NormResType const & normres):
 		nspin_(el.states().num_spin_indices()),
-		nkpoints_(el.brillouin_zone().size())
+		nkpoints_(el.brillouin_zone().size()),
+		electrons_(el)
 	{
 		
 		gpu::array<int, 2> kpoint_index({el.kpin_part().local_size(), el.max_local_set_size()});
@@ -62,12 +69,12 @@ public:
 		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
 		all_occupations = parallel::gather(+occs.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
 		all_normres = parallel::gather(+normres.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
-		
+
 	}
 
 	static std::string spin_string(int index){
-		if(index == 0) return "\u21D1";
-		return "\u21D3";
+		if(index == 0) return "\u25B2";
+		return "\u25BC";
 	}
 
 	template <class OStream>
@@ -109,8 +116,10 @@ public:
 				minres = 1000.0;
 				maxres = 0.0;			
 			}
+
+			auto kpoint = self.electrons_.brillouin_zone().kpoint(self.all_kpoint_index[ieig])/(2.0*M_PI);
 			
-			if(self.nkpoints_ > 1) tfm::format(out, "  kpt = %4d", self.all_kpoint_index[ieig] + 1);
+			if(self.nkpoints_ > 1) tfm::format(out, "  kpt = (%5.2f,%5.2f,%5.2f)", kpoint[0], kpoint[1], kpoint[2]);
 			if(self.nspin_    > 1) tfm::format(out, "  spin = %s", spin_string(self.all_spin_index[ieig]));
 			tfm::format(out, "  st = %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
 									self.all_states_index[ieig] + 1, self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), fabs(self.all_normres[ieig]));
@@ -118,6 +127,48 @@ public:
 
 		return out;
 	}
+
+	template <class Base>
+	class full_ : public Base {
+
+	public:
+		
+		full_(Base bas):
+			Base(std::move(bas)){
+		}
+		
+		template <class OStream>
+		friend OStream& operator<<(OStream & out, full_ const & self){
+			auto curkpoint = -1;
+			auto curspin = -1;
+			
+			for(int ieig = 0; ieig < self.all_eigenvalues().size(); ieig++) {
+
+				if(curkpoint != self.all_kpoint_index[ieig] or curspin != self.all_spin_index[ieig]){
+
+					curkpoint = self.all_kpoint_index[ieig];
+					curspin = self.all_spin_index[ieig];
+
+					auto kpoint = self.electrons_.brillouin_zone().kpoint(self.all_kpoint_index[ieig])/(2.0*M_PI);
+
+					if(self.nkpoints_ > 1) tfm::format(out, "  kpt = (%5.2f,%5.2f,%5.2f)", kpoint[0], kpoint[1], kpoint[2]);
+					if(self.nspin_    > 1) tfm::format(out, "  spin = %s", spin_string(self.all_spin_index[ieig]));
+					if(self.nkpoints_ > 1 or self.nspin_    > 1) tfm::format(out, "\n");
+				}
+				
+				tfm::format(out, "    st = %4d  occ = %4.3f  evalue = %18.12f Ha (%18.12f eV)  res = %5.0e\n",
+										self.all_states_index[ieig] + 1, self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), real(self.all_eigenvalues[ieig])*27.211383, fabs(self.all_normres[ieig]));
+			}
+			
+			return out;
+		}
+		
+	};
+	
+	auto full() const {
+		return full_<eigenvalues_output>(*this);
+	}
+	
 };
 
 }
