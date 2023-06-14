@@ -29,13 +29,15 @@ class eigenvalues_output {
 	gpu::array<double, 1> all_eigenvalues;
 	gpu::array<double, 1> all_occupations;
 	gpu::array<complex, 1> all_normres;
-
+	systems::electrons const & electrons_;
+	
 public:
 	
 	template <typename NormResType>
 	eigenvalues_output(systems::electrons const & el, NormResType const & normres):
 		nspin_(el.states().num_spin_indices()),
-		nkpoints_(el.brillouin_zone().size())
+		nkpoints_(el.brillouin_zone().size()),
+		electrons_(el)
 	{
 		
 		gpu::array<int, 2> kpoint_index({el.kpin_part().local_size(), el.max_local_set_size()});
@@ -62,7 +64,7 @@ public:
 		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
 		all_occupations = parallel::gather(+occs.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
 		all_normres = parallel::gather(+normres.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
-		
+
 	}
 
 	static std::string spin_string(int index){
@@ -109,8 +111,10 @@ public:
 				minres = 1000.0;
 				maxres = 0.0;			
 			}
+
+			auto kpoint = self.electrons_.brillouin_zone().kpoint(self.all_kpoint_index[ieig])/(2.0*M_PI);
 			
-			if(self.nkpoints_ > 1) tfm::format(out, "  kpt = %4d", self.all_kpoint_index[ieig] + 1);
+			if(self.nkpoints_ > 1) tfm::format(out, "  kpt = (%5.2f,%5.2f,%5.2f)", kpoint[0], kpoint[1], kpoint[2]);
 			if(self.nspin_    > 1) tfm::format(out, "  spin = %s", spin_string(self.all_spin_index[ieig]));
 			tfm::format(out, "  st = %4d  occ = %4.3f  evalue = %18.12f  res = %5.0e\n",
 									self.all_states_index[ieig] + 1, self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), fabs(self.all_normres[ieig]));
