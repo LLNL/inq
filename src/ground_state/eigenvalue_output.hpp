@@ -19,8 +19,13 @@
 namespace inq {
 namespace ground_state {
 
+template <class>
+class full_eigenvalues_output;
+
 class eigenvalues_output {
 
+protected:
+	
 	int nspin_;
 	int nkpoints_;
 	gpu::array<int, 1> all_kpoint_index;
@@ -122,6 +127,38 @@ public:
 
 		return out;
 	}
+
+	template <class Base>
+	class full_ : public Base {
+
+	public:
+		
+		full_(Base bas):
+			Base(std::move(bas)){
+		}
+		
+		template <class OStream>
+		friend OStream& operator<<(OStream & out, full_ const & self){
+			
+			for(int ieig = 0; ieig < self.all_eigenvalues().size(); ieig++) {
+				
+				auto kpoint = self.electrons_.brillouin_zone().kpoint(self.all_kpoint_index[ieig])/(2.0*M_PI);
+				
+				if(self.nkpoints_ > 1) tfm::format(out, "  kpt = (%5.2f,%5.2f,%5.2f)", kpoint[0], kpoint[1], kpoint[2]);
+				if(self.nspin_    > 1) tfm::format(out, "  spin = %s", spin_string(self.all_spin_index[ieig]));
+				tfm::format(out, "  st = %4d  occ = %4.3f  evalue = %18.12f Ha (%18.12f eV)  res = %5.0e\n",
+										self.all_states_index[ieig] + 1, self.all_occupations[ieig], real(self.all_eigenvalues[ieig]), real(self.all_eigenvalues[ieig])*27.211383, fabs(self.all_normres[ieig]));
+			}
+			
+			return out;
+		}
+		
+	};
+	
+	auto full() const {
+		return full_<eigenvalues_output>(*this);
+	}
+	
 };
 
 }

@@ -199,12 +199,14 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	//make sure we have a density consistent with phi
 	electrons.spin_density() = observables::density::calculate(electrons);
 	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
-	res.energy.calculate(ham, electrons);
-	
+	auto normres = res.energy.calculate(ham, electrons);
+			
 	if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
+	auto ev_out = eigenvalues_output(electrons, normres);		
+	
 	if(solver.verbose_output() and console) {
-		console->info("\nSCF iters ended with result energies {}", res.energy);
+		console->info("\nSCF iters ended with resulting eigenvalues and energies:\n\n{}{}", ev_out.full(), res.energy);
 	}
 
 	if(ions.cell().periodicity() == 0){
