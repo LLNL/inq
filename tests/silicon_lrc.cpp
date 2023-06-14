@@ -47,9 +47,9 @@ int main(int argc, char ** argv){
 		Az.push_back(data.vector_field()[2]);
 	};
 
-	auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity, perturbations::dynamics::polarization, 0.2};
+	auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 
-	real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.04_atomictime), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, input::interaction::lda()|input::interaction::gauge_field(0.2), input::rt::num_steps(30) | input::rt::dt(0.04_atomictime), ions::propagator::fixed{}, kick);
 
 	data_match.check("current in z step   0", jz[0],   -0.157798692934);
 	data_match.check("current in z step  10", jz[10],  -0.146691801751);

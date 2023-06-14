@@ -42,8 +42,6 @@ public:
 		throw std::logic_error("This function should not be called");
 		return vector3<double, cartesian>{0.0, 0.0, 0.0};
 	}
-	void uniform_induced_potential(vector3<double,covariant> & induced, vector3<double,covariant> & velocity, vector3<double,covariant> & accel, double const dt, const double volume, vector3<double,covariant> const & current) const {
-	}
 	
 	template<typename PotentialType>
 	void potential(const double time, PotentialType & potential) const {

@@ -29,9 +29,7 @@ public:
 	kick(CellType const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed, dynamics arg_dynamics = dynamics::none, const double alpha = -4*M_PI):
 		efield_(-arg_kick_field),
 		vpot_(-arg_kick_field),		
-		periodicity_(cell.periodicity()),
-		dynamics_(arg_dynamics),
-		alpha_(alpha) 
+		periodicity_(cell.periodicity())
 	{
 		if(arg_gauge == gauge::mixed){
 			for(int idir = 0; idir < periodicity_; idir++) efield_[idir] = 0.0;
@@ -70,29 +68,12 @@ public:
 	auto uniform_vector_potential(double /*time*/) const {
 		return vpot_;
 	}
-	
-	auto has_induced_vector_potential() const {
-		return dynamics_ == dynamics::polarization;
-	}
-
-	void uniform_induced_potential(vector3<double,covariant> & induced, vector3<double,covariant> & velocity, vector3<double,covariant> & accel, double const dt, const double volume, vector3<double,covariant> const & current) const {
-		if(dynamics_==dynamics::polarization){
-			induced += 0.5*dt*velocity;
-			velocity += 0.5*dt*accel;
-			accel = alpha_*(-current)/volume;
-			velocity += 0.5*dt*accel;
-			induced += 0.5*dt*velocity;
-		}
-	}
 
 private:
 
 	vector3<double> efield_;
 	vector3<double> vpot_;	
 	int periodicity_;
-
-	dynamics dynamics_;
-	double alpha_;
 
 };
 
@@ -207,23 +188,23 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
 	}
 
-	SECTION("polarization dynamics"){
-		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite().cutoff_energy(ecut);
-		auto kick = perturbations::kick{box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::velocity, perturbations::dynamics::polarization, 0.2};
-		CHECK(kick.has_uniform_vector_potential());
-		CHECK(kick.has_induced_vector_potential());
-		vector3<double,covariant> induced{0.0, 0.0, 0.1};
-		vector3<double,covariant> velocity{0.0, 0.0, 0.2};
-		vector3<double,covariant> accel{0.0, 0.0, 0.3};
-		vector3<double,covariant> current{0.0, 0.0, 0.4};
-		const double dt = 0.1;
-		const double volume = 10;
-		kick.uniform_induced_potential(induced, velocity, accel, dt, volume, current);
-		CHECK(accel[2] == Approx(-0.008));
-		CHECK(velocity[2] == Approx(0.2146));
-		CHECK(induced[2] == Approx(0.12073));
-		CHECK(induced[0] == Approx(0.0));
-	}
+	//SECTION("polarization dynamics"){
+	//	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite().cutoff_energy(ecut);
+	//	auto kick = perturbations::kick{box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::velocity, perturbations::dynamics::polarization, 0.2};
+	//	CHECK(kick.has_uniform_vector_potential());
+	//	CHECK(kick.has_induced_vector_potential());
+	//	vector3<double,covariant> induced{0.0, 0.0, 0.1};
+	//	vector3<double,covariant> velocity{0.0, 0.0, 0.2};
+	//	vector3<double,covariant> accel{0.0, 0.0, 0.3};
+	//	vector3<double,covariant> current{0.0, 0.0, 0.4};
+	//	const double dt = 0.1;
+	//	const double volume = 10;
+	//	kick.uniform_induced_potential(induced, velocity, accel, dt, volume, current);
+	//	CHECK(accel[2] == Approx(-0.008));
+	//	CHECK(velocity[2] == Approx(0.2146));
+	//	CHECK(induced[2] == Approx(0.12073));
+	//	CHECK(induced[0] == Approx(0.0));
+	//}
 
 }
 #endif

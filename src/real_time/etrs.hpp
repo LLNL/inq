@@ -51,7 +51,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	auto orig_induced=ham.vp_induced;
 	auto orig_velocity=ham.vp_velocity;
 	auto orig_accel=ham.vp_accel;
-	pert.uniform_induced_potential(orig_induced, orig_velocity, orig_accel, dt, ions.cell().volume(), orig_current);
+	sc.update_induced_potential(orig_induced, orig_velocity, orig_accel, dt, ions.cell().volume(), orig_current);
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 	ham.exchange.update(electrons);
 	
@@ -61,7 +61,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	auto tmp_induced=ham.vp_induced;
 	auto tmp_velocity=ham.vp_velocity;
 	auto tmp_accel=ham.vp_accel;
-	pert.uniform_induced_potential(tmp_induced, tmp_velocity, tmp_accel, dt, ions.cell().volume(), tmp_current);
+	sc.update_induced_potential(tmp_induced, tmp_velocity, tmp_accel, dt, ions.cell().volume(), tmp_current);
 	ham.uniform_vector_potential()+=tmp_induced;
 
 	electrons.kpin() = save;
@@ -89,7 +89,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		tmp_induced=ham.vp_induced;
 		tmp_velocity=ham.vp_velocity;
 		tmp_accel=ham.vp_accel;
-		pert.uniform_induced_potential(tmp_induced, tmp_velocity, tmp_accel, dt, ions.cell().volume(), tmp_current);
+		sc.update_induced_potential(tmp_induced, tmp_velocity, tmp_accel, dt, ions.cell().volume(), tmp_current);
 		ham.uniform_vector_potential()+=tmp_induced;
 
 		if(done) break;
