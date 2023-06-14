@@ -73,8 +73,8 @@ public:
 	}
 
 	static std::string spin_string(int index){
-		if(index == 0) return "\u2197";
-		return "\u2198";
+		if(index == 0) return "\u25B2";
+		return "\u25BC";
 	}
 
 	template <class OStream>
