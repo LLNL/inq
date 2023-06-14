@@ -19,7 +19,6 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <perturbations/none.hpp>
 #include <utils/profiling.hpp>
-#include <observables/density.hpp>
 
 namespace inq {
 namespace hamiltonian {
