@@ -282,6 +282,24 @@ target_link_libraries(inq
 )
 
 ########################
+# GEMMI
+########################
+
+message(STATUS "Downloading gemmi")
+
+include(ExternalProject)
+
+ExternalProject_Add(gemmi
+  GIT_REPOSITORY    https://github.com/project-gemmi/gemmi.git
+  GIT_TAG           v0.6.2
+  GIT_PROGRESS      TRUE
+  GIT_SHALLOW       TRUE
+)
+
+ExternalProject_Get_Property(gemmi SOURCE_DIR)
+include_directories(${SOURCE_DIR}/include)
+
+########################
 # BOOST
 ########################
 
