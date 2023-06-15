@@ -298,23 +298,6 @@ target_include_directories(inq INTERFACE Boost::serialization Boost::filesystem 
 target_link_libraries(inq INTERFACE Boost::serialization Boost::filesystem Boost::system)
 
 #######################
-# LINK HDF5
-#######################
-
-set(HDF5_PREFER_PARALLEL true)
-find_package(HDF5 REQUIRED COMPONENTS C)
-
-#filter out libraries that nvcc doesn't understand
-list(FILTER HDF5_LIBRARIES EXCLUDE REGEX .*/libpthread.a)
-list(FILTER HDF5_LIBRARIES EXCLUDE REGEX .*/libdl.a)
-
-include_directories(${HDF5_INCLUDE_DIRS})
-link_libraries(${HDF5_LIBRARIES})
-
-target_include_directories(inq INTERFACE ${HDF5_INCLUDE_DIRS})
-target_link_libraries(inq INTERFACE ${HDF5_LIBRARIES})
-
-#######################
 # GENERATE inq_config.h
 ######################
 
