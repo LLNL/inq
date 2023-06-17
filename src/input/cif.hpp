@@ -24,8 +24,8 @@ class cif {
 	std::vector<vector3<double>> lattice_vectors_;
 	std::vector<input::atom> geo_;
 
-  static auto to_double(std::string const * strptr){
-    if(strptr == NULL) throw std::runtime_error("Cannot read value from CIF file");
+  static auto to_double(std::string const * strptr, std::string const & cif_file_name){
+    if(strptr == NULL) throw std::runtime_error("Error: cannot read cell parameters from CIF file '" + cif_file_name + "'.");
     return stod(*strptr);
   }
   
@@ -36,12 +36,12 @@ public:
 	{
     namespace cif = gemmi::cif;
     cif::Document doc = cif::read_file(cif_file_name);
-    auto length_a = to_double(doc.sole_block().find_value("_cell_length_a"));
-    auto length_b = to_double(doc.sole_block().find_value("_cell_length_b"));
-    auto length_c = to_double(doc.sole_block().find_value("_cell_length_c"));
-    auto angle_alpha = to_double(doc.sole_block().find_value("_cell_angle_alpha"));
-    auto angle_beta = to_double(doc.sole_block().find_value("_cell_angle_beta"));
-    auto angle_gamma = to_double(doc.sole_block().find_value("_cell_angle_gamma"));
+    auto length_a = to_double(doc.sole_block().find_value("_cell_length_a"), cif_file_name);
+    auto length_b = to_double(doc.sole_block().find_value("_cell_length_b"), cif_file_name);
+    auto length_c = to_double(doc.sole_block().find_value("_cell_length_c"), cif_file_name);
+    auto angle_alpha = to_double(doc.sole_block().find_value("_cell_angle_alpha"), cif_file_name);
+    auto angle_beta = to_double(doc.sole_block().find_value("_cell_angle_beta"), cif_file_name);
+    auto angle_gamma = to_double(doc.sole_block().find_value("_cell_angle_gamma"), cif_file_name);
 
 		//    std::cout << length_a << '\t' << length_b << '\t' << length_c << std::endl;    
 		//    std::cout << angle_alpha << '\t' << angle_beta << '\t' << angle_gamma << std::endl;
@@ -62,16 +62,26 @@ public:
     lattice_vectors_[2] = angstrom*length_c*vector3<double>({cosbeta, c1, c2});
 
 		auto atom_symbols = doc.sole_block().find_loop("_atom_site_type_symbol");
+		if(atom_symbols.length() == 0) atom_symbols = doc.sole_block().find_loop("_atom_site_label");
+		if(atom_symbols.length() == 0) throw std::runtime_error("Error: cannot find the atoms in CIF file '" + cif_file_name + "'.");
+
+		auto natoms = atom_symbols.length();
+		
 		auto atom_x = doc.sole_block().find_loop("_atom_site_fract_x");
 		auto atom_y = doc.sole_block().find_loop("_atom_site_fract_y");
 		auto atom_z = doc.sole_block().find_loop("_atom_site_fract_z");
 
+		if(natoms != atom_x.length() or natoms != atom_y.length() or natoms != atom_z.length()){
+			throw std::runtime_error("Error: read the atomic coordinates in CIF file '" + cif_file_name + "'.");
+		}
+		
 		ions::unit_cell cell(lattice_vectors_);
 
-		for(int iatom = 0; iatom < atom_symbols.length(); iatom++){
+		for(int iatom = 0; iatom < natoms; iatom++){
+			auto symbol = atom_symbols[iatom];
+			symbol.erase(std::remove_if(symbol.begin(), symbol.end(), ::isdigit), symbol.end()); //remove the numbers
 			auto pos = vector3<double, contravariant>{stod(atom_x[iatom]), stod(atom_y[iatom]), stod(atom_z[iatom])};
-			geo_.emplace_back(input::species(atom_symbols[iatom]), cell.metric().to_cartesian(pos));
-			//			std::cout << atom_symbols[iatom] << '\t' << atom_x[iatom] << '\t' << atom_y[iatom] << '\t' << atom_z[iatom] << std::endl;
+			geo_.emplace_back(input::species(symbol), cell.metric().to_cartesian(pos));
 		}
 	}
 	
@@ -125,6 +135,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(cif_file.atoms()[0].species() == "Al");
 		CHECK(cif_file.atoms()[1].species() == "Al");
+		CHECK(cif_file.atoms()[2].species() == "Al");		
 		CHECK(cif_file.atoms()[3].species() == "Al");
 
 		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
@@ -143,6 +154,45 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.atoms()[3].position()[1] == 3.817445193_a);
 		CHECK(cif_file.atoms()[3].position()[2] == Approx(0.0).margin(1e-12));
 	}
+	
+	SECTION("SrTiO3"){
+		
+		input::cif cif_file(config::path::unit_tests_data() + "9002806.cif");
 
+		CHECK(cif_file.lattice()[0][0] == 10.4316661532_a);
+		CHECK(cif_file.lattice()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[0][2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[1][1] == 10.4316661532_a);
+		CHECK(cif_file.lattice()[1][2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][2] == 14.7525249371_a);		
+		/*
+		CHECK(cif_file.num_atoms() == 4);
+
+		CHECK(cif_file.atoms()[0].species() == "Al");
+		CHECK(cif_file.atoms()[1].species() == "Al");
+		CHECK(cif_file.atoms()[2].species() == "Al");
+		CHECK(cif_file.atoms()[3].species() == "Al");
+
+		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[0].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[0].position()[2] == Approx(0.0).margin(1e-12));
+		
+		CHECK(cif_file.atoms()[1].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[1].position()[1] == 3.817445193_a);
+		CHECK(cif_file.atoms()[1].position()[2] == 3.817445193_a);
+
+		CHECK(cif_file.atoms()[2].position()[0] == 3.817445193_a);
+		CHECK(cif_file.atoms()[2].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[2].position()[2] == 3.817445193_a);
+
+		CHECK(cif_file.atoms()[3].position()[0] == 3.817445193_a);
+		CHECK(cif_file.atoms()[3].position()[1] == 3.817445193_a);
+		CHECK(cif_file.atoms()[3].position()[2] == Approx(0.0).margin(1e-12));
+		*/
+	}
+	
 }
 #endif
