@@ -37,15 +37,14 @@ public:
 	{
     namespace cif = gemmi::cif;
     cif::Document doc = cif::read_file(cif_file_name);
-    auto length_a = to_double(doc.sole_block().find_value("_cell_length_a"), cif_file_name);
+
+		//THE CELL
+		auto length_a = to_double(doc.sole_block().find_value("_cell_length_a"), cif_file_name);
     auto length_b = to_double(doc.sole_block().find_value("_cell_length_b"), cif_file_name);
     auto length_c = to_double(doc.sole_block().find_value("_cell_length_c"), cif_file_name);
     auto angle_alpha = to_double(doc.sole_block().find_value("_cell_angle_alpha"), cif_file_name);
     auto angle_beta = to_double(doc.sole_block().find_value("_cell_angle_beta"), cif_file_name);
     auto angle_gamma = to_double(doc.sole_block().find_value("_cell_angle_gamma"), cif_file_name);
-
-		//    std::cout << length_a << '\t' << length_b << '\t' << length_c << std::endl;    
-		//    std::cout << angle_alpha << '\t' << angle_beta << '\t' << angle_gamma << std::endl;
 
     angle_alpha *= M_PI/180.0;
     angle_beta  *= M_PI/180.0;
@@ -62,8 +61,15 @@ public:
     auto c2 = sqrt(1.0 - cosbeta*cosbeta - c1*c1);
     lattice_vectors_[2] = angstrom*length_c*vector3<double>({cosbeta, c1, c2});
 
-		auto atom_symbols = doc.sole_block().find_loop("_atom_site_type_symbol");
-		if(atom_symbols.length() == 0) atom_symbols = doc.sole_block().find_loop("_atom_site_label");
+		ions::unit_cell cell(lattice_vectors_);
+		
+		//SYMMETRIES
+		auto symmetries = doc.sole_block().find_loop("_space_group_symop_operation_xyz");
+		if(symmetries.length() == 0) symmetries = doc.sole_block().find_loop("_symmetry_equiv_pos_as_xyz");
+
+		
+		//THE ATOMS
+		auto atom_symbols = doc.sole_block().find_loop("_atom_site_label");
 		if(atom_symbols.length() == 0) throw std::runtime_error("Error: cannot find the atoms in CIF file '" + cif_file_name + "'.");
 
 		auto natoms = atom_symbols.length();
@@ -75,10 +81,6 @@ public:
 		if(natoms != atom_x.length() or natoms != atom_y.length() or natoms != atom_z.length()){
 			throw std::runtime_error("Error: read the atomic coordinates in CIF file '" + cif_file_name + "'.");
 		}
-
-		auto symmetries = doc.sole_block().find_loop("_space_group_symop_operation_xyz");
-
-		ions::unit_cell cell(lattice_vectors_);
 
 		std::vector<std::string> symbols;
 		std::vector<vector3<double, contravariant>> positions;
@@ -93,6 +95,7 @@ public:
 			positions.emplace_back(pos);
 
 			for(auto & symm: symmetries){
+				symm.erase(std::remove(symm.begin(), symm.end(), '\''), symm.end());
 				auto op = gemmi::parse_triplet(symm);
 				auto symm_pos = vector3<double, contravariant>{op.apply_to_xyz(std::array<double, 3>{pos[0], pos[1], pos[2]})};
 				symm_pos = cell.position_in_cell(symm_pos);
@@ -339,6 +342,163 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.atoms()[19].position()[2] == Approx(0.0).margin(1e-12));
 		
 	}
+
+	SECTION("Ca2PI symmetrized"){
+		
+		input::cif cif_file(config::path::unit_tests_data() + "Ca2PI_symm.cif");
+
+		CHECK(cif_file.lattice()[0][0] == 8.1469916149_a);
+		CHECK(cif_file.lattice()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[0][2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[1][0] == -4.0734958074_a);
+		CHECK(cif_file.lattice()[1][1] ==  7.0555017029_a);
+		CHECK(cif_file.lattice()[1][2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][2] == 42.0773092856_a);		
+		
+		CHECK(cif_file.num_atoms() == 12);
+		
+		CHECK(cif_file.atoms()[0].species() == "Ca");
+		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[0].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[0].position()[2] == 9.6727962369_a);
+		
+		CHECK(cif_file.atoms()[1].species() == "Ca");
+		CHECK(cif_file.atoms()[1].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[1].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[1].position()[2] == -9.6727962369_a);
+
+		CHECK(cif_file.atoms()[2].species() == "Ca");
+		CHECK(cif_file.atoms()[2].position()[0] ==  -4.0734958074_a);
+		CHECK(cif_file.atoms()[2].position()[1] ==   2.3518339010_a);
+		CHECK(cif_file.atoms()[2].position()[2] == -18.3787432869_a);
+		
+		CHECK(cif_file.atoms()[3].species() == "Ca");
+		CHECK(cif_file.atoms()[3].position()[0] ==  -4.0734958074_a);
+		CHECK(cif_file.atoms()[3].position()[1] ==   2.3518339010_a);
+		CHECK(cif_file.atoms()[3].position()[2] ==   4.3529735250_a);
+		
+		CHECK(cif_file.atoms()[4].species() == "Ca");
+		CHECK(cif_file.atoms()[4].position()[0] ==   4.0734958074_a);
+		CHECK(cif_file.atoms()[4].position()[1] ==  -2.3518339010_a);
+		CHECK(cif_file.atoms()[4].position()[2] ==  -4.3529735250_a);
+		
+		CHECK(cif_file.atoms()[5].species() == "Ca");
+		CHECK(cif_file.atoms()[5].position()[0] ==   4.0734958074_a);
+		CHECK(cif_file.atoms()[5].position()[1] ==  -2.3518339010_a);
+		CHECK(cif_file.atoms()[5].position()[2] ==  18.3787432869_a);
+
+		CHECK(cif_file.atoms()[6].species() == "P");
+		CHECK(cif_file.atoms()[6].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[6].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[6].position()[2] == -21.0386546428_a);
+
+		CHECK(cif_file.atoms()[7].species() == "P");
+		CHECK(cif_file.atoms()[7].position()[0] == -4.0734958074_a);
+		CHECK(cif_file.atoms()[7].position()[1] ==  2.3518339010_a);
+		CHECK(cif_file.atoms()[7].position()[2] == -7.0128848809_a);
+
+		CHECK(cif_file.atoms()[8].species() == "P");
+		CHECK(cif_file.atoms()[8].position()[0] ==  4.0734958074_a);
+		CHECK(cif_file.atoms()[8].position()[1] == -2.3518339010_a);
+		CHECK(cif_file.atoms()[8].position()[2] ==  7.0128848809_a);
+
+		CHECK(cif_file.atoms()[9].species() == "I");
+		CHECK(cif_file.atoms()[9].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[9].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[9].position()[2] == Approx(0.0).margin(1e-12));
+
+		CHECK(cif_file.atoms()[10].species() == "I");
+		CHECK(cif_file.atoms()[10].position()[0] == -4.0734958074_a);
+		CHECK(cif_file.atoms()[10].position()[1] ==  2.3518339010_a);
+		CHECK(cif_file.atoms()[10].position()[2] == 14.0257697619_a);
+
+		CHECK(cif_file.atoms()[11].species() == "I");
+		CHECK(cif_file.atoms()[11].position()[0] ==   4.0734958074_a);
+		CHECK(cif_file.atoms()[11].position()[1] ==  -2.3518339010_a);
+		CHECK(cif_file.atoms()[11].position()[2] == -14.0257697619_a);
+		
+	}
 	
+	SECTION("Ca2PI not symmetrized"){
+		
+		input::cif cif_file(config::path::unit_tests_data() + "Ca2PI.cif");
+
+		CHECK(cif_file.lattice()[0][0] == 8.1469916149_a);
+		CHECK(cif_file.lattice()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[0][2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[1][0] == -4.0734958074_a);
+		CHECK(cif_file.lattice()[1][1] ==  7.0555017029_a);
+		CHECK(cif_file.lattice()[1][2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][2] == 42.0773092856_a);		
+		
+		CHECK(cif_file.num_atoms() == 12);
+
+		//the order her is to match the symmetrized test above
+		CHECK(cif_file.atoms()[1].species() == "Ca");
+		CHECK(cif_file.atoms()[1].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[1].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[1].position()[2] == 9.6727962369_a);
+
+		CHECK(cif_file.atoms()[4].species() == "Ca");
+		CHECK(cif_file.atoms()[4].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[4].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[4].position()[2] == -9.6727962369_a);
+
+		CHECK(cif_file.atoms()[3].species() == "Ca");
+		CHECK(cif_file.atoms()[3].position()[0] ==  -4.0734958074_a);
+		CHECK(cif_file.atoms()[3].position()[1] ==   2.3518339010_a);
+		CHECK(cif_file.atoms()[3].position()[2] == -18.3787432869_a);
+
+		CHECK(cif_file.atoms()[0].species() == "Ca");
+		CHECK(cif_file.atoms()[0].position()[0] ==  -4.0734958074_a);
+		CHECK(cif_file.atoms()[0].position()[1] ==   2.3518339010_a);
+		CHECK(cif_file.atoms()[0].position()[2] ==   4.3529735250_a);
+
+		CHECK(cif_file.atoms()[5].species() == "Ca");
+		CHECK(cif_file.atoms()[5].position()[0] ==   4.0734958074_a);
+		CHECK(cif_file.atoms()[5].position()[1] ==  -2.3518339010_a);
+		CHECK(cif_file.atoms()[5].position()[2] ==  -4.3529735250_a);
+
+		CHECK(cif_file.atoms()[2].species() == "Ca");
+		CHECK(cif_file.atoms()[2].position()[0] ==   4.0734958074_a);
+		CHECK(cif_file.atoms()[2].position()[1] ==  -2.3518339010_a);
+		CHECK(cif_file.atoms()[2].position()[2] ==  18.3787432869_a);
+
+		CHECK(cif_file.atoms()[7].species() == "P");
+		CHECK(cif_file.atoms()[7].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[7].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[7].position()[2] == -21.0386546428_a);
+
+		CHECK(cif_file.atoms()[8].species() == "P");
+		CHECK(cif_file.atoms()[8].position()[0] == -4.0734958074_a);
+		CHECK(cif_file.atoms()[8].position()[1] ==  2.3518339010_a);
+		CHECK(cif_file.atoms()[8].position()[2] == -7.0128848809_a);
+		
+		CHECK(cif_file.atoms()[6].species() == "P");
+		CHECK(cif_file.atoms()[6].position()[0] ==  4.0734958074_a);
+		CHECK(cif_file.atoms()[6].position()[1] == -2.3518339010_a);
+		CHECK(cif_file.atoms()[6].position()[2] ==  7.0128848809_a);
+
+		CHECK(cif_file.atoms()[9].species() == "I");
+		CHECK(cif_file.atoms()[9].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[9].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[9].position()[2] == Approx(0.0).margin(1e-12));
+
+		CHECK(cif_file.atoms()[10].species() == "I");
+		CHECK(cif_file.atoms()[10].position()[0] == -4.0734958074_a);
+		CHECK(cif_file.atoms()[10].position()[1] ==  2.3518339010_a);
+		CHECK(cif_file.atoms()[10].position()[2] == 14.0257697619_a);
+
+		CHECK(cif_file.atoms()[11].species() == "I");
+		CHECK(cif_file.atoms()[11].position()[0] ==   4.0734958074_a);
+		CHECK(cif_file.atoms()[11].position()[1] ==  -2.3518339010_a);
+		CHECK(cif_file.atoms()[11].position()[2] == -14.0257697619_a);
+		
+	}
+		
 }
 #endif
