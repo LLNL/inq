@@ -11,6 +11,7 @@
 
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
+#include <input/cif.hpp>
 #include <input/parse_xyz.hpp>
 #include <input/poscar.hpp>
 #include <operations/io.hpp>
