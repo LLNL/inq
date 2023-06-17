@@ -177,8 +177,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		input::poscar vasp_file(config::path::unit_tests_data() + "al.poscar");
 
-		std::cout << "CARTESIAN " << std::endl;
-
 		CHECK(vasp_file.lattice()[0][0] == 7.6458319003_a);
 		CHECK(vasp_file.lattice()[0][1] == 0.0_a);
 		CHECK(vasp_file.lattice()[0][2] == 0.0_a);
@@ -193,6 +191,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(vasp_file.atoms()[0].species() == "Al");
 		CHECK(vasp_file.atoms()[1].species() == "Al");
+		CHECK(vasp_file.atoms()[2].species() == "Al");		
 		CHECK(vasp_file.atoms()[3].species() == "Al");
 
 		CHECK(vasp_file.atoms()[0].position()[0] == 0.0_a);
@@ -227,7 +226,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(vasp_file.atoms()[0].species() == "Ni");
 		CHECK(vasp_file.atoms()[1].species() == "Ni");
-		CHECK(vasp_file.atoms()[3].species() == "Ni");
+		CHECK(vasp_file.atoms()[2].species() == "Ni");
+		CHECK(vasp_file.atoms()[3].species() == "Ni");		
+		CHECK(vasp_file.atoms()[4].species() == "Ni");
 
 		CHECK(vasp_file.atoms()[0].position()[0] == 0.0_a);
 		CHECK(vasp_file.atoms()[0].position()[1] == 0.0_a);
