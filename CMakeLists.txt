@@ -285,6 +285,7 @@ target_link_libraries(inq
 # GEMMI
 ########################
 
+target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/gemmi/include)
 include_directories(${PROJECT_SOURCE_DIR}/external_libs/gemmi/include)
 
 ########################
