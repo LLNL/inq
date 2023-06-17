@@ -37,7 +37,7 @@ public:
 	{
     namespace cif = gemmi::cif;
     cif::Document doc = cif::read_file(cif_file_name);
-
+		
 		//THE CELL
 		auto length_a = to_double(doc.sole_block().find_value("_cell_length_a"), cif_file_name);
     auto length_b = to_double(doc.sole_block().find_value("_cell_length_b"), cif_file_name);
@@ -499,6 +499,39 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.atoms()[11].position()[2] == -14.0257697619_a);
 		
 	}
+	
+	SECTION("Na"){
 		
+		input::cif cif_file(config::path::unit_tests_data() + "Na.cif");
+
+		//These lattice vectors match openbabel
+		CHECK(cif_file.lattice()[0][0] == 17.7976863062_a);
+		CHECK(cif_file.lattice()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[0][2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[1][0] == 16.3923048366_a);
+		CHECK(cif_file.lattice()[1][1] == 6.9318092872_a);
+		CHECK(cif_file.lattice()[1][2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.lattice()[2][0] == 16.3923048366_a);
+		CHECK(cif_file.lattice()[2][1] ==  3.3234384423_a);
+		CHECK(cif_file.lattice()[2][2] ==  6.0831518898_a);		
+		
+		CHECK(cif_file.num_atoms() == 3);
+		
+		CHECK(cif_file.atoms()[0].species() == "Na");
+		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[0].position()[1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[0].position()[2] == Approx(0.0).margin(1e-12));
+
+		CHECK(cif_file.atoms()[1].species() == "Na");
+		CHECK(cif_file.atoms()[1].position()[0] == 11.2403978126_a);
+		CHECK(cif_file.atoms()[1].position()[1] ==  2.2789211505_a);
+		CHECK(cif_file.atoms()[1].position()[2] ==  1.3517980130_a);
+
+		CHECK(cif_file.atoms()[2].species() == "Na");
+		CHECK(cif_file.atoms()[2].position()[0] == -11.2403978126_a);
+		CHECK(cif_file.atoms()[2].position()[1] ==  -2.2789211505_a);
+		CHECK(cif_file.atoms()[2].position()[2] ==  -1.3517980130_a);
+	}
+	
 }
 #endif
