@@ -16,7 +16,6 @@
 #include <states/orbital_set.hpp>
 #include <perturbations/gauge.hpp>
 #include <perturbations/none.hpp>
-#include <perturbations/dynamics.hpp>
 
 namespace inq {
 namespace perturbations {
@@ -26,7 +25,7 @@ class kick : public perturbations::none {
 public:
 
 	template <typename CellType>
-	kick(CellType const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed, dynamics arg_dynamics = dynamics::none, const double alpha = -4*M_PI):
+	kick(CellType const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
 		efield_(-arg_kick_field),
 		vpot_(-arg_kick_field),		
 		periodicity_(cell.periodicity())
