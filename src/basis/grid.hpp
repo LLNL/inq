@@ -32,7 +32,6 @@ namespace basis {
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
-			periodicity_(cell.periodicity()),
 			double_grid_(double_grid){
 
 			if(base::part_.local_size() == 0){
@@ -104,10 +103,6 @@ namespace basis {
 			return nr_local_;
 		}
 		
-		auto periodicity() const {
-			return periodicity_;
-		}
-
 		template <class output_stream>
     void info(output_stream & out) const {
       out << "PLANE WAVE BASIS SET:" << std::endl;
@@ -183,7 +178,7 @@ namespace basis {
 
 		auto & cell() const {
 			return cell_;
-		}		
+		}	
 
 	protected:
 
@@ -205,8 +200,6 @@ namespace basis {
 		long npoints_;
 
 		bool spherical_g_grid_;
-
-		int periodicity_;
 
 		basis::double_grid double_grid_;
 
@@ -277,8 +270,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	auto new_gr = basis::grid(basis::grid(gr), parallel::communicator{boost::mpi3::environment::get_self_instance()});
 
 	CHECK(gr.sizes() == new_gr.sizes());
-	CHECK(new_gr.local_sizes() == new_gr.sizes());	
-	CHECK(gr.periodicity() == new_gr.periodicity());
+	CHECK(new_gr.local_sizes() == new_gr.sizes());
+	CHECK(gr.cell().periodicity() == new_gr.cell().periodicity());	
 	
 }
 #endif

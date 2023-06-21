@@ -183,9 +183,9 @@ public:
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
-		if(density.basis().periodicity() == 3){
+		if(density.basis().cell().periodicity() == 3){
 			return poisson_solve_3d(density);
-		} else if(density.basis().periodicity() == 2){
+		} else if(density.basis().cell().periodicity() == 2){
 			return poisson_solve_2d(density);
 		} else {
 			return poisson_solve_0d(density);
@@ -201,9 +201,9 @@ public:
 
 		auto gshift_cart = density.basis().cell().metric().to_cartesian(gshift);
 		
-		if(density.basis().periodicity() == 3){
+		if(density.basis().cell().periodicity() == 3){
 			poisson_solve_in_place_3d(density, gshift_cart, zeroterm);
-		} else if(density.basis().periodicity() == 2){
+		} else if(density.basis().cell().periodicity() == 2){
 			return poisson_solve_in_place_2d(density, gshift_cart, zeroterm);
 		} else {
 			poisson_solve_in_place_0d(density, gshift_cart, zeroterm);
@@ -252,7 +252,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		SECTION("Grid periodic"){
 		
-			CHECK(rs.periodicity() == 3);
+			CHECK(rs.cell().periodicity() == 3);
 			
 			CHECK(rs.sizes()[0] == 100);
 			CHECK(rs.sizes()[1] == 100);
@@ -404,7 +404,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		SECTION("Grid finite"){		
 
-			CHECK(rs.periodicity() == 0);
+			CHECK(rs.cell().periodicity() == 0);
 			
 			CHECK(rs.sizes()[0] == 89);
 			CHECK(rs.sizes()[1] == 89);
@@ -483,7 +483,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		solvers::poisson psolver;
 		
-		CHECK(rs.periodicity() == 2);
+		CHECK(rs.cell().periodicity() == 2);
 		
 		CHECK(rs.sizes()[0] == 50);
 		CHECK(rs.sizes()[1] == 50);

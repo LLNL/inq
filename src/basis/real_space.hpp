@@ -233,7 +233,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			CHECK(rs.sizes() == new_rs.sizes());
 			CHECK(new_rs.local_sizes() == new_rs.sizes());	
-			CHECK(rs.periodicity() == new_rs.periodicity());
+			CHECK(rs.cell().periodicity() == new_rs.cell().periodicity());
 			
     }
 
