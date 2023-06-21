@@ -27,11 +27,11 @@ class fourier_space;
 
 		using reciprocal_space = fourier_space;
 
-		real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm, bool spherical_grid = false):
+		real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm, bool spherical_grid = true):
 			grid(cell, calculate_dimensions(cell, spacing), spherical_grid, comm)
 		{
     }
-		
+
 		real_space(const grid & grid_basis):
 			grid(grid_basis){
 			
