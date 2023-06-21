@@ -14,6 +14,12 @@ project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
+
+message("CMake build type: ${CMAKE_BUILD_TYPE}")
+
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "")
 set(FETCHCONTENT_QUIET FALSE)
 Include(FetchContent)

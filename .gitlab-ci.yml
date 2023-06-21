@@ -271,7 +271,7 @@ gcc-ompi-fast:
       - mpic++.openmpi --version
       - mkdir build && cd build
       - export CXXFLAGS="-Ofast -ffast-math -DNDEBUG -pipe -Wall -Werror -Wpedantic -pedantic-errors -Wextra -Wno-narrowing -Wno-cast-function-type -Wno-unknown-pragmas -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter -Wno-error=deprecated-declarations"
-      - cmake ../ --install-prefix=$HOME -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
+      - cmake ../ -DCMAKE_BUILD_TYPE=Release --install-prefix=$HOME -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
       - time make
       - time make install
       - ctest --output-on-failure --timeout 360
@@ -302,7 +302,7 @@ clang-ompi:
       - mkdir build
       - cd build
       - CXXFLAGS="-O3 -pipe -Wall -Werror"
-      - CXX=clang++ CC=clang cmake ../ --install-prefix=$HOME -DMPI_EXECUTABLE_SUFFIX=.openmpi
+      - CXX=clang++ CC=clang cmake ../ -DCMAKE_BUILD_TYPE=Debug --install-prefix=$HOME -DMPI_EXECUTABLE_SUFFIX=.openmpi
       - ls -l
       - time make
       - time make install
@@ -503,7 +503,7 @@ cuda-mpich-debug-utests:
       - export GPUBIND=`pwd`/scripts/gpubind
       - mkdir build
       - cd build
-      - cmake ../ --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - cmake ../ -DCMAKE_BUILD_TYPE=Debug --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
       - cmake --build . --target install/fast
       - cd speed_tests
       -   make -j2
@@ -535,7 +535,7 @@ cuda-mpich-debug-itests:
       - export GPUBIND=`pwd`/scripts/gpubind
       - mkdir build
       - cd build
-      - cmake ../ --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - cmake ../ -DCMAKE_BUILD_TYPE=Debug --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
       - cmake --build . --target install/fast
       - cd tests/;
       -   time make -j2
@@ -561,7 +561,7 @@ nccl-mpich:
       - cd build
       - export PATH=/usr/local/cuda/bin:$PATH
       - nvcc -V
-      - cmake ../ --install-prefix=`pwd`/../install -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES -DNCCL_ROOT=/usr/local/nccl
+      - cmake ../ -DCMAKE_BUILD_TYPE=Debug --install-prefix=`pwd`/../install -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES -DNCCL_ROOT=/usr/local/nccl
       - time make -j16
       - time make -j16 install
       - INQ_EXEC_ENV="mpirun.mpich -np 1" ctest --output-on-failure --timeout 600 -j4
@@ -584,7 +584,7 @@ gcc-mpich-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
       - cd runs
@@ -613,7 +613,7 @@ nvcc-mpich-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
       - export GPUBIND=`pwd`/_deps/inq-src/scripts/gpubind
@@ -642,7 +642,7 @@ clang-ompi-template:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
       - export CXX=clang++
       - export CC=clang
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.openmpi
+      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.openmpi
       - time make -j2
       - time make -j2 install
       - cd runs
