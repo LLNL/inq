@@ -417,8 +417,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	auto basis_comm = basis::basis_subcomm(cart_comm);
 	
-	systems::box box = systems::box::cubic(6.66_b).cutoff_energy(23.0_Ha);
-	basis::real_space rs(box, basis_comm);
+	systems::box box = systems::box::cubic(6.66_b);
+	basis::real_space rs(box, /*spacing =*/ 0.46320257, basis_comm);
 	
 	basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
 	

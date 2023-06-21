@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 		}
 	}
 	
-	auto box = systems::box::cubic(20.0_A).finite().spacing(20.0_A/90);
+	auto box = systems::box::cubic(20.0_A).finite();
 	
 	systems::ions ions(box);
 
@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
 	
 	std::string restart_dir = "c240_restart";
 	
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::extra_states(32) | input::config::temperature(300.0_K));
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::spacing(20.0_A/90) | input::config::extra_states(32) | input::config::temperature(300.0_K));
 
 	auto not_found_gs = groundstate_only or not electrons.try_load(restart_dir);
 		

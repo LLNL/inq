@@ -269,8 +269,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	auto ll = 10.0;
 	
-	systems::box box = systems::box::cubic(ll*1.0_b).cutoff_energy(20.0_Ha);
-	basis::real_space pw(box, comm);
+	systems::box box = systems::box::cubic(ll*1.0_b);
+	basis::real_space pw(box, /*spacing = */ 0.49672941, comm);
   
   SECTION("Point 0 0 0"){
     

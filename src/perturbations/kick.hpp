@@ -94,8 +94,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 	
-	auto ecut = 31.2_Ha;
-	
 	SECTION("finite"){
 	
 		const int nvec = 12;
@@ -105,11 +103,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 		
-		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite().cutoff_energy(ecut);
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite();
 		
 		CHECK(box.periodicity_value() == 0);
 		
-		basis::real_space bas(box, comm);
+		basis::real_space bas(box, /*spacing =*/ 0.39770182, comm);
 		
 		CHECK(bas.cell().periodicity() == 0);
 		
@@ -148,7 +146,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 	
 	SECTION("periodic"){
-		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(ecut);
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b);
 		auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3});
 
 		CHECK(kick.has_uniform_vector_potential());
@@ -158,7 +156,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("semi periodic"){
-		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodicity(2).cutoff_energy(ecut);
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodicity(2);
 		auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3});
 
 		CHECK(kick.has_uniform_vector_potential());
@@ -168,7 +166,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("velocity gauge"){
-		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite().cutoff_energy(ecut);
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite();
 		auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::velocity);
 
 		CHECK(kick.has_uniform_vector_potential());
@@ -178,7 +176,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("length gauge"){
-		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic().cutoff_energy(ecut);
+		systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
 		auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::length);
 
 		CHECK(kick.has_uniform_vector_potential());

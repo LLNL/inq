@@ -21,7 +21,7 @@ int main(int argc, char ** argv){
 
 	auto a = 10.18_b;
 
-	auto box = systems::box::cubic(a).cutoff_energy(25.0_Ha);
+	auto box = systems::box::cubic(a);
 	
 	systems::ions ions(box);
 	
@@ -34,7 +34,7 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	systems::electrons electrons(env.par(), ions, box, input::kpoints::grid({1, 1, 1}, true));
+	systems::electrons electrons(env.par(), ions, box, input::config::cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 	
 	ground_state::initial_guess(ions, electrons);
 

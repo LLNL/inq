@@ -29,13 +29,13 @@ class fourier_space;
 
 		using reciprocal_space = fourier_space;
 
-    real_space(systems::box const & box, parallel::communicator && comm):
-			grid(box.cell(), calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
+    real_space(systems::box const & box, double const & spacing, parallel::communicator && comm):
+			grid(box.cell(), calculate_dimensions(box, spacing), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
 		{
     }
 		
-    real_space(systems::box const & box, parallel::communicator & comm):
-			grid(box.cell(), calculate_dimensions(box), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
+    real_space(systems::box const & box, double const & spacing, parallel::communicator & comm):
+			grid(box.cell(), calculate_dimensions(box, spacing), box.spherical_grid_value(), box.double_grid_value(), box.periodicity_value(), comm)
 		{
     }
 
@@ -175,9 +175,8 @@ class fourier_space;
 		
 	private:
 
-		static std::array<int, 3> calculate_dimensions(systems::box const & box){
+		static std::array<int, 3> calculate_dimensions(systems::box const & box, double const & spacing){
 			std::array<int, 3> nr;
-			double spacing = box.spacing_value();
 			
 			// make the spacing conmensurate with the grid
 			// OPTIMIZATION: we can select a good size here for the FFT
@@ -215,8 +214,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     SECTION("Cubic cell"){
 
-			systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
-      basis::real_space rs(box, comm);
+			systems::box box = systems::box::cubic(10.0_b);
+      basis::real_space rs(box, /* spacing = */ 0.49672941, comm);
 
       CHECK(rs.size() == 8000);
 
@@ -240,8 +239,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     SECTION("Parallelepipedic cell"){
 
-			systems::box box = systems::box::orthorhombic(77.7_b, 14.14_b, 23.25_b).cutoff_energy(37.9423091_Ha);
-      basis::real_space rs(box, comm);
+			systems::box box = systems::box::orthorhombic(77.7_b, 14.14_b, 23.25_b);
+      basis::real_space rs(box, /*spacing =*/ 0.36063925, comm);
 
       CHECK(rs.size() == 536640);
 
@@ -292,8 +291,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     SECTION("Non-orthogonal cell"){
 
 			auto a = 3.567095_A;
-			systems::box box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(30.0_Ha);
-      basis::real_space rs(box, comm);
+			systems::box box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b});
+      basis::real_space rs(box, /*spacing = */0.40557787, comm);
 
       CHECK(rs.size() == 1728);
 

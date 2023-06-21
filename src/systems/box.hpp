@@ -78,23 +78,9 @@ public:
 		return periodicity_.value_or(3);
 	}
 
-	auto & spacing(quantity<magnitude::length> arg_spacing){
-		spacing_ = arg_spacing.in_atomic_units(); 
-		return *this;
-	}
-	
-	 auto & cutoff_energy(quantity<magnitude::energy> arg_ecut){
-		spacing_ = M_PI*sqrt(0.5/arg_ecut.in_atomic_units());
-		return *this;
-	}
-	
 	auto spherical_grid(bool arg_sph_grid){
 		spherical_grid_ = arg_sph_grid;
 		return *this;
-	}
-	
-	auto spacing_value() const {
-		return spacing_.value();
 	}
 	
 	auto spherical_grid_value() const {
@@ -123,7 +109,6 @@ public:
 		return
 			    self.lattice_vectors_     == other.lattice_vectors_
 			and self.periodicity_ == other.periodicity_
-			and self.spacing_             == other.spacing_
 			and self.spherical_grid_      == other.spherical_grid_
 			and self.density_factor_      == other.density_factor_
 			and self.double_grid_         == other.double_grid_
@@ -149,7 +134,6 @@ private:
 
 	std::array<std::optional<vector3<double>>, 3> lattice_vectors_;
 	std::optional<int> periodicity_;
-	std::optional<double> spacing_;
 	std::optional<bool> spherical_grid_;
 	std::optional<double> density_factor_;
 	std::optional<bool> double_grid_;	
@@ -193,7 +177,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Cubic finite"){
 
-		auto ci = systems::box::cubic(10.2_b).finite().spacing(0.123_b);
+		auto ci = systems::box::cubic(10.2_b).finite();
 
 		CHECK(ci.cell()[0][0] == 10.2_a);
 		CHECK(ci.cell()[0][1] == 0.0_a);
@@ -205,14 +189,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ci.cell()[2][1] == 0.0_a);
 		CHECK(ci.cell()[2][2] == 10.2_a);
 		CHECK(ci.periodicity_value() == 0);
-		CHECK(ci.spacing_value() == 0.123_a);
 		CHECK(not ci.spherical_grid_value());
 		
 	}
 	
 	SECTION("Parallelepipedic"){
 
-		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha);
+		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic();
 
 		CHECK(ci.cell()[0][0] == 10.2_a);
 		CHECK(ci.cell()[0][1] == 0.0_a);
@@ -224,13 +207,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ci.cell()[2][1] == 0.0_a);
 		CHECK(ci.cell()[2][2] == 8.3_a);
 		CHECK(ci.periodicity_value() == 3);
-		CHECK(ci.spacing_value() == 0.1_a);
 
 	}
 			
 	SECTION("Spherical grid"){
 
-		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha).spherical_grid(true);
+		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().spherical_grid(true);
 
 		CHECK(ci.cell()[0][0] == 10.2_a);
 		CHECK(ci.cell()[0][1] == 0.0_a);
@@ -242,7 +224,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ci.cell()[2][1] == 0.0_a);
 		CHECK(ci.cell()[2][2] == 8.3_a);
 		CHECK(ci.periodicity_value() == 3);
-		CHECK(ci.spacing_value() == 0.1_a);
 		CHECK(ci.spherical_grid_value());
 
 	}
@@ -266,8 +247,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Equality"){
 
-		auto ci1 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha).spherical_grid(true);
-		auto ci2 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().cutoff_energy(493.48_Ha).spherical_grid(true);
+		auto ci1 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().spherical_grid(true);
+		auto ci2 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().spherical_grid(true);
 
 		CHECK(ci1 == ci2);
 		CHECK( not (ci1 != ci2) );

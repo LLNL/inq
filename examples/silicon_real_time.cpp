@@ -21,7 +21,7 @@ int main(int argc, char ** argv){
 
 	auto a = 10.18_b;
 
-	auto box = systems::box::cubic(a).spacing(a/24);
+	auto box = systems::box::cubic(a);
 	
 	systems::ions ions(box);
 	
@@ -36,7 +36,7 @@ int main(int argc, char ** argv){
 
 	auto nk = 2;
 	
-	systems::electrons electrons(env.par(), ions, box, input::kpoints::grid({nk, nk, nk}, true));
+	systems::electrons electrons(env.par(), ions, box, input::kpoints::grid({nk, nk, nk}, true), input::config::spacing(a/24));
 
 	auto functional = input::interaction::pbe();
 	

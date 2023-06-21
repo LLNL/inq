@@ -26,13 +26,13 @@ int main(int argc, char ** argv){
 		
 	utils::match energy_match(2.0e-5);
 
-	systems::box box = systems::box::cubic(15.0_b).finite().cutoff_energy(30.0_Ha);
+	systems::box box = systems::box::cubic(15.0_b).finite();
 	
 	systems::ions ions(box);
 
 	ions.insert("Ne" | input::species::nofilter(), {0.0_b, 0.0_b, 0.0_b});
 
-	systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3));
+	systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3) | input::config::cutoff(30.0_Ha));
 	
 	ground_state::initial_guess(ions, electrons);
 	

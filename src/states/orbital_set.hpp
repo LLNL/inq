@@ -186,9 +186,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
-    
-  auto ecut = 40.0_Ha;
-
+	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	parallel::cartesian_communicator<2> cart_comm(comm, {});
@@ -196,8 +194,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
-	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(ecut);
-  basis::real_space rs(box, basis_comm);
+	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b);
+  basis::real_space rs(box, /*spacing =*/ 0.35124074, basis_comm);
 
 	states::orbital_set<basis::real_space, double> orb(rs, 12, 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 	CHECK(not orb.spinors());

@@ -18,6 +18,7 @@
 
 int main(int argc, char ** argv){
 
+	using namespace inq;
 	using namespace inq::magnitude;
 
 	inq::input::environment env(argc, argv);
@@ -26,13 +27,13 @@ int main(int argc, char ** argv){
 
 	inq::input::species local_h = pseudo::element("H") | inq::input::species::symbol("Hloc") | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 
-	auto box = inq::systems::box::cubic(15.0_b).finite().cutoff_energy(40.0_Ha);
+	auto box = inq::systems::box::cubic(15.0_b).finite();
 
 	inq::systems::ions ions(box);
 
 	ions.insert(local_h, {150.0_b, -30.0_b, 0.0_b});
 
-	inq::systems::electrons electrons(env.par(), ions, box);
+	inq::systems::electrons electrons(env.par(), ions, box, input::config::cutoff(40.0_Ha));
 	inq::ground_state::initial_guess(ions, electrons);
 	
 	inq::ground_state::calculate(ions, electrons);

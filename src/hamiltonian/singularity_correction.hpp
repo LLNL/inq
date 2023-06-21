@@ -126,7 +126,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   SECTION("Auxiliary function cubic"){
     auto aa = 10.18_b;
 
-		auto box = systems::box::lattice({aa, 0.0_b, 0.0_b}, {0.0_b, aa, 0.0_b}, {0.0_b, 0.0_b, aa}).cutoff_energy(35.0_Ha);
+		auto box = systems::box::lattice({aa, 0.0_b, 0.0_b}, {0.0_b, aa, 0.0_b}, {0.0_b, 0.0_b, aa});
 		auto ions = systems::ions(box);
     auto const & cell = ions.cell();    
 

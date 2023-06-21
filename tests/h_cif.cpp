@@ -16,13 +16,13 @@ int main(int argc, char ** argv){
 
 	input::cif cif_file(config::path::unit_tests_data() + "H.cif");
 
-	auto box = systems::box(cif_file.lattice()).cutoff_energy(30.0_Ha);
+	auto box = systems::box(cif_file.lattice());
 
 	systems::ions ions(box);
 	
 	ions.insert(cif_file.atoms());
 
-	systems::electrons electrons(env.par(), ions, box);
+	systems::electrons electrons(env.par(), ions, box, input::config::cutoff(30.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-8_Ha));
