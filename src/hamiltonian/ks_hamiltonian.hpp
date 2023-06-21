@@ -195,6 +195,13 @@ public:
 	auto & uniform_vector_potential() const {
 		return uniform_vector_potential_;
 	}
+	auto & uniform_vector_potential() {
+		return uniform_vector_potential_;
+	}
+
+	vector3<double, covariant> vp_accel={0,0,0};
+	vector3<double, covariant> vp_velocity={0,0,0};
+	vector3<double, covariant> vp_induced={0,0,0};
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 		

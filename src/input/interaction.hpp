@@ -152,11 +152,23 @@ public:
 	static auto gauge_field(){
 		interaction inter;
 		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
+		inter.alpha_ = -4*M_PI;
+		return inter;
+	}
+
+	static auto gauge_field(const double alpha){
+		interaction inter;
+		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
+		inter.alpha_ = alpha;
 		return inter;
 	}
 	
 	auto induced_vector_potential_value() const {
 		return induced_vecpot_.value_or(induced_vector_potential::NONE);
+	}
+
+	auto alpha_value() const {
+		return alpha_;
 	}
 	
 	friend auto operator|(const interaction & inter1, const interaction & inter2){
@@ -168,6 +180,7 @@ public:
 		rinter.correlation_	= merge_optional(inter1.correlation_, inter2.correlation_);
 		rinter.fourier_pseudo_	= merge_optional(inter1.fourier_pseudo_, inter2.fourier_pseudo_);
 		rinter.induced_vecpot_ = merge_optional(inter1.induced_vecpot_, inter2.induced_vecpot_);
+		rinter.alpha_ = merge_optional(inter1.alpha_, inter2.alpha_);
 		return rinter;
 	}
 
@@ -178,6 +191,7 @@ private:
 	std::optional<correlation_functional> correlation_;
 	std::optional<induced_vector_potential> induced_vecpot_;
 	std::optional<bool> fourier_pseudo_;
+	double alpha_ = 0;
 		
 };
     

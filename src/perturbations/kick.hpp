@@ -67,7 +67,7 @@ public:
 	auto uniform_vector_potential(double /*time*/) const {
 		return vpot_;
 	}
-	
+
 private:
 
 	vector3<double> efield_;
@@ -186,5 +186,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.uniform_vector_potential(2.0)[1] == 0.0);
 		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
 	}
+
 }
 #endif
