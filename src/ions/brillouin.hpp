@@ -140,7 +140,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		auto a =  3.567095_A;
 
-		auto box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}).cutoff_energy(35.0_Ha);
+		auto box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b});
 		auto ions = systems::ions(box);
 		
 		ions.insert_fractional("C", {0.0 , 0.0 , 0.0 });

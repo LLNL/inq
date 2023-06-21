@@ -77,9 +77,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
-	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).cutoff_energy(31.2_Ha);
+	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b);
 
-  basis::real_space bas(box, comm);
+  basis::real_space bas(box, /*spacing =*/ 0.39770182, comm);
 
 	basis::field<basis::real_space, double> density(bas);
 

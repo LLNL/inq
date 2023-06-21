@@ -67,8 +67,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	SECTION("Orthogonal box"){
-		systems::box box = systems::box::orthorhombic(12.0_b, 14.0_b, 16.0_b).cutoff_energy(45.0_Ha);
-		basis::real_space rs(box, comm);
+		systems::box box = systems::box::orthorhombic(12.0_b, 14.0_b, 16.0_b);
+		basis::real_space rs(box, /*spacing =*/ 0.33115294, comm);
 
 		auto center = vector3{3.0, 2.0, 1.0};
 		auto radius = 3.0;
@@ -103,8 +103,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Non-orthogonal box"){
 
 		auto aa = 23.3_b;
-		systems::box box = systems::box::lattice({0.0_b, aa/2.0, aa/2.0}, {aa/2, 0.0_b, aa/2.0}, {aa/2.0, aa/2.0, 0.0_b}).cutoff_energy(75.0_Ha);
-		basis::real_space rs(box, comm);
+		systems::box box = systems::box::lattice({0.0_b, aa/2.0, aa/2.0}, {aa/2, 0.0_b, aa/2.0}, {aa/2.0, aa/2.0, 0.0_b});
+		basis::real_space rs(box,  /*spacing =*/ 0.25650997, comm);
 
 		auto center = vector3{-0.5, 0.666, -1.0};
 		auto radius = 4.2;
@@ -140,8 +140,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Non-orthogonal box 2"){
 
 		auto aa = 5.5_b;
-		systems::box box = systems::box::lattice({0.0_b, aa/2.0, aa/2.0}, {aa/2, 0.0_b, aa/2.0}, {aa/2.0, aa/2.0, 0.0_b}).cutoff_energy(102.0_Ha);
-		basis::real_space rs(box, comm);
+		systems::box box = systems::box::lattice({0.0_b, aa/2.0, aa/2.0}, {aa/2, 0.0_b, aa/2.0}, {aa/2.0, aa/2.0, 0.0_b});
+		basis::real_space rs(box, /*spacing =*/ 0.21995548, comm);
 
 		auto center = vector3{-0.5, 0.666, -1.0};
 		auto radius = 4.2;

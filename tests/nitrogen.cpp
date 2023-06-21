@@ -17,7 +17,7 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(6.0e-6);
 
-	auto box = systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b).cutoff_energy(40.0_Ha);
+	auto box = systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b);
 	
 	systems::ions ions(box);
 
@@ -26,7 +26,7 @@ int main(int argc, char ** argv){
 	ions.insert("N", {0.0_b, 0.0_b, -0.5*distance});
 	ions.insert("N", {0.0_b, 0.0_b,  0.5*distance});
 
-	systems::electrons electrons(env.par(), ions, box);
+	systems::electrons electrons(env.par(), ions, box, input::config::cutoff(40.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), input::scf::energy_tolerance(1e-9_Ha) | input::scf::calculate_forces());

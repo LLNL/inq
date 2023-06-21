@@ -32,7 +32,7 @@ int main(int argc, char ** argv){
   auto aa = sqrt(3)*dcc;
   auto lz = 10.0_b;
 
-	auto box = systems::box::lattice(aa*vector3{1.0, 0.0, 0.0}, aa*vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).spacing(aa/15.0).periodicity(2);
+	auto box = systems::box::lattice(aa*vector3{1.0, 0.0, 0.0}, aa*vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).periodicity(2);
 	
 	systems::ions ions(box);
 	
@@ -40,7 +40,7 @@ int main(int argc, char ** argv){
 	ions.insert("C", {0.0_b, dcc,   0.0_b});
 
 	{
-		systems::electrons electrons(env.par(), ions, box, input::config::extra_states(2), input::kpoints::grid({1, 1, 1}, false));
+		systems::electrons electrons(env.par(), ions, box, input::config::spacing(aa/15.0) | input::config::extra_states(2), input::kpoints::grid({1, 1, 1}, false));
 		
 		ground_state::initial_guess(ions, electrons);
 		

@@ -345,9 +345,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
-	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b).cutoff_energy(40.0_Ha);
-  basis::real_space rs(box, basis_comm);
-
+	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b);
+	basis::real_space rs(box, /*spacing = */ 0.35124074, basis_comm);
+	
 	basis::field_set<basis::real_space, double> ff(rs, 12, cart_comm);
 
 	CHECK(sizes(rs)[0] == 28);

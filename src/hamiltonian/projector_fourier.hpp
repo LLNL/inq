@@ -157,9 +157,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 
-	systems::box box = systems::box::cubic(10.0_b).cutoff_energy(20.0_Ha);
-  basis::real_space rs(box, comm);
-
+	systems::box box = systems::box::cubic(10.0_b);
+	basis::real_space rs(box, /*spacing = */ 0.49672941, comm);
+	
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
 	hamiltonian::projector_fourier proj(rs, ps);

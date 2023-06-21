@@ -19,13 +19,13 @@ int main(int argc, char ** argv){
 
   input::poscar vasp_file(config::path::unit_tests_data() + "bn.poscar");
 
-	auto box = systems::box(vasp_file.lattice()).cutoff_energy(35.0_Ha);
+	auto box = systems::box(vasp_file.lattice());
   
 	systems::ions ions(box);
 	
 	ions.insert(vasp_file.atoms());
   
-  systems::electrons electrons(env.par(), ions, box, input::config::extra_states(3), input::kpoints::grid({2, 2, 2}, true));
+  systems::electrons electrons(env.par(), ions, box, input::config::cutoff(35.0_Ha) | input::config::extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 	
   ground_state::initial_guess(ions, electrons);
 	

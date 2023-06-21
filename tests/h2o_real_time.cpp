@@ -17,7 +17,7 @@ int main(int argc, char ** argv){
 
 	utils::match match(1e-5);
 
-	auto box = systems::box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite().cutoff_energy(30.0_Ha);
+	auto box = systems::box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite();
 	
 	systems::ions ions(box);
 
@@ -27,7 +27,7 @@ int main(int argc, char ** argv){
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	systems::electrons electrons(env.par().states(parstates), ions, box);
+	systems::electrons electrons(env.par().states(parstates), ions, box, input::config::cutoff(30.0_Ha));
 
 	// Propagation without perturbation
 	{

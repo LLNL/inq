@@ -30,7 +30,7 @@ int main(int argc, char ** argv){
 
 	auto a = 10.18_b;
 
-	auto box = systems::box::cubic(a).cutoff_energy(25.0_Ha);
+	auto box = systems::box::cubic(a);
 	
 	systems::ions ions(box);
 	
@@ -46,7 +46,7 @@ int main(int argc, char ** argv){
 	int kpoint_par = 1;
 	if(env.par().size()%2 == 0) kpoint_par = 2;
 	
-	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, box, input::kpoints::grid({2, 1, 1}, true));
+	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, box, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(25.0_Ha));
 	
 	ground_state::initial_guess(ions, electrons);
 

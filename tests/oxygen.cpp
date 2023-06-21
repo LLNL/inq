@@ -25,7 +25,7 @@ int main(int argc, char ** argv){
 	
 	utils::match match(3.0e-5);
 
-	auto box = systems::box::cubic(10.0_b).finite().spacing(0.43_b);
+	auto box = systems::box::cubic(10.0_b).finite();
 
 	systems::ions ions(box);
 
@@ -34,7 +34,7 @@ int main(int argc, char ** argv){
 	ions.insert("O", {-distance/2, 0.0_b, 0.0_b});
 	ions.insert("O", {distance/2, 0.0_b, 0.0_b});	
 
-	systems::electrons electrons(env.par(), ions, box, input::config::spin_polarized() | input::config::temperature(1000.0_K) | input::config::extra_states(2));
+	systems::electrons electrons(env.par(), ions, box, input::config::spacing(0.43_b) | input::config::spin_polarized() | input::config::temperature(1000.0_K) | input::config::extra_states(2));
 	ground_state::initial_guess(ions, electrons);
 		
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::mixing(0.2) | input::scf::energy_tolerance(1e-8_Ha));

@@ -28,9 +28,10 @@ int main(int argc, char ** argv){
 	auto basis_comm = cart_comm.axis(1);
 
   for(auto ecut = 25.0_Ha; ecut <= 300.0_Ha; ecut += 25.0_Ha){
-    
-    systems::box box = systems::box::cubic(6.66_b).cutoff_energy(ecut);
-    basis::real_space rs(box, basis_comm);
+
+    auto spacing = M_PI*sqrt(0.5/ecut.in_atomic_units());
+    systems::box box = systems::box::cubic(6.66_b);
+    basis::real_space rs(box, spacing, basis_comm);
     
     for(int ist = 1; ist <= 256; ist *= 2){
       

@@ -79,7 +79,24 @@ public:
 		if(spin_val() == states::ks_states::spin_config::POLARIZED) return 2;
 		return 1;
 	}
-  
+
+	static auto cutoff(quantity<magnitude::energy> arg_ecut){
+		config conf;
+		conf.spacing_ = M_PI*sqrt(0.5/arg_ecut.in_atomic_units());
+		return conf;		
+	}
+
+	static auto spacing(quantity<magnitude::length> arg_spacing){
+		config conf;
+		conf.spacing_ = arg_spacing.in_atomic_units();
+		return conf;		
+	}
+
+	auto spacing_value() const {
+		if(not spacing_.has_value()) throw std::runtime_error("Error: the cutoff energy or the spacing have not been set");
+		return *spacing_;
+	}
+	
 	friend auto operator|(config const & conf1, config const & conf2){
 		using inq::utils::merge_optional;
 		
@@ -87,7 +104,8 @@ public:
 		rconf.extra_states_	= merge_optional(conf1.extra_states_, conf2.extra_states_);
 		rconf.excess_charge_	= merge_optional(conf1.excess_charge_, conf2.excess_charge_);
 		rconf.temperature_	= merge_optional(conf1.temperature_, conf2.temperature_);
-		rconf.spin_	= merge_optional(conf1.spin_, conf2.spin_);		
+		rconf.spin_	= merge_optional(conf1.spin_, conf2.spin_);
+		rconf.spacing_	= merge_optional(conf1.spacing_, conf2.spacing_);
 		return rconf;
 	}
 	
@@ -97,6 +115,8 @@ private:
 	std::optional<double> excess_charge_;
 	std::optional<quantity<magnitude::energy>> temperature_;
 	std::optional<states::ks_states::spin_config> spin_;
+	std::optional<double> spacing_;
+	
 };
 
 }

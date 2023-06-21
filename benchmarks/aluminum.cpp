@@ -68,7 +68,7 @@ int main(int argc, char ** argv){
 	cell.emplace_back(frac_coord{0.5, 0.0, 0.5});
 	cell.emplace_back(frac_coord{0.5, 0.5, 0.0});
 	
-	systems::box box = systems::box::orthorhombic(reps[0]*alat, reps[1]*alat, reps[2]*alat).spacing(alat/20);
+	systems::box box = systems::box::orthorhombic(reps[0]*alat, reps[1]*alat, reps[2]*alat);
 	
 	systems::ions ions(box);
 	
@@ -85,7 +85,7 @@ int main(int argc, char ** argv){
 	
 	assert(int(ions.geo().num_atoms()) == int(cell.size()*product(reps)));
 				 
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::extra_states(2*product(reps)) | input::config::temperature(1000.0_K));
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, box, input::config::spacing(alat/20) | input::config::extra_states(2*product(reps)) | input::config::temperature(1000.0_K));
 	
 	auto restart_dir = "aluminum_" + std::to_string(reps[0]) + "_" + std::to_string(reps[1]) + "_" + std::to_string(reps[2]);
 

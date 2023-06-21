@@ -286,8 +286,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
-	systems::box box = systems::box::orthorhombic(13.3_b, 6.55_b, 8.02_b).cutoff_energy(20.0_Ha);
-  basis::real_space rs(box, cart_comm);
+	systems::box box = systems::box::orthorhombic(13.3_b, 6.55_b, 8.02_b);
+  basis::real_space rs(box, /*spacing =*/ 0.49672941, cart_comm);
 
 	int const nvec = 19;
 	

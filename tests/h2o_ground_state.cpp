@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 	
 	inq::utils::match match(3.0e-4);
 
-	inq::systems::box box = box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite().cutoff_energy(30.0_Ha);
+	inq::systems::box box = box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite();
 	
 	inq::systems::ions ions(box);
 
@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	inq::systems::electrons electrons(env.par().states(parstates), ions, box);
+	inq::systems::electrons electrons(env.par().states(parstates), ions, box, inq::input::config::cutoff(30.0_Ha));
 
 	inq::ground_state::initial_guess(ions, electrons);
 
