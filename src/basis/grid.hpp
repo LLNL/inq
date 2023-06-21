@@ -26,13 +26,13 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodicity, parallel::communicator & comm) :
+		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, parallel::communicator & comm) :
 			base(nr[0], comm),
 			cubic_part_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
-			periodicity_(periodicity),
+			periodicity_(cell.periodicity()),
 			double_grid_(double_grid){
 
 			if(base::part_.local_size() == 0){
@@ -57,7 +57,7 @@ namespace basis {
 		}
 		
 		grid(grid && old, parallel::communicator new_comm):
-			grid(old.cell_, old.nr_, old.spherical_g_grid_, old.double_grid_.enabled(), old.periodicity_, new_comm)
+			grid(old.cell_, old.nr_, old.spherical_g_grid_, old.double_grid_.enabled(), new_comm)
 		{
 		}
 		
@@ -231,7 +231,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	basis::grid gr(cell, {120, 45, 77}, true, false, 3, comm);
+	basis::grid gr(cell, {120, 45, 77}, true, false, comm);
 
 	CHECK(gr.sizes()[0] == 120);
 	CHECK(gr.sizes()[1] == 45);
