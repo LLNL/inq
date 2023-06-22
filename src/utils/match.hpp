@@ -33,17 +33,17 @@ namespace utils {
 
       auto diff = fabs(reference - value);
       
-      if(diff > tol_){//tfm::format(std::cout, "step %9d :  t =  %9.3f e = %.12f\n", 0, 0.0, energy.total());
+      if(diff > tol_){
 				
         tfm::format(std::cout, "\nMatch '%s': FAILED\n", match_name);
-        tfm::format(std::cout, "  reference value  = %.12f\n", reference);
         tfm::format(std::cout, "  calculated value = %.12f\n", value);
+        tfm::format(std::cout, "  reference value  = %.12f\n", reference);
         tfm::format(std::cout, "  difference       = %.1e\n", diff);
 				tfm::format(std::cout, "  tolerance        = %.1e\n\n", tol_);
         ok_ = false;
         return false;
       } else {
-        tfm::format(std::cout, "Match '%s': SUCCESS\n", match_name);
+        tfm::format(std::cout, "Match '%s': SUCCESS (value = %.12f , diff = %.1e)\n", match_name, value, diff);
         return true;
       }
     }
