@@ -93,17 +93,17 @@ int main(int argc, char ** argv){
 		
 		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(40) .dt(0.03_atomictime), ions::propagator::fixed{}, kick);
 
-		data_match.check("energy step   0", energy[0],   -33.418518663279);
-		data_match.check("energy step  10", energy[10],  -33.418518663116);
-		data_match.check("energy step  20", energy[20],  -33.418518662540);
-		data_match.check("energy step  30", energy[30],  -33.418518662296);
-		data_match.check("energy step  40", energy[40],  -33.418518662423);
+		data_match.check("energy step   0", energy[0],   -33.418518667909);
+		data_match.check("energy step  10", energy[10],  -33.418518667745);
+		data_match.check("energy step  20", energy[20],  -33.418518667170);
+		data_match.check("energy step  30", energy[30],  -33.418518666925);
+		data_match.check("energy step  40", energy[40],  -33.418518667053);
 		
-		data_match.check("current in z step   0", jz[0],   -0.157729547895);
-		data_match.check("current in z step  10", jz[10],  -0.151911067747);
-		data_match.check("current in z step  20", jz[20],  -0.144088608186);
-		data_match.check("current in z step  30", jz[30],  -0.140191267000);
-		data_match.check("current in z step  40", jz[40],  -0.135683835952);
+		data_match.check("current in z step   0", jz[0],   -0.157728627231);
+		data_match.check("current in z step  10", jz[10],  -0.151910113914);
+		data_match.check("current in z step  20", jz[20],  -0.144087622581);
+		data_match.check("current in z step  30", jz[30],  -0.140190241687);
+		data_match.check("current in z step  40", jz[40],  -0.135682773098);
 		
 		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
 		data_match.check("vector potential in z step  10", Az[10],  0.050900000000);
@@ -128,23 +128,23 @@ int main(int argc, char ** argv){
 		
 		real_time::propagate<>(ions, electrons, output, options::theory{}.lda().lrc(0.2), options::real_time{}.num_steps(40).dt(0.03_atomictime), ions::propagator::fixed{}, kick);
 
-		data_match.check("energy step   0", energy[0],   -33.418518663279);
-		data_match.check("energy step  10", energy[10],  -33.418518483345);
-		data_match.check("energy step  20", energy[20],  -33.418517942165);
-		data_match.check("energy step  30", energy[30],  -33.418517090347);
-		data_match.check("energy step  40", energy[40],  -33.418515953351);
+		data_match.check("energy step   0", energy[0],   -33.418518667909);
+		data_match.check("energy step  10", energy[10],  -33.418518487977);
+		data_match.check("energy step  20", energy[20],  -33.418517946804);
+		data_match.check("energy step  30", energy[30],  -33.418517094998);
+		data_match.check("energy step  40", energy[40],  -33.418515958018);
 			
-		data_match.check("current in z step   0", jz[0],   -0.157729547895);
-		data_match.check("current in z step  10", jz[10],  -0.151948955175);
-		data_match.check("current in z step  20", jz[20],  -0.144243229877);
-		data_match.check("current in z step  30", jz[30],  -0.140534021619);
-		data_match.check("current in z step  40", jz[40],  -0.136281715570);
+		data_match.check("current in z step   0", jz[0],   -0.157728627231);
+		data_match.check("current in z step  10", jz[10],  -0.151948001118);
+		data_match.check("current in z step  20", jz[20],  -0.144242243331);
+		data_match.check("current in z step  30", jz[30],  -0.140532994159);
+		data_match.check("current in z step  40", jz[40],  -0.136280648873);
 		
 		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
-		data_match.check("vector potential in z step  10", Az[10],  0.050912319827);
-		data_match.check("vector potential in z step  20", Az[20],  0.050951055718);
-		data_match.check("vector potential in z step  30", Az[30],  0.051015010353);
-		data_match.check("vector potential in z step  40", Az[40],  0.051103425299);
+		data_match.check("vector potential in z step  10", Az[10],  0.050912319754);
+		data_match.check("vector potential in z step  20", Az[20],  0.050951055407);
+		data_match.check("vector potential in z step  30", Az[30],  0.051015009633);
+		data_match.check("vector potential in z step  40", Az[40],  0.051103423993);
 	}
 	
 	fftw_cleanup();
