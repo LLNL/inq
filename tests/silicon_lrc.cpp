@@ -34,10 +34,10 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	systems::electrons electrons(env.par(), ions, input::config::cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
+	systems::electrons electrons(env.par(), ions, input::config::cutoff(35.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 	
 	ground_state::initial_guess(ions, electrons);
-	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
+	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
 	electrons.save("silicon_restart");
 	
 	{ //NO LRC CORRECTION
@@ -50,17 +50,19 @@ int main(int argc, char ** argv){
 		
 		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.04_atomictime), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{}, kick);
 		
-		data_match.check("current in z step   0", jz[0],   -0.157804767329);
-		data_match.check("current in z step  10", jz[10],  -0.146630346166);
-		data_match.check("current in z step  20", jz[20],  -0.137863447161);
-		data_match.check("current in z step  30", jz[30],  -0.132069747875);
+		data_match.check("current in z step   0", jz[0],   -0.157729547895);
+		data_match.check("current in z step  10", jz[10],  -0.151911067747);
+		data_match.check("current in z step  20", jz[20],  -0.144088608186);
+		data_match.check("current in z step  30", jz[30],  -0.140191267000);
+		data_match.check("current in z step  40", jz[40],  -0.135683835952);
 		
 		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
 		data_match.check("vector potential in z step  10", Az[10],  0.050900000000);
 		data_match.check("vector potential in z step  20", Az[20],  0.050900000000);
 		data_match.check("vector potential in z step  30", Az[30],  0.050900000000);
+		data_match.check("vector potential in z step  40", Az[40],  0.050900000000);
 	}
 
 	{ //LRC CORRECTION
@@ -75,17 +77,19 @@ int main(int argc, char ** argv){
 		
 		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda() | input::interaction::lrc(0.2), input::rt::num_steps(30) | input::rt::dt(0.04_atomictime), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda() | input::interaction::lrc(0.2), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{}, kick);
 		
-		data_match.check("current in z step   0", jz[0],   -0.157798692934);
-		data_match.check("current in z step  10", jz[10],  -0.146691801751);
-		data_match.check("current in z step  20", jz[20],  -0.138123785595);
-		data_match.check("current in z step  30", jz[30],  -0.132646541020);
+		data_match.check("current in z step   0", jz[0],   -0.157729547895);
+		data_match.check("current in z step  10", jz[10],  -0.151948847224);
+		data_match.check("current in z step  20", jz[20],  -0.144242611185);
+		data_match.check("current in z step  30", jz[30],  -0.140532611854);
+		data_match.check("current in z step  40", jz[40],  -0.136279338368);
 		
 		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
-		data_match.check("vector potential in z step  10", Az[10],  0.050921665475);
-		data_match.check("vector potential in z step  20", Az[20],  0.050988650385);
-		data_match.check("vector potential in z step  30", Az[30],  0.051098335228);	
+		data_match.check("vector potential in z step  10", Az[10],  0.050912284789);
+		data_match.check("vector potential in z step  20", Az[20],  0.050950852243);
+		data_match.check("vector potential in z step  30", Az[30],  0.051014538212);
+		data_match.check("vector potential in z step  40", Az[40],  0.051102615912);
 	}
 	
 	fftw_cleanup();
