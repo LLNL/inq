@@ -141,7 +141,7 @@ public:
 	}
 
 	void update_induced_potential(vector3<double,covariant> & induced, vector3<double,covariant> & velocity, vector3<double,covariant> & accel, double const dt, const double volume, vector3<double,covariant> const & current) const {
-		if(interaction_.induced_vector_potential_value() == input::interaction::induced_vector_potential::GAUGE_FIELD){
+		if(interaction_.induced_vector_potential_value() == input::interaction::induced_vector_potential::LRC){
 			induced += 0.5*dt*velocity;
 			velocity += 0.5*dt*accel;
 			accel = interaction_.alpha_value()*(-current)/volume;

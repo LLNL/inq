@@ -43,7 +43,7 @@ public:
 	
 	enum class induced_vector_potential {
 		NONE,
-		GAUGE_FIELD
+		LRC
 	};
 
 	interaction(){
@@ -149,16 +149,16 @@ public:
 		return fourier_pseudo_.value_or(false);
 	}
 
-	static auto gauge_field(){
+	static auto lrc(){
 		interaction inter;
-		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
+		inter.induced_vecpot_ = induced_vector_potential::LRC;
 		inter.alpha_ = -4*M_PI;
 		return inter;
 	}
 
-	static auto gauge_field(const double alpha){
+	static auto lrc(const double alpha){
 		interaction inter;
-		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
+		inter.induced_vecpot_ = induced_vector_potential::LRC;
 		inter.alpha_ = alpha;
 		return inter;
 	}
