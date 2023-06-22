@@ -37,29 +37,56 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par(), ions, input::config::cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 	
 	ground_state::initial_guess(ions, electrons);
-
 	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
+	electrons.save("silicon_restart");
 	
-	std::vector<double> jz;
-	std::vector<double> Az;
-	auto output = [&](auto data){
-		jz.push_back(data.current()[2]); 
-		Az.push_back(data.vector_field()[2]);
-	};
+	{ //NO LRC CORRECTION
+		std::vector<double> jz;
+		std::vector<double> Az;
+		auto output = [&](auto data){
+			jz.push_back(data.current()[2]); 
+			Az.push_back(data.vector_field()[2]);
+		};
+		
+		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
+		
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.04_atomictime), ions::propagator::fixed{}, kick);
+		
+		data_match.check("current in z step   0", jz[0],   -0.157804767329);
+		data_match.check("current in z step  10", jz[10],  -0.146630346166);
+		data_match.check("current in z step  20", jz[20],  -0.137863447161);
+		data_match.check("current in z step  30", jz[30],  -0.132069747875);
+		
+		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
+		data_match.check("vector potential in z step  10", Az[10],  0.050900000000);
+		data_match.check("vector potential in z step  20", Az[20],  0.050900000000);
+		data_match.check("vector potential in z step  30", Az[30],  0.050900000000);
+	}
 
-	auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
-
-	real_time::propagate<>(ions, electrons, output, input::interaction::lda()|input::interaction::gauge_field(0.2), input::rt::num_steps(30) | input::rt::dt(0.04_atomictime), ions::propagator::fixed{}, kick);
-
-	data_match.check("current in z step   0", jz[0],   -0.157798692934);
-	data_match.check("current in z step  10", jz[10],  -0.146691801751);
-	data_match.check("current in z step  20", jz[20],  -0.138123785595);
-	data_match.check("current in z step  30", jz[30],  -0.132646541020);
-	
-	data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
-	data_match.check("vector potential in z step  10", Az[10],  0.050921665475);
-	data_match.check("vector potential in z step  20", Az[20],  0.050988650385);
-	data_match.check("vector potential in z step  30", Az[30],  0.051098335228);
+	{ //LRC CORRECTION
+		electrons.load("silicon_restart");
+		
+		std::vector<double> jz;
+		std::vector<double> Az;
+		auto output = [&](auto data){
+			jz.push_back(data.current()[2]); 
+			Az.push_back(data.vector_field()[2]);
+		};
+		
+		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
+		
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda() | input::interaction::gauge_field(0.2), input::rt::num_steps(30) | input::rt::dt(0.04_atomictime), ions::propagator::fixed{}, kick);
+		
+		data_match.check("current in z step   0", jz[0],   -0.157798692934);
+		data_match.check("current in z step  10", jz[10],  -0.146691801751);
+		data_match.check("current in z step  20", jz[20],  -0.138123785595);
+		data_match.check("current in z step  30", jz[30],  -0.132646541020);
+		
+		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
+		data_match.check("vector potential in z step  10", Az[10],  0.050921665475);
+		data_match.check("vector potential in z step  20", Az[20],  0.050988650385);
+		data_match.check("vector potential in z step  30", Az[30],  0.051098335228);	
+	}
 	
 	fftw_cleanup();
 
