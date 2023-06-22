@@ -45,7 +45,7 @@ int main(int argc, char ** argv){
 		std::vector<double> Az;
 		auto output = [&](auto data){
 			jz.push_back(data.current()[2]); 
-			Az.push_back(data.vector_field()[2]);
+			Az.push_back(data.uniform_vector_potential()[2]);
 		};
 		
 		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
@@ -72,7 +72,7 @@ int main(int argc, char ** argv){
 		std::vector<double> Az;
 		auto output = [&](auto data){
 			jz.push_back(data.current()[2]); 
-			Az.push_back(data.vector_field()[2]);
+			Az.push_back(data.uniform_vector_potential()[2]);
 		};
 		
 		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
