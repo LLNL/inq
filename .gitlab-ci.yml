@@ -292,10 +292,10 @@ gcc-ompi-fast:
       - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1_td
 
 #########################################################################################################################
-# CLANG-OMPI
+# CLANG-OMPI-DEBUG
 #########################################################################################################################
 
-clang-ompi:
+clang-ompi-debug:
     stage: build
     script:
       - clang++ --version
@@ -307,52 +307,52 @@ clang-ompi:
       - time make
       - time make install
       - cd ../
-      - time tar -Ipixz -cvf clang-ompi-build.tar.xz build/
+      - time tar -Ipixz -cvf clang-ompi-debug-build.tar.xz build/
     artifacts:
       paths:
-      - clang-ompi-build.tar.xz
+      - clang-ompi-debug-build.tar.xz
 
-clang-ompi-1p:
+clang-ompi-debug-1p:
     stage: test
-    needs: ["clang-ompi"]    
+    needs: ["clang-ompi-debug"]    
     script:
-      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
+      - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 360
 
-clang-ompi-2p:
+clang-ompi-debug-2p:
     stage: test
-    needs: ["clang-ompi"]
+    needs: ["clang-ompi-debug"]
     script:
-      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
+      - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
       
-clang-ompi-3p:
+clang-ompi-debug-3p:
     stage: test
-    needs: ["clang-ompi"]
+    needs: ["clang-ompi-debug"]
     script:
-      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
+      - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
 
-clang-ompi-4p:
+clang-ompi-debug-4p:
     stage: test
-    needs: ["clang-ompi"]
+    needs: ["clang-ompi-debug"]
     script:
-      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
+      - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
 
-clang-ompi-5p:
+clang-ompi-debug-5p:
     stage: test
-    needs: ["clang-ompi"]
+    needs: ["clang-ompi-debug"]
     script:
-      - time tar -Ipixz -xvf clang-ompi-build.tar.xz
+      - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
