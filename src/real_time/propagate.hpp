@@ -92,7 +92,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			iter_start_time = new_time;
 		}
 
-		if(console) console->trace("real-time propafation ended normally");
+		if(console) console->trace("real-time propagation ended normally");
 	}
 }
 }
