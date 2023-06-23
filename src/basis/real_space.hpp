@@ -29,13 +29,13 @@ class fourier_space;
 
 		using reciprocal_space = fourier_space;
 
-    real_space(systems::box const & box, double const & spacing, parallel::communicator && comm):
-			grid(box.cell(), calculate_dimensions(box, spacing), box.spherical_grid_value(), comm)
+    real_space(systems::box const & box, double const & spacing, parallel::communicator && comm, bool spherical_grid = false):
+			grid(box.cell(), calculate_dimensions(box, spacing), spherical_grid, comm)
 		{
     }
 		
-    real_space(systems::box const & box, double const & spacing, parallel::communicator & comm):
-			grid(box.cell(), calculate_dimensions(box, spacing), box.spherical_grid_value(), comm)
+    real_space(systems::box const & box, double const & spacing, parallel::communicator & comm, bool spherical_grid = false):
+			grid(box.cell(), calculate_dimensions(box, spacing), spherical_grid, comm)
 		{
     }
 

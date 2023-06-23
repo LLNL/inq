@@ -128,7 +128,7 @@ public:
 		kpin_states_comm_(kpin_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
-		states_basis_(box, conf.spacing_value(), basis_subcomm(full_comm_)),
+		states_basis_(box, conf.spacing_value(), basis_subcomm(full_comm_), conf.spherical_grid_value()),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(conf.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), conf.double_grid_value()),
 		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
