@@ -53,7 +53,7 @@ public:
 				auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(geo.atoms()[iatom])));
 				insert.first->second.add_coord(basis.cell().metric().to_contravariant(geo.coordinates()[iatom]));
 			} else {
-				projectors.emplace_back(basis, pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
+				projectors.emplace_back(basis, pot.double_grid(), pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
 				if(projectors.back().empty()) projectors.pop_back(); 
 			}
 		}
@@ -258,7 +258,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(ions.geo().num_atoms(), ions.geo().atoms(), rs.gcutoff());
+	hamiltonian::atomic_potential pot(ions.geo().num_atoms(), ions.geo().atoms(), rs.gcutoff(), /*double_grid = */ false);
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 

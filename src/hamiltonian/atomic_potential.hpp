@@ -41,13 +41,16 @@ namespace hamiltonian {
 		using pseudopotential_type = pseudo::pseudopotential<gpu::array<double, 1>>;
 		
 		template <class atom_array>
-		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff):
+		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, bool double_grid):
 			sep_(0.625), //this is the default from octopus
 			natoms_(natoms),
-			pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/")
+			pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
+			double_grid_(double_grid)
 		{
 
 			CALI_CXX_MARK_FUNCTION;
+
+			gcutoff *= double_grid_.spacing_factor(); 
 			
 			has_nlcc_ = false;
 			nelectrons_ = 0.0;
@@ -110,7 +113,7 @@ namespace hamiltonian {
 				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, atom_position, ps.short_range_potential_radius());
 
-				if(not basis.double_grid().enabled()){
+				if(not double_grid_.enabled()){
 
 					gpu::run(sphere.size(),
 									 [pot = begin(potential.cubic()),
@@ -129,7 +132,7 @@ namespace hamiltonian {
 									 [pot = begin(potential.cubic()),
 										sph = sphere.ref(),
 										spline = ps.short_range_potential().function(),
-										dg = basis.double_grid().ref(),
+										dg = double_grid_.ref(),
 										spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint){
 										 gpu::atomic::add(&pot[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]],
 																			dg.value([spline] GPU_LAMBDA (auto pos) { return spline(pos.length()); }, spac, metric.to_cartesian(sph.point_pos(ipoint))));
@@ -292,6 +295,10 @@ namespace hamiltonian {
 			return sep_;
 		}
 
+		auto & double_grid() const {
+			return double_grid_;
+		}
+		
 	private:
 
 		pseudo::math::erf_range_separation sep_;
@@ -300,6 +307,7 @@ namespace hamiltonian {
 		pseudo::set pseudo_set_;
 		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		bool has_nlcc_;
+		basis::double_grid double_grid_;
 
 	};
 
@@ -332,13 +340,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({element("P"), element("X")});
 	
-		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut));
+		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut, /*double_grid = */ false));
 	}
 	
 	SECTION("Duplicated element"){
 		std::vector<species> el_list({element("N"), element("N")});
 
-		hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut);
+		hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut, /*double_grid = */ false);
 
 		CHECK(pot.num_species() == 1);
 		CHECK(pot.num_electrons() == 10.0_a);
@@ -348,7 +356,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	SECTION("Empty list"){
 		std::vector<species> el_list;
 		
-		hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut);
+		hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut, false);
 
 		CHECK(pot.num_species() == 0);
 		CHECK(pot.num_electrons() == 0.0_a);
@@ -360,7 +368,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	SECTION("CNOH"){
 		species el_list[] = {element("C"), element("N"), element("O"), element("H")};
 
-		hamiltonian::atomic_potential pot(4, el_list, gcut);
+		hamiltonian::atomic_potential pot(4, el_list, gcut, /*double_grid = */ false);
 
 		CHECK(pot.num_species() == 4);
 		CHECK(pot.num_electrons() == 16.0_a);
@@ -373,7 +381,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		auto box = systems::box::cubic(20.0_b);
 		basis::real_space rs(box, /*spacing = */ 0.49672941, comm);		
 		
-		hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff());
+		hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), /*double_grid = */ false);
 		
 		CHECK(pot.num_species() == 2);
 		CHECK(pot.num_electrons() == 30.0_a);

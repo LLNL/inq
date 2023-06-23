@@ -96,22 +96,12 @@ public:
 		return density_factor_.value_or(1.0);
 	}
 	
-	auto & double_grid(){
-		double_grid_ = true;
-		return *this;
-	}
-	
-	auto double_grid_value() const {
-		return double_grid_.value_or(false);
-	}
-
 	friend auto operator==(box const& self, box const& other) {
 		return
 			    self.lattice_vectors_     == other.lattice_vectors_
 			and self.periodicity_ == other.periodicity_
 			and self.spherical_grid_      == other.spherical_grid_
 			and self.density_factor_      == other.density_factor_
-			and self.double_grid_         == other.double_grid_
 		;
 	}
 	
@@ -136,8 +126,6 @@ private:
 	std::optional<int> periodicity_;
 	std::optional<bool> spherical_grid_;
 	std::optional<double> density_factor_;
-	std::optional<bool> double_grid_;	
-
 		
 };
 
