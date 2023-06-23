@@ -106,7 +106,18 @@ public:
 	auto double_grid_value() const {
 		return double_grid_.value_or(false);
 	}
+
+	static auto density_factor(double arg_factor){
+		config conf;
+		conf.density_factor_ = arg_factor;
+		return conf;
+	}
+
+	auto density_factor_value() const {
+		return density_factor_.value_or(1.0);
+	}
 	
+
 	friend auto operator|(config const & conf1, config const & conf2){
 		using inq::utils::merge_optional;
 		
@@ -116,7 +127,8 @@ public:
 		rconf.temperature_	= merge_optional(conf1.temperature_, conf2.temperature_);
 		rconf.spin_	= merge_optional(conf1.spin_, conf2.spin_);
 		rconf.spacing_	= merge_optional(conf1.spacing_, conf2.spacing_);
-		rconf.double_grid_	= merge_optional(conf1.double_grid_, conf2.double_grid_);		
+		rconf.double_grid_	= merge_optional(conf1.double_grid_, conf2.double_grid_);
+		rconf.density_factor_	= merge_optional(conf1.density_factor_, conf2.density_factor_);
 		return rconf;
 	}
 	
@@ -128,6 +140,7 @@ private:
 	std::optional<states::ks_states::spin_config> spin_;
 	std::optional<double> spacing_;
 	std::optional<bool> double_grid_;	
+	std::optional<double> density_factor_;
 
 };
 

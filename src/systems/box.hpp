@@ -87,22 +87,12 @@ public:
 		return spherical_grid_.value_or(false);
 	}
 
-	auto & density_factor(double arg_factor){
-		density_factor_ = arg_factor;
-		return *this;
-	}
-
-	auto density_factor_value() const {
-		return density_factor_.value_or(1.0);
-	}
-	
 	friend auto operator==(box const& self, box const& other) {
 		return
 			    self.lattice_vectors_     == other.lattice_vectors_
 			and self.periodicity_ == other.periodicity_
 			and self.spherical_grid_      == other.spherical_grid_
-			and self.density_factor_      == other.density_factor_
-		;
+			;
 	}
 	
 	friend auto operator!=(box const& self, box const& other) {return not(self == other);}
@@ -125,7 +115,6 @@ private:
 	std::array<std::optional<vector3<double>>, 3> lattice_vectors_;
 	std::optional<int> periodicity_;
 	std::optional<bool> spherical_grid_;
-	std::optional<double> density_factor_;
 		
 };
 
