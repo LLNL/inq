@@ -115,20 +115,20 @@ public:
 	}
 
 	template <typename KptsType = input::kpoints::list>
-	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, KptsType const & kpts, const input::config & conf = {}):
-		electrons(dist, ions, box, conf, kpts)
+	electrons(input::parallelization const & dist, const inq::systems::ions & ions, KptsType const & kpts, const input::config & conf = {}):
+		electrons(dist, ions, conf, kpts)
 	{
 	}
 
 	template <typename KptsType = input::kpoints::list>	
-	electrons(input::parallelization const & dist, const inq::systems::ions & ions, systems::box const & box, const input::config & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
+	electrons(input::parallelization const & dist, const inq::systems::ions & ions, const input::config & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm(conf.num_spin_components_val(), brillouin_zone_.size())),
 		kpin_comm_(kpin_subcomm(full_comm_)),
 		kpin_states_comm_(kpin_states_subcomm(full_comm_)),
 		states_comm_(states_subcomm(full_comm_)),
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
-		states_basis_(box, conf.spacing_value(), basis_subcomm(full_comm_), conf.spherical_grid_value()),
+		states_basis_(ions.cell(), conf.spacing_value(), basis_subcomm(full_comm_), conf.spherical_grid_value()),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(conf.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), conf.double_grid_value()),
 		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
@@ -487,7 +487,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	auto par = input::parallelization(comm);
 		
-	systems::electrons electrons(par, ions, box, input::config::cutoff(15.0_Ha));
+	systems::electrons electrons(par, ions, input::config::cutoff(15.0_Ha));
 
 	CHECK(electrons.states().num_electrons() == 38.0_a);
 	CHECK(electrons.states().num_states() == 19);
@@ -517,7 +517,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	electrons.save("electron_restart");
 	
-	systems::electrons electrons_read(par, ions, box, input::config::cutoff(15.0_Ha));
+	systems::electrons electrons_read(par, ions, input::config::cutoff(15.0_Ha));
 	
 	electrons_read.load("electron_restart");
 
@@ -543,7 +543,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		newel.save("newel_restart");
 		
-		systems::electrons newel_read(par, ions, box, input::config::cutoff(15.0_Ha));
+		systems::electrons newel_read(par, ions, input::config::cutoff(15.0_Ha));
 		newel_read.load("newel_restart");
 		
 		CHECK(electrons.kpin_size() == newel_read.kpin_size());
@@ -568,7 +568,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("Electrons with kpoints"){
-		systems::electrons electrons(par, ions, box, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(15.0_Ha));
+		systems::electrons electrons(par, ions, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(15.0_Ha));
 		
 		CHECK(electrons.states().num_electrons() == 38.0_a);
 		CHECK(electrons.states().num_states() == 19);

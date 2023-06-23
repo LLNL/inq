@@ -46,7 +46,7 @@ int main(int argc, char ** argv){
 	int kpoint_par = 1;
 	if(env.par().size()%2 == 0) kpoint_par = 2;
 	
-	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, box, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(25.0_Ha));
+	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(25.0_Ha));
 	
 	ground_state::initial_guess(ions, electrons);
 

@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 
 	ions.insert(local_h, {150.0_b, -30.0_b, 0.0_b});
 
-	inq::systems::electrons electrons(env.par(), ions, box, input::config::cutoff(40.0_Ha));
+	inq::systems::electrons electrons(env.par(), ions, input::config::cutoff(40.0_Ha));
 	inq::ground_state::initial_guess(ions, electrons);
 	
 	inq::ground_state::calculate(ions, electrons);

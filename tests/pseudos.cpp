@@ -32,7 +32,7 @@ int main(int argc, char ** argv){
 		
 		ions.insert("C" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
 
-		systems::electrons electrons(env.par(), ions, box, input::config::cutoff(25.0_Ha) | input::config::extra_states(4) | input::config::temperature(300.0_K));
+		systems::electrons electrons(env.par(), ions, input::config::cutoff(25.0_Ha) | input::config::extra_states(4) | input::config::temperature(300.0_K));
 		
 		ground_state::initial_guess(ions, electrons);
 		
@@ -56,7 +56,7 @@ int main(int argc, char ** argv){
 		
 		ions.insert("C" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C.ccECP.upf"), {0.0_b, 0.0_b, 0.0_b});
 
-		systems::electrons electrons(env.par(), ions, box, input::config::cutoff(25.0_Ha) | input::config::extra_states(4) | input::config::temperature(300.0_K));
+		systems::electrons electrons(env.par(), ions, input::config::cutoff(25.0_Ha) | input::config::extra_states(4) | input::config::temperature(300.0_K));
 		
 		ground_state::initial_guess(ions, electrons);
 		
