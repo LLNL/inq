@@ -26,13 +26,12 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, int periodicity, parallel::communicator & comm) :
+		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, bool double_grid, parallel::communicator & comm) :
 			base(nr[0], comm),
 			cubic_part_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr),
 			spherical_g_grid_(spherical_grid),
-			periodicity_(periodicity),
 			double_grid_(double_grid){
 
 			if(base::part_.local_size() == 0){
@@ -57,7 +56,7 @@ namespace basis {
 		}
 		
 		grid(grid && old, parallel::communicator new_comm):
-			grid(old.cell_, old.nr_, old.spherical_g_grid_, old.double_grid_.enabled(), old.periodicity_, new_comm)
+			grid(old.cell_, old.nr_, old.spherical_g_grid_, old.double_grid_.enabled(), new_comm)
 		{
 		}
 		
@@ -104,10 +103,6 @@ namespace basis {
 			return nr_local_;
 		}
 		
-		auto periodicity() const {
-			return periodicity_;
-		}
-
 		template <class output_stream>
     void info(output_stream & out) const {
       out << "PLANE WAVE BASIS SET:" << std::endl;
@@ -183,7 +178,7 @@ namespace basis {
 
 		auto & cell() const {
 			return cell_;
-		}		
+		}	
 
 	protected:
 
@@ -205,8 +200,6 @@ namespace basis {
 		long npoints_;
 
 		bool spherical_g_grid_;
-
-		int periodicity_;
 
 		basis::double_grid double_grid_;
 
@@ -231,7 +224,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	basis::grid gr(cell, {120, 45, 77}, true, false, 3, comm);
+	basis::grid gr(cell, {120, 45, 77}, true, false, comm);
 
 	CHECK(gr.sizes()[0] == 120);
 	CHECK(gr.sizes()[1] == 45);
@@ -277,8 +270,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	auto new_gr = basis::grid(basis::grid(gr), parallel::communicator{boost::mpi3::environment::get_self_instance()});
 
 	CHECK(gr.sizes() == new_gr.sizes());
-	CHECK(new_gr.local_sizes() == new_gr.sizes());	
-	CHECK(gr.periodicity() == new_gr.periodicity());
+	CHECK(new_gr.local_sizes() == new_gr.sizes());
+	CHECK(gr.cell().periodicity() == new_gr.cell().periodicity());	
 	
 }
 #endif
