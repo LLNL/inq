@@ -30,7 +30,7 @@ class projector {
 public:
 #endif
 	
-	void build(const basis::real_space & basis, atomic_potential::pseudopotential_type const & ps) {
+	void build(basis::real_space const & basis, basis::double_grid const & double_grid, atomic_potential::pseudopotential_type const & ps) {
 
 		CALI_CXX_MARK_SCOPE("projector::build");
 		
@@ -41,7 +41,7 @@ public:
 
 			for(auto mm = 0; mm < 2*l + 1; mm++) kb_coeff_[iproj_lm + mm] = ps.kb_coeff(iproj_l);
 			
-			if(not basis.double_grid().enabled()) {
+			if(not double_grid.enabled()) {
 				
 				// now construct the projector with the spherical harmonics
 				gpu::run(sphere_.size(), 2*l + 1,
@@ -58,7 +58,7 @@ public:
 				
 				gpu::run(sphere_.size(), 2*l + 1,
 								 [mat = begin(matrix_), spline = ps.projector(iproj_l).function(), sph = sphere_.ref(), l, iproj_lm,
-									dg = basis.double_grid().ref(), spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint, auto m) {
+									dg = double_grid.ref(), spac = basis.rspacing(), metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint, auto m) {
 									 mat[iproj_lm + m][ipoint] = dg.value([spline, l, m] GPU_LAMBDA(auto pos) { return spline(pos.length())*pseudo::math::sharmonic(l, m - l, pos);}, spac, metric.to_cartesian(sph.point_pos(ipoint)));
 								 });
 				
@@ -73,14 +73,14 @@ public:
 	}
 	
 public:
-	projector(const basis::real_space & basis, atomic_potential::pseudopotential_type const & ps, vector3<double> atom_position, int iatom):
+	projector(const basis::real_space & basis, basis::double_grid const & double_grid, atomic_potential::pseudopotential_type const & ps, vector3<double> atom_position, int iatom):
 		sphere_(basis, atom_position, ps.projector_radius()),
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
 		kb_coeff_(nproj_),
 		iatom_(iatom){
 
-		build(basis, ps);
+		build(basis, double_grid, ps);
 	}
 
 	projector(projector const &) = delete;		
@@ -160,10 +160,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	ions::geometry geo;
 	systems::box box = systems::box::cubic(10.0_b);
 	basis::real_space rs(box, /*spacing = */ 0.49672941, comm);
+	basis::double_grid dg(false);
 	
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	
-	hamiltonian::projector proj(rs, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+	hamiltonian::projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
 	CHECK(proj.num_projectors() == 8);
 

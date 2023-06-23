@@ -96,6 +96,16 @@ public:
 		if(not spacing_.has_value()) throw std::runtime_error("Error: the cutoff energy or the spacing have not been set");
 		return *spacing_;
 	}
+
+	static auto double_grid(){
+		config conf;
+		conf.double_grid_ = true;
+		return conf;				
+	}
+	
+	auto double_grid_value() const {
+		return double_grid_.value_or(false);
+	}
 	
 	friend auto operator|(config const & conf1, config const & conf2){
 		using inq::utils::merge_optional;
@@ -106,6 +116,7 @@ public:
 		rconf.temperature_	= merge_optional(conf1.temperature_, conf2.temperature_);
 		rconf.spin_	= merge_optional(conf1.spin_, conf2.spin_);
 		rconf.spacing_	= merge_optional(conf1.spacing_, conf2.spacing_);
+		rconf.double_grid_	= merge_optional(conf1.double_grid_, conf2.double_grid_);		
 		return rconf;
 	}
 	
@@ -116,7 +127,8 @@ private:
 	std::optional<quantity<magnitude::energy>> temperature_;
 	std::optional<states::ks_states::spin_config> spin_;
 	std::optional<double> spacing_;
-	
+	std::optional<bool> double_grid_;	
+
 };
 
 }
