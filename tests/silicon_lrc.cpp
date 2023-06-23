@@ -39,8 +39,33 @@ int main(int argc, char ** argv){
 	ground_state::initial_guess(ions, electrons);
 	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
 	electrons.save("silicon_restart");
+
+	{ //NO KICK
+		std::vector<double> jz;
+		std::vector<double> Az;
+		auto output = [&](auto data){
+			jz.push_back(data.current()[2]); 
+			Az.push_back(data.uniform_vector_potential()[2]);
+		};
+		
+		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{});
+		
+		data_match.check("current in z step   0", jz[0],   -0.000002678775);
+		data_match.check("current in z step  10", jz[10],  -0.000002669488);
+		data_match.check("current in z step  20", jz[20],  -0.000002663568);
+		data_match.check("current in z step  30", jz[30],  -0.000002656289);
+		data_match.check("current in z step  40", jz[40],  -0.000002637812);
+		
+		data_match.check("vector potential in z step   0", Az[0],   0.0);
+		data_match.check("vector potential in z step  10", Az[10],  0.0);
+		data_match.check("vector potential in z step  20", Az[20],  0.0);
+		data_match.check("vector potential in z step  30", Az[30],  0.0);
+		data_match.check("vector potential in z step  40", Az[40],  0.0);
+	}
 	
 	{ //NO LRC CORRECTION
+		electrons.load("silicon_restart");
+				
 		std::vector<double> jz;
 		std::vector<double> Az;
 		auto output = [&](auto data){
