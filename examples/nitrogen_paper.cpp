@@ -25,7 +25,7 @@ int main(int argc, char ** argv){
 	ions.insert("N", {0.0_b, 0.0_b, -distance/2});
   ions.insert("N", {0.0_b, 0.0_b,  distance/2});
 	
-	systems::electrons electrons(env.par(), ions, box, input::config::cutoff(40.0_Ha));
+	systems::electrons electrons(env.par(), ions, input::config::cutoff(40.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, interaction::pbe());

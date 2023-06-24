@@ -22,7 +22,7 @@ int main(int argc, char ** argv){
 	
 	ions.insert(cif_file.atoms());
 
-	systems::electrons electrons(env.par(), ions, box, input::config::cutoff(30.0_Ha));
+	systems::electrons electrons(env.par(), ions, input::config::cutoff(30.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-8_Ha));

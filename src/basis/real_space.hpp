@@ -29,13 +29,13 @@ class fourier_space;
 
 		using reciprocal_space = fourier_space;
 
-    real_space(systems::box const & box, double const & spacing, parallel::communicator && comm):
-			grid(box.cell(), calculate_dimensions(box, spacing), box.spherical_grid_value(), comm)
+		real_space(ions::unit_cell const & cell, double const & spacing, parallel::communicator comm, bool spherical_grid = false):
+			grid(cell, calculate_dimensions(cell, spacing), spherical_grid, comm)
 		{
     }
 		
-    real_space(systems::box const & box, double const & spacing, parallel::communicator & comm):
-			grid(box.cell(), calculate_dimensions(box, spacing), box.spherical_grid_value(), comm)
+    real_space(systems::box const & box, double const & spacing, parallel::communicator comm, bool spherical_grid = false):
+			real_space(box.cell(), spacing, comm, spherical_grid)
 		{
     }
 
@@ -175,13 +175,13 @@ class fourier_space;
 		
 	private:
 
-		static std::array<int, 3> calculate_dimensions(systems::box const & box, double const & spacing){
+		static std::array<int, 3> calculate_dimensions(ions::unit_cell const & cell, double const & spacing){
 			std::array<int, 3> nr;
 			
 			// make the spacing conmensurate with the grid
 			// OPTIMIZATION: we can select a good size here for the FFT
 			for(int idir = 0; idir < 3; idir++){
-				double rlength = length(box.cell()[idir]);
+				double rlength = length(cell[idir]);
 				nr[idir] = round(rlength/spacing);
 			}
 			

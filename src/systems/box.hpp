@@ -78,31 +78,8 @@ public:
 		return periodicity_.value_or(3);
 	}
 
-	auto spherical_grid(bool arg_sph_grid){
-		spherical_grid_ = arg_sph_grid;
-		return *this;
-	}
-	
-	auto spherical_grid_value() const {
-		return spherical_grid_.value_or(false);
-	}
-
-	auto & density_factor(double arg_factor){
-		density_factor_ = arg_factor;
-		return *this;
-	}
-
-	auto density_factor_value() const {
-		return density_factor_.value_or(1.0);
-	}
-	
 	friend auto operator==(box const& self, box const& other) {
-		return
-			    self.lattice_vectors_     == other.lattice_vectors_
-			and self.periodicity_ == other.periodicity_
-			and self.spherical_grid_      == other.spherical_grid_
-			and self.density_factor_      == other.density_factor_
-		;
+		return self.lattice_vectors_  == other.lattice_vectors_ and self.periodicity_ == other.periodicity_;
 	}
 	
 	friend auto operator!=(box const& self, box const& other) {return not(self == other);}
@@ -124,8 +101,6 @@ private:
 
 	std::array<std::optional<vector3<double>>, 3> lattice_vectors_;
 	std::optional<int> periodicity_;
-	std::optional<bool> spherical_grid_;
-	std::optional<double> density_factor_;
 		
 };
 
@@ -177,7 +152,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ci.cell()[2][1] == 0.0_a);
 		CHECK(ci.cell()[2][2] == 10.2_a);
 		CHECK(ci.periodicity_value() == 0);
-		CHECK(not ci.spherical_grid_value());
 		
 	}
 	
@@ -200,7 +174,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 	SECTION("Spherical grid"){
 
-		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().spherical_grid(true);
+		auto ci = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic();
 
 		CHECK(ci.cell()[0][0] == 10.2_a);
 		CHECK(ci.cell()[0][1] == 0.0_a);
@@ -212,7 +186,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ci.cell()[2][1] == 0.0_a);
 		CHECK(ci.cell()[2][2] == 8.3_a);
 		CHECK(ci.periodicity_value() == 3);
-		CHECK(ci.spherical_grid_value());
 
 	}
 	
@@ -235,8 +208,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Equality"){
 
-		auto ci1 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().spherical_grid(true);
-		auto ci2 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic().spherical_grid(true);
+		auto ci1 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic();
+		auto ci2 = systems::box::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodic();
 
 		CHECK(ci1 == ci2);
 		CHECK( not (ci1 != ci2) );
