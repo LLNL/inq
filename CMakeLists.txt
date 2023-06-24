@@ -18,6 +18,8 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif()
 
+set(CMAKE_CXX_FLAGS "-O3") #always optimize the code
+
 message("CMake build type: ${CMAKE_BUILD_TYPE}")
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "")
