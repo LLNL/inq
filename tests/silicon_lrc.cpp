@@ -43,12 +43,20 @@ int main(int argc, char ** argv){
 	{ //NO KICK
 		std::vector<double> jz;
 		std::vector<double> Az;
+		std::vector<double> energy;
 		auto output = [&](auto data){
 			jz.push_back(data.current()[2]); 
 			Az.push_back(data.uniform_vector_potential()[2]);
+			energy.push_back(data.energy().total());
 		};
 		
 		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{});
+
+		data_match.check("energy step   0", energy[0],   -33.418896726864);
+		data_match.check("energy step  10", energy[10],  -33.418896726864);
+		data_match.check("energy step  20", energy[20],  -33.418896726864);
+		data_match.check("energy step  30", energy[30],  -33.418896726864);
+		data_match.check("energy step  40", energy[40],  -33.418896726864);
 		
 		data_match.check("current in z step   0", jz[0],   -0.000002678775);
 		data_match.check("current in z step  10", jz[10],  -0.000002669488);
@@ -68,14 +76,22 @@ int main(int argc, char ** argv){
 				
 		std::vector<double> jz;
 		std::vector<double> Az;
+		std::vector<double> energy;
 		auto output = [&](auto data){
 			jz.push_back(data.current()[2]); 
 			Az.push_back(data.uniform_vector_potential()[2]);
+			energy.push_back(data.energy().total());
 		};
 		
 		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 		
 		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{}, kick);
+
+		data_match.check("energy step   0", energy[0],   -33.418518663279);
+		data_match.check("energy step  10", energy[10],  -33.418518663116);
+		data_match.check("energy step  20", energy[20],  -33.418518662540);
+		data_match.check("energy step  30", energy[30],  -33.418518662296);
+		data_match.check("energy step  40", energy[40],  -33.418518662423);
 		
 		data_match.check("current in z step   0", jz[0],   -0.157729547895);
 		data_match.check("current in z step  10", jz[10],  -0.151911067747);
@@ -95,15 +111,23 @@ int main(int argc, char ** argv){
 		
 		std::vector<double> jz;
 		std::vector<double> Az;
+		std::vector<double> energy;		
 		auto output = [&](auto data){
 			jz.push_back(data.current()[2]); 
 			Az.push_back(data.uniform_vector_potential()[2]);
+			energy.push_back(data.energy().total());
 		};
 		
 		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 		
 		real_time::propagate<>(ions, electrons, output, input::interaction::lda() | input::interaction::lrc(0.2), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{}, kick);
-		
+
+		data_match.check("energy step   0", energy[0],   -33.418518663279);
+		data_match.check("energy step  10", energy[10],  -33.418518483855);
+		data_match.check("energy step  20", energy[20],  -33.418517945025);
+		data_match.check("energy step  30", energy[30],  -33.418517096793);
+		data_match.check("energy step  40", energy[40],  -33.418515964150);
+			
 		data_match.check("current in z step   0", jz[0],   -0.157729547895);
 		data_match.check("current in z step  10", jz[10],  -0.151948847224);
 		data_match.check("current in z step  20", jz[20],  -0.144242611185);
