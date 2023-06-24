@@ -104,7 +104,7 @@ public:
 		auto calc = [](auto occ, auto v) {
 			return occ*norm(v);
 		};
-		gpu::array<double, 2> occ({gs.kpin_size(), gs.kpin()[0].set_size()});
+		gpu::array<double, 2> occ({gs.kpin_part().size(), gs.kpin()[0].set_size()}, 0.0);
 		for(int ilot=0; ilot<gs.kpin_size(); ilot++) {
 
 			auto ortho = matrix::all_gather(operations::overlap(electrons_.kpin()[ilot], gs.kpin()[ilot]));
@@ -112,12 +112,14 @@ public:
 			for (int it=0; it<std::get<0>(sizes(ortho)); it++) {
 				auto start = electrons_.kpin()[ilot].set_part().start();
 				auto end = electrons_.kpin()[ilot].set_part().end();
-				occ[ilot][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, end}), calc);
-				if(electrons_.kpin_states_comm().size() > 1){
-					electrons_.kpin_states_comm().all_reduce_n(&occ[ilot][it], 1, std::plus<>{});
-				}
+				occ[ilot+gs.kpin_part().start()][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, end}), calc)/electrons_.kpin_weights()[ilot];
 			}
 		}
+
+		if(electrons_.kpin_states_comm().size() > 1){
+			electrons_.kpin_states_comm().all_reduce_n(raw_pointer_cast(occ.data_elements()), occ.num_elements(), std::plus<>{});
+		}
+
 		return occ;
 	}
 	
