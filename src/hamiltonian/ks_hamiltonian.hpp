@@ -68,6 +68,9 @@ public:
 	ks_hamiltonian(const basis::real_space & basis, ions::brillouin const & bzone, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
 								 const int num_hf_orbitals, const double exchange_coefficient, bool use_ace = false):
 		exchange(basis.cell(), bzone, exchange_coefficient, use_ace),
+		vp_accel({0.0,0.0,0.0}),
+		vp_velocity({0,0,0}),
+		vp_induced({0.0, 0.0, 0.0}),
 		scalar_potential_(states.num_density_components(), basis),
 		uniform_vector_potential_({0.0, 0.0, 0.0}),
 		non_local_in_fourier_(fourier_pseudo),
@@ -199,9 +202,9 @@ public:
 		return uniform_vector_potential_;
 	}
 
-	vector3<double, covariant> vp_accel={0,0,0};
-	vector3<double, covariant> vp_velocity={0,0,0};
-	vector3<double, covariant> vp_induced={0,0,0};
+	vector3<double, covariant> vp_accel;
+	vector3<double, covariant> vp_velocity;
+	vector3<double, covariant> vp_induced;
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 		
