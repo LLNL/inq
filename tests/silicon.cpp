@@ -43,11 +43,8 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	int kpoint_par = 1;
-	if(env.par().size()%2 == 0) kpoint_par = 2;
-	
-	systems::electrons electrons(env.par().kpoints(kpoint_par), ions, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(25.0_Ha));
-	
+	systems::electrons electrons(env.par(), ions, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(25.0_Ha));
+
 	ground_state::initial_guess(ions, electrons);
 
 	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
@@ -59,8 +56,6 @@ int main(int argc, char ** argv){
 	energy_match.check("non-local energy", result.energy.nonlocal(),     5.240672056923);
 	energy_match.check("ion-ion energy",   result.energy.ion(),        -31.483620495100);
 	
-	electrons.save("silicon_restart");
-
 	auto ked = observables::kinetic_energy_density(electrons);
 
 	energy_match.check("kinetic energy", operations::integral(ked), 14.428064504524);

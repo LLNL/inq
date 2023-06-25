@@ -77,8 +77,8 @@ public:
 		return forces_[iatom];
 	}
 
-	auto energy() const {
-		return energy_.total();
+	auto & energy() const {
+		return energy_;
 	}
 
 	auto dipole() const {
