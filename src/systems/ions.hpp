@@ -16,7 +16,6 @@
 #include <ions/geometry.hpp>
 #include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
-#include <systems/box.hpp>
 
 namespace inq {
 namespace systems {
@@ -24,11 +23,6 @@ namespace systems {
 class ions {
 
 public:
-
-	ions(const systems::box & arg_cell_input):
-		cell_(arg_cell_input.cell())
-	{
-	}
 
 	ions(inq::ions::unit_cell arg_cell_input):
 		cell_(std::move(arg_cell_input)){
@@ -116,5 +110,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;
+
+	auto dcc = 1.42_A;
+  auto aa = sqrt(3)*dcc;
+  auto lz = 10.0_b;
+	systems::ions ions(ions::unit_cell::lattice(aa*vector3{1.0, 0.0, 0.0}, aa*vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).periodicity(2));
+
+	CHECK(ions.cell().periodicity() == 2);
+	
 }
 #endif

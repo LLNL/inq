@@ -16,7 +16,6 @@
 #include <gpu/run.hpp>
 #include <ions/unit_cell.hpp>
 #include <math/vector3.hpp>
-#include <systems/box.hpp>
 
 namespace inq {
 namespace basis {
@@ -34,11 +33,6 @@ class fourier_space;
 		{
     }
 		
-    real_space(systems::box const & box, double const & spacing, parallel::communicator comm, bool spherical_grid = false):
-			real_space(box.cell(), spacing, comm, spherical_grid)
-		{
-    }
-
 		real_space(const grid & grid_basis):
 			grid(grid_basis){
 			
