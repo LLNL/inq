@@ -9,7 +9,6 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
-#include <input/atom.hpp>
 #include <utils/match.hpp>
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
