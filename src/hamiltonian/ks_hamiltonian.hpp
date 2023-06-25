@@ -47,7 +47,7 @@ public:
 			
 		projectors_fourier_map_.clear();			
 			
-		for(int iatom = 0; iatom < ions.num_atoms(); iatom++){
+		for(int iatom = 0; iatom < ions.size(); iatom++){
 			if(non_local_in_fourier_){
 				auto insert = projectors_fourier_map_.emplace(ions.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(ions.atoms()[iatom])));
 				insert.first->second.add_coord(basis.cell().metric().to_contravariant(ions.coordinates()[iatom]));
@@ -256,7 +256,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(ions.num_atoms(), ions.atoms(), rs.gcutoff(), /*double_grid = */ false);
+	hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff(), /*double_grid = */ false);
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 

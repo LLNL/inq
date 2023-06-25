@@ -63,14 +63,14 @@ public:
 	
 	auto symmetry_string() const{
 
-		assert(num_atoms() > 0);
+		assert(size() > 0);
 		
 		char symbol[11];
 		
-		std::vector<int> types(num_atoms());
-		std::vector<double> positions(3*num_atoms());
+		std::vector<int> types(size());
+		std::vector<double> positions(3*size());
 		
-		for(int iatom = 0; iatom < num_atoms(); iatom++){
+		for(int iatom = 0; iatom < size(); iatom++){
 			types[iatom] = atoms()[iatom].atomic_number();
 			auto pos = cell_.metric().to_contravariant(cell_.position_in_cell(coordinates()[iatom]));
 			positions[3*iatom + 0] = pos[0];
@@ -89,7 +89,7 @@ public:
 		amat[7] = cell_.lattice(2)[1];
 		amat[8] = cell_.lattice(2)[2];
 		
-		auto symnum = spg_get_international(symbol, reinterpret_cast<double (*)[3]>(amat), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), num_atoms(), 1e-4);
+		auto symnum = spg_get_international(symbol, reinterpret_cast<double (*)[3]>(amat), reinterpret_cast<double (*)[3]>(positions.data()), types.data(), size(), 1e-4);
 		return symbol + std::string(" (number ") + std::to_string(symnum) + std::string(")");
 	}
 	
@@ -118,15 +118,14 @@ public:
 		insert_fractional(input::species(pseudo::element(symbol)), pos);
 	}
 
-    
-	int num_atoms() const {
+	int size() const {
 		return (long) coordinates_.size();
 	}
 	
 	template <class output_stream>
 	void info(output_stream & out) const {
 		out << "GEOMETRY:" << std::endl;
-		out << "  Number of atoms = " << num_atoms() << std::endl;
+		out << "  Number of atoms = " << size() << std::endl;
 		out << std::endl;
 	}
 	
@@ -162,11 +161,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.cell().periodicity() == 2);
 		
-    CHECK(ions.num_atoms() == 0);
+    CHECK(ions.size() == 0);
 
     ions.insert(pseudo::element("Xe"), {1000.0_b, -200.0_b, 6.0_b});
 
-    CHECK(ions.num_atoms() == 1);
+    CHECK(ions.size() == 1);
     CHECK(ions.atoms()[0].atomic_number() == 54);
     CHECK(ions.atoms()[0] == pseudo::element(54));
     CHECK(ions.atoms()[0].charge() == -54.0_a);
@@ -191,7 +190,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     ions.insert(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 		
-    CHECK(ions.num_atoms() == 12);
+    CHECK(ions.size() == 12);
     
     CHECK(ions.atoms()[2] == pseudo::element("C"));
     CHECK(ions.atoms()[2].charge() == -6.0_a);
@@ -214,7 +213,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     ions.insert(pseudo::element("Cl"), {-3.0_b, 4.0_b, 5.0_b});
 
-    CHECK(ions.num_atoms() == 13);
+    CHECK(ions.size() == 13);
     CHECK(ions.atoms()[12].atomic_number() == 17);
     CHECK(ions.atoms()[12] == pseudo::element(17));
     CHECK(ions.atoms()[12].charge() == -17.0_a);

@@ -380,7 +380,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, comm);
 		
-		hamiltonian::atomic_potential pot(ions.num_atoms(), ions.atoms(), rs.gcutoff(), /*double_grid = */ false);
+		hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff(), /*double_grid = */ false);
 		
 		CHECK(pot.num_species() == 2);
 		CHECK(pot.num_electrons() == 30.0_a);

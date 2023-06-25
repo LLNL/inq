@@ -114,7 +114,7 @@ public:
 		
 	}
 	
-	auto num_atoms() const {
+	auto size() const {
 		return long(geo_.size());
 	}	
 	
@@ -164,7 +164,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(vasp_file.lattice()[2][1] == 3.3731611325_a);
 		CHECK(vasp_file.lattice()[2][2] == 0.0_a);		
 		
-		CHECK(vasp_file.num_atoms() == 2);
+		CHECK(vasp_file.size() == 2);
 
 		CHECK(vasp_file.atoms()[0].species() == "B");
 		CHECK(vasp_file.atoms()[1].species() == "N");
@@ -191,7 +191,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(vasp_file.lattice()[2][1] == 0.0_a);
 		CHECK(vasp_file.lattice()[2][2] == 7.6458319003_a);		
 		
-		CHECK(vasp_file.num_atoms() == 4);
+		CHECK(vasp_file.size() == 4);
 
 		CHECK(vasp_file.atoms()[0].species() == "Al");
 		CHECK(vasp_file.atoms()[1].species() == "Al");
@@ -226,7 +226,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(vasp_file.lattice()[2][1] == 0.0_a);
 		CHECK(vasp_file.lattice()[2][2] == 33.3536660997_a);		
 		
-		CHECK(vasp_file.num_atoms() == 5);
+		CHECK(vasp_file.size() == 5);
 
 		CHECK(vasp_file.atoms()[0].species() == "Ni");
 		CHECK(vasp_file.atoms()[1].species() == "Ni");

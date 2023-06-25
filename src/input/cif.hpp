@@ -126,7 +126,7 @@ public:
 		
 	}
 	
-	auto num_atoms() const {
+	auto size() const {
 		return long(geo_.size());
 	}	
 	
@@ -176,7 +176,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.lattice()[2][1] == Approx(0.0).margin(1e-12));
 		CHECK(cif_file.lattice()[2][2] == 7.634890386_a);		
 		
-		CHECK(cif_file.num_atoms() == 4);
+		CHECK(cif_file.size() == 4);
 
 		CHECK(cif_file.atoms()[0].species() == "Al");
 		CHECK(cif_file.atoms()[1].species() == "Al");
@@ -214,7 +214,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.lattice()[2][1] == Approx(0.0).margin(1e-12));
 		CHECK(cif_file.lattice()[2][2] == 14.7525249371_a);		
 		
-		CHECK(cif_file.num_atoms() == 20);
+		CHECK(cif_file.size() == 20);
 
 		//Conversions for units and cell convention to compare with obabel
 		//generated coordinates
@@ -362,7 +362,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.lattice()[2][1] == Approx(0.0).margin(1e-12));
 		CHECK(cif_file.lattice()[2][2] == 42.0773092856_a);		
 		
-		CHECK(cif_file.num_atoms() == 12);
+		CHECK(cif_file.size() == 12);
 		
 		CHECK(cif_file.atoms()[0].species() == "Ca");
 		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
@@ -440,7 +440,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.lattice()[2][1] == Approx(0.0).margin(1e-12));
 		CHECK(cif_file.lattice()[2][2] == 42.0773092856_a);		
 		
-		CHECK(cif_file.num_atoms() == 12);
+		CHECK(cif_file.size() == 12);
 
 		//the order her is to match the symmetrized test above
 		CHECK(cif_file.atoms()[1].species() == "Ca");
@@ -520,7 +520,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.lattice()[2][1] ==  3.3234384423_a);
 		CHECK(cif_file.lattice()[2][2] ==  6.0831518898_a);		
 		
-		CHECK(cif_file.num_atoms() == 3);
+		CHECK(cif_file.size() == 3);
 		
 		CHECK(cif_file.atoms()[0].species() == "Na");
 		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
