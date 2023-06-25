@@ -114,6 +114,18 @@ namespace ions {
 		auto periodicity() const {
 			return periodicity_;
 		}
+
+		auto & periodicity(int const pval) {
+			if(pval > 3 or pval < 0) throw std::runtime_error("inq error: the requested periodicity (" + std::to_string(pval) + ") does not make sense.");
+			if(pval == 1) throw std::runtime_error("inq error: periodicity 1 is not implemented yet.");
+			periodicity_ = pval;
+			return *this;
+		}
+				
+		auto & finite() {
+			periodicity_ = 0;
+			return *this;
+		}
 		
 		class cell_metric {
 
@@ -265,7 +277,25 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(cell.periodicity() == 3);
 			
 		}
-		
+
+		SECTION("Cubic finite"){
+				
+			auto cell = ions::unit_cell::cubic(10.2_b).finite();
+			
+			CHECK(cell[0][0] == 10.2_a);
+			CHECK(cell[0][1] == 0.0_a);
+			CHECK(cell[0][2] == 0.0_a);
+			CHECK(cell[1][0] == 0.0_a);
+			CHECK(cell[1][1] == 10.2_a);
+			CHECK(cell[1][2] == 0.0_a);
+			CHECK(cell[2][0] == 0.0_a);
+			CHECK(cell[2][1] == 0.0_a);
+			CHECK(cell[2][2] == 10.2_a);
+			
+			CHECK(cell.periodicity() == 0);
+			
+		}
+				
 		SECTION("Cubic cell"){
 			
       ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
