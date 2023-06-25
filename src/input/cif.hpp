@@ -136,6 +136,10 @@ public:
 	auto & atoms() const {
 		return geo_;
 	}
+
+	auto cell() const {
+		return ions::unit_cell(lattice());
+	}
 	
 };
 
