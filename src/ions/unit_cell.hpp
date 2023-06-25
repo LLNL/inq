@@ -9,6 +9,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <magnitude/length.hpp>
+
 #include <stdexcept>
 
 #include <math/vector3.hpp>
@@ -27,7 +29,7 @@ namespace ions {
 		int periodicity_;
 		
   public:
-		
+
     unit_cell(vector3<double> const& a0, vector3<double> const& a1, vector3<double> const& a2, int arg_periodicity = 3){
 			
 			periodicity_ = arg_periodicity;
@@ -49,6 +51,11 @@ namespace ions {
 			unit_cell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodicity){
 		}
 
+		static auto cubic(quantity<magnitude::length> lat_par){
+			auto aa = lat_par.in_atomic_units();
+			return unit_cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+		}
+		
 		vector_type const& operator[](int ii) const {
 			assert(ii >= 0 and ii < 3);         
 			return lattice_[ii];
@@ -236,13 +243,31 @@ namespace ions {
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
+	using namespace magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
 	
   {
-    
-    SECTION("Cubic cell"){
-    
+		SECTION("Cubic"){
+				
+			auto cell = ions::unit_cell::cubic(10.2_b);
+			
+			CHECK(cell[0][0] == 10.2_a);
+			CHECK(cell[0][1] == 0.0_a);
+			CHECK(cell[0][2] == 0.0_a);
+			CHECK(cell[1][0] == 0.0_a);
+			CHECK(cell[1][1] == 10.2_a);
+			CHECK(cell[1][2] == 0.0_a);
+			CHECK(cell[2][0] == 0.0_a);
+			CHECK(cell[2][1] == 0.0_a);
+			CHECK(cell[2][2] == 10.2_a);
+			
+			CHECK(cell.periodicity() == 3);
+			
+		}
+		
+		SECTION("Cubic cell"){
+			
       ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
       CHECK(cell[0][0] == 10.0_a);
