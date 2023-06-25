@@ -59,6 +59,12 @@ namespace ions {
 		static auto orthorhombic(quantity<magnitude::length> aa, quantity<magnitude::length> bb, quantity<magnitude::length> cc){
 			return unit_cell{vector3<double>(aa.in_atomic_units(), 0.0, 0.0), vector3<double>(0.0, bb.in_atomic_units(), 0.0), vector3<double>(0.0, 0.0, cc.in_atomic_units())};
 		}
+
+		static auto lattice(vector3<quantity<magnitude::length>> aa, vector3<quantity<magnitude::length>> bb, vector3<quantity<magnitude::length>> cc){
+			return unit_cell{vector3<double>(aa[0].in_atomic_units(), aa[1].in_atomic_units(), aa[2].in_atomic_units()), 
+											 vector3<double>(bb[0].in_atomic_units(), bb[1].in_atomic_units(), bb[2].in_atomic_units()), 
+											 vector3<double>(cc[0].in_atomic_units(), cc[1].in_atomic_units(), cc[2].in_atomic_units())};
+		}
 		
 		vector_type const& operator[](int ii) const {
 			assert(ii >= 0 and ii < 3);         
@@ -321,7 +327,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(cell.periodicity() == 2);
 		
 		}
-	
+
+		SECTION("Non-orthogonal"){
+			
+			auto cell = ions::unit_cell::lattice({0.0_A, 1.0_A, 1.0_A}, {1.0_A, 0.0_b, 1.0_A}, {1.0_A, 1.0_A, 0.0_A});
+			
+			CHECK(cell[0][0] == 0.0_a);
+			CHECK(cell[0][1] == 1.8897261246_a);
+			CHECK(cell[0][2] == 1.8897261246_a);
+			CHECK(cell[1][0] == 1.8897261246_a);
+			CHECK(cell[1][1] == 0.0_a);
+			CHECK(cell[1][2] == 1.8897261246_a);
+			CHECK(cell[2][0] == 1.8897261246_a);
+			CHECK(cell[2][1] == 1.8897261246_a);
+			CHECK(cell[2][2] == 0.0_a);
+			CHECK(cell.periodicity() == 3);
+			
+		}
+		
 		SECTION("Cubic cell"){
 			
       ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
@@ -538,10 +561,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(dot(cell.reciprocal(1), cell.lattice(2)) < 1e-14);
 			CHECK(dot(cell.reciprocal(2), cell.lattice(2)) == 2.0*M_PI);        
 
-		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[0] == 1.0_a);
-		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == (0.0_a).margin(1e-12) );
-		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == (0.0_a).margin(1e-12) );
-
+			CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[0] == 1.0_a);
+			CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == (0.0_a).margin(1e-12) );
+			CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == (0.0_a).margin(1e-12) );
+			
 			CHECK(cell.is_orthogonal());
 			CHECK(not cell.is_cartesian());
     }
