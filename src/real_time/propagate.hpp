@@ -42,7 +42,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 		hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components(), pert);
 		hamiltonian::ks_hamiltonian<complex> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(),
-																						 ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ options.propagator() == input::rt::electron_propagator::CRANK_NICOLSON);
+																						 ions, electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ options.propagator() == input::rt::electron_propagator::CRANK_NICOLSON);
 		hamiltonian::energy energy;
 
 		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
@@ -51,7 +51,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		ham.exchange.update(electrons);
 
 		energy.calculate(ham, electrons);
-		energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
+		energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 
 		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
 		

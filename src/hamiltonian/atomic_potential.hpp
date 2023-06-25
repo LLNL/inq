@@ -93,8 +93,8 @@ namespace hamiltonian {
 			return pseudopotential_list_.at(el.symbol());
 		}
 
-		template <class CommType, class basis_type, class geo_type>
-		basis::field<basis_type, double> local_potential(CommType & comm, const basis_type & basis, const geo_type & geo, int single_atom = -1) const {
+		template <class CommType, class basis_type, class ions_type>
+		basis::field<basis_type, double> local_potential(CommType & comm, const basis_type & basis, const ions_type & ions, int single_atom = -1) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
@@ -108,9 +108,9 @@ namespace hamiltonian {
 
 				if(single_atom >= 0 and single_atom != iatom) continue;
 				
-				auto atom_position = geo.coordinates()[iatom];
+				auto atom_position = ions.coordinates()[iatom];
 				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, atom_position, ps.short_range_potential_radius());
 
 				if(not double_grid_.enabled()){
@@ -146,8 +146,8 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////
 		
-		template <class CommType, class basis_type, class geo_type>
-		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const geo_type & geo, int single_atom = -1) const {
+		template <class CommType, class basis_type, class ions_type>
+		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const ions_type & ions, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -161,9 +161,9 @@ namespace hamiltonian {
 
 				if(single_atom >= 0 and single_atom != iatom) continue;
 				
-				auto atom_position = geo.coordinates()[iatom];
+				auto atom_position = ions.coordinates()[iatom];
 				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, atom_position, sep_.long_range_density_radius());
 
 				//OPTIMIZATION: this should be done in parallel for atoms too
@@ -183,8 +183,8 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////
 		
-		template <class CommType, class basis_type, class geo_type>
-		basis::field_set<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const geo_type & geo, states::ks_states const & states) const {
+		template <class CommType, class basis_type, class ions_type>
+		basis::field_set<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const ions_type & ions, states::ks_states const & states) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -200,9 +200,9 @@ namespace hamiltonian {
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
-				auto atom_position = geo.coordinates()[iatom];
+				auto atom_position = ions.coordinates()[iatom];
 				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 
 				if(ps.has_electronic_density()){
 
@@ -245,8 +245,8 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////
 
-		template <class CommType, class basis_type, class geo_type>
-		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const geo_type & geo) const {
+		template <class CommType, class basis_type, class ions_type>
+		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const ions_type & ions) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -258,9 +258,9 @@ namespace hamiltonian {
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
-				auto atom_position = geo.coordinates()[iatom];
+				auto atom_position = ions.coordinates()[iatom];
 				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 
 				if(not ps.has_nlcc_density()) continue;
 

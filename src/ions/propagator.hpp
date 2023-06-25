@@ -37,8 +37,8 @@ struct impulsive {
 
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_positions(double dt, TypeIons& ions, TypeForces const &){
-		for(int i = 0; i != ions.geo().num_atoms(); ++i)
-			ions.geo().coordinates()[i] += dt*ions.geo().velocities()[i];
+		for(int i = 0; i != ions.num_atoms(); ++i)
+			ions.coordinates()[i] += dt*ions.velocities()[i];
 	}
 
 	template <typename TypeIons, typename TypeForces>
@@ -55,19 +55,19 @@ struct molecular_dynamics{
 	template <typename TypeIons, typename TypeForces>
 	static auto acceleration(TypeIons& ions, TypeForces forces){
 
-		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++) forces[iatom] /= ions.geo().atoms()[iatom].mass();
+		for(int iatom = 0; iatom < ions.num_atoms(); iatom++) forces[iatom] /= ions.atoms()[iatom].mass();
 		return forces;
 
 	}
 	
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_positions(double dt, TypeIons& ions, TypeForces const & forces){
-		solvers::velocity_verlet::propagate_positions(dt, acceleration(ions, forces), ions.geo().velocities(), ions.geo().coordinates());
+		solvers::velocity_verlet::propagate_positions(dt, acceleration(ions, forces), ions.velocities(), ions.coordinates());
 	}
 
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_velocities(double dt, TypeIons & ions, TypeForces const & forces){
-		solvers::velocity_verlet::propagate_velocities(dt, acceleration(ions, forces), ions.geo().velocities());
+		solvers::velocity_verlet::propagate_velocities(dt, acceleration(ions, forces), ions.velocities());
 	}
 
 

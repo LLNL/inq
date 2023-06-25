@@ -26,7 +26,7 @@ public:
 		kpoints_(kpts.size()),
 		weights_(kpts.size())
   {
-		auto num_atoms = std::max(1, ions.geo().num_atoms());
+		auto num_atoms = std::max(1, ions.num_atoms());
 		
 		std::vector<int> types(num_atoms);
 		std::vector<double> positions(3*num_atoms);
@@ -37,9 +37,9 @@ public:
 		positions[1] = 0.0;
 		positions[2] = 0.0;		
 		
-		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-			types[iatom] = ions.geo().atoms()[iatom].atomic_number();
-			auto pos = ions.cell().metric().to_contravariant(ions.cell().position_in_cell(ions.geo().coordinates()[iatom]));
+		for(int iatom = 0; iatom < ions.num_atoms(); iatom++){
+			types[iatom] = ions.atoms()[iatom].atomic_number();
+			auto pos = ions.cell().metric().to_contravariant(ions.cell().position_in_cell(ions.coordinates()[iatom]));
 			positions[3*iatom + 0] = pos[0];
 			positions[3*iatom + 1] = pos[1];
 			positions[3*iatom + 2] = pos[2];

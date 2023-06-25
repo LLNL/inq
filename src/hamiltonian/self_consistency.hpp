@@ -61,11 +61,11 @@ public:
 		
 		solvers::poisson poisson_solver;
 		
-		auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(comm, density_basis_, ions.geo()));
-		auto ionic_short_range = atomic_pot.local_potential(comm, density_basis_, ions.geo());
+		auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(comm, density_basis_, ions));
+		auto ionic_short_range = atomic_pot.local_potential(comm, density_basis_, ions);
 		vion_ = operations::add(ionic_long_range, ionic_short_range);
 		
-		core_density_ = atomic_pot.nlcc_density(comm, density_basis_, ions.geo());
+		core_density_ = atomic_pot.nlcc_density(comm, density_basis_, ions);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

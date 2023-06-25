@@ -81,7 +81,7 @@ int main(int argc, char ** argv){
 		}
 	}
 	
-	assert(int(ions.geo().num_atoms()) == int(cell.size()*product(reps)));
+	assert(int(ions.num_atoms()) == int(cell.size()*product(reps)));
 				 
 	systems::electrons electrons(env.par().states().domains(pardomains), ions, input::config::spacing(alat/20) | input::config::extra_states(2*product(reps)) | input::config::temperature(1000.0_K));
 	

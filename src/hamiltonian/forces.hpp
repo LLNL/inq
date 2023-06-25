@@ -39,7 +39,7 @@ gpu::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, syst
 	basis::field<basis::real_space, vector3<double, covariant>> gdensity(electrons.density_basis());
 	gdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 
-  gpu::array<vector3<double>, 1> forces_non_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
+  gpu::array<vector3<double>, 1> forces_non_local(ions.num_atoms(), {0.0, 0.0, 0.0});
 
 	auto iphi = 0;
 	for(auto & phi : electrons.kpin()){
@@ -59,18 +59,18 @@ gpu::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, syst
 		electrons.full_comm().all_reduce_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
 	}
 	
-	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions.geo(), electrons.atomic_pot());
+	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions, electrons.atomic_pot());
 
-	gpu::array<vector3<double>, 1> forces_local(ions.geo().num_atoms(), {0.0, 0.0, 0.0});
+	gpu::array<vector3<double>, 1> forces_local(ions.num_atoms(), {0.0, 0.0, 0.0});
 
 	{ CALI_CXX_MARK_SCOPE("forces_local");
 		
 		solvers::poisson poisson_solver;
 		
 		//the force from the local potential
-		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-			auto ionic_long_range = poisson_solver(electrons.atomic_pot().ionic_density(electrons.states_comm(), electrons.density_basis(), ions.geo(), iatom));
-			auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm(), electrons.density_basis(), ions.geo(), iatom);
+		for(int iatom = 0; iatom < ions.num_atoms(); iatom++){
+			auto ionic_long_range = poisson_solver(electrons.atomic_pot().ionic_density(electrons.states_comm(), electrons.density_basis(), ions, iatom));
+			auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm(), electrons.density_basis(), ions, iatom);
 
 			auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis().local_size()),
 																 loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>
@@ -85,8 +85,8 @@ gpu::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, syst
 		}
 	}
 
-	gpu::array<vector3<double>, 1> forces(ions.geo().num_atoms());
-  for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
+	gpu::array<vector3<double>, 1> forces(ions.num_atoms());
+  for(int iatom = 0; iatom < ions.num_atoms(); iatom++){
     forces[iatom] = ionic_forces[iatom] + forces_local[iatom] + forces_non_local[iatom];
   }
 	
