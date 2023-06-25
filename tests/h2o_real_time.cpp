@@ -35,7 +35,7 @@ int main(int argc, char ** argv){
 
 		std::vector<double> energy;
 		auto output = [&energy](auto data){
-			energy.push_back(data.energy());
+			energy.push_back(data.energy().total());
 		};
 		
 		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
@@ -52,7 +52,7 @@ int main(int argc, char ** argv){
 
 		std::vector<double> energy;
 		auto output = [&energy](auto data){
-			energy.push_back(data.energy());
+			energy.push_back(data.energy().total());
 		};
 		
 		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(10) | input::rt::dt(0.1_atomictime) | input::rt::crank_nicolson());
@@ -89,7 +89,7 @@ int main(int argc, char ** argv){
 			
 			time[iter] = data.time();
 			dip[iter] = data.dipole()[0];
-			en[iter] = data.energy();			
+			en[iter] = data.energy().total();			
 
 			if(data.root() and data.every(50)){
 				auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  
@@ -141,7 +141,7 @@ int main(int argc, char ** argv){
 			
 			time[iter] = data.time();
 			dip[iter] = data.dipole()[0];
-			en[iter] = data.energy();			
+			en[iter] = data.energy().total();			
 
 			if(data.root() and data.every(50)){
 				auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  
@@ -184,7 +184,7 @@ int main(int argc, char ** argv){
 			
 			time[iter] = data.time();
 			dip[iter] = data.dipole()[0];
-			en[iter] = data.energy();			
+			en[iter] = data.energy().total();			
 
 			if(data.root() and data.every(50)){
 				auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  

@@ -66,7 +66,7 @@ int main(int argc, char ** argv){
 		time[iter] = data.time();
 		cur[iter] = data.current()[0];
 
-		en[iter] = data.energy();
+		en[iter] = data.energy().total();
 
 		if(data.root()) file << time[iter] << '\t' << cur[iter] << std::endl;
 		
