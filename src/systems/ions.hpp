@@ -25,11 +25,6 @@ class ions {
 
 public:
 
-	ions(const systems::box & arg_cell_input):
-		cell_(arg_cell_input.cell())
-	{
-	}
-
 	ions(inq::ions::unit_cell arg_cell_input):
 		cell_(std::move(arg_cell_input)){
 	}
