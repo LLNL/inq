@@ -478,9 +478,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	systems::box box = systems::box::orthorhombic(6.0_b, 1.0_b, 6.0_b);
-	
-	systems::ions ions(box);
+	systems::ions ions(ions::unit_cell::orthorhombic(6.0_b, 1.0_b, 6.0_b));
 
 	ions.insert("Cu", {0.0_b,  0.0_b,  0.0_b});
 	ions.insert("Cu", {1.0_b,  0.0_b,  0.0_b});

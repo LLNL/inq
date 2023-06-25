@@ -199,8 +199,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto ly = 13.8;
 	auto lz =  4.5;
 	
-	systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b);
-	basis::real_space bas(box, /*spacing =*/ 0.40557787, comm);
+	basis::real_space bas(ions::unit_cell::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b), /*spacing =*/ 0.40557787, comm);
 
 	basis::field_set<basis::real_space, double> density_unp(bas, 1);	
 	basis::field_set<basis::real_space, double> density_pol(bas, 2);
