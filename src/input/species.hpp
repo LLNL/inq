@@ -26,9 +26,9 @@ class species : public pseudo::element {
 	std::optional<bool> filter_;
 	
 public:
-
-	species(const pseudo::element & arg_el):
-		pseudo::element(arg_el){
+	
+	species(char const * const arg_symbol):
+		pseudo::element(std::string(arg_symbol)){
 	}
 	
 	species(std::string const & arg_symbol):
@@ -67,13 +67,11 @@ public:
 	}
 
 	auto symbol() const {
-		using pseudo::element;
-		return symbol_.value_or(element::symbol());
+		return symbol_.value_or(pseudo::element::symbol());
 	}
 
 	auto mass() const {
-		using pseudo::element;
-		return 1822.8885*mass_.value_or(element::mass());
+		return 1822.8885*mass_.value_or(pseudo::element::mass());
 	}
 
 	auto nofilter() {

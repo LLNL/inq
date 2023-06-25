@@ -97,10 +97,6 @@ public:
 		return cell_;
 	}
 
-	auto insert(std::string const & symbol, vector3<quantity<magnitude::length>> const & pos){
-		add_atom(input::species(pseudo::element(symbol)), pos);
-	}
-	
 	auto insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
 		add_atom(sp, pos);
 	}
@@ -113,11 +109,7 @@ public:
 	auto insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos){
 		add_atom(sp, cell_.metric().to_cartesian(pos));
 	}
-
-	auto insert_fractional(std::string const & symbol, vector3<double, contravariant> const & pos){
-		insert_fractional(input::species(pseudo::element(symbol)), pos);
-	}
-
+	
 	int size() const {
 		return (long) coordinates_.size();
 	}
@@ -232,7 +224,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(ions.velocities().size() == ions.coordinates().size());
 		
-    ions.insert(pseudo::element("Cl"), {-3.0_b, 4.0_b, 5.0_b});
+    ions.insert("Cl", {-3.0_b, 4.0_b, 5.0_b});
 
     CHECK(ions.size() == 13);
     CHECK(ions.atoms()[12].atomic_number() == 17);
