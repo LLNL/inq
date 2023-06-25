@@ -184,7 +184,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     CHECK(ions.size() == 0);
 
-    ions.insert(pseudo::element("Xe"), {1000.0_b, -200.0_b, 6.0_b});
+    ions.insert("Xe", {1000.0_b, -200.0_b, 6.0_b});
 
     CHECK(ions.size() == 1);
     CHECK(ions.atoms()[0].atomic_number() == 54);

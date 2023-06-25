@@ -20,13 +20,19 @@ namespace input {
 
 class species : public pseudo::element {
 
-	class options;
-		
+	std::optional<std::string> symbol_;
+	std::optional<std::string> pseudo_file_;	
+	std::optional<double> mass_;
+	std::optional<bool> filter_;
+	
 public:
 
-	species(const pseudo::element & arg_el, const options & arg_options = {}):
-		pseudo::element(arg_el),
-		opts(arg_options){
+	species(const pseudo::element & arg_el):
+		pseudo::element(arg_el){
+	}
+	
+	species(std::string const & arg_symbol):
+		pseudo::element(arg_symbol){
 	}
 
 	species(const species &) = default;	
@@ -34,98 +40,57 @@ public:
 	species & operator=(const species &) = delete;	
 	species & operator=(species &&) = delete;
 		
-	friend species operator|(const species & spec, const options & opts){
-		auto rspec = spec;
-		rspec.opts = rspec.opts | opts;
-		return rspec;
-	}
-
-	friend species operator|(const std::string & arg_symbol, const options & opts){
-		auto rspec = species(arg_symbol);
-		rspec.opts = rspec.opts | opts;
+	auto symbol(const std::string & arg_symbol) const{
+		species rspec = *this;
+		rspec.symbol_ = arg_symbol;
 		return rspec;
 	}
 		
-	static auto symbol(const std::string & arg_symbol){
-		options ropt;
-		ropt.symbol_ = arg_symbol;
-		return ropt;
-	}
-		
-	static auto pseudo(const std::string & pseudo_file){
-		options ropt;
-		ropt.pseudo_file_ = pseudo_file;
-		return ropt;
+	auto pseudo(const std::string & pseudo_file){
+		species rspec = *this;
+		rspec.pseudo_file_ = pseudo_file;
+		return rspec;
 	}
 
-	static auto mass(const double arg_mass){
-		options ropt;
-		ropt.mass_ = arg_mass;
-		return ropt;
+	auto mass(const double arg_mass){
+		species rspec = *this;
+		rspec.mass_ = arg_mass;
+		return rspec;
 	}
 
 	auto has_file() const {
-		return opts.pseudo_file_.has_value();
+		return pseudo_file_.has_value();
 	}
 
 	auto const & file_path() const {
-		return opts.pseudo_file_.value();
+		return pseudo_file_.value();
 	}
 
 	auto symbol() const {
 		using pseudo::element;
-		return opts.symbol_.value_or(element::symbol());
+		return symbol_.value_or(element::symbol());
 	}
 
 	auto mass() const {
 		using pseudo::element;
-		return 1822.8885*opts.mass_.value_or(element::mass());
+		return 1822.8885*mass_.value_or(element::mass());
 	}
 
-	static auto nofilter() {
-		options ropt;
-		ropt.filter_ = false;
-		return ropt;
+	auto nofilter() {
+		species rspec = *this;
+		rspec.filter_ = false;
+		return rspec;
 	}
 
-	static auto filter() {
-		options ropt;
-		ropt.filter_ = true;
-		return ropt;
+	auto filter() {
+		species rspec = *this;
+		rspec.filter_ = true;
+		return rspec;
 	}
 		
 	auto filter_pseudo() const {
-		return opts.filter_.value_or(true);
+		return filter_.value_or(true);
 	}
-				
-private:
-
-	class options {
-			
-		std::optional<std::string> symbol_;
-		std::optional<std::string> pseudo_file_;		
-		std::optional<double> mass_;
-		std::optional<bool> filter_;
-			
-	public:
-
-		friend options operator|(const options & opt1, const options & opt2){
-			options ropt;
-
-			using inq::utils::merge_optional;
-				
-			ropt.symbol_ = merge_optional(opt1.symbol_, opt2.symbol_);
-			ropt.pseudo_file_ = merge_optional(opt1.pseudo_file_, opt2.pseudo_file_);
-			ropt.mass_ = merge_optional(opt1.mass_, opt2.mass_);
-			ropt.filter_ = merge_optional(opt1.filter_, opt2.filter_);
-				
-			return ropt;
-		}
-
-		friend class species;
-	};
-
-	options opts;
 		
 };
 
@@ -145,7 +110,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Constructor"){
 		
-		input::species s(pseudo::element("Xe"));
+		auto s = input::species("Xe");
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
@@ -153,7 +118,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Constructor with options"){
 		
-		input::species s(pseudo::element("Xe"), input::species::mass(20));
+		auto s = input::species("Xe").mass(20);
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
@@ -162,7 +127,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Option mass"){
 		
-		input::species s = pseudo::element("U") | input::species::mass(235);
+		auto s = input::species("U").mass(235);
 		
 		CHECK(s.symbol() == "U");
 		CHECK(s.mass() == 428378.7975_a);
@@ -170,7 +135,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Option symbol"){
 		
-		input::species s = "U" | input::species::symbol("U235") | input::species::mass(235);
+		auto s = input::species("U").symbol("U235").mass(235);
 		
 		CHECK(s.symbol() == "U235");
 		CHECK(s.mass() == 428378.7975_a);
@@ -178,7 +143,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Option pseudopotential"){
 		
-		input::species s = "He" | input::species::pseudo("hola");
+		auto s = input::species("He").pseudo("hola");
 		
 		CHECK(s.symbol() == "He");
 		CHECK(s.has_file());
