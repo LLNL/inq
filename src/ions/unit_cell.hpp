@@ -53,7 +53,11 @@ namespace ions {
 
 		static auto cubic(quantity<magnitude::length> lat_par){
 			auto aa = lat_par.in_atomic_units();
-			return unit_cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+			return unit_cell{vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa)};
+		}
+
+		static auto orthorhombic(quantity<magnitude::length> aa, quantity<magnitude::length> bb, quantity<magnitude::length> cc){
+			return unit_cell{vector3<double>(aa.in_atomic_units(), 0.0, 0.0), vector3<double>(0.0, bb.in_atomic_units(), 0.0), vector3<double>(0.0, 0.0, cc.in_atomic_units())};
 		}
 		
 		vector_type const& operator[](int ii) const {
@@ -124,6 +128,11 @@ namespace ions {
 				
 		auto & finite() {
 			periodicity_ = 0;
+			return *this;
+		}
+
+		auto & periodic() {
+			periodicity_ = 3;
 			return *this;
 		}
 		
@@ -262,7 +271,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   {
 		SECTION("Cubic"){
 				
-			auto cell = ions::unit_cell::cubic(10.2_b);
+			auto cell = ions::unit_cell::cubic(10.2_b).periodic();
 			
 			CHECK(cell[0][0] == 10.2_a);
 			CHECK(cell[0][1] == 0.0_a);
@@ -295,7 +304,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(cell.periodicity() == 0);
 			
 		}
-				
+		
+		SECTION("Parallelepipedic"){
+			
+			auto cell = ions::unit_cell::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodicity(2);
+			
+			CHECK(cell[0][0] == 10.2_a);
+			CHECK(cell[0][1] == 0.0_a);
+			CHECK(cell[0][2] == 0.0_a);
+			CHECK(cell[1][0] == 0.0_a);
+			CHECK(cell[1][1] == 5.7_a);
+			CHECK(cell[1][2] == 0.0_a);
+			CHECK(cell[2][0] == 0.0_a);
+			CHECK(cell[2][1] == 0.0_a);
+			CHECK(cell[2][2] == 8.3_a);
+			CHECK(cell.periodicity() == 2);
+		
+		}
+	
 		SECTION("Cubic cell"){
 			
       ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
