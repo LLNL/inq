@@ -33,8 +33,8 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 	
 	electrons.update_occupations(electrons.eigenvalues());
 	
-	if(ions.geo().num_atoms() > 0){
-		electrons.spin_density() = electrons.atomic_pot().atomic_electronic_density(electrons.states_comm(), electrons.density_basis(), ions.geo(), electrons.states());
+	if(ions.size() > 0){
+		electrons.spin_density() = electrons.atomic_pot().atomic_electronic_density(electrons.states_comm(), electrons.density_basis(), ions, electrons.states());
 	} else {
 		electrons.spin_density() = observables::density::calculate(electrons);
 	}

@@ -204,7 +204,6 @@ namespace basis {
 #ifdef INQ_BASIS_GRID_UNIT_TEST
 #undef INQ_BASIS_GRID_UNIT_TEST
 
-#include <ions/geometry.hpp>
 #include <catch2/catch_all.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {

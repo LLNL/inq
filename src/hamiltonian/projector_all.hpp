@@ -435,9 +435,6 @@ private:
 #ifdef INQ_HAMILTONIAN_PROJECTOR_ALL_UNIT_TEST
 #undef INQ_HAMILTONIAN_PROJECTOR_ALL_UNIT_TEST
 
-#include <config/path.hpp>
-#include <ions/geometry.hpp>
-
 #include <catch2/catch_all.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {

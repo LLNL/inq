@@ -77,7 +77,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	if(console) console->trace("calculate started");
 	hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components());
 	
-	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
+	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions, electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
 	
 	if(electrons.full_comm().root()) ham.info(std::cout);
 		
@@ -99,7 +99,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
-	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
+	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 
 	double old_exe = ham.exchange.update(electrons);
 	double exe_diff = fabs(old_exe);

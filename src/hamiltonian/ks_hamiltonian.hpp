@@ -18,7 +18,6 @@
 #include <hamiltonian/projector_fourier.hpp>
 #include <hamiltonian/scalar_potential.hpp>
 #include <input/environment.hpp>
-#include <ions/geometry.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
 #include <operations/gradient.hpp>
@@ -40,7 +39,7 @@ public:
 
 	using potential_type = PotentialType;
 	
-	void update_projectors(const basis::real_space & basis, const atomic_potential & pot, const ions::geometry & geo){
+	void update_projectors(const basis::real_space & basis, const atomic_potential & pot, systems::ions const & ions){
 			
 		CALI_CXX_MARK_FUNCTION;
 
@@ -48,12 +47,12 @@ public:
 			
 		projectors_fourier_map_.clear();			
 			
-		for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
+		for(int iatom = 0; iatom < ions.size(); iatom++){
 			if(non_local_in_fourier_){
-				auto insert = projectors_fourier_map_.emplace(geo.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(geo.atoms()[iatom])));
-				insert.first->second.add_coord(basis.cell().metric().to_contravariant(geo.coordinates()[iatom]));
+				auto insert = projectors_fourier_map_.emplace(ions.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(ions.atoms()[iatom])));
+				insert.first->second.add_coord(basis.cell().metric().to_contravariant(ions.coordinates()[iatom]));
 			} else {
-				projectors.emplace_back(basis, pot.double_grid(), pot.pseudo_for_element(geo.atoms()[iatom]), geo.coordinates()[iatom], iatom);
+				projectors.emplace_back(basis, pot.double_grid(), pot.pseudo_for_element(ions.atoms()[iatom]), ions.coordinates()[iatom], iatom);
 				if(projectors.back().empty()) projectors.pop_back(); 
 			}
 		}
@@ -65,7 +64,7 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 		
-	ks_hamiltonian(const basis::real_space & basis, ions::brillouin const & bzone, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, const ions::geometry & geo,
+	ks_hamiltonian(const basis::real_space & basis, ions::brillouin const & bzone, states::ks_states const & states, const atomic_potential & pot, bool fourier_pseudo, systems::ions const & ions,
 								 const int num_hf_orbitals, const double exchange_coefficient, bool use_ace = false):
 		exchange(basis.cell(), bzone, exchange_coefficient, use_ace),
 		scalar_potential_(states.num_density_components(), basis),
@@ -74,7 +73,7 @@ public:
 		states_(states)
 	{
 		for(auto & pot : scalar_potential_) pot.fill(0.0);
-		update_projectors(basis, pot, geo);
+		update_projectors(basis, pot, ions);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -257,7 +256,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(ions.geo().num_atoms(), ions.geo().atoms(), rs.gcutoff(), /*double_grid = */ false);
+	hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff(), /*double_grid = */ false);
 	
 	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 
@@ -265,7 +264,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	auto bzone = ions::brillouin(ions, input::kpoints::gamma());
 	
-	hamiltonian::ks_hamiltonian<double> ham(rs, bzone, st, pot, false, ions.geo(), st.num_states(), 0.0);
+	hamiltonian::ks_hamiltonian<double> ham(rs, bzone, st, pot, false, ions, st.num_states(), 0.0);
 
 	SECTION("Constant function"){
 		

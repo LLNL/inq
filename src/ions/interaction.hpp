@@ -29,12 +29,12 @@ auto interaction_energy(const cell_type & cell, const geometry_type & geo, const
 	CALI_CXX_MARK_FUNCTION;
 
 	double energy;
-	boost::multi::array<vector3<double>, 1> forces(geo.num_atoms());
-	boost::multi::array<double, 1> charges(geo.num_atoms());
+	boost::multi::array<vector3<double>, 1> forces(geo.size());
+	boost::multi::array<double, 1> charges(geo.size());
 
-	for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
+	for(int ii = 0; ii < geo.size(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
 
-	interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+	interaction_energy(geo.size(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
 
 	return energy;
 }
@@ -47,12 +47,12 @@ auto interaction_forces(const cell_type & cell, const geometry_type & geo, const
 	CALI_CXX_MARK_FUNCTION;
 
 	double energy;
-	boost::multi::array<vector3<double>, 1> forces(geo.num_atoms());
-	boost::multi::array<double, 1> charges(geo.num_atoms());
+	boost::multi::array<vector3<double>, 1> forces(geo.size());
+	boost::multi::array<double, 1> charges(geo.size());
 
-	for(int ii = 0; ii < geo.num_atoms(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
+	for(int ii = 0; ii < geo.size(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
 
-	interaction_energy(geo.num_atoms(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+	interaction_energy(geo.size(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
 
 	return forces;
 }

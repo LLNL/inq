@@ -130,7 +130,7 @@ public:
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
 		states_basis_(ions.cell(), conf.spacing_value(), basis_subcomm(full_comm_), conf.spherical_grid_value()),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(conf.density_factor(), basis_comm_)), */
-		atomic_pot_(ions.geo().num_atoms(), ions.geo().atoms(), states_basis_.gcutoff(), conf.double_grid_value()),
+		atomic_pot_(ions.size(), ions.atoms(), states_basis_.gcutoff(), conf.double_grid_value()),
 		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
 		spin_density_(density_basis_, states_.num_density_components()),
 		kpin_part_(kpts.size()*states_.num_spin_indices(), kpin_comm_)
@@ -244,9 +244,9 @@ public:
 			
 
 		if(logger()){
-			logger()->info("constructed with geometry {}", ions.geo_);
-			logger()->info("constructed with cell {}", ions.cell_);
-			if(ions.geo().num_atoms() > 0) logger()->info("system symmetries: " + ions.symmetry_string());
+			logger()->info("constructed with cell {}", ions.cell());
+			logger()->info("constructed with geometry {}", ions);
+			if(ions.size() > 0) logger()->info("system symmetries: " + ions.symmetry_string());
 			logger()->info("constructed with Brillouin zone sampling {}", brillouin_zone_);
 		}
 
