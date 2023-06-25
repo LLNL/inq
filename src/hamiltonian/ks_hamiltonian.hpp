@@ -18,7 +18,6 @@
 #include <hamiltonian/projector_fourier.hpp>
 #include <hamiltonian/scalar_potential.hpp>
 #include <input/environment.hpp>
-#include <ions/geometry.hpp>
 #include <operations/space.hpp>
 #include <operations/laplacian.hpp>
 #include <operations/gradient.hpp>

@@ -14,6 +14,7 @@
 #include <gemmi/symmetry.hpp>
 #include <vector>
 
+#include <input/atom.hpp>
 #include <magnitude/length.hpp>
 #include <math/vector3.hpp>
 

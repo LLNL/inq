@@ -143,7 +143,6 @@ private:
 #undef INQ_HAMILTONIAN_PROJECTOR_UNIT_TEST
 
 #include <config/path.hpp>
-#include <ions/geometry.hpp>
 
 #include <catch2/catch_all.hpp>
 
