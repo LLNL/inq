@@ -322,7 +322,6 @@ namespace hamiltonian {
 #include <catch2/catch_all.hpp>
 #include <ions/geometry.hpp>
 #include <basis/real_space.hpp>
-#include <systems/box.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 

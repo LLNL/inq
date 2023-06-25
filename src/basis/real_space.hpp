@@ -16,7 +16,6 @@
 #include <gpu/run.hpp>
 #include <ions/unit_cell.hpp>
 #include <math/vector3.hpp>
-#include <systems/box.hpp>
 
 namespace inq {
 namespace basis {
