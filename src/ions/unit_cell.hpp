@@ -9,6 +9,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <magnitude/length.hpp>
+
 #include <stdexcept>
 
 #include <math/vector3.hpp>
@@ -27,7 +29,7 @@ namespace ions {
 		int periodicity_;
 		
   public:
-		
+
     unit_cell(vector3<double> const& a0, vector3<double> const& a1, vector3<double> const& a2, int arg_periodicity = 3){
 			
 			periodicity_ = arg_periodicity;
@@ -49,6 +51,21 @@ namespace ions {
 			unit_cell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodicity){
 		}
 
+		static auto cubic(quantity<magnitude::length> lat_par){
+			auto aa = lat_par.in_atomic_units();
+			return unit_cell{vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa)};
+		}
+
+		static auto orthorhombic(quantity<magnitude::length> aa, quantity<magnitude::length> bb, quantity<magnitude::length> cc){
+			return unit_cell{vector3<double>(aa.in_atomic_units(), 0.0, 0.0), vector3<double>(0.0, bb.in_atomic_units(), 0.0), vector3<double>(0.0, 0.0, cc.in_atomic_units())};
+		}
+
+		static auto lattice(vector3<quantity<magnitude::length>> aa, vector3<quantity<magnitude::length>> bb, vector3<quantity<magnitude::length>> cc){
+			return unit_cell{vector3<double>(aa[0].in_atomic_units(), aa[1].in_atomic_units(), aa[2].in_atomic_units()), 
+											 vector3<double>(bb[0].in_atomic_units(), bb[1].in_atomic_units(), bb[2].in_atomic_units()), 
+											 vector3<double>(cc[0].in_atomic_units(), cc[1].in_atomic_units(), cc[2].in_atomic_units())};
+		}
+		
 		vector_type const& operator[](int ii) const {
 			assert(ii >= 0 and ii < 3);         
 			return lattice_[ii];
@@ -106,6 +123,23 @@ namespace ions {
 
 		auto periodicity() const {
 			return periodicity_;
+		}
+
+		auto & periodicity(int const pval) {
+			if(pval > 3 or pval < 0) throw std::runtime_error("inq error: the requested periodicity (" + std::to_string(pval) + ") does not make sense.");
+			if(pval == 1) throw std::runtime_error("inq error: periodicity 1 is not implemented yet.");
+			periodicity_ = pval;
+			return *this;
+		}
+				
+		auto & finite() {
+			periodicity_ = 0;
+			return *this;
+		}
+
+		auto & periodic() {
+			periodicity_ = 3;
+			return *this;
 		}
 		
 		class cell_metric {
@@ -236,13 +270,83 @@ namespace ions {
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
+	using namespace magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
 	
   {
-    
-    SECTION("Cubic cell"){
-    
+		SECTION("Cubic"){
+				
+			auto cell = ions::unit_cell::cubic(10.2_b).periodic();
+			
+			CHECK(cell[0][0] == 10.2_a);
+			CHECK(cell[0][1] == 0.0_a);
+			CHECK(cell[0][2] == 0.0_a);
+			CHECK(cell[1][0] == 0.0_a);
+			CHECK(cell[1][1] == 10.2_a);
+			CHECK(cell[1][2] == 0.0_a);
+			CHECK(cell[2][0] == 0.0_a);
+			CHECK(cell[2][1] == 0.0_a);
+			CHECK(cell[2][2] == 10.2_a);
+			
+			CHECK(cell.periodicity() == 3);
+			
+		}
+
+		SECTION("Cubic finite"){
+				
+			auto cell = ions::unit_cell::cubic(10.2_b).finite();
+			
+			CHECK(cell[0][0] == 10.2_a);
+			CHECK(cell[0][1] == 0.0_a);
+			CHECK(cell[0][2] == 0.0_a);
+			CHECK(cell[1][0] == 0.0_a);
+			CHECK(cell[1][1] == 10.2_a);
+			CHECK(cell[1][2] == 0.0_a);
+			CHECK(cell[2][0] == 0.0_a);
+			CHECK(cell[2][1] == 0.0_a);
+			CHECK(cell[2][2] == 10.2_a);
+			
+			CHECK(cell.periodicity() == 0);
+			
+		}
+		
+		SECTION("Parallelepipedic"){
+			
+			auto cell = ions::unit_cell::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodicity(2);
+			
+			CHECK(cell[0][0] == 10.2_a);
+			CHECK(cell[0][1] == 0.0_a);
+			CHECK(cell[0][2] == 0.0_a);
+			CHECK(cell[1][0] == 0.0_a);
+			CHECK(cell[1][1] == 5.7_a);
+			CHECK(cell[1][2] == 0.0_a);
+			CHECK(cell[2][0] == 0.0_a);
+			CHECK(cell[2][1] == 0.0_a);
+			CHECK(cell[2][2] == 8.3_a);
+			CHECK(cell.periodicity() == 2);
+		
+		}
+
+		SECTION("Non-orthogonal"){
+			
+			auto cell = ions::unit_cell::lattice({0.0_A, 1.0_A, 1.0_A}, {1.0_A, 0.0_b, 1.0_A}, {1.0_A, 1.0_A, 0.0_A});
+			
+			CHECK(cell[0][0] == 0.0_a);
+			CHECK(cell[0][1] == 1.8897261246_a);
+			CHECK(cell[0][2] == 1.8897261246_a);
+			CHECK(cell[1][0] == 1.8897261246_a);
+			CHECK(cell[1][1] == 0.0_a);
+			CHECK(cell[1][2] == 1.8897261246_a);
+			CHECK(cell[2][0] == 1.8897261246_a);
+			CHECK(cell[2][1] == 1.8897261246_a);
+			CHECK(cell[2][2] == 0.0_a);
+			CHECK(cell.periodicity() == 3);
+			
+		}
+		
+		SECTION("Cubic cell"){
+			
       ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
       CHECK(cell[0][0] == 10.0_a);
@@ -457,10 +561,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(dot(cell.reciprocal(1), cell.lattice(2)) < 1e-14);
 			CHECK(dot(cell.reciprocal(2), cell.lattice(2)) == 2.0*M_PI);        
 
-		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[0] == 1.0_a);
-		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == (0.0_a).margin(1e-12) );
-		CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == (0.0_a).margin(1e-12) );
-
+			CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[0] == 1.0_a);
+			CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[1] == (0.0_a).margin(1e-12) );
+			CHECK(cell.metric().to_contravariant(vector3<double>(7.0710678119, 7.0710678119, 0.0))[2] == (0.0_a).margin(1e-12) );
+			
 			CHECK(cell.is_orthogonal());
 			CHECK(not cell.is_cartesian());
     }

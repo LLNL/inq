@@ -244,10 +244,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
-	systems::box box = systems::box::cubic(10.0_b);
-	auto ions = systems::ions(box);
+	auto ions = systems::ions(ions::unit_cell::cubic(10.0_b));
 
-	basis::real_space rs(box, /*spacing = */ 0.49672941, basis_comm);
+	basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, basis_comm);
 
 	SECTION("Basis"){
 		

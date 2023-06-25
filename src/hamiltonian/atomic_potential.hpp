@@ -378,8 +378,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
 		
-		auto box = systems::box::cubic(20.0_b);
-		basis::real_space rs(box, /*spacing = */ 0.49672941, comm);		
+		basis::real_space rs(ions::unit_cell::cubic(20.0_b), /*spacing = */ 0.49672941, comm);		
 		
 		hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), /*double_grid = */ false);
 		

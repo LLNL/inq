@@ -30,6 +30,10 @@ public:
 	{
 	}
 
+	ions(inq::ions::unit_cell arg_cell_input):
+		cell_(std::move(arg_cell_input)){
+	}
+	
 	auto symmetry_string() const{
 
 		assert(geo_.num_atoms() > 0);

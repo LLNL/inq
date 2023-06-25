@@ -76,10 +76,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		double lx = 9;
 		double ly = 12;
 		double lz = 10;
-		systems::box box = systems::box::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b);
-		
+
 		double factor = 0.673214;
-		basis::real_space rs(box, /*spacing =*/ 0.49672941, basis_comm);
+		basis::real_space rs(ions::unit_cell::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b), /*spacing =*/ 0.49672941, basis_comm);
 
 		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
 	
@@ -129,11 +128,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Plane-wave -- rotated"){
 		
 		double ll = 9;
-		systems::box box = systems::box::lattice({ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {-ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {0.0_b, 0.0_b, ll*1.0_b});
-		
 		double factor = 0.673214;
 	
-		basis::real_space rs(box, /*spacing =*/ 0.49672941, basis_comm);
+		basis::real_space rs(ions::unit_cell::lattice({ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {-ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {0.0_b, 0.0_b, ll*1.0_b}), /*spacing =*/ 0.49672941, basis_comm);
 		
 		CHECK(rs.cell().volume() == ll*ll*ll);
 		
@@ -185,11 +182,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Plane-wave -- non-orthogonal"){
 		
 		double ll = 5.89;
-		systems::box box = systems::box::lattice({0.0_b, ll*1.0_b, ll*1.0_b}, {ll*1.0_b, 0.0_b, ll*1.0_b}, {ll*1.0_b, ll*1.0_b, 0.0_b});
-		
 		double factor = 0.673214;
 	
-		basis::real_space rs(box, /*spacing =*/ 0.49672941, basis_comm);
+		basis::real_space rs(ions::unit_cell::lattice({0.0_b, ll*1.0_b, ll*1.0_b}, {ll*1.0_b, 0.0_b, ll*1.0_b}, {ll*1.0_b, ll*1.0_b, 0.0_b}), /*spacing =*/ 0.49672941, basis_comm);
 		
 		basis::field_set<basis::real_space, complex> func(rs, 13, cart_comm);
 	

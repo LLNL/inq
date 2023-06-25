@@ -247,8 +247,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	{
 
-		systems::box box = systems::box::orthorhombic(10.0_b, 10.0_b, 13.7_b);
-		basis::real_space rs(box, /*spacing =*/ 0.1, comm);
+		basis::real_space rs(ions::unit_cell::orthorhombic(10.0_b, 10.0_b, 13.7_b), /*spacing =*/ 0.1, comm);
 
 		SECTION("Grid periodic"){
 		
@@ -396,9 +395,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 
 	{
-
-		systems::box box = systems::box::cubic(8.0_b).finite();
-		basis::real_space rs(box, /*spacing =*/ 0.09, comm);
+		basis::real_space rs(ions::unit_cell::cubic(8.0_b).finite(), /*spacing =*/ 0.09, comm);
 
 		solvers::poisson psolver;
 
@@ -478,8 +475,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Point charge 2d periodic"){
 		
-		systems::box box = systems::box::orthorhombic(6.0_b, 6.0_b, 9.0_b).periodicity(2);
-		basis::real_space rs(box, /*spacing =*/ 0.12, comm);
+		basis::real_space rs(ions::unit_cell::orthorhombic(6.0_b, 6.0_b, 9.0_b).periodicity(2), /*spacing =*/ 0.12, comm);
 		
 		solvers::poisson psolver;
 		

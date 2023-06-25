@@ -17,10 +17,7 @@ int main(int argc, char ** argv){
 	environment env(argc, argv);
 
 	auto distance = 1.06_angstrom;
-
-	auto box = systems::box::orthorhombic(10.0_b, 10.0_b, 12.0_b).finite();
-	
-	systems::ions ions(box);
+	systems::ions ions(ions::unit_cell::orthorhombic(10.0_b, 10.0_b, 12.0_b).finite());
 
 	ions.insert("N", {0.0_b, 0.0_b, -distance/2});
   ions.insert("N", {0.0_b, 0.0_b,  distance/2});

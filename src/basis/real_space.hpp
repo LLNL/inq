@@ -214,8 +214,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     SECTION("Cubic cell"){
 
-			systems::box box = systems::box::cubic(10.0_b);
-      basis::real_space rs(box, /* spacing = */ 0.49672941, comm);
+      basis::real_space rs(ions::unit_cell::cubic(10.0_b), /* spacing = */ 0.49672941, comm);
 
       CHECK(rs.size() == 8000);
 
@@ -239,8 +238,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     SECTION("Parallelepipedic cell"){
 
-			systems::box box = systems::box::orthorhombic(77.7_b, 14.14_b, 23.25_b);
-      basis::real_space rs(box, /*spacing =*/ 0.36063925, comm);
+      basis::real_space rs(ions::unit_cell::orthorhombic(77.7_b, 14.14_b, 23.25_b), /*spacing =*/ 0.36063925, comm);
 
       CHECK(rs.size() == 536640);
 
@@ -291,8 +289,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     SECTION("Non-orthogonal cell"){
 
 			auto a = 3.567095_A;
-			systems::box box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b});
-      basis::real_space rs(box, /*spacing = */0.40557787, comm);
+      basis::real_space rs(ions::unit_cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}), /*spacing = */0.40557787, comm);
 
       CHECK(rs.size() == 1728);
 

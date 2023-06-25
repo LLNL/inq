@@ -18,9 +18,7 @@ int main(int argc, char ** argv){
 	utils::match energy_match(1.0e-5);
 
 	auto alat = 7.6524459_bohr;
-	
-	systems::box box = systems::box::cubic(alat);
-	systems::ions ions(box);
+	systems::ions ions(ions::unit_cell::cubic(alat));
 
 	ions.insert_fractional("Al", {0.0, 0.0, 0.0});
 	ions.insert_fractional("Al", {0.0, 0.5, 0.5});

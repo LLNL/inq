@@ -254,8 +254,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	systems::box box = systems::box::orthorhombic(10.0_b, 4.0_b, 7.0_b);
-	basis::real_space rs(box, /*spacing = */ 0.35124074, comm);
+	basis::real_space rs(ions::unit_cell::orthorhombic(10.0_b, 4.0_b, 7.0_b), /*spacing = */ 0.35124074, comm);
 
 	basis::field<basis::real_space, double> ff(rs);
 

@@ -16,10 +16,7 @@ int main(int argc, char ** argv){
 
 	input::cif cif_file(config::path::unit_tests_data() + "H.cif");
 
-	auto box = systems::box(cif_file.lattice());
-
-	systems::ions ions(box);
-	
+	systems::ions ions(cif_file.cell());
 	ions.insert(cif_file.atoms());
 
 	systems::electrons electrons(env.par(), ions, input::config::cutoff(30.0_Ha));

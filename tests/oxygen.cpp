@@ -25,9 +25,7 @@ int main(int argc, char ** argv){
 	
 	utils::match match(3.0e-5);
 
-	auto box = systems::box::cubic(10.0_b).finite();
-
-	systems::ions ions(box);
+	systems::ions ions(ions::unit_cell::cubic(10.0_b).finite());
 
 	auto distance = 121.0_pm;
 	
