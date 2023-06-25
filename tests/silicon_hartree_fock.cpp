@@ -29,10 +29,7 @@ int main(int argc, char ** argv){
 	std::vector<input::atom> geo;
 
 	auto a = 10.18_b;
-
-	auto box = systems::box::cubic(a);
-	
-	systems::ions ions(box);
+	systems::ions ions(ions::unit_cell::cubic(a));
 	
 	ions.insert_fractional("Si", {0.0,  0.0,  0.0 });
 	ions.insert_fractional("Si", {0.25, 0.25, 0.25});

@@ -26,15 +26,11 @@ int main(int argc, char ** argv){
 
 	utils::match energy_match(3.0e-5);
 
-	std::vector<input::atom> geo;
-
 	auto dcc = 1.42_A;
   auto aa = sqrt(3)*dcc;
   auto lz = 10.0_b;
 
-	auto box = systems::box::lattice(aa*vector3{1.0, 0.0, 0.0}, aa*vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).periodicity(2);
-	
-	systems::ions ions(box);
+	systems::ions ions(ions::unit_cell::lattice(aa*vector3{1.0, 0.0, 0.0}, aa*vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).periodicity(2));
 	
 	ions.insert("C", {0.0_b, 0.0_b, 0.0_b});
 	ions.insert("C", {0.0_b, dcc,   0.0_b});

@@ -16,11 +16,8 @@ int main(int argc, char ** argv){
 	input::environment env(argc, argv);
 
 	utils::match match(1e-5);
-
-	auto box = systems::box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite();
 	
-	systems::ions ions(box);
-
+	systems::ions ions(ions::unit_cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
 	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "water.xyz"));
 
 	auto comm = boost::mpi3::environment::get_world_instance();
@@ -75,7 +72,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 
-		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
+		auto kick = perturbations::kick{ions.cell(), {0.1, 0.0, 0.0}};
 
 		long nsteps = 71;
 		 
@@ -126,8 +123,8 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 		
-		auto kick1 = perturbations::kick{box.cell(), {0.06, 0.0, 0.0}, perturbations::gauge::velocity};
-		auto kick2 = perturbations::kick{box.cell(), {0.04, 0.0, 0.0}, perturbations::gauge::velocity};
+		auto kick1 = perturbations::kick{ions.cell(), {0.06, 0.0, 0.0}, perturbations::gauge::velocity};
+		auto kick2 = perturbations::kick{ions.cell(), {0.04, 0.0, 0.0}, perturbations::gauge::velocity};
 
 		long nsteps = 31;
 		 
@@ -170,7 +167,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 
-		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
+		auto kick = perturbations::kick{ions.cell(), {0.1, 0.0, 0.0}};
 
 		long nsteps = 21;
 		

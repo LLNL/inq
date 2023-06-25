@@ -33,9 +33,7 @@ int main(int argc, char ** argv){
 	
 	inq::utils::match match(3.0e-4);
 
-	inq::systems::box box = box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite();
-	
-	inq::systems::ions ions(box);
+	inq::systems::ions ions(inq::ions::unit_cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
 
 	ions.insert(inq::input::parse_xyz(inq::config::path::unit_tests_data() + "water.xyz"));
 	

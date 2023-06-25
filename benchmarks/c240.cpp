@@ -39,10 +39,7 @@ int main(int argc, char ** argv){
 		}
 	}
 	
-	auto box = systems::box::cubic(20.0_A).finite();
-	
-	systems::ions ions(box);
-
+	systems::ions ions(ions::unit_cell::cubic(20.0_A).finite());
 	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "c240.xyz"));
 	
 	std::string restart_dir = "c240_restart";

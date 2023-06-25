@@ -20,10 +20,7 @@ int main(int argc, char ** argv){
 	std::vector<input::atom> geo;
 
 	auto a = 10.18_b;
-
-	auto box = systems::box::cubic(a);
-	
-	systems::ions ions(box);
+	systems::ions ions(ions::unit_cell::cubic(a));
 	
 	ions.insert_fractional("Si", {0.0,  0.0,  0.0 });
 	ions.insert_fractional("Si", {0.25, 0.25, 0.25});
@@ -47,7 +44,7 @@ int main(int argc, char ** argv){
 		electrons.save("silicon_restart");
 	}
 
-	auto kick = perturbations::kick{box.cell(), {0.01, 0.0, 0.0}, perturbations::gauge::velocity};
+	auto kick = perturbations::kick{ions.cell(), {0.01, 0.0, 0.0}, perturbations::gauge::velocity};
 	
 	auto const dt = 0.065;
 	long nsteps = 413.41373/dt;

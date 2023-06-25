@@ -25,10 +25,10 @@ int main(int argc, char ** argv){
 		
 	utils::match energy_match(2.0e-5);
 
-	auto box = systems::box::cubic(15.0_b).finite();
+	auto cell = ions::unit_cell::cubic(15.0_b).finite();
 
 	{
-		systems::ions ions(box);
+		systems::ions ions(cell);
 		
 		ions.insert("C" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
 
@@ -52,7 +52,7 @@ int main(int argc, char ** argv){
 	}
 
 	{
-		systems::ions ions(box);
+		systems::ions ions(cell);
 		
 		ions.insert("C" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C.ccECP.upf"), {0.0_b, 0.0_b, 0.0_b});
 

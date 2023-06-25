@@ -30,8 +30,8 @@ public:
 	{
 	}
 
-	ions(inq::ions::unit_cell && arg_cell_input):
-		cell_(std::forward<inq::ions::unit_cell>(arg_cell_input)){
+	ions(inq::ions::unit_cell arg_cell_input):
+		cell_(std::move(arg_cell_input)){
 	}
 	
 	auto symmetry_string() const{
