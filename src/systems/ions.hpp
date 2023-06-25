@@ -180,7 +180,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(ions.size() == 1);
     CHECK(ions.atoms()[0].atomic_number() == 54);
-    CHECK(ions.atoms()[0] == pseudo::element(54));
+    CHECK(ions.atoms()[0] == input::species(54));
     CHECK(ions.atoms()[0].charge() == -54.0_a);
     CHECK(ions.atoms()[0].mass() == 239333.5935636_a);
     CHECK(ions.coordinates()[0][0] == 1000.0_a);
@@ -205,14 +205,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     CHECK(ions.size() == 12);
     
-    CHECK(ions.atoms()[2] == pseudo::element("C"));
+    CHECK(ions.atoms()[2] == "C");
     CHECK(ions.atoms()[2].charge() == -6.0_a);
     CHECK(ions.atoms()[2].mass() == 21892.1617296_a);
     CHECK(ions.coordinates()[2][0] == 2.2846788549_a);
     CHECK(ions.coordinates()[2][1] == -1.3190288178_a);
     CHECK(ions.coordinates()[2][2] == 0.0_a);
 
-    CHECK(ions.atoms()[11] == pseudo::element("H"));
+    CHECK(ions.atoms()[11] == "H");
     CHECK(ions.atoms()[11].charge() == -1.0_a);
     CHECK(ions.atoms()[11].mass() == 1837.17994584_a);
     CHECK(ions.coordinates()[11][0] == -4.0572419367_a);
@@ -228,7 +228,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(ions.size() == 13);
     CHECK(ions.atoms()[12].atomic_number() == 17);
-    CHECK(ions.atoms()[12] == pseudo::element(17));
+    CHECK(ions.atoms()[12] == input::species(17));
     CHECK(ions.atoms()[12].charge() == -17.0_a);
     CHECK(ions.atoms()[12].mass() == 64614.105771_a);
     CHECK(ions.coordinates()[12][0] == -3.0_a);

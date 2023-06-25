@@ -35,6 +35,10 @@ public:
 		pseudo::element(arg_symbol){
 	}
 
+	species(int atomic_number):
+		pseudo::element(atomic_number){
+	}
+	
 	species(const species &) = default;	
 	species(species &&) = default;
 	species & operator=(const species &) = delete;	

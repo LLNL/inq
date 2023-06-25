@@ -76,12 +76,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
   CHECK(geo.size() == 12);
 
-  CHECK(geo[2].species() == pseudo::element("C"));
+  CHECK(geo[2].species() == "C");
   CHECK(geo[2].position()[0] == 2.2846788549_a);
   CHECK(geo[2].position()[1] == -1.3190288178_a);
   CHECK(geo[2].position()[2] == 0.0_a);
 
-  CHECK(geo[11].species() == pseudo::element("H"));
+  CHECK(geo[11].species() == "H");
   CHECK(geo[11].position()[0] == -4.0572419367_a);
   CHECK(geo[11].position()[1] == 2.343260364_a);
   CHECK(geo[11].position()[2] == 0.0_a);
