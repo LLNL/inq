@@ -135,7 +135,28 @@ public:
 		return os;
 	}
 
-    
+	class atom {
+		
+		input::species species_;
+		vector3<double> position_;
+		
+	public:
+		
+		atom(const input::species & arg_spec, const vector3<double> & arg_position):
+			species_(arg_spec),
+			position_(arg_position){
+		}
+		
+		const auto & species() const {
+			return species_;
+		}
+		
+		const auto & position() const {
+			return position_;
+		}
+		
+	};
+
 };
 
 }

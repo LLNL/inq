@@ -19,7 +19,7 @@
 #include <math/vector3.hpp>
 
 #include <pseudopod/element.hpp>
-#include <input/atom.hpp>
+#include <systems/ions.hpp>
 #include <input/species.hpp>
 #include <ions/unit_cell.hpp>
 #include <magnitude/length.hpp>
@@ -30,7 +30,7 @@ namespace input {
 class poscar {
 
 	std::vector<vector3<double>> lattice_vectors_;
-	std::vector<input::atom> geo_;
+	std::vector<systems::ions::atom> geo_;
 	
 public:
 	

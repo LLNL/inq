@@ -14,7 +14,7 @@
 #include <gemmi/symmetry.hpp>
 #include <vector>
 
-#include <input/atom.hpp>
+#include <systems/ions.hpp>
 #include <magnitude/length.hpp>
 #include <math/vector3.hpp>
 
@@ -24,7 +24,7 @@ namespace input {
 class cif {
 
 	std::vector<vector3<double>> lattice_vectors_;
-	std::vector<input::atom> geo_;
+	std::vector<systems::ions::atom> geo_;
 
   static auto to_double(std::string const * strptr, std::string const & cif_file_name){
     if(strptr == NULL) throw std::runtime_error("Error: cannot read cell parameters from CIF file '" + cif_file_name + "'.");

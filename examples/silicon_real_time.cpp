@@ -17,8 +17,6 @@ int main(int argc, char ** argv){
 
 	utils::match energy_match(3.0e-5);
 
-	std::vector<input::atom> geo;
-
 	auto a = 10.18_b;
 	systems::ions ions(ions::unit_cell::cubic(a));
 	

@@ -9,7 +9,6 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
-#include <input/atom.hpp>
 #include <operations/io.hpp>
 #include <utils/match.hpp>
 #include <ground_state/initial_guess.hpp>
@@ -25,8 +24,6 @@ int main(int argc, char ** argv){
 	input::environment env(argc, argv);
 
 	utils::match energy_match(3.0e-5);
-
-	std::vector<input::atom> geo;
 
 	auto a = 3.567095_A;
 	systems::ions ions(ions::unit_cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}));

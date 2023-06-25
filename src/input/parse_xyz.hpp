@@ -15,7 +15,7 @@
 #include <math/vector3.hpp>
 
 #include <pseudopod/element.hpp>
-#include <input/atom.hpp>
+#include <systems/ions.hpp>
 #include <input/species.hpp>
 #include <magnitude/length.hpp>
 
@@ -26,7 +26,7 @@ auto parse_xyz(const std::string & xyz_file_name, quantity<magnitude::length> un
 
 	using namespace inq;
  
-	std::vector<input::atom> geo;
+	std::vector<systems::ions::atom> geo;
 
 	std::ifstream xyz_file(xyz_file_name.c_str());
 	
@@ -45,7 +45,7 @@ auto parse_xyz(const std::string & xyz_file_name, quantity<magnitude::length> un
   
 	for(int iatom = 0; iatom < natoms; iatom++){
 		xyz_file >> atom_name >> atom_position;
-		geo.push_back(atom_name | atom_position*unit.in_atomic_units());
+		geo.push_back(systems::ions::atom{input::species{atom_name}, atom_position*unit.in_atomic_units()});
 	}
   
 	xyz_file.close();
@@ -85,14 +85,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   CHECK(geo[11].position()[0] == -4.0572419367_a);
   CHECK(geo[11].position()[1] == 2.343260364_a);
   CHECK(geo[11].position()[2] == 0.0_a);
-
-  geo.push_back("Cl" | vector3<double>(-3.0, 4.0, 5.0));
-
-  CHECK(geo.size() == 13);
-  CHECK(geo[12].species() == pseudo::element("Cl"));
-  CHECK(geo[12].position()[0] == -3.0_a);
-  CHECK(geo[12].position()[1] == 4.0_a);
-  CHECK(geo[12].position()[2] == 5.0_a);
 
 }
 #endif
