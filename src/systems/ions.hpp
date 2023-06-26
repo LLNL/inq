@@ -258,5 +258,381 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
   }
 
+	SECTION("CIF - Al"){
+		
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "Al.cif");
+
+		CHECK(ions.cell().lattice(0)[0] == 7.634890386_a);
+		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[1] == 7.634890386_a);
+		CHECK(ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[2] == 7.634890386_a);		
+		
+		CHECK(ions.size() == 4);
+
+		CHECK(ions.atoms()[0] == "Al");
+		CHECK(ions.atoms()[1] == "Al");
+		CHECK(ions.atoms()[2] == "Al");		
+		CHECK(ions.atoms()[3] == "Al");
+
+		CHECK(ions.coordinates()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[0][2] == Approx(0.0).margin(1e-12));
+		
+		CHECK(ions.coordinates()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[1][1] == -3.817445193_a);
+		CHECK(ions.coordinates()[1][2] == -3.817445193_a);
+
+		CHECK(ions.coordinates()[2][0] == -3.817445193_a);
+		CHECK(ions.coordinates()[2][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[2][2] == -3.817445193_a);
+
+		CHECK(ions.coordinates()[3][0] == -3.817445193_a);
+		CHECK(ions.coordinates()[3][1] == -3.817445193_a);
+		CHECK(ions.coordinates()[3][2] == Approx(0.0).margin(1e-12));
+	}
+	
+	SECTION("CIF - SrTiO3"){
+		
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "9002806.cif");
+
+		CHECK(ions.cell().lattice(0)[0] == 10.4316661532_a);
+		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[1] == 10.4316661532_a);
+		CHECK(ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[2] == 14.7525249371_a);		
+		
+		CHECK(ions.size() == 20);
+
+		//Conversions for units and cell convention to compare with obabel
+		//generated coordinates
+		//
+		//  1.38005 ->  2.6079165383
+		//  1.95168 ->  3.6881312343
+		//  2.76010 -> -5.2158330766
+		//  3.90335 -> -7.3762624686
+		//  4.14015 -> -2.6079165383
+		//  5.85503 -> -3.6881312343
+		
+		//Sr         0.00000        0.00000        1.95168
+		CHECK(ions.atoms()[0] == "Sr");
+		CHECK(ions.coordinates()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[0][2] == 3.6881312343_a);
+
+		//Sr         0.00000        0.00000        5.85503
+		CHECK(ions.atoms()[1] == "Sr");
+		CHECK(ions.coordinates()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[1][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[1][2] == -3.6881312343_a);
+
+		//Sr         2.76010        2.76010        5.85503
+		CHECK(ions.atoms()[2] == "Sr");
+		CHECK(ions.coordinates()[2][0] == -5.2158330766_a);
+		CHECK(ions.coordinates()[2][1] == -5.2158330766_a);
+		CHECK(ions.coordinates()[2][2] == -3.6881312343_a);
+
+		//Sr         2.76010        2.76010        1.95167
+		CHECK(ions.atoms()[3] == "Sr");
+		CHECK(ions.coordinates()[3][0] == -5.2158330766_a);
+		CHECK(ions.coordinates()[3][1] == -5.2158330766_a);
+		CHECK(ions.coordinates()[3][2] ==  3.6881312343_a);
+
+		//Ti         2.76010        0.00000        0.00000
+		CHECK(ions.atoms()[4] == "Ti");
+		CHECK(ions.coordinates()[4][0] == -5.2158330766_a);
+		CHECK(ions.coordinates()[4][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[4][2] == Approx(0.0).margin(1e-12));
+
+		//Ti         2.76010        0.00000        3.90335
+		CHECK(ions.atoms()[5] == "Ti");
+		CHECK(ions.coordinates()[5][0] == -5.2158330766_a);
+		CHECK(ions.coordinates()[5][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[5][2] == -7.3762624686_a);
+
+		//Ti         0.00000        2.76010        3.90335
+		CHECK(ions.atoms()[6] == "Ti");
+		CHECK(ions.coordinates()[6][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[6][1] == -5.2158330766_a);
+		CHECK(ions.coordinates()[6][2] == -7.3762624686_a);
+
+		//Ti         0.00000        2.76010        0.00000
+		CHECK(ions.atoms()[7] == "Ti");
+		CHECK(ions.coordinates()[7][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[7][1] == -5.2158330766_a);
+		CHECK(ions.coordinates()[7][2] == Approx(0.0).margin(1e-12));
+
+		//O          0.00000        2.76010        1.95168
+		CHECK(ions.atoms()[8] == "O");
+		CHECK(ions.coordinates()[8][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[8][1] == -5.2158330766_a);
+		CHECK(ions.coordinates()[8][2] == 3.6881312343_a);
+
+		//O          0.00000        2.76010        5.85503
+		CHECK(ions.atoms()[9] == "O");
+		CHECK(ions.coordinates()[9][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[9][1] == -5.2158330766_a);
+		CHECK(ions.coordinates()[9][2] == -3.6881312343_a);
+
+		//O          2.76010        0.00000        5.85503
+		CHECK(ions.atoms()[10] == "O");
+		CHECK(ions.coordinates()[10][0] == -5.2158330766_a);
+		CHECK(ions.coordinates()[10][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[10][2] == -3.6881312343_a);
+
+		//O          2.76010        0.00000        1.95167
+		CHECK(ions.atoms()[11] == "O");
+		CHECK(ions.coordinates()[11][0] == -5.2158330766_a);
+		CHECK(ions.coordinates()[11][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[11][2] ==  3.6881312343_a);
+
+		//O          4.14015        1.38005        0.00000
+		CHECK(ions.atoms()[12] == "O");
+		CHECK(ions.coordinates()[12][0] == -2.6079165383_a);
+		CHECK(ions.coordinates()[12][1] ==  2.6079165383_a);
+		CHECK(ions.coordinates()[12][2] == Approx(0.0).margin(1e-12));
+
+		//4.14015        1.38005        3.90335
+		CHECK(ions.atoms()[13] == "O");
+		CHECK(ions.coordinates()[13][0] == -2.6079165383_a);
+		CHECK(ions.coordinates()[13][1] ==  2.6079165383_a);
+		CHECK(ions.coordinates()[13][2] == -7.3762624686_a);
+
+		//O          1.38005        4.14015        3.90335
+		CHECK(ions.atoms()[14] == "O");
+		CHECK(ions.coordinates()[14][0] ==  2.6079165383_a);
+		CHECK(ions.coordinates()[14][1] == -2.6079165383_a);
+		CHECK(ions.coordinates()[14][2] == -7.3762624686_a);
+
+		//O          1.38005        1.38005        3.90335
+		CHECK(ions.atoms()[15] == "O");
+		CHECK(ions.coordinates()[15][0] ==  2.6079165383_a);
+		CHECK(ions.coordinates()[15][1] ==  2.6079165383_a);
+		CHECK(ions.coordinates()[15][2] == -7.3762624686_a);
+
+		//O          4.14015        4.14015        3.90335
+		CHECK(ions.atoms()[16] == "O");
+		CHECK(ions.coordinates()[16][0] == -2.6079165383_a);
+		CHECK(ions.coordinates()[16][1] == -2.6079165383_a);
+		CHECK(ions.coordinates()[16][2] == -7.3762624686_a);
+
+		//O          4.14015        4.14015        0.00000
+		CHECK(ions.atoms()[17] == "O");
+		CHECK(ions.coordinates()[17][0] == -2.6079165383_a);
+		CHECK(ions.coordinates()[17][1] == -2.6079165383_a);
+		CHECK(ions.coordinates()[17][2] == Approx(0.0).margin(1e-12));
+
+		//O          1.38005        1.38005        0.00000
+		CHECK(ions.atoms()[18] == "O");
+		CHECK(ions.coordinates()[18][0] ==  2.6079165383_a);
+		CHECK(ions.coordinates()[18][1] ==  2.6079165383_a);
+		CHECK(ions.coordinates()[18][2] == Approx(0.0).margin(1e-12));
+
+		//O          1.38005        4.14015        0.00000
+		CHECK(ions.atoms()[19] == "O");
+		CHECK(ions.coordinates()[19][0] ==  2.6079165383_a);
+		CHECK(ions.coordinates()[19][1] == -2.6079165383_a);
+		CHECK(ions.coordinates()[19][2] == Approx(0.0).margin(1e-12));
+		
+	}
+
+	SECTION("CIF - Ca2PI symmetrized"){
+		
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "Ca2PI_symm.cif");
+
+		CHECK(ions.cell().lattice(0)[0] == 8.1469916149_a);
+		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[0] == -4.0734958074_a);
+		CHECK(ions.cell().lattice(1)[1] ==  7.0555017029_a);
+		CHECK(ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[2] == 42.0773092856_a);		
+		
+		CHECK(ions.size() == 12);
+		
+		CHECK(ions.atoms()[0] == "Ca");
+		CHECK(ions.coordinates()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[0][2] == 9.6727962369_a);
+		
+		CHECK(ions.atoms()[1] == "Ca");
+		CHECK(ions.coordinates()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[1][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[1][2] == -9.6727962369_a);
+
+		CHECK(ions.atoms()[2] == "Ca");
+		CHECK(ions.coordinates()[2][0] ==  -4.0734958074_a);
+		CHECK(ions.coordinates()[2][1] ==   2.3518339010_a);
+		CHECK(ions.coordinates()[2][2] == -18.3787432869_a);
+		
+		CHECK(ions.atoms()[3] == "Ca");
+		CHECK(ions.coordinates()[3][0] ==  -4.0734958074_a);
+		CHECK(ions.coordinates()[3][1] ==   2.3518339010_a);
+		CHECK(ions.coordinates()[3][2] ==   4.3529735250_a);
+		
+		CHECK(ions.atoms()[4] == "Ca");
+		CHECK(ions.coordinates()[4][0] ==   4.0734958074_a);
+		CHECK(ions.coordinates()[4][1] ==  -2.3518339010_a);
+		CHECK(ions.coordinates()[4][2] ==  -4.3529735250_a);
+		
+		CHECK(ions.atoms()[5] == "Ca");
+		CHECK(ions.coordinates()[5][0] ==   4.0734958074_a);
+		CHECK(ions.coordinates()[5][1] ==  -2.3518339010_a);
+		CHECK(ions.coordinates()[5][2] ==  18.3787432869_a);
+
+		CHECK(ions.atoms()[6] == "P");
+		CHECK(ions.coordinates()[6][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[6][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[6][2] == -21.0386546428_a);
+
+		CHECK(ions.atoms()[7] == "P");
+		CHECK(ions.coordinates()[7][0] == -4.0734958074_a);
+		CHECK(ions.coordinates()[7][1] ==  2.3518339010_a);
+		CHECK(ions.coordinates()[7][2] == -7.0128848809_a);
+
+		CHECK(ions.atoms()[8] == "P");
+		CHECK(ions.coordinates()[8][0] ==  4.0734958074_a);
+		CHECK(ions.coordinates()[8][1] == -2.3518339010_a);
+		CHECK(ions.coordinates()[8][2] ==  7.0128848809_a);
+
+		CHECK(ions.atoms()[9] == "I");
+		CHECK(ions.coordinates()[9][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[9][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[9][2] == Approx(0.0).margin(1e-12));
+
+		CHECK(ions.atoms()[10] == "I");
+		CHECK(ions.coordinates()[10][0] == -4.0734958074_a);
+		CHECK(ions.coordinates()[10][1] ==  2.3518339010_a);
+		CHECK(ions.coordinates()[10][2] == 14.0257697619_a);
+
+		CHECK(ions.atoms()[11] == "I");
+		CHECK(ions.coordinates()[11][0] ==   4.0734958074_a);
+		CHECK(ions.coordinates()[11][1] ==  -2.3518339010_a);
+		CHECK(ions.coordinates()[11][2] == -14.0257697619_a);
+		
+	}
+	
+	SECTION("CIF - Ca2PI not symmetrized"){
+		
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "Ca2PI.cif");
+
+		CHECK(ions.cell().lattice(0)[0] == 8.1469916149_a);
+		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[0] == -4.0734958074_a);
+		CHECK(ions.cell().lattice(1)[1] ==  7.0555017029_a);
+		CHECK(ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[2] == 42.0773092856_a);		
+		
+		CHECK(ions.size() == 12);
+
+		//the order her is to match the symmetrized test above
+		CHECK(ions.atoms()[1] == "Ca");
+		CHECK(ions.coordinates()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[1][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[1][2] == 9.6727962369_a);
+
+		CHECK(ions.atoms()[4] == "Ca");
+		CHECK(ions.coordinates()[4][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[4][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[4][2] == -9.6727962369_a);
+
+		CHECK(ions.atoms()[3] == "Ca");
+		CHECK(ions.coordinates()[3][0] ==  -4.0734958074_a);
+		CHECK(ions.coordinates()[3][1] ==   2.3518339010_a);
+		CHECK(ions.coordinates()[3][2] == -18.3787432869_a);
+
+		CHECK(ions.atoms()[0] == "Ca");
+		CHECK(ions.coordinates()[0][0] ==  -4.0734958074_a);
+		CHECK(ions.coordinates()[0][1] ==   2.3518339010_a);
+		CHECK(ions.coordinates()[0][2] ==   4.3529735250_a);
+
+		CHECK(ions.atoms()[5] == "Ca");
+		CHECK(ions.coordinates()[5][0] ==   4.0734958074_a);
+		CHECK(ions.coordinates()[5][1] ==  -2.3518339010_a);
+		CHECK(ions.coordinates()[5][2] ==  -4.3529735250_a);
+
+		CHECK(ions.atoms()[2] == "Ca");
+		CHECK(ions.coordinates()[2][0] ==   4.0734958074_a);
+		CHECK(ions.coordinates()[2][1] ==  -2.3518339010_a);
+		CHECK(ions.coordinates()[2][2] ==  18.3787432869_a);
+
+		CHECK(ions.atoms()[7] == "P");
+		CHECK(ions.coordinates()[7][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[7][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[7][2] == -21.0386546428_a);
+
+		CHECK(ions.atoms()[8] == "P");
+		CHECK(ions.coordinates()[8][0] == -4.0734958074_a);
+		CHECK(ions.coordinates()[8][1] ==  2.3518339010_a);
+		CHECK(ions.coordinates()[8][2] == -7.0128848809_a);
+		
+		CHECK(ions.atoms()[6] == "P");
+		CHECK(ions.coordinates()[6][0] ==  4.0734958074_a);
+		CHECK(ions.coordinates()[6][1] == -2.3518339010_a);
+		CHECK(ions.coordinates()[6][2] ==  7.0128848809_a);
+
+		CHECK(ions.atoms()[9] == "I");
+		CHECK(ions.coordinates()[9][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[9][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[9][2] == Approx(0.0).margin(1e-12));
+
+		CHECK(ions.atoms()[10] == "I");
+		CHECK(ions.coordinates()[10][0] == -4.0734958074_a);
+		CHECK(ions.coordinates()[10][1] ==  2.3518339010_a);
+		CHECK(ions.coordinates()[10][2] == 14.0257697619_a);
+
+		CHECK(ions.atoms()[11] == "I");
+		CHECK(ions.coordinates()[11][0] ==   4.0734958074_a);
+		CHECK(ions.coordinates()[11][1] ==  -2.3518339010_a);
+		CHECK(ions.coordinates()[11][2] == -14.0257697619_a);
+		
+	}
+	
+	SECTION("CIF - Na"){
+		
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "Na.cif");
+
+		//These lattice vectors match openbabel
+		CHECK(ions.cell().lattice(0)[0] == 17.7976863062_a);
+		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[0] == 16.3923048366_a);
+		CHECK(ions.cell().lattice(1)[1] == 6.9318092872_a);
+		CHECK(ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[0] == 16.3923048366_a);
+		CHECK(ions.cell().lattice(2)[1] ==  3.3234384423_a);
+		CHECK(ions.cell().lattice(2)[2] ==  6.0831518898_a);		
+		
+		CHECK(ions.size() == 3);
+		
+		CHECK(ions.atoms()[0] == "Na");
+		CHECK(ions.coordinates()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.coordinates()[0][2] == Approx(0.0).margin(1e-12));
+
+		CHECK(ions.atoms()[1] == "Na");
+		CHECK(ions.coordinates()[1][0] == 11.2403978126_a);
+		CHECK(ions.coordinates()[1][1] ==  2.2789211505_a);
+		CHECK(ions.coordinates()[1][2] ==  1.3517980130_a);
+
+		CHECK(ions.atoms()[2] == "Na");
+		CHECK(ions.coordinates()[2][0] == -11.2403978126_a);
+		CHECK(ions.coordinates()[2][1] ==  -2.2789211505_a);
+		CHECK(ions.coordinates()[2][2] ==  -1.3517980130_a);
+	}
+	
 }
 #endif
