@@ -17,11 +17,8 @@ int main(int argc, char ** argv){
 
 	utils::match energy_match(3.0e-5);
 
-  input::poscar vasp_file(config::path::unit_tests_data() + "bn.poscar");
+  auto ions = systems::ions::parse(config::path::unit_tests_data() + "bn.poscar");
 
-	systems::ions ions(vasp_file.cell());
-	ions.insert(vasp_file.atoms());
-  
   systems::electrons electrons(env.par(), ions, input::config::cutoff(35.0_Ha) | input::config::extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 	
   ground_state::initial_guess(ions, electrons);

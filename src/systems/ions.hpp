@@ -14,6 +14,7 @@
 #include <spglib.h>
 
 #include <input/cif.hpp>
+#include <input/poscar.hpp>
 #include <input/species.hpp>
 #include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
@@ -54,6 +55,13 @@ public:
 			return parsed;
 		}
 
+		if(extension == "poscar") {
+			input::poscar file(filename);
+			ions parsed(file.cell());
+			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
+			return parsed;
+		}
+		
 		throw std::runtime_error("error: unsupported or unknwon file format '" + extension + "'.");
 	}
 	
@@ -113,12 +121,12 @@ public:
 		return cell_;
 	}
 
-	auto insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
+	void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
 		add_atom(sp, pos);
 	}
 
 	template <class ContainerType>
-	auto insert(ContainerType const & container){
+	void insert(ContainerType const & container){
 		for(auto atom : container) add_atom(atom.species(), atom.position());
 	}
 
@@ -636,9 +644,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("POSCAR - BN"){
 	
-		input::poscar vasp_file(config::path::unit_tests_data() + "bn.poscar");
-		systems::ions ions(vasp_file.cell());
-		ions.insert(vasp_file.atoms());
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "bn.poscar");
 		
 		CHECK(ions.cell().lattice(0)[0] == 0.0_a);
 		CHECK(ions.cell().lattice(0)[1] == 3.3731611325_a);
@@ -665,9 +671,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("POSCAR - Al"){
 		
-		input::poscar vasp_file(config::path::unit_tests_data() + "al.poscar");
-		systems::ions ions(vasp_file.cell());
-		ions.insert(vasp_file.atoms());
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "al.poscar");
 		
 		CHECK(ions.cell().lattice(0)[0] == 7.6458319003_a);
 		CHECK(ions.cell().lattice(0)[1] == 0.0_a);
@@ -702,9 +706,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("POSCAR - Ni"){
 		
-		input::poscar vasp_file(config::path::unit_tests_data() + "ni.poscar");
-		systems::ions ions(vasp_file.cell());
-		ions.insert(vasp_file.atoms());
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "ni.poscar");
 	
 		CHECK(ions.cell().lattice(0)[0] == 3.33536661_a);
 		CHECK(ions.cell().lattice(0)[1] == 3.33536661_a);
