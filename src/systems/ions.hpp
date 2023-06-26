@@ -13,6 +13,7 @@
 
 #include <spglib.h>
 
+#include <input/cif.hpp>
 #include <input/species.hpp>
 #include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
@@ -41,6 +42,21 @@ public:
 		cell_(std::move(arg_cell_input)){
 	}
 
+	static ions parse(std::string filename) {
+
+		std::string extension = filename.substr(filename.find_last_of(".") + 1);
+		std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+		
+		if(extension == "cif") {
+			input::cif file(filename);
+			ions parsed(file.cell());
+			for(int ii = 0; ii < file.size(); ii++) parsed.insert_fractional(file.atoms()[ii], file.positions()[ii]);
+			return parsed;
+		}
+
+		throw std::runtime_error("error: unsupported or unknwon file format '" + extension + "'.");
+	}
+	
 	auto & atoms() const {
 		return atoms_;
 	}
@@ -106,7 +122,7 @@ public:
 		for(auto atom : container) add_atom(atom.species(), atom.position());
 	}
 
-	auto insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos){
+	void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos){
 		add_atom(sp, cell_.metric().to_cartesian(pos));
 	}
 	

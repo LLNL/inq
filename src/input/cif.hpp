@@ -14,7 +14,8 @@
 #include <gemmi/symmetry.hpp>
 #include <vector>
 
-#include <systems/ions.hpp>
+#include <input/species.hpp>
+#include <ions/unit_cell.hpp>
 #include <magnitude/length.hpp>
 #include <math/vector3.hpp>
 
@@ -24,7 +25,8 @@ namespace input {
 class cif {
 
 	std::vector<vector3<double>> lattice_vectors_;
-	std::vector<systems::ions::atom> geo_;
+	std::vector<input::species> atoms_;
+	std::vector<vector3<double, contravariant>> positions_;
 
   static auto to_double(std::string const * strptr, std::string const & cif_file_name){
     if(strptr == NULL) throw std::runtime_error("Error: cannot read cell parameters from CIF file '" + cif_file_name + "'.");
@@ -84,7 +86,6 @@ public:
 		}
 
 		std::vector<std::string> symbols;
-		std::vector<vector3<double, contravariant>> positions;
 		
 		for(int iatom = 0; iatom < natoms; iatom++){
 			auto symbol = atom_symbols[iatom];
@@ -93,7 +94,7 @@ public:
 			pos = cell.position_in_cell(pos);
 			
 			symbols.emplace_back(symbol);
-			positions.emplace_back(pos);
+			positions_.emplace_back(pos);
 
 			for(auto & symm: symmetries){
 				symm.erase(std::remove(symm.begin(), symm.end(), '\''), symm.end());
@@ -104,7 +105,7 @@ public:
 				auto duplicated = false;
 				
 				for(int jatom = 0; jatom < (int) symbols.size(); jatom++){
-					if(cell.metric().norm(symm_pos - positions[jatom]) > 1e-8) continue;
+					if(cell.metric().norm(symm_pos - positions_[jatom]) > 1e-8) continue;
 					
 					if(symbol != symbols[jatom]) throw std::runtime_error("Error: the file '" + cif_file_name + "' contains two different atoms in the same position.");
 					duplicated = true;
@@ -114,33 +115,34 @@ public:
 				if(duplicated) continue;
 
 				symbols.emplace_back(symbol);
-				positions.emplace_back(symm_pos);
+				positions_.emplace_back(symm_pos);
 			}
 		}
 
-		assert(symbols.size() == positions.size());
+		assert(symbols.size() == positions_.size());
 		
-		for(auto iatom = 0; iatom < (int) symbols.size(); iatom++){
-			geo_.emplace_back(input::species(symbols[iatom]), cell.metric().to_cartesian(positions[iatom]));
-		}
-		
+		for(auto iatom = 0; iatom < (int) symbols.size(); iatom++) atoms_.emplace_back(symbols[iatom]);
 	}
 	
 	auto size() const {
-		return long(geo_.size());
+		return long(positions_.size());
 	}	
 	
 	auto & lattice() const {
 		return lattice_vectors_;
 	}
-	
-	auto & atoms() const {
-		return geo_;
-	}
 
 	auto cell() const {
 		return ions::unit_cell(lattice());
 	}
+
+	auto & atoms() const {
+		return atoms_;
+	}
+
+	auto & positions() const {
+		return positions_;
+	}	
 	
 };
 
@@ -178,26 +180,26 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(cif_file.size() == 4);
 
-		CHECK(cif_file.atoms()[0].species() == "Al");
-		CHECK(cif_file.atoms()[1].species() == "Al");
-		CHECK(cif_file.atoms()[2].species() == "Al");		
-		CHECK(cif_file.atoms()[3].species() == "Al");
+		CHECK(cif_file.atoms()[0] == "Al");
+		CHECK(cif_file.atoms()[1] == "Al");
+		CHECK(cif_file.atoms()[2] == "Al");		
+		CHECK(cif_file.atoms()[3] == "Al");
 
-		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[0].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[0].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][2] == Approx(0.0).margin(1e-12));
 		
-		CHECK(cif_file.atoms()[1].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[1].position()[1] == -3.817445193_a);
-		CHECK(cif_file.atoms()[1].position()[2] == -3.817445193_a);
+		CHECK(cif_file.positions()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[1][1] == -0.5_a);
+		CHECK(cif_file.positions()[1][2] == -0.5_a);
 
-		CHECK(cif_file.atoms()[2].position()[0] == -3.817445193_a);
-		CHECK(cif_file.atoms()[2].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[2].position()[2] == -3.817445193_a);
+		CHECK(cif_file.positions()[2][0] == -0.5_a);
+		CHECK(cif_file.positions()[2][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[2][2] == -0.5_a);
 
-		CHECK(cif_file.atoms()[3].position()[0] == -3.817445193_a);
-		CHECK(cif_file.atoms()[3].position()[1] == -3.817445193_a);
-		CHECK(cif_file.atoms()[3].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[3][0] == -0.5_a);
+		CHECK(cif_file.positions()[3][1] == -0.5_a);
+		CHECK(cif_file.positions()[3][2] == Approx(0.0).margin(1e-12));
 	}
 	
 	SECTION("SrTiO3"){
@@ -219,132 +221,132 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		//Conversions for units and cell convention to compare with obabel
 		//generated coordinates
 		//
-		//  1.38005 ->  2.6079165383
-		//  1.95168 ->  3.6881312343
-		//  2.76010 -> -5.2158330766
-		//  3.90335 -> -7.3762624686
-		//  4.14015 -> -2.6079165383
-		//  5.85503 -> -3.6881312343
+		//  1.38005 ->  0.25
+		//  1.95168 ->  0.25
+		//  2.76010 -> -0.5
+		//  3.90335 -> -0.5
+		//  4.14015 -> -0.25
+		//  5.85503 -> -0.25
 		
 		//Sr         0.00000        0.00000        1.95168
-		CHECK(cif_file.atoms()[0].species() == "Sr");
-		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[0].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[0].position()[2] == 3.6881312343_a);
+		CHECK(cif_file.atoms()[0] == "Sr");
+		CHECK(cif_file.positions()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][2] == 0.25_a);
 
 		//Sr         0.00000        0.00000        5.85503
-		CHECK(cif_file.atoms()[1].species() == "Sr");
-		CHECK(cif_file.atoms()[1].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[1].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[1].position()[2] == -3.6881312343_a);
+		CHECK(cif_file.atoms()[1] == "Sr");
+		CHECK(cif_file.positions()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[1][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[1][2] == -0.25_a);
 
 		//Sr         2.76010        2.76010        5.85503
-		CHECK(cif_file.atoms()[2].species() == "Sr");
-		CHECK(cif_file.atoms()[2].position()[0] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[2].position()[1] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[2].position()[2] == -3.6881312343_a);
+		CHECK(cif_file.atoms()[2] == "Sr");
+		CHECK(cif_file.positions()[2][0] == -0.5_a);
+		CHECK(cif_file.positions()[2][1] == -0.5_a);
+		CHECK(cif_file.positions()[2][2] == -0.25_a);
 
 		//Sr         2.76010        2.76010        1.95167
-		CHECK(cif_file.atoms()[3].species() == "Sr");
-		CHECK(cif_file.atoms()[3].position()[0] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[3].position()[1] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[3].position()[2] ==  3.6881312343_a);
+		CHECK(cif_file.atoms()[3] == "Sr");
+		CHECK(cif_file.positions()[3][0] == -0.5_a);
+		CHECK(cif_file.positions()[3][1] == -0.5_a);
+		CHECK(cif_file.positions()[3][2] ==  0.25_a);
 
 		//Ti         2.76010        0.00000        0.00000
-		CHECK(cif_file.atoms()[4].species() == "Ti");
-		CHECK(cif_file.atoms()[4].position()[0] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[4].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[4].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[4] == "Ti");
+		CHECK(cif_file.positions()[4][0] == -0.5_a);
+		CHECK(cif_file.positions()[4][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[4][2] == Approx(0.0).margin(1e-12));
 
 		//Ti         2.76010        0.00000        3.90335
-		CHECK(cif_file.atoms()[5].species() == "Ti");
-		CHECK(cif_file.atoms()[5].position()[0] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[5].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[5].position()[2] == -7.3762624686_a);
+		CHECK(cif_file.atoms()[5] == "Ti");
+		CHECK(cif_file.positions()[5][0] == -0.5_a);
+		CHECK(cif_file.positions()[5][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[5][2] == -0.5_a);
 
 		//Ti         0.00000        2.76010        3.90335
-		CHECK(cif_file.atoms()[6].species() == "Ti");
-		CHECK(cif_file.atoms()[6].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[6].position()[1] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[6].position()[2] == -7.3762624686_a);
+		CHECK(cif_file.atoms()[6] == "Ti");
+		CHECK(cif_file.positions()[6][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[6][1] == -0.5_a);
+		CHECK(cif_file.positions()[6][2] == -0.5_a);
 
 		//Ti         0.00000        2.76010        0.00000
-		CHECK(cif_file.atoms()[7].species() == "Ti");
-		CHECK(cif_file.atoms()[7].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[7].position()[1] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[7].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[7] == "Ti");
+		CHECK(cif_file.positions()[7][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[7][1] == -0.5_a);
+		CHECK(cif_file.positions()[7][2] == Approx(0.0).margin(1e-12));
 
 		//O          0.00000        2.76010        1.95168
-		CHECK(cif_file.atoms()[8].species() == "O");
-		CHECK(cif_file.atoms()[8].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[8].position()[1] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[8].position()[2] == 3.6881312343_a);
+		CHECK(cif_file.atoms()[8] == "O");
+		CHECK(cif_file.positions()[8][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[8][1] == -0.5_a);
+		CHECK(cif_file.positions()[8][2] == 0.25_a);
 
 		//O          0.00000        2.76010        5.85503
-		CHECK(cif_file.atoms()[9].species() == "O");
-		CHECK(cif_file.atoms()[9].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[9].position()[1] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[9].position()[2] == -3.6881312343_a);
+		CHECK(cif_file.atoms()[9] == "O");
+		CHECK(cif_file.positions()[9][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[9][1] == -0.5_a);
+		CHECK(cif_file.positions()[9][2] == -0.25_a);
 
 		//O          2.76010        0.00000        5.85503
-		CHECK(cif_file.atoms()[10].species() == "O");
-		CHECK(cif_file.atoms()[10].position()[0] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[10].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[10].position()[2] == -3.6881312343_a);
+		CHECK(cif_file.atoms()[10] == "O");
+		CHECK(cif_file.positions()[10][0] == -0.5_a);
+		CHECK(cif_file.positions()[10][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[10][2] == -0.25_a);
 
 		//O          2.76010        0.00000        1.95167
-		CHECK(cif_file.atoms()[11].species() == "O");
-		CHECK(cif_file.atoms()[11].position()[0] == -5.2158330766_a);
-		CHECK(cif_file.atoms()[11].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[11].position()[2] ==  3.6881312343_a);
+		CHECK(cif_file.atoms()[11] == "O");
+		CHECK(cif_file.positions()[11][0] == -0.5_a);
+		CHECK(cif_file.positions()[11][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[11][2] ==  0.25_a);
 
 		//O          4.14015        1.38005        0.00000
-		CHECK(cif_file.atoms()[12].species() == "O");
-		CHECK(cif_file.atoms()[12].position()[0] == -2.6079165383_a);
-		CHECK(cif_file.atoms()[12].position()[1] ==  2.6079165383_a);
-		CHECK(cif_file.atoms()[12].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[12] == "O");
+		CHECK(cif_file.positions()[12][0] == -0.25_a);
+		CHECK(cif_file.positions()[12][1] ==  0.25_a);
+		CHECK(cif_file.positions()[12][2] == Approx(0.0).margin(1e-12));
 
 		//4.14015        1.38005        3.90335
-		CHECK(cif_file.atoms()[13].species() == "O");
-		CHECK(cif_file.atoms()[13].position()[0] == -2.6079165383_a);
-		CHECK(cif_file.atoms()[13].position()[1] ==  2.6079165383_a);
-		CHECK(cif_file.atoms()[13].position()[2] == -7.3762624686_a);
+		CHECK(cif_file.atoms()[13] == "O");
+		CHECK(cif_file.positions()[13][0] == -0.25_a);
+		CHECK(cif_file.positions()[13][1] ==  0.25_a);
+		CHECK(cif_file.positions()[13][2] == -0.5_a);
 
 		//O          1.38005        4.14015        3.90335
-		CHECK(cif_file.atoms()[14].species() == "O");
-		CHECK(cif_file.atoms()[14].position()[0] ==  2.6079165383_a);
-		CHECK(cif_file.atoms()[14].position()[1] == -2.6079165383_a);
-		CHECK(cif_file.atoms()[14].position()[2] == -7.3762624686_a);
+		CHECK(cif_file.atoms()[14] == "O");
+		CHECK(cif_file.positions()[14][0] ==  0.25_a);
+		CHECK(cif_file.positions()[14][1] == -0.25_a);
+		CHECK(cif_file.positions()[14][2] == -0.5_a);
 
 		//O          1.38005        1.38005        3.90335
-		CHECK(cif_file.atoms()[15].species() == "O");
-		CHECK(cif_file.atoms()[15].position()[0] ==  2.6079165383_a);
-		CHECK(cif_file.atoms()[15].position()[1] ==  2.6079165383_a);
-		CHECK(cif_file.atoms()[15].position()[2] == -7.3762624686_a);
+		CHECK(cif_file.atoms()[15] == "O");
+		CHECK(cif_file.positions()[15][0] ==  0.25_a);
+		CHECK(cif_file.positions()[15][1] ==  0.25_a);
+		CHECK(cif_file.positions()[15][2] == -0.5_a);
 
 		//O          4.14015        4.14015        3.90335
-		CHECK(cif_file.atoms()[16].species() == "O");
-		CHECK(cif_file.atoms()[16].position()[0] == -2.6079165383_a);
-		CHECK(cif_file.atoms()[16].position()[1] == -2.6079165383_a);
-		CHECK(cif_file.atoms()[16].position()[2] == -7.3762624686_a);
+		CHECK(cif_file.atoms()[16] == "O");
+		CHECK(cif_file.positions()[16][0] == -0.25_a);
+		CHECK(cif_file.positions()[16][1] == -0.25_a);
+		CHECK(cif_file.positions()[16][2] == -0.5_a);
 
 		//O          4.14015        4.14015        0.00000
-		CHECK(cif_file.atoms()[17].species() == "O");
-		CHECK(cif_file.atoms()[17].position()[0] == -2.6079165383_a);
-		CHECK(cif_file.atoms()[17].position()[1] == -2.6079165383_a);
-		CHECK(cif_file.atoms()[17].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[17] == "O");
+		CHECK(cif_file.positions()[17][0] == -0.25_a);
+		CHECK(cif_file.positions()[17][1] == -0.25_a);
+		CHECK(cif_file.positions()[17][2] == Approx(0.0).margin(1e-12));
 
 		//O          1.38005        1.38005        0.00000
-		CHECK(cif_file.atoms()[18].species() == "O");
-		CHECK(cif_file.atoms()[18].position()[0] ==  2.6079165383_a);
-		CHECK(cif_file.atoms()[18].position()[1] ==  2.6079165383_a);
-		CHECK(cif_file.atoms()[18].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[18] == "O");
+		CHECK(cif_file.positions()[18][0] ==  0.25_a);
+		CHECK(cif_file.positions()[18][1] ==  0.25_a);
+		CHECK(cif_file.positions()[18][2] == Approx(0.0).margin(1e-12));
 
 		//O          1.38005        4.14015        0.00000
-		CHECK(cif_file.atoms()[19].species() == "O");
-		CHECK(cif_file.atoms()[19].position()[0] ==  2.6079165383_a);
-		CHECK(cif_file.atoms()[19].position()[1] == -2.6079165383_a);
-		CHECK(cif_file.atoms()[19].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[19] == "O");
+		CHECK(cif_file.positions()[19][0] ==  0.25_a);
+		CHECK(cif_file.positions()[19][1] == -0.25_a);
+		CHECK(cif_file.positions()[19][2] == Approx(0.0).margin(1e-12));
 		
 	}
 
@@ -364,65 +366,65 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(cif_file.size() == 12);
 		
-		CHECK(cif_file.atoms()[0].species() == "Ca");
-		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[0].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[0].position()[2] == 9.6727962369_a);
+		CHECK(cif_file.atoms()[0] == "Ca");
+		CHECK(cif_file.positions()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][2] == 0.22988153_a);
 		
-		CHECK(cif_file.atoms()[1].species() == "Ca");
-		CHECK(cif_file.atoms()[1].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[1].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[1].position()[2] == -9.6727962369_a);
+		CHECK(cif_file.atoms()[1] == "Ca");
+		CHECK(cif_file.positions()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[1][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[1][2] == -0.22988153_a);
 
-		CHECK(cif_file.atoms()[2].species() == "Ca");
-		CHECK(cif_file.atoms()[2].position()[0] ==  -4.0734958074_a);
-		CHECK(cif_file.atoms()[2].position()[1] ==   2.3518339010_a);
-		CHECK(cif_file.atoms()[2].position()[2] == -18.3787432869_a);
+		CHECK(cif_file.atoms()[2] == "Ca");
+		CHECK(cif_file.positions()[2][0] ==  -0.3333333333_a);
+		CHECK(cif_file.positions()[2][1] ==   0.3333333333_a);
+		CHECK(cif_file.positions()[2][2] ==  -0.4367851367_a);
 		
-		CHECK(cif_file.atoms()[3].species() == "Ca");
-		CHECK(cif_file.atoms()[3].position()[0] ==  -4.0734958074_a);
-		CHECK(cif_file.atoms()[3].position()[1] ==   2.3518339010_a);
-		CHECK(cif_file.atoms()[3].position()[2] ==   4.3529735250_a);
+		CHECK(cif_file.atoms()[3] == "Ca");
+		CHECK(cif_file.positions()[3][0] ==  -0.3333333333_a);
+		CHECK(cif_file.positions()[3][1] ==   0.3333333333_a);
+		CHECK(cif_file.positions()[3][2] ==   0.10345180330_a);
 		
-		CHECK(cif_file.atoms()[4].species() == "Ca");
-		CHECK(cif_file.atoms()[4].position()[0] ==   4.0734958074_a);
-		CHECK(cif_file.atoms()[4].position()[1] ==  -2.3518339010_a);
-		CHECK(cif_file.atoms()[4].position()[2] ==  -4.3529735250_a);
+		CHECK(cif_file.atoms()[4] == "Ca");
+		CHECK(cif_file.positions()[4][0] ==   0.3333333333_a);
+		CHECK(cif_file.positions()[4][1] ==  -0.3333333333_a);
+		CHECK(cif_file.positions()[4][2] ==  -0.1034518033_a);
 		
-		CHECK(cif_file.atoms()[5].species() == "Ca");
-		CHECK(cif_file.atoms()[5].position()[0] ==   4.0734958074_a);
-		CHECK(cif_file.atoms()[5].position()[1] ==  -2.3518339010_a);
-		CHECK(cif_file.atoms()[5].position()[2] ==  18.3787432869_a);
+		CHECK(cif_file.atoms()[5] == "Ca");
+		CHECK(cif_file.positions()[5][0] ==   0.3333333333_a);
+		CHECK(cif_file.positions()[5][1] ==  -0.3333333333_a);
+		CHECK(cif_file.positions()[5][2] ==   0.4367851367_a);
 
-		CHECK(cif_file.atoms()[6].species() == "P");
-		CHECK(cif_file.atoms()[6].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[6].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[6].position()[2] == -21.0386546428_a);
+		CHECK(cif_file.atoms()[6] == "P");
+		CHECK(cif_file.positions()[6][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[6][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[6][2] == -0.5_a);
 
-		CHECK(cif_file.atoms()[7].species() == "P");
-		CHECK(cif_file.atoms()[7].position()[0] == -4.0734958074_a);
-		CHECK(cif_file.atoms()[7].position()[1] ==  2.3518339010_a);
-		CHECK(cif_file.atoms()[7].position()[2] == -7.0128848809_a);
+		CHECK(cif_file.atoms()[7] == "P");
+		CHECK(cif_file.positions()[7][0] == -0.3333333333_a);
+		CHECK(cif_file.positions()[7][1] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[7][2] == -0.1666666667_a);
 
-		CHECK(cif_file.atoms()[8].species() == "P");
-		CHECK(cif_file.atoms()[8].position()[0] ==  4.0734958074_a);
-		CHECK(cif_file.atoms()[8].position()[1] == -2.3518339010_a);
-		CHECK(cif_file.atoms()[8].position()[2] ==  7.0128848809_a);
+		CHECK(cif_file.atoms()[8] == "P");
+		CHECK(cif_file.positions()[8][0] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[8][1] == -0.3333333333_a);
+		CHECK(cif_file.positions()[8][2] ==  0.1666666667_a);
 
-		CHECK(cif_file.atoms()[9].species() == "I");
-		CHECK(cif_file.atoms()[9].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[9].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[9].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[9] == "I");
+		CHECK(cif_file.positions()[9][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[9][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[9][2] == Approx(0.0).margin(1e-12));
 
-		CHECK(cif_file.atoms()[10].species() == "I");
-		CHECK(cif_file.atoms()[10].position()[0] == -4.0734958074_a);
-		CHECK(cif_file.atoms()[10].position()[1] ==  2.3518339010_a);
-		CHECK(cif_file.atoms()[10].position()[2] == 14.0257697619_a);
+		CHECK(cif_file.atoms()[10] == "I");
+		CHECK(cif_file.positions()[10][0] == -0.3333333333_a);
+		CHECK(cif_file.positions()[10][1] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[10][2] ==  0.3333333333_a);
 
-		CHECK(cif_file.atoms()[11].species() == "I");
-		CHECK(cif_file.atoms()[11].position()[0] ==   4.0734958074_a);
-		CHECK(cif_file.atoms()[11].position()[1] ==  -2.3518339010_a);
-		CHECK(cif_file.atoms()[11].position()[2] == -14.0257697619_a);
+		CHECK(cif_file.atoms()[11] == "I");
+		CHECK(cif_file.positions()[11][0] ==   0.3333333333_a);
+		CHECK(cif_file.positions()[11][1] ==  -0.3333333333_a);
+		CHECK(cif_file.positions()[11][2] ==  -0.3333333333_a);
 		
 	}
 	
@@ -443,65 +445,65 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.size() == 12);
 
 		//the order her is to match the symmetrized test above
-		CHECK(cif_file.atoms()[1].species() == "Ca");
-		CHECK(cif_file.atoms()[1].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[1].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[1].position()[2] == 9.6727962369_a);
+		CHECK(cif_file.atoms()[1] == "Ca");
+		CHECK(cif_file.positions()[1][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[1][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[1][2] == 0.22988153_a);
 
-		CHECK(cif_file.atoms()[4].species() == "Ca");
-		CHECK(cif_file.atoms()[4].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[4].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[4].position()[2] == -9.6727962369_a);
+		CHECK(cif_file.atoms()[4] == "Ca");
+		CHECK(cif_file.positions()[4][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[4][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[4][2] == -0.22988153_a);
 
-		CHECK(cif_file.atoms()[3].species() == "Ca");
-		CHECK(cif_file.atoms()[3].position()[0] ==  -4.0734958074_a);
-		CHECK(cif_file.atoms()[3].position()[1] ==   2.3518339010_a);
-		CHECK(cif_file.atoms()[3].position()[2] == -18.3787432869_a);
+		CHECK(cif_file.atoms()[3] == "Ca");
+		CHECK(cif_file.positions()[3][0] == -0.3333333333_a);
+		CHECK(cif_file.positions()[3][1] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[3][2] == -0.4367851367_a);
 
-		CHECK(cif_file.atoms()[0].species() == "Ca");
-		CHECK(cif_file.atoms()[0].position()[0] ==  -4.0734958074_a);
-		CHECK(cif_file.atoms()[0].position()[1] ==   2.3518339010_a);
-		CHECK(cif_file.atoms()[0].position()[2] ==   4.3529735250_a);
+		CHECK(cif_file.atoms()[0] == "Ca");
+		CHECK(cif_file.positions()[0][0] == -0.3333333333_a);
+		CHECK(cif_file.positions()[0][1] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[0][2] ==  0.1034518033_a);
 
-		CHECK(cif_file.atoms()[5].species() == "Ca");
-		CHECK(cif_file.atoms()[5].position()[0] ==   4.0734958074_a);
-		CHECK(cif_file.atoms()[5].position()[1] ==  -2.3518339010_a);
-		CHECK(cif_file.atoms()[5].position()[2] ==  -4.3529735250_a);
+		CHECK(cif_file.atoms()[5] == "Ca");
+		CHECK(cif_file.positions()[5][0] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[5][1] == -0.3333333333_a);
+		CHECK(cif_file.positions()[5][2] == -0.1034518033_a);
 
-		CHECK(cif_file.atoms()[2].species() == "Ca");
-		CHECK(cif_file.atoms()[2].position()[0] ==   4.0734958074_a);
-		CHECK(cif_file.atoms()[2].position()[1] ==  -2.3518339010_a);
-		CHECK(cif_file.atoms()[2].position()[2] ==  18.3787432869_a);
+		CHECK(cif_file.atoms()[2] == "Ca");
+		CHECK(cif_file.positions()[2][0] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[2][1] == -0.3333333333_a);
+		CHECK(cif_file.positions()[2][2] ==  0.4367851367_a);
 
-		CHECK(cif_file.atoms()[7].species() == "P");
-		CHECK(cif_file.atoms()[7].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[7].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[7].position()[2] == -21.0386546428_a);
+		CHECK(cif_file.atoms()[7] == "P");
+		CHECK(cif_file.positions()[7][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[7][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[7][2] == -0.5_a);
 
-		CHECK(cif_file.atoms()[8].species() == "P");
-		CHECK(cif_file.atoms()[8].position()[0] == -4.0734958074_a);
-		CHECK(cif_file.atoms()[8].position()[1] ==  2.3518339010_a);
-		CHECK(cif_file.atoms()[8].position()[2] == -7.0128848809_a);
+		CHECK(cif_file.atoms()[8] == "P");
+		CHECK(cif_file.positions()[8][0] == -0.3333333333_a);
+		CHECK(cif_file.positions()[8][1] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[8][2] == -0.1666666667_a);
 		
-		CHECK(cif_file.atoms()[6].species() == "P");
-		CHECK(cif_file.atoms()[6].position()[0] ==  4.0734958074_a);
-		CHECK(cif_file.atoms()[6].position()[1] == -2.3518339010_a);
-		CHECK(cif_file.atoms()[6].position()[2] ==  7.0128848809_a);
+		CHECK(cif_file.atoms()[6] == "P");
+		CHECK(cif_file.positions()[6][0] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[6][1] == -0.3333333333_a);
+		CHECK(cif_file.positions()[6][2] ==  0.1666666667_a);
 
-		CHECK(cif_file.atoms()[9].species() == "I");
-		CHECK(cif_file.atoms()[9].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[9].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[9].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[9] == "I");
+		CHECK(cif_file.positions()[9][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[9][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[9][2] == Approx(0.0).margin(1e-12));
 
-		CHECK(cif_file.atoms()[10].species() == "I");
-		CHECK(cif_file.atoms()[10].position()[0] == -4.0734958074_a);
-		CHECK(cif_file.atoms()[10].position()[1] ==  2.3518339010_a);
-		CHECK(cif_file.atoms()[10].position()[2] == 14.0257697619_a);
+		CHECK(cif_file.atoms()[10] == "I");
+		CHECK(cif_file.positions()[10][0] == -0.3333333333_a);
+		CHECK(cif_file.positions()[10][1] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[10][2] ==  0.3333333333_a);
 
-		CHECK(cif_file.atoms()[11].species() == "I");
-		CHECK(cif_file.atoms()[11].position()[0] ==   4.0734958074_a);
-		CHECK(cif_file.atoms()[11].position()[1] ==  -2.3518339010_a);
-		CHECK(cif_file.atoms()[11].position()[2] == -14.0257697619_a);
+		CHECK(cif_file.atoms()[11] == "I");
+		CHECK(cif_file.positions()[11][0] ==  0.3333333333_a);
+		CHECK(cif_file.positions()[11][1] == -0.3333333333_a);
+		CHECK(cif_file.positions()[11][2] == -0.3333333333_a);
 		
 	}
 	
@@ -522,20 +524,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(cif_file.size() == 3);
 		
-		CHECK(cif_file.atoms()[0].species() == "Na");
-		CHECK(cif_file.atoms()[0].position()[0] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[0].position()[1] == Approx(0.0).margin(1e-12));
-		CHECK(cif_file.atoms()[0].position()[2] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.atoms()[0] == "Na");
+		CHECK(cif_file.positions()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(cif_file.positions()[0][2] == Approx(0.0).margin(1e-12));
 
-		CHECK(cif_file.atoms()[1].species() == "Na");
-		CHECK(cif_file.atoms()[1].position()[0] == 11.2403978126_a);
-		CHECK(cif_file.atoms()[1].position()[1] ==  2.2789211505_a);
-		CHECK(cif_file.atoms()[1].position()[2] ==  1.3517980130_a);
+		CHECK(cif_file.atoms()[1] == "Na");
+		CHECK(cif_file.positions()[1][0] == 0.22222_a);
+		CHECK(cif_file.positions()[1][1] == 0.22222_a);
+		CHECK(cif_file.positions()[1][2] == 0.22222_a);
 
-		CHECK(cif_file.atoms()[2].species() == "Na");
-		CHECK(cif_file.atoms()[2].position()[0] == -11.2403978126_a);
-		CHECK(cif_file.atoms()[2].position()[1] ==  -2.2789211505_a);
-		CHECK(cif_file.atoms()[2].position()[2] ==  -1.3517980130_a);
+		CHECK(cif_file.atoms()[2] == "Na");
+		CHECK(cif_file.positions()[2][0] == -0.22222_a);
+		CHECK(cif_file.positions()[2][1] == -0.22222_a);
+		CHECK(cif_file.positions()[2][2] == -0.22222_a);
 	}
 	
 }
