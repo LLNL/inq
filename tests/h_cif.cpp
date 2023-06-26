@@ -14,10 +14,7 @@ int main(int argc, char ** argv){
 	
 	input::environment env(argc, argv);
 
-	input::cif cif_file(config::path::unit_tests_data() + "H.cif");
-
-	systems::ions ions(cif_file.cell());
-	ions.insert(cif_file.atoms());
+	auto ions = systems::ions::parse(config::path::unit_tests_data() + "H.cif");
 
 	systems::electrons electrons(env.par(), ions, input::config::cutoff(30.0_Ha));
 	ground_state::initial_guess(ions, electrons);

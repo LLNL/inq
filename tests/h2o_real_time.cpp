@@ -17,9 +17,8 @@ int main(int argc, char ** argv){
 
 	utils::match match(1e-5);
 	
-	systems::ions ions(ions::unit_cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
-	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "water.xyz"));
-
+	auto ions = systems::ions::parse(inq::config::path::unit_tests_data() + "water.xyz", inq::ions::unit_cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
+	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;

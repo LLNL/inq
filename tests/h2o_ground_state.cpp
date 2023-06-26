@@ -8,19 +8,7 @@
 
 #include <fftw3.h>
 
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <config/path.hpp>
-#include <input/parse_xyz.hpp>
-#include <utils/match.hpp>
-#include <operations/io.hpp>
-#include <perturbations/kick.hpp>
-#include <ground_state/initial_guess.hpp>
-#include <ground_state/calculate.hpp>
-
-#include <input/environment.hpp>
-
-#include <utils/profiling.hpp>
+#include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
 
@@ -32,10 +20,8 @@ int main(int argc, char ** argv){
 	inq::input::environment env(argc, argv);
 	
 	inq::utils::match match(3.0e-4);
-
-	inq::systems::ions ions(inq::ions::unit_cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
-
-	ions.insert(inq::input::parse_xyz(inq::config::path::unit_tests_data() + "water.xyz"));
+	
+	auto ions = inq::systems::ions::parse(inq::config::path::unit_tests_data() + "water.xyz", inq::ions::unit_cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();

@@ -318,7 +318,6 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 
-#include <input/parse_xyz.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
@@ -373,9 +372,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	SECTION("Construct from a geometry"){
 
-		auto ions = systems::ions(ions::unit_cell::cubic(20.0_b));
-
-		ions.insert(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", ions::unit_cell::cubic(20.0_b));
 		
 		basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, comm);
 		
