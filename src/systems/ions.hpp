@@ -13,13 +13,12 @@
 
 #include <spglib.h>
 
-#include <input/cif.hpp>
-#include <input/parse_xyz.hpp>
-#include <input/poscar.hpp>
 #include <input/species.hpp>
 #include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
-
+#include <parse/cif.hpp>
+#include <parse/poscar.hpp>
+#include <parse/xyz.hpp>
 
 namespace inq {
 namespace systems {
@@ -55,7 +54,7 @@ public:
 		if(extension == "cif") {
 			if(cell.has_value()) throw std::runtime_error("error: the cell argument cannot be given for parsing CIF file '" + filename + "'.");
 			
-			input::cif file(filename);
+			parse::cif file(filename);
 			ions parsed(file.cell());
 			for(int ii = 0; ii < file.size(); ii++) parsed.insert_fractional(file.atoms()[ii], file.positions()[ii]);
 			return parsed;
@@ -64,7 +63,7 @@ public:
 		if(extension == "poscar" or extension == "vasp" or filename_wo_path == "poscar") {
 			if(cell.has_value()) throw std::runtime_error("error: the cell argument cannot be given for parsing POSCAR file '" + filename + "'.");
 			
-			input::poscar file(filename);
+			parse::poscar file(filename);
 			ions parsed(file.cell());
 			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
 			return parsed;
@@ -74,7 +73,7 @@ public:
 			if(not cell.has_value()) throw std::runtime_error("error: the cell needs to be provided for parsing XYZ file '" + filename + "'.");
 				
 			ions parsed(*cell);
-			auto file = input::xyz(filename);
+			auto file = parse::xyz(filename);
 			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
 			return parsed;
 		}

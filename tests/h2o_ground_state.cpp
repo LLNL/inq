@@ -8,19 +8,7 @@
 
 #include <fftw3.h>
 
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <config/path.hpp>
-#include <input/parse_xyz.hpp>
-#include <utils/match.hpp>
-#include <operations/io.hpp>
-#include <perturbations/kick.hpp>
-#include <ground_state/initial_guess.hpp>
-#include <ground_state/calculate.hpp>
-
-#include <input/environment.hpp>
-
-#include <utils/profiling.hpp>
+#include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
 

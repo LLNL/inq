@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INPUT__CIF
-#define INQ__INPUT__CIF
+#ifndef INQ__PARSE__CIF
+#define INQ__PARSE__CIF
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -20,7 +20,7 @@
 #include <math/vector3.hpp>
 
 namespace inq {
-namespace input {
+namespace parse {
 
 class cif {
 
@@ -151,8 +151,8 @@ public:
 }
 #endif
 
-#ifdef INQ_INPUT_CIF_UNIT_TEST
-#undef INQ_INPUT_CIF_UNIT_TEST
+#ifdef INQ_PARSE_CIF_UNIT_TEST
+#undef INQ_PARSE_CIF_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -166,7 +166,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Al"){
 		
-		input::cif cif_file(config::path::unit_tests_data() + "Al.cif");
+		parse::cif cif_file(config::path::unit_tests_data() + "Al.cif");
 
 		CHECK(cif_file.lattice()[0][0] == 7.634890386_a);
 		CHECK(cif_file.lattice()[0][1] == Approx(0.0).margin(1e-12));
@@ -204,7 +204,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("SrTiO3"){
 		
-		input::cif cif_file(config::path::unit_tests_data() + "9002806.cif");
+		parse::cif cif_file(config::path::unit_tests_data() + "9002806.cif");
 
 		CHECK(cif_file.lattice()[0][0] == 10.4316661532_a);
 		CHECK(cif_file.lattice()[0][1] == Approx(0.0).margin(1e-12));
@@ -352,7 +352,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Ca2PI symmetrized"){
 		
-		input::cif cif_file(config::path::unit_tests_data() + "Ca2PI_symm.cif");
+		parse::cif cif_file(config::path::unit_tests_data() + "Ca2PI_symm.cif");
 
 		CHECK(cif_file.lattice()[0][0] == 8.1469916149_a);
 		CHECK(cif_file.lattice()[0][1] == Approx(0.0).margin(1e-12));
@@ -430,7 +430,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Ca2PI not symmetrized"){
 		
-		input::cif cif_file(config::path::unit_tests_data() + "Ca2PI.cif");
+		parse::cif cif_file(config::path::unit_tests_data() + "Ca2PI.cif");
 
 		CHECK(cif_file.lattice()[0][0] == 8.1469916149_a);
 		CHECK(cif_file.lattice()[0][1] == Approx(0.0).margin(1e-12));
@@ -509,7 +509,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Na"){
 		
-		input::cif cif_file(config::path::unit_tests_data() + "Na.cif");
+		parse::cif cif_file(config::path::unit_tests_data() + "Na.cif");
 
 		//These lattice vectors match openbabel
 		CHECK(cif_file.lattice()[0][0] == 17.7976863062_a);

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INPUT__POSCAR
-#define INQ__INPUT__POSCAR
+#ifndef INQ__PARSE__POSCAR
+#define INQ__PARSE__POSCAR
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -24,7 +24,7 @@
 #include <magnitude/length.hpp>
 
 namespace inq {
-namespace input {
+namespace parse {
 
 class poscar {
 
@@ -143,8 +143,8 @@ public:
 }
 #endif
 
-#ifdef INQ_INPUT_POSCAR_UNIT_TEST
-#undef INQ_INPUT_POSCAR_UNIT_TEST
+#ifdef INQ_PARSE_POSCAR_UNIT_TEST
+#undef INQ_PARSE_POSCAR_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -158,7 +158,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("BN"){
 	
-		input::poscar vasp_file(config::path::unit_tests_data() + "bn.poscar");
+		parse::poscar vasp_file(config::path::unit_tests_data() + "bn.poscar");
 
 		CHECK(vasp_file.lattice()[0][0] == 0.0_a);
 		CHECK(vasp_file.lattice()[0][1] == 3.3731611325_a);
@@ -185,7 +185,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Al"){
 		
-		input::poscar vasp_file(config::path::unit_tests_data() + "al.poscar");
+		parse::poscar vasp_file(config::path::unit_tests_data() + "al.poscar");
 
 		CHECK(vasp_file.lattice()[0][0] == 7.6458319003_a);
 		CHECK(vasp_file.lattice()[0][1] == 0.0_a);
@@ -220,7 +220,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Ni"){
 		
-		input::poscar vasp_file(config::path::unit_tests_data() + "POSCAR");
+		parse::poscar vasp_file(config::path::unit_tests_data() + "POSCAR");
 
 		CHECK(vasp_file.lattice()[0][0] == 3.33536661_a);
 		CHECK(vasp_file.lattice()[0][1] == 3.33536661_a);

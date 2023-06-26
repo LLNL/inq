@@ -318,7 +318,6 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 
-#include <input/parse_xyz.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 

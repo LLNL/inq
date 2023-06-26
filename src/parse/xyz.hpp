@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INPUT__PARSE_XYZ
-#define INQ__INPUT__PARSE_XYZ
+#ifndef INQ__PARSE__XYZ
+#define INQ__PARSE__XYZ
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -19,7 +19,7 @@
 #include <magnitude/length.hpp>
 
 namespace inq {
-namespace input {
+namespace parse {
 
 class xyz {
 
@@ -75,8 +75,8 @@ class xyz {
 }
 #endif
 
-#ifdef INQ_INPUT_PARSE_XYZ_UNIT_TEST
-#undef INQ_INPUT_PARSE_XYZ_UNIT_TEST
+#ifdef INQ_PARSE_XYZ_UNIT_TEST
+#undef INQ_PARSE_XYZ_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -88,7 +88,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-  auto xyz_file = input::xyz(config::path::unit_tests_data() + "benzene.xyz");
+  auto xyz_file = parse::xyz(config::path::unit_tests_data() + "benzene.xyz");
   
   CHECK(xyz_file.size() == 12);
 
