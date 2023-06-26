@@ -45,11 +45,6 @@ namespace ions {
 			reciprocal_[1] = 2.0*M_PI/volume_*cross(a2, a0);
 			reciprocal_[2] = 2.0*M_PI/volume_*cross(a0, a1);
 		}
-		
-		template<class lat_type>
-		unit_cell(const lat_type & lat, int periodicity = 3):
-			unit_cell(vector_type{lat[0][0], lat[0][1], lat[0][2]}, vector_type{lat[1][0], lat[1][1], lat[1][2]}, vector_type{lat[2][0], lat[2][1], lat[2][2]}, periodicity){
-		}
 
 		static auto cubic(quantity<magnitude::length> lat_par){
 			auto aa = lat_par.in_atomic_units();
@@ -514,8 +509,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     SECTION("Rotated cell"){
 
 			double ll = 10;
-			double lv[3][3] = {{ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {-ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {0.0, 0.0, ll}};
-      ions::unit_cell cell(lv);
+      ions::unit_cell cell({ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {-ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {0.0, 0.0, ll});
       
       CHECK(cell.lattice(0)[0] == 7.0710678119_a);
       CHECK(cell.lattice(0)[1] == 7.0710678119_a);
@@ -571,8 +565,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     SECTION("Non-orthogonal cell"){
 
-			double lv[3][3] = {{6.942, 8.799, 4.759}, {9.627, 7.092, 4.819}, {4.091, 0.721, 1.043}};
-      ions::unit_cell cell(lv);
+      ions::unit_cell cell({6.942, 8.799, 4.759}, {9.627, 7.092, 4.819}, {4.091, 0.721, 1.043});
       
       CHECK(cell.lattice(0)[0] == 6.942_a);
       CHECK(cell.lattice(0)[1] == 8.799_a);

@@ -102,7 +102,7 @@ public:
 
 		} else {
 			// Direct 
-			ions::unit_cell cell(lattice_vectors_);
+			auto cell = ions::unit_cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);
 			for(unsigned ispecies = 0; ispecies < species_num.size(); ispecies++){
 				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
 					vector3<double, contravariant> pos;
@@ -133,7 +133,7 @@ public:
 	}
 
 	auto cell() const {
-		return ions::unit_cell(lattice());
+		return ions::unit_cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);
 	}
 	
 };
