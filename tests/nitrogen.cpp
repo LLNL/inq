@@ -24,7 +24,7 @@ int main(int argc, char ** argv){
 	ions.insert("N", {0.0_b, 0.0_b, -0.5*distance});
 	ions.insert("N", {0.0_b, 0.0_b,  0.5*distance});
 
-	systems::electrons electrons(env.par(), ions, input::config::cutoff(40.0_Ha));
+	systems::electrons electrons(env.par(), ions, input::config{}.cutoff(40.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), input::scf::energy_tolerance(1e-9_Ha) | input::scf::calculate_forces());

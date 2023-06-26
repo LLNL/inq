@@ -83,7 +83,7 @@ int main(int argc, char ** argv){
 	
 	assert(int(ions.size()) == int(cell.size()*product(reps)));
 				 
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, input::config::spacing(alat/20) | input::config::extra_states(2*product(reps)) | input::config::temperature(1000.0_K));
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, input::config{}.spacing(alat/20).extra_states(2*product(reps)).temperature(1000.0_K));
 	
 	auto restart_dir = "aluminum_" + std::to_string(reps[0]) + "_" + std::to_string(reps[1]) + "_" + std::to_string(reps[2]);
 

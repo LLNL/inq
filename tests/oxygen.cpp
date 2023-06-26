@@ -31,7 +31,7 @@ int main(int argc, char ** argv){
 	ions.insert("O", {-distance/2, 0.0_b, 0.0_b});
 	ions.insert("O", {distance/2, 0.0_b, 0.0_b});	
 
-	systems::electrons electrons(env.par(), ions, input::config::spacing(0.43_b) | input::config::spin_polarized() | input::config::temperature(1000.0_K) | input::config::extra_states(2));
+	systems::electrons electrons(env.par(), ions, input::config{}.spacing(0.43_b).spin_polarized().temperature(1000.0_K).extra_states(2));
 	ground_state::initial_guess(ions, electrons);
 		
 	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::mixing(0.2) | input::scf::energy_tolerance(1e-8_Ha));

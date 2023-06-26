@@ -23,7 +23,7 @@ int main(int argc, char ** argv){
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	systems::electrons electrons(env.par().states(parstates), ions, input::config::cutoff(30.0_Ha));
+	systems::electrons electrons(env.par().states(parstates), ions, input::config{}.cutoff(30.0_Ha));
 
 	// Propagation without perturbation
 	{

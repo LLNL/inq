@@ -19,7 +19,7 @@ int main(int argc, char ** argv){
 
   auto ions = systems::ions::parse(config::path::unit_tests_data() + "bn.poscar");
 
-  systems::electrons electrons(env.par(), ions, input::config::cutoff(35.0_Ha) | input::config::extra_states(3), input::kpoints::grid({2, 2, 2}, true));
+  systems::electrons electrons(env.par(), ions, input::config{}.cutoff(35.0_Ha).extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 	
   ground_state::initial_guess(ions, electrons);
 	

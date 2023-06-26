@@ -37,7 +37,7 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	systems::electrons electrons(env.par(), ions, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(25.0_Ha));
+	systems::electrons electrons(env.par(), ions, input::kpoints::grid({2, 1, 1}, true), input::config{}.cutoff(25.0_Ha));
 
 	ground_state::initial_guess(ions, electrons);
 

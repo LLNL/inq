@@ -21,10 +21,19 @@ namespace input {
 
 class config {
 
+	std::optional<int> extra_states_;
+	std::optional<double> excess_charge_;
+	std::optional<quantity<magnitude::energy>> temperature_;
+	std::optional<states::ks_states::spin_config> spin_;
+	std::optional<double> spacing_;
+	std::optional<bool> double_grid_;	
+	std::optional<double> density_factor_;
+	std::optional<bool> spherical_grid_;
+
 public:
 	
-	static auto extra_states(int value){
-		config conf;
+	auto extra_states(int value){
+		config conf = *this;
 		conf.extra_states_ = value;
 		return conf;
 	}
@@ -33,8 +42,8 @@ public:
 		return extra_states_.value_or(0);
 	}
 
-	static auto excess_charge(double value){
-		config conf;
+	auto excess_charge(double value){
+		config conf = *this;
 		conf.excess_charge_ = value;
 		return conf;
 	}
@@ -43,8 +52,8 @@ public:
 		return excess_charge_.value_or(0.0);
 	}
 
-	static auto temperature(quantity<magnitude::energy> value){
-		config conf;
+	auto temperature(quantity<magnitude::energy> value){
+		config conf = *this;
 		conf.temperature_ = value;
 		return conf;
 	}
@@ -53,20 +62,20 @@ public:
 		return temperature_.value_or(quantity<magnitude::energy>::zero()).in_atomic_units();
 	}
 
-	static auto spin_unpolarized(){
-		config conf;
+	auto spin_unpolarized(){
+		config conf = *this;
 		conf.spin_ = states::ks_states::spin_config::UNPOLARIZED;
 		return conf;
 	}
 	
-	static auto spin_polarized(){
-		config conf;
+	auto spin_polarized(){
+		config conf = *this;
 		conf.spin_ = states::ks_states::spin_config::POLARIZED;
 		return conf;
 	}
 
-	static auto spin_orbit(){
-		config conf;
+	auto spin_orbit(){
+		config conf = *this;
 		conf.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
 		return conf;
 	}
@@ -80,14 +89,14 @@ public:
 		return 1;
 	}
 
-	static auto cutoff(quantity<magnitude::energy> arg_ecut){
-		config conf;
+	auto cutoff(quantity<magnitude::energy> arg_ecut){
+		config conf = *this;
 		conf.spacing_ = M_PI*sqrt(0.5/arg_ecut.in_atomic_units());
 		return conf;		
 	}
 
-	static auto spacing(quantity<magnitude::length> arg_spacing){
-		config conf;
+	auto spacing(quantity<magnitude::length> arg_spacing){
+		config conf = *this;
 		conf.spacing_ = arg_spacing.in_atomic_units();
 		return conf;		
 	}
@@ -97,8 +106,8 @@ public:
 		return *spacing_;
 	}
 
-	static auto double_grid(){
-		config conf;
+	auto double_grid(){
+		config conf = *this;
 		conf.double_grid_ = true;
 		return conf;				
 	}
@@ -107,8 +116,8 @@ public:
 		return double_grid_.value_or(false);
 	}
 
-	static auto density_factor(double arg_factor){
-		config conf;
+	auto density_factor(double arg_factor){
+		config conf = *this;
 		conf.density_factor_ = arg_factor;
 		return conf;
 	}
@@ -117,8 +126,8 @@ public:
 		return density_factor_.value_or(1.0);
 	}
 
-	static auto spherical_grid(bool arg_sph_grid){
-		config conf;		
+	auto spherical_grid(bool arg_sph_grid){
+		config conf = *this;		
 		conf.spherical_grid_ = arg_sph_grid;
 		return conf;
 	}
@@ -126,32 +135,6 @@ public:
 	auto spherical_grid_value() const {
 		return spherical_grid_.value_or(false);
 	}
-	
-	friend auto operator|(config const & conf1, config const & conf2){
-		using inq::utils::merge_optional;
-		
-		config rconf;
-		rconf.extra_states_	= merge_optional(conf1.extra_states_, conf2.extra_states_);
-		rconf.excess_charge_	= merge_optional(conf1.excess_charge_, conf2.excess_charge_);
-		rconf.temperature_	= merge_optional(conf1.temperature_, conf2.temperature_);
-		rconf.spin_	= merge_optional(conf1.spin_, conf2.spin_);
-		rconf.spacing_	= merge_optional(conf1.spacing_, conf2.spacing_);
-		rconf.double_grid_	= merge_optional(conf1.double_grid_, conf2.double_grid_);
-		rconf.density_factor_	= merge_optional(conf1.density_factor_, conf2.density_factor_);
-		rconf.spherical_grid_	= merge_optional(conf1.spherical_grid_, conf2.spherical_grid_);
-		return rconf;
-	}
-	
-private:
-	
-	std::optional<int> extra_states_;
-	std::optional<double> excess_charge_;
-	std::optional<quantity<magnitude::energy>> temperature_;
-	std::optional<states::ks_states::spin_config> spin_;
-	std::optional<double> spacing_;
-	std::optional<bool> double_grid_;	
-	std::optional<double> density_factor_;
-	std::optional<bool> spherical_grid_;
 
 };
 
@@ -166,7 +149,13 @@ private:
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
+	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
+
+	auto conf = input::config{}.spacing(23.0_b);
+	CHECK(conf.spacing_value() == 23.0_a);
+
+	
 }
 #endif

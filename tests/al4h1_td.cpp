@@ -26,8 +26,8 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Al", {0.5, 0.5, 0.0});	
 	ions.insert_fractional("H",  {0.1, 0.2, 0.3});
 	
-	systems::electrons electrons(env.par(), ions, input::config::cutoff(30.0_Ha) | input::config::extra_states(1) | input::config::temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
-	
+	systems::electrons electrons(env.par(), ions, input::config{}.cutoff(30.0_Ha).extra_states(1).temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
+		
 	electrons.load("al4h1_restart");
 
 	std::vector<double> energy;
