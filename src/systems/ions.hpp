@@ -214,6 +214,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Read an xyz file"){
 		
 		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", ions::unit_cell::cubic(66.6_A).finite());
+
+		CHECK(ions.cell().lattice(0)[0] == 125.8557599003_a);
+		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[1] == 125.8557599003_a);
+		CHECK(ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[2] == 125.8557599003_a);
+		CHECK(ions.cell().periodicity() == 0);
 		
     CHECK(ions.size() == 12);
     
