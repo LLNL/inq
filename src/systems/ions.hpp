@@ -538,7 +538,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.size() == 12);
 
-		//the order her is to match the symmetrized test above
+		//the order here is to match the symmetrized test above
 		CHECK(ions.atoms()[1] == "Ca");
 		CHECK(ions.coordinates()[1][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.coordinates()[1][1] == Approx(0.0).margin(1e-12));
@@ -634,5 +634,117 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.coordinates()[2][2] ==  -1.3517980130_a);
 	}
 	
+	SECTION("POSCAR - BN"){
+	
+		input::poscar vasp_file(config::path::unit_tests_data() + "bn.poscar");
+		systems::ions ions(vasp_file.cell());
+		ions.insert(vasp_file.atoms());
+		
+		CHECK(ions.cell().lattice(0)[0] == 0.0_a);
+		CHECK(ions.cell().lattice(0)[1] == 3.3731611325_a);
+		CHECK(ions.cell().lattice(0)[2] == 3.3731611325_a);
+		CHECK(ions.cell().lattice(1)[0] == 3.3731611325_a);
+		CHECK(ions.cell().lattice(1)[1] == 0.0_a);
+		CHECK(ions.cell().lattice(1)[2] == 3.3731611325_a);
+		CHECK(ions.cell().lattice(2)[0] == 3.3731611325_a);
+		CHECK(ions.cell().lattice(2)[1] == 3.3731611325_a);
+		CHECK(ions.cell().lattice(2)[2] == 0.0_a);		
+		
+		CHECK(ions.size() == 2);
+
+		CHECK(ions.atoms()[0] == "B");
+		CHECK(ions.atoms()[1] == "N");
+
+		CHECK(ions.coordinates()[0][0] == 0.0_a);
+		CHECK(ions.coordinates()[0][1] == 0.0_a);
+		CHECK(ions.coordinates()[0][2] == 0.0_a);
+		CHECK(ions.coordinates()[1][0] == 1.6865805662_a);
+		CHECK(ions.coordinates()[1][1] == 1.6865805662_a);
+		CHECK(ions.coordinates()[1][2] == 1.6865805662_a);		
+	}
+
+	SECTION("POSCAR - Al"){
+		
+		input::poscar vasp_file(config::path::unit_tests_data() + "al.poscar");
+		systems::ions ions(vasp_file.cell());
+		ions.insert(vasp_file.atoms());
+		
+		CHECK(ions.cell().lattice(0)[0] == 7.6458319003_a);
+		CHECK(ions.cell().lattice(0)[1] == 0.0_a);
+		CHECK(ions.cell().lattice(0)[2] == 0.0_a);
+		CHECK(ions.cell().lattice(1)[0] == 0.0_a);
+		CHECK(ions.cell().lattice(1)[1] == 7.6458319003_a);
+		CHECK(ions.cell().lattice(1)[2] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[0] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[1] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[2] == 7.6458319003_a);		
+		
+		CHECK(ions.size() == 4);
+
+		CHECK(ions.atoms()[0] == "Al");
+		CHECK(ions.atoms()[1] == "Al");
+		CHECK(ions.atoms()[2] == "Al");		
+		CHECK(ions.atoms()[3] == "Al");
+
+		CHECK(ions.coordinates()[0][0] == 0.0_a);
+		CHECK(ions.coordinates()[0][1] == 0.0_a);
+		CHECK(ions.coordinates()[0][2] == 0.0_a);
+		CHECK(ions.coordinates()[1][0] == 3.8229159501_a);
+		CHECK(ions.coordinates()[1][1] == 3.8229159501_a);
+		CHECK(ions.coordinates()[1][2] == 0.0_a);
+		CHECK(ions.coordinates()[2][0] == 0.0_a);
+		CHECK(ions.coordinates()[2][1] == 3.8229159501_a);
+		CHECK(ions.coordinates()[2][2] == 3.8229159501_a);
+		CHECK(ions.coordinates()[3][0] == 3.8229159501_a);
+		CHECK(ions.coordinates()[3][1] == 0.0_a);
+		CHECK(ions.coordinates()[3][2] == 3.8229159501_a);
+	}
+
+	SECTION("POSCAR - Ni"){
+		
+		input::poscar vasp_file(config::path::unit_tests_data() + "ni.poscar");
+		systems::ions ions(vasp_file.cell());
+		ions.insert(vasp_file.atoms());
+	
+		CHECK(ions.cell().lattice(0)[0] == 3.33536661_a);
+		CHECK(ions.cell().lattice(0)[1] == 3.33536661_a);
+		CHECK(ions.cell().lattice(0)[2] == 0.0_a);
+		CHECK(ions.cell().lattice(1)[0] == -3.33536661_a);
+		CHECK(ions.cell().lattice(1)[1] == 3.33536661_a);
+		CHECK(ions.cell().lattice(1)[2] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[0] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[1] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[2] == 33.3536660997_a);		
+		
+		CHECK(ions.size() == 5);
+
+		CHECK(ions.atoms()[0] == "Ni");
+		CHECK(ions.atoms()[1] == "Ni");
+		CHECK(ions.atoms()[2] == "Ni");
+		CHECK(ions.atoms()[3] == "Ni");		
+		CHECK(ions.atoms()[4] == "Ni");
+
+		CHECK(ions.coordinates()[0][0] == 0.0_a);
+		CHECK(ions.coordinates()[0][1] == 0.0_a);
+		CHECK(ions.coordinates()[0][2] == 0.0_a);
+
+		CHECK(ions.coordinates()[1][0] == 0.0_a);
+		CHECK(ions.coordinates()[1][1] == 3.33536661_a);
+		CHECK(ions.coordinates()[1][2] == 3.33536661_a);
+
+		CHECK(ions.coordinates()[2][0] == 0.0_a);
+		CHECK(ions.coordinates()[2][1] == 0.0_a);
+		CHECK(ions.coordinates()[2][2] == 6.6707332199_a);
+
+		CHECK(ions.coordinates()[3][0] == 0.0_a);
+		CHECK(ions.coordinates()[3][1] == 3.33536661_a);
+		CHECK(ions.coordinates()[3][2] == 10.0060998299_a);
+
+		CHECK(ions.coordinates()[4][0] == 0.0_a);
+		CHECK(ions.coordinates()[4][1] == 0.0_a);
+		CHECK(ions.coordinates()[4][2] == 13.3414664399_a);
+		
+	}
+
 }
 #endif
