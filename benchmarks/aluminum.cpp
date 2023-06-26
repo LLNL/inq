@@ -96,7 +96,7 @@ int main(int argc, char ** argv){
 	}
 
 	if(not groundstate_only){
-		real_time::propagate(ions, electrons, [](auto){}, functional, input::rt::num_steps(100) | input::rt::dt(0.05_atomictime));
+		real_time::propagate(ions, electrons, [](auto){}, functional, options::real_time::num_steps(100) | options::real_time::dt(0.05_atomictime));
 	}
 	
 }

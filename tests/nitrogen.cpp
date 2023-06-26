@@ -62,7 +62,7 @@ int main(int argc, char ** argv){
 	};
 	
 	auto dt = 0.025_atomictime;
-	real_time::propagate(ions, electrons, process, input::interaction::lda(), input::rt::num_steps(10) | input::rt::dt(dt), ions::propagator::molecular_dynamics{});
+	real_time::propagate(ions, electrons, process, input::interaction::lda(), options::real_time::num_steps(10) | options::real_time::dt(dt), ions::propagator::molecular_dynamics{});
 
 	return energy_match.fail();
 

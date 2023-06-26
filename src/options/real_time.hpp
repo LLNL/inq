@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__RT
-#define INPUT__RT
+#ifndef OPTIONS__REAL_TIME
+#define OPTIONS__REAL_TIME
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -17,19 +17,19 @@
 
 
 namespace inq {
-namespace input {
+namespace options {
 
-class rt {
+class real_time {
 
 public:
 	
 	enum class electron_propagator { ETRS, CRANK_NICOLSON };
 	
-	rt(){
+	real_time(){
 	}
 
 	static auto dt(quantity<magnitude::time> dt) {
-		rt solver;
+		real_time solver;
 		solver.dt_ = dt.in_atomic_units();
 		return solver;
 	}
@@ -39,7 +39,7 @@ public:
 	}
 
 	auto static num_steps(double etol) {
-		rt solver;
+		real_time solver;
 		solver.num_steps_ = etol;
 		return solver;
 	}
@@ -49,13 +49,13 @@ public:
 	}
 
 	auto static etrs() {
-		rt solver;
+		real_time solver;
 		solver.prop_ = electron_propagator::ETRS;
 		return solver;
 	}
 
 	auto static crank_nicolson() {
-		rt solver;
+		real_time solver;
 		solver.prop_ = electron_propagator::CRANK_NICOLSON;
 		return solver;
 	}
@@ -64,10 +64,10 @@ public:
 		return prop_.value_or(electron_propagator::ETRS);
 	}
 	
-	friend auto operator|(const rt & solver1, const rt & solver2){
+	friend auto operator|(const real_time & solver1, const real_time & solver2){
 		using utils::merge_optional;
 
-		rt rsolver;
+		real_time rsolver;
 		rsolver.dt_	= merge_optional(solver1.dt_, solver2.dt_);
 		rsolver.num_steps_	= merge_optional(solver1.num_steps_, solver2.num_steps_);
 		rsolver.prop_	= merge_optional(solver1.prop_, solver2.prop_);		
@@ -86,8 +86,8 @@ private:
 }
 #endif
 
-#ifdef INQ_INPUT_RT_UNIT_TEST
-#undef INQ_INPUT_RT_UNIT_TEST
+#ifdef INQ_OPTIONS_REAL_TIME_UNIT_TEST
+#undef INQ_OPTIONS_REAL_TIME_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -99,21 +99,21 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Defaults"){
 
-    input::rt solver;
+    options::real_time solver;
 
     CHECK(solver.dt() == 0.01_a);
     CHECK(solver.num_steps() == 100);
-    CHECK(solver.propagator() == input::rt::electron_propagator::ETRS);		
+    CHECK(solver.propagator() == options::real_time::electron_propagator::ETRS);		
     
   }
 
   SECTION("Composition"){
 
-    auto solver = input::rt::num_steps(1000) | input::rt::dt(0.05_atomictime) | input::rt::crank_nicolson();
+    auto solver = options::real_time::num_steps(1000) | options::real_time::dt(0.05_atomictime) | options::real_time::crank_nicolson();
     
     CHECK(solver.num_steps() == 1000);
     CHECK(solver.dt() == 0.05_a);
-		CHECK(solver.propagator() == input::rt::electron_propagator::CRANK_NICOLSON);
+		CHECK(solver.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
   }
 
 }
