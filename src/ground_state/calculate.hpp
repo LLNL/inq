@@ -33,8 +33,8 @@
 #include <math/complex.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
-#include <input/scf.hpp>
 #include <observables/dipole.hpp>
+#include <options/ground_state.hpp>
 #include <systems/electrons.hpp>
 #include <ground_state/eigenvalue_output.hpp>
 #include <ground_state/result.hpp>
@@ -66,7 +66,7 @@ auto state_convergence(systems::electrons & el, NormResType const & normres) {
 	return state_conv;
 }
 
-ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {}){
+ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, options::ground_state const & solver = {}){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -88,8 +88,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	
 	auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 		switch(solver.mixing_algorithm()){
-		case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
-		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+		case options::ground_state::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
+		case options::ground_state::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 		} __builtin_unreachable();
 	}();
 	
@@ -132,7 +132,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				
 			switch(solver.eigensolver()){
 					
-			case input::scf::scf_eigensolver::STEEPEST_DESCENT:
+			case options::ground_state::scf_eigensolver::STEEPEST_DESCENT:
 				eigensolvers::steepest_descent(ham, prec, fphi);
 				break;
 				

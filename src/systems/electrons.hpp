@@ -27,7 +27,6 @@
 #include <input/interaction.hpp>
 #include <input/kpoints.hpp>
 #include <input/rt.hpp>
-#include <input/scf.hpp>
 #include <options/electrons.hpp>
 #include <ions/interaction.hpp>
 #include <systems/ions.hpp>

@@ -34,7 +34,7 @@ int main(int argc, char ** argv){
 	// Non Interacting
 	{
 	
-		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::non_interacting(), inq::input::scf{}.energy_tolerance(1e-8_Ha));
+		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::non_interacting(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -120,7 +120,7 @@ int main(int argc, char ** argv){
 	// B3LYP
 	{
 
-		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::b3lyp(), inq::input::scf{}.energy_tolerance(1e-6_Ha));
+		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::b3lyp(), inq::options::ground_state{}.energy_tolerance(1e-6_Ha));
 		
 		energy_match.check("total energy",        result.energy.total(),      -0.447426627140);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),     0.421674180797);

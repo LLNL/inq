@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INPUT__SCF
-#define INQ__INPUT__SCF
+#ifndef INQ__OPTIONS__GROUND_STATE
+#define INQ__OPTIONS__GROUND_STATE
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -16,9 +16,9 @@
 #include <cassert>
 
 namespace inq {
-namespace input {
+namespace options {
 
-  class scf {
+  class ground_state {
 
   public:
 
@@ -39,7 +39,7 @@ namespace input {
   public:
 
     auto steepest_descent(){
-      scf solver = *this;;
+      ground_state solver = *this;;
       solver.eigensolver_ = scf_eigensolver::STEEPEST_DESCENT;
       return solver;
     }
@@ -49,7 +49,7 @@ namespace input {
     }
 
     auto mixing(double mixing_factor) {
-      scf solver = *this;;
+      ground_state solver = *this;;
       solver.mixing_ = mixing_factor;
       return solver;
     }
@@ -59,7 +59,7 @@ namespace input {
     }
 
 		auto energy_tolerance(quantity<magnitude::energy> etol) {
-			scf solver = *this;;
+			ground_state solver = *this;;
       solver.energy_tol_ = etol.in_atomic_units();
       return solver;
     }
@@ -69,13 +69,13 @@ namespace input {
 		}
 		
 		auto linear_mixing(){
-			scf solver = *this;;
+			ground_state solver = *this;;
       solver.mixing_algo_ = mixing_algo::LINEAR;
       return solver;
 		}
 
 		auto broyden_mixing(){
-			scf solver = *this;;
+			ground_state solver = *this;;
       solver.mixing_algo_ = mixing_algo::BROYDEN;
       return solver;
 		}
@@ -85,7 +85,7 @@ namespace input {
 		}
 
 		auto silent(){
-			scf solver = *this;;
+			ground_state solver = *this;;
       solver.verbose_ = false;
       return solver;
 		}
@@ -95,7 +95,7 @@ namespace input {
 		}
 
 		auto no_subspace_diag() {
-			scf solver = *this;;
+			ground_state solver = *this;;
       solver.subspace_diag_ = false;
       return solver;
 		}
@@ -105,7 +105,7 @@ namespace input {
 		}
 
 		auto scf_steps(int val) {
-			scf solver = *this;;
+			ground_state solver = *this;;
 			solver.scf_steps_ = val;
       return solver;
 		}
@@ -115,7 +115,7 @@ namespace input {
 		}		
 
 		auto calculate_forces() {
-			scf solver = *this;;
+			ground_state solver = *this;;
       solver.calc_forces_ = true;
       return solver;
 		}
@@ -129,8 +129,8 @@ namespace input {
 }
 #endif
 
-#ifdef INQ_INPUT_SCF_UNIT_TEST
-#undef INQ_INPUT_SCF_UNIT_TEST
+#ifdef INQ_OPTIONS_GROUND_STATE_UNIT_TEST
+#undef INQ_OPTIONS_GROUND_STATE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -141,15 +141,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Defaults"){
 
-    input::scf solver;
+    options::ground_state solver;
 
-    CHECK(solver.eigensolver() == input::scf::scf_eigensolver::STEEPEST_DESCENT);
+    CHECK(solver.eigensolver() == options::ground_state::scf_eigensolver::STEEPEST_DESCENT);
     CHECK(solver.mixing() == 0.3_a);
   }
 
   SECTION("Composition"){
 
-    auto solver = input::scf{}.calculate_forces().mixing(0.05);
+    auto solver = options::ground_state{}.calculate_forces().mixing(0.05);
 
 		CHECK(solver.calc_forces());
     CHECK(solver.mixing() == 0.05_a);

@@ -49,7 +49,7 @@ int main(int argc, char ** argv){
 		
 	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);
-		ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf{}.steepest_descent().scf_steps(10).mixing(0.3));
+		ground_state::calculate(ions, electrons, input::interaction::pbe(), options::ground_state{}.steepest_descent().scf_steps(10).mixing(0.3));
 		electrons.save(restart_dir);
 	}
 	
