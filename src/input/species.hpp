@@ -71,11 +71,13 @@ public:
 	}
 
 	auto symbol() const {
-		return symbol_.value_or(pseudo::element::symbol());
+		using pseudo::element;
+		return symbol_.value_or(element::symbol());
 	}
 
 	auto mass() const {
-		return 1822.8885*mass_.value_or(pseudo::element::mass());
+		using pseudo::element;		
+		return 1822.8885*mass_.value_or(element::mass());
 	}
 
 	auto nofilter() {
