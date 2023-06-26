@@ -79,6 +79,7 @@ public:
 		}
 		
 		throw std::runtime_error("error: unsupported or unknown format for file '" + filename + "'.");
+		return ions(*cell); //dummy return value to keep the compiler happy
 	}
 	
 	auto & atoms() const {
