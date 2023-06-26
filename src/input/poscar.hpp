@@ -43,8 +43,8 @@ public:
 		using namespace inq::magnitude;
 
 		std::ifstream poscar_file(poscar_file_name.c_str());
-		
-		assert(poscar_file.is_open());
+
+		if(not poscar_file.is_open()) throw std::runtime_error("error: failed to open POSCAR file '" + poscar_file_name + "'.");
 
 		{
 			std::string comment_line;
@@ -220,7 +220,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Ni"){
 		
-		input::poscar vasp_file(config::path::unit_tests_data() + "ni.poscar");
+		input::poscar vasp_file(config::path::unit_tests_data() + "POSCAR");
 
 		CHECK(vasp_file.lattice()[0][0] == 3.33536661_a);
 		CHECK(vasp_file.lattice()[0][1] == 3.33536661_a);

@@ -47,6 +47,9 @@ public:
 
 		std::string extension = filename.substr(filename.find_last_of(".") + 1);
 		std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+		std::string filename_wo_path = filename.substr(filename.find_last_of("/") + 1);
+		std::transform(filename_wo_path.begin(), filename_wo_path.end(), filename_wo_path.begin(), ::tolower);
 		
 		if(extension == "cif") {
 			input::cif file(filename);
@@ -55,14 +58,14 @@ public:
 			return parsed;
 		}
 
-		if(extension == "poscar") {
+		if(extension == "poscar" or extension == "vasp" or filename_wo_path == "poscar") {
 			input::poscar file(filename);
 			ions parsed(file.cell());
 			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
 			return parsed;
 		}
 		
-		throw std::runtime_error("error: unsupported or unknwon file format '" + extension + "'.");
+		throw std::runtime_error("error: unsupported or unknown format for file '" + filename + "'.");
 	}
 	
 	auto & atoms() const {
@@ -706,7 +709,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("POSCAR - Ni"){
 		
-		auto ions = systems::ions::parse(config::path::unit_tests_data() + "ni.poscar");
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "POSCAR");
 	
 		CHECK(ions.cell().lattice(0)[0] == 3.33536661_a);
 		CHECK(ions.cell().lattice(0)[1] == 3.33536661_a);
