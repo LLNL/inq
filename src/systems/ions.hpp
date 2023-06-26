@@ -141,12 +141,7 @@ public:
 	void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
 		add_atom(sp, pos);
 	}
-
-	template <class ContainerType>
-	void insert(ContainerType const & container){
-		for(auto atom : container) add_atom(atom.species(), atom.position());
-	}
-
+	
 	void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos){
 		add_atom(sp, cell_.metric().to_cartesian(pos));
 	}
@@ -167,28 +162,6 @@ public:
 		self.info(os);
 		return os;
 	}
-
-	class atom {
-		
-		input::species species_;
-		vector3<double> position_;
-		
-	public:
-		
-		atom(const input::species & arg_spec, const vector3<double> & arg_position):
-			species_(arg_spec),
-			position_(arg_position){
-		}
-		
-		const auto & species() const {
-			return species_;
-		}
-		
-		const auto & position() const {
-			return position_;
-		}
-		
-	};
 
 };
 
