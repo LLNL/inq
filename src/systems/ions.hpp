@@ -97,10 +97,6 @@ public:
 		return cell_;
 	}
 
-	auto insert(std::string const & symbol, vector3<quantity<magnitude::length>> const & pos){
-		add_atom(input::species(pseudo::element(symbol)), pos);
-	}
-	
 	auto insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
 		add_atom(sp, pos);
 	}
@@ -113,11 +109,7 @@ public:
 	auto insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos){
 		add_atom(sp, cell_.metric().to_cartesian(pos));
 	}
-
-	auto insert_fractional(std::string const & symbol, vector3<double, contravariant> const & pos){
-		insert_fractional(input::species(pseudo::element(symbol)), pos);
-	}
-
+	
 	int size() const {
 		return (long) coordinates_.size();
 	}
@@ -184,11 +176,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     CHECK(ions.size() == 0);
 
-    ions.insert(pseudo::element("Xe"), {1000.0_b, -200.0_b, 6.0_b});
+    ions.insert("Xe", {1000.0_b, -200.0_b, 6.0_b});
 
     CHECK(ions.size() == 1);
     CHECK(ions.atoms()[0].atomic_number() == 54);
-    CHECK(ions.atoms()[0] == pseudo::element(54));
+    CHECK(ions.atoms()[0] == input::species(54));
     CHECK(ions.atoms()[0].charge() == -54.0_a);
     CHECK(ions.atoms()[0].mass() == 239333.5935636_a);
     CHECK(ions.coordinates()[0][0] == 1000.0_a);
@@ -213,14 +205,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     CHECK(ions.size() == 12);
     
-    CHECK(ions.atoms()[2] == pseudo::element("C"));
+    CHECK(ions.atoms()[2] == "C");
     CHECK(ions.atoms()[2].charge() == -6.0_a);
     CHECK(ions.atoms()[2].mass() == 21892.1617296_a);
     CHECK(ions.coordinates()[2][0] == 2.2846788549_a);
     CHECK(ions.coordinates()[2][1] == -1.3190288178_a);
     CHECK(ions.coordinates()[2][2] == 0.0_a);
 
-    CHECK(ions.atoms()[11] == pseudo::element("H"));
+    CHECK(ions.atoms()[11] == "H");
     CHECK(ions.atoms()[11].charge() == -1.0_a);
     CHECK(ions.atoms()[11].mass() == 1837.17994584_a);
     CHECK(ions.coordinates()[11][0] == -4.0572419367_a);
@@ -232,11 +224,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(ions.velocities().size() == ions.coordinates().size());
 		
-    ions.insert(pseudo::element("Cl"), {-3.0_b, 4.0_b, 5.0_b});
+    ions.insert("Cl", {-3.0_b, 4.0_b, 5.0_b});
 
     CHECK(ions.size() == 13);
     CHECK(ions.atoms()[12].atomic_number() == 17);
-    CHECK(ions.atoms()[12] == pseudo::element(17));
+    CHECK(ions.atoms()[12] == input::species(17));
     CHECK(ions.atoms()[12].charge() == -17.0_a);
     CHECK(ions.atoms()[12].mass() == 64614.105771_a);
     CHECK(ions.coordinates()[12][0] == -3.0_a);

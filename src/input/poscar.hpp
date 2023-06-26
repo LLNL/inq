@@ -71,7 +71,7 @@ public:
 		std::string species_name;
 		while (std::getline(iss, species_name, ' ')){
 			species.push_back(species_name);
-			pseudo::element sp(species.back());
+			input::species sp(species.back());
 			if(not sp.valid()) throw std::runtime_error("Cannot read the species from POSCAR file \'" + poscar_file_name +
 																									"\'. Make sure your file contains the optional \'Species names\' line (see\n https://www.vasp.at/wiki/index.php/POSCAR for details).");
 		}

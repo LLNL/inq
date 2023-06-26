@@ -328,7 +328,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
-	using pseudo::element;
 	using input::species;
 
 	double const gcut = 0.785;
@@ -336,13 +335,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	parallel::communicator comm{boost::mpi3::environment::get_self_instance()};
 	
 	SECTION("Non-existing element"){
-		std::vector<species> el_list({element("P"), element("X")});
+		std::vector<species> el_list({"P", "X"});
 	
 		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut, /*double_grid = */ false));
 	}
 	
 	SECTION("Duplicated element"){
-		std::vector<species> el_list({element("N"), element("N")});
+		std::vector<species> el_list({"N", "N"});
 
 		hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut, /*double_grid = */ false);
 
@@ -364,7 +363,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	}
 
 	SECTION("CNOH"){
-		species el_list[] = {element("C"), element("N"), element("O"), element("H")};
+		species el_list[] = {"C", "N", "O", "H"};
 
 		hamiltonian::atomic_potential pot(4, el_list, gcut, /*double_grid = */ false);
 
