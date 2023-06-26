@@ -42,7 +42,7 @@ int main(int argc, char ** argv){
 	if(comm.size() == 4) parstates = 2;	
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	systems::electrons electrons(env.par().states(parstates), ions, input::config{}.extra_states(4).cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
+	systems::electrons electrons(env.par().states(parstates), ions, options::electrons{}.extra_states(4).cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 
 	ground_state::initial_guess(ions, electrons);
 	ground_state::calculate(ions, electrons, input::interaction::dft(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-4_Ha));

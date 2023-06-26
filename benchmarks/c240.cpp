@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
 		
 	std::string restart_dir = "c240_restart";
 	
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, input::config{}.spacing(20.0_A/90).extra_states(32).temperature(300.0_K));
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, options::electrons{}.spacing(20.0_A/90).extra_states(32).temperature(300.0_K));
 
 	auto not_found_gs = groundstate_only or not electrons.try_load(restart_dir);
 		

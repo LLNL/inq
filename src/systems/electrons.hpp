@@ -24,11 +24,11 @@
 #include <operations/io.hpp>
 #include <operations/orthogonalize.hpp>
 #include <math/complex.hpp>
-#include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <input/kpoints.hpp>
 #include <input/rt.hpp>
 #include <input/scf.hpp>
+#include <options/electrons.hpp>
 #include <ions/interaction.hpp>
 #include <systems/ions.hpp>
 #include <states/orbital_set.hpp>
@@ -115,13 +115,13 @@ public:
 	}
 
 	template <typename KptsType = input::kpoints::list>
-	electrons(input::parallelization const & dist, const inq::systems::ions & ions, KptsType const & kpts, const input::config & conf = {}):
+	electrons(input::parallelization const & dist, const inq::systems::ions & ions, KptsType const & kpts, const options::electrons & conf = {}):
 		electrons(dist, ions, conf, kpts)
 	{
 	}
 
 	template <typename KptsType = input::kpoints::list>	
-	electrons(input::parallelization const & dist, const inq::systems::ions & ions, const input::config & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
+	electrons(input::parallelization const & dist, const inq::systems::ions & ions, const options::electrons & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		full_comm_(dist.cart_comm(conf.num_spin_components_val(), brillouin_zone_.size())),
 		kpin_comm_(kpin_subcomm(full_comm_)),
@@ -485,7 +485,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	auto par = input::parallelization(comm);
 		
-	systems::electrons electrons(par, ions, input::config{}.cutoff(15.0_Ha));
+	systems::electrons electrons(par, ions, options::electrons{}.cutoff(15.0_Ha));
 
 	CHECK(electrons.states().num_electrons() == 38.0_a);
 	CHECK(electrons.states().num_states() == 19);
@@ -515,7 +515,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	electrons.save("electron_restart");
 	
-	systems::electrons electrons_read(par, ions, input::config{}.cutoff(15.0_Ha));
+	systems::electrons electrons_read(par, ions, options::electrons{}.cutoff(15.0_Ha));
 	
 	electrons_read.load("electron_restart");
 
@@ -541,7 +541,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		newel.save("newel_restart");
 		
-		systems::electrons newel_read(par, ions, input::config{}.cutoff(15.0_Ha));
+		systems::electrons newel_read(par, ions, options::electrons{}.cutoff(15.0_Ha));
 		newel_read.load("newel_restart");
 		
 		CHECK(electrons.kpin_size() == newel_read.kpin_size());
@@ -566,7 +566,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("Electrons with kpoints"){
-		systems::electrons electrons(par, ions, input::kpoints::grid({2, 1, 1}, true), input::config{}.cutoff(15.0_Ha));
+		systems::electrons electrons(par, ions, input::kpoints::grid({2, 1, 1}, true), options::electrons{}.cutoff(15.0_Ha));
 		
 		CHECK(electrons.states().num_electrons() == 38.0_a);
 		CHECK(electrons.states().num_states() == 19);

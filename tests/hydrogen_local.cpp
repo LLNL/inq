@@ -28,7 +28,7 @@ int main(int argc, char ** argv){
 	inq::systems::ions ions(inq::ions::unit_cell::cubic(15.0_b).finite());
 	ions.insert(local_h, {150.0_b, -30.0_b, 0.0_b});
 	
-	inq::systems::electrons electrons(env.par(), ions, inq::input::config{}.cutoff(40.0_Ha));
+	inq::systems::electrons electrons(env.par(), ions, inq::options::electrons{}.cutoff(40.0_Ha));
 	inq::ground_state::initial_guess(ions, electrons);
 	
 	// Non Interacting

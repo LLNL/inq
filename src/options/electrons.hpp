@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INPUT__CONFIG
-#define INQ__INPUT__CONFIG
+#ifndef INQ__OPTIONS__ELECTRONS
+#define INQ__OPTIONS__ELECTRONS
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -17,9 +17,9 @@
 #include <optional>
 
 namespace inq {
-namespace input {
+namespace options {
 
-class config {
+class electrons {
 
 	std::optional<int> extra_states_;
 	std::optional<double> excess_charge_;
@@ -33,7 +33,7 @@ class config {
 public:
 	
 	auto extra_states(int value){
-		config conf = *this;
+		electrons conf = *this;
 		conf.extra_states_ = value;
 		return conf;
 	}
@@ -43,7 +43,7 @@ public:
 	}
 
 	auto excess_charge(double value){
-		config conf = *this;
+		electrons conf = *this;
 		conf.excess_charge_ = value;
 		return conf;
 	}
@@ -53,7 +53,7 @@ public:
 	}
 
 	auto temperature(quantity<magnitude::energy> value){
-		config conf = *this;
+		electrons conf = *this;
 		conf.temperature_ = value;
 		return conf;
 	}
@@ -63,19 +63,19 @@ public:
 	}
 
 	auto spin_unpolarized(){
-		config conf = *this;
+		electrons conf = *this;
 		conf.spin_ = states::ks_states::spin_config::UNPOLARIZED;
 		return conf;
 	}
 	
 	auto spin_polarized(){
-		config conf = *this;
+		electrons conf = *this;
 		conf.spin_ = states::ks_states::spin_config::POLARIZED;
 		return conf;
 	}
 
 	auto spin_orbit(){
-		config conf = *this;
+		electrons conf = *this;
 		conf.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
 		return conf;
 	}
@@ -90,13 +90,13 @@ public:
 	}
 
 	auto cutoff(quantity<magnitude::energy> arg_ecut){
-		config conf = *this;
+		electrons conf = *this;
 		conf.spacing_ = M_PI*sqrt(0.5/arg_ecut.in_atomic_units());
 		return conf;		
 	}
 
 	auto spacing(quantity<magnitude::length> arg_spacing){
-		config conf = *this;
+		electrons conf = *this;
 		conf.spacing_ = arg_spacing.in_atomic_units();
 		return conf;		
 	}
@@ -107,7 +107,7 @@ public:
 	}
 
 	auto double_grid(){
-		config conf = *this;
+		electrons conf = *this;
 		conf.double_grid_ = true;
 		return conf;				
 	}
@@ -117,7 +117,7 @@ public:
 	}
 
 	auto density_factor(double arg_factor){
-		config conf = *this;
+		electrons conf = *this;
 		conf.density_factor_ = arg_factor;
 		return conf;
 	}
@@ -127,7 +127,7 @@ public:
 	}
 
 	auto spherical_grid(bool arg_sph_grid){
-		config conf = *this;		
+		electrons conf = *this;		
 		conf.spherical_grid_ = arg_sph_grid;
 		return conf;
 	}
@@ -142,8 +142,8 @@ public:
 }
 #endif
 
-#ifdef INQ_INPUT_CONFIG_UNIT_TEST
-#undef INQ_INPUT_CONFIG_UNIT_TEST
+#ifdef INQ_OPTIONS_ELECTRONS_UNIT_TEST
+#undef INQ_OPTIONS_ELECTRONS_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -153,7 +153,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-	auto conf = input::config{}.spacing(23.0_b);
+	auto conf = options::electrons{}.spacing(23.0_b);
 	CHECK(conf.spacing_value() == 23.0_a);
 
 	

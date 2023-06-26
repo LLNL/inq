@@ -31,7 +31,6 @@
 #include <mixers/broyden.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
-#include <input/config.hpp>
 #include <input/interaction.hpp>
 #include <ions/interaction.hpp>
 #include <input/scf.hpp>

@@ -35,7 +35,7 @@ int main(int argc, char ** argv){
 	ions.insert("C", {0.0_b, dcc,   0.0_b});
 
 	{
-		systems::electrons electrons(env.par(), ions, input::config{}.spacing(aa/15.0).extra_states(2), input::kpoints::grid({1, 1, 1}, false));
+		systems::electrons electrons(env.par(), ions, options::electrons{}.spacing(aa/15.0).extra_states(2), input::kpoints::grid({1, 1, 1}, false));
 		
 		ground_state::initial_guess(ions, electrons);
 		
