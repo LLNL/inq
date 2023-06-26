@@ -14,6 +14,7 @@
 #include <spglib.h>
 
 #include <input/cif.hpp>
+#include <input/parse_xyz.hpp>
 #include <input/poscar.hpp>
 #include <input/species.hpp>
 #include <ions/unit_cell.hpp>
@@ -43,7 +44,7 @@ public:
 		cell_(std::move(arg_cell_input)){
 	}
 
-	static ions parse(std::string filename) {
+	static ions parse(std::string filename, std::optional<inq::ions::unit_cell> const & cell = {}) {
 
 		std::string extension = filename.substr(filename.find_last_of(".") + 1);
 		std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
@@ -52,6 +53,8 @@ public:
 		std::transform(filename_wo_path.begin(), filename_wo_path.end(), filename_wo_path.begin(), ::tolower);
 		
 		if(extension == "cif") {
+			if(cell.has_value()) throw std::runtime_error("error: the cell argument cannot be given for parsing CIF file '" + filename + "'.");
+			
 			input::cif file(filename);
 			ions parsed(file.cell());
 			for(int ii = 0; ii < file.size(); ii++) parsed.insert_fractional(file.atoms()[ii], file.positions()[ii]);
@@ -59,8 +62,19 @@ public:
 		}
 
 		if(extension == "poscar" or extension == "vasp" or filename_wo_path == "poscar") {
+			if(cell.has_value()) throw std::runtime_error("error: the cell argument cannot be given for parsing POSCAR file '" + filename + "'.");
+			
 			input::poscar file(filename);
 			ions parsed(file.cell());
+			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
+			return parsed;
+		}
+
+		if(extension == "xyz") {
+			if(not cell.has_value()) throw std::runtime_error("error: the cell needs to be provided for parsing XYZ file '" + filename + "'.");
+				
+			ions parsed(*cell);
+			auto file = input::xyz(filename);
 			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
 			return parsed;
 		}
@@ -226,9 +240,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Read an xyz file"){
 		
-		systems::ions ions(ions::unit_cell::cubic(66.6_A).finite());
-
-    ions.insert(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", ions::unit_cell::cubic(66.6_A).finite());
 		
     CHECK(ions.size() == 12);
     

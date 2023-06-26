@@ -373,9 +373,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	SECTION("Construct from a geometry"){
 
-		auto ions = systems::ions(ions::unit_cell::cubic(20.0_b));
-
-		ions.insert(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", ions::unit_cell::cubic(20.0_b));
 		
 		basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, comm);
 		

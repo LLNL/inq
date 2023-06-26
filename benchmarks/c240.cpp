@@ -39,9 +39,8 @@ int main(int argc, char ** argv){
 		}
 	}
 	
-	systems::ions ions(ions::unit_cell::cubic(20.0_A).finite());
-	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "c240.xyz"));
-	
+	auto ions = systems::ions::parse(inq::config::path::unit_tests_data() + "c240.xyz", ions::unit_cell::cubic(20.0_A).finite());
+		
 	std::string restart_dir = "c240_restart";
 	
 	systems::electrons electrons(env.par().states().domains(pardomains), ions, input::config::spacing(20.0_A/90) | input::config::extra_states(32) | input::config::temperature(300.0_K));
