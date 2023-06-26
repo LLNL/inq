@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 	
 	ground_state::initial_guess(ions, electrons);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
+	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf{}.steepest_descent().energy_tolerance(1e-9_Ha));
 	
 	std::vector<double> jz;
 	std::vector<double> Az;

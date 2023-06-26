@@ -31,7 +31,7 @@ int main(int argc, char ** argv){
 
 	inq::ground_state::initial_guess(ions, electrons);
 
-	auto scf_options = scf::energy_tolerance(1.0e-9_Ha) | scf::broyden_mixing();
+	auto scf_options = scf{}.energy_tolerance(1.0e-9_Ha).broyden_mixing();
 	auto result = inq::ground_state::calculate(ions, electrons, interaction::lda(), scf_options);
 	
 	match.check("total energy",        result.energy.total(),       -17.604152928274);

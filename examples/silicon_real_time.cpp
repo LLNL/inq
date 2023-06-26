@@ -37,8 +37,8 @@ int main(int argc, char ** argv){
 	
 	if(not electrons.try_load("silicon_restart")){
 		ground_state::initial_guess(ions, electrons);
-		ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-4_Ha));
-		ground_state::calculate(ions, electrons, functional, inq::input::scf::energy_tolerance(1e-8_Ha));
+		ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf{}.energy_tolerance(1e-4_Ha));
+		ground_state::calculate(ions, electrons, functional, inq::input::scf{}.energy_tolerance(1e-8_Ha));
 		electrons.save("silicon_restart");
 	}
 

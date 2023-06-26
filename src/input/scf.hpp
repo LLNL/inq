@@ -25,8 +25,21 @@ namespace input {
     enum class scf_eigensolver { STEEPEST_DESCENT };
     enum class mixing_algo { LINEAR, BROYDEN };
 
-    static auto steepest_descent(){
-      scf solver;
+	private:
+		
+		std::optional<scf_eigensolver> eigensolver_;
+    std::optional<double> mixing_;
+		std::optional<double> energy_tol_;
+		std::optional<mixing_algo> mixing_algo_;
+		std::optional<bool> verbose_;
+		std::optional<bool> subspace_diag_;
+		std::optional<int> scf_steps_;
+		std::optional<bool> calc_forces_;
+
+  public:
+
+    auto steepest_descent(){
+      scf solver = *this;;
       solver.eigensolver_ = scf_eigensolver::STEEPEST_DESCENT;
       return solver;
     }
@@ -35,8 +48,8 @@ namespace input {
       return eigensolver_.value_or(scf_eigensolver::STEEPEST_DESCENT);
     }
 
-    static auto mixing(double mixing_factor) {
-      scf solver;
+    auto mixing(double mixing_factor) {
+      scf solver = *this;;
       solver.mixing_ = mixing_factor;
       return solver;
     }
@@ -45,8 +58,8 @@ namespace input {
       return mixing_.value_or(0.3);
     }
 
-		auto static energy_tolerance(quantity<magnitude::energy> etol) {
-			scf solver;
+		auto energy_tolerance(quantity<magnitude::energy> etol) {
+			scf solver = *this;;
       solver.energy_tol_ = etol.in_atomic_units();
       return solver;
     }
@@ -55,14 +68,14 @@ namespace input {
 			return energy_tol_.value_or(1e-5);
 		}
 		
-		auto static linear_mixing(){
-			scf solver;
+		auto linear_mixing(){
+			scf solver = *this;;
       solver.mixing_algo_ = mixing_algo::LINEAR;
       return solver;
 		}
 
-		auto static broyden_mixing(){
-			scf solver;
+		auto broyden_mixing(){
+			scf solver = *this;;
       solver.mixing_algo_ = mixing_algo::BROYDEN;
       return solver;
 		}
@@ -71,8 +84,8 @@ namespace input {
 			return mixing_algo_.value_or(mixing_algo::BROYDEN);
 		}
 
-		auto static silent(){
-			scf solver;
+		auto silent(){
+			scf solver = *this;;
       solver.verbose_ = false;
       return solver;
 		}
@@ -81,8 +94,8 @@ namespace input {
 			return verbose_.value_or(true);
 		}
 
-		auto static no_subspace_diag() {
-			scf solver;
+		auto no_subspace_diag() {
+			scf solver = *this;;
       solver.subspace_diag_ = false;
       return solver;
 		}
@@ -91,8 +104,8 @@ namespace input {
 			return subspace_diag_.value_or(true);
 		}
 
-		auto static scf_steps(int val) {
-			scf solver;
+		auto scf_steps(int val) {
+			scf solver = *this;;
 			solver.scf_steps_ = val;
       return solver;
 		}
@@ -101,8 +114,8 @@ namespace input {
 			return scf_steps_.value_or(200);
 		}		
 
-		auto static calculate_forces() {
-			scf solver;
+		auto calculate_forces() {
+			scf solver = *this;;
       solver.calc_forces_ = true;
       return solver;
 		}
@@ -111,31 +124,6 @@ namespace input {
 			return calc_forces_.value_or(false);
 		}
 		
-    friend auto operator|(const scf & solver1, const scf & solver2){
-			using inq::utils::merge_optional;
-
-			scf rsolver;
-			rsolver.eigensolver_	= merge_optional(solver1.eigensolver_, solver2.eigensolver_);
-			rsolver.mixing_	= merge_optional(solver1.mixing_, solver2.mixing_);
-			rsolver.energy_tol_	= merge_optional(solver1.energy_tol_, solver2.energy_tol_);
-			rsolver.mixing_algo_	= merge_optional(solver1.mixing_algo_, solver2.mixing_algo_);
-			rsolver.verbose_	= merge_optional(solver1.verbose_, solver2.verbose_);
-			rsolver.subspace_diag_ = merge_optional(solver1.subspace_diag_, solver2.subspace_diag_);
-			rsolver.scf_steps_ = merge_optional(solver1.scf_steps_, solver2.scf_steps_);
-			rsolver.calc_forces_ = merge_optional(solver1.calc_forces_, solver2.calc_forces_);
-			return rsolver;
-		}
-    
-  private:
-
-    std::optional<scf_eigensolver> eigensolver_;
-    std::optional<double> mixing_;
-		std::optional<double> energy_tol_;
-		std::optional<mixing_algo> mixing_algo_;
-		std::optional<bool> verbose_;
-		std::optional<bool> subspace_diag_;
-		std::optional<int> scf_steps_;
-		std::optional<bool> calc_forces_;
   };
 }
 }
@@ -161,7 +149,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Composition"){
 
-    auto solver = input::scf::calculate_forces() | input::scf::mixing(0.05);
+    auto solver = input::scf{}.calculate_forces().mixing(0.05);
 
 		CHECK(solver.calc_forces());
     CHECK(solver.mixing() == 0.05_a);

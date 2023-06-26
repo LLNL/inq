@@ -91,7 +91,7 @@ int main(int argc, char ** argv){
 
 	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, functional, inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(niter) | inq::input::scf::mixing(0.1));
+		auto result = ground_state::calculate(ions, electrons, functional, inq::input::scf{}.steepest_descent().scf_steps(niter).mixing(0.1));
 		if(not groundstate_only) electrons.save(restart_dir);
 	}
 
