@@ -54,7 +54,7 @@ int main(int argc, char ** argv){
 	}
 	
 	if(not groundstate_only){
-		real_time::propagate(ions, electrons, [](auto){}, input::interaction::pbe(), options::real_time::num_steps(100) | options::real_time::dt(0.0565_atomictime));
+		real_time::propagate(ions, electrons, [](auto){}, input::interaction::pbe(), options::real_time{}.num_steps(100).dt(0.0565_atomictime));
 	}
 	
 }

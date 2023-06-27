@@ -22,14 +22,19 @@ namespace options {
 class real_time {
 
 public:
-	
-	enum class electron_propagator { ETRS, CRANK_NICOLSON };
-	
-	real_time(){
-	}
 
-	static auto dt(quantity<magnitude::time> dt) {
-		real_time solver;
+	enum class electron_propagator { ETRS, CRANK_NICOLSON };
+
+private:
+
+	std::optional<double> dt_;
+	std::optional<int> num_steps_;
+	std::optional<electron_propagator> prop_;
+
+public:
+	
+	auto dt(quantity<magnitude::time> dt) const {
+		real_time solver = *this;;
 		solver.dt_ = dt.in_atomic_units();
 		return solver;
 	}
@@ -38,8 +43,8 @@ public:
 		return dt_.value_or(0.01);
 	}
 
-	auto static num_steps(double etol) {
-		real_time solver;
+	auto num_steps(double etol) const {
+		real_time solver = *this;;
 		solver.num_steps_ = etol;
 		return solver;
 	}
@@ -48,14 +53,14 @@ public:
 		return num_steps_.value_or(100);
 	}
 
-	auto static etrs() {
-		real_time solver;
+	auto etrs() {
+		real_time solver = *this;;
 		solver.prop_ = electron_propagator::ETRS;
 		return solver;
 	}
 
-	auto static crank_nicolson() {
-		real_time solver;
+	auto crank_nicolson() const {
+		real_time solver = *this;;
 		solver.prop_ = electron_propagator::CRANK_NICOLSON;
 		return solver;
 	}
@@ -63,23 +68,7 @@ public:
 	auto propagator() const {
 		return prop_.value_or(electron_propagator::ETRS);
 	}
-	
-	friend auto operator|(const real_time & solver1, const real_time & solver2){
-		using utils::merge_optional;
 
-		real_time rsolver;
-		rsolver.dt_	= merge_optional(solver1.dt_, solver2.dt_);
-		rsolver.num_steps_	= merge_optional(solver1.num_steps_, solver2.num_steps_);
-		rsolver.prop_	= merge_optional(solver1.prop_, solver2.prop_);		
-		return rsolver;
-	}
-    
-private:
-
-	std::optional<double> dt_;
-	std::optional<int> num_steps_;
-	std::optional<electron_propagator> prop_;
-		
 };
     
 }
@@ -109,7 +98,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Composition"){
 
-    auto solver = options::real_time::num_steps(1000) | options::real_time::dt(0.05_atomictime) | options::real_time::crank_nicolson();
+    auto solver = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson();
     
     CHECK(solver.num_steps() == 1000);
     CHECK(solver.dt() == 0.05_a);
