@@ -584,7 +584,7 @@ gcc-mpich-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - time cmake ../ --install-prefix=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
       - cd runs
@@ -613,7 +613,7 @@ nvcc-mpich-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - time cmake ../ --install-prefix=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
       - time make -j2
       - time make -j2 install
       - export GPUBIND=`pwd`/_deps/inq-src/scripts/gpubind
@@ -642,7 +642,7 @@ clang-ompi-template:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror"
       - export CXX=clang++
       - export CC=clang
-      - time cmake ../ -DCMAKE_INSTALL_PREFIX=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.openmpi
+      - time cmake ../ --install-prefix=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.openmpi
       - time make -j2
       - time make -j2 install
       - cd runs
