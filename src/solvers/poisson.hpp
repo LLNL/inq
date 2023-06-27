@@ -231,7 +231,6 @@ public:
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unit_cell.hpp>
 #include <operations/integral.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {

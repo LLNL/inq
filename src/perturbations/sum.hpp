@@ -85,7 +85,6 @@ auto operator+(PertTypeA perta, PertTypeB pertb){
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unit_cell.hpp>
 
 #include <perturbations/kick.hpp>
 #include <perturbations/laser.hpp>

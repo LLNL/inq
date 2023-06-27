@@ -176,7 +176,6 @@ private:
 
 #include <basis/real_space.hpp>
 
-#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 
 #include <parallel/communicator.hpp>

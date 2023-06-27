@@ -257,8 +257,8 @@ namespace ions {
 }
 #endif
 
-#ifdef INQ_IONS_UNIT_CELL_UNIT_TEST
-#undef INQ_IONS_UNIT_CELL_UNIT_TEST
+#ifdef INQ_SYSTEMS_CELL_UNIT_TEST
+#undef INQ_SYSTEMS_CELL_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 

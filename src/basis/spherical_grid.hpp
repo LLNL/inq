@@ -22,7 +22,6 @@
 #include <gpu/atomic.hpp>
 #include <gpu/run.hpp>
 #include <gpu/reduce.hpp>
-#include <ions/unit_cell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/containing_cube.hpp>
 #include <basis/real_space.hpp>
@@ -254,7 +253,6 @@ namespace basis {
 #undef INQ_BASIS_SPHERICAL_GRID_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
 #include <math/complex.hpp>
 

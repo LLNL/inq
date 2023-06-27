@@ -15,7 +15,6 @@
 #include <vector>
 
 #include <input/species.hpp>
-#include <ions/unit_cell.hpp>
 #include <magnitude/length.hpp>
 #include <math/vector3.hpp>
 

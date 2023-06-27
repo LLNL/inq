@@ -72,7 +72,6 @@ namespace basis {
 #undef INQ_BASIS_TRIVIAL_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   

@@ -181,7 +181,6 @@ private:
 #ifdef INQ_HAMILTONIAN_XC_TERM_UNIT_TEST
 #undef INQ_HAMILTONIAN_XC_TERM_UNIT_TEST
 
-#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 

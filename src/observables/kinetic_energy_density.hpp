@@ -61,7 +61,6 @@ basis::field<basis::real_space, double> kinetic_energy_density(systems::electron
 #undef INQ_OBSERVABLES_KINETIC_ENERGY_DENSITY_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 

@@ -97,7 +97,6 @@ double steepest_descent(const operator_type & ham, const preconditioner_type & p
 #undef INQ_SOLVERS_STEEPEST_DESCENT_UNIT_TEST
 
 #include <basis/trivial.hpp>
-#include <ions/unit_cell.hpp>
 #include <operations/matrix_operator.hpp>
 
 #include <catch2/catch_all.hpp>

@@ -53,7 +53,6 @@ void containing_cube(const BasisType & grid, PosType const & pos, double radius,
 #undef INQ_BASIS_CONTAINING_CUBE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
 #include <basis/real_space.hpp>
 

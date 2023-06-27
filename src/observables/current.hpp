@@ -60,7 +60,6 @@ auto current(const systems::ions & ions, systems::electrons const & electrons, H
 #undef INQ_OBSERVABLES_CURRENT_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 

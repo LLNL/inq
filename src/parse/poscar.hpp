@@ -20,7 +20,6 @@
 
 #include <pseudopod/element.hpp>
 #include <input/species.hpp>
-#include <ions/unit_cell.hpp>
 #include <magnitude/length.hpp>
 
 namespace inq {

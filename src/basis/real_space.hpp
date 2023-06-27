@@ -14,7 +14,6 @@
 
 #include <basis/grid.hpp>
 #include <gpu/run.hpp>
-#include <ions/unit_cell.hpp>
 #include <math/vector3.hpp>
 
 namespace inq {
@@ -192,7 +191,6 @@ class fourier_space;
 #undef INQ_BASIS_REAL_SPACE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 

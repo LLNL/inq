@@ -12,7 +12,6 @@
 #include <inq_config.h>
 
 #include <math/vector3.hpp>
-#include <ions/unit_cell.hpp>
 #include "grid.hpp"
 #include <cassert>
 #include <array>
@@ -154,7 +153,6 @@ class real_space;
 #undef INQ_BASIS_FOURIER_SPACE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 

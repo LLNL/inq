@@ -242,7 +242,6 @@ field<basis::real_space, vector3<double, VectorSpace>> real_field(field<basis::r
 #undef INQ_BASIS_FIELD_UNIT_TEST
 
 #include <basis/real_space.hpp>
-#include <ions/unit_cell.hpp>
 
 #include <catch2/catch_all.hpp>
 

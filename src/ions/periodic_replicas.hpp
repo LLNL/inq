@@ -75,7 +75,6 @@ private:
 #undef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 

@@ -362,7 +362,6 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 #include <vector>
 #include <valarray>
 #include <gpu/array.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 

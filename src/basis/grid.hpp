@@ -14,7 +14,6 @@
 
 #include <basis/base.hpp>
 #include <math/vector3.hpp>
-#include <ions/unit_cell.hpp>
 
 namespace inq {
 namespace basis {

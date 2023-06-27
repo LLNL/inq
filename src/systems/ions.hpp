@@ -13,8 +13,8 @@
 
 #include <spglib.h>
 
+#include <systems/cell.hpp>
 #include <input/species.hpp>
-#include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
 #include <parse/cif.hpp>
 #include <parse/poscar.hpp>

@@ -9,7 +9,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <ions/unit_cell.hpp>
 #include <ions/brillouin.hpp>
 
 namespace inq {
@@ -112,7 +111,6 @@ public:
 #ifdef INQ_HAMILTONIAN_SINGULARITY_CORRECTION_UNIT_TEST
 #undef INQ_HAMILTONIAN_SINGULARITY_CORRECTION_UNIT_TEST
 
-#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 

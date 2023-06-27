@@ -123,7 +123,6 @@ private:
 #undef INQ_BASIS_DOUBLE_GRID_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   

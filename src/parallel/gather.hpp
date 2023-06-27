@@ -56,7 +56,6 @@ auto gather(ArrayType const & array, PartType const & part, CommType & comm, int
 #undef INQ_PARALLEL_GATHER_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
 
 #include <mpi3/environment.hpp>

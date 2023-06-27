@@ -80,7 +80,6 @@ double conjugate_gradient(const operator_type & op, const preconditioner_type &,
 #undef INQ_SOLVERS_CONJUGATE_GRADIENT_UNIT_TEST
 
 #include <basis/trivial.hpp>
-#include <ions/unit_cell.hpp>
 #include <operations/matrix_operator.hpp>
 
 #include <catch2/catch_all.hpp>
