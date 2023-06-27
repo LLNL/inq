@@ -35,7 +35,10 @@ public:
 		core_density_(density_basis),
 		potential_basis_(potential_basis),
 		density_basis_(density_basis),
-		pert_(pert)
+		pert_(pert),
+		induced_vector_potential_acc_({0.0,0.0,0.0}),
+		induced_vector_potential_vel_({0.0, 0.0, 0.0}),
+		induced_vector_potential_({0.0, 0.0, 0.0})
 	{
 	}
 	
@@ -48,7 +51,10 @@ public:
 		core_density_(std::move(old.core_density_), new_comm),
 		potential_basis_(std::move(old.potential_basis_), new_comm),
 		density_basis_(std::move(old.density_basis_), new_comm),
-		pert_(std::move(old.pert_))
+		pert_(std::move(old.pert_)),
+		induced_vector_potential_acc_(old.induced_vector_potential_acc_),
+		induced_vector_potential_vel_(old.induced_vector_potential_vel_),
+		induced_vector_potential_(old.induced_vector_potential_)
 	{
 	}
 	
@@ -168,7 +174,14 @@ private:
 	basis::real_space potential_basis_;
 	basis::real_space density_basis_;
 	Perturbation pert_;
-		
+
+public:
+	
+	vector3<double, covariant> induced_vector_potential_acc_;
+	vector3<double, covariant> induced_vector_potential_vel_;
+	vector3<double, covariant> induced_vector_potential_;
+
+	
 };
 }
 }
