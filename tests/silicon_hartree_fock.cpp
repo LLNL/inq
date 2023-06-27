@@ -26,7 +26,7 @@ int main(int argc, char ** argv){
 	utils::match energy_match(3.0e-5);
 
 	auto a = 10.18_b;
-	systems::ions ions(ions::unit_cell::cubic(a));
+	systems::ions ions(systems::cell::cubic(a));
 	
 	ions.insert_fractional("Si", {0.0,  0.0,  0.0 });
 	ions.insert_fractional("Si", {0.25, 0.25, 0.25});
@@ -42,11 +42,11 @@ int main(int argc, char ** argv){
 	if(comm.size() == 4) parstates = 2;	
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	systems::electrons electrons(env.par().states(parstates), ions, input::config::extra_states(4) | input::config::cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
+	systems::electrons electrons(env.par().states(parstates), ions, options::electrons{}.extra_states(4).cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 
 	ground_state::initial_guess(ions, electrons);
-	ground_state::calculate(ions, electrons, input::interaction::dft(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-4_Ha));
- 	auto result = ground_state::calculate(ions, electrons, input::interaction::hartree_fock(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
+	ground_state::calculate(ions, electrons, options::theory{}.dft(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-4_Ha));
+ 	auto result = ground_state::calculate(ions, electrons, options::theory{}.hartree_fock(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
 	
 	energy_match.check("total energy",        result.energy.total(),       -30.495900907055);
 	energy_match.check("kinetic energy",      result.energy.kinetic(),      13.234089410583);

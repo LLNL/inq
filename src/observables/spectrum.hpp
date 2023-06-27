@@ -65,7 +65,6 @@ gpu::array<RetElementType, 1> spectrum(quantity<magnitude::energy> maxw, quantit
 #undef INQ_OBSERVABLES_SPECTRUM_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 #include <fstream>
 
 using namespace inq;

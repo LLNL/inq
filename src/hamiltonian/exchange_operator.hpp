@@ -42,7 +42,7 @@ namespace hamiltonian {
 		
   public:
 
-		exchange_operator(ions::unit_cell const & cell, ions::brillouin const & bzone, double const exchange_coefficient, bool const use_ace):
+		exchange_operator(systems::cell const & cell, ions::brillouin const & bzone, double const exchange_coefficient, bool const use_ace):
 			exchange_coefficient_(exchange_coefficient),
 			use_ace_(use_ace),
 			sing_(cell, bzone){
@@ -235,7 +235,6 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_EXCHANGE_OPERATOR_UNIT_TEST
 #undef INQ_HAMILTONIAN_EXCHANGE_OPERATOR_UNIT_TEST
 
-#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 

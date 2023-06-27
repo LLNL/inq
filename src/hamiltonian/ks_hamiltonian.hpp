@@ -228,7 +228,6 @@ private:
 #ifdef INQ_HAMILTONIAN_KS_HAMILTONIAN_UNIT_TEST
 #undef INQ_HAMILTONIAN_KS_HAMILTONIAN_UNIT_TEST
 
-#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
@@ -243,7 +242,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
-	auto ions = systems::ions(ions::unit_cell::cubic(10.0_b));
+	auto ions = systems::ions(systems::cell::cubic(10.0_b));
 
 	basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, basis_comm);
 

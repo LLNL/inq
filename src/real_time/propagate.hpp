@@ -13,6 +13,7 @@
 #include <hamiltonian/forces.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <observables/dipole.hpp>
+#include <options/real_time.hpp>
 #include <perturbations/none.hpp>
 #include <ions/propagator.hpp>
 #include <systems/electrons.hpp>
@@ -27,14 +28,14 @@ namespace inq {
 namespace real_time {
 
 template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed, typename Perturbation = perturbations::none>
-void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const input::rt & options, IonSubPropagator const& ion_propagator = {}, Perturbation const & pert = {}){
+void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const options::theory & inter, const options::real_time & opts, IonSubPropagator const& ion_propagator = {}, Perturbation const & pert = {}){
 		CALI_CXX_MARK_FUNCTION;
 		
 		auto console = electrons.logger();
 		if(console) console->trace("initializing real-time propagation");
 
-		const double dt = options.dt();
-		const int numsteps = options.num_steps();
+		const double dt = opts.dt();
+		const int numsteps = opts.num_steps();
 
 		for(auto & phi : electrons.kpin()) pert.zero_step(phi);
 		
@@ -42,7 +43,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 		hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components(), pert);
 		hamiltonian::ks_hamiltonian<complex> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(),
-																						 ions, electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ options.propagator() == input::rt::electron_propagator::CRANK_NICOLSON);
+																						 ions, electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ opts.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
 		hamiltonian::energy energy;
 
 		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
@@ -66,11 +67,11 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
 
-			switch(options.propagator()){
-			case input::rt::electron_propagator::ETRS :
+			switch(opts.propagator()){
+			case options::real_time::electron_propagator::ETRS :
 				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy, pert);
 				break;
-			case input::rt::electron_propagator::CRANK_NICOLSON :
+			case options::real_time::electron_propagator::CRANK_NICOLSON :
 				crank_nicolson(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
 				break;
 			}

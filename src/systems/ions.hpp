@@ -13,8 +13,8 @@
 
 #include <spglib.h>
 
+#include <systems/cell.hpp>
 #include <input/species.hpp>
-#include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
 #include <parse/cif.hpp>
 #include <parse/poscar.hpp>
@@ -25,7 +25,7 @@ namespace systems {
 
 class ions {
 
-	inq::ions::unit_cell cell_;
+	inq::systems::cell cell_;
 	std::vector<input::species> atoms_;
 	std::vector<vector3<double>> coordinates_;
 	std::vector<vector3<double>> velocities_;	
@@ -39,11 +39,11 @@ class ions {
 
 public:
 
-	ions(inq::ions::unit_cell arg_cell_input):
+	ions(inq::systems::cell arg_cell_input):
 		cell_(std::move(arg_cell_input)){
 	}
 
-	static ions parse(std::string filename, std::optional<inq::ions::unit_cell> const & cell = {}) {
+	static ions parse(std::string filename, std::optional<inq::systems::cell> const & cell = {}) {
 
 		std::string extension = filename.substr(filename.find_last_of(".") + 1);
 		std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
@@ -184,7 +184,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto dcc = 1.42_A;
 		auto aa = sqrt(3)*dcc;
 		auto lz = 10.0_b;
-		systems::ions ions(ions::unit_cell::lattice(aa*vector3{1.0, 0.0, 0.0}, aa*vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).periodicity(2));
+		systems::ions ions(systems::cell::lattice(aa*vector3{1.0, 0.0, 0.0}, aa*vector3{-1.0/2.0, sqrt(3.0)/2.0, 0.0}, {0.0_b, 0.0_b, lz}).periodicity(2));
 		
 		CHECK(ions.cell().periodicity() == 2);
 		
@@ -213,7 +213,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Read an xyz file"){
 		
-		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", ions::unit_cell::cubic(66.6_A).finite());
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", systems::cell::cubic(66.6_A).finite());
 
 		CHECK(ions.cell().lattice(0)[0] == 125.8557599003_a);
 		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));

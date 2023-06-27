@@ -26,7 +26,7 @@ int main(int argc, char ** argv){
 	utils::match energy_match(3.0e-5);
 
 	auto a = 10.18_b;
-	systems::ions ions(ions::unit_cell::cubic(a));
+	systems::ions ions(systems::cell::cubic(a));
 	
 	ions.insert_fractional("Si", {0.0,  0.0,  0.0 });
 	ions.insert_fractional("Si", {0.25, 0.25, 0.25});
@@ -37,11 +37,11 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	systems::electrons electrons(env.par(), ions, input::kpoints::grid({2, 1, 1}, true), input::config::cutoff(25.0_Ha));
+	systems::electrons electrons(env.par(), ions, input::kpoints::grid({2, 1, 1}, true), options::electrons{}.cutoff(25.0_Ha));
 
 	ground_state::initial_guess(ions, electrons);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-9_Ha));
 	
 	energy_match.check("total energy",     result.energy.total(),      -23.834202307770);
 	energy_match.check("kinetic energy",   result.energy.kinetic(),     14.428062704088);

@@ -395,7 +395,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 	
 	vector3<double> ll{6.66, 7.77, 9.99};
 	
-	auto cell = ions::unit_cell::orthorhombic(ll[0]*1.0_b, ll[1]*1.0_b, ll[2]*1.0_b);
+	auto cell = systems::cell::orthorhombic(ll[0]*1.0_b, ll[1]*1.0_b, ll[2]*1.0_b);
 	auto spacing = 0.46320257;
 	
 	SECTION("Enlarge and shrink -- field"){

@@ -14,7 +14,6 @@
 
 #include <basis/base.hpp>
 #include <math/vector3.hpp>
-#include <ions/unit_cell.hpp>
 
 namespace inq {
 namespace basis {
@@ -25,7 +24,7 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const ions::unit_cell & cell, std::array<int, 3> nr, bool spherical_grid, parallel::communicator & comm) :
+		grid(const systems::cell & cell, std::array<int, 3> nr, bool spherical_grid, parallel::communicator & comm) :
 			base(nr[0], comm),
 			cubic_part_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
 			cell_(cell),
@@ -177,7 +176,7 @@ namespace basis {
 	protected:
 
 		std::array<inq::parallel::partition, 3> cubic_part_;
-		ions::unit_cell cell_;
+		systems::cell cell_;
 
     std::array<int, 3> nr_;
 
@@ -211,7 +210,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
   
-  ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
+  systems::cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 

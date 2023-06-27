@@ -14,7 +14,7 @@
 #include <observables/density.hpp>
 #include <operations/add.hpp>
 #include <operations/integral.hpp>
-#include <input/interaction.hpp>
+#include <options/theory.hpp>
 #include <hamiltonian/xc_functional.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <perturbations/none.hpp>
@@ -27,7 +27,7 @@ class xc_term {
 	
 public:
 	
-	xc_term(input::interaction interaction, int const spin_components):
+	xc_term(options::theory interaction, int const spin_components):
 		exchange_(int(interaction.exchange()), spin_components),
 		correlation_(int(interaction.correlation()), spin_components)
 	{
@@ -181,7 +181,6 @@ private:
 #ifdef INQ_HAMILTONIAN_XC_TERM_UNIT_TEST
 #undef INQ_HAMILTONIAN_XC_TERM_UNIT_TEST
 
-#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
@@ -199,7 +198,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto ly = 13.8;
 	auto lz =  4.5;
 	
-	basis::real_space bas(ions::unit_cell::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b), /*spacing =*/ 0.40557787, comm);
+	basis::real_space bas(systems::cell::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b), /*spacing =*/ 0.40557787, comm);
 
 	basis::field_set<basis::real_space, double> density_unp(bas, 1);	
 	basis::field_set<basis::real_space, double> density_pol(bas, 2);

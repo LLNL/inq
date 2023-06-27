@@ -231,7 +231,6 @@ public:
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unit_cell.hpp>
 #include <operations/integral.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
@@ -247,7 +246,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	{
 
-		basis::real_space rs(ions::unit_cell::orthorhombic(10.0_b, 10.0_b, 13.7_b), /*spacing =*/ 0.1, comm);
+		basis::real_space rs(systems::cell::orthorhombic(10.0_b, 10.0_b, 13.7_b), /*spacing =*/ 0.1, comm);
 
 		SECTION("Grid periodic"){
 		
@@ -395,7 +394,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 
 	{
-		basis::real_space rs(ions::unit_cell::cubic(8.0_b).finite(), /*spacing =*/ 0.09, comm);
+		basis::real_space rs(systems::cell::cubic(8.0_b).finite(), /*spacing =*/ 0.09, comm);
 
 		solvers::poisson psolver;
 
@@ -475,7 +474,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Point charge 2d periodic"){
 		
-		basis::real_space rs(ions::unit_cell::orthorhombic(6.0_b, 6.0_b, 9.0_b).periodicity(2), /*spacing =*/ 0.12, comm);
+		basis::real_space rs(systems::cell::orthorhombic(6.0_b, 6.0_b, 9.0_b).periodicity(2), /*spacing =*/ 0.12, comm);
 		
 		solvers::poisson psolver;
 		

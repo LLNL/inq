@@ -286,7 +286,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto set_comm = basis::set_subcomm(cart_comm);
 	auto basis_comm = basis::basis_subcomm(cart_comm);	
 
-	ions::unit_cell box = ions::unit_cell::orthorhombic(13.3_b, 6.55_b, 8.02_b);
+	systems::cell box = systems::cell::orthorhombic(13.3_b, 6.55_b, 8.02_b);
   basis::real_space rs(box, /*spacing =*/ 0.49672941, cart_comm);
 	
 	int const nvec = 19;

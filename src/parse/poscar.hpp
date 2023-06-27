@@ -20,7 +20,6 @@
 
 #include <pseudopod/element.hpp>
 #include <input/species.hpp>
-#include <ions/unit_cell.hpp>
 #include <magnitude/length.hpp>
 
 namespace inq {
@@ -102,7 +101,7 @@ public:
 
 		} else {
 			// Direct 
-			auto cell = ions::unit_cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);
+			auto cell = systems::cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);
 			for(unsigned ispecies = 0; ispecies < species_num.size(); ispecies++){
 				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
 					vector3<double, contravariant> pos;
@@ -133,7 +132,7 @@ public:
 	}
 
 	auto cell() const {
-		return ions::unit_cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);
+		return systems::cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);
 	}
 	
 };

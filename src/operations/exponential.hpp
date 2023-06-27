@@ -77,7 +77,6 @@ namespace operations {
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unit_cell.hpp>
 #include <basis/trivial.hpp>
 #include <operations/matrix_operator.hpp>
 

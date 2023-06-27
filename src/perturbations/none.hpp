@@ -58,7 +58,6 @@ public:
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unit_cell.hpp>
 
 using namespace inq;
 using namespace Catch::literals;

@@ -18,7 +18,7 @@ int main(int argc, char ** argv){
 	utils::match data_match(3.0e-5);
 
 	auto a = 10.18_b;
-	systems::ions ions(ions::unit_cell::cubic(a));
+	systems::ions ions(systems::cell::cubic(a));
 	
 	ions.insert_fractional("Si", {0.0,  0.0,  0.0 });
 	ions.insert_fractional("Si", {0.25, 0.25, 0.25});
@@ -29,11 +29,11 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	systems::electrons electrons(env.par(), ions, input::config::cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
+	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 	
 	ground_state::initial_guess(ions, electrons);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-9_Ha));
 	
 	std::vector<double> jz;
 	std::vector<double> Az;
@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
 
 	auto kick = perturbations::kick{ions.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 
-	real_time::propagate<>(ions, electrons, output, input::interaction::lda()|input::interaction::gauge_field(0.2), input::rt::num_steps(30) | input::rt::dt(0.04_atomictime), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, options::theory{}.lda().gauge_field(0.2), options::real_time{}.num_steps(30).dt(0.04_atomictime), ions::propagator::fixed{}, kick);
 
 	data_match.check("current in z step   0", jz[0],   -0.157798692934);
 	data_match.check("current in z step  10", jz[10],  -0.146691801751);

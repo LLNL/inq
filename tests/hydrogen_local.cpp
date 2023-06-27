@@ -25,16 +25,16 @@ int main(int argc, char ** argv){
 
 	auto local_h = inq::input::species("H").symbol("Hloc").pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 
-	inq::systems::ions ions(inq::ions::unit_cell::cubic(15.0_b).finite());
+	inq::systems::ions ions(inq::systems::cell::cubic(15.0_b).finite());
 	ions.insert(local_h, {150.0_b, -30.0_b, 0.0_b});
 	
-	inq::systems::electrons electrons(env.par(), ions, inq::input::config::cutoff(40.0_Ha));
+	inq::systems::electrons electrons(env.par(), ions, inq::options::electrons{}.cutoff(40.0_Ha));
 	inq::ground_state::initial_guess(ions, electrons);
 	
 	// Non Interacting
 	{
 	
-		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::non_interacting(), inq::input::scf::energy_tolerance(1e-8_Ha));
+		auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.non_interacting(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -77,7 +77,7 @@ int main(int argc, char ** argv){
 	// LDA
 	{
 		
-		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::lda());
+		auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.lda());
 		
 		/*
 			OCTOPUS RESULTS: (Spacing 0.286)
@@ -120,7 +120,7 @@ int main(int argc, char ** argv){
 	// B3LYP
 	{
 
-		auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::b3lyp(), inq::input::scf::energy_tolerance(1e-6_Ha));
+		auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.b3lyp(), inq::options::ground_state{}.energy_tolerance(1e-6_Ha));
 		
 		energy_match.check("total energy",        result.energy.total(),      -0.447426627140);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),     0.421674180797);

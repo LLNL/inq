@@ -18,7 +18,7 @@ int main(int argc, char ** argv){
 	utils::match energy_match(3.0e-5);
 
 	auto a = 10.18_b;
-	systems::ions ions(ions::unit_cell::cubic(a));
+	systems::ions ions(systems::cell::cubic(a));
 	
 	ions.insert_fractional("Si", {0.0,  0.0,  0.0 });
 	ions.insert_fractional("Si", {0.25, 0.25, 0.25});
@@ -31,14 +31,14 @@ int main(int argc, char ** argv){
 
 	auto nk = 2;
 	
-	systems::electrons electrons(env.par(), ions, input::kpoints::grid({nk, nk, nk}, true), input::config::spacing(a/24));
+	systems::electrons electrons(env.par(), ions, input::kpoints::grid({nk, nk, nk}, true), options::electrons{}.spacing(a/24));
 
-	auto functional = input::interaction::pbe();
+	auto functional = options::theory{}.pbe();
 	
 	if(not electrons.try_load("silicon_restart")){
 		ground_state::initial_guess(ions, electrons);
-		ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-4_Ha));
-		ground_state::calculate(ions, electrons, functional, inq::input::scf::energy_tolerance(1e-8_Ha));
+		ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-4_Ha));
+		ground_state::calculate(ions, electrons, functional, inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 		electrons.save("silicon_restart");
 	}
 
@@ -76,7 +76,7 @@ int main(int argc, char ** argv){
 		}
 	};
 	
-	real_time::propagate<>(ions, electrons, output, functional, input::rt::num_steps(nsteps) | input::rt::dt(dt*1.0_atomictime) | input::rt::etrs(), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, functional, options::real_time{}.num_steps(nsteps).dt(dt*1.0_atomictime).etrs(), ions::propagator::fixed{}, kick);
 	
 	return energy_match.fail();
 	

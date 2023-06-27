@@ -30,7 +30,7 @@ int main(int argc, char ** argv){
   for(auto ecut = 25.0_Ha; ecut <= 300.0_Ha; ecut += 25.0_Ha){
 
     auto spacing = M_PI*sqrt(0.5/ecut.in_atomic_units());
-    basis::real_space rs(ions::unit_cell::cubic(6.66_b), spacing, basis_comm);
+    basis::real_space rs(systems::cell::cubic(6.66_b), spacing, basis_comm);
     
     for(int ist = 1; ist <= 256; ist *= 2){
       

@@ -19,11 +19,11 @@ int main(int argc, char ** argv){
 
   auto ions = systems::ions::parse(config::path::unit_tests_data() + "bn.poscar");
 
-  systems::electrons electrons(env.par(), ions, input::config::cutoff(35.0_Ha) | input::config::extra_states(3), input::kpoints::grid({2, 2, 2}, true));
+  systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha).extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 	
   ground_state::initial_guess(ions, electrons);
 	
-  auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-8_Ha));
+  auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
 	
   energy_match.check("total energy",        result.energy.total(),         -13.415882371703);
   energy_match.check("kinetic energy",      result.energy.kinetic(),         9.561946750259);

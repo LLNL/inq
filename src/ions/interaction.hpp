@@ -23,56 +23,6 @@
 namespace inq {
 namespace ions {
 
-template <class cell_type, class geometry_type>
-auto interaction_energy(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
-
-	CALI_CXX_MARK_FUNCTION;
-
-	double energy;
-	boost::multi::array<vector3<double>, 1> forces(geo.size());
-	boost::multi::array<double, 1> charges(geo.size());
-
-	for(int ii = 0; ii < geo.size(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
-
-	interaction_energy(geo.size(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
-
-	return energy;
-}
-
-///////////////////////////////////////////////////////////////////////////
-
-template <class cell_type, class geometry_type>
-auto interaction_forces(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
-
-	CALI_CXX_MARK_FUNCTION;
-
-	double energy;
-	boost::multi::array<vector3<double>, 1> forces(geo.size());
-	boost::multi::array<double, 1> charges(geo.size());
-
-	for(int ii = 0; ii < geo.size(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
-
-	interaction_energy(geo.size(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
-
-	return forces;
-}
-
-///////////////////////////////////////////////////////////////////////////
-
-template <class cell_type, class array_charge, class array_positions, class array_forces>
-void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
-												double & energy, array_forces & forces){
-
-	if(cell.periodicity() == 0) {
-		interaction_energy_finite(natoms, cell, charge, positions, sep, energy, forces);
-	} else if(cell.periodicity() == 2 or cell.periodicity() == 3) {
-		interaction_energy_periodic(cell.periodicity(), natoms, cell, charge, positions, sep, energy, forces);
-	} else {
-		throw std::runtime_error("inq internal error: ionic interaction not implemented for periodicity " + std::to_string(cell.periodicity()));
-	}
-	
-}
-
 ///////////////////////////////////////////////////////////////////////////
 
 template <class cell_type, class array_charge, class array_positions, class array_forces>
@@ -350,6 +300,58 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 	energy = ers + eself + efs + epseudo;
 }
 
+///////////////////////////////////////////////////////////////////////////
+
+template <class cell_type, class array_charge, class array_positions, class array_forces>
+void interaction_energy(const int natoms, const cell_type & cell, const array_charge & charge, const array_positions & positions, pseudo::math::erf_range_separation const & sep,
+												double & energy, array_forces & forces){
+
+	if(cell.periodicity() == 0) {
+		interaction_energy_finite(natoms, cell, charge, positions, sep, energy, forces);
+	} else if(cell.periodicity() == 2 or cell.periodicity() == 3) {
+		interaction_energy_periodic(cell.periodicity(), natoms, cell, charge, positions, sep, energy, forces);
+	} else {
+		throw std::runtime_error("inq internal error: ionic interaction not implemented for periodicity " + std::to_string(cell.periodicity()));
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+template <class cell_type, class geometry_type>
+auto interaction_energy(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	double energy;
+	boost::multi::array<vector3<double>, 1> forces(geo.size());
+	boost::multi::array<double, 1> charges(geo.size());
+
+	for(int ii = 0; ii < geo.size(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
+
+	interaction_energy(geo.size(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+
+	return energy;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+template <class cell_type, class geometry_type>
+auto interaction_forces(const cell_type & cell, const geometry_type & geo, const hamiltonian::atomic_potential & atomic_pot){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	double energy;
+	boost::multi::array<vector3<double>, 1> forces(geo.size());
+	boost::multi::array<double, 1> charges(geo.size());
+
+	for(int ii = 0; ii < geo.size(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
+
+	interaction_energy(geo.size(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+
+	return forces;
+}
+
+
 }
 }
 #endif
@@ -362,7 +364,6 @@ void interaction_energy_periodic(int periodicity, const int natoms, const cell_t
 #include <vector>
 #include <valarray>
 #include <gpu/array.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
@@ -374,7 +375,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
     double aa = 7.653;
     
-    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    systems::cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
     
     std::valarray<double> charge(4);
     charge = 3.0;
@@ -398,7 +399,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     double aa = 6.74065308785213;
     
-    ions::unit_cell cell(vector3<double>(0.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, 0.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, 0.0));
+    systems::cell cell(vector3<double>(0.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, 0.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, 0.0));
 
     const double charge[2] = {4.0, 4.0};
     
@@ -419,7 +420,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     double aa = 5.3970578;
     
-    ions::unit_cell cell(vector3<double>(-aa/2.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, -aa/2.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, -aa/2.0));
+    systems::cell cell(vector3<double>(-aa/2.0, aa/2.0, aa/2.0), vector3<double>(aa/2.0, -aa/2.0, aa/2.0), vector3<double>(aa/2.0, aa/2.0, -aa/2.0));
 
     const double charge = 16.0;
     
@@ -438,7 +439,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     double aa = 20.0;
     
-    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodicity = */ 0);
+    systems::cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodicity = */ 0);
 
 		const double charge[2] = {5.0, 5.0};
 
@@ -469,7 +470,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     double aa = 20.0;
     
-    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    systems::cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
 
 		const double charge[2] = {5.0, 5.0};
 
@@ -500,7 +501,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     double aa = 20.0;
     
-    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
+    systems::cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa));
 
 		const double charge[2] = {5.0, 5.0};
 
@@ -531,7 +532,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     double alat = 20.25;
     
-    ions::unit_cell cell(vector3<double>(alat, 0.0, 0.0), vector3<double>(0.0, alat, 0.0), vector3<double>(0.0, 0.0, alat));
+    systems::cell cell(vector3<double>(alat, 0.0, 0.0), vector3<double>(0.0, alat, 0.0), vector3<double>(0.0, 0.0, alat));
 
 		gpu::array<double, 1> charge(64, 4.0);
 
@@ -618,7 +619,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     
     double aa = 20.0;
     
-    ions::unit_cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodicity = */ 0);
+    systems::cell cell(vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa), /* periodicity = */ 0);
 
 		const double charge[3] = {6.0, 1.0, 1.0};
 
@@ -656,7 +657,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto ly = sqrt(3.0)*aa;
 		auto lz = 7.5589045;
     
-    ions::unit_cell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz), 2);
+    systems::cell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz), 2);
 
 		const double charge[4] = {3.0, 5.0, 3.0, 5.0};
 
@@ -696,7 +697,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto ly = sqrt(3.0)*aa;
 		auto lz = 7.5589045;
     
-    ions::unit_cell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz), 2);
+    systems::cell cell(vector3<double>(lx, 0.0, 0.0), vector3<double>(0.0, ly, 0.0), vector3<double>(0.0, 0.0, lz), 2);
 
 		const double charge[4] = {3.0, 5.0, 3.0, 5.0};
 
@@ -735,7 +736,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto aa = sqrt(3)*dcc;
 		auto lz = 10.0;
     
-    ions::unit_cell cell(aa*vector3<double>(1.0, 0.0, 0.0), aa*vector3<double>(-1.0/2.0, sqrt(3.0)/2.0, 0.0), vector3<double>(0.0, 0.0, lz), 3);
+    systems::cell cell(aa*vector3<double>(1.0, 0.0, 0.0), aa*vector3<double>(-1.0/2.0, sqrt(3.0)/2.0, 0.0), vector3<double>(0.0, 0.0, lz), 3);
 
 		const double charge[2] = {4.0, 4.0};
 
@@ -764,7 +765,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto aa = sqrt(3)*dcc;
 		auto lz = 10.0;
     
-    ions::unit_cell cell(aa*vector3<double>(1.0, 0.0, 0.0), aa*vector3<double>(-1.0/2.0, sqrt(3.0)/2.0, 0.0), vector3<double>(0.0, 0.0, lz), 2);
+    systems::cell cell(aa*vector3<double>(1.0, 0.0, 0.0), aa*vector3<double>(-1.0/2.0, sqrt(3.0)/2.0, 0.0), vector3<double>(0.0, 0.0, lz), 2);
 
 		const double charge[2] = {4.0, 4.0};
 

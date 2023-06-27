@@ -17,15 +17,15 @@ int main(int argc, char ** argv){
 	environment env(argc, argv);
 
 	auto distance = 1.06_angstrom;
-	systems::ions ions(ions::unit_cell::orthorhombic(10.0_b, 10.0_b, 12.0_b).finite());
+	systems::ions ions(systems::cell::orthorhombic(10.0_b, 10.0_b, 12.0_b).finite());
 
 	ions.insert("N", {0.0_b, 0.0_b, -distance/2});
   ions.insert("N", {0.0_b, 0.0_b,  distance/2});
 	
-	systems::electrons electrons(env.par(), ions, input::config::cutoff(40.0_Ha));
+	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(40.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, interaction::pbe());
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe());
 
 	std::cout << "N2 energy = " << result.energy.total() << std::endl;
 

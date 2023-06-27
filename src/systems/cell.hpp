@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__IONS__UNIT_CELL
-#define INQ__IONS__UNIT_CELL
+#ifndef INQ__SYSTEMS__CELL
+#define INQ__SYSTEMS__CELL
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -18,9 +18,9 @@
 #include <array>
 
 namespace inq {
-namespace ions {
+namespace systems {
 
-  class unit_cell{
+  class cell{
 		using vector_type = vector3<double>;
   private:
     vector_type lattice_[3];
@@ -30,7 +30,7 @@ namespace ions {
 		
   public:
 
-    unit_cell(vector3<double> const& a0, vector3<double> const& a1, vector3<double> const& a2, int arg_periodicity = 3){
+    cell(vector3<double> const& a0, vector3<double> const& a1, vector3<double> const& a2, int arg_periodicity = 3){
 			
 			periodicity_ = arg_periodicity;
 		
@@ -48,15 +48,15 @@ namespace ions {
 
 		static auto cubic(quantity<magnitude::length> lat_par){
 			auto aa = lat_par.in_atomic_units();
-			return unit_cell{vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa)};
+			return cell{vector3<double>(aa, 0.0, 0.0), vector3<double>(0.0, aa, 0.0), vector3<double>(0.0, 0.0, aa)};
 		}
 
 		static auto orthorhombic(quantity<magnitude::length> aa, quantity<magnitude::length> bb, quantity<magnitude::length> cc){
-			return unit_cell{vector3<double>(aa.in_atomic_units(), 0.0, 0.0), vector3<double>(0.0, bb.in_atomic_units(), 0.0), vector3<double>(0.0, 0.0, cc.in_atomic_units())};
+			return cell{vector3<double>(aa.in_atomic_units(), 0.0, 0.0), vector3<double>(0.0, bb.in_atomic_units(), 0.0), vector3<double>(0.0, 0.0, cc.in_atomic_units())};
 		}
 
 		static auto lattice(vector3<quantity<magnitude::length>> aa, vector3<quantity<magnitude::length>> bb, vector3<quantity<magnitude::length>> cc){
-			return unit_cell{vector3<double>(aa[0].in_atomic_units(), aa[1].in_atomic_units(), aa[2].in_atomic_units()), 
+			return cell{vector3<double>(aa[0].in_atomic_units(), aa[1].in_atomic_units(), aa[2].in_atomic_units()), 
 											 vector3<double>(bb[0].in_atomic_units(), bb[1].in_atomic_units(), bb[2].in_atomic_units()), 
 											 vector3<double>(cc[0].in_atomic_units(), cc[1].in_atomic_units(), cc[2].in_atomic_units())};
 		}
@@ -77,11 +77,11 @@ namespace ions {
 		}
 		
 		auto enlarge(int factor) const {
-			return unit_cell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodicity_);
+			return cell(factor*lattice_[0], factor*lattice_[1], factor*lattice_[2], periodicity_);
 		}
 
 		auto enlarge(vector3<int> factor) const {
-			return unit_cell(factor[0]*lattice_[0], factor[1]*lattice_[1], factor[2]*lattice_[2], periodicity_);
+			return cell(factor[0]*lattice_[0], factor[1]*lattice_[1], factor[2]*lattice_[2], periodicity_);
 		}
 			
     double volume() const { return volume_; }
@@ -97,18 +97,18 @@ namespace ions {
     }
 
 		template<class OStream>
-		friend OStream& operator<<(OStream& os, unit_cell const& self){
+		friend OStream& operator<<(OStream& os, cell const& self){
 			self.info(os);
 			return os;
 	  }
 		
 		////////////////////////////////////////////////////////////////////////////////
 
-    bool operator==(const unit_cell& c) const {
+    bool operator==(const cell& c) const {
 			return ( lattice_[0]==c.lattice_[0] && lattice_[1]==c.lattice_[1] && lattice_[2]==c.lattice_[2] );
 		}
 			
-    bool operator!=(const unit_cell& c) const {
+    bool operator!=(const cell& c) const {
 			return ! ( *this == c );
 		}
 
@@ -257,8 +257,8 @@ namespace ions {
 }
 #endif
 
-#ifdef INQ_IONS_UNIT_CELL_UNIT_TEST
-#undef INQ_IONS_UNIT_CELL_UNIT_TEST
+#ifdef INQ_SYSTEMS_CELL_UNIT_TEST
+#undef INQ_SYSTEMS_CELL_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -272,7 +272,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   {
 		SECTION("Cubic"){
 				
-			auto cell = ions::unit_cell::cubic(10.2_b).periodic();
+			auto cell = systems::cell::cubic(10.2_b).periodic();
 			
 			CHECK(cell[0][0] == 10.2_a);
 			CHECK(cell[0][1] == 0.0_a);
@@ -290,7 +290,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		SECTION("Cubic finite"){
 				
-			auto cell = ions::unit_cell::cubic(10.2_b).finite();
+			auto cell = systems::cell::cubic(10.2_b).finite();
 			
 			CHECK(cell[0][0] == 10.2_a);
 			CHECK(cell[0][1] == 0.0_a);
@@ -308,7 +308,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		SECTION("Parallelepipedic"){
 			
-			auto cell = ions::unit_cell::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodicity(2);
+			auto cell = systems::cell::orthorhombic(10.2_b, 5.7_b, 8.3_b).periodicity(2);
 			
 			CHECK(cell[0][0] == 10.2_a);
 			CHECK(cell[0][1] == 0.0_a);
@@ -325,7 +325,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		SECTION("Non-orthogonal"){
 			
-			auto cell = ions::unit_cell::lattice({0.0_A, 1.0_A, 1.0_A}, {1.0_A, 0.0_b, 1.0_A}, {1.0_A, 1.0_A, 0.0_A});
+			auto cell = systems::cell::lattice({0.0_A, 1.0_A, 1.0_A}, {1.0_A, 0.0_b, 1.0_A}, {1.0_A, 1.0_A, 0.0_A});
 			
 			CHECK(cell[0][0] == 0.0_a);
 			CHECK(cell[0][1] == 1.8897261246_a);
@@ -342,7 +342,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		SECTION("Cubic cell"){
 			
-      ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
+      systems::cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
       CHECK(cell[0][0] == 10.0_a);
       CHECK(cell[0][1] ==  0.0_a);
@@ -423,7 +423,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     SECTION("Parallelepipedic cell"){
 
-			ions::unit_cell cell(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
+			systems::cell cell(vector3<double>(28.62, 0.0, 0.0), vector3<double>(0.0, 90.14, 0.0), vector3<double>(0.0, 0.0, 12.31));
 			
       CHECK(cell.lattice(0)[0] == 28.62_a);
       CHECK(cell.lattice(0)[1] ==  0.0_a);
@@ -509,7 +509,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     SECTION("Rotated cell"){
 
 			double ll = 10;
-      ions::unit_cell cell({ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {-ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {0.0, 0.0, ll});
+      systems::cell cell({ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {-ll/sqrt(2.0), ll/sqrt(2.0), 0.0}, {0.0, 0.0, ll});
       
       CHECK(cell.lattice(0)[0] == 7.0710678119_a);
       CHECK(cell.lattice(0)[1] == 7.0710678119_a);
@@ -565,7 +565,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     SECTION("Non-orthogonal cell"){
 
-      ions::unit_cell cell({6.942, 8.799, 4.759}, {9.627, 7.092, 4.819}, {4.091, 0.721, 1.043});
+      systems::cell cell({6.942, 8.799, 4.759}, {9.627, 7.092, 4.819}, {4.091, 0.721, 1.043});
       
       CHECK(cell.lattice(0)[0] == 6.942_a);
       CHECK(cell.lattice(0)[1] == 8.799_a);

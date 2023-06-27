@@ -85,7 +85,6 @@ private:
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
@@ -103,7 +102,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 		
-		basis::real_space bas(ions::unit_cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite(), /*spacing =*/ 0.39770182, comm);
+		basis::real_space bas(systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite(), /*spacing =*/ 0.39770182, comm);
 		
 		CHECK(bas.cell().periodicity() == 0);
 		
@@ -142,7 +141,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 	
 	SECTION("periodic"){
-		auto cell = ions::unit_cell::orthorhombic(4.2_b, 3.5_b, 6.4_b);
+		auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b);
 		auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3});
 
 		CHECK(kick.has_uniform_vector_potential());
@@ -152,7 +151,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("semi periodic"){
-		auto cell = ions::unit_cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodicity(2);
+		auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodicity(2);
 		auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3});
 
 		CHECK(kick.has_uniform_vector_potential());
@@ -162,7 +161,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("velocity gauge"){
-		auto cell = ions::unit_cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite();
+		auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite();
 		auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3}, perturbations::gauge::velocity);
 
 		CHECK(kick.has_uniform_vector_potential());
@@ -172,7 +171,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("length gauge"){
-		auto cell = ions::unit_cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
+		auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
 		auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3}, perturbations::gauge::length);
 
 		CHECK(kick.has_uniform_vector_potential());
