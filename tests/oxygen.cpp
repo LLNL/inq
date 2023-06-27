@@ -34,7 +34,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par(), ions, options::electrons{}.spacing(0.43_b).spin_polarized().temperature(1000.0_K).extra_states(2));
 	ground_state::initial_guess(ions, electrons);
 		
-	auto result = ground_state::calculate(ions, electrons, input::interaction{}.pbe(), options::ground_state{}.mixing(0.2).energy_tolerance(1e-8_Ha));
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.mixing(0.2).energy_tolerance(1e-8_Ha));
 	
 	match.check("total energy",        result.energy.total()    ,   -32.885878270495);
 	match.check("kinetic energy",      result.energy.kinetic()   ,   20.663840649123);

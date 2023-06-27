@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 	
 	ground_state::initial_guess(ions, electrons);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction{}.non_interacting(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-9_Ha));
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-9_Ha));
 	
 	std::vector<double> jz;
 	std::vector<double> Az;
@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
 
 	auto kick = perturbations::kick{ions.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 
-	real_time::propagate<>(ions, electrons, output, input::interaction{}.lda().gauge_field(0.2), options::real_time{}.num_steps(30).dt(0.04_atomictime), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, options::theory{}.lda().gauge_field(0.2), options::real_time{}.num_steps(30).dt(0.04_atomictime), ions::propagator::fixed{}, kick);
 
 	data_match.check("current in z step   0", jz[0],   -0.157798692934);
 	data_match.check("current in z step  10", jz[10],  -0.146691801751);

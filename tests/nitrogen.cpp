@@ -27,7 +27,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(40.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, input::interaction{}.lda(), options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
 
 	for(int iatom = 0; iatom < result.forces.size(); iatom++){
 		printf("Force atom %d = %20.14f %20.14f %20.14f\n", iatom, result.forces[iatom][0], result.forces[iatom][1], result.forces[iatom][2]);
@@ -62,7 +62,7 @@ int main(int argc, char ** argv){
 	};
 	
 	auto dt = 0.025_atomictime;
-	real_time::propagate(ions, electrons, process, input::interaction{}.lda(), options::real_time{}.num_steps(10).dt(dt), ions::propagator::molecular_dynamics{});
+	real_time::propagate(ions, electrons, process, options::theory{}.lda(), options::real_time{}.num_steps(10).dt(dt), ions::propagator::molecular_dynamics{});
 
 	return energy_match.fail();
 

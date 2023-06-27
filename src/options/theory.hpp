@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__INTERACTION
-#define INPUT__INTERACTION
+#ifndef OPTIONS__THEORY
+#define OPTIONS__THEORY
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -18,9 +18,9 @@
 #include <xc.h>
 
 namespace inq {
-namespace input {
+namespace options {
 
-class interaction {
+class theory {
 
 public:
 
@@ -58,7 +58,7 @@ private:
 public:
 	
 	auto non_interacting() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.hartree_potential_ = false;
 		inter.exchange_ = exchange_functional::NONE;
 		inter.correlation_ = correlation_functional::NONE;		
@@ -66,13 +66,13 @@ public:
 	}
 
 	auto dft() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.hartree_potential_ = true;
 		return inter;
 	}
 	
 	auto lda() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::LDA;
 		inter.correlation_ = correlation_functional::LDA_PZ;		
@@ -80,7 +80,7 @@ public:
 	}
 
 	auto hartree() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::NONE;
 		inter.correlation_ = correlation_functional::NONE;		
@@ -88,7 +88,7 @@ public:
 	}
 	
 	auto hartree_fock() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::HARTREE_FOCK;
 		inter.correlation_ = correlation_functional::NONE;		
@@ -104,7 +104,7 @@ public:
 	}
 
 	auto pbe() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::PBE;
 		inter.correlation_ = correlation_functional::PBE;
@@ -112,7 +112,7 @@ public:
 	}
 
 	auto pbe0()  const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::PBE0;
 		inter.correlation_ = correlation_functional::NONE;
@@ -120,7 +120,7 @@ public:
 	}
 
 	auto b3lyp()  const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::B3LYP;
 		inter.correlation_ = correlation_functional::NONE;
@@ -142,13 +142,13 @@ public:
 	}
 
 	auto real_space_pseudo() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.fourier_pseudo_ = false;
 		return inter;
 	}
 
 	auto fourier_pseudo() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.fourier_pseudo_ = true;
 		return inter;
 	}
@@ -158,14 +158,14 @@ public:
 	}
 
 	auto gauge_field() const {
-		interaction inter = *this;
+		theory inter = *this;
 		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
 		inter.alpha_ = -4*M_PI;
 		return inter;
 	}
 
 	auto gauge_field(const double alpha){
-		interaction inter = *this;
+		theory inter = *this;
 		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
 		inter.alpha_ = alpha;
 		return inter;
@@ -186,8 +186,8 @@ public:
 }
 #endif
 
-#ifdef INQ_INPUT_INTERACTION_UNIT_TEST
-#undef INQ_INPUT_INTERACTION_UNIT_TEST
+#ifdef INQ_OPTIONS_THEORY_UNIT_TEST
+#undef INQ_OPTIONS_THEORY_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -198,18 +198,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Defaults"){
 
-    input::interaction inter;
+    options::theory inter;
 
 		CHECK(inter.hartree_potential() == true);
-		CHECK(inter.exchange() == input::interaction::exchange_functional::PBE);
-		CHECK(inter.correlation() == input::interaction::correlation_functional::PBE);
+		CHECK(inter.exchange() == options::theory::exchange_functional::PBE);
+		CHECK(inter.correlation() == options::theory::correlation_functional::PBE);
 		CHECK(inter.fourier_pseudo_value() == false);
 		CHECK_THROWS(inter.exchange_coefficient());
   }
 
   SECTION("Composition"){
 
-    auto inter = input::interaction{}.non_interacting().fourier_pseudo();
+    auto inter = options::theory{}.non_interacting().fourier_pseudo();
     
 		CHECK(not inter.self_consistent());
 		CHECK(inter.fourier_pseudo_value() == true);
@@ -218,7 +218,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
   SECTION("Hartee-Fock"){
 
-    auto inter = input::interaction{}.hartree_fock();
+    auto inter = options::theory{}.hartree_fock();
 		CHECK(inter.exchange_coefficient() == 1.0);
   }
 

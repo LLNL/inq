@@ -28,7 +28,7 @@ namespace inq {
 namespace real_time {
 
 template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed, typename Perturbation = perturbations::none>
-void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const input::interaction & inter, const options::real_time & opts, IonSubPropagator const& ion_propagator = {}, Perturbation const & pert = {}){
+void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const options::theory & inter, const options::real_time & opts, IonSubPropagator const& ion_propagator = {}, Perturbation const & pert = {}){
 		CALI_CXX_MARK_FUNCTION;
 		
 		auto console = electrons.logger();

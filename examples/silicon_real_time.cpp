@@ -33,11 +33,11 @@ int main(int argc, char ** argv){
 	
 	systems::electrons electrons(env.par(), ions, input::kpoints::grid({nk, nk, nk}, true), options::electrons{}.spacing(a/24));
 
-	auto functional = input::interaction{}.pbe();
+	auto functional = options::theory{}.pbe();
 	
 	if(not electrons.try_load("silicon_restart")){
 		ground_state::initial_guess(ions, electrons);
-		ground_state::calculate(ions, electrons, input::interaction{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-4_Ha));
+		ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-4_Ha));
 		ground_state::calculate(ions, electrons, functional, inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 		electrons.save("silicon_restart");
 	}

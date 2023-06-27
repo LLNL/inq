@@ -31,7 +31,6 @@
 #include <mixers/broyden.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
-#include <input/interaction.hpp>
 #include <ions/interaction.hpp>
 #include <observables/dipole.hpp>
 #include <options/ground_state.hpp>
@@ -66,7 +65,7 @@ auto state_convergence(systems::electrons & el, NormResType const & normres) {
 	return state_conv;
 }
 
-ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, options::ground_state const & solver = {}){
+ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const options::theory & inter = {}, options::ground_state const & solver = {}){
 
 	CALI_CXX_MARK_FUNCTION;
 

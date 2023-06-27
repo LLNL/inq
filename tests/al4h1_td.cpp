@@ -32,7 +32,7 @@ int main(int argc, char ** argv){
 
 	std::vector<double> energy;
 	
-	real_time::propagate<>(ions, electrons, [&](auto data){energy.push_back(data.energy().total());}, input::interaction{}.lda(), options::real_time{}.num_steps(30).dt(0.055_atomictime));
+	real_time::propagate<>(ions, electrons, [&](auto data){energy.push_back(data.energy().total());}, options::theory{}.lda(), options::real_time{}.num_steps(30).dt(0.055_atomictime));
 
 	energy_match.check("energy step   0", energy[0],   -9.798687545996);
 	energy_match.check("energy step  10", energy[10],  -9.798687876007);

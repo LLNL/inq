@@ -18,16 +18,16 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/energy.hpp>
 #include <ions/brillouin.hpp>
+#include <ions/interaction.hpp>
 #include <observables/density.hpp>
 #include <operations/randomize.hpp>
 #include <operations/integral.hpp>
 #include <operations/io.hpp>
 #include <operations/orthogonalize.hpp>
 #include <math/complex.hpp>
-#include <input/interaction.hpp>
 #include <input/kpoints.hpp>
 #include <options/electrons.hpp>
-#include <ions/interaction.hpp>
+#include <options/theory.hpp>
 #include <systems/ions.hpp>
 #include <states/orbital_set.hpp>
 

@@ -30,7 +30,7 @@ int main(int argc, char ** argv){
 	
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, input::interaction{}.pbe(), options::ground_state{}.energy_tolerance(1e-8_Ha).calculate_forces());
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.energy_tolerance(1e-8_Ha).calculate_forces());
 	
 	energy_match.check("ion-ion energy",      result.energy.ion(),         -10.318372113231);
 	energy_match.check("total energy",        result.energy.total(),        -9.802338589416);

@@ -32,7 +32,7 @@ int main(int argc, char ** argv){
 	inq::ground_state::initial_guess(ions, electrons);
 
 	auto scf_options = inq::options::ground_state{}.energy_tolerance(1.0e-9_Ha).broyden_mixing();
-	auto result = inq::ground_state::calculate(ions, electrons, interaction{}.lda(), scf_options);
+	auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.lda(), scf_options);
 	
 	match.check("total energy",        result.energy.total(),       -17.604152928274);
 	match.check("kinetic energy",      result.energy.kinetic(),      12.055671278976);

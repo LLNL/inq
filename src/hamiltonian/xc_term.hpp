@@ -14,7 +14,7 @@
 #include <observables/density.hpp>
 #include <operations/add.hpp>
 #include <operations/integral.hpp>
-#include <input/interaction.hpp>
+#include <options/theory.hpp>
 #include <hamiltonian/xc_functional.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <perturbations/none.hpp>
@@ -27,7 +27,7 @@ class xc_term {
 	
 public:
 	
-	xc_term(input::interaction interaction, int const spin_components):
+	xc_term(options::theory interaction, int const spin_components):
 		exchange_(int(interaction.exchange()), spin_components),
 		correlation_(int(interaction.correlation()), spin_components)
 	{

@@ -41,7 +41,7 @@ int main(int argc, char ** argv){
 
 	ground_state::initial_guess(ions, electrons);
 
-	auto result = ground_state::calculate(ions, electrons, input::interaction{}.non_interacting(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-9_Ha));
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-9_Ha));
 	
 	energy_match.check("total energy",     result.energy.total(),      -23.834202307770);
 	energy_match.check("kinetic energy",   result.energy.kinetic(),     14.428062704088);

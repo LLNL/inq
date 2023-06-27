@@ -45,8 +45,8 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par().states(parstates), ions, options::electrons{}.extra_states(4).cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 
 	ground_state::initial_guess(ions, electrons);
-	ground_state::calculate(ions, electrons, input::interaction{}.dft(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-4_Ha));
- 	auto result = ground_state::calculate(ions, electrons, input::interaction{}.hartree_fock(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
+	ground_state::calculate(ions, electrons, options::theory{}.dft(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-4_Ha));
+ 	auto result = ground_state::calculate(ions, electrons, options::theory{}.hartree_fock(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
 	
 	energy_match.check("total energy",        result.energy.total(),       -30.495900907055);
 	energy_match.check("kinetic energy",      result.energy.kinetic(),      13.234089410583);

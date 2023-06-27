@@ -36,7 +36,7 @@ int main(int argc, char ** argv){
 		
 		ground_state::initial_guess(ions, electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction{}.pbe(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
 		
 		energy_match.check("total energy",        result.energy.total(),         -10.949196617732);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),        11.411454690719);
@@ -67,7 +67,7 @@ int main(int argc, char ** argv){
 	ground_state::initial_guess(ions, electrons);
 
 	{
-		auto result = ground_state::calculate(ions, electrons, input::interaction{}.pbe(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
 
 		energy_match.check("total energy",        result.energy.total(),         -12.041228146904);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.513350495571);
@@ -88,7 +88,7 @@ int main(int argc, char ** argv){
 	if(energy_match.fail()) return energy_match.fail();		
 
 	{
-		auto result = ground_state::calculate(ions, electrons, input::interaction{}.pbe0(), inq::options::ground_state{}.steepest_descent().scf_steps(0));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe0(), inq::options::ground_state{}.steepest_descent().scf_steps(0));
 		
 		energy_match.check("total energy",        result.energy.total(),         -11.569230679378);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.513350460378);
@@ -105,7 +105,7 @@ int main(int argc, char ** argv){
 	if(energy_match.fail()) return energy_match.fail();
 
 	{
-		auto result = ground_state::calculate(ions, electrons, input::interaction{}.hartree_fock(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.hartree_fock(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
 
 		energy_match.check("total energy",        result.energy.total(),          -9.788709725748);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.151819376871);
