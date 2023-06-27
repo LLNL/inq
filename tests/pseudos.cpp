@@ -9,7 +9,6 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
-#include <input/atom.hpp>
 #include <utils/match.hpp>
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
@@ -25,18 +24,18 @@ int main(int argc, char ** argv){
 		
 	utils::match energy_match(2.0e-5);
 
-	auto box = systems::box::cubic(15.0_b).finite();
+	auto cell = systems::cell::cubic(15.0_b).finite();
 
 	{
-		systems::ions ions(box);
+		systems::ions ions(cell);
 		
-		ions.insert("C" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
+		ions.insert(input::species("C").pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
 
-		systems::electrons electrons(env.par(), ions, input::config::cutoff(25.0_Ha) | input::config::extra_states(4) | input::config::temperature(300.0_K));
+		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
 		
 		ground_state::initial_guess(ions, electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 		
 		energy_match.check("total energy",        result.energy.total()    ,   -5.364150140372);
 		energy_match.check("kinetic energy",      result.energy.kinetic()   ,   3.176958479664);
@@ -52,15 +51,15 @@ int main(int argc, char ** argv){
 	}
 
 	{
-		systems::ions ions(box);
+		systems::ions ions(cell);
 		
-		ions.insert("C" | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "C.ccECP.upf"), {0.0_b, 0.0_b, 0.0_b});
+		ions.insert(input::species("C").pseudo(inq::config::path::unit_tests_data() + "C.ccECP.upf"), {0.0_b, 0.0_b, 0.0_b});
 
-		systems::electrons electrons(env.par(), ions, input::config::cutoff(25.0_Ha) | input::config::extra_states(4) | input::config::temperature(300.0_K));
+		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
 		
 		ground_state::initial_guess(ions, electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 		
 		energy_match.check("total energy",        result.energy.total()    ,   -5.390943623548);
 		energy_match.check("kinetic energy",      result.energy.kinetic()  ,    3.462168739143);

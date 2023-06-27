@@ -41,22 +41,22 @@ vector3<double> dipole(basis::field<basis::real_space, double> const & density){
 	
 }
 
-vector3<double> dipole(ions::geometry const & geo, const hamiltonian::atomic_potential & atomic_pot){
+vector3<double> dipole(systems::ions const & ions, const hamiltonian::atomic_potential & atomic_pot){
 
 	using physics::constants::proton_charge;
 	
 	vector3<double> dip = {0.0, 0.0, 0.0};
 
-	for(int iatom = 0; iatom < geo.num_atoms(); iatom++){
-		auto zval = atomic_pot.pseudo_for_element(geo.atoms()[iatom]).valence_charge();
-		dip += proton_charge*zval*geo.coordinates()[iatom];
+	for(int iatom = 0; iatom < ions.size(); iatom++){
+		auto zval = atomic_pot.pseudo_for_element(ions.atoms()[iatom]).valence_charge();
+		dip += proton_charge*zval*ions.coordinates()[iatom];
 	}
 
 	return dip;
 }
 
 vector3<double> dipole(systems::ions const & ions, systems::electrons const & electrons){
-	return dipole(ions.geo_, electrons.atomic_pot()) + dipole(electrons.density());
+	return dipole(ions, electrons.atomic_pot()) + dipole(electrons.density());
 }
 
 }
@@ -67,7 +67,6 @@ vector3<double> dipole(systems::ions const & ions, systems::electrons const & el
 #undef INQ_OBSERVABLES_DIPOLE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
@@ -76,10 +75,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
-	
-	systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b);
 
-  basis::real_space bas(box, /*spacing =*/ 0.39770182, comm);
+  basis::real_space bas(systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b), /*spacing =*/ 0.39770182, comm);
 
 	basis::field<basis::real_space, double> density(bas);
 

@@ -31,11 +31,9 @@
 #include <mixers/broyden.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
-#include <input/config.hpp>
-#include <input/interaction.hpp>
 #include <ions/interaction.hpp>
-#include <input/scf.hpp>
 #include <observables/dipole.hpp>
+#include <options/ground_state.hpp>
 #include <systems/electrons.hpp>
 #include <ground_state/eigenvalue_output.hpp>
 #include <ground_state/result.hpp>
@@ -67,7 +65,7 @@ auto state_convergence(systems::electrons & el, NormResType const & normres) {
 	return state_conv;
 }
 
-ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const input::interaction & inter = {}, const input::scf & solver = {}){
+ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const options::theory & inter = {}, options::ground_state const & solver = {}){
 
 	CALI_CXX_MARK_FUNCTION;
 
@@ -77,7 +75,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	if(console) console->trace("calculate started");
 	hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components());
 	
-	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions.geo(), electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
+	hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(), ions, electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ true);
 	
 	if(electrons.full_comm().root()) ham.info(std::cout);
 		
@@ -89,8 +87,8 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	
 	auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 		switch(solver.mixing_algorithm()){
-		case input::scf::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
-		case input::scf::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+		case options::ground_state::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
+		case options::ground_state::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 		} __builtin_unreachable();
 	}();
 	
@@ -99,7 +97,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 	sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 	sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
 		
-	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions.geo(), electrons.atomic_pot()));
+	res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 
 	double old_exe = ham.exchange.update(electrons);
 	double exe_diff = fabs(old_exe);
@@ -133,7 +131,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				
 			switch(solver.eigensolver()){
 					
-			case input::scf::scf_eigensolver::STEEPEST_DESCENT:
+			case options::ground_state::scf_eigensolver::STEEPEST_DESCENT:
 				eigensolvers::steepest_descent(ham, prec, fphi);
 				break;
 				

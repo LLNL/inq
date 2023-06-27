@@ -22,7 +22,6 @@
 #include <gpu/atomic.hpp>
 #include <gpu/run.hpp>
 #include <gpu/reduce.hpp>
-#include <ions/unit_cell.hpp>
 #include <ions/periodic_replicas.hpp>
 #include <basis/containing_cube.hpp>
 #include <basis/real_space.hpp>
@@ -254,7 +253,6 @@ namespace basis {
 #undef INQ_BASIS_SPHERICAL_GRID_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
 #include <math/complex.hpp>
 
@@ -268,9 +266,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	auto ll = 10.0;
-	
-	systems::box box = systems::box::cubic(ll*1.0_b);
-	basis::real_space pw(box, /*spacing = */ 0.49672941, comm);
+	basis::real_space pw(systems::cell::cubic(ll*1.0_b), /*spacing = */ 0.49672941, comm);
   
   SECTION("Point 0 0 0"){
     

@@ -93,8 +93,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	auto basis_comm = basis::basis_subcomm(cart_comm);
 
-	systems::box box = systems::box::cubic(10.0_b);
-	basis::real_space bas(box, /*spacing =*/ 0.49672941, basis_comm);
+	basis::real_space bas(systems::cell::cubic(10.0_b), /*spacing =*/ 0.49672941, basis_comm);
 	
 	SECTION("double"){
 		basis::field_set<basis::real_space, double> aa(bas, nst, cart_comm);

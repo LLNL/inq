@@ -157,8 +157,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	pseudo::math::erf_range_separation const sep(0.625);
 
-	systems::box box = systems::box::cubic(10.0_b);
-	basis::real_space rs(box, /*spacing = */ 0.49672941, comm);
+	basis::real_space rs(systems::cell::cubic(10.0_b), /*spacing = */ 0.49672941, comm);
 	
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
 	

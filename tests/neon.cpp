@@ -10,7 +10,6 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
-#include <input/atom.hpp>
 #include <utils/match.hpp>
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
@@ -26,19 +25,16 @@ int main(int argc, char ** argv){
 		
 	utils::match energy_match(2.0e-5);
 
-	systems::box box = systems::box::cubic(15.0_b).finite();
-	
-	systems::ions ions(box);
+	systems::ions ions(systems::cell::cubic(15.0_b).finite());
+	ions.insert(input::species("Ne").nofilter(), {0.0_b, 0.0_b, 0.0_b});
 
-	ions.insert("Ne" | input::species::nofilter(), {0.0_b, 0.0_b, 0.0_b});
-
-	systems::electrons electrons(env.par(), ions, input::config::extra_states(3) | input::config::cutoff(30.0_Ha));
+	systems::electrons electrons(env.par(), ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
 	
 	ground_state::initial_guess(ions, electrons);
 	
 	//REAL SPACE PSEUDO
 	{
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting());
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.765371991220);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.606535224997);
@@ -51,7 +47,7 @@ int main(int argc, char ** argv){
 
 	//FOURIER SPACE PSEUDO
 	{	
-		auto result = ground_state::calculate(ions, electrons, input::interaction::non_interacting() | input::interaction::fourier_pseudo());
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting().fourier_pseudo());
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.765376105880);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.606511739929);

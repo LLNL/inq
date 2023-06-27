@@ -93,8 +93,8 @@ namespace hamiltonian {
 			return pseudopotential_list_.at(el.symbol());
 		}
 
-		template <class CommType, class basis_type, class geo_type>
-		basis::field<basis_type, double> local_potential(CommType & comm, const basis_type & basis, const geo_type & geo, int single_atom = -1) const {
+		template <class CommType, class basis_type, class ions_type>
+		basis::field<basis_type, double> local_potential(CommType & comm, const basis_type & basis, const ions_type & ions, int single_atom = -1) const {
 
 			CALI_CXX_MARK_SCOPE("atomic_potential::local_potential");
 			
@@ -108,9 +108,9 @@ namespace hamiltonian {
 
 				if(single_atom >= 0 and single_atom != iatom) continue;
 				
-				auto atom_position = geo.coordinates()[iatom];
+				auto atom_position = ions.coordinates()[iatom];
 				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, atom_position, ps.short_range_potential_radius());
 
 				if(not double_grid_.enabled()){
@@ -146,8 +146,8 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////
 		
-		template <class CommType, class basis_type, class geo_type>
-		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const geo_type & geo, int single_atom = -1) const {
+		template <class CommType, class basis_type, class ions_type>
+		basis::field<basis_type, double> ionic_density(CommType & comm, const basis_type & basis, const ions_type & ions, int single_atom = -1) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -161,9 +161,9 @@ namespace hamiltonian {
 
 				if(single_atom >= 0 and single_atom != iatom) continue;
 				
-				auto atom_position = geo.coordinates()[iatom];
+				auto atom_position = ions.coordinates()[iatom];
 				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, atom_position, sep_.long_range_density_radius());
 
 				//OPTIMIZATION: this should be done in parallel for atoms too
@@ -183,8 +183,8 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////
 		
-		template <class CommType, class basis_type, class geo_type>
-		basis::field_set<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const geo_type & geo, states::ks_states const & states) const {
+		template <class CommType, class basis_type, class ions_type>
+		basis::field_set<basis_type, double> atomic_electronic_density(CommType & comm, const basis_type & basis, const ions_type & ions, states::ks_states const & states) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -200,9 +200,9 @@ namespace hamiltonian {
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
-				auto atom_position = geo.coordinates()[iatom];
+				auto atom_position = ions.coordinates()[iatom];
 				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 
 				if(ps.has_electronic_density()){
 
@@ -245,8 +245,8 @@ namespace hamiltonian {
 
 		////////////////////////////////////////////////////////////////////////////////////
 
-		template <class CommType, class basis_type, class geo_type>
-		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const geo_type & geo) const {
+		template <class CommType, class basis_type, class ions_type>
+		basis::field<basis_type, double> nlcc_density(CommType & comm, const basis_type & basis, const ions_type & ions) const {
 
 			CALI_CXX_MARK_FUNCTION;
 
@@ -258,9 +258,9 @@ namespace hamiltonian {
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
-				auto atom_position = geo.coordinates()[iatom];
+				auto atom_position = ions.coordinates()[iatom];
 				
-				auto & ps = pseudo_for_element(geo.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 
 				if(not ps.has_nlcc_density()) continue;
 
@@ -318,11 +318,8 @@ namespace hamiltonian {
 #ifdef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 #undef INQ_HAMILTONIAN_ATOMIC_POTENTIAL_UNIT_TEST
 
-#include <input/parse_xyz.hpp>
 #include <catch2/catch_all.hpp>
-#include <ions/geometry.hpp>
 #include <basis/real_space.hpp>
-#include <systems/box.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
@@ -330,7 +327,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
-	using pseudo::element;
 	using input::species;
 
 	double const gcut = 0.785;
@@ -338,13 +334,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	parallel::communicator comm{boost::mpi3::environment::get_self_instance()};
 	
 	SECTION("Non-existing element"){
-		std::vector<species> el_list({element("P"), element("X")});
+		std::vector<species> el_list({"P", "X"});
 	
 		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut, /*double_grid = */ false));
 	}
 	
 	SECTION("Duplicated element"){
-		std::vector<species> el_list({element("N"), element("N")});
+		std::vector<species> el_list({"N", "N"});
 
 		hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut, /*double_grid = */ false);
 
@@ -366,7 +362,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	}
 
 	SECTION("CNOH"){
-		species el_list[] = {element("C"), element("N"), element("O"), element("H")};
+		species el_list[] = {"C", "N", "O", "H"};
 
 		hamiltonian::atomic_potential pot(4, el_list, gcut, /*double_grid = */ false);
 
@@ -375,27 +371,26 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	}
 
 	SECTION("Construct from a geometry"){
+
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", systems::cell::cubic(20.0_b));
 		
-		ions::geometry geo(input::parse_xyz(config::path::unit_tests_data() + "benzene.xyz"));
+		basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, comm);
 		
-		auto box = systems::box::cubic(20.0_b);
-		basis::real_space rs(box, /*spacing = */ 0.49672941, comm);		
-		
-		hamiltonian::atomic_potential pot(geo.num_atoms(), geo.atoms(), rs.gcutoff(), /*double_grid = */ false);
+		hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff(), /*double_grid = */ false);
 		
 		CHECK(pot.num_species() == 2);
 		CHECK(pot.num_electrons() == 30.0_a);
 		
 		rs.info(std::cout);
 		
-		auto vv = pot.local_potential(comm, rs, geo);
+		auto vv = pot.local_potential(comm, rs, ions);
 		
 		CHECK(operations::integral(vv) == -45.5744357466_a);
 		
 		CHECK(vv.cubic()[5][3][0] == -1.6226427555_a);
 		CHECK(vv.cubic()[3][1][0] == -0.2739253316_a);
 		
-		auto id = pot.ionic_density(comm, rs, geo);
+		auto id = pot.ionic_density(comm, rs, ions);
 		
 		CHECK(operations::integral(id) == -30.0000000746_a);
 		CHECK(id.cubic()[5][3][0] == -0.9448936487_a);
@@ -403,7 +398,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 		states::ks_states unp(states::ks_states::spin_config::UNPOLARIZED, 11.0);
 		
-		auto nn_unp = pot.atomic_electronic_density(comm, rs, geo, unp);
+		auto nn_unp = pot.atomic_electronic_density(comm, rs, ions, unp);
 
 		CHECK(nn_unp.set_size() == 1);		
 		CHECK(operations::integral_sum(nn_unp) == 29.9562520003_a);
@@ -412,7 +407,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 		states::ks_states pol(states::ks_states::spin_config::POLARIZED, 11.0);
 		
-		auto nn_pol = pot.atomic_electronic_density(comm, rs, geo, pol);
+		auto nn_pol = pot.atomic_electronic_density(comm, rs, ions, pol);
 
 		CHECK(nn_pol.set_size() == 2);
 		CHECK(operations::integral_sum(nn_pol) == 29.9562519176_a);
@@ -423,7 +418,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		CHECK(pot.has_nlcc());
 		
-		auto nlcc = pot.nlcc_density(comm, rs, geo);
+		auto nlcc = pot.nlcc_density(comm, rs, ions);
 		
 		CHECK(operations::integral(nlcc) == 3.0083012065_a);
 		CHECK(nlcc.cubic()[5][3][0] == 0.6248217151_a);

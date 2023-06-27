@@ -14,9 +14,9 @@
 #include <observables/density.hpp>
 #include <operations/add.hpp>
 #include <operations/integral.hpp>
-#include <input/interaction.hpp>
 #include <hamiltonian/xc_term.hpp>
 #include <hamiltonian/atomic_potential.hpp>
+#include <options/theory.hpp>
 #include <perturbations/none.hpp>
 #include <utils/profiling.hpp>
 
@@ -28,8 +28,8 @@ class self_consistency {
 	
 public:
 	
-	self_consistency(input::interaction interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis, int const spin_components, Perturbation const & pert = {}):
-		interaction_(interaction),
+	self_consistency(options::theory interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis, int const spin_components, Perturbation const & pert = {}):
+		theory_(interaction),
 		xc_(interaction, spin_components),
 		vion_(density_basis),
 		core_density_(density_basis),
@@ -42,7 +42,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	self_consistency(self_consistency && old, parallel::communicator new_comm):
-		interaction_(std::move(old.interaction_)),
+		theory_(std::move(old.theory_)),
 		xc_(std::move(old.xc_)),
 		vion_(std::move(old.vion_), new_comm),
 		core_density_(std::move(old.core_density_), new_comm),
@@ -61,11 +61,11 @@ public:
 		
 		solvers::poisson poisson_solver;
 		
-		auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(comm, density_basis_, ions.geo()));
-		auto ionic_short_range = atomic_pot.local_potential(comm, density_basis_, ions.geo());
+		auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(comm, density_basis_, ions));
+		auto ionic_short_range = atomic_pot.local_potential(comm, density_basis_, ions);
 		vion_ = operations::add(ionic_long_range, ionic_short_range);
 		
-		core_density_ = atomic_pot.nlcc_density(comm, density_basis_, ions.geo());
+		core_density_ = atomic_pot.nlcc_density(comm, density_basis_, ions);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ public:
 		}
 		
 		// Hartree
-		if(interaction_.hartree_potential()){
+		if(theory_.hartree_potential()){
 			auto vhartree = poisson_solver(total_density);
 			energy.hartree(0.5*operations::integral_product(total_density, vhartree));
 			for(auto & vcomp : vks) operations::increment(vcomp, vhartree);
@@ -141,10 +141,10 @@ public:
 	}
 
 	void update_induced_potential(vector3<double,covariant> & induced, vector3<double,covariant> & velocity, vector3<double,covariant> & accel, double const dt, const double volume, vector3<double,covariant> const & current) const {
-		if(interaction_.induced_vector_potential_value() == input::interaction::induced_vector_potential::LRC){
+		if(theory_.induced_vector_potential_value() == options::theory::induced_vector_potential::LRC){
 			induced += 0.5*dt*velocity;
 			velocity += 0.5*dt*accel;
-			accel = interaction_.alpha_value()*(-current)/volume;
+			accel = theory_.alpha_value()*(-current)/volume;
 			velocity += 0.5*dt*accel;
 			induced += 0.5*dt*velocity;
 		}
@@ -154,14 +154,14 @@ public:
 	
 	auto exx_coefficient(){
 		if(xc_.exchange().true_functional()) return xc_.exchange().exx_coefficient();
-		return interaction_.exchange_coefficient();
+		return theory_.exchange_coefficient();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 private:
 	
-	input::interaction interaction_;
+	options::theory theory_;
 	hamiltonian::xc_term xc_;
 	basis::field<basis::real_space, double> vion_;
 	basis::field<basis::real_space, double> core_density_;
@@ -177,7 +177,6 @@ private:
 #ifdef INQ_HAMILTONIAN_SELF_CONSISTENCY_UNIT_TEST
 #undef INQ_HAMILTONIAN_SELF_CONSISTENCY_UNIT_TEST
 
-#include <ions/unit_cell.hpp>
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 

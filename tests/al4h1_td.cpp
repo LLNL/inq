@@ -18,10 +18,7 @@ int main(int argc, char ** argv){
 	utils::match energy_match(1.0e-5);
 
 	auto alat = 7.6524459_bohr;
-
-	systems::box box = systems::box::cubic(alat);
-
-	systems::ions ions(box);
+	systems::ions ions(systems::cell::cubic(alat));
 	
 	ions.insert_fractional("Al", {0.0, 0.0, 0.0});
 	ions.insert_fractional("Al", {0.0, 0.5, 0.5});
@@ -29,13 +26,13 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Al", {0.5, 0.5, 0.0});	
 	ions.insert_fractional("H",  {0.1, 0.2, 0.3});
 	
-	systems::electrons electrons(env.par(), ions, input::config::cutoff(30.0_Ha) | input::config::extra_states(1) | input::config::temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
-	
+	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha).extra_states(1).temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
+		
 	electrons.load("al4h1_restart");
 
 	std::vector<double> energy;
 	
-	real_time::propagate<>(ions, electrons, [&](auto data){energy.push_back(data.energy().total());}, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+	real_time::propagate<>(ions, electrons, [&](auto data){energy.push_back(data.energy().total());}, options::theory{}.lda(), options::real_time{}.num_steps(30).dt(0.055_atomictime));
 
 	energy_match.check("energy step   0", energy[0],   -9.798687545996);
 	energy_match.check("energy step  10", energy[10],  -9.798687876007);

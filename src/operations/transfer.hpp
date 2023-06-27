@@ -395,12 +395,12 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 	
 	vector3<double> ll{6.66, 7.77, 9.99};
 	
-	systems::box box = systems::box::orthorhombic(ll[0]*1.0_b, ll[1]*1.0_b, ll[2]*1.0_b);
+	auto cell = systems::cell::orthorhombic(ll[0]*1.0_b, ll[1]*1.0_b, ll[2]*1.0_b);
 	auto spacing = 0.46320257;
 	
 	SECTION("Enlarge and shrink -- field"){
 		
-		basis::real_space grid(box, spacing, cart_comm);
+		basis::real_space grid(cell, spacing, cart_comm);
 		basis::field<basis::real_space, TestType> small(grid);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -470,7 +470,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 
 	SECTION("Enlarge and shrink -- field_set"){
 
-		basis::real_space grid(box, spacing, basis_comm);
+		basis::real_space grid(cell, spacing, basis_comm);
 		basis::field_set<basis::real_space, TestType> small(grid, 5, cart_comm);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -549,7 +549,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 
 	SECTION("Mesh refinement -- field"){
 
-		basis::real_space grid(box, spacing, self_comm);
+		basis::real_space grid(cell, spacing, self_comm);
 		basis::field<basis::real_space, TestType> coarse(grid); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -601,7 +601,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 		
 	SECTION("Mesh refinement -- field_set"){
 
-		basis::real_space grid(box, spacing, self_comm);
+		basis::real_space grid(cell, spacing, self_comm);
 		basis::field_set<basis::real_space, TestType> coarse(grid, 5); 
 
 		for(int ix = 0; ix < coarse.basis().local_sizes()[0]; ix++){
@@ -653,7 +653,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 	
 	SECTION("Mesh coarsening -- field"){
 
-		basis::real_space grid(box, spacing, self_comm);
+		basis::real_space grid(cell, spacing, self_comm);
 		
 		auto fine_grid = grid.refine(2);
 		
@@ -708,7 +708,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 
 	SECTION("Mesh coarsening -- field_set"){
 			
-		basis::real_space grid(box, spacing, self_comm);
+		basis::real_space grid(cell, spacing, self_comm);
 		auto fine_grid = grid.refine(2);
 		
 		basis::field_set<basis::real_space, TestType> fine(fine_grid, 5);

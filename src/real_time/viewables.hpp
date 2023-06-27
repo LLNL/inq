@@ -66,11 +66,11 @@ public:
 	}
 	
 	auto coordinates(int iatom) const {
-		return ions_.geo().coordinates()[iatom];
+		return ions_.coordinates()[iatom];
 	}
 	
 	auto velocities(int iatom) const {
-		return ions_.geo().velocities()[iatom];
+		return ions_.velocities()[iatom];
 	}
 
 	auto forces(int iatom) const {

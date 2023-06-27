@@ -12,7 +12,6 @@
 #include <inq_config.h>
 
 #include <math/vector3.hpp>
-#include <ions/unit_cell.hpp>
 #include "grid.hpp"
 #include <cassert>
 #include <array>
@@ -51,7 +50,7 @@ class real_space;
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
+			point_operator(std::array<int, 3> const & ng, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
 				cubic_part_(dist),
@@ -129,7 +128,7 @@ class real_space;
 			std::array<int, 3> ng_;
 			vector3<double, covariant> gspacing_;
 			std::array<inq::parallel::partition, 3> cubic_part_;
-			ions::unit_cell::cell_metric metric_;
+			systems::cell::cell_metric metric_;
 			
 		};
 
@@ -154,7 +153,6 @@ class real_space;
 #undef INQ_BASIS_FOURIER_SPACE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 

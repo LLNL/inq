@@ -9,7 +9,6 @@
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
 #include <config/path.hpp>
-#include <input/atom.hpp>
 #include <utils/match.hpp>
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
@@ -25,19 +24,16 @@ int main(int argc, char ** argv){
 	
 	inq::utils::match energy_match(3.0e-5);
 
-	inq::input::species local_h = pseudo::element("H") | inq::input::species::symbol("Hloc") | inq::input::species::pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
-
-	auto box = inq::systems::box::cubic(15.0_b).finite();
-
-	inq::systems::ions ions(box);
-
+	auto local_h = inq::input::species("H").symbol("Hloc").pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	
+	inq::systems::ions ions(inq::systems::cell::cubic(15.0_b).finite());
 	ions.insert(local_h, {150.0_b, -30.0_b, 0.0_b});
 
-	inq::systems::electrons electrons(env.par(), ions, input::config::cutoff(40.0_Ha));
+	inq::systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(40.0_Ha));
 	inq::ground_state::initial_guess(ions, electrons);
 	
 	inq::ground_state::calculate(ions, electrons);
-	auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::hartree_fock(), inq::input::scf::energy_tolerance(1e-8_Ha));
+	auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.hartree_fock(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 	
 	energy_match.check("total energy",        result.energy.total(),      -0.578525486338);
 	energy_match.check("kinetic energy",      result.energy.kinetic(),     0.348185715818);

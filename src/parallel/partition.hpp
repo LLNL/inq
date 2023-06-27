@@ -156,7 +156,6 @@ protected:
 #undef INQ_PARALLEL_PARTITION_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 
 #include <mpi3/environment.hpp>
 

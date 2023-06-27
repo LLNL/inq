@@ -85,7 +85,6 @@ auto operator+(PertTypeA perta, PertTypeB pertb){
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-#include <ions/unit_cell.hpp>
 
 #include <perturbations/kick.hpp>
 #include <perturbations/laser.hpp>
@@ -96,8 +95,8 @@ using namespace magnitude;
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
-  systems::box box = systems::box::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
-  auto kick = perturbations::kick(box.cell(), {0.1, 0.2, 0.3}, perturbations::gauge::velocity);
+  auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
+  auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3}, perturbations::gauge::velocity);
     
   auto ps = perturbations::sum(kick, perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha));
 

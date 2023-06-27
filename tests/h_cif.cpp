@@ -14,18 +14,12 @@ int main(int argc, char ** argv){
 	
 	input::environment env(argc, argv);
 
-	input::cif cif_file(config::path::unit_tests_data() + "H.cif");
+	auto ions = systems::ions::parse(config::path::unit_tests_data() + "H.cif");
 
-	auto box = systems::box(cif_file.lattice());
-
-	systems::ions ions(box);
-	
-	ions.insert(cif_file.atoms());
-
-	systems::electrons electrons(env.par(), ions, input::config::cutoff(30.0_Ha));
+	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, input::interaction::pbe(), inq::input::scf::energy_tolerance(1e-8_Ha));
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 
 	utils::match energy_match(3.0e-5);
 

@@ -8,19 +8,7 @@
 
 #include <fftw3.h>
 
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <config/path.hpp>
-#include <input/parse_xyz.hpp>
-#include <utils/match.hpp>
-#include <operations/io.hpp>
-#include <perturbations/kick.hpp>
-#include <ground_state/initial_guess.hpp>
-#include <ground_state/calculate.hpp>
-
-#include <input/environment.hpp>
-
-#include <utils/profiling.hpp>
+#include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
 
@@ -32,23 +20,19 @@ int main(int argc, char ** argv){
 	inq::input::environment env(argc, argv);
 	
 	inq::utils::match match(3.0e-4);
-
-	inq::systems::box box = box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite();
 	
-	inq::systems::ions ions(box);
-
-	ions.insert(inq::input::parse_xyz(inq::config::path::unit_tests_data() + "water.xyz"));
+	auto ions = inq::systems::ions::parse(inq::config::path::unit_tests_data() + "water.xyz", inq::systems::cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	inq::systems::electrons electrons(env.par().states(parstates), ions, inq::input::config::cutoff(30.0_Ha));
+	inq::systems::electrons electrons(env.par().states(parstates), ions, inq::options::electrons{}.cutoff(30.0_Ha));
 
 	inq::ground_state::initial_guess(ions, electrons);
 
-	auto scf_options = scf::energy_tolerance(1.0e-9_Ha) | scf::broyden_mixing();
-	auto result = inq::ground_state::calculate(ions, electrons, interaction::lda(), scf_options);
+	auto scf_options = inq::options::ground_state{}.energy_tolerance(1.0e-9_Ha).broyden_mixing();
+	auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.lda(), scf_options);
 	
 	match.check("total energy",        result.energy.total(),       -17.604152928274);
 	match.check("kinetic energy",      result.energy.kinetic(),      12.055671278976);

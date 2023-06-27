@@ -22,7 +22,7 @@ int main(int argc, char ** argv){
 	vector3<int, contravariant> reps{2, 2, 2};
 	int niter = 10;
 	
-	auto functional = input::interaction::pbe();
+	auto functional = options::theory{}.pbe();
 	
 	{
 		int opt;
@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
 				sscanf(optarg, "%d%*c%d%*c%d", &reps[0], &reps[1], &reps[2]);
 				break;
 			case 'y':
-				functional = input::interaction::pbe0();
+				functional = options::theory{}.pbe0();
 				break;
  		  case 'i':
 				niter = atoi(optarg);
@@ -68,9 +68,7 @@ int main(int argc, char ** argv){
 	cell.emplace_back(frac_coord{0.5, 0.0, 0.5});
 	cell.emplace_back(frac_coord{0.5, 0.5, 0.0});
 	
-	systems::box box = systems::box::orthorhombic(reps[0]*alat, reps[1]*alat, reps[2]*alat);
-	
-	systems::ions ions(box);
+	systems::ions ions(systems::cell::orthorhombic(reps[0]*alat, reps[1]*alat, reps[2]*alat));
 	
 	for(int ix = 0; ix < reps[0]; ix++){
 		for(int iy = 0; iy < reps[1]; iy++){
@@ -83,9 +81,9 @@ int main(int argc, char ** argv){
 		}
 	}
 	
-	assert(int(ions.geo().num_atoms()) == int(cell.size()*product(reps)));
+	assert(int(ions.size()) == int(cell.size()*product(reps)));
 				 
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, input::config::spacing(alat/20) | input::config::extra_states(2*product(reps)) | input::config::temperature(1000.0_K));
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, options::electrons{}.spacing(alat/20).extra_states(2*product(reps)).temperature(1000.0_K));
 	
 	auto restart_dir = "aluminum_" + std::to_string(reps[0]) + "_" + std::to_string(reps[1]) + "_" + std::to_string(reps[2]);
 
@@ -93,12 +91,12 @@ int main(int argc, char ** argv){
 
 	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, functional, inq::input::scf::steepest_descent() | inq::input::scf::scf_steps(niter) | inq::input::scf::mixing(0.1));
+		auto result = ground_state::calculate(ions, electrons, functional, inq::options::ground_state{}.steepest_descent().scf_steps(niter).mixing(0.1));
 		if(not groundstate_only) electrons.save(restart_dir);
 	}
 
 	if(not groundstate_only){
-		real_time::propagate(ions, electrons, [](auto){}, functional, input::rt::num_steps(100) | input::rt::dt(0.05_atomictime));
+		real_time::propagate(ions, electrons, [](auto){}, functional, options::real_time{}.num_steps(100).dt(0.05_atomictime));
 	}
 	
 }

@@ -39,26 +39,22 @@ int main(int argc, char ** argv){
 		}
 	}
 	
-	auto box = systems::box::cubic(20.0_A).finite();
-	
-	systems::ions ions(box);
-
-	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "c240.xyz"));
-	
+	auto ions = systems::ions::parse(inq::config::path::unit_tests_data() + "c240.xyz", systems::cell::cubic(20.0_A).finite());
+		
 	std::string restart_dir = "c240_restart";
 	
-	systems::electrons electrons(env.par().states().domains(pardomains), ions, input::config::spacing(20.0_A/90) | input::config::extra_states(32) | input::config::temperature(300.0_K));
+	systems::electrons electrons(env.par().states().domains(pardomains), ions, options::electrons{}.spacing(20.0_A/90).extra_states(32).temperature(300.0_K));
 
 	auto not_found_gs = groundstate_only or not electrons.try_load(restart_dir);
 		
 	if(not_found_gs){
 		ground_state::initial_guess(ions, electrons);
-		ground_state::calculate(ions, electrons, input::interaction::pbe(), input::scf::steepest_descent() | input::scf::scf_steps(10) | input::scf::mixing(0.3));
+		ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.steepest_descent().scf_steps(10).mixing(0.3));
 		electrons.save(restart_dir);
 	}
 	
 	if(not groundstate_only){
-		real_time::propagate(ions, electrons, [](auto){}, input::interaction::pbe(), input::rt::num_steps(100) | input::rt::dt(0.0565_atomictime));
+		real_time::propagate(ions, electrons, [](auto){}, options::theory{}.pbe(), options::real_time{}.num_steps(100).dt(0.0565_atomictime));
 	}
 	
 }

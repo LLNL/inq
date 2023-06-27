@@ -26,7 +26,7 @@ public:
 		kpoints_(kpts.size()),
 		weights_(kpts.size())
   {
-		auto num_atoms = std::max(1, ions.geo().num_atoms());
+		auto num_atoms = std::max(1, ions.size());
 		
 		std::vector<int> types(num_atoms);
 		std::vector<double> positions(3*num_atoms);
@@ -37,9 +37,9 @@ public:
 		positions[1] = 0.0;
 		positions[2] = 0.0;		
 		
-		for(int iatom = 0; iatom < ions.geo().num_atoms(); iatom++){
-			types[iatom] = ions.geo().atoms()[iatom].atomic_number();
-			auto pos = ions.cell().metric().to_contravariant(ions.cell().position_in_cell(ions.geo().coordinates()[iatom]));
+		for(int iatom = 0; iatom < ions.size(); iatom++){
+			types[iatom] = ions.atoms()[iatom].atomic_number();
+			auto pos = ions.cell().metric().to_contravariant(ions.cell().position_in_cell(ions.coordinates()[iatom]));
 			positions[3*iatom + 0] = pos[0];
 			positions[3*iatom + 1] = pos[1];
 			positions[3*iatom + 2] = pos[2];
@@ -140,8 +140,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		auto a =  3.567095_A;
 
-		auto box = systems::box::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b});
-		auto ions = systems::ions(box);
+		auto ions = systems::ions(systems::cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}));
 		
 		ions.insert_fractional("C", {0.0 , 0.0 , 0.0 });
 		ions.insert_fractional("C", {0.25, 0.25, 0.25});

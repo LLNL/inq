@@ -126,7 +126,6 @@ public:
 #undef INQ_PARALLEL_ARRAY_ITERATOR_2D_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <ions/unit_cell.hpp>
 #include <gpu/array.hpp>
 
 #include <mpi3/environment.hpp>

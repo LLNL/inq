@@ -17,13 +17,8 @@ int main(int argc, char ** argv){
 
 	utils::match data_match(3.0e-5);
 
-	std::vector<input::atom> geo;
-
 	auto a = 10.18_b;
-
-	auto box = systems::box::cubic(a);
-	
-	systems::ions ions(box);
+	systems::ions ions(systems::cell::cubic(a));
 	
 	ions.insert_fractional("Si", {0.0,  0.0,  0.0 });
 	ions.insert_fractional("Si", {0.25, 0.25, 0.25});
@@ -34,10 +29,10 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	systems::electrons electrons(env.par(), ions, input::config::cutoff(35.0_Ha), input::kpoints::grid({1, 1, 1}, true));
+	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 	
 	ground_state::initial_guess(ions, electrons);
-	auto result = ground_state::calculate(ions, electrons, input::interaction::lda(), inq::input::scf::steepest_descent() | inq::input::scf::energy_tolerance(1e-9_Ha));
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.energy_tolerance(1e-9_Ha));
 	electrons.save("silicon_restart");
 
 	{ //NO KICK
@@ -50,7 +45,7 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy().total());
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{});
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(40).dt(0.03_atomictime), ions::propagator::fixed{});
 
 		data_match.check("energy step   0", energy[0],   -33.418896726864);
 		data_match.check("energy step  10", energy[10],  -33.418896726864);
@@ -83,9 +78,9 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy().total());
 		};
 		
-		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
+		auto kick = perturbations::kick{ions.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(40) .dt(0.03_atomictime), ions::propagator::fixed{}, kick);
 
 		data_match.check("energy step   0", energy[0],   -33.418518663279);
 		data_match.check("energy step  10", energy[10],  -33.418518663116);
@@ -118,9 +113,9 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy().total());
 		};
 		
-		auto kick = perturbations::kick{box.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
+		auto kick = perturbations::kick{ions.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda() | input::interaction::lrc(0.2), input::rt::num_steps(40) | input::rt::dt(0.03_atomictime), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda().lrc(0.2), options::real_time{}.num_steps(40).dt(0.03_atomictime), ions::propagator::fixed{}, kick);
 
 		data_match.check("energy step   0", energy[0],   -33.418518663279);
 		data_match.check("energy step  10", energy[10],  -33.418518483855);

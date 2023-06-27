@@ -16,18 +16,14 @@ int main(int argc, char ** argv){
 	input::environment env(argc, argv);
 
 	utils::match match(1e-5);
-
-	auto box = systems::box::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite();
 	
-	systems::ions ions(box);
-
-	ions.insert(input::parse_xyz(config::path::unit_tests_data() + "water.xyz"));
-
+	auto ions = systems::ions::parse(inq::config::path::unit_tests_data() + "water.xyz", inq::systems::cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
+	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();
 	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
 	
-	systems::electrons electrons(env.par().states(parstates), ions, input::config::cutoff(30.0_Ha));
+	systems::electrons electrons(env.par().states(parstates), ions, options::electrons{}.cutoff(30.0_Ha));
 
 	// Propagation without perturbation
 	{
@@ -38,7 +34,7 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy().total());
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(30) | input::rt::dt(0.055_atomictime));
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(30).dt(0.055_atomictime));
 		
 		match.check("ETRS: energy step   0", energy[0],   -17.604152928110);
 		match.check("ETRS: energy step  10", energy[10],  -17.604152928110);
@@ -55,7 +51,7 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy().total());
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(10) | input::rt::dt(0.1_atomictime) | input::rt::crank_nicolson());
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(10).dt(0.1_atomictime).crank_nicolson());
 		
 		/* This is disabled for now since CN seems to be a bit numerically unstable
 			 
@@ -75,7 +71,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 
-		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
+		auto kick = perturbations::kick{ions.cell(), {0.1, 0.0, 0.0}};
 
 		long nsteps = 71;
 		 
@@ -102,7 +98,7 @@ int main(int argc, char ** argv){
 			}
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(nsteps).dt(0.055_atomictime), ions::propagator::fixed{}, kick);
 
 		match.check("ETRS length kick: dipole step   0", dip[0],   0.043955375747);
 		match.check("ETRS length kick: dipole step  10", dip[10],  0.376347806791);
@@ -126,8 +122,8 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 		
-		auto kick1 = perturbations::kick{box.cell(), {0.06, 0.0, 0.0}, perturbations::gauge::velocity};
-		auto kick2 = perturbations::kick{box.cell(), {0.04, 0.0, 0.0}, perturbations::gauge::velocity};
+		auto kick1 = perturbations::kick{ions.cell(), {0.06, 0.0, 0.0}, perturbations::gauge::velocity};
+		auto kick2 = perturbations::kick{ions.cell(), {0.04, 0.0, 0.0}, perturbations::gauge::velocity};
 
 		long nsteps = 31;
 		 
@@ -154,7 +150,7 @@ int main(int argc, char ** argv){
 			}
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime), ions::propagator::fixed{}, kick1 + kick2);
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(nsteps).dt(0.055_atomictime), ions::propagator::fixed{}, kick1 + kick2);
 
 		match.check("ETRS velocity kick: dipole step   0", dip[0],   0.043697788108);
 		match.check("ETRS velocity kick: dipole step  10", dip[10],  0.375961176642);
@@ -170,7 +166,7 @@ int main(int argc, char ** argv){
 	{
 		electrons.load("h2o_restart");
 
-		auto kick = perturbations::kick{box.cell(), {0.1, 0.0, 0.0}};
+		auto kick = perturbations::kick{ions.cell(), {0.1, 0.0, 0.0}};
 
 		long nsteps = 21;
 		
@@ -197,7 +193,7 @@ int main(int argc, char ** argv){
 			}
 		};
 		
-		real_time::propagate<>(ions, electrons, output, input::interaction::lda(), input::rt::num_steps(nsteps) | input::rt::dt(0.055_atomictime) | input::rt::crank_nicolson(), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(nsteps).dt(0.055_atomictime).crank_nicolson(), ions::propagator::fixed{}, kick);
 		
 	}
 	
