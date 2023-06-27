@@ -26,7 +26,7 @@ class singularity_correction {
 public:
 
   // the function defined in Eq. 16
-  static auto auxiliary(ions::unit_cell const & cell, vector3<double, covariant> const & qpoint){
+  static auto auxiliary(systems::cell const & cell, vector3<double, covariant> const & qpoint){
     auto val = 0.0;
 		    auto const & metric = cell.metric();
 
@@ -44,7 +44,7 @@ public:
     return 4*M_PI*M_PI/val;
   }
 
-  singularity_correction(ions::unit_cell const & cell, ions::brillouin const & bzone):
+  singularity_correction(systems::cell const & cell, ions::brillouin const & bzone):
     fk_(bzone.size()),
     nkpoints_(bzone.size()),
     cell_volume_(cell.volume())
@@ -124,7 +124,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   SECTION("Auxiliary function cubic"){
     auto aa = 10.18_b;
 
-		auto ions = systems::ions(ions::unit_cell::lattice({aa, 0.0_b, 0.0_b}, {0.0_b, aa, 0.0_b}, {0.0_b, 0.0_b, aa}));
+		auto ions = systems::ions(systems::cell::lattice({aa, 0.0_b, 0.0_b}, {0.0_b, aa, 0.0_b}, {0.0_b, 0.0_b, aa}));
     auto const & cell = ions.cell();
 
     auto bzone = ions::brillouin(ions, input::kpoints::grid({2, 2, 2}));
@@ -159,7 +159,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
     
     SECTION("Auxiliary function non-orthogonal"){
     auto aa = 6.7408326;
-    ions::unit_cell cell(aa*vector3<double>(0.0, 0.5, 0.5), aa*vector3<double>(0.5, 0.0, 0.5), aa*vector3<double>(0.5, 0.5, 0.0));
+    systems::cell cell(aa*vector3<double>(0.0, 0.5, 0.5), aa*vector3<double>(0.5, 0.0, 0.5), aa*vector3<double>(0.5, 0.5, 0.0));
     
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{1.6666666666666666E-002, 0.28333333333333333, 0.39166666666666666}) == 2.77471621018199290_a);
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{0.12500000000000000,-0.20833333333333334, -0.23333333333333334}) == 3.6560191647005245_a);

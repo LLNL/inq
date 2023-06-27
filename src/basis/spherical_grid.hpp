@@ -266,7 +266,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
 	auto ll = 10.0;
-	basis::real_space pw(ions::unit_cell::cubic(ll*1.0_b), /*spacing = */ 0.49672941, comm);
+	basis::real_space pw(systems::cell::cubic(ll*1.0_b), /*spacing = */ 0.49672941, comm);
   
   SECTION("Point 0 0 0"){
     

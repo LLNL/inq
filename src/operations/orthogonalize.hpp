@@ -49,7 +49,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
-	basis::real_space pw(ions::unit_cell::cubic(6.3_b), /*spacing =*/ 0.44428829, comm);
+	basis::real_space pw(systems::cell::cubic(6.3_b), /*spacing =*/ 0.44428829, comm);
 
 	SECTION("Dimension 3"){
 		basis::field_set<basis::real_space, complex> phi(pw, 3);

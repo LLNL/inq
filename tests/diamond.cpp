@@ -26,7 +26,7 @@ int main(int argc, char ** argv){
 	utils::match energy_match(3.0e-5);
 
 	auto a = 3.567095_A;
-	systems::ions ions(ions::unit_cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}));
+	systems::ions ions(systems::cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}));
 	
 	ions.insert_fractional("C", {0.0,  0.0,  0.0 });
 	ions.insert_fractional("C", {0.25, 0.25, 0.25});

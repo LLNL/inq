@@ -68,7 +68,7 @@ int main(int argc, char ** argv){
 	cell.emplace_back(frac_coord{0.5, 0.0, 0.5});
 	cell.emplace_back(frac_coord{0.5, 0.5, 0.0});
 	
-	systems::ions ions(ions::unit_cell::orthorhombic(reps[0]*alat, reps[1]*alat, reps[2]*alat));
+	systems::ions ions(systems::cell::orthorhombic(reps[0]*alat, reps[1]*alat, reps[2]*alat));
 	
 	for(int ix = 0; ix < reps[0]; ix++){
 		for(int iy = 0; iy < reps[1]; iy++){

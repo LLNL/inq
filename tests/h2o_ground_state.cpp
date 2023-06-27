@@ -21,7 +21,7 @@ int main(int argc, char ** argv){
 	
 	inq::utils::match match(3.0e-4);
 	
-	auto ions = inq::systems::ions::parse(inq::config::path::unit_tests_data() + "water.xyz", inq::ions::unit_cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
+	auto ions = inq::systems::ions::parse(inq::config::path::unit_tests_data() + "water.xyz", inq::systems::cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
 	
 	auto comm = boost::mpi3::environment::get_world_instance();
 	auto parstates = comm.size();

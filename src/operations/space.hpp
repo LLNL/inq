@@ -416,7 +416,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 
 	auto basis_comm = basis::basis_subcomm(cart_comm);
-	basis::real_space rs(ions::unit_cell::cubic(6.66_b), /*spacing =*/ 0.46320257, basis_comm);
+	basis::real_space rs(systems::cell::cubic(6.66_b), /*spacing =*/ 0.46320257, basis_comm);
 	
 	basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
 	

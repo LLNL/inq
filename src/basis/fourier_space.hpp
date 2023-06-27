@@ -50,7 +50,7 @@ class real_space;
 
 		public:
 
-			point_operator(std::array<int, 3> const & ng, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, ions::unit_cell::cell_metric metric):
+			point_operator(std::array<int, 3> const & ng, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
 				ng_(ng),
 				gspacing_(gspacing),
 				cubic_part_(dist),
@@ -128,7 +128,7 @@ class real_space;
 			std::array<int, 3> ng_;
 			vector3<double, covariant> gspacing_;
 			std::array<inq::parallel::partition, 3> cubic_part_;
-			ions::unit_cell::cell_metric metric_;
+			systems::cell::cell_metric metric_;
 			
 		};
 

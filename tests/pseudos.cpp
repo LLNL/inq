@@ -24,7 +24,7 @@ int main(int argc, char ** argv){
 		
 	utils::match energy_match(2.0e-5);
 
-	auto cell = ions::unit_cell::cubic(15.0_b).finite();
+	auto cell = systems::cell::cubic(15.0_b).finite();
 
 	{
 		systems::ions ions(cell);

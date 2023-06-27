@@ -77,7 +77,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		double lz = 10;
 
 		double factor = 0.673214;
-		basis::real_space rs(ions::unit_cell::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b), /*spacing =*/ 0.49672941, basis_comm);
+		basis::real_space rs(systems::cell::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b), /*spacing =*/ 0.49672941, basis_comm);
 		
 		basis::field_set<basis::real_space, vector3<complex, cartesian>> func(rs, 13, cart_comm);
 	
@@ -131,7 +131,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		double ll = 9;
 		double factor = 0.673214;
 	
-		basis::real_space rs(ions::unit_cell::lattice({ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {-ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {0.0_b, 0.0_b, ll*1.0_b}), /*spacing =*/ 0.49672941, basis_comm);
+		basis::real_space rs(systems::cell::lattice({ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {-ll*1.0_b/sqrt(2), ll*1.0_b/sqrt(2), 0.0_b}, {0.0_b, 0.0_b, ll*1.0_b}), /*spacing =*/ 0.49672941, basis_comm);
 
 		CHECK(rs.cell().volume() == ll*ll*ll);
 		
@@ -187,7 +187,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		double ll = 5.89;
 		double factor = 0.673214;
 
-		basis::real_space rs(ions::unit_cell::lattice({0.0_b, ll*1.0_b, ll*1.0_b}, {ll*1.0_b, 0.0_b, ll*1.0_b}, {ll*1.0_b, ll*1.0_b, 0.0_b}), /*spacing =*/ 0.49672941, basis_comm);
+		basis::real_space rs(systems::cell::lattice({0.0_b, ll*1.0_b, ll*1.0_b}, {ll*1.0_b, 0.0_b, ll*1.0_b}, {ll*1.0_b, ll*1.0_b, 0.0_b}), /*spacing =*/ 0.49672941, basis_comm);
 
 		basis::field_set<basis::real_space, vector3<complex, cartesian>> func(rs, 13, cart_comm);
 	

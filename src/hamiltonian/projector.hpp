@@ -156,7 +156,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	basis::real_space rs(ions::unit_cell::cubic(10.0_b), /*spacing = */ 0.49672941, comm);
+	basis::real_space rs(systems::cell::cubic(10.0_b), /*spacing = */ 0.49672941, comm);
 	basis::double_grid dg(false);
 	
 	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());

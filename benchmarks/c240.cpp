@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 		}
 	}
 	
-	auto ions = systems::ions::parse(inq::config::path::unit_tests_data() + "c240.xyz", ions::unit_cell::cubic(20.0_A).finite());
+	auto ions = systems::ions::parse(inq::config::path::unit_tests_data() + "c240.xyz", systems::cell::cubic(20.0_A).finite());
 		
 	std::string restart_dir = "c240_restart";
 	

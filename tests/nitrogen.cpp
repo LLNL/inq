@@ -17,7 +17,7 @@ int main(int argc, char ** argv){
 	
 	utils::match energy_match(6.0e-6);
 
-	systems::ions ions(ions::unit_cell::orthorhombic(10.0_b, 10.0_b, 12.0_b));
+	systems::ions ions(systems::cell::orthorhombic(10.0_b, 10.0_b, 12.0_b));
 
 	auto distance = 2.2_bohr; //a bit larger than experiment to check the force
 	

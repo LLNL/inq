@@ -82,7 +82,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	
   {
-    ions::unit_cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
+    systems::cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
     SECTION("Cubic cell 0"){
       ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 9.5);
@@ -215,7 +215,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		SECTION("Periodicity 2"){
 
-			ions::unit_cell cell2(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0), 2);
+			systems::cell cell2(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0), 2);
 
 			CHECK(cell2.periodicity() == 2);
 			
@@ -247,7 +247,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		SECTION("Periodicity 0"){
 
-			ions::unit_cell cell0(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0), 0);
+			systems::cell cell0(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0), 0);
 
 			CHECK(cell0.periodicity() == 0);
 			

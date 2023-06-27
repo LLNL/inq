@@ -63,7 +63,7 @@ public:
     auto c2 = sqrt(1.0 - cosbeta*cosbeta - c1*c1);
     lattice_vectors_[2] = angstrom*length_c*vector3<double>({cosbeta, c1, c2});
 
-		auto cell = ions::unit_cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);
+		auto cell = systems::cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);
 		
 		//SYMMETRIES
 		auto symmetries = doc.sole_block().find_loop("_space_group_symop_operation_xyz");
@@ -132,7 +132,7 @@ public:
 	}
 
 	auto cell() const {
-		return ions::unit_cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);		
+		return systems::cell(lattice_vectors_[0], lattice_vectors_[1], lattice_vectors_[2]);		
 	}
 
 	auto & atoms() const {

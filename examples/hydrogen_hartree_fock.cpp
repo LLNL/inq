@@ -26,7 +26,7 @@ int main(int argc, char ** argv){
 
 	auto local_h = inq::input::species("H").symbol("Hloc").pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	
-	inq::systems::ions ions(inq::ions::unit_cell::cubic(15.0_b).finite());
+	inq::systems::ions ions(inq::systems::cell::cubic(15.0_b).finite());
 	ions.insert(local_h, {150.0_b, -30.0_b, 0.0_b});
 
 	inq::systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(40.0_Ha));
