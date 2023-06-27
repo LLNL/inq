@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
 	inq::ground_state::initial_guess(ions, electrons);
 	
 	inq::ground_state::calculate(ions, electrons);
-	auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction::hartree_fock(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
+	auto result = inq::ground_state::calculate(ions, electrons, inq::input::interaction{}.hartree_fock(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 	
 	energy_match.check("total energy",        result.energy.total(),      -0.578525486338);
 	energy_match.check("kinetic energy",      result.energy.kinetic(),     0.348185715818);

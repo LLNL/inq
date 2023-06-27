@@ -46,41 +46,49 @@ public:
 		GAUGE_FIELD
 	};
 
-	interaction(){
-	}
+private:
 
-	static auto non_interacting(){
-		interaction inter;
+	std::optional<bool> hartree_potential_;
+	std::optional<exchange_functional> exchange_;
+	std::optional<correlation_functional> correlation_;
+	std::optional<induced_vector_potential> induced_vecpot_;
+	std::optional<bool> fourier_pseudo_;
+	double alpha_ = 0;
+
+public:
+	
+	auto non_interacting() const {
+		interaction inter = *this;
 		inter.hartree_potential_ = false;
 		inter.exchange_ = exchange_functional::NONE;
 		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
 	}
 
-	static auto dft(){
-		interaction inter;
+	auto dft() const {
+		interaction inter = *this;
 		inter.hartree_potential_ = true;
 		return inter;
 	}
 	
-	static auto lda(){
-		interaction inter;
+	auto lda() const {
+		interaction inter = *this;
 		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::LDA;
 		inter.correlation_ = correlation_functional::LDA_PZ;		
 		return inter;
 	}
 
-	static auto hartree(){
-		interaction inter;
+	auto hartree() const {
+		interaction inter = *this;
 		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::NONE;
 		inter.correlation_ = correlation_functional::NONE;		
 		return inter;
 	}
 	
-	static auto hartree_fock(){
-		interaction inter;
+	auto hartree_fock() const {
+		interaction inter = *this;
 		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::HARTREE_FOCK;
 		inter.correlation_ = correlation_functional::NONE;		
@@ -95,24 +103,24 @@ public:
 		return correlation_.value_or(correlation_functional::PBE);
 	}
 
-	static auto pbe() {
-		interaction inter;
+	auto pbe() const {
+		interaction inter = *this;
 		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::PBE;
 		inter.correlation_ = correlation_functional::PBE;
 		return inter;
 	}
 
-	static auto pbe0() {
-		interaction inter;
+	auto pbe0()  const {
+		interaction inter = *this;
 		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::PBE0;
 		inter.correlation_ = correlation_functional::NONE;
 		return inter;
 	}
 
-	static auto b3lyp() {
-		interaction inter;
+	auto b3lyp()  const {
+		interaction inter = *this;
 		inter.hartree_potential_ = true;		
 		inter.exchange_ = exchange_functional::B3LYP;
 		inter.correlation_ = correlation_functional::NONE;
@@ -133,14 +141,14 @@ public:
 		return hartree_potential() or exchange() != exchange_functional::NONE or correlation() != correlation_functional::NONE;
 	}
 
-	static auto real_space_pseudo(){
-		interaction inter;
+	auto real_space_pseudo() const {
+		interaction inter = *this;
 		inter.fourier_pseudo_ = false;
 		return inter;
 	}
 
-	static auto fourier_pseudo(){
-		interaction inter;
+	auto fourier_pseudo() const {
+		interaction inter = *this;
 		inter.fourier_pseudo_ = true;
 		return inter;
 	}
@@ -149,15 +157,15 @@ public:
 		return fourier_pseudo_.value_or(false);
 	}
 
-	static auto gauge_field(){
-		interaction inter;
+	auto gauge_field() const {
+		interaction inter = *this;
 		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
 		inter.alpha_ = -4*M_PI;
 		return inter;
 	}
 
-	static auto gauge_field(const double alpha){
-		interaction inter;
+	auto gauge_field(const double alpha){
+		interaction inter = *this;
 		inter.induced_vecpot_ = induced_vector_potential::GAUGE_FIELD;
 		inter.alpha_ = alpha;
 		return inter;
@@ -170,28 +178,7 @@ public:
 	auto alpha_value() const {
 		return alpha_;
 	}
-	
-	friend auto operator|(const interaction & inter1, const interaction & inter2){
-		using inq::utils::merge_optional;
-		
-		interaction rinter;
-		rinter.hartree_potential_	= merge_optional(inter1.hartree_potential_, inter2.hartree_potential_);
-		rinter.exchange_	= merge_optional(inter1.exchange_, inter2.exchange_);
-		rinter.correlation_	= merge_optional(inter1.correlation_, inter2.correlation_);
-		rinter.fourier_pseudo_	= merge_optional(inter1.fourier_pseudo_, inter2.fourier_pseudo_);
-		rinter.induced_vecpot_ = merge_optional(inter1.induced_vecpot_, inter2.induced_vecpot_);
-		rinter.alpha_ = merge_optional(inter1.alpha_, inter2.alpha_);
-		return rinter;
-	}
 
-private:
-
-	std::optional<bool> hartree_potential_;
-	std::optional<exchange_functional> exchange_;
-	std::optional<correlation_functional> correlation_;
-	std::optional<induced_vector_potential> induced_vecpot_;
-	std::optional<bool> fourier_pseudo_;
-	double alpha_ = 0;
 		
 };
     
@@ -222,7 +209,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Composition"){
 
-    auto inter = input::interaction::non_interacting() | input::interaction::fourier_pseudo();
+    auto inter = input::interaction{}.non_interacting().fourier_pseudo();
     
 		CHECK(not inter.self_consistent());
 		CHECK(inter.fourier_pseudo_value() == true);
@@ -231,7 +218,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
   SECTION("Hartee-Fock"){
 
-    auto inter = input::interaction::hartree_fock();
+    auto inter = input::interaction{}.hartree_fock();
 		CHECK(inter.exchange_coefficient() == 1.0);
   }
 

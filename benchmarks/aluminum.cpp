@@ -22,7 +22,7 @@ int main(int argc, char ** argv){
 	vector3<int, contravariant> reps{2, 2, 2};
 	int niter = 10;
 	
-	auto functional = input::interaction::pbe();
+	auto functional = input::interaction{}.pbe();
 	
 	{
 		int opt;
@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
 				sscanf(optarg, "%d%*c%d%*c%d", &reps[0], &reps[1], &reps[2]);
 				break;
 			case 'y':
-				functional = input::interaction::pbe0();
+				functional = input::interaction{}.pbe0();
 				break;
  		  case 'i':
 				niter = atoi(optarg);

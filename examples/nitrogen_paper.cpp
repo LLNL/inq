@@ -25,7 +25,7 @@ int main(int argc, char ** argv){
 	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(40.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, interaction::pbe());
+	auto result = ground_state::calculate(ions, electrons, interaction{}.pbe());
 
 	std::cout << "N2 energy = " << result.energy.total() << std::endl;
 
