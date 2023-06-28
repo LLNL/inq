@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
   data_match.check("XC density integral", result.energy.nvxc(),           -13.142640399717);
   data_match.check("ion-ion energy",      result.energy.ion(),            -31.483620495100);
 	
-	electrons.save("silicon_restart");
+	electrons.save("silicon_lrc_restart");
 
 	{ //NO KICK
 		std::vector<double> jz;
@@ -78,7 +78,7 @@ int main(int argc, char ** argv){
 	}
 	
 	{ //NO LRC CORRECTION
-		electrons.load("silicon_restart");
+		electrons.load("silicon_lrc_restart");
 				
 		std::vector<double> jz;
 		std::vector<double> Az;
@@ -113,7 +113,7 @@ int main(int argc, char ** argv){
 	}
 
 	{ //LRC CORRECTION
-		electrons.load("silicon_restart");
+		electrons.load("silicon_lrc_restart");
 		
 		std::vector<double> jz;
 		std::vector<double> Az;
