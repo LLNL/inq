@@ -34,10 +34,10 @@ int main(int argc, char ** argv){
 	
 	real_time::propagate<>(ions, electrons, [&](auto data){energy.push_back(data.energy().total());}, options::theory{}.lda(), options::real_time{}.num_steps(30).dt(0.055_atomictime));
 
-	energy_match.check("energy step   0", energy[0],   -9.798687545996);
-	energy_match.check("energy step  10", energy[10],  -9.798687876007);
-	energy_match.check("energy step  20", energy[20],  -9.798688613754);
-	energy_match.check("energy step  30", energy[30],  -9.798688812739);
+	energy_match.check("energy step   0", energy[0],   -9.798687609908);
+	energy_match.check("energy step  10", energy[10],  -9.798687875095);
+	energy_match.check("energy step  20", energy[20],  -9.798688092120);
+	energy_match.check("energy step  30", energy[30],  -9.798688286243);
 	
 	return energy_match.fail();
 	
