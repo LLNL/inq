@@ -33,6 +33,17 @@ int main(int argc, char ** argv){
 	
 	ground_state::initial_guess(ions, electrons);
 	auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.energy_tolerance(1e-9_Ha));
+
+	data_match.check("total energy",        result.energy.total(),          -33.418896726864);
+  data_match.check("kinetic energy",      result.energy.kinetic(),         13.130726145119);
+  data_match.check("eigenvalues",         result.energy.eigenvalues(),     -0.213554205314);
+  data_match.check("Hartree energy",      result.energy.hartree(),          2.381711162124);
+  data_match.check("external energy",     result.energy.external(),        -9.463654074017);
+  data_match.check("non-local energy",    result.energy.nonlocal(),         4.498591799053);
+  data_match.check("XC energy",           result.energy.xc(),             -12.482651264043);
+  data_match.check("XC density integral", result.energy.nvxc(),           -13.142640399717);
+  data_match.check("ion-ion energy",      result.energy.ion(),            -31.483620495100);
+	
 	electrons.save("silicon_restart");
 
 	{ //NO KICK
@@ -118,22 +129,22 @@ int main(int argc, char ** argv){
 		real_time::propagate<>(ions, electrons, output, options::theory{}.lda().lrc(0.2), options::real_time{}.num_steps(40).dt(0.03_atomictime), ions::propagator::fixed{}, kick);
 
 		data_match.check("energy step   0", energy[0],   -33.418518663279);
-		data_match.check("energy step  10", energy[10],  -33.418518483855);
-		data_match.check("energy step  20", energy[20],  -33.418517945025);
-		data_match.check("energy step  30", energy[30],  -33.418517096793);
-		data_match.check("energy step  40", energy[40],  -33.418515964150);
+		data_match.check("energy step  10", energy[10],  -33.418518483345);
+		data_match.check("energy step  20", energy[20],  -33.418517942165);
+		data_match.check("energy step  30", energy[30],  -33.418517090347);
+		data_match.check("energy step  40", energy[40],  -33.418515953351);
 			
 		data_match.check("current in z step   0", jz[0],   -0.157729547895);
-		data_match.check("current in z step  10", jz[10],  -0.151948847224);
-		data_match.check("current in z step  20", jz[20],  -0.144242611185);
-		data_match.check("current in z step  30", jz[30],  -0.140532611854);
-		data_match.check("current in z step  40", jz[40],  -0.136279338368);
+		data_match.check("current in z step  10", jz[10],  -0.151948955175);
+		data_match.check("current in z step  20", jz[20],  -0.144243229877);
+		data_match.check("current in z step  30", jz[30],  -0.140534021619);
+		data_match.check("current in z step  40", jz[40],  -0.136281715570);
 		
 		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
-		data_match.check("vector potential in z step  10", Az[10],  0.050912284789);
-		data_match.check("vector potential in z step  20", Az[20],  0.050950852243);
-		data_match.check("vector potential in z step  30", Az[30],  0.051014538212);
-		data_match.check("vector potential in z step  40", Az[40],  0.051102615912);
+		data_match.check("vector potential in z step  10", Az[10],  0.050912319827);
+		data_match.check("vector potential in z step  20", Az[20],  0.050951055718);
+		data_match.check("vector potential in z step  30", Az[30],  0.051015010353);
+		data_match.check("vector potential in z step  40", Az[40],  0.051103425299);
 	}
 	
 	fftw_cleanup();
