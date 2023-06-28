@@ -23,7 +23,8 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 	
   SECTION("2D copy performance benchmark"){
 
-		if(comm.root()){
+		// only run in series
+		if(comm.size() == 1){
 			
 			long nn = 8000;
 
