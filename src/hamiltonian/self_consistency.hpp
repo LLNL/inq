@@ -143,16 +143,20 @@ public:
 		} else {
 			hamiltonian.uniform_vector_potential_ = {0.0, 0.0, 0.0};
 		}
+
+		if(theory_.induced_vector_potential_value() != options::theory::induced_vector_potential::NONE){
+			hamiltonian.uniform_vector_potential_ += induced_vector_potential_;
+		}
 		
 	}
 
-	void update_induced_potential(vector3<double,covariant> & induced, vector3<double,covariant> & velocity, vector3<double,covariant> & accel, double const dt, const double volume, vector3<double,covariant> const & current) const {
+	void propagate_induced_vector_potential(double const dt, const double volume, vector3<double,covariant> const & current) {
 		if(theory_.induced_vector_potential_value() == options::theory::induced_vector_potential::LRC){
-			induced += 0.5*dt*velocity;
-			velocity += 0.5*dt*accel;
-			accel = theory_.alpha_value()*(-current)/volume;
-			velocity += 0.5*dt*accel;
-			induced += 0.5*dt*velocity;
+			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
+			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
+			induced_vector_potential_acc_ = theory_.alpha_value()*(-current)/volume;
+			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
+			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
 		}
 	}
 
@@ -174,9 +178,6 @@ private:
 	basis::real_space potential_basis_;
 	basis::real_space density_basis_;
 	Perturbation pert_;
-
-public:
-	
 	vector3<double, covariant> induced_vector_potential_acc_;
 	vector3<double, covariant> induced_vector_potential_vel_;
 	vector3<double, covariant> induced_vector_potential_;

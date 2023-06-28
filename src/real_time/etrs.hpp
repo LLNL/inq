@@ -27,7 +27,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	systems::electrons::kpin_type save;
 
-	sc.update_induced_potential(sc.induced_vector_potential_, sc.induced_vector_potential_vel_, sc.induced_vector_potential_acc_, dt, ions.cell().volume(), observables::current(ions, electrons, ham));
+	sc.propagate_induced_vector_potential(dt, ions.cell().volume(), observables::current(ions, electrons, ham));
 	
 	int iphi = 0;
 	for(auto & phi : electrons.kpin()){
@@ -50,9 +50,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	}
 
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-	ham.uniform_vector_potential() += sc.induced_vector_potential_;
 	ham.exchange.update(electrons);
-
 	electrons.kpin() = save;
 	
 	//propagate the other half step with H(t + dt) self-consistently
@@ -72,9 +70,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		auto done = (delta < scf_threshold) or (iscf == nscf - 1);
 		
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-		ham.uniform_vector_potential() += sc.induced_vector_potential_;
 		ham.exchange.update(electrons);
-	
 		if(done) break;
 	}
 	
