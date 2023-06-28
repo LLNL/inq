@@ -144,7 +144,7 @@ public:
 			hamiltonian.uniform_vector_potential_ = {0.0, 0.0, 0.0};
 		}
 
-		if(theory_.induced_vector_potential_value() != options::theory::induced_vector_potential::NONE){
+		if(have_induced_vector_potential()){
 			hamiltonian.uniform_vector_potential_ += induced_vector_potential_;
 		}
 		
@@ -168,6 +168,10 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
+
+	bool have_induced_vector_potential() const {
+		return theory_.induced_vector_potential_value() != options::theory::induced_vector_potential::NONE;
+	}
 	
 private:
 	
