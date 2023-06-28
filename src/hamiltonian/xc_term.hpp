@@ -287,16 +287,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 		if(bas.part().contains(5439)) {
 			auto index = bas.part().global_to_local(parallel::global_index(5439));
-			CHECK(vfunc_unp.matrix()[index][0] == 0.0005467193_a);
-			CHECK(vfunc_pol.matrix()[index][0] == 0.0005956583_a);
-			CHECK(vfunc_pol.matrix()[index][1] == 0.0005978958_a);
+			CHECK(vfunc_unp.matrix()[index][0] == 0.0005665189_a);
+			CHECK(vfunc_pol.matrix()[index][0] == 0.0007334274_a);
+			CHECK(vfunc_pol.matrix()[index][1] == 0.0007356649_a);
 		}
 
 		if(bas.part().contains(4444)) {
 			auto index = bas.part().global_to_local(parallel::global_index(4444));
-			CHECK(vfunc_unp.matrix()[index][0] == -0.0798456253_a);
-			CHECK(vfunc_pol.matrix()[index][0] == -0.0667968142_a);
-			CHECK(vfunc_pol.matrix()[index][1] == -0.0830118308_a);
+			CHECK(vfunc_unp.matrix()[index][0] == -0.0770230402_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.0641968735_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.0804118901_a);
 		}
 
 	}
@@ -317,16 +317,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 		if(bas.part().contains(5439)) {
 			auto index = bas.part().global_to_local(parallel::global_index(5439));
-			CHECK(vfunc_unp.matrix()[index][0] == -0.6495909727_a);
-			CHECK(vfunc_pol.matrix()[index][0] == -0.6398010386_a);
-			CHECK(vfunc_pol.matrix()[index][1] == -0.6142058762_a);
+			CHECK(vfunc_unp.matrix()[index][0] == -0.5955644446_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.5721375366_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.5667836757_a);
 		}
 
 		if(bas.part().contains(4444)) {
 			auto index = bas.part().global_to_local(parallel::global_index(4444));
-			CHECK(vfunc_unp.matrix()[index][0] == -0.2879332051_a);
-			CHECK(vfunc_pol.matrix()[index][0] == -0.3195127242_a);
-			CHECK(vfunc_pol.matrix()[index][1] == -0.2368583776_a);
+			CHECK(vfunc_unp.matrix()[index][0] == -0.2720801967_a);
+			CHECK(vfunc_pol.matrix()[index][0] == -0.3121236386_a);
+			CHECK(vfunc_pol.matrix()[index][1] == -0.1997021271_a);
 		}
 
 	}

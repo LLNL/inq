@@ -59,8 +59,6 @@ int main(int argc, char ** argv){
 	energy_match.check("HF exchange energy",  result.energy.hf_exchange(),  -9.636982901957);
 	energy_match.check("ion-ion energy",      result.energy.ion(),         -31.483620495100);
 	
-	electrons.save("silicon_restart");
-
 	auto ked = observables::kinetic_energy_density(electrons);
 
 	energy_match.check("kinetic energy", operations::integral(ked), 13.234089398748);
@@ -68,6 +66,5 @@ int main(int argc, char ** argv){
 	fftw_cleanup(); //required for valgrind
 	
 	return energy_match.fail();
-	
 }
 

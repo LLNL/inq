@@ -198,10 +198,6 @@ public:
 		return uniform_vector_potential_;
 	}
 
-	vector3<double, covariant> vp_accel={0,0,0};
-	vector3<double, covariant> vp_velocity={0,0,0};
-	vector3<double, covariant> vp_induced={0,0,0};
-
 	////////////////////////////////////////////////////////////////////////////////////////////
 		
 private:
@@ -384,7 +380,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		diff /= hphi.set_size()*hphi.basis().size();
 
-		CHECK(diff == 0.0051420503_a);
+		CHECK(diff == 0.0051434147_a);
 		
 	}
 
@@ -475,7 +471,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		diff /= hphi.set_size()*hphi.basis().size();
 
-		CHECK(diff == 0.0051420503_a);
+		CHECK(diff == 0.0051436452_a);
 		
 	}
 	

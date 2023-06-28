@@ -47,7 +47,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		hamiltonian::energy energy;
 
 		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
-		sc.update_hamiltonian(ham, energy, electrons.spin_density(), 0.0);
+		sc.update_hamiltonian(ham, energy, electrons.spin_density(), /* time = */ 0.0);
 
 		ham.exchange.update(electrons);
 
@@ -69,7 +69,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 			switch(opts.propagator()){
 			case options::real_time::electron_propagator::ETRS :
-				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy, pert);
+				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
 				break;
 			case options::real_time::electron_propagator::CRANK_NICOLSON :
 				crank_nicolson(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);

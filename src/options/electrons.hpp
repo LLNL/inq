@@ -133,7 +133,7 @@ public:
 	}
 	
 	auto spherical_grid_value() const {
-		return spherical_grid_.value_or(false);
+		return spherical_grid_.value_or(true);
 	}
 
 };

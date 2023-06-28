@@ -89,7 +89,7 @@ public:
 		return pert_.uniform_electric_field(time_);
 	}
 
-	auto vector_field() const{
+	auto uniform_vector_potential() const{
 		return ham_.uniform_vector_potential();
 	}
 
