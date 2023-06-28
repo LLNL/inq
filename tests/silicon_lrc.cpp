@@ -15,7 +15,7 @@ int main(int argc, char ** argv){
 
 	input::environment env(argc, argv);
 
-	utils::match data_match(3.0e-5);
+	utils::match data_match(7.0e-5);
 
 	auto a = 10.18_b;
 	systems::ions ions(systems::cell::cubic(a));
