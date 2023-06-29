@@ -44,10 +44,10 @@ public:
 	}
 
 	static ions parse(std::string filename, inq::systems::cell const & cell) {
-		return parse(filename, -1.0, cell);
+		return parse(filename, std::optional<quantity<magnitude::length>>{}, cell);
 	}
 	
-	static ions parse(std::string filename, double radius = -1.0, std::optional<inq::systems::cell> cell = {}) {
+	static ions parse(std::string filename, std::optional<quantity<magnitude::length>> radius = {}, std::optional<inq::systems::cell> cell = {}) {
 
 		using namespace inq::magnitude;
 		
@@ -57,10 +57,12 @@ public:
 		std::string filename_wo_path = filename.substr(filename.find_last_of("/") + 1);
 		std::transform(filename_wo_path.begin(), filename_wo_path.end(), filename_wo_path.begin(), ::tolower);
 
-		assert(not (cell.has_value() and radius > 0.0));
+		assert(not (cell.has_value() and radius.has_value()));
+		if(radius.has_value() and radius->in_atomic_units() <= 0.0) throw std::runtime_error("error: a non-positive radius was given when parsing file '" + filename + "'.");
+
 		
 		if(extension == "cif") {
-			if(cell.has_value() or radius > 0.0) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");
+			if(cell.has_value() or radius.has_value()) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");
 			
 			parse::cif file(filename);
 			ions parsed(file.cell());
@@ -69,7 +71,7 @@ public:
 		}
 
 		if(extension == "poscar" or extension == "vasp" or filename_wo_path == "poscar") {
-			if(cell.has_value() or radius > 0.0) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");			
+			if(cell.has_value() or radius.has_value()) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");			
 			
 			parse::poscar file(filename);
 			ions parsed(file.cell());
@@ -78,15 +80,15 @@ public:
 		}
 
 		if(extension == "xyz") {
-			if(not cell.has_value() and radius <= 0.0) throw std::runtime_error("error: the radius or cell argument needs to be provided for parsing XYZ file '" + filename + "'.");
+			if(not cell.has_value() and not radius.has_value()) throw std::runtime_error("error: the radius or cell argument needs to be provided for parsing XYZ file '" + filename + "'.");
 
 			auto file = parse::xyz(filename);
 
 			// find the size of the containing box
 			auto maxl = vector3<double>{0.0, 0.0, 0.0};
-			if(radius > 0.0){
+			if(radius.has_value()){
 				for(int ii = 0; ii < file.size(); ii++) {
-					for(int idir = 0; idir < 3; idir++) maxl[idir] = std::max(maxl[idir], fabs(file.positions()[ii][idir]) + radius);
+					for(int idir = 0; idir < 3; idir++) maxl[idir] = std::max(maxl[idir], fabs(file.positions()[ii][idir]) + radius->in_atomic_units());
 				}
 
 				cell = systems::cell::orthorhombic(2.0_b*maxl[0], 2.0_b*maxl[1], 2.0_b*maxl[2]).finite();
@@ -98,7 +100,7 @@ public:
 		}
 		
 		throw std::runtime_error("error: unsupported or unknown format for file '" + filename + "'.");
-		return ions(*cell); //dummy return value to keep the compiler happy
+		return ions(*cell); //dummy return value to keep the compiler happy, this should never be reached
 	}
 	
 	auto & atoms() const {
@@ -286,7 +288,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Read an xyz file with radius"){
 		
-		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", /* radius = */ 5.0);
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", /* radius = */ 5.0_b);
 
 		CHECK(ions.cell().lattice(0)[0] == 18.1144839792_a);
 		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
