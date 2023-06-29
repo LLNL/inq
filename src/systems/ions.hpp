@@ -43,16 +43,24 @@ public:
 		cell_(std::move(arg_cell_input)){
 	}
 
-	static ions parse(std::string filename, std::optional<inq::systems::cell> const & cell = {}) {
+	static ions parse(std::string filename, inq::systems::cell const & cell) {
+		return parse(filename, -1.0, cell);
+	}
+	
+	static ions parse(std::string filename, double radius = -1.0, std::optional<inq::systems::cell> cell = {}) {
 
+		using namespace inq::magnitude;
+		
 		std::string extension = filename.substr(filename.find_last_of(".") + 1);
 		std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
 		std::string filename_wo_path = filename.substr(filename.find_last_of("/") + 1);
 		std::transform(filename_wo_path.begin(), filename_wo_path.end(), filename_wo_path.begin(), ::tolower);
+
+		assert(not (cell.has_value() and radius > 0.0));
 		
 		if(extension == "cif") {
-			if(cell.has_value()) throw std::runtime_error("error: the cell argument cannot be given for parsing CIF file '" + filename + "'.");
+			if(cell.has_value() or radius > 0.0) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");
 			
 			parse::cif file(filename);
 			ions parsed(file.cell());
@@ -61,7 +69,7 @@ public:
 		}
 
 		if(extension == "poscar" or extension == "vasp" or filename_wo_path == "poscar") {
-			if(cell.has_value()) throw std::runtime_error("error: the cell argument cannot be given for parsing POSCAR file '" + filename + "'.");
+			if(cell.has_value() or radius > 0.0) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");			
 			
 			parse::poscar file(filename);
 			ions parsed(file.cell());
@@ -70,10 +78,21 @@ public:
 		}
 
 		if(extension == "xyz") {
-			if(not cell.has_value()) throw std::runtime_error("error: the cell needs to be provided for parsing XYZ file '" + filename + "'.");
-				
-			ions parsed(*cell);
+			if(not cell.has_value() and radius <= 0.0) throw std::runtime_error("error: the radius or cell argument needs to be provided for parsing XYZ file '" + filename + "'.");
+
 			auto file = parse::xyz(filename);
+
+			// find the size of the containing box
+			auto maxl = vector3<double>{0.0, 0.0, 0.0};
+			if(radius > 0.0){
+				for(int ii = 0; ii < file.size(); ii++) {
+					for(int idir = 0; idir < 3; idir++) maxl[idir] = std::max(maxl[idir], fabs(file.positions()[ii][idir]) + radius);
+				}
+
+				cell = systems::cell::orthorhombic(2.0_b*maxl[0], 2.0_b*maxl[1], 2.0_b*maxl[2]).finite();
+			}
+	
+			ions parsed(*cell);
 			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
 			return parsed;
 		}
@@ -211,7 +230,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
   }
 	
-	SECTION("Read an xyz file"){
+	SECTION("Read an xyz file with cell"){
 		
 		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", systems::cell::cubic(66.6_A).finite());
 
@@ -264,7 +283,61 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.velocities().size() == ions.coordinates().size());
 		
   }
+	
+	SECTION("Read an xyz file with radius"){
+		
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "benzene.xyz", /* radius = */ 5.0);
 
+		CHECK(ions.cell().lattice(0)[0] == 18.1144839792_a);
+		CHECK(ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(1)[1] == 19.3692621259_a);
+		CHECK(ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.cell().lattice(2)[2] == 10.0_a);
+		CHECK(ions.cell().periodicity() == 0);
+		
+    CHECK(ions.size() == 12);
+    
+    CHECK(ions.atoms()[2] == "C");
+    CHECK(ions.atoms()[2].charge() == -6.0_a);
+    CHECK(ions.atoms()[2].mass() == 21892.1617296_a);
+    CHECK(ions.coordinates()[2][0] == 2.2846788549_a);
+    CHECK(ions.coordinates()[2][1] == -1.3190288178_a);
+    CHECK(ions.coordinates()[2][2] == 0.0_a);
+
+    CHECK(ions.atoms()[11] == "H");
+    CHECK(ions.atoms()[11].charge() == -1.0_a);
+    CHECK(ions.atoms()[11].mass() == 1837.17994584_a);
+    CHECK(ions.coordinates()[11][0] == -4.0572419367_a);
+    CHECK(ions.coordinates()[11][1] == 2.343260364_a);
+    CHECK(ions.coordinates()[11][2] == 0.0_a);
+		CHECK(ions.velocities()[11][0] == 0.0_a);
+    CHECK(ions.velocities()[11][1] == 0.0_a);
+    CHECK(ions.velocities()[11][2] == 0.0_a);
+
+		CHECK(ions.velocities().size() == ions.coordinates().size());
+		
+    ions.insert("Cl", {-3.0_b, 4.0_b, 5.0_b});
+
+    CHECK(ions.size() == 13);
+    CHECK(ions.atoms()[12].atomic_number() == 17);
+    CHECK(ions.atoms()[12] == input::species(17));
+    CHECK(ions.atoms()[12].charge() == -17.0_a);
+    CHECK(ions.atoms()[12].mass() == 64614.105771_a);
+    CHECK(ions.coordinates()[12][0] == -3.0_a);
+    CHECK(ions.coordinates()[12][1] == 4.0_a);
+    CHECK(ions.coordinates()[12][2] == 5.0_a);
+		CHECK(ions.velocities()[12][0] == 0.0_a);
+    CHECK(ions.velocities()[12][1] == 0.0_a);
+    CHECK(ions.velocities()[12][2] == 0.0_a);
+
+		CHECK(ions.velocities().size() == ions.coordinates().size());
+		
+  }
+	
 	SECTION("CIF - Al"){
 		
 		auto ions = systems::ions::parse(config::path::unit_tests_data() + "Al.cif");
