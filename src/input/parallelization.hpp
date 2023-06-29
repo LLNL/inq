@@ -52,6 +52,10 @@ namespace input {
 		{
     }
 
+		auto & comm() const {
+			return comm_;
+		}
+
 		auto cart_comm(int nspin, int nkpoints) const {
 			assert(nspin == 1 or nspin == 2);
 			
@@ -118,6 +122,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	auto cart_comm = par.kpoints(1).states(comm.size()).domains(1).cart_comm(2, 10);
 
+	CHECK(par.comm() == comm);
 	CHECK(cart_comm.size() == comm.size());
 
 	SECTION("optimize parallelization"){
