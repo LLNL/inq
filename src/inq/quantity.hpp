@@ -25,10 +25,10 @@ namespace inq {
 			class Other,
 			class = std::enable_if_t<not std::is_base_of<quantity, Other>::value, int>
 		>
-		quantity(Other const&) {static_assert(sizeof(Other*) and false, "deleted");}
+		quantity(Other const&) {static_assert(sizeof(Other*) and false, "deleted, a value is probably missing units");}
 
 		template<class Other>
-		explicit operator Other() const {static_assert(sizeof(Other*) and false, "deleted"); return Other{};}
+		explicit operator Other() const {static_assert(sizeof(Other*) and false, "deleted, a value is probably missing units"); return Other{};}
 
 		quantity() = default;
 		quantity(quantity const&) = default;
