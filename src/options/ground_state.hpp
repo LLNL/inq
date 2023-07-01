@@ -65,7 +65,7 @@ namespace options {
     }
 				
 		auto energy_tolerance() const {
-			return energy_tol_.value_or(1e-5);
+			return energy_tol_.value_or(1e-6);
 		}
 		
 		auto linear_mixing(){
