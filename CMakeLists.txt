@@ -331,16 +331,16 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   return()
 endif()
 
-message(STATUS "Downloading Catch2 v3p3")
+message(STATUS "Downloading Catch2 v3p3p2 for inq")
 FetchContent_Declare(
 	Catch2
 	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-	GIT_TAG        7cf2f88e50f0d1de324489c31db0314188423b6d
+	GIT_TAG        v3.3.2
   GIT_PROGRESS   TRUE
   GIT_SHALLOW    TRUE
 )
 FetchContent_MakeAvailable(Catch2)
-include_directories(${catch2_SOURCE_DIR}/src)
+link_libraries(Catch2::Catch2WithMain)
 
 add_subdirectory(src)
 add_subdirectory(tests)
