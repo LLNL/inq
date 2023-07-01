@@ -7,13 +7,14 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "")
 set(FETCHCONTENT_QUIET FALSE)
 Include(FetchContent)
 
-message(STATUS "Downloading Catch2 v3p3")
+message(STATUS "Downloading Catch2 v3p3p2 for gpurun")
 FetchContent_Declare(
 	Catch2
 	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-	GIT_TAG        7cf2f88e50f0d1de324489c31db0314188423b6d
-  GIT_PROGRESS TRUE 
-	)
+	GIT_TAG        v3.3.2
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+)
 FetchContent_MakeAvailable(Catch2)
 include_directories(${catch2_SOURCE_DIR}/src)
 
