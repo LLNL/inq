@@ -340,7 +340,7 @@ FetchContent_Declare(
   GIT_SHALLOW    TRUE
 )
 FetchContent_MakeAvailable(Catch2)
-include_directories(${catch2_SOURCE_DIR}/src)
+link_libraries(Catch2::Catch2WithMain)
 
 add_subdirectory(src)
 add_subdirectory(tests)
