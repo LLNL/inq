@@ -19,6 +19,7 @@ namespace hamiltonian {
 	class energy {
 
 		double ion_ = 0.0;
+		double ion_kinetic_ = 0.0;		
 		double eigenvalues_ = 0.0;
 		double external_ = 0.0;
 		double nonlocal_ = 0.0;
@@ -74,7 +75,7 @@ namespace hamiltonian {
 		}
 		
 		auto total() const {
-			return kinetic() + hartree_ + external_ + nonlocal_ + xc_ + hf_exchange_ + ion_;
+			return kinetic() + hartree_ + external_ + nonlocal_ + xc_ + hf_exchange_ + ion_ + ion_kinetic_;
 		}
 
 		auto & eigenvalues() const {
@@ -139,6 +140,14 @@ namespace hamiltonian {
 
 		void ion(double const & val) {
 			ion_ = val;
+		}
+
+		auto & ion_kinetic() const {
+			return ion_kinetic_;
+		}
+
+		void ion_kinetic(double const & val) {
+			ion_kinetic_ = val;
 		}
 		
 		template <class out_type>

@@ -34,7 +34,7 @@ class ions {
 	void add_atom(input::species const & element, PositionType const & position){
 		atoms_.push_back(element);
 		coordinates_.push_back(in_atomic_units(position));
-		velocities_.push_back(vector3<double>(0.0, 0.0, 0.0));					
+		velocities_.push_back(vector3<double>(0.0, 0.0, 0.0));
 	}
 
 public:
@@ -184,6 +184,14 @@ public:
 		return os;
 	}
 
+	auto kinetic_energy() {
+		auto energy = 0.0;
+		for(int iatom = 0; iatom < size(); iatom++){
+			energy += 0.5*atoms()[iatom].mass()*norm(velocities()[iatom]);
+		}
+		return energy;
+	}
+	
 };
 
 }
