@@ -32,7 +32,7 @@ struct loc_pot {
 };
 
 template <typename HamiltonianType>
-gpu::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons & electrons, HamiltonianType const & ham){
+gpu::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham){
 
 	CALI_CXX_MARK_FUNCTION;
 

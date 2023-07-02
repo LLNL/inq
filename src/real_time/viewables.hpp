@@ -34,7 +34,7 @@ class viewables {
 	systems::ions const & ions_;
 	systems::electrons const & electrons_;
 	hamiltonian::energy const & energy_;
-	ForcesType const & forces_;
+	ForcesType forces_;
   HamiltonianType const & ham_;
 	Perturbation const & pert_;
 	
@@ -73,7 +73,8 @@ public:
 		return ions_.velocities()[iatom];
 	}
 
-	auto forces(int iatom) const {
+	auto forces(int iatom) {
+		if(forces_.size() == 0) forces_ = hamiltonian::calculate_forces(ions_, electrons_, ham_);
 		return forces_[iatom];
 	}
 
