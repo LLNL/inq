@@ -18,7 +18,8 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-O3") #always optimize the code
+#always optimize the code
+set(CMAKE_CXX_FLAGS  "-O3 ${CMAKE_CXX_FLAGS}")
 
 message("CMake build type: ${CMAKE_BUILD_TYPE}")
 
