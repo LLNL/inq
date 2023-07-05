@@ -44,7 +44,7 @@ namespace hamiltonian {
 		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, bool double_grid):
 			sep_(0.625), //this is the default from octopus
 			natoms_(natoms),
-			pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-04_pbe_standard/"),
+			pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-05_pbe_standard_upf/"),
 			double_grid_(double_grid)
 		{
 
