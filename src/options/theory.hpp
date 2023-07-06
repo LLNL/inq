@@ -52,7 +52,6 @@ private:
 	std::optional<exchange_functional> exchange_;
 	std::optional<correlation_functional> correlation_;
 	std::optional<induced_vector_potential> induced_vecpot_;
-	std::optional<bool> fourier_pseudo_;
 	double alpha_ = 0;
 
 public:
@@ -141,22 +140,6 @@ public:
 		return hartree_potential() or exchange() != exchange_functional::NONE or correlation() != correlation_functional::NONE;
 	}
 
-	auto real_space_pseudo() const {
-		theory inter = *this;
-		inter.fourier_pseudo_ = false;
-		return inter;
-	}
-
-	auto fourier_pseudo() const {
-		theory inter = *this;
-		inter.fourier_pseudo_ = true;
-		return inter;
-	}
-		
-	auto fourier_pseudo_value() const {
-		return fourier_pseudo_.value_or(false);
-	}
-
 	auto lrc() const {
 		theory inter = *this;
 		inter.induced_vecpot_ = induced_vector_potential::LRC;
@@ -203,16 +186,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(inter.hartree_potential() == true);
 		CHECK(inter.exchange() == options::theory::exchange_functional::PBE);
 		CHECK(inter.correlation() == options::theory::correlation_functional::PBE);
-		CHECK(inter.fourier_pseudo_value() == false);
 		CHECK_THROWS(inter.exchange_coefficient());
   }
 
   SECTION("Composition"){
 
-    auto inter = options::theory{}.non_interacting().fourier_pseudo();
+    auto inter = options::theory{}.non_interacting();
     
 		CHECK(not inter.self_consistent());
-		CHECK(inter.fourier_pseudo_value() == true);
 		CHECK(inter.exchange_coefficient() == 0.0);		
   }
 	

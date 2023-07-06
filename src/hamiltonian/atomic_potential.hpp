@@ -51,6 +51,7 @@ namespace hamiltonian {
 		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		bool has_nlcc_;
 		basis::double_grid double_grid_;
+		bool fourier_pseudo_;
 
 	public:
 		
@@ -59,7 +60,8 @@ namespace hamiltonian {
 			sep_(0.625), //this is the default from octopus
 			natoms_(natoms),
 			pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-05_pbe_standard_upf/"),
-			double_grid_(conf.double_grid_value())
+			double_grid_(conf.double_grid_value()),
+			fourier_pseudo_(conf.fourier_pseudo_value())
 		{
 
 			CALI_CXX_MARK_FUNCTION;
@@ -311,6 +313,10 @@ namespace hamiltonian {
 
 		auto & double_grid() const {
 			return double_grid_;
+		}
+
+		auto & fourier_pseudo() const {
+			return fourier_pseudo_;
 		}
 		
 	};

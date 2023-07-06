@@ -29,6 +29,7 @@ class electrons {
 	std::optional<bool> double_grid_;	
 	std::optional<double> density_factor_;
 	std::optional<bool> spherical_grid_;
+	std::optional<bool> fourier_pseudo_;
 
 public:
 	
@@ -135,6 +136,22 @@ public:
 	auto spherical_grid_value() const {
 		return spherical_grid_.value_or(true);
 	}
+	
+	auto real_space_pseudo() const {
+		electrons conf = *this;
+		conf.fourier_pseudo_ = false;
+		return conf;
+	}
+
+	auto fourier_pseudo() const {
+		electrons conf = *this;
+		conf.fourier_pseudo_ = true;
+		return conf;
+	}
+		
+	auto fourier_pseudo_value() const {
+		return fourier_pseudo_.value_or(false);
+	}
 
 };
 
@@ -155,7 +172,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	auto conf = options::electrons{}.spacing(23.0_b);
 	CHECK(conf.spacing_value() == 23.0_a);
-
+	CHECK(conf.fourier_pseudo_value() == false);
 	
 }
 #endif
