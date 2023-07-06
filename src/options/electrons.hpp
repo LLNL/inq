@@ -22,7 +22,7 @@ namespace options {
 class electrons {
 
 	std::optional<int> extra_states_;
-	std::optional<double> excess_charge_;
+	std::optional<double> extra_electrons_;
 	std::optional<quantity<magnitude::energy>> temperature_;
 	std::optional<states::ks_states::spin_config> spin_;
 	std::optional<double> spacing_;
@@ -43,14 +43,14 @@ public:
 		return extra_states_.value_or(0);
 	}
 
-	auto excess_charge(double value){
+	auto extra_electrons(double value){
 		electrons conf = *this;
-		conf.excess_charge_ = value;
+		conf.extra_electrons_ = value;
 		return conf;
 	}
 
-	auto excess_charge_val() const {
-		return excess_charge_.value_or(0.0);
+	auto extra_electrons_val() const {
+		return extra_electrons_.value_or(0.0);
 	}
 
 	auto temperature(quantity<magnitude::energy> value){

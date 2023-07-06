@@ -129,7 +129,7 @@ public:
 		states_basis_(ions.cell(), conf.spacing_value(), basis_subcomm(full_comm_), conf.spherical_grid_value()),
 		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(conf.density_factor(), basis_comm_)), */
 		atomic_pot_(ions.size(), ions.atoms(), states_basis_.gcutoff(), conf),
-		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.excess_charge_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
+		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.extra_electrons_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
 		spin_density_(density_basis_, states_.num_density_components()),
 		kpin_part_(kpts.size()*states_.num_spin_indices(), kpin_comm_)
 	{
@@ -170,7 +170,8 @@ public:
 		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
 		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
 
-		if(atomic_pot_.num_electrons() + conf.excess_charge_val() == 0) throw std::runtime_error("inq error: the system does not have any electrons");
+		if(atomic_pot_.num_electrons() + conf.extra_electrons_val() == 0) throw std::runtime_error("inq error: the system does not have any electrons");
+		if(atomic_pot_.num_electrons() + conf.extra_electrons_val() < 0) throw std::runtime_error("inq error: the system has a negative number of electrons");		
 		
 		print(ions);
 
