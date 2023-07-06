@@ -22,13 +22,14 @@ namespace options {
 class electrons {
 
 	std::optional<int> extra_states_;
-	std::optional<double> excess_charge_;
+	std::optional<double> extra_electrons_;
 	std::optional<quantity<magnitude::energy>> temperature_;
 	std::optional<states::ks_states::spin_config> spin_;
 	std::optional<double> spacing_;
 	std::optional<bool> double_grid_;	
 	std::optional<double> density_factor_;
 	std::optional<bool> spherical_grid_;
+	std::optional<bool> fourier_pseudo_;
 
 public:
 	
@@ -42,14 +43,14 @@ public:
 		return extra_states_.value_or(0);
 	}
 
-	auto excess_charge(double value){
+	auto extra_electrons(double value){
 		electrons conf = *this;
-		conf.excess_charge_ = value;
+		conf.extra_electrons_ = value;
 		return conf;
 	}
 
-	auto excess_charge_val() const {
-		return excess_charge_.value_or(0.0);
+	auto extra_electrons_val() const {
+		return extra_electrons_.value_or(0.0);
 	}
 
 	auto temperature(quantity<magnitude::energy> value){
@@ -74,7 +75,7 @@ public:
 		return conf;
 	}
 
-	auto spin_orbit(){
+	auto spin_non_collinear(){
 		electrons conf = *this;
 		conf.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
 		return conf;
@@ -135,6 +136,22 @@ public:
 	auto spherical_grid_value() const {
 		return spherical_grid_.value_or(true);
 	}
+	
+	auto real_space_pseudo() const {
+		electrons conf = *this;
+		conf.fourier_pseudo_ = false;
+		return conf;
+	}
+
+	auto fourier_pseudo() const {
+		electrons conf = *this;
+		conf.fourier_pseudo_ = true;
+		return conf;
+	}
+		
+	auto fourier_pseudo_value() const {
+		return fourier_pseudo_.value_or(false);
+	}
 
 };
 
@@ -155,7 +172,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	auto conf = options::electrons{}.spacing(23.0_b);
 	CHECK(conf.spacing_value() == 23.0_a);
-
+	CHECK(conf.fourier_pseudo_value() == false);
 	
 }
 #endif

@@ -42,8 +42,8 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		electrons.spin_density() = observables::density::calculate(electrons);
 
 		hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components(), pert);
-		hamiltonian::ks_hamiltonian<complex> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), inter.fourier_pseudo_value(),
-																						 ions, electrons.states().num_states(), sc.exx_coefficient(), /* use_ace = */ opts.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
+		hamiltonian::ks_hamiltonian<complex> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(),
+																						 ions, sc.exx_coefficient(), /* use_ace = */ opts.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
 		hamiltonian::energy energy;
 
 		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());

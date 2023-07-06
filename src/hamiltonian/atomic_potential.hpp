@@ -21,9 +21,11 @@
 #include <basis/double_grid.hpp>
 #include <gpu/array.hpp>
 #include <operations/integral.hpp>
+#include <options/electrons.hpp>
 #include <parallel/partition.hpp>
 #include <solvers/poisson.hpp>
 #include <states/ks_states.hpp>
+
 
 #include <unordered_map>
 
@@ -37,15 +39,29 @@ namespace hamiltonian {
 	class atomic_potential {
 
 	public:
-
+		
 		using pseudopotential_type = pseudo::pseudopotential<gpu::array<double, 1>>;
+
+	private:
+		
+		pseudo::math::erf_range_separation sep_;
+		int natoms_;
+		double nelectrons_;
+		pseudo::set pseudo_set_;
+		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
+		bool has_nlcc_;
+		basis::double_grid double_grid_;
+		bool fourier_pseudo_;
+
+	public:
 		
 		template <class atom_array>
-		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, bool double_grid):
+		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, options::electrons const & conf = {}):
 			sep_(0.625), //this is the default from octopus
 			natoms_(natoms),
 			pseudo_set_("pseudopotentials/pseudo-dojo.org/nc-sr-05_pbe_standard_upf/"),
-			double_grid_(double_grid)
+			double_grid_(conf.double_grid_value()),
+			fourier_pseudo_(conf.fourier_pseudo_value())
 		{
 
 			CALI_CXX_MARK_FUNCTION;
@@ -298,17 +314,11 @@ namespace hamiltonian {
 		auto & double_grid() const {
 			return double_grid_;
 		}
+
+		auto & fourier_pseudo() const {
+			return fourier_pseudo_;
+		}
 		
-	private:
-
-		pseudo::math::erf_range_separation sep_;
-		int natoms_;
-		double nelectrons_;
-		pseudo::set pseudo_set_;
-		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
-		bool has_nlcc_;
-		basis::double_grid double_grid_;
-
 	};
 
 }
@@ -332,17 +342,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	double const gcut = 0.785;
 
 	parallel::communicator comm{boost::mpi3::environment::get_self_instance()};
-	
+		
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({"P", "X"});
 	
-		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut, /*double_grid = */ false));
+		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut));
 	}
 	
 	SECTION("Duplicated element"){
 		std::vector<species> el_list({"N", "N"});
 
-		hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut, /*double_grid = */ false);
+		hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut);
 
 		CHECK(pot.num_species() == 1);
 		CHECK(pot.num_electrons() == 10.0_a);
@@ -352,7 +362,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	SECTION("Empty list"){
 		std::vector<species> el_list;
 		
-		hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut, false);
+		hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut);
 
 		CHECK(pot.num_species() == 0);
 		CHECK(pot.num_electrons() == 0.0_a);
@@ -364,7 +374,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	SECTION("CNOH"){
 		species el_list[] = {"C", "N", "O", "H"};
 
-		hamiltonian::atomic_potential pot(4, el_list, gcut, /*double_grid = */ false);
+		hamiltonian::atomic_potential pot(4, el_list, gcut);
 
 		CHECK(pot.num_species() == 4);
 		CHECK(pot.num_electrons() == 16.0_a);
@@ -376,7 +386,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, comm);
 		
-		hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff(), /*double_grid = */ false);
+		hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff());
 		
 		CHECK(pot.num_species() == 2);
 		CHECK(pot.num_electrons() == 30.0_a);

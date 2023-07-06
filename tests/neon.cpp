@@ -27,13 +27,11 @@ int main(int argc, char ** argv){
 
 	systems::ions ions(systems::cell::cubic(15.0_b).finite());
 	ions.insert(input::species("Ne").nofilter(), {0.0_b, 0.0_b, 0.0_b});
-
-	systems::electrons electrons(env.par(), ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
-	
-	ground_state::initial_guess(ions, electrons);
 	
 	//REAL SPACE PSEUDO
 	{
+		systems::electrons electrons(env.par(), ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
+		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.765371991220);
@@ -46,8 +44,10 @@ int main(int argc, char ** argv){
 	}
 
 	//FOURIER SPACE PSEUDO
-	{	
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting().fourier_pseudo());
+	{
+		systems::electrons electrons(env.par(), ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha).fourier_pseudo());
+		ground_state::initial_guess(ions, electrons);
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.765376105880);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.606511739929);
