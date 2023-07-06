@@ -301,17 +301,17 @@ include_directories(${PROJECT_SOURCE_DIR}/external_libs/gemmi/include)
 # BOOST
 ########################
 
-find_package(Boost REQUIRED COMPONENTS serialization filesystem system)
+find_package(Boost REQUIRED COMPONENTS serialization filesystem system iostreams)
 message(STATUS "Boost actual version found " ${Boost_VERSION})
 if(Boost_VERSION LESS_EQUAL "1.53.0")  # 105300
 	message(STATUS "Applying option BOOST_NO_AUTO_PTR to patch for old Boost")
 	add_compile_options(-DBOOST_NO_AUTO_PTR)
 endif()
-include_directories(Boost::serialization Boost::filesystem Boost::system) #${Boost_INCLUDE_DIRS})
-link_libraries(Boost::serialization Boost::filesystem Boost::system)
+include_directories(Boost::serialization Boost::filesystem Boost::system Boost::iostreams) #${Boost_INCLUDE_DIRS})
+link_libraries(Boost::serialization Boost::filesystem Boost::system Boost::iostreams)
 
-target_include_directories(inq INTERFACE Boost::serialization Boost::filesystem Boost::system) #${Boost_INCLUDE_DIRS})
-target_link_libraries(inq INTERFACE Boost::serialization Boost::filesystem Boost::system)
+target_include_directories(inq INTERFACE Boost::serialization Boost::filesystem Boost::system Boost::iostreams) #${Boost_INCLUDE_DIRS})
+target_link_libraries(inq INTERFACE Boost::serialization Boost::filesystem Boost::system Boost::iostreams)
 
 #######################
 # GENERATE inq_config.h
