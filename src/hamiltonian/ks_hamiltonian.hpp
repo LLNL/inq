@@ -65,7 +65,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 		
 	ks_hamiltonian(const basis::real_space & basis, ions::brillouin const & bzone, states::ks_states const & states, atomic_potential const & pot, systems::ions const & ions,
-								 const int num_hf_orbitals, const double exchange_coefficient, bool use_ace = false):
+								 const double exchange_coefficient, bool use_ace = false):
 		exchange(basis.cell(), bzone, exchange_coefficient, use_ace),
 		scalar_potential_(states.num_density_components(), basis),
 		uniform_vector_potential_({0.0, 0.0, 0.0}),
@@ -259,7 +259,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	auto bzone = ions::brillouin(ions, input::kpoints::gamma());
 	
-	hamiltonian::ks_hamiltonian<double> ham(rs, bzone, st, pot, ions, st.num_states(), 0.0);
+	hamiltonian::ks_hamiltonian<double> ham(rs, bzone, st, pot, ions, 0.0);
 
 	SECTION("Constant function"){
 		
