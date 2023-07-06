@@ -75,7 +75,7 @@ public:
 		return conf;
 	}
 
-	auto spin_orbit(){
+	auto spin_non_collinear(){
 		electrons conf = *this;
 		conf.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
 		return conf;
