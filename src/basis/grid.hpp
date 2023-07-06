@@ -24,12 +24,11 @@ namespace basis {
 
 		const static int dimension = 3;
 		
-		grid(const systems::cell & cell, std::array<int, 3> nr, bool spherical_grid, parallel::communicator & comm) :
+		grid(const systems::cell & cell, std::array<int, 3> nr, parallel::communicator & comm) :
 			base(nr[0], comm),
 			cubic_part_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
 			cell_(cell),
-			nr_(nr),
-			spherical_g_grid_(spherical_grid){
+			nr_(nr){
 
 			if(base::part_.local_size() == 0){
 				std::cerr << "\n  Partition " << comm.rank() << " has 0 points. Please change the number of processors.\n" << std::endl;
@@ -53,7 +52,7 @@ namespace basis {
 		}
 		
 		grid(grid && old, parallel::communicator new_comm):
-			grid(old.cell_, old.nr_, old.spherical_g_grid_, new_comm)
+			grid(old.cell_, old.nr_, new_comm)
 		{
 		}
 		
@@ -192,8 +191,6 @@ namespace basis {
 
 		long npoints_;
 
-		bool spherical_g_grid_;
-
   };
 
 }
@@ -214,7 +211,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	basis::grid gr(cell, {120, 45, 77}, true, comm);
+	basis::grid gr(cell, {120, 45, 77}, comm);
 
 	CHECK(gr.sizes()[0] == 120);
 	CHECK(gr.sizes()[1] == 45);

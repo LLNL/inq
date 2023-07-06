@@ -359,7 +359,7 @@ auto to_fourier(const FieldSetType & phi){
 		to_fourier_array(phi.basis(), fphi.basis(), phi_as_scalar, fphi_as_scalar);
 	}
 	
-	if(fphi.basis().spherical()) zero_outside_sphere(fphi);
+	zero_outside_sphere(fphi);
 	
 	return fphi;
 }

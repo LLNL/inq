@@ -127,16 +127,6 @@ public:
 		return density_factor_.value_or(1.0);
 	}
 
-	auto spherical_grid(bool arg_sph_grid){
-		electrons conf = *this;		
-		conf.spherical_grid_ = arg_sph_grid;
-		return conf;
-	}
-	
-	auto spherical_grid_value() const {
-		return spherical_grid_.value_or(true);
-	}
-	
 	auto real_space_pseudo() const {
 		electrons conf = *this;
 		conf.fourier_pseudo_ = false;
