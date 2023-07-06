@@ -38,10 +38,6 @@ class real_space;
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();			
     }
 
-		bool spherical() const {
-			return spherical_g_grid_;
-		}
-
 		auto volume_element() const {
 			return cell().volume()/(size()*size());
 		}

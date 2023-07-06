@@ -27,8 +27,8 @@ class fourier_space;
 
 		using reciprocal_space = fourier_space;
 
-		real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm, bool spherical_grid = true):
-			grid(cell, calculate_dimensions(cell, spacing), spherical_grid, comm)
+		real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm):
+			grid(cell, calculate_dimensions(cell, spacing), comm)
 		{
     }
 
@@ -135,16 +135,16 @@ class fourier_space;
 		}
 
 		auto enlarge(int factor) const {
-			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, spherical_g_grid_, this->comm()));
+			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, this->comm()));
 		}
 
 		auto enlarge(vector3<int> factor) const {
-			return real_space(grid(cell_.enlarge(factor), {factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]}, spherical_g_grid_, this->comm()));
+			return real_space(grid(cell_.enlarge(factor), {factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]},  this->comm()));
 		}
 		
 		auto refine(double factor) const {
 			assert(factor > 0.0);
-			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, spherical_g_grid_, this->comm()));
+			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, this->comm()));
 		}
 		
 		auto volume_element() const {
