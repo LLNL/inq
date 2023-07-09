@@ -26,6 +26,17 @@ namespace hamiltonian {
 template <typename Perturbation = perturbations::none>
 class self_consistency {
 	
+	options::theory theory_;
+	hamiltonian::xc_term xc_;
+	basis::field<basis::real_space, double> vion_;
+	basis::field<basis::real_space, double> core_density_;
+	basis::real_space potential_basis_;
+	basis::real_space density_basis_;
+	Perturbation pert_;
+	vector3<double, covariant> induced_vector_potential_acc_;
+	vector3<double, covariant> induced_vector_potential_vel_;
+	vector3<double, covariant> induced_vector_potential_;
+
 public:
 	
 	self_consistency(options::theory interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis, int const spin_components, Perturbation const & pert = {}):
@@ -172,21 +183,7 @@ public:
 	bool have_induced_vector_potential() const {
 		return theory_.induced_vector_potential_value() != options::theory::induced_vector_potential::NONE;
 	}
-	
-private:
-	
-	options::theory theory_;
-	hamiltonian::xc_term xc_;
-	basis::field<basis::real_space, double> vion_;
-	basis::field<basis::real_space, double> core_density_;
-	basis::real_space potential_basis_;
-	basis::real_space density_basis_;
-	Perturbation pert_;
-	vector3<double, covariant> induced_vector_potential_acc_;
-	vector3<double, covariant> induced_vector_potential_vel_;
-	vector3<double, covariant> induced_vector_potential_;
-
-	
+		
 };
 }
 }
