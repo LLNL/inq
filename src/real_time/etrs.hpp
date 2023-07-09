@@ -27,7 +27,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	systems::electrons::kpin_type save;
 
-	if(sc.have_induced_vector_potential()){
+	if(sc.has_induced_vector_potential()){
 		sc.propagate_induced_vector_potential(dt, observables::current(ions, electrons, ham));
 	}
 	

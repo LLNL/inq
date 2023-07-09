@@ -147,8 +147,8 @@ public:
 		return inter;
 	}
 	
-	auto induced_vector_potential_value() const {
-		return induced_vecpot_.value_or(induced_vector_potential::NONE);
+	auto has_induced_vector_potential() const {
+		return induced_vecpot_.value_or(induced_vector_potential::NONE) == induced_vector_potential::LRC;
 	}
 
 	auto alpha_value() const {
@@ -187,24 +187,26 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     auto inter = options::theory{}.non_interacting();
     
 		CHECK(not inter.self_consistent());
-		CHECK(inter.exchange_coefficient() == 0.0);		
+		CHECK(inter.exchange_coefficient() == 0.0);
+		CHECK(inter.has_induced_vector_potential() == false);
   }
 	
   SECTION("Hartee-Fock"){
 
     auto inter = options::theory{}.hartree_fock();
 		CHECK(inter.exchange_coefficient() == 1.0);
+		CHECK(inter.has_induced_vector_potential() == false);		
   }
 
 	SECTION("Induced vector potential"){
 		{
 			auto inter = options::theory{}.induced_vector_potential();
-			CHECK(inter.induced_vector_potential_value() == options::theory::induced_vector_potential::LRC);
+			CHECK(inter.has_induced_vector_potential() == true);
 			CHECK(inter.alpha_value() == -4.0*M_PI);
 		}
 		{
 			auto inter = options::theory{}.induced_vector_potential(0.2);
-			CHECK(inter.induced_vector_potential_value() == options::theory::induced_vector_potential::LRC);
+			CHECK(inter.has_induced_vector_potential() == true);
 			CHECK(inter.alpha_value() == 0.2);
 		}
 	}
