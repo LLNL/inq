@@ -26,6 +26,17 @@ namespace hamiltonian {
 template <typename Perturbation = perturbations::none>
 class self_consistency {
 	
+	options::theory theory_;
+	hamiltonian::xc_term xc_;
+	basis::field<basis::real_space, double> vion_;
+	basis::field<basis::real_space, double> core_density_;
+	basis::real_space potential_basis_;
+	basis::real_space density_basis_;
+	Perturbation pert_;
+	vector3<double, covariant> induced_vector_potential_acc_;
+	vector3<double, covariant> induced_vector_potential_vel_;
+	vector3<double, covariant> induced_vector_potential_;
+
 public:
 	
 	self_consistency(options::theory interaction, basis::real_space const & potential_basis, basis::real_space const & density_basis, int const spin_components, Perturbation const & pert = {}):
@@ -144,17 +155,17 @@ public:
 			hamiltonian.uniform_vector_potential_ = {0.0, 0.0, 0.0};
 		}
 
-		if(have_induced_vector_potential()){
+		if(has_induced_vector_potential()){
 			hamiltonian.uniform_vector_potential_ += induced_vector_potential_;
 		}
 		
 	}
 
-	void propagate_induced_vector_potential(double const dt, const double volume, vector3<double,covariant> const & current) {
-		if(theory_.induced_vector_potential_value() == options::theory::induced_vector_potential::LRC){
+	void propagate_induced_vector_potential(double const dt, vector3<double,covariant> const & current) {
+		if(has_induced_vector_potential()){
 			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
 			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
-			induced_vector_potential_acc_ = theory_.alpha_value()*(-current)/volume;
+			induced_vector_potential_acc_ = theory_.alpha_value()*(-current)/density_basis_.cell().volume();
 			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
 			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
 		}
@@ -169,23 +180,10 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	bool have_induced_vector_potential() const {
-		return theory_.induced_vector_potential_value() != options::theory::induced_vector_potential::NONE;
+	bool has_induced_vector_potential() const {
+		return theory_.has_induced_vector_potential();
 	}
-	
-private:
-	
-	options::theory theory_;
-	hamiltonian::xc_term xc_;
-	basis::field<basis::real_space, double> vion_;
-	basis::field<basis::real_space, double> core_density_;
-	basis::real_space potential_basis_;
-	basis::real_space density_basis_;
-	Perturbation pert_;
-	vector3<double, covariant> induced_vector_potential_acc_;
-	vector3<double, covariant> induced_vector_potential_vel_;
-	vector3<double, covariant> induced_vector_potential_;
-
+		
 	
 };
 }

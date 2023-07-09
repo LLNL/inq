@@ -41,18 +41,12 @@ public:
 		LYP = XC_GGA_C_LYP
 	};
 	
-	enum class induced_vector_potential {
-		NONE,
-		LRC
-	};
-
 private:
 
 	std::optional<bool> hartree_potential_;
 	std::optional<exchange_functional> exchange_;
 	std::optional<correlation_functional> correlation_;
-	std::optional<induced_vector_potential> induced_vecpot_;
-	double alpha_ = 0;
+	std::optional<double> alpha_;
 
 public:
 	
@@ -140,26 +134,19 @@ public:
 		return hartree_potential() or exchange() != exchange_functional::NONE or correlation() != correlation_functional::NONE;
 	}
 
-	auto lrc() const {
+	auto induced_vector_potential(const double alpha = -4.0*M_PI){
 		theory inter = *this;
-		inter.induced_vecpot_ = induced_vector_potential::LRC;
-		inter.alpha_ = -4*M_PI;
-		return inter;
-	}
-
-	auto lrc(const double alpha){
-		theory inter = *this;
-		inter.induced_vecpot_ = induced_vector_potential::LRC;
 		inter.alpha_ = alpha;
 		return inter;
 	}
 	
-	auto induced_vector_potential_value() const {
-		return induced_vecpot_.value_or(induced_vector_potential::NONE);
+	auto has_induced_vector_potential() const {
+		return alpha_.has_value();
 	}
 
 	auto alpha_value() const {
-		return alpha_;
+		assert(alpha_.has_value());
+		return alpha_.value();
 	}
 
 		
@@ -194,14 +181,29 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     auto inter = options::theory{}.non_interacting();
     
 		CHECK(not inter.self_consistent());
-		CHECK(inter.exchange_coefficient() == 0.0);		
+		CHECK(inter.exchange_coefficient() == 0.0);
+		CHECK(inter.has_induced_vector_potential() == false);
   }
 	
   SECTION("Hartee-Fock"){
 
     auto inter = options::theory{}.hartree_fock();
 		CHECK(inter.exchange_coefficient() == 1.0);
+		CHECK(inter.has_induced_vector_potential() == false);		
   }
+
+	SECTION("Induced vector potential"){
+		{
+			auto inter = options::theory{}.induced_vector_potential();
+			CHECK(inter.has_induced_vector_potential() == true);
+			CHECK(inter.alpha_value() == -4.0*M_PI);
+		}
+		{
+			auto inter = options::theory{}.induced_vector_potential(0.2);
+			CHECK(inter.has_induced_vector_potential() == true);
+			CHECK(inter.alpha_value() == 0.2);
+		}
+	}
 
 }
 #endif
