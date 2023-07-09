@@ -203,5 +203,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(inter.exchange_coefficient() == 1.0);
   }
 
+	SECTION("Induced vector potential"){
+		{
+			auto inter = options::theory{}.induced_vector_potential();
+			CHECK(inter.induced_vector_potential_value() == options::theory::induced_vector_potential::LRC);
+			CHECK(inter.alpha_value() == -4.0*M_PI);
+		}
+		{
+			auto inter = options::theory{}.induced_vector_potential(0.2);
+			CHECK(inter.induced_vector_potential_value() == options::theory::induced_vector_potential::LRC);
+			CHECK(inter.alpha_value() == 0.2);
+		}
+	}
+
 }
 #endif
