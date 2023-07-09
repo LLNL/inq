@@ -85,6 +85,12 @@ auto point(vector3<double, covariant> const & kpoint, double const & weight = 1.
 	return kpts;
 }
 
+auto point(double const & k0, double const & k1, double const & k2, double const & weight = 1.0){
+	auto kpts = input::kpoints::list();
+	kpts.insert(vector3<double, covariant>{k0, k1, k2}, weight);
+	return kpts;
+}
+
 auto gamma(){
 	return point({0.0, 0.0, 0.0}, 1.0);
 }
