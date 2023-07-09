@@ -28,7 +28,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	systems::electrons::kpin_type save;
 
 	if(sc.have_induced_vector_potential()){
-		sc.propagate_induced_vector_potential(dt, ions.cell().volume(), observables::current(ions, electrons, ham));
+		sc.propagate_induced_vector_potential(dt, observables::current(ions, electrons, ham));
 	}
 	
 	int iphi = 0;

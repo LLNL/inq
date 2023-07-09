@@ -161,11 +161,11 @@ public:
 		
 	}
 
-	void propagate_induced_vector_potential(double const dt, const double volume, vector3<double,covariant> const & current) {
+	void propagate_induced_vector_potential(double const dt, vector3<double,covariant> const & current) {
 		if(theory_.induced_vector_potential_value() == options::theory::induced_vector_potential::LRC){
 			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
 			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
-			induced_vector_potential_acc_ = theory_.alpha_value()*(-current)/volume;
+			induced_vector_potential_acc_ = theory_.alpha_value()*(-current)/density_basis_.cell().volume();
 			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
 			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
 		}
