@@ -69,7 +69,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using Catch::Approx;
 		
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
-	auto par = input::parallelization(comm).states();
+	auto par = input::parallelization(comm);
 
 	{
 		systems::ions ions(systems::cell::orthorhombic(6.0_b, 10.0_b, 6.0_b));
