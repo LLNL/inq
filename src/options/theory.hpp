@@ -41,18 +41,12 @@ public:
 		LYP = XC_GGA_C_LYP
 	};
 	
-	enum class induced_vector_potential {
-		NONE,
-		LRC
-	};
-
 private:
 
 	std::optional<bool> hartree_potential_;
 	std::optional<exchange_functional> exchange_;
 	std::optional<correlation_functional> correlation_;
-	std::optional<induced_vector_potential> induced_vecpot_;
-	double alpha_ = 0;
+	std::optional<double> alpha_;
 
 public:
 	
@@ -142,17 +136,17 @@ public:
 
 	auto induced_vector_potential(const double alpha = -4.0*M_PI){
 		theory inter = *this;
-		inter.induced_vecpot_ = induced_vector_potential::LRC;
 		inter.alpha_ = alpha;
 		return inter;
 	}
 	
 	auto has_induced_vector_potential() const {
-		return induced_vecpot_.value_or(induced_vector_potential::NONE) == induced_vector_potential::LRC;
+		return alpha_.has_value();
 	}
 
 	auto alpha_value() const {
-		return alpha_;
+		assert(alpha_.has_value());
+		return alpha_.value();
 	}
 
 		
