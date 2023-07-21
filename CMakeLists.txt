@@ -229,11 +229,11 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/multi)
 target_link_libraries(inq INTERFACE multi)
 
 # MPI3
-set(mpi3_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
+set(bmpi3_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
 include_directories(${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/mpi3)
-target_link_libraries(inq INTERFACE mpi3)
+target_link_libraries(inq INTERFACE bmpi3)
 
 ########################
 # SPDLOG
