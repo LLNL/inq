@@ -61,8 +61,8 @@ git clone git@gitlab.com:npneq/inq.git --recursive
 cd inq
 mkdir build && cd build
 # set up environment if necessary, e.g. export CUDACXX=/usr/local/cuda/bin/nvcc, or load modules
-../configure --prefix=$HOME  # change prefix, e.g. $HOME/.local or /usr/local (needs root access), if necessary,
-make -j
+cmake .. --install-prefix=$HOME  # change prefix if necessary, e.g. $HOME/.local or /usr/local (needs root access)
+cmake --build . --parallel
 make install
 make test
 ```
