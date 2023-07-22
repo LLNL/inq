@@ -12,6 +12,7 @@ add_library(unit_tests_main OBJECT main/unit_tests_main.cpp)
 if(ENABLE_CUDA)
 	set_source_files_properties(main/unit_tests_main.cpp PROPERTIES LANGUAGE CUDA)
 endif()
+target_link_libraries(unit_tests_main PRIVATE inq Catch2::Catch2WithMain)
 
 file(GLOB INCLUDE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */*.hpp)
 
