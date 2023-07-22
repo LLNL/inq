@@ -174,8 +174,7 @@ target_include_directories(inq INTERFACE ${Libxc_INCLUDE_DIRS})
 target_link_libraries(inq INTERFACE ${Libxc_LIBRARIES} xc)
 
 # Multi
-set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/include)
-
+#set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/include)
 add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/multi)
 target_link_libraries(inq INTERFACE multi)
 
