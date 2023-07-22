@@ -80,7 +80,7 @@ if(ENABLE_CUDA)
 
   string(APPEND CMAKE_CUDA_FLAGS " --forward-unknown-to-host-linker ${ARCH_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
 
-  target_link_libraries(inq INTERFACE CUDA::cufft CUDA::cusolver)
+  target_link_libraries(inq INTERFACE CUDA::cufft CUDA::cudart CUDA::cusolver)
   # if(${CUDA_cublas_LIBRARY} STREQUAL "CUDA_cublas_LIBRARY-NOTFOUND")
   #   target_include_directories(inq INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/include")
   #   target_link_directories   (inq INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/../../math_libs/lib64")
