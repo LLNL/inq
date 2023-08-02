@@ -65,6 +65,10 @@ public:
 		std::getline(poscar_file, species_line);
 		std::getline(poscar_file, species_line);
 
+		species_line.erase(species_line.begin(), std::find_if(species_line.begin(), species_line.end(), [](auto c) {
+			return !std::isspace(c);
+		}));
+
 		std::istringstream iss(species_line);
 
 		std::string species_name;
