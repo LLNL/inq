@@ -165,7 +165,7 @@ public:
 		if(has_induced_vector_potential()){
 			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
 			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
-			induced_vector_potential_acc_ = theory_.alpha_value()*(-current)/density_basis_.cell().volume();
+			induced_vector_potential_acc_ = theory_.alpha_value()*current/density_basis_.cell().volume();
 			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
 			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
 		}
