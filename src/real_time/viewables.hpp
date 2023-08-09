@@ -91,7 +91,7 @@ public:
 	}
 
 	auto uniform_vector_potential() const{
-		return ham_.uniform_vector_potential();
+		return ions_.cell().metric().to_cartesian(ham_.uniform_vector_potential());
 	}
 
 	auto num_electrons() const {
