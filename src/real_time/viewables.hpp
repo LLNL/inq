@@ -123,18 +123,6 @@ public:
 
 		return occ;
 	}
-	
-	auto induced_vector_potential() const{
-		return ham_.vp_induced;
-	}
-
-	auto induced_vector_potential_vel() const{
-		return ham_.vp_velocity;
-	}
-	auto induced_vector_potential_accel() const{
-		return ham_.vp_accel;
-	}
-
 };
 
 }
