@@ -105,11 +105,11 @@ int main(int argc, char ** argv){
 		data_match.check("current in z step  30", jz[30],  -0.140190241687);
 		data_match.check("current in z step  40", jz[40],  -0.135682773098);
 		
-		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
-		data_match.check("vector potential in z step  10", Az[10],  0.050900000000);
-		data_match.check("vector potential in z step  20", Az[20],  0.050900000000);
-		data_match.check("vector potential in z step  30", Az[30],  0.050900000000);
-		data_match.check("vector potential in z step  40", Az[40],  0.050900000000);
+		data_match.check("vector potential in z step   0", Az[0],   0.005000000000);
+		data_match.check("vector potential in z step  10", Az[10],  0.005000000000);
+		data_match.check("vector potential in z step  20", Az[20],  0.005000000000);
+		data_match.check("vector potential in z step  30", Az[30],  0.005000000000);
+		data_match.check("vector potential in z step  40", Az[40],  0.005000000000);
 	}
 
 	{ //LRC CORRECTION
@@ -140,11 +140,11 @@ int main(int argc, char ** argv){
 		data_match.check("current in z step  30", jz[30],  -0.140532994159);
 		data_match.check("current in z step  40", jz[40],  -0.136280648873);
 		
-		data_match.check("vector potential in z step   0", Az[0],   0.050900000000);
-		data_match.check("vector potential in z step  10", Az[10],  0.050912319754);
-		data_match.check("vector potential in z step  20", Az[20],  0.050951055407);
-		data_match.check("vector potential in z step  30", Az[30],  0.051015009633);
-		data_match.check("vector potential in z step  40", Az[40],  0.051103423993);
+		data_match.check("vector potential in z step   0", Az[0],   0.005000000000);
+		data_match.check("vector potential in z step  10", Az[10],  0.005001210192);
+		data_match.check("vector potential in z step  20", Az[20],  0.005005015266);
+		data_match.check("vector potential in z step  30", Az[30],  0.005011297606);
+		data_match.check("vector potential in z step  40", Az[40],  0.005019982710);
 	}
 	
 	fftw_cleanup();
