@@ -91,7 +91,7 @@ public:
 	}
 
 	auto uniform_vector_potential() const{
-		return ham_.uniform_vector_potential();
+		return ions_.cell().metric().to_cartesian(ham_.uniform_vector_potential());
 	}
 
 	auto num_electrons() const {
@@ -123,18 +123,6 @@ public:
 
 		return occ;
 	}
-	
-	auto induced_vector_potential() const{
-		return ham_.vp_induced;
-	}
-
-	auto induced_vector_potential_vel() const{
-		return ham_.vp_velocity;
-	}
-	auto induced_vector_potential_accel() const{
-		return ham_.vp_accel;
-	}
-
 };
 
 }
