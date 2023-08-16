@@ -221,6 +221,13 @@ target_link_libraries(inq
 target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/gemmi/include)
 
 ########################
+# ZLIB
+########################
+
+find_package(ZLIB REQUIRED)
+target_link_libraries(inq INTERFACE ZLIB::ZLIB)
+
+########################
 # BOOST
 ########################
 
