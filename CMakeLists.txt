@@ -231,15 +231,15 @@ target_link_libraries(inq INTERFACE ZLIB::ZLIB)
 # BOOST
 ########################
 
-find_package(Boost REQUIRED COMPONENTS serialization filesystem system iostreams)
+find_package(Boost REQUIRED COMPONENTS serialization system)
 message(STATUS "Boost actual version found " ${Boost_VERSION})
 if(Boost_VERSION LESS_EQUAL "1.53.0")  # 105300
 	message(STATUS "Applying option BOOST_NO_AUTO_PTR to patch for old Boost")
 	add_compile_options(-DBOOST_NO_AUTO_PTR)
 endif()
 
-target_include_directories(inq INTERFACE Boost::serialization Boost::filesystem Boost::system)
-target_link_libraries(inq INTERFACE Boost::serialization Boost::filesystem Boost::system)
+target_include_directories(inq INTERFACE Boost::serialization Boost::system)
+target_link_libraries(inq INTERFACE Boost::serialization Boost::system)
 
 #######################
 # GENERATE inq_config.h

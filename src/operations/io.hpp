@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <iostream>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace inq {
 namespace operations {
@@ -53,7 +53,7 @@ void save(std::string const & dirname, CommType & comm, PartType const & part, A
 
 	auto filename = dirname + "/array";
 
-	if(comm.root()) boost::filesystem::create_directories(dirname);
+	if(comm.root()) std::filesystem::create_directories(dirname);
 	comm.barrier();
 	
 	MPI_File fh;
@@ -128,7 +128,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 	
 	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
 
-	if(phi.full_comm().rank() == 0) boost::filesystem::create_directories(dirname);
+	if(phi.full_comm().rank() == 0) std::filesystem::create_directories(dirname);
 	phi.full_comm().barrier();
 				 
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
