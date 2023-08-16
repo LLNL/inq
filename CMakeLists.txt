@@ -221,6 +221,13 @@ target_link_libraries(inq
 target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/gemmi/include)
 
 ########################
+# ZLIB
+########################
+
+find_package(ZLIB REQUIRED)
+target_link_libraries(inq INTERFACE ZLIB::ZLIB)
+
+########################
 # BOOST
 ########################
 
@@ -231,8 +238,8 @@ if(Boost_VERSION LESS_EQUAL "1.53.0")  # 105300
 	add_compile_options(-DBOOST_NO_AUTO_PTR)
 endif()
 
-target_include_directories(inq INTERFACE Boost::serialization Boost::filesystem Boost::system Boost::iostreams) #${Boost_INCLUDE_DIRS})
-target_link_libraries(inq INTERFACE Boost::serialization Boost::filesystem Boost::system Boost::iostreams)
+target_include_directories(inq INTERFACE Boost::serialization Boost::filesystem Boost::system)
+target_link_libraries(inq INTERFACE Boost::serialization Boost::filesystem Boost::system)
 
 #######################
 # GENERATE inq_config.h
