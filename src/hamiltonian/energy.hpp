@@ -51,16 +51,19 @@ namespace hamiltonian {
 				operations::shift(-1.0, el.eigenvalues()[iphi], phi, residual);
 				
 				normres[iphi] = operations::overlap_diagonal(residual);
-				auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);
 				
 				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 				
 				eigenvalues_ += operations::sum(el.occupations()[iphi], el.eigenvalues()[iphi], energy_term);
-				nonlocal_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
+
+				{
+					CALI_CXX_MARK_SCOPE("energy::calculate::nonlocal");
+					auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);
+					nonlocal_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
+				}
 
 				if(ham.exchange.enabled()){
 					CALI_CXX_MARK_SCOPE("energy::calculate::exchange");
-
 					auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(phi), phi);
 					hf_exchange_ += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
 				}
