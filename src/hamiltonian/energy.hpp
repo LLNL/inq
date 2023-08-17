@@ -63,9 +63,13 @@ namespace hamiltonian {
 				iphi++;
 			}
 
-			el.kpin_states_comm().all_reduce_n(&eigenvalues_, 1);
-			el.kpin_states_comm().all_reduce_n(&nonlocal_, 1);
-			el.kpin_states_comm().all_reduce_n(&hf_exchange_, 1);
+			if(el.kpin_states_comm().size() > 1){	
+				CALI_CXX_MARK_SCOPE("energy::calculate::reduce");
+
+				el.kpin_states_comm().all_reduce_n(&eigenvalues_, 1);
+				el.kpin_states_comm().all_reduce_n(&nonlocal_, 1);
+				el.kpin_states_comm().all_reduce_n(&hf_exchange_, 1);
+			}
 
 			return normres;
 		}
