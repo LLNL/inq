@@ -21,6 +21,7 @@ namespace real_time {
 
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
 void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
+	CALI_CXX_MARK_FUNCTION;
 
 	int const nscf = 5;
 	double const scf_threshold = 5e-5;
@@ -36,7 +37,9 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		
 		//propagate half step and full step with H(t)
 		auto halfstep_phi = operations::exponential_2_for_1(ham, complex(0.0, dt/2.0), complex(0.0, dt), phi);
-		save.emplace_back(std::move(halfstep_phi));
+		{ CALI_CXX_MARK_SCOPE("etrs:save");
+		  save.emplace_back(std::move(halfstep_phi));
+		}
 									 		
 		iphi++;
 	}
@@ -53,8 +56,11 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 	ham.exchange.update(electrons);
-	electrons.kpin() = save;
-	
+
+	{ CALI_CXX_MARK_SCOPE("etrs:restore");
+		electrons.kpin() = save;
+	}
+
 	//propagate the other half step with H(t + dt) self-consistently
 	for(int iscf = 0; iscf < nscf; iscf++){
 
