@@ -29,9 +29,9 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	auto nk = 2;
+	auto nk = 8;
 	
-	systems::electrons electrons(env.par(), ions, input::kpoints::grid({nk, nk, nk}, true), options::electrons{}.spacing(a/24));
+	systems::electrons electrons(env.par(), ions, input::kpoints::grid({nk, nk, nk}, false), options::electrons{}.spacing(a/32));
 
 	auto functional = options::theory{}.pbe();
 	
@@ -44,12 +44,13 @@ int main(int argc, char ** argv){
 
 	auto kick = perturbations::kick{ions.cell(), {0.01, 0.0, 0.0}, perturbations::gauge::velocity};
 	
-	auto const dt = 0.065;
-	long nsteps = 413.41373/dt;
+	auto const dt = 0.010000;
+	long nsteps = 100; //413.41373/dt;
 	
 	gpu::array<double, 1> time(nsteps);
 	gpu::array<double, 1> cur(nsteps);
-	gpu::array<double, 1> en(nsteps);		
+	gpu::array<double, 1> en(nsteps);	
+	gpu::array<double, 1> aind(nsteps);
 
 	std::ofstream file;
 	if(electrons.root()) file.open("current.dat");
@@ -60,10 +61,10 @@ int main(int argc, char ** argv){
 		
 		time[iter] = data.time();
 		cur[iter] = data.current()[0];
-
 		en[iter] = data.energy().total();
-
-		if(data.root()) file << time[iter] << '\t' << cur[iter] << std::endl;
+		aind[iter] = data.uniform_vector_potential()[0];
+		
+		if(data.root()) file << time[iter] << '\t' << cur[iter] << '\t' << aind[iter] << std::endl;
 		
 		if(data.root() and data.every(50)){
 			auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), cur({0, iter - 1}));  
@@ -76,7 +77,7 @@ int main(int argc, char ** argv){
 		}
 	};
 	
-	real_time::propagate<>(ions, electrons, output, functional, options::real_time{}.num_steps(nsteps).dt(dt*1.0_atomictime).etrs(), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, functional.induced_vector_potential(4.0*M_PI), options::real_time{}.num_steps(nsteps).dt(dt*1.0_atomictime).etrs(), ions::propagator::fixed{}, kick);
 	
 	return energy_match.fail();
 	

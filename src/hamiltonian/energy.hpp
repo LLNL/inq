@@ -38,6 +38,8 @@ namespace hamiltonian {
 			CALI_CXX_MARK_SCOPE("energy::calculate");
 
 			auto normres = gpu::array<complex, 2>({static_cast<gpu::array<complex, 2>::size_type>(el.kpin().size()), el.max_local_set_size()});
+
+			auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 			
 			eigenvalues_ = 0.0;
 			nonlocal_ = 0.0;
@@ -45,16 +47,15 @@ namespace hamiltonian {
 			
 			int iphi = 0;
 			for(auto & phi : el.kpin()){
-				
-				auto residual = ham(phi);
-				el.eigenvalues()[iphi] = operations::overlap_diagonal_normalized(residual, phi, operations::real_part{});
-				operations::shift(-1.0, el.eigenvalues()[iphi], phi, residual);
-				
-				normres[iphi] = operations::overlap_diagonal(residual);
-				
-				auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
-				
-				eigenvalues_ += operations::sum(el.occupations()[iphi], el.eigenvalues()[iphi], energy_term);
+
+				{
+					CALI_CXX_MARK_SCOPE("energy::calculate::eigenvalues");
+					auto residual = ham(phi);
+					el.eigenvalues()[iphi] = operations::overlap_diagonal_normalized(residual, phi, operations::real_part{});
+					operations::shift(-1.0, el.eigenvalues()[iphi], phi, residual);
+					normres[iphi] = operations::overlap_diagonal(residual);
+					eigenvalues_ += operations::sum(el.occupations()[iphi], el.eigenvalues()[iphi], energy_term);
+				}
 
 				{
 					CALI_CXX_MARK_SCOPE("energy::calculate::nonlocal");
@@ -74,9 +75,11 @@ namespace hamiltonian {
 			if(el.kpin_states_comm().size() > 1){	
 				CALI_CXX_MARK_SCOPE("energy::calculate::reduce");
 
-				el.kpin_states_comm().all_reduce_n(&eigenvalues_, 1);
-				el.kpin_states_comm().all_reduce_n(&nonlocal_, 1);
-				el.kpin_states_comm().all_reduce_n(&hf_exchange_, 1);
+				double red[3] = {eigenvalues_, nonlocal_, hf_exchange_};
+				el.kpin_states_comm().all_reduce_n(red, 3);
+				eigenvalues_ = red[0];
+				nonlocal_    = red[1];
+				hf_exchange_ = red[2];
 			}
 
 			return normres;
