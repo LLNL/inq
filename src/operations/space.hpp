@@ -358,8 +358,9 @@ auto to_fourier(const FieldSetType & phi){
 
 		to_fourier_array(phi.basis(), fphi.basis(), phi_as_scalar, fphi_as_scalar);
 	}
-	
-	zero_outside_sphere(fphi);
+
+	// this is disabled since it causes some issues I need to check, XA
+	//	zero_outside_sphere(fphi);
 	
 	return fphi;
 }
