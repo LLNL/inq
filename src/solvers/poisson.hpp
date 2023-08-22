@@ -509,16 +509,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		auto & part = potential.basis().part();
 	
-		if(part.contains(0))        CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(0))])        == -17.4005034752_a);
-		if(part.contains(10))       CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(10))])       ==  -0.1456166788_a);
-		if(part.contains(75*10))    CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(75*10))])    ==  -0.1784163493_a);
-		if(part.contains(50*75*10)) CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(50*75*10))]) ==  -0.1784163493_a);
+		if(part.contains(0)) CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(0))]) == -19.7036030489_a);
+		if(part.contains(10)) CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(10))]) == -0.1442198547_a);
+		if(part.contains(75*10)) CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(75*10))]) == -0.1883939339_a);
+		if(part.contains(50*75*10)) CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(50*75*10))]) == -0.1883939339_a);
 
 		for(int ist = 0; ist < nst; ist++){
-			if(part.contains(0))        CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(0))][ist])/(1.0 + ist)        == -17.4005034752_a);
-			if(part.contains(10))       CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(10))][ist])/(1.0 + ist)       ==  -0.1456166788_a);
-			if(part.contains(75*10))    CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(75*10))][ist])/(1.0 + ist)    ==  -0.1784163493_a);
-			if(part.contains(50*75*10)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(50*75*10))][ist])/(1.0 + ist) ==  -0.1784163493_a);
+			if(part.contains(0)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(0))][ist])/(1.0 + ist) == -19.7036030489_a);
+			if(part.contains(10)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(10))][ist])/(1.0 + ist) == -0.1442198547_a);
+			if(part.contains(75*10)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(75*10))][ist])/(1.0 + ist) == -0.1883939339_a);
+			if(part.contains(50*75*10)) CHECK(real(density_set.matrix()[part.global_to_local(parallel::global_index(50*75*10))][ist])/(1.0 + ist) == -0.1883939339_a);
 		}
 		
 	}

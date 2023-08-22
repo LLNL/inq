@@ -358,8 +358,9 @@ auto to_fourier(const FieldSetType & phi){
 
 		to_fourier_array(phi.basis(), fphi.basis(), phi_as_scalar, fphi_as_scalar);
 	}
-	
-	zero_outside_sphere(fphi);
+
+	// this is disabled since it causes some issues I need to check, XA
+	//	zero_outside_sphere(fphi);
 	
 	return fphi;
 }
@@ -521,7 +522,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		diff /= phi2.hypercubic().num_elements();
 		
-		CHECK(diff < 5e-3); //this is not exact because of the zero sphere in Fourier space
+		CHECK(diff < 1e-15);
 		
 	}
 	

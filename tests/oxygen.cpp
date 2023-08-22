@@ -31,22 +31,22 @@ int main(int argc, char ** argv){
 	ions.insert("O", {-distance/2, 0.0_b, 0.0_b});
 	ions.insert("O", {distance/2, 0.0_b, 0.0_b});	
 
-	systems::electrons electrons(env.par(), ions, options::electrons{}.spacing(0.40_b).spin_polarized().temperature(1000.0_K).extra_states(2));
+	systems::electrons electrons(env.par(), ions, options::electrons{}.spacing(0.43_b).spin_polarized().temperature(1000.0_K).extra_states(2));
 	ground_state::initial_guess(ions, electrons);
 		
 	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.mixing(0.2).energy_tolerance(1e-8_Ha));
 	
-	match.check("total energy",        result.energy.total()    ,   -32.992817052706);
-	match.check("kinetic energy",      result.energy.kinetic()    ,  21.130408842736);
-	match.check("eigenvalues",         result.energy.eigenvalues(),  -7.231771093615);
-	match.check("hartree energy",      result.energy.hartree(),      42.263542203035);
-	match.check("external energy",     result.energy.external(),    -99.314139230050);
-	match.check("non-local energy",    result.energy.nonlocal(),     -4.606142280273);
-	match.check("XC energy",           result.energy.xc(),           -8.210601953832);
-	match.check("XC density integral", result.energy.nvxc(),         -8.968982832097);
+	match.check("total energy",        result.energy.total()    ,   -32.885878270495);
+	match.check("kinetic energy",      result.energy.kinetic()   ,   20.663840649123);
+	match.check("eigenvalues",         result.energy.eigenvalues(),  -7.271345986319);
+	match.check("hartree energy",      result.energy.hartree(),      42.107413515539);
+	match.check("external energy",     result.energy.external(),    -98.967748472806);
+	match.check("non-local energy",    result.energy.nonlocal(),     -4.258411086657);
+	match.check("XC energy",           result.energy.xc(),           -8.175088241373);
+	match.check("XC density integral", result.energy.nvxc(),         -8.923854107057);
 	match.check("HF exchange energy",  result.energy.hf_exchange(),   0.000000000000);
 	match.check("ion-ion energy",      result.energy.ion(),          15.744115365679);
-	
+
 	return match.fail();
 	
 }
