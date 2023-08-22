@@ -522,7 +522,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		diff /= phi2.hypercubic().num_elements();
 		
-		CHECK(diff < 5e-3); //this is not exact because of the zero sphere in Fourier space
+		CHECK(diff < 1e-15);
 		
 	}
 	

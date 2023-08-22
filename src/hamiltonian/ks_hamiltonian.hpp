@@ -380,7 +380,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		diff /= hphi.set_size()*hphi.basis().size();
 
-		CHECK(diff == 0.0051434147_a);
+		CHECK(diff == 0.0051420503_a);
 		
 	}
 
@@ -471,7 +471,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		diff /= hphi.set_size()*hphi.basis().size();
 
-		CHECK(diff == 0.0051436452_a);
+		CHECK(diff == 0.0051420503_a);
 		
 	}
 	
