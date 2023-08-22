@@ -76,11 +76,11 @@ class real_space;
 			}
 			
 			GPU_FUNCTION auto outside_sphere(int ix, int iy, int iz) const {
-				auto gvec = gvector(ix, iy, iz);
-				gvec[0] /= ng_[0]/2.0;
-				gvec[1] /= ng_[1]/2.0;
-				gvec[2] /= ng_[2]/2.0;
-				return metric_.norm(gvec) > 1.0;
+				auto ivec = grid::to_symmetric_range(ng_, cubic_part_[0].local_to_global(ix), cubic_part_[1].local_to_global(iy), cubic_part_[2].local_to_global(iz));
+				double xx = double(ivec[0])/ng_[0];
+				double yy = double(ivec[1])/ng_[1];
+				double zz = double(ivec[2])/ng_[2];
+				return xx*xx + yy*yy + zz*zz > 0.25;
 			}
 			
 			GPU_FUNCTION const auto & gspacing() const{

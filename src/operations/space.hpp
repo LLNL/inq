@@ -418,8 +418,23 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	auto basis_comm = basis::basis_subcomm(cart_comm);
 	basis::real_space rs(systems::cell::cubic(6.66_b), /*spacing =*/ 0.46320257, basis_comm);
+	auto fs = basis::fourier_space(rs);
 	
 	basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
+
+	SECTION("zero_outside_sphere"){
+		
+		basis::field<basis::fourier_space, double> ff(fs);
+		
+		ff.fill(1.0);
+		auto vol = operations::integral(ff);
+
+		CHECK(vol == 0.1076560845_a);
+		
+		operations::space::zero_outside_sphere(ff);
+		
+		CHECK(operations::integral(ff)/vol == 0.5160349854_a /* The limit is M_PI/6.0 for zero spacing */);
+	}
 	
 	SECTION("Zero"){
 		
