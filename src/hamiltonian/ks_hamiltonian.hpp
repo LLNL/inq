@@ -18,7 +18,7 @@
 #include <hamiltonian/projector_fourier.hpp>
 #include <hamiltonian/scalar_potential.hpp>
 #include <input/environment.hpp>
-#include <operations/space.hpp>
+#include <operations/transform.hpp>
 #include <operations/laplacian.hpp>
 #include <operations/gradient.hpp>
 #include <states/ks_states.hpp>
@@ -95,12 +95,12 @@ public:
  
 		if(non_local_in_fourier_) {
 
-			auto phi_fs = operations::space::to_fourier(phi);
+			auto phi_fs = operations::transform::to_fourier(phi);
 			states::orbital_set<basis::fourier_space, complex> vnlphi_fs(phi_fs.skeleton());
 
 			vnlphi_fs.fill(0.0);
 			non_local(phi_fs, vnlphi_fs);
-			return operations::space::to_real(vnlphi_fs);
+			return operations::transform::to_real(vnlphi_fs);
 					
 		} else {
 				
@@ -123,13 +123,13 @@ public:
 
 		auto proj = projectors_all_.project(phi, phi.kpoint() + uniform_vector_potential_);
 			
-		auto phi_fs = operations::space::to_fourier(phi);
+		auto phi_fs = operations::transform::to_fourier(phi);
 		
 		auto hphi_fs = operations::laplacian(phi_fs, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
 
 		non_local(phi_fs, hphi_fs);
 			
-		auto hphi = operations::space::to_real(hphi_fs);
+		auto hphi = operations::transform::to_real(hphi_fs);
 
 		hamiltonian::scalar_potential_add(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
 		exchange(phi, hphi);
@@ -145,7 +145,7 @@ public:
 			
 		CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
 
-		auto phi_rs = operations::space::to_real(phi);
+		auto phi_rs = operations::transform::to_real(phi);
 
 		auto proj = projectors_all_.project(phi_rs, phi.kpoint() + uniform_vector_potential_);
 			
@@ -155,7 +155,7 @@ public:
  
 		projectors_all_.apply(proj, hphi_rs, phi.kpoint() + uniform_vector_potential_);
 			
-		auto hphi = operations::space::to_fourier(hphi_rs);
+		auto hphi = operations::transform::to_fourier(hphi_rs);
 
 		operations::laplacian_add(phi, hphi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
 		non_local(phi, hphi);
@@ -409,7 +409,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			}
 		}
 
-		auto hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
+		auto hphi = operations::transform::to_real(ham(operations::transform::to_fourier(phi)));
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -455,7 +455,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			}
 		}
 
-		auto hphi = operations::space::to_real(ham(operations::space::to_fourier(phi)));
+		auto hphi = operations::transform::to_real(ham(operations::transform::to_fourier(phi)));
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){

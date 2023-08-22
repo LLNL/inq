@@ -15,7 +15,7 @@
 #include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
 #include <math/vector3.hpp>
-#include <operations/space.hpp>
+#include <operations/transform.hpp>
 #include <utils/profiling.hpp>
 
 namespace inq {
@@ -62,7 +62,7 @@ FieldSetType laplacian(FieldSetType const & ff, FactorType factor = 1.0, vector3
 	CALI_CXX_MARK_FUNCTION;
 
 	if constexpr(std::is_same_v<typename FieldSetType::basis_type, basis::real_space>) {
-		return operations::space::to_real(operations::laplacian(operations::space::to_fourier(ff), factor));		
+		return operations::transform::to_real(operations::laplacian(operations::transform::to_fourier(ff), factor));		
 	} else {
 		
 		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only implemented for real or fourier_space");
@@ -133,11 +133,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 
 		auto lapl = operations::laplacian(func, factor);
-		auto func_fs = operations::space::to_fourier(func);
+		auto func_fs = operations::transform::to_fourier(func);
 		operations::laplacian_in_place(func_fs, factor);
-		auto lapl_in_place = operations::space::to_real(func_fs);
-		operations::laplacian_add(operations::space::to_fourier(func), func_fs, factor);
-		auto lapl_add = operations::space::to_real(func_fs);
+		auto lapl_in_place = operations::transform::to_real(func_fs);
+		operations::laplacian_add(operations::transform::to_fourier(func), func_fs, factor);
+		auto lapl_add = operations::transform::to_real(func_fs);
 		
 		double diff = 0.0;
 		double diff_in_place = 0.0;
@@ -199,11 +199,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 
 		auto lapl = operations::laplacian(func, factor);
-		auto func_fs = operations::space::to_fourier(func);
+		auto func_fs = operations::transform::to_fourier(func);
 		operations::laplacian_in_place(func_fs, factor);
-		auto lapl_in_place = operations::space::to_real(func_fs);
-		operations::laplacian_add(operations::space::to_fourier(func), func_fs, factor);
-		auto lapl_add = operations::space::to_real(func_fs);
+		auto lapl_in_place = operations::transform::to_real(func_fs);
+		operations::laplacian_add(operations::transform::to_fourier(func), func_fs, factor);
+		auto lapl_add = operations::transform::to_real(func_fs);
 		
 		double diff = 0.0;
 		double diff_in_place = 0.0;
@@ -263,11 +263,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 
 		auto lapl = operations::laplacian(func, factor);
-		auto func_fs = operations::space::to_fourier(func);
+		auto func_fs = operations::transform::to_fourier(func);
 		operations::laplacian_in_place(func_fs, factor);
-		auto lapl_in_place = operations::space::to_real(func_fs);
-		operations::laplacian_add(operations::space::to_fourier(func), func_fs, factor);
-		auto lapl_add = operations::space::to_real(func_fs);
+		auto lapl_in_place = operations::transform::to_real(func_fs);
+		operations::laplacian_add(operations::transform::to_fourier(func), func_fs, factor);
+		auto lapl_add = operations::transform::to_real(func_fs);
 		
 		double diff = 0.0;
 		double diff_in_place = 0.0;

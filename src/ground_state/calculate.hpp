@@ -127,7 +127,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 		}
 		
 		for(auto & phi : electrons.kpin()) {
-			auto fphi = operations::space::to_fourier(std::move(phi));
+			auto fphi = operations::transform::to_fourier(std::move(phi));
 				
 			switch(solver.eigensolver()){
 					
@@ -139,7 +139,7 @@ ground_state::result calculate(const systems::ions & ions, systems::electrons & 
 				assert(false);
 			}
 
-			phi = operations::space::to_real(std::move(fphi));
+			phi = operations::transform::to_real(std::move(fphi));
 		}
 
 		CALI_MARK_BEGIN("mixing");

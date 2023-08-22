@@ -15,7 +15,7 @@
 #include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
 #include <math/vector3.hpp>
-#include <operations/space.hpp>
+#include <operations/transform.hpp>
 #include <utils/profiling.hpp>
 
 namespace inq {
@@ -29,9 +29,9 @@ ResultType divergence(FieldSetType const & ff, double factor = 1.0, vector3<doub
 
 	if constexpr(std::is_same_v<typename FieldSetType::basis_type, basis::real_space>) {
 		if constexpr(std::is_same_v<typename FieldSetType::element_type::element_type, double>) {		
-			return real_field(operations::space::to_real(operations::divergence(operations::space::to_fourier(complex_field(ff)), factor, shift)));
+			return real_field(operations::transform::to_real(operations::divergence(operations::transform::to_fourier(complex_field(ff)), factor, shift)));
 		} else {
-			return operations::space::to_real(operations::divergence(operations::space::to_fourier(ff), factor, shift));
+			return operations::transform::to_real(operations::divergence(operations::transform::to_fourier(ff), factor, shift));
 		}
 	} else {
 		

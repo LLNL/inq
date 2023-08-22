@@ -13,7 +13,7 @@
 #include <basis/field_set.hpp>
 #include <gpu/run.hpp>
 #include <parallel/get_remote_points.hpp>
-#include <operations/space.hpp>
+#include <operations/transform.hpp>
 
 #include <multi/adaptors/fftw.hpp>
 
@@ -315,8 +315,8 @@ auto refine(FieldType const & source, typename basis::real_space const & new_bas
 	assert(not source.basis().part().parallel());
 			
 	basis::fourier_space new_fourier_basis(new_basis);
-	auto destination_fourier = enlarge(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
-	return operations::space::to_real(destination_fourier,  /*normalize = */ false);
+	auto destination_fourier = enlarge(operations::transform::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
+	return operations::transform::to_real(destination_fourier,  /*normalize = */ false);
 }
 
 //////////////////////////////////////////////////////////
@@ -339,8 +339,8 @@ auto coarsen(FieldType const & source, typename basis::real_space const & new_ba
 	assert(not source.basis().part().parallel());
 			
 	basis::fourier_space new_fourier_basis(new_basis);
-	auto destination_fourier = shrink(operations::space::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
-	return operations::space::to_real(destination_fourier, /*normalize = */ false);
+	auto destination_fourier = shrink(operations::transform::to_fourier(source), new_fourier_basis, 1.0/source.basis().size());
+	return operations::transform::to_real(destination_fourier, /*normalize = */ false);
 }
 
 //////////////////////////////////////////////////////////
