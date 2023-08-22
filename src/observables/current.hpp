@@ -83,17 +83,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			auto cur = observables::current(ions, electrons, ham);
 
-			CHECK(cur[0] == -1.9018202326_a);
-			CHECK(cur[1] == -5.8744437947_a);
-			CHECK(cur[2] == -2.0854607655_a);
+			CHECK(cur[0] == 62.2452955214_a);
+			CHECK(cur[1] == -1.0723045428_a);
+			CHECK(cur[2] == 55.1882949624_a);
 			
 			ham.uniform_vector_potential() = vector3<double, covariant>{1.0, -2.0, 3.0};
 
 			cur = observables::current(ions, electrons, ham);
 
-			CHECK(cur[0] == -14.3800491961_a);
-			CHECK(cur[1] ==  19.0820141323_a);
-			CHECK(cur[2] == -39.5201476561_a);
+			CHECK(cur[0] ==  42.2452955214_a);
+			CHECK(cur[1] ==  38.9276954572_a);
+			CHECK(cur[2] ==  -4.8117050376_a);
 			
 		}
 
@@ -137,17 +137,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			ham.uniform_vector_potential() = vector3<double, covariant>{0.0, 0.0, 0.0};
 			
-			CHECK(cur[0] == -21.5025764534_a);
-			CHECK(cur[1] == -25.4752000156_a);
-			CHECK(cur[2] == -21.6862169863_a);
+			CHECK(cur[0] ==  30.8293689855_a);
+			CHECK(cur[1] == -32.4882310787_a);
+			CHECK(cur[2] ==  23.7723684265_a);
 			
 			ham.uniform_vector_potential() = vector3<double, covariant>{1.0, -2.0, 3.0};
 
 			cur = observables::current(ions, electrons, ham);
 
-			CHECK(cur[0] == -33.9808054170_a);
-			CHECK(cur[1] ==  -0.5187420885_a);
-			CHECK(cur[2] == -59.1209038769_a);
+			CHECK(cur[0] ==  10.8293689855_a);
+			CHECK(cur[1] ==   7.5117689213_a);
+			CHECK(cur[2] == -36.2276315735_a);
 			
 		}
 
@@ -193,17 +193,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			auto cur = observables::current(ions, electrons, ham);
 
-			CHECK(cur[0] ==  1.1881930424_a);
-			CHECK(cur[1] ==  3.0924490711_a);
-			CHECK(cur[2] == -1.1742075559_a);
+			CHECK(cur[0] == 125.4365980468_a);
+			CHECK(cur[1] ==  5.708830041_a);
+			CHECK(cur[2] == 116.8317675488_a);
 			
 			ham.uniform_vector_potential() = vector3<double, covariant>{1.0, -2.0, 3.0};
 
 			cur = observables::current(ions, electrons, ham);
 
-			CHECK(cur[0] == -22.3329458896_a);
-			CHECK(cur[1] ==  50.1419928639_a);
-			CHECK(cur[2] == -71.5878092751_a);
+			CHECK(cur[0] ==  87.3634379355_a);
+			CHECK(cur[1] ==  81.8624161924_a);
+			CHECK(cur[2] ==   2.7621022916_a);
 			
 		}
 
@@ -244,17 +244,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			auto cur = observables::current(ions, electrons, ham);
 
-			CHECK(cur[0] == -35.6687745275_a);
-			CHECK(cur[1] == -33.6480414758_a);
-			CHECK(cur[2] == -38.0202750984_a);
+			CHECK(cur[0] ==  65.7213690610_a);
+			CHECK(cur[1] == -53.8899219217_a);
+			CHECK(cur[2] ==  57.1274385904_a);
 			
 			ham.uniform_vector_potential() = vector3<double, covariant>{1.0, -2.0, 3.0};
 
 			cur = observables::current(ions, electrons, ham);
 
-			CHECK(cur[0] ==  -59.1613104715_a);
-			CHECK(cur[1] ==   13.3779952917_a);
-			CHECK(cur[2] == -108.4400843854_a);
+			CHECK(cur[0] ==  27.6768119377_a);
+			CHECK(cur[1] ==  22.2401572043_a);
+			CHECK(cur[2] == -56.9484342345_a);
 			
 		}
 
