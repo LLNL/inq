@@ -14,7 +14,7 @@
 #include <gpu/array.hpp>
 #include <basis/field.hpp>
 #include <basis/fourier_space.hpp>
-#include <operations/space.hpp>
+#include <operations/transform.hpp>
 #include <operations/transfer.hpp>
 
 #include <utils/profiling.hpp>
@@ -91,9 +91,9 @@ private:
 
 		CALI_CXX_MARK_FUNCTION;
 		
-		auto potential_fs = operations::space::to_fourier(density);
+		auto potential_fs = operations::transform::to_fourier(density);
 		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs);
-		return operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+		return operations::transform::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,9 +102,9 @@ private:
 
 		CALI_CXX_MARK_FUNCTION;
 
-		auto potential_fs = operations::space::to_fourier(std::move(density));
+		auto potential_fs = operations::transform::to_fourier(std::move(density));
 		poisson_apply_kernel(poisson_kernel_3d{}, potential_fs, gshift, zeroterm);
-		density = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+		density = operations::transform::to_real(std::move(potential_fs),  /*normalize = */ false);
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -114,12 +114,12 @@ private:
 		CALI_CXX_MARK_FUNCTION;
 
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge({1, 1, 2}));
-		auto potential_fs = operations::space::to_fourier(potential2x);
+		auto potential_fs = operations::transform::to_fourier(potential2x);
 
 		const auto cutoff_radius = density.basis().rlength()[2];
 		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs);
 
-		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
+		potential2x = operations::transform::to_real(potential_fs,  /*normalize = */ false);
 		auto potential = operations::transfer::shrink(potential2x, density.basis());
 
 		return potential;
@@ -132,12 +132,12 @@ private:
 		CALI_CXX_MARK_FUNCTION;
 
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge({1, 1, 2}));
-		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
+		auto potential_fs = operations::transform::to_fourier(std::move(potential2x));
 			
 		const auto cutoff_radius = density.basis().rlength()[2];
 		poisson_apply_kernel(poisson_kernel_2d{cutoff_radius}, potential_fs, gshift, zeroterm);
 		
-		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+		potential2x = operations::transform::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
 	}
 
@@ -148,12 +148,12 @@ private:
 		CALI_CXX_MARK_FUNCTION;
 
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
-		auto potential_fs = operations::space::to_fourier(potential2x);
+		auto potential_fs = operations::transform::to_fourier(potential2x);
 			
 		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs);
 		
-		potential2x = operations::space::to_real(potential_fs,  /*normalize = */ false);
+		potential2x = operations::transform::to_real(potential_fs,  /*normalize = */ false);
 		auto potential = operations::transfer::shrink(potential2x, density.basis());
 
 		return potential;
@@ -166,12 +166,12 @@ private:
 		CALI_CXX_MARK_FUNCTION;
 
 		auto potential2x = operations::transfer::enlarge(density, density.basis().enlarge(2));
-		auto potential_fs = operations::space::to_fourier(std::move(potential2x));
+		auto potential_fs = operations::transform::to_fourier(std::move(potential2x));
 			
 		const auto cutoff_radius = potential2x.basis().min_rlength()/2.0;
 		poisson_apply_kernel(poisson_kernel_0d{cutoff_radius}, potential_fs, gshift, zeroterm);
 
-		potential2x = operations::space::to_real(std::move(potential_fs),  /*normalize = */ false);
+		potential2x = operations::transform::to_real(std::move(potential_fs),  /*normalize = */ false);
 		density = operations::transfer::shrink(potential2x, density.basis());
 	}
 

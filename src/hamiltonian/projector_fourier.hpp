@@ -19,7 +19,7 @@
 #include <ions/periodic_replicas.hpp>
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
-#include <operations/space.hpp>
+#include <operations/transform.hpp>
 #include <hamiltonian/atomic_potential.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -62,7 +62,7 @@ namespace hamiltonian {
 
 			assert(iproj_lm == ps.num_projectors_lm());
 
-			beta_ = operations::space::to_fourier(beta_rs);
+			beta_ = operations::transform::to_fourier(beta_rs);
 			
     }
 		

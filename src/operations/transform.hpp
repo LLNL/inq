@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__OPERATIONS__SPACE
-#define INQ__OPERATIONS__SPACE
+#ifndef INQ__OPERATIONS__TRANSFORM
+#define INQ__OPERATIONS__TRANSFORM
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -35,7 +35,7 @@
 
 namespace inq {
 namespace operations {
-namespace space {
+namespace transform {
 
 ///////////////////////////////////////////////////////////////
 
@@ -403,8 +403,8 @@ auto to_real(const FieldSetType & fphi, bool const normalize = true){
 }
 #endif
 
-#ifdef INQ_OPERATIONS_SPACE_UNIT_TEST
-#undef INQ_OPERATIONS_SPACE_UNIT_TEST
+#ifdef INQ_OPERATIONS_TRANSFORM_UNIT_TEST
+#undef INQ_OPERATIONS_TRANSFORM_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -431,7 +431,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(vol == 0.1076560845_a);
 		
-		operations::space::zero_outside_sphere(ff);
+		operations::transform::zero_outside_sphere(ff);
 		
 		CHECK(operations::integral(ff)/vol == 0.5160349854_a /* The limit is M_PI/6.0 for zero spacing */);
 	}
@@ -446,7 +446,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			}
 		}
 		
-		auto fphi = operations::space::to_fourier(phi);
+		auto fphi = operations::transform::to_fourier(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
@@ -465,7 +465,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(diff < 1e-15);
 		
-		auto phi2 = operations::space::to_real(fphi);
+		auto phi2 = operations::transform::to_real(fphi);
 
 		diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -498,7 +498,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			}
 		}
 		
-		auto fphi = operations::space::to_fourier(phi);
+		auto fphi = operations::transform::to_fourier(phi);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
@@ -520,7 +520,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		//not sure what is wrong here
 		std::cout << "DIFF1 " << diff << std::endl;
 
-		auto phi2 = operations::space::to_real(fphi);
+		auto phi2 = operations::transform::to_real(fphi);
 
 		diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){

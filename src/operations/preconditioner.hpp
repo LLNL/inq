@@ -11,7 +11,7 @@
 
 #include <basis/field.hpp>
 #include <basis/fourier_space.hpp>
-#include <operations/space.hpp>
+#include <operations/transform.hpp>
 #include <states/orbital_set.hpp>
 
 #include <cstdlib>
@@ -57,9 +57,9 @@ public:
 	template <class type>
 	void operator()(states::orbital_set<basis::real_space, type> & phi) const {
 			
-		auto fphi = operations::space::to_fourier(phi);
+		auto fphi = operations::transform::to_fourier(phi);
 		operator()(fphi);
-		phi = operations::space::to_real(fphi);
+		phi = operations::transform::to_real(fphi);
 	}
 
 };

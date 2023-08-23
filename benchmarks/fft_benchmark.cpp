@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
       auto iter_start_time = std::chrono::high_resolution_clock::now();
       
       for(int irep = 0; irep < reps; irep++){
-        auto fphi = operations::space::to_fourier(phi);
+        auto fphi = operations::transform::to_fourier(phi);
       }
       
       auto new_time = std::chrono::high_resolution_clock::now();
