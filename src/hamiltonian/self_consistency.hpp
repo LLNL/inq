@@ -18,6 +18,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <options/theory.hpp>
 #include <perturbations/none.hpp>
+#include <solvers/velocity_verlet.hpp>
 #include <utils/profiling.hpp>
 
 namespace inq {
@@ -33,7 +34,6 @@ class self_consistency {
 	basis::real_space potential_basis_;
 	basis::real_space density_basis_;
 	Perturbation pert_;
-	vector3<double, covariant> induced_vector_potential_acc_;
 	vector3<double, covariant> induced_vector_potential_vel_;
 	vector3<double, covariant> induced_vector_potential_;
 
@@ -47,7 +47,6 @@ public:
 		potential_basis_(potential_basis),
 		density_basis_(density_basis),
 		pert_(pert),
-		induced_vector_potential_acc_({0.0,0.0,0.0}),
 		induced_vector_potential_vel_({0.0, 0.0, 0.0}),
 		induced_vector_potential_({0.0, 0.0, 0.0})
 	{
@@ -63,7 +62,6 @@ public:
 		potential_basis_(std::move(old.potential_basis_), new_comm),
 		density_basis_(std::move(old.density_basis_), new_comm),
 		pert_(std::move(old.pert_)),
-		induced_vector_potential_acc_(old.induced_vector_potential_acc_),
 		induced_vector_potential_vel_(old.induced_vector_potential_vel_),
 		induced_vector_potential_(old.induced_vector_potential_)
 	{
@@ -161,14 +159,18 @@ public:
 		
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
 	void propagate_induced_vector_potential(double const dt, vector3<double,covariant> const & current) {
-		if(has_induced_vector_potential()){
-			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
-			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
-			induced_vector_potential_acc_ = theory_.alpha_value()*current/density_basis_.cell().volume();
-			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
-			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
-		}
+		if(not has_induced_vector_potential()) return;
+		solvers::velocity_verlet::propagate_positions(dt, theory_.alpha_value()*current/density_basis_.cell().volume(), induced_vector_potential_vel_, induced_vector_potential_);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
+	void propagate_induced_vector_potential_derivative(double const dt, vector3<double, covariant> const & current) {
+		if(not has_induced_vector_potential()) return;
+		solvers::velocity_verlet::propagate_velocities(dt, theory_.alpha_value()*current/density_basis_.cell().volume(), induced_vector_potential_vel_);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

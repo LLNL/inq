@@ -40,6 +40,8 @@ struct crank_nicolson_op {
 template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
 void crank_nicolson(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 
+	assert(not sc.has_induced_vector_potential());
+	
 	CALI_CXX_MARK_FUNCTION;
 	
 	crank_nicolson_op<decltype(ham)> op{ham, complex{0.0, 0.5*dt}};

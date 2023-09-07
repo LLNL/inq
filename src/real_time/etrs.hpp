@@ -19,8 +19,9 @@
 namespace inq {
 namespace real_time {
 
-template <class IonSubPropagator, class ForcesType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
-void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
+template <class IonSubPropagator, class ForcesType, class CurrentType, class HamiltonianType, class SelfConsistencyType, class EnergyType>
+void etrs(double const time, double const dt, systems::ions & ions, systems::electrons & electrons, IonSubPropagator const & ion_propagator, ForcesType const & forces, CurrentType const & current,
+					HamiltonianType & ham, SelfConsistencyType & sc, EnergyType & energy){
 	CALI_CXX_MARK_FUNCTION;
 
 	int const nscf = 5;
@@ -28,10 +29,6 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	systems::electrons::kpin_type save;
 
-	if(sc.has_induced_vector_potential()){
-		sc.propagate_induced_vector_potential(dt, observables::current(ions, electrons, ham));
-	}
-	
 	int iphi = 0;
 	for(auto & phi : electrons.kpin()){
 		
@@ -46,14 +43,14 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	electrons.spin_density() = observables::density::calculate(electrons);
 	
-	//propagate ionic positions to t + dt
-	ion_propagator.propagate_positions(dt, ions, forces);
+	//propagate the Hamiltonian to t + dt
+	ion_propagator.propagate_positions(dt, ions, forces);	
 	if(not ion_propagator.static_ions) {
 		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 		ham.update_projectors(electrons.states_basis(), electrons.atomic_pot(), ions);
 		energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 	}
-
+	sc.propagate_induced_vector_potential(dt, current);
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 	ham.exchange.update(electrons);
 
