@@ -60,9 +60,11 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 
 		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
-		
 		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
+		auto current = vector3<double, covariant>{0.0, 0.0, 0.0};
+		if(sc.has_induced_vector_potential()) current = observables::current(ions, electrons, ham);
+		
 		func(real_time::viewables{false, 0, 0.0, ions, electrons, energy, forces, ham, pert});
 
 		if(console) console->trace("starting real-time propagation");
@@ -74,7 +76,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 			switch(opts.propagator()){
 			case options::real_time::electron_propagator::ETRS :
-				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
+				etrs(istep*dt, dt, ions, electrons, ion_propagator, forces, current, ham, sc, energy);
 				break;
 			case options::real_time::electron_propagator::CRANK_NICOLSON :
 				crank_nicolson(istep*dt, dt, ions, electrons, ion_propagator, forces, ham, sc, energy);
@@ -84,10 +86,12 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			energy.calculate(ham, electrons);
 			
 			if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
-			
+
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
 
+			if(sc.has_induced_vector_potential()) current = observables::current(ions, electrons, ham);
+			
 			func(real_time::viewables{istep == numsteps - 1, istep, (istep + 1.0)*dt, ions, electrons, energy, forces, ham, pert});			
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
