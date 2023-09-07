@@ -90,7 +90,10 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
 
-			if(sc.has_induced_vector_potential()) current = observables::current(ions, electrons, ham);
+			if(sc.has_induced_vector_potential()) {
+				current = observables::current(ions, electrons, ham);
+				sc.propagate_induced_vector_potential_derivative(dt, current);
+			}
 			
 			func(real_time::viewables{istep == numsteps - 1, istep, (istep + 1.0)*dt, ions, electrons, energy, forces, ham, pert});			
 			

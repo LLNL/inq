@@ -171,6 +171,9 @@ public:
 		}
 	}
 
+	void propagate_induced_vector_potential_derivative(double const dt, vector3<double, covariant> const & current) {
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto exx_coefficient(){
