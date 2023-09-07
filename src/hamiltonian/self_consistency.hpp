@@ -18,6 +18,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <options/theory.hpp>
 #include <perturbations/none.hpp>
+#include <solvers/velocity_verlet.hpp>
 #include <utils/profiling.hpp>
 
 namespace inq {
@@ -161,17 +162,18 @@ public:
 		
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
 	void propagate_induced_vector_potential(double const dt, vector3<double,covariant> const & current) {
-		if(has_induced_vector_potential()){
-			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
-			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
-			induced_vector_potential_acc_ = theory_.alpha_value()*current/density_basis_.cell().volume();
-			induced_vector_potential_vel_ += 0.5*dt*induced_vector_potential_acc_;
-			induced_vector_potential_ += 0.5*dt*induced_vector_potential_vel_;
-		}
+		if(not has_induced_vector_potential()) return;
+		solvers::velocity_verlet::propagate_positions(dt, theory_.alpha_value()*current/density_basis_.cell().volume(), induced_vector_potential_vel_, induced_vector_potential_);
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
 	void propagate_induced_vector_potential_derivative(double const dt, vector3<double, covariant> const & current) {
+		if(not has_induced_vector_potential()) return;
+		solvers::velocity_verlet::propagate_velocities(dt, theory_.alpha_value()*current/density_basis_.cell().volume(), induced_vector_potential_vel_);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
