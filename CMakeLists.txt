@@ -19,7 +19,11 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 #always optimize the code
-set(CMAKE_CXX_FLAGS  "-O3 ${CMAKE_CXX_FLAGS}")
+if(ENABLE_CUDA)
+  set(CMAKE_CXX_FLAGS  "-O3 ${CMAKE_CXX_FLAGS} -fno-lto")  # in newer versions of Ubuntu, LTO is on by default, which is incompatible with NVCC
+else()
+  set(CMAKE_CXX_FLAGS  "-O3 ${CMAKE_CXX_FLAGS}")
+endif()
 
 message("CMake build type: ${CMAKE_BUILD_TYPE}")
 
