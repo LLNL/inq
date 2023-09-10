@@ -41,6 +41,20 @@ class environment {
 			return threaded_;
 		}
 
+	auto initialization_(bool use_threads){
+		
+		if(use_threads) assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
+		
+		threaded_impl() = use_threads;
+		
+		if(not use_threads and base_comm_.rank() == 0){
+			calimgr_.add("runtime-report");
+			calimgr_.start();
+		}
+		
+		CALI_MARK_BEGIN("inq_environment");		
+	}
+	
 	public:
 
 		static auto const & threaded() {
@@ -51,18 +65,7 @@ class environment {
       mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
 			base_comm_(mpi_env_.get_world_instance())
     {
-			if(use_threads){
-				assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
-			}
-			
-			threaded_impl() = use_threads;
-			
-			if(not use_threads and base_comm_.rank() == 0){
-				calimgr_.add("runtime-report");
-				calimgr_.start();
-			}
-
-			CALI_MARK_BEGIN("inq_environment");
+			initialization_(use_threads);
     }
 
 		~environment(){
