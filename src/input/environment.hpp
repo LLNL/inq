@@ -55,19 +55,26 @@ class environment {
 		CALI_MARK_BEGIN("inq_environment");		
 	}
 	
-	public:
+public:
+	
+	static auto const & threaded() {
+		return threaded_impl();
+	}
 
-		static auto const & threaded() {
-			return threaded_impl();
-		}
-
-    environment(int argc, char** argv, bool use_threads = false):
-      mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
-			base_comm_(mpi_env_.get_world_instance())
-    {
-			initialization_(use_threads);
-    }
-
+	environment(int argc, char** argv, bool use_threads = false):
+		mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
+		base_comm_(mpi_env_.get_world_instance())
+	{
+		initialization_(use_threads);
+	}
+	
+	environment(bool use_threads = false):
+		mpi_env_(use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
+		base_comm_(mpi_env_.get_world_instance())
+	{
+		initialization_(use_threads);
+	}
+	
 		~environment(){
 
 			CALI_MARK_END("inq_environment");
