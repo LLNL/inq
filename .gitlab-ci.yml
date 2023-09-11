@@ -430,13 +430,14 @@ clang-ompi-fast-5p:
 #########################################################################################################################
 
 cuda-mpich-fast-utests:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     stage: test
     needs: []
     tags:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
@@ -469,7 +470,7 @@ cuda-mpich-fast-itests:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget
+      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
@@ -491,13 +492,14 @@ cuda-mpich-fast-itests:
 #########################################################################################################################
 
 cuda-mpich-debug-utests:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     stage: test
     needs: []
     tags:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
@@ -523,13 +525,14 @@ cuda-mpich-debug-utests:
       - cd ..
 
 cuda-mpich-debug-itests:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     stage: test
     needs: []
     tags:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
@@ -594,6 +597,7 @@ gcc-mpich-template:
 #######################################################################################################################
 
 nvcc-mpich-template:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     variables:
       GIT_STRATEGY: none
     stage: template
@@ -602,7 +606,7 @@ nvcc-mpich-template:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y -qq nvidia-smi nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev   
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvidia-smi
