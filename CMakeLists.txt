@@ -171,6 +171,9 @@ target_link_libraries(inq INTERFACE bmpi3)
 ########################
 
 message(STATUS "Downloading spdlog")
+set(SPDLOG_BUILD_PIC "YES")
+set(SPDLOG_NO_THREAD_ID "YES")
+set(SPDLOG_NO_TLS "YES")
 
 FetchContent_Declare(
   spdlog
