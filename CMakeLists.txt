@@ -13,6 +13,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
@@ -269,7 +270,7 @@ if(ENABLE_CUDA)
 	set_source_files_properties(${PYTHON_FILES} PROPERTIES LANGUAGE CUDA)	
 endif()
 
-pybind11_add_module(pinq
+pybind11_add_module(pinq MODULE
 	${PYTHON_FILES}
 )
 
