@@ -267,7 +267,7 @@ FetchContent_MakeAvailable(pybind11)
 file (GLOB PYTHON_FILES "python/*.cpp" "python/*.hpp")
 
 if(ENABLE_CUDA)
-	set_source_files_properties(${PYTHON_FILES} PROPERTIES LANGUAGE CUDA)	
+	set_source_files_properties(${PYTHON_FILES} PROPERTIES LANGUAGE CUDA)   
 endif()
 
 pybind11_add_module(pinq MODULE
