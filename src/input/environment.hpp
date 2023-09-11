@@ -41,66 +41,40 @@ class environment {
 			return threaded_;
 		}
 
-	public:
-
-		static auto const & threaded() {
-			return threaded_impl();
+	auto initialization_(bool use_threads){
+		
+		if(use_threads) assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
+		
+		threaded_impl() = use_threads;
+		
+		if(not use_threads and base_comm_.rank() == 0){
+			calimgr_.add("runtime-report");
+			calimgr_.start();
 		}
-
-	#ifdef ENABLE_CUDA
-	static inline std::jmp_buf check_cuda_recover;
-
-	static void check_cuda_signal_handler(int /*signal*/) {
-		spdlog::warn("CUDA-aware MPI is not detected. INQ will run correctly but at a lower performance when running with more than one GPU. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`");
-		std::longjmp(check_cuda_recover, 1);
+		
+		CALI_MARK_BEGIN("inq_environment");		
+	}
+	
+public:
+	
+	static auto const & threaded() {
+		return threaded_impl();
 	}
 
-	static inline bool cuda_support_ = false;
-	static inline bool cuda_support() {return cuda_support_;}
-
-	static void check_cuda_support(boost::mpi3::environment& env) {
-		#if 0
-		namespace multi = ::boost::multi;
-		multi::array<int, 1, thrust::cuda::allocator<int>> const gpu_ones ({1}, 1);
-		multi::array<int, 1, thrust::cuda::allocator<int>>       gpu_check({1}, 0);
-
-		auto const original_handler = std::signal(SIGSEGV, check_cuda_signal_handler);
-		if(not setjmp(check_cuda_recover)) {
-			cudaDeviceSynchronize();
-			env.get_world_instance().reduce_n(raw_pointer_cast(gpu_ones.data_elements()), 1, raw_pointer_cast(gpu_check.data_elements()));
-			cuda_support_ = true;
-			cudaDeviceSynchronize();
-			if(gpu_check[0] != env.get_world_instance().size()) {
-				throw std::runtime_error{"Basic MPI operation produces incorrect result ("+std::to_string(static_cast<int>(gpu_check[0]))+", should be "+std::to_string(env.get_world_instance().size()) +")."};
-			}
-		}
-		std::signal(SIGSEGV, original_handler);
-		#endif
+	environment(int argc, char** argv, bool use_threads = false):
+		mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
+		base_comm_(mpi_env_.get_world_instance())
+	{
+		initialization_(use_threads);
 	}
-	#endif
-
-    environment(int argc, char** argv, bool use_threads = false):
-      mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
-			base_comm_(mpi_env_.get_world_instance())
-    {
-			if(use_threads){
-				assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
-			}
-			
-			threaded_impl() = use_threads;
-			
-			if(not use_threads and base_comm_.rank() == 0){
-				calimgr_.add("runtime-report");
-				calimgr_.start();
-			}
-
-		#ifdef ENABLE_CUDA
-		check_cuda_support(mpi_env_);
-		#endif
-
-			CALI_MARK_BEGIN("inq_environment");
-    }
-
+	
+	environment(bool use_threads = false):
+		mpi_env_(use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
+		base_comm_(mpi_env_.get_world_instance())
+	{
+		initialization_(use_threads);
+	}
+	
 		~environment(){
 
 			CALI_MARK_END("inq_environment");
@@ -111,11 +85,6 @@ class environment {
 				calimgr_.flush(); // write performance results
 			}
 
-			#ifdef ENABLE_CUDA
-			#if 0
-			if(not cuda_support()) { spdlog::warn("CUDA-aware MPI was not detected. INQ ran at a lower performance if running with more than one GPU. Try enabling CUDA-aware MPI, for example by `export MPICH_GPU_SUPPORT_ENABLED=1`."); }
-			#endif
-			#endif
 		}
 
 		auto par() const {
