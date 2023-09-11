@@ -252,6 +252,8 @@ target_link_libraries(inq INTERFACE Boost::serialization Boost::system)
 # PYBIND11
 ########################
 
+find_package(Python COMPONENTS Interpreter Development)
+
 FetchContent_Declare(
   pybind11
 	GIT_REPOSITORY https://github.com/pybind/pybind11.git
@@ -270,9 +272,14 @@ pybind11_add_module(pinq
 target_link_libraries(pinq PUBLIC)
 target_link_libraries(pinq PRIVATE inq)
 
+if (NOT CMAKE_INSTALL_PYTHON_LIBDIR)
+  set(CMAKE_INSTALL_PYTHON_LIBDIR
+    "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")
+endif ()
+
 install(TARGETS pinq
   COMPONENT python
-  LIBRARY DESTINATION "${PROJECT_BINARY_DIR}/python"
+  LIBRARY DESTINATION "${CMAKE_INSTALL_PYTHON_LIBDIR}"
 )
 	
 #######################
