@@ -142,6 +142,7 @@ gcc-ompi-coverage-4p:
 
 gcc-mpich:
     stage: build
+    needs: []    
     script:
       - c++ --version
       - mpichversion
