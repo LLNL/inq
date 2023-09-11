@@ -248,6 +248,26 @@ endif()
 target_include_directories(inq INTERFACE Boost::serialization Boost::system)
 target_link_libraries(inq INTERFACE Boost::serialization Boost::system)
 
+########################
+# PYBIND11
+########################
+
+find_package(pybind11 REQUIRED)
+
+file (GLOB PYTHON_FILES "python/*.cpp" "python/*.hpp")
+
+pybind11_add_module(pinq
+	${PYTHON_FILES}
+)
+
+target_link_libraries(pinq PUBLIC)
+target_link_libraries(pinq PRIVATE inq)
+
+install(TARGETS pinq
+  COMPONENT python
+  LIBRARY DESTINATION "${PROJECT_BINARY_DIR}/python"
+)
+	
 #######################
 # GENERATE inq_config.h
 ######################
