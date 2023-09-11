@@ -252,7 +252,14 @@ target_link_libraries(inq INTERFACE Boost::serialization Boost::system)
 # PYBIND11
 ########################
 
-find_package(pybind11 REQUIRED)
+FetchContent_Declare(
+  pybind11
+	GIT_REPOSITORY https://github.com/pybind/pybind11.git
+	GIT_TAG        v2.11.1
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(pybind11)
 
 file (GLOB PYTHON_FILES "python/*.cpp" "python/*.hpp")
 
