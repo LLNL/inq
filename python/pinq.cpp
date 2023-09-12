@@ -41,29 +41,35 @@ auto ase_atoms_to_inq_ions(py::object atoms){
 	return ions;
 }
 
-auto run(py::object atoms){
-
-	using namespace inq;
-	using namespace inq::magnitude;
-
-	input::environment env{};
+struct calculator {
 	
-	utils::match energy_match(6.0e-6);
-
-	auto ions = ase_atoms_to_inq_ions(atoms);
+	auto get_potential_energy(py::object atoms){
+		
+		using namespace inq;
+		using namespace inq::magnitude;
+		
+		input::environment env{};
+		
+		utils::match energy_match(6.0e-6);
+		
+		auto ions = ase_atoms_to_inq_ions(atoms);
+		
+		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha));
+		ground_state::initial_guess(ions, electrons);
+		
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.energy_tolerance(1e-9_Ha));
+		
+		return result.energy.total();
+	}
 	
-	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha));
-	ground_state::initial_guess(ions, electrons);
-	
-	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.energy_tolerance(1e-9_Ha));
-	
-	return result.energy.total();
-	
-}
+};
 
 PYBIND11_MODULE(pinq, module) {
 
 	module.doc() = "Python interface for the INQ DFT/TDDFT library";
-	module.def("run", &run, "A function that runs a calculation");
+
+	py::class_<calculator>(module, "calculator")
+		.def(py::init<>())
+		.def("get_potential_energy", &calculator::get_potential_energy);
 	
 }

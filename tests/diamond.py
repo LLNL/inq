@@ -17,7 +17,9 @@ atoms.set_cell([[0.0, alat/2.0, alat/2.0],
                 [alat/2.0, 0.0, alat/2.0],
                 [alat/2.0, alat/2.0, 0.0]], scale_atoms=True)
 
-energy = pinq.run(atoms)
+calc = pinq.calculator()
+atoms.calc = calc
+energy = atoms.get_potential_energy()
 
 print("Energy = ", energy);
 
