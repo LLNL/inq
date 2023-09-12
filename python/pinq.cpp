@@ -34,7 +34,7 @@ auto ase_atoms_to_inq_ions(py::object atoms){
 	return ions;
 }
 
-void run(py::object atoms){
+auto run(py::object atoms){
 
 	using namespace inq;
 	using namespace inq::magnitude;
@@ -50,7 +50,8 @@ void run(py::object atoms){
 	
 	auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
 
-	std::cout << "Energy = " << result.energy.total() << std::endl;
+	return result.energy.total();
+	
 }
 
 PYBIND11_MODULE(pinq, module) {

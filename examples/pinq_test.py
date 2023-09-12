@@ -7,4 +7,7 @@ h2 = Atoms('H2', positions=[[0, 0, 0], [0.0, 0, 0.7]])
 
 import pinq
 
-pinq.run(h2)
+energy = pinq.run(h2)
+
+print("Energy ", energy);
+
