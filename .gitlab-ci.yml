@@ -27,17 +27,6 @@ stages:
 # CHECK MISSING LIBRARY DETECTION 
 #########################################################################################################################
 
-config-no-blas:
-    stage: config-check
-    script:
-      - apt purge -y -qq libblas-dev
-      - apt autoremove -y -qq      
-      - mpic++ --version
-      - mkdir build
-      - cd build
-      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
-      - eval ! cmake ../ --install-prefix=$HOME
-
 config-no-boost:
     stage: config-check
     script:
