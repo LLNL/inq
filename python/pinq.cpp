@@ -15,11 +15,11 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+using namespace inq;
+using namespace inq::magnitude;
+
 auto ase_atoms_to_inq_ions(py::object atoms){
 
-	using namespace inq;
-	using namespace inq::magnitude;
-	
 	auto lattice = atoms.attr("get_cell")().attr("__array__")().cast<py::array_t<double>>();
 	auto lat = static_cast<double *>(lattice.request().ptr);
 
@@ -42,22 +42,38 @@ auto ase_atoms_to_inq_ions(py::object atoms){
 }
 
 struct calculator {
+
+	options::theory theo_;
+
+	calculator(py::args const &, py::kwargs const & kwargs){
+		auto const args_map = py::cast<std::unordered_map<std::string, py::object>>(kwargs);
+
+		if(args_map.find("xc") != args_map.end()){
+			auto functional = py::cast<std::string>(args_map.at("xc"));
+
+			if(functional == "LDA" or functional == "lda") {
+				theo_ = theo_.lda();
+			} else if(functional == "PBE" or functional == "pbe") {
+				theo_ = theo_.pbe();
+			} else {
+				throw std::runtime_error("pinq: Unknown functional '" + functional + "'.");
+			}
+			
+		}
+	}
 	
 	auto get_potential_energy(py::object atoms){
-		
-		using namespace inq;
-		using namespace inq::magnitude;
-		
+
 		input::environment env{};
 		
 		utils::match energy_match(6.0e-6);
 		
 		auto ions = ase_atoms_to_inq_ions(atoms);
-		
+
 		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha));
 		ground_state::initial_guess(ions, electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.energy_tolerance(1e-9_Ha));
+		auto result = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha));
 		
 		return result.energy.total()*1.0_Ha/1.0_Ry;
 	}
@@ -69,7 +85,7 @@ PYBIND11_MODULE(pinq, module) {
 	module.doc() = "Python interface for the INQ DFT/TDDFT library";
 
 	py::class_<calculator>(module, "calculator")
-		.def(py::init<>())
+		.def(py::init<py::args, py::kwargs&>())
 		.def("get_potential_energy", &calculator::get_potential_energy);
 	
 }
