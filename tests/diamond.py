@@ -17,7 +17,7 @@ atoms.set_cell([[0.0, alat/2.0, alat/2.0],
                 [alat/2.0, 0.0, alat/2.0],
                 [alat/2.0, alat/2.0, 0.0]], scale_atoms=True)
 
-calc = pinq.calculator(ecut = 70.0)
+calc = pinq.calculator(ecut = 70.0, extra_bands = 1)
 atoms.calc = calc
 energy = atoms.get_potential_energy()
 

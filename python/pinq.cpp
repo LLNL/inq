@@ -59,13 +59,20 @@ struct calculator {
 			} else {
 				throw std::runtime_error("pinq: Unknown functional '" + functional + "'.");
 			}
-			
 		}
 
 		if(args_map.find("ecut") != args_map.end()){
 			els_ = els_.cutoff(1.0_Ry*py::cast<double>(args_map.at("ecut")));
 		} else {
 			throw std::runtime_error("pinq: Missing argument 'ecut'.");
+		}
+
+		if(args_map.find("extra_bands") != args_map.end()){
+			els_ = els_.extra_states(py::cast<int>(args_map.at("extra_bands")));
+		}
+		
+		if(args_map.find("width") != args_map.end()){
+			els_ = els_.temperature(1.0_eV*py::cast<double>(args_map.at("width")));
 		}
 		
 	}
