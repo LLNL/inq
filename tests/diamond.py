@@ -1,3 +1,9 @@
+import importlib.util
+ase_spec = importlib.util.find_spec("ase")
+if(ase_spec is None):
+  print("Cannot find ASE, this test will be skipped")
+  exit()
+
 from ase import Atoms
 from ase.optimize import BFGS
 from ase.calculators.nwchem import NWChem
