@@ -52,10 +52,10 @@ auto run(py::object atoms){
 
 	auto ions = ase_atoms_to_inq_ions(atoms);
 	
-	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(40.0_Ha));
+	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
-	auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
+	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.energy_tolerance(1e-9_Ha));
 	
 	return result.energy.total();
 	
