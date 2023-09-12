@@ -59,7 +59,7 @@ struct calculator {
 		
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.energy_tolerance(1e-9_Ha));
 		
-		return result.energy.total();
+		return result.energy.total()*1.0_Ha/1.0_Ry;
 	}
 	
 };
