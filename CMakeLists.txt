@@ -13,6 +13,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 project(inq VERSION 0.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
@@ -171,6 +172,9 @@ target_link_libraries(inq INTERFACE bmpi3)
 ########################
 
 message(STATUS "Downloading spdlog")
+set(SPDLOG_BUILD_PIC "YES")
+set(SPDLOG_NO_THREAD_ID "YES")
+set(SPDLOG_NO_TLS "YES")
 
 FetchContent_Declare(
   spdlog
@@ -245,6 +249,44 @@ endif()
 target_include_directories(inq INTERFACE Boost::serialization Boost::system)
 target_link_libraries(inq INTERFACE Boost::serialization Boost::system)
 
+########################
+# PYBIND11
+########################
+
+find_package(Python COMPONENTS Interpreter Development)
+
+FetchContent_Declare(
+  pybind11
+	GIT_REPOSITORY https://github.com/pybind/pybind11.git
+	GIT_TAG        v2.11.1
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(pybind11)
+
+file (GLOB PYTHON_FILES "python/*.cpp" "python/*.hpp")
+
+if(ENABLE_CUDA)
+	set_source_files_properties(${PYTHON_FILES} PROPERTIES LANGUAGE CUDA)   
+endif()
+
+pybind11_add_module(pinq MODULE
+	${PYTHON_FILES}
+)
+
+target_link_libraries(pinq PUBLIC)
+target_link_libraries(pinq PRIVATE inq)
+
+if (NOT CMAKE_INSTALL_PYTHON_LIBDIR)
+  set(CMAKE_INSTALL_PYTHON_LIBDIR
+    "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")
+endif ()
+
+install(TARGETS pinq
+  COMPONENT python
+  LIBRARY DESTINATION "${CMAKE_INSTALL_PYTHON_LIBDIR}"
+)
+	
 #######################
 # GENERATE inq_config.h
 ######################
