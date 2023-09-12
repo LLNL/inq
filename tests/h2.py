@@ -12,10 +12,10 @@ import pinq
 
 atoms = Atoms('H2', positions=[[0, 0, 0], [0.0, 0, 0.7]], cell = [3.0, 3.0, 4.0])
 
-calc = pinq.calculator(xc='LDA')
+calc = pinq.calculator(ecut = 80.0, xc = 'LDA')
 atoms.calc = calc
 energy = atoms.get_potential_energy()
 
 print("Energy = ", energy);
 
-assert abs(energy - -2.398700283444644) < 3.0e-5
+assert abs(energy - -2.398773189650942) < 3.0e-5

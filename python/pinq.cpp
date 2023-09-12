@@ -44,7 +44,8 @@ auto ase_atoms_to_inq_ions(py::object atoms){
 struct calculator {
 
 	options::theory theo_;
-
+	options::electrons els_;
+	
 	calculator(py::args const &, py::kwargs const & kwargs){
 		auto const args_map = py::cast<std::unordered_map<std::string, py::object>>(kwargs);
 
@@ -60,6 +61,13 @@ struct calculator {
 			}
 			
 		}
+
+		if(args_map.find("ecut") != args_map.end()){
+			els_ = els_.cutoff(1.0_Ry*py::cast<double>(args_map.at("ecut")));
+		} else {
+			throw std::runtime_error("pinq: Missing argument 'ecut'.");
+		}
+		
 	}
 	
 	auto get_potential_energy(py::object atoms){
@@ -70,7 +78,7 @@ struct calculator {
 		
 		auto ions = ase_atoms_to_inq_ions(atoms);
 
-		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha));
+		systems::electrons electrons(env.par(), ions, els_);
 		ground_state::initial_guess(ions, electrons);
 		
 		auto result = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha));
