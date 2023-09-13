@@ -19,3 +19,12 @@ energy = atoms.get_potential_energy()
 print("Energy = ", energy);
 
 assert abs(energy - -32.63697189005673) < 3.0e-5
+
+forces = atoms.get_forces()
+
+assert abs(forces[0, 0]) < 3.0e-5
+assert abs(forces[0, 1]) < 3.0e-5
+assert abs(forces[0, 2] - -4.71394914e+00) < 3.0e-5
+assert abs(forces[1, 0]) < 3.0e-5
+assert abs(forces[1, 1]) < 3.0e-5
+assert abs(forces[1, 2] - 4.71396052e+00) < 3.0e-5

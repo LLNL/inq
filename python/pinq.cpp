@@ -86,6 +86,23 @@ struct calculator {
 
 	///////////////////////////////////
 	
+	auto get_forces(py::object atoms){
+
+		py::array_t<double, py::array::c_style> forces_array({result_.forces.size(), 3l});
+		
+    auto arr = forces_array.mutable_unchecked();
+		
+    for (py::ssize_t iatom = 0; iatom < arr.shape(0); iatom++) {
+			for (py::ssize_t idir = 0; idir < arr.shape(1); idir++) {
+				arr(iatom, idir) = result_.forces[iatom][idir]*(1.0_Ha/1.0_eV)*(1.0_A/1.0_bohr); //convert to eV/A
+			}
+    }
+		
+    return forces_array;
+	}
+
+	///////////////////////////////////
+	
 	void calculate(py::object atoms){
 		input::environment env{};
 		
@@ -95,8 +112,12 @@ struct calculator {
 
 		systems::electrons electrons(env.par(), ions, els_);
 		ground_state::initial_guess(ions, electrons);
-		
+
 		result_ = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
+
+		std::cout << result_.forces[0] << std::endl;
+		std::cout << result_.forces[1] << std::endl;		
+
 	}
 	
 };
@@ -108,6 +129,7 @@ PYBIND11_MODULE(pinq, module) {
 	py::class_<calculator>(module, "calculator")
 		.def(py::init<py::args, py::kwargs&>())
 		.def("get_potential_energy", &calculator::get_potential_energy)
+		.def("get_forces", &calculator::get_forces)
 		.def("calculate", &calculator::calculate);
 
 	
