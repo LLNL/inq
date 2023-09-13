@@ -19,7 +19,7 @@ int main(int argc, char ** argv){
 
   int const reps = 10;
 
-  input::environment env(argc, argv);
+  input::environment env{};
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	comm.nccl_init();
 	

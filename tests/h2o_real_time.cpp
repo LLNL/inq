@@ -13,7 +13,7 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 	
-	input::environment env(argc, argv);
+	input::environment env{};
 
 	utils::match match(1e-5);
 	
