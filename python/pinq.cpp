@@ -115,9 +115,6 @@ struct calculator {
 
 		result_ = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
 
-		std::cout << result_.forces[0] << std::endl;
-		std::cout << result_.forces[1] << std::endl;		
-
 	}
 	
 };
