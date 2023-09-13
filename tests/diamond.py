@@ -23,4 +23,4 @@ energy = atoms.get_potential_energy()
 
 print("Energy = ", energy);
 
-assert abs(energy - 2.0*-10.949196617732) < 3.0e-5
+assert abs(energy - -10.949196617732*27.211383) < 3.0e-5

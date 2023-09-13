@@ -81,7 +81,7 @@ struct calculator {
 	///////////////////////////////////
 	
 	auto get_potential_energy(py::object atoms){
-		return result_.energy.total()*1.0_Ha/1.0_Ry;
+		return result_.energy.total()*1.0_Ha/1.0_eV;
 	}
 
 	///////////////////////////////////
