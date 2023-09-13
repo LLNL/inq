@@ -12,8 +12,8 @@ import pinq
 
 atoms = Atoms('H2', positions=[[0, 0, 0], [0.0, 0, 0.7]], cell = [3.0, 3.0, 4.0])
 
-calc = pinq.calculator(ecut = 80.0, xc = 'LDA')
-atoms.calc = calc
+atoms.calc = pinq.calculator(ecut = 80.0, xc = 'LDA')
+atoms.calc.calculate(atoms)
 energy = atoms.get_potential_energy()
 
 print("Energy = ", energy);

@@ -45,7 +45,8 @@ struct calculator {
 
 	options::theory theo_;
 	options::electrons els_;
-	
+	hamiltonian::energy energy_;
+
 	calculator(py::args const &, py::kwargs const & kwargs){
 		auto const args_map = py::cast<std::unordered_map<std::string, py::object>>(kwargs);
 
@@ -76,9 +77,16 @@ struct calculator {
 		}
 		
 	}
+
+	///////////////////////////////////
 	
 	auto get_potential_energy(py::object atoms){
+		return energy_.total()*1.0_Ha/1.0_Ry;
+	}
 
+	///////////////////////////////////
+	
+	void calculate(py::object atoms){
 		input::environment env{};
 		
 		utils::match energy_match(6.0e-6);
@@ -89,8 +97,8 @@ struct calculator {
 		ground_state::initial_guess(ions, electrons);
 		
 		auto result = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha));
-		
-		return result.energy.total()*1.0_Ha/1.0_Ry;
+
+		energy_ = result.energy;
 	}
 	
 };
@@ -101,6 +109,8 @@ PYBIND11_MODULE(pinq, module) {
 
 	py::class_<calculator>(module, "calculator")
 		.def(py::init<py::args, py::kwargs&>())
-		.def("get_potential_energy", &calculator::get_potential_energy);
+		.def("get_potential_energy", &calculator::get_potential_energy)
+		.def("calculate", &calculator::calculate);
+
 	
 }
