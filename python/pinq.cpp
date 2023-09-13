@@ -15,11 +15,11 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+using namespace inq;
+using namespace inq::magnitude;
+
 auto ase_atoms_to_inq_ions(py::object atoms){
 
-	using namespace inq;
-	using namespace inq::magnitude;
-	
 	auto lattice = atoms.attr("get_cell")().attr("__array__")().cast<py::array_t<double>>();
 	auto lat = static_cast<double *>(lattice.request().ptr);
 
@@ -41,29 +41,66 @@ auto ase_atoms_to_inq_ions(py::object atoms){
 	return ions;
 }
 
-auto run(py::object atoms){
+struct calculator {
 
-	using namespace inq;
-	using namespace inq::magnitude;
+	options::theory theo_;
+	options::electrons els_;
+	
+	calculator(py::args const &, py::kwargs const & kwargs){
+		auto const args_map = py::cast<std::unordered_map<std::string, py::object>>(kwargs);
 
-	input::environment env{};
-	
-	utils::match energy_match(6.0e-6);
+		if(args_map.find("xc") != args_map.end()){
+			auto functional = py::cast<std::string>(args_map.at("xc"));
 
-	auto ions = ase_atoms_to_inq_ions(atoms);
+			if(functional == "LDA" or functional == "lda") {
+				theo_ = theo_.lda();
+			} else if(functional == "PBE" or functional == "pbe") {
+				theo_ = theo_.pbe();
+			} else {
+				throw std::runtime_error("pinq: Unknown functional '" + functional + "'.");
+			}
+		}
+
+		if(args_map.find("ecut") != args_map.end()){
+			els_ = els_.cutoff(1.0_Ry*py::cast<double>(args_map.at("ecut")));
+		} else {
+			throw std::runtime_error("pinq: Missing argument 'ecut'.");
+		}
+
+		if(args_map.find("extra_bands") != args_map.end()){
+			els_ = els_.extra_states(py::cast<int>(args_map.at("extra_bands")));
+		}
+		
+		if(args_map.find("width") != args_map.end()){
+			els_ = els_.temperature(1.0_eV*py::cast<double>(args_map.at("width")));
+		}
+		
+	}
 	
-	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha));
-	ground_state::initial_guess(ions, electrons);
+	auto get_potential_energy(py::object atoms){
+
+		input::environment env{};
+		
+		utils::match energy_match(6.0e-6);
+		
+		auto ions = ase_atoms_to_inq_ions(atoms);
+
+		systems::electrons electrons(env.par(), ions, els_);
+		ground_state::initial_guess(ions, electrons);
+		
+		auto result = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha));
+		
+		return result.energy.total()*1.0_Ha/1.0_Ry;
+	}
 	
-	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.energy_tolerance(1e-9_Ha));
-	
-	return result.energy.total();
-	
-}
+};
 
 PYBIND11_MODULE(pinq, module) {
 
 	module.doc() = "Python interface for the INQ DFT/TDDFT library";
-	module.def("run", &run, "A function that runs a calculation");
+
+	py::class_<calculator>(module, "calculator")
+		.def(py::init<py::args, py::kwargs&>())
+		.def("get_potential_energy", &calculator::get_potential_energy);
 	
 }

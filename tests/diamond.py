@@ -17,8 +17,10 @@ atoms.set_cell([[0.0, alat/2.0, alat/2.0],
                 [alat/2.0, 0.0, alat/2.0],
                 [alat/2.0, alat/2.0, 0.0]], scale_atoms=True)
 
-energy = pinq.run(atoms)
+calc = pinq.calculator(ecut = 70.0, extra_bands = 1)
+atoms.calc = calc
+energy = atoms.get_potential_energy()
 
 print("Energy = ", energy);
 
-assert abs(energy - -10.949196617732) < 3.0e-5
+assert abs(energy - 2.0*-10.949196617732) < 3.0e-5
