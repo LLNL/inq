@@ -25,6 +25,7 @@ private:
 	options::theory theo_;
 	options::electrons els_;
 	ground_state::result result_;
+	input::environment env_;
 	
 	auto ase_atoms_to_inq_ions(py::object atoms){
 		
@@ -108,13 +109,12 @@ public:
 	///////////////////////////////////
 	
 	void calculate(py::object atoms){
-		input::environment env{};
 		
 		utils::match energy_match(6.0e-6);
 		
 		auto ions = ase_atoms_to_inq_ions(atoms);
 
-		systems::electrons electrons(env.par(), ions, els_);
+		systems::electrons electrons(env_.par(), ions, els_);
 		ground_state::initial_guess(ions, electrons);
 
 		result_ = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
