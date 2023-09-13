@@ -33,14 +33,17 @@ namespace inq {
 namespace input {
 
 class environment {
+		
+	boost::mpi3::environment mpi_env_;
+	cali::ConfigManager calimgr_;
+	mutable parallel::communicator base_comm_;
 
- private:
-		static auto & threaded_impl() {
-			static bool threaded_ = false;
-
-			return threaded_;
-		}
-
+	static auto & threaded_impl() {
+		static bool threaded_ = false;
+		
+		return threaded_;
+	}
+	
 	auto initialization_(bool use_threads){
 		
 		if(use_threads) assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
@@ -53,6 +56,7 @@ class environment {
 		}
 		
 		CALI_MARK_BEGIN("inq_environment");		
+
 	}
 	
 public:
@@ -75,27 +79,22 @@ public:
 		initialization_(use_threads);
 	}
 	
-		~environment(){
-
-			CALI_MARK_END("inq_environment");
-
-			base_comm_.barrier();
-
-			if(not threaded() and base_comm_.rank() == 0){
-				calimgr_.flush(); // write performance results
-			}
-
-		}
-
-		auto par() const {
-			return parallelization(base_comm_);
-		}
-
-  private:
+	~environment(){
 		
-    boost::mpi3::environment mpi_env_;
-		cali::ConfigManager calimgr_;
-    mutable parallel::communicator base_comm_;		
+		CALI_MARK_END("inq_environment");
+		
+		base_comm_.barrier();
+		
+		if(not threaded() and base_comm_.rank() == 0){
+			calimgr_.flush(); // write performance results
+		}
+		
+	}
+	
+	auto par() const {
+		return parallelization(base_comm_);
+	}
+		
 };
 
 }
