@@ -45,7 +45,7 @@ struct calculator {
 
 	options::theory theo_;
 	options::electrons els_;
-	hamiltonian::energy energy_;
+	ground_state::result result_;
 
 	calculator(py::args const &, py::kwargs const & kwargs){
 		auto const args_map = py::cast<std::unordered_map<std::string, py::object>>(kwargs);
@@ -81,7 +81,7 @@ struct calculator {
 	///////////////////////////////////
 	
 	auto get_potential_energy(py::object atoms){
-		return energy_.total()*1.0_Ha/1.0_Ry;
+		return result_.energy.total()*1.0_Ha/1.0_Ry;
 	}
 
 	///////////////////////////////////
@@ -96,9 +96,7 @@ struct calculator {
 		systems::electrons electrons(env.par(), ions, els_);
 		ground_state::initial_guess(ions, electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha));
-
-		energy_ = result.energy;
+		result_ = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
 	}
 	
 };
