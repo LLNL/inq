@@ -91,8 +91,6 @@ public:
 			return parallelization(base_comm_);
 		}
 
-	auto world() {return mpi_env_.world();}
-
   private:
 		
     boost::mpi3::environment mpi_env_;
