@@ -109,9 +109,7 @@ public:
 	///////////////////////////////////
 	
 	void calculate(py::object atoms){
-		
-		utils::match energy_match(6.0e-6);
-		
+
 		auto ions = ase_atoms_to_inq_ions(atoms);
 
 		systems::electrons electrons(env_.par(), ions, els_);
