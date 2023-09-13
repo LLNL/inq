@@ -23,3 +23,12 @@ endforeach()
 
 set_tests_properties(inq::tests::h2o_real_time PROPERTIES DEPENDS inq::tests::h2o_ground_state)
 set_tests_properties(inq::tests::al4h1_td PROPERTIES DEPENDS inq::tests::al4h1)
+
+#PYTHON TESTS
+
+file(GLOB TEST_SCRIPTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
+
+foreach(TEST_FILE ${TEST_SCRIPTS})
+  add_test(NAME inq::tests::${TEST_FILE} COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE})
+  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "PYTHONPATH=path_list_append:${PROJECT_BINARY_DIR}")
+endforeach()

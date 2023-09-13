@@ -15,6 +15,7 @@ variables:
   OMPI_MCA_btl_vader_single_copy_mechanism: "none"
   OMPI_MCA_rmaps_base_oversubscribe: "1" 
   CODECOV_TOKEN: "5855e536-b784-400e-b0b2-b1d01c2287a9"
+  DEBIAN_FRONTEND: "noninteractive"
 
 stages:
   - config-check
@@ -26,17 +27,6 @@ stages:
 #########################################################################################################################
 # CHECK MISSING LIBRARY DETECTION 
 #########################################################################################################################
-
-config-no-blas:
-    stage: config-check
-    script:
-      - apt purge -y -qq libblas-dev
-      - apt autoremove -y -qq      
-      - mpic++ --version
-      - mkdir build
-      - cd build
-      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
-      - eval ! cmake ../ --install-prefix=$HOME
 
 config-no-boost:
     stage: config-check
@@ -438,7 +428,7 @@ cuda-mpich-fast-utests:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
@@ -472,7 +462,7 @@ cuda-mpich-fast-itests:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
@@ -502,8 +492,8 @@ cuda-mpich-debug-utests:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
-      - apt purge -y -qq clang clang-14
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
+      - apt purge -y -qq clang clang-14 ase
       - apt autoremove -y -qq
       - nvcc -V
       - export GPUBIND=`pwd`/scripts/gpubind
@@ -536,7 +526,7 @@ cuda-mpich-debug-itests:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev 
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvcc -V
@@ -611,7 +601,7 @@ nvcc-mpich-template:
       - cuda-docker
     script:
       - apt update -qq
-      - apt install --no-install-recommends -y pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev   
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev   
       - apt purge -y -qq clang clang-14
       - apt autoremove -y -qq
       - nvidia-smi
