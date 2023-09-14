@@ -26,6 +26,7 @@ private:
 	options::electrons els_;
 	ground_state::result result_;
 	input::environment env_;
+	std::optional<systems::electrons> electrons_;
 	
 	auto ase_atoms_to_inq_ions(py::object atoms){
 		
@@ -112,10 +113,10 @@ public:
 
 		auto ions = ase_atoms_to_inq_ions(atoms);
 
-		systems::electrons electrons(env_.par(), ions, els_);
-		ground_state::initial_guess(ions, electrons);
+		electrons_.emplace(systems::electrons(env_.par(), ions, els_));
+		ground_state::initial_guess(ions, *electrons_);
 
-		result_ = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
+		result_ = ground_state::calculate(ions, *electrons_, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
 
 	}
 	
