@@ -26,6 +26,7 @@ private:
 	options::electrons els_;
 	ground_state::result result_;
 	input::environment env_;
+	std::optional<systems::electrons> electrons_;
 	
 	auto ase_atoms_to_inq_ions(py::object atoms){
 		
@@ -108,15 +109,102 @@ public:
 
 	///////////////////////////////////
 	
-	void calculate(py::object atoms){
+	auto get_density(){
 
+		assert(electrons_.has_value());
+
+		auto const & dens = electrons_->spin_density().hypercubic();
+			
+		auto dx = std::get<0>(sizes(dens));
+		auto dy = std::get<1>(sizes(dens));
+		auto dz = std::get<2>(sizes(dens));
+		auto dspin = std::get<3>(sizes(dens));		
+		
+		py::array_t<double, py::array::c_style> density_array({dx, dy, dz, dspin});
+		
+    auto arr = density_array.mutable_unchecked();
+		
+    for (py::ssize_t ix = 0; ix < arr.shape(0); ix++) {
+			for (py::ssize_t iy = 0; iy < arr.shape(1); iy++) {
+				for (py::ssize_t iz = 0; iz < arr.shape(2); iz++) {
+					for (py::ssize_t ispin = 0; ispin < arr.shape(3); ispin++) {
+						arr(ix, iy, iz, ispin) = dens[ix][iy][iz][ispin];
+					}
+				}
+			}
+    }
+		
+    return density_array;
+	}
+
+	///////////////////////////////////
+	
+	void calculate(py::object atoms){
+		
 		auto ions = ase_atoms_to_inq_ions(atoms);
 
-		systems::electrons electrons(env_.par(), ions, els_);
-		ground_state::initial_guess(ions, electrons);
+		electrons_.emplace(systems::electrons(env_.par(), ions, els_));
+		ground_state::initial_guess(ions, *electrons_);
 
-		result_ = ground_state::calculate(ions, electrons, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
+		result_ = ground_state::calculate(ions, *electrons_, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
 
+	}
+
+	///////////////////////////////////
+	
+	auto scf_step(py::object atoms, py::array_t<double> const & potential){
+		
+		auto ions = ase_atoms_to_inq_ions(atoms);
+
+		if(not electrons_.has_value()){
+			electrons_.emplace(systems::electrons(env_.par(), ions, els_));
+			ground_state::initial_guess(ions, *electrons_);
+		}
+
+		solvers::poisson poisson_solver;
+		
+		auto ionic_long_range = poisson_solver(electrons_->atomic_pot().ionic_density(electrons_->kpin_states_comm(), electrons_->density_basis(), ions));
+		auto ionic_short_range = electrons_->atomic_pot().local_potential(electrons_->kpin_states_comm(), electrons_->density_basis(), ions);
+		auto vion = operations::add(ionic_long_range, ionic_short_range);
+		
+		auto ham = hamiltonian::ks_hamiltonian<double>(electrons_->states_basis(), electrons_->brillouin_zone(), electrons_->states(), electrons_->atomic_pot(),
+																									 ions, /*exx_coefficient = */ 0.0, /* use_ace = */ true);
+
+    auto pot = potential.unchecked();
+		
+		for (py::ssize_t ix = 0; ix < pot.shape(0); ix++) {
+			for (py::ssize_t iy = 0; iy < pot.shape(1); iy++) {
+				for (py::ssize_t iz = 0; iz < pot.shape(2); iz++) {
+					for (py::ssize_t ispin = 0; ispin < pot.shape(3); ispin++) {
+						ham.scalar_potential()[ispin].cubic()[ix][iy][iz] = vion.cubic()[ix][iy][iz] + pot(ix, iy, iz, ispin);
+					}
+				}
+			}
+    }
+
+		//subspace diagonalization
+		int ilot = 0;
+		for(auto & phi : electrons_->kpin()) {
+			electrons_->eigenvalues()[ilot] = ground_state::subspace_diagonalization(ham, phi);
+			ilot++;
+		}
+
+		electrons_->update_occupations(electrons_->eigenvalues());
+
+		operations::preconditioner prec;
+		
+		for(auto & phi : electrons_->kpin()) {
+			auto fphi = operations::transform::to_fourier(std::move(phi));
+			eigensolvers::steepest_descent(ham, prec, fphi);
+			phi = operations::transform::to_real(std::move(fphi));
+		}
+
+		electrons_->spin_density() = observables::density::calculate(*electrons_);
+
+		result_.energy.calculate(ham, *electrons_);
+		
+		return get_density();
+		
 	}
 	
 };
@@ -128,8 +216,9 @@ PYBIND11_MODULE(pinq, module) {
 	py::class_<calculator>(module, "calculator")
 		.def(py::init<py::args, py::kwargs&>())
 		.def("get_potential_energy", &calculator::get_potential_energy)
-		.def("get_forces", &calculator::get_forces)
-		.def("calculate", &calculator::calculate);
-
+		.def("get_forces",           &calculator::get_forces)
+		.def("get_density",          &calculator::get_density)		
+		.def("calculate",            &calculator::calculate)
+		.def("scf_step",             &calculator::scf_step);
 	
 }
