@@ -36,7 +36,6 @@
 #include <options/ground_state.hpp>
 #include <systems/electrons.hpp>
 #include <ground_state/eigenvalue_output.hpp>
-#include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
 #include<tinyformat/tinyformat.h>
@@ -84,8 +83,14 @@ public:
 		 ham_(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), ions_, sc_.exx_coefficient(), /* use_ace = */ true)
 	{
 	}
+
+	struct result {
+		hamiltonian::energy energy;
+		vector3<double> dipole;
+		gpu::array<vector3<double>, 1> forces;
+	};
 	
-	ground_state::result operator()(systems::electrons & electrons){
+	result operator()(systems::electrons & electrons){
 		
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -96,7 +101,7 @@ public:
 		
 		if(electrons.full_comm().root()) ham_.info(std::cout);
 		
-		ground_state::result res;
+		result res;
 		operations::preconditioner prec;
 		
 		using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
