@@ -33,14 +33,17 @@ namespace inq {
 namespace input {
 
 class environment {
+		
+	boost::mpi3::environment mpi_env_;
+	cali::ConfigManager calimgr_;
+	mutable parallel::communicator base_comm_;
 
- private:
-		static auto & threaded_impl() {
-			static bool threaded_ = false;
-
-			return threaded_;
-		}
-
+	static auto & threaded_impl() {
+		static bool threaded_ = false;
+		
+		return threaded_;
+	}
+	
 	auto initialization_(bool use_threads){
 		
 		if(use_threads) assert(mpi_env_.thread_support() == boost::mpi3::thread_level::multiple);
@@ -53,6 +56,7 @@ class environment {
 		}
 		
 		CALI_MARK_BEGIN("inq_environment");		
+
 	}
 	
 public:
@@ -61,13 +65,6 @@ public:
 		return threaded_impl();
 	}
 
-	environment(int argc, char** argv, bool use_threads = false):
-		mpi_env_(argc, argv, use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
-		base_comm_(mpi_env_.get_world_instance())
-	{
-		initialization_(use_threads);
-	}
-	
 	environment(bool use_threads = false):
 		mpi_env_(use_threads?boost::mpi3::thread_level::multiple:boost::mpi3::thread_level::single),
 		base_comm_(mpi_env_.get_world_instance())
@@ -75,29 +72,22 @@ public:
 		initialization_(use_threads);
 	}
 	
-		~environment(){
-
-			CALI_MARK_END("inq_environment");
-
-			base_comm_.barrier();
-
-			if(not threaded() and base_comm_.rank() == 0){
-				calimgr_.flush(); // write performance results
-			}
-
-		}
-
-		auto par() const {
-			return parallelization(base_comm_);
-		}
-
-	auto world() {return mpi_env_.world();}
-
-  private:
+	~environment(){
 		
-    boost::mpi3::environment mpi_env_;
-		cali::ConfigManager calimgr_;
-    mutable parallel::communicator base_comm_;		
+		CALI_MARK_END("inq_environment");
+		
+		base_comm_.barrier();
+		
+		if(not threaded() and base_comm_.rank() == 0){
+			calimgr_.flush(); // write performance results
+		}
+		
+	}
+	
+	auto par() const {
+		return parallelization(base_comm_);
+	}
+		
 };
 
 }

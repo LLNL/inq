@@ -14,7 +14,7 @@
 
 int main( int argc, char* argv[] ) {
 
-	inq::input::environment env(argc, argv);
+	inq::input::environment env{};
 	
   int result = Catch::Session().run( argc, argv );
 

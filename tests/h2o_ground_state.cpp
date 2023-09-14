@@ -17,7 +17,7 @@ int main(int argc, char ** argv){
 	using namespace inq::magnitude;
 	using inq::vector3;
 	
-	inq::input::environment env(argc, argv);
+	inq::input::environment env{};
 	
 	inq::utils::match match(3.0e-4);
 	

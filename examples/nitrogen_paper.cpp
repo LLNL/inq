@@ -14,7 +14,7 @@ int main(int argc, char ** argv){
 	using namespace inq::input;
 	using namespace inq::magnitude;
 	
-	environment env(argc, argv);
+	environment env{};
 
 	auto distance = 1.06_angstrom;
 	systems::ions ions(systems::cell::orthorhombic(10.0_b, 10.0_b, 12.0_b).finite());

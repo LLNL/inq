@@ -12,7 +12,7 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 	
-	input::environment env(argc, argv);
+	input::environment env{};
 
 	auto ions = systems::ions::parse(config::path::unit_tests_data() + "H.cif");
 
