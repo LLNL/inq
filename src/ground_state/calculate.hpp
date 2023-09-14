@@ -14,8 +14,9 @@
 namespace inq {
 namespace ground_state {
 
-ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const options::theory & inter = {}, options::ground_state const & solver = {}){
-	return calculator{}.calculate(ions, electrons, inter, solver);
+ground_state::result calculate(systems::ions const & ions, systems::electrons & electrons, const options::theory & inter = {}, options::ground_state const & solver = {}){
+	auto calc = calculator{ions, electrons, inter, solver};
+	return calc(electrons);
 }
 }
 }

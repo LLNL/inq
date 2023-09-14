@@ -51,23 +51,41 @@
 namespace inq {
 namespace ground_state {
 
-template <typename NormResType>
-auto state_convergence(systems::electrons & el, NormResType const & normres) {
-	auto state_conv = 0.0;
+class calculator {
+
+	systems::ions const & ions_;
+	options::theory inter_;
+	options::ground_state solver_;
+	hamiltonian::self_consistency<> sc_;
+	hamiltonian::ks_hamiltonian<double> ham_;
 	
-	for(int iphi = 0; iphi < el.kpin_size(); iphi++){
-		state_conv += operations::sum(el.occupations()[iphi], normres[iphi], [](auto occ, auto nres){ return fabs(occ*nres); });
+	template <typename NormResType>
+	static auto state_convergence(systems::electrons & el, NormResType const & normres) {
+		auto state_conv = 0.0;
+		
+		for(int iphi = 0; iphi < el.kpin_size(); iphi++){
+			state_conv += operations::sum(el.occupations()[iphi], normres[iphi], [](auto occ, auto nres){ return fabs(occ*nres); });
+		}
+		
+		el.kpin_states_comm().all_reduce_n(&state_conv, 1);
+		state_conv /= el.states().num_electrons();
+		
+		return state_conv;
+	}
+
+public:
+
+	
+	calculator(systems::ions const & ions, systems::electrons const & electrons, const options::theory & inter = {}, options::ground_state const & solver = {})
+		:ions_(ions),
+		 inter_(inter),
+		 solver_(solver),
+		 sc_(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components()),
+		 ham_(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), ions_, sc_.exx_coefficient(), /* use_ace = */ true)
+	{
 	}
 	
-	el.kpin_states_comm().all_reduce_n(&state_conv, 1);
-	state_conv /= el.states().num_electrons();
-	
-	return state_conv;
-}
-
-class calculator {
-public:
-	ground_state::result calculate(const systems::ions & ions, systems::electrons & electrons, const options::theory & inter = {}, options::ground_state const & solver = {}){
+	ground_state::result operator()(systems::electrons & electrons){
 		
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -75,33 +93,29 @@ public:
 		
 		auto console = electrons.logger();
 		if(console) console->trace("calculate started");
-		hamiltonian::self_consistency sc(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components());
 		
-		hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), ions, sc.exx_coefficient(), /* use_ace = */ true);
-		
-		if(electrons.full_comm().root()) ham.info(std::cout);
+		if(electrons.full_comm().root()) ham_.info(std::cout);
 		
 		ground_state::result res;
-		
 		operations::preconditioner prec;
 		
 		using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
 		
 		auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
-			switch(solver.mixing_algorithm()){
-			case options::ground_state::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver.mixing());
-			case options::ground_state::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+			switch(solver_.mixing_algorithm()){
+			case options::ground_state::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver_.mixing());
+			case options::ground_state::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver_.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 			} __builtin_unreachable();
 		}();
 		
 		auto old_energy = std::numeric_limits<double>::max();
 		
-		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
-		sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
+		sc_.update_ionic_fields(electrons.states_comm(), ions_, electrons.atomic_pot());
+		sc_.update_hamiltonian(ham_, res.energy, electrons.spin_density());
 		
-		res.energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
+		res.energy.ion(inq::ions::interaction_energy(ions_.cell(), ions_, electrons.atomic_pot()));
 		
-		double old_exe = ham.exchange.update(electrons);
+		double old_exe = ham_.exchange.update(electrons);
 		double exe_diff = fabs(old_exe);
 		auto update_hf = false;
 		
@@ -109,21 +123,21 @@ public:
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		
 		int conv_count = 0;
-		for(int iiter = 0; iiter < solver.scf_steps(); iiter++){
+		for(int iiter = 0; iiter < solver_.scf_steps(); iiter++){
 			
 			CALI_CXX_MARK_SCOPE("scf_iteration");
 			
-			if(solver.subspace_diag()) {
+			if(solver_.subspace_diag()) {
 				int ilot = 0;
 				for(auto & phi : electrons.kpin()) {
-					electrons.eigenvalues()[ilot] = subspace_diagonalization(ham, phi);
+					electrons.eigenvalues()[ilot] = subspace_diagonalization(ham_, phi);
 					ilot++;
 				}
 				electrons.update_occupations(electrons.eigenvalues());
 			}
 			
 			if(update_hf){
-				auto exe = ham.exchange.update(electrons);
+				auto exe = ham_.exchange.update(electrons);
 				exe_diff = fabs(exe - old_exe);
 				old_exe = exe;
 			}
@@ -131,10 +145,10 @@ public:
 			for(auto & phi : electrons.kpin()) {
 				auto fphi = operations::transform::to_fourier(std::move(phi));
 				
-				switch(solver.eigensolver()){
+				switch(solver_.eigensolver()){
 					
 				case options::ground_state::scf_eigensolver::STEEPEST_DESCENT:
-					eigensolvers::steepest_descent(ham, prec, fphi);
+					eigensolvers::steepest_descent(ham_, prec, fphi);
 					break;
 					
 				default:
@@ -152,7 +166,7 @@ public:
 				density_diff = operations::integral_sum_absdiff(electrons.spin_density(), new_density);
 				density_diff /= electrons.states().num_electrons();
 				
-				if(inter.self_consistent()) {
+				if(inter_.self_consistent()) {
 					auto tmp = +electrons.spin_density().matrix().flatted();
 					mixer->operator()(tmp, new_density.matrix().flatted());
 					electrons.spin_density().matrix().flatted() = tmp;
@@ -162,12 +176,12 @@ public:
 				}
 			}
 			
-			sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
+			sc_.update_hamiltonian(ham_, res.energy, electrons.spin_density());
 			
 			CALI_MARK_END("mixing");
 			
 			{
-				auto normres = res.energy.calculate(ham, electrons);
+				auto normres = res.energy.calculate(ham_, electrons);
 				auto energy_diff = (res.energy.eigenvalues() - old_energy)/electrons.states().num_electrons();
 
 				electrons.full_comm().barrier();
@@ -179,14 +193,14 @@ public:
 				auto state_conv = state_convergence(electrons, normres);
 				auto ev_out = eigenvalues_output(electrons, normres);
 				
-				if(solver.verbose_output() and console){
+				if(solver_.verbose_output() and console){
 					console->info("\nSCF iter {} : wtime = {:5.2f}s e = {:.10f} de = {:5.0e} dexe = {:5.0e} dn = {:5.0e} dst = {:5.0e}\n{}", 
 												iiter, elapsed_seconds.count(), res.energy.total(), energy_diff, exe_diff, density_diff, state_conv, ev_out);
 				}
 				
-				if(fabs(energy_diff) < solver.energy_tolerance()){
+				if(fabs(energy_diff) < solver_.energy_tolerance()){
 					conv_count++;
-					if(conv_count > 2 and exe_diff < solver.energy_tolerance()) break;
+					if(conv_count > 2 and exe_diff < solver_.energy_tolerance()) break;
 					if(conv_count > 2) update_hf = true;
 				} else {
 					conv_count = 0; 
@@ -198,19 +212,19 @@ public:
 
 		//make sure we have a density consistent with phi
 		electrons.spin_density() = observables::density::calculate(electrons);
-		sc.update_hamiltonian(ham, res.energy, electrons.spin_density());
-		auto normres = res.energy.calculate(ham, electrons);
+		sc_.update_hamiltonian(ham_, res.energy, electrons.spin_density());
+		auto normres = res.energy.calculate(ham_, electrons);
 			
-		if(solver.calc_forces()) res.forces = hamiltonian::calculate_forces(ions, electrons, ham);
+		if(solver_.calc_forces()) res.forces = hamiltonian::calculate_forces(ions_, electrons, ham_);
 		
 		auto ev_out = eigenvalues_output(electrons, normres);		
 		
-		if(solver.verbose_output() and console) {
+		if(solver_.verbose_output() and console) {
 			console->info("\nSCF iters ended with resulting eigenvalues and energies:\n\n{}{}", ev_out.full(), res.energy);
 		}
 		
-		if(ions.cell().periodicity() == 0){
-			res.dipole = observables::dipole(ions, electrons);
+		if(ions_.cell().periodicity() == 0){
+			res.dipole = observables::dipole(ions_, electrons);
 		} else {
 			res.dipole = vector3<double>(0.);
 		}
