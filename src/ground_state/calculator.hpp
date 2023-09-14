@@ -92,7 +92,7 @@ public:
 		assert(electrons.kpin()[0].full_comm() == electrons.states_basis_comm());
 		
 		auto console = electrons.logger();
-		if(console) console->trace("ground-state calculation started");
+		if(solver_.verbose_output() and console) console->trace("ground-state calculation started");
 		
 		if(electrons.full_comm().root()) ham_.info(std::cout);
 		
@@ -229,7 +229,7 @@ public:
 			res.dipole = vector3<double>(0.);
 		}
 	
-		if(console) console->trace("ground-state calculation ended normally");
+		if(solver_.verbose_output() and console) console->trace("ground-state calculation ended normally");
 		return res;
 	}
 	

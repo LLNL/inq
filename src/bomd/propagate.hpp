@@ -34,7 +34,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, const optio
 					   std::string("  number of steps  = {}\n") + 
 					   std::string("  propagation time = {} atomictime ({:.2f} fs)"), dt, dt/0.041341373, numsteps, numsteps*dt, numsteps*dt/41.341373);
 
-		auto calculate_gs = ground_state::calculator(ions, electrons, inter, options::ground_state{}.calculate_forces());
+		auto calculate_gs = ground_state::calculator(ions, electrons, inter, options::ground_state{}.calculate_forces().silent());
 		
 		auto res = calculate_gs(electrons);
 		auto energy = res.energy;
