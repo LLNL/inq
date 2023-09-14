@@ -39,16 +39,16 @@ int main(int argc, char ** argv){
 		
 		ground_state::initial_guess(ions, electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.rpbe(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
 		
-		energy_match.check("total energy",        result.energy.total(),         -11.794106663282);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),         9.555702987386);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -3.535844485436);
-		energy_match.check("Hartree energy",      result.energy.hartree(),       -11.139895259643);
-		energy_match.check("external energy",     result.energy.external(),       15.119948124584);
-		energy_match.check("non-local energy",    result.energy.nonlocal(),       -1.139268347279);
-		energy_match.check("XC energy",           result.energy.xc(),             -4.376877703296);
-		energy_match.check("XC density integral", result.energy.nvxc(),           -4.792436730841);
+		energy_match.check("total energy",        result.energy.total(),         -11.805691503483);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),         9.569622551441);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -3.508150621604);
+		energy_match.check("Hartree energy",      result.energy.hartree(),       -11.111524294835);
+		energy_match.check("external energy",     result.energy.external(),       15.082403332438);
+		energy_match.check("non-local energy",    result.energy.nonlocal(),       -1.140029496383);
+		energy_match.check("XC energy",           result.energy.xc(),             -4.392447131111);
+		energy_match.check("XC density integral", result.energy.nvxc(),           -4.797098419430);
 		energy_match.check("ion-ion energy",      result.energy.ion(),           -19.813716465033);
 		
 	}

@@ -28,6 +28,7 @@ public:
 		NONE = 0,
 		LDA = XC_LDA_X,
 		PBE = XC_GGA_X_PBE,
+		RPBE = XC_GGA_X_RPBE,		
 		B = XC_GGA_X_B88,
 		B3LYP = XC_HYB_GGA_XC_B3LYP,
 		PBE0 = XC_HYB_GGA_XC_PBEH,
@@ -98,8 +99,16 @@ public:
 
 	auto pbe() const {
 		theory inter = *this;
-		inter.hartree_potential_ = true;		
+		inter.hartree_potential_ = true;
 		inter.exchange_ = exchange_functional::PBE;
+		inter.correlation_ = correlation_functional::PBE;
+		return inter;
+	}
+
+	auto rpbe() const {
+		theory inter = *this;
+		inter.hartree_potential_ = true;
+		inter.exchange_ = exchange_functional::RPBE;
 		inter.correlation_ = correlation_functional::PBE;
 		return inter;
 	}
