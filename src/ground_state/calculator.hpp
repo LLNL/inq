@@ -88,6 +88,7 @@ public:
 		hamiltonian::energy energy;
 		vector3<double> dipole;
 		gpu::array<vector3<double>, 1> forces;
+		int total_iter;
 	};
 	
 	result operator()(systems::electrons & electrons){
@@ -126,7 +127,8 @@ public:
 		
 		electrons.full_comm().barrier();
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
-		
+
+		res.total_iter = solver_.scf_steps();
 		int conv_count = 0;
 		for(int iiter = 0; iiter < solver_.scf_steps(); iiter++){
 			
@@ -205,7 +207,10 @@ public:
 				
 				if(fabs(energy_diff) < solver_.energy_tolerance()){
 					conv_count++;
-					if(conv_count > 2 and exe_diff < solver_.energy_tolerance()) break;
+					if(conv_count > 2 and exe_diff < solver_.energy_tolerance()) {
+						res.total_iter = iiter;
+						break;
+					}
 					if(conv_count > 2) update_hf = true;
 				} else {
 					conv_count = 0; 
