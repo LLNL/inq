@@ -109,6 +109,36 @@ public:
 
 	///////////////////////////////////
 	
+	auto get_density(){
+
+		assert(electrons_.has_value());
+
+		auto const & dens = electrons_->density().hypercubic();
+			
+		auto dx = std::get<0>(sizes(dens));
+		auto dy = std::get<1>(sizes(dens));
+		auto dz = std::get<2>(sizes(dens));
+		auto dspin = std::get<3>(sizes(dens));		
+		
+		py::array_t<double, py::array::c_style> density_array({dx, dy, dz, dspin});
+		
+    auto arr = density_array.mutable_unchecked();
+		
+    for (py::ssize_t ix = 0; ix < arr.shape(0); ix++) {
+			for (py::ssize_t iy = 0; iy < arr.shape(1); iy++) {
+				for (py::ssize_t iz = 0; iz < arr.shape(2); iz++) {
+					for (py::ssize_t ispin = 0; ispin < arr.shape(3); ispin++) {
+						arr(ix, iy, iz, ispin) = dens[ix][iy][iz][ispin];
+					}
+				}
+			}
+    }
+		
+    return density_array;
+	}
+
+	///////////////////////////////////
+	
 	void calculate(py::object atoms){
 
 		auto ions = ase_atoms_to_inq_ions(atoms);
@@ -129,8 +159,8 @@ PYBIND11_MODULE(pinq, module) {
 	py::class_<calculator>(module, "calculator")
 		.def(py::init<py::args, py::kwargs&>())
 		.def("get_potential_energy", &calculator::get_potential_energy)
-		.def("get_forces", &calculator::get_forces)
-		.def("calculate", &calculator::calculate);
-
+		.def("get_forces",           &calculator::get_forces)
+		.def("get_density",          &calculator::get_density)		
+		.def("calculate",            &calculator::calculate);
 	
 }

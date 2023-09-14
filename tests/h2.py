@@ -36,3 +36,4 @@ energy = atoms.get_potential_energy()
 
 assert abs(energy - -32.63697189005673) < 3.0e-5
 
+atoms.calc.get_density()
