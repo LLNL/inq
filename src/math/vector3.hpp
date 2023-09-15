@@ -214,10 +214,6 @@ public:
 		return elementwise([] (auto x) { return imag(x);}, vv);
 	}
 
-	friend GPU_FUNCTION auto fabs(vector3 const & vv){
-		return elementwise([] (auto x) { return fabs(x);}, vv);
-	}
-		
 	// VECTORIAL PRODUCTS
 		
 	//internal product
@@ -256,7 +252,11 @@ public:
 	friend GPU_FUNCTION auto product(vector3 const & vv) {
 		return vv[0]*vv[1]*vv[2];
 	}
-		
+
+	friend GPU_FUNCTION auto fabs(vector3 const & vv){
+		return fabs(vv[0]) + fabs(vv[1]) + fabs(vv[2]);
+	}
+	
 	// INPUT OUTPUT
 	friend std::ostream& operator <<(std::ostream & out, vector3 const & vv){
 		out << vv.vec_[0] << '\t' << vv.vec_[1] << '\t' << vv.vec_[2];
@@ -470,7 +470,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		vector3<double> dv(3.0, -1.1, 0.1);
 
 		CHECK( dot(dv, dv) == norm(dv));        
-
+		CHECK(fabs(dv) == 3.0 + 1.1 + 0.1);
+		
 		vector3<complex> vv1({complex(0.0, 2.0), complex(0.2, -1.1), complex(0.1, 0.1)});
 		vector3<complex> vv2({complex(-4.55, 9.0), complex(-0.535, -33.3), complex(2.35, -0.4)});
 		
@@ -492,14 +493,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(imag(vv1)[0] ==  2.0_a);
 		CHECK(real(vv1)[1] ==  0.2_a);
 		CHECK(imag(vv1)[1] == -1.1_a);
-	SECTION("contravariant and covariant"){
+		
+		SECTION("contravariant and covariant"){
 
 		vector3<double, contravariant> vec(2.0, 3.0, 5.0);
 		vector3<double, covariant> covec(4.1, 0.76, 2.4);
 
 		CHECK(dot(covec, vec) == 22.48_a);
 		
-	}
+		}
+		
 		CHECK(real(vv1)[2] ==  0.1_a);
 		CHECK(imag(vv1)[2] ==  0.1_a);
 
