@@ -61,7 +61,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, const optio
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
 			
-			if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}  wtime = {:9.3f}", istep + 1, (istep + 1)*dt, energy.total(), elapsed_seconds.count());
+			if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}  scf_iter = {:4d}  wtime = {:9.3f}", istep + 1, (istep + 1)*dt, energy.total(), res.total_iter, elapsed_seconds.count());
 
 			iter_start_time = new_time;
 		}
