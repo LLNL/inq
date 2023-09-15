@@ -81,7 +81,6 @@ private:
 
 public:
 
-	
 	calculator(systems::ions const & ions, systems::electrons const & electrons, const options::theory & inter = {}, options::ground_state const & solver = {})
 		:ions_(ions),
 		 inter_(inter),
@@ -249,6 +248,13 @@ public:
 		if(solver_.verbose_output() and console) console->trace("ground-state calculation ended normally");
 		return res;
 	}
+
+	/////////////////////////////////////////
+
+	auto & hamiltonian() const {
+		return ham_;
+	}
+	
 	
 };
 }
