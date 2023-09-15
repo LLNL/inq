@@ -52,6 +52,13 @@ namespace ground_state {
 
 class calculator {
 
+public:
+
+	using energy_type = hamiltonian::energy;
+	using forces_type = gpu::array<vector3<double>, 1>;
+
+private:
+	
 	systems::ions const & ions_;
 	options::theory inter_;
 	options::ground_state solver_;
@@ -85,9 +92,9 @@ public:
 	}
 
 	struct result {
-		hamiltonian::energy energy;
+		energy_type energy;
 		vector3<double> dipole;
-		gpu::array<vector3<double>, 1> forces;
+		forces_type forces;
 		int total_iter;
 	};
 	
