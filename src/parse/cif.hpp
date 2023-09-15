@@ -81,7 +81,7 @@ public:
 		auto atom_z = doc.sole_block().find_loop("_atom_site_fract_z");
 
 		if(natoms != atom_x.length() or natoms != atom_y.length() or natoms != atom_z.length()){
-			throw std::runtime_error("Error: read the atomic coordinates in CIF file '" + cif_file_name + "'.");
+			throw std::runtime_error("Error: cannot read the atomic coordinates from CIF file '" + cif_file_name + "'.");
 		}
 
 		std::vector<std::string> symbols;
@@ -218,7 +218,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(cif_file.size() == 20);
 
 		//Conversions for units and cell convention to compare with obabel
-		//generated coordinates
+		//generated positions
 		//
 		//  1.38005 ->  0.25
 		//  1.95168 ->  0.25

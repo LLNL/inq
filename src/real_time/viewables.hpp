@@ -65,8 +65,8 @@ public:
 		return time_;
 	}
 	
-	auto coordinates(int iatom) const {
-		return ions_.coordinates()[iatom];
+	auto positions(int iatom) const {
+		return ions_.positions()[iatom];
 	}
 	
 	auto velocities(int iatom) const {

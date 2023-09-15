@@ -38,7 +38,7 @@ struct impulsive {
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_positions(double dt, TypeIons& ions, TypeForces const &){
 		for(int i = 0; i != ions.size(); ++i)
-			ions.coordinates()[i] += dt*ions.velocities()[i];
+			ions.positions()[i] += dt*ions.velocities()[i];
 	}
 
 	template <typename TypeIons, typename TypeForces>
@@ -62,7 +62,7 @@ struct molecular_dynamics{
 	
 	template <typename TypeIons, typename TypeForces>
 	static void propagate_positions(double dt, TypeIons& ions, TypeForces const & forces){
-		solvers::velocity_verlet::propagate_positions(dt, acceleration(ions, forces), ions.velocities(), ions.coordinates());
+		solvers::velocity_verlet::propagate_positions(dt, acceleration(ions, forces), ions.velocities(), ions.positions());
 	}
 
 	template <typename TypeIons, typename TypeForces>
