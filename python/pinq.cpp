@@ -24,7 +24,7 @@ private:
 	
 	options::theory theo_;
 	options::electrons els_;
-	ground_state::result result_;
+	ground_state::calculator::result result_;
 	input::environment env_;
 	std::optional<systems::electrons> electrons_;
 	

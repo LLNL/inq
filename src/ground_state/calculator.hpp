@@ -36,7 +36,6 @@
 #include <options/ground_state.hpp>
 #include <systems/electrons.hpp>
 #include <ground_state/eigenvalue_output.hpp>
-#include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
 #include<tinyformat/tinyformat.h>
@@ -84,19 +83,26 @@ public:
 		 ham_(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), ions_, sc_.exx_coefficient(), /* use_ace = */ true)
 	{
 	}
+
+	struct result {
+		hamiltonian::energy energy;
+		vector3<double> dipole;
+		gpu::array<vector3<double>, 1> forces;
+		int total_iter;
+	};
 	
-	ground_state::result operator()(systems::electrons & electrons){
+	result operator()(systems::electrons & electrons){
 		
 		CALI_CXX_MARK_FUNCTION;
 		
 		assert(electrons.kpin()[0].full_comm() == electrons.states_basis_comm());
 		
 		auto console = electrons.logger();
-		if(console) console->trace("calculate started");
+		if(solver_.verbose_output() and console) console->trace("ground-state calculation started");
 		
 		if(electrons.full_comm().root()) ham_.info(std::cout);
 		
-		ground_state::result res;
+		result res;
 		operations::preconditioner prec;
 		
 		using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
@@ -121,7 +127,8 @@ public:
 		
 		electrons.full_comm().barrier();
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
-		
+
+		res.total_iter = solver_.scf_steps();
 		int conv_count = 0;
 		for(int iiter = 0; iiter < solver_.scf_steps(); iiter++){
 			
@@ -200,7 +207,10 @@ public:
 				
 				if(fabs(energy_diff) < solver_.energy_tolerance()){
 					conv_count++;
-					if(conv_count > 2 and exe_diff < solver_.energy_tolerance()) break;
+					if(conv_count > 2 and exe_diff < solver_.energy_tolerance()) {
+						res.total_iter = iiter;
+						break;
+					}
 					if(conv_count > 2) update_hf = true;
 				} else {
 					conv_count = 0; 
@@ -229,7 +239,7 @@ public:
 			res.dipole = vector3<double>(0.);
 		}
 	
-		if(console) console->trace("calculate ended normally");
+		if(solver_.verbose_output() and console) console->trace("ground-state calculation ended normally");
 		return res;
 	}
 	
