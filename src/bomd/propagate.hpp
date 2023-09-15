@@ -23,6 +23,8 @@ namespace bomd {
 template <typename IonSubPropagator = ions::propagator::molecular_dynamics>
 void propagate(systems::ions & ions, systems::electrons & electrons, const options::theory & inter, const options::real_time & opts, IonSubPropagator const& ion_propagator = {}){
 		CALI_CXX_MARK_FUNCTION;
+
+		using namespace inq::magnitude;
 		
 		auto console = electrons.logger();
 
@@ -30,9 +32,9 @@ void propagate(systems::ions & ions, systems::electrons & electrons, const optio
 		const int numsteps = opts.num_steps();
 
 		if(console) console->trace(std::string("initializing real-time propagation:\n") +
-					   std::string("  time step        = {} atomictime ({:.2f} as)\n") + 
+					   std::string("  time step        = {} atomictime ({:.2f} fs)\n") + 
 					   std::string("  number of steps  = {}\n") + 
-					   std::string("  propagation time = {} atomictime ({:.2f} fs)"), dt, dt/0.041341373, numsteps, numsteps*dt, numsteps*dt/41.341373);
+					   std::string("  propagation time = {} atomictime ({:.2f} fs)"), dt, dt*1.0_atomictime/1.0_fs, numsteps, numsteps*dt, numsteps*dt*1.0_atomictime/1.0_fs);
 
 		auto calculate_gs = ground_state::calculator(ions, electrons, inter, options::ground_state{}.calculate_forces().silent());
 
@@ -42,7 +44,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, const optio
 		if(console) console->trace("starting Born-Oppenheimer propagation");
 
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
-		for(int istep = 0; istep < numsteps; istep++){
+		for(int istep = 0; istep < numsteps + 1; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
 
 			auto time = istep*dt;
