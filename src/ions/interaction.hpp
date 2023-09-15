@@ -328,7 +328,7 @@ auto interaction_energy(const cell_type & cell, const geometry_type & geo, const
 
 	for(int ii = 0; ii < geo.size(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
 
-	interaction_energy(geo.size(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+	interaction_energy(geo.size(), cell, charges, geo.positions(), atomic_pot.range_separation(), energy, forces);
 
 	return energy;
 }
@@ -346,7 +346,7 @@ auto interaction_forces(const cell_type & cell, const geometry_type & geo, const
 
 	for(int ii = 0; ii < geo.size(); ii++) charges[ii] = atomic_pot.pseudo_for_element(geo.atoms()[ii]).valence_charge();
 
-	interaction_energy(geo.size(), cell, charges, geo.coordinates(), atomic_pot.range_separation(), energy, forces);
+	interaction_energy(geo.size(), cell, charges, geo.positions(), atomic_pot.range_separation(), energy, forces);
 
 	return forces;
 }

@@ -124,7 +124,7 @@ namespace hamiltonian {
 
 				if(single_atom >= 0 and single_atom != iatom) continue;
 				
-				auto atom_position = ions.coordinates()[iatom];
+				auto atom_position = ions.positions()[iatom];
 				
 				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, atom_position, ps.short_range_potential_radius());
@@ -177,7 +177,7 @@ namespace hamiltonian {
 
 				if(single_atom >= 0 and single_atom != iatom) continue;
 				
-				auto atom_position = ions.coordinates()[iatom];
+				auto atom_position = ions.positions()[iatom];
 				
 				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 				basis::spherical_grid sphere(basis, atom_position, sep_.long_range_density_radius());
@@ -216,7 +216,7 @@ namespace hamiltonian {
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
-				auto atom_position = ions.coordinates()[iatom];
+				auto atom_position = ions.positions()[iatom];
 				
 				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 
@@ -274,7 +274,7 @@ namespace hamiltonian {
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
-				auto atom_position = ions.coordinates()[iatom];
+				auto atom_position = ions.positions()[iatom];
 				
 				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
 

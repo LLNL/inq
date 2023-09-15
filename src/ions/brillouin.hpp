@@ -39,7 +39,7 @@ public:
 		
 		for(int iatom = 0; iatom < ions.size(); iatom++){
 			types[iatom] = ions.atoms()[iatom].atomic_number();
-			auto pos = ions.cell().metric().to_contravariant(ions.cell().position_in_cell(ions.coordinates()[iatom]));
+			auto pos = ions.cell().metric().to_contravariant(ions.cell().position_in_cell(ions.positions()[iatom]));
 			positions[3*iatom + 0] = pos[0];
 			positions[3*iatom + 1] = pos[1];
 			positions[3*iatom + 2] = pos[2];
