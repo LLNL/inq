@@ -35,33 +35,30 @@ void propagate(systems::ions & ions, systems::electrons & electrons, const optio
 					   std::string("  propagation time = {} atomictime ({:.2f} fs)"), dt, dt/0.041341373, numsteps, numsteps*dt, numsteps*dt/41.341373);
 
 		auto calculate_gs = ground_state::calculator(ions, electrons, inter, options::ground_state{}.calculate_forces().silent());
-		
-		auto res = calculate_gs(electrons);
-		auto energy = res.energy;
-		auto forces = res.forces;
 
-		if(console) console->trace("starting Born-Oppenheimer propagation");
-		if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}", 0, 0.0, energy.total());
+		ground_state::calculator::energy_type energy;
+		ground_state::calculator::forces_type forces;
 		
+		if(console) console->trace("starting Born-Oppenheimer propagation");
+
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 		for(int istep = 0; istep < numsteps; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
 
-			//propagate ionic positions to t + dt
-			ion_propagator.propagate_positions(dt, ions, forces);
+			auto time = istep*dt;
 			
-			//calculate the electronic state at t + dt
+			if(istep > 0) ion_propagator.propagate_positions(dt, ions, forces);
+			
 			auto res = calculate_gs(electrons);
 			energy = res.energy;
 			forces = res.forces;
 
-			//propagate ionic velocities to t + dt
-			ion_propagator.propagate_velocities(dt, ions, forces);
+			if(istep > 0) ion_propagator.propagate_velocities(dt, ions, forces);
 
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
 			
-			if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}  scf_iter = {:4d}  wtime = {:9.3f}", istep + 1, (istep + 1)*dt, energy.total(), res.total_iter, elapsed_seconds.count());
+			if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}  scf_iter = {:4d}  wtime = {:9.3f}", istep, time, energy.total(), res.total_iter, elapsed_seconds.count());
 
 			iter_start_time = new_time;
 		}
