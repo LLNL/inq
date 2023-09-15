@@ -17,6 +17,7 @@
 #include <perturbations/kick.hpp>
 #include <perturbations/laser.hpp>
 #include <perturbations/sum.hpp>
+#include <observables/kinetic_energy_density.hpp>
 #include <observables/spectrum.hpp>
 #endif
 
