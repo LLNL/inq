@@ -65,20 +65,20 @@ public:
 		return time_;
 	}
 	
-	auto positions(int iatom) const {
-		return ions_.positions()[iatom];
+	auto positions() const {
+		return ions_.positions();
 	}
 	
-	auto velocities(int iatom) const {
-		return ions_.velocities()[iatom];
+	auto velocities() const {
+		return ions_.velocities();
 	}
 
-	auto forces(int iatom) {
+	auto forces() {
 		if(forces_.size() == 0) forces_ = hamiltonian::calculate_forces(ions_, electrons_, ham_);
-		return forces_[iatom];
+		return forces_;
 	}
 
-	auto & energy() const {
+	auto energy() const {
 		return energy_;
 	}
 

@@ -25,10 +25,17 @@ namespace systems {
 
 class ions {
 
+public:
+	
+	using positions_type  =	std::vector<vector3<double>>;
+	using velocities_type = std::vector<vector3<double>>;
+
+private:
+
 	inq::systems::cell cell_;
 	std::vector<input::species> atoms_;
-	std::vector<vector3<double>> positions_;
-	std::vector<vector3<double>> velocities_;	
+	positions_type positions_;
+	velocities_type velocities_;	
 
 	template <typename PositionType>
 	void add_atom(input::species const & element, PositionType const & position){

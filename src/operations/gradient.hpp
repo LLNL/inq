@@ -104,7 +104,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		auto grad = operations::gradient(func, factor);
 		
-		auto diff = vector3<double, covariant>(0.0, 0.0, 0.0);		
+		auto diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
@@ -119,9 +119,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		CHECK(diff[0] < 1.0e-8) ;
-		CHECK(diff[1] < 1.0e-8) ;
-		CHECK(diff[2] < 1.0e-8) ;
+		CHECK(diff < 3.0e-8) ;
 		
 	}
 	
@@ -159,7 +157,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		auto grad = operations::gradient(func, factor);
 		
-		auto diff = vector3<double, covariant>(0.0, 0.0, 0.0);
+		auto diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
@@ -174,9 +172,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		CHECK(diff[0] < 1.0e-8);
-		CHECK(diff[1] < 1.0e-8);
-		CHECK(diff[2] < 1.0e-8);		
+		CHECK(diff < 3.0e-8);
 	}
 	
 	SECTION("Plane-wave -- non-orthogonal"){
@@ -211,7 +207,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		auto grad = operations::gradient(func, factor);
 
-		auto diff = vector3<double, covariant>(0.0, 0.0, 0.0);
+		auto diff = 0.0;
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
@@ -226,9 +222,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		CHECK(diff[0] < 1.0e-7);
-		CHECK(diff[1] < 1.0e-7);
-		CHECK(diff[2] < 1.0e-7);
+		CHECK(diff < 3.0e-7);
+
 	}
 	
 }

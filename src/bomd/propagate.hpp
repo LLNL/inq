@@ -11,6 +11,7 @@
 #include <ground_state/calculate.hpp>
 #include <ions/propagator.hpp>
 #include <options/real_time.hpp>
+#include <real_time/viewables.hpp>
 #include <systems/electrons.hpp>
 #include <systems/ions.hpp>
 #include <utils/profiling.hpp>
@@ -20,9 +21,11 @@
 namespace inq {
 namespace bomd {
 
-template <typename IonSubPropagator = ions::propagator::molecular_dynamics>
-void propagate(systems::ions & ions, systems::electrons & electrons, const options::theory & inter, const options::real_time & opts, IonSubPropagator const& ion_propagator = {}){
+template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::molecular_dynamics>
+void propagate(systems::ions & ions, systems::electrons & electrons,  ProcessFunction func, const options::theory & inter, const options::real_time & opts, IonSubPropagator const& ion_propagator = {}){
 		CALI_CXX_MARK_FUNCTION;
+
+		using namespace inq::magnitude;
 		
 		auto console = electrons.logger();
 
@@ -30,38 +33,37 @@ void propagate(systems::ions & ions, systems::electrons & electrons, const optio
 		const int numsteps = opts.num_steps();
 
 		if(console) console->trace(std::string("initializing real-time propagation:\n") +
-					   std::string("  time step        = {} atomictime ({:.2f} as)\n") + 
+					   std::string("  time step        = {} atomictime ({:.2f} fs)\n") + 
 					   std::string("  number of steps  = {}\n") + 
-					   std::string("  propagation time = {} atomictime ({:.2f} fs)"), dt, dt/0.041341373, numsteps, numsteps*dt, numsteps*dt/41.341373);
+					   std::string("  propagation time = {} atomictime ({:.2f} fs)"), dt, dt*1.0_atomictime/1.0_fs, numsteps, numsteps*dt, numsteps*dt*1.0_atomictime/1.0_fs);
 
 		auto calculate_gs = ground_state::calculator(ions, electrons, inter, options::ground_state{}.calculate_forces().silent());
-		
-		auto res = calculate_gs(electrons);
-		auto energy = res.energy;
-		auto forces = res.forces;
 
-		if(console) console->trace("starting Born-Oppenheimer propagation");
-		if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}", 0, 0.0, energy.total());
+		ground_state::calculator::energy_type energy;
+		ground_state::calculator::forces_type forces;
 		
+		if(console) console->trace("starting Born-Oppenheimer propagation");
+
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
-		for(int istep = 0; istep < numsteps; istep++){
+		for(int istep = 0; istep < numsteps + 1; istep++){
 			CALI_CXX_MARK_SCOPE("time_step");
 
-			//propagate ionic positions to t + dt
-			ion_propagator.propagate_positions(dt, ions, forces);
+			auto time = istep*dt;
 			
-			//calculate the electronic state at t + dt
+			if(istep > 0) ion_propagator.propagate_positions(dt, ions, forces);
+			
 			auto res = calculate_gs(electrons);
 			energy = res.energy;
 			forces = res.forces;
 
-			//propagate ionic velocities to t + dt
-			ion_propagator.propagate_velocities(dt, ions, forces);
+			if(istep > 0) ion_propagator.propagate_velocities(dt, ions, forces);
 
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
+
+			func(real_time::viewables{istep == numsteps, istep, time, ions, electrons, energy, forces, calculate_gs.hamiltonian(), perturbations::none{}});
 			
-			if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}  scf_iter = {:4d}  wtime = {:9.3f}", istep + 1, (istep + 1)*dt, energy.total(), res.total_iter, elapsed_seconds.count());
+			if(console) console->info("step {:9d} :  t =  {:9.3f}  e = {:.12f}  scf_iter = {:4d}  wtime = {:9.3f}", istep, time, energy.total(), res.total_iter, elapsed_seconds.count());
 
 			iter_start_time = new_time;
 		}
