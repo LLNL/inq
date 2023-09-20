@@ -30,6 +30,18 @@ typename array_type::element sum(const array_type & phi){
 	return gpu::run(gpu::reduce(phi.size()), gpu::array_access<decltype(begin(phi))>{begin(phi)});
 }
 
+template <class ArrayType, class UnaryOp>
+auto sum(ArrayType const & arr, UnaryOp const & op){
+
+	CALI_CXX_MARK_SCOPE("sum(2arg)");
+
+	using return_type = decltype(op(arr[0]));
+
+	return_type val = 0.0;
+	for(int ii = 0; ii < arr.size(); ii++) val += op(arr[ii]);
+	return val;
+}
+
 template <class array1_type, class array2_type, class binary_op>
 auto sum(const array1_type & phi1, const array2_type & phi2, const binary_op op){
 
@@ -79,7 +91,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		for(int ii = 0; ii < N; ii++)	aa[ii] = ii;
 
 		CHECK(operations::sum(aa) == Approx(0.5*N*(N - 1.0)));
-
+		CHECK(operations::sum(aa, [](auto xx){ return -2.0*xx; }) == Approx(-N*(N - 1.0)));
 	}
 	
 	SECTION("Sum complex"){
@@ -96,6 +108,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(real(operations::sum(aa)) == Approx(0.5*N*(N - 1.0)));
 		CHECK(imag(operations::sum(aa)) == Approx(-1.5*N*(N - 1.0)));
 
+		CHECK(real(operations::sum(aa, [](auto xx) { return conj(complex{0.0, -1.0}*xx); })) == Approx(-1.5*N*(N - 1.0)));
+		CHECK(imag(operations::sum(aa, [](auto xx) { return conj(complex{0.0, -1.0}*xx); })) == Approx( 0.5*N*(N - 1.0)));
+		
 	}
 
 	SECTION("Sum product double"){
