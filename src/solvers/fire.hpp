@@ -64,7 +64,10 @@ void fire(ArrayType & xx, double step, double tolforce, ForceFunction const & fu
       p_times = 0;
       dt *= f_dec;
       alpha = alpha_start;
-      for(auto ii = 0; ii < vel.size(); ii++) vel[ii] = vector3{0.0, 0.0, 0.0};
+      for(auto ii = 0; ii < vel.size(); ii++) {
+        xx[ii] -= 0.5*vel[ii]*dt;
+        vel[ii] = vector3{0.0, 0.0, 0.0};
+      }
     }
 
     for(auto ii = 0; ii < vel.size(); ii++) {
