@@ -52,7 +52,7 @@ void fire(ArrayType & xx, double step, double tolforce, ForceFunction const & fu
     auto norm_force = operations::sum(force, [](auto xx) { return norm(xx); });
     for(auto ii = 0; ii < vel.size(); ii++) vel[ii] = (1.0 - alpha)*vel[ii] + alpha*force[ii]*sqrt(norm_vel/norm_force);
       
-    if(p_value > 0.0) {
+    if(p_times == 0 or p_value > 0.0) {
       if(p_times > n_min) {
         dt = std::min(dt*f_inc, dt_max);
         alpha *= f_alpha;
