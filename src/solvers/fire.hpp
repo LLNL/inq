@@ -34,11 +34,16 @@ void fire(ArrayType & xx, double step, double tolforce, ForceFunction const & fu
   auto const mass = 1.0;
   auto const maxiter = 200;
 
+	auto old_xx = xx;
+	auto old_p_value = 0.0;
+	auto p_value = 0.0;
+	
   auto vel = ArrayType(xx.size(), {0.0, 0.0, 0.0});
   for(int iiter = 0; iiter < maxiter; iiter++){
 
     auto force = func(xx);
-    auto p_value = operations::sum(force, vel, [](auto fo, auto ve) { return dot(fo, ve);});
+		old_p_value = p_value;
+		p_value = operations::sum(force, vel, [](auto fo, auto ve) { return dot(fo, ve);});
 
     std::cout << iiter << '\t' << xx[0][0] << '\t' << vel[0][0] << '\t' << force[0][0] << '\t' << p_value << '\t' << std::endl;
     file << iiter << '\t' << xx[0][0] << '\t' << vel[0][0] << '\t' << force[0][0] << '\t' << p_value << '\t' << dt << std::endl;
@@ -64,15 +69,26 @@ void fire(ArrayType & xx, double step, double tolforce, ForceFunction const & fu
       p_times = 0;
       dt *= f_dec;
       alpha = alpha_start;
+
+			auto den = old_p_value - p_value;
+			auto c0 = -p_value/den;
+			auto c1 = old_p_value/den;
+			
+			std::cout << c0*old_xx[0][0] + c1*xx[0][0] << '\t' << old_xx[0][0] << '\t' << xx[0][0] << '\t' << c0 << '\t' << c1 << std::endl;
+			
       for(auto ii = 0; ii < vel.size(); ii++) {
-        xx[ii] -= 0.5*vel[ii]*dt;
+				xx[ii] = c0*old_xx[ii] + c1*xx[ii];
         vel[ii] = vector3{0.0, 0.0, 0.0};
       }
+			
+			continue;
+
     }
 
     for(auto ii = 0; ii < vel.size(); ii++) {
       vel[ii] += force[ii]*dt/mass;
-      xx[ii]  += vel[ii]*dt;
+			old_xx[ii] = xx[ii];
+			xx[ii]  += vel[ii]*dt;
     }
     
   }
