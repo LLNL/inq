@@ -48,11 +48,6 @@ void fire(ArrayType & xx, double step, double tolforce, ForceFunction const & fu
     std::cout << iiter << '\t' << xx[0][0] << '\t' << vel[0][0] << '\t' << force[0][0] << '\t' << p_value << '\t' << std::endl;
     file << iiter << '\t' << xx[0][0] << '\t' << vel[0][0] << '\t' << force[0][0] << '\t' << p_value << '\t' << dt << std::endl;
     
-    auto max_force = 0.0;
-    for(auto ii = 0; ii < force.size(); ii++) max_force = std::max(max_force, fabs(force[ii]));
-
-    if(max_force < tolforce) break;
-    
     auto norm_vel = operations::sum(vel, [](auto xx) { return norm(xx); });
     auto norm_force = operations::sum(force, [](auto xx) { return norm(xx); });
     for(auto ii = 0; ii < vel.size(); ii++) vel[ii] = (1.0 - alpha)*vel[ii] + alpha*force[ii]*sqrt(norm_vel/norm_force);
@@ -85,6 +80,10 @@ void fire(ArrayType & xx, double step, double tolforce, ForceFunction const & fu
 
     }
 
+    auto max_force = 0.0;
+    for(auto ii = 0; ii < force.size(); ii++) max_force = std::max(max_force, fabs(force[ii]));
+    if(max_force < tolforce) break;
+		
     for(auto ii = 0; ii < vel.size(); ii++) {
       vel[ii] += force[ii]*dt/mass;
 			old_xx[ii] = xx[ii];
