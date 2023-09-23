@@ -45,9 +45,6 @@ void fire(ArrayType & xx, double step, double tolforce, ForceFunction const & fu
 		old_p_value = p_value;
 		p_value = operations::sum(force, vel, [](auto fo, auto ve) { return dot(fo, ve);});
 
-    std::cout << iiter << '\t' << xx[0][0] << '\t' << vel[0][0] << '\t' << force[0][0] << '\t' << p_value << '\t' << std::endl;
-    file << iiter << '\t' << xx[0][0] << '\t' << vel[0][0] << '\t' << force[0][0] << '\t' << p_value << '\t' << dt << std::endl;
-    
     auto norm_vel = operations::sum(vel, [](auto xx) { return norm(xx); });
     auto norm_force = operations::sum(force, [](auto xx) { return norm(xx); });
     for(auto ii = 0; ii < vel.size(); ii++) vel[ii] = (1.0 - alpha)*vel[ii] + alpha*force[ii]*sqrt(norm_vel/norm_force);
@@ -68,8 +65,8 @@ void fire(ArrayType & xx, double step, double tolforce, ForceFunction const & fu
 			auto den = old_p_value - p_value;
 			auto c0 = -p_value/den;
 			auto c1 = old_p_value/den;
-			
-			std::cout << c0*old_xx[0][0] + c1*xx[0][0] << '\t' << old_xx[0][0] << '\t' << xx[0][0] << '\t' << c0 << '\t' << c1 << std::endl;
+
+			if(fabs(den) < 1e-16) c0 = c1 = 0.5;
 			
       for(auto ii = 0; ii < vel.size(); ii++) {
 				xx[ii] = c0*old_xx[ii] + c1*xx[ii];
@@ -111,8 +108,26 @@ using namespace inq;
 using namespace Catch::literals;
 using Catch::Approx;
 
-TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+auto lennard_jones_force(gpu::array<vector3<double>, 1> const & xx){
+	auto force = gpu::array<vector3<double>, 1>(xx.size());
 
+	for(int ii = 0; ii < xx.size(); ii++){
+		force[ii] = {0.0, 0.0, 0.0};
+		for(int jj = 0; jj < xx.size(); jj++){
+			if(ii == jj) continue;
+			
+			auto dxx = xx[ii] - xx[jj];
+      auto rr2 = norm(dxx);
+      auto rr6 = rr2*rr2*rr2;
+      auto rr12 = rr6*rr6;
+      force[ii] += 24.0/rr2*(2.0/rr12 - 1.0/rr6)*dxx;
+		}
+	}
+	
+	return force;
+}
+
+TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Lennard Jones 2 atoms"){
     
@@ -120,22 +135,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     pos[0] = vector3{-1.0, 0.0, 0.0};
     pos[1] = vector3{ 1.0, 0.0, 0.0};
 
-    auto lj2 = [] (auto xx) {
-      auto dxx = xx[0] - xx[1];
-      auto rr2 = norm(dxx);
-      auto rr6 = rr2*rr2*rr2;
-      auto rr12 = rr6*rr6;
-
-      //      std::cout << 4.0*(1.0/rr12 - 1.0/rr6) << std::endl;
-      
-      auto force = gpu::array<vector3<double>, 1>(2);
-      force[0] = 24.0/rr2*(2.0/rr12 - 1.0/rr6)*dxx;
-      force[1] = -force[0];
-
-      return force;
-    };
-
-    auto force = lj2(pos);
+    auto force = lennard_jones_force(pos);
 
     CHECK(force[0][0] == Approx(0.181640625));
     CHECK(force[0][1] == Approx(0.0).margin(1e-12));
@@ -144,7 +144,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(force[1][1] == Approx(0.0).margin(1e-12));
     CHECK(force[1][2] == Approx(0.0).margin(1e-12));
   
-    solvers::fire(pos, 0.1, 1e-5, lj2);
+    solvers::fire(pos, 0.1, 1e-5, lennard_jones_force);
     
     CHECK(pos[0][0] == Approx(-0.5*pow(2, 1.0/6.0)));
     CHECK(pos[0][1] == Approx(0.0).margin(1e-12));
@@ -153,7 +153,45 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(pos[1][1] == Approx(0.0).margin(1e-12));
     CHECK(pos[1][2] == Approx(0.0).margin(1e-12));
 
+    pos[0] = vector3{-0.3, 0.0, 0.0};
+    pos[1] = vector3{ 0.3, 0.0, 0.0};
+		
+    solvers::fire(pos, 0.1, 1e-5, lennard_jones_force);
+
+    CHECK(pos[0][0] == Approx(-0.5*pow(2, 1.0/6.0)));
+    CHECK(pos[0][1] == Approx(0.0).margin(1e-12));
+    CHECK(pos[0][2] == Approx(0.0).margin(1e-12));
+    CHECK(pos[1][0] == Approx( 0.5*pow(2, 1.0/6.0)));
+    CHECK(pos[1][1] == Approx(0.0).margin(1e-12));
+    CHECK(pos[1][2] == Approx(0.0).margin(1e-12));
+		
   }
 	
+	SECTION("Lennard Jones 4 atoms"){
+    
+    auto pos = gpu::array<vector3<double>, 1>(4);
+		
+    pos[0] = vector3{-1.0, 0.0, 0.0};
+    pos[1] = vector3{ 1.0, 0.0, 0.0};
+		pos[2] = vector3{ 0.0, 1.0, 0.0};
+		pos[3] = vector3{ 0.0, 0.0, 1.0};
+
+    solvers::fire(pos, 0.1, 1e-5, lennard_jones_force);
+
+    CHECK(pos[0][0] == -0.561231_a);
+    CHECK(pos[0][1] == -0.0306156_a);
+    CHECK(pos[0][2] == -0.0306156_a);
+    CHECK(pos[1][0] ==  0.561231_a);
+    CHECK(pos[1][1] == -0.0306156_a);
+    CHECK(pos[1][2] == -0.0306156_a);
+    CHECK(pos[2][0] == Approx(0.0).margin(1e-12));
+    CHECK(pos[2][1] == 0.927466_a);
+    CHECK(pos[2][2] == 0.133765_a);
+    CHECK(pos[3][0] == Approx(0.0).margin(1e-12));
+    CHECK(pos[3][1] == 0.133765_a);
+		CHECK(pos[3][2] == 0.927466_a);
+				
+  }
+		
 }
 #endif
