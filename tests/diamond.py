@@ -5,10 +5,7 @@ if(ase_spec is None):
   exit()
 
 from ase import Atoms
-from ase.optimize import BFGS
-from ase.calculators.nwchem import NWChem
-from ase.io import write
-import _pinq
+from pinq.calculator import PinqCalculator
 
 alat =  3.567095
 
@@ -17,7 +14,7 @@ atoms.set_cell([[0.0, alat/2.0, alat/2.0],
                 [alat/2.0, 0.0, alat/2.0],
                 [alat/2.0, alat/2.0, 0.0]], scale_atoms=True)
 
-atoms.calc = _pinq.calculator(ecut = 70.0, extra_bands = 1)
+atoms.calc = PinqCalculator(ecut = 70.0, extra_bands = 1)
 atoms.calc.calculate(atoms)
 energy = atoms.get_potential_energy()
 
