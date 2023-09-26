@@ -209,7 +209,7 @@ public:
 	
 };
 
-PYBIND11_MODULE(pinq, module) {
+PYBIND11_MODULE(_pinq, module) {
 
 	module.doc() = "Python interface for the INQ DFT/TDDFT library";
 
