@@ -24,12 +24,12 @@ if(ENABLE_CUDA)
 	set_source_files_properties(${PYTHON_FILES} PROPERTIES LANGUAGE CUDA)   
 endif()
 
-pybind11_add_module(pinq MODULE
+pybind11_add_module(_pinq MODULE
 	${PYTHON_FILES}
 )
 
-target_link_libraries(pinq PUBLIC)
-target_link_libraries(pinq PRIVATE inq)
+target_link_libraries(_pinq PUBLIC)
+target_link_libraries(_pinq PRIVATE inq)
 
 #DO NOT INSTALL FROM HERE
 #
@@ -37,7 +37,7 @@ target_link_libraries(pinq PRIVATE inq)
 #  set(CMAKE_INSTALL_PYTHON_LIBDIR
 #    "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")
 #endif ()
-#install(TARGETS pinq
+#install(TARGETS _pinq
 #  COMPONENT python
 #  LIBRARY DESTINATION "${CMAKE_INSTALL_PYTHON_LIBDIR}"
 #)
