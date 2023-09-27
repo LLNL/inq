@@ -31,6 +31,24 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	operations::rotate_trs(olap, phi);
 }
 
+template <class field_set_type>
+void orthogonalize(field_set_type & phi1, field_set_type const & phi2){
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(not phi1.set_part().parallel());
+
+	auto olap = overlap(phi2, phi1);
+	auto olap_array = matrix::all_gather(olap);
+
+	gpu::run(phi1.set_part().local_size(), phi1.basis().local_size(),
+					 [ph1 = begin(phi1.matrix()), ph2 = begin(phi2.matrix()), ol = begin(olap_array), nst2 = phi2.set_part().local_size()] GPU_LAMBDA (auto ist, auto ip){
+						 for(int ist2 = 0; ist2 < nst2; ist2++){
+							 ph1[ip][ist] -= ol[ist2][ist]*ph2[ip][ist2];
+						 }
+					 });
+	
+}
+
 }
 }
 #endif
@@ -139,6 +157,33 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			}
 		}
 	}
+
+	SECTION("Two arguments"){
+		basis::field_set<basis::real_space, complex> phi1(pw, 100);
+		basis::field_set<basis::real_space, complex> phi2(pw, 100);		
+
+		operations::randomize(phi1);
+		operations::orthogonalize(phi1); 
+
+		gpu::run(phi1.set_part().local_size(), phi1.basis().local_sizes()[2], phi1.basis().local_sizes()[1], phi1.basis().local_sizes()[0],
+						 [point_op = phi1.basis().point_op(), ph1 = begin(phi1.hypercubic()), ph2 = begin(phi2.hypercubic())] GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
+							 ph2[ix][iy][iz][ist] = ph1[ix][iy][iz][ist]*point_op.rvector_cartesian(ix, iy, iz)[0];
+						 });
+
+		operations::orthogonalize(phi2, phi1);
+		
+		auto olap = operations::overlap(phi2, phi1);
+
+		auto olap_array = matrix::all_gather(olap);
+				
+		for(int ii = 0; ii < phi1.set_size(); ii++){
+			for(int jj = 0; jj < phi1.set_size(); jj++){
+				CHECK(fabs(olap_array[ii][jj]) < 1e-13);
+			}
+		}
+		
+	}
+	
 	
 }
 #endif
