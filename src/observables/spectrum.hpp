@@ -33,23 +33,31 @@ gpu::array<RetElementType, 1> spectrum(quantity<magnitude::energy> maxw, quantit
 
   assert(freq_series.size() == nfreq);
 
+  gpu::array<typename TimeSeriesType::element_type, 1> damped_time_series(ntime);
+
+	gpu::run(ntime,
+           [tim = begin(time), tse = begin(time_series), dtse = begin(damped_time_series), ntime] GPU_LAMBDA (auto itime){
+
+						 auto fract = tim[itime]/tim[ntime - 1];
+						 auto damp_factor = 1.0 - 3.0*fract*fract + 2.0*fract*fract*fract;
+
+						 dtse[itime] = damp_factor*tse[itime];
+					 });
+
+	
   gpu::run(nfreq,
-           [fse = begin(freq_series), tim = begin(time), tse = begin(time_series), ntime, dw] GPU_LAMBDA (auto ifreq){
+           [fse = begin(freq_series), tim = begin(time), tse = begin(damped_time_series), ntime, dw] GPU_LAMBDA (auto ifreq){
              
              double ww = dw.in_atomic_units()*ifreq;
 
              RetElementType sum = 0.5*(tim[1] - tim[0])*tse[0]*exp(complex{0.0, 1.0}*0.0);
              for(long itime = 1; itime < ntime - 1; itime++){
                assert(tim[itime] > tim[itime - 1]);
-
-               auto fract = tim[itime]/tim[ntime - 1];
-               auto damp_factor = 1.0 - 3.0*fract*fract + 2.0*fract*fract*fract;
                
-               sum += 0.5*damp_factor*(tim[itime + 1] - tim[itime - 1])*exp(complex{0.0, 1.0}*ww*tim[itime])*tse[itime];
+               sum += 0.5*(tim[itime + 1] - tim[itime - 1])*exp(complex{0.0, 1.0}*ww*tim[itime])*tse[itime];
              }
 
-             //the damp function is zero for the last value
-             //sum += 0.5*(tim[ntime - 1] - tim[ntime - 2])*exp(complex{0.0, 1.0}*ww*tim[ntime - 1])*tse[ntime - 1];
+             sum += 0.5*(tim[ntime - 1] - tim[ntime - 2])*exp(complex{0.0, 1.0}*ww*tim[ntime - 1])*tse[ntime - 1];
              
              fse[ifreq] = sum;
            });
