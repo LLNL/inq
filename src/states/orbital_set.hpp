@@ -89,7 +89,7 @@ public:
 	}
 
 	auto spinor_local_set_size() const {
-		return fields_.local_set_size()/2;
+		return fields_.local_set_size()/spinor_dim_;
 	}
 	
 	auto set_size() const {
