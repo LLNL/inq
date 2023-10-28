@@ -40,6 +40,13 @@ int main(int argc, char ** argv){
 	match.check("HF exchange energy",  result.energy.hf_exchange(),   0.000000000000);
 	match.check("ion-ion energy",      result.energy.ion(),          15.744115365679);
 
+	auto magnetization = observables::magnetization(electrons.spin_density());
+	auto total_mag = operations::integral(magnetization);
+
+	match.check("magnetization x", total_mag[0], 0.0);
+	match.check("magnetization y", total_mag[1], 0.0);
+	match.check("magnetization z", total_mag[2], 2.0);
+	
 	return match.fail();
 	
 }
