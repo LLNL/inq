@@ -46,7 +46,7 @@ public:
 			 
 	template <class any_type>
 	orbital_set(inq::utils::skeleton_wrapper<orbital_set<Basis, any_type>> const & skeleton)
-		:orbital_set(skeleton.base.basis(), skeleton.base.set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm()){
+		:orbital_set(skeleton.base.basis(), skeleton.base.spinor_set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm()){
 	}
 	
 	auto skeleton() const {
@@ -55,7 +55,7 @@ public:
 	
 	template <class OtherType>
 	static auto reciprocal(inq::utils::skeleton_wrapper<orbital_set<basis_type, OtherType>> const & skeleton){
-		return orbital_set<typename basis_type::reciprocal_space, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm());
+		return orbital_set<typename basis_type::reciprocal_space, element_type>(skeleton.base.basis().reciprocal(), skeleton.base.spinor_set_size(), skeleton.base.spinor_dim(), skeleton.base.kpoint(), skeleton.base.spin_index(), skeleton.base.full_comm());
 	}
 	
 	template <typename ScalarType>
@@ -89,13 +89,17 @@ public:
 	}
 
 	auto spinor_local_set_size() const {
-		return fields_.local_set_size()/2;
+		return fields_.local_set_size()/spinor_dim_;
 	}
-	
+
 	auto set_size() const {
 		return fields_.set_size();
 	}
 	
+	auto spinor_set_size() const {
+		return fields_.set_size()/spinor_dim_;
+	}
+
 	auto & basis() const {
 		return fields_.basis();
 	}

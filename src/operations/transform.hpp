@@ -341,6 +341,8 @@ auto to_fourier(const FieldSetType & phi){
 
 	auto fphi = FieldSetType::reciprocal(phi.skeleton());
 
+	assert(phi.local_set_size() == fphi.local_set_size());	
+	
 	using type = typename FieldSetType::element_type;
 	
 	if constexpr (not is_vector3<type>::value){
@@ -372,6 +374,8 @@ auto to_real(const FieldSetType & fphi, bool const normalize = true){
 	CALI_CXX_MARK_SCOPE("to_real");
 
 	auto phi = FieldSetType::reciprocal(fphi.skeleton());
+
+	assert(phi.local_set_size() == fphi.local_set_size());	
 	
 	using type = typename FieldSetType::element_type;
 	

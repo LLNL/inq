@@ -36,7 +36,7 @@ namespace hamiltonian {
 			id_(functional_id),
 			nspin_(spin_components){
 
-			assert(nspin_ == 1 or nspin_ == 2);
+			if(true_functional()) assert(nspin_ == 1 or nspin_ == 2);
 			
 			if(true_functional() and xc_func_init(&func_, functional_id, (nspin_==1)?XC_UNPOLARIZED:XC_POLARIZED) != 0){
 				fprintf(stderr, "Functional '%d' not found\n", functional_id);
