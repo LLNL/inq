@@ -1,0 +1,224 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  macos12:
+    name: "macOS 12"
+    runs-on: macos-12
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    env:
+      SKBUILD_CMAKE_ARGS: "-DEXTRA_WARNINGS=ON"
+      SKBUILD_CMAKE_TARGETS: "all;check"
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build wheel and install
+      run: |
+        python3 -m pip install wheel
+        python3 -m pip wheel -v .
+        python3 -m pip install gemmi-*.whl
+    - name: Python Tests
+      run: |
+        python3 -m unittest discover -v -s tests/
+        python3 -m pip install sphinx
+        cd docs
+        sphinx-build -M doctest . _build -n -E
+    - uses: actions/upload-artifact@v3
+      with:
+        name: gemmi-macos12
+        path: |
+          ${{runner.workspace}}/gemmi-*.whl
+        retention-days: 14
+
+  macos11:
+    name: "macOS 11 (w/o python)"
+    runs-on: macos-11
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+    - uses: actions/checkout@v3
+    - name: mkdir build
+      run: cmake -E make_directory ${{runner.workspace}}/build
+    - name: CMake Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: |
+        cmake --version
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_SHARED_LIBS=ON
+        cmake --build . -j3
+        cmake --build . --target check -j3
+    - name: Install
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: sudo cmake --install .
+    - name: Test
+      run: |
+        ctest --output-on-failure
+        python3 tests/test_prog.py
+    - uses: actions/upload-artifact@v3
+      with:
+        name: gemmi-macos11
+        path: |
+          ${{runner.workspace}}/build/gemmi
+          ${{runner.workspace}}/build/libgemmi*
+        retention-days: 14
+
+  windows2022:
+    name: "Windows 2022"
+    runs-on: windows-2022
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: build and test
+      run: |
+        python -m pip install -v .
+        python -m pip install numpy
+        python -m unittest discover -v -s tests/
+    - name: run doctest
+      working-directory: ./docs
+      run: |
+        python -m pip install sphinx
+        sphinx-build -M doctest . _build -n -E
+
+  ubuntu2204:
+    name: "Ubuntu 22.04"
+    runs-on: ubuntu-22.04
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+    - uses: actions/checkout@v3
+    - name: apt-get
+      run: |
+        sudo apt-get update
+        sudo apt-get install libz-dev python3-pip g++ gfortran python3-numpy
+    - name: install pybind11
+      run: |
+        git clone --depth=1 https://github.com/pybind/pybind11.git
+        #cd pybind11
+        #cmake . -Wno-dev -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYBIND11_TEST=OFF
+        #make
+        #sudo make install
+    - name: build and test
+      run: |
+        g++ --version
+        cmake --version
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=MinSizeRel -DUSE_FORTRAN=1 -DEXTRA_WARNINGS=1 -DUSE_PYTHON=1 -DPython_EXECUTABLE=/usr/bin/python3 -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_VISIBILITY_PRESET=hidden
+        make -j2
+        make -j2 check
+        sudo make install
+        python3 -m unittest discover -v -s ../tests/
+        strip --strip-unneeded ./gemmi ./gemmi.cpython*.so
+    - name: run doctest
+      run: |
+        sudo python3 -m pip install -U sphinx
+        export PYTHONPATH=$PWD/build
+        cd docs
+        sphinx-build -M doctest . _build -n -E
+
+  ubuntu2004:
+    name: "Ubuntu 20.04"
+    runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+    - uses: actions/checkout@v3
+    - name: apt-get
+      run: |
+        sudo apt-get update
+        sudo apt-get install libz-dev python3-pip g++ gfortran python3-numpy valgrind
+    - name: install pybind11
+      run: |
+        python3 -m pip install pybind11
+    - name: build and test
+      run: |
+        g++ --version
+        cmake --version
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_PYTHON=1 -DPython_EXECUTABLE=python3
+        cmake --build . --config Debug -j2
+        cmake --build . --config Debug --target check -j2
+        sudo cmake --install . --config Debug
+        cd ..
+        python3 -m unittest discover -v -s tests/
+    - name: run doctest
+      run: |
+        sudo pip3 install -U sphinx
+        cd docs
+        sphinx-build -M doctest . _build -n -E
+    - name: run tests under valgrind
+      run: PYTHONMALLOC=malloc valgrind python3 -m unittest discover -v -s tests/
+
+  ubuntu2004_clang6:
+    name: "Ubuntu 20.04 with Clang 6.0"
+    runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    env:
+      CC: clang-6.0
+      CXX: clang++-6.0
+      SKBUILD_CMAKE_ARGS: "-DCMAKE_CXX_STANDARD=11;-DEXTRA_WARNINGS=ON"
+      SKBUILD_CMAKE_TARGETS: "all;check"
+    steps:
+    - uses: actions/checkout@v3
+    - run: sudo apt-get install clang-6.0 libz-dev python3-pip python3-numpy
+    - name: install pybind11
+      run: |
+        sudo /usr/bin/python3 -m pip install "pybind11[global]" build
+    - name: build and test
+      run: |
+        $CXX --version
+        python3 -m build --sdist
+        python3 -m pip install -v dist/gemmi-*.tar.gz
+        python3 -m unittest discover -v -s tests/
+    - name: run doctest
+      run: |
+        python3 -m pip install -U sphinx
+        cd docs
+        sphinx-build -M doctest . _build -n -E
+
+  centos:
+    runs-on: ubuntu-latest
+    name: "CentOS 7"
+    container: centos:7
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+    - uses: actions/checkout@v3
+    - name: yum
+      run: |
+        yum update -y && yum install -y epel-release
+        yum install -y gcc-c++ cmake3 make git python3-devel
+        pip3 install -U numpy
+        g++ --version
+        python3 --version
+        cmake3 --version
+        type python3
+    - name: install pybind11
+      run: |
+        git clone --branch stable --depth=1 https://github.com/pybind/pybind11.git
+        cd pybind11
+        cmake3 . -Wno-dev -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYBIND11_TEST=OFF
+        make
+        make install
+    - name: build and test
+      run: |
+        pwd
+        cmake3 . -DUSE_PYTHON=1 -DPython_EXECUTABLE=/usr/bin/python3
+        make -j2
+        make -j2 check
+        make install
+        python3 -m unittest discover -v -s ./tests/
+        strip --strip-unneeded ./gemmi ./gemmi.cpython*.so
+    - name: run doctest
+      run: |
+        pip3 install -U sphinx
+        cd docs
+        PYTHONPATH=.. sphinx-build -M doctest . _build -n -E
+    - uses: actions/upload-artifact@v3
+      with:
+        name: gemmi-linux
+        path: |
+          ./gemmi
+          ./gemmi.cpython*.so
+        retention-days: 14

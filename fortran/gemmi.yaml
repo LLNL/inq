@@ -1,0 +1,113 @@
+library: gemmi
+namespace: gemmi
+format:
+  C_prefix: ge_
+  F_filename_suffix: f90
+options:
+  wrap_struct_as: class
+  C_line_length: 94
+  F_line_length: 94
+  F_API_case: lower
+
+splicer_code:
+  c:
+    CXX_definitions: |
+      // for read_ccp4_map() and read_ccp4_mask()
+      #define GEMMI_READ_MAP_IMPLEMENTATION
+      #include "gemmi/read_map.hpp"
+
+declarations:
+
+### unitcell.hpp ###
+
+- decl: struct Position
+  cxx_header: gemmi/unitcell.hpp
+  declarations:
+  - decl: Position()
+  - decl: Position(double x, double y, double z)
+  - decl: double x;
+  - decl: double y;
+  - decl: double z;
+
+- decl: struct Fractional
+  cxx_header: gemmi/unitcell.hpp
+  declarations:
+  - decl: Fractional()
+  - decl: Fractional(double x, double y, double z)
+  - decl: double x;
+  - decl: double y;
+  - decl: double z;
+
+- decl: struct UnitCell
+  cxx_header: gemmi/unitcell.hpp
+  declarations:
+  - decl: UnitCell()
+  - decl: UnitCell(double a, double b, double c, double alpha, double beta, double gamma)
+  - decl: double a +readonly;
+  - decl: double b +readonly;
+  - decl: double c +readonly;
+  - decl: double alpha +readonly;
+  - decl: double beta +readonly;
+  - decl: double gamma +readonly;
+  - decl: bool is_crystal()
+  - decl: Position orthogonalize(const Fractional& f)
+  - decl: Fractional fractionalize(const Position& o)
+
+
+### symmetry.hpp ###
+
+- decl: struct Op
+  cxx_header: gemmi/symmetry.hpp
+  declarations:
+  - decl: string triplet() const
+
+- decl: struct GroupOps
+  cxx_header: gemmi/symmetry.hpp
+  declarations:
+  - decl: int order()
+  - decl: Op get_op(int n)
+
+- decl: struct SpaceGroup
+  cxx_header: gemmi/symmetry.hpp
+  declarations:
+  - decl: int number +readonly;
+  - decl: int ccp4 +readonly;
+  - decl: std::string xhm()
+  - decl: std::string short_name()
+  - decl: GroupOps operations()
+
+- decl: const SpaceGroup* find_spacegroup_by_number(int ccp4) +owner(library)
+- decl: const SpaceGroup* find_spacegroup_by_name(string name) +owner(library)
+
+
+### ccp4.hpp ###
+
+- decl: template<typename T> class Ccp4
+  cxx_header: gemmi/ccp4.hpp
+  cxx_template:
+    - instantiation: <float>
+    - instantiation: <int8_t>
+  declarations:
+  - decl: Ccp4()
+  - decl: void read_ccp4_file(const std::string& path)
+
+- decl: Ccp4<float> read_ccp4_map(const std::string& path, bool setup)
+- decl: Ccp4<int8_t> read_ccp4_mask(const std::string& path, bool setup)
+
+
+### mtz.hpp ###
+
+- decl: class Mtz
+  cxx_header: gemmi/mtz.hpp
+  declarations:
+  - decl: string title;
+  - decl: int nreflections +readonly;
+  - decl: string spacegroup_name +readonly;
+  #- decl: const SpaceGroup* spacegroup;
+  - decl: Mtz(bool with_base)
+  - decl: double resolution_high()
+  - decl: double resolution_low()
+  - decl: UnitCell& get_cell(int dataset)
+  - decl: bool is_merged()
+  - decl: void write_to_file(const std::string& path)
+- decl: Mtz read_mtz_file(const std::string& path)

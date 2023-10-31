@@ -1,0 +1,40 @@
+$ gemmi -h
+gemmi 0.6.4-dev
+Command-line utility that accompanies the GEMMI library,
+which is a joint project of CCP4 and Global Phasing Ltd.
+Licence: Mozilla Public License 2.0. Copyright Global Phasing Ltd.
+https://github.com/project-gemmi/gemmi
+
+Usage: gemmi [--version] [--help] <command> [<args>]
+
+Commands:
+ align         sequence alignment (global, pairwise, affine gap penalty)
+ blobs         list unmodelled electron density blobs
+ cif2mtz       convert structure factor mmCIF to MTZ
+ cif2json      translate (mm)CIF to (mm)JSON
+ contact       searches for contacts (neighbouring atoms)
+ contents      info about content of a coordinate file (pdb, mmCIF, ...)
+ convert       convert file (CIF - JSON, mmCIF - PDB) or modify structure
+ ecalc         calculate normalized amplitudes E
+ fprime        calculate anomalous scattering factors f' and f"
+ grep          search for tags in CIF file(s)
+ h             add or remove hydrogen atoms
+ json2cif      translate mmJSON to mmCIF
+ map           print info or modify a CCP4 map
+ map2sf        transform CCP4 map to map coefficients (in MTZ or mmCIF)
+ mask          make a bulk-solvent mask in the CCP4 format
+ merge         merge intensities from multi-record reflection file
+ mondiff       compare two monomer CIF files
+ mtz           print info about MTZ reflection file
+ mtz2cif       convert MTZ to structure factor mmCIF
+ prep          prepare topology file (.crd) for Refmac
+ reindex       reindex MTZ file
+ residues      list residues from a coordinate file
+ rmsz          validate geometry using monomer library
+ sf2map        transform map coefficients (from MTZ or mmCIF) to map
+ sfcalc        calculate structure factors from a model
+ sg            info about space groups
+ tags          list tags from CIF file(s)
+ validate      validate CIF 1.1 syntax
+ wcn           calculate local density / contact numbers (WCN, CN, ACN, LDM)
+ xds2mtz       convert XDS_ASCII to MTZ
