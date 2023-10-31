@@ -1,0 +1,10 @@
+$ gemmi fprime -h
+Usage:
+ gemmi fprime [options] ELEMENT[...]
+Prints anomalous scattering factors f' and f".
+
+Options:
+  -h, --help               Print usage and exit.
+  -V, --version            Print version and exit.
+  -e, --energy=ENERGY      Energy [eV]
+  -w, --wavelength=LAMBDA  Wavelength [A]

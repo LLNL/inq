@@ -1,0 +1,53 @@
+$ gemmi sfcalc -h
+Usage:
+  gemmi sfcalc [options] INPUT_FILE
+
+Calculates structure factors of a model (PDB, mmCIF or SMX CIF file).
+
+Uses FFT to calculate all reflections up to requested resolution for MX
+files. Otherwise, for SMX and --hkl, F's are calculated directly.
+This program can also compare F's calculated directly with values
+calculated through FFT or with values read from a reflection file.
+
+Options:
+  -h, --help           Print usage and exit.
+  -V, --version        Print version and exit.
+  -v, --verbose        Verbose output.
+  --hkl=H,K,L          Calculate structure factor F_hkl.
+  --dmin=NUM           Calculate structure factors up to given resolution.
+  --for=TYPE           TYPE is xray (default), electron, neutron or mott-bethe.
+  --normalize-it92     Normalize X-ray form factors (a tiny change).
+  --ciffp              Read f' from _atom_type_scat_dispersion_real in CIF.
+  --wavelength=NUM     Wavelength [A] for calculation of f' (use --wavelength=0
+                       or -w0 to ignore anomalous scattering).
+  --unknown=SYMBOL     Use form factor of SYMBOL for unknown atoms.
+  --noaniso            Ignore anisotropic ADPs.
+  --margin=NUM         For non-crystal use bounding box w/ margin (default: 10).
+
+Options for density and FFT calculations (with --dmin):
+  --rate=NUM           Shannon rate used for grid spacing (default: 1.5).
+  --blur=NUM           B added for Gaussian blurring (default: auto).
+  --rcut=Y             Use atomic radius r such that rho(r) < Y (default: 1e-5).
+  --test[=CACHE]       Calculate exact values and report differences (slow).
+  --write-map=FILE     Write density (excl. bulk solvent) as CCP4 map.
+  --to-mtz=FILE        Write Fcalc to a new MTZ file.
+
+Options for anisotropic scaling (only w/ FFT):
+  --scale-to=FILE:COL  Anisotropic scaling to F from MTZ file.
+                       Argument: FILE[:FCOL[:SIGFCOL]] (defaults: F and SIGF).
+  --sigma-cutoff=NUM   Use only data with F/SIGF > NUM (default: 0).
+
+Options for bulk solvent correction (only w/ FFT):
+  --radii-set=SET      Set of per-element radii, one of: vdw, cctbx, refmac.
+  --r-probe=NUM        Value added to VdW radius (default: 1.0A).
+  --r-shrink=NUM       Value for shrinking the solvent area (default: 1.1A).
+  --ksolv=NUM          Value (if optimizing: initial value) of k_solv.
+  --bsolv=NUM          Value (if optimizing: initial value) of B_solv.
+  --baniso=B11:...:B23 Anisotropic scale matrix (6 colon-separated numbers: B11,
+                       B22, B33, B12, B13, B23).
+
+Options for comparing calculated values with values from a file:
+  --compare=FILE       Re-calculate Fcalc and report differences.
+  --f=LABEL            MTZ column label (default: FC) or small molecule cif tag
+                       (default: F_calc or F_squared_calc).
+  --phi=LABEL          MTZ column label (default: PHIC).

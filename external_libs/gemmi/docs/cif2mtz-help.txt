@@ -1,0 +1,39 @@
+$ gemmi cif2mtz -h
+Usage:
+  gemmi cif2mtz [options] CIF_FILE MTZ_FILE
+  gemmi cif2mtz [options] CIF_FILE --dir=DIRECTORY
+Options:
+  -h, --help               Print usage and exit.
+  -V, --version            Print version and exit.
+  -v, --verbose            Verbose output.
+  -b NAME, --block=NAME    mmCIF block to convert, by name.
+  -B INDEX                 mmCIF block to convert, by index (default: 1).
+  --add CIF_FILE           Use additional input mmCIF file, first block.
+  -l, --list               Dry run and list blocks in mmCIF file.
+  -d DIR, --dir=NAME       Output directory.
+  --spec=FILE              Conversion spec.
+  --print-spec             Print default spec and exit.
+  --title                  MTZ title.
+  -H LINE, --history=LINE  Add a history line.
+  --wavelength=LAMBDA      Set wavelength (default: from input file).
+  -u, --unmerged           Write unmerged MTZ file(s).
+  --refln-to=MODE          Read refln category as: normal, friedel (converts Fs
+                           to F+/F-), unmerged or auto (default).
+  --sort                   Order reflections according to Miller indices.
+  --asu=ccp4|tnt           Move merged reflections into CCP4 or TNT ASU.
+  --skip-negative-sigma    Skip reflections with sigma<0 (in any MTZ Q column).
+  --zero-to-mnf            If value and sigma are 0, set both to MNF.
+  --local                  Take file from local copy of the PDB archive in
+                           $PDB_DIR/structures/divided/structure_factors/
+
+First variant: converts the first block of CIF_FILE, or the block
+specified with --block=NAME, to MTZ file with given name.
+
+Second variant: converts each block of CIF_FILE to one MTZ file
+(block-name.mtz) in the specified DIRECTORY.
+
+If CIF_FILE is -, the input is read from stdin.
+
+To convert data from multiple CIF files into one MTZ file use:
+  gemmi cif2mtz [options] CIF1 --add CIF2 --add CIF3 MTZ_FILE
+It's for special cases, e.g. when map coefficients are in separate files.

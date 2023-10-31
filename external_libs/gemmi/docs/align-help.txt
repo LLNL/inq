@@ -1,0 +1,41 @@
+$ gemmi align -h
+Pairwise sequence alignment with scoring matrix and affine gap penalty.
+
+Usage:
+
+gemmi align [options] FILE[...]
+    Aligns sequence from the model to the full sequence (SEQRES).
+    Both are from the same FILE - either in the PDB or mmCIF format.
+    If the mmCIF format is used, option --check-mmcif can be used.
+
+gemmi align [options] --query=CHAIN1 --target=CHAIN2 FILE [FILE2]
+    Aligns CHAIN1 from FILE to CHAIN2 from FILE2 (if given) or FILE.
+    By default, the sequence of residues in the model is used.
+    To use SEQRES prepend '+' to the chain name (e.g. --query=+A),
+    or, when using mmCIF, prepend '@' to entity name (--query=@1).
+
+gemmi align [options] --text-align STRING1 STRING2
+    Aligns two ASCII strings (used for testing).
+
+Options:
+  -h, --help           Print usage and exit.
+  -V, --version        Print version and exit.
+  --check-mmcif        checks alignment against _atom_site.label_seq_id
+  --query=[+|@]CHAIN   Align CHAIN from file INPUT1.
+  --target=[+|@]CHAIN  Align CHAIN from file INPUT2.
+  --text-align         Align characters in two strings (for testing).
+
+Scoring (absolute values):
+  --blosum62           Use BLOSUM62 score matrix.
+  --partial=y|n        Use scoring meant to align partially-modelled polymer to
+                       its full sequence (default in 1st mode).
+  --match=INT          Match score (default: 1).
+  --mism=INT           Mismatch penalty (default: -1).
+  --gapo=INT           Gap opening penalty (default: -1).
+  --gape=INT           Gap extension penalty (default: -1).
+
+Output options:
+  -p                   Print formatted alignment with one-letter codes.
+  --rmsd               In addition to aligning two CHAINs (--query and
+                       --target), superpose structures and print RMSD.
+  -v, --verbose        Verbose output.
