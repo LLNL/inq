@@ -7,6 +7,8 @@
 
 cmake_minimum_required(VERSION 3.21)
 message("CMake version ${CMAKE_VERSION}")
+
+enable_language(CXX)
 include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -49,7 +51,6 @@ target_compile_options(inq INTERFACE
 enable_testing()
 include(CTest)
 
-enable_language(CXX)
 target_compile_features(inq INTERFACE cxx_std_17)
 
 if(ENABLE_CUDA)
