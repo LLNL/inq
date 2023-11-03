@@ -155,5 +155,27 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(not E_field.has_uniform_vector_potential());
 		CHECK(E_field.uniform_electric_field(0.0)[0] == 0.0);
 	}
+
+
+        perturbations::ramplaser rlas({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs);
+
+	rlas.print_info(std::cout);
+	
+	CHECK(rlas.has_uniform_electric_field());
+
+	SECTION("ramplaser velocity gauge"){
+		perturbations::ramplaser ramp_vector_potential({0.1, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs,perturbations::gauge::velocity);
+		CHECK(ramp_vector_potential.has_uniform_vector_potential());
+		CHECK(not ramp_vector_potential.has_uniform_electric_field());
+		CHECK(ramp_vector_potential.uniform_vector_potential(0.0)[0] == 0.0);
+		CHECK(ramp_vector_potential.uniform_vector_potential(0.0)[2] == 0.0);
+	}
+
+	SECTION("ramplaser length gauge"){
+		perturbations::ramplaser ramp_E_field({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs);
+		CHECK(ramp_E_field.has_uniform_electric_field());
+		CHECK(not ramp_E_field.has_uniform_vector_potential());
+		CHECK(ramp_E_field.uniform_electric_field(0.0)[0] == 0.0);
+	}
 }
 #endif
