@@ -14,6 +14,7 @@ std::unique_ptr<ChemComp> make_chemcomp_with_restraints(const Residue& res) {
   std::unique_ptr<ChemComp> cc(new ChemComp());
   cc->name = res.name;
   cc->group = ChemComp::Group::Null;
+  cc->has_coordinates = true;
   // add atoms
   cc->atoms.reserve(res.atoms.size());
   for (const Atom& a : res.atoms) {
@@ -25,7 +26,7 @@ std::unique_ptr<ChemComp> make_chemcomp_with_restraints(const Residue& res) {
     if (el == El::D)
       el = El::H;
     const std::string& chem_type = el.uname();
-    cc->atoms.push_back(ChemComp::Atom{a.name, el, float(a.charge), chem_type});
+    cc->atoms.push_back(ChemComp::Atom{a.name, el, float(a.charge), chem_type, a.pos});
   }
   // prepare pairs of atoms
   struct Pair {
@@ -319,9 +320,8 @@ double Topo::ideal_chiral_abs_volume(const Chirality &ch) const {
 }
 
 std::vector<Topo::Rule> Topo::apply_restraints(const Restraints& rt,
-                                               Residue& res, Residue* res2,
-                                               char altloc1, char altloc2,
-                                               bool require_alt) {
+                                               Residue& res, Residue* res2, Asu asu,
+                                               char altloc1, char altloc2, bool require_alt) {
   std::string altlocs;
   if (altloc1 == '\0' && altloc2 == '\0') {
     add_distinct_altlocs(res, altlocs);
@@ -339,7 +339,7 @@ std::vector<Topo::Rule> Topo::apply_restraints(const Restraints& rt,
           bool with_alt = at1->altloc || at2->altloc;
           if (with_alt || !require_alt) {
             rules.push_back({RKind::Bond, bonds.size()});
-            bonds.push_back({&bond, {{at1, at2}}});
+            bonds.push_back({&bond, {{at1, at2}}, asu});
           }
           if (!with_alt)
             break;
@@ -432,13 +432,14 @@ void Topo::apply_restraints_from_link(Link& link, const MonLib& monlib) {
     rt = rt_copy.get();
     rt_storage.push_back(std::move(rt_copy));
   }
-  link.link_rules = apply_restraints(*rt, *link.res1, link.res2, link.alt1, link.alt2, false);
+  link.link_rules = apply_restraints(*rt, *link.res1, link.res2, link.asu,
+                                     link.alt1, link.alt2, false);
 }
 
 // see comments above the declaration
 void Topo::initialize_refmac_topology(Structure& st, Model& model0,
                                       MonLib& monlib, bool ignore_unknown_links) {
-  // initialize chains and residues
+  // initialize chain_infos
   for (Chain& chain : model0.chains)
     for (ResidueSpan& sub : chain.subchains()) {
       // set Residue::group_idx which is used in Restraints::AtomId::get_from()
@@ -449,6 +450,17 @@ void Topo::initialize_refmac_topology(Structure& st, Model& model0,
       }
       const Entity* ent = st.get_entity_of(sub);
       chain_infos.emplace_back(sub, chain, ent);
+    }
+
+  // add modifications from MODRES records (Refmac's extension)
+  for (const ModRes& modres : st.mod_residues)
+    if (!modres.mod_id.empty()) {
+      for (Topo::ChainInfo& chain_info : chain_infos)
+        if (chain_info.chain_ref.name == modres.chain_name) {
+          for (Topo::ResInfo& res_info : chain_info.res_infos)
+            if (*res_info.res == modres.res_id)
+              res_info.add_mod(modres.mod_id, nullptr, '\0');
+        }
     }
 
   // setup pointers to monomers and links in the polymer
@@ -561,6 +573,12 @@ void Topo::initialize_refmac_topology(Structure& st, Model& model0,
 }
 
 void Topo::apply_all_restraints(const MonLib& monlib) {
+  bonds.clear();
+  angles.clear();
+  torsions.clear();
+  chirs.clear();
+  planes.clear();
+  rt_storage.clear();
   for (ChainInfo& chain_info : chain_infos)
     for (ResInfo& ri : chain_info.res_infos) {
       // link restraints
@@ -568,10 +586,10 @@ void Topo::apply_all_restraints(const MonLib& monlib) {
         apply_restraints_from_link(link, monlib);
       // monomer restraints
       auto it = ri.chemcomps.cbegin();
-      ri.monomer_rules = apply_restraints(it->cc->rt, *ri.res, nullptr,
+      ri.monomer_rules = apply_restraints(it->cc->rt, *ri.res, nullptr, Asu::Same,
                                           it->altloc, '\0', /*require_alt=*/false);
       while (++it != ri.chemcomps.end()) {
-        auto rules = apply_restraints(it->cc->rt, *ri.res, nullptr,
+        auto rules = apply_restraints(it->cc->rt, *ri.res, nullptr, Asu::Same,
                                       it->altloc, '\0', /*require_alt=*/true);
         vector_move_extend(ri.monomer_rules, std::move(rules));
       }
@@ -581,18 +599,22 @@ void Topo::apply_all_restraints(const MonLib& monlib) {
 }
 
 void Topo::create_indices() {
+  bond_index.clear();
   for (Bond& bond : bonds) {
     bond_index.emplace(bond.atoms[0], &bond);
     if (bond.atoms[1] != bond.atoms[0])
       bond_index.emplace(bond.atoms[1], &bond);
   }
+  angle_index.clear();
   for (Angle& ang : angles)
     angle_index.emplace(ang.atoms[1], &ang);
+  torsion_index.clear();
   for (Torsion& tor : torsions) {
     torsion_index.emplace(tor.atoms[1], &tor);
     if (tor.atoms[1] != tor.atoms[2])
       torsion_index.emplace(tor.atoms[2], &tor);
   }
+  plane_index.clear();
   for (Plane& plane : planes)
     for (Atom* atom : plane.atoms)
       plane_index.emplace(atom, &plane);
@@ -834,9 +856,8 @@ NeighMap prepare_neighbor_data(Topo& topo, const MonLib& monlib) {
   std::streambuf *warnings_orig = nullptr;
   if (topo.warnings)
     warnings_orig = topo.warnings->rdbuf(nullptr);
-  // Prepare bonds. It fills topo.bonds - cleared later in this function,
-  // and monomer_rules/link_rules - overwritten if apply_all_restraints()
-  // is called again.
+  // Prepare bonds. Fills topo.bonds, monomer_rules/link_rules and rt_storage,
+  // but they are all reset when apply_all_restraints() is called again.
   topo.only_bonds = true;
   topo.apply_all_restraints(monlib);
   topo.only_bonds = false;
@@ -851,7 +872,6 @@ NeighMap prepare_neighbor_data(Topo& topo, const MonLib& monlib) {
     if (a1 != a2)
       neighbors.emplace(a2->serial, Neigh{a1->altloc, a1->occ});
   }
-  topo.bonds.clear();
   return neighbors;
 }
 
@@ -865,10 +885,11 @@ prepare_topology(Structure& st, MonLib& monlib, size_t model_index,
   topo->warnings = warnings;
   if (model_index >= st.models.size())
     fail("no such model index: " + std::to_string(model_index));
-  topo->initialize_refmac_topology(st, st.models[model_index], monlib, ignore_unknown_links);
+  Model& model = st.models[model_index];
+  topo->initialize_refmac_topology(st, model, monlib, ignore_unknown_links);
 
   if (use_cispeps)
-    force_cispeps(*topo, st.models.size() == 1, st.models[model_index], st.cispeps, warnings);
+    force_cispeps(*topo, st.models.size() == 1, model, st.cispeps, warnings);
 
   // remove hydrogens, or change deuterium to fraction, or nothing
   // and then check atom names
@@ -908,7 +929,9 @@ prepare_topology(Structure& st, MonLib& monlib, size_t model_index,
     }
 
   // add hydrogens
-  if (h_change == HydrogenChange::ReAdd || h_change == HydrogenChange::ReAddButWater) {
+  if (h_change == HydrogenChange::ReAdd ||
+      h_change == HydrogenChange::ReAddButWater ||
+      h_change == HydrogenChange::ReAddKnown) {
     NeighMap neighbors = prepare_neighbor_data(*topo, monlib);
     for (Topo::ChainInfo& chain_info : topo->chain_infos)
       for (Topo::ResInfo& ri : chain_info.res_infos) {
@@ -967,7 +990,6 @@ prepare_topology(Structure& st, MonLib& monlib, size_t model_index,
       remove_h_from_auto_links(link);
   }
 
-  assign_serial_numbers(st.models[model_index]);
   // fill Topo::bonds, angles, ... and ResInfo::monomer_rules, Links::link_rules
   topo->apply_all_restraints(monlib);
   // fill bond_index, angle_index, etc
@@ -977,6 +999,26 @@ prepare_topology(Structure& st, MonLib& monlib, size_t model_index,
   if (h_change != HydrogenChange::NoChange)
     place_hydrogens_on_all_atoms(*topo);
 
+  if (h_change == HydrogenChange::ReAddKnown) {
+    // To leave only known hydrogens, we remove Hs with zero occupancy.
+    // As a side-effect, it removes any H atoms on zero-occupancy parents.
+    for (Chain& chain : model.chains)
+      for (Residue& res : chain.residues)
+        vector_remove_if(res.atoms, [](Atom& a) { return a.is_hydrogen() && a.occ == 0; });
+
+    // disable warnings here, so they are not printed twice
+    std::streambuf *warnings_orig = nullptr;
+    if (topo->warnings)
+      warnings_orig = topo->warnings->rdbuf(nullptr);
+    // re-set restraints and indices
+    topo->apply_all_restraints(monlib);
+    topo->create_indices();
+    // re-enable warnings
+    if (warnings_orig)
+      topo->warnings->rdbuf(warnings_orig);
+  }
+
+  assign_serial_numbers(model);
   return topo;
 }
 

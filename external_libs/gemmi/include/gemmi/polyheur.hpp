@@ -42,11 +42,17 @@ inline std::string one_letter_code(const std::vector<std::string>& seq) {
   return r;
 }
 
-inline std::string one_letter_code(const ConstResidueSpan& polymer) {
-  std::string r;
-  for (const Residue& res : polymer.first_conformer())
-    r += find_tabulated_residue(res.name).fasta_code();
-  return r;
+/// used with expand_one_letter_sequence()
+inline ResidueKind sequence_kind(PolymerType ptype) {
+  if (is_polypeptide(ptype))
+    return ResidueKind::AA;
+  if (ptype == PolymerType::Dna)
+    return ResidueKind::DNA;
+  if (ptype == PolymerType::Rna || ptype == PolymerType::DnaRnaHybrid)
+    return ResidueKind::RNA;
+  if (ptype == PolymerType::Unknown)
+    fail("sequence_kind(): unknown polymer type");
+  return ResidueKind::AA;
 }
 
 struct AtomNameElement { std::string atom_name; El el; };
@@ -147,6 +153,9 @@ inline std::string make_one_letter_sequence(const ConstResidueSpan& polymer) {
 /// be regarded as as either the last residue or a linked ligand.
 GEMMI_DLL void add_entity_types(Chain& chain, bool overwrite);
 GEMMI_DLL void add_entity_types(Structure& st, bool overwrite);
+
+/// Assigns entity_type=Unknown for all residues.
+GEMMI_DLL void remove_entity_types(Structure& st);
 
 /// Assigns Residue::entity_id based on Residue::subchain and Entity::subchains.
 GEMMI_DLL void add_entity_ids(Structure& st, bool overwrite);

@@ -99,6 +99,16 @@ struct GEMMI_DLL Mtz {
     bool is_integer() const {
       return type == 'H' || type == 'B' || type == 'Y' || type == 'I';
     }
+
+    const Column* get_next_column_if_type(char next_type) const {
+      if (idx + 1 < parent->columns.size()) {
+        const Column& next_col = parent->columns[idx + 1];
+        if (next_col.dataset_id == dataset_id && next_col.type == next_type)
+          return &next_col;
+      }
+      return nullptr;
+    }
+
     using iterator = StrideIter<float>;
     iterator begin() {
       assert(parent);
@@ -125,7 +135,7 @@ struct GEMMI_DLL Mtz {
       // COMBAT sets BSCALE=1, but Pointless sets it to 0.
       //floats[43] = 1.f; // batch scale
     }
-    int number;
+    int number = 0;
     std::string title;
     std::vector<int> ints;
     std::vector<float> floats;
@@ -274,6 +284,12 @@ struct GEMMI_DLL Mtz {
         rmsd[i] = std::sqrt(rmsd[i] / n);
     }
     return UnitCell(avg[0], avg[1], avg[2], avg[3], avg[4], avg[5]);
+  }
+
+  void set_spacegroup(const SpaceGroup* new_sg) {
+    spacegroup = new_sg;
+    spacegroup_number = new_sg ? spacegroup->ccp4 : 0;
+    spacegroup_name = new_sg ? spacegroup->hm : "";
   }
 
   Dataset& last_dataset() {
@@ -463,7 +479,7 @@ struct GEMMI_DLL Mtz {
 
   // Functions for reading MTZ headers and data.
 
-  void toggle_endiannes() {
+  void toggle_endianness() {
     same_byte_order = !same_byte_order;
     swap_eight_bytes(&header_offset);
   }
@@ -485,7 +501,7 @@ struct GEMMI_DLL Mtz {
     // BE is denoted by 1 and LE by 4.
     // If we get a value different than 1 and 4 we assume the native byte order.
     if ((buf[9] & 0xf0) == (is_little_endian() ? 0x10 : 0x40))
-      toggle_endiannes();
+      toggle_endianness();
 
     std::int32_t tmp_header_offset;
     std::memcpy(&tmp_header_offset, buf + 4, 4);
@@ -779,6 +795,9 @@ struct GEMMI_DLL Mtz {
     }
   }
 
+  /// the same as read_input(MaybeGzipped(path), with_data)
+  void read_file_gz(const std::string& path, bool with_data=true);
+
   std::vector<int> sorted_row_indices(int use_first=3) const {
     if (!has_data())
       fail("No data.");
@@ -821,58 +840,24 @@ struct GEMMI_DLL Mtz {
       data[offset + i] = static_cast<float>(hkl[i]);
   }
 
+  /// Returns offset of the first hkl or (size_t)-1. Can be slow.
+  size_t find_offset_of_hkl(const Miller& hkl, size_t start=0) const;
+
   /// (for merged MTZ only) change HKL to ASU equivalent, adjust phases, etc
   void ensure_asu(bool tnt_asu=false);
 
   /// reindex data, usually followed by ensure_asu()
   void reindex(const Op& op, std::ostream* out);
 
-  // (for unmerged MTZ only) change HKL according to M/ISYM
-  bool switch_to_original_hkl() {
-    if (indices_switched_to_original)
-      return false;
-    if (!has_data())
-      fail("switch_to_original_hkl(): data not read yet");
-    const Column* col = column_with_label("M/ISYM");
-    if (col == nullptr || col->type != 'Y' || col->idx < 3)
-      return false;
-    std::vector<Op> inv_symops;
-    inv_symops.reserve(symops.size());
-    for (const Op& op : symops)
-      inv_symops.push_back(op.inverse());
-    for (size_t n = 0; n + col->idx < data.size(); n += columns.size()) {
-      int isym = static_cast<int>(data[n + col->idx]) & 0xFF;
-      const Op& op = inv_symops.at((isym - 1) / 2);
-      Miller hkl = op.apply_to_hkl(get_hkl(n));
-      int sign = (isym & 1) ? 1 : -1;
-      for (int i = 0; i < 3; ++i)
-        data[n+i] = static_cast<float>(sign * hkl[i]);
-    }
-    indices_switched_to_original = true;
-    return true;
-  }
+  /// Change symmetry to P1 and expand reflections. Does not sort.
+  /// Similar to command EXPAND in SFTOOLS.
+  void expand_to_p1();
 
-  // (for unmerged MTZ only) change HKL to ASU equivalent and set ISYM
-  bool switch_to_asu_hkl() {
-    if (!indices_switched_to_original)
-      return false;
-    if (!has_data())
-      fail("switch_to_asu_hkl(): data not read yet");
-    const Column* col = column_with_label("M/ISYM");
-    if (col == nullptr || col->type != 'Y' || col->idx < 3 || !spacegroup)
-      return false;
-    size_t misym_idx = col->idx;
-    UnmergedHklMover hkl_mover(spacegroup);
-    for (size_t n = 0; n + col->idx < data.size(); n += columns.size()) {
-      Miller hkl = get_hkl(n);
-      int isym = hkl_mover.move_to_asu(hkl);  // modifies hkl
-      set_hkl(n, hkl);
-      float& misym = data[n + misym_idx];
-      misym = float(((int)misym & ~0xff) | isym);
-    }
-    indices_switched_to_original = false;
-    return true;
-  }
+  /// (for unmerged MTZ only) change HKL according to M/ISYM
+  bool switch_to_original_hkl();
+
+  /// (for unmerged MTZ only) change HKL to ASU equivalent and set ISYM
+  bool switch_to_asu_hkl();
 
   Dataset& add_dataset(const std::string& name) {
     int id = 0;
@@ -1087,7 +1072,6 @@ Mtz read_mtz(Input&& input, bool with_data) {
   mtz.read_input(std::forward<Input>(input), with_data);
   return mtz;
 }
-
 
 // Abstraction of data source, cf. ReflnDataProxy.
 struct MtzDataProxy {

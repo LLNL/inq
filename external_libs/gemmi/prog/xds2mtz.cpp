@@ -93,7 +93,7 @@ int GEMMI_MAIN(int argc, char **argv) {
       }
       if (gemmi::likely_in_house_source(xds.wavelength))
         std::fprintf(stderr, "WARNING: likely in-house source (wavelength %g)\n"
-                             "         polarization corection can be inappropriate.\n",
+                             "         polarization correction can be inappropriate.\n",
                      xds.wavelength);
       if (verbose)
         std::fprintf(stderr, "Applying polarization correction...\n");
@@ -127,7 +127,7 @@ int GEMMI_MAIN(int argc, char **argv) {
     if (const option::Option* opt = p.options[Title])
       mtz.title = opt->arg;
     else
-      mtz.title = "Converted from XDS_ASCII";
+      mtz.title = "Converted from " + gemmi::path_basename(input_path, {});
     if (const option::Option* opt = p.options[History]) {
       for (; opt; opt = opt->next())
         mtz.history.emplace_back(opt->arg);
@@ -164,6 +164,10 @@ int GEMMI_MAIN(int argc, char **argv) {
     mtz.nreflections = (int) xds.data.size();
     mtz.data.resize(mtz.columns.size() * xds.data.size());
     gemmi::UnmergedHklMover hkl_mover(mtz.spacegroup);
+    int max_frame = 0;
+    for (const gemmi::XdsAscii::Refl& refl : xds.data)
+      max_frame = std::max(max_frame, refl.frame());
+    int iset_offset = (max_frame + 11000) / 10000 * 10000;
     // iset,frame -> batch
     std::map<std::pair<int,int>, int> frames;
     size_t k = 0;
@@ -174,7 +178,7 @@ int GEMMI_MAIN(int argc, char **argv) {
         mtz.data[k++] = (float) hkl[j];
       mtz.data[k++] = (float) isym;
       int frame = refl.frame();
-      int batch = frame + 10000 * std::max(refl.iset - 1, 0);
+      int batch = frame + iset_offset * std::max(refl.iset - 1, 0);
       frames.emplace(std::make_pair(refl.iset, frame), batch);
       mtz.data[k++] = (float) batch;
       mtz.data[k++] = (float) refl.iobs;  // I

@@ -112,9 +112,10 @@ struct ReciprocalGrid : GridBase<T> {
     double max_1_d2 = 0.;
     if (dmin != 0.) {
       max_1_d2 = 1. / (dmin * dmin);
-      max_h = std::min(max_h, int(1. / (dmin * this->unit_cell.ar)));
-      max_k = std::min(max_k, int(1. / (dmin * this->unit_cell.br)));
-      max_l = std::min(max_l, int(1. / (dmin * this->unit_cell.cr)));
+      Miller lim = this->unit_cell.get_hkl_limits(dmin);
+      max_h = std::min(max_h, lim[0]);
+      max_k = std::min(max_k, lim[1]);
+      max_l = std::min(max_l, lim[2]);
     }
     gemmi::ReciprocalAsu asu(this->spacegroup);
     std::unique_ptr<GroupOps> gops;
@@ -123,9 +124,22 @@ struct ReciprocalGrid : GridBase<T> {
     Miller hkl;
     for (hkl[0] = -max_h; hkl[0] <= max_h; ++hkl[0]) {
       int hi = hkl[0] >= 0 ? hkl[0] : hkl[0] + this->nu;
+      int hi_ = -hkl[0] >= 0 ? -hkl[0] : -hkl[0] + this->nu;
       for (hkl[1] = -max_k; hkl[1] <= max_k; ++hkl[1]) {
+        hkl[2] = -max_l;
+        // (hkl)s with l<0 might be needed to get complete asu.
+        // If they are absent in the data (Hermitian FFT), use Friedel's pairs.
+        if (half_l) {
+          int ki_ = -hkl[1] >= 0 ? -hkl[1] : -hkl[1] + this->nv;
+          for (; hkl[2] < 0; ++hkl[2])
+            if (asu.is_in(hkl) &&
+                (max_1_d2 == 0. || this->unit_cell.calculate_1_d2(hkl) < max_1_d2) &&
+                (with_sys_abs || !gops->is_systematically_absent(hkl)))
+              asu_data.v.push_back({hkl,
+                  friedel_mate_value(this->get_value_q(hi_, ki_, -hkl[2]))});
+        }
         int ki = hkl[1] >= 0 ? hkl[1] : hkl[1] + this->nv;
-        for (hkl[2] = (half_l ? 0 : -max_l); hkl[2] <= max_l; ++hkl[2])
+        for (; hkl[2] <= max_l; ++hkl[2])
           if (asu.is_in(hkl) &&
               (max_1_d2 == 0. || this->unit_cell.calculate_1_d2(hkl) < max_1_d2) &&
               (with_sys_abs || !gops->is_systematically_absent(hkl)) &&

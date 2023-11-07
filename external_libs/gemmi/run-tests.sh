@@ -33,7 +33,7 @@ if [ $# != 0 ] && [ $1 = n ]; then
     shift
 else
     (cd $BUILD_DIR && make -j4 all check)
-    ./tools/cmp-size.py build/gemmi build/gemmi.*.so
+    ./tools/cmp-size.py build/gemmi build/gemmi.*.so build/libgemmi_cpp.*
     ./tools/docs-help.sh
 fi
 (cd docs && make -j4 html SPHINXOPTS="-q -n")
@@ -51,9 +51,10 @@ if [ -z "${NO_DOCTEST-}" ]; then
     (cd docs && make doctest SPHINXOPTS="-q -n -E")
 fi
 
-flake8 docs/ examples/ tests/ tools/ setup.py
-# We want to avoid having '::' in pydoc from pybind11.
-$PYTHON -m pydoc gemmi | grep :: ||:
+flake8 docs/ examples/ tests/ tools/
+pybind11-stubgen --dry-run --exit-code gemmi \
+    --enum-class-locations='Ignore:gemmi.ContactSearch' \
+    --enum-class-locations='.+:gemmi'
 
 
 # Usually, we stop here. Below are more extensive checks below that are run
@@ -67,17 +68,26 @@ if [ $1 = i ]; then
     echo 'OK'
 fi
 
+if [ $1 = a ]; then
+    echo 'Run codespell'
+    codespell include src prog python fortran tests examples docs wasm tools ||:
+fi
+
 if [ $1 = m -o $1 = a ]; then
-    echo 'Creating, compiling and removing test_mmdb.cpp'
-    echo 'Example 1'
+    echo 'Creating, compiling and removing test_mmdb{1,2}.cpp'
+    echo 'Example 1: gemmi -> mmdb'
     cmd="c++ -O -Wall -Wextra -pedantic -Wshadow -Iinclude test_mmdb.cpp \
         -lmmdb2 -Lbuild -lgemmi_cpp -lz -o test_mmdb"
     awk '/Example 1/,/^}/' include/gemmi/mmdb.hpp > test_mmdb.cpp
-    $cmd
-    echo 'Example 2'
+    ${cmd}1
+    echo "Converting tests/1orc.pdb to /tmp/example1.pdb"
+    ./test_mmdb1 tests/1orc.pdb /tmp/example1.pdb
+    echo 'Example 2: mmdb -> gemmi'
     awk '/Example 2/,/^}/' include/gemmi/mmdb.hpp > test_mmdb.cpp
-    $cmd
-    rm -f test_mmdb.cpp
+    ${cmd}2
+    echo "Converting tests/1orc.pdb to /tmp/example2.pdb"
+    ./test_mmdb2 tests/1orc.pdb /tmp/example2.pdb
+    rm -f test_mmdb1.cpp test_mmdb2.cpp test_mmdb1 test_mmdb2
 fi
 
 if [ $1 = h -o $1 = a ]; then
@@ -86,7 +96,7 @@ if [ $1 = h -o $1 = a ]; then
     for f in include/gemmi/*.hpp; do
         if [ $f != include/gemmi/mmdb.hpp ]; then
             echo -n .
-            gcc-9 -c -fsyntax-only $f
+            gcc-9 -c -fsyntax-only -Dsmall=.avoid/small $f
         fi
     done
     echo

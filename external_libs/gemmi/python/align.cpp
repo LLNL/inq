@@ -25,24 +25,31 @@ void add_alignment(py::module& m) {
     ;
 
   py::class_<AlignmentScoring>(m, "AlignmentScoring")
-    .def(py::init<>())
+    .def(py::init([](char what) {
+          const AlignmentScoring* s = AlignmentScoring::simple();
+          if (what == 'p')
+            s = AlignmentScoring::partial_model();
+          else if (what == 'b')
+            s = AlignmentScoring::blosum62();
+          return new AlignmentScoring(*s);
+    }), py::arg("what")='s')
     .def_readwrite("match", &AlignmentScoring::match)
     .def_readwrite("mismatch", &AlignmentScoring::mismatch)
     .def_readwrite("gapo", &AlignmentScoring::gapo)
     .def_readwrite("gape", &AlignmentScoring::gape)
+    .def_readwrite("good_gapo", &AlignmentScoring::good_gapo)
+    .def_readwrite("bad_gapo", &AlignmentScoring::bad_gapo)
     ;
 
-  m.def("prepare_blosum62_scoring", &prepare_blosum62_scoring);
   m.def("align_string_sequences", &align_string_sequences,
-        py::arg("query"), py::arg("target"), py::arg("free_gapo"),
-        py::arg_v("scoring", AlignmentScoring(), "gemmi.AlignmentScoring()"));
+        py::arg("query"), py::arg("target"), py::arg("target_gapo"),
+        py::arg("scoring")=nullptr);
   m.def("align_sequence_to_polymer",
-        [](const std::vector<std::string>& full_seq,
-           const ResidueSpan& polymer, PolymerType polymer_type,
-           AlignmentScoring& sco) {
-      return align_sequence_to_polymer(full_seq, polymer, polymer_type, sco);
-  }, py::arg("full_seq"), py::arg("polymer"), py::arg("polymer_type"),
-     py::arg_v("scoring", AlignmentScoring(), "gemmi.AlignmentScoring()"));
+        [](const std::vector<std::string>& full_seq, const ResidueSpan& polymer,
+           PolymerType polymer_type, AlignmentScoring* scoring) {
+      return align_sequence_to_polymer(full_seq, polymer, polymer_type, scoring);
+  }, py::arg("full_seq"), py::arg("polymer"),
+     py::arg("polymer_type"), py::arg("scoring")=nullptr);
 
   // structure superposition
   py::enum_<SupSelect>(m, "SupSelect")
@@ -88,5 +95,8 @@ void add_alignment(py::module& m) {
 
 void add_assign_label_seq_id(py::class_<Structure>& structure) {
   structure
-    .def("assign_label_seq_id", &assign_label_seq_id, py::arg("force")=false);
+    .def("assign_label_seq_id", &assign_label_seq_id, py::arg("force")=false)
+    .def("clear_sequences", &clear_sequences)
+    .def("assign_best_sequences", &assign_best_sequences, py::arg("fasta_sequences"))
+    ;
 }

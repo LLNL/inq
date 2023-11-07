@@ -1,0 +1,8 @@
+$ gemmi sg -h
+Usage:
+ gemmi sg [options] SPACEGROUP[...]
+Prints information about the space group.
+  -h, --help     Print usage and exit.
+  -V, --version  Print version and exit.
+  -v, --verbose  Verbose output.
+  --asu=N        Draw ASU in NxNxN map grid and exit. Uses N(N+1) columns.

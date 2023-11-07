@@ -1,10 +1,12 @@
 // Copyright 2017 Global Phasing Ltd.
 
+#include <sstream>
 #include "gemmi/cifdoc.hpp"
-#include "tostr.hpp"
 #include "gemmi/to_cif.hpp"
 #include "gemmi/to_json.hpp"
 #include "gemmi/fstream.hpp"
+#include "gemmi/ddl.hpp"
+#include "gemmi/read_cif.hpp"  // for read_cif_gz
 
 #include "common.h"
 #include <pybind11/stl.h>
@@ -68,7 +70,21 @@ void add_cif(py::module& cif) {
     .value("PreferPairs", Style::PreferPairs)
     .value("Pdbx", Style::Pdbx)
     .value("Indent35", Style::Indent35)
-    .value("Aligned", Style::Aligned);
+    .value("Aligned", Style::Aligned)
+    ;
+  py::class_<WriteOptions>(cif, "WriteOptions")
+    .def(py::init<>())
+    .def_readwrite("prefer_pairs", &WriteOptions::prefer_pairs)
+    .def_readwrite("compact", &WriteOptions::compact)
+    .def_readwrite("misuse_hash", &WriteOptions::misuse_hash)
+    .def_readwrite("align_pairs", &WriteOptions::align_pairs)
+    .def_readwrite("align_loops", &WriteOptions::align_loops)
+    .def("__repr__", [](const WriteOptions &self) -> std::string {
+        std::string str = self.str();
+        if (str.empty())
+          return "gemmi.cif.WriteOptions()";
+        return gemmi::cat("<gemmi.cif.WriteOptions ", str, '>');
+    });
   py::class_<Document>(cif, "Document")
     .def(py::init<>())
     .def_readwrite("source", &Document::source)
@@ -119,16 +135,27 @@ void add_cif(py::module& cif) {
          py::arg("name"),
          py::return_value_policy::reference_internal)
     .def("write_file",
-         [](const Document& doc, const std::string& filename, Style s) {
+         [](const Document& doc, const std::string& filename, WriteOptions opt) {
+        gemmi::Ofstream os(filename);
+        write_cif_to_stream(os.ref(), doc, opt);
+    }, py::arg("filename"), py::arg("options")=WriteOptions(),
+    "Write data to a CIF file.")
+    // deprecated
+    .def("write_file", [](const Document& doc, const std::string& filename, Style s) {
         gemmi::Ofstream os(filename);
         write_cif_to_stream(os.ref(), doc, s);
-    }, py::arg("filename"), py::arg("style")=Style::Simple,
-    "Write data to a CIF file.")
-    .def("as_string", [](const Document& d, Style style) {
+    }, py::arg("filename"), py::arg("style"))
+    .def("as_string", [](const Document& d, WriteOptions opt) {
         std::ostringstream os;
-        write_cif_to_stream(os, d, style);
+        write_cif_to_stream(os, d, opt);
         return os.str();
-    }, py::arg("style")=Style::Simple, "Returns a string in CIF format.")
+    }, py::arg("options")=WriteOptions(), "Returns a string in CIF format.")
+    // deprecated
+    .def("as_string", [](const Document& d, Style s) {
+        std::ostringstream os;
+        write_cif_to_stream(os, d, s);
+        return os.str();
+    }, py::arg("style"))
     .def("as_json", [](const Document& d, bool mmjson, bool lowercase_names) {
         std::ostringstream os;
         JsonWriter writer(os);
@@ -264,18 +291,29 @@ void add_cif(py::module& cif) {
            return data;
          }, py::arg("name"), py::arg("raw")=false)
     .def("write_file",
-         [](const Block& self, const std::string& filename, Style s) {
+         [](const Block& self, const std::string& filename, WriteOptions opt) {
+        gemmi::Ofstream os(filename);
+        write_cif_block_to_stream(os.ref(), self, opt);
+    }, py::arg("filename"), py::arg("options")=WriteOptions(),
+    "Write data to a CIF file.")
+    // deprecated
+    .def("write_file", [](const Block& self, const std::string& filename, Style s) {
         gemmi::Ofstream os(filename);
         write_cif_block_to_stream(os.ref(), self, s);
-    }, py::arg("filename"), py::arg("style")=Style::Simple,
-    "Write data to a CIF file.")
-    .def("as_string", [](const Block& self, Style style) {
+    }, py::arg("filename"), py::arg("style"))
+    .def("as_string", [](const Block& self, WriteOptions opt) {
         std::ostringstream os;
-        write_cif_block_to_stream(os, self, style);
+        write_cif_block_to_stream(os, self, opt);
         return os.str();
-    }, py::arg("style")=Style::Simple, "Returns a string in CIF format.")
+    }, py::arg("options")=WriteOptions(), "Returns a string in CIF format.")
+    // deprecated
+    .def("as_string", [](const Block& self, Style s) {
+        std::ostringstream os;
+        write_cif_block_to_stream(os, self, s);
+        return os.str();
+    }, py::arg("style"))
     .def("__repr__", [](const Block &self) {
-        return gemmi::tostr("<gemmi.cif.Block ", self.name, '>');
+        return gemmi::cat("<gemmi.cif.Block ", self.name, '>');
     });
 
 
@@ -306,8 +344,7 @@ void add_cif(py::module& cif) {
          py::arg("new_values"), py::arg("pos")=-1)
     .def("set_all_values", &Loop::set_all_values, py::arg("columns"))
     .def("__repr__", [](const Loop &self) {
-        return gemmi::tostr("<gemmi.cif.Loop ", self.length(), " x ",
-                            self.width(), '>');
+        return gemmi::cat("<gemmi.cif.Loop ", self.length(), " x ", self.width(), '>');
     });
 
 
@@ -331,10 +368,12 @@ void add_cif(py::module& cif) {
     })
     .def("str", &Column::str, py::arg("index"))
     .def("__repr__", [](const Column &self) {
-        std::string desc = "nil";
+        std::string s = "<gemmi.cif.Column ";
         if (const std::string* tag = self.get_tag())
-          desc = gemmi::tostr(*tag, " length ", self.length());
-        return "<gemmi.cif.Column " + desc + ">";
+          gemmi::cat_to(s, *tag, " length ", self.length(), '>');
+        else
+          s += "nil>";
+        return s;
     });
 
   cif_table
@@ -364,10 +403,12 @@ void add_cif(py::module& cif) {
     .def("__bool__", &Table::ok)
     .def("__len__", &Table::length)
     .def("__repr__", [](const Table& self) {
-        return "<gemmi.cif.Table " +
-               (self.ok() ? gemmi::tostr(self.length(), " x ", self.width())
-                          : "nil") +
-               ">";
+        std::string s = "<gemmi.cif.Table ";
+        if (self.ok())
+          gemmi::cat_to(s, self.length(), " x ", self.width(), '>');
+        else
+          s += "nil>";
+        return s;
     });
 
   cif_table_row
@@ -400,4 +441,32 @@ void add_cif(py::module& cif) {
 
   cif.def("quote", &quote, py::arg("string"));
   cif.def("quote_list", &quote_list);
+
+  py::class_<Ddl>(cif, "Ddl")
+    .def(py::init([](bool print_unknown_tags, bool use_regex, bool use_context,
+                     bool use_parents, bool use_mandatory, bool use_unique_keys) {
+          Ddl* ddl = new Ddl;
+          if (ddl) {
+            ddl->print_unknown_tags = print_unknown_tags;
+            ddl->use_regex = use_regex;
+            ddl->use_context = use_context;
+            ddl->use_parents = use_parents;
+            ddl->use_mandatory = use_mandatory;
+            ddl->use_unique_keys = use_unique_keys;
+          }
+          return ddl;
+    }), py::arg("print_unknown_tags")=true, py::arg("use_regex")=true,
+        py::arg("use_context")=true, py::arg("use_linked_groups")=true,
+        py::arg("use_mandatory")=true, py::arg("use_unique_keys")=true)
+    .def("read_ddl_file", [](Ddl& self, const std::string& path) {
+        std::ostringstream out;
+        self.read_ddl(gemmi::read_cif_gz(path), out);
+        return out.str();
+    }, py::arg("path"))
+    .def("validate_cif", [](Ddl& self, const Document& doc) {
+        std::ostringstream out;
+        self.validate_cif(doc, out);
+        return out.str();
+    })
+    ;
 }

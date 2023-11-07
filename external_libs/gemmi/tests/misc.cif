@@ -1,0 +1,67 @@
+# misc examples for testing the parser
+data_Strings
+_noq str
+_singleq 'str'
+_doubleq "str"
+_in_next_line # comment
+str
+_with_hash s#t#r#
+_semicolonq
+;str
+;
+_na .
+_who_knows ?
+
+data_numbers
+_int 5
+_real 3.14
+_neg -3.14
+_pos +3.140
+_negz -003.1
+_posz +03.140
+_sci 2.1e12
+_dotfirst .75
+_dotfirstsci .7e+3
+_dotlast 85.
+_dote 3.e08
+_with_su 123.456(12)
+_not_valid_numb 1-0
+# these are valid CIF numbers, but probably were meant as strings
+_zeros 00000000000
+_zdote 03.E-08
+
+data_loops
+loop_
+_x _y _z
+1 0 1
+4.1 3.2 2.0
+
+loop_
+_single_tag
+tomato
+;carrot
+;
+"ginger"
+
+data_frames
+save_fr
+_a 1
+loop_
+_b 2 3 4
+_c
+;five
+;
+save_
+save_anoTHer
+_A 1
+_x 2
+save_
+_and item
+
+# this string is from PDB 5Q1H and contains non-ascii character 0xa0 (nbsp)
+_exptl_crystal_grow.pdbx_details    '0.1 M BIS-TRIS 5.5 pH 5.5, 25%PEG3350'
+
+# from a bug report:
+_cell_special_details
+;
+;

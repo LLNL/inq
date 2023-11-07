@@ -1,12 +1,13 @@
 // Copyright 2018-2022 Global Phasing Ltd.
 
 #include <gemmi/resinfo.hpp>
+#include <gemmi/atox.hpp>  // for is_space
 
 namespace gemmi {
 
 // hydrogen_count needs to be verified
 ResidueInfo find_tabulated_residue(const std::string& name) {
-  using RI = ResidueInfo;
+  using RI = ResidueKind;
   if (name.size() == 3) {
 #define ID(s) (s[0] << 16 | s[1] << 8 | s[2])
     switch (ID(name.c_str())) {
@@ -397,6 +398,39 @@ ResidueInfo find_tabulated_residue(const std::string& name) {
 #undef ID
   }
   return { RI::UNKNOWN, 0, ' ', 0, 0.0f };
+}
+
+std::vector<std::string> expand_one_letter_sequence(const std::string& seq,
+                                                    ResidueKind kind) {
+  std::vector<std::string> r;
+  r.reserve(seq.size());
+  auto kind_str = [&]() {
+    switch (kind) {
+      case ResidueKind::AA: return "peptide";
+      case ResidueKind::RNA: return "RNA";
+      case ResidueKind::DNA: return "DNA";
+      default: return "unknown";
+    }
+  };
+  for (size_t i = 0; i != seq.size(); ++i) {
+    char c = seq[i];
+    if (is_space(c))
+      continue;
+    if (c == '(') { // special case, e.g. (MSE)
+      size_t start = i + 1;
+      i = seq.find(')', start);
+      if (i == std::string::npos)
+        fail("unmatched '(' in sequence");
+      r.emplace_back(seq, start, i - start);
+    } else {
+      const char* str = expand_one_letter(c, kind);
+      if (str == nullptr)
+        fail("unexpected letter in ", kind_str(), " sequence: ", c,
+             " (", std::to_string(int(c)), ')');
+      r.emplace_back(str);
+    }
+  }
+  return r;
 }
 
 } // namespace gemmi

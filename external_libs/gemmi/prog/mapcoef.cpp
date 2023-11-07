@@ -8,7 +8,6 @@
 #include <cstring>            // for strcmp
 #include <cstdlib>            // for strtod, exit
 #include <array>
-#include <gemmi/gz.hpp>       // for MaybeGzipped
 #include <gemmi/mtz.hpp>      // for Mtz
 #include <gemmi/fourier.hpp>  // for get_f_phi_on_grid, transform_f_phi_..
 #include <gemmi/recgrid.hpp>  // for ReciprocalGrid
@@ -55,11 +54,6 @@ const option::Descriptor MapUsage[] = {
 static std::array<const Mtz::Column*, 2>
 get_mtz_map_columns(const Mtz& mtz, const char* section, bool diff_map,
                     const char* f_label, const char* phi_label) {
-  static const char* default_labels[] = {
-    "FWT", "PHWT", "DELFWT", "PHDELWT",
-    "2FOFCWT", "PH2FOFCWT", "FOFCWT", "PHFOFCWT",
-    nullptr
-  };
   const Mtz::Column* f_col = nullptr;
   const Mtz::Column* phi_col = nullptr;
   const Mtz::Dataset* ds = nullptr;
@@ -72,27 +66,27 @@ get_mtz_map_columns(const Mtz& mtz, const char* section, bool diff_map,
     f_col = mtz.column_with_label(f_label, ds);
     if (!f_col)
       gemmi::fail("Column not found: ", f_label);
-    if (phi_label) {
+    if (phi_label)
       phi_col = mtz.column_with_label(phi_label, ds);
-    } else {
-      for (int i = 0; ; i += 2) {
-        if (default_labels[i] == nullptr)
-          gemmi::fail("Unknown phase column label.\n");
-        if (std::strcmp(default_labels[i], f_label) == 0) {
-          phi_col = mtz.column_with_label(default_labels[i + 1], ds);
+    else
+      phi_col = f_col->get_next_column_if_type('P');
+    if (!f_col || !phi_col)
+      gemmi::fail("Specified map coefficient labels not found.\n");
+  } else if (diff_map) {
+    for (const char* label : {"DELFWT", "FOFCWT"})
+      if ((f_col = mtz.column_with_label(label, ds)))
+        if ((phi_col = f_col->get_next_column_if_type('P')))
           break;
-        }
-      }
-    }
+    if (!f_col || !phi_col)
+      gemmi::fail("Default difference map labels (DELFWT/FOFCWT + phase) not found.\n");
   } else {
-    for (int i = (diff_map ? 2 : 0); default_labels[i]; i += 4)
-      if ((f_col = mtz.column_with_label(default_labels[i], ds)) &&
-          (phi_col = mtz.column_with_label(default_labels[i+1], ds))) {
-        break;
-      }
+    for (const char* label : {"FWT", "2FOFCWT"})
+      if ((f_col = mtz.column_with_label(label, ds)))
+        if ((phi_col = f_col->get_next_column_if_type('P')))
+          break;
+    if (!f_col || !phi_col)
+      gemmi::fail("Default map labels (FWT/2FOFCWT + phase) not found.\n");
   }
-  if (!f_col || !phi_col)
-    gemmi::fail("Default map coefficient labels not found.\n");
   return {{f_col, phi_col}};
 }
 
@@ -188,7 +182,8 @@ read_sf_and_fft_to_map(const char* input_path,
           size, half_l, axis_order);
   } else {
     timer.start();
-    Mtz mtz = gemmi::read_mtz(gemmi::MaybeGzipped(input_path), true);
+    Mtz mtz;
+    mtz.read_file_gz(input_path);
     timer.print("MTZ read in");
     auto cols = get_mtz_map_columns(mtz, section, diff_map, f_label, ph_label);
     gemmi::MtzDataProxy data_proxy{mtz};

@@ -2,7 +2,6 @@
 
 #include "gemmi/mtz.hpp"
 #include "gemmi/fourier.hpp"
-#include "gemmi/gz.hpp"
 #include "tostr.hpp"
 
 #include "common.h"
@@ -16,6 +15,8 @@ using namespace gemmi;
 PYBIND11_MAKE_OPAQUE(std::vector<Mtz::Dataset>)
 PYBIND11_MAKE_OPAQUE(std::vector<Mtz::Column>)
 PYBIND11_MAKE_OPAQUE(std::vector<Mtz::Batch>)
+PYBIND11_MAKE_OPAQUE(std::vector<int>);    // for Batch::ints
+PYBIND11_MAKE_OPAQUE(std::vector<float>);  // for Batch::floats
 
 namespace gemmi {
   // operator<< is used by stl_bind for vector's __repr__
@@ -24,6 +25,27 @@ namespace gemmi {
        << '/' << ds.crystal_name << '/' << ds.dataset_name << '>';
     return os;
   }
+}
+
+
+// Minimal std::vector bindings, for Batch::ints and Batch::floats.
+// Don't allow the user to resize the vector, only to get and set values.
+template<typename Vector>
+void bind_batch_vector(py::handle scope, const char* name) {
+  using T = typename Vector::value_type;
+  using SizeType = typename Vector::size_type;
+  using DiffType = typename Vector::difference_type;
+  auto wrap_idx = [&](DiffType i, SizeType length) -> SizeType {
+    SizeType idx = (i >= 0 ? (SizeType)i : (SizeType)i + length);
+    if (idx >= length)
+      throw py::index_error();
+    return idx;
+  };
+  py::class_<Vector>(scope, name, py::module_local())
+    .def("__getitem__", [&](const Vector& v, DiffType i) { return v[wrap_idx(i, v.size())]; })
+    .def("__setitem__", [&](Vector& v, DiffType i, T x) { v[wrap_idx(i, v.size())] = x; })
+    .def("__len__", [](const Vector& v) { return v.size(); })
+    ;
 }
 
 template<typename F>
@@ -66,6 +88,8 @@ void add_mtz(py::module& m) {
   py::bind_vector<std::vector<Mtz::Dataset>>(m, "MtzDatasets");
   py::bind_vector<std::vector<Mtz::Column>>(m, "MtzColumns");
   py::bind_vector<std::vector<Mtz::Batch>>(m, "MtzBatches");
+  bind_batch_vector<std::vector<int>>(m, "BatchInts");
+  bind_batch_vector<std::vector<float>>(m, "BatchFloats");
 
   mtz
     .def(py::init<bool>(), py::arg("with_base")=false)
@@ -253,6 +277,16 @@ void add_mtz(py::module& m) {
         self.reindex(op, &out);
         return out.str();
     }, py::arg("op"))
+    .def("expand_to_p1", &Mtz::expand_to_p1)
+    // handy for testing, but slow and can't handle duplicated column names
+    .def("row_as_dict", [](const Mtz& self, const Miller& hkl) {
+        size_t offset = self.find_offset_of_hkl(hkl);
+        py::dict data;
+        if (offset != (size_t)-1)
+          for (const Mtz::Column& column : self.columns)
+            data[column.label.c_str()] = self.data[offset++];
+        return data;
+    }, py::arg("hkl"))
     .def("__repr__", [](const Mtz& self) {
         return tostr("<gemmi.Mtz with ", self.columns.size(), " columns, ",
                      self.nreflections, " reflections>");
@@ -302,14 +336,19 @@ void add_mtz(py::module& m) {
   pyMtzBatch
     .def(py::init<>())
     .def_readwrite("number", &Mtz::Batch::number)
-    .def_property_readonly("dataset_id", &Mtz::Batch::dataset_id)
     .def_readwrite("title", &Mtz::Batch::title)
-    .def_readonly("ints", &Mtz::Batch::ints)
-    .def_readonly("floats", &Mtz::Batch::floats)
-    .def_readonly("axes", &Mtz::Batch::axes)
+    .def_readwrite("ints", &Mtz::Batch::ints)
+    .def_readwrite("floats", &Mtz::Batch::floats)
+    .def_readwrite("axes", &Mtz::Batch::axes)
+    .def_property("cell", &Mtz::Batch::get_cell, &Mtz::Batch::set_cell)
+    .def_property("dataset_id", &Mtz::Batch::dataset_id, &Mtz::Batch::set_dataset_id)
+    .def_property("wavelength", &Mtz::Batch::wavelength, &Mtz::Batch::set_wavelength)
+    .def("clone", [](const Mtz::Batch& self) { return new Mtz::Batch(self); })
     ;
 
   m.def("read_mtz_file", [](const std::string& path) {
-      return read_mtz(MaybeGzipped(path), true);
-  }, py::arg("path"), py::return_value_policy::move);
+    std::unique_ptr<Mtz> mtz(new Mtz);
+    mtz->read_file_gz(path, true);
+    return mtz.release();
+  }, py::arg("path"));
 }

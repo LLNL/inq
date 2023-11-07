@@ -93,15 +93,21 @@ template<> inline void transform_pos_and_adp(Atom& atom, const Transform& tr) {
     atom.aniso = atom.aniso.transformed_by<float>(tr.mat);
 }
 
-/// set atom site serial numbers to 1, 2, ...
-inline void assign_serial_numbers(Model& model) {
+/// set atom site serial numbers to 1, 2, ..., optionally leaving gaps for TERs
+inline void assign_serial_numbers(Model& model, bool numbered_ter=false) {
   int serial = 0;
-  for (CRA cra : model.all())
-    cra.atom->serial = ++serial;
+  for (Chain& chain : model.chains)
+    for (Residue& res : chain.residues) {
+      for (Atom& atom : res.atoms)
+        atom.serial = ++serial;
+      if (numbered_ter && res.entity_type == EntityType::Polymer &&
+          (&res == &chain.residues.back() || (&res + 1)->entity_type != EntityType::Polymer))
+        ++serial;
+    }
 }
-inline void assign_serial_numbers(Structure& st) {
+inline void assign_serial_numbers(Structure& st, bool numbered_ter=false) {
   for (Model& model : st.models)
-    assign_serial_numbers(model);
+    assign_serial_numbers(model, numbered_ter);
 }
 
 inline void replace_d_fraction_with_altlocs(Residue& res) {
@@ -184,6 +190,22 @@ inline void store_deuterium_as_fraction(Structure& st, bool store_fraction) {
         } else {
           replace_d_fraction_with_altlocs(res);
         }
+}
+
+/// Convert coordinates to the standard coordinate system for the unit cell.
+inline void standardize_crystal_frame(Structure& st) {
+  if (!st.cell.explicit_matrices || !st.cell.is_crystal())
+    return;
+  Transform orig_frac = st.cell.frac;
+  st.cell.explicit_matrices = false;
+  st.cell.calculate_properties();
+  Transform tr = st.cell.orth.combine(orig_frac);
+  Transform tr_inv = tr.inverse();
+  st.has_origx = true;
+  st.origx = tr_inv.combine(st.origx);
+  for (NcsOp& ncsop : st.ncs)
+    ncsop.tr = tr.combine(ncsop.tr).combine(tr_inv);
+  transform_pos_and_adp(st, tr);
 }
 
 } // namespace gemmi

@@ -13,6 +13,7 @@
 #include "gemmi/resinfo.hpp"   // for expand_protein_one_letter
 #include "gemmi/mmread_gz.hpp" // for read_structure_gz
 #include "gemmi/select.hpp"    // for Selection
+#include "gemmi/enumstr.hpp"   // for polymer_type_to_string
 
 #include <cstring>
 #include <iostream>
@@ -47,7 +48,7 @@ enum OptionIndex {
   FormatIn=AfterCifModOptions, FormatOut, CifStyle, AllAuth, BlockName,
   ExpandNcs, AsAssembly,
   RemoveH, RemoveWaters, RemoveLigWat, TrimAla, Select, Remove, ApplySymop,
-  ShortTer, Linkr, CopyRemarks, Minimal, ShortenCN, RenameChain,
+  Reframe, ShortTer, Linkr, CopyRemarks, Minimal, ShortenCN, RenameChain,
   ChangeCcdCode, SetSeq,
   SiftsNum, Biso, Anisou, SetCis, SegmentAsChain, OldPdb, ForceLabel
 };
@@ -107,9 +108,8 @@ const option::Descriptor Usage[] = {
   { ChangeCcdCode, 0, "", "monomer", Arg::ColonPair,
     "  --monomer=OLD:NEW  \tChange monomer name (CCD code) OLD to NEW." },
   { SetSeq, 0, "s", "", Arg::Required,
-    "  -s FILE  \tUse sequence from FILE (PIR or FASTA format), "
-    "which must contain either one sequence (for all chains) "
-    "or as many sequences as there are chains." },
+    "  -s FILE  \tUse sequence(s) from FILE in PIR or FASTA format. Each chain"
+    " is assigned the best matching sequence, if any." },
   { SiftsNum, 0, "", "sifts-num", Arg::None,
     "  --sifts-num  \tUse SIFTS-mapped position in UniProt sequence as sequence ID." },
   { Biso, 0, "B", "", Arg::Required,
@@ -129,6 +129,8 @@ const option::Descriptor Usage[] = {
     "  --remove=SEL  \tRemove the selection." },
   { ApplySymop, 0, "", "apply-symop", Arg::Required,
     "  --apply-symop=OP  \tApply symmetry operation (e.g. '-x,y+1/2,-z'." },
+  { Reframe, 0, "", "reframe", Arg::None,
+    "  --reframe  \tStandardize the coordinate system (frame)." },
   { ExpandNcs, 0, "", "expand-ncs", ConvArg::NcsChoice,
     "  --expand-ncs=dup|num|x  \tExpand strict NCS from in MTRIXn or"
     " _struct_ncs_oper. New chain names are the same, have added numbers,"
@@ -160,6 +162,18 @@ std::string format_as_string(CoorFormat format) {
   gemmi::unreachable();
 }
 
+std::string read_whole_file(std::istream& stream) {
+  constexpr std::size_t buf_size = 4096;
+  char buffer[buf_size];
+  stream.exceptions(std::ios_base::badbit);  // throw on fail/bad
+  std::string out;
+  while (stream) {
+    stream.read(buffer, buf_size);
+    out.append(buffer, stream.gcount());
+  }
+  return out;
+}
+
 void convert(gemmi::Structure& st,
              const std::string& output, CoorFormat output_type,
              const std::vector<option::Option>& options) {
@@ -175,8 +189,8 @@ void convert(gemmi::Structure& st,
     gemmi::change_ccd_code(st, old_name, new_name);
   }
 
+  gemmi::setup_entities(st);
   if (st.input_format == CoorFormat::Pdb) {
-    gemmi::setup_entities(st);
     if (!options[SetSeq])
       gemmi::assign_label_seq_id(st, options[ForceLabel]);
     if (!options[CopyRemarks])
@@ -196,6 +210,8 @@ void convert(gemmi::Structure& st,
     gemmi::Op op = gemmi::parse_triplet(options[ApplySymop].arg);
     transform_pos_and_adp(st, st.cell.op_as_transform(op));
   }
+  if (options[Reframe])
+    standardize_crystal_frame(st);
 
   if (options[Biso]) {
     const char* start = options[Biso].arg;
@@ -232,8 +248,7 @@ void convert(gemmi::Structure& st,
     const char* sep = std::strchr(opt->arg, ':');
     std::string old_name(opt->arg, sep);
     std::string new_name(sep+1);
-    if (gemmi::Chain* chain = st.first_model().find_chain(old_name))
-      gemmi::rename_chain(st, *chain, new_name);
+    gemmi::rename_chain(st, old_name, new_name);
   }
   if (options[ShortenCN]) {
     shorten_chain_names(st);
@@ -244,14 +259,25 @@ void convert(gemmi::Structure& st,
                     chain.name + "\nTry option --shorten");
   }
   if (options[SetSeq]) {
-    gemmi::Ifstream stream(options[SetSeq].arg);
-    std::string seq = gemmi::read_pir_or_fasta(stream.ref());
-    for (gemmi::Entity& ent : st.entities)
-      if (ent.entity_type == gemmi::EntityType::Polymer) {
-        ent.full_sequence = gemmi::expand_protein_one_letter_string(seq);
-      }
+    std::vector<std::string> fasta_sequences;
+    for (const option::Option* opt = options[SetSeq]; opt; opt = opt->next()) {
+      gemmi::Ifstream stream(opt->arg);
+      std::string str = read_whole_file(stream.ref());
+      for (gemmi::FastaSeq& fs : gemmi::read_pir_or_fasta(str))
+        fasta_sequences.push_back(std::move(fs.seq));
+    }
+    if (options[Verbose])
+      std::cerr << fasta_sequences.size() << " sequence(s) was read..." << std::endl;
+    gemmi::clear_sequences(st);
+    gemmi::assign_best_sequences(st, fasta_sequences);
     gemmi::deduplicate_entities(st);
     gemmi::assign_label_seq_id(st, options[ForceLabel]);
+    for (gemmi::Entity& ent : st.entities) {
+      if (ent.entity_type == gemmi::EntityType::Polymer && ent.full_sequence.empty())
+        std::cerr << "No sequence found for "
+                  << polymer_type_to_string(ent.polymer_type) << " entity " << ent.name
+                  << " (" << gemmi::join_str(ent.subchains, ',') << ')' << std::endl;
+    }
   }
 
   if (options[SiftsNum]) {
@@ -349,8 +375,7 @@ void convert(gemmi::Structure& st,
     apply_cif_doc_modifications(doc, options);
 
     if (output_type == CoorFormat::Mmcif) {
-      auto style = cif_style_as_enum(options[CifStyle]);
-      write_cif_to_stream(os.ref(), doc, style);
+      write_cif_to_stream(os.ref(), doc, cif_write_options(options[CifStyle]));
     } else /*output_type == CoorFormat::Mmjson*/ {
       cif::JsonWriter writer(os.ref());
       writer.set_mmjson();
@@ -359,14 +384,13 @@ void convert(gemmi::Structure& st,
   } else if (output_type == CoorFormat::Pdb) {
     shorten_ccd_codes(st);
     gemmi::PdbWriteOptions opt;
+    if (options[Minimal])
+      opt = gemmi::PdbWriteOptions::minimal();
     if (options[ShortTer])
       opt.numbered_ter = false;
     if (options[Linkr])
       opt.use_linkr = true;
-    if (options[Minimal])
-      gemmi::write_minimal_pdb(st, os.ref(), opt);
-    else
-      gemmi::write_pdb(st, os.ref(), opt);
+    gemmi::write_pdb(st, os.ref(), opt);
   }
 }
 

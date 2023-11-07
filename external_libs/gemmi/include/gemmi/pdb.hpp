@@ -13,7 +13,7 @@
 #ifndef GEMMI_PDB_HPP_
 #define GEMMI_PDB_HPP_
 
-#include <algorithm>  // for swap
+#include <algorithm>  // for min, swap
 #include <cctype>     // for isalpha
 #include <cstdio>     // for stdin, size_t
 #include <cstdlib>    // for strtol
@@ -233,6 +233,7 @@ Structure read_pdb_from_stream(Stream&& stream, const std::string& source,
   if (max_line_length <= 0 || max_line_length > 120)
     max_line_length = 120;
   bool after_ter = false;
+  bool ignore_ter = false;
   Transform matrix;
   std::unordered_map<ResidueId, int> resmap;
   while (size_t len = copy_line_from_stream(line, max_line_length+1, stream)) {
@@ -362,6 +363,9 @@ Structure read_pdb_from_stream(Stream&& stream, const std::string& source,
         if (st.assemblies.empty())
           continue;
         Assembly& assembly = st.assemblies.back();
+        auto r350_key = [&](int cpos, const char* text) {
+          return colon == line + cpos && starts_with(line+11, text);
+        };
         if (starts_with(line+11, "  BIOMT")) {
           if (read_matrix(matrix, line+13, len-13) == 3)
             if (!assembly.generators.empty()) {
@@ -371,23 +375,22 @@ Structure read_pdb_from_stream(Stream&& stream, const std::string& source,
               opers.back().transform = matrix;
               matrix.set_identity();
             }
-#define CHECK(cpos, text) (colon == line+(cpos) && starts_with(line+11, text))
-        } else if (CHECK(44, "AUTHOR DETERMINED")) {
+        } else if (r350_key(44, "AUTHOR DETERMINED")) {
           assembly.author_determined = true;
           assembly.oligomeric_details = read_string(line+45, 35);
-        } else if (CHECK(51, "SOFTWARE DETERMINED")) {
+        } else if (r350_key(51, "SOFTWARE DETERMINED")) {
           assembly.software_determined = true;
           assembly.oligomeric_details = read_string(line+52, 28);
-        } else if (CHECK(24, "SOFTWARE USED")) {
+        } else if (r350_key(24, "SOFTWARE USED")) {
           assembly.software_name = read_string(line+25, 55);
-        } else if (CHECK(36, "TOTAL BURIED SURFACE AREA")) {
+        } else if (r350_key(36, "TOTAL BURIED SURFACE AREA")) {
           assembly.absa = read_double(line+37, 12);
-        } else if (CHECK(38, "SURFACE AREA OF THE COMPLEX")) {
+        } else if (r350_key(38, "SURFACE AREA OF THE COMPLEX")) {
           assembly.ssa = read_double(line+39, 12);
-        } else if (CHECK(40, "CHANGE IN SOLVENT FREE ENERGY")) {
+        } else if (r350_key(40, "CHANGE IN SOLVENT FREE ENERGY")) {
           assembly.more = read_double(line+41, 12);
-        } else if (CHECK(40, "APPLY THE FOLLOWING TO CHAINS") ||
-                   CHECK(40, "                   AND CHAINS")) {
+        } else if (r350_key(40, "APPLY THE FOLLOWING TO CHAINS") ||
+                   r350_key(40, "                   AND CHAINS")) {
           if (line[11] == 'A') // first line - APPLY ...
             assembly.generators.emplace_back();
           else if (assembly.generators.empty())
@@ -395,11 +398,19 @@ Structure read_pdb_from_stream(Stream&& stream, const std::string& source,
           split_str_into_multi(read_string(line+41, 39), ", ",
                                assembly.generators.back().chains);
         }
-#undef CHECK
       }
 
     } else if (is_record_type(line, "CONECT")) {
-      // ignore for now
+      int serial = read_serial(line+6);
+      if (len >= 11 && serial != 0) {
+        std::vector<int>& bonded_atoms = st.conect_map[serial];
+        int limit = std::min(27, (int)len - 1);
+        for (int offset = 11; offset <= limit; offset += 5) {
+          int n = read_serial(line+offset);
+          if (n != 0)
+            bonded_atoms.push_back(n);
+        }
+      }
 
     } else if (is_record_type(line, "SEQRES")) {
       std::string chain_name = read_string(line+10, 2);
@@ -422,7 +433,7 @@ Structure read_pdb_from_stream(Stream&& stream, const std::string& source,
       // Refmac's extension: 73-80 mod_id
       // Check for spaces to make sure it's not an overflowed comment
       if (len >= 73 && line[70] == ' ' && line[71] == ' ')
-        modres.mod_id = read_string(line + 72, 6);
+        modres.mod_id = read_string(line + 72, 8);
       st.mod_residues.push_back(modres);
 
     } else if (is_record_type(line, "HETNAM")) {
@@ -435,6 +446,7 @@ Structure read_pdb_from_stream(Stream&& stream, const std::string& source,
     } else if (is_record_type(line, "DBREF")) { // DBREF or DBREF1 or DBREF2
       std::string chain_name = read_string(line+11, 2);
       Entity& ent = impl::find_or_add(st.entities, chain_name);
+      ent.entity_type = EntityType::Polymer;
       if (line[5] == ' ' || line[5] == '1')
         ent.dbrefs.emplace_back();
       else if (ent.dbrefs.empty()) // DBREF2 without DBREF1?
@@ -542,13 +554,18 @@ Structure read_pdb_from_stream(Stream&& stream, const std::string& source,
       chain = nullptr;
 
     } else if (is_record_type3(line, "TER")) { // finishes polymer chains
-      // we don't expect more than one TER record in one chain
-      if (!chain || after_ter)
+      if (!chain || ignore_ter)
         continue;
       if (options.split_chain_on_ter) {
         chain = nullptr;
         // split_chain_on_ter is used for AMBER files that can have TER records
         // in various places. So in such case TER doesn't imply entity_type.
+        continue;
+      }
+      // If we have 2+ TER records in one chain, they are used in non-standard
+      // way and should be better ignored (in all the chains).
+      if (after_ter) {
+        ignore_ter = true;  // all entity_types will be later set to Unknown
         continue;
       }
       for (Residue& res : chain->residues)
@@ -621,7 +638,10 @@ Structure read_pdb_from_stream(Stream&& stream, const std::string& source,
   if (st.models.empty())
     st.models.emplace_back("1");
 
-  // Here we assign Residue::subchain, but for chains with all
+  if (ignore_ter)
+    remove_entity_types(st);
+
+  // Here we assign Residue::subchain, but only for chains with all
   // Residue::entity_type assigned, i.e. for chains with TER.
   assign_subchains(st, /*force=*/false, /*fail_if_unknown=*/false);
 

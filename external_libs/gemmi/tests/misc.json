@@ -1,0 +1,51 @@
+{
+ "strings": {
+  "_noq": "str",
+  "_singleq": "str",
+  "_doubleq": "str",
+  "_in_next_line": "str",
+  "_with_hash": "s#t#r#",
+  "_semicolonq": "str",
+  "_na": null,
+  "_who_knows": null
+ },
+ "numbers": {
+  "_int": 5,
+  "_real": 3.14,
+  "_neg": -3.14,
+  "_pos": 3.140,
+  "_negz": -3.1,
+  "_posz": 3.140,
+  "_sci": 2.1e12,
+  "_dotfirst": 0.75,
+  "_dotfirstsci": 0.7e+3,
+  "_dotlast": 85.0,
+  "_dote": 3.0e08,
+  "_with_su": "123.456(12)",
+  "_not_valid_numb": "1-0",
+  "_zeros": "00000000000",
+  "_zdote": "03.E-08"
+ },
+ "loops": {
+  "_x": [1,4.1],
+  "_y": [0,3.2],
+  "_z": [1,2.0],
+  "_single_tag": ["tomato","carrot","ginger"]
+ },
+ "frames": {
+  "_and": "item",
+  "_exptl_crystal_grow.pdbx_details": "0.1 M BIS-TRIS 5.5 pH 5.5, 25%PEG3350",
+  "_cell_special_details": "",
+  "Frames": {
+   "fr": {
+    "_a": 1,
+    "_b": [2,3,4],
+    "_c": "five"
+   },
+   "another": {
+    "_a": 1,
+    "_x": 2
+   }
+  }
+ }
+}

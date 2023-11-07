@@ -1,0 +1,35 @@
+$ gemmi sf2map -h
+Usage:
+  gemmi sf2map [options] INPUT_FILE MAP_FILE
+
+INPUT_FILE must be either MTZ or mmCIF with map coefficients.
+
+By default, the program searches for 2mFo-DFc map coefficients in:
+  - MTZ columns FWT/PHWT or 2FOFCWT/PH2FOFCWT,
+  - mmCIF tags _refln.pdbx_FWT/pdbx_PHWT.
+If option "-d" is given, mFo-DFc map coefficients are searched in:
+  - MTZ columns DELFWT/PHDELWT or FOFCWT/PHFOFCWT,
+  - mmCIF tags _refln.pdbx_DELFWT/pdbx_DELPHWT.
+
+
+Options:
+  -h, --help           Print usage and exit.
+  -V, --version        Print version and exit.
+  -v, --verbose        Verbose output.
+  -d, --diff           Use difference map coefficients.
+  --section=NAME       MTZ dataset name or CIF block name
+  -f COLUMN            F column (MTZ label or mmCIF tag).
+  -p COLUMN            Phase column (MTZ label or mmCIF tag).
+  --weight=COLUMN      (normally not needed) weighting for F.
+  -g, --grid=NX,NY,NZ  Grid size (user-specified minimum).
+  --exact              Use the exact grid size specified by --grid.
+  -s, --sample=NUMBER  Set spacing to d_min/NUMBER (3 is usual).
+  --zyx                Output axes Z Y X as fast, medium, slow (default is X Y
+                       Z).
+  -G                   Print size of the grid that would be used and exit.
+  --timing             Print calculation times.
+  --normalize          Scale the map to standard deviation 1 and mean 0.
+  --mapmask=FILE       Output only map covering the structure from FILE,
+                       similarly to CCP4 MAPMASK with XYZIN.
+  --margin=N           (w/ --mapmask) Border in Angstrom (default: 5).
+  --select=SEL         (w/ --mapmask) Selection of atoms in FILE, MMDB syntax.

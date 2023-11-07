@@ -27,20 +27,22 @@ inline std::complex<double> calculate_sf_part(const Fractional& fpos,
 template <typename Table>
 class StructureFactorCalculator {
 public:
+  using coef_type = typename Table::Coef::coef_type;
+
   StructureFactorCalculator(const UnitCell& cell) : cell_(cell) {}
 
   void set_stol2_and_scattering_factors(const Miller& hkl) {
-    stol2_ = cell_.calculate_stol_sq(hkl);
+    stol2_ = (coef_type) cell_.calculate_stol_sq(hkl);
     scattering_factors_.clear();
     scattering_factors_.resize(addends.size(), 0.);
   }
 
-  double get_scattering_factor(Element element) {
+  double get_scattering_factor(Element element, signed char charge) {
     double& sfactor = scattering_factors_[element.ordinal()];
     if (sfactor == 0.) {
       if (!Table::has(element.elem))
         fail("Missing scattering factor for ", element.name());
-      sfactor = Table::get(element.elem).calculate_sf(stol2_) + addends.get(element);
+      sfactor = Table::get(element.elem, charge).calculate_sf(stol2_) + addends.get(element);
     }
     return sfactor;
   }
@@ -90,7 +92,8 @@ public:
   std::complex<double> calculate_sf_from_atom(const Fractional& fract,
                                               const Site& site,
                                               const Miller& hkl) {
-    return calculate_sf_from_atom_sf(fract, site, hkl, get_scattering_factor(site.element));
+    double atom_sf = get_scattering_factor(site.element, site.charge);
+    return calculate_sf_from_atom_sf(fract, site, hkl, atom_sf);
   }
 
   std::complex<double> calculate_sf_from_model(const Model& model, const Miller& hkl) {
@@ -106,12 +109,13 @@ public:
   // Z part of Mott-Bethe formula (when need to use different model)
   std::complex<double> calculate_mb_z(const Model& model, const Miller& hkl, bool only_h) {
     std::complex<double> sf = 0.;
-    stol2_ = cell_.calculate_stol_sq(hkl);
+    stol2_ = (coef_type) cell_.calculate_stol_sq(hkl);
     for (const Chain& chain : model.chains)
       for (const Residue& res : chain.residues)
         for (const Atom& site : res.atoms)
           if (!only_h || site.element.is_hydrogen())
-            sf += calculate_sf_from_atom_sf(cell_.fractionalize(site.pos), site, hkl, -1.*site.element.atomic_number());
+            sf += calculate_sf_from_atom_sf(cell_.fractionalize(site.pos), site, hkl,
+                                            -site.element.atomic_number());
     return sf;
   }
 
@@ -121,18 +125,18 @@ public:
 
   // The occupancy is assumed to take into account symmetry,
   // i.e. to be fractional if the atom is on special position.
-  std::complex<double> calculate_sf_from_small_structure(const SmallStructure& small,
+  std::complex<double> calculate_sf_from_small_structure(const SmallStructure& small_st,
                                                          const Miller& hkl) {
     std::complex<double> sf = 0.;
     set_stol2_and_scattering_factors(hkl);
-    for (const SmallStructure::Site& site : small.sites)
+    for (const SmallStructure::Site& site : small_st.sites)
       sf += calculate_sf_from_atom(site.fract, site, hkl);
     return sf;
   }
 
 private:
   const UnitCell& cell_;
-  double stol2_;
+  coef_type stol2_;
   std::vector<double> scattering_factors_;
 public:
   Addends addends;  // usually f' for X-rays

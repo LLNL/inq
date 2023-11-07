@@ -35,14 +35,14 @@ enum OptionIndex {
 const option::Descriptor Usage[] = {
   { NoOp, 0, "", "", Arg::None,
     "Usage:\n " EXE_NAME " [options] MTZ_FILE[...]"
-    "\nPrint informations from an mtz file."},
+    "\nPrint information from an mtz file."},
   CommonUsage[Help],
   CommonUsage[Version],
   CommonUsage[Verbose],
   { Headers, 0, "H", "headers", Arg::None,
     "  -H, --headers  \tPrint raw headers, until the END record." },
   { Dump, 0, "d", "dump", Arg::None,
-    "  -d, --dump  \tPrint a subset of CCP4 mtzdmp informations." },
+    "  -d, --dump  \tPrint a subset of CCP4 mtzdmp information." },
   { PrintBatch, 0, "B", "batch", Arg::Int,
     "  -B N, --batch=N  \tPrint data from batch header N." },
   { PrintBatches, 0, "b", "batches", Arg::None,
@@ -64,7 +64,7 @@ const option::Descriptor Usage[] = {
   { Compare, 0, "", "compare", Arg::Required,
     "  --compare=FILE  \tCompare two MTZ files." },
   { ToggleEndian, 0, "", "toggle-endian", Arg::None,
-    "  --toggle-endian  \tToggle assumed endiannes (little <-> big)." },
+    "  --toggle-endian  \tToggle assumed endianness (little <-> big)." },
   { NoIsym, 0, "", "no-isym", Arg::None,
     "  --no-isym  \tDo not apply symmetry from M/ISYM column." },
   { UpdateReso, 0, "", "update-reso", Arg::None,
@@ -98,8 +98,23 @@ void dump(const Mtz& mtz) {
          mtz.sort_order[0], mtz.sort_order[1], mtz.sort_order[2],
          mtz.sort_order[3], mtz.sort_order[4]);
   printf("Space Group: %s\n", mtz.spacegroup_name.c_str());
-  printf("Space Group Number: %d\n\n", mtz.spacegroup_number);
-  printf("Header info (run with option -s for recalculated statistics):\n");
+  printf("Space Group Number: %d\n", mtz.spacegroup_number);
+  if (mtz.symops.empty()) {
+    printf("No SYMM records.\n");
+  } else {
+    gemmi::GroupOps gops = gemmi::split_centering_vectors(mtz.symops);
+    const gemmi::SpaceGroup* symm_sg = find_spacegroup_by_ops(gops);
+    if (symm_sg == nullptr) {
+      printf("Space Group from SYMM Records: unknown, the operations are:\n");
+      for (const gemmi::Op& op : mtz.symops)
+        printf("    %s\n", op.triplet().c_str());
+    } else {
+      printf("Space Group from SYMM Records: %s\n", symm_sg->xhm().c_str());
+      if (symm_sg != mtz.spacegroup)
+        printf("  WARNING: the space group differs!\n");
+    }
+  }
+  printf("\nHeader info (run with option -s for recalculated statistics):\n");
   printf("Column    Type  Dataset    Min        Max\n");
   for (const Mtz::Column& col : mtz.columns)
     printf("%-12s %c %2d %12.6g %10.6g\n",
@@ -422,6 +437,8 @@ void check_asu(const Mtz& mtz, bool tnt) {
     if (asu.is_in({{h, k, l}}))
       ++counter;
   }
+  if (!mtz.is_merged())
+    printf("NOTE: this is multirecord (unmerged) MTZ file\n");
   printf("spacegroup: %s\n", sg->xhm().c_str());
   printf("%s ASU convention wrt. standard setting: %s\n",
          tnt ? "TNT" : "CCP4", asu.condition_str());
@@ -511,7 +528,7 @@ void print_mtz_info(Stream&& stream, const char* path,
   try {
     mtz.read_first_bytes(stream);
     if (options[ToggleEndian])
-      mtz.toggle_endiannes();
+      mtz.toggle_endianness();
   } catch (std::runtime_error& e) {
     gemmi::fail(std::string(e.what()) + ": " + path);
   }
@@ -585,8 +602,11 @@ int GEMMI_MAIN(int argc, char **argv) {
       const char* path = p.nonOption(i);
       if (i != 0)
         printf("\n\n");
-      if (p.options[Verbose])
+      if (p.options[Verbose]) {
+        std::fflush(stdout);
         std::fprintf(stderr, "Reading %s ...\n", path);
+        std::fflush(stderr);
+      }
       gemmi::MaybeGzipped input(path);
       if (input.is_stdin()) {
         print_mtz_info(gemmi::FileStream{stdin}, path, p.options);
@@ -598,7 +618,9 @@ int GEMMI_MAIN(int argc, char **argv) {
       }
     }
   } catch (std::runtime_error& e) {
+    std::fflush(stdout);
     std::fprintf(stderr, "ERROR: %s\n", e.what());
+    std::fflush(stderr);
     return 1;
   }
   return 0;

@@ -7,9 +7,13 @@
 
 #include <string>
 #ifdef __has_include
-# if __has_include(<charconv>)
+# if __has_include(<charconv>) && !(defined(_MSVC_LANG) && _MSVC_LANG < 201703L)
 #  include <charconv>
 # endif
+#endif
+
+#if __cpp_lib_to_chars < 201611L
+# include <algorithm> // for min
 #endif
 
 #include "fail.hpp"  // for GEMMI_DLL

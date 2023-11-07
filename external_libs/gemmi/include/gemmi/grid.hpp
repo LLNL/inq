@@ -310,6 +310,8 @@ struct Grid : GridBase<T> {
 
   /// spacing between virtual planes, not between points
   double spacing[3] = {0., 0., 0.};
+  /// unit_cell.orth.mat columns divided by nu, nv, nw
+  UpperTriangularMat33 orth_n;
 
   /// copy unit_cell, spacegroup, nu, nv, nw, axis_order and set spacing
   void copy_metadata_from(const GridMeta& g) {
@@ -327,6 +329,10 @@ struct Grid : GridBase<T> {
     spacing[0] = 1.0 / (nu * unit_cell.ar);
     spacing[1] = 1.0 / (nv * unit_cell.br);
     spacing[2] = 1.0 / (nw * unit_cell.cr);
+    Vec3 inv_n(1.0 / nu, 1.0 / nv, 1.0 / nw);
+    orth_n = unit_cell.orth.mat.multiply_by_diagonal(inv_n);
+    if (!unit_cell.orth.mat.is_upper_triangular())
+      fail("Grids work only with the standard orientation of crystal frame (SCALEn)");
   }
 
   double min_spacing() const {
@@ -367,7 +373,7 @@ struct Grid : GridBase<T> {
   template<typename S>
   void setup_from(const S& st, double approx_spacing) {
     spacegroup = st.find_spacegroup();
-    set_unit_cell(st.cell);
+    unit_cell = st.cell;
     set_size_from_spacing(approx_spacing, GridSizeRounding::Up);
   }
 
@@ -593,24 +599,26 @@ struct Grid : GridBase<T> {
   template <bool UsePbc>
   void check_size_for_points_in_box(int& du, int& dv, int& dw,
                                     bool fail_on_too_large_radius) const {
-    if (fail_on_too_large_radius) {
-      if (2 * du >= nu || 2 * dv >= nv || 2 * dw >= nw)
-        fail("grid operation failed: radius bigger than half the unit cell?");
-    }
-    if (UsePbc && !fail_on_too_large_radius) {
-      // If we'd use the minimum image convention the max would be (nu-1)/2.
-      // The limits set here are necessary for index_n() that is used below.
-      du = std::min(du, nu - 1);
-      dv = std::min(dv, nv - 1);
-      dw = std::min(dw, nw - 1);
+    if (UsePbc) {
+      if (fail_on_too_large_radius) {
+        if (2 * du >= nu || 2 * dv >= nv || 2 * dw >= nw)
+          fail("grid operation failed: radius bigger than half the unit cell?");
+      } else {
+        // If we'd use the minimum image convention the max would be (nu-1)/2.
+        // The limits set here are necessary for index_n() that is used below.
+        du = std::min(du, nu - 1);
+        dv = std::min(dv, nv - 1);
+        dw = std::min(dw, nw - 1);
+      }
     }
   }
 
   template <bool UsePbc, typename Func>
-  void do_use_points_in_box(Fractional fctr, int du, int dv, int dw, Func&& func) {
-    int u0 = iround(fctr.x * nu);
-    int v0 = iround(fctr.y * nv);
-    int w0 = iround(fctr.z * nw);
+  void do_use_points_in_box(const Fractional& fctr, int du, int dv, int dw, Func&& func) {
+    const Fractional nctr(fctr.x * nu, fctr.y * nv, fctr.z * nw);
+    int u0 = iround(nctr.x);
+    int v0 = iround(nctr.y);
+    int w0 = iround(nctr.z);
     int u_lo = u0 - du;
     int u_hi = u0 + du;
     int v_lo = v0 - dv;
@@ -625,39 +633,48 @@ struct Grid : GridBase<T> {
       w_lo = std::max(w_lo, 0);
       w_hi = std::min(w_hi, nw - 1);
     }
-    const Position orth0(unit_cell.orth.mat.column_copy(0));
-    for (int w = w_lo; w <= w_hi; ++w) {
-      int w_ = UsePbc ? modulo(w, nw) : w;
-      double fw = w * (1.0 / nw);
-      for (int v = v_lo; v <= v_hi; ++v) {
-        int v_ = UsePbc ? modulo(v, nv) : v;
-        double fv = v * (1.0 / nv);
-        size_t idx0 = this->index_q(0, v_, w_);
-        Position delta0 = unit_cell.orthogonalize_difference(fctr - Fractional(0., fv, fw));
-        for (int u = u_lo; u <= u_hi; ++u) {
-          int u_ = UsePbc ? modulo(u, nu) : u;
-          double fu = u * (1.0 / nu);
-          Position delta = delta0 - orth0 * fu;
-          func(data[idx0 + u_], delta, u, v, w);
+    int u_0 = UsePbc ? modulo(u_lo, nu) : u_lo;
+    int v_0 = UsePbc ? modulo(v_lo, nv) : v_lo;
+    int w_0 = UsePbc ? modulo(w_lo, nw) : w_lo;
+    auto wrap = [](int& q, int nq) { if (UsePbc && q == nq) q = 0; };
+    Fractional fdelta(nctr.x - u_lo, 0, 0);
+    for (int w = w_lo, w_ = w_0; w <= w_hi; ++w, wrap(++w_, nw)) {
+      fdelta.z = nctr.z - w;
+      for (int v = v_lo, v_ = v_0; v <= v_hi; ++v, wrap(++v_, nv)) {
+        fdelta.y = nctr.y - v;
+        Position delta(orth_n.multiply(fdelta));
+        T* t = &data[this->index_q(u_0, v_, w_)];
+        for (int u = u_lo, u_ = u_0;;) {
+          func(*t, delta, u, v, w);
+          if (u >= u_hi)
+            break;
+          ++u;
+          ++u_;
+          ++t;
+          if (UsePbc && u_ == nu) {
+            u_ = 0;
+            t -= nu;
+          }
+          delta.x -= orth_n.a11;
         }
       }
     }
   }
 
   template <bool UsePbc, typename Func>
-  void use_points_in_box(Fractional fctr, int du, int dv, int dw,
+  void use_points_in_box(const Fractional& fctr, int du, int dv, int dw,
                          Func&& func, bool fail_on_too_large_radius=true) {
     check_size_for_points_in_box<UsePbc>(du, dv, dw, fail_on_too_large_radius);
     do_use_points_in_box<UsePbc>(fctr, du, dv, dw, func);
   }
 
   template <bool UsePbc, typename Func>
-  void use_points_around(const Fractional& fctr_, double radius, Func&& func,
+  void use_points_around(const Fractional& fctr, double radius, Func&& func,
                          bool fail_on_too_large_radius=true) {
     int du = (int) std::ceil(radius / spacing[0]);
     int dv = (int) std::ceil(radius / spacing[1]);
     int dw = (int) std::ceil(radius / spacing[2]);
-    use_points_in_box<UsePbc>(fctr_, du, dv, dw,
+    use_points_in_box<UsePbc>(fctr, du, dv, dw,
                       [&](T& ref, const Position& delta, int, int, int) {
                         double d2 = delta.length_sq();
                         if (d2 < radius * radius)
@@ -669,9 +686,9 @@ struct Grid : GridBase<T> {
   void set_points_around(const Position& ctr, double radius, T value, bool use_pbc=true) {
     Fractional fctr = unit_cell.fractionalize(ctr);
     if (use_pbc)
-      use_points_around<true>(fctr, radius, [&](T& ref, double) { ref = value; });
+      use_points_around<true>(fctr, radius, [&](T& ref, double) { ref = value; }, false);
     else
-      use_points_around<false>(fctr, radius, [&](T& ref, double) { ref = value; });
+      use_points_around<false>(fctr, radius, [&](T& ref, double) { ref = value; }, false);
   }
 
   void change_values(T old_value, T new_value) {
@@ -737,6 +754,14 @@ struct Grid : GridBase<T> {
   }
   void symmetrize_nondefault(T default_) {
     symmetrize([default_](T a, T b) { return impl::is_same(a, default_) ? b : a; });
+  }
+  void symmetrize_avg() {
+    symmetrize_sum();
+    if (spacegroup && spacegroup->number != 1) {
+      int n_ops = spacegroup->operations().order();
+      for (T& x : data)
+        x /= n_ops;
+    }
   }
 
   /// scale the data to get mean == 0 and rmsd == 1 (doesn't work for T=complex)

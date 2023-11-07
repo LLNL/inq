@@ -16,7 +16,9 @@
 
 namespace gemmi {
 
-enum class HydrogenChange { NoChange, Shift, Remove, ReAdd, ReAddButWater };
+enum class HydrogenChange {
+  NoChange, Shift, Remove, ReAdd, ReAddButWater, ReAddKnown
+};
 
 struct GEMMI_DLL Topo {
   // We have internal pointers in this class (pointers setup in
@@ -29,10 +31,12 @@ struct GEMMI_DLL Topo {
   struct Bond {
     const Restraints::Bond* restr;
     std::array<Atom*, 2> atoms;
-    double calculate() const { return atoms[0]->pos.dist(atoms[1]->pos); }
-    double calculate_z() const {
-      return std::abs(calculate() - restr->value) / restr->esd;
+    Asu asu;
+    double calculate() const {
+      return asu != Asu::Different ? atoms[0]->pos.dist(atoms[1]->pos) : NAN;
     }
+    double calculate_z_(double d) const { return std::abs(d - restr->value) / restr->esd; }
+    double calculate_z() const { return calculate_z_(calculate()); }
   };
   struct Angle {
     const Restraints::Angle* restr;
@@ -242,7 +246,7 @@ struct GEMMI_DLL Topo {
   double ideal_chiral_abs_volume(const Chirality &ch) const;
 
   std::vector<Rule> apply_restraints(const Restraints& rt,
-                                     Residue& res, Residue* res2,
+                                     Residue& res, Residue* res2, Asu asu,
                                      char altloc1, char altloc2, bool require_alt);
   void apply_restraints_from_link(Link& link, const MonLib& monlib);
 

@@ -263,10 +263,10 @@ struct UnitCell {
   }
 
   void set_matrices_from_fract(const Transform& f) {
-    // mmCIF _atom_sites.fract_transf_* and PDB SCALEn records usually
-    // have less significant digits than unit cell parameters, and should
-    // be ignored unless we have non-standard settings.
-    if (f.mat.approx(frac.mat, 5e-6) && f.vec.approx(frac.vec, 1e-6))
+    // mmCIF _atom_sites.fract_transf_* and PDB SCALEn records usually contain
+    // fewer significant digits than the unit cell parameters, and sometimes are
+    // just wrong. Use them only if we seem to have non-standard crystal frame.
+    if (f.mat.approx(frac.mat, 1e-4) && f.vec.approx(frac.vec, 1e-6))
       return;
     // The SCALE record is sometimes incorrect. Here we only catch cases
     // when CRYST1 is set as for non-crystal and SCALE is very suspicious.
@@ -422,10 +422,14 @@ struct UnitCell {
 
   // Helper function. PBC = periodic boundary conditions.
   bool search_pbc_images(Fractional&& diff, NearestImage& image) const {
-    int neg_shift[3] = { iround(diff.x), iround(diff.y), iround(diff.z) };
-    diff.x -= neg_shift[0];
-    diff.y -= neg_shift[1];
-    diff.z -= neg_shift[2];
+    int neg_shift[3] = {0, 0, 0};
+    if (is_crystal()) {
+      for (int j = 0; j < 3; ++j)
+        neg_shift[j] = iround(diff.at(j));
+      diff.x -= neg_shift[0];
+      diff.y -= neg_shift[1];
+      diff.z -= neg_shift[2];
+    }
     Position orth_diff = orthogonalize_difference(diff);
     double dsq = orth_diff.length_sq();
     if (dsq < image.dist_sq) {
@@ -443,7 +447,7 @@ struct UnitCell {
       image.dist_sq = INFINITY;
     else
       image.dist_sq = ref.dist_sq(pos);
-    if (asu == Asu::Same || !is_crystal())
+    if (asu == Asu::Same)
       return image;
     Fractional fpos = fractionalize(pos);
     Fractional fref = fractionalize(ref);
@@ -473,10 +477,7 @@ struct UnitCell {
     sym_image.dist_sq = INFINITY;
     sym_image.sym_idx = image_idx;
     apply_transform(fpos, image_idx, false);
-    if (is_crystal())
-      search_pbc_images(fpos - fref, sym_image);
-    else
-      sym_image.dist_sq = orthogonalize_difference(fpos - fref).length_sq();
+    search_pbc_images(fpos - fref, sym_image);
     return sym_image;
   }
   NearestImage find_nearest_pbc_image(const Position& ref, const Position& pos,

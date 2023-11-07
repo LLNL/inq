@@ -6,7 +6,6 @@
 #include "gemmi/polyheur.hpp"   // for one_letter_code, trim_to_alanine
 #include "gemmi/assembly.hpp"   // for expand_ncs, HowToNameCopiedChain
 #include "gemmi/select.hpp"     // for Selection
-#include "tostr.hpp"
 
 #include "common.h"
 #include <pybind11/stl.h>
@@ -68,10 +67,8 @@ void add_mol(py::module& m) {
     .value("Dup", HowToNameCopiedChain::Dup)
     ;
 
-  m.def("one_letter_code",
-        (std::string (*)(const std::vector<std::string>&)) &one_letter_code);
-  m.def("one_letter_code",
-        [](const ResidueSpan& span) { return one_letter_code(span); });
+  m.def("one_letter_code", &one_letter_code);
+  m.def("sequence_kind", &sequence_kind);
   m.def("make_address", &make_address);
 
   py::enum_<CoorFormat>(m, "CoorFormat")
@@ -93,7 +90,7 @@ void add_mol(py::module& m) {
     })
     .def("__str__", [](const CRA& self) { return atom_str(self); })
     .def("__repr__", [](const CRA& self) {
-        return tostr("<gemmi.CRA ", atom_str(self), '>');
+        return cat("<gemmi.CRA ", atom_str(self), '>');
     });
 
   py::class_<CraProxy>(m, "CraGenerator")
@@ -112,11 +109,14 @@ void add_mol(py::module& m) {
     .def_readwrite("entities", &Structure::entities)
     .def_readwrite("connections", &Structure::connections)
     .def_readwrite("cispeps", &Structure::cispeps)
+    .def_readwrite("mod_residues", &Structure::mod_residues)
     .def_readwrite("helices", &Structure::helices)
     .def_readwrite("sheets", &Structure::sheets)
     .def_readwrite("assemblies", &Structure::assemblies)
     .def_readwrite("meta", &Structure::meta)
     .def_readwrite("has_d_fraction", &Structure::has_d_fraction)
+    .def_readwrite("has_origx", &Structure::has_origx)
+    .def_readonly("origx", &Structure::origx)
     .def_readwrite("info", &Structure::info)
     .def_readwrite("raw_remarks", &Structure::raw_remarks)
     .def("find_spacegroup", &Structure::find_spacegroup)
@@ -139,9 +139,10 @@ void add_mol(py::module& m) {
     .def("__delitem__", &remove_children<Structure>)
     .def("__delitem__", &Structure::remove_model, py::arg("name"))
     .def("__setitem__", &set_child<Structure, Model>)
-    .def("find_connection_by_cra", [](Structure& st, CRA cra1, CRA cra2) {
-        return st.find_connection_by_cra(cra1, cra2);
-    }, py::return_value_policy::reference_internal)
+    .def("find_connection_by_cra", [](Structure& st, CRA cra1, CRA cra2, bool ignore_segment) {
+        return st.find_connection_by_cra(cra1, cra2, ignore_segment);
+    }, py::arg("cra1"), py::arg("cra2"), py::arg("ignore_segment")=false,
+       py::return_value_policy::reference_internal)
     .def("find_connection", &Structure::find_connection,
          py::arg("partner1"), py::arg("partner2"),
          py::return_value_policy::reference_internal)
@@ -157,6 +158,9 @@ void add_mol(py::module& m) {
     .def("setup_cell_images", &Structure::setup_cell_images)
     .def("add_entity_types", (void (*)(Structure&, bool)) &add_entity_types,
          py::arg("overwrite")=false)
+    .def("add_conect", &Structure::add_conect,
+         py::arg("serial1"), py::arg("serial2"), py::arg("order"))
+    .def("clear_conect", [](Structure& self) { self.conect_map.clear(); })
     .def("assign_subchains", &assign_subchains,
          py::arg("force")=false, py::arg("fail_if_unknown")=true)
     .def("ensure_entities", &ensure_entities)
@@ -168,19 +172,24 @@ void add_mol(py::module& m) {
     .def("remove_waters", remove_waters<Structure>)
     .def("remove_ligands_and_waters", remove_ligands_and_waters<Structure>)
     .def("store_deuterium_as_fraction", &store_deuterium_as_fraction)
-    .def("assign_serial_numbers", (void (*)(Structure&)) &assign_serial_numbers)
+    .def("standardize_crystal_frame", &standardize_crystal_frame)
+    .def("assign_serial_numbers", (void (*)(Structure&, bool)) &assign_serial_numbers,
+         py::arg("numbered_ter")=false)
     .def("shorten_chain_names", &shorten_chain_names)
-    .def("expand_ncs", &expand_ncs, py::arg("how"))
+    .def("expand_ncs", &expand_ncs, py::arg("how"), py::arg("merge_dist")=0.2)
     .def("transform_to_assembly",
-         [](Structure& st, const std::string& assembly_name, HowToNameCopiedChain how) {
-        return transform_to_assembly(st, assembly_name, how, nullptr);
-    }, py::arg("assembly_name"), py::arg("how"))
+         [](Structure& st, const std::string& assembly_name, HowToNameCopiedChain how,
+            bool keep_spacegroup, double merge_dist) {
+        return transform_to_assembly(st, assembly_name, how, nullptr,
+                                     keep_spacegroup, merge_dist);
+    }, py::arg("assembly_name"), py::arg("how"), py::arg("keep_spacegroup")=false,
+       py::arg("merge_dist")=0.2)
     .def("calculate_box", &calculate_box, py::arg("margin")=0.)
     .def("calculate_fractional_box", &calculate_fractional_box, py::arg("margin")=0.)
     .def("clone", [](const Structure& self) { return new Structure(self); })
     .def("__repr__", [](const Structure& self) {
-        return tostr("<gemmi.Structure ", self.name, " with ",
-                     self.models.size(), " model(s)>");
+        return cat("<gemmi.Structure ", self.name, " with ",
+                   self.models.size(), " model(s)>");
     });
     add_assign_label_seq_id(structure);
     add_write(m, structure);
@@ -230,6 +239,9 @@ void add_mol(py::module& m) {
         self.chains.emplace_back(name);
         return self.chains.back();
      }, py::arg("name"), py::return_value_policy::reference_internal)
+    .def("get_cra", &Model::get_cra)
+    .def("get_parent_of", &Model::get_parent_of,
+         py::return_value_policy::reference_internal)
     .def("remove_chain", &Model::remove_chain, py::arg("name"))
     .def("__delitem__", &Model::remove_chain, py::arg("name"))
     .def("__delitem__", remove_child<Model>, py::arg("index"))
@@ -251,8 +263,7 @@ void add_mol(py::module& m) {
     .def("split_chains_by_segments", &split_chains_by_segments)
     .def("clone", [](const Model& self) { return new Model(self); })
     .def("__repr__", [](const Model& self) {
-        return tostr("<gemmi.Model ", self.name, " with ",
-                     self.chains.size(), " chain(s)>");
+        return cat("<gemmi.Model ", self.name, " with ", self.chains.size(), " chain(s)>");
     });
 
   py::class_<UniqProxy<Residue>>(m, "FirstConformerRes")
@@ -324,8 +335,7 @@ void add_mol(py::module& m) {
          py::keep_alive<0, 1>())
     .def("clone", [](const Chain& self) { return new Chain(self); })
     .def("__repr__", [](const Chain& self) {
-        return tostr("<gemmi.Chain ", self.name,
-                     " with ", self.residues.size(), " res>");
+        return cat("<gemmi.Chain ", self.name, " with ", self.residues.size(), " res>");
     });
 
   pyResidueSpan
@@ -352,6 +362,7 @@ void add_mol(py::module& m) {
     .def("residue_groups", &ResidueSpan::residue_groups, py::keep_alive<0, 1>())
     .def("length", &ResidueSpan::length)
     .def("subchain_id", &ResidueSpan::subchain_id)
+    .def("extract_sequence", &ResidueSpan::extract_sequence)
     .def("label_seq_id_to_auth", &ResidueSpan::label_seq_id_to_auth)
     .def("auth_seq_id_to_label", &ResidueSpan::auth_seq_id_to_label)
     .def("check_polymer_type", [](const ResidueSpan& span) {
@@ -406,8 +417,7 @@ void add_mol(py::module& m) {
          py::arg("altloc"), py::return_value_policy::reference_internal)
     .def("name", &AtomGroup::name)
     .def("__repr__", [](const AtomGroup& self) {
-        return tostr("<gemmi.AtomGroup ", self.name(), ", sites: ",
-                     self.size(), '>');
+        return cat("<gemmi.AtomGroup ", self.name(), ", sites: ", self.size(), '>');
     });
 
   pyResidue
@@ -458,8 +468,7 @@ void add_mol(py::module& m) {
     .def("trim_to_alanine", (bool (*)(Residue&)) &trim_to_alanine)
     .def("clone", [](const Residue& self) { return new Residue(self); })
     .def("__repr__", [](const Residue& self) {
-        return tostr("<gemmi.Residue ", self.str(), " with ",
-                     self.atoms.size(), " atoms>");
+        return cat("<gemmi.Residue ", self.str(), " with ", self.atoms.size(), " atoms>");
     });
 
   py::enum_<CalcFlag>(m, "CalcFlag")
@@ -521,8 +530,10 @@ void add_mol(py::module& m) {
                             HowToNameCopiedChain how) {
         return make_assembly(assembly, model, how, nullptr);
   });
+  m.def("expand_ncs_model", &expand_ncs_model);
   m.def("merge_atoms_in_expanded_model", &merge_atoms_in_expanded_model,
-        py::arg("model"), py::arg("cell"), py::arg("max_dist")=0.2);
+        py::arg("model"), py::arg("cell"), py::arg("max_dist")=0.2,
+        py::arg("compare_serial")=true);
 
   // select.hpp
   py::class_<FilterProxy<Selection, Model>> pySelectionModelsProxy(m, "SelectionModelsProxy");

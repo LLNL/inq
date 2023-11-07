@@ -20,7 +20,7 @@ namespace {
 enum OptionIndex {
   Spec=4, PrintSpec, BlockName, EntryId, SkipEmpty, SkipNegativeSigI,
   NoComments, NoHistory, NoStaranisoTensor, RunFrom, Wavelength, Validate,
-  LessAnomalous, Separate, Deposition, Nfree, Trim
+  LessAnomalous, Separate, Deposition, NoIntensityCheck, Nfree, Trim
 };
 
 const option::Descriptor Usage[] = {
@@ -68,6 +68,7 @@ const option::Descriptor Usage[] = {
     "  --nfree=N  \tFlag value used for the free set (default: auto)" },
   { Trim, 0, "", "trim", Arg::Int,
     "  --trim=N  \t(for testing) output only reflections -N <= h,k,l <=N." },
+  { NoIntensityCheck, 0, "", "no-intensity-check", Arg::None, 0 },
   { NoOp, 0, "", "", Arg::None,
     "\nOne or two MTZ files are taken as the input. If two files are given,"
     "\none must be merged and the other unmerged."
@@ -94,7 +95,7 @@ const option::Descriptor Usage[] = {
     "\n      & SIGI Q intensity_sigma"
     "\nCOLUMN is MTZ column label. Columns H K L are added if not specified."
     "\n  Alternative labels can be separated with | (e.g. FREE|FreeR_flag)."
-    "\nTYPE is used for checking the columm type, unless it is '*'."
+    "\nTYPE is used for checking the column type, unless it is '*'."
     "\nTAG does not include category name, it is only the part after _refln."
     "\nFORMAT (optional) is printf-like floating-point format:"
     "\n - one of e, f, g with optional flag, width and precision"
@@ -154,6 +155,11 @@ int GEMMI_MAIN(int argc, char **argv) {
   }
   if (mtz_paths[nargs-2] && gemmi::giends_with(mtz_paths[nargs-2], ".hkl"))
     std::swap(xds_path, mtz_paths[nargs-2]);
+  if (gemmi::giends_with(cif_output, ".mtz")) {
+    std::fprintf(stderr, "This must be a mistake, requested output cif file"
+                         " has mtz extension: %s\n", cif_output);
+    return 1;
+  }
   for (int i = 0; i < 2; ++i)
     if (mtz_paths[i]) {
       mtz[i].reset(new gemmi::Mtz);
@@ -291,9 +297,11 @@ int GEMMI_MAIN(int argc, char **argv) {
       else if (xds_ascii)
         ui.read_unmerged_intensities_from_xds(*xds_ascii);
 
-      // If an old StarAniso version was used that doesn't store B tensor,
-      // allow intensities to differ.
-      bool relaxed_check = !mtz_to_cif.staraniso_version.empty() && !mi.staraniso_b.ok();
+      bool relaxed_check =
+        p.options[NoIntensityCheck] ||
+        // If an old StarAniso version was used that doesn't store B tensor,
+        // allow intensities to differ.
+        (!mtz_to_cif.staraniso_version.empty() && !mi.staraniso_b.ok());
 
       if (!gemmi::validate_merged_intensities(mi, ui, relaxed_check, std::cerr))
         ok = false;

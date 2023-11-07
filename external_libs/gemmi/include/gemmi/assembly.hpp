@@ -93,7 +93,7 @@ inline void ensure_unique_chain_name(const Model& model, Chain& chain) {
 GEMMI_DLL Model make_assembly(const Assembly& assembly, const Model& model,
                               HowToNameCopiedChain how, std::ostream* out);
 
-inline Assembly expand_to_p1(const UnitCell& cell) {
+inline Assembly pseudo_assembly_for_unit_cell(const UnitCell& cell) {
   Assembly assembly("unit_cell");
   std::vector<Assembly::Operator> operators(cell.images.size() + 1);
   // operators[0] stays as identity
@@ -105,16 +105,23 @@ inline Assembly expand_to_p1(const UnitCell& cell) {
   return assembly;
 }
 
+/// If called with assembly_name="unit_cell" changes structure to unit cell (P1).
+/// \par keep_spacegroup preserves space group and unit cell - is it needed?
+GEMMI_DLL void transform_to_assembly(Structure& st, const std::string& assembly_name,
+                                     HowToNameCopiedChain how, std::ostream* out,
+                                     bool keep_spacegroup=false, double merge_dist=0.2);
+
+
+GEMMI_DLL Model expand_ncs_model(const Model& model, const std::vector<NcsOp>& ncs,
+                                 HowToNameCopiedChain how);
+
 /// Searches and merges overlapping equivalent atoms from different chains.
 /// To be used after expand_ncs() and make_assembly().
 GEMMI_DLL void merge_atoms_in_expanded_model(Model& model, const UnitCell& cell,
-                                             double max_dist=0.2);
+                                             double max_dist=0.2, bool compare_serial=true);
 
-GEMMI_DLL void transform_to_assembly(Structure& st, const std::string& assembly_name,
-                                     HowToNameCopiedChain how, std::ostream* out);
-
-// chain is assumed to be from st.models[0]
-GEMMI_DLL void rename_chain(Structure& st, Chain& chain, const std::string& new_name);
+GEMMI_DLL void rename_chain(Structure& st, const std::string& old_name,
+                                           const std::string& new_name);
 
 inline void shorten_chain_names(Structure& st) {
   ChainNameGenerator namegen(HowToNameCopiedChain::Short);
@@ -125,11 +132,11 @@ inline void shorten_chain_names(Structure& st) {
       namegen.used_names.push_back(chain.name);
   for (Chain& chain : model0.chains)
     if (chain.name.length() > max_len)
-      rename_chain(st, chain,
+      rename_chain(st, chain.name,
                    namegen.make_short_name(chain.name.substr(0, max_len)));
 }
 
-GEMMI_DLL void expand_ncs(Structure& st, HowToNameCopiedChain how);
+GEMMI_DLL void expand_ncs(Structure& st, HowToNameCopiedChain how, double merge_dist=0.2);
 
 /// HowToNameCopiedChain::Dup adds segment name to chain name
 GEMMI_DLL void split_chains_by_segments(Model& model, HowToNameCopiedChain how);

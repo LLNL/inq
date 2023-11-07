@@ -4,11 +4,13 @@
 #include "gemmi/refln.hpp"
 #include "gemmi/fourier.hpp"  // for get_size_for_hkl, get_f_phi_on_grid, ...
 #include "tostr.hpp"
-#include "gemmi/fprime.hpp"
+#include "gemmi/fprime.hpp"   // for cromer_liberman
 #include "gemmi/reciproc.hpp" // for count_reflections, make_miller_vector
 #include "gemmi/cif2mtz.hpp"  // for CifToMtz
+#include "gemmi/mtz2cif.hpp"  // for MtzToCif
 #include "gemmi/merge.hpp"    // for Intensities
 #include "gemmi/binner.hpp"   // for Binner
+#include "gemmi/ecalc.hpp"    // for calculate_amplitude_normalizers
 
 #include "common.h"
 #include "arrvec.h"  // py_array_from_vector
@@ -164,6 +166,22 @@ void add_hkl(py::module& m) {
     })
     ;
 
+  py::class_<MtzToCif>(m, "MtzToCif")
+    .def(py::init<>())
+    .def_readwrite("spec_lines", &MtzToCif::spec_lines)
+    .def_readwrite("with_comments", &MtzToCif::with_comments)
+    .def_readwrite("with_history", &MtzToCif::with_history)
+    .def_readwrite("skip_empty", &MtzToCif::skip_empty)
+    .def_readwrite("skip_negative_sigi", &MtzToCif::skip_negative_sigi)
+    .def_readwrite("wavelength", &MtzToCif::wavelength)
+    .def_readwrite("free_flag_value", &MtzToCif::free_flag_value)
+    .def("write_cif_to_string", [](MtzToCif& self, const Mtz& mtz, const Mtz* mtz2) {
+        std::ostringstream out;
+        self.write_cif(mtz, mtz2, nullptr, out);
+        return out.str();
+    }, py::arg("mtz"), py::arg("mtz2")=nullptr)
+    ;
+
   py::enum_<DataType>(m, "DataType")
     .value("Unknown", DataType::Unknown)
     .value("Unmerged", DataType::Unmerged)
@@ -252,11 +270,11 @@ void add_hkl(py::module& m) {
     .def(py::init<>())
     .def("setup", [](Binner& self, int nbins, Binner::Method method,
                      const Mtz& mtz, const UnitCell* cell) {
-        return self.setup(nbins, method, MtzDataProxy{mtz}, cell);
+        self.setup(nbins, method, MtzDataProxy{mtz}, cell);
     }, py::arg("nbins"), py::arg("method"), py::arg("mtz"), py::arg("cell")=nullptr)
     .def("setup", [](Binner& self, int nbins, Binner::Method method,
                      const ReflnBlock& r, const UnitCell* cell) {
-        return self.setup(nbins, method, ReflnDataProxy(r), cell);
+        self.setup(nbins, method, ReflnDataProxy(r), cell);
     }, py::arg("nbins"), py::arg("method"), py::arg("r"), py::arg("cell")=nullptr)
     .def("setup", [](Binner& self, int nbins, Binner::Method method,
                      py::array_t<int> hkl, const UnitCell* cell) {
@@ -267,13 +285,13 @@ void add_hkl(py::module& m) {
         if (cell)
           for (size_t i = 0; i < inv_d2.size(); ++i)
             inv_d2[i] = cell->calculate_1_d2_double(h(i, 0), h(i, 1), h(i, 2));
-        return self.setup_from_1_d2(nbins, method, std::move(inv_d2), cell);
+        self.setup_from_1_d2(nbins, method, std::move(inv_d2), cell);
     }, py::arg("nbins"), py::arg("method"), py::arg("hkl"), py::arg("cell"))
     .def("setup_from_1_d2", [](Binner& self, int nbins, Binner::Method method,
                                py::array_t<double> inv_d2, const UnitCell* cell) {
         double* ptr = (double*) inv_d2.request().ptr;
         auto len = inv_d2.shape(0);
-        return self.setup_from_1_d2(nbins, method, std::vector<double>(ptr, ptr+len), cell);
+        self.setup_from_1_d2(nbins, method, std::vector<double>(ptr, ptr+len), cell);
     }, py::arg("nbins"), py::arg("method"), py::arg("inv_d2"), py::arg("cell"))
     .def("get_bin", &Binner::get_bin)
     .def("get_bins", [](Binner& self, const Mtz& mtz) {
@@ -316,6 +334,13 @@ void add_hkl(py::module& m) {
     ;
 
   m.def("combine_correlations", &combine_correlations);
+
+  m.def("calculate_amplitude_normalizers",
+        [](const Mtz& mtz, const std::string& f_col, const Binner& binner) {
+      const Mtz::Column& f = mtz.get_column_with_label(f_col);
+      return py_array_from_vector(
+          calculate_amplitude_normalizers(MtzDataProxy{mtz}, f.idx, binner));
+  });
 
   py::class_<HklMatch>(m, "HklMatch")
     .def(py::init([](py::array_t<int, py::array::c_style> hkl,

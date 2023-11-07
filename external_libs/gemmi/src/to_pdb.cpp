@@ -53,7 +53,7 @@ bool use_hetatm(const Residue& res) {
 }
 
 // works for non-negative values only
-inline void base36_encode(char* buffer, int width, int value) {
+void base36_encode(char* buffer, int width, int value) {
   const char base36[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   buffer[width] = '\0';
   do {
@@ -65,7 +65,7 @@ inline void base36_encode(char* buffer, int width, int value) {
 }
 
 // based on http://cci.lbl.gov/hybrid_36/
-inline std::array<char,8> encode_serial_in_hybrid36(int serial) {
+std::array<char,8> encode_serial_in_hybrid36(int serial) {
   std::array<char,8> str;
   assert(serial >= 0);
   if (serial < 100000)
@@ -75,7 +75,7 @@ inline std::array<char,8> encode_serial_in_hybrid36(int serial) {
   return str;
 }
 
-inline std::array<char,8> write_seq_id(const SeqId& seqid) {
+std::array<char,8> write_seq_id(const SeqId& seqid) {
   std::array<char,8> str;
   char* ptr = str.data();
   if (*seqid.num > -1000 && *seqid.num < 10000) {
@@ -89,7 +89,7 @@ inline std::array<char,8> write_seq_id(const SeqId& seqid) {
   return str;
 }
 
-inline const char* find_last_break(const char *str, int max_len) {
+const char* find_last_break(const char *str, int max_len) {
   int last_break = 0;
   for (int i = 0; i < max_len; i++) {
     if (str[i] == '\0')
@@ -102,8 +102,8 @@ inline const char* find_last_break(const char *str, int max_len) {
 
 // Write record with possible continuation lines, with the format:
 // 1-6 record name, 8-10 continuation, 11-lastcol string.
-inline void write_multiline(std::ostream& os, const char* record_name,
-                            const std::string& text, int lastcol) {
+void write_multiline(std::ostream& os, const char* record_name,
+                     const std::string& text, int lastcol) {
   if (text.empty())
     return;
   char buf[88]; // a few bytes extra, just in case
@@ -118,16 +118,7 @@ inline void write_multiline(std::ostream& os, const char* record_name,
   }
 }
 
-inline void write_cryst1(const Structure& st, std::ostream& os) {
-  char buf[88];
-  const UnitCell& cell = st.cell;
-  WRITE("CRYST1%9.3f%9.3f%9.3f%7.2f%7.2f%7.2f %-11s%4s          ",
-        cell.a, cell.b, cell.c, cell.alpha, cell.beta, cell.gamma,
-        st.spacegroup_hm.empty() ? "P 1" : st.spacegroup_hm.c_str(),
-        st.get_info("_cell.Z_PDB").c_str());
-}
-
-inline void write_ncs_op(const NcsOp& op, std::ostream& os) {
+void write_ncs_op(const NcsOp& op, std::ostream& os) {
   char buf[88];
   for (int i = 0; i < 3; ++i) {
     WRITE("MTRIX%d %3.3s%10.6f%10.6f%10.6f %14.5f    %-21c", i+1,
@@ -136,18 +127,7 @@ inline void write_ncs_op(const NcsOp& op, std::ostream& os) {
   }
 }
 
-inline void write_ncs(const Structure& st, std::ostream& os) {
-  if (st.ncs.empty())
-    return;
-  auto identity = st.info.find("_struct_ncs_oper.id");
-  if (identity != st.info.end() &&
-      !in_vector_f([&](const NcsOp& op) { return op.id == identity->second; }, st.ncs))
-    write_ncs_op(NcsOp{identity->second, true, {}}, os);
-  for (const NcsOp& op : st.ncs)
-    write_ncs_op(op, os);
-}
-
-inline void write_remarks(const Structure& st, std::ostream& os) {
+void write_remarks(const Structure& st, std::ostream& os) {
   char buf[88];
   if (st.resolution > 0) {
     WRITE("%-80s", "REMARK   2");
@@ -228,8 +208,8 @@ inline void write_remarks(const Structure& st, std::ostream& os) {
   }
 }
 
-inline void write_chain_atoms(const Chain& chain, std::ostream& os,
-                              int& serial, PdbWriteOptions opt) {
+void write_chain_atoms(const Chain& chain, std::ostream& os,
+                       int& serial, PdbWriteOptions opt) {
   char buf[88];
   buf[0] = '\0';
   if (chain.name.length() > 2)
@@ -237,6 +217,7 @@ inline void write_chain_atoms(const Chain& chain, std::ostream& os,
   for (const Residue& res : chain.residues) {
     bool as_het = use_hetatm(res);
     for (const Atom& a : res.atoms) {
+      serial = opt.preserve_serial ? a.serial : serial + 1;
       //  1- 6  6s  record name
       //  7-11  5d  integer serial
       // 12     1   -
@@ -261,7 +242,7 @@ inline void write_chain_atoms(const Chain& chain, std::ostream& os,
             "%2s%5s   %8.3f%8.3f%8.3f"
             "%6.2f%6.2f      %-4.4s%2s%c%c",
             as_het ? "HETATM" : "ATOM",
-            encode_serial_in_hybrid36(++serial).data(),
+            encode_serial_in_hybrid36(serial).data(),
             a.padded_name().c_str(),
             a.altloc ? std::toupper(a.altloc) : ' ',
             res.name.c_str(),
@@ -319,34 +300,21 @@ inline void write_chain_atoms(const Chain& chain, std::ostream& os,
   }
 }
 
-inline void write_atoms(const Structure& st, std::ostream& os,
-                        PdbWriteOptions opt) {
-  char buf[88];
-  for (const Model& model : st.models) {
-    int serial = 0;
-    if (st.models.size() > 1) {
-      // according to the spec model name in mmCIF may not be numeric
-      std::string name = model.name;
-      for (char c : name)
-        if (!std::isdigit(c)) {
-          name = std::to_string(&model - &st.models[0] + 1);
-          break;
-        }
-      WRITE("MODEL %8s %65s", name.c_str(), "");
-    }
-    for (const Chain& chain : model.chains)
-      write_chain_atoms(chain, os, serial, opt);
-    if (st.models.size() > 1)
-      WRITE("%-80s", "ENDMDL");
-  }
-}
+} // anonymous namespace
 
-inline void write_header(const Structure& st, std::ostream& os,
-                         PdbWriteOptions opt) {
+void write_pdb(const Structure& st, std::ostream& os, PdbWriteOptions opt) {
+  // check if structure can be written as pdb
+  for (const gemmi::Model& model : st.models)
+    for (const gemmi::Chain& chain : model.chains)
+      if (chain.name.size() > 2)
+        gemmi::fail("chain name too long for the PDB format: " + chain.name);
+
   const std::string& entry_id = st.get_info("_entry.id");
   const char* entry_id_4 = entry_id.size() <= 4 ? entry_id.c_str() : "";
   char buf[88];
-  { // header line
+
+  // HEADER
+  if (!opt.minimal_file) {
     const char* months = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC???";
     const std::string& date =
       st.get_info("_pdbx_database_status.recvd_initial_deposition_date");
@@ -362,28 +330,32 @@ inline void write_header(const Structure& st, std::ostream& os,
       WRITEU("HEADER    %-40.40s%-9s   %-18.18s",
              keywords.c_str(), pdb_date.c_str(), entry_id.c_str());
   }
-  write_multiline(os, "TITLE", st.get_info("_struct.title"), 80);
-  write_multiline(os, "KEYWDS", st.get_info("_struct_keywords.text"), 79);
-  std::string expdta = st.get_info("_exptl.method");
-  if (expdta.empty())
-    expdta = join_str(st.meta.experiments, "; ",
-                      [](const ExperimentInfo& e) { return e.method; });
-  write_multiline(os, "EXPDTA", expdta, 79);
-  if (st.models.size() > 1)
-    WRITE("NUMMDL    %-6zu %63s", st.models.size(), "");
 
-  if (!st.raw_remarks.empty()) {
-    for (const std::string& line : st.raw_remarks) {
-      os << line;
-      if (line.empty() || line.back() != '\n')
-        os << '\n';
+  // TITLE, KEYWDS, EXPDTA, NUMMDL, REMARK
+  if (!opt.minimal_file) {
+    write_multiline(os, "TITLE", st.get_info("_struct.title"), 80);
+    write_multiline(os, "KEYWDS", st.get_info("_struct_keywords.text"), 79);
+    std::string expdta = st.get_info("_exptl.method");
+    if (expdta.empty())
+      expdta = join_str(st.meta.experiments, "; ",
+                        [](const ExperimentInfo& e) { return e.method; });
+    write_multiline(os, "EXPDTA", expdta, 79);
+    if (st.models.size() > 1)
+      WRITE("NUMMDL    %-6zu %63s", st.models.size(), "");
+
+    if (!st.raw_remarks.empty()) {
+      for (const std::string& line : st.raw_remarks) {
+        os << line;
+        if (line.empty() || line.back() != '\n')
+          os << '\n';
+      }
+    } else {
+      write_remarks(st, os);
     }
-  } else {
-    write_remarks(st, os);
   }
 
   // DBREF[12], SEQRES
-  if (!st.models.empty() && opt.seqres_records) {
+  if (opt.seqres_records && !st.models.empty()) {
     std::vector<const Entity*> entity_list;
     entity_list.reserve(st.models[0].chains.size());
     for (const Chain& ch : st.models[0].chains) {
@@ -470,21 +442,25 @@ inline void write_header(const Structure& st, std::ostream& os,
       }
   }
 
-  for (const ModRes& modres : st.mod_residues) {
-    WRITE("MODRES %4s %3.3s%2s %5s %3s  %-41.41s  %-8.8s\n",
-          entry_id_4,
-          modres.res_id.name.c_str(),
-          modres.chain_name.c_str(),
-          write_seq_id(modres.res_id.seqid).data(),
-          modres.parent_comp_id.c_str(),
-          modres.details.c_str(),
-          modres.mod_id.c_str());
-  }
+  // MODRES
+  if (!opt.minimal_file)
+    for (const ModRes& modres : st.mod_residues) {
+      WRITE("MODRES %4s %3.3s%2s %5s %3s  %-41.41s  %-8.8s\n",
+            entry_id_4,
+            modres.res_id.name.c_str(),
+            modres.chain_name.c_str(),
+            write_seq_id(modres.res_id.seqid).data(),
+            modres.parent_comp_id.c_str(),
+            modres.details.c_str(),
+            modres.mod_id.c_str());
+    }
 
+  // HETNAM - but it's used only for tilde-hetnam extension
   for (const OldToNew& mapping : st.shortened_ccd_codes)
     WRITE("HETNAM     %3s %55s %-9s\n", mapping.new_.c_str(), "", mapping.old.c_str());
 
-  if (!st.helices.empty()) {
+  // HELIX
+  if (!opt.minimal_file && !st.helices.empty()) {
     int counter = 0;
     for (const Helix& helix : st.helices) {
       if (++counter == 10000)
@@ -505,7 +481,8 @@ inline void write_header(const Structure& st, std::ostream& os,
     }
   }
 
-  if (!st.sheets.empty()) {
+  // SHEET
+  if (!opt.minimal_file && !st.sheets.empty()) {
     for (const Sheet& sheet : st.sheets) {
       int strand_counter = 0;
       for (const Sheet::Strand& strand : sheet.strands) {
@@ -623,53 +600,87 @@ inline void write_header(const Structure& st, std::ostream& os,
     }
   }
 
-  if (opt.cryst1_record)
-    write_cryst1(st, os);
-  if (st.has_origx && !st.origx.is_identity()) {
+  // CRYST1
+  if (opt.cryst1_record) {
+    WRITE("CRYST1%9.3f%9.3f%9.3f%7.2f%7.2f%7.2f %-11s%4s          ",
+          st.cell.a, st.cell.b, st.cell.c, st.cell.alpha, st.cell.beta, st.cell.gamma,
+          st.spacegroup_hm.empty() ? "P 1" : st.spacegroup_hm.c_str(),
+          st.get_info("_cell.Z_PDB").c_str());
+  }
+
+  // ORIGX1/2/3
+  if (!opt.minimal_file && st.has_origx && !st.origx.is_identity()) {
     for (int i = 0; i < 3; ++i)
       WRITE("ORIGX%d %13.6f%10.6f%10.6f %14.5f %24s", i+1,
             st.origx.mat[i][0], st.origx.mat[i][1], st.origx.mat[i][2],
             st.origx.vec.at(i), "");
   }
-  if (st.cell.explicit_matrices) {
+
+  // SCALE1/2/3
+  if (!opt.minimal_file && st.cell.explicit_matrices) {
     for (int i = 0; i < 3; ++i)
       // We add a small number to avoid negative 0.
       WRITE("SCALE%d %13.6f%10.6f%10.6f %14.5f %24s", i+1,
             st.cell.frac.mat[i][0] + 1e-15, st.cell.frac.mat[i][1] + 1e-15,
             st.cell.frac.mat[i][2] + 1e-15, st.cell.frac.vec.at(i) + 1e-15, "");
   }
-  write_ncs(st, os);
+
+  // MTRIX1/2/3
+  if (!st.ncs.empty()) {
+    auto identity = st.info.find("_struct_ncs_oper.id");
+    if (identity != st.info.end() &&
+        !in_vector_f([&](const NcsOp& op) { return op.id == identity->second; }, st.ncs))
+      write_ncs_op(NcsOp{identity->second, true, {}}, os);
+    for (const NcsOp& op : st.ncs)
+      write_ncs_op(op, os);
+  }
+
+  // MODEL, ATOM, HETATM, TER, ENDMDL
+  if (opt.atom_records) {
+    for (const Model& model : st.models) {
+      int serial = 0;
+      if (st.models.size() > 1) {
+        // according to the spec model name in mmCIF may not be numeric
+        std::string name = model.name;
+        for (char c : name)
+          if (!std::isdigit(c)) {
+            name = std::to_string(&model - &st.models[0] + 1);
+            break;
+          }
+        WRITE("MODEL %8s %65s", name.c_str(), "");
+      }
+      for (const Chain& chain : model.chains)
+        write_chain_atoms(chain, os, serial, opt);
+      if (st.models.size() > 1)
+        WRITE("%-80s", "ENDMDL");
+    }
+  }
+
+  // CONECT
+  if (opt.conect_records) {
+    auto num_str = [](const std::vector<int>& nums, size_t i) {
+      return i < nums.size() ? encode_serial_in_hybrid36(nums[i]) : std::array<char,8>{};
+    };
+    for (const auto& num_pair : st.conect_map)
+      for (size_t i = 0; i < num_pair.second.size(); i += 4)
+        WRITE("CONECT%5s%5s%5s%5s%5s%50s",
+              encode_serial_in_hybrid36(num_pair.first).data(),
+              encode_serial_in_hybrid36(num_pair.second[i]).data(),
+              num_str(num_pair.second, i+1).data(),
+              num_str(num_pair.second, i+2).data(),
+              num_str(num_pair.second, i+3).data(),
+              "");
+  }
+
+  // END
+  if (opt.end_record)
+    WRITE("%-80s", "END");
 }
 
-inline void check_if_structure_can_be_written_as_pdb(const Structure& st) {
-  for (const gemmi::Model& model : st.models)
-    for (const gemmi::Chain& chain : model.chains)
-      if (chain.name.size() > 2)
-        gemmi::fail("chain name too long for the PDB format: " + chain.name);
-}
-
-} // anonymous namespace
-
-std::string make_pdb_headers(const Structure& st) {
-  check_if_structure_can_be_written_as_pdb(st);
+std::string make_pdb_string(const Structure& st, PdbWriteOptions opt) {
   std::ostringstream os;
-  write_header(st, os, PdbWriteOptions());
+  write_pdb(st, os, opt);
   return os.str();
-}
-
-void write_pdb(const Structure& st, std::ostream& os, PdbWriteOptions opt) {
-  check_if_structure_can_be_written_as_pdb(st);
-  write_header(st, os, opt);
-  write_atoms(st, os, opt);
-  char buf[88];
-  WRITE("%-80s", "END");
-}
-
-void write_minimal_pdb(const Structure& st, std::ostream& os, PdbWriteOptions opt) {
-  check_if_structure_can_be_written_as_pdb(st);
-  write_cryst1(st, os);
-  write_ncs(st, os);
-  write_atoms(st, os, opt);
 }
 
 #undef WRITE

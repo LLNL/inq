@@ -13,6 +13,7 @@
 #include <stdexcept>  // for out_of_range
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "elem.hpp"
 #include "fail.hpp"      // for fail
@@ -95,6 +96,7 @@ struct PdbReadOptions {
   bool split_chain_on_ter = false;
   bool skip_remarks = false;
 };
+// end of PdbReadOptions for mol.rst
 
 // remove empty residues from chain, empty chains from model, etc
 template<class T> void remove_empty_children(T& obj) {
@@ -382,6 +384,7 @@ struct ResidueSpan : MutableVectorSpan<Residue> {
   GroupingProxy residue_groups();
   const std::string& subchain_id() const { return const_().subchain_id(); }
   ResidueGroup find_residue_group(SeqId id);
+  std::vector<std::string> extract_sequence() const { return const_().extract_sequence(); }
   ConstResidueGroup find_residue_group(SeqId id) const;
   SeqId label_seq_id_to_auth(SeqId::OptionalNum label_seq_id) const {
     return const_().label_seq_id_to_auth(label_seq_id);
@@ -612,9 +615,10 @@ inline std::string atom_str(const const_CRA& cra) {
                   cra.atom ? cra.atom->altloc : '\0');
 }
 
-inline bool atom_matches(const const_CRA& cra, const AtomAddress& addr) {
+inline bool atom_matches(const const_CRA& cra, const AtomAddress& addr, bool ignore_segment=false) {
   return cra.chain && cra.chain->name == addr.chain_name &&
-         cra.residue && cra.residue->matches(addr.res_id) &&
+         cra.residue && cra.residue->matches_noseg(addr.res_id) &&
+         (ignore_segment || cra.residue->segment == addr.res_id.segment) &&
          cra.atom && cra.atom->name == addr.atom_name &&
          cra.atom->altloc == addr.altloc;
 }
@@ -833,11 +837,72 @@ struct Model {
     return table;
   }
 
+  CRA get_cra(Atom* atom) { return parent_index.get_cra(*this, atom); }
+  Chain* get_parent_of(Residue* res) { return parent_index.get_parent_of(*this, res); }
+
   // methods present in Structure, Model, ... - used in templates
   Model empty_copy() const { return Model(name); }
   using child_type = Chain;
   std::vector<Chain>& children() { return chains; }
   const std::vector<Chain>& children() const { return chains; }
+
+private:
+  struct ParentIndex {
+    using index_type = std::uint32_t;
+    std::unordered_map<const Atom*, std::array<index_type, 3>> atom_parents;
+    std::unordered_map<const Residue*, std::array<index_type, 2>> residue_parents;
+    void update(const Model& model) {
+      clear();
+      for (index_type ic = 0; ic < model.chains.size(); ++ic) {
+        const Chain& chain = model.chains[ic];
+        for (index_type ir = 0; ir < chain.residues.size(); ++ir) {
+          const Residue& res = chain.residues[ir];
+          residue_parents.emplace(&res, std::array<index_type,2>{ic, ir});
+          for (index_type ia = 0; ia < res.atoms.size(); ++ia)
+            atom_parents.emplace(&res.atoms[ia], std::array<index_type,3>{ic, ir, ia});
+        }
+      }
+    }
+    void clear() {
+      atom_parents.clear();
+      residue_parents.clear();
+    }
+    CRA get_cra(Model& model, Atom* atom) {
+      for (;;) {
+        auto it = atom_parents.find(atom);
+        if (it != atom_parents.end()) {
+          auto ic = it->second[0];
+          auto ir = it->second[1];
+          auto ia = it->second[2];
+          if (ic < model.chains.size()) {
+            Chain& chain = model.chains[ic];
+            if (ir < chain.residues.size()) {
+              Residue& res = chain.residues[ir];
+              if (ia < res.atoms.size() && atom == &res.atoms[ia])
+                return {&chain, &res, atom};
+            }
+          }
+        }
+        update(model);
+      }
+    }
+    Chain* get_parent_of(Model& model, Residue* res) {
+      for (;;) {
+        auto it = residue_parents.find(res);
+        if (it != residue_parents.end()) {
+          auto ic = it->second[0];
+          auto ir = it->second[1];
+          if (ic < model.chains.size()) {
+            Chain& chain = model.chains[ic];
+            if (ir < chain.residues.size() && res == &chain.residues[ir])
+              return &chain;
+          }
+        }
+        update(model);
+      }
+    }
+  };
+  ParentIndex parent_index;
 };
 
 inline Entity* find_entity_of_subchain(const std::string& subchain_id,
@@ -866,6 +931,7 @@ struct Structure {
   std::vector<Helix> helices;
   std::vector<Sheet> sheets;
   std::vector<Assembly> assemblies;
+  std::map<int, std::vector<int>> conect_map;
   Metadata meta;
 
   CoorFormat input_format = CoorFormat::Unknown;
@@ -948,10 +1014,13 @@ struct Structure {
   }
 
   Connection* find_connection_by_cra(const const_CRA& cra1,
-                                     const const_CRA& cra2) {
+                                     const const_CRA& cra2,
+                                     bool ignore_segment=false) {
     for (Connection& c : connections)
-      if ((atom_matches(cra1, c.partner1) && atom_matches(cra2, c.partner2)) ||
-          (atom_matches(cra1, c.partner2) && atom_matches(cra2, c.partner1)))
+      if ((atom_matches(cra1, c.partner1, ignore_segment) &&
+           atom_matches(cra2, c.partner2, ignore_segment)) ||
+          (atom_matches(cra1, c.partner2, ignore_segment) &&
+           atom_matches(cra2, c.partner1, ignore_segment)))
         return &c;
     return nullptr;
   }
@@ -972,6 +1041,16 @@ struct Structure {
   }
   bool ncs_not_expanded() const {
     return std::any_of(ncs.begin(), ncs.end(), [](const NcsOp& o) { return !o.given; });
+  }
+
+  void add_conect_one_way(int serial1, int serial2, int order) {
+    auto& vec = conect_map[serial1];
+    for (int i = 0; i < order; ++i)
+      vec.insert(std::upper_bound(vec.begin(), vec.end(), serial2), serial2);
+  }
+  void add_conect(int serial1, int serial2, int order) {
+    add_conect_one_way(serial1, serial2, order);
+    add_conect_one_way(serial2, serial1, order);
   }
 
   void merge_chain_parts(int min_sep=0) {

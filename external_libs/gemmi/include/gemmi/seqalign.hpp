@@ -17,12 +17,54 @@
 namespace gemmi {
 
 struct AlignmentScoring {
-  int match = 1;
-  int mismatch = -1;
-  int gapo = -1;
-  int gape = -1;
+  int match;
+  int mismatch;
+  int gapo;  // gap opening penalty
+  int gape;  // gap extension penalty
+  // In a polymer in model, coordinates are used to determine expected gaps.
+  int good_gapo;  // gap opening in expected place in a polymer
+  int bad_gapo;  // gap opening that was not predicted
   std::vector<std::int8_t> score_matrix;
   std::vector<std::string> matrix_encoding;
+
+  static const AlignmentScoring* simple() {
+    static const AlignmentScoring s = { 1, -1, -1, -1, 0, -2, {}, {} };
+    return &s;
+  }
+  // Scoring for alignment of partially-modelled polymer to its full sequence
+  static const AlignmentScoring* partial_model() {
+    static const AlignmentScoring s = { 100, -10000, -10000, -1, 0, -200, {}, {} };
+    return &s;
+  }
+  static const AlignmentScoring* blosum62() {
+    // BLAST uses BLOSUM-62 with gap cost (10,1)
+    static const AlignmentScoring s = {
+      1, -4, -10, -1, 0, -10,
+      { 4,-1,-2,-2, 0,-1,-1, 0,-2,-1,-1,-1,-1,-2,-1, 1, 0,-3,-2, 0,
+       -1, 5, 0,-2,-3, 1, 0,-2, 0,-3,-2, 2,-1,-3,-2,-1,-1,-3,-2,-3,
+       -2, 0, 6, 1,-3, 0, 0, 0, 1,-3,-3, 0,-2,-3,-2, 1, 0,-4,-2,-3,
+       -2,-2, 1, 6,-3, 0, 2,-1,-1,-3,-4,-1,-3,-3,-1, 0,-1,-4,-3,-3,
+        0,-3,-3,-3, 9,-3,-4,-3,-3,-1,-1,-3,-1,-2,-3,-1,-1,-2,-2,-1,
+       -1, 1, 0, 0,-3, 5, 2,-2, 0,-3,-2, 1, 0,-3,-1, 0,-1,-2,-1,-2,
+       -1, 0, 0, 2,-4, 2, 5,-2, 0,-3,-3, 1,-2,-3,-1, 0,-1,-3,-2,-2,
+        0,-2, 0,-1,-3,-2,-2, 6,-2,-4,-4,-2,-3,-3,-2, 0,-2,-2,-3,-3,
+       -2, 0, 1,-1,-3, 0, 0,-2, 8,-3,-3,-1,-2,-1,-2,-1,-2,-2, 2,-3,
+       -1,-3,-3,-3,-1,-3,-3,-4,-3, 4, 2,-3, 1, 0,-3,-2,-1,-3,-1, 3,
+       -1,-2,-3,-4,-1,-2,-3,-4,-3, 2, 4,-2, 2, 0,-3,-2,-1,-2,-1, 1,
+       -1, 2, 0,-1,-3, 1, 1,-2,-1,-3,-2, 5,-1,-3,-1, 0,-1,-3,-2,-2,
+       -1,-1,-2,-3,-1, 0,-2,-3,-2, 1, 2,-1, 5, 0,-2,-1,-1,-1,-1, 1,
+       -2,-3,-3,-3,-2,-3,-3,-3,-1, 0, 0,-3, 0, 6,-4,-2,-2, 1, 3,-1,
+       -1,-2,-2,-1,-3,-1,-1,-2,-2,-3,-3,-1,-2,-4, 7,-1,-1,-4,-3,-2,
+        1,-1, 1, 0,-1, 0, 0, 0,-1,-2,-2, 0,-1,-2,-1, 4, 1,-3,-2,-2,
+        0,-1, 0,-1,-1,-1,-1,-2,-2,-1,-1,-1,-1,-2,-1, 1, 5,-2,-2, 0,
+       -3,-3,-4,-4,-2,-2,-3,-2,-2,-3,-2,-3,-1, 1,-4,-3,-2,11, 2,-3,
+       -2,-2,-2,-3,-2,-1,-2,-3, 2,-1,-1,-2,-1, 3,-3,-2,-2, 2, 7,-1,
+        0,-3,-3,-3,-1,-2,-2,-3,-3, 3, 1,-2, 1,-1,-2,-2, 0,-3,-1, 4},
+      {"ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
+       "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL"}
+    };
+    return &s;
+  }
 };
 
 struct AlignmentResult {
@@ -146,16 +188,16 @@ struct AlignmentResult {
   }
 };
 
-// All values in query and target must be less then m.
-// free_gapo marks positions in target where gap opening is free.
+/// All values in query and target must be less then m.
+/// target_gapo, if set, has gap opening penalties at specific positions in target.
 inline
 AlignmentResult align_sequences(const std::vector<std::uint8_t>& query,
                                 const std::vector<std::uint8_t>& target,
-                                const std::vector<bool>& free_gapo,
+                                const std::vector<int>& target_gapo,
                                 std::uint8_t m,
                                 const AlignmentScoring& scoring) {
   // generate the query profile
-  std::int8_t *query_profile = new std::int8_t[query.size() * m];
+  std::int16_t *query_profile = new std::int16_t[query.size() * m];
   {
     std::uint32_t mat_size = (std::uint32_t) scoring.matrix_encoding.size();
     std::int32_t i = 0;
@@ -174,7 +216,7 @@ AlignmentResult align_sequences(const std::vector<std::uint8_t>& query,
 
   // fill the first row
   {
-    std::int32_t gap0 = !free_gapo.empty() && free_gapo[0] ? gape : gapoe;
+    std::int32_t gap0 = !target_gapo.empty() ? target_gapo[0] + gape : gapoe;
     eh[0].h = 0;
     eh[0].e = gap0 + gapoe;
     for (std::int32_t j = 1; j <= (std::int32_t)query.size(); ++j) {
@@ -188,12 +230,12 @@ AlignmentResult align_sequences(const std::vector<std::uint8_t>& query,
   // DP loop
   for (std::int32_t i = 0; i < (std::int32_t)target.size(); ++i) {
     std::uint8_t target_item = target[i];
-    std::int8_t *scores = &query_profile[target_item * query.size()];
+    std::int16_t *scores = &query_profile[target_item * query.size()];
     std::uint8_t *zi = &z[i * query.size()];
     std::int32_t h1 = gapoe + gape * i;
     std::int32_t f = gapoe + gapoe + gape * i;
-    std::int32_t gapx = i+1 < (std::int32_t)free_gapo.size() && free_gapo[i+1]
-                        ? gape : gapoe;
+    std::int32_t gapx = i+1 < (std::int32_t)target_gapo.size()
+                        ? target_gapo[i+1] + gape : gapoe;
     for (std::size_t j = 0; j < query.size(); ++j) {
       // At the beginning of the loop:
       //  eh[j] = { H(i-1,j-1), E(i,j) }, f = F(i,j) and h1 = H(i,j-1)
@@ -252,10 +294,12 @@ AlignmentResult align_sequences(const std::vector<std::uint8_t>& query,
 inline
 AlignmentResult align_string_sequences(const std::vector<std::string>& query,
                                        const std::vector<std::string>& target,
-                                       const std::vector<bool>& free_gapo,
-                                       const AlignmentScoring& scoring) {
+                                       const std::vector<int>& target_gapo,
+                                       const AlignmentScoring* scoring) {
+  if (scoring == nullptr)
+    scoring = AlignmentScoring::simple();
   std::map<std::string, std::uint8_t> encoding;
-  for (const std::string& res_name : scoring.matrix_encoding)
+  for (const std::string& res_name : scoring->matrix_encoding)
     encoding.emplace(res_name, (std::uint8_t)encoding.size());
   for (const std::string& s : query)
     encoding.emplace(s, (std::uint8_t)encoding.size());
@@ -270,42 +314,7 @@ AlignmentResult align_string_sequences(const std::vector<std::string>& query,
   for (size_t i = 0; i != target.size(); ++i)
     encoded_target[i] = encoding.at(target[i]);
   return align_sequences(encoded_query, encoded_target,
-                         free_gapo, (std::uint8_t)encoding.size(), scoring);
-}
-
-inline AlignmentScoring prepare_blosum62_scoring() {
-  AlignmentScoring s;
-  s.match = 1;
-  s.mismatch = -4;
-  s.gapo = -10;  // BLAST uses BLOSUM-62 with gap cost (10,1)
-  s.gape = -1;
-  s.score_matrix = {
-    4,-1,-2,-2, 0,-1,-1, 0,-2,-1,-1,-1,-1,-2,-1, 1, 0,-3,-2, 0,
-   -1, 5, 0,-2,-3, 1, 0,-2, 0,-3,-2, 2,-1,-3,-2,-1,-1,-3,-2,-3,
-   -2, 0, 6, 1,-3, 0, 0, 0, 1,-3,-3, 0,-2,-3,-2, 1, 0,-4,-2,-3,
-   -2,-2, 1, 6,-3, 0, 2,-1,-1,-3,-4,-1,-3,-3,-1, 0,-1,-4,-3,-3,
-    0,-3,-3,-3, 9,-3,-4,-3,-3,-1,-1,-3,-1,-2,-3,-1,-1,-2,-2,-1,
-   -1, 1, 0, 0,-3, 5, 2,-2, 0,-3,-2, 1, 0,-3,-1, 0,-1,-2,-1,-2,
-   -1, 0, 0, 2,-4, 2, 5,-2, 0,-3,-3, 1,-2,-3,-1, 0,-1,-3,-2,-2,
-    0,-2, 0,-1,-3,-2,-2, 6,-2,-4,-4,-2,-3,-3,-2, 0,-2,-2,-3,-3,
-   -2, 0, 1,-1,-3, 0, 0,-2, 8,-3,-3,-1,-2,-1,-2,-1,-2,-2, 2,-3,
-   -1,-3,-3,-3,-1,-3,-3,-4,-3, 4, 2,-3, 1, 0,-3,-2,-1,-3,-1, 3,
-   -1,-2,-3,-4,-1,-2,-3,-4,-3, 2, 4,-2, 2, 0,-3,-2,-1,-2,-1, 1,
-   -1, 2, 0,-1,-3, 1, 1,-2,-1,-3,-2, 5,-1,-3,-1, 0,-1,-3,-2,-2,
-   -1,-1,-2,-3,-1, 0,-2,-3,-2, 1, 2,-1, 5, 0,-2,-1,-1,-1,-1, 1,
-   -2,-3,-3,-3,-2,-3,-3,-3,-1, 0, 0,-3, 0, 6,-4,-2,-2, 1, 3,-1,
-   -1,-2,-2,-1,-3,-1,-1,-2,-2,-3,-3,-1,-2,-4, 7,-1,-1,-4,-3,-2,
-    1,-1, 1, 0,-1, 0, 0, 0,-1,-2,-2, 0,-1,-2,-1, 4, 1,-3,-2,-2,
-    0,-1, 0,-1,-1,-1,-1,-2,-2,-1,-1,-1,-1,-2,-1, 1, 5,-2,-2, 0,
-   -3,-3,-4,-4,-2,-2,-3,-2,-2,-3,-2,-3,-1, 1,-4,-3,-2,11, 2,-3,
-   -2,-2,-2,-3,-2,-1,-2,-3, 2,-1,-1,-2,-1, 3,-3,-2,-2, 2, 7,-1,
-    0,-3,-3,-3,-1,-2,-2,-3,-3, 3, 1,-2, 1,-1,-2,-2, 0,-3,-1, 4,
-  };
-  s.matrix_encoding = {
-    "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
-    "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
-  };
-  return s;
+                         target_gapo, (std::uint8_t)encoding.size(), *scoring);
 }
 
 } // namespace gemmi

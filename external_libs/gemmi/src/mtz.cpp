@@ -1,9 +1,52 @@
 // Copyright 2019-2023 Global Phasing Ltd.
 
 #include <gemmi/mtz.hpp>
+#include <gemmi/gz.hpp>
 #include <gemmi/sprintf.hpp>
 
 namespace gemmi {
+
+double wrap_degrees(double phi) {
+  if (phi >= 0 && phi < 360.)
+    return phi;
+  return phi - std::floor(phi / 360.) * 360.;
+}
+
+void shift_phase(float& phi, double shift, bool negate=false) {
+  double phi_ = phi + deg(shift);
+  phi = float(wrap_degrees(negate ? -phi_ : phi_));
+}
+
+// apply phase shift to Hendrickson–Lattman coefficients HLA, HLB, HLC and HLD
+void shift_hl_coefficients(float& a, float& b, float& c, float& d,
+                           double shift, bool negate=false) {
+  double sinx = std::sin(shift);
+  double cosx = std::cos(shift);
+  double sin2x = 2 * sinx * cosx;
+  double cos2x = sq(cosx)- sq(sinx);
+  // a sin(x+y) + b cos(x+y) = a sin(x) cos(y) - b sin(x) sin(y)
+  //                         + a cos(x) sin(y) + b cos(x) cos(y)
+  float a_ = float(a * cosx - b * sinx);
+  float b_ = float(a * sinx + b * cosx);
+  float c_ = float(c * cos2x - d * sin2x);
+  float d_ = float(c * sin2x + d * cos2x);
+  a = a_;                 // cos(phi)
+  b = negate ? -b_ : b_;  // sin(phi)
+  c = c_;                 // cos(2 phi)
+  d = negate ? -d_ : d_;  // sin(2 phi)
+}
+
+// for probing/testing individual reflections, no need to optimize it
+size_t Mtz::find_offset_of_hkl(const Miller& hkl, size_t start) const {
+  if (!has_data() || columns.size() < 3)
+    fail("No data.");
+  if (start != 0)
+    start -= (start % columns.size());
+  for (size_t n = start; n + 2 < data.size(); n += columns.size())
+    if (get_hkl(n) == hkl)
+      return n;
+  return (size_t)-1;
+}
 
 void Mtz::ensure_asu(bool tnt_asu) {
   if (!is_merged())
@@ -32,29 +75,14 @@ void Mtz::ensure_asu(bool tnt_asu) {
     if (!phase_columns.empty() || !abcd_columns.empty()) {
       const Op& op = gops.sym_ops[(isym - 1) / 2];
       double shift = op.phase_shift(hkl);
-      if (shift != 0) {
-        if (isym % 2 == 0)
-          shift = -shift;
-        double shift_deg = deg(shift);
-        for (int col : phase_columns)
-          data[n + col] = float(data[n + col] + shift_deg);
-        for (auto i = abcd_columns.begin(); i+3 < abcd_columns.end(); i += 4) {
-          double sinx = std::sin(shift);
-          double cosx = std::cos(shift);
-          double sin2x = 2 * sinx * cosx;
-          double cos2x = sq(cosx)- sq(sinx);
-          double a = data[n + *(i+0)];
-          double b = data[n + *(i+1)];
-          double c = data[n + *(i+2)];
-          double d = data[n + *(i+3)];
-          // a sin(x+y) + b cos(x+y) = a sin(x) cos(y) - b sin(x) sin(y)
-          //                         + a cos(x) sin(y) + b cos(x) cos(y)
-          data[n + *(i+0)] = float(a * cosx - b * sinx);
-          data[n + *(i+1)] = float(a * sinx + b * cosx);
-          data[n + *(i+2)] = float(c * cos2x - d * sin2x);
-          data[n + *(i+3)] = float(c * sin2x + d * cos2x);
-        }
-      }
+      bool negate = (isym % 2 == 0);
+      for (int col : phase_columns)
+        shift_phase(data[n + col], shift, negate);
+      for (auto i = abcd_columns.begin(); i+3 < abcd_columns.end(); i += 4)
+        // we expect coefficients HLA, HLB, HLC and HLD - in this order
+        shift_hl_coefficients(data[n + *(i+0)], data[n + *(i+1)],
+                              data[n + *(i+2)], data[n + *(i+3)],
+                              shift, negate);
     }
     if (isym % 2 == 0 && !centric &&
         // usually, centric reflections have empty F(-), so avoid swapping it
@@ -114,9 +142,7 @@ void Mtz::reindex(const Op& op, std::ostream* out) {
       if (out)
         *out << "Space group changed from " << spacegroup->xhm() << " to "
              << new_sg->xhm() << ".\n";
-      spacegroup = new_sg;
-      spacegroup_number = spacegroup->ccp4;
-      spacegroup_name = spacegroup->hm;
+      set_spacegroup(new_sg);
     } else {
       if (out)
         *out << "Space group stays the same:" << spacegroup->xhm() << ".\n";
@@ -131,6 +157,108 @@ void Mtz::reindex(const Op& op, std::ostream* out) {
     batch.set_cell(batch.get_cell().changed_basis_backward(transposed_op, false));
 }
 
+void Mtz::expand_to_p1() {
+  if (!spacegroup || !has_data())
+    return;
+  std::vector<int> phase_columns = positions_of_columns_with_type('P');
+  std::vector<int> abcd_columns = positions_of_columns_with_type('A');
+  bool has_phases = (!phase_columns.empty() || !abcd_columns.empty());
+  GroupOps gops = spacegroup->operations();
+  data.reserve(gops.sym_ops.size() * data.size());
+  size_t orig_size = data.size();
+  std::vector<Miller> hkl_copies;
+  for (size_t n = 0; n < orig_size; n += columns.size()) {
+    hkl_copies.clear();
+    Miller hkl = get_hkl(n);
+    // no reallocations because of reserve() above
+    auto orig_iter = data.begin() + n;
+    for (auto op = gops.sym_ops.begin() + 1; op < gops.sym_ops.end(); ++op) {
+      Miller new_hkl = op->apply_to_hkl(hkl);
+      Op::Miller negated{{-new_hkl[0], -new_hkl[1], -new_hkl[2]}};
+      if (new_hkl != hkl && !in_vector(new_hkl, hkl_copies) &&
+          negated != hkl && !in_vector(negated, hkl_copies)) {
+        hkl_copies.push_back(new_hkl);
+        size_t offset = data.size();
+        data.insert(data.end(), orig_iter, orig_iter + columns.size());
+        set_hkl(offset, new_hkl);
+        if (has_phases) {
+          double shift = op->phase_shift(hkl);
+          if (shift != 0) {
+            for (int col : phase_columns)
+              shift_phase(data[offset + col], shift);
+            for (auto i = abcd_columns.begin(); i+3 < abcd_columns.end(); i += 4)
+              // we expect coefficients HLA, HLB, HLC and HLD - in this order
+              shift_hl_coefficients(data[offset + *(i+0)], data[offset + *(i+1)],
+                                    data[offset + *(i+2)], data[offset + *(i+3)], shift);
+          }
+        }
+      }
+    }
+  }
+  nreflections = int(data.size() / columns.size());
+  sort_order = {{0, 0, 0, 0, 0}};
+  set_spacegroup(&get_spacegroup_p1());
+}
+
+bool Mtz::switch_to_original_hkl() {
+  if (indices_switched_to_original)
+    return false;
+  if (!has_data())
+    fail("switch_to_original_hkl(): data not read yet");
+  if (nreflections == 0) {
+    // This function can be called before the data is populated
+    // to set indices_switched_to_original, which is not exposed in Python.
+    indices_switched_to_original = true;
+    return true;
+  }
+  const Column* col = column_with_label("M/ISYM");
+  if (col == nullptr || col->type != 'Y' || col->idx < 3)
+    return false;
+  std::vector<Op> inv_symops;
+  inv_symops.reserve(symops.size());
+  for (const Op& op : symops)
+    inv_symops.push_back(op.inverse());
+  for (size_t n = 0; n + col->idx < data.size(); n += columns.size()) {
+    int isym = static_cast<int>(data[n + col->idx]) & 0xFF;
+    const Op& op = inv_symops.at((isym - 1) / 2);
+    Miller hkl = op.apply_to_hkl(get_hkl(n));
+    int sign = (isym & 1) ? 1 : -1;
+    for (int i = 0; i < 3; ++i)
+      data[n+i] = static_cast<float>(sign * hkl[i]);
+  }
+  indices_switched_to_original = true;
+  return true;
+}
+
+bool Mtz::switch_to_asu_hkl() {
+  if (!indices_switched_to_original)
+    return false;
+  if (!has_data())
+    fail("switch_to_asu_hkl(): data not read yet");
+  const Column* col = column_with_label("M/ISYM");
+  if (col == nullptr || col->type != 'Y' || col->idx < 3 || !spacegroup)
+    return false;
+  size_t misym_idx = col->idx;
+  UnmergedHklMover hkl_mover(spacegroup);
+  for (size_t n = 0; n + col->idx < data.size(); n += columns.size()) {
+    Miller hkl = get_hkl(n);
+    int isym = hkl_mover.move_to_asu(hkl);  // modifies hkl
+    set_hkl(n, hkl);
+    float& misym = data[n + misym_idx];
+    misym = float(((int)misym & ~0xff) | isym);
+  }
+  indices_switched_to_original = false;
+  return true;
+}
+
+void Mtz::read_file_gz(const std::string& path, bool with_data) {
+  try {
+    read_input(MaybeGzipped(path), with_data);
+  } catch (std::runtime_error& e) {
+    // append path to the error like in read_file(), but shouldn't the path go first?
+    fail(std::string(e.what()) + ": " + path);
+  }
+}
 
 #define WRITE(...) do { \
     int len = snprintf_z(buf, 81, __VA_ARGS__); \

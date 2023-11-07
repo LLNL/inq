@@ -90,7 +90,7 @@ void add_meta(py::module& m) {
     .def_readwrite("altloc", &AtomAddress::altloc)
     .def("__str__", &AtomAddress::str)
     .def("__repr__", [](const AtomAddress& self) {
-        return tostr("<gemmi.AtomAddress ", self.str(), '>');
+        return cat("<gemmi.AtomAddress ", self.str(), '>');
     })
     .def(py::self == py::self)
     .def(py::pickle(
@@ -175,8 +175,8 @@ void add_meta(py::module& m) {
     .def_readwrite("partner2", &Connection::partner2)
     .def_readwrite("reported_distance", &Connection::reported_distance)
     .def("__repr__", [](const Connection& self) {
-        return tostr("<gemmi.Connection ", self.name, "  ",
-                     self.partner1.str(), " - ", self.partner2.str(), '>');
+        return cat("<gemmi.Connection ", self.name, "  ",
+                   self.partner1.str(), " - ", self.partner2.str(), '>');
     });
   py::bind_vector<std::vector<Connection>>(m, "ConnectionList");
 
@@ -187,6 +187,15 @@ void add_meta(py::module& m) {
     .def_readwrite("model_str", &CisPep::model_str)
     .def_readwrite("only_altloc", &CisPep::only_altloc)
     .def_readwrite("reported_angle", &CisPep::reported_angle)
+    ;
+
+  py::class_<ModRes>(m, "ModRes")
+    .def(py::init<>())
+    .def_readwrite("chain_name", &ModRes::chain_name)
+    .def_readwrite("res_id", &ModRes::res_id)
+    .def_readwrite("parent_comp_id", &ModRes::parent_comp_id)
+    .def_readwrite("mod_id", &ModRes::mod_id)
+    .def_readwrite("details", &ModRes::details)
     ;
 
   py::class_<Helix> helix(m, "Helix");

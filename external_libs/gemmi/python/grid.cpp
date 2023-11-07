@@ -121,7 +121,8 @@ py::class_<Grid<T>, GridBase<T>> add_grid_common(py::module& m, const std::strin
     .def("resample_to", &Gr::resample_to, py::arg("dest"), py::arg("order"))
     .def("masked_asu", &masked_asu<T>, py::keep_alive<0, 1>())
     .def("mask_points_in_constant_radius", &mask_points_in_constant_radius<T>,
-         py::arg("model"), py::arg("radius"), py::arg("value"))
+         py::arg("model"), py::arg("radius"), py::arg("value"),
+         py::arg("ignore_hydrogen")=false, py::arg("ignore_zero_occupancy_atoms")=false)
     .def("get_subarray",
          [](const Gr& self, std::array<int,3> start, std::array<int,3> shape) {
         py::array_t<T> arr({shape[0], shape[1], shape[2]},
@@ -219,6 +220,7 @@ void add_grid(py::module& m) {
     ;
   auto grid_float = add_grid_common<float>(m, "FloatGrid");
   add_grid_interpolation<float>(grid_float);
+  grid_float.def("symmetrize_avg", &Grid<float>::symmetrize_avg);
   grid_float.def("normalize", &Grid<float>::normalize);
   grid_float.def("add_soft_edge_to_mask", &add_soft_edge_to_mask<float>);
 
@@ -238,6 +240,8 @@ void add_grid(py::module& m) {
     .def_readwrite("rshrink", &SolventMasker::rshrink)
     .def_readwrite("island_min_volume", &SolventMasker::island_min_volume)
     .def_readwrite("constant_r", &SolventMasker::constant_r)
+    .def_readwrite("ignore_hydrogen", &SolventMasker::ignore_hydrogen)
+    .def_readwrite("ignore_zero_occupancy_atoms", &SolventMasker::ignore_zero_occupancy_atoms)
     .def("set_radii", &SolventMasker::set_radii,
          py::arg("choice"), py::arg("constant_r")=0.)
     .def("put_mask_on_int8_grid", &SolventMasker::put_mask_on_grid<int8_t>)

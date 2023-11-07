@@ -32,7 +32,7 @@ namespace {
 
 enum OptionIndex {
   Hkl=4, Dmin, For, NormalizeIt92, Rate, Blur, RCut, Test, ToMtz, Compare,
-  CifFp, Wavelength, Unknown, NoAniso, Margin, ScaleTo, FLabel,
+  CifFp, Wavelength, Unknown, NoAniso, Margin, ScaleTo, SigmaCutoff, FLabel,
   PhiLabel, Ksolv, Bsolv, Baniso, RadiiSet, Rprobe, Rshrink, WriteMap
 };
 
@@ -110,9 +110,14 @@ const option::Descriptor Usage[] = {
     "  --write-map=FILE  \tWrite density (excl. bulk solvent) as CCP4 map." },
   { ToMtz, 0, "", "to-mtz", Arg::Required,
     "  --to-mtz=FILE  \tWrite Fcalc to a new MTZ file." },
+
+  { NoOp, 0, "", "", Arg::None, "\nOptions for anisotropic scaling (only w/ FFT):" },
   { ScaleTo, 0, "", "scale-to", Arg::Required,
     "  --scale-to=FILE:COL  \tAnisotropic scaling to F from MTZ file."
     "\n\tArgument: FILE[:FCOL[:SIGFCOL]] (defaults: F and SIGF)." },
+  { SigmaCutoff, 0, "", "sigma-cutoff", Arg::Float,
+    "  --sigma-cutoff=NUM  \tUse only data with F/SIGF > NUM (default: 0)." },
+  // TODO: solvent option: mask, babinet, none
 
   { NoOp, 0, "", "", Arg::None, "\nOptions for bulk solvent correction (only w/ FFT):" },
   { RadiiSet, 0, "", "radii-set", SfCalcArg::Radii,
@@ -246,6 +251,11 @@ void process_with_fft(const gemmi::Structure& st,
   }
 
   if (verbose) {
+#if GEMMI_COUNT_DC
+    fprintf(stderr, "Density-points calculated: %zu (avg per atom: %g)\n",
+            dencalc.density_computations,
+            double(dencalc.density_computations) / dencalc.atoms_added);
+#endif
     fprintf(stderr, "FFT of grid %d x %d x %d\n",
             dencalc.grid.nu, dencalc.grid.nv, dencalc.grid.nw);
     fflush(stderr);
@@ -254,7 +264,7 @@ void process_with_fft(const gemmi::Structure& st,
   gemmi::FPhiGrid<Real> sf = transform_map_to_f_phi(dencalc.grid, /*half_l=*/true);
   if (verbose) {
     timer.print("...took");
-    fprintf(stderr, "Printing results...\n");
+    fprintf(stderr, "Preparing results...\n");
     fflush(stderr);
   }
   gemmi::StructureFactorCalculator<Table> calc(st.cell);
@@ -280,20 +290,30 @@ void process_with_fft(const gemmi::Structure& st,
                 .prepare_asu_data(dencalc.d_min, 0);
   }
 
-  Comparator comparator;
   if (scale_to.size() != 0) {
-    scaling.prepare_points(asu_data, scale_to, mask_data);
-    printf("Calculating scale factors using %lu points...\n",
-           (unsigned long) scaling.points.size()); // %zu is absent in old MinGW
+    scaling.prepare_points(asu_data, scale_to, &mask_data);
+    printf("Calculating scale factors using %zu points...\n", scaling.points.size());
     scaling.fit_isotropic_b_approximately();
     //fprintf(stderr, "k_ov=%g B_ov=%g\n", scaling.k_overall, scaling.get_b_overall().u11);
     scaling.fit_parameters();
     gemmi::SMat33<double> b_aniso = scaling.get_b_overall();
+    if (scaling.use_solvent)
+      fprintf(stderr, "Bulk solvent parameters: k_sol=%g B_sol=%g\n",
+              scaling.k_sol, scaling.b_sol);
     fprintf(stderr, "k_ov=%g B11=%g B22=%g B33=%g B12=%g B13=%g B23=%g\n",
             scaling.k_overall, b_aniso.u11, b_aniso.u22, b_aniso.u33,
                                b_aniso.u12, b_aniso.u13, b_aniso.u23);
+    if (verbose) {
+      std::vector<double> computed = scaling.compute_values();
+      Comparator comparator;
+      for (size_t i = 0; i != scaling.points.size(); ++i)
+        comparator.add(computed[i], (double)scaling.points[i].fobs);
+      fprintf(stderr, "After scaling: ");
+      print_to_stderr(comparator);
+      fprintf(stderr, "\n");
+    }
   }
-  scaling.scale_data(asu_data, mask_data);
+  scaling.scale_data(asu_data, &mask_data);
 
   if (file.mode == RefFile::Mode::WriteMtz) {
     write_asudata_to_mtz(asu_data, file);
@@ -301,6 +321,7 @@ void process_with_fft(const gemmi::Structure& st,
     for (gemmi::HklValue<std::complex<Real>>& hv : asu_data.v)
       print_sf(hv.value, hv.hkl);
   } else {
+    Comparator comparator;
     for (gemmi::HklValue<std::complex<Real>>& hv : asu_data.v) {
       std::complex<double> exact;
       if (file.path) {
@@ -499,7 +520,7 @@ void process_with_table(bool use_st, gemmi::Structure& st, const gemmi::SmallStr
   const gemmi::UnitCell& cell = use_st ? st.cell : small.cell;
   gemmi::StructureFactorCalculator<Table> calc(cell);
 
-  // assign f' given explicitely in a file
+  // assign f' given explicitly in a file
   if (p.options[CifFp]) {
     if (use_st) {
       // _atom_type.scat_dispersion_real is almost never used,
@@ -584,6 +605,9 @@ void process_with_table(bool use_st, gemmi::Structure& st, const gemmi::SmallStr
         siglabel = path.substr(sep2+1);
       path.resize(sep);
     }
+    double sigma_cutoff = 0;
+    if (p.options[SigmaCutoff])
+      sigma_cutoff = std::atof(p.options[SigmaCutoff].arg);
     gemmi::Mtz mtz;
     mtz.read_input(gemmi::MaybeGzipped(path), true);
     if (siglabel.empty()) {
@@ -592,6 +616,13 @@ void process_with_table(bool use_st, gemmi::Structure& st, const gemmi::SmallStr
         hkl_value.value.sigma = std::sqrt(hkl_value.value.sigma);
     } else {
       scale_to.load_values<2>(gemmi::MtzDataProxy{mtz}, {flabel, siglabel});
+      size_t size_before = scale_to.size();
+      vector_remove_if(scale_to.v, [=](const gemmi::HklValue<gemmi::ValueSigma<Real>>& x) {
+          return x.value.value <= sigma_cutoff * x.value.sigma;
+      });
+      if (p.options[Verbose])
+        fprintf(stderr, "Sigma cutoff (F/sigF > %g) excluded %zu out of %zu points.\n",
+                sigma_cutoff, size_before - scale_to.size(), size_before);
     }
   }
 
@@ -638,7 +669,7 @@ void process_with_table(bool use_st, gemmi::Structure& st, const gemmi::SmallStr
         masker.rshrink = std::atof(p.options[Rshrink].arg);
 
       gemmi::Scaling<Real> scaling(cell, st.find_spacegroup());
-      if (p.options[Ksolv] || p.options[Bsolv]) {
+      if (p.options[Ksolv] || p.options[Bsolv] || scale_to.size() != 0) {
         scaling.use_solvent = true;
         if (p.options[Ksolv])
           scaling.k_sol = std::atof(p.options[Ksolv].arg);
@@ -776,11 +807,13 @@ void process(const std::string& input, const OptParser& p) {
     gemmi::fail("Electron scattering has no dispersive part (--ciffp)");
   if (table == 'x' || table == 'm') {
     if (p.options[NormalizeIt92])
-      gemmi::IT92<double>::normalize();
-    process_with_table<gemmi::IT92<double>>(use_st, st, small, wavelength,
-                                            table == 'm', p);
+      gemmi::IT92<float>::normalize();
+    if (table == 'm')
+      gemmi::IT92<float>::ignore_charge = true;
+    process_with_table<gemmi::IT92<float>>(use_st, st, small, wavelength,
+                                           table == 'm', p);
   } else if (table == 'e') {
-    process_with_table<gemmi::C4322<double>>(use_st, st, small, 0., false, p);
+    process_with_table<gemmi::C4322<float>>(use_st, st, small, 0., false, p);
   } else if (table == 'n') {
     process_with_table<gemmi::Neutron92<double>>(use_st, st, small, 0., false, p);
   }

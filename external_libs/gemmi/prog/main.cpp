@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <cstring>
 
-void print_version(const char* program_name);  // in options.h
+void print_version(const char* program_name, bool verbose=false);  // in options.h
 
 int blobs_main(int argc, char** argv);
 int cif2mtz_main(int argc, char** argv);
@@ -12,6 +12,7 @@ int cif2json_main(int argc, char** argv);
 int contact_main(int argc, char** argv);
 int contents_main(int argc, char** argv);
 int convert_main(int argc, char** argv);
+int ecalc_main(int argc, char** argv);
 int fprime_main(int argc, char** argv);
 int grep_main(int argc, char** argv);
 int h_main(int argc, char** argv);
@@ -55,6 +56,7 @@ static SubCmd subcommands[] = {
   CMD(contact, "searches for contacts (neighbouring atoms)"),
   CMD(contents, "info about content of a coordinate file (pdb, mmCIF, ...)"),
   CMD(convert, "convert file (CIF - JSON, mmCIF - PDB) or modify structure"),
+  CMD(ecalc, "calculate normalized amplitudes E"),
   CMD(fprime, "calculate anomalous scattering factors f' and f\""),
   CMD(grep, "search for tags in CIF file(s)"),
   CMD(h, "add or remove hydrogen atoms"),
@@ -125,7 +127,8 @@ int main(int argc, char** argv)
   }
 #endif
   if (eq(argv[1], "--version") || eq(argv[1], "-V")) {
-    print_version("gemmi");
+    bool verbose = argc > 2 && (eq(argv[2], "-v") || eq(argv[2], "--verbose"));
+    print_version("gemmi", verbose);
     return 0;
   }
   if (eq(argv[1], "--help") || eq(argv[1], "-h") || eq(argv[1], "help")) {

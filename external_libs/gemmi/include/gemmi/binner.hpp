@@ -21,8 +21,8 @@ struct Binner {
     Dstar3,
   };
 
-  int setup_from_1_d2(int nbins, Method method, std::vector<double>&& inv_d2,
-                      const UnitCell* cell_) {
+  void setup_from_1_d2(int nbins, Method method, std::vector<double>&& inv_d2,
+                       const UnitCell* cell_) {
     if (nbins < 1)
       fail("Binner: nbins argument must be positive");
     if (inv_d2.empty())
@@ -76,17 +76,29 @@ struct Binner {
       }
     }
     limits.back() = std::numeric_limits<double>::infinity();
-    return (int) limits.size();
   }
 
   template<typename DataProxy>
-  int setup(int nbins, Method method, const DataProxy& proxy,
-            const UnitCell* cell_=nullptr) {
+  void setup(int nbins, Method method, const DataProxy& proxy,
+             const UnitCell* cell_=nullptr, bool with_mids=false, size_t col_idx=0) {
+    if (col_idx >= proxy.stride())
+      fail("wrong col_idx in Binner::setup()");
     cell = cell_ ? *cell_ : proxy.unit_cell();
-    std::vector<double> inv_d2(proxy.size() / proxy.stride());
-    for (size_t i = 0, offset = 0; i < inv_d2.size(); ++i, offset += proxy.stride())
-      inv_d2[i] = cell.calculate_1_d2(proxy.get_hkl(offset));
-    return setup_from_1_d2(nbins, method, std::move(inv_d2), nullptr);
+    std::vector<double> inv_d2;
+    inv_d2.reserve(proxy.size() / proxy.stride());
+    for (size_t offset = 0; offset < proxy.size(); offset += proxy.stride())
+      if (col_idx == 0 || !std::isnan(proxy.get_num(offset + col_idx)))
+        inv_d2.push_back(cell.calculate_1_d2(proxy.get_hkl(offset)));
+    setup_from_1_d2((with_mids ? 2 * nbins : nbins),
+                    method, std::move(inv_d2), nullptr);
+    if (with_mids) {
+      mids.resize(nbins);
+      for (int i = 0; i < nbins; ++i) {
+        mids[i] = limits[2*i];
+        limits[i] = limits[2*i+1];
+      }
+      limits.resize(nbins);
+    }
   }
 
   void ensure_limits_are_set() const {
@@ -136,6 +148,15 @@ struct Binner {
     return nums;
   }
 
+  std::vector<int> get_bins_from_1_d2(const std::vector<double>& inv_d2) const {
+    ensure_limits_are_set();
+    int hint = 0;
+    std::vector<int> nums(inv_d2.size());
+    for (size_t i = 0; i < inv_d2.size(); ++i)
+      nums[i] = get_bin_from_1_d2_hinted(inv_d2[i], hint);
+    return nums;
+  }
+
   double dmin_of_bin(int n) const {
     return 1. / std::sqrt(limits.at(n));
   }
@@ -149,9 +170,9 @@ struct Binner {
   double min_1_d2;
   double max_1_d2;
   std::vector<double> limits;  // upper limit of each bin
+  std::vector<double> mids;    // the middle of each bin
 };
 
-// the result is in a
 inline Correlation combine_two_correlations(const Correlation& a, const Correlation& b) {
   Correlation r;
   r.n = a.n + b.n;

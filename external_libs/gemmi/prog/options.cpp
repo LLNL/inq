@@ -10,7 +10,7 @@
 #include <gemmi/version.hpp>   // for GEMMI_VERSION
 #include <gemmi/util.hpp>   // for trim_str
 #include <gemmi/model.hpp>  // for gemmi::CoorFormat
-#include <gemmi/to_cif.hpp>  // for gemmi::cif::Style
+#include <gemmi/to_cif.hpp>  // for gemmi::cif::WriteOptions
 #include <gemmi/atox.hpp>   // for skip_blank
 
 using std::fprintf;
@@ -173,7 +173,7 @@ void OptParser::simple_parse(int argc, char** argv,
     std::exit(0);
   }
   if (options[Version]) {
-    print_version(program_name);
+    print_version(program_name, options[Verbose]);
     std::exit(0);
   }
   if (options[NoOp]) {
@@ -192,6 +192,12 @@ void OptParser::check_exclusive_group(const std::vector<int>& group) {
       else
         exit_exclusive(first, opt);
     }
+}
+
+int OptParser::integer_or(int opt, int default_) const {
+  if (options[opt])
+    return std::atoi(options[opt].arg);
+  return default_;
 }
 
 void OptParser::print_try_help_and_exit(const char* msg) const {
@@ -272,22 +278,42 @@ gemmi::CoorFormat coor_format_as_enum(const option::Option& format_in) {
   return format;
 }
 
-gemmi::cif::Style cif_style_as_enum(const option::Option& cif_style) {
+gemmi::cif::WriteOptions cif_write_options(const option::Option& cif_style) {
+  gemmi::cif::WriteOptions options;
+  options.prefer_pairs = true;
   if (cif_style)
     switch (cif_style.arg[0]) {
       // value for 'd' (default) is returned at end of this function
-      case 'p'/*pdbx*/: return gemmi::cif::Style::Pdbx;
-      case 'a'/*aligned*/: return gemmi::cif::Style::Aligned;
+      case 'p'/*pdbx*/:
+        options.misuse_hash = true;
+        break;
+      case 'a'/*aligned*/:
+        options.align_pairs = 33;
+        options.align_loops = 30;
+        break;
     }
-  return gemmi::cif::Style::PreferPairs;
+  return options;
 }
 
-void print_version(const char* program_name) {
+void print_version(const char* program_name, bool verbose) {
   std::printf("%s " GEMMI_VERSION
 #ifdef GEMMI_VERSION_INFO
          " (" GEMMI_XSTRINGIZE(GEMMI_VERSION_INFO) ")"
 #endif
          "\n", program_name);
+  if (verbose) {
+#if defined(_MSC_VER)
+    std::printf("Compiler: MSVC %d (C++ %ld)\n", _MSC_FULL_VER, _MSVC_LANG);
+#else
+#  if defined(__clang__)
+    std::printf("Compiler: Clang %d.%d.%d (C++ %ld)\n",
+                __clang_major__, __clang_minor__, __clang_patchlevel__, __cplusplus);
+#  elif defined(__GNUC__)
+    std::printf("Compiler: GCC %d.%d.%d (C++ %ld)\n",
+                __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__, __cplusplus);
+#  endif
+#endif
+  }
 }
 
 void read_spec_file(const char* path, std::vector<std::string>& output) {
