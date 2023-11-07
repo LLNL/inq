@@ -117,11 +117,11 @@ public:
 	}
 
 	auto spinor_matrix() const {
-		return fields_.matrix().rotated().partitioned(2).transposed().unrotated();
+		return fields_.matrix().rotated().partitioned(spinor_dim_).transposed().unrotated();
 	}
 	
 	auto spinor_matrix() {
-		return fields_.matrix().rotated().partitioned(2).transposed().unrotated();
+		return fields_.matrix().rotated().partitioned(spinor_dim_).transposed().unrotated();
 	}
 	
 	auto hypercubic() const {
