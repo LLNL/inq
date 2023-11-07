@@ -65,6 +65,60 @@ private:
 
 };
 
+class ramplaser : public perturbations::none {
+
+	vector3<double, cartesian> polarization_;
+	double frequency_;
+        double rampstart_;
+        double rampwidth_;
+	
+public:
+	ramplaser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency, quantity<magnitude::time> rampstart, quantity<magnitude::time> rampwidth,  gauge arg_gauge = gauge::length):
+		polarization_(polarization),
+		frequency_(frequency.in_atomic_units()),
+                rampstart_(rampstart.in_atomic_units()),
+                rampwidth_(rampwidth.in_atomic_units()),
+		gauge_(arg_gauge) {
+		assert(gauge_ != gauge::mixed);
+	}
+	
+	auto has_uniform_electric_field() const {
+		return gauge_ == gauge::length;
+	}
+	
+	auto uniform_electric_field(double time) const {
+                double coshfactor = cosh(rampwidth_*(time-rampstart_));
+		return polarization_*sin(time*frequency_) *0.5*(tanh((time-rampstart_)/rampwidth_)+1.0) - polarization_/frequency_*(cos(time*frequency_) - 1.0) * 0.5/rampwidth_/coshfactor/coshfactor;
+	}
+	
+	auto has_uniform_vector_potential() const {
+		return gauge_ == gauge::velocity;
+	}
+	
+	auto uniform_vector_potential(double time) const {
+		//E=-1/c*dA/dt
+		return polarization_/frequency_*(cos(time*frequency_) - 1.0) *0.5*(tanh((time-rampstart_)/rampwidth_)+1.0);
+	}
+
+
+	template <typename OutputStream>
+	void print_info(OutputStream & out) {
+		auto freq_ev = frequency_*27.211383;
+		
+		out << "Frequency :    " << frequency_ << " Ha" << std::endl;
+		out << "               " << freq_ev << " eV" << std::endl;
+		out << "               " << freq_ev*241.7991 << " THz" << std::endl;
+		out << "               " << 1239.84193/freq_ev << " nm" << std::endl;
+		
+	}
+	
+private:
+	gauge gauge_;
+
+};
+
+
+
 }
 }
 #endif
@@ -100,6 +154,28 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(E_field.has_uniform_electric_field());
 		CHECK(not E_field.has_uniform_vector_potential());
 		CHECK(E_field.uniform_electric_field(0.0)[0] == 0.0);
+	}
+
+
+        perturbations::ramplaser rlas({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs);
+
+	rlas.print_info(std::cout);
+	
+	CHECK(rlas.has_uniform_electric_field());
+
+	SECTION("ramplaser velocity gauge"){
+		perturbations::ramplaser ramp_vector_potential({0.1, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs,perturbations::gauge::velocity);
+		CHECK(ramp_vector_potential.has_uniform_vector_potential());
+		CHECK(not ramp_vector_potential.has_uniform_electric_field());
+		CHECK(ramp_vector_potential.uniform_vector_potential(0.0)[0] == 0.0);
+		CHECK(ramp_vector_potential.uniform_vector_potential(0.0)[2] == 0.0);
+	}
+
+	SECTION("ramplaser length gauge"){
+		perturbations::ramplaser ramp_E_field({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs);
+		CHECK(ramp_E_field.has_uniform_electric_field());
+		CHECK(not ramp_E_field.has_uniform_vector_potential());
+		CHECK(ramp_E_field.uniform_electric_field(0.0)[0] == 0.0);
 	}
 }
 #endif
