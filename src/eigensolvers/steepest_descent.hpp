@@ -27,35 +27,36 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 	
 	const int num_steps = 5;
 
+	auto hphi = ham(phi);
+	
 	for(int istep = 0; istep < num_steps; istep++){
 
-		auto residual = ham(phi);
+		auto residual = hphi;
 		auto eigenvalues = operations::overlap_diagonal(residual, phi);
 		auto norm =	operations::overlap_diagonal(phi);
 			
-		auto lambda = eigenvalues;
-			
+		auto evnorm = eigenvalues;
+		
 		gpu::run(phi.local_set_size(),
-						 [lam = begin(lambda), nor = begin(norm)]
-						 GPU_LAMBDA (auto ist){
-							 lam[ist] = lam[ist]/(-real(nor[ist]));
+						 [evn = begin(evnorm), nor = begin(norm)] GPU_LAMBDA (auto ist){
+							 evn[ist] /= real(nor[ist]);
 						 });
-			
-		operations::shift(1.0, lambda, phi, residual);
+		
+		operations::shift(-1.0, evnorm, phi, residual);
 
 		prec(residual);
 
 		auto mm = gpu::array<typename field_set_type::element_type, 2>({6, phi.local_set_size()});
 
-		{
-			auto hresidual = ham(residual);
-			mm[0] = operations::overlap_diagonal(residual, residual);
-			mm[1] = operations::overlap_diagonal(phi, residual);
-			mm[2] = operations::overlap_diagonal(residual, hresidual);
-			mm[3] = operations::overlap_diagonal(phi, hresidual);
-			mm[4] = eigenvalues;
-			mm[5] = norm;
-		}
+		auto hresidual = ham(residual);
+		mm[0] = operations::overlap_diagonal(residual, residual);
+		mm[1] = operations::overlap_diagonal(phi, residual);
+		mm[2] = operations::overlap_diagonal(residual, hresidual);
+		mm[3] = operations::overlap_diagonal(phi, hresidual);
+		mm[4] = eigenvalues;
+		mm[5] = norm;
+
+		auto lambda = gpu::array<double, 1>(phi.local_set_size());
 		
 		gpu::run(phi.local_set_size(),
 						 [m = begin(mm), lam = begin(lambda)]
@@ -63,17 +64,20 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 							 auto ca = real(m[0][ist]*m[3][ist] - m[2][ist]*m[1][ist]);
 							 auto cb = real(m[5][ist]*m[2][ist] - m[4][ist]*m[0][ist]);
 							 auto cc = real(m[4][ist]*m[1][ist] - m[3][ist]*m[5][ist]);
-
 							 auto den = cb + sqrt(cb*cb - 4.0*ca*cc);
 
 							 if(fabs(den) < 1e-15) { //this happens if we are perfectly converged
-								 lam[ist] = complex(0.0, 0.0);
+								 lam[ist] = 0.0;
 							 } else {
-								 lam[ist] = complex(2.0*cc/den, 0.0);
+								 lam[ist] = 2.0*cc/den;
 							 }
 						 });
-		
-		operations::shift(1.0, lambda, residual, phi);
+
+		gpu::run(phi.local_set_size(), phi.basis().local_size(),
+						 [res = begin(residual.matrix()), ph = begin(phi.matrix()), hres = begin(hresidual.matrix()), hph = begin(hphi.matrix()), lam = begin(lambda), istep] GPU_LAMBDA (auto ist, auto ip){
+							 ph[ip][ist] += lam[ist]*res[ip][ist];
+							 if(istep !=  num_steps - 1) hph[ip][ist] += lam[ist]*hres[ip][ist];
+						 });
 	}
 
 	operations::orthogonalize(phi);
