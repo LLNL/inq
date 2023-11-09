@@ -72,9 +72,12 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 								 lam[ist] = complex(2.0*cc/den, 0.0);
 							 }
 						 });
-		
-		operations::shift(1.0, lambda, residual, phi);
-		if(istep != num_steps - 1) operations::shift(1.0, lambda, hresidual, hphi);
+
+		gpu::run(phi.local_set_size(), phi.basis().local_size(),
+						 [res = begin(residual.matrix()), ph = begin(phi.matrix()), hres = begin(hresidual.matrix()), hph = begin(hphi.matrix()), lam = begin(lambda), istep] GPU_LAMBDA (auto ist, auto ip){
+							 ph[ip][ist] += lam[ist]*res[ip][ist];
+							 if(istep !=  num_steps - 1) hph[ip][ist] += lam[ist]*hres[ip][ist];
+						 });
 	}
 
 	operations::orthogonalize(phi);
