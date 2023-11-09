@@ -27,9 +27,11 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 	
 	const int num_steps = 5;
 
+	auto hphi = ham(phi);
+	
 	for(int istep = 0; istep < num_steps; istep++){
 
-		auto residual = ham(phi);
+		auto residual = hphi;
 		auto eigenvalues = operations::overlap_diagonal(residual, phi);
 		auto norm =	operations::overlap_diagonal(phi);
 			
@@ -74,6 +76,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 						 });
 		
 		operations::shift(1.0, lambda, residual, phi);
+		if(istep != num_steps - 1) hphi = ham(phi);
 	}
 
 	operations::orthogonalize(phi);
