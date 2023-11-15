@@ -59,7 +59,7 @@ namespace hamiltonian {
 		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, options::electrons const & conf = {}):
 			sep_(0.625), //this is the default from octopus
 			natoms_(natoms),
-			pseudo_set_(pseudo::set::pseudodojo_pbe()),
+			pseudo_set_(conf.pseudopotentials_value()),
 			double_grid_(conf.double_grid_value()),
 			fourier_pseudo_(conf.fourier_pseudo_value())
 		{

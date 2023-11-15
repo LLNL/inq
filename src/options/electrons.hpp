@@ -30,6 +30,7 @@ class electrons {
 	std::optional<double> density_factor_;
 	std::optional<bool> spherical_grid_;
 	std::optional<bool> fourier_pseudo_;
+	std::optional<pseudo::set> pseudo_set_;
 
 public:
 	
@@ -143,6 +144,16 @@ public:
 		return fourier_pseudo_.value_or(false);
 	}
 
+	auto pseudopotentials(pseudo::set && set){
+		electrons conf = *this;
+		conf.pseudo_set_.emplace(std::forward<pseudo::set>(set));
+		return conf;
+	}
+
+	auto pseudopotentials_value() const{
+		return pseudo_set_.value_or(pseudo::set::pseudodojo_pbe());
+	}
+	
 };
 
 }
