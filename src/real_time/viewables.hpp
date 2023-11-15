@@ -102,18 +102,18 @@ public:
     return ions_.cell().metric().to_cartesian(observables::current(ions_, electrons_, ham_));
   }
 	auto projected_occupation(const systems::electrons & gs) {
-		auto calc = [](auto occ, auto v) {
+		auto calc = [] (auto occ, auto v) {
 			return occ*norm(v);
 		};
 		gpu::array<double, 2> occ({gs.kpin_part().size(), gs.kpin()[0].set_size()}, 0.0);
-		for(int ilot=0; ilot<gs.kpin_size(); ilot++) {
+		for(int ilot = 0; ilot < gs.kpin_size(); ilot++) {
 
 			auto ortho = matrix::all_gather(operations::overlap(electrons_.kpin()[ilot], gs.kpin()[ilot]));
 			
-			for (int it=0; it<std::get<0>(sizes(ortho)); it++) {
+			for (int it = 0; it < std::get<0>(sizes(ortho)); it++) {
 				auto start = electrons_.kpin()[ilot].set_part().start();
 				auto end = electrons_.kpin()[ilot].set_part().end();
-				occ[ilot+gs.kpin_part().start()][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, end}), calc)/electrons_.kpin_weights()[ilot];
+				occ[ilot + gs.kpin_part().start()][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, end}), calc)/electrons_.kpin_weights()[ilot];
 			}
 		}
 
