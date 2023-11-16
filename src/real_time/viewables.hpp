@@ -112,8 +112,8 @@ public:
 			
 			for (int it = 0; it < std::get<0>(sizes(ortho)); it++) {
 				auto start = electrons_.kpin()[ilot].set_part().start();
-				auto end = electrons_.kpin()[ilot].set_part().end();
-				occ[ilot + gs.kpin_part().start()][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, end}), calc)/electrons_.kpin_weights()[ilot];
+				auto finish = electrons_.kpin()[ilot].set_part().end();
+				occ[ilot + gs.kpin_part().start()][it] = operations::sum(electrons_.occupations()[ilot], ortho[it]({start, finish}), calc)/electrons_.kpin_weights()[ilot];
 			}
 		}
 
