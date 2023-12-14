@@ -9,8 +9,8 @@ include_directories(.)
 include_directories(../external_libs)
 
 add_library(unit_tests_main OBJECT main/unit_tests_main.cpp)
-if(ENABLE_CUDA)
-	set_source_files_properties(main/unit_tests_main.cpp PROPERTIES LANGUAGE CUDA)
+if(ENABLE_GPU)
+	set_source_files_properties(main/unit_tests_main.cpp PROPERTIES LANGUAGE ${GPU_LANGUAGE})
 endif()
 target_link_libraries(unit_tests_main PRIVATE inq Catch2::Catch2WithMain)
 
@@ -40,8 +40,8 @@ foreach(TEST_FILE ${INCLUDE_FILES})
 	add_test(NAME inq::unit_tests::${dir}::${name} COMMAND ${PROJECT_BINARY_DIR}/scripts/run_test.sh ./all_unit_tests [${dir}][${name}])
 endforeach()
 
-if(ENABLE_CUDA)
-	set_source_files_properties(all_unit_tests.cpp PROPERTIES LANGUAGE CUDA)
+if(ENABLE_GPU)
+	set_source_files_properties(all_unit_tests.cpp PROPERTIES LANGUAGE ${GPU_LANGUAGE})
 endif()
 
 add_executable(all_unit_tests)
