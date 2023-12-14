@@ -81,6 +81,10 @@ if(ENABLE_CUDA)
   endif()
 endif()
 
+if(ENABLE_HIP)
+  enable_language(HIP)
+endif()
+
 link_libraries(m)
 
 enable_language(Fortran)
