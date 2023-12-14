@@ -79,6 +79,16 @@ if(ENABLE_CUDA)
 		target_include_directories(inq INTERFACE ${NCCL_INCLUDE_DIRS})
 		target_link_libraries(inq INTERFACE ${NCCL_LIBRARIES})
   endif()
+
+	set(ENABLE_GPU TRUE)	
+	set(GPU_LANGUAGE CUDA)
+endif()
+
+if(ENABLE_HIP)
+  enable_language(HIP)
+
+	set(ENABLE_GPU TRUE)
+	set(GPU_LANGUAGE HIP)
 endif()
 
 link_libraries(m)
