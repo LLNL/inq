@@ -18,7 +18,7 @@
 namespace inq {
 namespace observables {
 
-template <typename TimeType, typename TimeSeriesType, typename RetElementType = decltype(exp(complex{0.0, 1.0})*TimeSeriesType{}[0])>
+template <typename TimeType, typename TimeSeriesType, typename RetElementType = decltype(exp(complex{0.0, 1.0})*std::declval<TimeSeriesType>()[0])>
 gpu::array<RetElementType, 1> spectrum(quantity<magnitude::energy> maxw, quantity<magnitude::energy> dw, TimeType const & time, TimeSeriesType const & time_series) {
 
 	CALI_CXX_MARK_FUNCTION;
