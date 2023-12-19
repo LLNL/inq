@@ -93,6 +93,19 @@ auto last_error() {
 #endif
 }
 
+template <typename KernelType>
+auto max_blocksize(KernelType const & kernel){
+	int mingridsize = 0;
+	int blocksize = 0;
+#ifdef ENABLE_CUDA
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, kernel));
+#endif
+#ifdef ENABLE_HIP
+	check_error(hipOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, kernel));
+#endif
+	return blocksize;
+}
+
 //finds fact1, fact2 < thres such that fact1*fact2 >= val
 inline static void factorize(const std::size_t val, const std::size_t thres, std::size_t & fact1, std::size_t & fact2){
 	fact1 = val;
