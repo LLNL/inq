@@ -62,17 +62,36 @@ auto id() {
 #endif
 }
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template <class ErrorType>
 void check_error(ErrorType const & error){
+#ifdef ENABLE_CUDA
 	if(error != cudaError_t(CUDA_SUCCESS)){
 		std::cout << "**************************************************************************\n\n";
 		std::cout << "  CUDA ERROR: '" << cudaGetErrorString(error) << "'.\n";
 		std::cout << "\n**************************************************************************\n" << std::endl;		
 		abort();
 	}
+#endif
+#ifdef ENABLE_HIP
+	if(error != hipError_t(hipSuccess)){
+		std::cout << "**************************************************************************\n\n";
+		std::cout << "  HIP ERROR: '" << hipGetErrorString(error) << "'.\n";
+		std::cout << "\n**************************************************************************\n" << std::endl;
+		abort();
+	}
+#endif
 }
 #endif
+
+auto last_error() {
+#ifdef ENABLE_CUDA
+	return cudaGetLastError();
+#endif
+#ifdef ENABLE_HIP
+	return hipGetLastError();
+#endif
+}
 
 //finds fact1, fact2 < thres such that fact1*fact2 >= val
 inline static void factorize(const std::size_t val, const std::size_t thres, std::size_t & fact1, std::size_t & fact2){
@@ -99,7 +118,7 @@ void run(kernel_type kernel){
 #ifdef ENABLE_CUDA
 
 	cuda_run_kernel_0<<<1, 1>>>(kernel);
-	check_error(cudaGetLastError());
+	check_error(last_error());
 	sync();
 	
 #else
@@ -130,7 +149,7 @@ void run(size_t size, kernel_type kernel){
 	unsigned nblock = (size + blocksize - 1)/blocksize;
   
 	cuda_run_kernel_1<<<nblock, blocksize>>>(size, kernel);
-	check_error(cudaGetLastError());
+	check_error(last_error());
 	
 	sync();
 	
@@ -172,7 +191,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 	struct dim3 dg{nblock, unsigned(dim2), unsigned(dim3)};
 	struct dim3 db{unsigned(blocksize), 1, 1};
 	cuda_run_kernel_2<<<dg, db>>>(sizex, sizey, dim2, kernel);
-	check_error(cudaGetLastError());    
+	check_error(last_error());
 		
 	sync();
 	
@@ -211,7 +230,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
 	struct dim3 db{unsigned(blocksize), 1, 1};
 	cuda_run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
-	check_error(cudaGetLastError());
+	check_error(last_error());
 	
 	sync();
 	
@@ -260,7 +279,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
 	struct dim3 db{unsigned(blocksize), 1, 1};
 	cuda_run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);
-	check_error(cudaGetLastError());
+	check_error(last_error());
 	
 	sync();
 
