@@ -24,7 +24,7 @@
 #include<cassert>
 #include <iostream>
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #define GPU_FUNCTION __host__ __device__
 #define GPU_LAMBDA __device__
 #else
@@ -139,7 +139,7 @@ void run(kernel_type kernel){
 #endif
 }
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template <class kernel_type>
 __global__ void run_kernel_1(unsigned size, kernel_type kernel){
 	auto ii = blockIdx.x*blockDim.x + threadIdx.x;
@@ -150,20 +150,17 @@ __global__ void run_kernel_1(unsigned size, kernel_type kernel){
 template <class kernel_type>
 void run(size_t size, kernel_type kernel){
 	
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 	if(size == 0) return;
 		
 	assert(size <= CUDA_MAX_DIM1);
 
-	int mingridsize = 0;
-	int blocksize = 0;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  run_kernel_1<kernel_type>));
+	auto blocksize = max_blocksize(run_kernel_1<kernel_type>);
 
 	unsigned nblock = (size + blocksize - 1)/blocksize;
   
 	run_kernel_1<<<nblock, blocksize>>>(size, kernel);
 	check_error(last_error());
-	
 	sync();
 	
 #else
@@ -172,7 +169,7 @@ void run(size_t size, kernel_type kernel){
   
 }
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template <class kernel_type>
 __global__ void run_kernel_2(unsigned sizex, unsigned sizey, unsigned dim2, kernel_type kernel){
 	auto i1 = blockIdx.x*blockDim.x + threadIdx.x;
@@ -188,12 +185,10 @@ __global__ void run_kernel_2(unsigned sizex, unsigned sizey, unsigned dim2, kern
 template <class kernel_type>
 void run(size_t sizex, size_t sizey, kernel_type kernel){
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 	if(sizex == 0 or sizey == 0) return;
 
-	int mingridsize = 0;
-	int blocksize = 0;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  run_kernel_2<kernel_type>));
+	auto blocksize = max_blocksize(run_kernel_2<kernel_type>);
 
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
 	unsigned nblock = (sizex + blocksize - 1)/blocksize;
@@ -217,7 +212,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 #endif
 }
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template <class kernel_type>
 __global__ void run_kernel_3(unsigned sizex, unsigned sizey, unsigned sizez, kernel_type kernel){
 	auto ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -231,12 +226,10 @@ __global__ void run_kernel_3(unsigned sizex, unsigned sizey, unsigned sizez, ker
 template <class kernel_type>
 void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 	if(sizex == 0 or sizey == 0 or sizez == 0) return;
 
-	int mingridsize = 0;
-	int blocksize = 0;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  run_kernel_3<kernel_type>));
+	auto blocksize = max_blocksize(run_kernel_3<kernel_type>);
 	
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
 	unsigned nblock = (sizex + blocksize - 1)/blocksize;
@@ -258,7 +251,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 #endif
 }
 	
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template <class kernel_type>
 __global__ void run_kernel_4(unsigned sizex, unsigned sizey, unsigned sizez, unsigned sizew, kernel_type kernel){
 	auto ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -280,12 +273,10 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 		return;
 	}
 	
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 	if(sizex == 0 or sizey == 0 or sizez == 0 or sizew == 0) return;
 
-	int mingridsize = 0;
-	int blocksize = 0;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  run_kernel_4<kernel_type>));
+	auto blocksize = max_blocksize(run_kernel_4<kernel_type>);
 	
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
 	unsigned nblock = (sizex + blocksize - 1)/blocksize;

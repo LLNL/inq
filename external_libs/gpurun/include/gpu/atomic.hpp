@@ -20,7 +20,7 @@ namespace atomic {
 
 template <typename Type1, typename Type2>
 GPU_FUNCTION inline Type1 add(Type1 * val, Type2 const & incr){
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #ifdef __CUDA_ARCH__
 	static_assert(__CUDA_ARCH__ >= 600, "gpu library needs target gpu architecture >= 6.0");
 #endif
@@ -46,7 +46,7 @@ GPU_FUNCTION inline auto add(inq::vector3<Type, Space> * val, inq::vector3<Type,
 	return inq::vector3<Type, Space>{v0, v1, v2};
 }
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template <typename Type2>
 GPU_FUNCTION inline long add(long * val, Type2 const & incr){
   return add((unsigned long long int *) val, incr);
