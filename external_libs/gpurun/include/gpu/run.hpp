@@ -11,100 +11,12 @@
 
 #include <inq_config.h>
 
-#ifdef ENABLE_CUDA
-#include <cuda.h>
-#include <cuda_runtime.h>
-#endif
-
-#ifdef ENABLE_HIP
-#include <hip/hip_runtime.h>
-#endif
-
-#include<cstddef> // std::size_t
-#include<cassert>
-#include <iostream>
-
-#ifdef ENABLE_GPU
-#define GPU_FUNCTION __host__ __device__
-#define GPU_LAMBDA __device__
-#else
-#define GPU_FUNCTION
-#define GPU_LAMBDA
-#endif
+#include <gpu/host.hpp>
 
 #define CUDA_MAX_DIM1 2147483647ULL
 #define CUDA_MAX_DIM23 65535
 
-
-#include <boost/archive/iterators/base64_from_binary.hpp>
-#include <boost/archive/iterators/transform_width.hpp>
-
 namespace gpu {
-
-void sync(){
-#ifdef ENABLE_CUDA
-	cudaStreamSynchronize(0);
-#endif
-#ifdef ENABLE_HIP
-	[[maybe_unused]] auto error = hipStreamSynchronize(0);
-#endif
-}
-
-auto id() {
-#ifdef ENABLE_CUDA	
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties (&prop, 0);
-	using namespace boost::archive::iterators;
-	using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
-	return std::string(it((unsigned char*)&prop.uuid), it((unsigned char*)&prop.uuid + sizeof(prop.uuid)));
-#else
-	return 0;
-#endif
-}
-
-#ifdef ENABLE_GPU
-template <class ErrorType>
-void check_error(ErrorType const & error){
-#ifdef ENABLE_CUDA
-	if(error != cudaError_t(CUDA_SUCCESS)){
-		std::cout << "**************************************************************************\n\n";
-		std::cout << "  CUDA ERROR: '" << cudaGetErrorString(error) << "'.\n";
-		std::cout << "\n**************************************************************************\n" << std::endl;		
-		abort();
-	}
-#endif
-#ifdef ENABLE_HIP
-	if(error != hipError_t(hipSuccess)){
-		std::cout << "**************************************************************************\n\n";
-		std::cout << "  HIP ERROR: '" << hipGetErrorString(error) << "'.\n";
-		std::cout << "\n**************************************************************************\n" << std::endl;
-		abort();
-	}
-#endif
-}
-#endif
-
-auto last_error() {
-#ifdef ENABLE_CUDA
-	return cudaGetLastError();
-#endif
-#ifdef ENABLE_HIP
-	return hipGetLastError();
-#endif
-}
-
-template <typename KernelType>
-auto max_blocksize(KernelType const & kernel){
-	[[maybe_unused]] int mingridsize = 0;
-	int blocksize = 0;
-#ifdef ENABLE_CUDA
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, kernel));
-#endif
-#ifdef ENABLE_HIP
-	check_error(hipOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, kernel));
-#endif
-	return blocksize;
-}
 
 //finds fact1, fact2 < thres such that fact1*fact2 >= val
 inline static void factorize(const std::size_t val, const std::size_t thres, std::size_t & fact1, std::size_t & fact2){
