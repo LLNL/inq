@@ -105,9 +105,9 @@ inline static void factorize(const std::size_t val, const std::size_t thres, std
 	assert(fact1*fact2 >= val);
 }
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template <class kernel_type>
-__global__ void cuda_run_kernel_0(kernel_type kernel){
+__global__ void run_kernel_0(kernel_type kernel){
 	kernel();
 }
 #endif
@@ -115,9 +115,9 @@ __global__ void cuda_run_kernel_0(kernel_type kernel){
 template <class kernel_type>
 void run(kernel_type kernel){
 	
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 
-	cuda_run_kernel_0<<<1, 1>>>(kernel);
+	run_kernel_0<<<1, 1>>>(kernel);
 	check_error(last_error());
 	sync();
 	
