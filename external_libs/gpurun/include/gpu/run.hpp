@@ -128,7 +128,7 @@ void run(kernel_type kernel){
 
 #ifdef ENABLE_CUDA
 template <class kernel_type>
-__global__ void cuda_run_kernel_1(unsigned size, kernel_type kernel){
+__global__ void run_kernel_1(unsigned size, kernel_type kernel){
 	auto ii = blockIdx.x*blockDim.x + threadIdx.x;
 	if(ii < size) kernel(ii);
 }
@@ -144,11 +144,11 @@ void run(size_t size, kernel_type kernel){
 
 	int mingridsize = 0;
 	int blocksize = 0;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  cuda_run_kernel_1<kernel_type>));
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  run_kernel_1<kernel_type>));
 
 	unsigned nblock = (size + blocksize - 1)/blocksize;
   
-	cuda_run_kernel_1<<<nblock, blocksize>>>(size, kernel);
+	run_kernel_1<<<nblock, blocksize>>>(size, kernel);
 	check_error(last_error());
 	
 	sync();
@@ -161,7 +161,7 @@ void run(size_t size, kernel_type kernel){
 
 #ifdef ENABLE_CUDA
 template <class kernel_type>
-__global__ void cuda_run_kernel_2(unsigned sizex, unsigned sizey, unsigned dim2, kernel_type kernel){
+__global__ void run_kernel_2(unsigned sizex, unsigned sizey, unsigned dim2, kernel_type kernel){
 	auto i1 = blockIdx.x*blockDim.x + threadIdx.x;
 	auto i2 = blockIdx.y*blockDim.y + threadIdx.y;
 	auto i3 = blockIdx.z*blockDim.z + threadIdx.z;
@@ -180,7 +180,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 
 	int mingridsize = 0;
 	int blocksize = 0;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  cuda_run_kernel_2<kernel_type>));
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  run_kernel_2<kernel_type>));
 
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
 	unsigned nblock = (sizex + blocksize - 1)/blocksize;
@@ -190,7 +190,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 	
 	struct dim3 dg{nblock, unsigned(dim2), unsigned(dim3)};
 	struct dim3 db{unsigned(blocksize), 1, 1};
-	cuda_run_kernel_2<<<dg, db>>>(sizex, sizey, dim2, kernel);
+	run_kernel_2<<<dg, db>>>(sizex, sizey, dim2, kernel);
 	check_error(last_error());
 		
 	sync();
@@ -206,7 +206,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 
 #ifdef ENABLE_CUDA
 template <class kernel_type>
-__global__ void cuda_run_kernel_3(unsigned sizex, unsigned sizey, unsigned sizez, kernel_type kernel){
+__global__ void run_kernel_3(unsigned sizex, unsigned sizey, unsigned sizez, kernel_type kernel){
 	auto ix = blockIdx.x*blockDim.x + threadIdx.x;
 	auto iy = blockIdx.y*blockDim.y + threadIdx.y;
 	auto iz = blockIdx.z*blockDim.z + threadIdx.z;
@@ -223,13 +223,13 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 
 	int mingridsize = 0;
 	int blocksize = 0;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  cuda_run_kernel_3<kernel_type>));
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  run_kernel_3<kernel_type>));
 	
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
 	unsigned nblock = (sizex + blocksize - 1)/blocksize;
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
 	struct dim3 db{unsigned(blocksize), 1, 1};
-	cuda_run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
+	run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
 	check_error(last_error());
 	
 	sync();
@@ -247,7 +247,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	
 #ifdef ENABLE_CUDA
 template <class kernel_type>
-__global__ void cuda_run_kernel_4(unsigned sizex, unsigned sizey, unsigned sizez, unsigned sizew, kernel_type kernel){
+__global__ void run_kernel_4(unsigned sizex, unsigned sizey, unsigned sizez, unsigned sizew, kernel_type kernel){
 	auto ix = blockIdx.x*blockDim.x + threadIdx.x;
 	auto iy = blockIdx.y*blockDim.y + threadIdx.y;
 	auto iz = blockIdx.z*blockDim.z + threadIdx.z;
@@ -272,13 +272,13 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 
 	int mingridsize = 0;
 	int blocksize = 0;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  cuda_run_kernel_4<kernel_type>));
+	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize,  run_kernel_4<kernel_type>));
 	
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
 	unsigned nblock = (sizex + blocksize - 1)/blocksize;
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
 	struct dim3 db{unsigned(blocksize), 1, 1};
-	cuda_run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);
+	run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);
 	check_error(last_error());
 	
 	sync();
