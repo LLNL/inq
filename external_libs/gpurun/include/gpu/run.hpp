@@ -95,7 +95,7 @@ auto last_error() {
 
 template <typename KernelType>
 auto max_blocksize(KernelType const & kernel){
-	int mingridsize = 0;
+	[[maybe_unused]] int mingridsize = 0;
 	int blocksize = 0;
 #ifdef ENABLE_CUDA
 	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, kernel));
