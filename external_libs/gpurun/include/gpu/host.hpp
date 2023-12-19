@@ -37,15 +37,6 @@
 
 namespace gpu {
 
-void sync(){
-#ifdef ENABLE_CUDA
-	cudaStreamSynchronize(0);
-#endif
-#ifdef ENABLE_HIP
-	[[maybe_unused]] auto error = hipStreamSynchronize(0);
-#endif
-}
-
 auto id() {
 #ifdef ENABLE_CUDA	
 	cudaDeviceProp prop;
@@ -100,6 +91,15 @@ auto max_blocksize(KernelType const & kernel){
 	check_error(hipOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, kernel));
 #endif
 	return blocksize;
+}
+
+void sync(){
+#ifdef ENABLE_CUDA
+	check_error(cudaStreamSynchronize(0));
+#endif
+#ifdef ENABLE_HIP
+	check_error(hipStreamSynchronize(0));
+#endif
 }
 
 }
