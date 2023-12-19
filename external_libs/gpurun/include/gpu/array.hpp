@@ -28,7 +28,7 @@ template<class T>
 inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
 #endif
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #include<thrust/complex.h>
 
 #ifdef __NVCC__
@@ -45,7 +45,7 @@ inline constexpr bool ::boost::multi::force_element_trivial_default_construction
 #endif
 
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::universal_allocator<type>
 #include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
 #endif
@@ -58,7 +58,7 @@ inline constexpr bool ::boost::multi::force_element_trivial_default_construction
 
 namespace gpu {
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template<typename Upstream, typename Bookkeeper>
 thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>& 
 LEAKY_tls_disjoint_pool(
@@ -68,11 +68,10 @@ LEAKY_tls_disjoint_pool(
   static thread_local auto adaptor = new thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>(upstream, bookkeeper);
   return *adaptor;
 }
-
-template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>>
+template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::universal_allocator<void>::pointer>>>
 struct caching_allocator : Base_ {
 	caching_allocator() : Base_{
-		&LEAKY_tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
+		&LEAKY_tls_disjoint_pool(thrust::mr::get_global_resource<thrust::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
 	} {}
 	caching_allocator(caching_allocator const&) : caching_allocator{} {}
   	template<class U> struct rebind {using other = caching_allocator<U>;};
@@ -134,7 +133,7 @@ private:
 #endif
 
 template <class type, size_t dim,
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 					class allocator = caching_allocator<type>
 #else
 					class allocator = std::allocator<type>
@@ -143,7 +142,7 @@ template <class type, size_t dim,
 using array = boost::multi::array<type, dim, allocator>;
 
 template <class type, size_t dim,
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 					class allocator = caching_allocator<type>
 #else
 					class allocator = std::allocator<type>
