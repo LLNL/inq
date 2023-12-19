@@ -16,6 +16,10 @@
 #include <cuda_runtime.h>
 #endif
 
+#ifdef ENABLE_HIP
+#include <hip/hip_runtime.h>
+#endif
+
 #include<cstddef> // std::size_t
 #include<cassert>
 #include <iostream>
@@ -40,6 +44,9 @@ namespace gpu {
 void sync(){
 #ifdef ENABLE_CUDA
 	cudaStreamSynchronize(0);
+#endif
+#ifdef ENABLE_HIP
+	[[maybe_unused]] auto error = hipStreamSynchronize(0);
 #endif
 }
 
