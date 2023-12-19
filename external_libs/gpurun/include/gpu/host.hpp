@@ -38,9 +38,15 @@
 namespace gpu {
 
 auto id() {
-#ifdef ENABLE_CUDA	
+#ifdef ENABLE_GPU
+#ifdef ENABLE_CUDA
 	cudaDeviceProp prop;
-	cudaGetDeviceProperties (&prop, 0);
+	cudaGetDeviceProperties(&prop, 0);
+#endif
+#ifdef ENABLE_HIP
+	hipDeviceProp_t prop;
+	hipGetDeviceProperties(&prop, 0);
+#endif
 	using namespace boost::archive::iterators;
 	using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
 	return std::string(it((unsigned char*)&prop.uuid), it((unsigned char*)&prop.uuid + sizeof(prop.uuid)));
