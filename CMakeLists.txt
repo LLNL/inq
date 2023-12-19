@@ -87,6 +87,9 @@ endif()
 if(ENABLE_HIP)
   enable_language(HIP)
 
+	find_package(hip REQUIRED)
+	target_link_libraries(inq INTERFACE hip::host)
+	
 	set(ENABLE_GPU TRUE)
 	set(GPU_LANGUAGE HIP)
 endif()

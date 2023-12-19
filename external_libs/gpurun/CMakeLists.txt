@@ -48,10 +48,11 @@ endforeach()
 include_directories(${PROJECT_SOURCE_DIR}/external_libs)
 include_directories(${PROJECT_BINARY_DIR})
 
-if(ENABLE_CUDA)
-	set_source_files_properties(gpurun_unit_tests.cpp PROPERTIES LANGUAGE CUDA)
+if(ENABLE_GPU)
+	set_source_files_properties(gpurun_unit_tests.cpp PROPERTIES LANGUAGE ${GPU_LANGUAGE})
 endif()
 
 add_executable(gpurun_unit_tests)
 target_sources(gpurun_unit_tests PRIVATE gpurun_unit_tests.cpp)
 target_link_libraries(gpurun_unit_tests PRIVATE Catch2::Catch2WithMain inq)
+target_link_libraries(gpurun_unit_tests INTERFACE hip::host)
