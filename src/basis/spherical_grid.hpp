@@ -11,7 +11,7 @@
 
 #include <inq_config.h>
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #include <thrust/remove.h>  // for thrust::remove_if
 #include <thrust/sort.h>
 #include <thrust/binary_search.h>
@@ -131,7 +131,7 @@ namespace basis {
 
 			{
 				CALI_CXX_MARK_SCOPE("spherical_grid::compact");				
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 				using thrust::remove_if;
 				auto it = remove_if(thrust::device, begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ < 0.0;});
 				size_ = it - begin(points_);				
