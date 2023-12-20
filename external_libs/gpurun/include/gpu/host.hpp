@@ -108,6 +108,40 @@ void sync(){
 #endif
 }
 
+auto get_current_device() {
+	int device = 0;
+#ifdef ENABLE_CUDA
+	check_error(cudaGetDevice(&device));
+#endif
+	return device;
+}
+
+template <typename PointerType>
+auto get_device(PointerType pointer) {
+	int device = 0;
+#ifdef ENABLE_CUDA
+	cudaPointerAttributes attr{};
+	check_error(cudaPointerGetAttributes(&attr, raw_pointer_cast(pointer)));
+	assert(attr.type == cudaMemoryTypeManaged);
+	device = attr.device;
+#endif
+	return device;
+}
+
+constexpr auto cpu_device() {
+#ifdef ENABLE_CUDA
+	return cudaCpuDeviceId;
+#endif
+	return 0;
+}
+
+template <typename PointerType, typename SizeType>
+void prefetch_to_device(PointerType pointer, SizeType byte_count, int device) {
+#ifdef ENABLE_CUDA
+	check_error(cudaMemPrefetchAsync(raw_pointer_cast(pointer), byte_count, device));
+#endif
+}
+
 }
 #endif
 
