@@ -116,6 +116,18 @@ auto get_current_device() {
 	return device;
 }
 
+template <typename PointerType>
+auto get_device(PointerType pointer) {
+	int device = 0;
+#ifdef ENABLE_CUDA
+	cudaPointerAttributes attr{};
+	check_error(cudaPointerGetAttributes(&attr, raw_pointer_cast(pointer)));
+	assert(attr.type == cudaMemoryTypeManaged);
+	device = attr.device;
+#endif
+	return device;
+}
+
 }
 #endif
 
