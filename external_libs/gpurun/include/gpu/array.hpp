@@ -30,7 +30,7 @@ template<class T>
 inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
 #endif
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #include<thrust/complex.h>
 
 #ifdef __NVCC__
@@ -43,16 +43,18 @@ template<class T>
 inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<T>> = std::is_trivially_default_constructible<T>::value;
 #endif
 
+#ifdef ENABLE_HIP
+#define MULTI_USE_HIP
+#endif
+
 #include <multi/adaptors/thrust.hpp>
 #endif
 
-
-#ifdef ENABLE_CUDA
-#include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::universal_allocator<type>
+#ifdef ENABLE_GPU
 #include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
 #endif
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #include "multi/adaptors/cuda/cublas.hpp" // must be included before blas.hpp
 #include "multi/adaptors/cuda/cublas/context.hpp" // must be included before blas.hpp
 #endif
@@ -60,7 +62,7 @@ inline constexpr bool ::boost::multi::force_element_trivial_default_construction
 
 namespace gpu {
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 template<typename Upstream, typename Bookkeeper>
 thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>& 
 LEAKY_tls_disjoint_pool(
@@ -80,15 +82,17 @@ struct caching_allocator : Base_ {
 
   // using Base_::allocate;
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n) -> typename std::allocator_traits<Base_>::pointer {
-		CALI_CXX_MARK_SCOPE("allocate");
+		CALI_MARK_BEGIN("allocate");
     auto ret = std::allocator_traits<Base_>::allocate(*this, n);
 		prefetch_to_device(ret, n*sizeof(T), get_current_device());
+		CALI_MARK_END("allocate");
     return ret;
   }
 
   [[nodiscard]] constexpr auto allocate(typename std::allocator_traits<Base_>::size_type n, typename std::allocator_traits<Base_>::const_void_pointer hint) -> typename std::allocator_traits<Base_>::pointer {
-		CALI_CXX_MARK_SCOPE("allocate_with_hint");
+		CALI_MARK_BEGIN("allocate_with_hint");
     auto ret = std::allocator_traits<Base_>::allocate(*this, n);
+		CALI_MARK_END("allocate_with_hint");		
     if(not hint) {
 			prefetch_to_device(ret, n*sizeof(T), get_current_device());
       return ret;
@@ -98,14 +102,15 @@ struct caching_allocator : Base_ {
   }
 	
 	constexpr void deallocate(typename std::allocator_traits<Base_>::pointer p, typename std::allocator_traits<Base_>::size_type n) {
-		CALI_CXX_MARK_SCOPE("deallocate");
-		Base_::deallocate(p, n);
+		CALI_MARK_BEGIN("deallocate");
+		Base_::deallocate(p, n);	
+		CALI_MARK_END("deallocate");	
 	}
 };
 #endif
 
 template <class type, size_t dim,
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 					class allocator = caching_allocator<type>
 #else
 					class allocator = std::allocator<type>
