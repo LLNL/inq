@@ -104,12 +104,6 @@ struct caching_allocator : Base_ {
 	
 private:
   using device_index = int;
-
-  static auto get_current_device() {
-    int device;
-    check_error(cudaGetDevice(&device));
-    return device;
-  }
 	
   static void prefetch_to_device(typename std::allocator_traits<Base_>::const_void_pointer p, typename std::allocator_traits<Base_>::size_type byte_count, device_index d) {
     check_error(cudaMemPrefetchAsync(raw_pointer_cast(p), byte_count, d));
@@ -149,9 +143,7 @@ void prefetch(ArrayType const &
 #endif
 							){
 #ifdef ENABLE_CUDA
-	int device;
-	cudaGetDevice(&device);
-	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), device);
+	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), get_current_device());
 #endif
 }
 

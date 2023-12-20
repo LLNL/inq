@@ -108,6 +108,14 @@ void sync(){
 #endif
 }
 
+auto get_current_device() {
+	int device = 0;
+#ifdef ENABLE_CUDA
+	check_error(cudaGetDevice(&device));
+#endif
+	return device;
+}
+
 }
 #endif
 
