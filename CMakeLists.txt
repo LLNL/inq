@@ -89,7 +89,12 @@ if(ENABLE_HIP)
 
 	find_package(hip REQUIRED)
 	target_link_libraries(inq INTERFACE hip::host)
+
+	find_package(rocprim REQUIRED CONFIG PATHS "/opt/rocm/rocprim") 	# On ROCm rocThrust requires rocPRIM
+	find_package(rocthrust REQUIRED CONFIG PATHS "/opt/rocm/rocthrust")
 	
+	target_link_libraries(inq INTERFACE roc::rocthrust)
+
 	set(ENABLE_GPU TRUE)
 	set(GPU_LANGUAGE HIP)
 endif()
