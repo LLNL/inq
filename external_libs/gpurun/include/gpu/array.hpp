@@ -18,6 +18,8 @@
 
 #include <complex>
 
+#include <gpu/host.hpp>
+
 #ifdef __NVCC__
 template<>
 inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<double>> = true;
@@ -102,30 +104,20 @@ struct caching_allocator : Base_ {
 	
 private:
   using device_index = int;
-  static auto get_current_device() -> device_index {
+
+  static auto get_current_device() {
     int device;
-    switch(cudaGetDevice(&device)) {
-    case cudaSuccess          : break;
-    case cudaErrorInvalidValue: assert(0);
-    }
+    check_error(cudaGetDevice(&device));
     return device;
   }
+	
   static void prefetch_to_device(typename std::allocator_traits<Base_>::const_void_pointer p, typename std::allocator_traits<Base_>::size_type byte_count, device_index d) {
-    switch(cudaMemPrefetchAsync(raw_pointer_cast(p), byte_count, d)) {
-    case cudaSuccess           : return;
-    case cudaErrorInvalidValue : ;
-    case cudaErrorInvalidDevice: ;
-    }
-    assert(0);
+    check_error(cudaMemPrefetchAsync(raw_pointer_cast(p), byte_count, d));
   }
 
   static auto get_device(typename std::allocator_traits<Base_>::const_void_pointer p) -> device_index {
     cudaPointerAttributes attr{};
-    switch(cudaPointerGetAttributes(&attr, raw_pointer_cast(p))) {
-    case cudaSuccess           : break;
-    case cudaErrorInvalidDevice:
-    case cudaErrorInvalidValue : assert(0);
-    }
+    check_error(cudaPointerGetAttributes(&attr, raw_pointer_cast(p)));
     assert(attr.type == cudaMemoryTypeManaged);
     return attr.device;
   }
