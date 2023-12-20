@@ -90,6 +90,7 @@
     #define PCG_EMULATED_128BIT_MATH 1
 #endif
 
+#include <gpu/run.hpp>
 
 namespace pcg_extras {
 
@@ -300,9 +301,7 @@ inline itype rotl(itype value, bitcount_t rot)
 }
 
 template <typename itype>
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline itype rotr(itype value, bitcount_t rot)
 {
     constexpr bitcount_t bits = sizeof(itype) * 8;
@@ -323,27 +322,21 @@ inline itype rotr(itype value, bitcount_t rot)
  */
 #if PCG_USE_INLINE_ASM && __GNUC__ && (__x86_64__  || __i386__)
 
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline uint8_t rotr(uint8_t value, bitcount_t rot)
 {
     asm ("rorb   %%cl, %0" : "=r" (value) : "0" (value), "c" (rot));
     return value;
 }
 
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline uint16_t rotr(uint16_t value, bitcount_t rot)
 {
     asm ("rorw   %%cl, %0" : "=r" (value) : "0" (value), "c" (rot));
     return value;
 }
 
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline uint32_t rotr(uint32_t value, bitcount_t rot)
 {
     asm ("rorl   %%cl, %0" : "=r" (value) : "0" (value), "c" (rot));
@@ -351,9 +344,7 @@ inline uint32_t rotr(uint32_t value, bitcount_t rot)
 }
 
 #if __x86_64__
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline uint64_t rotr(uint64_t value, bitcount_t rot)
 {
     asm ("rorq   %%cl, %0" : "=r" (value) : "0" (value), "c" (rot));
@@ -366,33 +357,25 @@ inline uint64_t rotr(uint64_t value, bitcount_t rot)
 
 #pragma intrinsic(_rotr, _rotr64, _rotr8, _rotr16)
 
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline uint8_t rotr(uint8_t value, bitcount_t rot)
 {
     return _rotr8(value, rot);
 }
 
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline uint16_t rotr(uint16_t value, bitcount_t rot)
 {
     return _rotr16(value, rot);
 }
 
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline uint32_t rotr(uint32_t value, bitcount_t rot)
 {
     return _rotr(value, rot);
 }
 
-#ifdef __CUDACC__
-__host__ __device__
-#endif
+GPU_FUNCTION
 inline uint64_t rotr(uint64_t value, bitcount_t rot)
 {
     return _rotr64(value, rot);

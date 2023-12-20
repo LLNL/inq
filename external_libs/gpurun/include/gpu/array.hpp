@@ -30,7 +30,7 @@ template<class T>
 inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
 #endif
 
-#ifdef ENABLE_GPU
+#ifdef ENABLE_CUDA
 #include<thrust/complex.h>
 
 #ifdef __NVCC__
@@ -47,7 +47,7 @@ inline constexpr bool ::boost::multi::force_element_trivial_default_construction
 #endif
 
 
-#ifdef ENABLE_GPU
+#ifdef ENABLE_CUDA
 #include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::universal_allocator<type>
 #include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
 #endif
@@ -60,7 +60,7 @@ inline constexpr bool ::boost::multi::force_element_trivial_default_construction
 
 namespace gpu {
 
-#ifdef ENABLE_GPU
+#ifdef ENABLE_CUDA
 template<typename Upstream, typename Bookkeeper>
 thrust::mr::disjoint_unsynchronized_pool_resource<Upstream, Bookkeeper>& 
 LEAKY_tls_disjoint_pool(
@@ -105,7 +105,7 @@ struct caching_allocator : Base_ {
 #endif
 
 template <class type, size_t dim,
-#ifdef ENABLE_GPU
+#ifdef ENABLE_CUDA
 					class allocator = caching_allocator<type>
 #else
 					class allocator = std::allocator<type>
