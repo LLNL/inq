@@ -113,15 +113,6 @@ template <class type, size_t dim,
 					>
 using array = boost::multi::array<type, dim, allocator>;
 
-template <class type, size_t dim,
-#ifdef ENABLE_GPU
-					class allocator = caching_allocator<type>
-#else
-					class allocator = std::allocator<type>
-#endif
-					>
-using array_nopre = boost::multi::array<type, dim, allocator>;
-
 template <typename ArrayType>
 void prefetch(ArrayType const & array){
 	prefetch_to_device(array.data_elements(), array.num_elements()*sizeof(typename ArrayType::element_type), get_current_device());
