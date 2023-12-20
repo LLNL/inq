@@ -128,6 +128,14 @@ auto get_device(PointerType pointer) {
 	return device;
 }
 
+constexpr auto cpu_device() {
+#ifdef ENABLE_CUDA
+	return cudaCpuDeviceId;
+#endif
+	return 0;
+}
+
+
 }
 #endif
 

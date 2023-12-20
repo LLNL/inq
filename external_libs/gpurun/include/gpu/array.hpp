@@ -147,7 +147,7 @@ void prefetch_cpu(ArrayType const &
 #endif
 							){
 #ifdef ENABLE_CUDA
-	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), cudaCpuDeviceId);
+	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), cpu_device());
 #endif
 }
 
