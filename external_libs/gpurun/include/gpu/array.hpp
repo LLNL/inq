@@ -54,7 +54,7 @@ inline constexpr bool ::boost::multi::force_element_trivial_default_construction
 #include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
 #endif
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #include "multi/adaptors/cuda/cublas.hpp" // must be included before blas.hpp
 #include "multi/adaptors/cuda/cublas/context.hpp" // must be included before blas.hpp
 #endif
