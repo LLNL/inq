@@ -83,12 +83,12 @@ auto diagonalize_raw(gpu::array<double, 2, Alloc>& matrix){
 	double lwork_query;
 
 	int info;
-	dsyev("V", "U", nn, matrix.data_elements(), nn, eigenvalues.data_elements(), &lwork_query, -1, info);
+	dsyev("V", "U", nn, raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(eigenvalues.data_elements()), &lwork_query, -1, info);
 
 	int lwork = int(lwork_query);
 	auto work = (double *) malloc(lwork*sizeof(complex));
     
-	dsyev("V", "U", nn, matrix.data_elements(), nn, eigenvalues.data_elements(), work, lwork, info);
+	dsyev("V", "U", nn, raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(eigenvalues.data_elements()), work, lwork, info);
 	assert(info == 0);
 		
 	free(work);
@@ -148,13 +148,13 @@ auto diagonalize_raw(gpu::array<complex, 2, Alloc>& matrix){
 	auto rwork = (double *) malloc(std::max(1, 3*nn - 2)*sizeof(double));
     
 	int info;
-	zheev("V", "U", nn, matrix.data_elements(), nn, eigenvalues.data_elements(), &lwork_query, -1, rwork, info);
+	zheev("V", "U", nn, raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(eigenvalues.data_elements()), &lwork_query, -1, rwork, info);
 
 
 	int lwork = int(real(lwork_query));
 	auto work = (complex *) malloc(lwork*sizeof(complex));
     
-	zheev("V", "U", nn, matrix.data_elements(), nn, eigenvalues.data_elements(), work, lwork, rwork, info);
+	zheev("V", "U", nn, raw_pointer_cast(matrix.data_elements()), nn, raw_pointer_cast(eigenvalues.data_elements()), work, lwork, rwork, info);
     
 	free(rwork);
 	free(work);
