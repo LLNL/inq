@@ -101,13 +101,6 @@ struct caching_allocator : Base_ {
 		CALI_CXX_MARK_SCOPE("deallocate");
 		Base_::deallocate(p, n);
 	}
-	
-private:
-	
-  static void prefetch_to_device(typename std::allocator_traits<Base_>::const_void_pointer p, typename std::allocator_traits<Base_>::size_type byte_count, int d) {
-    check_error(cudaMemPrefetchAsync(raw_pointer_cast(p), byte_count, d));
-  }
-
 };
 #endif
 
@@ -130,25 +123,13 @@ template <class type, size_t dim,
 using array_nopre = boost::multi::array<type, dim, allocator>;
 
 template <typename ArrayType>
-void prefetch(ArrayType const &
-#ifdef ENABLE_CUDA
-							array
-#endif
-							){
-#ifdef ENABLE_CUDA
-	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), get_current_device());
-#endif
+void prefetch(ArrayType const & array){
+	prefetch_to_device(array.data_elements(), array.num_elements()*sizeof(typename ArrayType::element_type), get_current_device());
 }
 
 template <typename ArrayType>
-void prefetch_cpu(ArrayType const &
-#ifdef ENABLE_CUDA
-							array
-#endif
-							){
-#ifdef ENABLE_CUDA
-	cudaMemPrefetchAsync(raw_pointer_cast(array.data_elements()), array.num_elements()*sizeof(typename ArrayType::element_type), cpu_device());
-#endif
+void prefetch_cpu(ArrayType const & array){
+	prefetch_to_device(array.data_elements(), array.num_elements()*sizeof(typename ArrayType::element_type), cpu_device());	
 }
 
 }

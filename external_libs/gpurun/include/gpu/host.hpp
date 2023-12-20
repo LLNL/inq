@@ -135,6 +135,12 @@ constexpr auto cpu_device() {
 	return 0;
 }
 
+template <typename PointerType, typename SizeType>
+void prefetch_to_device(PointerType pointer, SizeType byte_count, int device) {
+#ifdef ENABLE_CUDA
+	check_error(cudaMemPrefetchAsync(raw_pointer_cast(pointer), byte_count, device));
+#endif
+}
 
 }
 #endif
