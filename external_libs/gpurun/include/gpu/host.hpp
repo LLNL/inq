@@ -37,24 +37,6 @@
 
 namespace gpu {
 
-auto id() {
-#ifdef ENABLE_GPU
-#ifdef ENABLE_CUDA
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties(&prop, 0);
-#endif
-#ifdef ENABLE_HIP
-	hipDeviceProp_t prop;
-	hipGetDeviceProperties(&prop, 0);
-#endif
-	using namespace boost::archive::iterators;
-	using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
-	return std::string(it((unsigned char*)&prop.uuid), it((unsigned char*)&prop.uuid + sizeof(prop.uuid)));
-#else
-	return 0;
-#endif
-}
-
 #ifdef ENABLE_GPU
 template <class ErrorType>
 void check_error(ErrorType const & error){
@@ -76,6 +58,25 @@ void check_error(ErrorType const & error){
 #endif
 }
 #endif
+
+auto id() {
+#ifdef ENABLE_GPU
+#ifdef ENABLE_CUDA
+	cudaDeviceProp prop;
+	check_error(cudaGetDeviceProperties(&prop, 0));
+	auto uuid = prop.uuid;
+#endif
+#ifdef ENABLE_HIP
+	hipUUID uuid;
+	check_error(hipDeviceGetUuid(&uuid, 0));
+#endif
+	using namespace boost::archive::iterators;
+	using it = base64_from_binary<transform_width<unsigned char*, 6, 8>>;
+	return std::string(it((unsigned char*)&uuid), it((unsigned char*)&uuid + sizeof(uuid)));
+#else
+	return 0;
+#endif
+}
 
 auto last_error() {
 #ifdef ENABLE_CUDA
