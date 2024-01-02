@@ -21,9 +21,9 @@ int main(int argc, char ** argv){
 
   int const reps = 10;
   
-	input::environment env{};
+	auto & env = inq::input::environment::global();	
 
-  parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {1, boost::mpi3::fill});
+  parallel::cartesian_communicator<2> cart_comm(env.comm(), {1, boost::mpi3::fill});
 
 	auto basis_comm = cart_comm.axis(1);
 

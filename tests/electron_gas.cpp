@@ -13,13 +13,11 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 			
-	input::environment env{};
-	
 	utils::match energy_match(1.0e-5);
 
 	{
 		systems::ions ions(systems::cell::cubic(10.0_b));
-		systems::electrons electrons(env.par(), ions, input::kpoints::grid({1, 1, 3}), options::electrons{}.cutoff(30.0_Ha).temperature(300.0_K).extra_states(2).extra_electrons(14.0));
+		systems::electrons electrons(ions, input::kpoints::grid({1, 1, 3}), options::electrons{}.cutoff(30.0_Ha).temperature(300.0_K).extra_states(2).extra_electrons(14.0));
 		
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.energy_tolerance(1e-9_Ha));
@@ -35,7 +33,7 @@ int main(int argc, char ** argv){
 	{
 		auto a = 10.0_b;
 		systems::ions ions(systems::cell::lattice({a/sqrt(2.0), a/2.0, a/2.0}, {-a/sqrt(2), a/2.0, a/2.0}, {0.0_b, -a/sqrt(2.0), a/sqrt(2.0)}));
-		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha).temperature(300.0_K).extra_states(2).extra_electrons(14.0), input::kpoints::grid({1, 1, 3}));
+		systems::electrons electrons(ions, options::electrons{}.cutoff(30.0_Ha).temperature(300.0_K).extra_states(2).extra_electrons(14.0), input::kpoints::grid({1, 1, 3}));
 		
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.energy_tolerance(1e-9_Ha));
@@ -51,7 +49,7 @@ int main(int argc, char ** argv){
 	{
 		auto a = 10.0_b;
 		systems::ions ions(systems::cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2.0, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}));
-		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha).temperature(300.0_K).extra_states(2).extra_electrons(18.0), input::kpoints::grid({1, 1, 1}, false));
+		systems::electrons electrons(ions, options::electrons{}.cutoff(30.0_Ha).temperature(300.0_K).extra_states(2).extra_electrons(18.0), input::kpoints::grid({1, 1, 1}, false));
 		
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.energy_tolerance(1e-9_Ha));

@@ -12,9 +12,7 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	using namespace inq::magnitude;
-
-	input::environment env{};
-
+	
 	utils::match energy_match(3.0e-5);
 
 	auto a = 3.567095_A;
@@ -24,7 +22,7 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("C", {0.25, 0.25, 0.25});
 
 	{
-		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha).extra_states(3), input::kpoints::gamma() + input::kpoints::point({-0.5, -0.5, -0.5}, 0.0));
+		systems::electrons electrons(ions, options::electrons{}.cutoff(35.0_Ha).extra_states(3), input::kpoints::gamma() + input::kpoints::point({-0.5, -0.5, -0.5}, 0.0));
 		
 		ground_state::initial_guess(ions, electrons);
 		
@@ -54,7 +52,7 @@ int main(int argc, char ** argv){
 		energy_match.check("kinetic energy", operations::integral(ked), 11.411455188639);
 	}
 	
-	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha).extra_states(3), input::kpoints::grid({2, 2, 2}, true));
+	systems::electrons electrons(ions, options::electrons{}.cutoff(35.0_Ha).extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 	
 	ground_state::initial_guess(ions, electrons);
 

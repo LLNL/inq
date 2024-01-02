@@ -13,8 +13,6 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 
-	input::environment env{};
-	
 	utils::match match(3.0e-5);
 
 	systems::ions ions(systems::cell::cubic(10.0_b).finite());
@@ -25,7 +23,7 @@ int main(int argc, char ** argv){
 	ions.insert("O", {distance/2, 0.0_b, 0.0_b});	
 
 	{
-		systems::electrons electrons(env.par(), ions, options::electrons{}.spacing(0.43_b).spin_polarized().temperature(1000.0_K).extra_states(2));
+		systems::electrons electrons(ions, options::electrons{}.spacing(0.43_b).spin_polarized().temperature(1000.0_K).extra_states(2));
 		ground_state::initial_guess(ions, electrons);
 		
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), options::ground_state{}.mixing(0.2).energy_tolerance(1e-8_Ha));
@@ -51,7 +49,7 @@ int main(int argc, char ** argv){
 	}
 
 	{
-		systems::electrons electrons(env.par(), ions, options::electrons{}.spacing(0.43_b).spin_non_collinear().temperature(1000.0_K).extra_states(2));
+		systems::electrons electrons(ions, options::electrons{}.spacing(0.43_b).spin_non_collinear().temperature(1000.0_K).extra_states(2));
 		ground_state::initial_guess(ions, electrons);
 		ground_state::calculate(ions, electrons, options::theory{}.non_interacting(), options::ground_state{}.mixing(0.2).energy_tolerance(1e-8_Ha));
 	}

@@ -113,6 +113,18 @@ public:
 	}
 
 	template <typename KptsType = input::kpoints::list>
+	electrons(const inq::systems::ions & ions, KptsType const & kpts, const options::electrons & conf = {}):
+		electrons(input::environment::global().par(), ions, conf, kpts)
+	{
+	}
+
+	template <typename KptsType = input::kpoints::list>	
+	electrons(const inq::systems::ions & ions, const options::electrons & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
+		electrons(input::environment::global().par(), ions, conf, kpts)
+	{
+	}
+	
+	template <typename KptsType = input::kpoints::list>
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, KptsType const & kpts, const options::electrons & conf = {}):
 		electrons(dist, ions, conf, kpts)
 	{

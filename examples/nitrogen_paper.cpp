@@ -14,15 +14,13 @@ int main(int argc, char ** argv){
 	using namespace inq::input;
 	using namespace inq::magnitude;
 	
-	environment env{};
-
 	auto distance = 1.06_angstrom;
 	systems::ions ions(systems::cell::orthorhombic(10.0_b, 10.0_b, 12.0_b).finite());
 
 	ions.insert("N", {0.0_b, 0.0_b, -distance/2});
   ions.insert("N", {0.0_b, 0.0_b,  distance/2});
 	
-	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(40.0_Ha));
+	systems::electrons electrons(ions, options::electrons{}.cutoff(40.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe());

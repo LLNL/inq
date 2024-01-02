@@ -12,8 +12,7 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	using namespace inq::magnitude;
-
-	input::environment env{};
+	auto & env = inq::input::environment::global();
 
 	utils::match energy_match(3.0e-5);
 
@@ -29,10 +28,9 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	auto comm = boost::mpi3::environment::get_world_instance();
-	auto parstates = comm.size();
-	if(comm.size() == 4) parstates = 2;	
-	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
+	auto parstates = env.comm().size();
+	if(env.comm().size() == 4) parstates = 2;	
+	if(env.comm().size() == 3 or env.comm().size() == 5) parstates = 1;
 	
 	systems::electrons electrons(env.par().states(parstates), ions, options::electrons{}.extra_states(4).cutoff(25.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 

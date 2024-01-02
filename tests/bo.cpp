@@ -12,9 +12,7 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	using namespace inq::magnitude;
-	
-	input::environment env{};
-		
+
 	utils::match match(2.0e-5);
 
   //SINGLE ATOM SANITY CHECK
@@ -22,7 +20,7 @@ int main(int argc, char ** argv){
     systems::ions ions(systems::cell::cubic(8.0_b).finite());
     ions.insert(input::species("He").nofilter(), {0.0_b, 0.0_b, 0.0_b});
     
-    systems::electrons electrons(env.par(), ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
+    systems::electrons electrons(ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
     ground_state::initial_guess(ions, electrons);
 
     std::vector<double> energy;

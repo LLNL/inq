@@ -13,15 +13,13 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 	
-	input::environment env{};
-
 	utils::match match(1e-5);
 	
 	auto ions = systems::ions::parse(inq::config::path::unit_tests_data() + "water.xyz", inq::systems::cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());
-	
-	auto comm = boost::mpi3::environment::get_world_instance();
-	auto parstates = comm.size();
-	if(comm.size() == 3 or comm.size() == 5) parstates = 1;
+
+	auto & env = inq::input::environment::global();
+	auto parstates = env.comm().size();
+	if(env.comm().size() == 3 or env.comm().size() == 5) parstates = 1;
 	
 	systems::electrons electrons(env.par().states(parstates), ions, options::electrons{}.cutoff(30.0_Ha));
 

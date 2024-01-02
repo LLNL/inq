@@ -13,13 +13,11 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 
-	input::environment env{};
-
 	utils::match energy_match(3.0e-5);
 
   auto ions = systems::ions::parse(config::path::unit_tests_data() + "bn.poscar");
 
-  systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha).extra_states(3), input::kpoints::grid({2, 2, 2}, true));
+  systems::electrons electrons(ions, options::electrons{}.cutoff(35.0_Ha).extra_states(3), input::kpoints::grid({2, 2, 2}, true));
 	
   ground_state::initial_guess(ions, electrons);
 	

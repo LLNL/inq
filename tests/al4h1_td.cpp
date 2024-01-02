@@ -13,8 +13,6 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 	
-	input::environment env{};
-	
 	utils::match energy_match(1.0e-5);
 
 	auto alat = 7.6524459_bohr;
@@ -26,7 +24,7 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Al", {0.5, 0.5, 0.0});	
 	ions.insert_fractional("H",  {0.1, 0.2, 0.3});
 	
-	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha).extra_states(1).temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
+	systems::electrons electrons(ions, options::electrons{}.cutoff(30.0_Ha).extra_states(1).temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
 		
 	electrons.load("al4h1_restart");
 
