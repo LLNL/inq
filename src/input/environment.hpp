@@ -88,6 +88,10 @@ public:
 		return parallelization(base_comm_);
 	}
 
+	auto & comm() const {
+		return base_comm_;
+	}
+
 	static auto const & global() {
 		static environment global_env;
 		return global_env;
