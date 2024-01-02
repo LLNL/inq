@@ -14,7 +14,7 @@
 
 int main( int argc, char* argv[] ) {
 
-	inq::input::environment env{};
+	inq::input::environment::global(); //Initialize MPI 
 	
   int result = Catch::Session().run( argc, argv );
 
