@@ -19,8 +19,8 @@ int main(int argc, char ** argv){
 
   int const reps = 10;
 
-	inq::input::environment::global();
-	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	auto & env = inq::input::environment::global();
+	auto comm = env.comm();
 	comm.nccl_init();
 	
   if(comm.root()) printf("#  size [MB]      p2p [GB/s] agregate [GB/s]\n");
