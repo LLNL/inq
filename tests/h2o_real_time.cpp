@@ -13,8 +13,8 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 	
-	input::environment env{};
-
+	auto & env = inq::input::environment::global();
+	
 	utils::match match(1e-5);
 	
 	auto ions = systems::ions::parse(inq::config::path::unit_tests_data() + "water.xyz", inq::systems::cell::orthorhombic(12.0_b, 11.0_b, 10.0_b).finite());

@@ -12,11 +12,9 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 	
-	input::environment env{};
-
 	auto ions = systems::ions::parse(config::path::unit_tests_data() + "H.cif");
 
-	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha));
+	systems::electrons electrons(ions, options::electrons{}.cutoff(30.0_Ha));
 	ground_state::initial_guess(ions, electrons);
 	
 	auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));

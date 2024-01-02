@@ -13,8 +13,6 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 	
-	input::environment env{};
-		
 	utils::match energy_match(2.0e-5);
 
 	auto cell = systems::cell::cubic(15.0_b).finite();
@@ -24,7 +22,7 @@ int main(int argc, char ** argv){
 		
 		ions.insert(input::species("C").pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
 
-		systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
+		systems::electrons electrons(ions, options::electrons{}.cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
 		
 		ground_state::initial_guess(ions, electrons);
 		
@@ -48,7 +46,7 @@ int main(int argc, char ** argv){
 		
 		ions.insert(input::species("C"), {0.0_b, 0.0_b, 0.0_b});
 
-		systems::electrons electrons(env.par(), ions, options::electrons{}.pseudopotentials(pseudo::set::ccecp()).cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
+		systems::electrons electrons(ions, options::electrons{}.pseudopotentials(pseudo::set::ccecp()).cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
 		
 		ground_state::initial_guess(ions, electrons);
 		

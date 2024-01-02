@@ -13,8 +13,6 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 
-	input::environment env{};
-
 	utils::match energy_match(3.0e-5);
 
 	auto a = 10.18_b;
@@ -31,7 +29,7 @@ int main(int argc, char ** argv){
 
 	auto nk = 8;
 	
-	systems::electrons electrons(env.par(), ions, input::kpoints::grid({nk, nk, nk}, false), options::electrons{}.spacing(a/32));
+	systems::electrons electrons(ions, input::kpoints::grid({nk, nk, nk}, false), options::electrons{}.spacing(a/32));
 
 	auto functional = options::theory{}.pbe();
 	

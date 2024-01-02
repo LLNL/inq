@@ -14,8 +14,8 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	using namespace inq::magnitude;
-	
-	input::environment env{};
+
+	auto & env = inq::input::environment::global();
 
 	int pardomains = 1;
 	bool groundstate_only = false;

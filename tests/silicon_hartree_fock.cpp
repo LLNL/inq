@@ -12,8 +12,7 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	using namespace inq::magnitude;
-
-	input::environment env{};
+	auto & env = inq::input::environment::global();
 
 	utils::match energy_match(3.0e-5);
 

@@ -13,8 +13,6 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 
-	input::environment env{};
-
 	utils::match data_match(7.0e-5);
 
 	auto a = 10.18_b;
@@ -29,7 +27,7 @@ int main(int argc, char ** argv){
 	ions.insert_fractional("Si", {0.0,  0.5,  0.5 });
 	ions.insert_fractional("Si", {0.25, 0.75, 0.75});
 
-	systems::electrons electrons(env.par(), ions, options::electrons{}.cutoff(35.0_Ha), input::kpoints::grid({1, 1, 1}, true));
+	systems::electrons electrons(ions, options::electrons{}.cutoff(35.0_Ha), input::kpoints::grid({1, 1, 1}, true));
 	
 	ground_state::initial_guess(ions, electrons);
 	auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.energy_tolerance(1e-9_Ha));

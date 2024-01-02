@@ -13,8 +13,6 @@ int main(int argc, char ** argv){
 	using namespace inq;
 	using namespace inq::magnitude;
 	
-	input::environment env{};
-		
 	utils::match energy_match(2.0e-5);
 
 	systems::ions ions(systems::cell::cubic(15.0_b).finite());
@@ -22,7 +20,7 @@ int main(int argc, char ** argv){
 	
 	//REAL SPACE PSEUDO
 	{
-		systems::electrons electrons(env.par(), ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
+		systems::electrons electrons(ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
 		
@@ -37,7 +35,7 @@ int main(int argc, char ** argv){
 
 	//FOURIER SPACE PSEUDO
 	{
-		systems::electrons electrons(env.par(), ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha).fourier_pseudo());
+		systems::electrons electrons(ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha).fourier_pseudo());
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
 		
