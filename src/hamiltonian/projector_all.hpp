@@ -23,11 +23,7 @@ namespace hamiltonian {
 
 class projector_all {
 
-#ifndef ENABLE_CUDA
-private:
-#else
-public:
-#endif
+public: // for CUDA
 	
 	template <typename ProjectorsType>
 	void constructor(ProjectorsType const & projectors){
