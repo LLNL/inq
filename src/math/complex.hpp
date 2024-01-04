@@ -14,13 +14,13 @@
 #include <complex>
 #include <gpu/run.hpp>
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #include <thrust/complex.h>
 #endif
 
 namespace inq {
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 using complex = thrust::complex<double>;
 using thrust::polar;
 #else
