@@ -46,8 +46,10 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 			//MEMCPY
 			{
 				auto start_time = std::chrono::high_resolution_clock::now();
-#ifdef ENABLE_CUDA
+#if   defined(ENABLE_CUDA)
 				cudaMemcpy(raw_pointer_cast(dest.data_elements()), raw_pointer_cast(src.data_elements()), nn*nn*sizeof(complex), cudaMemcpyDeviceToDevice);
+#elif defined(ENABLE_HIP)
+				hipMemcpy (raw_pointer_cast(dest.data_elements()), raw_pointer_cast(src.data_elements()), nn*nn*sizeof(complex), hipMemcpyDeviceToDevice)==HIP_SUCCESS?void():assert(0);
 #else
 				memcpy(dest.data_elements(), src.data_elements(), nn*nn*sizeof(complex));
 #endif

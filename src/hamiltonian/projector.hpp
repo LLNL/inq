@@ -26,9 +26,7 @@ namespace hamiltonian {
 
 class projector {
 
-#ifdef ENABLE_CUDA
-public:
-#endif
+public: // for CUDA
 	
 	void build(basis::real_space const & basis, basis::double_grid const & double_grid, atomic_potential::pseudopotential_type const & ps) {
 

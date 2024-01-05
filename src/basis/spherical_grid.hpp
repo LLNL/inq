@@ -36,9 +36,7 @@ namespace basis {
 
   class spherical_grid {
 
-#ifdef ENABLE_CUDA
-	public:
-#endif
+	public: //because of CUDA
 		struct point_data {
 			vector3<int> coords_;
 			float distance_; //I don't think we need additional precision for this, and we get aligned memory

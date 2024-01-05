@@ -18,7 +18,7 @@
 #include <basis/fourier_space.hpp>
 #include <states/orbital_set.hpp>
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 #include <multi/adaptors/fft.hpp>
 #else
 #include <multi/adaptors/fftw.hpp>
@@ -120,7 +120,7 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 	assert(std::get<3>(sizes(array_rs)) == std::get<3>(sizes(array_fs)));
 	
 	namespace multi = boost::multi;
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 	namespace fft = multi::fft;
 #else
 	namespace fft = multi::fftw;
@@ -251,14 +251,14 @@ template <class InArray4D, class OutArray4D>
 void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space const & real_basis, InArray4D const & array_fs, OutArray4D && array_rs, bool normalize) {
 
 	CALI_CXX_MARK_FUNCTION;
-	
+
 	namespace multi = boost::multi;
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 	namespace fft = multi::fft;
 #else
 	namespace fft = multi::fftw;
 #endif
-	
+
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
 
@@ -309,7 +309,7 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 			auto tmpsub = tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]});
 
-#ifdef ENABLE_CUDA
+#ifdef ENABLE_GPU
 			//when using cuda, do a loop explicitly over the last dimension (n1), otherwise multi makes a loop over the 2 first ones (n0 and n1). And we know that n3 << n0*n1.
 			for(auto ii : extension(tmpsub.unrotated())) {
 				fft::dft_backward({false, false, true}, tmpsub.unrotated()[ii], array_rs.unrotated()[ii]);
