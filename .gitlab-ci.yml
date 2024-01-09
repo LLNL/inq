@@ -288,6 +288,7 @@ gcc-ompi-fast:
 
 clang-ompi-debug:
     stage: build
+    needs: []    
     script:
       - clang++ --version
       - mkdir build
@@ -354,6 +355,7 @@ clang-ompi-debug-5p:
 
 clang-ompi-fast:
     stage: build
+    needs: []
     script:
       - clang++ --version
       - mkdir build && cd build
