@@ -62,7 +62,8 @@ int main(int argc, char ** argv){
 	}
 
 	{
-		systems::electrons electrons(ions, options::electrons{}.cutoff(30.0_Ha).extra_states(1).temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
+		//do not add an extra state, so check that the restart works with less states
+		systems::electrons electrons(ions, options::electrons{}.cutoff(30.0_Ha).temperature(300.0_K), input::kpoints::grid({2, 2, 2}, true));
 		
 		electrons.load("al4h1_restart");
 		
