@@ -22,7 +22,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 endforeach()
 
 set_tests_properties(inq::tests::h2o_real_time PROPERTIES DEPENDS inq::tests::h2o_ground_state)
-set_tests_properties(inq::tests::al4h1_td PROPERTIES DEPENDS inq::tests::al4h1)
 
 #PYTHON TESTS
 
