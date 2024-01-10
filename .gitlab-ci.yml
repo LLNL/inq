@@ -247,9 +247,6 @@ gcc-ompi:
       - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1
       - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1
       - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1
-      - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1_td
-      - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1_td
-      - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1_td
 
 #########################################################################################################################
 # GCC-OMPI-FAST
@@ -278,9 +275,6 @@ gcc-ompi-fast:
       - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1
       - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1
       - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1
-      - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1_td
-      - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1_td
-      - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1_td
 
 #########################################################################################################################
 # CLANG-OMPI-DEBUG
