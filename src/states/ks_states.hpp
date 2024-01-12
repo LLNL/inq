@@ -101,6 +101,8 @@ public:
 		
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <class CommType, typename EigType, typename KwType, typename FunctionType>
 	auto get_efermi(CommType & comm, double nelec, EigType const & eig, KwType const & kw, FunctionType function){
 			
@@ -136,13 +138,13 @@ public:
 		}
 		return efermi;		
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <class CommType, typename EigenvalType, typename KpinWeightsType, typename OccsType>
 	double update_occupations(CommType & comm, EigenvalType const & eigenval, KpinWeightsType const & kpin_weights, OccsType & occs) {
 
 		assert(sizes(eigenval) == sizes(occs));
-		
-		double efermi;
 		
 		auto feig = eigenval.flatted();
 		auto focc = occs.flatted();
@@ -153,14 +155,24 @@ public:
 							 kw[jj][ii] = kp[jj];
 						 });
 		auto fkw = kweights.flatted();
-		
+
+		return get_occupations(num_electrons_, comm, feig, fkw, focc);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	template <class CommType, typename EigenvalType, typename KpinWeightsType, typename OccsType>
+	double get_occupations(double const electrons_available, CommType & comm, EigenvalType const & feig, KpinWeightsType const & fkw, OccsType & focc){
+
+		double efermi;
+
 		if(temperature_ == 0.0){
 
 			auto func = [] (auto efermi, auto eig){
 				return (eig <= efermi) ? 1.0 :  0.0;
 			};
 
-			auto nelec = ceil(num_electrons_/max_occ_)*max_occ_; 
+			auto nelec = ceil(electrons_available/max_occ_)*max_occ_; 
 
 			efermi = get_efermi(comm, nelec, feig, fkw, func);
 
@@ -186,7 +198,8 @@ public:
 
 			if(comm.rank() == -out.index) {
 				assert(out.value == homo);
-				focc[homoloc] -= nelec - num_electrons_;
+				focc[homoloc] -= nelec - electrons_available;
+				assert(focc[homoloc] >= 0.0);
 			} else {
 				assert(out.value >= homo);
 			}
@@ -199,14 +212,16 @@ public:
 				return smear_function((efermi - eig)/dsmear);
 			};
 			
-			efermi = get_efermi(comm, num_electrons_, feig, fkw, func);
+			efermi = get_efermi(comm, electrons_available, feig, fkw, func);
 			
 			for(long ie = 0; ie < feig.size(); ie++){
 				focc[ie] = max_occ_*fkw[ie]*func(efermi, feig[ie]);
+				assert(focc[ie] >= 0.0);
 			}
+
 		}
 		
-		assert(fabs(comm.all_reduce_value(operations::sum(focc)) - num_electrons_) <= 1e-10);
+		assert(fabs(comm.all_reduce_value(operations::sum(focc)) - electrons_available) <= 1e-10);
 		
 		return efermi;
 	}
