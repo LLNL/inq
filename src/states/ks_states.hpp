@@ -199,6 +199,7 @@ public:
 			if(comm.rank() == -out.index) {
 				assert(out.value == homo);
 				focc[homoloc] -= nelec - electrons_available;
+				assert(focc[homoloc] >= 0.0);
 			} else {
 				assert(out.value >= homo);
 			}
@@ -215,7 +216,9 @@ public:
 			
 			for(long ie = 0; ie < feig.size(); ie++){
 				focc[ie] = max_occ_*fkw[ie]*func(efermi, feig[ie]);
+				assert(focc[ie] >= 0.0);
 			}
+
 		}
 		
 		assert(fabs(comm.all_reduce_value(operations::sum(focc)) - electrons_available) <= 1e-10);
