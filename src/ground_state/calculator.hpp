@@ -134,6 +134,7 @@ public:
 		electrons.full_comm().barrier();
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 
+		auto converged = false;
 		res.total_iter = solver_.scf_steps();
 		int conv_count = 0;
 		for(int iiter = 0; iiter < solver_.scf_steps(); iiter++){
@@ -215,6 +216,7 @@ public:
 					conv_count++;
 					if(conv_count > 2 and exe_diff < solver_.energy_tolerance()) {
 						res.total_iter = iiter;
+						converged = true;
 						break;
 					}
 					if(conv_count > 2) update_hf = true;
@@ -226,6 +228,10 @@ public:
 			}
 		}
 
+		if(solver_.scf_steps() > 0 and not converged) {
+			throw std::runtime_error("The SCF calculation did not converge. Try reducing the mixing parameter.\n"); 
+		}
+		
 		//make sure we have a density consistent with phi
 		electrons.spin_density() = observables::density::calculate(electrons);
 		sc_.update_hamiltonian(ham_, res.energy, electrons.spin_density());
@@ -236,7 +242,7 @@ public:
 		auto ev_out = eigenvalues_output(electrons, normres);		
 		
 		if(solver_.verbose_output() and console) {
-			console->info("\nSCF iters ended with resulting eigenvalues and energies:\n\n{}{}", ev_out.full(), res.energy);
+			console->info("\nSCF ended after {} iterations with resulting eigenvalues and energies:\n\n{}{}", res.total_iter, ev_out.full(), res.energy);
 		}
 		
 		if(ions_.cell().periodicity() == 0){
