@@ -258,12 +258,21 @@ namespace systems {
 
 		void save(parallel::communicator & comm, std::string const & dirname) const {
 			auto error_message = "INQ error: Cannot save the cell to directory '" + dirname + "'.";
-			
+
+			auto exception_happened = true;
 			if(comm.root()) {
-				std::filesystem::create_directories(dirname);
+
+				try { std::filesystem::create_directories(dirname); }
+				catch(...) {
+					comm.broadcast_value(exception_happened);
+					throw std::runtime_error(error_message);
+				}
 				
 				auto lattice_file = std::ofstream(dirname + "/lattice");
-				if(not lattice_file) throw std::runtime_error(error_message);				
+				if(not lattice_file) {
+					comm.broadcast_value(exception_happened);					
+					throw std::runtime_error(error_message);
+				}
 				lattice_file.precision(25);
 				
 				for(int ilat = 0; ilat < 3; ilat++){
@@ -274,8 +283,18 @@ namespace systems {
 				}
 
 				auto periodicity_file = std::ofstream(dirname + "/periodicity");
-				if(not periodicity_file) throw std::runtime_error(error_message);				
+				if(not periodicity_file) {
+					comm.broadcast_value(exception_happened);
+					throw std::runtime_error(error_message);
+				}
 				periodicity_file << periodicity_ << std::endl;
+
+				exception_happened = false;
+				comm.broadcast_value(exception_happened);
+				
+			} else {
+				comm.broadcast_value(exception_happened);
+				if(exception_happened) throw std::runtime_error(error_message);
 			}
 			
 			comm.barrier();
