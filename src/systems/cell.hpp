@@ -12,6 +12,8 @@
 #include <magnitude/length.hpp>
 
 #include <stdexcept>
+#include <filesystem>
+#include <fstream>
 
 #include <math/vector3.hpp>
 #include <valarray>
@@ -250,6 +252,28 @@ namespace systems {
 		auto is_cartesian() const {
 			return is_orthogonal() and lattice_[0][1] < 1e-8 and lattice_[0][2] < 1e-8;
 		}
+
+		void save(parallel::communicator & comm, std::string const & dirname) const {
+			
+			if(comm.root()) {
+				std::filesystem::create_directories(dirname);
+
+				auto lattice_file = std::ofstream(dirname + "/lattice");
+				lattice_file.precision(25);
+				
+				for(int ilat = 0; ilat < 3; ilat++){
+					for(int idir = 0; idir < 3; idir++){
+						lattice_file << lattice_[ilat][idir] << '\t';
+					}
+					lattice_file << '\n';
+				}
+
+				auto periodicity_file = std::ofstream(dirname + "/periodicity");
+				periodicity_file << periodicity_ << std::endl;
+			}
+			
+			comm.barrier();
+		}
 		
   };
 
@@ -268,6 +292,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
+
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
   {
 		SECTION("Cubic"){
@@ -337,6 +363,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(cell[2][1] == 1.8897261246_a);
 			CHECK(cell[2][2] == 0.0_a);
 			CHECK(cell.periodicity() == 3);
+
+			cell.save(comm, "cell_non_orthogonal_save");
 			
 		}
 		
