@@ -12,6 +12,8 @@
 #include <magnitude/length.hpp>
 
 #include <stdexcept>
+#include <filesystem>
+#include <fstream>
 
 #include <math/vector3.hpp>
 #include <valarray>
@@ -33,7 +35,10 @@ namespace systems {
     cell(vector3<double> const& a0, vector3<double> const& a1, vector3<double> const& a2, int arg_periodicity = 3){
 			
 			periodicity_ = arg_periodicity;
-		
+
+			assert(periodicity_ >= 0);
+			assert(periodicity_ <= 3);			
+			
 			lattice_[0] = a0;
 			lattice_[1] = a1;
 			lattice_[2] = a2;
@@ -250,6 +255,74 @@ namespace systems {
 		auto is_cartesian() const {
 			return is_orthogonal() and lattice_[0][1] < 1e-8 and lattice_[0][2] < 1e-8;
 		}
+
+		void save(parallel::communicator & comm, std::string const & dirname) const {
+			auto error_message = "INQ error: Cannot save the cell to directory '" + dirname + "'.";
+
+			auto exception_happened = true;
+			if(comm.root()) {
+
+				try { std::filesystem::create_directories(dirname); }
+				catch(...) {
+					comm.broadcast_value(exception_happened);
+					throw std::runtime_error(error_message);
+				}
+				
+				auto lattice_file = std::ofstream(dirname + "/lattice");
+				if(not lattice_file) {
+					comm.broadcast_value(exception_happened);					
+					throw std::runtime_error(error_message);
+				}
+				lattice_file.precision(25);
+				
+				for(int ilat = 0; ilat < 3; ilat++){
+					for(int idir = 0; idir < 3; idir++){
+						lattice_file << lattice_[ilat][idir] << '\t';
+					}
+					lattice_file << '\n';
+				}
+
+				auto periodicity_file = std::ofstream(dirname + "/periodicity");
+				if(not periodicity_file) {
+					comm.broadcast_value(exception_happened);
+					throw std::runtime_error(error_message);
+				}
+				periodicity_file << periodicity_ << std::endl;
+
+				exception_happened = false;
+				comm.broadcast_value(exception_happened);
+				
+			} else {
+				comm.broadcast_value(exception_happened);
+				if(exception_happened) throw std::runtime_error(error_message);
+			}
+			
+			comm.barrier();
+		}
+
+		static auto load(std::string const & dirname) {
+			auto error_message = "INQ error: Cannot load the cell from directory '" + dirname + "'.";
+			
+			vector3<double> lat[3];
+			
+			auto lattice_file = std::ifstream(dirname + "/lattice");			
+			if(not lattice_file) throw std::runtime_error(error_message);
+			
+			for(int ilat = 0; ilat < 3; ilat++){
+				for(int idir = 0; idir < 3; idir++){
+					lattice_file >> lat[ilat][idir];
+				}
+			}
+			
+			int per;
+			
+			auto periodicity_file = std::ifstream(dirname + "/periodicity");
+			if(not periodicity_file) throw std::runtime_error(error_message);
+			
+			periodicity_file >> per;
+
+			return cell(lat[0], lat[1], lat[2], per);
+		}
 		
   };
 
@@ -268,6 +341,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
+
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
   {
 		SECTION("Cubic"){
@@ -337,6 +412,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(cell[2][1] == 1.8897261246_a);
 			CHECK(cell[2][2] == 0.0_a);
 			CHECK(cell.periodicity() == 3);
+        
+			cell.save(comm, "cell_non_orthogonal_save");
+			auto read_cell = systems::cell::load("cell_non_orthogonal_save");
+			
+			CHECK(read_cell[0][0] == 0.0_a);
+			CHECK(read_cell[0][1] == 1.8897261246_a);
+			CHECK(read_cell[0][2] == 1.8897261246_a);
+			CHECK(read_cell[1][0] == 1.8897261246_a);
+			CHECK(read_cell[1][1] == 0.0_a);
+			CHECK(read_cell[1][2] == 1.8897261246_a);
+			CHECK(read_cell[2][0] == 1.8897261246_a);
+			CHECK(read_cell[2][1] == 1.8897261246_a);
+			CHECK(read_cell[2][2] == 0.0_a);
+			CHECK(read_cell.periodicity() == 3);
 			
 		}
 		
@@ -628,7 +717,91 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(not cell.is_orthogonal());
 			CHECK(not cell.is_cartesian());
+
+			cell.save(comm, "cell_non_orthogonal_save_2");
+
+			auto read_cell = systems::cell::load("cell_non_orthogonal_save_2");
+
+			CHECK(read_cell.lattice(0)[0] == 6.942_a);
+			CHECK(read_cell.lattice(0)[1] == 8.799_a);
+			CHECK(read_cell.lattice(0)[2] == 4.759_a);
+			CHECK(read_cell.lattice(1)[0] == 9.627_a);
+			CHECK(read_cell.lattice(1)[1] == 7.092_a);
+			CHECK(read_cell.lattice(1)[2] == 4.819_a);
+			CHECK(read_cell.lattice(2)[0] == 4.091_a);
+			CHECK(read_cell.lattice(2)[1] == 0.721_a);
+			CHECK(read_cell.lattice(2)[2] == 1.043_a);
+		
+			CHECK(read_cell.reciprocal(0)[0] == 3.3736397602_a);
+			CHECK(read_cell.reciprocal(0)[1] == 8.3200742872_a);
+			CHECK(read_cell.reciprocal(0)[2] == -18.9840209206_a);
+			CHECK(read_cell.reciprocal(1)[0] == -4.942140131_a);
+			CHECK(read_cell.reciprocal(1)[1] == -10.517582818_a);
+			CHECK(read_cell.reciprocal(1)[2] == 26.6552948109_a);
+			CHECK(read_cell.reciprocal(2)[0] == 7.4410562534_a);
+			CHECK(read_cell.reciprocal(2)[1] == 10.6318294029_a);
+			CHECK(read_cell.reciprocal(2)[2] == -30.5117208294_a);
+		
+			CHECK(read_cell.volume() == 7.305321831_a);
+
+			CHECK(dot(read_cell.reciprocal(0), read_cell.lattice(0)) == Approx(2.0*M_PI));
+			CHECK(dot(read_cell.reciprocal(1), read_cell.lattice(0)) < 1e-12);
+			CHECK(dot(read_cell.reciprocal(2), read_cell.lattice(0)) < 1e-12);
+			CHECK(dot(read_cell.reciprocal(0), read_cell.lattice(1)) < 1e-12);
+			CHECK(dot(read_cell.reciprocal(1), read_cell.lattice(1)) == Approx(2.0*M_PI));
+			CHECK(dot(read_cell.reciprocal(2), read_cell.lattice(1)) < 1e-12);
+			CHECK(dot(read_cell.reciprocal(0), read_cell.lattice(2)) < 1e-12);
+			CHECK(dot(read_cell.reciprocal(1), read_cell.lattice(2)) < 1e-12);
+			CHECK(dot(read_cell.reciprocal(2), read_cell.lattice(2)) == Approx(2.0*M_PI));
+			
+			CHECK(read_cell.metric().to_cartesian(vector3<double, contravariant>(0.2, -0.5, 0.867))[0] == 0.121797_a);
+			CHECK(read_cell.metric().to_cartesian(vector3<double, contravariant>(0.2, -0.5, 0.867))[1] == -1.161093_a);
+			CHECK(read_cell.metric().to_cartesian(vector3<double, contravariant>(0.2, -0.5, 0.867))[2] == -0.553419_a);
+
+			CHECK(read_cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[0] == -39.3396165136_a);
+			CHECK(read_cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[1] == 50.8091863243_a);
+			CHECK(read_cell.metric().to_contravariant(vector3<double>(0.66, -23.77, 2.72))[2] == -52.6483546581_a);
+
+			CHECK(!read_cell.contains(vector3<double, contravariant>(0.5, 0.5, 0.5)));
+			CHECK(!read_cell.contains(vector3<double, contravariant>(1.5, 0.5, 0.5)));
+			CHECK(!read_cell.contains(vector3<double, contravariant>(0.5, -0.1, 0.0)));
+			CHECK(!read_cell.contains(vector3<double, contravariant>(0.5, 0.5, -1.0)));
+
+			{
+				auto vv = read_cell.metric().to_contravariant(vector3<double, cartesian>{9.627, 7.092, 4.819});
+				CHECK(fabs(vv[0]) < 1e-12);			
+				CHECK(vv[1] == 1.0_a);
+				CHECK(fabs(vv[2]) < 1e-12);
+
+				auto vv2 = read_cell.metric().to_cartesian(vv);
+				CHECK(vv2[0] == 9.627_a);				
+				CHECK(vv2[1] == 7.092_a);
+				CHECK(vv2[2] == 4.819_a);
+
+				CHECK(norm(vv2) == Approx(dot(vv, read_cell.metric().to_covariant(vv))));
+			}
+
+			CHECK(not read_cell.is_orthogonal());
+			CHECK(not read_cell.is_cartesian());
+			
     }
+
+    SECTION("Bad load and save"){
+
+			CHECK_THROWS(systems::cell::load("this_directory_doesnt_exist"));
+
+			auto cell = systems::cell::cubic(10.2_b).periodic();
+			
+			CHECK_THROWS(cell.save(comm, "\0"));
+
+			if(comm.root()) {
+				//generate a directory with the name of the file we will try to create
+				std::filesystem::create_directories("dummy_dir/periodicity");
+			}
+			
+			CHECK_THROWS(cell.save(comm, "dummy_dir"));
+
+		}
   }
 }
 #endif
