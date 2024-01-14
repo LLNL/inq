@@ -199,6 +199,16 @@ public:
 		return energy;
 	}
 
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		cell_.save(comm, dirname + "/cell");
+		comm.barrier();
+	}
+	
+	static auto load(std::string const & dirname) {
+		auto cell = systems::cell::load(dirname + "/cell");
+		return ions(cell);
+	}
+	
 };
 
 }
@@ -215,6 +225,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	
 	SECTION("Create empty and add an atom"){
 		
 		auto dcc = 1.42_A;
@@ -834,6 +846,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.positions()[4][0] == 0.0_a);
 		CHECK(ions.positions()[4][1] == 0.0_a);
 		CHECK(ions.positions()[4][2] == 13.3414664399_a);
+
+		ions.save(comm, "save_ions_ni");
+
+		auto read_ions = systems::ions::load("save_ions_ni");
+
+		CHECK(read_ions.cell().lattice(0)[0] == 3.33536661_a);
+		CHECK(read_ions.cell().lattice(0)[1] == 3.33536661_a);
+		CHECK(read_ions.cell().lattice(0)[2] == 0.0_a);
+		CHECK(read_ions.cell().lattice(1)[0] == -3.33536661_a);
+		CHECK(read_ions.cell().lattice(1)[1] == 3.33536661_a);
+		CHECK(read_ions.cell().lattice(1)[2] == 0.0_a);
+		CHECK(read_ions.cell().lattice(2)[0] == 0.0_a);
+		CHECK(read_ions.cell().lattice(2)[1] == 0.0_a);
+		CHECK(read_ions.cell().lattice(2)[2] == 33.3536660997_a);
 		
 	}
 
