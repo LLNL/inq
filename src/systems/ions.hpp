@@ -201,11 +201,40 @@ public:
 
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		cell_.save(comm, dirname + "/cell");
+
+		auto error_message = "INQ error: Cannot save the ions to directory '" + dirname + "'.";
+		
+		auto exception_happened = true;
+		if(comm.root()) {
+			
+			auto num_ions_file = std::ofstream(dirname + "/num_ions");
+			if(not num_ions_file) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+			num_ions_file << size() << std::endl;
+			
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+				if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
 		comm.barrier();
 	}
 	
 	static auto load(std::string const & dirname) {
 		auto cell = systems::cell::load(dirname + "/cell");
+
+		auto error_message = "INQ error: Cannot load the ions from directory '" + dirname + "'.";
+		
+		int num;
+		auto num_ions_file = std::ifstream(dirname + "/num_ions");
+		if(not num_ions_file) throw std::runtime_error(error_message);
+		num_ions_file >> num;
+		
 		return ions(cell);
 	}
 	
@@ -847,9 +876,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.positions()[4][1] == 0.0_a);
 		CHECK(ions.positions()[4][2] == 13.3414664399_a);
 
-		ions.save(comm, "save_ions_ni");
+		ions.save(comm, "ions_save_ni");
 
-		auto read_ions = systems::ions::load("save_ions_ni");
+		auto read_ions = systems::ions::load("ions_save_ni");
 
 		CHECK(read_ions.cell().lattice(0)[0] == 3.33536661_a);
 		CHECK(read_ions.cell().lattice(0)[1] == 3.33536661_a);
