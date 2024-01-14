@@ -35,7 +35,10 @@ namespace systems {
     cell(vector3<double> const& a0, vector3<double> const& a1, vector3<double> const& a2, int arg_periodicity = 3){
 			
 			periodicity_ = arg_periodicity;
-		
+
+			assert(periodicity_ >= 0);
+			assert(periodicity_ <= 3);			
+			
 			lattice_[0] = a0;
 			lattice_[1] = a1;
 			lattice_[2] = a2;
@@ -276,19 +279,25 @@ namespace systems {
 		}
 
 		static auto load(std::string const & dirname) {
+			auto error_message = "INQ error: Cannot read cell from directory '" + dirname + "'.";
+			
 			vector3<double> lat[3];
 			
 			auto lattice_file = std::ifstream(dirname + "/lattice");
-					
+			
+			if(not lattice_file) throw std::runtime_error(error_message);
+			
 			for(int ilat = 0; ilat < 3; ilat++){
 				for(int idir = 0; idir < 3; idir++){
 					lattice_file >> lat[ilat][idir];
 				}
 			}
-
+			
 			int per;
 			
 			auto periodicity_file = std::ifstream(dirname + "/periodicity");
+			if(not periodicity_file) throw std::runtime_error(error_message);
+			
 			periodicity_file >> per;
 
 			return cell(lat[0], lat[1], lat[2], per);
@@ -755,6 +764,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(not read_cell.is_cartesian());
 			
     }
+
+    SECTION("Bad load and save"){
+
+			CHECK_THROWS(systems::cell::load("this_directory_doesnt_exist"));
+			
+		}
   }
 }
 #endif
