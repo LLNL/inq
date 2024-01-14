@@ -206,13 +206,26 @@ public:
 		
 		auto exception_happened = true;
 		if(comm.root()) {
-			
+
+
+			//number of ions
 			auto num_ions_file = std::ofstream(dirname + "/num_ions");
 			if(not num_ions_file) {
 				comm.broadcast_value(exception_happened);
 				throw std::runtime_error(error_message);
 			}
 			num_ions_file << size() << std::endl;
+
+			//atoms
+			auto atoms_file = std::ofstream(dirname + "/atoms");
+			if(not atoms_file) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+
+			for(auto & atom : atoms_){
+				atoms_file << atom.symbol() << std::endl;
+			}
 			
 			exception_happened = false;
 			comm.broadcast_value(exception_happened);
