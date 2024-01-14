@@ -257,11 +257,13 @@ namespace systems {
 		}
 
 		void save(parallel::communicator & comm, std::string const & dirname) const {
+			auto error_message = "INQ error: Cannot save the cell to directory '" + dirname + "'.";
 			
 			if(comm.root()) {
 				std::filesystem::create_directories(dirname);
-
+				
 				auto lattice_file = std::ofstream(dirname + "/lattice");
+				if(not lattice_file) throw std::runtime_error(error_message);				
 				lattice_file.precision(25);
 				
 				for(int ilat = 0; ilat < 3; ilat++){
@@ -272,6 +274,7 @@ namespace systems {
 				}
 
 				auto periodicity_file = std::ofstream(dirname + "/periodicity");
+				if(not periodicity_file) throw std::runtime_error(error_message);				
 				periodicity_file << periodicity_ << std::endl;
 			}
 			
@@ -279,12 +282,11 @@ namespace systems {
 		}
 
 		static auto load(std::string const & dirname) {
-			auto error_message = "INQ error: Cannot read cell from directory '" + dirname + "'.";
+			auto error_message = "INQ error: Cannot load the cell from directory '" + dirname + "'.";
 			
 			vector3<double> lat[3];
 			
-			auto lattice_file = std::ifstream(dirname + "/lattice");
-			
+			auto lattice_file = std::ifstream(dirname + "/lattice");			
 			if(not lattice_file) throw std::runtime_error(error_message);
 			
 			for(int ilat = 0; ilat < 3; ilat++){
@@ -768,7 +770,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     SECTION("Bad load and save"){
 
 			CHECK_THROWS(systems::cell::load("this_directory_doesnt_exist"));
+
+			auto cell = systems::cell::cubic(10.2_b).periodic();
 			
+			CHECK_THROWS(cell.save(comm, "\0"));
+
+			if(comm.root()) {
+				//generate a directory with the name of the file we will try to create
+				std::filesystem::create_directories("dummy_dir/periodicity");
+			}
+			
+			CHECK_THROWS(cell.save(comm, "dummy_dir"));
+
 		}
   }
 }
