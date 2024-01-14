@@ -198,7 +198,7 @@ public:
 		}
 		return energy;
 	}
-	
+
 };
 
 }
