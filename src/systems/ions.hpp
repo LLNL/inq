@@ -264,13 +264,34 @@ public:
 		auto cell = systems::cell::load(dirname + "/cell");
 
 		auto error_message = "INQ error: Cannot load the ions from directory '" + dirname + "'.";
+
+		auto read_ions = ions(cell);
 		
 		int num;
 		auto num_ions_file = std::ifstream(dirname + "/num_ions");
 		if(not num_ions_file) throw std::runtime_error(error_message);
 		num_ions_file >> num;
+
+		auto atoms_file = std::ifstream(dirname + "/atoms");
+		if(not atoms_file) throw std::runtime_error(error_message);
+
+		auto positions_file = std::ifstream(dirname + "/positions");
+		if(not positions_file) throw std::runtime_error(error_message);
+
+		auto velocities_file = std::ifstream(dirname + "/velocities");
+		if(not velocities_file) throw std::runtime_error(error_message);
+
+		for(int iatom = 0; iatom < num; iatom++){
+			std::string symbol;
+			vector3<double> pos, vel;
+			atoms_file >> symbol;
+			positions_file >> pos;
+			velocities_file >> vel;
+			
+			read_ions.add_atom(symbol, pos, vel);
+		}		
 		
-		return ions(cell);
+		return read_ions;
 	}
 	
 };
@@ -924,6 +945,26 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(read_ions.cell().lattice(2)[0] == 0.0_a);
 		CHECK(read_ions.cell().lattice(2)[1] == 0.0_a);
 		CHECK(read_ions.cell().lattice(2)[2] == 33.3536660997_a);
+
+		CHECK(read_ions.positions()[0][0] == 0.0_a);
+		CHECK(read_ions.positions()[0][1] == 0.0_a);
+		CHECK(read_ions.positions()[0][2] == 0.0_a);
+
+		CHECK(read_ions.positions()[1][0] == 0.0_a);
+		CHECK(read_ions.positions()[1][1] == 3.33536661_a);
+		CHECK(read_ions.positions()[1][2] == 3.33536661_a);
+
+		CHECK(read_ions.positions()[2][0] == 0.0_a);
+		CHECK(read_ions.positions()[2][1] == 0.0_a);
+		CHECK(read_ions.positions()[2][2] == 6.6707332199_a);
+
+		CHECK(read_ions.positions()[3][0] == 0.0_a);
+		CHECK(read_ions.positions()[3][1] == 3.33536661_a);
+		CHECK(read_ions.positions()[3][2] == 10.0060998299_a);
+
+		CHECK(read_ions.positions()[4][0] == 0.0_a);
+		CHECK(read_ions.positions()[4][1] == 0.0_a);
+		CHECK(read_ions.positions()[4][2] == 13.3414664399_a);
 		
 	}
 
