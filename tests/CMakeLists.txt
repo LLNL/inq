@@ -21,8 +21,6 @@ foreach(TEST_FILE ${TEST_SRCS})
   endif()
 endforeach()
 
-set_tests_properties(inq::tests::h2o_real_time PROPERTIES DEPENDS inq::tests::h2o_ground_state)
-
 #PYTHON TESTS
 
 file(GLOB TEST_SCRIPTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
