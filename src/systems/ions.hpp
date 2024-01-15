@@ -38,10 +38,10 @@ private:
 	velocities_type velocities_;	
 
 	template <typename PositionType>
-	void add_atom(input::species const & element, PositionType const & position){
+	void add_atom(input::species const & element, PositionType const & position, vector3<double> const & vel = vector3<double>(0.0, 0.0, 0.0)){
 		atoms_.push_back(element);
 		positions_.push_back(in_atomic_units(position));
-		velocities_.push_back(vector3<double>(0.0, 0.0, 0.0));
+		velocities_.push_back(vel);
 	}
 
 public:
