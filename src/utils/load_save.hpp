@@ -19,7 +19,7 @@ namespace utils {
 template <typename Type>
 void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) return;
-	
+
 	auto file = std::ofstream(filename);
 	file.precision(25);
 	
@@ -29,6 +29,21 @@ void save_optional(parallel::communicator & comm, std::string const & filename, 
 		throw std::runtime_error(error_message);
 	}
 	file << *value << std::endl;
+}
+
+template <typename Type>
+void save_optional_enum(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+	if(not value.has_value()) return;
+	
+	auto file = std::ofstream(filename);
+	file.precision(25);
+	
+	if(not file) {
+		auto exception_happened = true;
+		comm.broadcast_value(exception_happened);
+		throw std::runtime_error(error_message);
+	}
+	file << static_cast<int>(*value) << std::endl;
 }
 
 template <typename Type>

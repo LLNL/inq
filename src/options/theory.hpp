@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <utils/merge_optional.hpp>
+#include <utils/load_save.hpp>
 
 #include <cassert>
 #include <optional>
@@ -158,6 +158,33 @@ public:
 		return alpha_.value();
 	}
 
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save theory to directory '" + dirname + "'.";
+		
+		auto exception_happened = true;
+		if(comm.root()) {
+			
+			try { std::filesystem::create_directories(dirname); }
+			catch(...) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+
+			utils::save_optional(comm, dirname + "/hartee_potential", hartree_potential_, error_message);
+			utils::save_optional_enum(comm, dirname + "/exchange", exchange_, error_message);
+			utils::save_optional_enum(comm, dirname + "/correlation", correlation_, error_message);
+			utils::save_optional(comm, dirname + "/alpha", alpha_, error_message);
+
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+			if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
 		
 };
     
@@ -175,6 +202,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	
 	SECTION("Defaults"){
 
     options::theory inter;
@@ -183,15 +212,19 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(inter.exchange() == options::theory::exchange_functional::PBE);
 		CHECK(inter.correlation() == options::theory::correlation_functional::PBE);
 		CHECK_THROWS(inter.exchange_coefficient());
-  }
+		
+		inter.save(comm, "theory_save_default");
+	}
 
-  SECTION("Composition"){
+  SECTION("Non interacting"){
 
     auto inter = options::theory{}.non_interacting();
     
 		CHECK(not inter.self_consistent());
 		CHECK(inter.exchange_coefficient() == 0.0);
 		CHECK(inter.has_induced_vector_potential() == false);
+
+		inter.save(comm, "theory_save_non_interacting");
   }
 	
   SECTION("Hartee-Fock"){
