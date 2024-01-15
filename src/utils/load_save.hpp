@@ -56,6 +56,16 @@ static void load_optional(std::string const & filename, std::optional<Type> & va
 	}
 }
 
+template <typename Type>
+static void load_optional_enum(std::string const & filename, std::optional<Type> & value) {
+	auto file = std::ifstream(filename);
+	if(file){
+		int readval;
+		file >> readval;
+		value = static_cast<Type>(readval);
+	}
+}
+	
 }
 }
 #endif
