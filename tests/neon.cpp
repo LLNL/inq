@@ -12,14 +12,25 @@ int main(int argc, char ** argv){
 
 	using namespace inq;
 	using namespace inq::magnitude;
-	
+
+	auto comm = input::environment::global().comm();	
+
 	utils::match energy_match(2.0e-5);
 
-	systems::ions ions(systems::cell::cubic(15.0_b).finite());
-	ions.insert(input::species("Ne"), {0.0_b, 0.0_b, 0.0_b});
+	{
+		systems::ions ions(systems::cell::cubic(15.0_b).finite());
+		ions.save(comm, ".default_ions");
+	}
+
+	{
+		auto ions = systems::ions::load(".default_ions");		
+		ions.insert(input::species("Ne"), {0.0_b, 0.0_b, 0.0_b});
+		ions.save(comm, ".default_ions");
+	}
 	
 	//REAL SPACE PSEUDO
 	{
+		auto ions = systems::ions::load(".default_ions");
 		systems::electrons electrons(ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
 		
 		ground_state::initial_guess(ions, electrons);
@@ -37,6 +48,7 @@ int main(int argc, char ** argv){
 
 	//FOURIER SPACE PSEUDO
 	{
+		auto ions = systems::ions::load(".default_ions");
 		systems::electrons electrons(ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha).fourier_pseudo());
 		electrons.load("neon_restart");
 
