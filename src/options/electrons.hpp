@@ -255,7 +255,26 @@ public:
 		load_value(dirname + "/density_factor", opts.density_factor_);
 		load_value(dirname + "/spherical_grid", opts.spherical_grid_);
 		load_value(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
-		
+
+		//SPIN
+		{
+			auto file = std::ifstream(dirname + "/spin");
+			if(file){
+				std::string readval;
+				file >> readval;
+
+				if(readval == "unpolarized"){
+					opts.spin_ = states::ks_states::spin_config::UNPOLARIZED;
+				} else if(readval == "polarized"){
+					opts.spin_ = states::ks_states::spin_config::POLARIZED;
+				} else if(readval == "non_collinear"){
+					opts.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
+				} else {
+					throw std::runtime_error("INQ error: Invalid spin configuration when reading optional::electrons from directory '" + dirname + "'.");
+				}
+			}
+		}
+			
 		return opts;
 	}
 	
@@ -283,12 +302,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(conf.extra_states_val() == 666);
 	CHECK(conf.spacing_value() == 23.1_a);
 	CHECK(conf.fourier_pseudo_value() == false);
+	CHECK(conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);	
 
 	conf.save(comm, "options_electrons_save");
 	auto read_conf = options::electrons::load("options_electrons_save");
 
 	CHECK(read_conf.extra_states_val() == 666);
 	CHECK(read_conf.spacing_value() == 23.1_a);
-	CHECK(read_conf.fourier_pseudo_value() == false);	
+	CHECK(read_conf.fourier_pseudo_value() == false);
+	CHECK(read_conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	
 }
 #endif
