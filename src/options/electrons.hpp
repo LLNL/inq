@@ -23,7 +23,7 @@ class electrons {
 
 	std::optional<int> extra_states_;
 	std::optional<double> extra_electrons_;
-	std::optional<quantity<magnitude::energy>> temperature_;
+	std::optional<double> temperature_;
 	std::optional<states::ks_states::spin_config> spin_;
 	std::optional<double> spacing_;
 	std::optional<bool> double_grid_;	
@@ -56,12 +56,12 @@ public:
 
 	auto temperature(quantity<magnitude::energy> value){
 		electrons conf = *this;
-		conf.temperature_ = value;
+		conf.temperature_ = value.in_atomic_units();
 		return conf;
 	}
 
 	auto temperature_val() const {
-		return temperature_.value_or(quantity<magnitude::energy>::zero()).in_atomic_units();
+		return temperature_.value_or(0.0);
 	}
 
 	auto spin_unpolarized(){
