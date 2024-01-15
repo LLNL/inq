@@ -27,11 +27,21 @@ int main(int argc, char ** argv){
 		ions.insert(input::species("Ne"), {0.0_b, 0.0_b, 0.0_b});
 		ions.save(comm, ".default_ions");
 	}
+
+	{
+		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(3);
+		el_opts.save(comm, ".default_electrons_options");
+	}
+	
+	{
+		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(30.0_Ha);
+		el_opts.save(comm, ".default_electrons_options");
+	}
 	
 	//REAL SPACE PSEUDO
 	{
 		auto ions = systems::ions::load(".default_ions");
-		systems::electrons electrons(ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
+		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
 		
 		ground_state::initial_guess(ions, electrons);
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
@@ -48,8 +58,13 @@ int main(int argc, char ** argv){
 
 	//FOURIER SPACE PSEUDO
 	{
+		auto el_opts = options::electrons::load(".default_electrons_options").fourier_pseudo();
+		el_opts.save(comm, ".default_electrons_options");
+	}
+	
+	{
 		auto ions = systems::ions::load(".default_ions");
-		systems::electrons electrons(ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha).fourier_pseudo());
+		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
 		electrons.load("neon_restart");
 
 		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
