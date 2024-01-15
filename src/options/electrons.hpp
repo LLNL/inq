@@ -232,18 +232,29 @@ public:
 		
 		comm.barrier();
 	}
+
+
+	template <typename Type>
+	static void load_value(std::string const & filename, std::optional<Type> & value) {
+		auto file = std::ifstream(filename);
+		if(file){
+			Type readval;
+			file >> readval;
+			value = readval;
+		}
+	}
 	
 	static auto load(std::string const & dirname) {
-		auto error_message = "INQ error: Cannot load the options::electrons from directory '" + dirname + "'.";
-
 		electrons opts;
 
-		auto file = std::ifstream(dirname + "/extra_states");
-		if(file){
-			int val;
-			file >> val;
-			opts.extra_states_ = val;
-		}
+		load_value(dirname + "/extra_states", opts.extra_states_);
+		load_value(dirname + "/extra_electrons", opts.extra_electrons_);
+		load_value(dirname + "/temperature", opts.temperature_);
+		load_value(dirname + "/spacing", opts.spacing_);
+		load_value(dirname + "/double_grid", opts.double_grid_);
+		load_value(dirname + "/density_factor", opts.density_factor_);
+		load_value(dirname + "/spherical_grid", opts.spherical_grid_);
+		load_value(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
 		
 		return opts;
 	}
@@ -277,6 +288,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	auto read_conf = options::electrons::load("options_electrons_save");
 
 	CHECK(read_conf.extra_states_val() == 666);
-	
+	CHECK(read_conf.spacing_value() == 23.1_a);
+	CHECK(read_conf.fourier_pseudo_value() == false);	
 }
 #endif
