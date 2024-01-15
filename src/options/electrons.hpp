@@ -274,7 +274,17 @@ public:
 				}
 			}
 		}
-			
+
+		//PSEUDO_SET
+		{
+			auto file = std::ifstream(dirname + "/pseudo_set");
+			if(file){
+				std::string readval;
+				file >> readval;
+				opts.pseudo_set_.emplace(readval);
+			}
+		}
+		
 		return opts;
 	}
 	
@@ -302,7 +312,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(conf.extra_states_val() == 666);
 	CHECK(conf.spacing_value() == 23.1_a);
 	CHECK(conf.fourier_pseudo_value() == false);
-	CHECK(conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);	
+	CHECK(conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	CHECK(conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 
 	conf.save(comm, "options_electrons_save");
 	auto read_conf = options::electrons::load("options_electrons_save");
@@ -311,6 +322,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(read_conf.spacing_value() == 23.1_a);
 	CHECK(read_conf.fourier_pseudo_value() == false);
 	CHECK(read_conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	CHECK(read_conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 	
 }
 #endif
