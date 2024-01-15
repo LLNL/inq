@@ -23,7 +23,7 @@ class electrons {
 
 	std::optional<int> extra_states_;
 	std::optional<double> extra_electrons_;
-	std::optional<quantity<magnitude::energy>> temperature_;
+	std::optional<double> temperature_;
 	std::optional<states::ks_states::spin_config> spin_;
 	std::optional<double> spacing_;
 	std::optional<bool> double_grid_;	
@@ -56,12 +56,12 @@ public:
 
 	auto temperature(quantity<magnitude::energy> value){
 		electrons conf = *this;
-		conf.temperature_ = value;
+		conf.temperature_ = value.in_atomic_units();
 		return conf;
 	}
 
 	auto temperature_val() const {
-		return temperature_.value_or(quantity<magnitude::energy>::zero()).in_atomic_units();
+		return temperature_.value_or(0.0);
 	}
 
 	auto spin_unpolarized(){
@@ -153,6 +153,140 @@ public:
 	auto pseudopotentials_value() const{
 		return pseudo_set_.value_or(pseudo::set::pseudodojo_pbe());
 	}
+
+	template <typename Type>
+	static void save_value(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+		if(not value.has_value()) return;
+		
+		auto file = std::ofstream(filename);
+		file.precision(25);
+		
+		if(not file) {
+			auto exception_happened = true;
+			comm.broadcast_value(exception_happened);
+			throw std::runtime_error(error_message);
+		}
+		file << *value << std::endl;
+	}
+
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the options::electrons to directory '" + dirname + "'.";
+		
+		auto exception_happened = true;
+		if(comm.root()) {
+			
+			try { std::filesystem::create_directories(dirname); }
+			catch(...) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+
+			save_value(comm, dirname + "/extra_states", extra_states_, error_message);
+			save_value(comm, dirname + "/extra_electrons", extra_electrons_, error_message);
+			save_value(comm, dirname + "/temperature", temperature_, error_message);
+			save_value(comm, dirname + "/spacing", spacing_, error_message);
+			save_value(comm, dirname + "/double_grid", double_grid_, error_message);
+			save_value(comm, dirname + "/density_factor", density_factor_, error_message);
+			save_value(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
+			save_value(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);			
+
+			//SPIN
+			if(spin_.has_value()){
+				auto file = std::ofstream(dirname + "/spin");
+				
+				if(not file) {
+					auto exception_happened = true;
+					comm.broadcast_value(exception_happened);
+					throw std::runtime_error(error_message);
+				}
+
+				if(*spin_ == states::ks_states::spin_config::UNPOLARIZED){
+					file << "unpolarized" << std::endl;
+				} else if(*spin_ == states::ks_states::spin_config::POLARIZED){
+					file << "polarized" << std::endl;
+				} else if(*spin_ == states::ks_states::spin_config::NON_COLLINEAR){
+					file << "non_collinear" << std::endl;
+				}
+			}
+
+			//PSEUDO_SET
+			if(pseudo_set_.has_value()){
+				auto file = std::ofstream(dirname + "/pseudo_set");
+				
+				if(not file) {
+					auto exception_happened = true;
+					comm.broadcast_value(exception_happened);
+					throw std::runtime_error(error_message);
+				}
+
+				file << pseudo_set_->path() << std::endl;
+			}
+
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+			if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
+
+
+	template <typename Type>
+	static void load_value(std::string const & filename, std::optional<Type> & value) {
+		auto file = std::ifstream(filename);
+		if(file){
+			Type readval;
+			file >> readval;
+			value = readval;
+		}
+	}
+	
+	static auto load(std::string const & dirname) {
+		electrons opts;
+
+		load_value(dirname + "/extra_states", opts.extra_states_);
+		load_value(dirname + "/extra_electrons", opts.extra_electrons_);
+		load_value(dirname + "/temperature", opts.temperature_);
+		load_value(dirname + "/spacing", opts.spacing_);
+		load_value(dirname + "/double_grid", opts.double_grid_);
+		load_value(dirname + "/density_factor", opts.density_factor_);
+		load_value(dirname + "/spherical_grid", opts.spherical_grid_);
+		load_value(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
+
+		//SPIN
+		{
+			auto file = std::ifstream(dirname + "/spin");
+			if(file){
+				std::string readval;
+				file >> readval;
+
+				if(readval == "unpolarized"){
+					opts.spin_ = states::ks_states::spin_config::UNPOLARIZED;
+				} else if(readval == "polarized"){
+					opts.spin_ = states::ks_states::spin_config::POLARIZED;
+				} else if(readval == "non_collinear"){
+					opts.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
+				} else {
+					throw std::runtime_error("INQ error: Invalid spin configuration when reading optional::electrons from directory '" + dirname + "'.");
+				}
+			}
+		}
+
+		//PSEUDO_SET
+		{
+			auto file = std::ifstream(dirname + "/pseudo_set");
+			if(file){
+				std::string readval;
+				file >> readval;
+				opts.pseudo_set_.emplace(readval);
+			}
+		}
+		
+		return opts;
+	}
 	
 };
 
@@ -171,9 +305,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-	auto conf = options::electrons{}.spacing(23.0_b);
-	CHECK(conf.spacing_value() == 23.0_a);
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+
+	auto conf = options::electrons{}.spacing(23.1_b).extra_states(666).spin_non_collinear().pseudopotentials(pseudo::set::ccecp());
+
+	CHECK(conf.extra_states_val() == 666);
+	CHECK(conf.spacing_value() == 23.1_a);
 	CHECK(conf.fourier_pseudo_value() == false);
+	CHECK(conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	CHECK(conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
+
+	conf.save(comm, "options_electrons_save");
+	auto read_conf = options::electrons::load("options_electrons_save");
+
+	CHECK(read_conf.extra_states_val() == 666);
+	CHECK(read_conf.spacing_value() == 23.1_a);
+	CHECK(read_conf.fourier_pseudo_value() == false);
+	CHECK(read_conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	CHECK(read_conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 	
 }
 #endif
