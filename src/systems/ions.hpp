@@ -226,6 +226,28 @@ public:
 			for(auto & atom : atoms_){
 				atoms_file << atom.symbol() << std::endl;
 			}
+
+			//positions
+			auto positions_file = std::ofstream(dirname + "/positions");
+			if(not positions_file) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+			positions_file.precision(25);
+			for(auto & pos : positions_){
+				positions_file << pos << std::endl;
+			}
+
+			//velocities
+			auto velocities_file = std::ofstream(dirname + "/velocities");
+			if(not velocities_file) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+			velocities_file.precision(25);
+			for(auto & pos : velocities_){
+				velocities_file << pos << std::endl;
+			}
 			
 			exception_happened = false;
 			comm.broadcast_value(exception_happened);
