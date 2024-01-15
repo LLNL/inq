@@ -38,10 +38,10 @@ private:
 	velocities_type velocities_;	
 
 	template <typename PositionType>
-	void add_atom(input::species const & element, PositionType const & position){
+	void add_atom(input::species const & element, PositionType const & position, vector3<double> const & vel = vector3<double>(0.0, 0.0, 0.0)){
 		atoms_.push_back(element);
 		positions_.push_back(in_atomic_units(position));
-		velocities_.push_back(vector3<double>(0.0, 0.0, 0.0));
+		velocities_.push_back(vel);
 	}
 
 public:
@@ -199,6 +199,101 @@ public:
 		return energy;
 	}
 
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		cell_.save(comm, dirname + "/cell");
+
+		auto error_message = "INQ error: Cannot save the ions to directory '" + dirname + "'.";
+		
+		auto exception_happened = true;
+		if(comm.root()) {
+
+
+			//number of ions
+			auto num_ions_file = std::ofstream(dirname + "/num_ions");
+			if(not num_ions_file) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+			num_ions_file << size() << std::endl;
+
+			//atoms
+			auto atoms_file = std::ofstream(dirname + "/atoms");
+			if(not atoms_file) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+
+			for(auto & atom : atoms_){
+				atoms_file << atom.symbol() << std::endl;
+			}
+
+			//positions
+			auto positions_file = std::ofstream(dirname + "/positions");
+			if(not positions_file) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+			positions_file.precision(25);
+			for(auto & pos : positions_){
+				positions_file << pos << std::endl;
+			}
+
+			//velocities
+			auto velocities_file = std::ofstream(dirname + "/velocities");
+			if(not velocities_file) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+			velocities_file.precision(25);
+			for(auto & pos : velocities_){
+				velocities_file << pos << std::endl;
+			}
+			
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+				if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
+	
+	static auto load(std::string const & dirname) {
+		auto cell = systems::cell::load(dirname + "/cell");
+
+		auto error_message = "INQ error: Cannot load the ions from directory '" + dirname + "'.";
+
+		auto read_ions = ions(cell);
+		
+		int num;
+		auto num_ions_file = std::ifstream(dirname + "/num_ions");
+		if(not num_ions_file) throw std::runtime_error(error_message);
+		num_ions_file >> num;
+
+		auto atoms_file = std::ifstream(dirname + "/atoms");
+		if(not atoms_file) throw std::runtime_error(error_message);
+
+		auto positions_file = std::ifstream(dirname + "/positions");
+		if(not positions_file) throw std::runtime_error(error_message);
+
+		auto velocities_file = std::ifstream(dirname + "/velocities");
+		if(not velocities_file) throw std::runtime_error(error_message);
+
+		for(int iatom = 0; iatom < num; iatom++){
+			std::string symbol;
+			vector3<double> pos, vel;
+			atoms_file >> symbol;
+			positions_file >> pos;
+			velocities_file >> vel;
+			
+			read_ions.add_atom(symbol, pos, vel);
+		}		
+		
+		return read_ions;
+	}
+	
 };
 
 }
@@ -215,6 +310,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	
 	SECTION("Create empty and add an atom"){
 		
 		auto dcc = 1.42_A;
@@ -296,6 +393,52 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.velocities()[12][0] == 0.0_a);
     CHECK(ions.velocities()[12][1] == 0.0_a);
     CHECK(ions.velocities()[12][2] == 0.0_a);
+
+		CHECK(ions.velocities().size() == ions.positions().size());
+
+		ions.save(comm, "ions_save_benzene");
+		auto read_ions = systems::ions::load("ions_save_benzene");
+
+		CHECK(read_ions.cell().lattice(0)[0] == 125.8557599003_a);
+		CHECK(read_ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(1)[0] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(1)[1] == 125.8557599003_a);
+		CHECK(read_ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(2)[0] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(2)[1] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(2)[2] == 125.8557599003_a);
+		CHECK(read_ions.cell().periodicity() == 0);
+
+    CHECK(read_ions.size() == 13);
+		
+    CHECK(read_ions.atoms()[2] == "C");
+    CHECK(read_ions.atoms()[2].charge() == -6.0_a);
+    CHECK(read_ions.atoms()[2].mass() == 21892.1617296_a);
+    CHECK(read_ions.positions()[2][0] == 2.2846788549_a);
+    CHECK(read_ions.positions()[2][1] == -1.3190288178_a);
+    CHECK(read_ions.positions()[2][2] == 0.0_a);
+
+    CHECK(read_ions.atoms()[11] == "H");
+    CHECK(read_ions.atoms()[11].charge() == -1.0_a);
+    CHECK(read_ions.atoms()[11].mass() == 1837.17994584_a);
+    CHECK(read_ions.positions()[11][0] == -4.0572419367_a);
+    CHECK(read_ions.positions()[11][1] == 2.343260364_a);
+    CHECK(read_ions.positions()[11][2] == 0.0_a);
+		CHECK(read_ions.velocities()[11][0] == 0.0_a);
+    CHECK(read_ions.velocities()[11][1] == 0.0_a);
+    CHECK(read_ions.velocities()[11][2] == 0.0_a);
+
+    CHECK(read_ions.atoms()[12].atomic_number() == 17);
+    CHECK(read_ions.atoms()[12] == input::species(17));
+    CHECK(read_ions.atoms()[12].charge() == -17.0_a);
+    CHECK(read_ions.atoms()[12].mass() == 64614.105771_a);
+    CHECK(read_ions.positions()[12][0] == -3.0_a);
+    CHECK(read_ions.positions()[12][1] == 4.0_a);
+    CHECK(read_ions.positions()[12][2] == 5.0_a);
+		CHECK(read_ions.velocities()[12][0] == 0.0_a);
+    CHECK(read_ions.velocities()[12][1] == 0.0_a);
+    CHECK(read_ions.velocities()[12][2] == 0.0_a);
 
 		CHECK(ions.velocities().size() == ions.positions().size());
 		
@@ -796,7 +939,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("POSCAR - Ni"){
 		
 		auto ions = systems::ions::parse(config::path::unit_tests_data() + "POSCAR");
-	
+		ions.velocities()[0] = vector3<double>{ 1.0,  2.0,  3.0};
+		ions.velocities()[1] = vector3<double>{ 0.1,  5.5, -0.8};
+		ions.velocities()[2] = vector3<double>{-1.0, -2.0, -3.0};
+		ions.velocities()[3] = vector3<double>{-7.9,  0.6,  3.4};
+		ions.velocities()[4] = vector3<double>{ 9.9,  2.6,  1.7};		
+		
 		CHECK(ions.cell().lattice(0)[0] == 3.33536661_a);
 		CHECK(ions.cell().lattice(0)[1] == 3.33536661_a);
 		CHECK(ions.cell().lattice(0)[2] == 0.0_a);
@@ -834,6 +982,79 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.positions()[4][0] == 0.0_a);
 		CHECK(ions.positions()[4][1] == 0.0_a);
 		CHECK(ions.positions()[4][2] == 13.3414664399_a);
+		
+		CHECK(ions.velocities()[0][0] ==  1.0_a);
+		CHECK(ions.velocities()[0][1] ==  2.0_a);
+		CHECK(ions.velocities()[0][2] ==  3.0_a);
+
+		CHECK(ions.velocities()[1][0] ==  0.1_a);
+		CHECK(ions.velocities()[1][1] ==  5.5_a);
+		CHECK(ions.velocities()[1][2] == -0.8_a);
+
+		CHECK(ions.velocities()[2][0] ==  -1.0_a);
+		CHECK(ions.velocities()[2][1] ==  -2.0_a);
+		CHECK(ions.velocities()[2][2] ==  -3.0_a);
+
+		CHECK(ions.velocities()[3][0] ==  -7.9_a);
+		CHECK(ions.velocities()[3][1] ==   0.6_a);
+		CHECK(ions.velocities()[3][2] ==   3.4_a);
+
+		CHECK(ions.velocities()[4][0] ==  9.9_a);
+		CHECK(ions.velocities()[4][1] ==  2.6_a);
+		CHECK(ions.velocities()[4][2] ==  1.7_a);
+
+		ions.save(comm, "ions_save_ni");
+		auto read_ions = systems::ions::load("ions_save_ni");
+
+		CHECK(read_ions.cell().lattice(0)[0] == 3.33536661_a);
+		CHECK(read_ions.cell().lattice(0)[1] == 3.33536661_a);
+		CHECK(read_ions.cell().lattice(0)[2] == 0.0_a);
+		CHECK(read_ions.cell().lattice(1)[0] == -3.33536661_a);
+		CHECK(read_ions.cell().lattice(1)[1] == 3.33536661_a);
+		CHECK(read_ions.cell().lattice(1)[2] == 0.0_a);
+		CHECK(read_ions.cell().lattice(2)[0] == 0.0_a);
+		CHECK(read_ions.cell().lattice(2)[1] == 0.0_a);
+		CHECK(read_ions.cell().lattice(2)[2] == 33.3536660997_a);
+
+		CHECK(read_ions.positions()[0][0] == 0.0_a);
+		CHECK(read_ions.positions()[0][1] == 0.0_a);
+		CHECK(read_ions.positions()[0][2] == 0.0_a);
+
+		CHECK(read_ions.positions()[1][0] == 0.0_a);
+		CHECK(read_ions.positions()[1][1] == 3.33536661_a);
+		CHECK(read_ions.positions()[1][2] == 3.33536661_a);
+
+		CHECK(read_ions.positions()[2][0] == 0.0_a);
+		CHECK(read_ions.positions()[2][1] == 0.0_a);
+		CHECK(read_ions.positions()[2][2] == 6.6707332199_a);
+
+		CHECK(read_ions.positions()[3][0] == 0.0_a);
+		CHECK(read_ions.positions()[3][1] == 3.33536661_a);
+		CHECK(read_ions.positions()[3][2] == 10.0060998299_a);
+
+		CHECK(read_ions.positions()[4][0] == 0.0_a);
+		CHECK(read_ions.positions()[4][1] == 0.0_a);
+		CHECK(read_ions.positions()[4][2] == 13.3414664399_a);
+
+		CHECK(read_ions.velocities()[0][0] ==  1.0_a);
+		CHECK(read_ions.velocities()[0][1] ==  2.0_a);
+		CHECK(read_ions.velocities()[0][2] ==  3.0_a);
+
+		CHECK(read_ions.velocities()[1][0] ==  0.1_a);
+		CHECK(read_ions.velocities()[1][1] ==  5.5_a);
+		CHECK(read_ions.velocities()[1][2] == -0.8_a);
+
+		CHECK(read_ions.velocities()[2][0] ==  -1.0_a);
+		CHECK(read_ions.velocities()[2][1] ==  -2.0_a);
+		CHECK(read_ions.velocities()[2][2] ==  -3.0_a);
+
+		CHECK(read_ions.velocities()[3][0] ==  -7.9_a);
+		CHECK(read_ions.velocities()[3][1] ==   0.6_a);
+		CHECK(read_ions.velocities()[3][2] ==   3.4_a);
+
+		CHECK(read_ions.velocities()[4][0] ==  9.9_a);
+		CHECK(read_ions.velocities()[4][1] ==  2.6_a);
+		CHECK(read_ions.velocities()[4][2] ==  1.7_a);
 		
 	}
 
