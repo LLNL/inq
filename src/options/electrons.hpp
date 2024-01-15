@@ -217,29 +217,18 @@ public:
 		
 		comm.barrier();
 	}
-
-
-	template <typename Type>
-	static void load_value(std::string const & filename, std::optional<Type> & value) {
-		auto file = std::ifstream(filename);
-		if(file){
-			Type readval;
-			file >> readval;
-			value = readval;
-		}
-	}
 	
 	static auto load(std::string const & dirname) {
 		electrons opts;
 
-		load_value(dirname + "/extra_states", opts.extra_states_);
-		load_value(dirname + "/extra_electrons", opts.extra_electrons_);
-		load_value(dirname + "/temperature", opts.temperature_);
-		load_value(dirname + "/spacing", opts.spacing_);
-		load_value(dirname + "/double_grid", opts.double_grid_);
-		load_value(dirname + "/density_factor", opts.density_factor_);
-		load_value(dirname + "/spherical_grid", opts.spherical_grid_);
-		load_value(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
+		utils::load_value(dirname + "/extra_states", opts.extra_states_);
+		utils::load_value(dirname + "/extra_electrons", opts.extra_electrons_);
+		utils::load_value(dirname + "/temperature", opts.temperature_);
+		utils::load_value(dirname + "/spacing", opts.spacing_);
+		utils::load_value(dirname + "/double_grid", opts.double_grid_);
+		utils::load_value(dirname + "/density_factor", opts.density_factor_);
+		utils::load_value(dirname + "/spherical_grid", opts.spherical_grid_);
+		utils::load_value(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
 
 		//SPIN
 		{
