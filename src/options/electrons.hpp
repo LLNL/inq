@@ -233,6 +233,21 @@ public:
 		comm.barrier();
 	}
 	
+	static auto load(std::string const & dirname) {
+		auto error_message = "INQ error: Cannot load the options::electrons from directory '" + dirname + "'.";
+
+		electrons opts;
+
+		auto file = std::ifstream(dirname + "/extra_states");
+		if(file){
+			int val;
+			file >> val;
+			opts.extra_states_ = val;
+		}
+		
+		return opts;
+	}
+	
 };
 
 }
@@ -259,6 +274,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(conf.fourier_pseudo_value() == false);
 
 	conf.save(comm, "options_electrons_save");
+	auto read_conf = options::electrons::load("options_electrons_save");
+
+	CHECK(read_conf.extra_states_val() == 666);
 	
 }
 #endif
