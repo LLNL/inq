@@ -395,6 +395,52 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(ions.velocities()[12][2] == 0.0_a);
 
 		CHECK(ions.velocities().size() == ions.positions().size());
+
+		ions.save(comm, "ions_save_benzene");
+		auto read_ions = systems::ions::load("ions_save_benzene");
+
+		CHECK(read_ions.cell().lattice(0)[0] == 125.8557599003_a);
+		CHECK(read_ions.cell().lattice(0)[1] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(0)[2] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(1)[0] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(1)[1] == 125.8557599003_a);
+		CHECK(read_ions.cell().lattice(1)[2] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(2)[0] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(2)[1] == Approx(0.0).margin(1e-12));
+		CHECK(read_ions.cell().lattice(2)[2] == 125.8557599003_a);
+		CHECK(read_ions.cell().periodicity() == 0);
+
+    CHECK(read_ions.size() == 13);
+		
+    CHECK(read_ions.atoms()[2] == "C");
+    CHECK(read_ions.atoms()[2].charge() == -6.0_a);
+    CHECK(read_ions.atoms()[2].mass() == 21892.1617296_a);
+    CHECK(read_ions.positions()[2][0] == 2.2846788549_a);
+    CHECK(read_ions.positions()[2][1] == -1.3190288178_a);
+    CHECK(read_ions.positions()[2][2] == 0.0_a);
+
+    CHECK(read_ions.atoms()[11] == "H");
+    CHECK(read_ions.atoms()[11].charge() == -1.0_a);
+    CHECK(read_ions.atoms()[11].mass() == 1837.17994584_a);
+    CHECK(read_ions.positions()[11][0] == -4.0572419367_a);
+    CHECK(read_ions.positions()[11][1] == 2.343260364_a);
+    CHECK(read_ions.positions()[11][2] == 0.0_a);
+		CHECK(read_ions.velocities()[11][0] == 0.0_a);
+    CHECK(read_ions.velocities()[11][1] == 0.0_a);
+    CHECK(read_ions.velocities()[11][2] == 0.0_a);
+
+    CHECK(read_ions.atoms()[12].atomic_number() == 17);
+    CHECK(read_ions.atoms()[12] == input::species(17));
+    CHECK(read_ions.atoms()[12].charge() == -17.0_a);
+    CHECK(read_ions.atoms()[12].mass() == 64614.105771_a);
+    CHECK(read_ions.positions()[12][0] == -3.0_a);
+    CHECK(read_ions.positions()[12][1] == 4.0_a);
+    CHECK(read_ions.positions()[12][2] == 5.0_a);
+		CHECK(read_ions.velocities()[12][0] == 0.0_a);
+    CHECK(read_ions.velocities()[12][1] == 0.0_a);
+    CHECK(read_ions.velocities()[12][2] == 0.0_a);
+
+		CHECK(ions.velocities().size() == ions.positions().size());
 		
   }
 	
@@ -958,7 +1004,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.velocities()[4][2] ==  1.7_a);
 
 		ions.save(comm, "ions_save_ni");
-
 		auto read_ions = systems::ions::load("ions_save_ni");
 
 		CHECK(read_ions.cell().lattice(0)[0] == 3.33536661_a);
