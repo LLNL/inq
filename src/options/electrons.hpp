@@ -159,6 +159,8 @@ public:
 		if(not value.has_value()) return;
 		
 		auto file = std::ofstream(filename);
+		file.precision(25);
+		
 		if(not file) {
 			auto exception_happened = true;
 			comm.broadcast_value(exception_happened);
@@ -180,7 +182,19 @@ public:
 			}
 
 			save_value(comm, dirname + "/extra_states", extra_states_, error_message);
+			save_value(comm, dirname + "/extra_electrons", extra_electrons_, error_message);
+			save_value(comm, dirname + "/temperature", temperature_, error_message);
 			
+			//	std::optional<states::ks_states::spin_config> spin_;
+
+			save_value(comm, dirname + "/spacing", spacing_, error_message);
+			save_value(comm, dirname + "/double_grid", double_grid_, error_message);
+			save_value(comm, dirname + "/density_factor", density_factor_, error_message);
+			save_value(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
+			save_value(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);			
+
+			//	std::optional<pseudo::set> pseudo_set_;
+
 			exception_happened = false;
 			comm.broadcast_value(exception_happened);
 			
@@ -211,10 +225,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	auto conf = options::electrons{}.spacing(23.0_b).extra_states(666);
+	auto conf = options::electrons{}.spacing(23.1_b).extra_states(666);
 
 	CHECK(conf.extra_states_val() == 666);
-	CHECK(conf.spacing_value() == 23.0_a);
+	CHECK(conf.spacing_value() == 23.1_a);
 	CHECK(conf.fourier_pseudo_value() == false);
 
 	conf.save(comm, "options_electrons_save");
