@@ -208,8 +208,19 @@ public:
 					file << "non_collinear" << std::endl;
 				}
 			}
-			
-			//	std::optional<pseudo::set> pseudo_set_;
+
+			//PSEUDO_SET
+			if(pseudo_set_.has_value()){
+				auto file = std::ofstream(dirname + "/pseudo_set");
+				
+				if(not file) {
+					auto exception_happened = true;
+					comm.broadcast_value(exception_happened);
+					throw std::runtime_error(error_message);
+				}
+
+				file << pseudo_set_->path() << std::endl;
+			}
 
 			exception_happened = false;
 			comm.broadcast_value(exception_happened);
@@ -241,7 +252,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	auto conf = options::electrons{}.spacing(23.1_b).extra_states(666).spin_non_collinear();
+	auto conf = options::electrons{}.spacing(23.1_b).extra_states(666).spin_non_collinear().pseudopotentials(pseudo::set::ccecp());
 
 	CHECK(conf.extra_states_val() == 666);
 	CHECK(conf.spacing_value() == 23.1_a);
