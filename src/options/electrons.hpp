@@ -166,14 +166,14 @@ public:
 				throw std::runtime_error(error_message);
 			}
 
-			utils::save_value(comm, dirname + "/extra_states", extra_states_, error_message);
-			utils::save_value(comm, dirname + "/extra_electrons", extra_electrons_, error_message);
-			utils::save_value(comm, dirname + "/temperature", temperature_, error_message);
-			utils::save_value(comm, dirname + "/spacing", spacing_, error_message);
-			utils::save_value(comm, dirname + "/double_grid", double_grid_, error_message);
-			utils::save_value(comm, dirname + "/density_factor", density_factor_, error_message);
-			utils::save_value(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
-			utils::save_value(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);			
+			utils::save_optional(comm, dirname + "/extra_states", extra_states_, error_message);
+			utils::save_optional(comm, dirname + "/extra_electrons", extra_electrons_, error_message);
+			utils::save_optional(comm, dirname + "/temperature", temperature_, error_message);
+			utils::save_optional(comm, dirname + "/spacing", spacing_, error_message);
+			utils::save_optional(comm, dirname + "/double_grid", double_grid_, error_message);
+			utils::save_optional(comm, dirname + "/density_factor", density_factor_, error_message);
+			utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
+			utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);			
 
 			//SPIN
 			if(spin_.has_value()){
@@ -221,14 +221,14 @@ public:
 	static auto load(std::string const & dirname) {
 		electrons opts;
 
-		utils::load_value(dirname + "/extra_states", opts.extra_states_);
-		utils::load_value(dirname + "/extra_electrons", opts.extra_electrons_);
-		utils::load_value(dirname + "/temperature", opts.temperature_);
-		utils::load_value(dirname + "/spacing", opts.spacing_);
-		utils::load_value(dirname + "/double_grid", opts.double_grid_);
-		utils::load_value(dirname + "/density_factor", opts.density_factor_);
-		utils::load_value(dirname + "/spherical_grid", opts.spherical_grid_);
-		utils::load_value(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
+		utils::load_optional(dirname + "/extra_states", opts.extra_states_);
+		utils::load_optional(dirname + "/extra_electrons", opts.extra_electrons_);
+		utils::load_optional(dirname + "/temperature", opts.temperature_);
+		utils::load_optional(dirname + "/spacing", opts.spacing_);
+		utils::load_optional(dirname + "/double_grid", opts.double_grid_);
+		utils::load_optional(dirname + "/density_factor", opts.density_factor_);
+		utils::load_optional(dirname + "/spherical_grid", opts.spherical_grid_);
+		utils::load_optional(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
 
 		//SPIN
 		{

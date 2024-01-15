@@ -17,7 +17,7 @@ namespace inq {
 namespace utils {
 
 template <typename Type>
-void save_value(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) return;
 	
 	auto file = std::ofstream(filename);
@@ -32,7 +32,7 @@ void save_value(parallel::communicator & comm, std::string const & filename, Typ
 }
 
 template <typename Type>
-static void load_value(std::string const & filename, std::optional<Type> & value) {
+static void load_optional(std::string const & filename, std::optional<Type> & value) {
 	auto file = std::ifstream(filename);
 	if(file){
 		Type readval;
