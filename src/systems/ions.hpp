@@ -893,7 +893,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("POSCAR - Ni"){
 		
 		auto ions = systems::ions::parse(config::path::unit_tests_data() + "POSCAR");
-	
+		ions.velocities()[0] = vector3<double>{ 1.0,  2.0,  3.0};
+		ions.velocities()[1] = vector3<double>{ 0.1,  5.5, -0.8};
+		ions.velocities()[2] = vector3<double>{-1.0, -2.0, -3.0};
+		ions.velocities()[3] = vector3<double>{-7.9,  0.6,  3.4};
+		ions.velocities()[4] = vector3<double>{ 9.9,  2.6,  1.7};		
+		
 		CHECK(ions.cell().lattice(0)[0] == 3.33536661_a);
 		CHECK(ions.cell().lattice(0)[1] == 3.33536661_a);
 		CHECK(ions.cell().lattice(0)[2] == 0.0_a);
@@ -931,6 +936,26 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.positions()[4][0] == 0.0_a);
 		CHECK(ions.positions()[4][1] == 0.0_a);
 		CHECK(ions.positions()[4][2] == 13.3414664399_a);
+		
+		CHECK(ions.velocities()[0][0] ==  1.0_a);
+		CHECK(ions.velocities()[0][1] ==  2.0_a);
+		CHECK(ions.velocities()[0][2] ==  3.0_a);
+
+		CHECK(ions.velocities()[1][0] ==  0.1_a);
+		CHECK(ions.velocities()[1][1] ==  5.5_a);
+		CHECK(ions.velocities()[1][2] == -0.8_a);
+
+		CHECK(ions.velocities()[2][0] ==  -1.0_a);
+		CHECK(ions.velocities()[2][1] ==  -2.0_a);
+		CHECK(ions.velocities()[2][2] ==  -3.0_a);
+
+		CHECK(ions.velocities()[3][0] ==  -7.9_a);
+		CHECK(ions.velocities()[3][1] ==   0.6_a);
+		CHECK(ions.velocities()[3][2] ==   3.4_a);
+
+		CHECK(ions.velocities()[4][0] ==  9.9_a);
+		CHECK(ions.velocities()[4][1] ==  2.6_a);
+		CHECK(ions.velocities()[4][2] ==  1.7_a);
 
 		ions.save(comm, "ions_save_ni");
 
@@ -965,6 +990,26 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(read_ions.positions()[4][0] == 0.0_a);
 		CHECK(read_ions.positions()[4][1] == 0.0_a);
 		CHECK(read_ions.positions()[4][2] == 13.3414664399_a);
+
+		CHECK(read_ions.velocities()[0][0] ==  1.0_a);
+		CHECK(read_ions.velocities()[0][1] ==  2.0_a);
+		CHECK(read_ions.velocities()[0][2] ==  3.0_a);
+
+		CHECK(read_ions.velocities()[1][0] ==  0.1_a);
+		CHECK(read_ions.velocities()[1][1] ==  5.5_a);
+		CHECK(read_ions.velocities()[1][2] == -0.8_a);
+
+		CHECK(read_ions.velocities()[2][0] ==  -1.0_a);
+		CHECK(read_ions.velocities()[2][1] ==  -2.0_a);
+		CHECK(read_ions.velocities()[2][2] ==  -3.0_a);
+
+		CHECK(read_ions.velocities()[3][0] ==  -7.9_a);
+		CHECK(read_ions.velocities()[3][1] ==   0.6_a);
+		CHECK(read_ions.velocities()[3][2] ==   3.4_a);
+
+		CHECK(read_ions.velocities()[4][0] ==  9.9_a);
+		CHECK(read_ions.velocities()[4][1] ==  2.6_a);
+		CHECK(read_ions.velocities()[4][2] ==  1.7_a);
 		
 	}
 
