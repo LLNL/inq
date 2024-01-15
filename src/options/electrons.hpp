@@ -153,6 +153,44 @@ public:
 	auto pseudopotentials_value() const{
 		return pseudo_set_.value_or(pseudo::set::pseudodojo_pbe());
 	}
+
+	template <typename Type>
+	static void save_value(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+		if(not value.has_value()) return;
+		
+		auto file = std::ofstream(filename);
+		if(not file) {
+			auto exception_happened = true;
+			comm.broadcast_value(exception_happened);
+			throw std::runtime_error(error_message);
+		}
+		file << *value << std::endl;
+	}
+
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the options::electrons to directory '" + dirname + "'.";
+		
+		auto exception_happened = true;
+		if(comm.root()) {
+			
+			try { std::filesystem::create_directories(dirname); }
+			catch(...) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+
+			save_value(comm, dirname + "/extra_states", extra_states_, error_message);
+			
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+			if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
 	
 };
 
@@ -171,9 +209,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	using Catch::Approx;
 
-	auto conf = options::electrons{}.spacing(23.0_b);
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+
+	auto conf = options::electrons{}.spacing(23.0_b).extra_states(666);
+
+	CHECK(conf.extra_states_val() == 666);
 	CHECK(conf.spacing_value() == 23.0_a);
 	CHECK(conf.fourier_pseudo_value() == false);
+
+	conf.save(comm, "options_electrons_save");
 	
 }
 #endif
