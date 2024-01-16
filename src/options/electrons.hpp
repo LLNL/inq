@@ -11,7 +11,7 @@
 
 #include <magnitude/energy.hpp>
 #include <states/ks_states.hpp>
-#include <utils/merge_optional.hpp>
+#include <utils/load_save.hpp>
 
 #include <cassert>
 #include <optional>
@@ -154,21 +154,6 @@ public:
 		return pseudo_set_.value_or(pseudo::set::pseudodojo_pbe());
 	}
 
-	template <typename Type>
-	static void save_value(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
-		if(not value.has_value()) return;
-		
-		auto file = std::ofstream(filename);
-		file.precision(25);
-		
-		if(not file) {
-			auto exception_happened = true;
-			comm.broadcast_value(exception_happened);
-			throw std::runtime_error(error_message);
-		}
-		file << *value << std::endl;
-	}
-
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the options::electrons to directory '" + dirname + "'.";
 		
@@ -181,14 +166,14 @@ public:
 				throw std::runtime_error(error_message);
 			}
 
-			save_value(comm, dirname + "/extra_states", extra_states_, error_message);
-			save_value(comm, dirname + "/extra_electrons", extra_electrons_, error_message);
-			save_value(comm, dirname + "/temperature", temperature_, error_message);
-			save_value(comm, dirname + "/spacing", spacing_, error_message);
-			save_value(comm, dirname + "/double_grid", double_grid_, error_message);
-			save_value(comm, dirname + "/density_factor", density_factor_, error_message);
-			save_value(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
-			save_value(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);			
+			utils::save_optional(comm, dirname + "/extra_states", extra_states_, error_message);
+			utils::save_optional(comm, dirname + "/extra_electrons", extra_electrons_, error_message);
+			utils::save_optional(comm, dirname + "/temperature", temperature_, error_message);
+			utils::save_optional(comm, dirname + "/spacing", spacing_, error_message);
+			utils::save_optional(comm, dirname + "/double_grid", double_grid_, error_message);
+			utils::save_optional(comm, dirname + "/density_factor", density_factor_, error_message);
+			utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
+			utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);			
 
 			//SPIN
 			if(spin_.has_value()){
@@ -232,29 +217,18 @@ public:
 		
 		comm.barrier();
 	}
-
-
-	template <typename Type>
-	static void load_value(std::string const & filename, std::optional<Type> & value) {
-		auto file = std::ifstream(filename);
-		if(file){
-			Type readval;
-			file >> readval;
-			value = readval;
-		}
-	}
 	
 	static auto load(std::string const & dirname) {
 		electrons opts;
 
-		load_value(dirname + "/extra_states", opts.extra_states_);
-		load_value(dirname + "/extra_electrons", opts.extra_electrons_);
-		load_value(dirname + "/temperature", opts.temperature_);
-		load_value(dirname + "/spacing", opts.spacing_);
-		load_value(dirname + "/double_grid", opts.double_grid_);
-		load_value(dirname + "/density_factor", opts.density_factor_);
-		load_value(dirname + "/spherical_grid", opts.spherical_grid_);
-		load_value(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
+		utils::load_optional(dirname + "/extra_states", opts.extra_states_);
+		utils::load_optional(dirname + "/extra_electrons", opts.extra_electrons_);
+		utils::load_optional(dirname + "/temperature", opts.temperature_);
+		utils::load_optional(dirname + "/spacing", opts.spacing_);
+		utils::load_optional(dirname + "/double_grid", opts.double_grid_);
+		utils::load_optional(dirname + "/density_factor", opts.density_factor_);
+		utils::load_optional(dirname + "/spherical_grid", opts.spherical_grid_);
+		utils::load_optional(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
 
 		//SPIN
 		{
