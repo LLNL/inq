@@ -40,15 +40,7 @@ void save_optional(parallel::communicator & comm, std::string const & filename, 
 		return;
 	}
 
-	auto file = std::ofstream(filename);
-	file.precision(25);
-	
-	if(not file) {
-		auto exception_happened = true;
-		comm.broadcast_value(exception_happened);
-		throw std::runtime_error(error_message);
-	}
-	file << *value << std::endl;
+	save_value(comm, filename, *value, error_message);
 }
 
 template <typename Type>
@@ -57,16 +49,8 @@ void save_optional_enum(parallel::communicator & comm, std::string const & filen
 		std::filesystem::remove(filename);
 		return;
 	}
-	
-	auto file = std::ofstream(filename);
-	file.precision(25);
-	
-	if(not file) {
-		auto exception_happened = true;
-		comm.broadcast_value(exception_happened);
-		throw std::runtime_error(error_message);
-	}
-	file << static_cast<int>(*value) << std::endl;
+
+	save_value(comm, filename, static_cast<int>(*value), error_message);
 }
 
 template <typename Type>
