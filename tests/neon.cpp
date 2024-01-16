@@ -37,14 +37,19 @@ int main(int argc, char ** argv){
 		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(30.0_Ha);
 		el_opts.save(comm, ".default_electrons_options");
 	}
-	
+
+	{
+		auto theo = options::theory::load(".default_theory").non_interacting();
+		theo.save(comm, ".default_theory");
+	}
+
 	//REAL SPACE PSEUDO
 	{
 		auto ions = systems::ions::load(".default_ions");
 		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
 		
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
+		auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.861045337100);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765610219604);
@@ -67,7 +72,7 @@ int main(int argc, char ** argv){
 		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
 		electrons.load("neon_restart");
 
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting());
+		auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.861056649453);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765555684056);
