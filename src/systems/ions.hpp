@@ -19,6 +19,7 @@
 #include <parse/cif.hpp>
 #include <parse/poscar.hpp>
 #include <parse/xyz.hpp>
+#include <utils/load_save.hpp>
 
 namespace inq {
 namespace systems {
@@ -207,14 +208,7 @@ public:
 		auto exception_happened = true;
 		if(comm.root()) {
 
-
-			//number of ions
-			auto num_ions_file = std::ofstream(dirname + "/num_ions");
-			if(not num_ions_file) {
-				comm.broadcast_value(exception_happened);
-				throw std::runtime_error(error_message);
-			}
-			num_ions_file << size() << std::endl;
+			utils::save_value(comm, dirname + "/num_ions", size(), error_message);
 
 			//atoms
 			auto atoms_file = std::ofstream(dirname + "/atoms");
@@ -268,10 +262,8 @@ public:
 		auto read_ions = ions(cell);
 		
 		int num;
-		auto num_ions_file = std::ifstream(dirname + "/num_ions");
-		if(not num_ions_file) throw std::runtime_error(error_message);
-		num_ions_file >> num;
-
+		utils::load_value(dirname + "/num_ions", num, error_message);
+		
 		auto atoms_file = std::ifstream(dirname + "/atoms");
 		if(not atoms_file) throw std::runtime_error(error_message);
 
