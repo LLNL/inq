@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <utils/merge_optional.hpp>
+#include <utils/load_save.hpp>
 
 #include <cassert>
 #include <optional>
@@ -157,8 +157,46 @@ public:
 		assert(alpha_.has_value());
 		return alpha_.value();
 	}
-
+	
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save theory to directory '" + dirname + "'.";
 		
+		auto exception_happened = true;
+		if(comm.root()) {
+			
+			try { std::filesystem::create_directories(dirname); }
+			catch(...) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+
+			utils::save_optional(comm, dirname + "/hartree_potential", hartree_potential_, error_message);
+			utils::save_optional_enum(comm, dirname + "/exchange", exchange_, error_message);
+			utils::save_optional_enum(comm, dirname + "/correlation", correlation_, error_message);
+			utils::save_optional(comm, dirname + "/alpha", alpha_, error_message);
+
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+			if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
+		
+	static auto load(std::string const & dirname) {
+		theory opts;
+		
+		utils::load_optional(dirname + "/hartree_potential", opts.hartree_potential_);
+		utils::load_optional_enum(dirname + "/exchange", opts.exchange_);
+		utils::load_optional_enum(dirname + "/correlation", opts.correlation_);
+		utils::load_optional(dirname + "/alpha", opts.alpha_);
+		
+		return opts;
+	}
+	
 };
     
 }
@@ -175,6 +213,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	
 	SECTION("Defaults"){
 
     options::theory inter;
@@ -183,35 +223,70 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(inter.exchange() == options::theory::exchange_functional::PBE);
 		CHECK(inter.correlation() == options::theory::correlation_functional::PBE);
 		CHECK_THROWS(inter.exchange_coefficient());
-  }
+		
+		inter.save(comm, "theory_save_default");
+		auto read_inter = options::theory::load("theory_save_non_default");
 
-  SECTION("Composition"){
+		CHECK(read_inter.hartree_potential() == true);
+		CHECK(read_inter.exchange() == options::theory::exchange_functional::PBE);
+		CHECK(read_inter.correlation() == options::theory::correlation_functional::PBE);
+		CHECK_THROWS(read_inter.exchange_coefficient());
+	}
+
+  SECTION("Non interacting"){
 
     auto inter = options::theory{}.non_interacting();
-    
-		CHECK(not inter.self_consistent());
+
+		CHECK(inter.hartree_potential() == false);
+		CHECK(inter.self_consistent() == false);
 		CHECK(inter.exchange_coefficient() == 0.0);
 		CHECK(inter.has_induced_vector_potential() == false);
+
+		inter.save(comm, "theory_save_non_interacting");
+		auto read_inter = options::theory::load("theory_save_non_interacting");
+
+		CHECK(read_inter.hartree_potential() == false);
+		CHECK(read_inter.self_consistent() == false);
+		CHECK(read_inter.exchange_coefficient() == 0.0);
+		CHECK(read_inter.has_induced_vector_potential() == false);
   }
 	
   SECTION("Hartee-Fock"){
 
     auto inter = options::theory{}.hartree_fock();
 		CHECK(inter.exchange_coefficient() == 1.0);
-		CHECK(inter.has_induced_vector_potential() == false);		
+		CHECK(inter.has_induced_vector_potential() == false);
+
+		inter.save(comm, "theory_save_hartree_fock");
+		auto read_inter = options::theory::load("theory_save_hartree_fock");
+		
+		CHECK(read_inter.exchange_coefficient() == 1.0);
+		CHECK(read_inter.has_induced_vector_potential() == false);
+		
   }
 
-	SECTION("Induced vector potential"){
-		{
-			auto inter = options::theory{}.induced_vector_potential();
-			CHECK(inter.has_induced_vector_potential() == true);
-			CHECK(inter.alpha_value() == -4.0*M_PI);
-		}
-		{
-			auto inter = options::theory{}.induced_vector_potential(0.2);
-			CHECK(inter.has_induced_vector_potential() == true);
-			CHECK(inter.alpha_value() == 0.2);
-		}
+	SECTION("Induced vector potential Yabana"){
+		auto inter = options::theory{}.induced_vector_potential();
+		CHECK(inter.has_induced_vector_potential() == true);
+		CHECK(inter.alpha_value() == -4.0*M_PI);
+		
+		inter.save(comm, "theory_save_yabana");
+		auto read_inter = options::theory::load("theory_save_yabana");
+
+		CHECK(read_inter.has_induced_vector_potential() == true);
+		CHECK(read_inter.alpha_value() == -4.0*M_PI);
+	}
+
+	SECTION("Induced vector potential Ullrich"){
+		auto inter = options::theory{}.induced_vector_potential(0.2);
+		CHECK(inter.has_induced_vector_potential() == true);
+		CHECK(inter.alpha_value() == 0.2);
+		
+		inter.save(comm, "theory_save_ullrich");
+		auto read_inter = options::theory::load("theory_save_ullrich");
+
+		CHECK(read_inter.has_induced_vector_potential() == true);
+		CHECK(read_inter.alpha_value() == 0.2);
 	}
 
 }

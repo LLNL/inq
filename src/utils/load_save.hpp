@@ -19,7 +19,7 @@ namespace utils {
 template <typename Type>
 void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) return;
-	
+
 	auto file = std::ofstream(filename);
 	file.precision(25);
 	
@@ -32,6 +32,21 @@ void save_optional(parallel::communicator & comm, std::string const & filename, 
 }
 
 template <typename Type>
+void save_optional_enum(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+	if(not value.has_value()) return;
+	
+	auto file = std::ofstream(filename);
+	file.precision(25);
+	
+	if(not file) {
+		auto exception_happened = true;
+		comm.broadcast_value(exception_happened);
+		throw std::runtime_error(error_message);
+	}
+	file << static_cast<int>(*value) << std::endl;
+}
+
+template <typename Type>
 static void load_optional(std::string const & filename, std::optional<Type> & value) {
 	auto file = std::ifstream(filename);
 	if(file){
@@ -41,6 +56,16 @@ static void load_optional(std::string const & filename, std::optional<Type> & va
 	}
 }
 
+template <typename Type>
+static void load_optional_enum(std::string const & filename, std::optional<Type> & value) {
+	auto file = std::ifstream(filename);
+	if(file){
+		int readval;
+		file >> readval;
+		value = static_cast<Type>(readval);
+	}
+}
+	
 }
 }
 #endif
