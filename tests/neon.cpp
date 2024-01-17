@@ -58,7 +58,7 @@ int main(int argc, char ** argv){
 		energy_match.check("non-local energy", result.energy.nonlocal()   , -18.116701402044);
 		energy_match.check("ion-ion energy",   result.energy.ion()        ,   0.000000000000);
 
-		electrons.save("neon_restart");
+		electrons.save(".default_orbitals");
 	}
 
 	//FOURIER SPACE PSEUDO
@@ -70,7 +70,7 @@ int main(int argc, char ** argv){
 	{
 		auto ions = systems::ions::load(".default_ions");
 		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
-		electrons.load("neon_restart");
+		electrons.load(".default_orbitals");
 
 		auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
 		
