@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <magnitude/length.hpp>
+#include <utils/load_save.hpp>
 
 #include <stdexcept>
 #include <filesystem>
@@ -282,13 +283,8 @@ namespace systems {
 					lattice_file << '\n';
 				}
 
-				auto periodicity_file = std::ofstream(dirname + "/periodicity");
-				if(not periodicity_file) {
-					comm.broadcast_value(exception_happened);
-					throw std::runtime_error(error_message);
-				}
-				periodicity_file << periodicity_ << std::endl;
-
+				utils::save_value(comm, dirname + "/periodicity", periodicity_, error_message);
+				
 				exception_happened = false;
 				comm.broadcast_value(exception_happened);
 				
@@ -315,12 +311,8 @@ namespace systems {
 			}
 			
 			int per;
+			utils::load_value(dirname + "/periodicity", per, error_message);
 			
-			auto periodicity_file = std::ifstream(dirname + "/periodicity");
-			if(not periodicity_file) throw std::runtime_error(error_message);
-			
-			periodicity_file >> per;
-
 			return cell(lat[0], lat[1], lat[2], per);
 		}
 		

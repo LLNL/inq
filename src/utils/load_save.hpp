@@ -12,40 +12,59 @@
 #include <cassert>
 #include <array>
 #include <cmath>
+#include <fstream>
+#include <filesystem>
 
 namespace inq {
 namespace utils {
 
 template <typename Type>
-void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
-	if(not value.has_value()) return;
-
+void save_value(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	auto file = std::ofstream(filename);
-	file.precision(25);
-	
+
 	if(not file) {
 		auto exception_happened = true;
 		comm.broadcast_value(exception_happened);
 		throw std::runtime_error(error_message);
 	}
-	file << *value << std::endl;
+
+	file.precision(25);
+
+	file << value << std::endl;
+}
+
+template <typename Type>
+void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+	if(not value.has_value()) {
+		std::filesystem::remove(filename);
+		return;
+	}
+
+	save_value(comm, filename, *value, error_message);
 }
 
 template <typename Type>
 void save_optional_enum(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
-	if(not value.has_value()) return;
-	
-	auto file = std::ofstream(filename);
-	file.precision(25);
-	
-	if(not file) {
-		auto exception_happened = true;
-		comm.broadcast_value(exception_happened);
-		throw std::runtime_error(error_message);
+	if(not value.has_value()) {
+		std::filesystem::remove(filename);
+		return;
 	}
-	file << static_cast<int>(*value) << std::endl;
+
+	save_value(comm, filename, static_cast<int>(*value), error_message);
 }
 
+template <typename Type>
+static void load_value(std::string const & filename, Type & value, std::string const & error_message){
+	auto file = std::ifstream(filename);
+
+	if(not file) throw std::runtime_error(error_message);
+
+	Type readval;
+	file >> readval;
+	value = readval;
+
+}
+	
 template <typename Type>
 static void load_optional(std::string const & filename, std::optional<Type> & value) {
 	auto file = std::ifstream(filename);
