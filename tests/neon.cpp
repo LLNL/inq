@@ -29,7 +29,7 @@ int main(int argc, char ** argv){
 	}
 
 	{
-		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(3);
+		auto el_opts = options::electrons{}.extra_states(3);
 		el_opts.save(comm, ".default_electrons_options");
 	}
 	
@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 	}
 
 	{
-		auto theo = options::theory::load(".default_theory").non_interacting();
+		auto theo = options::theory{}.non_interacting();
 		theo.save(comm, ".default_theory");
 	}
 
