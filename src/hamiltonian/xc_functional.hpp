@@ -86,6 +86,10 @@ namespace hamiltonian {
 			return 0.0;
 		}
 
+		std::string name() const {
+			return func_.info->name;
+		}
+		
 	private:
 		
 		int id_;
@@ -112,6 +116,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("LDA"){
 		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 1);
 		CHECK(ldafunctional.exx_coefficient() == 0.0);
+		CHECK(ldafunctional.name() == "Slater exchange");
 	}
 
 	SECTION("LSDA"){
@@ -122,6 +127,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("GGA"){
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 1);
 		CHECK(ggafunctional.exx_coefficient() == 0.0);
+		CHECK(ggafunctional.name() == "Perdew, Burke & Ernzerhof");
 	}
 
 	SECTION("Spin GGA"){
