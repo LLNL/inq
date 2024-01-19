@@ -29,6 +29,11 @@ int main(int argc, char ** argv){
 	}
 
 	{
+		auto ions = systems::ions::load(".default_ions");		
+		std::cout << ions;
+	}
+
+	{
 		auto el_opts = options::electrons{}.extra_states(3);
 		el_opts.save(comm, ".default_electrons_options");
 	}
