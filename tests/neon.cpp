@@ -28,11 +28,8 @@ int main(int argc, char ** argv){
 	interface::ions_add("Ne", {0.0_b, 0.0_b, 0.0_b});
 
   //inq ions
-	{
-		auto ions = systems::ions::load(".default_ions");		
-		if(comm.root()) std::cout << ions;
-	}
-
+	interface::ions();
+	
 	//inq electrons extra_states 3
 	{
 		auto el_opts = options::electrons{}.extra_states(3);
