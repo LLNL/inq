@@ -90,7 +90,7 @@ namespace hamiltonian {
 			return func_.info->name;
 		}
 
-		std::string kind() const {
+		std::string kind_name() const {
 			switch (func_.info->kind) {
 			case (XC_EXCHANGE):
 				return "Exchange";
@@ -102,8 +102,21 @@ namespace hamiltonian {
 				return "Kinetic energy";
 			default:
 				return "Unknown";
+			}
 		}
-	}
+		
+		std::string family_name() const {
+			switch (family()) {
+			case (XC_FAMILY_LDA):
+				return "LDA";
+			case (XC_FAMILY_GGA):
+				return "GGA";
+			case (XC_FAMILY_MGGA):
+				return "MGGA";
+			default:
+				return "Unknown";
+			}
+		}
 		
 	private:
 		
@@ -132,7 +145,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 1);
 		CHECK(ldafunctional.exx_coefficient() == 0.0);
 		CHECK(ldafunctional.name() == "Slater exchange");
-		CHECK(ldafunctional.kind() == "Exchange");
+		CHECK(ldafunctional.kind_name() == "Exchange");
+		CHECK(ldafunctional.family_name() == "LDA");
 	}
 
 	SECTION("LSDA"){
@@ -149,6 +163,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Spin GGA"){
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 2);
 		CHECK(ggafunctional.exx_coefficient() == 0.0);
+		CHECK(ggafunctional.family_name() == "GGA");
 	}
 
 	inq::hamiltonian::xc_functional b3lyp(XC_HYB_GGA_XC_B3LYP, 1);
@@ -156,7 +171,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("HYBRIDS"){
 		CHECK(b3lyp.exx_coefficient() == 0.2_a);
-		CHECK(b3lyp.kind() == "Exchange-correlation");
+		CHECK(b3lyp.kind_name() == "Exchange-correlation");
+		CHECK(b3lyp.family_name() == "GGA");
 		CHECK(pbeh.exx_coefficient() == 0.25_a);
 	}
 
