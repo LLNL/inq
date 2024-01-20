@@ -89,6 +89,21 @@ namespace hamiltonian {
 		std::string name() const {
 			return func_.info->name;
 		}
+
+		std::string kind() const {
+			switch (func_.info->kind) {
+			case (XC_EXCHANGE):
+				return "Exchange";
+			case (XC_CORRELATION):
+				return "Correlation";
+			case (XC_EXCHANGE_CORRELATION):
+				return "Exchange-correlation";
+			case (XC_KINETIC):
+				return "Kinetic energy";
+			default:
+				return "Unknown";
+		}
+	}
 		
 	private:
 		
@@ -117,6 +132,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 1);
 		CHECK(ldafunctional.exx_coefficient() == 0.0);
 		CHECK(ldafunctional.name() == "Slater exchange");
+		CHECK(ldafunctional.kind() == "Exchange");
 	}
 
 	SECTION("LSDA"){
@@ -140,6 +156,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("HYBRIDS"){
 		CHECK(b3lyp.exx_coefficient() == 0.2_a);
+		CHECK(b3lyp.kind() == "Exchange-correlation");
 		CHECK(pbeh.exx_coefficient() == 0.25_a);
 	}
 
