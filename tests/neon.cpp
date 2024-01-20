@@ -6,43 +6,53 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <inq/interface.hpp>
 #include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
 
 	using namespace inq;
-	using namespace inq::magnitude;
+	using namespace inq::magnitude;	
 
-	auto comm = input::environment::global().comm();	
+	auto comm = input::environment::global().comm();
 
 	utils::match energy_match(2.0e-5);
 
-	{
-		systems::ions ions(systems::cell::cubic(15.0_b).finite());
-		ions.save(comm, ".default_ions");
-	}
+	//inq cell cubic 15.0 bohr finite
+	interface::cell_cubic(15.0_b, 0);
 
+	//inq cell
+	interface::cell();
+
+	//inq ions add Ne 0.0 0.0 0.0 bohr
+	interface::ions_add("Ne", {0.0_b, 0.0_b, 0.0_b});
+
+  //inq ions
 	{
 		auto ions = systems::ions::load(".default_ions");		
-		ions.insert(input::species("Ne"), {0.0_b, 0.0_b, 0.0_b});
-		ions.save(comm, ".default_ions");
+		if(comm.root()) std::cout << ions;
 	}
 
+	//inq electrons extra_states 3
 	{
 		auto el_opts = options::electrons{}.extra_states(3);
 		el_opts.save(comm, ".default_electrons_options");
 	}
-	
+
+	//inq electrons cutoff 30.0 Ha
 	{
 		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(30.0_Ha);
 		el_opts.save(comm, ".default_electrons_options");
 	}
 
+	//inq theory non_interacting
 	{
 		auto theo = options::theory{}.non_interacting();
 		theo.save(comm, ".default_theory");
 	}
 
+
+	//inq run ground_state
 	//REAL SPACE PSEUDO
 	{
 		auto ions = systems::ions::load(".default_ions");
@@ -62,11 +72,13 @@ int main(int argc, char ** argv){
 	}
 
 	//FOURIER SPACE PSEUDO
+	//inq electrons fourier_pseudo
 	{
 		auto el_opts = options::electrons::load(".default_electrons_options").fourier_pseudo();
 		el_opts.save(comm, ".default_electrons_options");
 	}
-	
+
+	//inq run ground_state
 	{
 		auto ions = systems::ions::load(".default_ions");
 		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
