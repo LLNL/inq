@@ -47,3 +47,14 @@ endif()
 add_executable(all_unit_tests)
 target_sources(all_unit_tests PRIVATE all_unit_tests.cpp)
 target_link_libraries(all_unit_tests PRIVATE unit_tests_main Catch2::Catch2 inq)
+
+
+if(ENABLE_GPU)
+	set_source_files_properties(main/inq.cpp PROPERTIES LANGUAGE ${GPU_LANGUAGE})
+endif()
+
+add_executable(inq_executable)
+set_property(TARGET inq_executable PROPERTY OUTPUT_NAME inq)
+target_sources(inq_executable PRIVATE main/inq.cpp)
+target_link_libraries(inq_executable PRIVATE inq)
+install(TARGETS inq_executable)
