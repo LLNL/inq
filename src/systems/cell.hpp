@@ -94,12 +94,17 @@ namespace systems {
 
     template <class output_stream>
     void info(output_stream & out) const {
-      out << "UNIT CELL:" << std::endl;
-      out << "  Lattice vectors [b] = " << lattice_[0] << std::endl;
-      out << "                        " << lattice_[1] << std::endl;
-      out << "                        " << lattice_[2] << std::endl;
-      out << "  Volume [b^3]        = " << volume_ << std::endl;
-      out << std::endl;
+			out << "Unit cell:" << '\n';
+			out << "  Lattice vectors [b] = " << lattice_[0] << '\n';
+			out << "                        " << lattice_[1] << '\n';
+			out << "                        " << lattice_[2] << '\n';
+			out << "  Volume [b^3]        = " << volume_ << '\n';
+			out << "  Periodicity         = " << periodicity_;
+			if(periodicity_ == 0) out << "d (finite)\n";
+			if(periodicity_ == 1) out << "d (wire)\n";
+			if(periodicity_ == 2) out << "d (slab)\n";
+			if(periodicity_ == 3) out << "d (fully periodic)\n";
+			out << std::endl;
     }
 
 		template<class OStream>

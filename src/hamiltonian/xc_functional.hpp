@@ -86,6 +86,48 @@ namespace hamiltonian {
 			return 0.0;
 		}
 
+		std::string name() const {
+			return func_.info->name;
+		}
+
+		std::string kind_name() const {
+			switch (func_.info->kind) {
+			case (XC_EXCHANGE):
+				return "Exchange";
+			case (XC_CORRELATION):
+				return "Correlation";
+			case (XC_EXCHANGE_CORRELATION):
+				return "Exchange-correlation";
+			case (XC_KINETIC):
+				return "Kinetic energy";
+			default:
+				return "Unknown";
+			}
+		}
+		
+		std::string family_name() const {
+			switch (family()) {
+			case (XC_FAMILY_LDA):
+				return "LDA";
+			case (XC_FAMILY_GGA):
+				return "GGA";
+			case (XC_FAMILY_MGGA):
+				return "MGGA";
+			default:
+				return "Unknown";
+			}
+		}
+
+		auto references() const {
+			std::string refs;
+			for(int ii = 0; func_.info->refs[ii] != NULL; ii++){
+				refs += "[" + std::to_string(ii + 1) + "] ";
+				refs += func_.info->refs[ii]->ref;
+				refs += "\n";
+			}
+			return refs;
+		}
+		
 	private:
 		
 		int id_;
@@ -112,6 +154,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("LDA"){
 		inq::hamiltonian::xc_functional ldafunctional(XC_LDA_X, 1);
 		CHECK(ldafunctional.exx_coefficient() == 0.0);
+		CHECK(ldafunctional.name() == "Slater exchange");
+		CHECK(ldafunctional.kind_name() == "Exchange");
+		CHECK(ldafunctional.family_name() == "LDA");
+		CHECK(ldafunctional.references() == "[1] P. A. M. Dirac, Math. Proc. Cambridge Philos. Soc. 26, 376 (1930)\n[2] F. Bloch, Z. Phys. 57, 545 (1929)\n");
 	}
 
 	SECTION("LSDA"){
@@ -122,11 +168,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("GGA"){
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 1);
 		CHECK(ggafunctional.exx_coefficient() == 0.0);
+		CHECK(ggafunctional.name() == "Perdew, Burke & Ernzerhof");
 	}
 
 	SECTION("Spin GGA"){
 		inq::hamiltonian::xc_functional ggafunctional(XC_GGA_X_PBE, 2);
 		CHECK(ggafunctional.exx_coefficient() == 0.0);
+		CHECK(ggafunctional.family_name() == "GGA");
 	}
 
 	inq::hamiltonian::xc_functional b3lyp(XC_HYB_GGA_XC_B3LYP, 1);
@@ -134,6 +182,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("HYBRIDS"){
 		CHECK(b3lyp.exx_coefficient() == 0.2_a);
+		CHECK(b3lyp.kind_name() == "Exchange-correlation");
+		CHECK(b3lyp.family_name() == "GGA");
 		CHECK(pbeh.exx_coefficient() == 0.25_a);
 	}
 
