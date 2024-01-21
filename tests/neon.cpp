@@ -39,11 +39,7 @@ int main(int argc, char ** argv){
 	interface::electrons_cutoff(30.0_Ha);
 
 	//inq theory non_interacting
-	{
-		auto theo = options::theory{}.non_interacting();
-		theo.save(comm, ".default_theory");
-	}
-
+	interface::theory_non_interacting();
 
 	//inq run ground_state
 	//REAL SPACE PSEUDO

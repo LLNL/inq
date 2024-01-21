@@ -57,6 +57,11 @@ void electrons_fourier_pseudo(){
 	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 }
 
+void theory_non_interacting(){
+	auto theo = options::theory{}.non_interacting();
+	theo.save(input::environment::global().comm(), ".default_theory");
+}
+
 }
 }
 #endif
