@@ -41,14 +41,10 @@ int main(int argc, char ** argv){
 	//inq theory non_interacting
 	interface::theory_non_interacting();
 
-	//inq run ground_state
 	//REAL SPACE PSEUDO
 	{
-		auto ions = systems::ions::load(".default_ions");
-		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
-		
-		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
+		//inq run ground_state
+		auto result = interface::run_ground_state();
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.861045337100);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765610219604);
@@ -56,8 +52,6 @@ int main(int argc, char ** argv){
 		energy_match.check("external energy",  result.energy.external()   , -79.509954154661);
 		energy_match.check("non-local energy", result.energy.nonlocal()   , -18.116701402044);
 		energy_match.check("ion-ion energy",   result.energy.ion()        ,   0.000000000000);
-
-		electrons.save(".default_orbitals");
 	}
 
 	//FOURIER SPACE PSEUDO
@@ -66,11 +60,7 @@ int main(int argc, char ** argv){
 
 	//inq run ground_state
 	{
-		auto ions = systems::ions::load(".default_ions");
-		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
-		electrons.load(".default_orbitals");
-
-		auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
+		auto result = interface::run_ground_state();
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.861056649453);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765555684056);
@@ -78,9 +68,7 @@ int main(int argc, char ** argv){
 		energy_match.check("external energy",  result.energy.external()   , -79.509918897873);
 		energy_match.check("non-local energy", result.energy.nonlocal()   , -18.116693435635);
 		energy_match.check("ion-ion energy",   result.energy.ion()        ,   0.000000000000);
-		
 	}
 
 	return energy_match.fail();
-	
 }

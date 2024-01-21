@@ -12,6 +12,8 @@
 #include <input/environment.hpp>
 #include <systems/ions.hpp>
 #include <systems/electrons.hpp>
+#include <ground_state/initial_guess.hpp>
+#include <ground_state/calculate.hpp>
 
 namespace inq {
 namespace interface {
@@ -60,6 +62,18 @@ void electrons_fourier_pseudo(){
 void theory_non_interacting(){
 	auto theo = options::theory{}.non_interacting();
 	theo.save(input::environment::global().comm(), ".default_theory");
+}
+
+auto run_ground_state(){
+	auto ions = systems::ions::load(".default_ions");
+	systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
+
+	if(not electrons.try_load(".default_orbitals")){
+		ground_state::initial_guess(ions, electrons);
+	}
+	auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
+	electrons.save(".default_orbitals");
+	return result;
 }
 
 }
