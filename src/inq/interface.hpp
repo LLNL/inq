@@ -42,6 +42,21 @@ void ions(){
   if(input::environment::global().comm().root()) std::cout << ions;
 }
 
+void electrons_extra_states(int nstates){
+	auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
+	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+}
+
+void electrons_cutoff(quantity<magnitude::energy> ecut){
+	auto el_opts = options::electrons::load(".default_electrons_options").cutoff(ecut);
+	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+}
+
+void electrons_fourier_pseudo(){
+	auto el_opts = options::electrons::load(".default_electrons_options").fourier_pseudo();
+	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+}
+
 }
 }
 #endif

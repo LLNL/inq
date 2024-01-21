@@ -33,16 +33,10 @@ int main(int argc, char ** argv){
 	interface::ions();
 	
 	//inq electrons extra_states 3
-	{
-		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(3);
-		el_opts.save(comm, ".default_electrons_options");
-	}
-
+	interface::electrons_extra_states(3);
+	
 	//inq electrons cutoff 30.0 Ha
-	{
-		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(30.0_Ha);
-		el_opts.save(comm, ".default_electrons_options");
-	}
+	interface::electrons_cutoff(30.0_Ha);
 
 	//inq theory non_interacting
 	{
@@ -72,10 +66,7 @@ int main(int argc, char ** argv){
 
 	//FOURIER SPACE PSEUDO
 	//inq electrons fourier_pseudo
-	{
-		auto el_opts = options::electrons::load(".default_electrons_options").fourier_pseudo();
-		el_opts.save(comm, ".default_electrons_options");
-	}
+	interface::electrons_fourier_pseudo();
 
 	//inq run ground_state
 	{
