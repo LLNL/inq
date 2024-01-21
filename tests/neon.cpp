@@ -23,9 +23,19 @@ int main(int argc, char ** argv){
 	}
 
 	{
+		auto cell = systems::ions::load(".default_ions").cell();
+		if(comm.root()) std::cout << cell;
+	}
+
+	{
 		auto ions = systems::ions::load(".default_ions");		
 		ions.insert(input::species("Ne"), {0.0_b, 0.0_b, 0.0_b});
 		ions.save(comm, ".default_ions");
+	}
+
+	{
+		auto ions = systems::ions::load(".default_ions");		
+		if(comm.root()) std::cout << ions;
 	}
 
 	{

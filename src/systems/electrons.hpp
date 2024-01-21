@@ -256,7 +256,7 @@ public:
 
 		if(logger()){
 			logger()->info("constructed with cell {}", ions.cell());
-			logger()->info("constructed with geometry {}", ions);
+			logger()->info("constructed with geometry:\n {}", ions);
 			if(ions.size() > 0) logger()->info("system symmetries: " + ions.symmetry_string());
 			logger()->info("constructed with Brillouin zone sampling {}", brillouin_zone_);
 		}

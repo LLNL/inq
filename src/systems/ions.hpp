@@ -181,8 +181,10 @@ public:
 	
 	template <class output_stream>
 	void info(output_stream & out) const {
-		out << "GEOMETRY:" << std::endl;
-		out << "  Number of atoms = " << size() << std::endl;
+		out << "Ions (" << size() << " total):" << std::endl;
+		for(int iatom = 0; iatom < size(); iatom++){
+			out << "  " << atoms_[iatom].symbol() << '\t' << positions_[iatom] << '\n';
+		}
 		out << std::endl;
 	}
 	
