@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__INTERFACE
-#define INPUT__INTERFACE
+#ifndef INQ__INTERFACE
+#define INQ__INTERFACE
 
 // Copyright (C) 2019-2024 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -80,8 +80,8 @@ auto run_ground_state(){
 }
 #endif
 
-#ifdef INQ_INPUT_INTERFACE_UNIT_TEST
-#undef INQ_INPUT_INTERFACE_UNIT_TEST
+#ifdef INQ_INQ_INTERFACE_UNIT_TEST
+#undef INQ_INQ_INTERFACE_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
