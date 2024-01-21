@@ -11,9 +11,15 @@
 
 #include <input/environment.hpp>
 #include <systems/ions.hpp>
+#include <systems/electrons.hpp>
 
 namespace inq {
 namespace interface {
+
+void clear(){
+	options::theory{}.save(input::environment::global().comm(), ".default_theory");
+	options::electrons{}.save(input::environment::global().comm(), ".default_electrons_options");
+}
 
 void cell_cubic(quantity<magnitude::length> const aa, int periodicity = 3){
   systems::ions ions(systems::cell::cubic(aa).periodicity(periodicity));
@@ -35,7 +41,6 @@ void ions(){
   auto ions = systems::ions::load(".default_ions");		
   if(input::environment::global().comm().root()) std::cout << ions;
 }
-
 
 }
 }

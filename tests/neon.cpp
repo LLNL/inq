@@ -18,6 +18,8 @@ int main(int argc, char ** argv){
 
 	utils::match energy_match(2.0e-5);
 
+	interface::clear();
+	
 	//inq cell cubic 15.0 bohr finite
 	interface::cell_cubic(15.0_b, 0);
 
@@ -32,7 +34,7 @@ int main(int argc, char ** argv){
 	
 	//inq electrons extra_states 3
 	{
-		auto el_opts = options::electrons{}.extra_states(3);
+		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(3);
 		el_opts.save(comm, ".default_electrons_options");
 	}
 
