@@ -432,7 +432,7 @@ cuda-mpich-fast-utests:
       - mkdir build
       - cd build
       - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
-      - make -j2 _pinq      
+      - make -j2 _pinq inq_executable
       - cmake --build . --target install/fast
       - cd speed_tests
       -   make -j2
@@ -466,7 +466,7 @@ cuda-mpich-fast-itests:
       - mkdir build
       - cd build
       - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
-      - make -j2 _pinq
+      - make -j2 _pinq inq_executable
       - cmake --build . --target install/fast
       - cd tests/;
       -   time make -j2
@@ -496,7 +496,7 @@ cuda-mpich-debug-utests:
       - mkdir build
       - cd build
       - cmake ../ -DCMAKE_BUILD_TYPE=Debug --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
-      - make -j2 _pinq      
+      - make -j2 _pinq inq_executable
       - cmake --build . --target install/fast
       - cd speed_tests
       -   make -j2
@@ -530,7 +530,7 @@ cuda-mpich-debug-itests:
       - mkdir build
       - cd build
       - cmake ../ -DCMAKE_BUILD_TYPE=Debug --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
-      - make -j2 _pinq      
+      - make -j2 _pinq inq_executable
       - cmake --build . --target install/fast
       - cd tests/;
       -   time make -j2
