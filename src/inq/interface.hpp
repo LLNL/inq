@@ -19,8 +19,13 @@ namespace inq {
 namespace interface {
 
 void clear(){
-	options::theory{}.save(input::environment::global().comm(), ".default_theory");
-	options::electrons{}.save(input::environment::global().comm(), ".default_electrons_options");
+	if(input::environment::global().comm().root()) {
+		std::filesystem::remove_all(".default_ions");
+		std::filesystem::remove_all(".default_theory");
+		std::filesystem::remove_all(".default_electrons_options");
+		std::filesystem::remove_all(".default_orbitals");
+	}
+	input::environment::global().comm().barrier();
 }
 
 void cell_cubic(quantity<magnitude::length> const aa, int periodicity = 3){
