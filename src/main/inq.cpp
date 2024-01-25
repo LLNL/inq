@@ -37,6 +37,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "The following commands are available:\n";
 		std::cout << "  clear      Removes any inq information from the current directory.\n";
 		std::cout << "  cell       Defines the simulation cell.\n";
+		std::cout << "  ions       Defines the ions in the simulation.\n";
 		std::cout << std::endl;
 		exit(1);
 	}
@@ -75,6 +76,17 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
+	if(argv[1] == std::string("ions")) {
+
+		if(argc == 2) {
+			interface::ions();
+			exit(0);
+		}
+
+		std::cerr << "Invalid syntax in the ions command" << std::endl;
+		exit(1);
+	}
+	
 	std::cerr << "inq error: unknown command '" << argv[1] << "'." << std::endl;
 	exit(1);
 	
