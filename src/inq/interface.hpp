@@ -44,6 +44,12 @@ void ions_add(input::species const & sp, vector3<quantity<magnitude::length>> co
   ions.save(input::environment::global().comm(), ".default_ions");
 }
 
+void ions_clear(){
+  auto ions = systems::ions::load(".default_ions");
+  ions.clear();
+  ions.save(input::environment::global().comm(), ".default_ions");
+}
+
 void ions(){
   auto ions = systems::ions::load(".default_ions");		
   if(input::environment::global().comm().root()) std::cout << ions;
