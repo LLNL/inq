@@ -43,13 +43,15 @@ int main(int argc, char* argv[]) {
 	}
 
 	auto quiet = false;
+
+	auto command = std::string(argv[1]);
 	
-	if(argv[1] == std::string("clear")) {
+	if(command == "clear") {
 		interface::clear();
 		exit(0);
 	}
 
-	if(argv[1] == std::string("cell")) {
+	if(command == "cell") {
 
 		if(argc == 2) {
 			interface::cell();
@@ -76,7 +78,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	if(argv[1] == std::string("ions")) {
+	if(command == "ions") {
 
 		if(argc == 2) {
 			interface::ions();
@@ -105,7 +107,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	
-	std::cerr << "inq error: unknown command '" << argv[1] << "'." << std::endl;
+	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);
 	
 	fftw_cleanup();
