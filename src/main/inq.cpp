@@ -11,12 +11,19 @@
 
 int main(int argc, char* argv[]) {
 
-	inq::input::environment::global(); //Initialize MPI 
+	using namespace inq;
+	
+	input::environment::global(); //Initialize MPI 
 
 	if(argc == 1){
-		std::cout << "usage: " << argv[0] << " [command] [arguments]" << std::endl;
+		std::cout << "Usage: inq [command] [arguments]\n\n";
+		std::cout << "The following commands are available:\n";
+		std::cout << "  clear      Removes any inq information from the current directory.\n";
+		std::cout << std::endl;
 		exit(1);
 	}
+	
+	if(argv[1] == std::string("clear")) interface::clear();
 	
 	fftw_cleanup();
   return 0;
