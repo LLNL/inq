@@ -51,6 +51,12 @@ public:
 		cell_(std::move(arg_cell_input)){
 	}
 
+	void clear() {
+		atoms_.clear();
+		positions_.clear();
+		velocities_.clear();
+	}
+	
 	static ions parse(std::string filename, inq::systems::cell const & cell) {
 		return parse(filename, std::optional<quantity<magnitude::length>>{}, cell);
 	}
@@ -436,7 +442,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(read_ions.velocities()[12][1] == 0.0_a);
     CHECK(read_ions.velocities()[12][2] == 0.0_a);
 
-		CHECK(ions.velocities().size() == ions.positions().size());
+		CHECK(read_ions.velocities().size() == read_ions.positions().size());
+
+		read_ions.clear();
+
+		CHECK(read_ions.size() == 0);
 		
   }
 	
