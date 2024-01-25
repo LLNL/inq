@@ -265,6 +265,8 @@ namespace systems {
 		void save(parallel::communicator & comm, std::string const & dirname) const {
 			auto error_message = "INQ error: Cannot save the cell to directory '" + dirname + "'.";
 
+			comm.barrier();
+
 			auto exception_happened = true;
 			if(comm.root()) {
 
@@ -281,13 +283,8 @@ namespace systems {
 				}
 				lattice_file.precision(25);
 				
-				for(int ilat = 0; ilat < 3; ilat++){
-					for(int idir = 0; idir < 3; idir++){
-						lattice_file << lattice_[ilat][idir] << '\t';
-					}
-					lattice_file << '\n';
-				}
-
+				lattice_file << lattice_[0] << '\n' << lattice_[1] << '\n' << lattice_[2] << std::endl;
+				
 				utils::save_value(comm, dirname + "/periodicity", periodicity_, error_message);
 				
 				exception_happened = false;

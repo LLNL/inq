@@ -160,7 +160,9 @@ public:
 	
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save theory to directory '" + dirname + "'.";
-		
+
+		comm.barrier();
+
 		auto exception_happened = true;
 		if(comm.root()) {
 			

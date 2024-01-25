@@ -203,10 +203,12 @@ public:
 	}
 
 	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the ions to directory '" + dirname + "'.";
+
 		cell_.save(comm, dirname + "/cell");
 
-		auto error_message = "INQ error: Cannot save the ions to directory '" + dirname + "'.";
-		
+		comm.barrier();
+
 		auto exception_happened = true;
 		if(comm.root()) {
 
