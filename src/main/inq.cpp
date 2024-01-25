@@ -85,10 +85,21 @@ int main(int argc, char* argv[]) {
 			exit(0);
 		}
 
+		if(argv[2] == std::string("clear")){
+
+			if(argc != 3) {
+				std::cerr << "The 'ions clear' command doesn't take arguments." << std::endl;
+				exit(1);
+			}
+			interface::ions_clear();
+			if(not quiet) interface::ions();
+			exit(0);
+		}
+ 
 		if(argv[2] == std::string("add")){
 
 			if(argc != 8) {
-				std::cerr << "Wrong arguments for a ions add.\nUse: inq adds <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
+				std::cerr << "Wrong arguments for ions add.\nUse: inq ions add <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
 				exit(1);
 			}
 
