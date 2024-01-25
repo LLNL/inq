@@ -74,6 +74,9 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Invalid syntax in the cell command" << std::endl;
 		exit(1);
 	}
+
+	std::cerr << "inq error: unknown command '" << argv[1] << "'." << std::endl;
+	exit(1);
 	
 	fftw_cleanup();
   return 0;
