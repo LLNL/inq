@@ -83,6 +83,24 @@ int main(int argc, char* argv[]) {
 			exit(0);
 		}
 
+		if(argv[2] == std::string("add")){
+
+			if(argc != 8) {
+				std::cerr << "Wrong arguments for a ions add.\nUse: inq adds <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
+				exit(1);
+			}
+
+			auto symbol = std::string(argv[3]);
+			auto units = magnitude::length::parse(argv[7]);
+			auto xx = atof(argv[4])*units;
+			auto yy = atof(argv[5])*units;
+			auto zz = atof(argv[6])*units;
+			
+			interface::ions_add(symbol, {xx, yy, zz});
+			if(not quiet) interface::ions();
+			exit(0);
+		}
+ 
 		std::cerr << "Invalid syntax in the ions command" << std::endl;
 		exit(1);
 	}
