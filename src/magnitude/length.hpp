@@ -14,9 +14,7 @@
 namespace inq {
 namespace magnitude {
 
-class length {
-	
-};
+struct length;
 
 auto operator "" _b(long double val){
 	return inq::quantity<length>::from_atomic_units(val);
@@ -54,6 +52,26 @@ static auto const bohr     = inq::magnitude::operator""_bohr(1);
 
 static auto const angstrom = inq::magnitude::operator""_angstrom(1); // Å, AA, Angstrom
 static auto const A        = inq::magnitude::operator""_A(1);        // Å, AA, Angstrom
+
+struct length {
+	static inq::quantity<length> parse(std::string units){
+
+		std::transform(units.begin(), units.end(), units.begin(), ::tolower);
+		
+		if(units == "bohr" or units == "bohrs" or units == "b") {
+			return 1.0_b;
+		} else if (units == "angstrom" or units == "angstroms" or units == "a"){
+			return 1.0_A;
+		} else if (units == "nanometer" or units == "nanometers" or units == "nm"){
+			return 1.0_nm;
+		} else if (units == "picometer" or units == "picometers" or units == "pm"){
+			return 1.0_pm;
+		} else {
+			throw std::runtime_error("inq error: unknown length units '" + units + "'.");
+		}
+	}
+	
+};
 
 }
 
@@ -112,5 +130,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(le.in_atomic_units() == 0.440929796659773_a);
   }
 
+	CHECK(length::parse("bohr") == 1.0_b);	
+	CHECK(length::parse("Bohr") == 1.0_b);
+	CHECK(length::parse("BOHR") == 1.0_b);
+	CHECK(length::parse("a") == 1.0_A);
+	CHECK(length::parse("angstrom") == 1.0_A);
+	CHECK(length::parse("angSTROMS") == 1.0_A);		
+	CHECK(length::parse("PICOMETER") == 1.0_pm);	
+	CHECK(length::parse("picometers") == 1.0_pm);
+	CHECK(length::parse("pm") == 1.0_pm);	
+	CHECK(length::parse("NANOmeter") == 1.0_nm);	
+	
+	CHECK_THROWS(length::parse("not_a_unit") == 1.0_b);	
+	
 }
 #endif
