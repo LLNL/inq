@@ -14,9 +14,7 @@
 namespace inq {
 namespace magnitude {
 
-class energy {
-	
-};
+struct energy;
 
 auto operator "" _ha(long double val){
 	return inq::quantity<energy>::from_atomic_units(val);
@@ -63,6 +61,28 @@ auto operator "" _kelvin(long double val){
 }
 
 static auto const Ha = inq::magnitude::operator""_Ha(1);
+
+struct energy {
+
+	static inq::quantity<energy> parse(std::string units){
+		
+		std::transform(units.begin(), units.end(), units.begin(), ::tolower);
+		
+		if(units == "hartree" or units == "hartrees" or units == "ha") {
+			return 1.0_Ha;
+		} else if (units == "electronvolt" or units == "electronvolts" or units == "ev"){
+			return 1.0_eV;
+		} else if (units == "rydberg" or units == "rydbergs" or units == "ry"){
+			return 1.0_Ry;
+		} else if (units == "kelvin" or units == "kelvins" or units == "k"){
+			return 1.0_K;
+		} else {
+			throw std::runtime_error("inq error: unknown energy units '" + units + "'.");
+		}
+	}
+	
+};
+
 
 }
 }
@@ -123,6 +143,19 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto en = 0.5_hartree + 300.0_kelvin;
 		CHECK(en.in_atomic_units() == 0.5009500435_a);
 	}
+
+	CHECK(energy::parse("hartree") == 1.0_Ha);	
+	CHECK(energy::parse("Hartree") == 1.0_Ha);
+	CHECK(energy::parse("HARTREE") == 1.0_Ha);
+	CHECK(energy::parse("Ha") == 1.0_Ha);
+	CHECK(energy::parse("electronvolt") == 1.0_eV);
+	CHECK(energy::parse("eV") == 1.0_eV);
+	CHECK(energy::parse("rydberg") == 1.0_Ry);	
+	CHECK(energy::parse("Ry") == 1.0_Ry);
+	CHECK(energy::parse("Kelvins") == 1.0_K);	
+	CHECK(energy::parse("K") == 1.0_K);
+	
+	CHECK_THROWS(energy::parse("not_a_unit"));	
 	
 }
 #endif
