@@ -19,7 +19,16 @@ namespace inq {
 namespace interface {
 
 struct {
-	void operator()(){
+
+	std::string name() const {
+		return "clear";
+	}
+
+	std::string one_line() const {
+		return "Removes any inq information from the current directory.";
+	}
+	
+	void operator()() const {
 		if(input::environment::global().comm().root()) {
 			std::filesystem::remove_all(".default_ions");
 			std::filesystem::remove_all(".default_theory");
@@ -31,6 +40,14 @@ struct {
 }	clear;
 
 struct {
+
+	std::string name() const {
+		return "cell";
+	}
+
+	std::string one_line() const {
+		return "Defines the simulation cell.";
+	}
 	
 	void operator()(){
 		auto cell = systems::ions::load(".default_ions").cell();
@@ -45,6 +62,14 @@ struct {
 } cell ;
 
 struct {
+	
+	std::string name() const {
+		return "ions";
+	}
+
+	std::string one_line() const {
+		return "Defines the ions in the simulation.";
+	}
 
 	void operator()(){
 		auto ions = systems::ions::load(".default_ions");		
@@ -66,7 +91,15 @@ struct {
 } ions;
 
 struct {
-	
+		
+	std::string name() const {
+		return "electrons";
+	}
+
+	std::string one_line() const {
+		return "Defines the electrons in the simulation and how they are represented.";
+	}
+
 	static void extra_states(int nstates){
 		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
@@ -84,7 +117,16 @@ struct {
 
 } electrons;
 
-struct {
+struct {		
+
+	std::string name() const {
+		return "theory";
+	}
+
+	std::string one_line() const {
+		return "Defines the theory used to represent the electrons-electron interaction.";
+	}
+	
 	static void non_interacting(){
 		auto theo = options::theory{}.non_interacting();
 		theo.save(input::environment::global().comm(), ".default_theory");
@@ -92,6 +134,15 @@ struct {
 } theory;
 
 struct {
+
+	std::string name() const {
+		return "run";
+	}
+
+	std::string one_line() const {
+		return "Runs the simulation.";
+	}
+	
 	static auto ground_state(){
 		auto ions = systems::ions::load(".default_ions");
 		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));

@@ -35,9 +35,9 @@ int main(int argc, char* argv[]) {
 	if(argc == 1){
 		std::cout << "Usage: inq <command> [arguments]\n\n";
 		std::cout << "The following commands are available:\n";
-		std::cout << "  clear      Removes any inq information from the current directory.\n";
-		std::cout << "  cell       Defines the simulation cell.\n";
-		std::cout << "  ions       Defines the ions in the simulation.\n";
+		std::cout << "  " << interface::clear.name() << "\t\t" << interface::clear.one_line() << '\n';
+		std::cout << "  " << interface::cell.name()  << "\t\t" << interface::cell.one_line()  << '\n';		
+		std::cout << "  " << interface::ions.name()  << "\t\t" << interface::ions.one_line()  << '\n';
 		std::cout << std::endl;
 		exit(1);
 	}
