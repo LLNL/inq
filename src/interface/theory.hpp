@@ -50,26 +50,23 @@ struct {
 
 		if(args.size() == 0){
 			operator()();
-			exit(0);
-		}
-
-		if((args.size() == 1 and args[0] == "non_interacting") or (args.size() == 1 and args[0] == "non-interacting") or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){
+			
+		} else if((args.size() == 1 and args[0] == "non_interacting") or (args.size() == 1 and args[0] == "non-interacting") or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){
 			non_interacting();
-			exit(0);
-		}
-
-		if(args.size() == 1 and args[0] == "hartree"){
+			
+		} else if( args.size() == 1 and args[0] == "hartree"){
 			hartree();
-			exit(0);
+			
+		} else if((args.size() == 1 and args[0] == "hartree-fock") or (args.size() == 1 and args[0] == "hartree_fock") or (args.size() == 2 and args[0] == "hartree" and args[1] == "fock")){
+			hartree_fock();
+			
+		} else {				
+			std::cerr << "Invalid syntax in 'theory' command" << std::endl;
+			exit(1);
 		}
 
-		if((args.size() == 1 and args[0] == "hartree-fock") or (args.size() == 1 and args[0] == "hartree_fock") or (args.size() == 2 and args[0] == "hartree" and args[1] == "fock")){
-			hartree_fock();
-			exit(0);
-		}
-				
-		std::cerr << "Invalid syntax in 'theory' command" << std::endl;
-		exit(1);
+		if(not quiet) operator()();
+		exit(0);
 	}
 	
 } const theory;
