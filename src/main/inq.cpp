@@ -8,23 +8,6 @@
 
 #include <inq/inq.hpp>
 
-static auto parse_periodicity(std::string per_string){
-	
-	std::transform(per_string.begin(), per_string.end(), per_string.begin(), ::tolower);
-	
-	if(per_string == "finite" or per_string == "0" or per_string == "0d") {
-		return 0;
-	} else if (per_string == "wire" or per_string == "1" or per_string == "1d"){
-		return 1;
-	} else if (per_string == "slab" or per_string == "2" or per_string == "2d"){
-		return 2;
-	} else if (per_string == "periodic" or per_string == "3" or per_string == "3d"){
-		return 3;
-	} else {
-		throw std::runtime_error("inq error: unknown periodicity '" + per_string + "'.");
-	}
-}
-
 int main(int argc, char* argv[]) {
 
 	using namespace inq;
@@ -48,34 +31,8 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> args;
 	for(int iarg = 2; iarg < argc; iarg++) args.emplace_back(argv[iarg]);
 	
-	if(command == interface::clear.name()) interface::clear.command(args);
-	if(command == interface::cell.name()) {
-
-		if(args.size() == 0) {
-			interface::cell();
-			exit(0);
-		}
-
-		if(args[0] == "cubic"){
-			if(args.size() != 3 and args.size() != 4) {
-				std::cerr << "Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]" << std::endl;
-				exit(1);
-			}
-
-			auto aa = atof(args[1].c_str())*magnitude::length::parse(args[2]);
-
-			int per = 3;
-			if(args.size() == 4) per = parse_periodicity(args[3]);
-
-			interface::cell.cubic(aa, per);
-			if(not quiet) interface::cell();
-			exit(0);
-		}
-
-		std::cerr << "Invalid syntax in the cell command" << std::endl;
-		exit(1);
-	}
-
+	if(command == interface::clear.name()) interface::clear.command(args, quiet);
+	if(command == interface::cell.name())  interface::cell.command (args, quiet);
 	if(command == interface::ions.name()) {
 
 		if(args.size() == 0) {

@@ -38,6 +38,56 @@ struct {
 		ions.save(input::environment::global().comm(), ".default_ions");
 	}
 
+
+private:
+
+	static auto parse_periodicity(std::string per_string){
+		
+		std::transform(per_string.begin(), per_string.end(), per_string.begin(), ::tolower);
+		
+		if(per_string == "finite" or per_string == "0" or per_string == "0d") {
+			return 0;
+		} else if (per_string == "wire" or per_string == "1" or per_string == "1d"){
+			return 1;
+		} else if (per_string == "slab" or per_string == "2" or per_string == "2d"){
+			return 2;
+		} else if (per_string == "periodic" or per_string == "3" or per_string == "3d"){
+			return 3;
+		} else {
+			throw std::runtime_error("inq error: unknown periodicity '" + per_string + "'.");
+		}
+	}
+
+public:
+	
+	template <typename ArgsType>
+	void command(ArgsType const & args, bool quiet) const {
+		
+		if(args.size() == 0) {
+			operator()();
+			exit(0);
+		}
+		
+		if(args[0] == "cubic"){
+			if(args.size() != 3 and args.size() != 4) {
+				std::cerr << "Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]" << std::endl;
+				exit(1);
+			}
+			
+			auto aa = atof(args[1].c_str())*magnitude::length::parse(args[2]);
+
+			int per = 3;
+			if(args.size() == 4) per = parse_periodicity(args[3]);
+			
+			cubic(aa, per);
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
+		std::cerr << "Invalid syntax in the cell command" << std::endl;
+		exit(1);
+	}
+	
 } const cell ;
 
 }
