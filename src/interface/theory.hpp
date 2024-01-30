@@ -44,6 +44,11 @@ struct {
 		auto theo = options::theory::load(".default_theory").hartree_fock();
 		theo.save(input::environment::global().comm(), ".default_theory");
 	}
+
+	void lda() const{
+		auto theo = options::theory::load(".default_theory").lda();
+		theo.save(input::environment::global().comm(), ".default_theory");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
@@ -62,6 +67,9 @@ struct {
 			
 		} else if((args.size() == 1 and args[0] == "hartree-fock") or (args.size() == 1 and args[0] == "hartree_fock") or (args.size() == 2 and args[0] == "hartree" and args[1] == "fock")){
 			hartree_fock();
+
+		} else if( args.size() == 1 and args[0] == "lda" ){
+			lda();
 			
 		} else {				
 			std::cerr << "Invalid syntax in 'theory' command" << std::endl;

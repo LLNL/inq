@@ -15,7 +15,7 @@
 #include <optional>
 #include <stdexcept>
 
-#include <xc.h>
+#include <hamiltonian/xc_functional.hpp>
 
 namespace inq {
 namespace options {
@@ -217,6 +217,22 @@ public:
 		if(self.hartree_potential() and self.exchange() == exchange_functional::HARTREE_FOCK and self.correlation() == correlation_functional::NONE){
 			out << " Hartree-Fock" << std::endl;
 			return out;
+		}
+
+		if(self.exchange() != exchange_functional::NONE) {
+			auto e_func = hamiltonian::xc_functional(int(self.exchange()), 1);
+			
+			out << "  "   << e_func.kind_name() << ":\n";
+			out << "    " << e_func.family_name() << " - " << e_func.name() << "\n\n";
+			out << e_func.references("    ") << "\n";		
+		}
+
+		if(self.correlation() != correlation_functional::NONE) {
+			auto c_func = hamiltonian::xc_functional(int(self.correlation()), 1);
+			
+			out << "  "   << c_func.kind_name() << ":\n";
+			out << "    " << c_func.family_name() << " - " << c_func.name() << "\n\n";
+			out << c_func.references("    ") << "\n";
 		}
 		
 		return out;
