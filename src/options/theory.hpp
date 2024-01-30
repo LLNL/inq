@@ -25,18 +25,18 @@ class theory {
 public:
 
 	enum class exchange_functional {
-		NONE = 0,
+		NONE = XC_NONE,
 		LDA = XC_LDA_X,
 		PBE = XC_GGA_X_PBE,
 		RPBE = XC_GGA_X_RPBE,		
 		B = XC_GGA_X_B88,
 		B3LYP = XC_HYB_GGA_XC_B3LYP,
 		PBE0 = XC_HYB_GGA_XC_PBEH,
-		HARTREE_FOCK = -1
+		HARTREE_FOCK = XC_HARTREE_FOCK
 	};
 
 	enum class correlation_functional {
-		NONE = 0,
+		NONE = XC_NONE,
 		LDA_PZ = XC_LDA_C_PZ,
 		PBE = XC_GGA_C_PBE,
 		LYP = XC_GGA_C_LYP
