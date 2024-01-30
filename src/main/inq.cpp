@@ -44,6 +44,9 @@ int main(int argc, char* argv[]) {
 	auto quiet = false;
 
 	auto command = std::string(argv[1]);
+
+	std::vector<std::string> args;
+	for(int iarg = 2; iarg < argc; iarg++) args.emplace_back(argv[iarg]);
 	
 	if(command == "clear") {
 		interface::clear();
@@ -52,21 +55,21 @@ int main(int argc, char* argv[]) {
 
 	if(command == "cell") {
 
-		if(argc == 2) {
+		if(args.size() == 0) {
 			interface::cell();
 			exit(0);
 		}
 
-		if(argv[2] == std::string("cubic")){
-			if(argc != 5 and argc != 6) {
+		if(args[0] == "cubic"){
+			if(args.size() != 3 and args.size() != 4) {
 				std::cerr << "Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]" << std::endl;
 				exit(1);
 			}
 
-			auto aa = atof(argv[3])*magnitude::length::parse(argv[4]);
+			auto aa = atof(args[1].c_str())*magnitude::length::parse(args[2]);
 
 			int per = 3;
-			if(argc == 6) per = parse_periodicity(argv[5]);
+			if(args.size() == 4) per = parse_periodicity(args[3]);
 
 			interface::cell.cubic(aa, per);
 			if(not quiet) interface::cell();
@@ -79,14 +82,14 @@ int main(int argc, char* argv[]) {
 
 	if(command == "ions") {
 
-		if(argc == 2) {
+		if(args.size() == 0) {
 			interface::ions();
 			exit(0);
 		}
 
-		if(argv[2] == std::string("clear")){
+		if(args[0] == "clear"){
 
-			if(argc != 3) {
+			if(args.size() != 1) {
 				std::cerr << "The 'ions clear' command doesn't take arguments." << std::endl;
 				exit(1);
 			}
@@ -95,18 +98,18 @@ int main(int argc, char* argv[]) {
 			exit(0);
 		}
  
-		if(argv[2] == std::string("add")){
+		if(args[0] == "add"){
 
-			if(argc != 8) {
+			if(args.size() != 6) {
 				std::cerr << "Wrong arguments for ions add.\nUse: inq ions add <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
 				exit(1);
 			}
 
-			auto symbol = std::string(argv[3]);
-			auto units = magnitude::length::parse(argv[7]);
-			auto xx = atof(argv[4])*units;
-			auto yy = atof(argv[5])*units;
-			auto zz = atof(argv[6])*units;
+			auto symbol = args[1];
+			auto units = magnitude::length::parse(args[5]);
+			auto xx = atof(args[2].c_str())*units;
+			auto yy = atof(args[3].c_str())*units;
+			auto zz = atof(args[4].c_str())*units;
 			
 			interface::ions.add(symbol, {xx, yy, zz});
 			if(not quiet) interface::ions();
