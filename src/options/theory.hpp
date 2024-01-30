@@ -209,6 +209,11 @@ public:
 			return out;
 		}
 
+		if(self.hartree_potential() and self.exchange() == exchange_functional::NONE and self.correlation() == correlation_functional::NONE){
+			out << " Hartree (with self-interaction)" << std::endl;
+			return out;
+		}
+
 		return out;
 	}
 	
