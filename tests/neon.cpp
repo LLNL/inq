@@ -27,7 +27,7 @@ int main(int argc, char ** argv){
 	interface::cell();
 
 	//inq ions add Ne 0.0 0.0 0.0 bohr
-	interface::ions_add("Ne", {0.0_b, 0.0_b, 0.0_b});
+	interface::ions.add("Ne", {0.0_b, 0.0_b, 0.0_b});
 
   //inq ions
 	interface::ions();

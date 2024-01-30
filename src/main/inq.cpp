@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 				std::cerr << "The 'ions clear' command doesn't take arguments." << std::endl;
 				exit(1);
 			}
-			interface::ions_clear();
+			interface::ions.clear();
 			if(not quiet) interface::ions();
 			exit(0);
 		}
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
 			auto yy = atof(argv[5])*units;
 			auto zz = atof(argv[6])*units;
 			
-			interface::ions_add(symbol, {xx, yy, zz});
+			interface::ions.add(symbol, {xx, yy, zz});
 			if(not quiet) interface::ions();
 			exit(0);
 		}

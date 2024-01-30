@@ -38,23 +38,27 @@ void cell() {
   if(input::environment::global().comm().root()) std::cout << cell;
 }
 
-void ions_add(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
-  auto ions = systems::ions::load(".default_ions");
-  ions.insert(sp, pos);
-  ions.save(input::environment::global().comm(), ".default_ions");
-}
+struct {
 
-void ions_clear(){
-  auto ions = systems::ions::load(".default_ions");
-  ions.clear();
-  ions.save(input::environment::global().comm(), ".default_ions");
-}
+	void operator()(){
+		auto ions = systems::ions::load(".default_ions");		
+		if(input::environment::global().comm().root()) std::cout << ions;
+	}
 
-void ions(){
-  auto ions = systems::ions::load(".default_ions");		
-  if(input::environment::global().comm().root()) std::cout << ions;
-}
+	static void add(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
+		auto ions = systems::ions::load(".default_ions");
+		ions.insert(sp, pos);
+		ions.save(input::environment::global().comm(), ".default_ions");
+	}
 
+	static void clear(){
+		auto ions = systems::ions::load(".default_ions");
+		ions.clear();
+		ions.save(input::environment::global().comm(), ".default_ions");
+	}
+	
+} ions;
+	
 void electrons_extra_states(int nstates){
 	auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
 	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
