@@ -29,6 +29,25 @@ struct {
 		auto theo = options::theory{}.non_interacting();
 		theo.save(input::environment::global().comm(), ".default_theory");
 	}
+
+	
+	template <typename ArgsType>
+	void command(ArgsType const & args, bool quiet) const {
+
+		if(args.size() == 0){
+			std::cerr << "Missing arguments for 'theory' command" << std::endl;
+			exit(1);
+		}
+
+		if(args[0] == "non_interacting" or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){
+			non_interacting();
+			exit(0);
+		}
+
+		std::cerr << "Invalid syntax in 'theory' command" << std::endl;
+		exit(1);
+	}
+	
 } const theory;
 
 }
