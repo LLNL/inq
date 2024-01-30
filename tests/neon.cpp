@@ -33,10 +33,10 @@ int main(int argc, char ** argv){
 	interface::ions();
 	
 	//inq electrons extra_states 3
-	interface::electrons_extra_states(3);
+	interface::electrons.extra_states(3);
 	
 	//inq electrons cutoff 30.0 Ha
-	interface::electrons_cutoff(30.0_Ha);
+	interface::electrons.cutoff(30.0_Ha);
 
 	//inq theory non_interacting
 	interface::theory.non_interacting();
@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
 	//REAL SPACE PSEUDO
 	{
 		//inq run ground_state
-		auto result = interface::run_ground_state();
+		auto result = interface::run.ground_state();
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.861045337100);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765610219604);
@@ -56,11 +56,11 @@ int main(int argc, char ** argv){
 
 	//FOURIER SPACE PSEUDO
 	//inq electrons fourier_pseudo
-	interface::electrons_fourier_pseudo();
+	interface::electrons.fourier_pseudo();
 
 	//inq run ground_state
 	{
-		auto result = interface::run_ground_state();
+		auto result = interface::run.ground_state();
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.861056649453);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765555684056);

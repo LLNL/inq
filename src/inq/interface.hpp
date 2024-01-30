@@ -64,21 +64,25 @@ struct {
 	}
 	
 } ions;
+
+struct {
 	
-void electrons_extra_states(int nstates){
-	auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
-	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
-}
+	static void extra_states(int nstates){
+		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
 
-void electrons_cutoff(quantity<magnitude::energy> ecut){
-	auto el_opts = options::electrons::load(".default_electrons_options").cutoff(ecut);
-	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
-}
+	static void cutoff(quantity<magnitude::energy> ecut){
+		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(ecut);
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
 
-void electrons_fourier_pseudo(){
-	auto el_opts = options::electrons::load(".default_electrons_options").fourier_pseudo();
-	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
-}
+	static void fourier_pseudo(){
+		auto el_opts = options::electrons::load(".default_electrons_options").fourier_pseudo();
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+
+} electrons;
 
 struct {
 	static void non_interacting(){
@@ -87,17 +91,19 @@ struct {
 	}
 } theory;
 
-auto run_ground_state(){
-	auto ions = systems::ions::load(".default_ions");
-	systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
-
-	if(not electrons.try_load(".default_orbitals")){
-		ground_state::initial_guess(ions, electrons);
+struct {
+	static auto ground_state(){
+		auto ions = systems::ions::load(".default_ions");
+		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
+		
+		if(not electrons.try_load(".default_orbitals")){
+			ground_state::initial_guess(ions, electrons);
+		}
+		auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
+		electrons.save(".default_orbitals");
+		return result;
 	}
-	auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
-	electrons.save(".default_orbitals");
-	return result;
-}
+} run;
 
 }
 }
