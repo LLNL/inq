@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INTERFACE__IONS
-#define INQ__INTERFACE__IONS
+#ifndef INQ__INTERFACE__THEORY
+#define INQ__INTERFACE__THEORY
 
 // Copyright (C) 2019-2024 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -18,41 +18,28 @@
 namespace inq {
 namespace interface {
 
-struct {
-	
+struct {		
+
 	std::string name() const {
-		return "ions";
+		return "theory";
 	}
 
 	std::string one_line() const {
-		return "Defines the ions in the simulation.";
-	}
-
-	void operator()(){
-		auto ions = systems::ions::load(".default_ions");		
-		if(input::environment::global().comm().root()) std::cout << ions;
-	}
-
-	static void add(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
-		auto ions = systems::ions::load(".default_ions");
-		ions.insert(sp, pos);
-		ions.save(input::environment::global().comm(), ".default_ions");
-	}
-
-	static void clear(){
-		auto ions = systems::ions::load(".default_ions");
-		ions.clear();
-		ions.save(input::environment::global().comm(), ".default_ions");
+		return "Defines the theory used to represent the electrons-electron interaction.";
 	}
 	
-} ions;
+	static void non_interacting(){
+		auto theo = options::theory{}.non_interacting();
+		theo.save(input::environment::global().comm(), ".default_theory");
+	}
+} theory;
 
 }
 }
 #endif
 
-#ifdef INQ_INTERFACE_IONS_UNIT_TEST
-#undef INQ_INTERFACE_IONS_UNIT_TEST
+#ifdef INQ_INTERFACE_THEORY_UNIT_TEST
+#undef INQ_INTERFACE_THEORY_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INTERFACE__IONS
-#define INQ__INTERFACE__IONS
+#ifndef INQ__INTERFACE__RUN
+#define INQ__INTERFACE__RUN
 
 // Copyright (C) 2019-2024 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -19,40 +19,34 @@ namespace inq {
 namespace interface {
 
 struct {
-	
+
 	std::string name() const {
-		return "ions";
+		return "run";
 	}
 
 	std::string one_line() const {
-		return "Defines the ions in the simulation.";
-	}
-
-	void operator()(){
-		auto ions = systems::ions::load(".default_ions");		
-		if(input::environment::global().comm().root()) std::cout << ions;
-	}
-
-	static void add(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
-		auto ions = systems::ions::load(".default_ions");
-		ions.insert(sp, pos);
-		ions.save(input::environment::global().comm(), ".default_ions");
-	}
-
-	static void clear(){
-		auto ions = systems::ions::load(".default_ions");
-		ions.clear();
-		ions.save(input::environment::global().comm(), ".default_ions");
+		return "Runs the simulation.";
 	}
 	
-} ions;
+	static auto ground_state(){
+		auto ions = systems::ions::load(".default_ions");
+		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
+		
+		if(not electrons.try_load(".default_orbitals")){
+			ground_state::initial_guess(ions, electrons);
+		}
+		auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
+		electrons.save(".default_orbitals");
+		return result;
+	}
+} run;
 
 }
 }
 #endif
 
-#ifdef INQ_INTERFACE_IONS_UNIT_TEST
-#undef INQ_INTERFACE_IONS_UNIT_TEST
+#ifdef INQ_INTERFACE_RUN_UNIT_TEST
+#undef INQ_INTERFACE_RUN_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
