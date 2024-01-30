@@ -24,6 +24,11 @@ struct {
 	std::string one_line() const {
 		return "Defines the theory used to represent the electrons-electron interaction.";
 	}
+
+	void operator()() const {
+		auto theo = options::theory::load(".default_theory");
+		std::cout << theo;
+	}
 	
 	void non_interacting() const{
 		auto theo = options::theory::load(".default_theory").non_interacting();
@@ -34,8 +39,8 @@ struct {
 	void command(ArgsType const & args, bool quiet) const {
 
 		if(args.size() == 0){
-			std::cerr << "Missing arguments for 'theory' command" << std::endl;
-			exit(1);
+			operator()();
+			exit(0);
 		}
 
 		if(args[0] == "non_interacting" or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){

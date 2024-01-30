@@ -198,6 +198,19 @@ public:
 		
 		return opts;
 	}
+
+
+	template<class OStream>
+	friend OStream& operator<<(OStream& out, theory const & self){
+		out << "Theory:\n";
+
+		if(not self.hartree_potential() and self.exchange() == exchange_functional::NONE and self.correlation() == correlation_functional::NONE){
+			out << " Non-interacting electrons" << std::endl;
+			return out;
+		}
+
+		return out;
+	}
 	
 };
     
