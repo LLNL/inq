@@ -49,6 +49,10 @@ int main(int argc, char* argv[]) {
 	for(int iarg = 2; iarg < argc; iarg++) args.emplace_back(argv[iarg]);
 	
 	if(command == "clear") {
+		if(args.size() != 0) {
+			std::cerr << "The 'clear' command doesn't take arguments." << std::endl;
+			exit(1);
+		}
 		interface::clear();
 		exit(0);
 	}
