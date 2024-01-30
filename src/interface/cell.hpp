@@ -11,9 +11,6 @@
 
 #include <input/environment.hpp>
 #include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <ground_state/initial_guess.hpp>
-#include <ground_state/calculate.hpp>
 
 namespace inq {
 namespace interface {

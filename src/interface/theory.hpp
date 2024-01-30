@@ -10,10 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <ground_state/initial_guess.hpp>
-#include <ground_state/calculate.hpp>
+#include <options/theory.hpp>
 
 namespace inq {
 namespace interface {
