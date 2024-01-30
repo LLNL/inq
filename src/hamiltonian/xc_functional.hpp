@@ -118,9 +118,10 @@ namespace hamiltonian {
 			}
 		}
 
-		auto references() const {
+		auto references(std::string prefix = {}) const {
 			std::string refs;
 			for(int ii = 0; func_.info->refs[ii] != NULL; ii++){
+				refs += prefix;
 				refs += "[" + std::to_string(ii + 1) + "] ";
 				refs += func_.info->refs[ii]->ref;
 				refs += "\n";
