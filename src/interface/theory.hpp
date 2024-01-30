@@ -26,10 +26,9 @@ struct {
 	}
 	
 	void non_interacting() const{
-		auto theo = options::theory{}.non_interacting();
+		auto theo = options::theory::load(".default_theory").non_interacting();
 		theo.save(input::environment::global().comm(), ".default_theory");
 	}
-
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
