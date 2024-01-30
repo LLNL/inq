@@ -28,15 +28,20 @@ void clear(){
 	input::environment::global().comm().barrier();
 }
 
-void cell_cubic(quantity<magnitude::length> const aa, int periodicity = 3){
-  systems::ions ions(systems::cell::cubic(aa).periodicity(periodicity));
-  ions.save(input::environment::global().comm(), ".default_ions");
-}
 
-void cell() {
-  auto cell = systems::ions::load(".default_ions").cell();
-  if(input::environment::global().comm().root()) std::cout << cell;
-}
+struct {
+	
+	void operator()(){
+		auto cell = systems::ions::load(".default_ions").cell();
+		if(input::environment::global().comm().root()) std::cout << cell;
+	}
+	
+	static void cubic(quantity<magnitude::length> const aa, int periodicity = 3){
+		systems::ions ions(systems::cell::cubic(aa).periodicity(periodicity));
+		ions.save(input::environment::global().comm(), ".default_ions");
+	}
+
+} cell ;
 
 struct {
 

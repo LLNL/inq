@@ -21,7 +21,7 @@ int main(int argc, char ** argv){
 	interface::clear();
 	
 	//inq cell cubic 15.0 bohr finite
-	interface::cell_cubic(15.0_b, 0);
+	interface::cell.cubic(15.0_b, 0);
 
 	//inq cell
 	interface::cell();

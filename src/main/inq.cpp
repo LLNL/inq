@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 			int per = 3;
 			if(argc == 6) per = parse_periodicity(argv[5]);
 
-			interface::cell_cubic(aa, per);
+			interface::cell.cubic(aa, per);
 			if(not quiet) interface::cell();
 			exit(0);
 		}
