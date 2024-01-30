@@ -210,7 +210,8 @@ public:
 		}
 
 		if(self.hartree_potential() and self.exchange() == exchange_functional::NONE and self.correlation() == correlation_functional::NONE){
-			out << " Hartree (with self-interaction)" << std::endl;
+			out << " Hartree (with self-interaction)\n\n";
+			out << " [1] D. R. Hartree, Math. Proc. Camb. Philos. Soc. 24 1, 111 (1928)" << std::endl;
 			return out;
 		}
 
