@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
 	interface::electrons_cutoff(30.0_Ha);
 
 	//inq theory non_interacting
-	interface::theory_non_interacting();
+	interface::theory.non_interacting();
 
 	//REAL SPACE PSEUDO
 	{

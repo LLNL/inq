@@ -18,16 +18,17 @@
 namespace inq {
 namespace interface {
 
-void clear(){
-	if(input::environment::global().comm().root()) {
-		std::filesystem::remove_all(".default_ions");
-		std::filesystem::remove_all(".default_theory");
-		std::filesystem::remove_all(".default_electrons_options");
-		std::filesystem::remove_all(".default_orbitals");
+struct {
+	void operator()(){
+		if(input::environment::global().comm().root()) {
+			std::filesystem::remove_all(".default_ions");
+			std::filesystem::remove_all(".default_theory");
+			std::filesystem::remove_all(".default_electrons_options");
+			std::filesystem::remove_all(".default_orbitals");
+		}
+		input::environment::global().comm().barrier();
 	}
-	input::environment::global().comm().barrier();
-}
-
+}	clear;
 
 struct {
 	
@@ -79,10 +80,12 @@ void electrons_fourier_pseudo(){
 	el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 }
 
-void theory_non_interacting(){
-	auto theo = options::theory{}.non_interacting();
-	theo.save(input::environment::global().comm(), ".default_theory");
-}
+struct {
+	static void non_interacting(){
+		auto theo = options::theory{}.non_interacting();
+		theo.save(input::environment::global().comm(), ".default_theory");
+	}
+} theory;
 
 auto run_ground_state(){
 	auto ions = systems::ions::load(".default_ions");
