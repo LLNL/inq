@@ -33,45 +33,7 @@ int main(int argc, char* argv[]) {
 	
 	if(command == interface::clear.name()) interface::clear.command(args, quiet);
 	if(command == interface::cell.name())  interface::cell.command (args, quiet);
-	if(command == interface::ions.name()) {
-
-		if(args.size() == 0) {
-			interface::ions();
-			exit(0);
-		}
-
-		if(args[0] == "clear"){
-
-			if(args.size() != 1) {
-				std::cerr << "The 'ions clear' command doesn't take arguments." << std::endl;
-				exit(1);
-			}
-			interface::ions.clear();
-			if(not quiet) interface::ions();
-			exit(0);
-		}
- 
-		if(args[0] == "add"){
-
-			if(args.size() != 6) {
-				std::cerr << "Wrong arguments for ions add.\nUse: inq ions add <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
-				exit(1);
-			}
-
-			auto symbol = args[1];
-			auto units = magnitude::length::parse(args[5]);
-			auto xx = atof(args[2].c_str())*units;
-			auto yy = atof(args[3].c_str())*units;
-			auto zz = atof(args[4].c_str())*units;
-			
-			interface::ions.add(symbol, {xx, yy, zz});
-			if(not quiet) interface::ions();
-			exit(0);
-		}
- 
-		std::cerr << "Invalid syntax in the ions command" << std::endl;
-		exit(1);
-	}
+	if(command == interface::ions.name())  interface::ions.command (args, quiet);
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);
