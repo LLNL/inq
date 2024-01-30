@@ -213,7 +213,12 @@ public:
 			out << " Hartree (with self-interaction)" << std::endl;
 			return out;
 		}
-
+		
+		if(self.hartree_potential() and self.exchange() == exchange_functional::HARTREE_FOCK and self.correlation() == correlation_functional::NONE){
+			out << " Hartree-Fock" << std::endl;
+			return out;
+		}
+		
 		return out;
 	}
 	

@@ -39,6 +39,11 @@ struct {
 		auto theo = options::theory::load(".default_theory").hartree();
 		theo.save(input::environment::global().comm(), ".default_theory");
 	}
+
+	void hartree_fock() const{
+		auto theo = options::theory::load(".default_theory").hartree_fock();
+		theo.save(input::environment::global().comm(), ".default_theory");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -48,7 +53,7 @@ struct {
 			exit(0);
 		}
 
-		if((args.size() == 1 and args[0] == "non_interacting") or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){
+		if((args.size() == 1 and args[0] == "non_interacting") or (args.size() == 1 and args[0] == "non-interacting") or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){
 			non_interacting();
 			exit(0);
 		}
@@ -57,7 +62,12 @@ struct {
 			hartree();
 			exit(0);
 		}
-		
+
+		if((args.size() == 1 and args[0] == "hartree-fock") or (args.size() == 1 and args[0] == "hartree_fock") or (args.size() == 2 and args[0] == "hartree" and args[1] == "fock")){
+			hartree_fock();
+			exit(0);
+		}
+				
 		std::cerr << "Invalid syntax in 'theory' command" << std::endl;
 		exit(1);
 	}
