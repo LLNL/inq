@@ -48,16 +48,8 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> args;
 	for(int iarg = 2; iarg < argc; iarg++) args.emplace_back(argv[iarg]);
 	
-	if(command == "clear") {
-		if(args.size() != 0) {
-			std::cerr << "The 'clear' command doesn't take arguments." << std::endl;
-			exit(1);
-		}
-		interface::clear();
-		exit(0);
-	}
-
-	if(command == "cell") {
+	if(command == interface::clear.name()) interface::clear.command(args);
+	if(command == interface::cell.name()) {
 
 		if(args.size() == 0) {
 			interface::cell();
@@ -84,7 +76,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	if(command == "ions") {
+	if(command == interface::ions.name()) {
 
 		if(args.size() == 0) {
 			interface::ions();

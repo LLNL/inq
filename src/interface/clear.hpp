@@ -37,6 +37,17 @@ struct {
 		}
 		input::environment::global().comm().barrier();
 	}
+
+	template <typename ArgsType>
+	void command(ArgsType const & args) const {
+		if(args.size() != 0) {
+			std::cerr << "The 'clear' command doesn't take arguments." << std::endl;
+			exit(1);
+		}
+		operator()();
+		exit(0);
+	}
+	
 }	const clear;
 
 }
