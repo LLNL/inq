@@ -28,22 +28,22 @@ struct {
 		return "Defines the electrons in the simulation and how they are represented.";
 	}
 
-	static void extra_states(int nstates){
+	void extra_states(int nstates) const{
 		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 	}
 
-	static void cutoff(quantity<magnitude::energy> ecut){
+	void cutoff(quantity<magnitude::energy> ecut) const{
 		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(ecut);
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 	}
 
-	static void fourier_pseudo(){
+	void fourier_pseudo() const {
 		auto el_opts = options::electrons::load(".default_electrons_options").fourier_pseudo();
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 	}
 
-} electrons;
+} const electrons;
 
 }
 }

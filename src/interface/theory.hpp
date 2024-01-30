@@ -28,11 +28,11 @@ struct {
 		return "Defines the theory used to represent the electrons-electron interaction.";
 	}
 	
-	static void non_interacting(){
+	void non_interacting() const{
 		auto theo = options::theory{}.non_interacting();
 		theo.save(input::environment::global().comm(), ".default_theory");
 	}
-} theory;
+} const theory;
 
 }
 }

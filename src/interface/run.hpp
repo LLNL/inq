@@ -28,7 +28,7 @@ struct {
 		return "Runs the simulation.";
 	}
 	
-	static auto ground_state(){
+	auto ground_state() const{
 		auto ions = systems::ions::load(".default_ions");
 		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
 		
@@ -39,7 +39,7 @@ struct {
 		electrons.save(".default_orbitals");
 		return result;
 	}
-} run;
+} const run;
 
 }
 }

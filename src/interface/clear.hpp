@@ -37,7 +37,7 @@ struct {
 		}
 		input::environment::global().comm().barrier();
 	}
-}	clear;
+}	const clear;
 
 }
 }

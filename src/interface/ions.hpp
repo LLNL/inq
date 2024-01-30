@@ -28,24 +28,24 @@ struct {
 		return "Defines the ions in the simulation.";
 	}
 
-	void operator()(){
+	void operator()() const {
 		auto ions = systems::ions::load(".default_ions");		
 		if(input::environment::global().comm().root()) std::cout << ions;
 	}
 
-	static void add(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
+	void add(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) const {
 		auto ions = systems::ions::load(".default_ions");
 		ions.insert(sp, pos);
 		ions.save(input::environment::global().comm(), ".default_ions");
 	}
 
-	static void clear(){
+	void clear() const {
 		auto ions = systems::ions::load(".default_ions");
 		ions.clear();
 		ions.save(input::environment::global().comm(), ".default_ions");
 	}
 	
-} ions;
+} const ions;
 
 }
 }

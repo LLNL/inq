@@ -28,17 +28,17 @@ struct {
 		return "Defines the simulation cell.";
 	}
 	
-	void operator()(){
+	void operator()() const {
 		auto cell = systems::ions::load(".default_ions").cell();
 		if(input::environment::global().comm().root()) std::cout << cell;
 	}
 	
-	static void cubic(quantity<magnitude::length> const aa, int periodicity = 3){
+	void cubic(quantity<magnitude::length> const aa, int periodicity = 3) const {
 		systems::ions ions(systems::cell::cubic(aa).periodicity(periodicity));
 		ions.save(input::environment::global().comm(), ".default_ions");
 	}
 
-} cell ;
+} const cell ;
 
 }
 }
