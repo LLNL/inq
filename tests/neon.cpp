@@ -6,7 +6,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <inq/interface.hpp>
 #include <inq/inq.hpp>
 
 int main(int argc, char ** argv){
@@ -21,30 +20,30 @@ int main(int argc, char ** argv){
 	interface::clear();
 	
 	//inq cell cubic 15.0 bohr finite
-	interface::cell_cubic(15.0_b, 0);
+	interface::cell.cubic(15.0_b, 0);
 
 	//inq cell
 	interface::cell();
 
 	//inq ions add Ne 0.0 0.0 0.0 bohr
-	interface::ions_add("Ne", {0.0_b, 0.0_b, 0.0_b});
+	interface::ions.add("Ne", {0.0_b, 0.0_b, 0.0_b});
 
   //inq ions
 	interface::ions();
 	
 	//inq electrons extra_states 3
-	interface::electrons_extra_states(3);
+	interface::electrons.extra_states(3);
 	
 	//inq electrons cutoff 30.0 Ha
-	interface::electrons_cutoff(30.0_Ha);
+	interface::electrons.cutoff(30.0_Ha);
 
 	//inq theory non_interacting
-	interface::theory_non_interacting();
+	interface::theory.non_interacting();
 
 	//REAL SPACE PSEUDO
 	{
 		//inq run ground_state
-		auto result = interface::run_ground_state();
+		auto result = interface::run.ground_state();
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.861045337100);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765610219604);
@@ -56,11 +55,11 @@ int main(int argc, char ** argv){
 
 	//FOURIER SPACE PSEUDO
 	//inq electrons fourier_pseudo
-	interface::electrons_fourier_pseudo();
+	interface::electrons.fourier_pseudo();
 
 	//inq run ground_state
 	{
-		auto result = interface::run_ground_state();
+		auto result = interface::run.ground_state();
 		
 		energy_match.check("total energy",     result.energy.total()      , -61.861056649453);
 		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765555684056);

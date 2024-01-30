@@ -21,6 +21,14 @@
 #include <observables/kinetic_energy_density.hpp>
 #include <observables/magnetization.hpp>
 #include <observables/spectrum.hpp>
+
+#include <interface/cell.hpp>
+#include <interface/clear.hpp>
+#include <interface/electrons.hpp>
+#include <interface/ions.hpp>
+#include <interface/run.hpp>
+#include <interface/theory.hpp>
+
 #endif
 
 #ifdef INQ_INQ_INQ_UNIT_TEST
