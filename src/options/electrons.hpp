@@ -175,27 +175,9 @@ public:
 			utils::save_optional(comm, dirname + "/double_grid", double_grid_, error_message);
 			utils::save_optional(comm, dirname + "/density_factor", density_factor_, error_message);
 			utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
-			utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);			
-
-			//SPIN
-			if(spin_.has_value()){
-				auto file = std::ofstream(dirname + "/spin");
-				
-				if(not file) {
-					auto exception_happened = true;
-					comm.broadcast_value(exception_happened);
-					throw std::runtime_error(error_message);
-				}
-
-				if(*spin_ == states::spin_config::UNPOLARIZED){
-					file << "unpolarized" << std::endl;
-				} else if(*spin_ == states::spin_config::POLARIZED){
-					file << "polarized" << std::endl;
-				} else if(*spin_ == states::spin_config::NON_COLLINEAR){
-					file << "non_collinear" << std::endl;
-				}
-			}
-
+			utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);
+			utils::save_optional(comm, dirname + "/spin",           spin_,           error_message);
+			
 			//PSEUDO_SET
 			if(pseudo_set_.has_value()){
 				auto file = std::ofstream(dirname + "/pseudo_set");
@@ -231,26 +213,8 @@ public:
 		utils::load_optional(dirname + "/density_factor", opts.density_factor_);
 		utils::load_optional(dirname + "/spherical_grid", opts.spherical_grid_);
 		utils::load_optional(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
-
-		//SPIN
-		{
-			auto file = std::ifstream(dirname + "/spin");
-			if(file){
-				std::string readval;
-				file >> readval;
-
-				if(readval == "unpolarized"){
-					opts.spin_ = states::spin_config::UNPOLARIZED;
-				} else if(readval == "polarized"){
-					opts.spin_ = states::spin_config::POLARIZED;
-				} else if(readval == "non_collinear"){
-					opts.spin_ = states::spin_config::NON_COLLINEAR;
-				} else {
-					throw std::runtime_error("INQ error: Invalid spin configuration when reading optional::electrons from directory '" + dirname + "'.");
-				}
-			}
-		}
-
+		utils::load_optional(dirname + "/spin",           opts.spin_);		
+		
 		//PSEUDO_SET
 		{
 			auto file = std::ifstream(dirname + "/pseudo_set");
