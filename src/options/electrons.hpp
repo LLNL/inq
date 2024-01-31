@@ -108,6 +108,10 @@ public:
 		return *spacing_;
 	}
 
+	auto cutoff_value() const {
+		return 0.5*pow(M_PI/spacing_value(), 2);
+	}
+	
 	auto double_grid(){
 		electrons conf = *this;
 		conf.double_grid_ = true;
@@ -230,6 +234,9 @@ public:
 
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, electrons const & self){
+
+		using namespace magnitude;
+
 		out << "Electrons:\n";
 
 		out << "  extra_states       = " << self.extra_states_val();
@@ -244,9 +251,17 @@ public:
 		if(not self.temperature_.has_value()) out << " *";
 		out << "\n";
 
+		out << "  cutoff             = ";
+		if(self.spacing_.has_value()) {
+			out << self.cutoff_value() << " Ha | " << self.cutoff_value()/in_atomic_units(1.0_eV) << " eV | " << self.cutoff_value()/in_atomic_units(1.0_Ry) << " Ry";
+		} else {
+			out << "NOT SET *";
+		}
+		out << "\n";
+		
 		out << "  spacing            = ";
 		if(self.spacing_.has_value()) {
-			out << self.spacing_value();
+			out << self.spacing_value() << " bohr | " << self.spacing_value()/in_atomic_units(1.0_A) << " A";
 		} else {
 			out << "NOT SET *";
 		}
