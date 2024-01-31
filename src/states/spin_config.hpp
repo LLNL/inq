@@ -33,6 +33,24 @@ OStream & operator<<(OStream & out, spin_config const & self){
 	return out;
 }
 
+template<class IStream>
+IStream & operator>>(IStream & in, spin_config & self){
+
+	std::string readval;
+	in >> readval;
+
+	if(readval == "unpolarized"){
+		self = states::spin_config::UNPOLARIZED;
+	} else if(readval == "polarized"){
+		self = states::spin_config::POLARIZED;
+	} else if(readval == "non_collinear"){
+		self = states::spin_config::NON_COLLINEAR;
+	} else {
+		throw std::runtime_error("INQ error: Invalid spin configuration");
+	}
+	
+	return in;
+}
 
 }
 }
@@ -77,5 +95,31 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 	}
 	
+	SECTION("Input"){
+		{
+			std::stringstream ss;
+			states::spin_config sp;
+			ss << "unpolarized";
+			ss >> sp;
+			CHECK(sp == states::spin_config::UNPOLARIZED);
+		}
+
+		{
+			std::stringstream ss;
+			states::spin_config sp;
+			ss << "polarized";
+			ss >> sp;
+			CHECK(sp == states::spin_config::POLARIZED);
+		}
+		
+		{
+			std::stringstream ss;
+			states::spin_config sp;
+			ss << "non_collinear";
+			ss >> sp;
+			CHECK(sp == states::spin_config::NON_COLLINEAR);
+		}
+		
+	}
 }
 #endif
