@@ -25,11 +25,21 @@ struct {
 		return "Defines the electrons in the simulation and how they are represented.";
 	}
 
+	void operator()() const {
+		auto el_opts = options::electrons::load(".default_electrons_options");
+		std::cout << el_opts;
+	}
+
 	void extra_states(int nstates) const{
 		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 	}
 
+	void extra_electrons(double nelectrons) const{
+		auto el_opts = options::electrons::load(".default_electrons_options").extra_electrons(nelectrons);
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+	
 	void cutoff(quantity<magnitude::energy> ecut) const{
 		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(ecut);
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
@@ -40,6 +50,108 @@ struct {
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 	}
 
+	void unpolarized() const {
+		auto el_opts = options::electrons::load(".default_electrons_options").spin_unpolarized();
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+
+	void polarized() const {
+		auto el_opts = options::electrons::load(".default_electrons_options").spin_polarized();
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+
+	void non_collinear() const {
+		auto el_opts = options::electrons::load(".default_electrons_options").spin_non_collinear();
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+	
+	template <typename ArgsType>
+	void command(ArgsType const & args, bool quiet) const {
+		
+		if(args.size() == 0) {
+			operator()();
+			exit(0);
+		}
+		
+		if(args[0] == "extra_states"){
+
+			if(args.size() == 1) {
+				std::cerr << "Error: missing extra_states argument" << std::endl;
+				exit(1);
+			}
+
+			if(args.size() >= 3) {
+				std::cerr << "Error: too many arguments to extra_states argument" << std::endl;
+				exit(1);
+			}
+
+			extra_states(atoi(args[1].c_str()));
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
+		if(args[0] == "extra_electrons"){
+
+			if(args.size() == 1) {
+				std::cerr << "Error: missing extra_electrons argument" << std::endl;
+				exit(1);
+			}
+
+			if(args.size() >= 3) {
+				std::cerr << "Error: too many arguments to extra_electrons argument" << std::endl;
+				exit(1);
+			}
+
+			extra_electrons(atof(args[1].c_str()));
+			if(not quiet) operator()();
+			exit(0);
+		}
+
+		if(args[0] == "cutoff"){
+
+			if(args.size() < 3) {
+				std::cerr << "Error: missing cutoff arguments. Use 'cutoff <value> <units>'" << std::endl;
+				exit(1);
+			}
+
+			if(args.size() > 3) {
+				std::cerr << "Error: too many arguments to cutoff argument" << std::endl;
+				exit(1);
+			}
+
+			cutoff(atof(args[1].c_str())*magnitude::energy::parse(args[2]));
+			
+			if(not quiet) operator()();
+			exit(0);
+		}
+
+		if(args.size() == 1 and args[0] == "unpolarized"){
+			unpolarized();
+			if(not quiet) operator()();
+			exit(0);
+		}
+
+		if(args.size() == 1 and args[0] == "polarized"){
+			polarized();
+			if(not quiet) operator()();
+			exit(0);
+		}
+
+		if((args.size() == 1 and args[0] == "non_collinear")
+			 or (args.size() == 1 and args[0] == "non-collinear")
+			 or (args.size() == 1 and args[0] == "noncollinear")
+			 or (args.size() == 2 and args[0] == "non" and args[1] == "collinear")
+			 ){
+			
+			non_collinear();
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
+		std::cerr << "Invalid syntax in 'electrons' command" << std::endl;
+		exit(1);
+	}
+	
 } const electrons;
 
 }

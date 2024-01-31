@@ -24,7 +24,7 @@ class electrons {
 	std::optional<int> extra_states_;
 	std::optional<double> extra_electrons_;
 	std::optional<double> temperature_;
-	std::optional<states::ks_states::spin_config> spin_;
+	std::optional<states::spin_config> spin_;
 	std::optional<double> spacing_;
 	std::optional<bool> double_grid_;	
 	std::optional<double> density_factor_;
@@ -66,28 +66,28 @@ public:
 
 	auto spin_unpolarized(){
 		electrons conf = *this;
-		conf.spin_ = states::ks_states::spin_config::UNPOLARIZED;
+		conf.spin_ = states::spin_config::UNPOLARIZED;
 		return conf;
 	}
 	
 	auto spin_polarized(){
 		electrons conf = *this;
-		conf.spin_ = states::ks_states::spin_config::POLARIZED;
+		conf.spin_ = states::spin_config::POLARIZED;
 		return conf;
 	}
 
 	auto spin_non_collinear(){
 		electrons conf = *this;
-		conf.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
+		conf.spin_ = states::spin_config::NON_COLLINEAR;
 		return conf;
 	}
 	
 	auto spin_val() const {
-		return spin_.value_or(states::ks_states::spin_config::UNPOLARIZED);
+		return spin_.value_or(states::spin_config::UNPOLARIZED);
 	}
 	
 	auto num_spin_components_val() const {
-		if(spin_val() == states::ks_states::spin_config::POLARIZED) return 2;
+		if(spin_val() == states::spin_config::POLARIZED) return 2;
 		return 1;
 	}
 
@@ -108,6 +108,10 @@ public:
 		return *spacing_;
 	}
 
+	auto cutoff_value() const {
+		return 0.5*pow(M_PI/spacing_value(), 2);
+	}
+	
 	auto double_grid(){
 		electrons conf = *this;
 		conf.double_grid_ = true;
@@ -175,27 +179,9 @@ public:
 			utils::save_optional(comm, dirname + "/double_grid", double_grid_, error_message);
 			utils::save_optional(comm, dirname + "/density_factor", density_factor_, error_message);
 			utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
-			utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);			
-
-			//SPIN
-			if(spin_.has_value()){
-				auto file = std::ofstream(dirname + "/spin");
-				
-				if(not file) {
-					auto exception_happened = true;
-					comm.broadcast_value(exception_happened);
-					throw std::runtime_error(error_message);
-				}
-
-				if(*spin_ == states::ks_states::spin_config::UNPOLARIZED){
-					file << "unpolarized" << std::endl;
-				} else if(*spin_ == states::ks_states::spin_config::POLARIZED){
-					file << "polarized" << std::endl;
-				} else if(*spin_ == states::ks_states::spin_config::NON_COLLINEAR){
-					file << "non_collinear" << std::endl;
-				}
-			}
-
+			utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);
+			utils::save_optional(comm, dirname + "/spin",           spin_,           error_message);
+			
 			//PSEUDO_SET
 			if(pseudo_set_.has_value()){
 				auto file = std::ofstream(dirname + "/pseudo_set");
@@ -231,26 +217,8 @@ public:
 		utils::load_optional(dirname + "/density_factor", opts.density_factor_);
 		utils::load_optional(dirname + "/spherical_grid", opts.spherical_grid_);
 		utils::load_optional(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
-
-		//SPIN
-		{
-			auto file = std::ifstream(dirname + "/spin");
-			if(file){
-				std::string readval;
-				file >> readval;
-
-				if(readval == "unpolarized"){
-					opts.spin_ = states::ks_states::spin_config::UNPOLARIZED;
-				} else if(readval == "polarized"){
-					opts.spin_ = states::ks_states::spin_config::POLARIZED;
-				} else if(readval == "non_collinear"){
-					opts.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
-				} else {
-					throw std::runtime_error("INQ error: Invalid spin configuration when reading optional::electrons from directory '" + dirname + "'.");
-				}
-			}
-		}
-
+		utils::load_optional(dirname + "/spin",           opts.spin_);		
+		
 		//PSEUDO_SET
 		{
 			auto file = std::ifstream(dirname + "/pseudo_set");
@@ -262,6 +230,50 @@ public:
 		}
 		
 		return opts;
+	}
+
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, electrons const & self){
+
+		using namespace magnitude;
+
+		out << "Electrons:\n";
+
+		out << "  extra_states       = " << self.extra_states_val();
+		if(not self.extra_states_.has_value()) out << " *";
+		out << "\n";
+		
+		out << "  extra_electrons    = " << self.extra_electrons_val();
+		if(not self.extra_electrons_.has_value()) out << " *";
+		out << "\n";
+
+		out << "  temperature        = " << self.temperature_val();
+		if(not self.temperature_.has_value()) out << " *";
+		out << "\n";
+
+		out << "  cutoff             = ";
+		if(self.spacing_.has_value()) {
+			out << self.cutoff_value() << " Ha | " << self.cutoff_value()/in_atomic_units(1.0_eV) << " eV | " << self.cutoff_value()/in_atomic_units(1.0_Ry) << " Ry";
+		} else {
+			out << "NOT SET *";
+		}
+		out << "\n";
+		
+		out << "  spacing            = ";
+		if(self.spacing_.has_value()) {
+			out << self.spacing_value() << " bohr | " << self.spacing_value()/in_atomic_units(1.0_A) << " A";
+		} else {
+			out << "NOT SET *";
+		}
+		out << "\n";
+		
+		out << "  spin               = " << self.spin_val();
+		if(not self.spin_.has_value()) out << " *";
+		out << "\n";
+		
+		out << "\n  * default values" << std::endl;
+		
+		return out;
 	}
 	
 };
@@ -288,7 +300,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(conf.extra_states_val() == 666);
 	CHECK(conf.spacing_value() == 23.1_a);
 	CHECK(conf.fourier_pseudo_value() == false);
-	CHECK(conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	CHECK(conf.spin_val() == states::spin_config::NON_COLLINEAR);
 	CHECK(conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 
 	conf.save(comm, "options_electrons_save");
@@ -297,7 +309,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(read_conf.extra_states_val() == 666);
 	CHECK(read_conf.spacing_value() == 23.1_a);
 	CHECK(read_conf.fourier_pseudo_value() == false);
-	CHECK(read_conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	CHECK(read_conf.spin_val() == states::spin_config::NON_COLLINEAR);
 	CHECK(read_conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 	
 }

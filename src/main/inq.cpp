@@ -17,10 +17,11 @@ int main(int argc, char* argv[]) {
 	if(argc == 1){
 		std::cout << "Usage: inq <command> [arguments]\n\n";
 		std::cout << "The following commands are available:\n";
-		std::cout << "  " << interface::clear.name()  << "\t\t" << interface::clear.one_line() << '\n';
-		std::cout << "  " << interface::cell.name()   << "\t\t" << interface::cell.one_line()  << '\n';		
-		std::cout << "  " << interface::ions.name()   << "\t\t" << interface::ions.one_line()  << '\n';	
-		std::cout << "  " << interface::theory.name() << "\t\t" << interface::theory.one_line()  << '\n';	
+		std::cout << "  " << interface::clear.name()     << "\t\t" << interface::clear.one_line() << '\n';
+		std::cout << "  " << interface::cell.name()      << "\t\t" << interface::cell.one_line()  << '\n';		
+		std::cout << "  " << interface::ions.name()      << "\t\t" << interface::ions.one_line()  << '\n';	
+		std::cout << "  " << interface::theory.name()    << "\t\t" << interface::theory.one_line()  << '\n';
+		std::cout << "  " << interface::electrons.name() << "\t\t" << interface::electrons.one_line()  << '\n';		
 		std::cout << std::endl;
 		exit(1);
 	}
@@ -32,10 +33,11 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> args;
 	for(int iarg = 2; iarg < argc; iarg++) args.emplace_back(argv[iarg]);
 	
-	if(command == interface::clear.name())   interface::clear .command(args, quiet);
-	if(command == interface::cell.name())    interface::cell  .command(args, quiet);
-	if(command == interface::ions.name())    interface::ions  .command(args, quiet);
-	if(command == interface::theory.name())  interface::theory.command(args, quiet);	
+	if(command == interface::clear.name())      interface::clear    .command(args, quiet);
+	if(command == interface::cell.name())       interface::cell     .command(args, quiet);
+	if(command == interface::ions.name())       interface::ions     .command(args, quiet);
+	if(command == interface::theory.name())     interface::theory   .command(args, quiet);
+	if(command == interface::electrons.name())  interface::electrons.command(args, quiet);	
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);
