@@ -51,7 +51,7 @@ private:
 		} else if (per_string == "periodic" or per_string == "3" or per_string == "3d"){
 			return 3;
 		} else {
-			throw std::runtime_error("inq error: unknown periodicity '" + per_string + "'.");
+			throw std::runtime_error("Error: unknown periodicity '" + per_string + "'.");
 		}
 	}
 
@@ -67,7 +67,7 @@ public:
 		
 		if(args[0] == "cubic"){
 			if(args.size() != 3 and args.size() != 4) {
-				std::cerr << "Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]" << std::endl;
+				std::cerr << "Error: Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]" << std::endl;
 				exit(1);
 			}
 			
@@ -81,7 +81,7 @@ public:
 			exit(0);
 		}
 		
-		std::cerr << "Invalid syntax in the cell command" << std::endl;
+		std::cerr << "Error: Invalid syntax in the 'cell' command" << std::endl;
 		exit(1);
 	}
 	

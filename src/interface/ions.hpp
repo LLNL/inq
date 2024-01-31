@@ -53,7 +53,7 @@ struct {
 		if(args[0] == "clear"){
 
 			if(args.size() != 1) {
-				std::cerr << "The 'ions clear' command doesn't take arguments." << std::endl;
+				std::cerr << "Error: The 'ions clear' command doesn't take arguments." << std::endl;
 				exit(1);
 			}
 			clear();
@@ -64,7 +64,7 @@ struct {
 		if(args[0] == "add"){
 
 			if(args.size() != 6) {
-				std::cerr << "Wrong arguments for ions add.\nUse: inq ions add <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
+				std::cerr << "Error: Wrong arguments for ions add.\nUse: inq ions add <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
 				exit(1);
 			}
 
@@ -79,7 +79,7 @@ struct {
 			exit(0);
 		}
  
-		std::cerr << "Invalid syntax in the ions command" << std::endl;
+		std::cerr << "Error: Invalid syntax in the ions command" << std::endl;
 		exit(1);
 	}
 		
