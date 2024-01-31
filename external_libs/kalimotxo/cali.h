@@ -150,11 +150,12 @@ public:
 		for(auto timer = timers.begin(); timer != timers.end(); ++timer) sorted_timers.push_back(timer);
 
 		std::sort(sorted_timers.begin(), sorted_timers.end(), [](auto aa, auto bb) { return aa->second.exc_time > bb->second.exc_time; });
-		
+
+		auto file = fopen("profile.dat", "w");
 		for(auto timer = sorted_timers.begin(); timer != sorted_timers.end(); ++timer){		
-			printf("  %-50s\t%15d\t%10.2f\t%10.2f\n", (*timer)->first.substr(0, 50).c_str(), (*timer)->second.call_count, (*timer)->second.inc_time, (*timer)->second.exc_time);
+			fprintf(file, "  %-50s\t%15d\t%10.2f\t%10.2f\n", (*timer)->first.substr(0, 50).c_str(), (*timer)->second.call_count, (*timer)->second.inc_time, (*timer)->second.exc_time);
 		}
-		
+		fclose(file);
 	}
   
 };
