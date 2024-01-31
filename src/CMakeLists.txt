@@ -37,7 +37,7 @@ foreach(TEST_FILE ${INCLUDE_FILES})
 		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE}
 		APPEND)
 
-	add_test(NAME inq::unit_tests::${dir}::${name} COMMAND ${PROJECT_BINARY_DIR}/scripts/run_test.sh ./all_unit_tests [${dir}][${name}])
+	add_test(NAME inq::unit_tests::${dir}::${name} COMMAND ${PROJECT_BINARY_DIR}/scripts/run_test.sh ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests [${dir}][${name}])
 endforeach()
 
 if(ENABLE_GPU)
