@@ -263,6 +263,27 @@ public:
 		
 		return opts;
 	}
+
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, electrons const & self){
+		out << "Electrons:\n";
+
+		out << "  extra_states       = " << self.extra_states_val();
+		if(not self.extra_states_.has_value()) out << " *";
+		out << "\n";
+		
+		out << "  extra_electrons    = " << self.extra_electrons_val();
+		if(not self.extra_electrons_.has_value()) out << " *";
+		out << "\n";
+
+		out << "  temperature        = " << self.temperature_val();
+		if(not self.temperature_.has_value()) out << " *";
+		out << "\n";
+
+		out << "\n  * default values" << std::endl;
+		
+		return out;
+	}
 	
 };
 
