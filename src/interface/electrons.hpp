@@ -25,6 +25,11 @@ struct {
 		return "Defines the electrons in the simulation and how they are represented.";
 	}
 
+	void operator()() const {
+		auto el_opts = options::electrons::load(".default_electrons_options");
+		std::cout << el_opts;
+	}
+
 	void extra_states(int nstates) const{
 		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
@@ -40,6 +45,16 @@ struct {
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 	}
 
+	template <typename ArgsType>
+	void command(ArgsType const & args, bool quiet) const {
+		
+		if(args.size() == 0) {
+			operator()();
+			exit(0);
+		}
+		
+	}
+	
 } const electrons;
 
 }
