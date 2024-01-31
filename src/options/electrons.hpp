@@ -244,6 +244,18 @@ public:
 		if(not self.temperature_.has_value()) out << " *";
 		out << "\n";
 
+		out << "  spacing            = ";
+		if(self.spacing_.has_value()) {
+			out << self.spacing_value();
+		} else {
+			out << "NOT SET *";
+		}
+		out << "\n";
+		
+		out << "  spin               = " << self.spin_val();
+		if(not self.spin_.has_value()) out << " *";
+		out << "\n";
+		
 		out << "\n  * default values" << std::endl;
 		
 		return out;
