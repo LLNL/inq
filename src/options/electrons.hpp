@@ -24,7 +24,7 @@ class electrons {
 	std::optional<int> extra_states_;
 	std::optional<double> extra_electrons_;
 	std::optional<double> temperature_;
-	std::optional<states::ks_states::spin_config> spin_;
+	std::optional<states::spin_config> spin_;
 	std::optional<double> spacing_;
 	std::optional<bool> double_grid_;	
 	std::optional<double> density_factor_;
@@ -66,28 +66,28 @@ public:
 
 	auto spin_unpolarized(){
 		electrons conf = *this;
-		conf.spin_ = states::ks_states::spin_config::UNPOLARIZED;
+		conf.spin_ = states::spin_config::UNPOLARIZED;
 		return conf;
 	}
 	
 	auto spin_polarized(){
 		electrons conf = *this;
-		conf.spin_ = states::ks_states::spin_config::POLARIZED;
+		conf.spin_ = states::spin_config::POLARIZED;
 		return conf;
 	}
 
 	auto spin_non_collinear(){
 		electrons conf = *this;
-		conf.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
+		conf.spin_ = states::spin_config::NON_COLLINEAR;
 		return conf;
 	}
 	
 	auto spin_val() const {
-		return spin_.value_or(states::ks_states::spin_config::UNPOLARIZED);
+		return spin_.value_or(states::spin_config::UNPOLARIZED);
 	}
 	
 	auto num_spin_components_val() const {
-		if(spin_val() == states::ks_states::spin_config::POLARIZED) return 2;
+		if(spin_val() == states::spin_config::POLARIZED) return 2;
 		return 1;
 	}
 
@@ -187,11 +187,11 @@ public:
 					throw std::runtime_error(error_message);
 				}
 
-				if(*spin_ == states::ks_states::spin_config::UNPOLARIZED){
+				if(*spin_ == states::spin_config::UNPOLARIZED){
 					file << "unpolarized" << std::endl;
-				} else if(*spin_ == states::ks_states::spin_config::POLARIZED){
+				} else if(*spin_ == states::spin_config::POLARIZED){
 					file << "polarized" << std::endl;
-				} else if(*spin_ == states::ks_states::spin_config::NON_COLLINEAR){
+				} else if(*spin_ == states::spin_config::NON_COLLINEAR){
 					file << "non_collinear" << std::endl;
 				}
 			}
@@ -240,11 +240,11 @@ public:
 				file >> readval;
 
 				if(readval == "unpolarized"){
-					opts.spin_ = states::ks_states::spin_config::UNPOLARIZED;
+					opts.spin_ = states::spin_config::UNPOLARIZED;
 				} else if(readval == "polarized"){
-					opts.spin_ = states::ks_states::spin_config::POLARIZED;
+					opts.spin_ = states::spin_config::POLARIZED;
 				} else if(readval == "non_collinear"){
-					opts.spin_ = states::ks_states::spin_config::NON_COLLINEAR;
+					opts.spin_ = states::spin_config::NON_COLLINEAR;
 				} else {
 					throw std::runtime_error("INQ error: Invalid spin configuration when reading optional::electrons from directory '" + dirname + "'.");
 				}
@@ -309,7 +309,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(conf.extra_states_val() == 666);
 	CHECK(conf.spacing_value() == 23.1_a);
 	CHECK(conf.fourier_pseudo_value() == false);
-	CHECK(conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	CHECK(conf.spin_val() == states::spin_config::NON_COLLINEAR);
 	CHECK(conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 
 	conf.save(comm, "options_electrons_save");
@@ -318,7 +318,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(read_conf.extra_states_val() == 666);
 	CHECK(read_conf.spacing_value() == 23.1_a);
 	CHECK(read_conf.fourier_pseudo_value() == false);
-	CHECK(read_conf.spin_val() == states::ks_states::spin_config::NON_COLLINEAR);
+	CHECK(read_conf.spin_val() == states::spin_config::NON_COLLINEAR);
 	CHECK(read_conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 	
 }

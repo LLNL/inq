@@ -406,7 +406,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(id.cubic()[5][3][0] == -0.9448936487_a);
 		CHECK(id.cubic()[3][1][0] == -0.2074502252_a);
 
-		states::ks_states unp(states::ks_states::spin_config::UNPOLARIZED, 11.0);
+		states::ks_states unp(states::spin_config::UNPOLARIZED, 11.0);
 		
 		auto nn_unp = pot.atomic_electronic_density(comm, rs, ions, unp);
 
@@ -415,7 +415,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(nn_unp.hypercubic()[5][3][0][0] == 0.1330589609_a);
 		CHECK(nn_unp.hypercubic()[3][1][0][0] == 0.1846004508_a);
 
-		states::ks_states pol(states::ks_states::spin_config::POLARIZED, 11.0);
+		states::ks_states pol(states::spin_config::POLARIZED, 11.0);
 		
 		auto nn_pol = pot.atomic_electronic_density(comm, rs, ions, pol);
 

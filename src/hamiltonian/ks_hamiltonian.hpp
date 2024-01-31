@@ -253,7 +253,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff());
 	
-	states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
+	states::ks_states st(states::spin_config::UNPOLARIZED, 11.0);
 
   states::orbital_set<basis::real_space, complex> phi(rs, st.num_states(), 1, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 

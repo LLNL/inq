@@ -13,6 +13,7 @@
 #include <gpu/array.hpp>
 #include <operations/sum.hpp>
 #include <parallel/partition.hpp>
+#include <states/spin_config.hpp>
 
 namespace inq {
 namespace states {
@@ -23,8 +24,6 @@ public:
 
 	typedef complex coeff_type;
     
-	enum class spin_config { UNPOLARIZED, POLARIZED, NON_COLLINEAR };
-	
 	ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0, double temperature = 0.0, int nkpoints = 1):
 		temperature_(temperature),
 		nkpoints_(nkpoints)
@@ -258,7 +257,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
   SECTION("Spin unpolarized even"){
     
-    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 12.0);
+    states::ks_states st(states::spin_config::UNPOLARIZED, 12.0);
 
 		CHECK(st.num_electrons() == 12.0);
     CHECK(st.num_states() == 6);
@@ -294,7 +293,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
   SECTION("Spin unpolarized odd"){
     
-    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.0);
+    states::ks_states st(states::spin_config::UNPOLARIZED, 11.0);
 
 		CHECK(st.num_electrons() == 11.0);
     CHECK(st.num_states() == 6);
@@ -330,7 +329,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
   SECTION("Spin unpolarized even extra"){
     
-    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 12.0, 2);
+    states::ks_states st(states::spin_config::UNPOLARIZED, 12.0, 2);
 
 		CHECK(st.num_electrons() == 12.0);
     CHECK(st.num_states() == 8);
@@ -370,7 +369,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
   SECTION("Spin unpolarized odd extra"){
     
-    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 11.235, 2);
+    states::ks_states st(states::spin_config::UNPOLARIZED, 11.235, 2);
 
 		CHECK(st.num_electrons() == 11.235);
     CHECK(st.num_states() == 8);
@@ -410,7 +409,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
   SECTION("Spin unpolarized with temperature"){
     
-    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 4.0, 4, 0.01);
+    states::ks_states st(states::spin_config::UNPOLARIZED, 4.0, 4, 0.01);
 
 		CHECK(st.num_electrons() == 4.0);    
     CHECK(st.num_states() == 6);
@@ -448,7 +447,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	SECTION("Spin polarized"){
     
-    states::ks_states st(states::ks_states::spin_config::POLARIZED, 11.0);
+    states::ks_states st(states::spin_config::POLARIZED, 11.0);
 
 		CHECK(st.num_electrons() == 11.0);    
     CHECK(st.num_states() == 6);
@@ -460,7 +459,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
   SECTION("Non-collinear spin"){
     
-    states::ks_states st(states::ks_states::spin_config::NON_COLLINEAR, 11.0);
+    states::ks_states st(states::spin_config::NON_COLLINEAR, 11.0);
 
 		CHECK(st.num_electrons() == 11.0);
     CHECK(st.num_states() == 11);
@@ -472,7 +471,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
   SECTION("Spin unpolarized even extra"){
     
-    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 12.0, 2);
+    states::ks_states st(states::spin_config::UNPOLARIZED, 12.0, 2);
 
 		CHECK(st.num_electrons() == 12.0);
     CHECK(st.num_states() == 8);
@@ -512,7 +511,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 	SECTION("Spin unpolarized kpoints"){
     
-    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 6.0, 2, 0.0, 3);
+    states::ks_states st(states::spin_config::UNPOLARIZED, 6.0, 2, 0.0, 3);
 
 		CHECK(st.num_electrons() == 6.0);
     CHECK(st.num_states() == 5);
@@ -586,7 +585,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	SECTION("Spin unpolarized partial kpoints"){
     
-    states::ks_states st(states::ks_states::spin_config::UNPOLARIZED, 5.5, 2, 0.0, 3);
+    states::ks_states st(states::spin_config::UNPOLARIZED, 5.5, 2, 0.0, 3);
 
 		CHECK(st.num_electrons() == 5.5);
     CHECK(st.num_states() == 5);
