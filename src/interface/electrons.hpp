@@ -50,6 +50,21 @@ struct {
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 	}
 
+	void unpolarized() const {
+		auto el_opts = options::electrons::load(".default_electrons_options").spin_unpolarized();
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+
+	void polarized() const {
+		auto el_opts = options::electrons::load(".default_electrons_options").spin_polarized();
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+
+	void non_collinear() const {
+		auto el_opts = options::electrons::load(".default_electrons_options").spin_non_collinear();
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 		
@@ -109,7 +124,30 @@ struct {
 			if(not quiet) operator()();
 			exit(0);
 		}
+
+		if(args.size() == 1 and args[0] == "unpolarized"){
+			unpolarized();
+			if(not quiet) operator()();
+			exit(0);
+		}
+
+		if(args.size() == 1 and args[0] == "polarized"){
+			polarized();
+			if(not quiet) operator()();
+			exit(0);
+		}
+
+		if((args.size() == 1 and args[0] == "non_collinear")
+			 or (args.size() == 1 and args[0] == "non-collinear")
+			 or (args.size() == 1 and args[0] == "noncollinear")
+			 or (args.size() == 2 and args[0] == "non" and args[1] == "collinear")
+			 ){
 			
+			non_collinear();
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
 		std::cerr << "Invalid syntax in 'electrons' command" << std::endl;
 		exit(1);
 	}
