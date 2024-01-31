@@ -5,5 +5,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+tmpdir=`mktemp -d`
+echo cd $tmpdir
+cd $tmpdir
 echo $INQ_EXEC_ENV $*
 $INQ_EXEC_ENV $*
+ret=$?
+cd -
+rm -fr $tmpdir
+exit $ret
