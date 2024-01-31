@@ -119,7 +119,33 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			ss >> sp;
 			CHECK(sp == states::spin_config::NON_COLLINEAR);
 		}
-		
 	}
+	
+	SECTION("Input/Output"){
+		{
+			std::stringstream ss;
+			states::spin_config sp;
+			ss << states::spin_config::UNPOLARIZED;
+			ss >> sp;
+			CHECK(sp == states::spin_config::UNPOLARIZED);
+		}
+
+		{
+			std::stringstream ss;
+			states::spin_config sp;
+			ss << states::spin_config::POLARIZED;
+			ss >> sp;
+			CHECK(sp == states::spin_config::POLARIZED);
+		}
+		
+		{
+			std::stringstream ss;
+			states::spin_config sp;
+			ss << states::spin_config::NON_COLLINEAR;
+			ss >> sp;
+			CHECK(sp == states::spin_config::NON_COLLINEAR);
+		}
+	}
+	
 }
 #endif
