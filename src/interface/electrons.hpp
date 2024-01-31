@@ -53,6 +53,25 @@ struct {
 			exit(0);
 		}
 		
+		if(args[0] == "extra_states"){
+
+			if(args.size() == 1) {
+				std::cerr << "Error: missing extra_states argument" << std::endl;
+				exit(1);
+			}
+
+			if(args.size() >= 3) {
+				std::cerr << "Error: too many arguments to extra_states argument" << std::endl;
+				exit(1);
+			}
+
+			extra_states(atoi(args[1].c_str()));
+			if(not quiet) operator()();
+			exit(0);
+		}
+
+		std::cerr << "Invalid syntax in 'extra_states' command" << std::endl;
+		exit(1);
 	}
 	
 } const electrons;
