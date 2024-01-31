@@ -35,6 +35,11 @@ struct {
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
 	}
 
+	void extra_electrons(double nelectrons) const{
+		auto el_opts = options::electrons::load(".default_electrons_options").extra_electrons(nelectrons);
+		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+	}
+	
 	void cutoff(quantity<magnitude::energy> ecut) const{
 		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(ecut);
 		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
@@ -69,8 +74,25 @@ struct {
 			if(not quiet) operator()();
 			exit(0);
 		}
+		
+		if(args[0] == "extra_electrons"){
 
-		std::cerr << "Invalid syntax in 'extra_states' command" << std::endl;
+			if(args.size() == 1) {
+				std::cerr << "Error: missing extra_electrons argument" << std::endl;
+				exit(1);
+			}
+
+			if(args.size() >= 3) {
+				std::cerr << "Error: too many arguments to extra_electrons argument" << std::endl;
+				exit(1);
+			}
+
+			extra_electrons(atof(args[1].c_str()));
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
+		std::cerr << "Invalid syntax in 'electrons' command" << std::endl;
 		exit(1);
 	}
 	
