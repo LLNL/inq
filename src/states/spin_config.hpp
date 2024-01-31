@@ -19,6 +19,21 @@ namespace states {
 
 enum class spin_config { UNPOLARIZED, POLARIZED, NON_COLLINEAR };
 
+template<class OStream>
+OStream & operator<<(OStream & out, spin_config const & self){
+	
+	if(self == states::spin_config::UNPOLARIZED){
+		out << "unpolarized";
+	} else if(self == states::spin_config::POLARIZED){
+		out << "polarized";
+	} else if(self == states::spin_config::NON_COLLINEAR){
+		out << "non_collinear";
+	}
+	
+	return out;
+}
+
+
 }
 }
 #endif
@@ -34,5 +49,33 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	using namespace Catch::literals;
 	using namespace inq;
 
+
+	SECTION("Output"){
+		{
+			std::stringstream ss;
+			std::string str;
+			ss << states::spin_config::UNPOLARIZED;
+			ss >> str;
+			CHECK(str == "unpolarized");
+		}
+
+		{
+			std::stringstream ss;
+			std::string str;
+			ss << states::spin_config::POLARIZED;
+			ss >> str;
+			CHECK(str == "polarized");
+		}
+
+		{
+			std::stringstream ss;
+			std::string str;
+			ss << states::spin_config::NON_COLLINEAR;
+			ss >> str;
+			CHECK(str == "non_collinear");
+		}
+		
+	}
+	
 }
 #endif
