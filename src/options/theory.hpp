@@ -15,7 +15,7 @@
 #include <optional>
 #include <stdexcept>
 
-#include <xc.h>
+#include <hamiltonian/xc_functional.hpp>
 
 namespace inq {
 namespace options {
@@ -25,18 +25,18 @@ class theory {
 public:
 
 	enum class exchange_functional {
-		NONE = 0,
+		NONE = XC_NONE,
 		LDA = XC_LDA_X,
 		PBE = XC_GGA_X_PBE,
 		RPBE = XC_GGA_X_RPBE,		
 		B = XC_GGA_X_B88,
 		B3LYP = XC_HYB_GGA_XC_B3LYP,
 		PBE0 = XC_HYB_GGA_XC_PBEH,
-		HARTREE_FOCK = -1
+		HARTREE_FOCK = XC_HARTREE_FOCK
 	};
 
 	enum class correlation_functional {
-		NONE = 0,
+		NONE = XC_NONE,
 		LDA_PZ = XC_LDA_C_PZ,
 		PBE = XC_GGA_C_PBE,
 		LYP = XC_GGA_C_LYP
@@ -197,6 +197,41 @@ public:
 		utils::load_optional(dirname + "/alpha", opts.alpha_);
 		
 		return opts;
+	}
+
+
+	template<class OStream>
+	friend OStream& operator<<(OStream& out, theory const & self){
+		out << "Theory:\n";
+
+		if(not self.hartree_potential() and self.exchange() == exchange_functional::NONE and self.correlation() == correlation_functional::NONE){
+			out << " Non-interacting electrons" << std::endl;
+			return out;
+		}
+
+		if(self.hartree_potential() and self.exchange() == exchange_functional::NONE and self.correlation() == correlation_functional::NONE){
+			out << " Hartree (with self-interaction)\n\n";
+			out << " [1] D. R. Hartree, Math. Proc. Camb. Philos. Soc. 24 1, 111 (1928)" << std::endl;
+			return out;
+		}
+
+		if(self.exchange() != exchange_functional::NONE) {
+			auto e_func = hamiltonian::xc_functional(int(self.exchange()), 1);
+			
+			out << "  "   << e_func.kind_name() << ":\n";
+			out << "    " << e_func.family_name() << " - " << e_func.name() << "\n\n";
+			out << e_func.references("    ") << "\n";		
+		}
+
+		if(self.correlation() != correlation_functional::NONE) {
+			auto c_func = hamiltonian::xc_functional(int(self.correlation()), 1);
+			
+			out << "  "   << c_func.kind_name() << ":\n";
+			out << "    " << c_func.family_name() << " - " << c_func.name() << "\n\n";
+			out << c_func.references("    ") << "\n";
+		}
+		
+		return out;
 	}
 	
 };

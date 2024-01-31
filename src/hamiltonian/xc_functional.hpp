@@ -22,6 +22,9 @@
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
+#define XC_NONE          0
+#define XC_HARTREE_FOCK -1
+
 namespace inq {
 namespace hamiltonian {
 	class xc_functional {
@@ -87,10 +90,16 @@ namespace hamiltonian {
 		}
 
 		std::string name() const {
+			if(id_ == XC_NONE)         return "";			
+			if(id_ == XC_HARTREE_FOCK) return "Exact exchange";
+			
 			return func_.info->name;
 		}
 
 		std::string kind_name() const {
+			if(id_ == XC_NONE)         return "";
+			if(id_ == XC_HARTREE_FOCK) return "Exchange";
+			
 			switch (func_.info->kind) {
 			case (XC_EXCHANGE):
 				return "Exchange";
@@ -106,6 +115,9 @@ namespace hamiltonian {
 		}
 		
 		std::string family_name() const {
+			if(id_ == XC_NONE)         return "";
+			if(id_ == XC_HARTREE_FOCK) return "Hartree-Fock";
+			
 			switch (family()) {
 			case (XC_FAMILY_LDA):
 				return "LDA";
@@ -118,9 +130,20 @@ namespace hamiltonian {
 			}
 		}
 
-		auto references() const {
+		auto references(std::string prefix = {}) const {
 			std::string refs;
+			
+			if(id_ == XC_NONE) return refs;
+
+			if(id_ == XC_HARTREE_FOCK) {
+				refs += prefix + "[1] V. A. Fock, Z. Phys. 61, 126 (1930)\n";
+				refs += prefix + "[2] V. A. Fock, Z. Phys. 62, 795 (1930)\n";
+				refs += prefix + "[3] D. R. Hartree and W. Hartree, Proc. R. Soc. Lond. A. 150, 869 (1935)\n";
+				return refs;
+			}
+														
 			for(int ii = 0; func_.info->refs[ii] != NULL; ii++){
+				refs += prefix;
 				refs += "[" + std::to_string(ii + 1) + "] ";
 				refs += func_.info->refs[ii]->ref;
 				refs += "\n";

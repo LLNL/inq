@@ -10,10 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
-#include <systems/ions.hpp>
-#include <systems/electrons.hpp>
-#include <ground_state/initial_guess.hpp>
-#include <ground_state/calculate.hpp>
+#include <options/theory.hpp>
 
 namespace inq {
 namespace interface {
@@ -27,11 +24,62 @@ struct {
 	std::string one_line() const {
 		return "Defines the theory used to represent the electrons-electron interaction.";
 	}
+
+	void operator()() const {
+		auto theo = options::theory::load(".default_theory");
+		std::cout << theo;
+	}
 	
 	void non_interacting() const{
-		auto theo = options::theory{}.non_interacting();
+		auto theo = options::theory::load(".default_theory").non_interacting();
 		theo.save(input::environment::global().comm(), ".default_theory");
 	}
+
+	void hartree() const{
+		auto theo = options::theory::load(".default_theory").hartree();
+		theo.save(input::environment::global().comm(), ".default_theory");
+	}
+
+	void hartree_fock() const{
+		auto theo = options::theory::load(".default_theory").hartree_fock();
+		theo.save(input::environment::global().comm(), ".default_theory");
+	}
+
+	void lda() const{
+		auto theo = options::theory::load(".default_theory").lda();
+		theo.save(input::environment::global().comm(), ".default_theory");
+	}
+	
+	template <typename ArgsType>
+	void command(ArgsType args, bool quiet) const {
+
+		//convert to lower case
+		for(auto & arg : args) std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
+		
+		if(args.size() == 0){
+			operator()();
+			
+		} else if((args.size() == 1 and args[0] == "non_interacting") or (args.size() == 1 and args[0] == "non-interacting") or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){
+			non_interacting();
+			
+		} else if( args.size() == 1 and args[0] == "hartree"){
+			hartree();
+			
+		} else if((args.size() == 1 and args[0] == "hartree-fock") or (args.size() == 1 and args[0] == "hartree_fock") or (args.size() == 2 and args[0] == "hartree" and args[1] == "fock")){
+			hartree_fock();
+
+		} else if( args.size() == 1 and args[0] == "lda" ){
+			lda();
+			
+		} else {				
+			std::cerr << "Invalid syntax in 'theory' command" << std::endl;
+			exit(1);
+		}
+
+		if(not quiet) operator()();
+		exit(0);
+	}
+	
 } const theory;
 
 }
