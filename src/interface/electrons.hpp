@@ -91,7 +91,25 @@ struct {
 			if(not quiet) operator()();
 			exit(0);
 		}
-		
+
+		if(args[0] == "cutoff"){
+
+			if(args.size() < 3) {
+				std::cerr << "Error: missing cutoff arguments. Use 'cutoff <value> <units>'" << std::endl;
+				exit(1);
+			}
+
+			if(args.size() > 3) {
+				std::cerr << "Error: too many arguments to cutoff argument" << std::endl;
+				exit(1);
+			}
+
+			cutoff(atof(args[1].c_str())*magnitude::energy::parse(args[2]));
+			
+			if(not quiet) operator()();
+			exit(0);
+		}
+			
 		std::cerr << "Invalid syntax in 'electrons' command" << std::endl;
 		exit(1);
 	}
