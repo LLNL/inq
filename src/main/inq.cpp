@@ -21,7 +21,8 @@ int main(int argc, char* argv[]) {
 		std::cout << "  " << interface::cell.name()      << "\t\t" << interface::cell.one_line()  << '\n';		
 		std::cout << "  " << interface::ions.name()      << "\t\t" << interface::ions.one_line()  << '\n';	
 		std::cout << "  " << interface::theory.name()    << "\t\t" << interface::theory.one_line()  << '\n';
-		std::cout << "  " << interface::electrons.name() << "\t\t" << interface::electrons.one_line()  << '\n';		
+		std::cout << "  " << interface::electrons.name() << "\t\t" << interface::electrons.one_line()  << '\n';
+		std::cout << "  " << interface::run.name()       << "\t\t" << interface::run      .one_line()  << '\n';		
 		std::cout << std::endl;
 		exit(1);
 	}
@@ -37,7 +38,8 @@ int main(int argc, char* argv[]) {
 	if(command == interface::cell.name())       interface::cell     .command(args, quiet);
 	if(command == interface::ions.name())       interface::ions     .command(args, quiet);
 	if(command == interface::theory.name())     interface::theory   .command(args, quiet);
-	if(command == interface::electrons.name())  interface::electrons.command(args, quiet);	
+	if(command == interface::electrons.name())  interface::electrons.command(args, quiet);
+	if(command == interface::run      .name())  interface::run      .command(args, quiet);
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);

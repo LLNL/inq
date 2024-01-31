@@ -37,6 +37,29 @@ struct {
 		electrons.save(".default_orbitals");
 		return result;
 	}
+
+	template <typename ArgsType>
+	void command(ArgsType const & args, bool quiet) const {
+		
+		if(args.size() == 0) {
+			std::cerr << "Error: Missing argument to the 'run' command" << std::endl;
+			exit(1);
+		}
+		
+		if((args.size() == 1 and args[0] == "ground_state")
+			 or (args.size() == 1 and args[0] == "ground-state")
+			 or (args.size() == 1 and args[0] == "groundstate")			 
+			 or (args.size() == 2 and args[0] == "ground" and args[1] == "state")
+			 ) {
+
+			ground_state();
+			exit(0);
+		}
+		
+		std::cerr << "Error: Invalid syntax in the 'run' command" << std::endl;
+		exit(1);
+	}
+	
 } const run;
 
 }

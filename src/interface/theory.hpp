@@ -72,7 +72,7 @@ struct {
 			lda();
 			
 		} else {				
-			std::cerr << "Invalid syntax in 'theory' command" << std::endl;
+			std::cerr << "Error: Invalid syntax in 'theory' command" << std::endl;
 			exit(1);
 		}
 

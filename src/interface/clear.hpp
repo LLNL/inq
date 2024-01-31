@@ -37,7 +37,7 @@ struct {
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool) const {
 		if(args.size() != 0) {
-			std::cerr << "The 'clear' command doesn't take arguments." << std::endl;
+			std::cerr << "Error: The 'clear' command doesn't take arguments." << std::endl;
 			exit(1);
 		}
 		operator()();

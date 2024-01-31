@@ -148,7 +148,7 @@ struct {
 			exit(0);
 		}
 		
-		std::cerr << "Invalid syntax in 'electrons' command" << std::endl;
+		std::cerr << "Error: Invalid syntax in the 'electrons' command" << std::endl;
 		exit(1);
 	}
 	
