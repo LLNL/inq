@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e #make the script fail if a command fails
+set -x #output commands to the terminal
 
 inq clear
 inq cell cubic 9.0 bohr finite
