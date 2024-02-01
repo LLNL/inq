@@ -27,7 +27,7 @@ file(GLOB PYTHON_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
 
 foreach(TEST_FILE ${PYTHON_TESTS})
   add_test(NAME inq::tests::${TEST_FILE} COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE})
-  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "PYTHONPATH=path_list_append:${PROJECT_BINARY_DIR}/python:${PROJECT_SOURCE_DIR}/python")
+  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "PYTHONPATH=path_list_prepend:${PROJECT_BINARY_DIR}/python:${PROJECT_SOURCE_DIR}/python")
 endforeach()
 
 #BASH TESTS
@@ -35,6 +35,6 @@ endforeach()
 file(GLOB COMMAND_LINE_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.sh)
 
 foreach(TEST_FILE ${COMMAND_LINE_TESTS})
-  add_test(NAME inq::tests::${TEST_FILE} COMMAND ${PROJECT_BINARY_DIR}/scripts/run_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE})
-  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_append:${PROJECT_BINARY_DIR}/src")
+  add_test(NAME inq::tests::${TEST_FILE} COMMAND ${PROJECT_SOURCE_DIR}/scripts/run_shell_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE})
+  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${PROJECT_BINARY_DIR}/src")
 endforeach()
