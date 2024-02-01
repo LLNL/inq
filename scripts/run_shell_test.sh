@@ -10,7 +10,7 @@ set -x
 
 tmpdir=`mktemp -d`
 cd $tmpdir
-sed "s/^inq/$INQ_EXEC_ENV inq/g" $1 > script.sh
+sed "s|^inq|$INQ_EXEC_ENV inq|g" $1 > script.sh
 chmod +x script.sh
 shift
 ./script.sh $*
