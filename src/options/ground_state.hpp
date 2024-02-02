@@ -180,7 +180,7 @@ public:
 			
 			utils::save_optional(comm, dirname + "/eigensolver",      eigensolver_,   error_message);
 			utils::save_optional(comm, dirname + "/mixing",           mixing_,        error_message);
-			utils::save_optional(comm, dirname + "/energy_tol_",      energy_tol_,    error_message);
+			utils::save_optional(comm, dirname + "/energy_tol",       energy_tol_,    error_message);
 			utils::save_optional(comm, dirname + "/mixing_algorithm", mixing_algo_,   error_message);
 			utils::save_optional(comm, dirname + "/verbose",          verbose_,       error_message);
 			utils::save_optional(comm, dirname + "/subspace_diag",    subspace_diag_, error_message);
@@ -203,7 +203,7 @@ public:
 
 		utils::load_optional(dirname + "/eigensolver",      opts.eigensolver_);
 		utils::load_optional(dirname + "/mixing",           opts.mixing_);
-		utils::load_optional(dirname + "/energy_tol_",      opts.energy_tol_);
+		utils::load_optional(dirname + "/energy_tol",       opts.energy_tol_);
 		utils::load_optional(dirname + "/mixing_algorithm", opts.mixing_algo_);
 		utils::load_optional(dirname + "/verbose",          opts.verbose_);
 		utils::load_optional(dirname + "/subspace_diag",    opts.subspace_diag_);
@@ -211,6 +211,38 @@ public:
 		utils::load_optional(dirname + "/calc_forces",      opts.calc_forces_);
 		
 		return opts;
+	}
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, ground_state const & self){
+
+		using namespace magnitude;
+
+		out << "Ground state:\n";
+
+		out << "  eigensolver        = " << self.eigensolver();
+		if(not self.eigensolver_.has_value()) out << " *";
+		out << "\n";
+
+		out << "  mixing             = " << self.mixing();
+		if(not self.mixing_.has_value()) out << " *";
+		out << "\n";
+
+		out << "  energy_tol         = " << self.energy_tolerance();
+		if(not self.energy_tol_.has_value()) out << " *";
+		out << "\n";
+
+		out << "  mixing_algorithm   = " << self.mixing_algorithm();
+		if(not self.mixing_algo_.has_value()) out << " *";
+		out << "\n";
+		
+		out << "  scf_steps          = " << self.scf_steps();
+		if(not self.scf_steps_.has_value()) out << " *";
+		out << "\n";
+
+		out << "\n  * default values" << std::endl;
+		
+		return out;
 	}
 	
 };
@@ -255,7 +287,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(read_solver.mixing() == 0.05_a);
     CHECK(read_solver.eigensolver() == options::ground_state::scf_eigensolver::STEEPEST_DESCENT);
     CHECK(read_solver.mixing_algorithm() == options::ground_state::mixing_algo::LINEAR);
-		
+
   }
 }
 #endif
