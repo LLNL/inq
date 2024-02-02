@@ -163,6 +163,40 @@ public:
 	auto calc_forces() const {
 		return calc_forces_.value_or(false);
 	}
+	
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the options::ground_state to directory '" + dirname + "'.";
+		
+		comm.barrier();
+		
+		auto exception_happened = true;
+		if(comm.root()) {
+			
+			try { std::filesystem::create_directories(dirname); }
+			catch(...) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+			
+			utils::save_optional(comm, dirname + "/eigensolver",      eigensolver_,   error_message);
+			utils::save_optional(comm, dirname + "/mixing",           mixing_,        error_message);
+			utils::save_optional(comm, dirname + "/energy_tol_",      energy_tol_,    error_message);
+			utils::save_optional(comm, dirname + "/mixing_algorithm", mixing_algo_,   error_message);
+			utils::save_optional(comm, dirname + "/verbose",          verbose_,       error_message);
+			utils::save_optional(comm, dirname + "/subspace_diag",    subspace_diag_, error_message);
+			utils::save_optional(comm, dirname + "/scf_steps",        scf_steps_,     error_message);
+			utils::save_optional(comm, dirname + "/calc_forces",      calc_forces_,   error_message);
+			
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+			if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
 
 };
 }
@@ -179,21 +213,28 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+ 
 	SECTION("Defaults"){
 
     options::ground_state solver;
 
     CHECK(solver.eigensolver() == options::ground_state::scf_eigensolver::STEEPEST_DESCENT);
     CHECK(solver.mixing() == 0.3_a);
-		
+
   }
 
   SECTION("Composition"){
 
-    auto solver = options::ground_state{}.calculate_forces().mixing(0.05);
+    auto solver = options::ground_state{}.calculate_forces().mixing(0.05).steepest_descent().linear_mixing();
 
 		CHECK(solver.calc_forces());
     CHECK(solver.mixing() == 0.05_a);
+    CHECK(solver.eigensolver() == options::ground_state::scf_eigensolver::STEEPEST_DESCENT);
+    CHECK(solver.mixing_algorithm() == options::ground_state::mixing_algo::LINEAR);
+		
+		solver.save(comm, "save_options_ground_state");
+		
   }
 }
 #endif
