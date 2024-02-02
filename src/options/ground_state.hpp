@@ -23,8 +23,48 @@ class ground_state {
 public:
 
 	enum class scf_eigensolver { STEEPEST_DESCENT };
+
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, scf_eigensolver const & self){
+		if(self == scf_eigensolver::STEEPEST_DESCENT) out << "steepest_descent";
+		return out;
+	}
+
+	template<class IStream>
+	friend IStream & operator>>(IStream & in, scf_eigensolver & self){
+		std::string readval;
+		in >> readval;
+		if(readval == "steepest_descent"){
+			self = scf_eigensolver::STEEPEST_DESCENT;
+		} else {
+			throw std::runtime_error("INQ error: Invalid eigensolver");
+		}
+		return in;
+	}
+
 	enum class mixing_algo { LINEAR, BROYDEN };
 
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, mixing_algo const & self){
+		if(self == mixing_algo::LINEAR)     out << "linear";
+		if(self == mixing_algo::BROYDEN)    out << "broyden";
+		return out;
+	}
+
+	template<class IStream>
+	friend IStream & operator>>(IStream & in, mixing_algo & self){
+		std::string readval;
+		in >> readval;
+		if(readval == "linear"){
+			self = mixing_algo::LINEAR;
+		} else if(readval == "broyden"){
+			self = mixing_algo::LINEAR;
+		} else {
+			throw std::runtime_error("INQ error: Invalid mixing algorithm");
+		}
+		return in;
+	}
+	
 private:
 		
 	std::optional<scf_eigensolver> eigensolver_;
@@ -145,6 +185,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(solver.eigensolver() == options::ground_state::scf_eigensolver::STEEPEST_DESCENT);
     CHECK(solver.mixing() == 0.3_a);
+		
   }
 
   SECTION("Composition"){
