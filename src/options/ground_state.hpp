@@ -220,24 +220,24 @@ public:
 
 		out << "Ground state:\n";
 
-		out << "  eigensolver        = " << self.eigensolver();
-		if(not self.eigensolver_.has_value()) out << " *";
-		out << "\n";
-
-		out << "  mixing             = " << self.mixing();
-		if(not self.mixing_.has_value()) out << " *";
+		out << "  max_steps          = " << self.max_steps();
+		if(not self.max_steps_.has_value()) out << " *";
 		out << "\n";
 
 		out << "  energy_tol         = " << self.energy_tolerance();
 		if(not self.energy_tol_.has_value()) out << " *";
 		out << "\n";
-
+		
 		out << "  mixing_algorithm   = " << self.mixing_algorithm();
 		if(not self.mixing_algo_.has_value()) out << " *";
 		out << "\n";
-		
-		out << "  max_steps          = " << self.max_steps();
-		if(not self.max_steps_.has_value()) out << " *";
+	 
+		out << "  mixing             = " << self.mixing();
+		if(not self.mixing_.has_value()) out << " *";
+		out << "\n";
+
+		out << "  eigensolver        = " << self.eigensolver();
+		if(not self.eigensolver_.has_value()) out << " *";
 		out << "\n";
 
 		out << "\n  * default values" << std::endl;
