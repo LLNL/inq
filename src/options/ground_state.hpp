@@ -18,113 +18,113 @@
 namespace inq {
 namespace options {
 
-  class ground_state {
+class ground_state {
 
-  public:
+public:
 
-    enum class scf_eigensolver { STEEPEST_DESCENT };
-    enum class mixing_algo { LINEAR, BROYDEN };
+	enum class scf_eigensolver { STEEPEST_DESCENT };
+	enum class mixing_algo { LINEAR, BROYDEN };
 
-	private:
+private:
 		
-		std::optional<scf_eigensolver> eigensolver_;
-    std::optional<double> mixing_;
-		std::optional<double> energy_tol_;
-		std::optional<mixing_algo> mixing_algo_;
-		std::optional<bool> verbose_;
-		std::optional<bool> subspace_diag_;
-		std::optional<int> scf_steps_;
-		std::optional<bool> calc_forces_;
+	std::optional<scf_eigensolver> eigensolver_;
+	std::optional<double> mixing_;
+	std::optional<double> energy_tol_;
+	std::optional<mixing_algo> mixing_algo_;
+	std::optional<bool> verbose_;
+	std::optional<bool> subspace_diag_;
+	std::optional<int> scf_steps_;
+	std::optional<bool> calc_forces_;
 
-  public:
+public:
 
-    auto steepest_descent(){
-      ground_state solver = *this;;
-      solver.eigensolver_ = scf_eigensolver::STEEPEST_DESCENT;
-      return solver;
-    }
+	auto steepest_descent(){
+		ground_state solver = *this;;
+		solver.eigensolver_ = scf_eigensolver::STEEPEST_DESCENT;
+		return solver;
+	}
 
-    auto eigensolver() const {
-      return eigensolver_.value_or(scf_eigensolver::STEEPEST_DESCENT);
-    }
+	auto eigensolver() const {
+		return eigensolver_.value_or(scf_eigensolver::STEEPEST_DESCENT);
+	}
 
-    auto mixing(double mixing_factor) {
-      ground_state solver = *this;;
-      solver.mixing_ = mixing_factor;
-      return solver;
-    }
+	auto mixing(double mixing_factor) {
+		ground_state solver = *this;;
+		solver.mixing_ = mixing_factor;
+		return solver;
+	}
 
-    auto mixing() const {
-      return mixing_.value_or(0.3);
-    }
+	auto mixing() const {
+		return mixing_.value_or(0.3);
+	}
 
-		auto energy_tolerance(quantity<magnitude::energy> etol) {
-			ground_state solver = *this;;
-      solver.energy_tol_ = etol.in_atomic_units();
-      return solver;
-    }
+	auto energy_tolerance(quantity<magnitude::energy> etol) {
+		ground_state solver = *this;;
+		solver.energy_tol_ = etol.in_atomic_units();
+		return solver;
+	}
 				
-		auto energy_tolerance() const {
-			return energy_tol_.value_or(1e-6);
-		}
+	auto energy_tolerance() const {
+		return energy_tol_.value_or(1e-6);
+	}
 		
-		auto linear_mixing(){
-			ground_state solver = *this;;
-      solver.mixing_algo_ = mixing_algo::LINEAR;
-      return solver;
-		}
+	auto linear_mixing(){
+		ground_state solver = *this;;
+		solver.mixing_algo_ = mixing_algo::LINEAR;
+		return solver;
+	}
 
-		auto broyden_mixing(){
-			ground_state solver = *this;;
-      solver.mixing_algo_ = mixing_algo::BROYDEN;
-      return solver;
-		}
+	auto broyden_mixing(){
+		ground_state solver = *this;;
+		solver.mixing_algo_ = mixing_algo::BROYDEN;
+		return solver;
+	}
 		
-		auto mixing_algorithm() const {
-			return mixing_algo_.value_or(mixing_algo::BROYDEN);
-		}
+	auto mixing_algorithm() const {
+		return mixing_algo_.value_or(mixing_algo::BROYDEN);
+	}
 
-		auto silent(){
-			ground_state solver = *this;;
-      solver.verbose_ = false;
-      return solver;
-		}
+	auto silent(){
+		ground_state solver = *this;;
+		solver.verbose_ = false;
+		return solver;
+	}
 		
-		auto verbose_output() const {
-			return verbose_.value_or(true);
-		}
+	auto verbose_output() const {
+		return verbose_.value_or(true);
+	}
 
-		auto no_subspace_diag() {
-			ground_state solver = *this;;
-      solver.subspace_diag_ = false;
-      return solver;
-		}
+	auto no_subspace_diag() {
+		ground_state solver = *this;;
+		solver.subspace_diag_ = false;
+		return solver;
+	}
 		
-		auto subspace_diag() const {
-			return subspace_diag_.value_or(true);
-		}
+	auto subspace_diag() const {
+		return subspace_diag_.value_or(true);
+	}
 
-		auto scf_steps(int val) {
-			ground_state solver = *this;;
-			solver.scf_steps_ = val;
-      return solver;
-		}
+	auto scf_steps(int val) {
+		ground_state solver = *this;;
+		solver.scf_steps_ = val;
+		return solver;
+	}
 
-		auto scf_steps() const {
-			return scf_steps_.value_or(200);
-		}		
+	auto scf_steps() const {
+		return scf_steps_.value_or(200);
+	}
 
-		auto calculate_forces() {
-			ground_state solver = *this;;
-      solver.calc_forces_ = true;
-      return solver;
-		}
+	auto calculate_forces() {
+		ground_state solver = *this;;
+		solver.calc_forces_ = true;
+		return solver;
+	}
 		
-		auto calc_forces() const {
-			return calc_forces_.value_or(false);
-		}
-		
-  };
+	auto calc_forces() const {
+		return calc_forces_.value_or(false);
+	}
+
+};
 }
 }
 #endif
