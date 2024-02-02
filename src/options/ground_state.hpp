@@ -73,7 +73,7 @@ private:
 	std::optional<mixing_algo> mixing_algo_;
 	std::optional<bool> verbose_;
 	std::optional<bool> subspace_diag_;
-	std::optional<int> scf_steps_;
+	std::optional<int> max_steps_;
 	std::optional<bool> calc_forces_;
 
 public:
@@ -144,14 +144,14 @@ public:
 		return subspace_diag_.value_or(true);
 	}
 
-	auto scf_steps(int val) {
+	auto max_steps(int val) {
 		ground_state solver = *this;;
-		solver.scf_steps_ = val;
+		solver.max_steps_ = val;
 		return solver;
 	}
 
-	auto scf_steps() const {
-		return scf_steps_.value_or(200);
+	auto max_steps() const {
+		return max_steps_.value_or(200);
 	}
 
 	auto calculate_forces() {
@@ -184,7 +184,7 @@ public:
 			utils::save_optional(comm, dirname + "/mixing_algorithm", mixing_algo_,   error_message);
 			utils::save_optional(comm, dirname + "/verbose",          verbose_,       error_message);
 			utils::save_optional(comm, dirname + "/subspace_diag",    subspace_diag_, error_message);
-			utils::save_optional(comm, dirname + "/scf_steps",        scf_steps_,     error_message);
+			utils::save_optional(comm, dirname + "/max_steps",        max_steps_,     error_message);
 			utils::save_optional(comm, dirname + "/calc_forces",      calc_forces_,   error_message);
 			
 			exception_happened = false;
@@ -207,7 +207,7 @@ public:
 		utils::load_optional(dirname + "/mixing_algorithm", opts.mixing_algo_);
 		utils::load_optional(dirname + "/verbose",          opts.verbose_);
 		utils::load_optional(dirname + "/subspace_diag",    opts.subspace_diag_);
-		utils::load_optional(dirname + "/scf_steps",        opts.scf_steps_);
+		utils::load_optional(dirname + "/max_steps",        opts.max_steps_);
 		utils::load_optional(dirname + "/calc_forces",      opts.calc_forces_);
 		
 		return opts;
@@ -236,8 +236,8 @@ public:
 		if(not self.mixing_algo_.has_value()) out << " *";
 		out << "\n";
 		
-		out << "  scf_steps          = " << self.scf_steps();
-		if(not self.scf_steps_.has_value()) out << " *";
+		out << "  max_steps          = " << self.max_steps();
+		if(not self.max_steps_.has_value()) out << " *";
 		out << "\n";
 
 		out << "\n  * default values" << std::endl;

@@ -78,7 +78,7 @@ int main(int argc, char ** argv){
 	if(energy_match.fail()) return energy_match.fail();		
 
 	{
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe0(), inq::options::ground_state{}.steepest_descent().scf_steps(0));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe0(), inq::options::ground_state{}.steepest_descent().max_steps(0));
 		
 		energy_match.check("total energy",        result.energy.total(),         -11.569230679378);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.513350460378);
