@@ -197,7 +197,22 @@ public:
 		
 		comm.barrier();
 	}
+	
+	static auto load(std::string const & dirname) {
+		ground_state opts;
 
+		utils::load_optional(dirname + "/eigensolver",      opts.eigensolver_);
+		utils::load_optional(dirname + "/mixing",           opts.mixing_);
+		utils::load_optional(dirname + "/energy_tol_",      opts.energy_tol_);
+		utils::load_optional(dirname + "/mixing_algorithm", opts.mixing_algo_);
+		utils::load_optional(dirname + "/verbose",          opts.verbose_);
+		utils::load_optional(dirname + "/subspace_diag",    opts.subspace_diag_);
+		utils::load_optional(dirname + "/scf_steps",        opts.scf_steps_);
+		utils::load_optional(dirname + "/calc_forces",      opts.calc_forces_);
+		
+		return opts;
+	}
+	
 };
 }
 }
@@ -234,6 +249,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(solver.mixing_algorithm() == options::ground_state::mixing_algo::LINEAR);
 		
 		solver.save(comm, "save_options_ground_state");
+		auto read_solver = options::ground_state::load("save_options_ground_state");
+
+		CHECK(read_solver.calc_forces());
+    CHECK(read_solver.mixing() == 0.05_a);
+    CHECK(read_solver.eigensolver() == options::ground_state::scf_eigensolver::STEEPEST_DESCENT);
+    CHECK(read_solver.mixing_algorithm() == options::ground_state::mixing_algo::LINEAR);
 		
   }
 }
