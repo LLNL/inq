@@ -25,12 +25,7 @@ struct {
 	}
 	
 	void operator()() const {
-		if(input::environment::global().comm().root()) {
-			std::filesystem::remove_all(".default_ions");
-			std::filesystem::remove_all(".default_theory");
-			std::filesystem::remove_all(".default_electrons_options");
-			std::filesystem::remove_all(".default_orbitals");
-		}
+		if(input::environment::global().comm().root()) std::filesystem::remove_all(".inq");
 		input::environment::global().comm().barrier();
 	}
 

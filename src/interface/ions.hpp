@@ -26,20 +26,20 @@ struct {
 	}
 
 	void operator()() const {
-		auto ions = systems::ions::load(".default_ions");		
+		auto ions = systems::ions::load(".inq/default_ions");		
 		if(input::environment::global().comm().root()) std::cout << ions;
 	}
 
 	void add(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) const {
-		auto ions = systems::ions::load(".default_ions");
+		auto ions = systems::ions::load(".inq/default_ions");
 		ions.insert(sp, pos);
-		ions.save(input::environment::global().comm(), ".default_ions");
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
 	void clear() const {
-		auto ions = systems::ions::load(".default_ions");
+		auto ions = systems::ions::load(".inq/default_ions");
 		ions.clear();
-		ions.save(input::environment::global().comm(), ".default_ions");
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
 	template <typename ArgsType>

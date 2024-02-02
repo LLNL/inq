@@ -27,14 +27,14 @@ struct {
 	}
 	
 	auto ground_state() const{
-		auto ions = systems::ions::load(".default_ions");
-		systems::electrons electrons(ions, options::electrons::load(".default_electrons_options"));
+		auto ions = systems::ions::load(".inq/default_ions");
+		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"));
 		
-		if(not electrons.try_load(".default_orbitals")){
+		if(not electrons.try_load(".inq/default_orbitals")){
 			ground_state::initial_guess(ions, electrons);
 		}
-		auto result = ground_state::calculate(ions, electrons, options::theory::load(".default_theory"));
-		electrons.save(".default_orbitals");
+		auto result = ground_state::calculate(ions, electrons, options::theory::load(".inq/default_theory"));
+		electrons.save(".inq/default_orbitals");
 		return result;
 	}
 

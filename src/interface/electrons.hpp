@@ -26,43 +26,43 @@ struct {
 	}
 
 	void operator()() const {
-		auto el_opts = options::electrons::load(".default_electrons_options");
+		auto el_opts = options::electrons::load(".inq/default_electrons_options");
 		std::cout << el_opts;
 	}
 
 	void extra_states(int nstates) const{
-		auto el_opts = options::electrons::load(".default_electrons_options").extra_states(nstates);
-		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").extra_states(nstates);
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
 	void extra_electrons(double nelectrons) const{
-		auto el_opts = options::electrons::load(".default_electrons_options").extra_electrons(nelectrons);
-		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").extra_electrons(nelectrons);
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 	
 	void cutoff(quantity<magnitude::energy> ecut) const{
-		auto el_opts = options::electrons::load(".default_electrons_options").cutoff(ecut);
-		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").cutoff(ecut);
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
 	void fourier_pseudo() const {
-		auto el_opts = options::electrons::load(".default_electrons_options").fourier_pseudo();
-		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").fourier_pseudo();
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
 	void unpolarized() const {
-		auto el_opts = options::electrons::load(".default_electrons_options").spin_unpolarized();
-		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_unpolarized();
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
 	void polarized() const {
-		auto el_opts = options::electrons::load(".default_electrons_options").spin_polarized();
-		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_polarized();
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
 	void non_collinear() const {
-		auto el_opts = options::electrons::load(".default_electrons_options").spin_non_collinear();
-		el_opts.save(input::environment::global().comm(), ".default_electrons_options");
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_non_collinear();
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 	
 	template <typename ArgsType>
