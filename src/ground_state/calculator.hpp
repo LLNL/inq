@@ -135,9 +135,9 @@ public:
 		auto iter_start_time = std::chrono::high_resolution_clock::now();
 
 		auto converged = false;
-		res.total_iter = solver_.scf_steps();
+		res.total_iter = solver_.max_steps();
 		int conv_count = 0;
-		for(int iiter = 0; iiter < solver_.scf_steps(); iiter++){
+		for(int iiter = 0; iiter < solver_.max_steps(); iiter++){
 			
 			CALI_CXX_MARK_SCOPE("scf_iteration");
 			
@@ -228,7 +228,7 @@ public:
 			}
 		}
 
-		if(solver_.scf_steps() > 0 and not converged) {
+		if(solver_.max_steps() > 0 and not converged) {
 			throw std::runtime_error("The SCF calculation did not converge. Try reducing the mixing parameter.\n"); 
 		}
 		
