@@ -7,6 +7,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <inq/inq.hpp>
+#include <utils/lowercase.hpp>
 
 int main(int argc, char* argv[]) {
 	using namespace std::string_literals;
@@ -58,8 +59,7 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 
-		//convert to lower case
-		std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
+		arg = utils::lowercase(arg);
 
 		//convert spelling
 		auto search = dictionary.find(arg);
@@ -67,9 +67,7 @@ int main(int argc, char* argv[]) {
 
 		//convert spelling for words with a space
 		if(iarg + 1 < argc){
-			auto fusion = arg + argv[iarg + 1];
-			std::transform(fusion.begin(), fusion.end(), fusion.begin(), ::tolower);
-
+			auto fusion = utils::lowercase(arg + argv[iarg + 1]);
 			auto search = dictionary.find(fusion);
 			if(search != dictionary.end()) {
 				arg = search->second;

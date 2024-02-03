@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <inq/quantity.hpp>
+#include <utils/lowercase.hpp>
 
 namespace inq {
 namespace magnitude {
@@ -56,7 +57,7 @@ static auto const A        = inq::magnitude::operator""_A(1);        // Å, AA, 
 struct length {
 	static inq::quantity<length> parse(std::string units){
 
-		std::transform(units.begin(), units.end(), units.begin(), ::tolower);
+		units = utils::lowercase(units);
 		
 		if(units == "bohr" or units == "bohrs" or units == "b") {
 			return 1.0_b;
