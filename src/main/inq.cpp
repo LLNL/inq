@@ -24,6 +24,9 @@ int main(int argc, char* argv[]) {
 		std::cout << "  " << interface::electrons.name()    << "\t\t" << interface::electrons   .one_line() << '\n';
 		std::cout << "  " << interface::ground_state.name() << "\t\t" << interface::ground_state.one_line() << '\n';
 		std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
+		std::cout << "\n";
+		std::cout << "And the following options:\n";
+		std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.";
 		std::cout << std::endl;
 		exit(1);
 	}
@@ -33,6 +36,12 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> args;
 	for(int iarg = 1; iarg < argc; iarg++) {
 		auto arg = std::string(argv[iarg]);
+
+		if(arg == "-q" or arg == "--quiet") {
+			quiet = true;
+			continue;
+		}
+		
 		args.emplace_back(arg);
 	}
 	
