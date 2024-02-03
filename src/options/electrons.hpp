@@ -239,11 +239,11 @@ public:
 
 		out << "Electrons:\n";
 
-		out << "  extra_states       = " << self.extra_states_val();
+		out << "  extra-states       = " << self.extra_states_val();
 		if(not self.extra_states_.has_value()) out << " *";
 		out << "\n";
 		
-		out << "  extra_electrons    = " << self.extra_electrons_val();
+		out << "  extra-electrons    = " << self.extra_electrons_val();
 		if(not self.extra_electrons_.has_value()) out << " *";
 		out << "\n";
 

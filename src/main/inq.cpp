@@ -9,6 +9,26 @@
 #include <inq/inq.hpp>
 
 int main(int argc, char* argv[]) {
+	using namespace std::string_literals;
+ 
+	std::map<std::string, std::string> dictionary = {
+    { "ground_state"s,     "ground-state"s     },
+    {	"ground state"s,     "ground-state"s     },
+    {	"groundstate"s,      "ground-state"s     },
+		{ "extra_electrons"s,  "extra-electrons"s  },
+		{ "extra electrons"s,  "extra-electrons"s  },
+		{ "extraelectrons"s,   "extra-electrons"s  },
+		{ "extra_states"s,     "extra-states"s     },
+		{ "extra states"s,     "extra-states"s     },
+		{ "extrastates"s,      "extra-states"s     },
+		{ "max_steps"s,        "max-steps"s        },
+		{ "max steps"s,        "max-steps"s        },
+		{ "mix"s,              "mixing"s           },
+		{ "non_collinear"s,    "non-collinear"s    },
+		{ "non collinear"s,    "non-collinear"s    },
+		{ "non collinear"s,    "non-collinear"s    },
+		{ "tol"s         ,     "tolerance"s        }
+	};
 	
 	using namespace inq;
 	
@@ -44,6 +64,9 @@ int main(int argc, char* argv[]) {
 
 		//convert to lower case
 		std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
+
+		auto search = dictionary.find(arg);
+		if(search != dictionary.end()) arg = search->second;
 		
 		args.emplace_back(arg);
 	}
