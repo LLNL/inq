@@ -58,6 +58,7 @@ struct {
 		
 		if(args.size() == 0){
 			operator()();
+			exit(0);
 			
 		} else if((args.size() == 1 and args[0] == "non_interacting") or (args.size() == 1 and args[0] == "non-interacting") or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){
 			non_interacting();
