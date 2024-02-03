@@ -224,7 +224,7 @@ public:
 		if(not self.max_steps_.has_value()) out << " *";
 		out << "\n";
 
-		out << "  energy_tol         = " << self.energy_tolerance();
+		out << "  tolerance          = " << self.energy_tolerance();
 		if(not self.energy_tol_.has_value()) out << " *";
 		out << "\n";
 		
