@@ -13,20 +13,16 @@ int main(int argc, char* argv[]) {
  
 	std::map<std::string, std::string> dictionary = {
     { "ground_state"s,     "ground-state"s     },
-    {	"ground state"s,     "ground-state"s     },
     {	"groundstate"s,      "ground-state"s     },
 		{ "extra_electrons"s,  "extra-electrons"s  },
-		{ "extra electrons"s,  "extra-electrons"s  },
 		{ "extraelectrons"s,   "extra-electrons"s  },
 		{ "extra_states"s,     "extra-states"s     },
-		{ "extra states"s,     "extra-states"s     },
 		{ "extrastates"s,      "extra-states"s     },
 		{ "max_steps"s,        "max-steps"s        },
-		{ "max steps"s,        "max-steps"s        },
+		{ "maxsteps"s,         "max-steps"s        },
 		{ "mix"s,              "mixing"s           },
 		{ "non_collinear"s,    "non-collinear"s    },
-		{ "non collinear"s,    "non-collinear"s    },
-		{ "non collinear"s,    "non-collinear"s    },
+		{ "noncollinear"s,     "non-collinear"s    },
 		{ "tol"s         ,     "tolerance"s        }
 	};
 	
@@ -65,8 +61,21 @@ int main(int argc, char* argv[]) {
 		//convert to lower case
 		std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
 
+		//convert spelling
 		auto search = dictionary.find(arg);
 		if(search != dictionary.end()) arg = search->second;
+
+		//convert spelling for words with a space
+		if(iarg + 1 < argc){
+			auto fusion = arg + argv[iarg + 1];
+			std::transform(fusion.begin(), fusion.end(), fusion.begin(), ::tolower);
+
+			auto search = dictionary.find(fusion);
+			if(search != dictionary.end()) {
+				arg = search->second;
+				iarg++;
+			}
+		}
 		
 		args.emplace_back(arg);
 	}
