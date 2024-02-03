@@ -30,6 +30,12 @@ struct {
 		std::cout << gs_opts;
 	}
 
+	void tolerance(double tol) const {
+		using namespace magnitude;
+
+		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options").energy_tolerance(tol*1.0_Ha);
+		gs_opts.save(input::environment::global().comm(), ".inq/default_ground_state_options");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -38,6 +44,15 @@ struct {
 			operator()();
 			exit(0);
 		}
+
+		if(args.size() == 2 and (args[0] == "tolerance" or args[0] == "tol")){
+			tolerance(atof(args[1].c_str()));
+			if(not quiet) operator()();
+			exit(0);
+		}
+
+		std::cerr << "Error: Invalid syntax in 'ground_state' command" << std::endl;
+		exit(1);
 	}
 	
 } const ground_state;
