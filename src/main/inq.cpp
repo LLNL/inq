@@ -41,6 +41,9 @@ int main(int argc, char* argv[]) {
 			quiet = true;
 			continue;
 		}
+
+		//convert to lower case
+		std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
 		
 		args.emplace_back(arg);
 	}

@@ -53,9 +53,6 @@ struct {
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
-		//convert to lower case
-		for(auto & arg : args) std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
-		
 		if(args.size() == 0){
 			operator()();
 			exit(0);
