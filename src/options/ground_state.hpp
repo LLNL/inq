@@ -218,7 +218,7 @@ public:
 
 		using namespace magnitude;
 
-		out << "Ground state:\n";
+		out << "Ground-state:\n";
 
 		out << "  max_steps          = " << self.max_steps();
 		if(not self.max_steps_.has_value()) out << " *";

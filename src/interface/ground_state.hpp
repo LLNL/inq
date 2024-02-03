@@ -18,7 +18,7 @@ namespace interface {
 struct {
 		
 	std::string name() const {
-		return "ground_state";
+		return "ground-state";
 	}
 
 	std::string one_line() const {
