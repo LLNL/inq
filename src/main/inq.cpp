@@ -9,7 +9,7 @@
 #include <inq/inq.hpp>
 
 int main(int argc, char* argv[]) {
-
+	
 	using namespace inq;
 	
 	input::environment::global(); //Initialize MPI 
@@ -30,10 +30,14 @@ int main(int argc, char* argv[]) {
 
 	auto quiet = false;
 
-	auto command = std::string(argv[1]);
-
 	std::vector<std::string> args;
-	for(int iarg = 2; iarg < argc; iarg++) args.emplace_back(argv[iarg]);
+	for(int iarg = 1; iarg < argc; iarg++) {
+		auto arg = std::string(argv[iarg]);
+		args.emplace_back(arg);
+	}
+	
+	auto command = args[0];
+	args.erase(args.begin());
 	
 	if(command == interface::clear       .name()) interface::clear       .command(args, quiet);
 	if(command == interface::cell        .name()) interface::cell        .command(args, quiet);
