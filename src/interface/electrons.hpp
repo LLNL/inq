@@ -137,10 +137,7 @@ struct {
 			exit(0);
 		}
 
-		if((args.size() == 1 and args[0] == "non-collinear")
-			 or (args.size() == 2 and args[0] == "non" and args[1] == "collinear")
-			 ){
-			
+		if(args.size() == 1 and args[0] == "non-collinear") {
 			non_collinear();
 			if(not quiet) operator()();
 			exit(0);
