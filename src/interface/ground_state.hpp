@@ -44,6 +44,13 @@ struct {
 		gs_opts.save(input::environment::global().comm(), ".inq/default_ground_state_options");
 	}
 	
+	void mixing(double factor) const {
+		using namespace magnitude;
+
+		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options").mixing(factor);
+		gs_opts.save(input::environment::global().comm(), ".inq/default_ground_state_options");
+	}
+	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 		
@@ -64,6 +71,12 @@ struct {
 			exit(0);
 		}
 
+		if(args.size() == 2 and (args[0] == "mixing" or args[0] == "mix")){
+			mixing(atof(args[1].c_str()));
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
 		std::cerr << "Error: Invalid syntax in 'ground-state' command" << std::endl;
 		exit(1);
 	}

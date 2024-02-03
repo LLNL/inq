@@ -228,16 +228,8 @@ public:
 		if(not self.energy_tol_.has_value()) out << " *";
 		out << "\n";
 		
-		out << "  mixing_algorithm   = " << self.mixing_algorithm();
-		if(not self.mixing_algo_.has_value()) out << " *";
-		out << "\n";
-	 
 		out << "  mixing             = " << self.mixing();
 		if(not self.mixing_.has_value()) out << " *";
-		out << "\n";
-
-		out << "  eigensolver        = " << self.eigensolver();
-		if(not self.eigensolver_.has_value()) out << " *";
 		out << "\n";
 
 		out << "\n  * default values" << std::endl;
