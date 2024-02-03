@@ -30,6 +30,13 @@ struct {
 		std::cout << gs_opts;
 	}
 
+	void max_steps(int nsteps) const {
+		using namespace magnitude;
+
+		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options").max_steps(nsteps);
+		gs_opts.save(input::environment::global().comm(), ".inq/default_ground_state_options");
+	}
+	
 	void tolerance(double tol) const {
 		using namespace magnitude;
 
@@ -45,13 +52,19 @@ struct {
 			exit(0);
 		}
 
+		if(args.size() == 2 and (args[0] == "max-steps" or args[0] == "max_steps")){
+			max_steps(atoi(args[1].c_str()));
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
 		if(args.size() == 2 and (args[0] == "tolerance" or args[0] == "tol")){
 			tolerance(atof(args[1].c_str()));
 			if(not quiet) operator()();
 			exit(0);
 		}
 
-		std::cerr << "Error: Invalid syntax in 'ground_state' command" << std::endl;
+		std::cerr << "Error: Invalid syntax in 'ground-state' command" << std::endl;
 		exit(1);
 	}
 	
