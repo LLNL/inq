@@ -15,6 +15,8 @@ int main(int argc, char* argv[]) {
 	std::map<std::string, std::string> dictionary = {
     { "ground_state"s,     "ground-state"s     },
     {	"groundstate"s,      "ground-state"s     },
+    {	"hartree_fock"s,     "hartree-fock"s     },
+		{	"hartreefock"s,      "hartree-fock"s     },
 		{ "extra_electrons"s,  "extra-electrons"s  },
 		{ "extraelectrons"s,   "extra-electrons"s  },
 		{ "extra_states"s,     "extra-states"s     },
@@ -24,6 +26,8 @@ int main(int argc, char* argv[]) {
 		{ "mix"s,              "mixing"s           },
 		{ "non_collinear"s,    "non-collinear"s    },
 		{ "noncollinear"s,     "non-collinear"s    },
+		{ "non_interacting"s,  "non-interacting"s  },
+		{ "noninteracting"s,   "non-interacting"s  },		
 		{ "tol"s         ,     "tolerance"s        }
 	};
 	

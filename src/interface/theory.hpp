@@ -57,16 +57,16 @@ struct {
 			operator()();
 			exit(0);
 			
-		} else if((args.size() == 1 and args[0] == "non_interacting") or (args.size() == 1 and args[0] == "non-interacting") or (args.size() == 2 and args[0] == "non" and args[1] == "interacting")){
+		} else if(args.size() == 1 and args[0] == "non-interacting") {
 			non_interacting();
 			
-		} else if( args.size() == 1 and args[0] == "hartree"){
+		} else if(args.size() == 1 and args[0] == "hartree"){
 			hartree();
 			
-		} else if((args.size() == 1 and args[0] == "hartree-fock") or (args.size() == 1 and args[0] == "hartree_fock") or (args.size() == 2 and args[0] == "hartree" and args[1] == "fock")){
+		} else if(args.size() == 1 and args[0] == "hartree-fock") {
 			hartree_fock();
 
-		} else if( args.size() == 1 and args[0] == "lda" ){
+		} else if(args.size() == 1 and args[0] == "lda" ){
 			lda();
 			
 		} else {				
