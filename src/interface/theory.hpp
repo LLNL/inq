@@ -26,28 +26,28 @@ struct {
 	}
 
 	void operator()() const {
-		auto theo = options::theory::load(".default_theory");
+		auto theo = options::theory::load(".inq/default_theory");
 		std::cout << theo;
 	}
 	
 	void non_interacting() const{
-		auto theo = options::theory::load(".default_theory").non_interacting();
-		theo.save(input::environment::global().comm(), ".default_theory");
+		auto theo = options::theory::load(".inq/default_theory").non_interacting();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
 	}
 
 	void hartree() const{
-		auto theo = options::theory::load(".default_theory").hartree();
-		theo.save(input::environment::global().comm(), ".default_theory");
+		auto theo = options::theory::load(".inq/default_theory").hartree();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
 	}
 
 	void hartree_fock() const{
-		auto theo = options::theory::load(".default_theory").hartree_fock();
-		theo.save(input::environment::global().comm(), ".default_theory");
+		auto theo = options::theory::load(".inq/default_theory").hartree_fock();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
 	}
 
 	void lda() const{
-		auto theo = options::theory::load(".default_theory").lda();
-		theo.save(input::environment::global().comm(), ".default_theory");
+		auto theo = options::theory::load(".inq/default_theory").lda();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
 	}
 	
 	template <typename ArgsType>
