@@ -55,6 +55,10 @@ namespace utils {
     auto fail() const {
       return not ok();
     }
+
+		void operator&=(bool value) {
+			ok_ = ok_ and value;
+		}
     
 	protected:
 

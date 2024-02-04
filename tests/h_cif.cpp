@@ -26,7 +26,7 @@ int main(int argc, char ** argv){
   energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -1.511390321649);
   energy_match.check("Hartree energy",      result.energy.hartree(),         0.903321603071);
   energy_match.check("external energy",     result.energy.external(),       -3.319351558502);
-  energy_match.check("non-local energy",    result.energy.nonlocal(),       -0.389801056728);
+  energy_match.check("non-local energy",    result.energy.non_local(),       -0.389801056728);
   energy_match.check("XC energy",           result.energy.xc(),             -1.351311210649);
   energy_match.check("XC density integral", result.energy.nvxc(),           -1.734588282400);
   energy_match.check("ion-ion energy",      result.energy.ion(),            -0.323693899550);

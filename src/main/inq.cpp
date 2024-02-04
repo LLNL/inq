@@ -17,7 +17,6 @@ int main(int argc, char* argv[]) {
     {	"groundstate"s,      "ground-state"s     },
     {	"hartree_fock"s,     "hartree-fock"s     },
 		{	"hartreefock"s,      "hartree-fock"s     },
-		{	"ion_kinetic"s,      "ion-kinetic"s      },
 		{ "exact_exchange"s,   "exact-exchange"s   },
 		{ "exactexchange"s,    "exact-exchange"s   },
 		{ "extra_electrons"s,  "extra-electrons"s  },
@@ -51,6 +50,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "  " << interface::ground_state.name() << "\t\t" << interface::ground_state.one_line() << '\n';
 		std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
 		std::cout << "  " << interface::energy.name()       << "\t\t" << interface::energy      .one_line() << '\n';
+		std::cout << "  " << interface::util.name()         << "\t\t" << interface::util        .one_line() << '\n';
 		std::cout << "\n";
 		std::cout << "And the following options:\n";
 		std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.";
@@ -99,6 +99,7 @@ int main(int argc, char* argv[]) {
 	if(command == interface::ground_state.name()) interface::ground_state.command(args, quiet);
 	if(command == interface::run         .name()) interface::run         .command(args, quiet);
 	if(command == interface::energy      .name()) interface::energy      .command(args, quiet);
+	if(command == interface::util        .name()) interface::util        .command(args, quiet);	
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);

@@ -22,7 +22,7 @@ namespace hamiltonian {
 		double ion_kinetic_ = 0.0;		
 		double eigenvalues_ = 0.0;
 		double external_ = 0.0;
-		double nonlocal_ = 0.0;
+		double non_local_ = 0.0;
 		double hartree_ = 0.0;
 		double xc_ = 0.0;
 		double nvxc_ = 0.0;
@@ -42,7 +42,7 @@ namespace hamiltonian {
 			auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
 			
 			eigenvalues_ = 0.0;
-			nonlocal_ = 0.0;
+			non_local_ = 0.0;
 			exact_exchange_ = 0.0;
 			
 			int iphi = 0;
@@ -58,9 +58,9 @@ namespace hamiltonian {
 				}
 
 				{
-					CALI_CXX_MARK_SCOPE("energy::calculate::nonlocal");
+					CALI_CXX_MARK_SCOPE("energy::calculate::non_local");
 					auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);
-					nonlocal_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
+					non_local_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
 				}
 
 				if(ham.exchange.enabled()){
@@ -75,10 +75,10 @@ namespace hamiltonian {
 			if(el.kpin_states_comm().size() > 1){	
 				CALI_CXX_MARK_SCOPE("energy::calculate::reduce");
 
-				double red[3] = {eigenvalues_, nonlocal_, exact_exchange_};
+				double red[3] = {eigenvalues_, non_local_, exact_exchange_};
 				el.kpin_states_comm().all_reduce_n(red, 3);
 				eigenvalues_ = red[0];
-				nonlocal_    = red[1];
+				non_local_    = red[1];
 				exact_exchange_ = red[2];
 			}
 
@@ -86,11 +86,11 @@ namespace hamiltonian {
 		}
 	
 		auto kinetic() const {
-			return eigenvalues_ - 2.0*hartree_ - nvxc_ - 2.0*exact_exchange_ - external_ - nonlocal_;
+			return eigenvalues_ - 2.0*hartree_ - nvxc_ - 2.0*exact_exchange_ - external_ - non_local_;
 		}
 		
 		auto total() const {
-			return kinetic() + hartree_ + external_ + nonlocal_ + xc_ + exact_exchange_ + ion_ + ion_kinetic_;
+			return kinetic() + hartree_ + external_ + non_local_ + xc_ + exact_exchange_ + ion_ + ion_kinetic_;
 		}
 
 		auto & eigenvalues() const {
@@ -117,12 +117,12 @@ namespace hamiltonian {
 			external_ = val;
 		}
 
-		auto & nonlocal() const {
-			return nonlocal_;
+		auto & non_local() const {
+			return non_local_;
 		}
 
-		void nonlocal(double const & val) {
-			nonlocal_ = val;
+		void non_local(double const & val) {
+			non_local_ = val;
 		}
 
 		auto & xc() const {
@@ -183,7 +183,7 @@ namespace hamiltonian {
 				utils::save_value(comm, dirname + "/ion_kinetic",  ion_kinetic_, error_message);
 				utils::save_value(comm, dirname + "/eigenvalues",  eigenvalues_, error_message);
 				utils::save_value(comm, dirname + "/external",     external_,    error_message);
-				utils::save_value(comm, dirname + "/nonlocal",     nonlocal_,    error_message);
+				utils::save_value(comm, dirname + "/non-local",    non_local_,    error_message);
 				utils::save_value(comm, dirname + "/hartree",      hartree_,     error_message);
 				utils::save_value(comm, dirname + "/xc",           xc_,          error_message);
 				utils::save_value(comm, dirname + "/nvxc",         nvxc_,        error_message);
@@ -209,7 +209,7 @@ namespace hamiltonian {
 			utils::load_value(dirname + "/ion_kinetic",     en.ion_kinetic_,    error_message);
 			utils::load_value(dirname + "/eigenvalues",     en.eigenvalues_,    error_message);
 			utils::load_value(dirname + "/external",        en.external_,       error_message);
-			utils::load_value(dirname + "/nonlocal",        en.nonlocal_,       error_message);
+			utils::load_value(dirname + "/non-local",       en.non_local_,       error_message);
 			utils::load_value(dirname + "/hartree",         en.hartree_,        error_message);
 			utils::load_value(dirname + "/xc",              en.xc_,             error_message);
 			utils::load_value(dirname + "/nvxc",            en.nvxc_,           error_message);
@@ -227,7 +227,7 @@ namespace hamiltonian {
 			tfm::format(out, "  eigenvalues    = %20.12f\n", self.eigenvalues_);
 			tfm::format(out, "  hartree        = %20.12f\n", self.hartree());
 			tfm::format(out, "  external       = %20.12f\n", self.external());
-			tfm::format(out, "  nonlocal       = %20.12f\n", self.nonlocal());
+			tfm::format(out, "  non-local      = %20.12f\n", self.non_local());
 			tfm::format(out, "  xc             = %20.12f\n", self.xc());
 			tfm::format(out, "  intnvxc        = %20.12f\n", self.nvxc());
 			tfm::format(out, "  exact-exchange = %20.12f\n", self.exact_exchange());
@@ -262,7 +262,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	en.ion_kinetic(2.0);
 	en.eigenvalues(3.0);
 	en.external(4.0);
-	en.nonlocal(5.0);
+	en.non_local(5.0);
 	en.hartree(6.0);
 	en.xc(7.0);
 	en.nvxc(8.0);
@@ -272,7 +272,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(en.ion_kinetic() == 2.0);
 	CHECK(en.eigenvalues() == 3.0);
 	CHECK(en.external() == 4.0);
-	CHECK(en.nonlocal() == 5.0);
+	CHECK(en.non_local() == 5.0);
 	CHECK(en.hartree() == 6.0);
 	CHECK(en.xc() == 7.0);
 	CHECK(en.nvxc() == 8.0);
@@ -285,7 +285,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(read_en.ion_kinetic() == 2.0);
 	CHECK(read_en.eigenvalues() == 3.0);
 	CHECK(read_en.external() == 4.0);
-	CHECK(read_en.nonlocal() == 5.0);
+	CHECK(read_en.non_local() == 5.0);
 	CHECK(read_en.hartree() == 6.0);
 	CHECK(read_en.xc() == 7.0);
 	CHECK(read_en.nvxc() == 8.0);

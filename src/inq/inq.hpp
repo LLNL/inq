@@ -30,6 +30,7 @@
 #include <interface/ions.hpp>
 #include <interface/run.hpp>
 #include <interface/theory.hpp>
+#include <interface/util.hpp>
 
 #endif
 
