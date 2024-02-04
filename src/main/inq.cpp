@@ -17,6 +17,9 @@ int main(int argc, char* argv[]) {
     {	"groundstate"s,      "ground-state"s     },
     {	"hartree_fock"s,     "hartree-fock"s     },
 		{	"hartreefock"s,      "hartree-fock"s     },
+		{	"ion_kinetic"s,      "ion-kinetic"s      },
+		{ "exact_exchange"s,   "exact-exchange"s   },
+		{ "exactexchange"s,    "exact-exchange"s   },
 		{ "extra_electrons"s,  "extra-electrons"s  },
 		{ "extraelectrons"s,   "extra-electrons"s  },
 		{ "extra_states"s,     "extra-states"s     },
@@ -27,7 +30,9 @@ int main(int argc, char* argv[]) {
 		{ "non_collinear"s,    "non-collinear"s    },
 		{ "noncollinear"s,     "non-collinear"s    },
 		{ "non_interacting"s,  "non-interacting"s  },
-		{ "noninteracting"s,   "non-interacting"s  },		
+		{ "noninteracting"s,   "non-interacting"s  },
+		{ "non_local"s,        "non-local"s        },
+		{ "nonlocal"s,         "non-local"s        },		
 		{ "tol"s         ,     "tolerance"s        }
 	};
 	
@@ -45,6 +50,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "  " << interface::electrons.name()    << "\t\t" << interface::electrons   .one_line() << '\n';
 		std::cout << "  " << interface::ground_state.name() << "\t\t" << interface::ground_state.one_line() << '\n';
 		std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
+		std::cout << "  " << interface::energy.name()       << "\t\t" << interface::energy      .one_line() << '\n';
 		std::cout << "\n";
 		std::cout << "And the following options:\n";
 		std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.";
@@ -92,6 +98,7 @@ int main(int argc, char* argv[]) {
 	if(command == interface::electrons   .name()) interface::electrons   .command(args, quiet);
 	if(command == interface::ground_state.name()) interface::ground_state.command(args, quiet);
 	if(command == interface::run         .name()) interface::run         .command(args, quiet);
+	if(command == interface::energy      .name()) interface::energy      .command(args, quiet);
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);

@@ -36,7 +36,7 @@ int main(int argc, char ** argv){
 		match.check("non-local energy",    result.energy.nonlocal(),     -4.258411086657);
 		match.check("XC energy",           result.energy.xc(),           -8.175088241373);
 		match.check("XC density integral", result.energy.nvxc(),         -8.923854107057);
-		match.check("HF exchange energy",  result.energy.hf_exchange(),   0.000000000000);
+		match.check("HF exchange energy",  result.energy.exact_exchange(),   0.000000000000);
 		match.check("ion-ion energy",      result.energy.ion(),          15.744115365679);
 		
 		auto magnetization = observables::magnetization(electrons.spin_density());

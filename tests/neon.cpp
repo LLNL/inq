@@ -41,33 +41,39 @@ int main(int argc, char ** argv){
 	interface::theory.non_interacting();
 
 	//REAL SPACE PSEUDO
-	{
-		//inq run ground_state
-		auto result = interface::run.ground_state();
-		
-		energy_match.check("total energy",     result.energy.total()      , -61.861045337100);
-		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765610219604);
-		energy_match.check("eigenvalues",      result.energy.eigenvalues(), -61.861045337100);
-		energy_match.check("external energy",  result.energy.external()   , -79.509954154661);
-		energy_match.check("non-local energy", result.energy.nonlocal()   , -18.116701402044);
-		energy_match.check("ion-ion energy",   result.energy.ion()        ,   0.000000000000);
-	}
+	//inq run ground_state
+	interface::run.ground_state();
+	
+	energy_match.check("total energy",     interface::energy.total()      , -61.861056649453);
+	energy_match.check("kinetic energy",   interface::energy.kinetic()    ,  35.765610219604);
+	energy_match.check("eigenvalues",      interface::energy.eigenvalues(), -61.861045337100);
+	energy_match.check("external energy",  interface::energy.external()   , -79.509954154661);
+	energy_match.check("non-local energy", interface::energy.non_local()  , -18.116701402044);
+	energy_match.check("hartree",          interface::energy.hartree()    ,   0.000000000000);
+	energy_match.check("xc",               interface::energy.xc()         ,   0.000000000000);
+	energy_match.check("nvxc",             interface::energy.nvxc()       ,   0.000000000000);
+	energy_match.check("exact-exchange",   interface::energy.nvxc()       ,   0.000000000000);
+	energy_match.check("ion-ion energy",   interface::energy.ion()        ,   0.000000000000);
 
 	//FOURIER SPACE PSEUDO
 	//inq electrons fourier_pseudo
 	interface::electrons.fourier_pseudo();
 
 	//inq run ground_state
-	{
-		auto result = interface::run.ground_state();
-		
-		energy_match.check("total energy",     result.energy.total()      , -61.861056649453);
-		energy_match.check("kinetic energy",   result.energy.kinetic()    ,  35.765555684056);
-		energy_match.check("eigenvalues",      result.energy.eigenvalues(), -61.861056649453);
-		energy_match.check("external energy",  result.energy.external()   , -79.509918897873);
-		energy_match.check("non-local energy", result.energy.nonlocal()   , -18.116693435635);
-		energy_match.check("ion-ion energy",   result.energy.ion()        ,   0.000000000000);
-	}
+	interface::run.ground_state();
+	
+	energy_match.check("total energy",     interface::energy.total()      , -61.861056649453);
+	energy_match.check("kinetic energy",   interface::energy.kinetic()    ,  35.765555684056);
+	energy_match.check("eigenvalues",      interface::energy.eigenvalues(), -61.861056649453);
+	energy_match.check("external energy",  interface::energy.external()   , -79.509918897873);
+	energy_match.check("non-local energy", interface::energy.non_local()  , -18.116693435635);
+	energy_match.check("hartree",          interface::energy.hartree()    ,   0.000000000000);
+	energy_match.check("xc",               interface::energy.xc()         ,   0.000000000000);
+	energy_match.check("nvxc",             interface::energy.nvxc()       ,   0.000000000000);
+	energy_match.check("exact-exchange",   interface::energy.nvxc()       ,   0.000000000000);
+	energy_match.check("ion-ion energy",   interface::energy.ion()        ,   0.000000000000);
 
+	interface::energy();
+	
 	return energy_match.fail();
 }
