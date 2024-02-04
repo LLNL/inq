@@ -200,6 +200,23 @@ namespace hamiltonian {
 			comm.barrier();
 			
 		}
+
+		static auto load(std::string const & dirname) {
+			auto error_message = "INQ error: Cannot load the energy from directory '" + dirname + "'.";
+			energy en;
+
+			utils::load_value(dirname + "/ion",          en.ion_,         error_message);
+			utils::load_value(dirname + "/ion_kinetic",  en.ion_kinetic_, error_message);
+			utils::load_value(dirname + "/eigenvalues",  en.eigenvalues_, error_message);
+			utils::load_value(dirname + "/external",     en.external_,    error_message);
+			utils::load_value(dirname + "/nonlocal",     en.nonlocal_,    error_message);
+			utils::load_value(dirname + "/hartree",      en.hartree_,     error_message);
+			utils::load_value(dirname + "/xc",           en.xc_,          error_message);
+			utils::load_value(dirname + "/nvxc",         en.nvxc_,        error_message);
+			utils::load_value(dirname + "/hf_exchange_", en.hf_exchange_, error_message);
+			
+			return en;
+		}
 		
 		template<class OStream>
 		friend OStream & operator<<(OStream & out, energy const & self){
@@ -262,6 +279,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(en.hf_exchange() == 10.0);
 	
 	en.save(comm, "save_energy");
+	auto read_en = hamiltonian::energy::load("save_energy");
+	
+	CHECK(read_en.ion() == 1.0);
+	CHECK(read_en.ion_kinetic() == 2.0);
+	CHECK(read_en.eigenvalues() == 3.0);
+	CHECK(read_en.external() == 4.0);
+	CHECK(read_en.nonlocal() == 5.0);
+	CHECK(read_en.hartree() == 6.0);
+	CHECK(read_en.xc() == 7.0);
+	CHECK(read_en.nvxc() == 8.0);
+	CHECK(read_en.hf_exchange() == 10.0);
 	
 }
 #endif
