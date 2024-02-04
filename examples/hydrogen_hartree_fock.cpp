@@ -34,7 +34,7 @@ int main(int argc, char ** argv){
 	energy_match.check("non-local energy",    result.energy.nonlocal(),    0.0);
 	energy_match.check("XC energy",           result.energy.xc(),          0.0);
 	energy_match.check("XC density integral", result.energy.nvxc(),        0.0);
-	energy_match.check("HF exchange energy",  result.energy.hf_exchange(),-0.254438821884);
+	energy_match.check("HF exchange energy",  result.energy.exact_exchange(),-0.254438821884);
 	energy_match.check("ion-ion energy",      result.energy.ion(),        -0.093849362128);
 	
 	return energy_match.fail();

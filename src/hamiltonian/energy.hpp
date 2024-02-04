@@ -26,7 +26,7 @@ namespace hamiltonian {
 		double hartree_ = 0.0;
 		double xc_ = 0.0;
 		double nvxc_ = 0.0;
-		double hf_exchange_ = 0.0;
+		double exact_exchange_ = 0.0;
 
 	public:
 		
@@ -43,7 +43,7 @@ namespace hamiltonian {
 			
 			eigenvalues_ = 0.0;
 			nonlocal_ = 0.0;
-			hf_exchange_ = 0.0;
+			exact_exchange_ = 0.0;
 			
 			int iphi = 0;
 			for(auto & phi : el.kpin()){
@@ -66,7 +66,7 @@ namespace hamiltonian {
 				if(ham.exchange.enabled()){
 					CALI_CXX_MARK_SCOPE("energy::calculate::exchange");
 					auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(phi), phi);
-					hf_exchange_ += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
+					exact_exchange_ += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
 				}
 
 				iphi++;
@@ -75,22 +75,22 @@ namespace hamiltonian {
 			if(el.kpin_states_comm().size() > 1){	
 				CALI_CXX_MARK_SCOPE("energy::calculate::reduce");
 
-				double red[3] = {eigenvalues_, nonlocal_, hf_exchange_};
+				double red[3] = {eigenvalues_, nonlocal_, exact_exchange_};
 				el.kpin_states_comm().all_reduce_n(red, 3);
 				eigenvalues_ = red[0];
 				nonlocal_    = red[1];
-				hf_exchange_ = red[2];
+				exact_exchange_ = red[2];
 			}
 
 			return normres;
 		}
 	
 		auto kinetic() const {
-			return eigenvalues_ - 2.0*hartree_ - nvxc_ - 2.0*hf_exchange_ - external_ - nonlocal_;
+			return eigenvalues_ - 2.0*hartree_ - nvxc_ - 2.0*exact_exchange_ - external_ - nonlocal_;
 		}
 		
 		auto total() const {
-			return kinetic() + hartree_ + external_ + nonlocal_ + xc_ + hf_exchange_ + ion_ + ion_kinetic_;
+			return kinetic() + hartree_ + external_ + nonlocal_ + xc_ + exact_exchange_ + ion_ + ion_kinetic_;
 		}
 
 		auto & eigenvalues() const {
@@ -141,12 +141,12 @@ namespace hamiltonian {
 			nvxc_ = val;
 		}
 
-		auto & hf_exchange() const {
-			return hf_exchange_;
+		auto & exact_exchange() const {
+			return exact_exchange_;
 		}
 
-		void hf_exchange(double const & val) {
-			hf_exchange_ = val;
+		void exact_exchange(double const & val) {
+			exact_exchange_ = val;
 		}
 
 		auto & ion() const {
@@ -187,7 +187,7 @@ namespace hamiltonian {
 				utils::save_value(comm, dirname + "/hartree",      hartree_,     error_message);
 				utils::save_value(comm, dirname + "/xc",           xc_,          error_message);
 				utils::save_value(comm, dirname + "/nvxc",         nvxc_,        error_message);
-				utils::save_value(comm, dirname + "/hf_exchange_", hf_exchange_, error_message);
+				utils::save_value(comm, dirname + "/exact_exchange_", exact_exchange_, error_message);
 				
 				exception_happened = false;
 				comm.broadcast_value(exception_happened);
@@ -205,15 +205,15 @@ namespace hamiltonian {
 			auto error_message = "INQ error: Cannot load the energy from directory '" + dirname + "'.";
 			energy en;
 
-			utils::load_value(dirname + "/ion",          en.ion_,         error_message);
-			utils::load_value(dirname + "/ion_kinetic",  en.ion_kinetic_, error_message);
-			utils::load_value(dirname + "/eigenvalues",  en.eigenvalues_, error_message);
-			utils::load_value(dirname + "/external",     en.external_,    error_message);
-			utils::load_value(dirname + "/nonlocal",     en.nonlocal_,    error_message);
-			utils::load_value(dirname + "/hartree",      en.hartree_,     error_message);
-			utils::load_value(dirname + "/xc",           en.xc_,          error_message);
-			utils::load_value(dirname + "/nvxc",         en.nvxc_,        error_message);
-			utils::load_value(dirname + "/hf_exchange_", en.hf_exchange_, error_message);
+			utils::load_value(dirname + "/ion",             en.ion_,            error_message);
+			utils::load_value(dirname + "/ion_kinetic",     en.ion_kinetic_,    error_message);
+			utils::load_value(dirname + "/eigenvalues",     en.eigenvalues_,    error_message);
+			utils::load_value(dirname + "/external",        en.external_,       error_message);
+			utils::load_value(dirname + "/nonlocal",        en.nonlocal_,       error_message);
+			utils::load_value(dirname + "/hartree",         en.hartree_,        error_message);
+			utils::load_value(dirname + "/xc",              en.xc_,             error_message);
+			utils::load_value(dirname + "/nvxc",            en.nvxc_,           error_message);
+			utils::load_value(dirname + "/exact_exchange_", en.exact_exchange_, error_message);
 			
 			return en;
 		}
@@ -230,7 +230,7 @@ namespace hamiltonian {
 			tfm::format(out, "  nonlocal       = %20.12f\n", self.nonlocal());
 			tfm::format(out, "  xc             = %20.12f\n", self.xc());
 			tfm::format(out, "  intnvxc        = %20.12f\n", self.nvxc());
-			tfm::format(out, "  HF exchange    = %20.12f\n", self.hf_exchange());
+			tfm::format(out, "  exact-exchange = %20.12f\n", self.exact_exchange());
 			tfm::format(out, "  ion            = %20.12f\n", self.ion());
 			tfm::format(out, "\n");
 
@@ -266,7 +266,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	en.hartree(6.0);
 	en.xc(7.0);
 	en.nvxc(8.0);
-	en.hf_exchange(10.0);
+	en.exact_exchange(10.0);
 
 	CHECK(en.ion() == 1.0);
 	CHECK(en.ion_kinetic() == 2.0);
@@ -276,7 +276,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(en.hartree() == 6.0);
 	CHECK(en.xc() == 7.0);
 	CHECK(en.nvxc() == 8.0);
-	CHECK(en.hf_exchange() == 10.0);
+	CHECK(en.exact_exchange() == 10.0);
 	
 	en.save(comm, "save_energy");
 	auto read_en = hamiltonian::energy::load("save_energy");
@@ -289,7 +289,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(read_en.hartree() == 6.0);
 	CHECK(read_en.xc() == 7.0);
 	CHECK(read_en.nvxc() == 8.0);
-	CHECK(read_en.hf_exchange() == 10.0);
+	CHECK(read_en.exact_exchange() == 10.0);
 	
 }
 #endif

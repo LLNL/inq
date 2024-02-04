@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
 		match.check("non-local energy",    result.energy.nonlocal(),     -2.732683697594);
 		match.check("XC energy",           result.energy.xc(),           -4.762305356613);
 		match.check("XC density integral", result.energy.nvxc(),         -5.494649797157);
-		match.check("HF exchange energy",  result.energy.hf_exchange(),   0.000000000000);
+		match.check("HF exchange energy",  result.energy.exact_exchange(),   0.000000000000);
 		match.check("ion-ion energy",      result.energy.ion(),           6.985123238808);
 		
 		std::cout << result.dipole << std::endl;

@@ -41,7 +41,7 @@ int main(int argc, char ** argv){
 	energy_match.check("non-local energy",    result.energy.nonlocal(),       -1.620128454760);
 	energy_match.check("XC energy",           result.energy.xc(),             -5.718398066896);
 	energy_match.check("XC density integral", result.energy.nvxc(),           -6.353978638174);
-	energy_match.check("HF exchange energy",  result.energy.hf_exchange(),     0.0);
+	energy_match.check("HF exchange energy",  result.energy.exact_exchange(),     0.0);
 	
 	energy_match.check("force 1 x",           result.forces[0][0],            -0.00000000250910);
 	energy_match.check("force 1 y",           result.forces[0][1],            -0.00000000185763);

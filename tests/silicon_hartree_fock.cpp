@@ -46,7 +46,7 @@ int main(int argc, char ** argv){
 	energy_match.check("non-local energy",    result.energy.nonlocal(),      4.099633587891);
 	energy_match.check("XC energy",           result.energy.xc(),            0.000000000000);
 	energy_match.check("XC density integral", result.energy.nvxc(),          0.000000000000);
-	energy_match.check("HF exchange energy",  result.energy.hf_exchange(),  -9.636982901957);
+	energy_match.check("HF exchange energy",  result.energy.exact_exchange(),  -9.636982901957);
 	energy_match.check("ion-ion energy",      result.energy.ion(),         -31.483620495100);
 	
 	auto ked = observables::kinetic_energy_density(electrons);
