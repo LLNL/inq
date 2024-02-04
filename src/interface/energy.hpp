@@ -79,52 +79,52 @@ struct {
     }			
 
     if(args.size() == 1 and args[0] == "total"){
-      std::cout << total() << std::endl;
+      printf("%30.20e\n", total());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "kinetic"){
-      std::cout << kinetic() << std::endl;
+       printf("%30.20e\n", kinetic());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "eigenvalues"){
-      std::cout << eigenvalues() << std::endl;
+       printf("%30.20e\n", eigenvalues());
       exit(0);
     }
     
     if(args.size() == 1 and args[0] == "external"){
-      std::cout << external() << std::endl;
+       printf("%30.20e\n", external());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "non-local"){
-      std::cout << non_local() << std::endl;
+       printf("%30.20e\n", non_local());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "hartree"){
-      std::cout << hartree() << std::endl;
+       printf("%30.20e\n", hartree());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "xc"){
-      std::cout << xc() << std::endl;
+       printf("%30.20e\n", xc());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "nvxc"){
-      std::cout << nvxc() << std::endl;
+       printf("%30.20e\n", nvxc());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "exact-exchange"){
-      std::cout << exact_exchange() << std::endl;
+       printf("%30.20e\n", exact_exchange());
       exit(0);
     }
         
     if(args.size() == 1 and args[0] == "ion"){
-      std::cout << ion() << std::endl;
+       printf("%30.20e\n", ion());
       exit(0);
     }
       
