@@ -40,8 +40,6 @@ private:
 
 	static auto parse_periodicity(std::string per_string){
 		
-		std::transform(per_string.begin(), per_string.end(), per_string.begin(), ::tolower);
-		
 		if(per_string == "finite" or per_string == "0" or per_string == "0d") {
 			return 0;
 		} else if (per_string == "wire" or per_string == "1" or per_string == "1d"){

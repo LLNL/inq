@@ -73,7 +73,7 @@ struct {
 			exit(0);
 		}
 		
-		if(args[0] == "extra_states"){
+		if(args[0] == "extra-states"){
 
 			if(args.size() == 1) {
 				std::cerr << "Error: missing extra_states argument" << std::endl;
@@ -90,7 +90,7 @@ struct {
 			exit(0);
 		}
 		
-		if(args[0] == "extra_electrons"){
+		if(args[0] == "extra-electrons"){
 
 			if(args.size() == 1) {
 				std::cerr << "Error: missing extra_electrons argument" << std::endl;
@@ -137,12 +137,7 @@ struct {
 			exit(0);
 		}
 
-		if((args.size() == 1 and args[0] == "non_collinear")
-			 or (args.size() == 1 and args[0] == "non-collinear")
-			 or (args.size() == 1 and args[0] == "noncollinear")
-			 or (args.size() == 2 and args[0] == "non" and args[1] == "collinear")
-			 ){
-			
+		if(args.size() == 1 and args[0] == "non-collinear") {
 			non_collinear();
 			if(not quiet) operator()();
 			exit(0);

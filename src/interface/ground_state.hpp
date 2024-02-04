@@ -59,19 +59,19 @@ struct {
 			exit(0);
 		}
 
-		if(args.size() == 2 and (args[0] == "max-steps" or args[0] == "max_steps")){
+		if(args.size() == 2 and (args[0] == "max-steps")){
 			max_steps(atoi(args[1].c_str()));
 			if(not quiet) operator()();
 			exit(0);
 		}
 		
-		if(args.size() == 2 and (args[0] == "tolerance" or args[0] == "tol")){
+		if(args.size() == 2 and (args[0] == "tolerance")){
 			tolerance(atof(args[1].c_str()));
 			if(not quiet) operator()();
 			exit(0);
 		}
 
-		if(args.size() == 2 and (args[0] == "mixing" or args[0] == "mix")){
+		if(args.size() == 2 and (args[0] == "mixing")){
 			mixing(atof(args[1].c_str()));
 			if(not quiet) operator()();
 			exit(0);

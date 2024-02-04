@@ -20,6 +20,7 @@
 #include <parse/poscar.hpp>
 #include <parse/xyz.hpp>
 #include <utils/load_save.hpp>
+#include <utils/lowercase.hpp>
 
 namespace inq {
 namespace systems {
@@ -65,11 +66,8 @@ public:
 
 		using namespace inq::magnitude;
 		
-		std::string extension = filename.substr(filename.find_last_of(".") + 1);
-		std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-
-		std::string filename_wo_path = filename.substr(filename.find_last_of("/") + 1);
-		std::transform(filename_wo_path.begin(), filename_wo_path.end(), filename_wo_path.begin(), ::tolower);
+		std::string extension = utils::lowercase(filename.substr(filename.find_last_of(".") + 1));
+		std::string filename_wo_path = utils::lowercase(filename.substr(filename.find_last_of("/") + 1));
 
 		assert(not (cell.has_value() and radius.has_value()));
 		if(radius.has_value() and radius->in_atomic_units() <= 0.0) throw std::runtime_error("error: a non-positive radius was given when parsing file '" + filename + "'.");

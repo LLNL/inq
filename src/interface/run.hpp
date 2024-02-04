@@ -46,12 +46,7 @@ struct {
 			exit(1);
 		}
 		
-		if((args.size() == 1 and args[0] == "ground_state")
-			 or (args.size() == 1 and args[0] == "ground-state")
-			 or (args.size() == 1 and args[0] == "groundstate")			 
-			 or (args.size() == 2 and args[0] == "ground" and args[1] == "state")
-			 ) {
-
+		if(args.size() == 1 and args[0] == "ground-state") {
 			ground_state();
 			exit(0);
 		}

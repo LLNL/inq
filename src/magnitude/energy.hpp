@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <inq/quantity.hpp>
+#include <utils/lowercase.hpp>
 
 namespace inq {
 namespace magnitude {
@@ -66,7 +67,7 @@ struct energy {
 
 	static inq::quantity<energy> parse(std::string units){
 		
-		std::transform(units.begin(), units.end(), units.begin(), ::tolower);
+		units = utils::lowercase(units);
 		
 		if(units == "hartree" or units == "hartrees" or units == "ha") {
 			return 1.0_Ha;
