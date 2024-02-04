@@ -164,7 +164,43 @@ namespace hamiltonian {
 		void ion_kinetic(double const & val) {
 			ion_kinetic_ = val;
 		}
+
+		void save(parallel::communicator & comm, std::string const & dirname) const {
+			auto error_message = "INQ error: Cannot save the energy to directory '" + dirname + "'.";
+			
+			comm.barrier();
+
+			auto exception_happened = true;
+			if(comm.root()) {
+			
+				try { std::filesystem::create_directories(dirname); }
+				catch(...) {
+					comm.broadcast_value(exception_happened);
+					throw std::runtime_error(error_message);
+				}
+
+				utils::save_value(comm, dirname + "/ion",          ion_,         error_message);
+				utils::save_value(comm, dirname + "/ion_kinetic",  ion_kinetic_, error_message);
+				utils::save_value(comm, dirname + "/eigenvalues",  eigenvalues_, error_message);
+				utils::save_value(comm, dirname + "/external",     external_,    error_message);
+				utils::save_value(comm, dirname + "/nonlocal",     nonlocal_,    error_message);
+				utils::save_value(comm, dirname + "/hartree",      hartree_,     error_message);
+				utils::save_value(comm, dirname + "/xc",           xc_,          error_message);
+				utils::save_value(comm, dirname + "/nvxc",         nvxc_,        error_message);
+				utils::save_value(comm, dirname + "/hf_exchange_", hf_exchange_, error_message);
 				
+				exception_happened = false;
+				comm.broadcast_value(exception_happened);
+			
+			} else {
+				comm.broadcast_value(exception_happened);
+				if(exception_happened) throw std::runtime_error(error_message);
+			}
+		
+			comm.barrier();
+			
+		}
+		
 		template<class OStream>
 		friend OStream & operator<<(OStream & out, energy const & self){
 
@@ -200,6 +236,32 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace Catch::literals;
+
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	
+	hamiltonian::energy en;
+
+	en.ion(1.0);
+	en.ion_kinetic(2.0);
+	en.eigenvalues(3.0);
+	en.external(4.0);
+	en.nonlocal(5.0);
+	en.hartree(6.0);
+	en.xc(7.0);
+	en.nvxc(8.0);
+	en.hf_exchange(10.0);
+
+	CHECK(en.ion() == 1.0);
+	CHECK(en.ion_kinetic() == 2.0);
+	CHECK(en.eigenvalues() == 3.0);
+	CHECK(en.external() == 4.0);
+	CHECK(en.nonlocal() == 5.0);
+	CHECK(en.hartree() == 6.0);
+	CHECK(en.xc() == 7.0);
+	CHECK(en.nvxc() == 8.0);
+	CHECK(en.hf_exchange() == 10.0);
+	
+	en.save(comm, "save_energy");
 	
 }
 #endif
