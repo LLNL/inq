@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
 	energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -5.266545154146);
 	energy_match.check("Hartree energy",      result.energy.hartree(),        14.494239402365);
 	energy_match.check("external energy",     result.energy.external(),      -39.444396066271);
-	energy_match.check("non-local energy",    result.energy.nonlocal(),       -1.620128454760);
+	energy_match.check("non-local energy",    result.energy.non_local(),       -1.620128454760);
 	energy_match.check("XC energy",           result.energy.xc(),             -5.718398066896);
 	energy_match.check("XC density integral", result.energy.nvxc(),           -6.353978638174);
 	energy_match.check("HF exchange energy",  result.energy.exact_exchange(),     0.0);

@@ -37,7 +37,7 @@ int main(int argc, char ** argv){
 	energy_match.check("kinetic energy",   result.energy.kinetic(),     14.428062704088);
 	energy_match.check("eigenvalues",      result.energy.eigenvalues(),  7.649418187330);
 	energy_match.check("external energy",  result.energy.external(),   -12.019316573681);
-	energy_match.check("non-local energy", result.energy.nonlocal(),     5.240672056923);
+	energy_match.check("non-local energy", result.energy.non_local(),     5.240672056923);
 	energy_match.check("ion-ion energy",   result.energy.ion(),        -31.483620495100);
 	
 	auto ked = observables::kinetic_energy_density(electrons);

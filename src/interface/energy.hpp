@@ -47,7 +47,7 @@ struct {
   }
   
   double non_local() const{
-    return hamiltonian::energy::load(".inq/default_energy").nonlocal();
+    return hamiltonian::energy::load(".inq/default_energy").non_local();
   }
   
   double hartree() const{
