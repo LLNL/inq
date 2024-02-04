@@ -49,6 +49,9 @@ int main(int argc, char ** argv){
 	energy_match.check("eigenvalues",      interface::energy.eigenvalues(), -61.861045337100);
 	energy_match.check("external energy",  interface::energy.external()   , -79.509954154661);
 	energy_match.check("non-local energy", interface::energy.non_local()  , -18.116701402044);
+	energy_match.check("hartree",          interface::energy.hartree()    ,   0.000000000000);
+	energy_match.check("xc",               interface::energy.xc()         ,   0.000000000000);
+	energy_match.check("nvxc",             interface::energy.nvxc()       ,   0.000000000000);
 	energy_match.check("ion-ion energy",   interface::energy.ion()        ,   0.000000000000);
 
 	//FOURIER SPACE PSEUDO
@@ -63,6 +66,9 @@ int main(int argc, char ** argv){
 	energy_match.check("eigenvalues",      interface::energy.eigenvalues(), -61.861056649453);
 	energy_match.check("external energy",  interface::energy.external()   , -79.509918897873);
 	energy_match.check("non-local energy", interface::energy.non_local()  , -18.116693435635);
+	energy_match.check("hartree",          interface::energy.hartree()    ,   0.000000000000);
+	energy_match.check("xc",               interface::energy.xc()         ,   0.000000000000);
+	energy_match.check("nvxc",             interface::energy.nvxc()       ,   0.000000000000);
 	energy_match.check("ion-ion energy",   interface::energy.ion()        ,   0.000000000000);
 
 	interface::energy();

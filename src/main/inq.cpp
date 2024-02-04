@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
     {	"groundstate"s,      "ground-state"s     },
     {	"hartree_fock"s,     "hartree-fock"s     },
 		{	"hartreefock"s,      "hartree-fock"s     },
+		{	"ion_kinetic"s,      "ion-kinetic"s      },		
 		{ "extra_electrons"s,  "extra-electrons"s  },
 		{ "extraelectrons"s,   "extra-electrons"s  },
 		{ "extra_states"s,     "extra-states"s     },

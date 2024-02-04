@@ -49,9 +49,25 @@ struct {
   double non_local() const{
     return hamiltonian::energy::load(".inq/default_energy").nonlocal();
   }
+  
+  double hartree() const{
+    return hamiltonian::energy::load(".inq/default_energy").hartree();
+  }
+  
+  double xc() const{
+    return hamiltonian::energy::load(".inq/default_energy").xc();
+  }
+
+  double nvxc() const{
+    return hamiltonian::energy::load(".inq/default_energy").nvxc();
+  }
 
   double ion() const{
     return hamiltonian::energy::load(".inq/default_energy").ion();
+  }
+
+  double ion_kinetic() const{
+    return hamiltonian::energy::load(".inq/default_energy").ion_kinetic();
   }
   
 	template <typename ArgsType>
@@ -86,9 +102,29 @@ struct {
       std::cout << non_local() << std::endl;
       exit(0);
     }
-  
+
+    if(args.size() == 1 and args[0] == "hartree"){
+      std::cout << hartree() << std::endl;
+      exit(0);
+    }
+
+    if(args.size() == 1 and args[0] == "xc"){
+      std::cout << xc() << std::endl;
+      exit(0);
+    }
+
+    if(args.size() == 1 and args[0] == "nvxc"){
+      std::cout << nvxc() << std::endl;
+      exit(0);
+    }
+    
     if(args.size() == 1 and args[0] == "ion"){
       std::cout << ion() << std::endl;
+      exit(0);
+    }
+      
+    if(args.size() == 1 and args[0] == "ion-kinetic"){
+      std::cout << ion_kinetic() << std::endl;
       exit(0);
     }
     
