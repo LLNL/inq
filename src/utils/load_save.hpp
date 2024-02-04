@@ -51,6 +51,21 @@ void save_optional_enum(parallel::communicator & comm, std::string const & filen
 	}
 
 	save_value(comm, filename, static_cast<int>(*value), error_message);
+
+}
+template <typename Type>
+void save_array(parallel::communicator & comm, std::string const & filename, Type const & array, std::string const & error_message) {
+	auto file = std::ofstream(filename);
+
+	if(not file) {
+		auto exception_happened = true;
+		comm.broadcast_value(exception_happened);
+		throw std::runtime_error(error_message);
+	}
+
+	file.precision(25);
+	for(int ii = 0; ii < long(array.size()); ii++) file << array[ii] << '\n';
+	
 }
 
 template <typename Type>
