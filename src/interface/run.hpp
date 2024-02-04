@@ -34,7 +34,10 @@ struct {
 			ground_state::initial_guess(ions, electrons);
 		}
 		auto result = ground_state::calculate(ions, electrons, options::theory::load(".inq/default_theory"));
+
+		result.energy.save(input::environment::global().comm(), ".inq/default_energy");
 		electrons.save(".inq/default_orbitals");
+		
 		return result;
 	}
 
