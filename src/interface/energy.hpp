@@ -62,14 +62,14 @@ struct {
     return hamiltonian::energy::load(".inq/default_energy").nvxc();
   }
 
+  double exact_exchange() const{
+    return hamiltonian::energy::load(".inq/default_energy").exact_exchange();
+  }
+  
   double ion() const{
     return hamiltonian::energy::load(".inq/default_energy").ion();
   }
 
-  double ion_kinetic() const{
-    return hamiltonian::energy::load(".inq/default_energy").ion_kinetic();
-  }
-  
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -117,17 +117,17 @@ struct {
       std::cout << nvxc() << std::endl;
       exit(0);
     }
-    
+
+    if(args.size() == 1 and args[0] == "exact-exchange"){
+      std::cout << exact_exchange() << std::endl;
+      exit(0);
+    }
+        
     if(args.size() == 1 and args[0] == "ion"){
       std::cout << ion() << std::endl;
       exit(0);
     }
       
-    if(args.size() == 1 and args[0] == "ion-kinetic"){
-      std::cout << ion_kinetic() << std::endl;
-      exit(0);
-    }
-    
 		std::cerr << "Error: Invalid syntax in the 'energy' command" << std::endl;
 		exit(1);
     

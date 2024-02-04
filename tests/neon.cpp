@@ -52,6 +52,7 @@ int main(int argc, char ** argv){
 	energy_match.check("hartree",          interface::energy.hartree()    ,   0.000000000000);
 	energy_match.check("xc",               interface::energy.xc()         ,   0.000000000000);
 	energy_match.check("nvxc",             interface::energy.nvxc()       ,   0.000000000000);
+	energy_match.check("exact-exchange",   interface::energy.nvxc()       ,   0.000000000000);
 	energy_match.check("ion-ion energy",   interface::energy.ion()        ,   0.000000000000);
 
 	//FOURIER SPACE PSEUDO
@@ -69,6 +70,7 @@ int main(int argc, char ** argv){
 	energy_match.check("hartree",          interface::energy.hartree()    ,   0.000000000000);
 	energy_match.check("xc",               interface::energy.xc()         ,   0.000000000000);
 	energy_match.check("nvxc",             interface::energy.nvxc()       ,   0.000000000000);
+	energy_match.check("exact-exchange",   interface::energy.nvxc()       ,   0.000000000000);
 	energy_match.check("ion-ion energy",   interface::energy.ion()        ,   0.000000000000);
 
 	interface::energy();
