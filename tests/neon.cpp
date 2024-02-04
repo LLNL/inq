@@ -57,6 +57,8 @@ int main(int argc, char ** argv){
 	//inq electrons fourier_pseudo
 	interface::electrons.fourier_pseudo();
 
+	interface::energy();
+	
 	//inq run ground_state
 	{
 		auto result = interface::run.ground_state();
@@ -69,5 +71,7 @@ int main(int argc, char ** argv){
 		energy_match.check("ion-ion energy",   result.energy.ion()        ,   0.000000000000);
 	}
 
+	interface::energy();
+	
 	return energy_match.fail();
 }

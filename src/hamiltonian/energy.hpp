@@ -221,7 +221,7 @@ namespace hamiltonian {
 		template<class OStream>
 		friend OStream & operator<<(OStream & out, energy const & self){
 
-			tfm::format(out, "\n");
+			tfm::format(out, "Energy:\n");
 			tfm::format(out, "  total          = %20.12f\n", self.total());
 			tfm::format(out, "  kinetic        = %20.12f\n", self.kinetic());
 			tfm::format(out, "  eigenvalues    = %20.12f\n", self.eigenvalues_);

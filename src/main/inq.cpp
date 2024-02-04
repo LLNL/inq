@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "  " << interface::electrons.name()    << "\t\t" << interface::electrons   .one_line() << '\n';
 		std::cout << "  " << interface::ground_state.name() << "\t\t" << interface::ground_state.one_line() << '\n';
 		std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
+		std::cout << "  " << interface::energy.name()       << "\t\t" << interface::energy      .one_line() << '\n';
 		std::cout << "\n";
 		std::cout << "And the following options:\n";
 		std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.";
@@ -92,6 +93,7 @@ int main(int argc, char* argv[]) {
 	if(command == interface::electrons   .name()) interface::electrons   .command(args, quiet);
 	if(command == interface::ground_state.name()) interface::ground_state.command(args, quiet);
 	if(command == interface::run         .name()) interface::run         .command(args, quiet);
+	if(command == interface::energy      .name()) interface::energy      .command(args, quiet);
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);
