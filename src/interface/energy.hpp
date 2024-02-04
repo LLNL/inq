@@ -29,7 +29,31 @@ struct {
 		auto ener = hamiltonian::energy::load(".inq/default_energy");
 		std::cout << ener;
 	}
+
+  double total() const{
+    return hamiltonian::energy::load(".inq/default_energy").total();
+  }
 	
+  double kinetic() const{
+    return hamiltonian::energy::load(".inq/default_energy").kinetic();
+  }
+
+  double eigenvalues() const{
+    return hamiltonian::energy::load(".inq/default_energy").eigenvalues();
+  }
+
+  double external() const{
+    return hamiltonian::energy::load(".inq/default_energy").external();
+  }
+  
+  double non_local() const{
+    return hamiltonian::energy::load(".inq/default_energy").nonlocal();
+  }
+
+  double ion() const{
+    return hamiltonian::energy::load(".inq/default_energy").ion();
+  }
+  
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -38,6 +62,39 @@ struct {
 			exit(0);
     }			
 
+    if(args.size() == 1 and args[0] == "total"){
+      std::cout << total() << std::endl;
+      exit(0);
+    }
+
+    if(args.size() == 1 and args[0] == "kinetic"){
+      std::cout << kinetic() << std::endl;
+      exit(0);
+    }
+
+    if(args.size() == 1 and args[0] == "eigenvalues"){
+      std::cout << eigenvalues() << std::endl;
+      exit(0);
+    }
+    
+    if(args.size() == 1 and args[0] == "external"){
+      std::cout << external() << std::endl;
+      exit(0);
+    }
+
+    if(args.size() == 1 and args[0] == "non-local"){
+      std::cout << non_local() << std::endl;
+      exit(0);
+    }
+  
+    if(args.size() == 1 and args[0] == "ion"){
+      std::cout << ion() << std::endl;
+      exit(0);
+    }
+    
+		std::cerr << "Error: Invalid syntax in the 'energy' command" << std::endl;
+		exit(1);
+    
 	}
 	
 } const energy;

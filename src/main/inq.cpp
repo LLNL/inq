@@ -27,7 +27,9 @@ int main(int argc, char* argv[]) {
 		{ "non_collinear"s,    "non-collinear"s    },
 		{ "noncollinear"s,     "non-collinear"s    },
 		{ "non_interacting"s,  "non-interacting"s  },
-		{ "noninteracting"s,   "non-interacting"s  },		
+		{ "noninteracting"s,   "non-interacting"s  },
+		{ "non_local"s,        "non-local"s        },
+		{ "nonlocal"s,         "non-local"s        },		
 		{ "tol"s         ,     "tolerance"s        }
 	};
 	
