@@ -183,19 +183,14 @@ public:
 		return (long) positions_.size();
 	}
 	
-	template <class output_stream>
-	void info(output_stream & out) const {
-		out << "Ions (" << size() << " total):" << std::endl;
-		for(int iatom = 0; iatom < size(); iatom++){
-			out << "  " << atoms_[iatom].symbol() << '\t' << positions_[iatom] << '\n';
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, ions const & self){
+		out << "Ions (" << self.size() << " total):" << std::endl;
+		for(int iatom = 0; iatom < self.size(); iatom++){
+			out << "  " << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom] << '\n';
 		}
 		out << std::endl;
-	}
-	
-	template<class OStream>
-	friend OStream& operator<<(OStream& os, ions const& self){
-		self.info(os);
-		return os;
+		return out;
 	}
 
 	auto kinetic_energy() {
