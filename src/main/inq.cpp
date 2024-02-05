@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "\n";
 		std::cout << "Usage: inq <command> [arguments]\n\n";
 		std::cout << "The following commands are available:\n";
-		std::cout << "  " << "help"                         << "\t\t" << "Prints detailed information about other commands.\n";
+		std::cout << "  " << "help"                         << "\t\t" << "Prints detailed information about other commands\n";
 		std::cout << "  " << interface::clear.name()        << "\t\t" << interface::clear       .one_line() << '\n';
 		std::cout << "  " << interface::cell.name()         << "\t\t" << interface::cell        .one_line() << '\n';
 		std::cout << "  " << interface::ions.name()         << "\t\t" << interface::ions        .one_line() << '\n';
@@ -111,6 +111,12 @@ int main(int argc, char* argv[]) {
 			std::cout << "Usage: inq help <command>" << std::endl;
 			exit(1);
 		}
+
+		command = args[0];
+		args.erase(args.begin());
+
+		if(command == interface::clear       .name()) interface::clear       .help();
+		
 	}
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
