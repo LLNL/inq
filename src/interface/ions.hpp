@@ -42,6 +42,19 @@ struct {
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
+	void file(std::string const & filename) const {
+		std::string extension = utils::lowercase(filename.substr(filename.find_last_of(".") + 1));
+
+		if(extension == "xyz") {
+			auto cell = systems::ions::load(".inq/default_ions").cell();
+			auto ions = systems::ions::parse(filename, cell);
+			ions.save(input::environment::global().comm(), ".inq/default_ions");
+		} else {
+			auto ions = systems::ions::parse(filename);
+			ions.save(input::environment::global().comm(), ".inq/default_ions");
+		}
+	}
+	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 		
@@ -78,7 +91,14 @@ struct {
 			if(not quiet) operator()();
 			exit(0);
 		}
- 
+
+		if(args.size() == 2 and args[0] == "file"){
+
+			file(args[1]);
+			if(not quiet) operator()();
+			exit(0);
+		}
+	
 		std::cerr << "Error: Invalid syntax in the ions command" << std::endl;
 		exit(1);
 	}
