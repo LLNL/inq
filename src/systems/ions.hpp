@@ -211,21 +211,11 @@ public:
 		auto exception_happened = true;
 		if(comm.root()) {
 
-			utils::save_value(comm, dirname + "/num_ions", size(), error_message);
-			utils::save_array(comm, dirname + "/positions", positions_, error_message);
+			utils::save_value(comm, dirname + "/num_ions",   size(),      error_message);
+			utils::save_array(comm, dirname + "/atoms",      atoms_,      error_message);
+			utils::save_array(comm, dirname + "/positions",  positions_,  error_message);
 			utils::save_array(comm, dirname + "/velocities", velocities_, error_message);
 			
-			//atoms
-			auto atoms_file = std::ofstream(dirname + "/atoms");
-			if(not atoms_file) {
-				comm.broadcast_value(exception_happened);
-				throw std::runtime_error(error_message);
-			}
-
-			for(auto & atom : atoms_){
-				atoms_file << atom.symbol() << std::endl;
-			}
-
 			exception_happened = false;
 			comm.broadcast_value(exception_happened);
 			

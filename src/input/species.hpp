@@ -43,7 +43,7 @@ public:
 	species(species &&) = default;
 	species & operator=(const species &) = delete;	
 	species & operator=(species &&) = delete;
-		
+	
 	auto symbol(const std::string & arg_symbol) const{
 		species rspec = *this;
 		rspec.symbol_ = arg_symbol;
@@ -95,7 +95,13 @@ public:
 	auto filter_pseudo() const {
 		return filter_.value_or(true);
 	}
-		
+
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, species const & self){
+		out << self.symbol();
+		return out;
+	}
+	
 };
 
 }
