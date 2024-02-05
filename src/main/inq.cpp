@@ -8,6 +8,7 @@
 
 #include <inq/inq.hpp>
 #include <utils/lowercase.hpp>
+#include <interface/units.hpp>
 
 int main(int argc, char* argv[]) {
 	using namespace std::string_literals;
@@ -107,14 +108,19 @@ int main(int argc, char* argv[]) {
 
 	if(command == "help") {
 		if(args.size() == 0){
-			std::cout << "The 'help' command prints detailed information about other commands.\n\n";
-			std::cout << "Usage: inq help <command>" << std::endl;
+			std::cout << "\n";
+			std::cout << "Usage: inq help <command>\n\n";
+			std::cout << "The 'help' command prints detailed information about other inq commands.\n\n";
+			std::cout << "There is also some additional help topics you can read:\n";
+			std::cout << "  " << "units" << "\t\t" << "Prints information about the available input units in inq\n";
+			std::cout << std::endl;
 			exit(1);
 		}
 
 		command = args[0];
 		args.erase(args.begin());
 
+		if(command == interface::units       .name()) interface::units       .help();
 		if(command == interface::clear       .name()) interface::clear       .help();
 		if(command == interface::cell        .name()) interface::cell        .help();
 		
