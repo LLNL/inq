@@ -25,6 +25,64 @@ struct {
 		return "Defines the simulation cell.";
 	}
 	
+	void help() const {
+		
+		std::cout << R""""(
+
+The 'cell' command defines the inq simulation cell. There are four
+variations of the command depending on the type of cell you want to
+define.
+
+In all cases you must include the units for the cell. For the moment
+note you can use 'bohr' (or 'b') and "angstrom" (or 'A').  See `inq
+help units` for other supported units.
+
+An optional last argument defines the periodicity of the cell. The
+periodicity can be specified as a number from '0d' to '3d', or as
+'finite', 'wire', 'slab' and 'periodic'. If the periodicity is not
+given, the system is considered periodic.
+
+Note that defining the cell is not necessary if you are going to read
+it from a file (using the `inq ion file` command).
+
+The following are the accepted forms of the cell command:
+
+- inq cell cubic <a> <units> [periodicity]
+
+  Defines a cubic cell of side <a>.
+
+  For example 'inq cell 5.0 A finite'.
+
+
+- inq cell orthorhombic <a> <b> <c> <units> [periodicity]
+
+  Defines a orthorhombic (parallelepipedic) cell of sides a, b and c.
+
+  For example 'inq cell orthorhombic 10.0 10.0 12.0 bohr'.
+
+
+- inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  <units> [periodicity]
+
+  Creates a general cell defined by the lattice vectors a, b, and c
+  (given by components). The units are applied to all the vector
+  components.
+
+  For example 'inq cell  4.6478 0 0  -2.3239 4.02512 0  0 0 10.0 b 2d'.
+
+
+- inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  scale <s> <units> [periodicity]
+
+  Like the previous case, creates a general cell defined by the lattice vectors a, b, and c
+  (given by components). However in this case a general scale factor is applied to all the vectors.
+
+  For example 'inq cell  0.0 0.5 0.5  0.5 0.0 0.5  0.5 0.5 0.0  scale 3.57 angstrom'.
+
+)"""";
+
+		exit(0);
+	}
+
+	
 	void operator()() const {
 		auto cell = systems::ions::load(".inq/default_ions").cell();
 		if(input::environment::global().comm().root()) std::cout << cell;
@@ -149,7 +207,7 @@ public:
 		std::cerr << "Error: Invalid syntax in the 'cell' command" << std::endl;
 		exit(1);
 	}
-	
+		
 } const cell ;
 
 }

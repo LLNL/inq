@@ -116,6 +116,7 @@ int main(int argc, char* argv[]) {
 		args.erase(args.begin());
 
 		if(command == interface::clear       .name()) interface::clear       .help();
+		if(command == interface::cell        .name()) interface::cell        .help();
 		
 	}
 	
