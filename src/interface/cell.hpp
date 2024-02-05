@@ -29,6 +29,9 @@ struct {
 		
 		std::cout << R""""(
 
+The 'cell' command
+==================
+
 The 'cell' command defines the inq simulation cell. There are four
 variations of the command depending on the type of cell you want to
 define.
@@ -56,7 +59,7 @@ The following are the accepted forms of the cell command:
 
 - inq cell orthorhombic <a> <b> <c> <units> [periodicity]
 
-  Defines a orthorhombic (parallelepipedic) cell of sides a, b and c.
+  Defines a orthorhombic cell of sides a, b and c.
 
   For example 'inq cell orthorhombic 10.0 10.0 12.0 bohr'.
 

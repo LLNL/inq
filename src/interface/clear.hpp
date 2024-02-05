@@ -43,6 +43,9 @@ struct {
 
 		std::cout << R""""(
 
+The 'clear' command
+===================
+
 Usage: inq clear
 
 The 'clear' command removes all inq information from the current
