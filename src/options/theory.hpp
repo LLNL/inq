@@ -151,8 +151,8 @@ public:
 			}
 
 			utils::save_optional(comm, dirname + "/hartree_potential", hartree_potential_, error_message);
-			utils::save_optional_enum(comm, dirname + "/exchange", exchange_, error_message);
-			utils::save_optional_enum(comm, dirname + "/correlation", correlation_, error_message);
+			utils::save_optional(comm, dirname + "/exchange", exchange_, error_message);
+			utils::save_optional(comm, dirname + "/correlation", correlation_, error_message);
 			utils::save_optional(comm, dirname + "/alpha", alpha_, error_message);
 
 			exception_happened = false;
@@ -170,8 +170,8 @@ public:
 		theory opts;
 		
 		utils::load_optional(dirname + "/hartree_potential", opts.hartree_potential_);
-		utils::load_optional_enum(dirname + "/exchange", opts.exchange_);
-		utils::load_optional_enum(dirname + "/correlation", opts.correlation_);
+		utils::load_optional(dirname + "/exchange", opts.exchange_);
+		utils::load_optional(dirname + "/correlation", opts.correlation_);
 		utils::load_optional(dirname + "/alpha", opts.alpha_);
 		
 		return opts;
