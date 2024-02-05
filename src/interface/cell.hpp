@@ -47,7 +47,7 @@ struct {
 		systems::ions ions(systems::cell::lattice({aa0, aa1, aa2}, {bb0, bb1, bb2}, {cc0, cc1, cc2}).periodicity(periodicity));
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
-	
+
 private:
 
 	static auto parse_periodicity(std::string per_string){
@@ -111,9 +111,20 @@ public:
 		}
 		
 		
-		if(args.size() == 10 or args.size() == 11) {
-			auto unit = magnitude::length::parse(args[9]);
+		if(args.size() >= 10 and args.size() <= 13) {
+
+			auto scale = 1.0;
+			auto units_name = args[9];
+			auto per_location = 10;
 			
+			if(units_name == "scale"){
+				scale = atof(args[10].c_str());
+				units_name = args[11];
+				per_location = 12;
+			}
+
+			auto unit = scale*magnitude::length::parse(units_name);
+				
 			auto aa0 = atof(args[0].c_str())*unit;
 			auto aa1 = atof(args[1].c_str())*unit;
 			auto aa2 = atof(args[2].c_str())*unit;
@@ -127,9 +138,10 @@ public:
 			auto cc2 = atof(args[8].c_str())*unit;
 
 			int per = 3;
-			if(args.size() == 11) per = parse_periodicity(args[10]);
+			if(long(args.size()) > per_location) per = parse_periodicity(args[per_location]);
 			
 			operator()(aa0, aa1, aa2, bb0, bb1, bb2, cc0, cc1, cc2, per);
+			
 			if(not quiet) operator()();
 			exit(0);
 		}
