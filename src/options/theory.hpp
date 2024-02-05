@@ -121,6 +121,14 @@ public:
 		return hartree_potential() or exchange() != XC_NONE or correlation() != XC_NONE;
 	}
 
+	auto functional(int exchange, int correlation = XC_NONE) const {
+		theory inter = *this;
+		inter.hartree_potential_ = true;
+		inter.exchange_ = exchange;
+		inter.correlation_ = correlation;
+		return inter;
+	}
+
 	auto induced_vector_potential(const double alpha = -4.0*M_PI){
 		theory inter = *this;
 		inter.alpha_ = alpha;
