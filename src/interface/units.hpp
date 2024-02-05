@@ -34,6 +34,10 @@ allows users to use the units directly from the source without having
 to waste time converting. Second, it avoids errors when users assume
 the code is expecting different units.
 
+The code works internally in Hartree atomic units, and most of the
+quantities are printed in these units. However, when space allows for
+it, we print quantities in other relevant units.
+
 In the command line interface units are given as an argument after a
 value, or a set of values. There are no default input units in
 inq. Not putting the units is a syntax error and the command most
