@@ -50,6 +50,26 @@ struct {
 		theo.save(input::environment::global().comm(), ".inq/default_theory");
 	}
 	
+	void pbe() const{
+		auto theo = options::theory::load(".inq/default_theory").pbe();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+
+	void rpbe() const{
+		auto theo = options::theory::load(".inq/default_theory").rpbe();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+	
+	void pbe0() const{
+		auto theo = options::theory::load(".inq/default_theory").pbe0();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+	
+	void b3lyp() const{
+		auto theo = options::theory::load(".inq/default_theory").b3lyp();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+	
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -59,16 +79,20 @@ struct {
 			
 		} else if(args.size() == 1 and args[0] == "non-interacting") {
 			non_interacting();
-			
-		} else if(args.size() == 1 and args[0] == "hartree"){
+		} else if(args.size() == 1 and args[0] == "hartree") {
 			hartree();
-			
 		} else if(args.size() == 1 and args[0] == "hartree-fock") {
 			hartree_fock();
-
-		} else if(args.size() == 1 and args[0] == "lda" ){
+		} else if(args.size() == 1 and args[0] == "lda") {
 			lda();
-			
+		} else if(args.size() == 1 and args[0] == "pbe") {
+			pbe();
+		} else if(args.size() == 1 and args[0] == "rpbe") {
+			rpbe();
+		} else if(args.size() == 1 and args[0] == "pbe0") {
+			pbe0();
+		} else if(args.size() == 1 and args[0] == "b3lyp") {
+			b3lyp();
 		} else {				
 			std::cerr << "Error: Invalid syntax in 'theory' command" << std::endl;
 			exit(1);
