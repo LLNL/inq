@@ -271,15 +271,7 @@ namespace systems {
 					throw std::runtime_error(error_message);
 				}
 				
-				auto lattice_file = std::ofstream(dirname + "/lattice");
-				if(not lattice_file) {
-					comm.broadcast_value(exception_happened);					
-					throw std::runtime_error(error_message);
-				}
-				lattice_file.precision(25);
-				
-				lattice_file << lattice_[0] << '\n' << lattice_[1] << '\n' << lattice_[2] << std::endl;
-				
+				utils::save_array(comm, dirname + "/lattice",     lattice_,     error_message);
 				utils::save_value(comm, dirname + "/periodicity", periodicity_, error_message);
 				
 				exception_happened = false;
