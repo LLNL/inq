@@ -247,7 +247,7 @@ public:
 		if(not self.extra_electrons_.has_value()) out << " *";
 		out << "\n";
 
-		out << "  temperature        = " << self.temperature_val();
+		out << "  temperature        = " << self.temperature_val() << " Ha | " << self.temperature_val()/in_atomic_units(1.0_eV) << " eV | " << self.temperature_val()/in_atomic_units(1.0_K) << " K";
 		if(not self.temperature_.has_value()) out << " *";
 		out << "\n";
 
