@@ -64,6 +64,11 @@ struct {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_non_collinear();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
+
+	void temperature(quantity<magnitude::energy> temp) const{
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").temperature(temp);
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -142,7 +147,25 @@ struct {
 			if(not quiet) operator()();
 			exit(0);
 		}
-		
+
+		if(args[0] == "temperature"){
+
+			if(args.size() < 3) {
+				std::cerr << "Error: missing temperature arguments. Use 'temperature <value> <units>'." << std::endl;
+				exit(1);
+			}
+
+			if(args.size() > 3) {
+				std::cerr << "Error: too many arguments to temperature argument.  Use 'temperature <value> <units>'." << std::endl;
+				exit(1);
+			}
+
+			temperature(atof(args[1].c_str())*magnitude::energy::parse(args[2]));
+			
+			if(not quiet) operator()();
+			exit(0);
+		}
+			
 		std::cerr << "Error: Invalid syntax in the 'electrons' command" << std::endl;
 		exit(1);
 	}
