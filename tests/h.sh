@@ -7,7 +7,7 @@ inq clear
 inq cell cubic 9.0 bohr finite
 inq ions add H 0.0 0.0 0.0 bohr
 inq electrons cutoff 25 hartree
-inq electrons polarized
+inq electrons spin polarized
 inq ground-state tolerance 1e-8
 inq run ground-state
 

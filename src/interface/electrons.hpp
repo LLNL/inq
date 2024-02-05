@@ -24,7 +24,7 @@ struct {
 	std::string one_line() const {
 		return "Defines the electrons in the simulation and how they are represented.";
 	}
-
+	
 	void operator()() const {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options");
 		std::cout << el_opts;
@@ -50,17 +50,17 @@ struct {
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void unpolarized() const {
+	void spin_unpolarized() const {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_unpolarized();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void polarized() const {
+	void spin_polarized() const {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_polarized();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void non_collinear() const {
+	void spin_non_collinear() const {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_non_collinear();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
@@ -130,20 +130,20 @@ struct {
 			exit(0);
 		}
 
-		if(args.size() == 1 and args[0] == "unpolarized"){
-			unpolarized();
+		if(args.size() == 2 and args[0] == "spin" and args[1] == "unpolarized"){
+			spin_unpolarized();
 			if(not quiet) operator()();
 			exit(0);
 		}
 
-		if(args.size() == 1 and args[0] == "polarized"){
-			polarized();
+		if(args.size() == 2 and args[0] == "spin" and args[1] == "polarized"){
+			spin_polarized();
 			if(not quiet) operator()();
 			exit(0);
 		}
 
-		if(args.size() == 1 and args[0] == "non-collinear") {
-			non_collinear();
+		if(args.size() == 2 and args[0] == "spin" and args[1] == "non-collinear") {
+			spin_non_collinear();
 			if(not quiet) operator()();
 			exit(0);
 		}
