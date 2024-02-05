@@ -92,25 +92,20 @@ namespace systems {
 			
     double volume() const { return volume_; }
 
-    template <class output_stream>
-    void info(output_stream & out) const {
-			out << "Cell:" << '\n';
-			out << "  Lattice vectors [b] = " << lattice_[0] << '\n';
-			out << "                        " << lattice_[1] << '\n';
-			out << "                        " << lattice_[2] << '\n';
-			out << "  Volume [b^3]        = " << volume_ << '\n';
-			out << "  Periodicity         = " << periodicity_;
-			if(periodicity_ == 0) out << "d (finite)\n";
-			if(periodicity_ == 1) out << "d (wire)\n";
-			if(periodicity_ == 2) out << "d (slab)\n";
-			if(periodicity_ == 3) out << "d (fully periodic)\n";
-			out << std::endl;
-    }
-
 		template<class OStream>
-		friend OStream& operator<<(OStream& os, cell const& self){
-			self.info(os);
-			return os;
+		friend OStream & operator<<(OStream & out, cell const& self){
+			out << "Cell:" << '\n';
+			out << "  Lattice vectors [b] = " << self.lattice_[0] << '\n';
+			out << "                        " << self.lattice_[1] << '\n';
+			out << "                        " << self.lattice_[2] << '\n';
+			out << "  Volume [b^3]        = " << self.volume_ << '\n';
+			out << "  Periodicity         = " << self.periodicity_;
+			if(self.periodicity_ == 0) out << "d (finite)\n";
+			if(self.periodicity_ == 1) out << "d (wire)\n";
+			if(self.periodicity_ == 2) out << "d (slab)\n";
+			if(self.periodicity_ == 3) out << "d (fully periodic)\n";
+			out << std::endl;
+			return out;
 	  }
 		
 		////////////////////////////////////////////////////////////////////////////////
