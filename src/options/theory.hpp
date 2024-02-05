@@ -22,23 +22,8 @@ namespace options {
 
 class theory {
 
-public:
-
-	enum class exchange_functional {
-		NONE = XC_NONE,
-		LDA = XC_LDA_X,
-		PBE = XC_GGA_X_PBE,
-		RPBE = XC_GGA_X_RPBE,		
-		B = XC_GGA_X_B88,
-		B3LYP = XC_HYB_GGA_XC_B3LYP,
-		PBE0 = XC_HYB_GGA_XC_PBEH,
-		HARTREE_FOCK = XC_HARTREE_FOCK
-	};
-
-private:
-
 	std::optional<bool> hartree_potential_;
-	std::optional<exchange_functional> exchange_;
+	std::optional<int> exchange_;
 	std::optional<int> correlation_;
 	std::optional<double> alpha_;
 
@@ -47,7 +32,7 @@ public:
 	auto non_interacting() const {
 		theory inter = *this;
 		inter.hartree_potential_ = false;
-		inter.exchange_ = exchange_functional::NONE;
+		inter.exchange_ = XC_NONE;
 		inter.correlation_ = XC_NONE;
 		return inter;
 	}
@@ -61,7 +46,7 @@ public:
 	auto lda() const {
 		theory inter = *this;
 		inter.hartree_potential_ = true;
-		inter.exchange_ = exchange_functional::LDA;
+		inter.exchange_ = XC_LDA_X;
 		inter.correlation_ = XC_LDA_C_PZ;
 		return inter;
 	}
@@ -69,7 +54,7 @@ public:
 	auto hartree() const {
 		theory inter = *this;
 		inter.hartree_potential_ = true;
-		inter.exchange_ = exchange_functional::NONE;
+		inter.exchange_ = XC_NONE;
 		inter.correlation_ = XC_NONE;
 		return inter;
 	}
@@ -77,13 +62,13 @@ public:
 	auto hartree_fock() const {
 		theory inter = *this;
 		inter.hartree_potential_ = true;
-		inter.exchange_ = exchange_functional::HARTREE_FOCK;
+		inter.exchange_ = XC_HARTREE_FOCK;
 		inter.correlation_ = XC_NONE;
 		return inter;
 	}
 		
 	auto exchange() const {
-		return exchange_.value_or(exchange_functional::PBE);
+		return exchange_.value_or(XC_GGA_X_PBE);
 	}
 
 	auto correlation() const {
@@ -93,7 +78,7 @@ public:
 	auto pbe() const {
 		theory inter = *this;
 		inter.hartree_potential_ = true;
-		inter.exchange_ = exchange_functional::PBE;
+		inter.exchange_ = XC_GGA_X_PBE;
 		inter.correlation_ = XC_GGA_C_PBE;
 		return inter;
 	}
@@ -101,7 +86,7 @@ public:
 	auto rpbe() const {
 		theory inter = *this;
 		inter.hartree_potential_ = true;
-		inter.exchange_ = exchange_functional::RPBE;
+		inter.exchange_ = XC_GGA_X_RPBE;
 		inter.correlation_ = XC_GGA_C_PBE;
 		return inter;
 	}
@@ -109,7 +94,7 @@ public:
 	auto pbe0()  const {
 		theory inter = *this;
 		inter.hartree_potential_ = true;		
-		inter.exchange_ = exchange_functional::PBE0;
+		inter.exchange_ = XC_HYB_GGA_XC_PBEH;
 		inter.correlation_ = XC_NONE;
 		return inter;
 	}
@@ -117,14 +102,14 @@ public:
 	auto b3lyp()  const {
 		theory inter = *this;
 		inter.hartree_potential_ = true;		
-		inter.exchange_ = exchange_functional::B3LYP;
+		inter.exchange_ = XC_HYB_GGA_XC_B3LYP;
 		inter.correlation_ = XC_NONE;
 		return inter;
 	}
 
 	auto exchange_coefficient() const {
-		if(exchange() == exchange_functional::HARTREE_FOCK) return 1.0;
-		if(exchange() == exchange_functional::NONE) return 0.0;
+		if(exchange() == XC_HARTREE_FOCK) return 1.0;
+		if(exchange() == XC_NONE) return 0.0;
 		throw std::runtime_error("inq internal error: exchange coefficient not known here for true functionals");
 	}
 
@@ -133,7 +118,7 @@ public:
 	}
 	
 	auto self_consistent() const {
-		return hartree_potential() or exchange() != exchange_functional::NONE or correlation() != XC_NONE;
+		return hartree_potential() or exchange() != XC_NONE or correlation() != XC_NONE;
 	}
 
 	auto induced_vector_potential(const double alpha = -4.0*M_PI){
@@ -197,18 +182,18 @@ public:
 	friend OStream& operator<<(OStream& out, theory const & self){
 		out << "Theory:\n";
 
-		if(not self.hartree_potential() and self.exchange() == exchange_functional::NONE and self.correlation() == XC_NONE){
+		if(not self.hartree_potential() and self.exchange() == XC_NONE and self.correlation() == XC_NONE){
 			out << " Non-interacting electrons" << std::endl;
 			return out;
 		}
 
-		if(self.hartree_potential() and self.exchange() == exchange_functional::NONE and self.correlation() == XC_NONE){
+		if(self.hartree_potential() and self.exchange() == XC_NONE and self.correlation() == XC_NONE){
 			out << " Hartree (with self-interaction)\n\n";
 			out << " [1] D. R. Hartree, Math. Proc. Camb. Philos. Soc. 24 1, 111 (1928)" << std::endl;
 			return out;
 		}
 
-		if(self.exchange() != exchange_functional::NONE) {
+		if(self.exchange() != XC_NONE) {
 			auto e_func = hamiltonian::xc_functional(int(self.exchange()), 1);
 			
 			out << "  "   << e_func.kind_name() << ":\n";
@@ -250,7 +235,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     options::theory inter;
 
 		CHECK(inter.hartree_potential() == true);
-		CHECK(inter.exchange() == options::theory::exchange_functional::PBE);
+		CHECK(inter.exchange() == XC_GGA_X_PBE);
 		CHECK(inter.correlation() == XC_GGA_C_PBE);
 		CHECK_THROWS(inter.exchange_coefficient());
 		
@@ -258,7 +243,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto read_inter = options::theory::load("theory_save_non_default");
 
 		CHECK(read_inter.hartree_potential() == true);
-		CHECK(read_inter.exchange() == options::theory::exchange_functional::PBE);
+		CHECK(read_inter.exchange() == XC_GGA_X_PBE);
 		CHECK(read_inter.correlation() == XC_GGA_C_PBE);
 		CHECK_THROWS(read_inter.exchange_coefficient());
 	}
