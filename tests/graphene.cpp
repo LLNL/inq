@@ -29,7 +29,7 @@ int main(int argc, char ** argv){
 		
 		ground_state::initial_guess(ions, electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.rpbe(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.functional(XC_GGA_X_RPBE, XC_GGA_C_PBE), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
 		
 		energy_match.check("total energy",        result.energy.total(),         -11.805691503483);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),         9.569622551441);

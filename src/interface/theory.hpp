@@ -24,7 +24,7 @@ struct {
 	std::string one_line() const {
 		return "Defines the theory used to represent the electrons-electron interaction.";
 	}
-
+	
 	void operator()() const {
 		auto theo = options::theory::load(".inq/default_theory");
 		std::cout << theo;
@@ -52,11 +52,6 @@ struct {
 	
 	void pbe() const{
 		auto theo = options::theory::load(".inq/default_theory").pbe();
-		theo.save(input::environment::global().comm(), ".inq/default_theory");
-	}
-
-	void rpbe() const{
-		auto theo = options::theory::load(".inq/default_theory").rpbe();
 		theo.save(input::environment::global().comm(), ".inq/default_theory");
 	}
 	
@@ -92,8 +87,6 @@ struct {
 			lda();
 		} else if(args.size() == 1 and args[0] == "pbe") {
 			pbe();
-		} else if(args.size() == 1 and args[0] == "rpbe") {
-			rpbe();
 		} else if(args.size() == 1 and args[0] == "pbe0") {
 			pbe0();
 		} else if(args.size() == 1 and args[0] == "b3lyp") {
