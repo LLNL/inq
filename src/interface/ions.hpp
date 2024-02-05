@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/cell.hpp>
 #include <systems/ions.hpp>
 
 namespace inq {
@@ -99,7 +100,10 @@ struct {
 
 		if(args.size() == 2 and args[0] == "file"){
 			file(args[1]);
-			if(not quiet) operator()();
+			if(not quiet) {
+				interface::cell();
+				operator()();
+			}
 			exit(0);
 		}
 		
@@ -107,7 +111,10 @@ struct {
 			auto radius = atof(args[3].c_str())*magnitude::length::parse(args[4]);
 			
 			file(args[1], radius);
-			if(not quiet) operator()();
+			if(not quiet) {
+				interface::cell();
+				operator()();
+			}
 			exit(0);
 		}
 		
