@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
 		if(command == interface::units       .name()) interface::units       .help();
 		if(command == interface::clear       .name()) interface::clear       .help();
 		if(command == interface::cell        .name()) interface::cell        .help();
-		
+		if(command == interface::electrons   .name()) interface::electrons   .help();
 	}
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
