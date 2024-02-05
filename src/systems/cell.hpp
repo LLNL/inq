@@ -288,18 +288,9 @@ namespace systems {
 		static auto load(std::string const & dirname) {
 			auto error_message = "INQ error: Cannot load the cell from directory '" + dirname + "'.";
 			
-			vector3<double> lat[3];
-			
-			auto lattice_file = std::ifstream(dirname + "/lattice");			
-			if(not lattice_file) throw std::runtime_error(error_message);
-			
-			for(int ilat = 0; ilat < 3; ilat++){
-				for(int idir = 0; idir < 3; idir++){
-					lattice_file >> lat[ilat][idir];
-				}
-			}
-			
+			std::array<vector3<double>, 3> lat;
 			int per;
+			utils::load_array(dirname + "/lattice", lat, error_message);
 			utils::load_value(dirname + "/periodicity", per, error_message);
 			
 			return cell(lat[0], lat[1], lat[2], per);
