@@ -8,6 +8,7 @@
 
 #include <inq/inq.hpp>
 #include <utils/lowercase.hpp>
+#include <interface/units.hpp>
 
 int main(int argc, char* argv[]) {
 	using namespace std::string_literals;
@@ -40,20 +41,22 @@ int main(int argc, char* argv[]) {
 	input::environment::global(); //Initialize MPI 
 
 	if(argc == 1){
+		std::cout << "\n";
 		std::cout << "Usage: inq <command> [arguments]\n\n";
 		std::cout << "The following commands are available:\n";
+		std::cout << "  " << "help"                         << "\t\t" << "Prints detailed information about other commands\n";
 		std::cout << "  " << interface::clear.name()        << "\t\t" << interface::clear       .one_line() << '\n';
 		std::cout << "  " << interface::cell.name()         << "\t\t" << interface::cell        .one_line() << '\n';
 		std::cout << "  " << interface::ions.name()         << "\t\t" << interface::ions        .one_line() << '\n';
-		std::cout << "  " << interface::theory.name()       << "\t\t" << interface::theory      .one_line() << '\n';
-		std::cout << "  " << interface::electrons.name()    << "\t\t" << interface::electrons   .one_line() << '\n';
-		std::cout << "  " << interface::ground_state.name() << "\t\t" << interface::ground_state.one_line() << '\n';
+		std::cout << "  " << interface::theory.name()       << "\t"   << interface::theory      .one_line() << '\n';
+		std::cout << "  " << interface::electrons.name()    << "\t"   << interface::electrons   .one_line() << '\n';
+		std::cout << "  " << interface::ground_state.name() << "\t"   << interface::ground_state.one_line() << '\n';
 		std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
-		std::cout << "  " << interface::energy.name()       << "\t\t" << interface::energy      .one_line() << '\n';
+		std::cout << "  " << interface::energy.name()       << "\t"   << interface::energy      .one_line() << '\n';
 		std::cout << "  " << interface::util.name()         << "\t\t" << interface::util        .one_line() << '\n';
 		std::cout << "\n";
 		std::cout << "And the following options:\n";
-		std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.";
+		std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.\n";
 		std::cout << std::endl;
 		exit(1);
 	}
@@ -102,6 +105,28 @@ int main(int argc, char* argv[]) {
 	if(command == interface::run         .name()) interface::run         .command(args, quiet);
 	if(command == interface::energy      .name()) interface::energy      .command(args, quiet);
 	if(command == interface::util        .name()) interface::util        .command(args, quiet);	
+
+	if(command == "help") {
+		if(args.size() == 0){
+			std::cout << "\n";
+			std::cout << "Usage: inq help <command>\n\n";
+			std::cout << "The 'help' command prints detailed information about other inq commands.\n\n";
+			std::cout << "There is also some additional help topics you can read:\n";
+			std::cout << "  " << "units" << "\t\t" << "Prints information about the available input units in inq\n";
+			std::cout << std::endl;
+			exit(1);
+		}
+
+		command = args[0];
+		args.erase(args.begin());
+
+		if(command == interface::units       .name()) interface::units       .help();
+		if(command == interface::clear       .name()) interface::clear       .help();
+		if(command == interface::cell        .name()) interface::cell        .help();
+		if(command == interface::electrons   .name()) interface::electrons   .help();
+		if(command == interface::run         .name()) interface::run         .help();
+		if(command == interface::theory      .name()) interface::theory      .help();
+	}
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);

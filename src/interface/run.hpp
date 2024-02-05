@@ -26,6 +26,31 @@ struct {
 		return "Runs the simulation.";
 	}
 	
+	void help() const {
+		
+		std::cout << R""""(
+
+The 'run' command
+==================
+
+This command runs the actual simulation. It requires all the
+simulation parameters to be set before running.
+
+Note that this is the expensive part in the execution on
+inq. Depending on the system you are using you might want to execute
+this in parallel or through a queuing system.
+
+These are the options available:
+
+- `ground-state`
+
+   Runs a ground-state calculation with fixed ions.
+
+)"""";
+		
+		exit(0);
+	}
+
 	void ground_state() const{
 		auto ions = systems::ions::load(".inq/default_ions");
 		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"));

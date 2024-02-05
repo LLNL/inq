@@ -21,7 +21,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Removes any inq information from the current directory.";
+		return "Removes any inq information from the current directory";
 	}
 	
 	void operator()() const {
@@ -36,6 +36,23 @@ struct {
 			exit(1);
 		}
 		operator()();
+		exit(0);
+	}
+
+	void help() const {
+
+		std::cout << R""""(
+
+The 'clear' command
+===================
+
+Usage: inq clear
+
+The 'clear' command removes all inq information from the current
+directory. It doesn't take any arguments.
+
+)"""";
+
 		exit(0);
 	}
 	

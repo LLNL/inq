@@ -40,6 +40,8 @@ public:
 	auto dft() const {
 		theory inter = *this;
 		inter.hartree_potential_ = true;
+		inter.exchange_ = XC_GGA_X_PBE;
+		inter.correlation_ = XC_GGA_C_PBE;
 		return inter;
 	}
 	
@@ -79,14 +81,6 @@ public:
 		theory inter = *this;
 		inter.hartree_potential_ = true;
 		inter.exchange_ = XC_GGA_X_PBE;
-		inter.correlation_ = XC_GGA_C_PBE;
-		return inter;
-	}
-
-	auto rpbe() const {
-		theory inter = *this;
-		inter.hartree_potential_ = true;
-		inter.exchange_ = XC_GGA_X_RPBE;
 		inter.correlation_ = XC_GGA_C_PBE;
 		return inter;
 	}

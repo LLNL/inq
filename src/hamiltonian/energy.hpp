@@ -179,15 +179,15 @@ namespace hamiltonian {
 					throw std::runtime_error(error_message);
 				}
 
-				utils::save_value(comm, dirname + "/ion",          ion_,         error_message);
-				utils::save_value(comm, dirname + "/ion_kinetic",  ion_kinetic_, error_message);
-				utils::save_value(comm, dirname + "/eigenvalues",  eigenvalues_, error_message);
-				utils::save_value(comm, dirname + "/external",     external_,    error_message);
-				utils::save_value(comm, dirname + "/non-local",    non_local_,    error_message);
-				utils::save_value(comm, dirname + "/hartree",      hartree_,     error_message);
-				utils::save_value(comm, dirname + "/xc",           xc_,          error_message);
-				utils::save_value(comm, dirname + "/nvxc",         nvxc_,        error_message);
-				utils::save_value(comm, dirname + "/exact_exchange_", exact_exchange_, error_message);
+				utils::save_value(comm, dirname + "/ion",            ion_,         error_message);
+				utils::save_value(comm, dirname + "/ion_kinetic",    ion_kinetic_, error_message);
+				utils::save_value(comm, dirname + "/eigenvalues",    eigenvalues_, error_message);
+				utils::save_value(comm, dirname + "/external",       external_,    error_message);
+				utils::save_value(comm, dirname + "/non-local",      non_local_,    error_message);
+				utils::save_value(comm, dirname + "/hartree",        hartree_,     error_message);
+				utils::save_value(comm, dirname + "/xc",             xc_,          error_message);
+				utils::save_value(comm, dirname + "/nvxc",           nvxc_,        error_message);
+				utils::save_value(comm, dirname + "/exact_exchange", exact_exchange_, error_message);
 				
 				exception_happened = false;
 				comm.broadcast_value(exception_happened);
@@ -213,7 +213,7 @@ namespace hamiltonian {
 			utils::load_value(dirname + "/hartree",         en.hartree_,        error_message);
 			utils::load_value(dirname + "/xc",              en.xc_,             error_message);
 			utils::load_value(dirname + "/nvxc",            en.nvxc_,           error_message);
-			utils::load_value(dirname + "/exact_exchange_", en.exact_exchange_, error_message);
+			utils::load_value(dirname + "/exact_exchange",  en.exact_exchange_, error_message);
 			
 			return en;
 		}
