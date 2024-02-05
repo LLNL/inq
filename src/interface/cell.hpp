@@ -54,7 +54,7 @@ The following are the accepted forms of the cell command:
 
   Defines a cubic cell of side <a>.
 
-  For example 'inq cell 5.0 A finite'.
+  For example 'inq cell cubic 5.0 A finite'.
 
 
 - inq cell orthorhombic <a> <b> <c> <units> [periodicity]

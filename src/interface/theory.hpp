@@ -66,7 +66,7 @@ These are the options available:
 
 - `Hartree-Fock`
 
-   Exchange is modelled by the Hartree-Fock method. Note that this
+   Exchange is modeled by the Hartree-Fock method. Note that this
    method is much more expensive than pure DFT.
 
    Example: `inq theory Hartree-Fock`

@@ -61,7 +61,7 @@ the user.
   can add fractions of an electrons (given as a decimal number).
 
   Note that in first principles simulations the electrons are not
-  associated a priori to a certain atom. So when you add an electron
+  associated a priory to a certain atom. So when you add an electron
   there is no concept of 'where' you put it. This will be determined
   by the ground-state optimization.
 

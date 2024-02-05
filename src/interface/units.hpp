@@ -44,7 +44,7 @@ inq. Not putting the units is a syntax error and the command most
 likely fail or produce unexpected behavior.
 
 This page lists the supported units in inq for different
-magnitudes. All units are case unsensitive, have abbreviations and can
+magnitudes. All units are case insensitive, have abbreviations and can
 be given in plural form.
 
 - Energy
