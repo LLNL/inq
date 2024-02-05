@@ -99,7 +99,17 @@ static void load_optional_enum(std::string const & filename, std::optional<Type>
 		value = static_cast<Type>(readval);
 	}
 }
+
+template <typename Type>
+static void load_array(std::string const & filename, Type & array, std::string const & error_message){
+	auto file = std::ifstream(filename);
+
+	if(not file) throw std::runtime_error(error_message);
+
+	for(int ii = 0; ii < long(array.size()); ii++) file >> array[ii];
 	
+}
+
 }
 }
 #endif
