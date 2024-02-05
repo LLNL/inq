@@ -35,6 +35,10 @@ struct {
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
+	void orthorhombic(quantity<magnitude::length> const aa, quantity<magnitude::length> const bb, quantity<magnitude::length> const cc, int periodicity = 3) const {
+		systems::ions ions(systems::cell::orthorhombic(aa, bb, cc).periodicity(periodicity));
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
 
 private:
 
@@ -75,6 +79,25 @@ public:
 			if(args.size() == 4) per = parse_periodicity(args[3]);
 			
 			cubic(aa, per);
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
+		if(args[0] == "orthorhombic"){
+			if(args.size() != 5 and args.size() != 6) {
+				std::cerr << "Error: Wrong arguments for a cubic cell definition.\nUse: inq cell orthorhombic <aa> <bb> <cc> <units> [periodicity]" << std::endl;
+				exit(1);
+			}
+
+			auto unit = magnitude::length::parse(args[4]);
+			auto aa = atof(args[1].c_str())*unit;
+			auto bb = atof(args[2].c_str())*unit;
+			auto cc = atof(args[3].c_str())*unit;
+
+			int per = 3;
+			if(args.size() == 6) per = parse_periodicity(args[5]);
+			
+			orthorhombic(aa, bb, cc, per);
 			if(not quiet) operator()();
 			exit(0);
 		}
