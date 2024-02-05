@@ -94,7 +94,7 @@ namespace systems {
 
     template <class output_stream>
     void info(output_stream & out) const {
-			out << "Unit cell:" << '\n';
+			out << "Cell:" << '\n';
 			out << "  Lattice vectors [b] = " << lattice_[0] << '\n';
 			out << "                        " << lattice_[1] << '\n';
 			out << "                        " << lattice_[2] << '\n';

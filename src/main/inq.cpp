@@ -69,7 +69,9 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 
-		arg = utils::lowercase(arg);
+		auto lower = true;
+		if(args.size() > 0 and args.back() == "file") lower = false; //do not convert filenames to lowercase
+		if(lower) arg = utils::lowercase(arg);
 
 		//convert spelling
 		auto search = dictionary.find(arg);
