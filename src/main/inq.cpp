@@ -124,6 +124,7 @@ int main(int argc, char* argv[]) {
 		if(command == interface::clear       .name()) interface::clear       .help();
 		if(command == interface::cell        .name()) interface::cell        .help();
 		if(command == interface::electrons   .name()) interface::electrons   .help();
+		if(command == interface::theory      .name()) interface::theory      .help();
 	}
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;

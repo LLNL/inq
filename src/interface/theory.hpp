@@ -25,6 +25,98 @@ struct {
 		return "Defines the theory used to represent the electrons-electron interaction.";
 	}
 	
+	void help() const {
+		
+		std::cout << R""""(
+
+The 'theory' command
+==================
+
+This command specified the theory level used to model the
+electron-electron interaction. Most of the time you will want to use
+some form of density functional theory (DFT) but some other options
+are available. This command will allow you to pick up the DFT
+functional you want to use, the most popular ones have a specific
+option or you can use the `functional` command to select any
+functional from libxc.
+
+These are the options available:
+
+- `dft` (default)
+
+   This is the default, DFT in the PBE approximation is used to model
+   the electron-electron interaction.
+
+   Example: `inq theory dft`
+
+- `non-interacting`
+
+   There is no electron-electron interaction, particles are assumed to
+   be independent.
+
+   Example: `inq theory non-interacting`
+
+- `Hartree`
+
+   Particles only interact through classical electrostatics. Note that
+   as implemented in inq, hartree does not include a self-interaction
+   correction term.
+
+   Example: `inq theory Hartree`
+
+- `Hartree-Fock`
+
+   Exchange is modelled by the Hartree-Fock method. Note that this
+   method is much more expensive than pure DFT.
+
+   Example: `inq theory Hartree-Fock`
+
+- `lda`
+
+   The local density approximation in DFT.
+
+   Example: `inq theory lda`
+
+- `pbe`
+
+   The PBE GGA approximation in DFT.
+
+   Example: `inq theory pbe`
+
+-  `pbe0`
+
+   The PBE0 (also known as PBEH) hybrid functional. Note that this
+   functional includes Hartree-Fock exact exchange, so it is much more
+   computationally expensive than GGA functionals like pbe.
+
+   Example: `inq theory pbe0`
+
+-  `b3lyp`
+
+   The B3LYP hybrid functional. Note that this functional includes
+   Hartree-Fock exact exchange, so it is much more computationally
+   expensive than GGA functionals like pbe.
+
+   Example: `inq theory b3lyp`
+
+- `functional <exchange_name> [correlation_name]`
+
+   This option allows you to select any functional combination from
+   the libxc library using the functional names (functional id numbers
+   are not supported). Note that the correlation functional is
+   optional, it is okay to pass just one functional. You can find a
+   list of libxc functionals here [1].
+
+   [1] https://www.tddft.org/programs/libxc/functionals/
+   
+   Examples: `inq theory functional XC_GGA_X_RPBE XC_GGA_C_PBE`
+             `inq theory functional LDA_XC_TETER93`
+
+)"""";
+
+		exit(0);
+	}	
+
 	void operator()() const {
 		auto theo = options::theory::load(".inq/default_theory");
 		std::cout << theo;
@@ -45,6 +137,11 @@ struct {
 		theo.save(input::environment::global().comm(), ".inq/default_theory");
 	}
 
+	void dft() const{
+		auto theo = options::theory::load(".inq/default_theory").dft();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+	
 	void lda() const{
 		auto theo = options::theory::load(".inq/default_theory").lda();
 		theo.save(input::environment::global().comm(), ".inq/default_theory");
@@ -83,6 +180,8 @@ struct {
 			hartree();
 		} else if(args.size() == 1 and args[0] == "hartree-fock") {
 			hartree_fock();
+		} else if(args.size() == 1 and args[0] == "dft") {
+			dft();
 		} else if(args.size() == 1 and args[0] == "lda") {
 			lda();
 		} else if(args.size() == 1 and args[0] == "pbe") {
