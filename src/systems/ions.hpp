@@ -183,19 +183,14 @@ public:
 		return (long) positions_.size();
 	}
 	
-	template <class output_stream>
-	void info(output_stream & out) const {
-		out << "Ions (" << size() << " total):" << std::endl;
-		for(int iatom = 0; iatom < size(); iatom++){
-			out << "  " << atoms_[iatom].symbol() << '\t' << positions_[iatom] << '\n';
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, ions const & self){
+		out << "Ions (" << self.size() << " total):" << std::endl;
+		for(int iatom = 0; iatom < self.size(); iatom++){
+			out << "  " << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom] << '\n';
 		}
 		out << std::endl;
-	}
-	
-	template<class OStream>
-	friend OStream& operator<<(OStream& os, ions const& self){
-		self.info(os);
-		return os;
+		return out;
 	}
 
 	auto kinetic_energy() {
@@ -216,40 +211,10 @@ public:
 		auto exception_happened = true;
 		if(comm.root()) {
 
-			utils::save_value(comm, dirname + "/num_ions", size(), error_message);
-
-			//atoms
-			auto atoms_file = std::ofstream(dirname + "/atoms");
-			if(not atoms_file) {
-				comm.broadcast_value(exception_happened);
-				throw std::runtime_error(error_message);
-			}
-
-			for(auto & atom : atoms_){
-				atoms_file << atom.symbol() << std::endl;
-			}
-
-			//positions
-			auto positions_file = std::ofstream(dirname + "/positions");
-			if(not positions_file) {
-				comm.broadcast_value(exception_happened);
-				throw std::runtime_error(error_message);
-			}
-			positions_file.precision(25);
-			for(auto & pos : positions_){
-				positions_file << pos << std::endl;
-			}
-
-			//velocities
-			auto velocities_file = std::ofstream(dirname + "/velocities");
-			if(not velocities_file) {
-				comm.broadcast_value(exception_happened);
-				throw std::runtime_error(error_message);
-			}
-			velocities_file.precision(25);
-			for(auto & pos : velocities_){
-				velocities_file << pos << std::endl;
-			}
+			utils::save_value(comm, dirname + "/num_ions",   size(),      error_message);
+			utils::save_array(comm, dirname + "/atoms",      atoms_,      error_message);
+			utils::save_array(comm, dirname + "/positions",  positions_,  error_message);
+			utils::save_array(comm, dirname + "/velocities", velocities_, error_message);
 			
 			exception_happened = false;
 			comm.broadcast_value(exception_happened);
