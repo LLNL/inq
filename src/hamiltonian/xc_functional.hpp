@@ -23,7 +23,7 @@
 #include <utils/raw_pointer_cast.hpp>
 
 #define XC_NONE          0
-#define XC_HARTREE_FOCK -1
+#define XC_HARTREE_FOCK -4659
 
 namespace inq {
 namespace hamiltonian {

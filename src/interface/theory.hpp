@@ -50,6 +50,31 @@ struct {
 		theo.save(input::environment::global().comm(), ".inq/default_theory");
 	}
 	
+	void pbe() const{
+		auto theo = options::theory::load(".inq/default_theory").pbe();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+
+	void rpbe() const{
+		auto theo = options::theory::load(".inq/default_theory").rpbe();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+	
+	void pbe0() const{
+		auto theo = options::theory::load(".inq/default_theory").pbe0();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+	
+	void b3lyp() const{
+		auto theo = options::theory::load(".inq/default_theory").b3lyp();
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+
+	void functional(int exchange, int correlation = XC_NONE) const{
+		auto theo = options::theory::load(".inq/default_theory").functional(exchange, correlation);
+		theo.save(input::environment::global().comm(), ".inq/default_theory");
+	}
+	
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -59,15 +84,49 @@ struct {
 			
 		} else if(args.size() == 1 and args[0] == "non-interacting") {
 			non_interacting();
-			
-		} else if(args.size() == 1 and args[0] == "hartree"){
+		} else if(args.size() == 1 and args[0] == "hartree") {
 			hartree();
-			
 		} else if(args.size() == 1 and args[0] == "hartree-fock") {
 			hartree_fock();
-
-		} else if(args.size() == 1 and args[0] == "lda" ){
+		} else if(args.size() == 1 and args[0] == "lda") {
 			lda();
+		} else if(args.size() == 1 and args[0] == "pbe") {
+			pbe();
+		} else if(args.size() == 1 and args[0] == "rpbe") {
+			rpbe();
+		} else if(args.size() == 1 and args[0] == "pbe0") {
+			pbe0();
+		} else if(args.size() == 1 and args[0] == "b3lyp") {
+			b3lyp();
+
+		} else if(args[0] == "functional") {
+
+			if(args.size() == 1){
+				std::cerr << "Error: missing arguments for the 'theory functional' command" << std::endl;
+				exit(1);
+			}
+			
+			if(args.size() > 3){
+				std::cerr << "Error: too many arguments for the 'theory functional' command" << std::endl;
+				exit(1);
+			}
+			
+			auto exchange_id = xc_functional_get_number(args[1].c_str());
+
+			if(exchange_id == -1) {
+				std::cerr << "\nError: Unknown exchange functional '" << args[1] << "'in 'theory' command\n" << std::endl;
+				exit(1);
+			}
+			
+			auto correlation_id = XC_NONE;
+			if(args.size() == 3) correlation_id = xc_functional_get_number(args[2].c_str());
+
+			if(correlation_id == -1) {
+				std::cerr << "\nError: Unknown correlation functional '" << args[2] << "' in 'theory' command\n" << std::endl;
+				exit(1);
+			}
+
+			functional(exchange_id, correlation_id);
 			
 		} else {				
 			std::cerr << "Error: Invalid syntax in 'theory' command" << std::endl;
