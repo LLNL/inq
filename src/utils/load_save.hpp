@@ -71,13 +71,8 @@ void save_array(parallel::communicator & comm, std::string const & filename, Typ
 template <typename Type>
 static void load_value(std::string const & filename, Type & value, std::string const & error_message){
 	auto file = std::ifstream(filename);
-
 	if(not file) throw std::runtime_error(error_message);
-
-	Type readval;
-	file >> readval;
-	value = readval;
-
+	file >> value;
 }
 	
 template <typename Type>
