@@ -222,16 +222,16 @@ namespace hamiltonian {
 		friend OStream & operator<<(OStream & out, energy const & self){
 
 			tfm::format(out, "Energy:\n");
-			tfm::format(out, "  total          = %20.12f\n", self.total());
-			tfm::format(out, "  kinetic        = %20.12f\n", self.kinetic());
-			tfm::format(out, "  eigenvalues    = %20.12f\n", self.eigenvalues_);
-			tfm::format(out, "  hartree        = %20.12f\n", self.hartree());
-			tfm::format(out, "  external       = %20.12f\n", self.external());
-			tfm::format(out, "  non-local      = %20.12f\n", self.non_local());
-			tfm::format(out, "  xc             = %20.12f\n", self.xc());
-			tfm::format(out, "  intnvxc        = %20.12f\n", self.nvxc());
-			tfm::format(out, "  exact-exchange = %20.12f\n", self.exact_exchange());
-			tfm::format(out, "  ion            = %20.12f\n", self.ion());
+			tfm::format(out, "  total          = %20.12f Ha\n", self.total());
+			tfm::format(out, "  kinetic        = %20.12f Ha\n", self.kinetic());
+			tfm::format(out, "  eigenvalues    = %20.12f Ha\n", self.eigenvalues_);
+			tfm::format(out, "  hartree        = %20.12f Ha\n", self.hartree());
+			tfm::format(out, "  external       = %20.12f Ha\n", self.external());
+			tfm::format(out, "  non-local      = %20.12f Ha\n", self.non_local());
+			tfm::format(out, "  xc             = %20.12f Ha\n", self.xc());
+			tfm::format(out, "  nvxc           = %20.12f Ha\n", self.nvxc());
+			tfm::format(out, "  exact-exchange = %20.12f Ha\n", self.exact_exchange());
+			tfm::format(out, "  ion            = %20.12f Ha\n", self.ion());
 			tfm::format(out, "\n");
 
 			return out;
