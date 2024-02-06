@@ -40,15 +40,21 @@ These are the options available:
 
    Example: `inq kpoints`
 
+
 - `kpoints gamma`
 
    Example: `inq kpoints gamma`
 
 
-- `kpoints grid <nx> <ny> <nz> [shifted]`
+- `kpoints grid <nx> <ny> <nz>`
 
    Examples: `inq kpoints grid 8 8 8`
-             `inq kpoints grid 4 4 4 shifted`
+
+
+- `kpoints shiffted grid <nx> <ny> <nz>`
+
+   Examples: `inq kpoints shifted grid 4 4 4`
+
 
 )"""";
 		
@@ -64,6 +70,11 @@ These are the options available:
 		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
 		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 	}
+
+  void grid(int nx, int ny, int nz) const {
+		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::grid({nx, ny, nz}));
+		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
+	}
   
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool const quiet) const {
@@ -75,6 +86,13 @@ These are the options available:
 
     if(args.size() == 1 and args[0] == "gamma") {
 			gamma();
+      if(not quiet) operator()();
+			exit(0);
+		}
+
+    if(args.size() == 4 and args[0] == "grid") {
+      
+      grid(atoi(args[1].c_str()), atoi(args[2].c_str()), atoi(args[3].c_str()));
       if(not quiet) operator()();
 			exit(0);
 		}
