@@ -25,7 +25,74 @@ struct {
 	std::string one_line() const {
 		return "Defines the ions in the simulation.";
 	}
+	void help() const {
+		
+		std::cout << R""""(
 
+The 'ions' command
+==================
+
+This command defines the ions present in the system and its
+coordinates. These can be given one by one using the `ions add`
+command or from a file using the `ions file` command.
+
+If you are adding ions one by one or reading an XYZ file, you must
+first declare the cell for system (see `inq help cell`).
+
+These are the uses for the command:
+
+- `ions`
+
+  Without any arguments, `ions` prints a list of the ions currently in the system.
+
+  Example: `inq ions`.
+
+
+- `ions clear`
+
+  Removes any ions present in the system. Does not change the cell.
+
+  Example: `inq ions clear`
+
+
+- `ions add <symbol> <x> <y> <z> <units>`
+
+  Add an ion of type _symbol_ at coordinates _x_, _y_, and _z_. The
+  units for the coordinates must be specified (check `inq help units`
+  for details).
+
+  Example: `ions add He  0.0 0. 0.0 2.0 angstrom'
+
+
+- `ions file <file>`
+
+  Read a coordinate file. The supported formats are POSCAR, CIF and
+  XYZ. For POSCAR and CIF both the ions and the cell information will
+  be read. For XYZ only the atomic positions are read, so the cell
+  must be defined before reading the file.
+
+  Example: 'inq ions file diamond.cif'.
+
+
+- `ions file <file> radius <r> <units>`
+
+  Reads a coordinate file and define a cell around the ions. The cell
+  is orthorhombic and finite. The cell has the smallest possible size
+  so that walls are at least distance 'r' from any atom. This is
+  useful for molecular systems where you need to converge the size of
+  the cell.  The units for the radius value must be specified (check
+  `inq help units` for details).
+
+  Note: right now this functionality is only implemented for XYZ files.
+
+  For example 'inq ions file glucose.xyz radius 2.0 A'.
+
+
+)"""";
+
+		exit(0);
+	}
+	
 	void operator()() const {
 		auto ions = systems::ions::load(".inq/default_ions");		
 		if(input::environment::global().comm().root()) std::cout << ions;
