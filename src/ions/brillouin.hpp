@@ -114,8 +114,7 @@ public:
 	
 	template<class OStream>
 	friend OStream& operator<<(OStream& os, brillouin const & self){
-		os << std::endl;		
-		os << "  Number of kpoints = " << self.size() << std::endl;
+		os << "Kpoints (" << self.size() << " total):\n";
 		for(int ikpt = 0; ikpt < self.size(); ikpt++){
 			auto kk = self.kpoint(ikpt)/(2.0*M_PI);
 			tfm::format(os, "  k-point %7d = %7.3f %7.3f %7.3f   weight = %5.3f\n", ikpt, kk[0], kk[1], kk[2], self.kpoint_weight(ikpt));
