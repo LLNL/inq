@@ -24,6 +24,52 @@ struct {
 	std::string one_line() const {
 		return "Defines the how the ground_state is calculated.";
 	}
+	
+	void help() const {
+		
+		std::cout << R""""(
+
+The 'ground-state' command
+==================
+
+This command defines the options for ground-state self-consistency
+calculations. These are the available options:
+
+- `ground-state`
+
+  When no arguments are given, `ground-state` will just print the
+  currently defined options (including default values).
+
+  Example: `inq ground-state`.
+
+
+- `ground-state max-steps <value>`
+
+  Sets the maximum number of self-consistency steps that will be
+  done. The default value is 200.
+
+  Example: 'inq ground-state max-steps 250'.
+
+
+- `ground-state tolerance <value>`
+
+  The tolerance used to consider that the self-consistency iteration
+  is converged. The default value is 1e-6.
+
+  Example: `inq ground-state tolerance 1e-9`.
+
+
+- `ground-state mixing <value>`
+
+  Set the mixing factor for the self-consistency. The default value is 0.3.
+
+  Example: `inq ground-state mixing 0.1`.
+
+
+)"""";
+
+		exit(0);
+	}
 
 	void operator()() const {
 		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options");
