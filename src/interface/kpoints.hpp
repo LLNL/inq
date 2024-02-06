@@ -32,6 +32,12 @@ struct {
 The 'kpoints' command
 ==================
 
+This command defines the kpoints to be used in the simulation. This
+command has to be given after the ions are defined.
+
+Note that right now inq doesn't use symmetries to reduce the kpoint
+grid.
+
 These are the options available:
 
 - `kpoints`
@@ -41,17 +47,26 @@ These are the options available:
    Example: `inq kpoints`
 
 
-- `kpoints gamma`
+- `kpoints gamma` (default)
+
+   Tells the system to only use the 0 0 0 point. This is the default.
 
    Example: `inq kpoints gamma`
 
 
 - `kpoints grid <nx> <ny> <nz>`
 
+   Define a uniform grid to sample the Brillouin zone with sizes _nx_,
+   _ny_ and _nz_. This generates a non-shifted grid that will include
+   gamma.
+
    Examples: `inq kpoints grid 8 8 8`
 
 
 - `kpoints shifted grid <nx> <ny> <nz>`
+
+   Define a shifted uniform grid to sample the Brillouin zone with sizes _nx_,
+   _ny_ and _nz_. This grid doesn't include gamma.
 
    Examples: `inq kpoints shifted grid 4 4 4`
 
