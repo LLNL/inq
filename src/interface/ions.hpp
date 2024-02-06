@@ -104,6 +104,12 @@ These are the uses for the command:
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
+	void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos) const {
+		auto ions = systems::ions::load(".inq/default_ions");
+		ions.insert_fractional(sp, pos);
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
+
 	void clear() const {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.clear();
@@ -146,11 +152,28 @@ These are the uses for the command:
 			if(not quiet) operator()();
 			exit(0);
 		}
- 
+
+ 		if(args.size() >= 2 and args[0] == "insert" and args[1] == "fractional"){
+
+			if(args.size() != 6) {
+				std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert fractional <symbol> <x> <y> <z>" << std::endl;
+				exit(1);
+			}
+
+			auto symbol = args[2];
+			auto xx = atof(args[3].c_str());
+			auto yy = atof(args[4].c_str());
+			auto zz = atof(args[5].c_str());
+			
+			insert_fractional(symbol, {xx, yy, zz});
+			if(not quiet) operator()();
+			exit(0);
+		}
+
 		if(args[0] == "insert"){
 
 			if(args.size() != 6) {
-				std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
+				std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert <symbol> <x> <y> <z> <units>" << std::endl;
 				exit(1);
 			}
 
