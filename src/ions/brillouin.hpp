@@ -118,6 +118,37 @@ public:
 		os << std::endl;
 		return os;
 	}
+
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the Brillouin zone to directory '" + dirname + "'.";
+
+		comm.barrier();
+
+		auto exception_happened = true;
+		if(comm.root()) {
+
+			try { std::filesystem::create_directories(dirname); }
+			catch(...) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+				
+			utils::save_value(comm, dirname + "/num_kpoints",   size(),    error_message);
+			utils::save_array(comm, dirname + "/kpoints",       kpoints_,  error_message);
+			utils::save_array(comm, dirname + "/weights",       weights_,  error_message);
+			
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+			if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
+	
+	
 };
 
 }
@@ -136,6 +167,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using Catch::Approx;
 	using namespace Catch::literals;
 
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	
 	SECTION("Diamond"){
 
 		auto a =  3.567095_A;
@@ -241,6 +274,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz4.kpoint_weight(0) ==  0.33333333_a);
 		CHECK(bz4.kpoint_weight(1) ==  0.66666666_a);
 		CHECK(bz4.kpoint_weight(2) ==  0.0_a);
+
+		bz4.save(comm, "save_brillouin_4");
+
 		
 	}
 
