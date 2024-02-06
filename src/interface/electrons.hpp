@@ -44,14 +44,14 @@ the user.
   Example: `inq electrons`.
 
 
-- inq electrons cutoff <value> <units>
+- `electrons cutoff <value> <units>`
 
   Sets the energy cutoff for the simulation grid. A higher cutoff
   implies a more precise, but more costly, simulation. The value must
   be followed by its units, check `inq help units` for details on what
   units are available.
 
-  Example: 'inq electrons cutoff 30.0 Ry'.
+  Example: `inq electrons cutoff 30.0 Ry`.
 
 
 - `electrons spin <value>`
