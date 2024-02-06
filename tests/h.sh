@@ -5,7 +5,7 @@ set -x #output commands to the terminal
 
 inq clear
 inq cell cubic 9.0 bohr finite
-inq ions add H 0.0 0.0 0.0 bohr
+inq ions insert H 0.0 0.0 0.0 bohr
 inq electrons cutoff 25 hartree
 inq electrons spin polarized
 inq ground-state tolerance 1e-8

@@ -33,7 +33,7 @@ The 'ions' command
 ==================
 
 This command defines the ions present in the system and its
-coordinates. These can be given one by one using the `ions add`
+coordinates. These can be given one by one using the `ions insert`
 command or from a file using the `ions file` command.
 
 If you are adding ions one by one or reading an XYZ file, you must
@@ -55,13 +55,13 @@ These are the uses for the command:
   Example: `inq ions clear`
 
 
-- `ions add <symbol> <x> <y> <z> <units>`
+- `ions insert <symbol> <x> <y> <z> <units>`
 
   Add an ion of type _symbol_ at coordinates _x_, _y_, and _z_. The
   units for the coordinates must be specified (check `inq help units`
   for details).
 
-  Example: `ions add He  0.0 0. 0.0 2.0 angstrom'
+  Example: `ions insert He  0.0 0. 0.0 2.0 angstrom'
 
 
 - `ions file <file>`
@@ -98,7 +98,7 @@ These are the uses for the command:
 		if(input::environment::global().comm().root()) std::cout << ions;
 	}
 
-	void add(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) const {
+	void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) const {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.insert(sp, pos);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
@@ -147,10 +147,10 @@ These are the uses for the command:
 			exit(0);
 		}
  
-		if(args[0] == "add"){
+		if(args[0] == "insert"){
 
 			if(args.size() != 6) {
-				std::cerr << "Error: Wrong arguments for ions add.\nUse: inq ions add <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
+				std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert <symbol> <pos_x> <pos_y> <pos_z> <units>" << std::endl;
 				exit(1);
 			}
 
@@ -160,7 +160,7 @@ These are the uses for the command:
 			auto yy = atof(args[3].c_str())*units;
 			auto zz = atof(args[4].c_str())*units;
 			
-			add(symbol, {xx, yy, zz});
+			insert(symbol, {xx, yy, zz});
 			if(not quiet) operator()();
 			exit(0);
 		}
