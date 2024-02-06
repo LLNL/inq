@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
 		if(command == interface::clear       .name()) interface::clear       .help();
 		if(command == interface::cell        .name()) interface::cell        .help();
 		if(command == interface::electrons   .name()) interface::electrons   .help();
-		//if(command == interface::energy      .name()) interface::energy      .help();		
+		if(command == interface::energy      .name()) interface::energy      .help();
 		if(command == interface::ground_state.name()) interface::ground_state.help();
 		if(command == interface::ions        .name()) interface::ions        .help();
 		if(command == interface::run         .name()) interface::run         .help();
