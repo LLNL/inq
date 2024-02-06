@@ -99,6 +99,10 @@ public:
 		for(int ik = 0; ik < kpts.size(); ik++) weights_[ik] /= totalw;
 
   }
+
+  brillouin(inq::systems::ions const &, brillouin const & bz):
+		brillouin(bz){
+  }
 	
   auto size() const {
     return (long) kpoints_.size();
