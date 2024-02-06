@@ -64,6 +64,14 @@ These are the uses for the command:
   Example: `ions insert He  0.0 0. 0.0 2.0 angstrom'
 
 
+- `ions insert fractional <symbol> <x> <y> <z>`
+
+  Insert an ion of type _symbol_ at fractional coordinates _x_, _y_,
+  and _z_.
+
+  Example: `ions insert fractional Si 0.25 0.25 0.25'
+
+
 - `ions file <file>`
 
   Read a coordinate file. The supported formats are POSCAR, CIF and
