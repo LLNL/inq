@@ -19,6 +19,11 @@ class brillouin {
 
 	std::vector<vector3<double, covariant>> kpoints_;
 	std::vector<double> weights_;	
+
+	brillouin(int size):
+		kpoints_(size),
+		weights_(size) {
+	}
 	
 public:
   
@@ -148,6 +153,19 @@ public:
 		comm.barrier();
 	}
 	
+	static auto load(std::string const & dirname) {
+		auto error_message = "INQ error: Cannot load the kpoints from directory '" + dirname + "'.";
+
+		int num;
+		utils::load_value(dirname + "/num_kpoints", num, error_message);
+
+		brillouin bz(num);
+
+		utils::load_array(dirname + "/kpoints", bz.kpoints_, error_message);
+		utils::load_array(dirname + "/weights", bz.weights_, error_message);
+		
+		return bz;
+	}
 	
 };
 
@@ -249,6 +267,43 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz3.kpoint(7)[1]/(2*M_PI) == -0.25_a);
 		CHECK(bz3.kpoint(7)[2]/(2*M_PI) == -0.25_a);
 
+		bz3.save(comm, "save_brillouin_3");
+		auto read_bz3 = ions::brillouin::load("save_brillouin_3");
+
+		CHECK(read_bz3.size() == 8);
+
+		CHECK(read_bz3.kpoint(0)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(0)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(0)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(read_bz3.kpoint(1)[0]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(1)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(1)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(read_bz3.kpoint(2)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(2)[1]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(2)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(read_bz3.kpoint(3)[0]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(3)[1]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(3)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(read_bz3.kpoint(4)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(4)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(4)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(read_bz3.kpoint(5)[0]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(5)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(5)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(read_bz3.kpoint(6)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(6)[1]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(6)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(read_bz3.kpoint(7)[0]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(7)[1]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(7)[2]/(2*M_PI) == -0.25_a);
+		
 		auto kpts = input::kpoints::list();
 		
 		kpts.insert({0.5, 0.5, -0.5}, 1.0);
@@ -276,7 +331,25 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz4.kpoint_weight(2) ==  0.0_a);
 
 		bz4.save(comm, "save_brillouin_4");
+		auto read_bz4 = ions::brillouin::load("save_brillouin_4");
 
+		CHECK(read_bz4.size() == 3);
+
+		CHECK(read_bz4.kpoint(0)[0]/(2*M_PI) == -0.5_a);
+		CHECK(read_bz4.kpoint(0)[1]/(2*M_PI) == -0.5_a);
+		CHECK(read_bz4.kpoint(0)[2]/(2*M_PI) == -0.5_a);
+		
+		CHECK(read_bz4.kpoint(1)[0]/(2*M_PI) ==  0.1_a);
+		CHECK(read_bz4.kpoint(1)[1]/(2*M_PI) ==  0.2_a);
+		CHECK(read_bz4.kpoint(1)[2]/(2*M_PI) ==  0.3_a);
+		
+		CHECK(read_bz4.kpoint(2)[0]/(2*M_PI) ==  0.0_a);
+		CHECK(read_bz4.kpoint(2)[1]/(2*M_PI) == -0.01_a);
+		CHECK(read_bz4.kpoint(2)[2]/(2*M_PI) ==  0.0_a);
+
+		CHECK(read_bz4.kpoint_weight(0) ==  0.33333333_a);
+		CHECK(read_bz4.kpoint_weight(1) ==  0.66666666_a);
+		CHECK(read_bz4.kpoint_weight(2) ==  0.0_a);
 		
 	}
 
