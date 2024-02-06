@@ -36,7 +36,10 @@ int main(int argc, char* argv[]) {
 		{ "non_interacting"s,  "non-interacting"s  },
 		{ "noninteracting"s,   "non-interacting"s  },
 		{ "non_local"s,        "non-local"s        },
-		{ "nonlocal"s,         "non-local"s        },		
+		{ "nonlocal"s,         "non-local"s        },
+		{ "gridshifted"s,      "shifted-grid"s     },
+		{ "grid-shifted"s,     "shifted-grid"s     },
+		{ "shiftedgrid"s,      "shifted-grid"s     },
 		{ "tol"s         ,     "tolerance"s        }
 	};
 	

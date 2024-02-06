@@ -51,7 +51,7 @@ These are the options available:
    Examples: `inq kpoints grid 8 8 8`
 
 
-- `kpoints shiffted grid <nx> <ny> <nz>`
+- `kpoints shifted grid <nx> <ny> <nz>`
 
    Examples: `inq kpoints shifted grid 4 4 4`
 
@@ -75,6 +75,11 @@ These are the options available:
 		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::grid({nx, ny, nz}));
 		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 	}
+
+  void shifted_grid(int nx, int ny, int nz) const {
+		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::grid({nx, ny, nz}, true));
+		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
+	}
   
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool const quiet) const {
@@ -96,7 +101,14 @@ These are the options available:
       if(not quiet) operator()();
 			exit(0);
 		}
-    
+
+    if(args.size() == 4 and args[0] == "shifted-grid") {
+      
+      shifted_grid(atoi(args[1].c_str()), atoi(args[2].c_str()), atoi(args[3].c_str()));
+      if(not quiet) operator()();
+			exit(0);
+		}
+        
 		std::cerr << "Error: Invalid syntax in the 'kpoints' command" << std::endl;
 		exit(1);
 	}
