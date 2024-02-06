@@ -42,21 +42,27 @@ functional from libxc.
 
 These are the options available:
 
-- `dft` (default)
+- `theory`
+
+   Without any argument, `theory` will just print the current theory level that is set.
+
+   Example: `inq theory`.
+
+- `theory dft` (default)
 
    This is the default, DFT in the PBE approximation is used to model
    the electron-electron interaction.
 
    Example: `inq theory dft`
-
-- `non-interacting`
+`
+- `theory non-interacting`
 
    There is no electron-electron interaction, particles are assumed to
    be independent.
 
    Example: `inq theory non-interacting`
 
-- `Hartree`
+- `theory Hartree`
 
    Particles only interact through classical electrostatics. Note that
    as implemented in inq, hartree does not include a self-interaction
@@ -64,26 +70,26 @@ These are the options available:
 
    Example: `inq theory Hartree`
 
-- `Hartree-Fock`
+- `theory Hartree-Fock`
 
    Exchange is modeled by the Hartree-Fock method. Note that this
    method is much more expensive than pure DFT.
 
    Example: `inq theory Hartree-Fock`
 
-- `lda`
+- `theory lda`
 
    The local density approximation in DFT.
 
    Example: `inq theory lda`
 
-- `pbe`
+- `theory pbe`
 
    The PBE GGA approximation in DFT.
 
    Example: `inq theory pbe`
 
--  `pbe0`
+- `theory pbe0`
 
    The PBE0 (also known as PBEH) hybrid functional. Note that this
    functional includes Hartree-Fock exact exchange, so it is much more
@@ -91,7 +97,7 @@ These are the options available:
 
    Example: `inq theory pbe0`
 
--  `b3lyp`
+- `theory b3lyp`
 
    The B3LYP hybrid functional. Note that this functional includes
    Hartree-Fock exact exchange, so it is much more computationally
@@ -99,7 +105,7 @@ These are the options available:
 
    Example: `inq theory b3lyp`
 
-- `functional <exchange_name> [correlation_name]`
+- `theory functional <exchange_name> [correlation_name]`
 
    This option allows you to select any functional combination from
    the libxc library using the functional names (functional id numbers

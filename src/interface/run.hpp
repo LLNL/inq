@@ -42,9 +42,12 @@ this in parallel or through a queuing system.
 
 These are the options available:
 
-- `ground-state`
+- `run ground-state`
 
    Runs a ground-state calculation with fixed ions.
+
+   Example: `inq run ground-state`
+
 
 )"""";
 		
