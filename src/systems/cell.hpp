@@ -26,8 +26,8 @@ namespace systems {
   class cell{
 		using vector_type = vector3<double>;
   private:
-    vector_type lattice_[3];
-    vector_type reciprocal_[3];
+		std::array<vector_type, 3> lattice_;
+    std::array<vector_type, 3> reciprocal_;
     double volume_;
 		int periodicity_;
 		
@@ -92,25 +92,20 @@ namespace systems {
 			
     double volume() const { return volume_; }
 
-    template <class output_stream>
-    void info(output_stream & out) const {
-			out << "Cell:" << '\n';
-			out << "  Lattice vectors [b] = " << lattice_[0] << '\n';
-			out << "                        " << lattice_[1] << '\n';
-			out << "                        " << lattice_[2] << '\n';
-			out << "  Volume [b^3]        = " << volume_ << '\n';
-			out << "  Periodicity         = " << periodicity_;
-			if(periodicity_ == 0) out << "d (finite)\n";
-			if(periodicity_ == 1) out << "d (wire)\n";
-			if(periodicity_ == 2) out << "d (slab)\n";
-			if(periodicity_ == 3) out << "d (fully periodic)\n";
-			out << std::endl;
-    }
-
 		template<class OStream>
-		friend OStream& operator<<(OStream& os, cell const& self){
-			self.info(os);
-			return os;
+		friend OStream & operator<<(OStream & out, cell const& self){
+			out << "Cell:" << '\n';
+			out << "  Lattice vectors [b] = " << self.lattice_[0] << '\n';
+			out << "                        " << self.lattice_[1] << '\n';
+			out << "                        " << self.lattice_[2] << '\n';
+			out << "  Volume [b^3]        = " << self.volume_ << '\n';
+			out << "  Periodicity         = " << self.periodicity_;
+			if(self.periodicity_ == 0) out << "d (finite)\n";
+			if(self.periodicity_ == 1) out << "d (wire)\n";
+			if(self.periodicity_ == 2) out << "d (slab)\n";
+			if(self.periodicity_ == 3) out << "d (fully periodic)\n";
+			out << std::endl;
+			return out;
 	  }
 		
 		////////////////////////////////////////////////////////////////////////////////
@@ -276,15 +271,7 @@ namespace systems {
 					throw std::runtime_error(error_message);
 				}
 				
-				auto lattice_file = std::ofstream(dirname + "/lattice");
-				if(not lattice_file) {
-					comm.broadcast_value(exception_happened);					
-					throw std::runtime_error(error_message);
-				}
-				lattice_file.precision(25);
-				
-				lattice_file << lattice_[0] << '\n' << lattice_[1] << '\n' << lattice_[2] << std::endl;
-				
+				utils::save_array(comm, dirname + "/lattice",     lattice_,     error_message);
 				utils::save_value(comm, dirname + "/periodicity", periodicity_, error_message);
 				
 				exception_happened = false;
@@ -301,18 +288,9 @@ namespace systems {
 		static auto load(std::string const & dirname) {
 			auto error_message = "INQ error: Cannot load the cell from directory '" + dirname + "'.";
 			
-			vector3<double> lat[3];
-			
-			auto lattice_file = std::ifstream(dirname + "/lattice");			
-			if(not lattice_file) throw std::runtime_error(error_message);
-			
-			for(int ilat = 0; ilat < 3; ilat++){
-				for(int idir = 0; idir < 3; idir++){
-					lattice_file >> lat[ilat][idir];
-				}
-			}
-			
+			std::array<vector3<double>, 3> lat;
 			int per;
+			utils::load_array(dirname + "/lattice", lat, error_message);
 			utils::load_value(dirname + "/periodicity", per, error_message);
 			
 			return cell(lat[0], lat[1], lat[2], per);
