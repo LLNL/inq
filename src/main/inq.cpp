@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
 		if(command == interface::run         .name()) interface::run         .help();
 		if(command == interface::theory      .name()) interface::theory      .help();
 		if(command == interface::units       .name()) interface::units       .help();
-		//if(command == interface::util        .name()) interface::util        .help();
+		if(command == interface::util        .name()) interface::util        .help();
 	}
 	
 	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;

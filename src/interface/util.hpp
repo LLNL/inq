@@ -24,7 +24,33 @@ struct {
 	std::string one_line() const {
 		return "Miscelaneous utility commands.";
 	}
+	
+	void help() const {
+		
+		std::cout << R""""(
 
+The 'util' command
+==================
+
+This command provided some simple utilities used for the testing of
+inq. They are not very useful for users.
+
+These are the available subcommands:
+
+- `util match <value1> <value2> <tolerance>`
+
+  Checks if two values match within a certain tolerance. If they match,
+  the command will run successfully, with a 0 return code. If the match
+  fails, then the command will fail with a return value of 1.
+
+  Example: `inq util match 1.0 2.0 1e-5`.
+
+
+)"""";
+
+		exit(0);
+	}
+	
 	bool match(double value, double reference, double tolerance) const {
     
     auto diff = fabs(reference - value);
