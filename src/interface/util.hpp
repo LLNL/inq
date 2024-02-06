@@ -46,6 +46,14 @@ These are the available subcommands:
   Example: `inq util match 1.0 2.0 1e-5`.
 
 
+- `util test-data`
+
+  Returns the path where inq install the data files used for
+  tests. This is not really useful for users, just developers.
+
+  Example: `inq util test-data`
+
+
 )"""";
 
 		exit(0);
@@ -67,7 +75,11 @@ These are the available subcommands:
       return true;
     }
   }
-        
+
+	auto test_data() const {
+		return config::path::unit_tests_data();
+	}
+		
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 		
@@ -81,6 +93,11 @@ These are the available subcommands:
       } else {
         exit(1);
       }
+		}
+
+		if(args.size() == 1 and args[0] == "test-data"){
+			std::cout << test_data() << std::endl;
+			exit(0);
 		}
 		
 		std::cerr << "Error: Invalid syntax in the 'util' command" << std::endl;
