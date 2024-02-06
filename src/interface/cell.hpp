@@ -50,6 +50,13 @@ it from a file (using the `inq ion file` command).
 
 The following are the accepted forms of the cell command:
 
+- `cell`
+
+  Without any arguments, `cell` prints the cell currently defined in the system.
+
+  Example: `inq cell`.
+
+
 - inq cell cubic <a> <units> [periodicity]
 
   Defines a cubic cell of side <a>.

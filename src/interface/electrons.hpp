@@ -36,23 +36,33 @@ This command defines the electrons that are in the system and how they
 are going to be represented through several values that can be set by
 the user.
 
-- inq electrons cutoff <value> <units>
+- `electrons`
+
+  When no arguments are given, `electrons` will just print the
+  currently defined options (including default values).
+
+  Example: `inq electrons`.
+
+
+- `electrons cutoff <value> <units>`
 
   Sets the energy cutoff for the simulation grid. A higher cutoff
   implies a more precise, but more costly, simulation. The value must
   be followed by its units, check `inq help units` for details on what
   units are available.
 
-  Example: 'inq electrons cutoff 30.0 Ry'.
+  Example: `inq electrons cutoff 30.0 Ry`.
 
-- inq electrons spin <value>
+
+- `electrons spin <value>`
 
   Sets the spin configuration used in the simulation. The valid values
   are 'unpolarized' (the default), 'polarized' and 'non-collinear'.
 
-  Example: 'inq electrons spin polarized'.
+  Example: `inq electrons spin polarized`.
 
-- inq electrons extra-electrons <value>
+
+- `electrons extra-electrons <value>`
 
   Inq determines the number of electrons from the ions present in the
   system. Using this variable you can add or remove electrons from the
@@ -65,9 +75,10 @@ the user.
   there is no concept of 'where' you put it. This will be determined
   by the ground-state optimization.
 
-  Example: 'inq electrons extra-electrons -0.5'.
+  Example: `inq electrons extra-electrons -0.5`.
 
-- inq electrons extra-states <value>
+
+- `electrons extra-states <value>`
 
   Inq automatically selects a number of states (orbitals, bands) that is
   enough to represent all the electrons in the system. In many cases
@@ -79,7 +90,8 @@ the user.
 
   Example: `inq electrons extra-states 2`.
 
-- inq temperature <value> <units>
+
+- `temperature <value> <units>`
 
   This command sets the temperature of the electrons in the
   ground-state optimization. The value must be positive and the units
@@ -89,7 +101,8 @@ the user.
   Note that when you add a temperature you also need to specify
   extra-states.
 
-  Example: `inq electrons temperature 273.15 Kelvin`
+  Example: `inq electrons temperature 273.15 Kelvin`.
+
 
 )"""";
 

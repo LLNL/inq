@@ -24,7 +24,41 @@ struct {
 	std::string one_line() const {
 		return "Miscelaneous utility commands.";
 	}
+	
+	void help() const {
+		
+		std::cout << R""""(
 
+The 'util' command
+==================
+
+This command provided some simple utilities used for the testing of
+inq. They are not very useful for users.
+
+These are the available subcommands:
+
+- `util match <value1> <value2> <tolerance>`
+
+  Checks if two values match within a certain tolerance. If they match,
+  the command will run successfully, with a 0 return code. If the match
+  fails, then the command will fail with a return value of 1.
+
+  Example: `inq util match 1.0 2.0 1e-5`.
+
+
+- `util test-data`
+
+  Returns the path where inq install the data files used for
+  tests. This is not really useful for users, just developers.
+
+  Example: `inq util test-data`
+
+
+)"""";
+
+		exit(0);
+	}
+	
 	bool match(double value, double reference, double tolerance) const {
     
     auto diff = fabs(reference - value);
@@ -41,7 +75,11 @@ struct {
       return true;
     }
   }
-        
+
+	auto test_data() const {
+		return config::path::unit_tests_data();
+	}
+		
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 		
@@ -55,6 +93,11 @@ struct {
       } else {
         exit(1);
       }
+		}
+
+		if(args.size() == 1 and args[0] == "test-data"){
+			std::cout << test_data() << std::endl;
+			exit(0);
 		}
 		
 		std::cerr << "Error: Invalid syntax in the 'util' command" << std::endl;
