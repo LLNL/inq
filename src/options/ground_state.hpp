@@ -75,7 +75,6 @@ private:
 	std::optional<bool> subspace_diag_;
 	std::optional<int> max_steps_;
 	std::optional<bool> calc_forces_;
-	std::optional<double> temperature_;
 	
 public:
 
@@ -165,16 +164,6 @@ public:
 		return calc_forces_.value_or(false);
 	}
 
-	auto temperature(quantity<magnitude::energy> value){
-		ground_state conf = *this;
-		conf.temperature_ = value.in_atomic_units();
-		return conf;
-	}
-
-	auto temperature_val() const {
-		return temperature_.value_or(0.0);
-	}
-	
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the options::ground_state to directory '" + dirname + "'.";
 		
@@ -197,7 +186,6 @@ public:
 			utils::save_optional(comm, dirname + "/subspace_diag",    subspace_diag_, error_message);
 			utils::save_optional(comm, dirname + "/max_steps",        max_steps_,     error_message);
 			utils::save_optional(comm, dirname + "/calc_forces",      calc_forces_,   error_message);
-			utils::save_optional(comm, dirname + "/temperature",      temperature_,   error_message);
 			
 			exception_happened = false;
 			comm.broadcast_value(exception_happened);
@@ -221,7 +209,6 @@ public:
 		utils::load_optional(dirname + "/subspace_diag",    opts.subspace_diag_);
 		utils::load_optional(dirname + "/max_steps",        opts.max_steps_);
 		utils::load_optional(dirname + "/calc_forces",      opts.calc_forces_);
-		utils::load_optional(dirname + "/temperature",      opts.temperature_);
 		
 		return opts;
 	}
@@ -244,11 +231,7 @@ public:
 		out << "  mixing             = " << self.mixing();
 		if(not self.mixing_.has_value()) out << " *";
 		out << "\n";
-
-		out << "  temperature             = " << self.temperature_val() << " Ha | " << self.temperature_val()/in_atomic_units(1.0_eV) << " eV | " << self.temperature_val()/in_atomic_units(1.0_K) << " K";
-		if(not self.temperature_.has_value()) out << " *";
-		out << "\n";
-
+		
 		out << "\n  * default values" << std::endl;
 		
 		return out;
