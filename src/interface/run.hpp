@@ -57,11 +57,11 @@ These are the options available:
 	void ground_state() const{
 		auto ions = systems::ions::load(".inq/default_ions");
 		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"));
-		
+
 		if(not electrons.try_load(".inq/default_orbitals")){
 			ground_state::initial_guess(ions, electrons);
 		}
-		auto result = ground_state::calculate(ions, electrons, options::theory::load(".inq/default_theory"));
+		auto result = ground_state::calculate(ions, electrons, options::theory::load(".inq/default_theory"), options::ground_state::load(".inq/default_ground_state_options"));
 
 		result.energy.save(input::environment::global().comm(), ".inq/default_energy");
 		electrons.save(".inq/default_orbitals");
