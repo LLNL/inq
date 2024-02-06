@@ -18,6 +18,10 @@ int main(int argc, char* argv[]) {
     {	"groundstate"s,      "ground-state"s     },
     {	"hartree_fock"s,     "hartree-fock"s     },
 		{	"hartreefock"s,      "hartree-fock"s     },
+		{	"kpoint"s,           "kpoints"s          },
+		{	"kpoints"s,          "kpoints"s          },
+		{	"k-point"s,          "kpoints"s          },
+		{	"k-points"s,         "kpoints"s          },	
 		{ "exact_exchange"s,   "exact-exchange"s   },
 		{ "exactexchange"s,    "exact-exchange"s   },
 		{ "extra_electrons"s,  "extra-electrons"s  },
@@ -51,6 +55,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "  " << interface::energy.name()       << "\t"   << interface::energy      .one_line() << '\n';
 		std::cout << "  " << interface::ground_state.name() << "\t"   << interface::ground_state.one_line() << '\n';
 		std::cout << "  " << interface::ions.name()         << "\t\t" << interface::ions        .one_line() << '\n';
+		std::cout << "  " << interface::kpoints.name()      << "\t"   << interface::kpoints     .one_line() << '\n';
 		std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
 		std::cout << "  " << interface::theory.name()       << "\t"   << interface::theory      .one_line() << '\n';
 		std::cout << "  " << interface::util.name()         << "\t\t" << interface::util        .one_line() << '\n';
@@ -101,10 +106,11 @@ int main(int argc, char* argv[]) {
 	if(command == interface::electrons   .name()) interface::electrons   .command(args, quiet);
 	if(command == interface::energy      .name()) interface::energy      .command(args, quiet);
 	if(command == interface::ground_state.name()) interface::ground_state.command(args, quiet);
+	if(command == interface::kpoints     .name()) interface::kpoints     .command(args, quiet);
 	if(command == interface::ions        .name()) interface::ions        .command(args, quiet);
 	if(command == interface::run         .name()) interface::run         .command(args, quiet);
 	if(command == interface::theory      .name()) interface::theory      .command(args, quiet);
-	if(command == interface::util        .name()) interface::util        .command(args, quiet);	
+	if(command == interface::util        .name()) interface::util        .command(args, quiet);
 
 	if(command == "help") {
 		if(args.size() == 0){
@@ -125,6 +131,7 @@ int main(int argc, char* argv[]) {
 		if(command == interface::electrons   .name()) interface::electrons   .help();
 		if(command == interface::energy      .name()) interface::energy      .help();
 		if(command == interface::ground_state.name()) interface::ground_state.help();
+		if(command == interface::kpoints     .name()) interface::kpoints     .help();
 		if(command == interface::ions        .name()) interface::ions        .help();
 		if(command == interface::run         .name()) interface::run         .help();
 		if(command == interface::theory      .name()) interface::theory      .help();
