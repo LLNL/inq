@@ -67,13 +67,11 @@ calculations. These are the available options:
 
 
 )"""";
-
-		exit(0);
 	}
 
 	void operator()() const {
 		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options");
-		std::cout << gs_opts;
+		if(input::environment::global().comm().root()) std::cout << gs_opts;
 	}
 
 	void max_steps(int nsteps) const {
@@ -123,7 +121,7 @@ calculations. These are the available options:
 			exit(0);
 		}
 		
-		std::cerr << "Error: Invalid syntax in 'ground-state' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in 'ground-state' command" << std::endl;
 		exit(1);
 	}
 	

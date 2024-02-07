@@ -105,13 +105,11 @@ the user.
 
 
 )"""";
-
-		exit(0);
 	}
 
 	void operator()() const {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options");
-		std::cout << el_opts;
+		if(input::environment::global().comm().root()) std::cout << el_opts;
 	}
 
 	void extra_states(int nstates) const{
@@ -165,12 +163,12 @@ the user.
 		if(args[0] == "extra-states"){
 
 			if(args.size() == 1) {
-				std::cerr << "Error: missing extra_states argument" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: missing extra_states argument" << std::endl;
 				exit(1);
 			}
 
 			if(args.size() >= 3) {
-				std::cerr << "Error: too many arguments to extra_states argument" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to extra_states argument" << std::endl;
 				exit(1);
 			}
 
@@ -182,12 +180,12 @@ the user.
 		if(args[0] == "extra-electrons"){
 
 			if(args.size() == 1) {
-				std::cerr << "Error: missing extra_electrons argument" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: missing extra_electrons argument" << std::endl;
 				exit(1);
 			}
 
 			if(args.size() >= 3) {
-				std::cerr << "Error: too many arguments to extra_electrons argument" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to extra_electrons argument" << std::endl;
 				exit(1);
 			}
 
@@ -199,12 +197,12 @@ the user.
 		if(args[0] == "cutoff"){
 
 			if(args.size() < 3) {
-				std::cerr << "Error: missing cutoff arguments. Use 'cutoff <value> <units>'" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: missing cutoff arguments. Use 'cutoff <value> <units>'" << std::endl;
 				exit(1);
 			}
 
 			if(args.size() > 3) {
-				std::cerr << "Error: too many arguments to cutoff argument" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to cutoff argument" << std::endl;
 				exit(1);
 			}
 
@@ -235,12 +233,12 @@ the user.
 		if(args[0] == "temperature"){
 
 			if(args.size() < 3) {
-				std::cerr << "Error: missing temperature arguments. Use 'temperature <value> <units>'." << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: missing temperature arguments. Use 'temperature <value> <units>'." << std::endl;
 				exit(1);
 			}
 
 			if(args.size() > 3) {
-				std::cerr << "Error: too many arguments to temperature argument.  Use 'temperature <value> <units>'." << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to temperature argument.  Use 'temperature <value> <units>'." << std::endl;
 				exit(1);
 			}
 
@@ -250,7 +248,7 @@ the user.
 			exit(0);
 		}
 
-		std::cerr << "Error: Invalid syntax in the 'electrons' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'electrons' command" << std::endl;
 		exit(1);
 	}
 	

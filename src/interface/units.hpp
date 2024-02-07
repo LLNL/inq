@@ -68,8 +68,6 @@ be given in plural form.
 
 
 )"""";
-
-		exit(0);
 	}
 		
 } const units ;

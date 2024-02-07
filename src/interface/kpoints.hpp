@@ -72,8 +72,6 @@ These are the options available:
 
 
 )"""";
-		
-		exit(0);
 	}
 
   void operator()() const {
@@ -124,7 +122,7 @@ These are the options available:
 			exit(0);
 		}
         
-		std::cerr << "Error: Invalid syntax in the 'kpoints' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'kpoints' command" << std::endl;
 		exit(1);
 	}
 	

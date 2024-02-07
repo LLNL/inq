@@ -50,8 +50,6 @@ These are the options available:
 
 
 )"""";
-		
-		exit(0);
 	}
 
 	void ground_state() const{
@@ -79,7 +77,7 @@ These are the options available:
 	void command(ArgsType const & args, bool quiet) const {
 		
 		if(args.size() == 0) {
-			std::cerr << "Error: Missing argument to the 'run' command" << std::endl;
+			if(input::environment::global().comm().root()) std::cerr << "Error: Missing argument to the 'run' command" << std::endl;
 			exit(1);
 		}
 		
@@ -88,7 +86,7 @@ These are the options available:
 			exit(0);
 		}
 		
-		std::cerr << "Error: Invalid syntax in the 'run' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'run' command" << std::endl;
 		exit(1);
 	}
 	

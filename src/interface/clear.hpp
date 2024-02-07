@@ -52,8 +52,6 @@ The 'clear' command removes all inq information from the current
 directory. It doesn't take any arguments.
 
 )"""";
-
-		exit(0);
 	}
 	
 }	const clear;

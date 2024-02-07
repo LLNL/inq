@@ -48,24 +48,26 @@ int main(int argc, char* argv[]) {
 	input::environment::global(); //Initialize MPI 
 
 	if(argc == 1){
-		std::cout << "\n";
-		std::cout << "Usage: inq <command> [arguments]\n\n";
-		std::cout << "The following commands are available:\n";
-		std::cout << "  " << "help"                         << "\t\t" << "Prints detailed information about other commands\n";
-		std::cout << "  " << interface::cell.name()         << "\t\t" << interface::cell        .one_line() << '\n';
-		std::cout << "  " << interface::clear.name()        << "\t\t" << interface::clear       .one_line() << '\n';
-		std::cout << "  " << interface::electrons.name()    << "\t"   << interface::electrons   .one_line() << '\n';
-		std::cout << "  " << interface::energy.name()       << "\t"   << interface::energy      .one_line() << '\n';
-		std::cout << "  " << interface::ground_state.name() << "\t"   << interface::ground_state.one_line() << '\n';
-		std::cout << "  " << interface::ions.name()         << "\t\t" << interface::ions        .one_line() << '\n';
-		std::cout << "  " << interface::kpoints.name()      << "\t"   << interface::kpoints     .one_line() << '\n';
-		std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
-		std::cout << "  " << interface::theory.name()       << "\t"   << interface::theory      .one_line() << '\n';
-		std::cout << "  " << interface::util.name()         << "\t\t" << interface::util        .one_line() << '\n';
-		std::cout << "\n";
-		std::cout << "And the following options:\n";
-		std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.\n";
-		std::cout << std::endl;
+		if(input::environment::global().comm().root()) {
+			std::cout << "\n";
+			std::cout << "Usage: inq <command> [arguments]\n\n";
+			std::cout << "The following commands are available:\n";
+			std::cout << "  " << "help"                         << "\t\t" << "Prints detailed information about other commands\n";
+			std::cout << "  " << interface::cell.name()         << "\t\t" << interface::cell        .one_line() << '\n';
+			std::cout << "  " << interface::clear.name()        << "\t\t" << interface::clear       .one_line() << '\n';
+			std::cout << "  " << interface::electrons.name()    << "\t"   << interface::electrons   .one_line() << '\n';
+			std::cout << "  " << interface::energy.name()       << "\t"   << interface::energy      .one_line() << '\n';
+			std::cout << "  " << interface::ground_state.name() << "\t"   << interface::ground_state.one_line() << '\n';
+			std::cout << "  " << interface::ions.name()         << "\t\t" << interface::ions        .one_line() << '\n';
+			std::cout << "  " << interface::kpoints.name()      << "\t"   << interface::kpoints     .one_line() << '\n';
+			std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
+			std::cout << "  " << interface::theory.name()       << "\t"   << interface::theory      .one_line() << '\n';
+			std::cout << "  " << interface::util.name()         << "\t\t" << interface::util        .one_line() << '\n';
+			std::cout << "\n";
+			std::cout << "And the following options:\n";
+			std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.\n";
+			std::cout << std::endl;
+		}
 		exit(1);
 	}
 
@@ -117,32 +119,37 @@ int main(int argc, char* argv[]) {
 
 	if(command == "help") {
 		if(args.size() == 0){
-			std::cout << "\n";
-			std::cout << "Usage: inq help <command>\n\n";
-			std::cout << "The 'help' command prints detailed information about other inq commands.\n\n";
-			std::cout << "There is also some additional help topics you can read:\n";
-			std::cout << "  " << "units" << "\t\t" << "Prints information about the available input units in inq\n";
-			std::cout << std::endl;
+			if(input::environment::global().comm().root()) {
+				std::cout << "\n";
+				std::cout << "Usage: inq help <command>\n\n";
+				std::cout << "The 'help' command prints detailed information about other inq commands.\n\n";
+				std::cout << "There is also some additional help topics you can read:\n";
+				std::cout << "  " << "units" << "\t\t" << "Prints information about the available input units in inq\n";
+				std::cout << std::endl;
+			}
 			exit(1);
 		}
 
 		command = args[0];
 		args.erase(args.begin());
 
-		if(command == interface::clear       .name()) interface::clear       .help();
-		if(command == interface::cell        .name()) interface::cell        .help();
-		if(command == interface::electrons   .name()) interface::electrons   .help();
-		if(command == interface::energy      .name()) interface::energy      .help();
-		if(command == interface::ground_state.name()) interface::ground_state.help();
-		if(command == interface::kpoints     .name()) interface::kpoints     .help();
-		if(command == interface::ions        .name()) interface::ions        .help();
-		if(command == interface::run         .name()) interface::run         .help();
-		if(command == interface::theory      .name()) interface::theory      .help();
-		if(command == interface::units       .name()) interface::units       .help();
-		if(command == interface::util        .name()) interface::util        .help();
+		if(input::environment::global().comm().root()) {
+			if(command == interface::clear       .name()) interface::clear       .help();
+			if(command == interface::cell        .name()) interface::cell        .help();
+			if(command == interface::electrons   .name()) interface::electrons   .help();
+			if(command == interface::energy      .name()) interface::energy      .help();
+			if(command == interface::ground_state.name()) interface::ground_state.help();
+			if(command == interface::kpoints     .name()) interface::kpoints     .help();
+			if(command == interface::ions        .name()) interface::ions        .help();
+			if(command == interface::run         .name()) interface::run         .help();
+			if(command == interface::theory      .name()) interface::theory      .help();
+			if(command == interface::units       .name()) interface::units       .help();
+			if(command == interface::util        .name()) interface::util        .help();
+		}
+		exit(0);
 	}
 	
-	std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
+	if(input::environment::global().comm().root()) std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);
 	
 	fftw_cleanup();

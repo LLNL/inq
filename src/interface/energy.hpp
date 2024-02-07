@@ -129,8 +129,6 @@ These are the available subcommands:
 
 
 )"""";
-
-		exit(0);
 	}
 
 	void operator()() const {
