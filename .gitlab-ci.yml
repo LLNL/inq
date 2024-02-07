@@ -222,38 +222,76 @@ gcc-mpich-5p:
       - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
-# GCC-OMPI
+# GCC-OMPI-DEBUG
 #########################################################################################################################
 
-gcc-ompi:
-    stage: test
+gcc-ompi-debug:
+    stage: build
     needs: []
     script:
       - mpic++.openmpi --version
       - mkdir build && cd build
-      - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Release -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
+      - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
       - time make
       - time make install
-      - ctest --output-on-failure --timeout 1000
-      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 1000; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 1000; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 1000; cd ..
-      - time mpirun.openmpi --allow-run-as-root -np 2 tests/silicon
-      - time mpirun.openmpi --allow-run-as-root -np 3 tests/silicon
-      - time mpirun.openmpi --allow-run-as-root -np 5 tests/silicon
-      - time mpirun.openmpi --allow-run-as-root -np 2 tests/nitrogen
-      - time mpirun.openmpi --allow-run-as-root -np 3 tests/nitrogen
-      - time mpirun.openmpi --allow-run-as-root -np 5 tests/nitrogen
-      - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1
-      - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1
-      - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1
+      - cd ../
+      - time tar -Ipixz -cvf gcc-ompi-debug-build.tar.xz build/
+    artifacts:
+      paths:
+      - gcc-ompi-debug-build.tar.xz
+
+gcc-ompi-debug-1p:
+    stage: test
+    needs: ["gcc-ompi-debug"]    
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - ctest --output-on-failure --timeout 360
+
+gcc-ompi-debug-2p:
+    stage: test
+    needs: ["gcc-ompi-debug"]
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
+      
+gcc-ompi-debug-3p:
+    stage: test
+    needs: ["gcc-ompi-debug"]
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
+
+gcc-ompi-debug-4p:
+    stage: test
+    needs: ["gcc-ompi-debug"]
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
+
+gcc-ompi-debug-5p:
+    stage: test
+    needs: ["gcc-ompi-debug"]
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
+
 
 #########################################################################################################################
 # GCC-OMPI-FAST
 #########################################################################################################################
       
 gcc-ompi-fast:
-    stage: test
+    stage: build
     needs: []
     script:
       - mpic++.openmpi --version
@@ -262,19 +300,56 @@ gcc-ompi-fast:
       - cmake ../ -DCMAKE_BUILD_TYPE=Release --install-prefix=$HOME -DMPI_EXECUTABLE_SUFFIX=.openmpi || cat config.log
       - time make
       - time make install
+      - cd ../ 
+      - time tar -Ipixz -cvf gcc-ompi-fast-build.tar.xz build/
+    artifacts:
+      paths:
+      - gcc-ompi-fast-build.tar.xz
+
+gcc-ompi-fast-1p:
+    stage: test
+    needs: ["gcc-ompi-fast"]
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast      
       - ctest --output-on-failure --timeout 360
-      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 360; cd ..
-      - cd src; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 360; cd ..
-      - time mpirun.openmpi --allow-run-as-root -np 2 tests/silicon
-      - time mpirun.openmpi --allow-run-as-root -np 3 tests/silicon
-      - time mpirun.openmpi --allow-run-as-root -np 5 tests/silicon
-      - time mpirun.openmpi --allow-run-as-root -np 2 tests/nitrogen
-      - time mpirun.openmpi --allow-run-as-root -np 3 tests/nitrogen
-      - time mpirun.openmpi --allow-run-as-root -np 5 tests/nitrogen
-      - time mpirun.openmpi --allow-run-as-root -np 2 tests/al4h1
-      - time mpirun.openmpi --allow-run-as-root -np 3 tests/al4h1
-      - time mpirun.openmpi --allow-run-as-root -np 5 tests/al4h1
+
+gcc-ompi-fast-2p:
+    stage: test
+    needs: ["gcc-ompi-fast"]    
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
+
+gcc-ompi-fast-3p:
+    stage: test
+    needs: ["gcc-ompi-fast"]    
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
+
+gcc-ompi-fast-4p:
+    stage: test
+    needs: ["gcc-ompi-fast"]    
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
+      
+gcc-ompi-fast-5p:
+    stage: test
+    needs: ["gcc-ompi-fast"]    
+    script:
+      - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
+      - cd build
+      - cmake --build . --target install/fast
+      - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
 # CLANG-OMPI-DEBUG
