@@ -10,6 +10,21 @@
 #include <utils/lowercase.hpp>
 #include <interface/units.hpp>
 
+using namespace inq;
+
+static void list() {
+	std::cout << "  " << interface::cell.name()         << "\t\t" << interface::cell        .one_line() << '\n';
+	std::cout << "  " << interface::clear.name()        << "\t\t" << interface::clear       .one_line() << '\n';
+	std::cout << "  " << interface::electrons.name()    << "\t"   << interface::electrons   .one_line() << '\n';
+	std::cout << "  " << interface::energy.name()       << "\t"   << interface::energy      .one_line() << '\n';
+	std::cout << "  " << interface::ground_state.name() << "\t"   << interface::ground_state.one_line() << '\n';
+	std::cout << "  " << interface::ions.name()         << "\t\t" << interface::ions        .one_line() << '\n';
+	std::cout << "  " << interface::kpoints.name()      << "\t"   << interface::kpoints     .one_line() << '\n';
+	std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
+	std::cout << "  " << interface::theory.name()       << "\t"   << interface::theory      .one_line() << '\n';
+	std::cout << "  " << interface::util.name()         << "\t\t" << interface::util        .one_line() << '\n';
+}
+
 int main(int argc, char* argv[]) {
 	using namespace std::string_literals;
  
@@ -43,8 +58,6 @@ int main(int argc, char* argv[]) {
 		{ "tol"s         ,     "tolerance"s        }
 	};
 	
-	using namespace inq;
-	
 	input::environment::global(); //Initialize MPI 
 
 	if(argc == 1){
@@ -53,16 +66,7 @@ int main(int argc, char* argv[]) {
 			std::cout << "Usage: inq <command> [arguments]\n\n";
 			std::cout << "The following commands are available:\n";
 			std::cout << "  " << "help"                         << "\t\t" << "Prints detailed information about other commands\n";
-			std::cout << "  " << interface::cell.name()         << "\t\t" << interface::cell        .one_line() << '\n';
-			std::cout << "  " << interface::clear.name()        << "\t\t" << interface::clear       .one_line() << '\n';
-			std::cout << "  " << interface::electrons.name()    << "\t"   << interface::electrons   .one_line() << '\n';
-			std::cout << "  " << interface::energy.name()       << "\t"   << interface::energy      .one_line() << '\n';
-			std::cout << "  " << interface::ground_state.name() << "\t"   << interface::ground_state.one_line() << '\n';
-			std::cout << "  " << interface::ions.name()         << "\t\t" << interface::ions        .one_line() << '\n';
-			std::cout << "  " << interface::kpoints.name()      << "\t"   << interface::kpoints     .one_line() << '\n';
-			std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
-			std::cout << "  " << interface::theory.name()       << "\t"   << interface::theory      .one_line() << '\n';
-			std::cout << "  " << interface::util.name()         << "\t\t" << interface::util        .one_line() << '\n';
+			list();
 			std::cout << "\n";
 			std::cout << "And the following options:\n";
 			std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.\n";
@@ -122,8 +126,9 @@ int main(int argc, char* argv[]) {
 			if(input::environment::global().comm().root()) {
 				std::cout << "\n";
 				std::cout << "Usage: inq help <command>\n\n";
-				std::cout << "The 'help' command prints detailed information about other inq commands.\n\n";
-				std::cout << "There is also some additional help topics you can read:\n";
+				std::cout << "The 'help' command prints detailed information about other inq commands:\n\n";
+				list();
+				std::cout << "\nThere is also some additional help topics you can read:\n\n";
 				std::cout << "  " << "units" << "\t\t" << "Prints information about the available input units in inq\n";
 				std::cout << std::endl;
 			}
