@@ -26,7 +26,9 @@ class brillouin {
 	}
 	
 public:
-  
+
+	brillouin() = default;
+	
   brillouin(inq::systems::ions const & ions, input::kpoints::grid const & kpts):
 		kpoints_(kpts.size()),
 		weights_(kpts.size())
@@ -103,6 +105,11 @@ public:
   brillouin(inq::systems::ions const &, brillouin const & bz):
 		brillouin(bz){
   }
+
+	void clear() {
+		kpoints_.clear();
+		weights_.clear();
+	}
 	
   auto size() const {
     return (long) kpoints_.size();
@@ -221,7 +228,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz1.kpoint(1)[0]/(2*M_PI) == -0.5_a);
 		CHECK(bz1.kpoint(1)[1]/(2*M_PI) == -0.5_a);
 		CHECK(bz1.kpoint(1)[2]/(2*M_PI) == -0.5_a);
-		
+
+		bz1.clear();
+		CHECK(bz1.size() == 0);
+				
 		auto bz2 = ions::brillouin(ions, input::kpoints::grid({1, 2, 3}));
 
 		CHECK(bz2.size() == 6);
