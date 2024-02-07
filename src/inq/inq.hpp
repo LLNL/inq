@@ -31,6 +31,7 @@
 #include <interface/kpoints.hpp>
 #include <interface/run.hpp>
 #include <interface/theory.hpp>
+#include <interface/units.hpp>
 #include <interface/util.hpp>
 
 #endif
