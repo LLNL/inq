@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Defines the theory used to represent the electrons-electron interaction.";
+		return "Defines the theory used to represent the electrons-electron interaction";
 	}
 	
 	void help() const {

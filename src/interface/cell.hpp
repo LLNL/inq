@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Defines the simulation cell.";
+		return "Defines the simulation cell";
 	}
 	
 	void help() const {
@@ -89,7 +89,6 @@ The following are the accepted forms of the cell command:
 
 )"""";
 	}
-
 	
 	void operator()() const {
 		auto cell = systems::ions::load(".inq/default_ions").cell();

@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Miscelaneous utility commands.";
+		return "Miscelaneous utility commands";
 	}
 	
 	void help() const {

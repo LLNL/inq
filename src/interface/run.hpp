@@ -23,7 +23,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Runs the simulation.";
+		return "Runs the simulation";
 	}
 	
 	void help() const {

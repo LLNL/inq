@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Get information about the energy obtained by a ground-state calculation.";
+		return "Get information about the energy obtained by a ground-state calculation";
 	}
 
 	void help() const {
