@@ -16,6 +16,7 @@
 #include <parallel/communicator.hpp>
 #include <mpi3/detail/datatype.hpp>
 
+#include <utils/num_str.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -34,12 +35,6 @@
 namespace inq {
 namespace operations {
 namespace io {
-
-auto numstr(long num){
-	char numcstr[12]; 
-	snprintf(numcstr, 11, "%010ld", num);
-	return std::string(numcstr);				
-}
 
 template <class ArrayType, class PartType, class CommType>
 void save(std::string const & dirname, CommType & comm, PartType const & part, ArrayType const & array){
@@ -133,7 +128,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 				 
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
-		auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
+		auto filename = dirname + "/" + util::num_to_str(ist + phi.set_part().start());
 
 		buffer = phi.matrix().rotated()[ist];
 
@@ -182,7 +177,7 @@ auto load(std::string const & dirname, FieldSet & phi){
 			
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
-		auto filename = dirname + "/" + numstr(ist + phi.set_part().start());
+		auto filename = dirname + "/" + util::num_to_str(ist + phi.set_part().start());
 
 		MPI_File fh;
 
