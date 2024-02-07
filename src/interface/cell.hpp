@@ -134,6 +134,8 @@ public:
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
+
+		using util::str_to;
 		
 		if(args.size() == 0) {
 			operator()();
@@ -146,7 +148,7 @@ public:
 				exit(1);
 			}
 			
-			auto aa = atof(args[1].c_str())*magnitude::length::parse(args[2]);
+			auto aa = str_to<double>(args[1])*magnitude::length::parse(args[2]);
 
 			int per = 3;
 			if(args.size() == 4) per = parse_periodicity(args[3]);
@@ -163,9 +165,9 @@ public:
 			}
 
 			auto unit = magnitude::length::parse(args[4]);
-			auto aa = atof(args[1].c_str())*unit;
-			auto bb = atof(args[2].c_str())*unit;
-			auto cc = atof(args[3].c_str())*unit;
+			auto aa = str_to<double>(args[1])*unit;
+			auto bb = str_to<double>(args[2])*unit;
+			auto cc = str_to<double>(args[3])*unit;
 
 			int per = 3;
 			if(args.size() == 6) per = parse_periodicity(args[5]);
@@ -183,24 +185,24 @@ public:
 			auto per_location = 10;
 			
 			if(units_name == "scale"){
-				scale = atof(args[10].c_str());
+				scale = str_to<double>(args[10]);
 				units_name = args[11];
 				per_location = 12;
 			}
 
 			auto unit = scale*magnitude::length::parse(units_name);
 				
-			auto aa0 = atof(args[0].c_str())*unit;
-			auto aa1 = atof(args[1].c_str())*unit;
-			auto aa2 = atof(args[2].c_str())*unit;
+			auto aa0 = str_to<double>(args[0])*unit;
+			auto aa1 = str_to<double>(args[1])*unit;
+			auto aa2 = str_to<double>(args[2])*unit;
 			
-			auto bb0 = atof(args[3].c_str())*unit;
-			auto bb1 = atof(args[4].c_str())*unit;
-			auto bb2 = atof(args[5].c_str())*unit;
+			auto bb0 = str_to<double>(args[3])*unit;
+			auto bb1 = str_to<double>(args[4])*unit;
+			auto bb2 = str_to<double>(args[5])*unit;
 
-			auto cc0 = atof(args[6].c_str())*unit;
-			auto cc1 = atof(args[7].c_str())*unit;
-			auto cc2 = atof(args[8].c_str())*unit;
+			auto cc0 = str_to<double>(args[6])*unit;
+			auto cc1 = str_to<double>(args[7])*unit;
+			auto cc2 = str_to<double>(args[8])*unit;
 
 			int per = 3;
 			if(long(args.size()) > per_location) per = parse_periodicity(args[per_location]);
