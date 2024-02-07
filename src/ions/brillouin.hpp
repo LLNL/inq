@@ -26,7 +26,9 @@ class brillouin {
 	}
 	
 public:
-  
+
+	brillouin() = default;
+	
   brillouin(inq::systems::ions const & ions, input::kpoints::grid const & kpts):
 		kpoints_(kpts.size()),
 		weights_(kpts.size())
@@ -103,6 +105,11 @@ public:
   brillouin(inq::systems::ions const &, brillouin const & bz):
 		brillouin(bz){
   }
+
+	void clear() {
+		kpoints_.clear();
+		weights_.clear();
+	}
 	
   auto size() const {
     return (long) kpoints_.size();
@@ -115,6 +122,12 @@ public:
   auto kpoint_weight(int ik) const {
     return weights_[ik];
   }
+
+	auto insert(vector3<double, covariant> kpt, double const & weight){
+		kpt.transform([](auto xx){ return (xx >= 0.5) ? xx - 1.0 : xx; });
+		kpoints_.emplace_back(2.0*M_PI*kpt);
+		weights_.emplace_back(weight);
+	}
 	
 	template<class OStream>
 	friend OStream& operator<<(OStream& os, brillouin const & self){
@@ -206,6 +219,19 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz1.kpoint(0)[1] == 0.0_a);
 		CHECK(bz1.kpoint(0)[2] == 0.0_a);
 
+		bz1.insert({-0.5, -0.5, -0.5}, 0.0);
+		
+		CHECK(bz1.size() == 2);
+		CHECK(bz1.kpoint(0)[0]/(2*M_PI) ==  0.0_a);
+		CHECK(bz1.kpoint(0)[1]/(2*M_PI) ==  0.0_a);
+		CHECK(bz1.kpoint(0)[2]/(2*M_PI) ==  0.0_a);
+		CHECK(bz1.kpoint(1)[0]/(2*M_PI) == -0.5_a);
+		CHECK(bz1.kpoint(1)[1]/(2*M_PI) == -0.5_a);
+		CHECK(bz1.kpoint(1)[2]/(2*M_PI) == -0.5_a);
+
+		bz1.clear();
+		CHECK(bz1.size() == 0);
+				
 		auto bz2 = ions::brillouin(ions, input::kpoints::grid({1, 2, 3}));
 
 		CHECK(bz2.size() == 6);
