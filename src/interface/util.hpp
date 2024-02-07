@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Miscelaneous utility commands.";
+		return "Miscelaneous utility commands";
 	}
 	
 	void help() const {
@@ -55,8 +55,6 @@ These are the available subcommands:
 
 
 )"""";
-
-		exit(0);
 	}
 	
 	bool match(double value, double reference, double tolerance) const {
@@ -64,14 +62,16 @@ These are the available subcommands:
     auto diff = fabs(reference - value);
     
     if(diff > tolerance){
-      tfm::format(std::cout, "\nMatch: FAILED\n");
-      tfm::format(std::cout, "  calculated value = %.12f\n",  value);
-      tfm::format(std::cout, "  reference value  = %.12f\n",  reference);
-      tfm::format(std::cout, "  difference       = %.1e\n",   diff);
-      tfm::format(std::cout, "  tolerance        = %.1e\n\n", tolerance);
+			if(input::environment::global().comm().root()) {
+				tfm::format(std::cout, "\nMatch: FAILED\n");
+				tfm::format(std::cout, "  calculated value = %.12f\n",  value);
+				tfm::format(std::cout, "  reference value  = %.12f\n",  reference);
+				tfm::format(std::cout, "  difference       = %.1e\n",   diff);
+				tfm::format(std::cout, "  tolerance        = %.1e\n\n", tolerance);
+			}
       return false;
     } else {
-      tfm::format(std::cout, "Match: SUCCESS (value = %.12f , diff = %.1e)\n", value, diff);
+      if(input::environment::global().comm().root()) tfm::format(std::cout, "Match: SUCCESS (value = %.12f , diff = %.1e)\n", value, diff);
       return true;
     }
   }
@@ -100,7 +100,7 @@ These are the available subcommands:
 			exit(0);
 		}
 		
-		std::cerr << "Error: Invalid syntax in the 'util' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'util' command" << std::endl;
 		exit(1);
 	}
 	

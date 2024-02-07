@@ -5,7 +5,8 @@ set -x #output commands to the terminal
 
 #Test the help commands
 
-inq || true
+inq
+inq help
 inq help clear
 inq help cell
 inq help electrons

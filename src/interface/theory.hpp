@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Defines the theory used to represent the electrons-electron interaction.";
+		return "Defines the theory used to represent the electrons-electron interaction";
 	}
 	
 	void help() const {
@@ -119,13 +119,11 @@ These are the options available:
              `inq theory functional LDA_XC_TETER93`
 
 )"""";
-
-		exit(0);
 	}	
 
 	void operator()() const {
 		auto theo = options::theory::load(".inq/default_theory");
-		std::cout << theo;
+		if(input::environment::global().comm().root()) std::cout << theo;
 	}
 	
 	void non_interacting() const{
@@ -200,19 +198,19 @@ These are the options available:
 		} else if(args[0] == "functional") {
 
 			if(args.size() == 1){
-				std::cerr << "Error: missing arguments for the 'theory functional' command" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: missing arguments for the 'theory functional' command" << std::endl;
 				exit(1);
 			}
 			
 			if(args.size() > 3){
-				std::cerr << "Error: too many arguments for the 'theory functional' command" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments for the 'theory functional' command" << std::endl;
 				exit(1);
 			}
 			
 			auto exchange_id = xc_functional_get_number(args[1].c_str());
 
 			if(exchange_id == -1) {
-				std::cerr << "\nError: Unknown exchange functional '" << args[1] << "'in 'theory' command\n" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "\nError: Unknown exchange functional '" << args[1] << "'in 'theory' command\n" << std::endl;
 				exit(1);
 			}
 			
@@ -220,14 +218,14 @@ These are the options available:
 			if(args.size() == 3) correlation_id = xc_functional_get_number(args[2].c_str());
 
 			if(correlation_id == -1) {
-				std::cerr << "\nError: Unknown correlation functional '" << args[2] << "' in 'theory' command\n" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "\nError: Unknown correlation functional '" << args[2] << "' in 'theory' command\n" << std::endl;
 				exit(1);
 			}
 
 			functional(exchange_id, correlation_id);
 			
 		} else {				
-			std::cerr << "Error: Invalid syntax in 'theory' command" << std::endl;
+			if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in 'theory' command" << std::endl;
 			exit(1);
 		}
 

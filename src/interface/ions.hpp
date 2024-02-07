@@ -23,7 +23,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Defines the ions in the simulation.";
+		return "Defines the ions in the simulation";
 	}
 	void help() const {
 		
@@ -97,8 +97,6 @@ These are the uses for the command:
 
 
 )"""";
-
-		exit(0);
 	}
 	
 	void operator()() const {
@@ -153,7 +151,7 @@ These are the uses for the command:
 		if(args[0] == "clear"){
 
 			if(args.size() != 1) {
-				std::cerr << "Error: The 'ions clear' command doesn't take arguments." << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: The 'ions clear' command doesn't take arguments." << std::endl;
 				exit(1);
 			}
 			clear();
@@ -164,7 +162,7 @@ These are the uses for the command:
  		if(args.size() >= 2 and args[0] == "insert" and args[1] == "fractional"){
 
 			if(args.size() != 6) {
-				std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert fractional <symbol> <x> <y> <z>" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert fractional <symbol> <x> <y> <z>" << std::endl;
 				exit(1);
 			}
 
@@ -181,7 +179,7 @@ These are the uses for the command:
 		if(args[0] == "insert"){
 
 			if(args.size() != 6) {
-				std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert <symbol> <x> <y> <z> <units>" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert <symbol> <x> <y> <z> <units>" << std::endl;
 				exit(1);
 			}
 
@@ -216,7 +214,7 @@ These are the uses for the command:
 			exit(0);
 		}
 		
-		std::cerr << "Error: Invalid syntax in the ions command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the ions command" << std::endl;
 		exit(1);
 	}
 		

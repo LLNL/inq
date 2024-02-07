@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Defines the simulation cell.";
+		return "Defines the simulation cell";
 	}
 	
 	void help() const {
@@ -88,10 +88,7 @@ The following are the accepted forms of the cell command:
   For example 'inq cell  0.0 0.5 0.5  0.5 0.0 0.5  0.5 0.5 0.0  scale 3.57 angstrom'.
 
 )"""";
-
-		exit(0);
 	}
-
 	
 	void operator()() const {
 		auto cell = systems::ions::load(".inq/default_ions").cell();
@@ -145,7 +142,7 @@ public:
 		
 		if(args[0] == "cubic"){
 			if(args.size() != 3 and args.size() != 4) {
-				std::cerr << "Error: Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]" << std::endl;
 				exit(1);
 			}
 			
@@ -161,7 +158,7 @@ public:
 		
 		if(args[0] == "orthorhombic"){
 			if(args.size() != 5 and args.size() != 6) {
-				std::cerr << "Error: Wrong arguments for an orthorhombic cell definition.\nUse: inq cell orthorhombic <a> <b> <c> <units> [periodicity]" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: Wrong arguments for an orthorhombic cell definition.\nUse: inq cell orthorhombic <a> <b> <c> <units> [periodicity]" << std::endl;
 				exit(1);
 			}
 
@@ -214,7 +211,7 @@ public:
 			exit(0);
 		}
 
-		std::cerr << "Error: Invalid syntax in the 'cell' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'cell' command" << std::endl;
 		exit(1);
 	}
 		

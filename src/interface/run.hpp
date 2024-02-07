@@ -23,7 +23,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Runs the simulation.";
+		return "Runs the simulation";
 	}
 	
 	void help() const {
@@ -50,16 +50,17 @@ These are the options available:
 
 
 )"""";
-		
-		exit(0);
 	}
 
 	void ground_state() const{
 		auto ions = systems::ions::load(".inq/default_ions");
+
 		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
 
 		try { bz = ions::brillouin::load(".inq/default_brillouin"); }
-		catch(...) {}
+		catch(...) {
+			bz.save(input::environment::global().comm(), ".inq/default_brillouin");
+		}
 		
 		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"), bz);
  
@@ -76,7 +77,7 @@ These are the options available:
 	void command(ArgsType const & args, bool quiet) const {
 		
 		if(args.size() == 0) {
-			std::cerr << "Error: Missing argument to the 'run' command" << std::endl;
+			if(input::environment::global().comm().root()) std::cerr << "Error: Missing argument to the 'run' command" << std::endl;
 			exit(1);
 		}
 		
@@ -85,7 +86,7 @@ These are the options available:
 			exit(0);
 		}
 		
-		std::cerr << "Error: Invalid syntax in the 'run' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'run' command" << std::endl;
 		exit(1);
 	}
 	
