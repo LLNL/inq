@@ -18,6 +18,14 @@ auto num_to_str(long num){
 	return std::string(numcstr);				
 }
 
+template <typename Type>
+auto string_to(std::string const & str);
+
+template <>
+auto string_to<double>(std::string const & str) {
+  return atof(str.c_str());
+}
+
 
 }
 }
@@ -34,9 +42,23 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
-  CHECK(util::num_to_str(0)    == "0000000000");
-  CHECK(util::num_to_str(1024) == "0000001024");
-  CHECK(util::num_to_str(-333) == "-000000333");
+  SECTION("integer to string"){
+    
+    CHECK(util::num_to_str(0)    == "0000000000");
+    CHECK(util::num_to_str(1024) == "0000001024");
+    CHECK(util::num_to_str(-333) == "-000000333");
+
+  }
+
+  SECTION("string to double"){
+
+    CHECK(util::string_to<double>("0.3") == 0.3_a);
+    CHECK(util::string_to<double>("-56750.25456") == -56750.25456_a);
+    
+  }
+  
+
+  
 }
 
 #endif
