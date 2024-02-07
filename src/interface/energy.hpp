@@ -135,7 +135,7 @@ These are the available subcommands:
 
 	void operator()() const {
 		auto ener = hamiltonian::energy::load(".inq/default_energy");
-		std::cout << ener;
+		if(input::environment::global().comm().root()) std::cout << ener;
 	}
 
   double total() const{
@@ -192,51 +192,51 @@ These are the available subcommands:
     }
 
     if(args.size() == 1 and args[0] == "kinetic"){
-       printf("%30.20e\n", kinetic());
+			if(input::environment::global().comm().root()) printf("%30.20e\n", kinetic());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "eigenvalues"){
-       printf("%30.20e\n", eigenvalues());
+			if(input::environment::global().comm().root()) printf("%30.20e\n", eigenvalues());
       exit(0);
     }
     
     if(args.size() == 1 and args[0] == "external"){
-       printf("%30.20e\n", external());
+      if(input::environment::global().comm().root()) printf("%30.20e\n", external());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "non-local"){
-       printf("%30.20e\n", non_local());
+      if(input::environment::global().comm().root()) printf("%30.20e\n", non_local());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "hartree"){
-       printf("%30.20e\n", hartree());
+      if(input::environment::global().comm().root()) printf("%30.20e\n", hartree());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "xc"){
-       printf("%30.20e\n", xc());
+      if(input::environment::global().comm().root()) printf("%30.20e\n", xc());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "nvxc"){
-       printf("%30.20e\n", nvxc());
+      if(input::environment::global().comm().root()) printf("%30.20e\n", nvxc());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "exact-exchange"){
-       printf("%30.20e\n", exact_exchange());
+      if(input::environment::global().comm().root()) printf("%30.20e\n", exact_exchange());
       exit(0);
     }
         
     if(args.size() == 1 and args[0] == "ion"){
-       printf("%30.20e\n", ion());
+      if(input::environment::global().comm().root()) printf("%30.20e\n", ion());
       exit(0);
     }
       
-		std::cerr << "Error: Invalid syntax in the 'energy' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'energy' command" << std::endl;
 		exit(1);
     
 	}
