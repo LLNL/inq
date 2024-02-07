@@ -34,6 +34,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
+  CHECK(util::num_to_str(0)    == "0000000000");
+  CHECK(util::num_to_str(1024) == "0000001024");
+  CHECK(util::num_to_str(-333) == "-000000333");
 }
 
 #endif
