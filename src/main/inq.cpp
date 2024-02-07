@@ -128,9 +128,18 @@ int main(int argc, char* argv[]) {
 		command = args[0];
 		args.erase(args.begin());
 
-		if(command == interface::units.name()) interface::units.help();
-		if(comm.root()) all_commands.help(command);
-		exit(0);
+		if(comm.root()) {
+			if(command == interface::units.name()) {
+				interface::units.help();
+				exit(0);
+			}
+			all_commands.help(command);
+			
+			if(comm.root()) std::cerr << "inq error: unknown help item '" << command << "'." << std::endl;			
+			exit(1);
+		} else {
+			exit(0);
+		}
 	}
 	
 	if(comm.root()) std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
