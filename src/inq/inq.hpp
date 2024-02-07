@@ -28,6 +28,7 @@
 #include <interface/energy.hpp>
 #include <interface/ground_state.hpp>
 #include <interface/ions.hpp>
+#include <interface/kpoints.hpp>
 #include <interface/run.hpp>
 #include <interface/theory.hpp>
 #include <interface/util.hpp>

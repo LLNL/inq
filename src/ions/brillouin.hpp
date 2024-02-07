@@ -19,6 +19,11 @@ class brillouin {
 
 	std::vector<vector3<double, covariant>> kpoints_;
 	std::vector<double> weights_;	
+
+	brillouin(int size):
+		kpoints_(size),
+		weights_(size) {
+	}
 	
 public:
   
@@ -94,6 +99,10 @@ public:
 		for(int ik = 0; ik < kpts.size(); ik++) weights_[ik] /= totalw;
 
   }
+
+  brillouin(inq::systems::ions const &, brillouin const & bz):
+		brillouin(bz){
+  }
 	
   auto size() const {
     return (long) kpoints_.size();
@@ -109,8 +118,7 @@ public:
 	
 	template<class OStream>
 	friend OStream& operator<<(OStream& os, brillouin const & self){
-		os << std::endl;		
-		os << "  Number of kpoints = " << self.size() << std::endl;
+		os << "Kpoints (" << self.size() << " total):\n";
 		for(int ikpt = 0; ikpt < self.size(); ikpt++){
 			auto kk = self.kpoint(ikpt)/(2.0*M_PI);
 			tfm::format(os, "  k-point %7d = %7.3f %7.3f %7.3f   weight = %5.3f\n", ikpt, kk[0], kk[1], kk[2], self.kpoint_weight(ikpt));
@@ -118,6 +126,50 @@ public:
 		os << std::endl;
 		return os;
 	}
+
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the Brillouin zone to directory '" + dirname + "'.";
+
+		comm.barrier();
+
+		auto exception_happened = true;
+		if(comm.root()) {
+
+			try { std::filesystem::create_directories(dirname); }
+			catch(...) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+				
+			utils::save_value(comm, dirname + "/num_kpoints",   size(),    error_message);
+			utils::save_array(comm, dirname + "/kpoints",       kpoints_,  error_message);
+			utils::save_array(comm, dirname + "/weights",       weights_,  error_message);
+			
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+			if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
+	
+	static auto load(std::string const & dirname) {
+		auto error_message = "INQ error: Cannot load the kpoints from directory '" + dirname + "'.";
+
+		int num;
+		utils::load_value(dirname + "/num_kpoints", num, error_message);
+
+		brillouin bz(num);
+
+		utils::load_array(dirname + "/kpoints", bz.kpoints_, error_message);
+		utils::load_array(dirname + "/weights", bz.weights_, error_message);
+		
+		return bz;
+	}
+	
 };
 
 }
@@ -136,6 +188,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using Catch::Approx;
 	using namespace Catch::literals;
 
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	
 	SECTION("Diamond"){
 
 		auto a =  3.567095_A;
@@ -216,6 +270,43 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz3.kpoint(7)[1]/(2*M_PI) == -0.25_a);
 		CHECK(bz3.kpoint(7)[2]/(2*M_PI) == -0.25_a);
 
+		bz3.save(comm, "save_brillouin_3");
+		auto read_bz3 = ions::brillouin::load("save_brillouin_3");
+
+		CHECK(read_bz3.size() == 8);
+
+		CHECK(read_bz3.kpoint(0)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(0)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(0)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(read_bz3.kpoint(1)[0]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(1)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(1)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(read_bz3.kpoint(2)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(2)[1]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(2)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(read_bz3.kpoint(3)[0]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(3)[1]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(3)[2]/(2*M_PI) ==  0.25_a);
+		
+		CHECK(read_bz3.kpoint(4)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(4)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(4)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(read_bz3.kpoint(5)[0]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(5)[1]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(5)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(read_bz3.kpoint(6)[0]/(2*M_PI) ==  0.25_a);
+		CHECK(read_bz3.kpoint(6)[1]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(6)[2]/(2*M_PI) == -0.25_a);
+		
+		CHECK(read_bz3.kpoint(7)[0]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(7)[1]/(2*M_PI) == -0.25_a);
+		CHECK(read_bz3.kpoint(7)[2]/(2*M_PI) == -0.25_a);
+		
 		auto kpts = input::kpoints::list();
 		
 		kpts.insert({0.5, 0.5, -0.5}, 1.0);
@@ -241,6 +332,27 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz4.kpoint_weight(0) ==  0.33333333_a);
 		CHECK(bz4.kpoint_weight(1) ==  0.66666666_a);
 		CHECK(bz4.kpoint_weight(2) ==  0.0_a);
+
+		bz4.save(comm, "save_brillouin_4");
+		auto read_bz4 = ions::brillouin::load("save_brillouin_4");
+
+		CHECK(read_bz4.size() == 3);
+
+		CHECK(read_bz4.kpoint(0)[0]/(2*M_PI) == -0.5_a);
+		CHECK(read_bz4.kpoint(0)[1]/(2*M_PI) == -0.5_a);
+		CHECK(read_bz4.kpoint(0)[2]/(2*M_PI) == -0.5_a);
+		
+		CHECK(read_bz4.kpoint(1)[0]/(2*M_PI) ==  0.1_a);
+		CHECK(read_bz4.kpoint(1)[1]/(2*M_PI) ==  0.2_a);
+		CHECK(read_bz4.kpoint(1)[2]/(2*M_PI) ==  0.3_a);
+		
+		CHECK(read_bz4.kpoint(2)[0]/(2*M_PI) ==  0.0_a);
+		CHECK(read_bz4.kpoint(2)[1]/(2*M_PI) == -0.01_a);
+		CHECK(read_bz4.kpoint(2)[2]/(2*M_PI) ==  0.0_a);
+
+		CHECK(read_bz4.kpoint_weight(0) ==  0.33333333_a);
+		CHECK(read_bz4.kpoint_weight(1) ==  0.66666666_a);
+		CHECK(read_bz4.kpoint_weight(2) ==  0.0_a);
 		
 	}
 

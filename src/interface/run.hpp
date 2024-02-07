@@ -56,8 +56,13 @@ These are the options available:
 
 	void ground_state() const{
 		auto ions = systems::ions::load(".inq/default_ions");
-		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"));
+		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
 
+		try { bz = ions::brillouin::load(".inq/default_brillouin"); }
+		catch(...) {}
+		
+		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"), bz);
+ 
 		if(not electrons.try_load(".inq/default_orbitals")){
 			ground_state::initial_guess(ions, electrons);
 		}
