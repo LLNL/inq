@@ -56,10 +56,13 @@ These are the options available:
 
 	void ground_state() const{
 		auto ions = systems::ions::load(".inq/default_ions");
+
 		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
 
 		try { bz = ions::brillouin::load(".inq/default_brillouin"); }
-		catch(...) {}
+		catch(...) {
+			bz.save(input::environment::global().comm(), ".inq/default_brillouin");
+		}
 		
 		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"), bz);
  
