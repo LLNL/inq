@@ -41,7 +41,7 @@ public:
 		
 		using namespace inq::magnitude;
 
-		std::ifstream poscar_file(poscar_file_name.c_str());
+		std::ifstream poscar_file(poscar_file_name);
 
 		if(not poscar_file.is_open()) throw std::runtime_error("error: failed to open POSCAR file '" + poscar_file_name + "'.");
 

@@ -82,11 +82,13 @@ These are the available subcommands:
 		
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
+
+		using util::str_to;
 		
 		if(args.size() == 4 and args[0] == "match"){
-      auto val = atof(args[1].c_str());
-      auto ref = atof(args[2].c_str());
-      auto tol = atof(args[3].c_str());
+      auto val = str_to<double>(args[1]);
+      auto ref = str_to<double>(args[2]);
+      auto tol = str_to<double>(args[3]);
 
       if(match(val, ref, tol)){
         exit(0);

@@ -30,7 +30,7 @@ class xyz {
 	
 	xyz(const std::string & xyz_file_name, quantity<magnitude::length> unit = magnitude::operator""_angstrom(1.0)){
 		
-		std::ifstream xyz_file(xyz_file_name.c_str());
+		std::ifstream xyz_file(xyz_file_name);
 		
 		if(not xyz_file.is_open()) throw std::runtime_error("error: failed to open XYZ file '" + xyz_file_name + "'.");
 		

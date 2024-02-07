@@ -154,6 +154,8 @@ the user.
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
+
+		using util::str_to;
 		
 		if(args.size() == 0) {
 			operator()();
@@ -172,7 +174,7 @@ the user.
 				exit(1);
 			}
 
-			extra_states(atoi(args[1].c_str()));
+			extra_states(str_to<int>(args[1]));
 			if(not quiet) operator()();
 			exit(0);
 		}
@@ -189,7 +191,7 @@ the user.
 				exit(1);
 			}
 
-			extra_electrons(atof(args[1].c_str()));
+			extra_electrons(str_to<double>(args[1]));
 			if(not quiet) operator()();
 			exit(0);
 		}
@@ -206,7 +208,7 @@ the user.
 				exit(1);
 			}
 
-			cutoff(atof(args[1].c_str())*magnitude::energy::parse(args[2]));
+			cutoff(str_to<double>(args[1])*magnitude::energy::parse(args[2]));
 			
 			if(not quiet) operator()();
 			exit(0);
@@ -242,7 +244,7 @@ the user.
 				exit(1);
 			}
 
-			temperature(atof(args[1].c_str())*magnitude::energy::parse(args[2]));
+			temperature(str_to<double>(args[1])*magnitude::energy::parse(args[2]));
 			
 			if(not quiet) operator()();
 			exit(0);

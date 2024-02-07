@@ -97,6 +97,7 @@ calculations. These are the available options:
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
+		using util::str_to;
 		
 		if(args.size() == 0) {
 			operator()();
@@ -104,19 +105,19 @@ calculations. These are the available options:
 		}
 
 		if(args.size() == 2 and (args[0] == "max-steps")){
-			max_steps(atoi(args[1].c_str()));
+			max_steps(str_to<int>(args[1]));
 			if(not quiet) operator()();
 			exit(0);
 		}
 		
 		if(args.size() == 2 and (args[0] == "tolerance")){
-			tolerance(atof(args[1].c_str()));
+			tolerance(str_to<double>(args[1]));
 			if(not quiet) operator()();
 			exit(0);
 		}
 
 		if(args.size() == 2 and (args[0] == "mixing")){
-			mixing(atof(args[1].c_str()));
+			mixing(str_to<double>(args[1]));
 			if(not quiet) operator()();
 			exit(0);
 		}

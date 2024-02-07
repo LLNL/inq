@@ -126,6 +126,8 @@ These are the options available:
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool const quiet) const {
 
+		using util::str_to;
+		
     if(args.size() == 0) {
 			operator()();
 			exit(0);
@@ -139,21 +141,21 @@ These are the options available:
 
     if(args.size() == 4 and args[0] == "grid") {
       
-      grid(atoi(args[1].c_str()), atoi(args[2].c_str()), atoi(args[3].c_str()));
+      grid(str_to<int>(args[1]), str_to<int>(args[2]), str_to<int>(args[3]));
       if(not quiet) operator()();
 			exit(0);
 		}
 
     if(args.size() == 4 and args[0] == "shifted-grid") {
       
-      shifted_grid(atoi(args[1].c_str()), atoi(args[2].c_str()), atoi(args[3].c_str()));
+      shifted_grid(str_to<int>(args[1]), str_to<int>(args[2]), str_to<int>(args[3]));
       if(not quiet) operator()();
 			exit(0);
 		}
     
     if(args.size() == 5 and args[0] == "insert") {
       
-      insert(atof(args[1].c_str()), atof(args[2].c_str()), atof(args[3].c_str()), atof(args[4].c_str()));
+      insert(str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3]), str_to<double>(args[4]));
       if(not quiet) operator()();
 			exit(0);
 		}

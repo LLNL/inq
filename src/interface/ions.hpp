@@ -142,6 +142,8 @@ These are the uses for the command:
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
+
+		using util::str_to;
 		
 		if(args.size() == 0) {
 			operator()();
@@ -167,9 +169,9 @@ These are the uses for the command:
 			}
 
 			auto symbol = args[2];
-			auto xx = atof(args[3].c_str());
-			auto yy = atof(args[4].c_str());
-			auto zz = atof(args[5].c_str());
+			auto xx = str_to<double>(args[3]);
+			auto yy = str_to<double>(args[4]);
+			auto zz = str_to<double>(args[5]);
 			
 			insert_fractional(symbol, {xx, yy, zz});
 			if(not quiet) operator()();
@@ -185,9 +187,9 @@ These are the uses for the command:
 
 			auto symbol = args[1];
 			auto units = magnitude::length::parse(args[5]);
-			auto xx = atof(args[2].c_str())*units;
-			auto yy = atof(args[3].c_str())*units;
-			auto zz = atof(args[4].c_str())*units;
+			auto xx = str_to<double>(args[2])*units;
+			auto yy = str_to<double>(args[3])*units;
+			auto zz = str_to<double>(args[4])*units;
 			
 			insert(symbol, {xx, yy, zz});
 			if(not quiet) operator()();
@@ -204,7 +206,7 @@ These are the uses for the command:
 		}
 		
 		if(args.size() == 5 and args[0] == "file" and args[2] == "radius"){
-			auto radius = atof(args[3].c_str())*magnitude::length::parse(args[4]);
+			auto radius = str_to<double>(args[3])*magnitude::length::parse(args[4]);
 			
 			file(args[1], radius);
 			if(not quiet) {
