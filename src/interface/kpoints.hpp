@@ -71,6 +71,15 @@ These are the options available:
    Examples: `inq kpoints shifted grid 4 4 4`
 
 
+- `kpoints insert <kx> <ky> <kz> <w>`
+
+   Add a kpoint to the grid with coordinates _kx_, _ky_, _kz_, and
+   weight _w_. The kpoint is given in covariant coordinates in the
+   range [-0.5, 0.5).
+
+   Examples: `inq kpoints insert 0.25 0.25 0.25 1.0`
+
+
 )"""";
 	}
 
@@ -93,6 +102,12 @@ These are the options available:
 		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::grid({nx, ny, nz}, true));
 		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 	}
+
+  void insert(double const & kx, double const & ky, double const & kz, double const & weight) const {
+    auto bz = ions::brillouin::load(".inq/default_brillouin");
+    bz.insert({kx, ky, kz}, weight);
+		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
+  }
   
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool const quiet) const {
@@ -121,7 +136,14 @@ These are the options available:
       if(not quiet) operator()();
 			exit(0);
 		}
-        
+    
+    if(args.size() == 5 and args[0] == "insert") {
+      
+      insert(atof(args[1].c_str()), atof(args[2].c_str()), atof(args[3].c_str()), atof(args[4].c_str()));
+      if(not quiet) operator()();
+			exit(0);
+		}
+         
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'kpoints' command" << std::endl;
 		exit(1);
 	}
