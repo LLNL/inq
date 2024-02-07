@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 			std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.\n";
 			std::cout << std::endl;
 		}
-		exit(1);
+		exit(0);
 	}
 
 	auto quiet = false;
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
 				std::cout << "  " << "units" << "\t\t" << "Prints information about the available input units in inq\n";
 				std::cout << std::endl;
 			}
-			exit(1);
+			exit(0);
 		}
 
 		command = args[0];
