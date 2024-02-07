@@ -74,10 +74,17 @@ These are the options available:
 - `kpoints insert <kx> <ky> <kz> <w>`
 
    Add a kpoint to the grid with coordinates _kx_, _ky_, _kz_, and
-   weight _w_. The kpoint is given in covariant coordinates in the
+   weight _w_. The kpoint must be given in covariant coordinates in the
    range [-0.5, 0.5).
 
    Examples: `inq kpoints insert 0.25 0.25 0.25 1.0`
+
+
+- `kpoints clear`
+
+   Removes all the kpoints defined in the grid.
+
+   Examples: `inq kpoints clear`
 
 
 )"""";
@@ -104,9 +111,16 @@ These are the options available:
 	}
 
   void insert(double const & kx, double const & ky, double const & kz, double const & weight) const {
-    auto bz = ions::brillouin::load(".inq/default_brillouin");
+    auto bz = ions::brillouin{};
+    try { bz = ions::brillouin::load(".inq/default_brillouin"); }
+    catch(...){  }
     bz.insert({kx, ky, kz}, weight);
 		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
+  }
+
+  void clear() const {
+    auto bz = ions::brillouin{};
+    bz.save(input::environment::global().comm(), ".inq/default_brillouin");
   }
   
 	template <typename ArgsType>
@@ -143,7 +157,13 @@ These are the options available:
       if(not quiet) operator()();
 			exit(0);
 		}
-         
+    
+    if(args.size() == 1 and args[0] == "clear") {
+			clear();
+      if(not quiet) operator()();
+			exit(0);
+		}
+    
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'kpoints' command" << std::endl;
 		exit(1);
 	}
