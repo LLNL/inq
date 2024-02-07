@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 		{ "tol"s         ,     "tolerance"s        }
 	};
 	
-	input::environment::global(); //Initialize MPI 
+	auto comm = input::environment::global().comm(); //Initialize MPI 
 
 	auto all_commands =
 		interface::item(interface::cell)
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::util);
 	
 	if(argc == 1){
-		if(input::environment::global().comm().root()) {
+		if(comm.root()) {
 			std::cout << "\n";
 			std::cout << "Usage: inq <command> [arguments]\n\n";
 			std::cout << "The following commands are available:\n";
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 	
 	if(command == "help") {
 		if(args.size() == 0){
-			if(input::environment::global().comm().root()) {
+			if(comm.root()) {
 				std::cout << "\n";
 				std::cout << "Usage: inq help <command>\n\n";
 				std::cout << "The 'help' command prints detailed information about other inq commands:\n\n";
@@ -129,11 +129,11 @@ int main(int argc, char* argv[]) {
 		args.erase(args.begin());
 
 		if(command == interface::units.name()) interface::units.help();
-		if(input::environment::global().comm().root()) all_commands.help(command);
+		if(comm.root()) all_commands.help(command);
 		exit(0);
 	}
 	
-	if(input::environment::global().comm().root()) std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
+	if(comm.root()) std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);
 	
 	fftw_cleanup();
