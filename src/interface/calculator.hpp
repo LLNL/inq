@@ -99,7 +99,7 @@ auto eval(std::string_view text) try {
 	throw std::runtime_error(
 		"error parsing expression \n\"" + std::string(text) + "\"\n"
 		+ std::string(err.where() - text.begin() + 1, ' ') +
-        "^---- here\n...while applying parsing rule named \"" + err.which() + "\""
+		"^---- here\n...while applying parsing rule named \"" + err.which() + "\""
 	);
 }
 
@@ -118,47 +118,53 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using inq::interface::calculator::eval;
 
-    CHECK(eval("1.0") != 2.0);
+	CHECK(eval("1.0") != 2.0);
 
-    CHECK(eval("1.0") == 1.0);
-    CHECK(eval("2.0") == 2.0);
+	CHECK(eval("1.0") == 1.0);
+	CHECK(eval("2.0") == 2.0);
 
-    CHECK(eval("1.0 + 2.0") == 3.0);
-    CHECK(eval("2.0 * 3.0") == 6.0);
-    CHECK(eval("4.0 + (2.0 * 3.0)") == 10.0);
+	CHECK(eval("1.0 + 2.0") == 3.0);
+	CHECK(eval("1.0 - 2.0") == 1.0 - 2.0);
 
-    CHECK(eval("pi") == M_PI );
-    CHECK(eval("e") == M_E );
-    CHECK(eval("e + 1.0") == M_E + 1.0);
+	CHECK(eval("1.0 + 2.0e3") == 1.0 + 2.0e3);
 
-    CHECK(eval("sqrt(2.0)") == std::sqrt(2.0) );
-    CHECK(eval("sqrt(2.0 + 1.0)") == std::sqrt(2.0 + 1.0) );
+	CHECK(eval("2.0 * 3.0") == 6.0);
 
-    CHECK(eval("sqrt(3)*1.42") == std::sqrt(3.0)*1.42 );
-    CHECK(eval("3.2^2") == std::pow(3.2, 2.0) );
-    CHECK(eval("1.1 + (2.2 + 3.3)") == 1.1 + 2.2 + 3.3 );
-    CHECK(eval("sin(pi/4) + cos(pi/2)") == std::sin(M_PI/4.0) + cos(M_PI/2.0) );
+	CHECK(eval("4 + (2 * 3)") == 10.0);
+	CHECK(eval("4 + (2 * 3)") == 10.0);
 
-    CHECK(eval("exp(-2)") == std::exp(-2.0) );
-    CHECK(eval("log(e^3.0)") == std::log(std::exp(3.0)) );
-    CHECK(eval(" log(e^3.0)") == std::log(std::exp(3.0)) );
-    CHECK(eval(" log(e^3.0) ") == std::log(std::exp(3.0)) );
-    CHECK(eval(" log(e ^ 3.0) ") == std::log(std::exp(3.0)) );
+	CHECK(eval("pi") == M_PI );
+	CHECK(eval("e") == M_E );
+	CHECK(eval("e + 1.0") == M_E + 1.0);
+
+	CHECK(eval("sqrt(2.0)") == std::sqrt(2.0) );
+	CHECK(eval("sqrt(2.0 + 1.0)") == std::sqrt(2.0 + 1.0) );
+
+	CHECK(eval("sqrt(3)*1.42") == std::sqrt(3.0)*1.42 );
+	CHECK(eval("3.2^2") == std::pow(3.2, 2.0) );
+	CHECK(eval("1.1 + (2.2 + 3.3)") == 1.1 + 2.2 + 3.3 );
+	CHECK(eval("sin(pi/4) + cos(pi/2)") == std::sin(M_PI/4.0) + cos(M_PI/2.0) );
+
+	CHECK(eval("exp(-2)") == std::exp(-2.0) );
+	CHECK(eval("log(e^3.0)") == std::log(std::exp(3.0)) );
+	CHECK(eval(" log(e^3.0)") == std::log(std::exp(3.0)) );
+	CHECK(eval(" log(e^3.0) ") == std::log(std::exp(3.0)) );
+	CHECK(eval(" log(e ^ 3.0) ") == std::log(std::exp(3.0)) );
 
 	CHECK(eval("pow(e, 3.0) ") == std::pow(M_E, 3.0) );
 	CHECK(eval("pow(2.0, 3.0) ") == std::pow(2.0, 3.0) );
 
-    CHECK(eval("(1.0)") == 1.0);
-    CHECK(eval("(1.0 + 2.0)") == 1.0 + 2.0);
+	CHECK(eval("(1.0)") == 1.0);
+	CHECK(eval("(1.0 + 2.0)") == 1.0 + 2.0);
 
-    CHECK(eval("-(1.0 + 2.0)") == -(1.0 + 2.0) );
-    CHECK(eval("+(1.0 + 2.0)") == +(1.0 + 2.0) );
-    CHECK(eval("+sqrt(1.0 + 2.0)") == +std::sqrt(1.0 + 2.0) );
-    CHECK(eval("-sqrt(1.0 + 2.0)") == -std::sqrt(1.0 + 2.0) );
+	CHECK(eval("-(1.0 + 2.0)") == -(1.0 + 2.0) );
+	CHECK(eval("+(1.0 + 2.0)") == +(1.0 + 2.0) );
+	CHECK(eval("+sqrt(1.0 + 2.0)") == +std::sqrt(1.0 + 2.0) );
+	CHECK(eval("-sqrt(1.0 + 2.0)") == -std::sqrt(1.0 + 2.0) );
 
-    CHECK(eval("-1.0") == -1.0 );
+	CHECK(eval("-1.0") == -1.0 );
 
-    CHECK_NOTHROW(eval("1.0 + 2.0"));
+	CHECK_NOTHROW(eval("1.0 + 2.0"));
 
 	CHECK_THROWS(eval("poop (1.0 + 2.0)"));
 	CHECK_THROWS(eval("(1.0 + poop 2.0)"));
