@@ -67,11 +67,11 @@ int main(int argc, char* argv[]) {
 			std::cout << "\n";
 			std::cout << "Usage: inq <command> [arguments]\n\n";
 			std::cout << "The following commands are available:\n";
-			std::cout << "  " << "help"                         << "\t\t" << "Prints detailed information about other commands\n";
+			std::cout << interface::list_item("help", "Prints detailed information about other commands");
 			std::cout << all_commands.list();
 			std::cout << "\n";
 			std::cout << "And the following options:\n";
-			std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.\n";
+			std::cout << interface::list_item("-q,--quiet", "Run silently, do not print information unless explicitly asked to");
 			std::cout << std::endl;
 		}
 		exit(0);

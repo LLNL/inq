@@ -15,6 +15,13 @@
 namespace inq {
 namespace interface {
 
+auto list_item(std::string const & name, std::string const & one_line){
+	auto align = 18ul;
+		assert(name.size() < align);
+		auto pad = std::string(align - name.size(), ' ');
+		return "  " + name + pad + one_line + '\n';
+}
+
 template <typename Type>
 struct item : public Type {
 
@@ -23,10 +30,7 @@ struct item : public Type {
 	}
 	
 	auto list() const {
-		auto align = 18ul;
-		assert(Type::name().size() < align);
-		auto pad = std::string(align - Type::name().size(), ' ');
-		return "  " + Type::name() + pad + Type::one_line() + '\n';
+		return list_item(Type::name(), Type::one_line());
 	}
 
 	auto execute(std::string const & comm, std::vector<std::string> const & args, bool quiet) const {
