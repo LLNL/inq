@@ -49,8 +49,14 @@ endif()
 
 add_executable(all_unit_tests)
 target_sources(all_unit_tests PRIVATE all_unit_tests.cpp)
-target_link_libraries(all_unit_tests PRIVATE unit_tests_main Catch2::Catch2 inq)
-
+target_compile_definitions(all_unit_tests PRIVATE "BOOST_PP_VARIADICS=1")
+target_link_libraries(
+  all_unit_tests PRIVATE
+  unit_tests_main
+  Catch2::Catch2
+  Boost::headers  # for Boost.Spirit
+  inq
+)
 
 if(ENABLE_GPU)
 	set_source_files_properties(main/inq.cpp PROPERTIES LANGUAGE ${GPU_LANGUAGE})
