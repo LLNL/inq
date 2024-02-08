@@ -27,41 +27,57 @@ x3::rule<struct _factor, double> factor("factor");
 
 using x3::_val, x3::_attr;
 
+// NVCC (EDG?) doesn't tolerate lambdas defined inside operator[]
+constexpr auto identity_fn  = [](auto& ctx) {_val(ctx) = _attr(ctx);};
+
+constexpr auto negate_fn    = [](auto& ctx) {_val(ctx) = - _attr(ctx);};
+constexpr auto posit_fn     = [](auto& ctx) {_val(ctx) = + _attr(ctx);};
+
+constexpr auto sqrt_fn      = [](auto& ctx) {_val(ctx) = std::sqrt(_attr(ctx));};
+constexpr auto exp_fn       = [](auto& ctx) {_val(ctx) = std::exp (_attr(ctx));};
+constexpr auto cos_fn       = [](auto& ctx) {_val(ctx) = std::cos (_attr(ctx));};
+constexpr auto sin_fn       = [](auto& ctx) {_val(ctx) = std::sin (_attr(ctx));};
+constexpr auto log_fn       = [](auto& ctx) {_val(ctx) = std::log (_attr(ctx));};
+
+constexpr auto pow_fn       = [](auto& ctx) {_val(ctx) = std::pow(boost::fusion::at_c<0>(_attr(ctx)), boost::fusion::at_c<1>(_attr(ctx)));};
+
+constexpr auto pi_fn        = [](auto& ctx) {_val(ctx) = M_PI;};
+constexpr auto e_fn         = [](auto& ctx) {_val(ctx) = M_E ;};
+
+constexpr auto pow_acc_fn   = [](auto& ctx) {_val(ctx) = std::pow(_val(ctx), _attr(ctx));};
+
+constexpr auto multiplies_acc_fn = [](auto& ctx) {_val(ctx) *= _attr(ctx);};
+constexpr auto divides_acc_fn    = [](auto& ctx) {_val(ctx) /= _attr(ctx);};
+
+constexpr auto plus_acc_fn  = [](auto& ctx) {_val(ctx) += _attr(ctx);};
+constexpr auto minus_acc_fn = [](auto& ctx) {_val(ctx) -= _attr(ctx);};
+
 // clang-format off
 auto const unit = x3::rule<struct _unit, double>("unit") =
-		(x3::double_          )[([](auto& ctx) {_val(ctx) =           _attr(ctx) ;})]
-	| (   ("(" >> term) > ")" )[([](auto& ctx) {_val(ctx) =           _attr(ctx) ;})]
-	| (    "-" >> term        )[([](auto& ctx) {_val(ctx) = -         _attr(ctx) ;})]
-	| (    "+" >> term        )[([](auto& ctx) {_val(ctx) = +         _attr(ctx) ;})]
+	  (    x3::double_    )[identity_fn]
+	| (("(" >> term) > ")")[identity_fn]
 
-	| (("sqrt(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::sqrt(_attr(ctx));})]
-	| (( "exp(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::exp (_attr(ctx));})]
-	| (( "cos(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::cos (_attr(ctx));})]
-	| (( "sin(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::sin (_attr(ctx));})]
-	| (( "log(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::log (_attr(ctx));})]
+	| ("-" >> term)[negate_fn  ]
+	| ("+" >> term)[posit_fn   ]
 
-	| (( "pow(" >> term) > ',' > term > ')')[([](auto& ctx) {_val(ctx) = std::pow(boost::fusion::at_c<0>(_attr(ctx)), boost::fusion::at_c<1>(_attr(ctx)));})]
+	| (("sqrt(" >> term) > ')')[sqrt_fn]
+	| (( "exp(" >> term) > ')')[exp_fn ]
+	| (( "cos(" >> term) > ')')[cos_fn ]
+	| (( "sin(" >> term) > ')')[sin_fn ]
+	| (( "log(" >> term) > ')')[log_fn ]
 
-	| (x3::lit("pi")        )[([](auto& ctx) {_val(ctx) =           M_PI       ;})]
-	| (x3::lit("e" )        )[([](auto& ctx) {_val(ctx) =           M_E        ;})]
+	| (("pow(" >> term) > ',' > term > ')')[pow_fn]
+
+	| (x3::lit("pi"))[pi_fn  ]
+	| (x3::lit("e" ))[e_fn   ]
 ;
 
-auto const expo_def =
-	unit[([](auto& ctx) {_val(ctx) = _attr(ctx);})] >> *(
-		'^' > term [([](auto& ctx) {_val(ctx) = std::pow(_val(ctx), _attr(ctx));})]
-	)
-;
-auto const factor_def =
-	expo [ ([](auto& ctx) {_val(ctx) = _attr(ctx);}) ] >> *(
-		  ('*' > term[([](auto& ctx) {_val(ctx) *= _attr(ctx);})])
-		| ('/' > term[([](auto& ctx) {_val(ctx) /= _attr(ctx);})])
-	)
-;
+auto const expo_def = unit[identity_fn] >> *('^' > term [pow_acc_fn]);
+
+auto const factor_def = expo [identity_fn] >> *(('*' > term[multiplies_acc_fn]) | ('/' > term[divides_acc_fn   ]));
+
 auto const term_def =
-	factor[([](auto& ctx) {_val(ctx) = _attr(ctx);})] >> *(
-		  ('+' > term[([](auto& ctx) {_val(ctx) += _attr(ctx);})])
-		| ('-' > term[([](auto& ctx) {_val(ctx) -= _attr(ctx);})])
-	)
+	factor[identity_fn] >> *(('+' > term[plus_acc_fn ]) | ('-' > term[minus_acc_fn]))
 ;
 // clang-format on
 
@@ -78,7 +94,7 @@ auto eval(std::string_view text) try {
 	return result;
 } catch (x3::expectation_failure<std::string_view::const_iterator> const &err) {
 	throw std::runtime_error(
-		"error parsing expression \n\"" + std::string(text) + "\"\n" 
+		"error parsing expression \n\"" + std::string(text) + "\"\n"
 		+ std::string(err.where() - text.begin() + 1, ' ') +
         "^---- here\n...while applying parsing rule named \"" + err.which() + "\""
 	);
