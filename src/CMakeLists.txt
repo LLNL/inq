@@ -49,7 +49,7 @@ endif()
 
 add_executable(all_unit_tests)
 target_sources(all_unit_tests PRIVATE all_unit_tests.cpp)
-target_compile_definitions(all_unit_tests PRIVATE "BOOST_PP_VARIADICS=1")
+target_compile_definitions(all_unit_tests PRIVATE "BOOST_PP_VARIADICS=1")  # NVCC needs BOOST_PP_VARIADICS to compile some Boost headers
 target_link_libraries(
   all_unit_tests PRIVATE
   unit_tests_main
