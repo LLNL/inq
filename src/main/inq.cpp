@@ -58,7 +58,10 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::run)
 		+ interface::item(interface::theory)
 		+ interface::item(interface::util);
-	
+
+	auto all_helpers =
+		interface::item(interface::units);
+		
 	if(argc == 1){
 		if(comm.root()) {
 			std::cout << "\n";
@@ -119,7 +122,7 @@ int main(int argc, char* argv[]) {
 				std::cout << "The 'help' command prints detailed information about other inq commands:\n\n";
 				std::cout << all_commands.list();
 				std::cout << "\nThere is also some additional help topics you can read:\n\n";
-				std::cout << "  " << "units" << "\t\t" << "Prints information about the available input units in inq\n";
+				std::cout << all_helpers.list();
 				std::cout << std::endl;
 			}
 			exit(0);
@@ -129,13 +132,10 @@ int main(int argc, char* argv[]) {
 		args.erase(args.begin());
 
 		if(comm.root()) {
-			if(command == interface::units.name()) {
-				interface::units.help();
-				exit(0);
-			}
 			all_commands.help(command);
+			all_helpers.help(command);
 			
-			if(comm.root()) std::cerr << "inq error: unknown help item '" << command << "'." << std::endl;			
+			std::cerr << "inq error: unknown help item '" << command << "'." << std::endl;
 			exit(1);
 		} else {
 			exit(0);
