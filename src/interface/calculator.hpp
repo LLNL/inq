@@ -107,6 +107,8 @@ auto eval(std::string_view text) try {
 } // end namespace interface
 } // end namespace inq
 
+#endif
+
 #ifdef INQ_INTERFACE_CALCULATOR_UNIT_TEST
 #undef INQ_INTERFACE_CALCULATOR_UNIT_TEST
 
@@ -171,5 +173,4 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK_THROWS(eval("(1.0 + poop 2.0)"));
 	CHECK_THROWS(eval("(1.0 + 2.0) poop"));
 }
-#endif
 #endif
