@@ -30,8 +30,8 @@ using x3::_val, x3::_attr;
 // NVCC (EDG?) doesn't tolerate lambdas defined inside operator[]
 constexpr auto identity_fn  = [](auto& ctx) {_val(ctx) = _attr(ctx);};
 
-constexpr auto negate_fn    = [](auto& ctx) {_val(ctx) = - _attr(ctx);};
 constexpr auto posit_fn     = [](auto& ctx) {_val(ctx) = + _attr(ctx);};
+constexpr auto negate_fn    = [](auto& ctx) {_val(ctx) = - _attr(ctx);};
 
 constexpr auto sqrt_fn      = [](auto& ctx) {_val(ctx) = std::sqrt(_attr(ctx));};
 constexpr auto exp_fn       = [](auto& ctx) {_val(ctx) = std::exp (_attr(ctx));};
@@ -39,7 +39,10 @@ constexpr auto cos_fn       = [](auto& ctx) {_val(ctx) = std::cos (_attr(ctx));}
 constexpr auto sin_fn       = [](auto& ctx) {_val(ctx) = std::sin (_attr(ctx));};
 constexpr auto log_fn       = [](auto& ctx) {_val(ctx) = std::log (_attr(ctx));};
 
-constexpr auto pow_fn       = [](auto& ctx) {_val(ctx) = std::pow(boost::fusion::at_c<0>(_attr(ctx)), boost::fusion::at_c<1>(_attr(ctx)));};
+constexpr auto pow_fn       = [](auto& ctx) {
+	using boost::fusion::at_c;
+	_val(ctx) = std::pow(at_c<0>(_attr(ctx)), at_c<1>(_attr(ctx)));
+};
 
 constexpr auto pi_fn        = [](auto& ctx) {_val(ctx) = M_PI;};
 constexpr auto e_fn         = [](auto& ctx) {_val(ctx) = M_E ;};
