@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__INTERFACE_CALCULATOR_KPOINTS
-#define INQ__INTERFACE_CALCULATOR_KPOINTS
+#ifndef INQ__UTILS__CALCULATOR
+#define INQ__UTILS__CALCULATOR
 
 // Copyright (C) 2024 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -13,7 +13,7 @@
 #include <string_view>
 
 namespace inq {
-namespace interface {
+namespace utils {
 namespace calculator {
 
 namespace x3 = boost::spirit::x3;
@@ -104,13 +104,13 @@ auto eval(std::string_view text) try {
 }
 
 } // end namespace calculator
-} // end namespace interface
+} // end namespace utils
 } // end namespace inq
 
 #endif
 
-#ifdef INQ_INTERFACE_CALCULATOR_UNIT_TEST
-#undef INQ_INTERFACE_CALCULATOR_UNIT_TEST
+#ifdef INQ_UTILS_CALCULATOR_UNIT_TEST
+#undef INQ_UTILS_CALCULATOR_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -118,7 +118,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
-	using inq::interface::calculator::eval;
+	using inq::utils::calculator::eval;
 
 	// to interactively check results try here https://godbolt.org/z/7nqT6335v
 	CHECK(eval("1.0") != 2.0);
