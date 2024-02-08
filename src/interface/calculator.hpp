@@ -30,17 +30,17 @@ using x3::_val, x3::_attr;
 // clang-format off
 auto const unit = x3::rule<struct _unit, double>("unit") =
 		(x3::double_          )[([](auto& ctx) {_val(ctx) =           _attr(ctx) ;})]
-	| (    "(" >> term > ")")[([](auto& ctx) {_val(ctx) =           _attr(ctx) ;})]
-	| (    "-" >> term      )[([](auto& ctx) {_val(ctx) = -         _attr(ctx) ;})]
-	| (    "+" >> term      )[([](auto& ctx) {_val(ctx) = +         _attr(ctx) ;})]
+	| (   ("(" >> term) > ")" )[([](auto& ctx) {_val(ctx) =           _attr(ctx) ;})]
+	| (    "-" >> term        )[([](auto& ctx) {_val(ctx) = -         _attr(ctx) ;})]
+	| (    "+" >> term        )[([](auto& ctx) {_val(ctx) = +         _attr(ctx) ;})]
 
-	| ("sqrt(" >> term > ')')[([](auto& ctx) {_val(ctx) = std::sqrt(_attr(ctx));})]
-	| ( "exp(" >> term > ')')[([](auto& ctx) {_val(ctx) = std::exp (_attr(ctx));})]
-	| ( "cos(" >> term > ')')[([](auto& ctx) {_val(ctx) = std::cos (_attr(ctx));})]
-	| ( "sin(" >> term > ')')[([](auto& ctx) {_val(ctx) = std::sin (_attr(ctx));})]
-	| ( "log(" >> term > ')')[([](auto& ctx) {_val(ctx) = std::log (_attr(ctx));})]
+	| (("sqrt(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::sqrt(_attr(ctx));})]
+	| (( "exp(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::exp (_attr(ctx));})]
+	| (( "cos(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::cos (_attr(ctx));})]
+	| (( "sin(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::sin (_attr(ctx));})]
+	| (( "log(" >> term) > ')')[([](auto& ctx) {_val(ctx) = std::log (_attr(ctx));})]
 
-	| ( "pow(" >> term > ',' > term > ')')[([](auto& ctx) {_val(ctx) = std::pow(boost::fusion::at_c<0>(_attr(ctx)), boost::fusion::at_c<1>(_attr(ctx)));})]
+	| (( "pow(" >> term) > ',' > term > ')')[([](auto& ctx) {_val(ctx) = std::pow(boost::fusion::at_c<0>(_attr(ctx)), boost::fusion::at_c<1>(_attr(ctx)));})]
 
 	| (x3::lit("pi")        )[([](auto& ctx) {_val(ctx) =           M_PI       ;})]
 	| (x3::lit("e" )        )[([](auto& ctx) {_val(ctx) =           M_E        ;})]
