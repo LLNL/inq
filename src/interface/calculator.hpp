@@ -135,7 +135,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(eval("-(1.0 + 2.0)") == -(1.0 + 2.0) );
     CHECK(eval("+(1.0 + 2.0)") == +(1.0 + 2.0) );
     CHECK(eval("+sqrt(1.0 + 2.0)") == +std::sqrt(1.0 + 2.0) );
-    CHECK(eval("-sqrt(1.0 + 2.0)") == +std::sqrt(1.0 + 2.0) );
+    CHECK(eval("-sqrt(1.0 + 2.0)") == -std::sqrt(1.0 + 2.0) );
 
     CHECK(eval("-1.0") == -1.0 );
 
