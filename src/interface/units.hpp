@@ -20,6 +20,10 @@ struct {
 	std::string name() const {
 		return "units";
 	}
+
+	std::string one_line() const {
+		return "Prints information about the available input units in inq";
+	}
 	
 	void help() const {
 		

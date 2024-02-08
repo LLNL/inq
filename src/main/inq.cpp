@@ -7,26 +7,13 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <inq/inq.hpp>
-#include <utils/lowercase.hpp>
-#include <interface/units.hpp>
+#include <interface/aggregate.hpp>
 
 using namespace inq;
 
-static void list() {
-	std::cout << "  " << interface::cell.name()         << "\t\t" << interface::cell        .one_line() << '\n';
-	std::cout << "  " << interface::clear.name()        << "\t\t" << interface::clear       .one_line() << '\n';
-	std::cout << "  " << interface::electrons.name()    << "\t"   << interface::electrons   .one_line() << '\n';
-	std::cout << "  " << interface::energy.name()       << "\t"   << interface::energy      .one_line() << '\n';
-	std::cout << "  " << interface::ground_state.name() << "\t"   << interface::ground_state.one_line() << '\n';
-	std::cout << "  " << interface::ions.name()         << "\t\t" << interface::ions        .one_line() << '\n';
-	std::cout << "  " << interface::kpoints.name()      << "\t"   << interface::kpoints     .one_line() << '\n';
-	std::cout << "  " << interface::run.name()          << "\t\t" << interface::run         .one_line() << '\n';
-	std::cout << "  " << interface::theory.name()       << "\t"   << interface::theory      .one_line() << '\n';
-	std::cout << "  " << interface::util.name()         << "\t\t" << interface::util        .one_line() << '\n';
-}
-
 int main(int argc, char* argv[]) {
 	using namespace std::string_literals;
+	using interface::operator+;
  
 	std::map<std::string, std::string> dictionary = {
     { "ground_state"s,     "ground-state"s     },
@@ -58,18 +45,33 @@ int main(int argc, char* argv[]) {
 		{ "tol"s         ,     "tolerance"s        }
 	};
 	
-	input::environment::global(); //Initialize MPI 
+	auto comm = input::environment::global().comm(); //Initialize MPI 
 
+	auto all_commands =
+		interface::item(interface::cell)
+		+ interface::item(interface::clear)
+		+ interface::item(interface::electrons)
+		+ interface::item(interface::energy)
+		+ interface::item(interface::ground_state)
+		+ interface::item(interface::ions)
+		+ interface::item(interface::kpoints)
+		+ interface::item(interface::run)
+		+ interface::item(interface::theory)
+		+ interface::item(interface::util);
+
+	auto all_helpers =
+		interface::item(interface::units);
+		
 	if(argc == 1){
-		if(input::environment::global().comm().root()) {
+		if(comm.root()) {
 			std::cout << "\n";
 			std::cout << "Usage: inq <command> [arguments]\n\n";
 			std::cout << "The following commands are available:\n";
-			std::cout << "  " << "help"                         << "\t\t" << "Prints detailed information about other commands\n";
-			list();
+			std::cout << interface::list_item("help", "Prints detailed information about other commands");
+			std::cout << all_commands.list();
 			std::cout << "\n";
 			std::cout << "And the following options:\n";
-			std::cout << "  -q,--quiet    Run silently, do not print information unless explicitly asked to.\n";
+			std::cout << interface::list_item("-q,--quiet", "Run silently, do not print information unless explicitly asked to");
 			std::cout << std::endl;
 		}
 		exit(0);
@@ -110,26 +112,17 @@ int main(int argc, char* argv[]) {
 	auto command = args[0];
 	args.erase(args.begin());
 
-	if(command == interface::cell        .name()) interface::cell        .command(args, quiet);
-	if(command == interface::clear       .name()) interface::clear       .command(args, quiet);
-	if(command == interface::electrons   .name()) interface::electrons   .command(args, quiet);
-	if(command == interface::energy      .name()) interface::energy      .command(args, quiet);
-	if(command == interface::ground_state.name()) interface::ground_state.command(args, quiet);
-	if(command == interface::kpoints     .name()) interface::kpoints     .command(args, quiet);
-	if(command == interface::ions        .name()) interface::ions        .command(args, quiet);
-	if(command == interface::run         .name()) interface::run         .command(args, quiet);
-	if(command == interface::theory      .name()) interface::theory      .command(args, quiet);
-	if(command == interface::util        .name()) interface::util        .command(args, quiet);
-
+	all_commands.execute(command, args, quiet);
+	
 	if(command == "help") {
 		if(args.size() == 0){
-			if(input::environment::global().comm().root()) {
+			if(comm.root()) {
 				std::cout << "\n";
 				std::cout << "Usage: inq help <command>\n\n";
 				std::cout << "The 'help' command prints detailed information about other inq commands:\n\n";
-				list();
+				std::cout << all_commands.list();
 				std::cout << "\nThere is also some additional help topics you can read:\n\n";
-				std::cout << "  " << "units" << "\t\t" << "Prints information about the available input units in inq\n";
+				std::cout << all_helpers.list();
 				std::cout << std::endl;
 			}
 			exit(0);
@@ -138,23 +131,18 @@ int main(int argc, char* argv[]) {
 		command = args[0];
 		args.erase(args.begin());
 
-		if(input::environment::global().comm().root()) {
-			if(command == interface::clear       .name()) interface::clear       .help();
-			if(command == interface::cell        .name()) interface::cell        .help();
-			if(command == interface::electrons   .name()) interface::electrons   .help();
-			if(command == interface::energy      .name()) interface::energy      .help();
-			if(command == interface::ground_state.name()) interface::ground_state.help();
-			if(command == interface::kpoints     .name()) interface::kpoints     .help();
-			if(command == interface::ions        .name()) interface::ions        .help();
-			if(command == interface::run         .name()) interface::run         .help();
-			if(command == interface::theory      .name()) interface::theory      .help();
-			if(command == interface::units       .name()) interface::units       .help();
-			if(command == interface::util        .name()) interface::util        .help();
+		if(comm.root()) {
+			all_commands.help(command);
+			all_helpers.help(command);
+			
+			std::cerr << "inq error: unknown help item '" << command << "'." << std::endl;
+			exit(1);
+		} else {
+			exit(0);
 		}
-		exit(0);
 	}
 	
-	if(input::environment::global().comm().root()) std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
+	if(comm.root()) std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
 	exit(1);
 	
 	fftw_cleanup();
