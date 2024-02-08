@@ -128,7 +128,7 @@ void save(std::string const & dirname, FieldSet const & phi){
 				 
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
-		auto filename = dirname + "/" + util::num_to_str(ist + phi.set_part().start());
+		auto filename = dirname + "/" + utils::num_to_str(ist + phi.set_part().start());
 
 		buffer = phi.matrix().rotated()[ist];
 
@@ -177,7 +177,7 @@ auto load(std::string const & dirname, FieldSet & phi){
 			
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 
-		auto filename = dirname + "/" + util::num_to_str(ist + phi.set_part().start());
+		auto filename = dirname + "/" + utils::num_to_str(ist + phi.set_part().start());
 
 		MPI_File fh;
 

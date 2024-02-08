@@ -13,7 +13,7 @@
 #include <utils/calculator.hpp>
 
 namespace inq {
-namespace util {
+namespace utils {
 
 auto num_to_str(long num){
 	char numcstr[12]; 
@@ -56,26 +56,26 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("number to string"){
     
-    CHECK(util::num_to_str(0)    == "0000000000");
-    CHECK(util::num_to_str(1024) == "0000001024");
-    CHECK(util::num_to_str(-333) == "-000000333");
+    CHECK(utils::num_to_str(0)    == "0000000000");
+    CHECK(utils::num_to_str(1024) == "0000001024");
+    CHECK(utils::num_to_str(-333) == "-000000333");
 
   }
 
   SECTION("string to number"){
 
-    CHECK(util::str_to<double>("0.3") == 0.3_a);
-    CHECK(util::str_to<double>("-56750.25456") == -56750.25456_a);
-		CHECK(util::str_to<double>("1/2") == 0.5_a);
-		CHECK(util::str_to<double>("sqrt(2)") == 1.4142135624_a);
+    CHECK(utils::str_to<double>("0.3") == 0.3_a);
+    CHECK(utils::str_to<double>("-56750.25456") == -56750.25456_a);
+		CHECK(utils::str_to<double>("1/2") == 0.5_a);
+		CHECK(utils::str_to<double>("sqrt(2)") == 1.4142135624_a);
 
-    CHECK(util::str_to<int>("333") == 333);
-    CHECK(util::str_to<int>("-45") == -45);
-		CHECK(util::str_to<int>("28 - 84") == -56);
+    CHECK(utils::str_to<int>("333") == 333);
+    CHECK(utils::str_to<int>("-45") == -45);
+		CHECK(utils::str_to<int>("28 - 84") == -56);
 
-    CHECK(util::str_to<long>("467854545460193") == 467854545460193l);
-    CHECK(util::str_to<long>("-467489690221") == -467489690221l);
-		CHECK(util::str_to<long>("2^32") == 4294967296l);
+    CHECK(utils::str_to<long>("467854545460193") == 467854545460193l);
+    CHECK(utils::str_to<long>("-467489690221") == -467489690221l);
+		CHECK(utils::str_to<long>("2^32") == 4294967296l);
   }
 	
 }

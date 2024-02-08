@@ -143,7 +143,7 @@ These are the uses for the command:
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 
-		using util::str_to;
+		using utils::str_to;
 		
 		if(args.size() == 0) {
 			operator()();
