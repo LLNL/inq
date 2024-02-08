@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <cstdlib>
+#include <utils/calculator.hpp>
 
 namespace inq {
 namespace util {
@@ -25,17 +26,17 @@ auto str_to(std::string const & str);
 
 template <>
 auto str_to<double>(std::string const & str) {
-  return std::atof(str.c_str());
-}
-
-template <>
-auto str_to<int>(std::string const & str) {
-  return std::atoi(str.c_str());
+	return utils::calculator::eval(str);
 }
 
 template <>
 auto str_to<long>(std::string const & str) {
-  return std::atol(str.c_str());
+  return std::lround(str_to<double>(str));
+}
+
+template <>
+auto str_to<int>(std::string const & str) {
+  return int(str_to<long>(str));
 }
 
 }
@@ -65,16 +66,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(util::str_to<double>("0.3") == 0.3_a);
     CHECK(util::str_to<double>("-56750.25456") == -56750.25456_a);
+		CHECK(util::str_to<double>("1/2") == 0.5_a);
+		CHECK(util::str_to<double>("sqrt(2)") == 1.4142135624_a);
 
     CHECK(util::str_to<int>("333") == 333);
     CHECK(util::str_to<int>("-45") == -45);
+		CHECK(util::str_to<int>("28 - 84") == -56);
 
-    CHECK(util::str_to<long>("46785454537460193") == 46785454537460193l);
+    CHECK(util::str_to<long>("467854545460193") == 467854545460193l);
     CHECK(util::str_to<long>("-467489690221") == -467489690221l);
+		CHECK(util::str_to<long>("2^32") == 4294967296l);
   }
-  
-
-  
+	
 }
 
 #endif
