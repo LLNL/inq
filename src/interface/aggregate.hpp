@@ -23,7 +23,10 @@ struct item : public Type {
 	}
 	
 	auto list() const {
-		return "  " + Type::name() + "\t\t" + Type::one_line() + '\n';
+		auto align = 18ul;
+		assert(Type::name().size() < align);
+		auto pad = std::string(align - Type::name().size(), ' ');
+		return "  " + Type::name() + pad + Type::one_line() + '\n';
 	}
 
 	auto execute(std::string const & comm, std::vector<std::string> const & args, bool quiet) const {
