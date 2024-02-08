@@ -59,8 +59,9 @@ endif()
 add_executable(inq_executable)
 set_property(TARGET inq_executable PROPERTY OUTPUT_NAME inq)
 target_sources(inq_executable PRIVATE main/inq.cpp)
+target_compile_definitions(inq_executable PRIVATE "BOOST_PP_VARIADICS=1")
 target_link_libraries(inq_executable PRIVATE
-  inq
-  Boost::headers  # for Boost.Spirit
+inq
+Boost::headers  # for Boost.Spirit
 )
 install(TARGETS inq_executable)

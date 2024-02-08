@@ -67,7 +67,7 @@ auto const term_def =
 
 auto expr_def = x3::skip(x3::space)[x3::eps > term > x3::eoi];
 
-BOOST_SPIRIT_DEFINE(expr, term, factor, expo)
+BOOST_SPIRIT_DEFINE(expr, term, factor, expo)  // This may need a compile definition -DBOOST_PP_VARIADICS=1 in NVCC
 } // namespace parsing
 
 auto eval(std::string_view text) try {
