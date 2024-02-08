@@ -118,6 +118,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using inq::interface::calculator::eval;
 
+	// to interactively check results try here https://godbolt.org/z/7nqT6335v
 	CHECK(eval("1.0") != 2.0);
 
 	CHECK(eval("1.0") == 1.0);
