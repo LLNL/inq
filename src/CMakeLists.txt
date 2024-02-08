@@ -1,12 +1,15 @@
 # -*- indent-tabs-mode: t -*-
-# Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
+# Copyright (C) 2019-2024 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+cmake_minimum_required(VERSION 3.15)  # for Boost::headers
 
 include_directories(.)
 include_directories(../external_libs)
+
+find_package(Boost REQUIRED COMPONENTS headers CONFIG)
 
 add_library(unit_tests_main OBJECT main/unit_tests_main.cpp)
 if(ENABLE_GPU)
@@ -46,8 +49,14 @@ endif()
 
 add_executable(all_unit_tests)
 target_sources(all_unit_tests PRIVATE all_unit_tests.cpp)
-target_link_libraries(all_unit_tests PRIVATE unit_tests_main Catch2::Catch2 inq)
-
+target_compile_definitions(all_unit_tests PRIVATE "BOOST_PP_VARIADICS=1")  # NVCC needs BOOST_PP_VARIADICS to compile some Boost headers
+target_link_libraries(
+  all_unit_tests PRIVATE
+  unit_tests_main
+  Catch2::Catch2
+  Boost::headers  # for Boost.Spirit
+  inq
+)
 
 if(ENABLE_GPU)
 	set_source_files_properties(main/inq.cpp PROPERTIES LANGUAGE ${GPU_LANGUAGE})
@@ -56,5 +65,9 @@ endif()
 add_executable(inq_executable)
 set_property(TARGET inq_executable PROPERTY OUTPUT_NAME inq)
 target_sources(inq_executable PRIVATE main/inq.cpp)
-target_link_libraries(inq_executable PRIVATE inq)
+target_compile_definitions(inq_executable PRIVATE "BOOST_PP_VARIADICS=1")
+target_link_libraries(inq_executable PRIVATE
+inq
+Boost::headers  # for Boost.Spirit
+)
 install(TARGETS inq_executable)
