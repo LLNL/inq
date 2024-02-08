@@ -53,13 +53,13 @@ auto const expo_def =
 ;
 auto const factor_def =
 	expo [ ([](auto& ctx) {_val(ctx) = _attr(ctx);}) ] >> *(
-			('*' > term[([](auto& ctx) {_val(ctx) *= _attr(ctx);})])
+		  ('*' > term[([](auto& ctx) {_val(ctx) *= _attr(ctx);})])
 		| ('/' > term[([](auto& ctx) {_val(ctx) /= _attr(ctx);})])
 	)
 ;
 auto const term_def =
 	factor[([](auto& ctx) {_val(ctx) = _attr(ctx);})] >> *(
-			('+' > term[([](auto& ctx) {_val(ctx) += _attr(ctx);})])
+		  ('+' > term[([](auto& ctx) {_val(ctx) += _attr(ctx);})])
 		| ('-' > term[([](auto& ctx) {_val(ctx) -= _attr(ctx);})])
 	)
 ;
