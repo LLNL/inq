@@ -77,6 +77,19 @@ struct result {
     
     return res;
 	}
+
+  template<class OStream>
+  friend OStream & operator<<(OStream & out, result const & self){
+    
+    std::cout << "Ground-state result:\n";
+    std::cout << " iterations     = " << self.total_iter << '\n';
+    std::cout << " dipole         = " << self.dipole << '\n';
+    std::cout << " magnetization  = " << self.magnetization << '\n';
+    std::cout << " total energy   = " << utils::num_to_str("%.8f", self.energy.total()) << '\n';
+    std::cout << std::endl;
+    return out;
+  }
+  
   
 };
 
@@ -141,7 +154,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(read_res.energy.nvxc() == 8.55);
 	CHECK(read_res.energy.exact_exchange() == 10.55);
   CHECK(read_res.forces == ground_state::result::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
-  
+
 }
 #endif
 
