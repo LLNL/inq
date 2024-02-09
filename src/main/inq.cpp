@@ -15,7 +15,9 @@ int main(int argc, char* argv[]) {
 	using namespace std::string_literals;
 	using interface::operator+;
  
-	std::map<std::string, std::string> dictionary = {
+	std::unordered_map<std::string, std::string> aliases = {
+		{ "calculator"s,       "calc"s             },
+		{ "functionals"s,      "functional"s       },		
     { "ground_state"s,     "ground-state"s     },
     {	"groundstate"s,      "ground-state"s     },
     {	"hartree_fock"s,     "hartree-fock"s     },
@@ -42,7 +44,8 @@ int main(int argc, char* argv[]) {
 		{ "gridshifted"s,      "shifted-grid"s     },
 		{ "grid-shifted"s,     "shifted-grid"s     },
 		{ "shiftedgrid"s,      "shifted-grid"s     },
-		{ "tol"s         ,     "tolerance"s        }
+		{ "tol"s         ,     "tolerance"s        },
+		{ "utils"s        ,     "util"s            }
 	};
 	
 	auto comm = input::environment::global().comm(); //Initialize MPI 
@@ -92,15 +95,15 @@ int main(int argc, char* argv[]) {
 		if(args.size() > 0 and args.back() == "file") lower = false; //do not convert filenames to lowercase
 		if(lower) arg = utils::lowercase(arg);
 
-		//convert spelling
-		auto search = dictionary.find(arg);
-		if(search != dictionary.end()) arg = search->second;
+		//process aliases
+		auto search = aliases.find(arg);
+		if(search != aliases.end()) arg = search->second;
 
-		//convert spelling for words with a space
+		//process aliases for words with a space
 		if(iarg + 1 < argc){
 			auto fusion = utils::lowercase(arg + argv[iarg + 1]);
-			auto search = dictionary.find(fusion);
-			if(search != dictionary.end()) {
+			auto search = aliases.find(fusion);
+			if(search != aliases.end()) {
 				arg = search->second;
 				iarg++;
 			}

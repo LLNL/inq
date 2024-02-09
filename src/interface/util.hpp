@@ -32,10 +32,19 @@ struct {
 The 'util' command
 ==================
 
-This command provided some simple utilities used for the testing of
-inq. They are not very useful for users.
+This command provided some simple utilities for use in scripts or for
+the testing of inq.
 
 These are the available subcommands:
+
+- `util match calc <math-expression>`
+
+  Calculates the result of the given mathematical expression. This is
+  useful if you need to calculate a value in a script or double check
+  an expression you are given to inq in an argument.
+
+  Example: `inq util calc "1/sqrt(2.0) + exp(-1/2)`.
+
 
 - `util match <value1> <value2> <tolerance>`
 
@@ -56,7 +65,11 @@ These are the available subcommands:
 
 )"""";
 	}
-	
+
+	auto calc(std::string const & expr) const {
+		return utils::str_to<double>(expr);		
+	}
+
 	bool match(double value, double reference, double tolerance) const {
     
     auto diff = fabs(reference - value);
@@ -79,12 +92,17 @@ These are the available subcommands:
 	auto test_data() const {
 		return config::path::unit_tests_data();
 	}
-		
+
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 
 		using utils::str_to;
-		
+
+		if(args.size() == 2 and args[0] == "calc"){
+			if(input::environment::global().comm().root()) printf("%.20e\n", calc(args[1]));
+			exit(0);
+		}
+
 		if(args.size() == 4 and args[0] == "match"){
       auto val = str_to<double>(args[1]);
       auto ref = str_to<double>(args[2]);
@@ -98,10 +116,10 @@ These are the available subcommands:
 		}
 
 		if(args.size() == 1 and args[0] == "test-data"){
-			std::cout << test_data() << std::endl;
+			if(input::environment::global().comm().root()) std::cout << test_data() << std::endl;
 			exit(0);
 		}
-		
+
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'util' command" << std::endl;
 		exit(1);
 	}

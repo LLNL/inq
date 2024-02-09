@@ -127,6 +127,11 @@ the user.
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
+	void spacing(quantity<magnitude::length> const & val) const{
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").spacing(val);
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
+	}
+	
 	void fourier_pseudo() const {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").fourier_pseudo();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
@@ -214,6 +219,24 @@ the user.
 			exit(0);
 		}
 
+		if(args[0] == "spacing"){
+
+			if(args.size() < 3) {
+				if(input::environment::global().comm().root()) std::cerr << "Error: missing spacing arguments. Use 'spacing <value> <units>'" << std::endl;
+				exit(1);
+			}
+
+			if(args.size() > 3) {
+				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to spacing argument" << std::endl;
+				exit(1);
+			}
+
+			spacing(str_to<double>(args[1])*magnitude::length::parse(args[2]));
+			
+			if(not quiet) operator()();
+			exit(0);
+		}
+		
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "unpolarized"){
 			spin_unpolarized();
 			if(not quiet) operator()();
