@@ -42,9 +42,10 @@ struct result {
 				throw std::runtime_error(error_message);
 			}
       
+			utils::save_value(comm, dirname + "/total_iter",    total_iter,    error_message);
 			utils::save_value(comm, dirname + "/dipole",        dipole,        error_message);
       utils::save_value(comm, dirname + "/magnetization", magnetization, error_message);
-			utils::save_value(comm, dirname + "/total_iter",    total_iter,    error_message);
+			utils::save_value(comm, dirname + "/num_atoms",     forces.size(), error_message);
 			utils::save_array(comm, dirname + "/forces",        forces,        error_message);
 			
 			exception_happened = false;
@@ -58,7 +59,24 @@ struct result {
 		comm.barrier();
 	}
 	
-  
+  static auto load(std::string const & dirname) {
+    auto error_message = "INQ error: Cannot load the energy from directory '" + dirname + "'.";
+
+    result res;
+    res.energy = energy_type::load(dirname + "/energy");
+    
+    utils::load_value(dirname + "/total_iter",     res.total_iter,     error_message);
+    utils::load_value(dirname + "/dipole",         res.dipole,         error_message);
+    utils::load_value(dirname + "/magnetization",  res.magnetization,  error_message);
+
+    int num_atoms;
+    utils::load_value(dirname + "/num_atoms",      num_atoms,          error_message);
+
+    res.forces = ground_state::result::forces_type(num_atoms);
+    utils::load_array(dirname + "/forces",         res.forces,         error_message);
+    
+    return res;
+	}
   
 };
 
@@ -79,21 +97,50 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
   
   ground_state::result res;
-  res.total_iter    = 666;
-  res.dipole        = vector3<double>{1.0, 2.0, 3.0};
-  res.magnetization = vector3<double>{-1.0, -2.0, -3.0};
-  res.energy.ion(1.0);
-	res.energy.ion_kinetic(2.0);
-	res.energy.eigenvalues(3.0);
-	res.energy.external(4.0);
-	res.energy.non_local(5.0);
-	res.energy.hartree(6.0);
-	res.energy.xc(7.0);
-	res.energy.nvxc(8.0);
-	res.energy.exact_exchange(10.0);
-  res.forces = ground_state::result::force_type{65, vector3<double>{3.0, 4.0, 5.0}};
+  res.total_iter    = 333;
+  res.dipole        = vector3<double>{1.55, 2.55, 3.55};
+  res.magnetization = vector3<double>{-1.55, -2.55, -3.55};
+  res.energy.ion(1.55);
+	res.energy.ion_kinetic(2.55);
+	res.energy.eigenvalues(3.55);
+	res.energy.external(4.55);
+	res.energy.non_local(5.55);
+	res.energy.hartree(6.55);
+	res.energy.xc(7.55);
+	res.energy.nvxc(8.55);
+	res.energy.exact_exchange(10.55);
+  res.forces = ground_state::result::forces_type{65, vector3<double>{3.55, 4.55, 5.55}};
 
+  CHECK(res.total_iter == 333);
+  CHECK(res.dipole  == vector3<double>{1.55, 2.55, 3.55});
+  CHECK(res.magnetization == vector3<double>{-1.55, -2.55, -3.55});
+	CHECK(res.energy.ion() == 1.55);
+	CHECK(res.energy.ion_kinetic() == 2.55);
+	CHECK(res.energy.eigenvalues() == 3.55);
+	CHECK(res.energy.external() == 4.55);
+	CHECK(res.energy.non_local() == 5.55);
+	CHECK(res.energy.hartree() == 6.55);
+	CHECK(res.energy.xc() == 7.55);
+	CHECK(res.energy.nvxc() == 8.55);
+	CHECK(res.energy.exact_exchange() == 10.55);
+  CHECK(res.forces == ground_state::result::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
+  
   res.save(comm, "result_save");
+  auto read_res = ground_state::result::load("result_save");
+
+  CHECK(read_res.total_iter == 333);
+  CHECK(read_res.dipole  == vector3<double>{1.55, 2.55, 3.55});
+  CHECK(read_res.magnetization == vector3<double>{-1.55, -2.55, -3.55});
+	CHECK(read_res.energy.ion() == 1.55);
+	CHECK(read_res.energy.ion_kinetic() == 2.55);
+	CHECK(read_res.energy.eigenvalues() == 3.55);
+	CHECK(read_res.energy.external() == 4.55);
+	CHECK(read_res.energy.non_local() == 5.55);
+	CHECK(read_res.energy.hartree() == 6.55);
+	CHECK(read_res.energy.xc() == 7.55);
+	CHECK(read_res.energy.nvxc() == 8.55);
+	CHECK(read_res.energy.exact_exchange() == 10.55);
+  CHECK(read_res.forces == ground_state::result::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
   
 }
 #endif
