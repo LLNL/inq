@@ -33,13 +33,58 @@ The 'result' command
 ==================
 
 This command queries the result obtained from a ground-state
-calculation. Without arguments, `energy` prints all the energy values
-calculated. The options allows you to query a specific energy
-value. In this case only the value will be printed without any other
-text, so it is suitable for easy parsing in scripting. The values are
-returned in Hartree.
+calculation. Without arguments, it prints the values calculated.
+
+The options allows you to query a specific value. In this case only
+the value will be printed without any other text, so it is suitable
+for easy parsing in scripting. The values are returned in atomic
+units.
+
 
 These are the available subcommands:
+
+- `result`
+
+  When no arguments are given, print the values calculated.
+
+  Example: `inq result`.
+
+
+- `result iterations`
+
+  Print the number of self-consistency iterations done.
+
+  Example: `inq result iterations`
+
+- `result magnetization [index]`
+
+  Print the magnetization. If no additional arguments are given, print
+  the whole vector. Optionally you can add an index argument to print
+  a specific component of the vector. The index can be given as a
+  numerical value between _1_ and _3_, or as the letters _x_, _y_ or
+  _z_.
+
+  Note that for spin unpolarized systems the magnetization is always
+  zero. For spin polarized the magnetization is assumed on the _z_
+  direction.
+
+  Example: `inq result magnetization z`
+
+
+- `result dipole [index]`
+
+  Print the dipole of the system in atomic units. The vector is
+  printed if no additional arguments are given. You can also add an
+  index argument to print a specific component. The index can be given
+  as a numerical value between _1_ and _3_, or as the letters _x_, _y_
+  or _z_.
+
+  Note that the dipole is only calculated for the non-periodic
+  directions. For the periodic directions is set to zero since the
+  dipole is not properly defined.
+
+  Example: `inq result magnetization z`
+
 
 - `result energy`
 
