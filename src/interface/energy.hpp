@@ -185,52 +185,52 @@ These are the available subcommands:
     }			
 
     if(args.size() == 1 and args[0] == "total"){
-      printf("%30.20e\n", total());
+      printf("%.20e\n", total());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "kinetic"){
-			if(input::environment::global().comm().root()) printf("%30.20e\n", kinetic());
+			if(input::environment::global().comm().root()) printf("%.20e\n", kinetic());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "eigenvalues"){
-			if(input::environment::global().comm().root()) printf("%30.20e\n", eigenvalues());
+			if(input::environment::global().comm().root()) printf("%.20e\n", eigenvalues());
       exit(0);
     }
     
     if(args.size() == 1 and args[0] == "external"){
-      if(input::environment::global().comm().root()) printf("%30.20e\n", external());
+      if(input::environment::global().comm().root()) printf("%.20e\n", external());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "non-local"){
-      if(input::environment::global().comm().root()) printf("%30.20e\n", non_local());
+      if(input::environment::global().comm().root()) printf("%.20e\n", non_local());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "hartree"){
-      if(input::environment::global().comm().root()) printf("%30.20e\n", hartree());
+      if(input::environment::global().comm().root()) printf("%.20e\n", hartree());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "xc"){
-      if(input::environment::global().comm().root()) printf("%30.20e\n", xc());
+      if(input::environment::global().comm().root()) printf("%.20e\n", xc());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "nvxc"){
-      if(input::environment::global().comm().root()) printf("%30.20e\n", nvxc());
+      if(input::environment::global().comm().root()) printf("%.20e\n", nvxc());
       exit(0);
     }
 
     if(args.size() == 1 and args[0] == "exact-exchange"){
-      if(input::environment::global().comm().root()) printf("%30.20e\n", exact_exchange());
+      if(input::environment::global().comm().root()) printf("%.20e\n", exact_exchange());
       exit(0);
     }
         
     if(args.size() == 1 and args[0] == "ion"){
-      if(input::environment::global().comm().root()) printf("%30.20e\n", ion());
+      if(input::environment::global().comm().root()) printf("%.20e\n", ion());
       exit(0);
     }
       
