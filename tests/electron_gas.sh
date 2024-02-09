@@ -66,8 +66,6 @@ inq util match `inq energy nvxc`            -3.974184918648 1e-5
 inq util match `inq energy exact-exchange`   0.000000000000 1e-5
 inq util match `inq energy ion`              0.000000000000 1e-5
 
-exit 0
-
 # RUN 3
 
 inq clear
