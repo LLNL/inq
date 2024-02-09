@@ -45,6 +45,14 @@ basis::field<basis::real_space, vector3<double>> magnetization(basis::field_set<
 	
 }
 
+auto total_magnetization(basis::field_set<basis::real_space, double> const & spin_density){
+	if(spin_density.set_size() >= 2){
+		return operations::integral(observables::magnetization(spin_density));
+	} else {
+		return vector3<double>{0.0, 0.0, 0.0};
+	}
+}
+
 }
 }
 
