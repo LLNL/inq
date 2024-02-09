@@ -6,7 +6,7 @@ set -x #output commands to the terminal
 #RUN 1
 
 inq clear
-inq cell cubic 10.0 bohr
+inq cell cubic 10.0 bohr periodic
 
 inq electrons extra states 2
 inq electrons extra electrons 14.0
