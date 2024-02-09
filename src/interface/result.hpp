@@ -140,6 +140,11 @@ These are the available subcommands:
 		auto res = ground_state::result::load(".inq/default_result");
 		return res.total_iter;
 	}
+
+	auto magnetization() const {
+		auto res = ground_state::result::load(".inq/default_result");
+		return res.magnetization;
+	}
 	
 	void energy() const {
 		auto ener = ground_state::result::load(".inq/default_result").energy;
@@ -196,6 +201,11 @@ These are the available subcommands:
 		
 		if(args.size() == 1 and args[0] == "iterations"){
 			std::cout << iterations() << std::endl;
+			exit(0);
+		}
+
+		if(args.size() == 1 and args[0] == "magnetization"){
+			std::cout << magnetization() << std::endl;
 			exit(0);
 		}
 				
