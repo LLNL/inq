@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 	using namespace std::string_literals;
 	using interface::operator+;
  
-	std::map<std::string, std::string> dictionary = {
+	std::unordered_map<std::string, std::string> aliases = {
 		{ "calculator"s,       "calc"s             },
     { "ground_state"s,     "ground-state"s     },
     {	"groundstate"s,      "ground-state"s     },
@@ -94,15 +94,15 @@ int main(int argc, char* argv[]) {
 		if(args.size() > 0 and args.back() == "file") lower = false; //do not convert filenames to lowercase
 		if(lower) arg = utils::lowercase(arg);
 
-		//convert spelling
-		auto search = dictionary.find(arg);
-		if(search != dictionary.end()) arg = search->second;
+		//process aliases
+		auto search = aliases.find(arg);
+		if(search != aliases.end()) arg = search->second;
 
-		//convert spelling for words with a space
+		//process aliases for words with a space
 		if(iarg + 1 < argc){
 			auto fusion = utils::lowercase(arg + argv[iarg + 1]);
-			auto search = dictionary.find(fusion);
-			if(search != dictionary.end()) {
+			auto search = aliases.find(fusion);
+			if(search != aliases.end()) {
 				arg = search->second;
 				iarg++;
 			}
