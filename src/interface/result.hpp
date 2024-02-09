@@ -131,6 +131,11 @@ These are the available subcommands:
 )"""";
 	}
 
+	void operator()() const {
+		auto res = ground_state::result::load(".inq/default_result");
+		if(input::environment::global().comm().root()) std::cout << res;
+	}
+	
 	void energy() const {
 		auto ener = ground_state::result::load(".inq/default_result").energy;
 		if(input::environment::global().comm().root()) std::cout << ener;
@@ -179,6 +184,11 @@ These are the available subcommands:
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
+		if(args.size() == 0){
+			operator()();
+			exit(0);
+		}
+		
 		if(args[0] == "energy"){
 
 			args.erase(args.begin());
