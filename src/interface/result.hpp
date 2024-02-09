@@ -210,18 +210,13 @@ These are the available subcommands:
 		}
 
 		if(args.size() == 2 and args[0] == "magnetization"){
-			auto idir = -1;
-			if(args[1] == "1" or args[1] == "x") idir = 0;
-			if(args[1] == "2" or args[1] == "y") idir = 1;
-			if(args[1] == "3" or args[1] == "z") idir = 2;
+			auto idir = utils::str_to_index(args[1]);
 
 			if(idir == -1) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'result magnetization' command" << std::endl;
+				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid index in the 'result magnetization' command" << std::endl;
 				exit(1);
 			}
-			
-			assert(idir >= 0 and idir <= 2);
-			
+
 			if(input::environment::global().comm().root())  printf("%.6f\n", magnetization()[idir]);
 			exit(0);
 		}
