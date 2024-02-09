@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
 	using interface::operator+;
  
 	std::map<std::string, std::string> dictionary = {
+		{ "calculator"s,       "calc"s             },
     { "ground_state"s,     "ground-state"s     },
     {	"groundstate"s,      "ground-state"s     },
     {	"hartree_fock"s,     "hartree-fock"s     },
@@ -42,7 +43,8 @@ int main(int argc, char* argv[]) {
 		{ "gridshifted"s,      "shifted-grid"s     },
 		{ "grid-shifted"s,     "shifted-grid"s     },
 		{ "shiftedgrid"s,      "shifted-grid"s     },
-		{ "tol"s         ,     "tolerance"s        }
+		{ "tol"s         ,     "tolerance"s        },
+		{ "utils"s        ,     "util"s            }
 	};
 	
 	auto comm = input::environment::global().comm(); //Initialize MPI 
