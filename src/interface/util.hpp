@@ -99,7 +99,7 @@ These are the available subcommands:
 		using utils::str_to;
 
 		if(args.size() == 2 and args[0] == "calc"){
-			if(input::environment::global().comm().root()) std::cout << calc(args[1]) << std::endl;
+			if(input::environment::global().comm().root()) printf("%.20e\n", calc(args[1]));
 			exit(0);
 		}
 
