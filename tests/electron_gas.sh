@@ -38,8 +38,8 @@ inq util match `inq energy ion`              0.000000000000 3e-5
 inq clear
 
 #This is the same as before but the lattice is rotated 45 degrees along the z axis
-#lattice  {a/sqrt(2.0), a/2.0, a/2.0}, {-a/sqrt(2), a/2.0, a/2.0}, {0.0_b, -a/sqrt(2.0), a/sqrt(2.0)}
-inq cell  7.07107 5 5  -7.07107 5 5   0 -7.07107 7.07107  bohr
+a=10
+inq cell  "$a/sqrt(2.0)" $a/2 $a/2  "-$a/sqrt(2)" $a/2 $a/2  0 "-$a/sqrt(2.0)" "$a/sqrt(2.0)"  bohr
 
 inq electrons extra states 2
 inq electrons extra electrons 14.0
@@ -71,7 +71,7 @@ exit 0
 # RUN 3
 
 inq clear
-inq cell  0.0 0.5 0.5  0.5 0.0 0.5  0.5 0.5 0.0 scale 10.0 bohr
+inq cell  0 1/2 1/2  1/2 0 1/2  1/2 1/2 0 scale 10.0 bohr
 
 inq electrons extra states 2
 inq electrons extra electrons 18.0
