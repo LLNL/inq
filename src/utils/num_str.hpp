@@ -12,13 +12,22 @@
 #include <cstdlib>
 #include <utils/calculator.hpp>
 
+#include <tinyformat/tinyformat.h>
+
 namespace inq {
 namespace utils {
 
 auto num_to_str(long num){
-	char numcstr[12]; 
+	char numcstr[12];
 	snprintf(numcstr, 11, "%010ld", num);
-	return std::string(numcstr);				
+	return std::string(numcstr);
+}
+
+template <typename NumType>
+auto num_to_str(std::string const & fmt, NumType const & num){
+	std::stringstream ss;
+	tfm::format(ss, fmt.c_str(), num);
+	return ss.str();
 }
 
 template <typename Type>
@@ -59,6 +68,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(utils::num_to_str(0)    == "0000000000");
     CHECK(utils::num_to_str(1024) == "0000001024");
     CHECK(utils::num_to_str(-333) == "-000000333");
+
+		CHECK(utils::num_to_str("%20.12f", 1.23456789) == "      1.234567890000");
+		CHECK(utils::num_to_str("%.12f", 1.23456789)   == "1.234567890000");		
 
   }
 
