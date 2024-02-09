@@ -135,6 +135,11 @@ These are the available subcommands:
 		auto res = ground_state::result::load(".inq/default_result");
 		if(input::environment::global().comm().root()) std::cout << res;
 	}
+
+	auto iterations() const {
+		auto res = ground_state::result::load(".inq/default_result");
+		return res.total_iter;
+	}
 	
 	void energy() const {
 		auto ener = ground_state::result::load(".inq/default_result").energy;
@@ -189,6 +194,11 @@ These are the available subcommands:
 			exit(0);
 		}
 		
+		if(args.size() == 1 and args[0] == "iterations"){
+			std::cout << iterations() << std::endl;
+			exit(0);
+		}
+				
 		if(args[0] == "energy"){
 
 			args.erase(args.begin());
