@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
  
 	std::unordered_map<std::string, std::string> aliases = {
 		{ "calculator"s,       "calc"s             },
+		{ "functionals"s,      "functional"s       },		
     { "ground_state"s,     "ground-state"s     },
     {	"groundstate"s,      "ground-state"s     },
     {	"hartree_fock"s,     "hartree-fock"s     },
