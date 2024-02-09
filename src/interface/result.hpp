@@ -208,7 +208,25 @@ These are the available subcommands:
 			std::cout << magnetization() << std::endl;
 			exit(0);
 		}
-				
+
+		if(args.size() == 2 and args[0] == "magnetization"){
+			auto idir = -1;
+			if(args[1] == "1" or args[1] == "x") idir = 0;
+			if(args[1] == "2" or args[1] == "y") idir = 1;
+			if(args[1] == "3" or args[1] == "z") idir = 2;
+
+			if(idir == -1) {
+				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'result magnetization' command" << std::endl;
+				exit(1);
+			}
+			
+			assert(idir >= 0 and idir <= 2);
+			
+			if(input::environment::global().comm().root())  printf("%.6f\n", magnetization()[idir]);
+			exit(0);
+		}
+
+		
 		if(args[0] == "energy"){
 
 			args.erase(args.begin());
@@ -219,7 +237,7 @@ These are the available subcommands:
 			}
 
 			if(args.size() == 1 and args[0] == "total"){
-				printf("%.20e\n", energy_total());
+				if(input::environment::global().comm().root()) printf("%.20e\n", energy_total());
 				exit(0);
 			}
 
@@ -269,7 +287,7 @@ These are the available subcommands:
 			}
 		}
       
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'energy' command" << std::endl;
+		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'result' command" << std::endl;
 		exit(1);
     
 	}
