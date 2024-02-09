@@ -237,11 +237,8 @@ public:
 			console->info("\nSCF ended after {} iterations with resulting eigenvalues and energies:\n\n{}{}", res.total_iter, ev_out.full(), res.energy);
 		}
 		
-		if(ions_.cell().periodicity() == 0){
-			res.dipole = observables::dipole(ions_, electrons);
-		} else {
-			res.dipole = vector3<double>(0.);
-		}
+		res.dipole = observables::dipole(ions_, electrons);
+		for(int idir = 0; idir < ions_.cell().periodicity(); idir++) res.dipole[idir] = 0.0;
 
 		res.magnetization = observables::total_magnetization(electrons.spin_density());
 		
