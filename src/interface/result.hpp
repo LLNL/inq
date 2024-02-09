@@ -145,6 +145,11 @@ These are the available subcommands:
 		auto res = ground_state::result::load(".inq/default_result");
 		return res.magnetization;
 	}
+
+	auto dipole() const {
+		auto res = ground_state::result::load(".inq/default_result");
+		return res.dipole;
+	}
 	
 	void energy() const {
 		auto ener = ground_state::result::load(".inq/default_result").energy;
@@ -220,7 +225,23 @@ These are the available subcommands:
 			if(input::environment::global().comm().root())  printf("%.6f\n", magnetization()[idir]);
 			exit(0);
 		}
+		
+		if(args.size() == 1 and args[0] == "dipole"){
+			std::cout << dipole() << std::endl;
+			exit(0);
+		}
 
+		if(args.size() == 2 and args[0] == "dipole"){
+			auto idir = utils::str_to_index(args[1]);
+
+			if(idir == -1) {
+				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid index in the 'result dipole' command" << std::endl;
+				exit(1);
+			}
+
+			if(input::environment::global().comm().root())  printf("%.6f\n", dipole()[idir]);
+			exit(0);
+		}
 		
 		if(args[0] == "energy"){
 
