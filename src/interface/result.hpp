@@ -132,48 +132,48 @@ These are the available subcommands:
 	}
 
 	void energy() const {
-		auto ener = hamiltonian::energy::load(".inq/default_energy");
+		auto ener = ground_state::result::load(".inq/default_result").energy;
 		if(input::environment::global().comm().root()) std::cout << ener;
 	}
 	
   double energy_total() const{
-    return hamiltonian::energy::load(".inq/default_energy").total();
+    return ground_state::result::load(".inq/default_result").energy.total();
   }
 	
   double energy_kinetic() const{
-    return hamiltonian::energy::load(".inq/default_energy").kinetic();
+    return ground_state::result::load(".inq/default_result").energy.kinetic();
   }
 
   double energy_eigenvalues() const{
-    return hamiltonian::energy::load(".inq/default_energy").eigenvalues();
+    return ground_state::result::load(".inq/default_result").energy.eigenvalues();
   }
 
   double energy_external() const{
-    return hamiltonian::energy::load(".inq/default_energy").external();
+    return ground_state::result::load(".inq/default_result").energy.external();
   }
   
   double energy_non_local() const{
-    return hamiltonian::energy::load(".inq/default_energy").non_local();
+    return ground_state::result::load(".inq/default_result").energy.non_local();
   }
   
   double energy_hartree() const{
-    return hamiltonian::energy::load(".inq/default_energy").hartree();
+    return ground_state::result::load(".inq/default_result").energy.hartree();
   }
   
   double energy_xc() const{
-    return hamiltonian::energy::load(".inq/default_energy").xc();
+    return ground_state::result::load(".inq/default_result").energy.xc();
   }
 
   double energy_nvxc() const{
-    return hamiltonian::energy::load(".inq/default_energy").nvxc();
+    return ground_state::result::load(".inq/default_result").energy.nvxc();
   }
 
   double energy_exact_exchange() const{
-    return hamiltonian::energy::load(".inq/default_energy").exact_exchange();
+    return ground_state::result::load(".inq/default_result").energy.exact_exchange();
   }
   
   double energy_ion() const{
-    return hamiltonian::energy::load(".inq/default_energy").ion();
+    return ground_state::result::load(".inq/default_result").energy.ion();
   }
 
 	template <typename ArgsType>
