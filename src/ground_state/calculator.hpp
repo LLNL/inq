@@ -33,6 +33,7 @@
 #include <math/complex.hpp>
 #include <ions/interaction.hpp>
 #include <observables/dipole.hpp>
+#include <observables/magnetization.hpp>
 #include <options/ground_state.hpp>
 #include <systems/electrons.hpp>
 #include <ground_state/eigenvalue_output.hpp>
@@ -93,6 +94,7 @@ public:
 	struct result {
 		energy_type energy;
 		vector3<double> dipole;
+		vector3<double> magnetization;
 		forces_type forces;
 		int total_iter;
 	};
@@ -250,7 +252,9 @@ public:
 		} else {
 			res.dipole = vector3<double>(0.);
 		}
-	
+
+		res.magnetization = observables::total_magnetization(electrons.spin_density());
+		
 		if(solver_.verbose_output() and console) console->trace("ground-state calculation ended normally");
 		return res;
 	}

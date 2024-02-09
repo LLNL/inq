@@ -39,11 +39,9 @@ int main(int argc, char ** argv){
 		match.check("HF exchange energy",  result.energy.exact_exchange(),   0.000000000000);
 		match.check("ion-ion energy",      result.energy.ion(),          15.744115365679);
 		
-		auto total_mag = observables::total_magnetization(electrons.spin_density());
-		
-		match.check("magnetization x", total_mag[0], 0.0);
-		match.check("magnetization y", total_mag[1], 0.0);
-		match.check("magnetization z", total_mag[2], 2.0);
+		match.check("magnetization x", result.magnetization[0], 0.0);
+		match.check("magnetization y", result.magnetization[1], 0.0);
+		match.check("magnetization z", result.magnetization[2], 2.0);
 
 	}
 
