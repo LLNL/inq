@@ -24,7 +24,7 @@ private:
 	
 	options::theory theo_;
 	options::electrons els_;
-	ground_state::calculator::result result_;
+	ground_state::result result_;
 	std::optional<systems::electrons> electrons_;
 	
 	auto ase_atoms_to_inq_ions(py::object atoms){
