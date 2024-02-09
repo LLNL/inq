@@ -83,7 +83,7 @@ These are the available subcommands:
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 
-		using util::str_to;
+		using utils::str_to;
 		
 		if(args.size() == 4 and args[0] == "match"){
       auto val = str_to<double>(args[1]);

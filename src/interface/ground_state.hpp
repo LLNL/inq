@@ -97,7 +97,7 @@ calculations. These are the available options:
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
-		using util::str_to;
+		using utils::str_to;
 		
 		if(args.size() == 0) {
 			operator()();

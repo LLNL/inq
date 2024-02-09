@@ -311,7 +311,7 @@ public:
 
 		int iphi = 0;
 		for(auto & phi : kpin()){
-			auto basedir = dirname + "/kpin" + util::num_to_str(iphi + kpin_part_.start());
+			auto basedir = dirname + "/kpin" + utils::num_to_str(iphi + kpin_part_.start());
 			operations::io::save(basedir + "/states", phi);
 			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), +occupations()[iphi]);	
 			iphi++;
@@ -334,7 +334,7 @@ public:
 
 		int iphi = 0;
 		for(auto & phi : kpin()){
-			auto basedir = dirname + "/kpin" + util::num_to_str(iphi + kpin_part_.start());
+			auto basedir = dirname + "/kpin" + utils::num_to_str(iphi + kpin_part_.start());
 			success = success and operations::io::load(basedir + "/states", phi);
 
 			gpu::array<double, 1> tmpocc(kpin()[iphi].set_part().local_size());

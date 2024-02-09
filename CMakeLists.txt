@@ -272,6 +272,7 @@ endif()
 
 target_include_directories(inq INTERFACE Boost::serialization Boost::system)
 target_link_libraries(inq INTERFACE Boost::serialization Boost::system)
+target_compile_definitions(inq INTERFACE "BOOST_PP_VARIADICS=1")  # NVCC needs BOOST_PP_VARIADICS to compile some Boost headers
 
 ########################
 # PYTHON
