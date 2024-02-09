@@ -67,7 +67,7 @@ These are the options available:
 		if(not electrons.try_load(".inq/default_orbitals")){
 			ground_state::initial_guess(ions, electrons);
 		}
-		auto result = ground_state::calculate(ions, electrons, options::theory::load(".inq/default_theory"), options::ground_state::load(".inq/default_ground_state_options"));
+		auto result = ground_state::calculate(ions, electrons, options::theory::load(".inq/default_theory"), options::ground_state::load(".inq/default_ground_state_options").calculate_forces());
 
 		result.save(input::environment::global().comm(), ".inq/default_result");
 		electrons.save(".inq/default_orbitals");
