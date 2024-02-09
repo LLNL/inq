@@ -25,13 +25,13 @@ inq theory Hartree-Fock
 inq ground-state tolerance 1e-8
 inq run ground-state
 
-inq util match `inq energy total`          -30.503810445836 3e-5
-inq util match `inq energy kinetic`         13.263456976312 3e-5
-inq util match `inq energy eigenvalues`     -6.184068316670 3e-5
-inq util match `inq energy hartree`          2.508149586725 3e-5
-inq util match `inq energy external`        -9.273071664516 3e-5
-inq util match `inq energy non-local`        4.153303103402 3e-5
-inq util match `inq energy xc`               0.000000000000 3e-5
-inq util match `inq energy nvxc`             0.000000000000 3e-5
-inq util match `inq energy exact-exchange`  -9.672027952659 3e-5
-inq util match `inq energy ion`            -31.483620495100 3e-5
+inq util match `inq result energy total`          -30.503810445836 3e-5
+inq util match `inq result energy kinetic`         13.263456976312 3e-5
+inq util match `inq result energy eigenvalues`     -6.184068316670 3e-5
+inq util match `inq result energy hartree`          2.508149586725 3e-5
+inq util match `inq result energy external`        -9.273071664516 3e-5
+inq util match `inq result energy non-local`        4.153303103402 3e-5
+inq util match `inq result energy xc`               0.000000000000 3e-5
+inq util match `inq result energy nvxc`             0.000000000000 3e-5
+inq util match `inq result energy exact-exchange`  -9.672027952659 3e-5
+inq util match `inq result energy ion`            -31.483620495100 3e-5

@@ -10,10 +10,10 @@ inq help
 inq help clear
 inq help cell
 inq help electrons
-inq help energy
 inq help ground_state
 inq help ions
 inq help kpoints
+inq help result
 inq help run
 inq help theory
 inq help units
