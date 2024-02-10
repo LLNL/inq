@@ -69,8 +69,32 @@ public:
 		return prop_.value_or(electron_propagator::ETRS);
 	}
 
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, real_time const & self){
+		
+		using namespace magnitude;
+		
+		out << "Real-time:\n";
+		
+		out << "  time-step          = ";
+		if(self.dt_.has_value()) {
+			out << self.dt() << " atu | " << self.dt()/in_atomic_units(1.0_fs) << " fs";
+		} else {
+			out << "NOT SET *";
+		}
+		out << "\n";
+		
+		out << "  num-steps          = " << self.num_steps();
+		if(not self.num_steps_.has_value()) out << " *";
+		out << "\n";
+
+		out << "\n  * default values" << std::endl;
+		
+		return out;
+	}
+	
 };
-    
+
 }
 }
 #endif
@@ -93,7 +117,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(solver.dt() == 0.01_a);
     CHECK(solver.num_steps() == 100);
     CHECK(solver.propagator() == options::real_time::electron_propagator::ETRS);		
-    
+
   }
 
   SECTION("Composition"){
