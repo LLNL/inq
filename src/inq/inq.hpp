@@ -25,10 +25,10 @@
 #include <interface/cell.hpp>
 #include <interface/clear.hpp>
 #include <interface/electrons.hpp>
-#include <interface/energy.hpp>
 #include <interface/ground_state.hpp>
 #include <interface/ions.hpp>
 #include <interface/kpoints.hpp>
+#include <interface/result.hpp>
 #include <interface/run.hpp>
 #include <interface/theory.hpp>
 #include <interface/units.hpp>

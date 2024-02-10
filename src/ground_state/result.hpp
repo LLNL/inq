@@ -80,12 +80,16 @@ struct result {
 
   template<class OStream>
   friend OStream & operator<<(OStream & out, result const & self){
+
+    using namespace magnitude;
     
     std::cout << "Ground-state result:\n";
     std::cout << " iterations     = " << self.total_iter << '\n';
     std::cout << " dipole         = " << self.dipole << '\n';
     std::cout << " magnetization  = " << self.magnetization << '\n';
-    std::cout << " total energy   = " << utils::num_to_str("%.8f", self.energy.total()) << '\n';
+    std::cout << " total energy   = "
+              << utils::num_to_str("%.8f", self.energy.total()) << " Ha | "
+              << utils::num_to_str("%.8f", self.energy.total()/in_atomic_units(1.0_eV)) << " eV \n";
     std::cout << std::endl;
     return out;
   }
