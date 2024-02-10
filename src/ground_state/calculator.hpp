@@ -37,6 +37,7 @@
 #include <options/ground_state.hpp>
 #include <systems/electrons.hpp>
 #include <ground_state/eigenvalue_output.hpp>
+#include <ground_state/result.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
 #include<tinyformat/tinyformat.h>
@@ -54,9 +55,6 @@ namespace ground_state {
 class calculator {
 
 public:
-
-	using energy_type = hamiltonian::energy;
-	using forces_type = gpu::array<vector3<double>, 1>;
 
 private:
 	
@@ -91,14 +89,6 @@ public:
 	{
 	}
 
-	struct result {
-		energy_type energy;
-		vector3<double> dipole;
-		vector3<double> magnetization;
-		forces_type forces;
-		int total_iter;
-	};
-	
 	result operator()(systems::electrons & electrons){
 		
 		CALI_CXX_MARK_FUNCTION;
