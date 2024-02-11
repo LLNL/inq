@@ -15,9 +15,7 @@
 namespace inq {
 namespace magnitude {
 
-class time {
-	
-};
+struct time;
 
 auto operator "" _atomictime(long double val){
 	return inq::quantity<time>::from_atomic_units(val);
@@ -66,6 +64,29 @@ auto operator "" _ns(long double val){
 auto operator/(double num, quantity<energy> den){
   return quantity<time>::from_atomic_units(num/den.in_atomic_units());
 }
+
+struct time {
+	static inq::quantity<time> parse(std::string units){
+
+		units = utils::lowercase(units);
+		
+		if(units == "atomictime" or units == "atomictimeunits"  or units == "atomictimeunit" or units == "atu") {
+			return 1.0_atu;
+		} else if (units == "attosecond" or units == "attoseconds" or units == "as"){
+			return 1.0_as;
+		} else if (units == "femtosecond" or units == "femtoseconds" or units == "fs"){
+			return 1.0_fs;
+		} else if (units == "picosecond" or units == "picoseconds" or units == "ps"){
+			return 1.0_ps;
+		} else if (units == "nanosecond" or units == "nanoseconds" or units == "ns"){
+			return 1.0_ns;
+
+		} else {
+			throw std::runtime_error("inq error: unknown time units '" + units + "'.");
+		}
+	}
+	
+};
 
 }
 }
@@ -136,7 +157,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     auto ti = 1.0/100.0_eV;
     CHECK(ti.in_atomic_units() == 0.272113862460642_a);
   }
-  
+
+	CHECK(time::parse("atu") == 1.0_atu);	
+	CHECK(time::parse("atomictimeunits") == 1.0_atu);
+	CHECK(time::parse("ATOMICTIME") == 1.0_atu);
+	CHECK(time::parse("as") == 1.0_as);
+	CHECK(time::parse("nanoseconds") == 1.0_ns);
+	CHECK(time::parse("femtoSECONDS") == 1.0_fs);		
+	CHECK(time::parse("ps") == 1.0_ps);	
+	CHECK(time::parse("Picosecond") == 1.0_ps);
+	CHECK(time::parse("nanoseconds") == 1.0_ns);	
+	CHECK(time::parse("nS") == 1.0_ns);	
+	
+	CHECK_THROWS(time::parse("not_a_unit"));
+	
 }
 #endif
 
