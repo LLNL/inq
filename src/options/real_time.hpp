@@ -119,6 +119,15 @@ public:
 		comm.barrier();
 	}
 
+	static auto load(std::string const & dirname) {
+		real_time opts;
+
+		utils::load_optional(dirname + "/time_step",      opts.dt_);
+		utils::load_optional(dirname + "/num_steps",      opts.num_steps_);
+		utils::load_optional(dirname + "/propagator",     opts.prop_);
+		
+		return opts;
+	}
 	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, real_time const & self){
@@ -128,11 +137,8 @@ public:
 		out << "Real-time:\n";
 		
 		out << "  time-step          = ";
-		if(self.dt_.has_value()) {
-			out << self.dt() << " atu | " << self.dt()/in_atomic_units(1.0_fs) << " fs";
-		} else {
-			out << "NOT SET *";
-		}
+		out << self.dt() << " atu | " << self.dt()/in_atomic_units(1.0_fs) << " fs";
+		if(not self.dt_.has_value()) out << " *";
 		out << "\n";
 		
 		out << "  num-steps          = " << self.num_steps();
@@ -165,24 +171,36 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Defaults"){
 
-    options::real_time solver;
+    options::real_time rt;
 
-    CHECK(solver.dt() == 0.01_a);
-    CHECK(solver.num_steps() == 100);
-    CHECK(solver.propagator() == options::real_time::electron_propagator::ETRS);		
+    CHECK(rt.dt() == 0.01_a);
+    CHECK(rt.num_steps() == 100);
+    CHECK(rt.propagator() == options::real_time::electron_propagator::ETRS);		
 
+		rt.save(comm, "save_real_time");
+		auto read_rt = options::real_time::load("save_real_time");
+
+		CHECK(read_rt.dt() == 0.01_a);
+    CHECK(read_rt.num_steps() == 100);
+    CHECK(read_rt.propagator() == options::real_time::electron_propagator::ETRS);		
+		
   }
 
   SECTION("Composition"){
 
-    auto solver = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson();
+    auto rt = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson();
     
-    CHECK(solver.num_steps() == 1000);
-    CHECK(solver.dt() == 0.05_a);
-		CHECK(solver.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
+    CHECK(rt.num_steps() == 1000);
+    CHECK(rt.dt() == 0.05_a);
+		CHECK(rt.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
 
-		solver.save(comm, "save_real_time");
+		rt.save(comm, "save_real_time");
+		auto read_rt = options::real_time::load("save_real_time");
 
+		CHECK(read_rt.num_steps() == 1000);
+    CHECK(read_rt.dt() == 0.05_a);
+		CHECK(read_rt.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
+		
   }
 
 }
