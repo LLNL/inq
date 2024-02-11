@@ -23,6 +23,14 @@ auto operator "" _atomictime(long double val){
 	return inq::quantity<time>::from_atomic_units(val);
 }
 
+auto operator "" _atomictimeunits(long double val){
+	return inq::quantity<time>::from_atomic_units(val);
+}
+
+auto operator "" _atu(long double val){
+	return inq::quantity<time>::from_atomic_units(val);
+}
+
 auto operator "" _attosecond(long double val){
 	return inq::quantity<time>::from_atomic_units(0.0413413733352975*val);
 }
