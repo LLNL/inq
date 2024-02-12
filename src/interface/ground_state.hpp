@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Defines the how the ground_state is calculated";
+		return "Defines how the ground state is calculated";
 	}
 	
 	void help() const {
