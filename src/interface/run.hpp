@@ -73,6 +73,25 @@ These are the options available:
 		electrons.save(".inq/default_orbitals");
 	}
 
+	void real_time() const{
+		auto ions = systems::ions::load(".inq/default_ions");
+
+		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
+
+		try { bz = ions::brillouin::load(".inq/default_brillouin"); }
+		catch(...) {
+			bz.save(input::environment::global().comm(), ".inq/default_brillouin");
+		}
+		
+		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"), bz);
+ 
+		if(not electrons.try_load(".inq/default_orbitals")){
+			if(input::environment::global().comm().root()) std::cerr << "Error: cannot load a ground-state electron configuration for a real-time run.\n Please run a ground-state first.\n" << std::endl;
+			exit(1);
+		}
+		real_time::propagate(ions, electrons, [](auto){}, options::theory::load(".inq/default_theory"), options::real_time::load(".inq/default_real_time_options"));
+	}
+	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 		
@@ -83,6 +102,11 @@ These are the options available:
 		
 		if(args.size() == 1 and args[0] == "ground-state") {
 			ground_state();
+			exit(0);
+		}
+				
+		if(args.size() == 1 and args[0] == "real-time") {
+			real_time();
 			exit(0);
 		}
 		
