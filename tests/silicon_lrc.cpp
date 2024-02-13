@@ -54,7 +54,7 @@ int main(int argc, char ** argv){
 			energy.push_back(data.energy().total());
 		};
 		
-		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(40).dt(0.03_atomictime), ions::propagator::fixed{});
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(40).dt(0.03_atomictime));
 
 		data_match.check("energy step   0", energy[0],   -33.418896726864);
 		data_match.check("energy step  10", energy[10],  -33.418896726864);
@@ -89,7 +89,7 @@ int main(int argc, char ** argv){
 		
 		auto kick = perturbations::kick{ions.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 		
-		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(40) .dt(0.03_atomictime), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(40) .dt(0.03_atomictime), kick);
 
 		data_match.check("energy step   0", energy[0],   -33.418518663279);
 		data_match.check("energy step  10", energy[10],  -33.418518663116);
@@ -124,7 +124,7 @@ int main(int argc, char ** argv){
 		
 		auto kick = perturbations::kick{ions.cell(), {0.0, 0.0, -0.005}, perturbations::gauge::velocity};
 		
-		real_time::propagate<>(ions, electrons, output, options::theory{}.lda().induced_vector_potential(-0.2), options::real_time{}.num_steps(40).dt(0.03_atomictime), ions::propagator::fixed{}, kick);
+		real_time::propagate<>(ions, electrons, output, options::theory{}.lda().induced_vector_potential(-0.2), options::real_time{}.num_steps(40).dt(0.03_atomictime), kick);
 
 		data_match.check("energy step   0", energy[0],   -33.418518663279);
 		data_match.check("energy step  10", energy[10],  -33.418518483345);

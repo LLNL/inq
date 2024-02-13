@@ -28,11 +28,13 @@ namespace inq {
 namespace real_time {
 
 template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed, typename Perturbation = perturbations::none>
-void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const options::theory & inter, const options::real_time & opts, IonSubPropagator const& ion_propagator = {}, Perturbation const & pert = {}){
+void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const options::theory & inter, const options::real_time & opts, Perturbation const & pert = {}){
 		CALI_CXX_MARK_FUNCTION;
 		
 		auto console = electrons.logger();
 
+		ions::propagator::runtime ion_propagator{opts.ion_dynamics_value()};
+	
 		const double dt = opts.dt();
 		const int numsteps = opts.num_steps();
 
@@ -60,7 +62,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 
 		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
-		if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
+		if(ion_propagator.needs_force()) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 		auto current = vector3<double, covariant>{0.0, 0.0, 0.0};
 		if(sc.has_induced_vector_potential()) current = observables::current(ions, electrons, ham);
@@ -85,7 +87,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 			energy.calculate(ham, electrons);
 			
-			if(ion_propagator.needs_force) forces = hamiltonian::calculate_forces(ions, electrons, ham);
+			if(ion_propagator.needs_force()) forces = hamiltonian::calculate_forces(ions, electrons, ham);
 
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
