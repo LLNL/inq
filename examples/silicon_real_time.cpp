@@ -75,7 +75,7 @@ int main(int argc, char ** argv){
 		}
 	};
 	
-	real_time::propagate<>(ions, electrons, output, functional.induced_vector_potential(4.0*M_PI), options::real_time{}.num_steps(nsteps).dt(dt*1.0_atomictime).etrs(), ions::propagator::fixed{}, kick);
+	real_time::propagate<>(ions, electrons, output, functional.induced_vector_potential(4.0*M_PI), options::real_time{}.num_steps(nsteps).dt(dt*1.0_atomictime).etrs(), kick);
 	
 	return energy_match.fail();
 	
