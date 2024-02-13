@@ -41,9 +41,13 @@ int main(int argc, char* argv[]) {
 		{ "noninteracting"s,   "non-interacting"s  },
 		{ "non_local"s,        "non-local"s        },
 		{ "nonlocal"s,         "non-local"s        },
-		{ "results"s,          "result"s           },	
+		{ "real_time"s,        "real-time"s        },
+		{ "realtime"s,         "real-time"s        },
+		{ "results"s,          "result"s           },
 		{ "grid-shifted"s,     "shifted-grid"s     },
 		{ "shiftedgrid"s,      "shifted-grid"s     },
+		{ "time_step"s,        "time-step"s        },
+		{ "timestep"s,         "time-step"s        },
 		{ "tol"s         ,     "tolerance"s        },
 		{ "utils"s        ,     "util"s            }
 	};
@@ -57,7 +61,8 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::ground_state)
 		+ interface::item(interface::ions)
 		+ interface::item(interface::kpoints)
-		+ interface::item(interface::result)		
+		+ interface::item(interface::result)
+		+ interface::item(interface::real_time)
 		+ interface::item(interface::run)
 		+ interface::item(interface::theory)
 		+ interface::item(interface::util);

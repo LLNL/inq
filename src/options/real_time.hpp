@@ -24,7 +24,28 @@ class real_time {
 public:
 
 	enum class electron_propagator { ETRS, CRANK_NICOLSON };
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, electron_propagator const & self){
+		if(self == electron_propagator::ETRS)              out << "etrs";
+		if(self == electron_propagator::CRANK_NICOLSON)    out << "crank-nicolson";
+		return out;
+	}
 
+	template<class IStream>
+	friend IStream & operator>>(IStream & in, electron_propagator & self){
+		std::string readval;
+		in >> readval;
+		if(readval == "etrs"){
+			self = electron_propagator::ETRS;
+		} else if(readval == "crank-nicolson"){
+			self = electron_propagator::CRANK_NICOLSON;
+		} else {
+			throw std::runtime_error("INQ error: Invalid propagation algorithm");
+		}
+		return in;
+	}
+	
 private:
 
 	std::optional<double> dt_;
@@ -69,8 +90,68 @@ public:
 		return prop_.value_or(electron_propagator::ETRS);
 	}
 
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the options::real_time to directory '" + dirname + "'.";
+		
+		comm.barrier();
+
+		auto exception_happened = true;
+		if(comm.root()) {
+			
+			try { std::filesystem::create_directories(dirname); }
+			catch(...) {
+				comm.broadcast_value(exception_happened);
+				throw std::runtime_error(error_message);
+			}
+
+			utils::save_optional(comm, dirname + "/time_step",     dt_,          error_message);
+			utils::save_optional(comm, dirname + "/num_steps",     num_steps_,   error_message);
+			utils::save_optional(comm, dirname + "/propagator",    prop_,        error_message);
+
+			exception_happened = false;
+			comm.broadcast_value(exception_happened);
+			
+		} else {
+			comm.broadcast_value(exception_happened);
+			if(exception_happened) throw std::runtime_error(error_message);
+		}
+		
+		comm.barrier();
+	}
+
+	static auto load(std::string const & dirname) {
+		real_time opts;
+
+		utils::load_optional(dirname + "/time_step",      opts.dt_);
+		utils::load_optional(dirname + "/num_steps",      opts.num_steps_);
+		utils::load_optional(dirname + "/propagator",     opts.prop_);
+		
+		return opts;
+	}
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, real_time const & self){
+		
+		using namespace magnitude;
+		
+		out << "Real-time:\n";
+		
+		out << "  time-step          = ";
+		out << self.dt() << " atu | " << self.dt()/in_atomic_units(1.0_fs) << " fs";
+		if(not self.dt_.has_value()) out << " *";
+		out << "\n";
+		
+		out << "  num-steps          = " << self.num_steps();
+		if(not self.num_steps_.has_value()) out << " *";
+		out << "\n";
+
+		out << "\n  * default values" << std::endl;
+		
+		return out;
+	}
+	
 };
-    
+
 }
 }
 #endif
@@ -86,23 +167,40 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   using namespace inq::magnitude;	
   using namespace Catch::literals;
 
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	
 	SECTION("Defaults"){
 
-    options::real_time solver;
+    options::real_time rt;
 
-    CHECK(solver.dt() == 0.01_a);
-    CHECK(solver.num_steps() == 100);
-    CHECK(solver.propagator() == options::real_time::electron_propagator::ETRS);		
-    
+    CHECK(rt.dt() == 0.01_a);
+    CHECK(rt.num_steps() == 100);
+    CHECK(rt.propagator() == options::real_time::electron_propagator::ETRS);		
+
+		rt.save(comm, "save_real_time");
+		auto read_rt = options::real_time::load("save_real_time");
+
+		CHECK(read_rt.dt() == 0.01_a);
+    CHECK(read_rt.num_steps() == 100);
+    CHECK(read_rt.propagator() == options::real_time::electron_propagator::ETRS);		
+		
   }
 
   SECTION("Composition"){
 
-    auto solver = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson();
+    auto rt = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson();
     
-    CHECK(solver.num_steps() == 1000);
-    CHECK(solver.dt() == 0.05_a);
-		CHECK(solver.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
+    CHECK(rt.num_steps() == 1000);
+    CHECK(rt.dt() == 0.05_a);
+		CHECK(rt.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
+
+		rt.save(comm, "save_real_time");
+		auto read_rt = options::real_time::load("save_real_time");
+
+		CHECK(read_rt.num_steps() == 1000);
+    CHECK(read_rt.dt() == 0.05_a);
+		CHECK(read_rt.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
+		
   }
 
 }
