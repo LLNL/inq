@@ -231,7 +231,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(rt.dt() == 0.01_a);
     CHECK(rt.num_steps() == 100);
     CHECK(rt.propagator() == options::real_time::electron_propagator::ETRS);		
-		CHECK(read_rt.propagator() == options::real_time::ion_dynamics::STATIC);
+		CHECK(rt.ion_dynamics_value() == options::real_time::ion_dynamics::STATIC);
 		
 		rt.save(comm, "save_real_time");
 		auto read_rt = options::real_time::load("save_real_time");
@@ -239,7 +239,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(read_rt.dt() == 0.01_a);
     CHECK(read_rt.num_steps() == 100);
     CHECK(read_rt.propagator() == options::real_time::electron_propagator::ETRS);		
-		CHECK(read_rt.propagator() == options::real_time::ion_dynamics::STATIC);		
+		CHECK(read_rt.ion_dynamics_value() == options::real_time::ion_dynamics::STATIC);		
 	
   }
 
@@ -250,7 +250,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(rt.num_steps() == 1000);
     CHECK(rt.dt() == 0.05_a);
 		CHECK(rt.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
-		CHECK(rt.propagator() == options::real_time::ion_dynamics::IMPULSIVE);
+		CHECK(rt.ion_dynamics_value() == options::real_time::ion_dynamics::IMPULSIVE);
 		
 		rt.save(comm, "save_real_time");
 		auto read_rt = options::real_time::load("save_real_time");
@@ -258,7 +258,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(read_rt.num_steps() == 1000);
     CHECK(read_rt.dt() == 0.05_a);
 		CHECK(read_rt.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
-		CHECK(read_rt.propagator() == options::real_time::ion_dynamics::IMPULSIVE);
+		CHECK(read_rt.ion_dynamics_value() == options::real_time::ion_dynamics::IMPULSIVE);
 				
   }
 
