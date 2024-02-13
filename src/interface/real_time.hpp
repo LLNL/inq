@@ -76,14 +76,27 @@ calculations. These are the available options:
 	}
 	
 	void num_steps(long nsteps) const {
-		using namespace magnitude;
-
 		auto opts = options::real_time::load(".inq/default_real_time_options").num_steps(nsteps);
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 
+	void ions_static() const {
+		auto opts = options::real_time::load(".inq/default_real_time_options").static_ions();
+		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
+	}
+
+	void ions_impulsive() const {
+		auto opts = options::real_time::load(".inq/default_real_time_options").impulsive();
+		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
+	}
+	
+	void ions_ehrenfest() const {
+		auto opts = options::real_time::load(".inq/default_real_time_options").ehrenfest();
+		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
+	}
+	
 	template <typename ArgsType>
-	void command(ArgsType const & args, bool quiet) const {
+	void command(ArgsType args, bool quiet) const {
 		using utils::str_to;
 		
 		if(args.size() == 0) {
@@ -102,7 +115,32 @@ calculations. These are the available options:
 			if(not quiet) operator()();
 			exit(0);
 		}
-		
+
+		if(args[0] == "ions"){
+			args.erase(args.begin());
+
+			if(args.size() == 1 and args[0] == "static"){
+				ions_static();
+				if(not quiet) operator()();
+				exit(0);
+			}
+			
+			if(args.size() == 1 and args[0] == "impulsive"){
+				ions_impulsive();
+				if(not quiet) operator()();
+				exit(0);
+			}
+			
+			if(args.size() == 1 and args[0] == "ehrenfest"){
+				ions_ehrenfest();
+				if(not quiet) operator()();
+				exit(0);
+			}
+			
+			if(input::environment::global().comm().root()) std::cerr << "Error: Invalid arguments for 'real-time ions' command" << std::endl;
+			exit(1);
+		}
+				
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in 'real-time' command" << std::endl;
 		exit(1);
 	}
