@@ -11,6 +11,7 @@
 
 #include <options/real_time.hpp>
 #include <solvers/velocity_verlet.hpp>
+#include <variant>
 
 namespace inq {
 namespace ions {
@@ -85,75 +86,48 @@ struct molecular_dynamics{
 	void propagate_velocities(double dt, TypeIons & ions, TypeForces const & forces) const {
 		solvers::velocity_verlet::propagate_velocities(dt, acceleration(ions, forces), ions.velocities());
 	}
-
-
 };
+
 
 class runtime {
 
-	options::real_time::ion_dynamics dynamics_;
+	std::variant<fixed, impulsive, molecular_dynamics> var_;
 
 public:
 	
-	runtime(options::real_time::ion_dynamics arg_dynamics):
-		dynamics_(arg_dynamics) {
+	runtime(options::real_time::ion_dynamics arg_dynamics) {
+		switch (arg_dynamics) {
+    case options::real_time::ion_dynamics::STATIC:
+			var_ = ions::propagator::fixed{};
+			break;
+    case options::real_time::ion_dynamics::IMPULSIVE:
+			var_ = ions::propagator::impulsive{};
+			break;
+    case options::real_time::ion_dynamics::EHRENFEST:
+			var_ = ions::propagator::molecular_dynamics{};
+			break;
+		}
 	}
 
 	constexpr bool static_ions() const {
-		switch (dynamics_) {
-    case options::real_time::ion_dynamics::STATIC:
-			return fixed{}.static_ions();
-    case options::real_time::ion_dynamics::IMPULSIVE:
-			return impulsive{}.static_ions();
-    case options::real_time::ion_dynamics::EHRENFEST:
-			return molecular_dynamics{}.static_ions();
-		}
-		return false;
+		return std::visit([&](auto ip) { return ip.static_ions(); }, var_);
 	}
 	
 	constexpr bool needs_force() const {
-		switch (dynamics_) {
-    case options::real_time::ion_dynamics::STATIC:
-			return fixed{}.needs_force();
-    case options::real_time::ion_dynamics::IMPULSIVE:
-			return impulsive{}.needs_force();
-    case options::real_time::ion_dynamics::EHRENFEST:
-			return molecular_dynamics{}.needs_force();
-		}
-		return true;
+		return std::visit([&](auto ip) { return ip.needs_force(); }, var_);
 	}
 
 	template <typename TypeIons, typename TypeForces>
 	void propagate_positions(double dt, TypeIons& ions, TypeForces const & forces) const {
-		switch (dynamics_) {
-    case options::real_time::ion_dynamics::STATIC:
-			fixed{}.propagate_positions(dt, ions, forces);
-			break;
-    case options::real_time::ion_dynamics::IMPULSIVE:
-			impulsive{}.propagate_positions(dt, ions, forces);
-			break;
-    case options::real_time::ion_dynamics::EHRENFEST:
-			molecular_dynamics{}.propagate_positions(dt, ions, forces);
-			break;
-		}
+		return std::visit([&](auto ip) { return ip.propagate_positions(dt, ions, forces); }, var_);
 	}
 	
 	template <typename TypeIons, typename TypeForces>
 	void propagate_velocities(double dt, TypeIons& ions, TypeForces const & forces) const {
-		switch (dynamics_) {
-    case options::real_time::ion_dynamics::STATIC:
-			fixed{}.propagate_velocities(dt, ions, forces);
-			break;
-    case options::real_time::ion_dynamics::IMPULSIVE:
-			impulsive{}.propagate_velocities(dt, ions, forces);
-			break;
-    case options::real_time::ion_dynamics::EHRENFEST:
-			molecular_dynamics{}.propagate_velocities(dt, ions, forces);
-			break;
-		}
+		return std::visit([&](auto ip) { return ip.propagate_velocities(dt, ions, forces); }, var_);
 	}
 	
-};
+	};
 
 
 }
