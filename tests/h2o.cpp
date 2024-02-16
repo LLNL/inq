@@ -198,6 +198,51 @@ int main(int argc, char ** argv){
 			match.check("ETRS velocity kick: energy step  20", en[20],  -17.563911508759);
 			match.check("ETRS velocity kick: energy step  30", en[30],  -17.563914263774);
 		}
+
+		{
+			electrons.load("h2o_restart");
+
+			auto perts = perturbations::blend{};
+			perts.add(perturbations::kick{ions.cell(), {0.06, 0.0, 0.0}});
+			perts.add(perturbations::kick{ions.cell(), {0.04, 0.0, 0.0}});
+			
+			long nsteps = 31;
+			
+			gpu::array<double, 1> time(nsteps);
+			gpu::array<double, 1> dip(nsteps);
+			gpu::array<double, 1> en(nsteps);		
+			
+			auto output = [&](auto data){
+
+				auto iter = data.iter();
+			
+				time[iter] = data.time();
+				dip[iter] = data.dipole()[0];
+				en[iter] = data.energy().total();			
+				
+				if(data.root() and data.every(50)){
+					auto spectrum = observables::spectrum(20.0_eV, 0.01_eV, time({0, iter - 1}), dip({0, iter - 1}));  
+					
+					std::ofstream file("spectrum.dat");
+					
+					for(int ifreq = 0; ifreq < spectrum.size(); ifreq++){
+						file << ifreq*in_atomic_units(0.01_eV) << '\t' << real(spectrum[ifreq]) << '\t' << imag(spectrum[ifreq]) << std::endl;
+					}
+				}
+			};
+			
+			real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(nsteps).dt(0.055_atomictime), perts);
+
+			match.check("ETRS length kick: dipole step   0", dip[0],   0.043955375747);
+			match.check("ETRS length kick: dipole step  10", dip[10],  0.376347806791);
+			match.check("ETRS length kick: dipole step  20", dip[20],  0.525427259213);
+			match.check("ETRS length kick: dipole step  30", dip[30],  0.550931744154);
+			
+			match.check("ETRS length kick: energy step   0", en[0],   -17.563614846419);
+			match.check("ETRS length kick: energy step  10", en[10],  -17.563607131141);
+			match.check("ETRS length kick: energy step  20", en[20],  -17.563615606337);
+			match.check("ETRS length kick: energy step  30", en[30],  -17.563621943406);
+		}
 		
 		{
 			electrons.load("h2o_restart");
