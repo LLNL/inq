@@ -44,6 +44,13 @@ public:
 		return (long) perts_.size();
 	}
 
+	template <typename PhiType>  
+	void zero_step(PhiType & phi) const {
+		for(auto & pert : perts_){
+			std::visit([&](auto per) { per.zero_step(phi); }, pert);
+		}
+	}
+	
 	auto has_uniform_electric_field() const {
 		for(auto & pert : perts_){
 			auto has = std::visit([&](auto per) { return per.has_uniform_electric_field(); }, pert);
@@ -79,6 +86,14 @@ public:
 		}
     return total;
 	}
+
+	template<typename PotentialType>
+	void potential(double const time, PotentialType & potential) const {
+		for(auto & pert : perts_){
+			std::visit([&](auto per) { per.potential(time, potential); }, pert);
+		}
+	}
+	
 };
 	
 }
@@ -91,11 +106,12 @@ public:
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
-using namespace inq;
-using namespace Catch::literals;
-using namespace magnitude;
-
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+	using namespace inq;
+	using namespace Catch::literals;
+	using namespace magnitude;
+	using Catch::Approx;
+
 	perturbations::blend manyp;
 
 	auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
@@ -154,6 +170,55 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ps.uniform_vector_potential(1.0)[2] == -0.6);
  
 	}
-	
+
+	SECTION("zero step"){
+		
+		const int nvec = 12;
+		
+		double phi_absdif = 0.0;
+		double phi_dif = 0.0;
+		
+		parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+		
+		basis::real_space bas(systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite(), /*spacing =*/ 0.39770182, comm);
+		
+		CHECK(bas.cell().periodicity() == 0);
+		
+		basis::field_set<basis::real_space, complex> phi(bas, nvec);
+		
+		//Construct a field
+		for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						phi.hypercubic()[ix][iy][iz][ist] = complex(cos(ist+(ix+iy+iz)), 1.3*sin(ist+(cos(ix-iy-iz))));
+					}
+				}
+			}
+		}
+		
+		auto phi_old = phi;
+		auto kick = perturbations::kick(bas.cell(), {0.1, 0.0, 0.0});
+		auto ps = perturbations::blend{};
+		ps.add(kick);
+		ps.add(kick);
+		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha));
+		
+		ps.zero_step(phi);
+		
+		for(int ix = 0; ix < phi.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < phi.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < phi.basis().local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						phi_absdif += norm(phi.hypercubic()[ix][iy][iz][ist]) - norm(phi_old.hypercubic()[ix][iy][iz][ist]);
+						phi_dif += norm(phi.hypercubic()[ix][iy][iz][ist] - phi_old.hypercubic()[ix][iy][iz][ist]);
+					}
+				}
+			}
+		}
+		
+		CHECK(phi_absdif == Approx(0).margin(1.0e-9));
+		CHECK(phi_dif > 1.0e-9);
+	}
 }
 #endif
