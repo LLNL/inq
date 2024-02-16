@@ -37,18 +37,13 @@ public:
 	
 	template<typename PotentialType>
 	void potential(const double time, PotentialType & potential) const {
-		auto Vcap = [mid_pos = mid_pos_, width = width_, amplitude = amplitude_](inq::vector3<double, contravariant> rr) {
-			if (rr[2] > mid_pos - width/2 && rr[2] < mid_pos + width/2) {
-				return complex(0.0, amplitude*pow(sin((rr[2] - (mid_pos - width/2))*M_PI/2/(width/2)),2));
-			} else {
-				return complex{0,0};
-			}
-		};
-
+		
 		gpu::run(potential.basis().local_sizes()[2], potential.basis().local_sizes()[1], potential.basis().local_sizes()[0],
-						 [point_op = potential.basis().point_op(), vk = begin(potential.cubic()), Vcap] GPU_LAMBDA (auto iz, auto iy, auto ix) {
+						 [point_op = potential.basis().point_op(), vk = begin(potential.cubic()), mid_pos = mid_pos_, width = width_, amplitude = amplitude_] GPU_LAMBDA (auto iz, auto iy, auto ix) {
 							 auto rr = point_op.rvector(ix, iy, iz);
-							 vk[ix][iy][iz] += Vcap(rr);
+							 if (rr[2] > mid_pos - width/2 and rr[2] < mid_pos + width/2) {
+								 vk[ix][iy][iz] += complex(0.0, amplitude*pow(sin((rr[2] - (mid_pos - width/2))*M_PI/2/(width/2)), 2));
+							 }
 						 });
 	}
 
