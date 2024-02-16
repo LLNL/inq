@@ -59,12 +59,13 @@ public:
     if(pertb_.has_uniform_vector_potential()) vpotential += pertb_.uniform_vector_potential(time);
     return vpotential;
 	}
-    template<typename PotentialType>
-    void potential(const double time, PotentialType & potential) const {
+
+	template<typename PotentialType>
+	void potential(const double time, PotentialType & potential) const {
 		perta_.potential(time, potential);
 		pertb_.potential(time, potential);
-    }
-
+	}
+	
 };
 
 template <typename PertTypeA, typename PertTypeB>
