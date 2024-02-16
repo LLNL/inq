@@ -10,7 +10,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <perturbations/absorbing.hpp>
-#include <perturbations/gauge.hpp>
 #include <perturbations/kick.hpp>
 #include <perturbations/laser.hpp>
 #include <perturbations/none.hpp>
@@ -20,7 +19,7 @@ namespace perturbations {
 
 class blend {
 
-  using any = std::variant<absorbing, gauge, kick, laser, none>;
+  using any = std::variant<absorbing, kick, laser, none>;
   std::vector<any> perts_;
   
 public:
@@ -43,6 +42,24 @@ public:
 	
 	auto size() const {
 		return (long) perts_.size();
+	}
+
+	auto has_uniform_electric_field() const {
+		for(auto & pert : perts_){
+			auto has = std::visit([&](auto per) { return per.has_uniform_electric_field(); }, pert);
+			if(has) return true;
+		}
+		return false;
+	}
+
+	auto uniform_electric_field(double time) const {
+    auto total = vector3<double>{0.0, 0.0, 0.0};
+		for(auto & pert : perts_){
+			if(std::visit([&](auto per) { return per.has_uniform_electric_field(); }, pert)){
+				total += std::visit([&](auto per) { return per.uniform_electric_field(time);}, pert);
+			}
+		}
+    return total;
 	}
 	
 };
@@ -73,6 +90,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha));
 
 		CHECK(ps.size() == 2);
+		CHECK(ps.has_uniform_electric_field());
+
+		CHECK(ps.has_uniform_electric_field());
+		CHECK(ps.uniform_electric_field(M_PI/2.0)[0] == 1.0);
+		CHECK(ps.uniform_electric_field(M_PI/2.0)[1] == 1.0);
+		CHECK(ps.uniform_electric_field(M_PI/2.0)[2] == 1.0);
 		
 	}
 
@@ -82,7 +105,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		ps.add(kick);
 		
 		CHECK(ps.size() == 2);
-		
+		CHECK(not ps.has_uniform_electric_field());
+
 	}
 
 	SECTION("3 elements"){
@@ -92,6 +116,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha));
 
 		CHECK(ps.size() == 3);
+		CHECK(ps.has_uniform_electric_field());
+
+		CHECK(ps.uniform_electric_field(M_PI/2.0)[0] == 1.0);
+		CHECK(ps.uniform_electric_field(M_PI/2.0)[1] == 1.0);
+		CHECK(ps.uniform_electric_field(M_PI/2.0)[2] == 1.0);
 		
 	}
 	
