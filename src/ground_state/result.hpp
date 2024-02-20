@@ -28,6 +28,8 @@ struct result {
 
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the ground_state::result to directory '" + dirname + "'.";
+
+		utils::create_directory(comm, dirname);
 		
 		comm.barrier();
 
@@ -36,12 +38,6 @@ struct result {
 		auto exception_happened = true;
 		if(comm.root()) {
 			
-			try { std::filesystem::create_directories(dirname); }
-			catch(...) {
-				comm.broadcast_value(exception_happened);
-				throw std::runtime_error(error_message);
-			}
-      
 			utils::save_value(comm, dirname + "/total_iter",    total_iter,    error_message);
 			utils::save_value(comm, dirname + "/dipole",        dipole,        error_message);
       utils::save_value(comm, dirname + "/magnetization", magnetization, error_message);

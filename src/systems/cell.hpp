@@ -260,16 +260,12 @@ namespace systems {
 		void save(parallel::communicator & comm, std::string const & dirname) const {
 			auto error_message = "INQ error: Cannot save the cell to directory '" + dirname + "'.";
 
+			utils::create_directory(comm, dirname);
+			
 			comm.barrier();
 
 			auto exception_happened = true;
 			if(comm.root()) {
-
-				try { std::filesystem::create_directories(dirname); }
-				catch(...) {
-					comm.broadcast_value(exception_happened);
-					throw std::runtime_error(error_message);
-				}
 				
 				utils::save_array(comm, dirname + "/lattice",     lattice_,     error_message);
 				utils::save_value(comm, dirname + "/periodicity", periodicity_, error_message);
@@ -766,11 +762,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			CHECK_THROWS(cell.save(comm, "\0"));
 
-			if(comm.root()) {
-				//generate a directory with the name of the file we will try to create
-				std::filesystem::create_directories("dummy_dir/periodicity");
-			}
-			
+			//generate a directory with the name of the file we will try to create
+			utils::create_directory(comm, "dummy_dir/periodicity");
+				
 			CHECK_THROWS(cell.save(comm, "dummy_dir"));
 
 		}
