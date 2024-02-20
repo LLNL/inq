@@ -18,6 +18,29 @@
 namespace inq {
 namespace utils {
 
+template <typename CommunicatorType>
+void create_directory(CommunicatorType & comm, std::string const & dirname) {
+	comm.barrier();
+	
+	auto exception_happened = true;
+	if(comm.root()) {
+		
+		try { std::filesystem::create_directories(dirname); }
+		catch(...) {
+			comm.broadcast_value(exception_happened);
+			throw std::runtime_error("INQ Error: cannot create directory '" + dirname + "'.");
+		}
+
+		exception_happened = false;
+		comm.broadcast_value(exception_happened);
+	} else {
+		comm.broadcast_value(exception_happened);
+		if(exception_happened) throw std::runtime_error("INQ Error: cannot create directory '" + dirname + "'.");
+	}
+		
+	comm.barrier();
+}
+
 template <typename Type>
 void save_value(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	auto file = std::ofstream(filename);
