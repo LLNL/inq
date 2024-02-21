@@ -88,7 +88,7 @@ using namespace magnitude;
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
-	perturbations::ramplaser rlas({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs);
+	perturbations::ramplaser rlas({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs, perturbations::gauge::length);
 
 	std::cout << rlas;
 	
