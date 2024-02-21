@@ -170,7 +170,7 @@ public:
 	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, blend const & self){
-		out << "Perturbations:\n";
+		out << "Perturbations (" << self.size() << " total):\n";
 		for(auto & pert : self.perts_){
 			std::visit([&](auto per) { out << per; }, pert);
 		}
