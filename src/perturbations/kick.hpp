@@ -22,24 +22,30 @@ namespace perturbations {
 
 class kick : public perturbations::none {
 
+	vector3<double> efield_;
+	vector3<double> vpot_;	
+	int periodicity_;
+	gauge gauge_;
+	
 public:
 
 	template <typename CellType>
 	kick(CellType const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
 		efield_(-arg_kick_field),
 		vpot_(-arg_kick_field),		
-		periodicity_(cell.periodicity())
+		periodicity_(cell.periodicity()),
+		gauge_(arg_gauge)
 	{
-		if(arg_gauge == gauge::mixed){
+		if(gauge_ == gauge::mixed){
 			for(int idir = 0; idir < periodicity_; idir++) efield_[idir] = 0.0;
 			for(int idir = periodicity_; idir < 3; idir++) vpot_[idir] = 0.0;
 		}
 
-		if(arg_gauge == gauge::length){
+		if(gauge_ == gauge::length){
 			vpot_ = {0.0, 0.0, 0.0};
 		}
 
-		if(arg_gauge == gauge::velocity){
+		if(gauge_ == gauge::velocity){
 			efield_ = {0.0, 0.0, 0.0};
 		}
 
@@ -67,12 +73,6 @@ public:
 	auto uniform_vector_potential(double /*time*/) const {
 		return vpot_;
 	}
-
-private:
-
-	vector3<double> efield_;
-	vector3<double> vpot_;	
-	int periodicity_;
 
 };
 
