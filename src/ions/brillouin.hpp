@@ -143,16 +143,12 @@ public:
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the Brillouin zone to directory '" + dirname + "'.";
 
+		utils::create_directory(comm, dirname);
+		
 		comm.barrier();
 
 		auto exception_happened = true;
 		if(comm.root()) {
-
-			try { std::filesystem::create_directories(dirname); }
-			catch(...) {
-				comm.broadcast_value(exception_happened);
-				throw std::runtime_error(error_message);
-			}
 				
 			utils::save_value(comm, dirname + "/num_kpoints",   size(),    error_message);
 			utils::save_array(comm, dirname + "/kpoints",       kpoints_,  error_message);
