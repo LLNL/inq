@@ -37,14 +37,15 @@ class blend {
 	
 	template<class IStream>
 	friend IStream & operator>>(IStream & in, pert_id & self) {
-		
+
 		std::string readval;
 		in >> readval;
-		
+
 		if(readval == "kick"){
 			self = pert_id::KICK;
 		} else if(readval == "laser"){
 			self = pert_id::LASER;
+		} else {
 			throw std::runtime_error("INQ error: Invalid perturbation id");
 		}
 		
@@ -138,6 +139,34 @@ public:
 			index++;
 		}
 	}
+
+	static auto load(std::string const & dirname) {
+    auto error_message = "INQ error: Cannot load perturbations::blend from directory '" + dirname + "'.";
+
+		auto bl = perturbations::blend{};
+
+    int num;
+		utils::load_value(dirname + "/num_perturbations", num, error_message);
+
+		std::cout << num << std::endl;
+		for(int index = 0; index < num; index++){
+			auto subdir = dirname + "/pert" + utils::num_to_str(index);
+
+			pert_id id;
+			utils::load_value(subdir + "/type", id, error_message);
+
+			switch (id) {
+			case pert_id::KICK:
+				bl.add(perturbations::kick::load(subdir + "/save"));
+				break;
+			case pert_id::LASER:
+				bl.add(perturbations::laser::load(subdir + "/save"));				
+				break;
+			}
+		}
+			
+    return bl;
+	}
 	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, blend const & self){
@@ -226,7 +255,19 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		std::cout << ps;
 
 		ps.save(comm, "save_blend_3");
-		
+		auto read_ps = perturbations::blend::load("save_blend_3");
+
+		CHECK(read_ps.size() == 3);
+
+		CHECK(read_ps.has_uniform_electric_field());
+		CHECK(read_ps.uniform_electric_field(M_PI/2.0)[0] == 1.0);
+		CHECK(read_ps.uniform_electric_field(M_PI/2.0)[1] == 1.0);
+		CHECK(read_ps.uniform_electric_field(M_PI/2.0)[2] == 1.0);
+		  
+		CHECK(read_ps.has_uniform_vector_potential());
+		CHECK(read_ps.uniform_vector_potential(3.0)[0] == -0.2);
+		CHECK(read_ps.uniform_vector_potential(2.0)[1] == -0.4);
+		CHECK(read_ps.uniform_vector_potential(1.0)[2] == -0.6);
 	}
 
 	SECTION("zero step"){
