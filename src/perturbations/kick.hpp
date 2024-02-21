@@ -74,6 +74,15 @@ public:
 		return vpot_;
 	}
 
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the perturbations::kick to directory '" + dirname + "'.";
+		
+		utils::create_directory(comm, dirname);
+		utils::save_value(comm, dirname + "/field",         -(efield_ + vpot_),  error_message);
+		utils::save_value(comm, dirname + "/periodicity",   periodicity_,        error_message);
+		utils::save_value(comm, dirname + "/gauge",         gauge_,              error_message);
+	}
+	
 };
 
 }
@@ -92,6 +101,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
+
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	SECTION("finite"){
 	
@@ -148,6 +159,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.uniform_vector_potential(3.0)[0] == -0.1);
 		CHECK(kick.uniform_vector_potential(2.0)[1] == -0.2);
 		CHECK(kick.uniform_vector_potential(1.0)[2] == -0.3);
+
+		kick.save(comm, "save_kick_periodic");
+		
 	}
 
 	SECTION("semi periodic"){
