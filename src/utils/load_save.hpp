@@ -43,23 +43,37 @@ void create_directory(CommunicatorType & comm, std::string const & dirname) {
 
 template <typename Type>
 void save_value(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
-	auto file = std::ofstream(filename);
 
-	if(not file) {
-		auto exception_happened = true;
+	comm.barrier();
+
+	auto exception_happened = true;
+	if(comm.root()) {
+		auto file = std::ofstream(filename);
+		
+		if(not file) {
+			exception_happened = true;
+			comm.broadcast_value(exception_happened);
+			throw std::runtime_error(error_message);
+		}
+		
+		file.precision(25);
+		
+		file << value << std::endl;
+
+		exception_happened = false;
 		comm.broadcast_value(exception_happened);
-		throw std::runtime_error(error_message);
+	} else {
+		comm.broadcast_value(exception_happened);
+		if(exception_happened) throw std::runtime_error(error_message);
 	}
 
-	file.precision(25);
-
-	file << value << std::endl;
+	comm.barrier();
 }
 
 template <typename Type>
 void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) {
-		std::filesystem::remove(filename);
+		if(comm.root()) std::filesystem::remove(filename);
 		return;
 	}
 
@@ -69,7 +83,7 @@ void save_optional(parallel::communicator & comm, std::string const & filename, 
 template <typename Type>
 void save_optional_enum(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) {
-		std::filesystem::remove(filename);
+		if(comm.root()) std::filesystem::remove(filename);
 		return;
 	}
 
@@ -78,17 +92,31 @@ void save_optional_enum(parallel::communicator & comm, std::string const & filen
 }
 template <typename Type>
 void save_array(parallel::communicator & comm, std::string const & filename, Type const & array, std::string const & error_message) {
-	auto file = std::ofstream(filename);
+	
+	comm.barrier();
 
-	if(not file) {
-		auto exception_happened = true;
+	auto exception_happened = true;
+	if(comm.root()) {
+		
+		auto file = std::ofstream(filename);
+		
+		if(not file) {
+			auto exception_happened = true;
+			comm.broadcast_value(exception_happened);
+			throw std::runtime_error(error_message);
+		}
+		
+		file.precision(25);
+		for(int ii = 0; ii < long(array.size()); ii++) file << array[ii] << '\n';
+
+ 		exception_happened = false;
 		comm.broadcast_value(exception_happened);
-		throw std::runtime_error(error_message);
+	} else {
+		comm.broadcast_value(exception_happened);
+		if(exception_happened) throw std::runtime_error(error_message);
 	}
 
-	file.precision(25);
-	for(int ii = 0; ii < long(array.size()); ii++) file << array[ii] << '\n';
-	
+	comm.barrier();
 }
 
 template <typename Type>
