@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::ground_state)
 		+ interface::item(interface::ions)
 		+ interface::item(interface::kpoints)
+		+ interface::item(interface::perturbations)		
 		+ interface::item(interface::result)
 		+ interface::item(interface::real_time)
 		+ interface::item(interface::run)
