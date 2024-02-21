@@ -33,12 +33,13 @@ class kick : public perturbations::none {
 		periodicity_(arg_periodicity),
 		gauge_(arg_gauge)
 	{
-		if(gauge_ == gauge::mixed){
-			for(int idir = 0; idir < periodicity_; idir++) efield_[idir] = 0.0;
-			for(int idir = periodicity_; idir < 3; idir++) vpot_[idir] = 0.0;
+		if(gauge_ == gauge::automatic){
+			gauge_ = gauge::velocity;
+			if(periodicity_ == 0) gauge_ = gauge::length; 
 		}
 
 		if(gauge_ == gauge::length){
+			if(periodicity_ > 0) throw std::runtime_error("INQ Error: the length gauge cannot be used for periodic or partially-periodic systems");
 			vpot_ = {0.0, 0.0, 0.0};
 		}
 
@@ -51,7 +52,7 @@ class kick : public perturbations::none {
 	
 public:
 
-	kick(systems::cell const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
+	kick(systems::cell const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::automatic):
 		kick(cell.periodicity(), arg_kick_field, arg_gauge) {
 	}
 
@@ -203,7 +204,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.has_uniform_vector_potential());
 		CHECK(kick.uniform_vector_potential(3.0)[0] == -0.1);
 		CHECK(kick.uniform_vector_potential(2.0)[1] == -0.2);
-		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
+		CHECK(kick.uniform_vector_potential(1.0)[2] == -0.3);
 
 		kick.save(comm, "save_kick_semi_periodic");
 		auto read_kick = perturbations::kick::load("save_kick_semi_periodic");
@@ -211,7 +212,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(read_kick.has_uniform_vector_potential());
 		CHECK(read_kick.uniform_vector_potential(3.0)[0] == -0.1);
 		CHECK(read_kick.uniform_vector_potential(2.0)[1] == -0.2);
-		CHECK(read_kick.uniform_vector_potential(1.0)[2] == 0.0);
+		CHECK(read_kick.uniform_vector_potential(1.0)[2] == -0.3);
 	}
 
 	SECTION("velocity gauge"){
@@ -225,7 +226,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("length gauge"){
-		auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
+		auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).finite();
 		auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3}, perturbations::gauge::length);
 
 		CHECK(kick.has_uniform_vector_potential());
@@ -235,6 +236,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		std::cout << kick;
 		
+	}
+
+	SECTION("length gauge for periodic systems"){
+		auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
+		CHECK_THROWS(perturbations::kick(cell, {0.1, 0.2, 0.3}, perturbations::gauge::length));
 	}
 
 }

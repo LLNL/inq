@@ -29,13 +29,13 @@ class ramplaser : public perturbations::none {
 
 public:
 	
-	ramplaser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency, quantity<magnitude::time> rampstart, quantity<magnitude::time> rampwidth, gauge arg_gauge = gauge::length):
+	ramplaser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency, quantity<magnitude::time> rampstart, quantity<magnitude::time> rampwidth, gauge arg_gauge = gauge::automatic):
 		polarization_(polarization),
 		frequency_(frequency.in_atomic_units()),
 		rampstart_(rampstart.in_atomic_units()),
 		rampwidth_(rampwidth.in_atomic_units()),
 		gauge_(arg_gauge) {
-		assert(gauge_ != gauge::mixed);
+		if(gauge_ == gauge::automatic) gauge_ = gauge::velocity;
 	}
 	
 	auto has_uniform_electric_field() const {
@@ -103,7 +103,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("ramplaser length gauge"){
-		perturbations::ramplaser ramp_E_field({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs);
+		perturbations::ramplaser ramp_E_field({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs, perturbations::gauge::length);
 		CHECK(ramp_E_field.has_uniform_electric_field());
 		CHECK(not ramp_E_field.has_uniform_vector_potential());
 		CHECK(ramp_E_field.uniform_electric_field(0.0)[0] == 0.0);
