@@ -93,6 +93,21 @@ public:
 			std::visit([&](auto per) { per.potential(time, potential); }, pert);
 		}
 	}
+
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the perturbations::blend to directory '" + dirname + "'.";
+
+		utils::create_directory(comm, dirname);
+		utils::save_value(comm, dirname + "/num_perturbations",  size(),  error_message);
+
+		auto index = 0;
+		for(auto & pert : perts_){
+			auto subdir = dirname + "/pert" + utils::num_to_str(index);
+			utils::create_directory(comm, subdir);
+			std::visit([&](auto per) { per.save(comm, subdir + "/save"); }, pert);
+			index++;
+		}
+	}
 	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, blend const & self){
@@ -121,8 +136,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace magnitude;
 	using Catch::Approx;
 
-	perturbations::blend manyp;
-
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+ 
 	auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
   auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3}, perturbations::gauge::velocity);
 
@@ -179,6 +194,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ps.uniform_vector_potential(1.0)[2] == -0.6);
 
 		std::cout << ps;
+
+		ps.save(comm, "save_blend_3");
 		
 	}
 
