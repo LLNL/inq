@@ -169,32 +169,15 @@ namespace hamiltonian {
 			auto error_message = "INQ error: Cannot save the energy to directory '" + dirname + "'.";
 
 			utils::create_directory(comm, dirname);
-			
-			comm.barrier();
-
-			auto exception_happened = true;
-			if(comm.root()) {
-
-				utils::save_value(comm, dirname + "/ion",            ion_,         error_message);
-				utils::save_value(comm, dirname + "/ion_kinetic",    ion_kinetic_, error_message);
-				utils::save_value(comm, dirname + "/eigenvalues",    eigenvalues_, error_message);
-				utils::save_value(comm, dirname + "/external",       external_,    error_message);
-				utils::save_value(comm, dirname + "/non-local",      non_local_,    error_message);
-				utils::save_value(comm, dirname + "/hartree",        hartree_,     error_message);
-				utils::save_value(comm, dirname + "/xc",             xc_,          error_message);
-				utils::save_value(comm, dirname + "/nvxc",           nvxc_,        error_message);
-				utils::save_value(comm, dirname + "/exact_exchange", exact_exchange_, error_message);
-				
-				exception_happened = false;
-				comm.broadcast_value(exception_happened);
-			
-			} else {
-				comm.broadcast_value(exception_happened);
-				if(exception_happened) throw std::runtime_error(error_message);
-			}
-		
-			comm.barrier();
-			
+			utils::save_value(comm, dirname + "/ion",            ion_,         error_message);
+			utils::save_value(comm, dirname + "/ion_kinetic",    ion_kinetic_, error_message);
+			utils::save_value(comm, dirname + "/eigenvalues",    eigenvalues_, error_message);
+			utils::save_value(comm, dirname + "/external",       external_,    error_message);
+			utils::save_value(comm, dirname + "/non-local",      non_local_,    error_message);
+			utils::save_value(comm, dirname + "/hartree",        hartree_,     error_message);
+			utils::save_value(comm, dirname + "/xc",             xc_,          error_message);
+			utils::save_value(comm, dirname + "/nvxc",           nvxc_,        error_message);
+			utils::save_value(comm, dirname + "/exact_exchange", exact_exchange_, error_message);
 		}
 
 		static auto load(std::string const & dirname) {

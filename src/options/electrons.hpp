@@ -162,44 +162,17 @@ public:
 		auto error_message = "INQ error: Cannot save the options::electrons to directory '" + dirname + "'.";
 
 		utils::create_directory(comm, dirname);
+		utils::save_optional(comm, dirname + "/extra_states", extra_states_, error_message);
+		utils::save_optional(comm, dirname + "/extra_electrons", extra_electrons_, error_message);
+		utils::save_optional(comm, dirname + "/temperature", temperature_, error_message);
+		utils::save_optional(comm, dirname + "/spacing", spacing_, error_message);
+		utils::save_optional(comm, dirname + "/double_grid", double_grid_, error_message);
+		utils::save_optional(comm, dirname + "/density_factor", density_factor_, error_message);
+		utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
+		utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);
+		utils::save_optional(comm, dirname + "/spin",           spin_,           error_message);
+		if(pseudo_set_.has_value()) utils::save_value(comm, dirname + "/pseudo_set",   pseudo_set_->path(),   error_message);
 		
-		comm.barrier();
-
-		auto exception_happened = true;
-		if(comm.root()) {			
-
-			utils::save_optional(comm, dirname + "/extra_states", extra_states_, error_message);
-			utils::save_optional(comm, dirname + "/extra_electrons", extra_electrons_, error_message);
-			utils::save_optional(comm, dirname + "/temperature", temperature_, error_message);
-			utils::save_optional(comm, dirname + "/spacing", spacing_, error_message);
-			utils::save_optional(comm, dirname + "/double_grid", double_grid_, error_message);
-			utils::save_optional(comm, dirname + "/density_factor", density_factor_, error_message);
-			utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
-			utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);
-			utils::save_optional(comm, dirname + "/spin",           spin_,           error_message);
-			
-			//PSEUDO_SET
-			if(pseudo_set_.has_value()){
-				auto file = std::ofstream(dirname + "/pseudo_set");
-				
-				if(not file) {
-					auto exception_happened = true;
-					comm.broadcast_value(exception_happened);
-					throw std::runtime_error(error_message);
-				}
-
-				file << pseudo_set_->path() << std::endl;
-			}
-
-			exception_happened = false;
-			comm.broadcast_value(exception_happened);
-			
-		} else {
-			comm.broadcast_value(exception_happened);
-			if(exception_happened) throw std::runtime_error(error_message);
-		}
-		
-		comm.barrier();
 	}
 	
 	static auto load(std::string const & dirname) {

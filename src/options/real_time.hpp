@@ -143,26 +143,10 @@ public:
 		auto error_message = "INQ error: Cannot save the options::real_time to directory '" + dirname + "'.";
 
 		utils::create_directory(comm, dirname);
-		
-		comm.barrier();
-
-		auto exception_happened = true;
-		if(comm.root()) {
-			
-			utils::save_optional(comm, dirname + "/time_step",      dt_,            error_message);
-			utils::save_optional(comm, dirname + "/num_steps",      num_steps_,     error_message);
-			utils::save_optional(comm, dirname + "/propagator",     prop_,          error_message);
-			utils::save_optional(comm, dirname + "/ion_dynamics",   ion_dynamics_,  error_message);
-
-			exception_happened = false;
-			comm.broadcast_value(exception_happened);
-			
-		} else {
-			comm.broadcast_value(exception_happened);
-			if(exception_happened) throw std::runtime_error(error_message);
-		}
-		
-		comm.barrier();
+		utils::save_optional(comm, dirname + "/time_step",      dt_,            error_message);
+		utils::save_optional(comm, dirname + "/num_steps",      num_steps_,     error_message);
+		utils::save_optional(comm, dirname + "/propagator",     prop_,          error_message);
+		utils::save_optional(comm, dirname + "/ion_dynamics",   ion_dynamics_,  error_message);
 	}
 
 	static auto load(std::string const & dirname) {
