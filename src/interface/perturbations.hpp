@@ -33,6 +33,10 @@ The 'perturbations' command
 
 This command defines the perturbations applied to the system in a real-time simulations.
 
+Note that the perturbations can be applied in different ways depending
+on the periodicity of the system. The gauge selection is done
+automatically by the code.
+
 These are the uses for the command:
 
 - `perturbations`
@@ -49,6 +53,25 @@ These are the uses for the command:
   Example: `inq perturbations clear`
 
 
+- `perturbations kick <px> <py> <pz>`
+
+  Adds a kick perturbation. This corresponds of a uniform
+  time-dependent electric field. The time profile is a delta function
+  at time 0. The direction and intensity of the field is given by the
+  values _px_, _py_ and _pz_.
+
+  A kick has a flat profile in frequency space, so it will excite all
+  frequencies equally. This is useful to obtain linear response
+  properties.
+
+  For finite systems this kick is applied in the length gauge as a
+  phase to the orbitals (this avoid time discretization errors). For
+  periodic systems, the kick is applied in the velocity gauge as a
+  uniform vector potential.
+
+  Example: `inq perturbations kick 0.0 0.0 0.1`
+
+
 )"""";
 	}
 	
@@ -60,6 +83,13 @@ These are the uses for the command:
 	void clear() const {
 		auto perturbations = perturbations::blend::load(".inq/default_perturbations");
 		perturbations.clear();
+		perturbations.save(input::environment::global().comm(), ".inq/default_perturbations");
+	}
+
+	void kick(vector3<double, cartesian> const & polarization) const {
+		auto perturbations = perturbations::blend::load(".inq/default_perturbations");
+		auto cell = systems::ions::load(".inq/default_ions").cell();
+		perturbations.add(perturbations::kick(cell, polarization));
 		perturbations.save(input::environment::global().comm(), ".inq/default_perturbations");
 	}
 	
@@ -83,7 +113,19 @@ These are the uses for the command:
 			if(not quiet) operator()();
 			exit(0);
 		}
-		
+
+		if(args[0] == "kick"){
+
+			if(args.size() != 4) {
+				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid arguments for 'perturbations kick'." << std::endl;
+				exit(1);
+			}
+
+			kick({str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3])});
+			if(not quiet) operator()();
+			exit(0);
+		}
+				
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the perturbations command" << std::endl;
 		exit(1);
 	}
