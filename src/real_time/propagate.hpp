@@ -38,12 +38,14 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		const double dt = opts.dt();
 		const int numsteps = opts.num_steps();
 
-		if(console) console->trace(std::string("initializing real-time propagation:\n") +
-					   std::string("  time step        = {} atomictime ({:.2f} as)\n") + 
-					   std::string("  number of steps  = {}\n") + 
-					   std::string("  propagation time = {} atomictime ({:.2f} fs)"), dt, dt/0.041341373, numsteps, numsteps*dt, numsteps*dt/41.341373);
-
-
+		if(console) {
+			console->trace(std::string("initializing real-time propagation:\n") +
+										 std::string("  time step        = {} atomictime ({:.2f} as)\n") +
+										 std::string("  number of steps  = {}\n") +
+										 std::string("  propagation time = {} atomictime ({:.2f} fs)"), dt, dt/0.041341373, numsteps, numsteps*dt, numsteps*dt/41.341373);
+			console->trace("\n{}", pert);
+		}
+		
 		for(auto & phi : electrons.kpin()) pert.zero_step(phi);
 		
 		electrons.spin_density() = observables::density::calculate(electrons);
