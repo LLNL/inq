@@ -19,9 +19,38 @@ namespace perturbations {
 
 class blend {
 
+	enum class pert_id { KICK = 0, LASER = 1 };
   using any = std::variant<kick, laser>;
   std::vector<any> perts_;
-  
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, pert_id const & self) {
+		
+		if(self == pert_id::KICK){
+			out << "kick";
+		} else if(self == pert_id::LASER){
+			out << "laser";
+		}
+		
+		return out;
+	}
+	
+	template<class IStream>
+	friend IStream & operator>>(IStream & in, pert_id & self) {
+		
+		std::string readval;
+		in >> readval;
+		
+		if(readval == "kick"){
+			self = pert_id::KICK;
+		} else if(readval == "laser"){
+			self = pert_id::LASER;
+			throw std::runtime_error("INQ error: Invalid perturbation id");
+		}
+		
+		return in;
+	}
+	
 public:
 
   blend() = default;
@@ -104,6 +133,7 @@ public:
 		for(auto & pert : perts_){
 			auto subdir = dirname + "/pert" + utils::num_to_str(index);
 			utils::create_directory(comm, subdir);
+			utils::save_value(comm, subdir + "/type", pert_id(pert.index()),  error_message);
 			std::visit([&](auto per) { per.save(comm, subdir + "/save"); }, pert);
 			index++;
 		}
