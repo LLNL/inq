@@ -56,7 +56,7 @@ public:
 		
 		utils::create_directory(comm, dirname);
 		utils::save_value(comm, dirname + "/polarization",  polarization_,  error_message);
-		utils::save_value(comm, dirname + "/periodicity",   frequency_,     error_message);
+		utils::save_value(comm, dirname + "/frequency",     frequency_,     error_message);
 		utils::save_value(comm, dirname + "/gauge",         gauge_,         error_message);
 	}
 
@@ -105,26 +105,142 @@ using namespace magnitude;
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
-	perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV);
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+ 
+	SECTION("length gauge"){
+		perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV);
 
-	std::cout << las;
+		std::cout << las;
 	
-	CHECK(las.has_uniform_electric_field());
+		CHECK(las.has_uniform_electric_field());
+		CHECK(not las.has_uniform_vector_potential());
 
-	SECTION("velocity gauge"){
-		perturbations::laser vector_potential({0.1, 0.0, 0.0}, 1.0_eV, perturbations::gauge::velocity);
-		CHECK(vector_potential.has_uniform_vector_potential());
-		CHECK(not vector_potential.has_uniform_electric_field());
-		CHECK(vector_potential.uniform_vector_potential(0.0)[0] == 0.0);
-		CHECK(vector_potential.uniform_vector_potential(0.0)[2] == 0.0);
+		CHECK(las.uniform_electric_field(0.0)[0] == 0.0_a);
+		CHECK(las.uniform_electric_field(0.0)[1] == 0.0_a);
+		CHECK(las.uniform_electric_field(0.0)[2] == 0.0_a);
+
+		CHECK(las.uniform_electric_field(0.1)[0] == 0.0036749239_a);
+		CHECK(las.uniform_electric_field(0.1)[1] == 0.0_a);
+		CHECK(las.uniform_electric_field(0.1)[2] == 0.0_a);
+
+		CHECK(las.uniform_electric_field(0.5)[0] == 0.0183736271_a);
+		CHECK(las.uniform_electric_field(0.5)[1] == 0.0_a);
+		CHECK(las.uniform_electric_field(0.5)[2] == 0.0_a);
+		
+		CHECK(las.uniform_electric_field(0.7)[0] == 0.0257216884_a);
+		CHECK(las.uniform_electric_field(0.7)[1] == 0.0_a);
+		CHECK(las.uniform_electric_field(0.7)[2] == 0.0_a);
+		
+		CHECK(las.uniform_electric_field(1.4)[0] == 0.0514263564_a);
+		CHECK(las.uniform_electric_field(1.4)[1] == 0.0_a);
+		CHECK(las.uniform_electric_field(1.4)[2] == 0.0_a);
+		
+		CHECK(las.uniform_electric_field(10.0)[0] == 0.3592771603_a);
+		CHECK(las.uniform_electric_field(10.0)[1] == 0.0_a);
+		CHECK(las.uniform_electric_field(10.0)[2] == 0.0_a);
+				
+		CHECK(las.uniform_electric_field(70.0)[0] == 0.5389078998_a);
+		CHECK(las.uniform_electric_field(70.0)[1] == 0.0_a);
+		CHECK(las.uniform_electric_field(70.0)[2] == 0.0_a);
+
+		las.save(comm, "save_laser_length");
+		auto read_las = perturbations::laser::load("save_laser_length");
+
+		CHECK(read_las.uniform_electric_field(0.0)[0] == 0.0_a);
+		CHECK(read_las.uniform_electric_field(0.0)[1] == 0.0_a);
+		CHECK(read_las.uniform_electric_field(0.0)[2] == 0.0_a);
+
+		CHECK(read_las.uniform_electric_field(0.1)[0] == 0.0036749239_a);
+		CHECK(read_las.uniform_electric_field(0.1)[1] == 0.0_a);
+		CHECK(read_las.uniform_electric_field(0.1)[2] == 0.0_a);
+
+		CHECK(read_las.uniform_electric_field(0.5)[0] == 0.0183736271_a);
+		CHECK(read_las.uniform_electric_field(0.5)[1] == 0.0_a);
+		CHECK(read_las.uniform_electric_field(0.5)[2] == 0.0_a);
+		
+		CHECK(read_las.uniform_electric_field(0.7)[0] == 0.0257216884_a);
+		CHECK(read_las.uniform_electric_field(0.7)[1] == 0.0_a);
+		CHECK(read_las.uniform_electric_field(0.7)[2] == 0.0_a);
+		
+		CHECK(read_las.uniform_electric_field(1.4)[0] == 0.0514263564_a);
+		CHECK(read_las.uniform_electric_field(1.4)[1] == 0.0_a);
+		CHECK(read_las.uniform_electric_field(1.4)[2] == 0.0_a);
+		
+		CHECK(read_las.uniform_electric_field(10.0)[0] == 0.3592771603_a);
+		CHECK(read_las.uniform_electric_field(10.0)[1] == 0.0_a);
+		CHECK(read_las.uniform_electric_field(10.0)[2] == 0.0_a);
+				
+		CHECK(read_las.uniform_electric_field(70.0)[0] == 0.5389078998_a);
+		CHECK(read_las.uniform_electric_field(70.0)[1] == 0.0_a);
+		CHECK(read_las.uniform_electric_field(70.0)[2] == 0.0_a);
 
 	}
 
-	SECTION("length gauge"){
-		perturbations::laser E_field({1.0, 0.0, 0.0}, 1.0_eV);
-		CHECK(E_field.has_uniform_electric_field());
-		CHECK(not E_field.has_uniform_vector_potential());
-		CHECK(E_field.uniform_electric_field(0.0)[0] == 0.0);
+	SECTION("velocity gauge"){
+		perturbations::laser las({0.0, -0.5, 0.5}, 1.0_eV, perturbations::gauge::velocity);
+
+		CHECK(las.has_uniform_vector_potential());
+		CHECK(not las.has_uniform_electric_field());
+
+		CHECK(las.uniform_vector_potential(0.0)[0] ==  0.0_a);
+		CHECK(las.uniform_vector_potential(0.0)[1] ==  0.0_a);
+		CHECK(las.uniform_vector_potential(0.0)[2] ==  0.0_a);
+
+		CHECK(las.uniform_vector_potential(0.1)[0] ==  0.0_a);
+		CHECK(las.uniform_vector_potential(0.1)[1] ==  0.0000918732_a);
+		CHECK(las.uniform_vector_potential(0.1)[2] == -0.0000918732_a);
+
+		CHECK(las.uniform_vector_potential(0.5)[0] ==  0.0_a);
+		CHECK(las.uniform_vector_potential(0.5)[1] ==  0.002296768_a);
+		CHECK(las.uniform_vector_potential(0.5)[2] == -0.002296768_a);
+		
+		CHECK(las.uniform_vector_potential(0.7)[0] ==  0.0_a);
+		CHECK(las.uniform_vector_potential(0.7)[1] ==  0.0045015437_a);
+		CHECK(las.uniform_vector_potential(0.7)[2] == -0.0045015437_a);
+		
+		CHECK(las.uniform_vector_potential(1.4)[0] ==  0.0_a);
+		CHECK(las.uniform_vector_potential(1.4)[1] ==  0.0180031961_a);
+		CHECK(las.uniform_vector_potential(1.4)[2] == -0.0180031961_a);
+		
+		CHECK(las.uniform_vector_potential(10.0)[0] ==  0.0_a);
+		CHECK(las.uniform_vector_potential(10.0)[1] ==  0.9084398165_a);
+		CHECK(las.uniform_vector_potential(10.0)[2] == -0.9084398165_a);
+				
+		CHECK(las.uniform_vector_potential(70.0)[0] ==  0.0_a);
+		CHECK(las.uniform_vector_potential(70.0)[1] ==  25.0666486301_a);
+		CHECK(las.uniform_vector_potential(70.0)[2] == -25.0666486301_a);
+
+		las.save(comm, "save_laser_velocity");
+		auto read_las = perturbations::laser::load("save_laser_velocity");
+
+		CHECK(read_las.uniform_vector_potential(0.0)[0] ==  0.0_a);
+		CHECK(read_las.uniform_vector_potential(0.0)[1] ==  0.0_a);
+		CHECK(read_las.uniform_vector_potential(0.0)[2] ==  0.0_a);
+
+		CHECK(read_las.uniform_vector_potential(0.1)[0] ==  0.0_a);
+		CHECK(read_las.uniform_vector_potential(0.1)[1] ==  0.0000918732_a);
+		CHECK(read_las.uniform_vector_potential(0.1)[2] == -0.0000918732_a);
+
+		CHECK(read_las.uniform_vector_potential(0.5)[0] ==  0.0_a);
+		CHECK(read_las.uniform_vector_potential(0.5)[1] ==  0.002296768_a);
+		CHECK(read_las.uniform_vector_potential(0.5)[2] == -0.002296768_a);
+		
+		CHECK(read_las.uniform_vector_potential(0.7)[0] ==  0.0_a);
+		CHECK(read_las.uniform_vector_potential(0.7)[1] ==  0.0045015437_a);
+		CHECK(read_las.uniform_vector_potential(0.7)[2] == -0.0045015437_a);
+		
+		CHECK(read_las.uniform_vector_potential(1.4)[0] ==  0.0_a);
+		CHECK(read_las.uniform_vector_potential(1.4)[1] ==  0.0180031961_a);
+		CHECK(read_las.uniform_vector_potential(1.4)[2] == -0.0180031961_a);
+		
+		CHECK(read_las.uniform_vector_potential(10.0)[0] ==  0.0_a);
+		CHECK(read_las.uniform_vector_potential(10.0)[1] ==  0.9084398165_a);
+		CHECK(read_las.uniform_vector_potential(10.0)[2] == -0.9084398165_a);
+				
+		CHECK(read_las.uniform_vector_potential(70.0)[0] ==  0.0_a);
+		CHECK(read_las.uniform_vector_potential(70.0)[1] ==  25.0666486301_a);
+		CHECK(read_las.uniform_vector_potential(70.0)[2] == -25.0666486301_a);
+		
 	}
 
 }
