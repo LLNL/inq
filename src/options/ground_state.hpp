@@ -168,30 +168,14 @@ public:
 		auto error_message = "INQ error: Cannot save the options::ground_state to directory '" + dirname + "'.";
 
 		utils::create_directory(comm, dirname);
-		
-		comm.barrier();
-		
-		auto exception_happened = true;
-		if(comm.root()) {
-			
-			utils::save_optional(comm, dirname + "/eigensolver",      eigensolver_,   error_message);
-			utils::save_optional(comm, dirname + "/mixing",           mixing_,        error_message);
-			utils::save_optional(comm, dirname + "/energy_tol",       energy_tol_,    error_message);
-			utils::save_optional(comm, dirname + "/mixing_algorithm", mixing_algo_,   error_message);
-			utils::save_optional(comm, dirname + "/verbose",          verbose_,       error_message);
-			utils::save_optional(comm, dirname + "/subspace_diag",    subspace_diag_, error_message);
-			utils::save_optional(comm, dirname + "/max_steps",        max_steps_,     error_message);
-			utils::save_optional(comm, dirname + "/calc_forces",      calc_forces_,   error_message);
-			
-			exception_happened = false;
-			comm.broadcast_value(exception_happened);
-			
-		} else {
-			comm.broadcast_value(exception_happened);
-			if(exception_happened) throw std::runtime_error(error_message);
-		}
-		
-		comm.barrier();
+		utils::save_optional(comm, dirname + "/eigensolver",      eigensolver_,   error_message);
+		utils::save_optional(comm, dirname + "/mixing",           mixing_,        error_message);
+		utils::save_optional(comm, dirname + "/energy_tol",       energy_tol_,    error_message);
+		utils::save_optional(comm, dirname + "/mixing_algorithm", mixing_algo_,   error_message);
+		utils::save_optional(comm, dirname + "/verbose",          verbose_,       error_message);
+		utils::save_optional(comm, dirname + "/subspace_diag",    subspace_diag_, error_message);
+		utils::save_optional(comm, dirname + "/max_steps",        max_steps_,     error_message);
+		utils::save_optional(comm, dirname + "/calc_forces",      calc_forces_,   error_message);
 	}
 	
 	static auto load(std::string const & dirname) {

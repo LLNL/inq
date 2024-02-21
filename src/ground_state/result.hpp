@@ -29,30 +29,13 @@ struct result {
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the ground_state::result to directory '" + dirname + "'.";
 
+		energy.save(comm, dirname + "/energy");
 		utils::create_directory(comm, dirname);
-		
-		comm.barrier();
-
-    energy.save(comm, dirname + "/energy");
-    
-		auto exception_happened = true;
-		if(comm.root()) {
-			
-			utils::save_value(comm, dirname + "/total_iter",    total_iter,    error_message);
-			utils::save_value(comm, dirname + "/dipole",        dipole,        error_message);
-      utils::save_value(comm, dirname + "/magnetization", magnetization, error_message);
-			utils::save_value(comm, dirname + "/num_atoms",     forces.size(), error_message);
-			utils::save_array(comm, dirname + "/forces",        forces,        error_message);
-			
-			exception_happened = false;
-			comm.broadcast_value(exception_happened);
-			
-		} else {
-			comm.broadcast_value(exception_happened);
-			if(exception_happened) throw std::runtime_error(error_message);
-		}
-		
-		comm.barrier();
+		utils::save_value(comm, dirname + "/total_iter",    total_iter,    error_message);
+		utils::save_value(comm, dirname + "/dipole",        dipole,        error_message);
+		utils::save_value(comm, dirname + "/magnetization", magnetization, error_message);
+		utils::save_value(comm, dirname + "/num_atoms",     forces.size(), error_message);
+		utils::save_array(comm, dirname + "/forces",        forces,        error_message);
 	}
 	
   static auto load(std::string const & dirname) {

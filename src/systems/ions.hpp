@@ -205,26 +205,10 @@ public:
 		auto error_message = "INQ error: Cannot save the ions to directory '" + dirname + "'.";
 
 		cell_.save(comm, dirname + "/cell");
-
-		comm.barrier();
-
-		auto exception_happened = true;
-		if(comm.root()) {
-
-			utils::save_value(comm, dirname + "/num_ions",   size(),      error_message);
-			utils::save_array(comm, dirname + "/atoms",      atoms_,      error_message);
-			utils::save_array(comm, dirname + "/positions",  positions_,  error_message);
-			utils::save_array(comm, dirname + "/velocities", velocities_, error_message);
-			
-			exception_happened = false;
-			comm.broadcast_value(exception_happened);
-			
-		} else {
-			comm.broadcast_value(exception_happened);
-				if(exception_happened) throw std::runtime_error(error_message);
-		}
-		
-		comm.barrier();
+		utils::save_value(comm, dirname + "/num_ions",   size(),      error_message);
+		utils::save_array(comm, dirname + "/atoms",      atoms_,      error_message);
+		utils::save_array(comm, dirname + "/positions",  positions_,  error_message);
+		utils::save_array(comm, dirname + "/velocities", velocities_, error_message);
 	}
 	
 	static auto load(std::string const & dirname) {

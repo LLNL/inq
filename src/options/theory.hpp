@@ -142,26 +142,10 @@ public:
 		auto error_message = "INQ error: Cannot save theory to directory '" + dirname + "'.";
 
 		utils::create_directory(comm, dirname);
-		
-		comm.barrier();
-
-		auto exception_happened = true;
-		if(comm.root()) {
-			
-			utils::save_optional(comm, dirname + "/hartree_potential", hartree_potential_, error_message);
-			utils::save_optional(comm, dirname + "/exchange", exchange_, error_message);
-			utils::save_optional(comm, dirname + "/correlation", correlation_, error_message);
-			utils::save_optional(comm, dirname + "/alpha", alpha_, error_message);
-
-			exception_happened = false;
-			comm.broadcast_value(exception_happened);
-			
-		} else {
-			comm.broadcast_value(exception_happened);
-			if(exception_happened) throw std::runtime_error(error_message);
-		}
-		
-		comm.barrier();
+		utils::save_optional(comm, dirname + "/hartree_potential", hartree_potential_, error_message);
+		utils::save_optional(comm, dirname + "/exchange", exchange_, error_message);
+		utils::save_optional(comm, dirname + "/correlation", correlation_, error_message);
+		utils::save_optional(comm, dirname + "/alpha", alpha_, error_message);
 	}
 		
 	static auto load(std::string const & dirname) {
