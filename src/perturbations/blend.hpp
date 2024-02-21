@@ -19,7 +19,7 @@ namespace perturbations {
 
 class blend {
 
-  using any = std::variant<absorbing, kick, laser, none>;
+  using any = std::variant<kick, laser>;
   std::vector<any> perts_;
   
 public:
