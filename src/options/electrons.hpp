@@ -171,33 +171,8 @@ public:
 		utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
 		utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);
 		utils::save_optional(comm, dirname + "/spin",           spin_,           error_message);
-			
-		comm.barrier();
-
-		auto exception_happened = true;
-		if(comm.root()) {			
-			
-			if(pseudo_set_.has_value()){
-				auto file = std::ofstream(dirname + "/pseudo_set");
-				
-				if(not file) {
-					auto exception_happened = true;
-					comm.broadcast_value(exception_happened);
-					throw std::runtime_error(error_message);
-				}
-
-				file << pseudo_set_->path() << std::endl;
-			}
-
-			exception_happened = false;
-			comm.broadcast_value(exception_happened);
-			
-		} else {
-			comm.broadcast_value(exception_happened);
-			if(exception_happened) throw std::runtime_error(error_message);
-		}
+		if(pseudo_set_.has_value()) utils::save_value(comm, dirname + "/pseudo_set",   pseudo_set_->path(),   error_message);
 		
-		comm.barrier();
 	}
 	
 	static auto load(std::string const & dirname) {
