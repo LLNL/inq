@@ -23,8 +23,10 @@ class laser : public perturbations::none {
 
 	vector3<double, cartesian> polarization_;
 	double frequency_;
-	
+	gauge gauge_;
+
 public:
+	
 	laser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency,gauge arg_gauge = gauge::length):
 		polarization_(polarization),
 		frequency_(frequency.in_atomic_units()),
@@ -49,20 +51,19 @@ public:
 		return polarization_/frequency_*(cos(time*frequency_) - 1.0);
 	}
 
-	template <typename OutputStream>
-	void print_info(OutputStream & out) {
-		auto freq_ev = frequency_*27.211383;
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, laser const & self){
+		using namespace magnitude;
+
+		auto freq_ev = self.frequency_*27.211383;
 		
-		out << "Frequency :    " << frequency_ << " Ha" << std::endl;
+		out << "Frequency :    " << self.frequency_ << " Ha" << std::endl;
 		out << "               " << freq_ev << " eV" << std::endl;
 		out << "               " << freq_ev*241.7991 << " THz" << std::endl;
 		out << "               " << 1239.84193/freq_ev << " nm" << std::endl;
-		
-	}
-	
-private:
-	gauge gauge_;
 
+		return out;
+	}
 };
 
 
@@ -84,7 +85,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV);
 
-	las.print_info(std::cout);
+	std::cout << las;
 	
 	CHECK(las.has_uniform_electric_field());
 

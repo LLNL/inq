@@ -56,16 +56,18 @@ public:
 		return polarization_/frequency_*(cos(time*frequency_) - 1.0) *0.5*(tanh((time-rampstart_)/rampwidth_)+1.0);
 	}
 
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, ramplaser const & self){
+		using namespace magnitude;
 
-	template <typename OutputStream>
-	void print_info(OutputStream & out) {
-		auto freq_ev = frequency_*27.211383;
+		auto freq_ev = self.frequency_*27.211383;
 		
-		out << "Frequency :    " << frequency_ << " Ha" << std::endl;
+		out << "Frequency :    " << self.frequency_ << " Ha" << std::endl;
 		out << "               " << freq_ev << " eV" << std::endl;
 		out << "               " << freq_ev*241.7991 << " THz" << std::endl;
 		out << "               " << 1239.84193/freq_ev << " nm" << std::endl;
-		
+
+		return out;
 	}
 	
 };
@@ -90,7 +92,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	perturbations::ramplaser rlas({1.0, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs);
 
-	rlas.print_info(std::cout);
+	std::cout << rlas;
 	
 	CHECK(rlas.has_uniform_electric_field());
 
