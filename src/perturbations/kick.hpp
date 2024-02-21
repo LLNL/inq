@@ -99,7 +99,17 @@ public:
     
     return kick(per, field, gau);
 	}
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, kick const & self){
+		using namespace magnitude;
 
+		out << "Kick:\n";
+		out << "  field [a.u.] = " << -(self.efield_ + self.vpot_) << "\n";
+		out << "  gauge        = " << self.gauge_ << "\n";
+		return out;
+	}
+	
 };
 
 }
@@ -222,6 +232,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.uniform_vector_potential(3.0)[0] == 0.0);
 		CHECK(kick.uniform_vector_potential(2.0)[1] == 0.0);
 		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
+		
+		std::cout << kick;
+		
 	}
 
 }
