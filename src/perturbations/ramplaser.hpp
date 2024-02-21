@@ -61,8 +61,10 @@ public:
 		using namespace magnitude;
 
 		auto freq_ev = self.frequency_/in_atomic_units(1.0_eV);
-		out << "Laser:\n";
-		out << "  frequency = " << self.frequency_ << " Ha | " << freq_ev << " eV | " << freq_ev*241.7991 << " THz | " << 1239.84193/freq_ev << " nm" << std::endl;
+		out << "Ramp-laser:\n";
+		out << "  polarization [a.u.] = " << self.polarization_ << "\n";
+		out << "  frequency           = " << self.frequency_ << " Ha | " << freq_ev << " eV | " << freq_ev*241.7991 << " THz | " << 1239.84193/freq_ev << " nm" << std::endl;
+		out << "  gauge               = " << self.gauge_ << "\n";
 		return out;
 	}
 	
