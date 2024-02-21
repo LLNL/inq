@@ -27,7 +27,7 @@ class laser : public perturbations::none {
 
 public:
 	
-	laser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency,gauge arg_gauge = gauge::length):
+	laser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency, gauge arg_gauge = gauge::length):
 		polarization_(polarization),
 		frequency_(frequency.in_atomic_units()),
 		gauge_(arg_gauge) {
@@ -55,13 +55,9 @@ public:
 	friend OStream & operator<<(OStream & out, laser const & self){
 		using namespace magnitude;
 
-		auto freq_ev = self.frequency_*27.211383;
-		
-		out << "Frequency :    " << self.frequency_ << " Ha" << std::endl;
-		out << "               " << freq_ev << " eV" << std::endl;
-		out << "               " << freq_ev*241.7991 << " THz" << std::endl;
-		out << "               " << 1239.84193/freq_ev << " nm" << std::endl;
-
+		auto freq_ev = self.frequency_/in_atomic_units(1.0_eV);
+		out << "Laser:\n";
+		out << "  frequency = " << self.frequency_ << " Ha | " << freq_ev << " eV | " << freq_ev*241.7991 << " THz | " << 1239.84193/freq_ev << " nm" << std::endl;
 		return out;
 	}
 };
@@ -90,7 +86,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(las.has_uniform_electric_field());
 
 	SECTION("velocity gauge"){
-		perturbations::laser vector_potential({0.1, 0.0, 0.0}, 1.0_eV,perturbations::gauge::velocity);
+		perturbations::laser vector_potential({0.1, 0.0, 0.0}, 1.0_eV, perturbations::gauge::velocity);
 		CHECK(vector_potential.has_uniform_vector_potential());
 		CHECK(not vector_potential.has_uniform_electric_field());
 		CHECK(vector_potential.uniform_vector_potential(0.0)[0] == 0.0);
