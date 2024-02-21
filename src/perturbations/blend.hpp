@@ -149,7 +149,6 @@ public:
 		try {utils::load_value(dirname + "/num_perturbations", num, error_message);}
 		catch(...){ return bl; };
 		
-		std::cout << num << std::endl;
 		for(int index = 0; index < num; index++){
 			auto subdir = dirname + "/pert" + utils::num_to_str(index);
 
