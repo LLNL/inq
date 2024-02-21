@@ -51,6 +51,31 @@ public:
 		return polarization_/frequency_*(cos(time*frequency_) - 1.0);
 	}
 
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the perturbations::laser to directory '" + dirname + "'.";
+		
+		utils::create_directory(comm, dirname);
+		utils::save_value(comm, dirname + "/polarization",  polarization_,  error_message);
+		utils::save_value(comm, dirname + "/periodicity",   frequency_,     error_message);
+		utils::save_value(comm, dirname + "/gauge",         gauge_,         error_message);
+	}
+
+	static auto load(std::string const & dirname) {
+		using namespace magnitude;
+		
+    auto error_message = "INQ error: Cannot load perturbations::laser from directory '" + dirname + "'.";
+
+		vector3<double> pol;
+		double freq;
+		gauge gau;
+	
+    utils::load_value(dirname + "/polarization",   pol,   error_message);
+    utils::load_value(dirname + "/frequency",      freq,  error_message);
+    utils::load_value(dirname + "/gauge",          gau,   error_message);
+    
+    return laser(pol, freq*1.0_Ha, gau);
+	}
+
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, laser const & self){
 		using namespace magnitude;
@@ -60,6 +85,7 @@ public:
 		out << "  frequency = " << self.frequency_ << " Ha | " << freq_ev << " eV | " << freq_ev*241.7991 << " THz | " << 1239.84193/freq_ev << " nm" << std::endl;
 		return out;
 	}
+
 };
 
 
@@ -91,6 +117,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(not vector_potential.has_uniform_electric_field());
 		CHECK(vector_potential.uniform_vector_potential(0.0)[0] == 0.0);
 		CHECK(vector_potential.uniform_vector_potential(0.0)[2] == 0.0);
+
 	}
 
 	SECTION("length gauge"){
