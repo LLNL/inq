@@ -94,6 +94,15 @@ public:
 		}
 	}
 	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, blend const & self){
+		out << "Perturbations:\n";
+		for(auto & pert : self.perts_){
+			std::visit([&](auto per) { out << per; }, pert);
+		}
+		return out;
+	}
+	
 };
 	
 }
@@ -168,7 +177,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ps.uniform_vector_potential(3.0)[0] == -0.2);
 		CHECK(ps.uniform_vector_potential(2.0)[1] == -0.4);
 		CHECK(ps.uniform_vector_potential(1.0)[2] == -0.6);
- 
+
+		std::cout << ps;
+		
 	}
 
 	SECTION("zero step"){
