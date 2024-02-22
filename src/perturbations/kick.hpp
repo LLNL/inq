@@ -22,28 +22,37 @@ namespace perturbations {
 
 class kick : public perturbations::none {
 
-public:
+	vector3<double> efield_;
+	vector3<double> vpot_;	
+	int periodicity_;
+	gauge gauge_;
 
-	template <typename CellType>
-	kick(CellType const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
+	kick(int arg_periodicity, vector3<double> const & arg_kick_field, gauge arg_gauge):
 		efield_(-arg_kick_field),
 		vpot_(-arg_kick_field),		
-		periodicity_(cell.periodicity())
+		periodicity_(arg_periodicity),
+		gauge_(arg_gauge)
 	{
-		if(arg_gauge == gauge::mixed){
+		if(gauge_ == gauge::mixed){
 			for(int idir = 0; idir < periodicity_; idir++) efield_[idir] = 0.0;
 			for(int idir = periodicity_; idir < 3; idir++) vpot_[idir] = 0.0;
 		}
 
-		if(arg_gauge == gauge::length){
+		if(gauge_ == gauge::length){
 			vpot_ = {0.0, 0.0, 0.0};
 		}
 
-		if(arg_gauge == gauge::velocity){
+		if(gauge_ == gauge::velocity){
 			efield_ = {0.0, 0.0, 0.0};
 		}
 
 		assert(efield_ + vpot_ == -arg_kick_field);
+	}
+	
+public:
+
+	kick(systems::cell const & cell, vector3<double> const & arg_kick_field, gauge arg_gauge = gauge::mixed):
+		kick(cell.periodicity(), arg_kick_field, arg_gauge) {
 	}
 
 	template <typename PhiType>
@@ -68,12 +77,39 @@ public:
 		return vpot_;
 	}
 
-private:
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the perturbations::kick to directory '" + dirname + "'.";
+		
+		utils::create_directory(comm, dirname);
+		utils::save_value(comm, dirname + "/field",         -(efield_ + vpot_),  error_message);
+		utils::save_value(comm, dirname + "/periodicity",   periodicity_,        error_message);
+		utils::save_value(comm, dirname + "/gauge",         gauge_,              error_message);
+	}
 
-	vector3<double> efield_;
-	vector3<double> vpot_;	
-	int periodicity_;
+	static auto load(std::string const & dirname) {
+    auto error_message = "INQ error: Cannot load perturbations::kick from directory '" + dirname + "'.";
 
+		vector3<double> field;
+		int per;
+		gauge gau;
+	
+    utils::load_value(dirname + "/field",          field,   error_message);
+    utils::load_value(dirname + "/periodicity",    per,     error_message);
+    utils::load_value(dirname + "/gauge",          gau,     error_message);
+    
+    return kick(per, field, gau);
+	}
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, kick const & self){
+		using namespace magnitude;
+
+		out << "Kick:\n";
+		out << "  field [a.u.] = " << -(self.efield_ + self.vpot_) << "\n";
+		out << "  gauge        = " << self.gauge_ << "\n";
+		return out;
+	}
+	
 };
 
 }
@@ -92,6 +128,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
+
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	SECTION("finite"){
 	
@@ -148,6 +186,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.uniform_vector_potential(3.0)[0] == -0.1);
 		CHECK(kick.uniform_vector_potential(2.0)[1] == -0.2);
 		CHECK(kick.uniform_vector_potential(1.0)[2] == -0.3);
+
+		kick.save(comm, "save_kick_periodic");
+		auto read_kick = perturbations::kick::load("save_kick_periodic");
+
+		CHECK(read_kick.has_uniform_vector_potential());
+		CHECK(read_kick.uniform_vector_potential(3.0)[0] == -0.1);
+		CHECK(read_kick.uniform_vector_potential(2.0)[1] == -0.2);
+		CHECK(read_kick.uniform_vector_potential(1.0)[2] == -0.3);
 	}
 
 	SECTION("semi periodic"){
@@ -158,6 +204,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.uniform_vector_potential(3.0)[0] == -0.1);
 		CHECK(kick.uniform_vector_potential(2.0)[1] == -0.2);
 		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
+
+		kick.save(comm, "save_kick_semi_periodic");
+		auto read_kick = perturbations::kick::load("save_kick_semi_periodic");
+
+		CHECK(read_kick.has_uniform_vector_potential());
+		CHECK(read_kick.uniform_vector_potential(3.0)[0] == -0.1);
+		CHECK(read_kick.uniform_vector_potential(2.0)[1] == -0.2);
+		CHECK(read_kick.uniform_vector_potential(1.0)[2] == 0.0);
 	}
 
 	SECTION("velocity gauge"){
@@ -178,6 +232,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(kick.uniform_vector_potential(3.0)[0] == 0.0);
 		CHECK(kick.uniform_vector_potential(2.0)[1] == 0.0);
 		CHECK(kick.uniform_vector_potential(1.0)[2] == 0.0);
+		
+		std::cout << kick;
+		
 	}
 
 }

@@ -24,6 +24,30 @@ enum class gauge {
   velocity  // the electric field is applied through a uniform vector potential
 };
 
+template<class OStream>
+OStream & operator<<(OStream & out, gauge const & self){
+	if(self == gauge::mixed)        out << "mixed";
+	if(self == gauge::length)       out << "length";
+	if(self == gauge::velocity)     out << "velocity";		
+	return out;
+}
+
+template<class IStream>
+IStream & operator>>(IStream & in, gauge & self){
+	std::string readval;
+	in >> readval;
+	if(readval == "mixed"){
+		self = gauge::mixed;
+	} else if(readval == "length"){
+		self = gauge::length;
+	} else if(readval == "velocity"){
+		self = gauge::velocity;
+	} else {
+		throw std::runtime_error("INQ error: Invalid gauge");
+	}
+	return in;
+}
+
 }
 }
 #endif
@@ -34,11 +58,89 @@ enum class gauge {
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
 
-using namespace inq;
-
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
-  [[maybe_unused]] auto gau = perturbations::gauge::velocity;
+	using namespace Catch::literals;
+	using namespace inq;
 
+	SECTION("Output"){
+		{
+			std::stringstream ss;
+			std::string str;
+			ss << perturbations::gauge::mixed;
+			ss >> str;
+			CHECK(str == "mixed");
+		}
+
+		{
+			std::stringstream ss;
+			std::string str;
+			ss << perturbations::gauge::length;
+			ss >> str;
+			CHECK(str == "length");
+		}
+
+		{
+			std::stringstream ss;
+			std::string str;
+			ss << perturbations::gauge::velocity;
+			ss >> str;
+			CHECK(str == "velocity");
+		}
+		
+	}
+	
+	SECTION("Input"){
+		{
+			std::stringstream ss;
+			perturbations::gauge sp;
+			ss << "mixed";
+			ss >> sp;
+			CHECK(sp == perturbations::gauge::mixed);
+		}
+
+		{
+			std::stringstream ss;
+			perturbations::gauge sp;
+			ss << "length";
+			ss >> sp;
+			CHECK(sp == perturbations::gauge::length);
+		}
+		
+		{
+			std::stringstream ss;
+			perturbations::gauge sp;
+			ss << "velocity";
+			ss >> sp;
+			CHECK(sp == perturbations::gauge::velocity);
+		}
+	}
+	
+	SECTION("Input/Output"){
+		{
+			std::stringstream ss;
+			perturbations::gauge sp;
+			ss << perturbations::gauge::mixed;
+			ss >> sp;
+			CHECK(sp == perturbations::gauge::mixed);
+		}
+
+		{
+			std::stringstream ss;
+			perturbations::gauge sp;
+			ss << perturbations::gauge::length;
+			ss >> sp;
+			CHECK(sp == perturbations::gauge::length);
+		}
+		
+		{
+			std::stringstream ss;
+			perturbations::gauge sp;
+			ss << perturbations::gauge::velocity;
+			ss >> sp;
+			CHECK(sp == perturbations::gauge::velocity);
+		}
+	}
+	
 }
 #endif

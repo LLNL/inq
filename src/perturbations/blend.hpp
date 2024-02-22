@@ -19,9 +19,39 @@ namespace perturbations {
 
 class blend {
 
-  using any = std::variant<absorbing, kick, laser, none>;
+	enum class pert_id { KICK = 0, LASER = 1 };
+  using any = std::variant<kick, laser>;
   std::vector<any> perts_;
-  
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, pert_id const & self) {
+		
+		if(self == pert_id::KICK){
+			out << "kick";
+		} else if(self == pert_id::LASER){
+			out << "laser";
+		}
+		
+		return out;
+	}
+	
+	template<class IStream>
+	friend IStream & operator>>(IStream & in, pert_id & self) {
+
+		std::string readval;
+		in >> readval;
+
+		if(readval == "kick"){
+			self = pert_id::KICK;
+		} else if(readval == "laser"){
+			self = pert_id::LASER;
+		} else {
+			throw std::runtime_error("INQ error: Invalid perturbation id");
+		}
+		
+		return in;
+	}
+	
 public:
 
   blend() = default;
@@ -93,6 +123,59 @@ public:
 			std::visit([&](auto per) { per.potential(time, potential); }, pert);
 		}
 	}
+
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save the perturbations::blend to directory '" + dirname + "'.";
+
+		utils::create_directory(comm, dirname);
+		utils::save_value(comm, dirname + "/num_perturbations",  size(),  error_message);
+
+		auto index = 0;
+		for(auto & pert : perts_){
+			auto subdir = dirname + "/pert" + utils::num_to_str(index);
+			utils::create_directory(comm, subdir);
+			utils::save_value(comm, subdir + "/type", pert_id(pert.index()),  error_message);
+			std::visit([&](auto per) { per.save(comm, subdir + "/save"); }, pert);
+			index++;
+		}
+	}
+
+	static auto load(std::string const & dirname) {
+    auto error_message = "INQ error: Cannot load perturbations::blend from directory '" + dirname + "'.";
+
+		auto bl = perturbations::blend{};
+
+    int num;
+		utils::load_value(dirname + "/num_perturbations", num, error_message);
+
+		std::cout << num << std::endl;
+		for(int index = 0; index < num; index++){
+			auto subdir = dirname + "/pert" + utils::num_to_str(index);
+
+			pert_id id;
+			utils::load_value(subdir + "/type", id, error_message);
+
+			switch (id) {
+			case pert_id::KICK:
+				bl.add(perturbations::kick::load(subdir + "/save"));
+				break;
+			case pert_id::LASER:
+				bl.add(perturbations::laser::load(subdir + "/save"));				
+				break;
+			}
+		}
+			
+    return bl;
+	}
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, blend const & self){
+		out << "Perturbations:\n";
+		for(auto & pert : self.perts_){
+			std::visit([&](auto per) { out << per; }, pert);
+		}
+		return out;
+	}
 	
 };
 	
@@ -112,8 +195,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace magnitude;
 	using Catch::Approx;
 
-	perturbations::blend manyp;
-
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+ 
 	auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
   auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3}, perturbations::gauge::velocity);
 
@@ -168,7 +251,23 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ps.uniform_vector_potential(3.0)[0] == -0.2);
 		CHECK(ps.uniform_vector_potential(2.0)[1] == -0.4);
 		CHECK(ps.uniform_vector_potential(1.0)[2] == -0.6);
- 
+
+		std::cout << ps;
+
+		ps.save(comm, "save_blend_3");
+		auto read_ps = perturbations::blend::load("save_blend_3");
+
+		CHECK(read_ps.size() == 3);
+
+		CHECK(read_ps.has_uniform_electric_field());
+		CHECK(read_ps.uniform_electric_field(M_PI/2.0)[0] == 1.0);
+		CHECK(read_ps.uniform_electric_field(M_PI/2.0)[1] == 1.0);
+		CHECK(read_ps.uniform_electric_field(M_PI/2.0)[2] == 1.0);
+		  
+		CHECK(read_ps.has_uniform_vector_potential());
+		CHECK(read_ps.uniform_vector_potential(3.0)[0] == -0.2);
+		CHECK(read_ps.uniform_vector_potential(2.0)[1] == -0.4);
+		CHECK(read_ps.uniform_vector_potential(1.0)[2] == -0.6);
 	}
 
 	SECTION("zero step"){
