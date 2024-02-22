@@ -46,6 +46,11 @@ public:
 	template<typename PotentialType>
 	void potential(const double time, PotentialType & potential) const {
 	}
+
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, none const & self){
+		return out;
+	}
 	
 };
 	
