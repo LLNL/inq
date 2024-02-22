@@ -19,14 +19,14 @@ namespace inq {
 namespace perturbations {
 
 enum class gauge {
-  mixed,    // length gauge in non-periodic dimensions, velocity in periodic dimensions
-  length,   // the electric field enters through the scalar potential or a phase in the orbitals, does not work for periodic dimensions
-  velocity  // the electric field is applied through a uniform vector potential
+  automatic,  // length gauge for non-periodic systems, velocity for periodic and partially-periodic systems
+  length,     // the electric field enters through the scalar potential or a phase in the orbitals, does not work for periodic dimensions
+  velocity    // the electric field is applied through a uniform vector potential
 };
 
 template<class OStream>
 OStream & operator<<(OStream & out, gauge const & self){
-	if(self == gauge::mixed)        out << "mixed";
+	if(self == gauge::automatic)    out << "automatic";
 	if(self == gauge::length)       out << "length";
 	if(self == gauge::velocity)     out << "velocity";		
 	return out;
@@ -36,8 +36,8 @@ template<class IStream>
 IStream & operator>>(IStream & in, gauge & self){
 	std::string readval;
 	in >> readval;
-	if(readval == "mixed"){
-		self = gauge::mixed;
+	if(readval == "automatic"){
+		self = gauge::automatic;
 	} else if(readval == "length"){
 		self = gauge::length;
 	} else if(readval == "velocity"){
@@ -67,9 +67,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		{
 			std::stringstream ss;
 			std::string str;
-			ss << perturbations::gauge::mixed;
+			ss << perturbations::gauge::automatic;
 			ss >> str;
-			CHECK(str == "mixed");
+			CHECK(str == "automatic");
 		}
 
 		{
@@ -94,9 +94,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		{
 			std::stringstream ss;
 			perturbations::gauge sp;
-			ss << "mixed";
+			ss << "automatic";
 			ss >> sp;
-			CHECK(sp == perturbations::gauge::mixed);
+			CHECK(sp == perturbations::gauge::automatic);
 		}
 
 		{
@@ -120,9 +120,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		{
 			std::stringstream ss;
 			perturbations::gauge sp;
-			ss << perturbations::gauge::mixed;
+			ss << perturbations::gauge::automatic;
 			ss >> sp;
-			CHECK(sp == perturbations::gauge::mixed);
+			CHECK(sp == perturbations::gauge::automatic);
 		}
 
 		{

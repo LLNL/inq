@@ -203,7 +203,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("2 elements"){
 		auto ps = perturbations::blend{};
 		ps.add(kick);
-		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha));
+		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha, perturbations::gauge::length));
 
 		CHECK(ps.size() == 2);
 		CHECK(ps.has_uniform_electric_field());
@@ -238,7 +238,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto ps = perturbations::blend{};
 		ps.add(kick);
 		ps.add(kick);
-		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha));
+		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha, perturbations::gauge::length));
 
 		CHECK(ps.size() == 3);
 
@@ -301,7 +301,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto ps = perturbations::blend{};
 		ps.add(kick);
 		ps.add(kick);
-		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha));
+		ps.add(perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha, perturbations::gauge::length));
 		
 		ps.zero_step(phi);
 		

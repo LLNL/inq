@@ -27,11 +27,12 @@ class laser : public perturbations::none {
 
 public:
 	
-	laser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency, gauge arg_gauge = gauge::length):
+	laser(vector3<double, cartesian> polarization, quantity<magnitude::energy> frequency, gauge arg_gauge = gauge::automatic):
 		polarization_(polarization),
 		frequency_(frequency.in_atomic_units()),
 		gauge_(arg_gauge) {
-		assert(gauge_ != gauge::mixed);
+
+		if(gauge_ == gauge::automatic) gauge_ = gauge::velocity;
 	}
 	
 	auto has_uniform_electric_field() const {
@@ -110,7 +111,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
  
 	SECTION("length gauge"){
-		perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV);
+		perturbations::laser las({1.0, 0.0, 0.0}, 1.0_eV, perturbations::gauge::length);
 
 		std::cout << las;
 	

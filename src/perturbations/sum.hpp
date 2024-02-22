@@ -99,7 +99,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   auto cell = systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b).periodic();
   auto kick = perturbations::kick(cell, {0.1, 0.2, 0.3}, perturbations::gauge::velocity);
     
-  auto ps = perturbations::sum(kick, perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha));
+  auto ps = perturbations::sum(kick, perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha, perturbations::gauge::length));
 
   CHECK(ps.has_uniform_electric_field());
   CHECK(ps.uniform_electric_field(M_PI/2.0)[0] == 1.0);
@@ -120,7 +120,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   CHECK(ps2.uniform_vector_potential(2.0)[1] == -0.4);
   CHECK(ps2.uniform_vector_potential(1.0)[2] == -0.6);
 
-  auto ps3 = kick + kick + perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha);
+  auto ps3 = kick + kick + perturbations::laser({1.0, 1.0, 1.0}, 1.0_Ha, perturbations::gauge::length);
 
   CHECK(ps3.has_uniform_electric_field());
   CHECK(ps3.uniform_electric_field(M_PI/2.0)[0] == 1.0);
