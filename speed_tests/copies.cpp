@@ -26,7 +26,7 @@ TEST_CASE("speed_test::copy", "[speed_test::copy]") {
 		// only run in series
 		if(comm.size() == 1){
 			
-			long nn = 8000;
+			long nn = 7500;
 
 			// WARMUP POOL MEMORY, IF ANY
 			std::vector<gpu::array<complex, 2>> warmup(10, gpu::array<complex, 2>({nn, nn}, complex{1.0, 2.0}));
