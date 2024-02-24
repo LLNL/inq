@@ -72,21 +72,27 @@ These are the uses for the command:
   Example: `inq perturbations kick 0.0 0.0 0.1`
 
 
-- `perturbations laser <px> <py> <pz> frequency <f> <units>`
+- `perturbations laser <px> <py> <pz> <frequency|wavelength> <f> <units>`
 
   Adds a laser perturbation. The laser is approximated by a
   monochromatic electric field (the magnetic part is ignored). The
   direction and intensity of the field is given by the values _px_,
-  _py_ and _pz_. You also have to specify the angular frequency of the
-  laser _f_ and its units in energy (you can use 'eV' or 'THz' for
-  example, check `inq help units` for a full list of the energy units
-  available).
+  _py_ and _pz_.
+
+  You also have to specify the frequency of the laser using the
+  keyword 'frequency' followed by its value and its units (you can use
+  'eV' or 'THz' for example, check `inq help units` for a full list of
+  the energy units available).
+
+  Alternative you can use the keyword 'wavelength' followed by the
+  wavelength of the laser and its units (typically 'nm').
 
   For finite systems the laser is applied in the length gauge as a
   potential. For periodic systems, the laser is applied in the
   velocity gauge as a uniform vector potential.
 
-  Example: `inq perturbations laser 0 0 0.5 frequency 340.67 THz`
+  Examples: `inq perturbations laser  0    0    0.5 frequency  300 THz`
+            `inq perturbations laser -0.01 0.01 0   wavelength 880 nm`
 
 
 )"""";
@@ -123,7 +129,7 @@ These are the uses for the command:
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
-
+		using namespace magnitude;
 		using utils::str_to;
 		
 		if(args.size() == 0) {
@@ -156,7 +162,7 @@ These are the uses for the command:
 
 		if(args[0] == "laser"){
 
-			if(args.size() != 7 or args[4] != "frequency") {
+			if(args.size() != 7) {
 				if(input::environment::global().comm().root()) {
 					std::cerr << "Error: Invalid syntax for 'perturbations laser'.\n";
 					std::cerr << "       use 'inq perturbations laser <px> <py> <pz> frequency <f> <units>'"<< std::endl;
@@ -164,7 +170,19 @@ These are the uses for the command:
 				exit(1);
 			}
 
-			auto freq = magnitude::energy::parse(str_to<double>(args[5]), args[6]);
+			quantity<energy> freq;
+			
+			if(args[4] == "frequency") {
+				freq = energy::parse(str_to<double>(args[5]), args[6]);
+			} else if(args[4] == "wavelength") {
+				freq = energy::from_wavelength(length::parse(str_to<double>(args[5]), args[6]));
+			} else {
+				if(input::environment::global().comm().root()) {
+					std::cerr << "Error: Invalid argument " << args[4] << " for 'perturbations laser'.\n";
+					std::cerr << "       use 'inq perturbations laser <px> <py> <pz> <frequency|wavelength> <f> <units>'"<< std::endl;
+				}
+				exit(1);
+			}
 
 			laser({str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3])}, freq);
 			if(not quiet) operator()();
