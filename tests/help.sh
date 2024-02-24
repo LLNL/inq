@@ -13,6 +13,8 @@ inq help electrons
 inq help ground_state
 inq help ions
 inq help kpoints
+inq help perturbations
+inq help real-time
 inq help result
 inq help run
 inq help theory
