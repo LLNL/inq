@@ -213,7 +213,7 @@ the user.
 				exit(1);
 			}
 
-			cutoff(str_to<double>(args[1])*magnitude::energy::parse(args[2]));
+			cutoff(magnitude::energy::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
 			exit(0);
@@ -267,7 +267,7 @@ the user.
 				exit(1);
 			}
 
-			temperature(str_to<double>(args[1])*magnitude::energy::parse(args[2]));
+			temperature(magnitude::energy::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
 			exit(0);

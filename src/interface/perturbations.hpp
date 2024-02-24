@@ -164,7 +164,7 @@ These are the uses for the command:
 				exit(1);
 			}
 
-			auto freq = str_to<double>(args[5])*magnitude::energy::parse(args[6]);
+			auto freq = magnitude::energy::parse(str_to<double>(args[5]), args[6]);
 
 			laser({str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3])}, freq);
 			if(not quiet) operator()();
