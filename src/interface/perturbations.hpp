@@ -72,7 +72,6 @@ These are the uses for the command:
   Example: `inq perturbations kick 0.0 0.0 0.1`
 
 
-
 - `perturbations laser <px> <py> <pz> frequency <f> <units>`
 
   Adds a laser perturbation. The laser is approximated by a
