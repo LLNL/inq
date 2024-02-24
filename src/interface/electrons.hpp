@@ -231,7 +231,7 @@ the user.
 				exit(1);
 			}
 
-			spacing(str_to<double>(args[1])*magnitude::length::parse(args[2]));
+			spacing(magnitude::length::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
 			exit(0);

@@ -186,10 +186,10 @@ These are the uses for the command:
 			}
 
 			auto symbol = args[1];
-			auto units = magnitude::length::parse(args[5]);
-			auto xx = str_to<double>(args[2])*units;
-			auto yy = str_to<double>(args[3])*units;
-			auto zz = str_to<double>(args[4])*units;
+			auto units = args[5];
+			auto xx = magnitude::length::parse(str_to<double>(args[2]), units);
+			auto yy = magnitude::length::parse(str_to<double>(args[3]), units);
+			auto zz = magnitude::length::parse(str_to<double>(args[4]), units);
 			
 			insert(symbol, {xx, yy, zz});
 			if(not quiet) operator()();
@@ -206,7 +206,7 @@ These are the uses for the command:
 		}
 		
 		if(args.size() == 5 and args[0] == "file" and args[2] == "radius"){
-			auto radius = str_to<double>(args[3])*magnitude::length::parse(args[4]);
+			auto radius = magnitude::length::parse(str_to<double>(args[3]), args[4]);
 			
 			file(args[1], radius);
 			if(not quiet) {
