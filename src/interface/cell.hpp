@@ -148,7 +148,7 @@ public:
 				exit(1);
 			}
 			
-			auto aa = str_to<double>(args[1])*magnitude::length::parse(args[2]);
+			auto aa = magnitude::length::parse(str_to<double>(args[1]), args[2]);
 
 			int per = 3;
 			if(args.size() == 4) per = parse_periodicity(args[3]);
@@ -164,10 +164,10 @@ public:
 				exit(1);
 			}
 
-			auto unit = magnitude::length::parse(args[4]);
-			auto aa = str_to<double>(args[1])*unit;
-			auto bb = str_to<double>(args[2])*unit;
-			auto cc = str_to<double>(args[3])*unit;
+			auto units = args[4];
+			auto aa = magnitude::length::parse(str_to<double>(args[1]), units);
+			auto bb = magnitude::length::parse(str_to<double>(args[2]), units);
+			auto cc = magnitude::length::parse(str_to<double>(args[3]), units);
 
 			int per = 3;
 			if(args.size() == 6) per = parse_periodicity(args[5]);
@@ -190,7 +190,7 @@ public:
 				per_location = 12;
 			}
 
-			auto unit = scale*magnitude::length::parse(units_name);
+			auto unit = magnitude::length::parse(scale, units_name);
 				
 			auto aa0 = str_to<double>(args[0])*unit;
 			auto aa1 = str_to<double>(args[1])*unit;

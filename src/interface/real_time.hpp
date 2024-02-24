@@ -125,7 +125,7 @@ calculations. These are the available options:
 		}
 
 		if(args.size() == 3 and (args[0] == "time-step")){
-			time_step(str_to<double>(args[1])*magnitude::time::parse(args[2]));
+			time_step(magnitude::time::parse(str_to<double>(args[1]), args[2]));
 			if(not quiet) operator()();
 			exit(0);
 		}

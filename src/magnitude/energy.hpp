@@ -73,20 +73,20 @@ static auto const Ha = inq::magnitude::operator""_Ha(1);
 
 struct energy {
 
-	static inq::quantity<energy> parse(std::string units){
+	static auto parse(double value, std::string units){
 		
 		units = utils::lowercase(units);
 		
 		if(units == "hartree" or units == "hartrees" or units == "ha") {
-			return 1.0_Ha;
+			return value*1.0_Ha;
 		} else if (units == "electronvolt" or units == "electronvolts" or units == "ev"){
-			return 1.0_eV;
+			return value*1.0_eV;
 		} else if (units == "rydberg" or units == "rydbergs" or units == "ry"){
-			return 1.0_Ry;
+			return value*1.0_Ry;
 		} else if (units == "kelvin" or units == "kelvins" or units == "k"){
-			return 1.0_K;
+			return value*1.0_K;
 		} else if (units == "terahertz" or units == "terahertzs" or units == "thz"){
-			return 1.0_THz;
+			return value*1.0_THz;
 		} else {
 			throw std::runtime_error("inq error: unknown energy units '" + units + "'.");
 		}
@@ -155,18 +155,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(en.in_atomic_units() == 0.5009500435_a);
 	}
 
-	CHECK(energy::parse("hartree") == 1.0_Ha);	
-	CHECK(energy::parse("Hartree") == 1.0_Ha);
-	CHECK(energy::parse("HARTREE") == 1.0_Ha);
-	CHECK(energy::parse("Ha") == 1.0_Ha);
-	CHECK(energy::parse("electronvolt") == 1.0_eV);
-	CHECK(energy::parse("eV") == 1.0_eV);
-	CHECK(energy::parse("rydberg") == 1.0_Ry);	
-	CHECK(energy::parse("Ry") == 1.0_Ry);
-	CHECK(energy::parse("Kelvins") == 1.0_K);	
-	CHECK(energy::parse("K") == 1.0_K);
+	CHECK(energy::parse(1.0, "hartree") == 1.0_Ha);	
+	CHECK(energy::parse(4.0, "Hartree") == 4.0_Ha);
+	CHECK(energy::parse(-1.0, "HARTREE") == -1.0_Ha);
+	CHECK(energy::parse(1.0, "Ha") == 1.0_Ha);
+	CHECK(energy::parse(1.0, "electronvolt") == 1.0_eV);
+	CHECK(energy::parse(1.0, "eV") == 1.0_eV);
+	CHECK(energy::parse(0.1, "rydberg") == 0.1_Ry);	
+	CHECK(energy::parse(1.0, "Ry") == 1.0_Ry);
+	CHECK(energy::parse(1.0, "Kelvins") == 1.0_K);	
+	CHECK(energy::parse(273.0, "K") == 273.0_K);
 	
-	CHECK_THROWS(energy::parse("not_a_unit"));	
+	CHECK_THROWS(energy::parse(1.0, "not_a_unit"));	
 	
 }
 #endif
