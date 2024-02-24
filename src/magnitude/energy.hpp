@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <inq/quantity.hpp>
+#include <magnitude/length.hpp>
 #include <utils/lowercase.hpp>
 
 namespace inq {
@@ -72,6 +73,10 @@ auto operator "" _terahertz(long double val){
 static auto const Ha = inq::magnitude::operator""_Ha(1);
 
 struct energy {
+
+	static auto from_wavelength(quantity<length> wavelength){
+		return 2.0*M_PI*137.035999084/wavelength.in_atomic_units()*1.0_Ha;
+	}
 
 	static auto parse(double value, std::string units){
 		
@@ -155,6 +160,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(en.in_atomic_units() == 0.5009500435_a);
 	}
 
+	CHECK(energy::from_wavelength(1239.84193_nm)/1.0_eV == 1.0_a);
+	CHECK(energy::from_wavelength(1.0_nm)/1.0_eV == 1239.84193_a);
+	
 	CHECK(energy::parse(1.0, "hartree") == 1.0_Ha);	
 	CHECK(energy::parse(4.0, "Hartree") == 4.0_Ha);
 	CHECK(energy::parse(-1.0, "HARTREE") == -1.0_Ha);
