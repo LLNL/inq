@@ -66,20 +66,20 @@ auto operator/(double num, quantity<energy> den){
 }
 
 struct time {
-	static inq::quantity<time> parse(std::string units){
+	static auto parse(double value, std::string units){
 
 		units = utils::lowercase(units);
 		
 		if(units == "atomictime" or units == "atomictimeunits"  or units == "atomictimeunit" or units == "atu") {
-			return 1.0_atu;
+			return value*1.0_atu;
 		} else if (units == "attosecond" or units == "attoseconds" or units == "as"){
-			return 1.0_as;
+			return value*1.0_as;
 		} else if (units == "femtosecond" or units == "femtoseconds" or units == "fs"){
-			return 1.0_fs;
+			return value*1.0_fs;
 		} else if (units == "picosecond" or units == "picoseconds" or units == "ps"){
-			return 1.0_ps;
+			return value*1.0_ps;
 		} else if (units == "nanosecond" or units == "nanoseconds" or units == "ns"){
-			return 1.0_ns;
+			return value*1.0_ns;
 
 		} else {
 			throw std::runtime_error("inq error: unknown time units '" + units + "'.");
@@ -158,18 +158,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(ti.in_atomic_units() == 0.272113862460642_a);
   }
 
-	CHECK(time::parse("atu") == 1.0_atu);	
-	CHECK(time::parse("atomictimeunits") == 1.0_atu);
-	CHECK(time::parse("ATOMICTIME") == 1.0_atu);
-	CHECK(time::parse("as") == 1.0_as);
-	CHECK(time::parse("nanoseconds") == 1.0_ns);
-	CHECK(time::parse("femtoSECONDS") == 1.0_fs);		
-	CHECK(time::parse("ps") == 1.0_ps);	
-	CHECK(time::parse("Picosecond") == 1.0_ps);
-	CHECK(time::parse("nanoseconds") == 1.0_ns);	
-	CHECK(time::parse("nS") == 1.0_ns);	
+	CHECK(time::parse(1.0, "atu") == 1.0_atu);
+	CHECK(time::parse(-1.0, "atomictimeunits") == -1.0_atu);
+	CHECK(time::parse(1.0, "ATOMICTIME") == 1.0_atu);
+	CHECK(time::parse(10.0, "as") == 10.0_as);
+	CHECK(time::parse(1.0, "nanoseconds") == 1.0_ns);
+	CHECK(time::parse(0.1, "femtoSECONDS") == 0.1_fs);
+	CHECK(time::parse(1.0, "ps") == 1.0_ps);
+	CHECK(time::parse(3.0, "Picosecond") == 3.0_ps);
+	CHECK(time::parse(1.0, "nanoseconds") == 1.0_ns);
+	CHECK(time::parse(-12.0, "nS") == -12.0_ns);
 	
-	CHECK_THROWS(time::parse("not_a_unit"));
+	CHECK_THROWS(time::parse(1.0, "not_a_unit"));
 	
 }
 #endif
