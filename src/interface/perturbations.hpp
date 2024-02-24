@@ -78,14 +78,15 @@ These are the uses for the command:
   monochromatic electric field (the magnetic part is ignored). The
   direction and intensity of the field is given by the values _px_,
   _py_ and _pz_. You also have to specify the angular frequency of the
-  laser _f_ and its units in energy (check `inq help units` for a list
-  of the energy units available).
+  laser _f_ and its units in energy (you can use 'eV' or 'THz' for
+  example, check `inq help units` for a full list of the energy units
+  available).
 
   For finite systems the laser is applied in the length gauge as a
   potential. For periodic systems, the laser is applied in the
   velocity gauge as a uniform vector potential.
 
-  Example: `inq perturbations laser 0 0 0.5 frequency 0.6 eV`
+  Example: `inq perturbations laser 0 0 0.5 frequency 340.67 THz`
 
 
 )"""";
