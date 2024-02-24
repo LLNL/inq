@@ -72,6 +72,23 @@ These are the uses for the command:
   Example: `inq perturbations kick 0.0 0.0 0.1`
 
 
+
+- `perturbations laser <px> <py> <pz> frequency <f> <units>`
+
+  Adds a laser perturbation. The laser is approximated by a
+  monochromatic electric field (the magnetic part is ignored). The
+  direction and intensity of the field is given by the values _px_,
+  _py_ and _pz_. You also have to specify the angular frequency of the
+  laser _f_ and its units in energy (check `inq help units` for a list
+  of the energy units available).
+
+  For finite systems the laser is applied in the length gauge as a
+  potential. For periodic systems, the laser is applied in the
+  velocity gauge as a uniform vector potential.
+
+  Example: `inq perturbations laser 0 0 0.5 frequency 0.6 eV`
+
+
 )"""";
 	}
 	
