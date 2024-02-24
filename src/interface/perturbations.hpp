@@ -92,6 +92,17 @@ These are the uses for the command:
 		perturbations.add(perturbations::kick(cell, polarization));
 		perturbations.save(input::environment::global().comm(), ".inq/default_perturbations");
 	}
+
+	void laser(vector3<double, cartesian> const & polarization, quantity<magnitude::energy> freq) const {
+		auto perturbations = perturbations::blend::load(".inq/default_perturbations");
+		auto cell = systems::ions::load(".inq/default_ions").cell();
+		if(cell.periodicity() == 0){
+			perturbations.add(perturbations::laser(polarization, freq, perturbations::gauge::length));
+		} else {
+			perturbations.add(perturbations::laser(polarization, freq, perturbations::gauge::velocity));
+		}
+		perturbations.save(input::environment::global().comm(), ".inq/default_perturbations");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -125,7 +136,24 @@ These are the uses for the command:
 			if(not quiet) operator()();
 			exit(0);
 		}
-				
+
+		if(args[0] == "laser"){
+
+			if(args.size() != 7 or args[4] != "frequency") {
+				if(input::environment::global().comm().root()) {
+					std::cerr << "Error: Invalid syntax for 'perturbations laser'.\n";
+					std::cerr << "       use 'inq perturbations laser <px> <py> <pz> frequency <f> <units>'"<< std::endl;
+				}
+				exit(1);
+			}
+
+			auto freq = str_to<double>(args[5])*magnitude::energy::parse(args[6]);
+
+			laser({str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3])}, freq);
+			if(not quiet) operator()();
+			exit(0);
+		}
+
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the perturbations command" << std::endl;
 		exit(1);
 	}
