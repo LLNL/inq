@@ -146,9 +146,9 @@ public:
 		auto bl = perturbations::blend{};
 
     int num;
-		utils::load_value(dirname + "/num_perturbations", num, error_message);
-
-		std::cout << num << std::endl;
+		try {utils::load_value(dirname + "/num_perturbations", num, error_message);}
+		catch(...){ return bl; };
+		
 		for(int index = 0; index < num; index++){
 			auto subdir = dirname + "/pert" + utils::num_to_str(index);
 
@@ -170,7 +170,7 @@ public:
 	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, blend const & self){
-		out << "Perturbations:\n";
+		out << "Perturbations (" << self.size() << " total):\n";
 		for(auto & pert : self.perts_){
 			std::visit([&](auto per) { out << per; }, pert);
 		}

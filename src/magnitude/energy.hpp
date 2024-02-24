@@ -60,6 +60,14 @@ auto operator "" _K(long double val){
 auto operator "" _kelvin(long double val){
 	return val*1.0_K;
 }
+	
+auto operator "" _THz(long double val){
+	return inq::quantity<energy>::from_atomic_units(0.000151982850071586*val);	
+}
+
+auto operator "" _terahertz(long double val){
+	return val*1.0_THz;
+}
 
 static auto const Ha = inq::magnitude::operator""_Ha(1);
 
@@ -77,6 +85,8 @@ struct energy {
 			return 1.0_Ry;
 		} else if (units == "kelvin" or units == "kelvins" or units == "k"){
 			return 1.0_K;
+		} else if (units == "terahertz" or units == "terahertzs" or units == "thz"){
+			return 1.0_THz;
 		} else {
 			throw std::runtime_error("inq error: unknown energy units '" + units + "'.");
 		}

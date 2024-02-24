@@ -33,6 +33,7 @@ int main(int argc, char* argv[]) {
 		{ "extra_states"s,     "extra-states"s     },
 		{ "extrastates"s,      "extra-states"s     },
 		{ "max_steps"s,        "max-steps"s        },
+		{ "freq"s,             "frequency"s        },
 		{ "maxsteps"s,         "max-steps"s        },
 		{ "mix"s,              "mixing"s           },
 		{ "non_collinear"s,    "non-collinear"s    },
@@ -41,6 +42,7 @@ int main(int argc, char* argv[]) {
 		{ "noninteracting"s,   "non-interacting"s  },
 		{ "non_local"s,        "non-local"s        },
 		{ "nonlocal"s,         "non-local"s        },
+		{ "perturbation"s,     "perturbations"s    },
 		{ "real_time"s,        "real-time"s        },
 		{ "realtime"s,         "real-time"s        },
 		{ "results"s,          "result"s           },
@@ -61,6 +63,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::ground_state)
 		+ interface::item(interface::ions)
 		+ interface::item(interface::kpoints)
+		+ interface::item(interface::perturbations)		
 		+ interface::item(interface::result)
 		+ interface::item(interface::real_time)
 		+ interface::item(interface::run)

@@ -65,6 +65,13 @@ public:
 		perta_.potential(time, potential);
 		pertb_.potential(time, potential);
 	}
+
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, sum const & self){
+		out << self.perta_;
+		out << self.pertb_;
+		return out;
+	}
 	
 };
 
