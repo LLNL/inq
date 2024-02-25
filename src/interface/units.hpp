@@ -56,7 +56,7 @@ be given in plural form.
   * 'Electronvolt' or 'eV': 0.0367493221756544 Ha
   * 'Rydberg' or 'Ry': 0.5 Ha
   * 'Kelvin' or 'K' (times the Boltzmann constant): 3.16681156345556e-06 Ha
-  * 'teraHertz' or 'THz (times the Planck constant) ': 1.51982850071590e-4 Ha
+  * 'teraHertz' or 'THz' (times the Planck constant): 1.51982850071590e-4 Ha
 
 - Length
   * 'Bohr' or 'b'
