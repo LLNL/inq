@@ -118,13 +118,22 @@ int main(int argc, char* argv[]) {
 		auto search = aliases.find(arg);
 		if(search != aliases.end()) arg = search->second;
 
-		//process aliases for words with a space
+		//process aliases for words with one or two spaces
 		if(iarg + 1 < argc){
 			auto fusion = uniformize(arg + argv[iarg + 1]);
 			auto search = aliases.find(fusion);
 			if(search != aliases.end()) {
 				arg = search->second;
 				iarg++;
+			}
+		}
+		
+		if(iarg + 2 < argc){
+			auto fusion = uniformize(arg + argv[iarg + 1] + argv[iarg + 2]);
+			auto search = aliases.find(fusion);
+			if(search != aliases.end()) {
+				arg = search->second;
+				iarg += 2;
 			}
 		}
 		
