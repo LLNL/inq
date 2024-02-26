@@ -18,40 +18,30 @@ int main(int argc, char* argv[]) {
 	std::unordered_map<std::string, std::string> aliases = {
 		{ "calculator"s,       "calc"s             },
 		{ "functionals"s,      "functional"s       },		
-    { "ground_state"s,     "ground-state"s     },
     {	"groundstate"s,      "ground-state"s     },
-    {	"hartree_fock"s,     "hartree-fock"s     },
 		{	"hartreefock"s,      "hartree-fock"s     },
 		{	"kpoint"s,           "kpoints"s          },
 		{	"kpoints"s,          "kpoints"s          },
 		{	"k-point"s,          "kpoints"s          },
 		{	"k-points"s,         "kpoints"s          },	
-		{ "exact_exchange"s,   "exact-exchange"s   },
 		{ "exactexchange"s,    "exact-exchange"s   },
-		{ "extra_electrons"s,  "extra-electrons"s  },
 		{ "extraelectrons"s,   "extra-electrons"s  },
-		{ "extra_states"s,     "extra-states"s     },
 		{ "extrastates"s,      "extra-states"s     },
-		{ "max_steps"s,        "max-steps"s        },
+		{ "filename"s,         "file"s             },		
 		{ "freq"s,             "frequency"s        },
 		{ "maxsteps"s,         "max-steps"s        },
 		{ "mix"s,              "mixing"s           },
-		{ "non_collinear"s,    "non-collinear"s    },
 		{ "noncollinear"s,     "non-collinear"s    },
-		{ "non_interacting"s,  "non-interacting"s  },
 		{ "noninteracting"s,   "non-interacting"s  },
-		{ "non_local"s,        "non-local"s        },
 		{ "nonlocal"s,         "non-local"s        },
 		{ "perturbation"s,     "perturbations"s    },
-		{ "real_time"s,        "real-time"s        },
 		{ "realtime"s,         "real-time"s        },
 		{ "results"s,          "result"s           },
 		{ "grid-shifted"s,     "shifted-grid"s     },
 		{ "shiftedgrid"s,      "shifted-grid"s     },
-		{ "time_step"s,        "time-step"s        },
 		{ "timestep"s,         "time-step"s        },
-		{ "tol"s         ,     "tolerance"s        },
-		{ "utils"s        ,     "util"s            }
+		{ "tol"s,              "tolerance"s        },
+		{ "utils"s,            "util"s             }
 	};
 	
 	auto comm = input::environment::global().comm(); //Initialize MPI 
@@ -99,10 +89,15 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 
-		auto lower = true;
-		if(args.size() > 0 and args.back() == "file") lower = false; //do not convert filenames to lowercase
-		if(lower) arg = utils::lowercase(arg);
+		//if it's a filename, don't do anything to it
+		if(args.size() > 0 and args.back() == "file") {
+			args.emplace_back(arg);
+			continue;
+		}
 
+		arg = utils::lowercase(arg);
+		std::replace(arg.begin(), arg.end(), '_', '-'); //replace underscores with dashes
+		
 		//process aliases
 		auto search = aliases.find(arg);
 		if(search != aliases.end()) arg = search->second;

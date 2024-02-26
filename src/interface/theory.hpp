@@ -206,7 +206,8 @@ These are the options available:
 				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments for the 'theory functional' command" << std::endl;
 				exit(1);
 			}
-			
+
+			std::replace(args[1].begin(), args[1].end(), '-', '_'); //functional names use underscores
 			auto exchange_id = xc_functional_get_number(args[1].c_str());
 
 			if(exchange_id == -1) {
@@ -215,7 +216,10 @@ These are the options available:
 			}
 			
 			auto correlation_id = XC_NONE;
-			if(args.size() == 3) correlation_id = xc_functional_get_number(args[2].c_str());
+			if(args.size() == 3) {
+				std::replace(args[2].begin(), args[2].end(), '-', '_'); //functional names use underscores
+				correlation_id = xc_functional_get_number(args[2].c_str());
+			}
 
 			if(correlation_id == -1) {
 				if(input::environment::global().comm().root()) std::cerr << "\nError: Unknown correlation functional '" << args[2] << "' in 'theory' command\n" << std::endl;
