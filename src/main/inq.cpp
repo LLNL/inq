@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
 		{ "exactexchange"s,    "exact-exchange"s   },
 		{ "extraelectrons"s,   "extra-electrons"s  },
 		{ "extrastates"s,      "extra-states"s     },
+		{ "filename"s,         "file"s             },		
 		{ "freq"s,             "frequency"s        },
 		{ "maxsteps"s,         "max-steps"s        },
 		{ "mix"s,              "mixing"s           },
@@ -39,8 +40,8 @@ int main(int argc, char* argv[]) {
 		{ "grid-shifted"s,     "shifted-grid"s     },
 		{ "shiftedgrid"s,      "shifted-grid"s     },
 		{ "timestep"s,         "time-step"s        },
-		{ "tol"s         ,     "tolerance"s        },
-		{ "utils"s        ,     "util"s            }
+		{ "tol"s,              "tolerance"s        },
+		{ "utils"s,            "util"s             }
 	};
 	
 	auto comm = input::environment::global().comm(); //Initialize MPI 
