@@ -22,7 +22,7 @@ struct {
 	}
 
 	std::string one_line() const {
-		return "Get information about the result obtained by a ground-state calculation";
+		return "Get information about the results obtained from a ground-state calculation";
 	}
 
 	void help() const {
@@ -32,14 +32,13 @@ struct {
 The 'results ground-state' command
 ==================
 
-This command queries the result obtained from a ground-state
+This command queries the results obtained from a ground-state
 calculation. Without arguments, it prints the values calculated.
 
 The options allows you to query a specific value. In this case only
 the value will be printed without any other text, so it is suitable
 for easy parsing in scripting. The values are returned in atomic
 units.
-
 
 These are the available subcommands:
 
