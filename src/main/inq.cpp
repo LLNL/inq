@@ -143,11 +143,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	if(debug) {
-		std::cout << "Processed arguments:";
+		std::cout << "Processed arguments: ";
 		for(auto const & arg : args){
-			std::cout << " " << arg;
+			std::cout << "|" << arg;
 		}
-		std::cout << std::endl;
+		std::cout << "|" << std::endl;
 	}
 	
 	auto command = args[0];
