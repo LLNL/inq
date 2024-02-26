@@ -39,7 +39,7 @@ struct result {
 	}
 	
   static auto load(std::string const & dirname) {
-    auto error_message = "INQ error: Cannot load the energy from directory '" + dirname + "'.";
+    auto error_message = "INQ error: Cannot load the ground_state::result from directory '" + dirname + "'.";
 
     result res;
     res.energy = energy_type::load(dirname + "/energy");
