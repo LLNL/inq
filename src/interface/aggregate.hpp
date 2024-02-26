@@ -16,7 +16,7 @@ namespace inq {
 namespace interface {
 
 auto list_item(std::string const & name, std::string const & one_line){
-	auto align = 18ul;
+	auto align = 25ul;
 		assert(name.size() < align);
 		auto pad = std::string(align - name.size(), ' ');
 		return "  " + name + pad + one_line + '\n';

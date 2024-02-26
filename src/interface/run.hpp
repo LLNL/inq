@@ -69,7 +69,7 @@ These are the options available:
 		}
 		auto result = ground_state::calculate(ions, electrons, options::theory::load(".inq/default_theory"), options::ground_state::load(".inq/default_ground_state_options").calculate_forces());
 
-		result.save(input::environment::global().comm(), ".inq/default_result");
+		result.save(input::environment::global().comm(), ".inq/default_results_ground_state");
 		electrons.save(".inq/default_orbitals");
 	}
 
