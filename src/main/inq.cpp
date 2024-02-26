@@ -89,12 +89,14 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 
-		auto lower = true;
-		if(args.size() > 0 and args.back() == "file") lower = false; //do not convert filenames to lowercase
-		if(lower) arg = utils::lowercase(arg);
+		//if it's a filename, don't do anything to it
+		if(args.size() > 0 and args.back() == "file") {
+			args.emplace_back(arg);
+			continue;
+		}
 
-		//replace undescores with dashes
-		std::replace(arg.begin(), arg.end(), '_', '-');
+		arg = utils::lowercase(arg);
+		std::replace(arg.begin(), arg.end(), '_', '-'); //replace underscores with dashes
 		
 		//process aliases
 		auto search = aliases.find(arg);
