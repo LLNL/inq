@@ -92,9 +92,9 @@ These are the options available:
 			exit(1);
 		}
 
-		auto res = real_time::results(input::environment::global().comm(), ".inq/default_results_real_time");
+		auto res = real_time::results(".inq/default_results_real_time");
 		real_time::propagate(ions, electrons, res, options::theory::load(".inq/default_theory"), options::real_time::load(".inq/default_real_time_options"), perturbations::blend::load(".inq/default_perturbations"));
-		res.save();
+		res.save(input::environment::global().comm());
 
 	}
 	

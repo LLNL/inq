@@ -18,14 +18,12 @@ namespace real_time {
 class results {
 
   std::string dirname_;
-  mutable parallel::communicator comm_;
   long total_steps_;
 
 public:
 
-  results(parallel::communicator & arg_comm, std::string const & arg_dirname):
+  results(std::string const & arg_dirname):
     dirname_(arg_dirname),
-    comm_(arg_comm),
     total_steps_(0){
   }
 
@@ -36,14 +34,24 @@ public:
     
   }
 
-	void save() const {
+	void save(parallel::communicator & comm) const {
 		auto error_message = "INQ error: Cannot save the real_time::results to directory '" + dirname_ + "'.";
     
-    utils::create_directory(comm_, dirname_);
-		utils::save_value(comm_, dirname_ + "/total_steps",    total_steps_,    error_message);
+    utils::create_directory(comm, dirname_);
+		utils::save_value(comm, dirname_ + "/total_steps",    total_steps_,    error_message);
     
 	}
   
+  static auto load(std::string const & dirname) {
+    auto error_message = "INQ error: Cannot load the energy from directory '" + dirname + "'.";
+
+    results res(dirname);
+
+    utils::load_value(dirname + "/total_steps",     res.total_steps_,     error_message);
+    
+    return res;
+	}
+
 };
 
 }
