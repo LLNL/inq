@@ -103,6 +103,9 @@ int main(int argc, char* argv[]) {
 		if(args.size() > 0 and args.back() == "file") lower = false; //do not convert filenames to lowercase
 		if(lower) arg = utils::lowercase(arg);
 
+		//replace undescores with dashes
+		std::replace(arg.begin(), arg.end(), '_', '-');
+		
 		//process aliases
 		auto search = aliases.find(arg);
 		if(search != aliases.end()) arg = search->second;
