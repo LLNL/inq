@@ -19,19 +19,22 @@ class results {
 
   std::string dirname_;
   long total_steps_;
+  double total_time_;
 
 public:
 
   results(std::string const & arg_dirname):
     dirname_(arg_dirname),
-    total_steps_(0){
+    total_steps_(0),
+    total_time_(0.0){
   }
 
   template <class ObservablesType>
   void operator()(ObservablesType const & observables){
 
     
-    total_steps_ = observables.iter();
+    total_steps_ = observables.iter() + 1;
+    total_time_ = observables.time();
     
   }
 
@@ -40,6 +43,7 @@ public:
 
     utils::create_directory(comm, dirname_);
 		utils::save_value(comm, dirname_ + "/total_steps",    total_steps_,    error_message);
+		utils::save_value(comm, dirname_ + "/total_time",     total_time_,     error_message);
     
 	}
   
@@ -49,6 +53,7 @@ public:
     results res(dirname);
 
     utils::load_value(dirname + "/total_steps",     res.total_steps_,     error_message);
+    utils::load_value(dirname + "/total_time",      res.total_time_,      error_message);
     
     return res;
 	}
@@ -59,7 +64,8 @@ public:
     using namespace magnitude;
     
     std::cout << "Real-time results:\n";
-    std::cout << " total steps    = " << self.total_steps_ << '\n';
+    std::cout << "  total steps          = " << self.total_steps_ << '\n';
+    std::cout << "  simulated time       = " << self.total_time_ << " atu | " <<  self.total_time_/in_atomic_units(1.0_fs) << " fs \n";    
     std::cout << std::endl;
     return out;
   }
