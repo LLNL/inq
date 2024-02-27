@@ -51,6 +51,13 @@ These are the options available:
    Example: `inq run ground-state`
 
 
+- `run real-time`
+
+   Runs a real-time simulation.
+
+   Example: `inq run real-time`
+
+
 )"""";
 	}
 
