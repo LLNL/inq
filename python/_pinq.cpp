@@ -24,7 +24,7 @@ private:
 	
 	options::theory theo_;
 	options::electrons els_;
-	ground_state::result result_;
+	ground_state::results results_;
 	std::optional<systems::electrons> electrons_;
 	
 	auto ase_atoms_to_inq_ions(py::object atoms){
@@ -86,20 +86,20 @@ public:
 	///////////////////////////////////
 	
 	auto get_potential_energy(py::object atoms){
-		return result_.energy.total()*1.0_Ha/1.0_eV;
+		return results_.energy.total()*1.0_Ha/1.0_eV;
 	}
 
 	///////////////////////////////////
 	
 	auto get_forces(py::object atoms){
 
-		py::array_t<double, py::array::c_style> forces_array({result_.forces.size(), 3l});
+		py::array_t<double, py::array::c_style> forces_array({results_.forces.size(), 3l});
 		
     auto arr = forces_array.mutable_unchecked();
 		
     for (py::ssize_t iatom = 0; iatom < arr.shape(0); iatom++) {
 			for (py::ssize_t idir = 0; idir < arr.shape(1); idir++) {
-				arr(iatom, idir) = result_.forces[iatom][idir]*(1.0_Ha/1.0_eV)*(1.0_A/1.0_bohr); //convert to eV/A
+				arr(iatom, idir) = results_.forces[iatom][idir]*(1.0_Ha/1.0_eV)*(1.0_A/1.0_bohr); //convert to eV/A
 			}
     }
 		
@@ -145,7 +145,7 @@ public:
 		electrons_.emplace(systems::electrons(ions, els_));
 		ground_state::initial_guess(ions, *electrons_);
 
-		result_ = ground_state::calculate(ions, *electrons_, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
+		results_ = ground_state::calculate(ions, *electrons_, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
 
 	}
 
@@ -200,7 +200,7 @@ public:
 
 		electrons_->spin_density() = observables::density::calculate(*electrons_);
 
-		result_.energy.calculate(ham, *electrons_);
+		results_.energy.calculate(ham, *electrons_);
 		
 		return get_density();
 		

@@ -10,7 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
-#include <ground_state/result.hpp>
+#include <ground_state/results.hpp>
 
 namespace inq {
 namespace interface {
@@ -176,68 +176,68 @@ These are the available subcommands:
 	}
 
 	void operator()() const {
-		auto res = ground_state::result::load(".inq/default_results_ground_state");
+		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		if(input::environment::global().comm().root()) std::cout << res;
 	}
 
 	auto iterations() const {
-		auto res = ground_state::result::load(".inq/default_results_ground_state");
+		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		return res.total_iter;
 	}
 
 	auto magnetization() const {
-		auto res = ground_state::result::load(".inq/default_results_ground_state");
+		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		return res.magnetization;
 	}
 
 	auto dipole() const {
-		auto res = ground_state::result::load(".inq/default_results_ground_state");
+		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		return res.dipole;
 	}
 	
 	void energy() const {
-		auto ener = ground_state::result::load(".inq/default_results_ground_state").energy;
+		auto ener = ground_state::results::load(".inq/default_results_ground_state").energy;
 		if(input::environment::global().comm().root()) std::cout << ener;
 	}
 	
   double energy_total() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.total();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.total();
   }
 	
   double energy_kinetic() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.kinetic();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.kinetic();
   }
 
   double energy_eigenvalues() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.eigenvalues();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.eigenvalues();
   }
 
   double energy_external() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.external();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.external();
   }
   
   double energy_non_local() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.non_local();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.non_local();
   }
   
   double energy_hartree() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.hartree();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.hartree();
   }
   
   double energy_xc() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.xc();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.xc();
   }
 
   double energy_nvxc() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.nvxc();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.nvxc();
   }
 
   double energy_exact_exchange() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.exact_exchange();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.exact_exchange();
   }
   
   double energy_ion() const{
-    return ground_state::result::load(".inq/default_results_ground_state").energy.ion();
+    return ground_state::results::load(".inq/default_results_ground_state").energy.ion();
   }
 
 	template <typename ArgsType>

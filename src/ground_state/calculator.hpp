@@ -37,7 +37,7 @@
 #include <options/ground_state.hpp>
 #include <systems/electrons.hpp>
 #include <ground_state/eigenvalue_output.hpp>
-#include <ground_state/result.hpp>
+#include <ground_state/results.hpp>
 #include <ground_state/subspace_diagonalization.hpp>
 
 #include<tinyformat/tinyformat.h>
@@ -89,7 +89,7 @@ public:
 	{
 	}
 
-	result operator()(systems::electrons & electrons){
+	results operator()(systems::electrons & electrons){
 		
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -100,7 +100,7 @@ public:
 		
 		if(electrons.full_comm().root()) ham_.info(std::cout);
 		
-		result res;
+		results res;
 		operations::preconditioner prec;
 		
 		using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
