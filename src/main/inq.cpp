@@ -16,32 +16,38 @@ int main(int argc, char* argv[]) {
 	using interface::operator+;
  
 	std::unordered_map<std::string, std::string> aliases = {
-		{ "calculator"s,       "calc"s             },
-		{ "functionals"s,      "functional"s       },		
-    {	"groundstate"s,      "ground-state"s     },
-		{	"hartreefock"s,      "hartree-fock"s     },
-		{	"kpoint"s,           "kpoints"s          },
-		{	"kpoints"s,          "kpoints"s          },
-		{	"k-point"s,          "kpoints"s          },
-		{	"k-points"s,         "kpoints"s          },	
-		{ "exactexchange"s,    "exact-exchange"s   },
-		{ "extraelectrons"s,   "extra-electrons"s  },
-		{ "extrastates"s,      "extra-states"s     },
-		{ "filename"s,         "file"s             },		
-		{ "freq"s,             "frequency"s        },
-		{ "maxsteps"s,         "max-steps"s        },
-		{ "mix"s,              "mixing"s           },
-		{ "noncollinear"s,     "non-collinear"s    },
-		{ "noninteracting"s,   "non-interacting"s  },
-		{ "nonlocal"s,         "non-local"s        },
-		{ "perturbation"s,     "perturbations"s    },
-		{ "realtime"s,         "real-time"s        },
-		{ "results"s,          "result"s           },
-		{ "grid-shifted"s,     "shifted-grid"s     },
-		{ "shiftedgrid"s,      "shifted-grid"s     },
-		{ "timestep"s,         "time-step"s        },
-		{ "tol"s,              "tolerance"s        },
-		{ "utils"s,            "util"s             }
+		{ "calculator"s,               "calc"s                     },
+		{ "functionals"s,              "functional"s               },
+		{	"groundstate"s,              "ground-state"s             },
+		{	"hartreefock"s,              "hartree-fock"s             },
+		{	"kpoint"s,                   "kpoints"s                  },
+		{	"kpoints"s,                  "kpoints"s                  },
+		{	"k-point"s,                  "kpoints"s                  },
+		{	"k-points"s,                 "kpoints"s                  },
+		{ "exactexchange"s,            "exact-exchange"s           },
+		{ "extraelectrons"s,           "extra-electrons"s          },
+		{ "extrastates"s,              "extra-states"s             },
+		{ "filename"s,                 "file"s                     },
+		{ "freq"s,                     "frequency"s                },
+		{ "maxsteps"s,                 "max-steps"s                },
+		{ "mix"s,                      "mixing"s                   },
+		{ "noncollinear"s,             "non-collinear"s            },
+		{ "noninteracting"s,           "non-interacting"s          },
+		{ "nonlocal"s,                 "non-local"s                },
+		{ "perturbation"s,             "perturbations"s            },
+		{ "realtime"s,                 "real-time"s                },
+		{ "result"s,                   "results"s                  },
+		{ "results-ground-state"s,     "results ground-state"s     },
+		{ "resultsgroundstate"s,       "results ground-state"s     },
+		{ "resultsground-state"s,      "results ground-state"s     },
+		{ "results-groundstate"s,      "results ground-state"s     },
+		{ "resultsgs"s,                "results ground-state"s     },
+		{ "results-gs"s,               "results ground-state"s     },
+		{ "grid-shifted"s,             "shifted-grid"s             },
+		{ "shiftedgrid"s,              "shifted-grid"s             },
+		{ "timestep"s,                 "time-step"s                },
+		{ "tol"s,                      "tolerance"s                },
+		{ "utils"s,                    "util"s                     }
 	};
 	
 	auto comm = input::environment::global().comm(); //Initialize MPI 
@@ -54,7 +60,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::ions)
 		+ interface::item(interface::kpoints)
 		+ interface::item(interface::perturbations)		
-		+ interface::item(interface::result)
+		+ interface::item(interface::results_ground_state)
 		+ interface::item(interface::real_time)
 		+ interface::item(interface::run)
 		+ interface::item(interface::theory)
@@ -73,13 +79,21 @@ int main(int argc, char* argv[]) {
 			std::cout << "\n";
 			std::cout << "And the following options:\n";
 			std::cout << interface::list_item("-q,--quiet", "Run silently, do not print information unless explicitly asked to");
+			std::cout << interface::list_item("-d,--debug", "Print debug information (useful for inq developers)");
 			std::cout << std::endl;
 		}
 		exit(0);
 	}
 
 	auto quiet = false;
-
+	auto debug = false;
+	
+	auto uniformize = [](auto arg){
+		arg = utils::lowercase(arg);
+		std::replace(arg.begin(), arg.end(), '_', '-'); //replace underscores with dashes
+		return arg;
+	};
+	
 	std::vector<std::string> args;
 	for(int iarg = 1; iarg < argc; iarg++) {
 		auto arg = std::string(argv[iarg]);
@@ -89,22 +103,26 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 
+		if(arg == "-d" or arg == "--debug") {
+			debug = true;
+			continue;
+		}
+
 		//if it's a filename, don't do anything to it
 		if(args.size() > 0 and args.back() == "file") {
 			args.emplace_back(arg);
 			continue;
 		}
 
-		arg = utils::lowercase(arg);
-		std::replace(arg.begin(), arg.end(), '_', '-'); //replace underscores with dashes
-		
+		arg = uniformize(arg);
+
 		//process aliases
 		auto search = aliases.find(arg);
 		if(search != aliases.end()) arg = search->second;
 
-		//process aliases for words with a space
+		//process aliases for words with one or two spaces
 		if(iarg + 1 < argc){
-			auto fusion = utils::lowercase(arg + argv[iarg + 1]);
+			auto fusion = uniformize(arg + argv[iarg + 1]);
 			auto search = aliases.find(fusion);
 			if(search != aliases.end()) {
 				arg = search->second;
@@ -112,7 +130,24 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		
+		if(iarg + 2 < argc){
+			auto fusion = uniformize(arg + argv[iarg + 1] + argv[iarg + 2]);
+			auto search = aliases.find(fusion);
+			if(search != aliases.end()) {
+				arg = search->second;
+				iarg += 2;
+			}
+		}
+		
 		args.emplace_back(arg);
+	}
+
+	if(debug) {
+		std::cout << "Processed arguments: ";
+		for(auto const & arg : args){
+			std::cout << "|" << arg;
+		}
+		std::cout << "|" << std::endl;
 	}
 	
 	auto command = args[0];
