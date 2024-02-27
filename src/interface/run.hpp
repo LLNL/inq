@@ -12,6 +12,8 @@
 #include <input/environment.hpp>
 #include <ground_state/initial_guess.hpp>
 #include <ground_state/calculate.hpp>
+#include <real_time/propagate.hpp>
+#include <real_time/results.hpp>
 
 namespace inq {
 namespace interface {
@@ -89,7 +91,12 @@ These are the options available:
 			if(input::environment::global().comm().root()) std::cerr << "Error: cannot load a ground-state electron configuration for a real-time run.\n Please run a ground-state first.\n" << std::endl;
 			exit(1);
 		}
-		real_time::propagate(ions, electrons, [](auto){}, options::theory::load(".inq/default_theory"), options::real_time::load(".inq/default_real_time_options"), perturbations::blend::load(".inq/default_perturbations"));
+
+		auto res = real_time::results(".inq/default_results_real_time");
+		real_time::propagate(ions, electrons, [&res](auto obs){ res(obs); },
+												 options::theory::load(".inq/default_theory"), options::real_time::load(".inq/default_real_time_options"), perturbations::blend::load(".inq/default_perturbations"));
+		res.save(input::environment::global().comm());
+
 	}
 	
 	template <typename ArgsType>
