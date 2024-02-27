@@ -93,7 +93,8 @@ These are the options available:
 		}
 
 		auto res = real_time::results(".inq/default_results_real_time");
-		real_time::propagate(ions, electrons, res, options::theory::load(".inq/default_theory"), options::real_time::load(".inq/default_real_time_options"), perturbations::blend::load(".inq/default_perturbations"));
+		real_time::propagate(ions, electrons, [&res](auto obs){ res(obs); },
+												 options::theory::load(".inq/default_theory"), options::real_time::load(".inq/default_real_time_options"), perturbations::blend::load(".inq/default_perturbations"));
 		res.save(input::environment::global().comm());
 
 	}
