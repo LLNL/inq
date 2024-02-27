@@ -39,8 +39,8 @@ void propagate(systems::ions & ions, systems::electrons & electrons,  ProcessFun
 
 		auto calculate_gs = ground_state::calculator(ions, electrons, inter, options::ground_state{}.calculate_forces().silent());
 
-		ground_state::result::energy_type energy;
-		ground_state::result::forces_type forces;
+		ground_state::results::energy_type energy;
+		ground_state::results::forces_type forces;
 		
 		if(console) console->trace("starting Born-Oppenheimer propagation");
 

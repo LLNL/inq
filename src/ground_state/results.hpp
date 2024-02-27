@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__GROUND_STATE__RESULT
-#define INQ__GROUND_STATE__RESULT
+#ifndef INQ__GROUND_STATE__RESULTS
+#define INQ__GROUND_STATE__RESULTS
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -15,7 +15,7 @@
 namespace inq {
 namespace ground_state {
 
-struct result {
+struct results {
 
   using energy_type = hamiltonian::energy;
   using forces_type = gpu::array<vector3<double>, 1>;
@@ -27,7 +27,7 @@ struct result {
   forces_type forces;
 
 	void save(parallel::communicator & comm, std::string const & dirname) const {
-		auto error_message = "INQ error: Cannot save the ground_state::result to directory '" + dirname + "'.";
+		auto error_message = "INQ error: Cannot save the ground_state::results to directory '" + dirname + "'.";
 
 		energy.save(comm, dirname + "/energy");
 		utils::create_directory(comm, dirname);
@@ -39,9 +39,9 @@ struct result {
 	}
 	
   static auto load(std::string const & dirname) {
-    auto error_message = "INQ error: Cannot load the ground_state::result from directory '" + dirname + "'.";
+    auto error_message = "INQ error: Cannot load the ground_state::results from directory '" + dirname + "'.";
 
-    result res;
+    results res;
     res.energy = energy_type::load(dirname + "/energy");
     
     utils::load_value(dirname + "/total_iter",     res.total_iter,     error_message);
@@ -51,18 +51,18 @@ struct result {
     int num_atoms;
     utils::load_value(dirname + "/num_atoms",      num_atoms,          error_message);
 
-    res.forces = ground_state::result::forces_type(num_atoms);
+    res.forces = ground_state::results::forces_type(num_atoms);
     utils::load_array(dirname + "/forces",         res.forces,         error_message);
     
     return res;
 	}
 
   template<class OStream>
-  friend OStream & operator<<(OStream & out, result const & self){
+  friend OStream & operator<<(OStream & out, results const & self){
 
     using namespace magnitude;
     
-    std::cout << "Ground-state result:\n";
+    std::cout << "Ground-state results:\n";
     std::cout << " iterations     = " << self.total_iter << '\n';
     std::cout << " dipole         = " << self.dipole << '\n';
     std::cout << " magnetization  = " << self.magnetization << '\n';
@@ -80,8 +80,8 @@ struct result {
 }
 #endif
 
-#ifdef INQ_GROUND_STATE_RESULT_UNIT_TEST
-#undef INQ_GROUND_STATE_RESULT_UNIT_TEST
+#ifdef INQ_GROUND_STATE_RESULTS_UNIT_TEST
+#undef INQ_GROUND_STATE_RESULTS_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -92,7 +92,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
   
-  ground_state::result res;
+  ground_state::results res;
   res.total_iter    = 333;
   res.dipole        = vector3<double>{1.55, 2.55, 3.55};
   res.magnetization = vector3<double>{-1.55, -2.55, -3.55};
@@ -105,7 +105,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	res.energy.xc(7.55);
 	res.energy.nvxc(8.55);
 	res.energy.exact_exchange(10.55);
-  res.forces = ground_state::result::forces_type{65, vector3<double>{3.55, 4.55, 5.55}};
+  res.forces = ground_state::results::forces_type{65, vector3<double>{3.55, 4.55, 5.55}};
 
   CHECK(res.total_iter == 333);
   CHECK(res.dipole  == vector3<double>{1.55, 2.55, 3.55});
@@ -119,10 +119,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(res.energy.xc() == 7.55);
 	CHECK(res.energy.nvxc() == 8.55);
 	CHECK(res.energy.exact_exchange() == 10.55);
-  CHECK(res.forces == ground_state::result::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
+  CHECK(res.forces == ground_state::results::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
   
-  res.save(comm, "result_save");
-  auto read_res = ground_state::result::load("result_save");
+  res.save(comm, "save_results");
+  auto read_res = ground_state::results::load("save_results");
 
   CHECK(read_res.total_iter == 333);
   CHECK(read_res.dipole  == vector3<double>{1.55, 2.55, 3.55});
@@ -136,7 +136,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(read_res.energy.xc() == 7.55);
 	CHECK(read_res.energy.nvxc() == 8.55);
 	CHECK(read_res.energy.exact_exchange() == 10.55);
-  CHECK(read_res.forces == ground_state::result::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
+  CHECK(read_res.forces == ground_state::results::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
 
 }
 #endif
