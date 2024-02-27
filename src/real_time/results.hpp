@@ -30,20 +30,21 @@ public:
   template <class ObservablesType>
   void operator()(ObservablesType const & observables){
 
+    
     total_steps_ = observables.iter();
     
   }
 
 	void save(parallel::communicator & comm) const {
-		auto error_message = "INQ error: Cannot save the real_time::results to directory '" + dirname_ + "'.";
-    
+		auto error_message = "INQ error: Cannot save real_time::results to directory '" + dirname_ + "'.";
+
     utils::create_directory(comm, dirname_);
 		utils::save_value(comm, dirname_ + "/total_steps",    total_steps_,    error_message);
     
 	}
   
   static auto load(std::string const & dirname) {
-    auto error_message = "INQ error: Cannot load the energy from directory '" + dirname + "'.";
+    auto error_message = "INQ error: Cannot load real_time::results from directory '" + dirname + "'.";
 
     results res(dirname);
 
@@ -52,6 +53,17 @@ public:
     return res;
 	}
 
+  template<class OStream>
+  friend OStream & operator<<(OStream & out, results const & self){
+
+    using namespace magnitude;
+    
+    std::cout << "Real-time results:\n";
+    std::cout << " total steps    = " << self.total_steps_ << '\n';
+    std::cout << std::endl;
+    return out;
+  }
+  
 };
 
 }
