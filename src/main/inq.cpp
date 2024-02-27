@@ -52,6 +52,8 @@ int main(int argc, char* argv[]) {
 		{ "grid-shifted"s,             "shifted-grid"s             },
 		{ "shiftedgrid"s,              "shifted-grid"s             },
 		{ "timestep"s,                 "time-step"s                },
+		{ "totaltime"s,                "total-time"s               },
+		{ "totalsteps"s,               "total-steps"s              },
 		{ "tol"s,                      "tolerance"s                },
 		{ "utils"s,                    "util"s                     }
 	};

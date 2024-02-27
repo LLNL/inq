@@ -48,6 +48,21 @@ These are the available subcommands:
 
   Example: `inq results real-time`.
 
+
+- `results real-time total-steps`
+
+  Returns the total number of real-time simulation steps done.
+
+  Example: `inq results real-time total-steps`.
+
+
+- `results real-time total-time`
+
+  Returns the total simulated time (in atomic units).
+
+  Example: `inq results real-time total-time`.
+
+
 )"""";
 	}
 
@@ -68,6 +83,14 @@ public:
 		if(input::environment::global().comm().root()) std::cout << res;
 	}
 
+	auto total_steps() const {
+		return load().total_steps;
+	}
+	
+	auto total_time() const {
+		return load().total_time;
+	}
+	
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -75,7 +98,17 @@ public:
 			operator()();
 			exit(0);
 		}
-      
+
+		if(args.size() == 1 and args[0] == "total-steps"){
+			if(input::environment::global().comm().root()) printf("%ld\n", total_steps());
+			exit(0);
+		}
+		
+		if(args.size() == 1 and args[0] == "total-time"){
+			if(input::environment::global().comm().root()) printf("%.20e\n", total_time());
+			exit(0);
+		}
+					
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time' command" << std::endl;
 		exit(1);
     
