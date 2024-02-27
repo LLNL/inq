@@ -43,6 +43,12 @@ int main(int argc, char* argv[]) {
 		{ "results-groundstate"s,      "results ground-state"s     },
 		{ "resultsgs"s,                "results ground-state"s     },
 		{ "results-gs"s,               "results ground-state"s     },
+		{ "results-real-time"s,        "results real-time"s        },
+		{ "resultsrealtime"s,          "results real-time"s        },
+		{ "resultsreal-time"s,         "results real-time"s        },
+		{ "results-realtime"s,         "results real-time"s        },
+		{ "resultsrt"s,                "results real-time"s        },
+		{ "results-rt"s,               "results real-time"s        },
 		{ "grid-shifted"s,             "shifted-grid"s             },
 		{ "shiftedgrid"s,              "shifted-grid"s             },
 		{ "timestep"s,                 "time-step"s                },
@@ -61,6 +67,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::kpoints)
 		+ interface::item(interface::perturbations)		
 		+ interface::item(interface::results_ground_state)
+		+ interface::item(interface::results_real_time)
 		+ interface::item(interface::real_time)
 		+ interface::item(interface::run)
 		+ interface::item(interface::theory)
