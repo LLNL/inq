@@ -112,6 +112,8 @@ public:
 
 		return in;
 	}
+
+	using observables_type = std::unordered_set<observables>;
 	
 private:
 
@@ -119,7 +121,7 @@ private:
 	std::optional<int> num_steps_;
 	std::optional<electron_propagator> prop_;
 	std::optional<ion_dynamics> ion_dynamics_;
-	std::unordered_set<observables> obs_;
+	observables_type obs_;
 	
 public:
 	
@@ -226,7 +228,7 @@ public:
 		utils::load_optional(dirname + "/ion_dynamics",   opts.ion_dynamics_);
 		try { utils::load_container(dirname + "/observables",    opts.obs_, error_message); }
 		catch(...) {
-			opts.obs_.clear();
+			opts.obs_ = observables_type{};
 		}
 		
 		return opts;
