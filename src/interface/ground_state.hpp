@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/actions.hpp>
 #include <systems/electrons.hpp>
 
 namespace inq {
@@ -101,29 +102,28 @@ calculations. These are the available options:
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and (args[0] == "max-steps")){
 			max_steps(str_to<int>(args[1]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 2 and (args[0] == "tolerance")){
 			tolerance(str_to<double>(args[1]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and (args[0] == "mixing")){
 			mixing(str_to<double>(args[1]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in 'ground-state' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in 'ground-state' command");
 	}
 	
 } const ground_state;

@@ -9,8 +9,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <interface/actions.hpp>
 #include <input/environment.hpp>
 #include <real_time/results.hpp>
+
+#include <utility>
 
 namespace inq {
 namespace interface {
@@ -98,7 +101,7 @@ private:
 	static auto load() {
 		try { return real_time::results::load(".inq/default_results_real_time"); }
 		catch(...){
-			if(input::environment::global().comm().root()) std::cerr << "Error: cannot find real-time results, run a real-time simulation first" << std::endl;
+			actions::error(input::environment::global().comm(), "Cannot find real-time results, run a real-time simulation first");
 			exit(1);
 		}
 	}
@@ -131,17 +134,17 @@ public:
 
 		if(args.size() == 0){
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 1 and args[0] == "total-steps"){
 			if(input::environment::global().comm().root()) printf("%ld\n", total_steps());
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 1 and args[0] == "total-time"){
 			if(input::environment::global().comm().root()) printf("%.20e\n", total_time());
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "time"){
@@ -153,10 +156,9 @@ public:
 			} else if (args.size() == 2) {
 				if(input::environment::global().comm().root()) printf("%.20e\n", time_array[utils::str_to<long>(args[1])]);
 			} else {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time time' command" << std::endl;
-				exit(1);
+				actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time time' command");
 			}
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "total-energy"){
@@ -171,15 +173,12 @@ public:
 			} else if (args.size() == 2) {
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_array[utils::str_to<long>(args[1])]);
 			} else {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time total-energy' command" << std::endl;
-				exit(1);
+				actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time total-energy' command");
 			}
-			exit(0);
+			actions::normal_exit();
 		}
 		
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time' command" << std::endl;
-		exit(1);
-    
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time' command");
 	}
 	
 } const results_real_time;

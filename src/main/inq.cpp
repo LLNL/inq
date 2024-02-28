@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
 			std::cout << interface::list_item("-d,--debug", "Print debug information (useful for inq developers)");
 			std::cout << std::endl;
 		}
-		exit(0);
+		interface::actions::normal_exit();
 	}
 
 	auto quiet = false;
@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
 				std::cout << all_helpers.list();
 				std::cout << std::endl;
 			}
-			exit(0);
+			interface::actions::normal_exit();
 		}
 
 		command = args[0];
@@ -186,16 +186,14 @@ int main(int argc, char* argv[]) {
 		if(comm.root()) {
 			all_commands.help(command);
 			all_helpers.help(command);
-			
-			std::cerr << "inq error: unknown help item '" << command << "'." << std::endl;
-			exit(1);
+
+			interface::actions::error(comm, "Unknown help item '" + command + "'.");
 		} else {
-			exit(0);
+			interface::actions::normal_exit();
 		}
 	}
 	
-	if(comm.root()) std::cerr << "inq error: unknown command '" << command << "'." << std::endl;
-	exit(1);
+	interface::actions::error(comm, "Unknown command '" + command + "'.");
 	
 	fftw_cleanup();
   return 0;

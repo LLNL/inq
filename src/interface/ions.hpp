@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/actions.hpp>
 #include <interface/cell.hpp>
 #include <systems/ions.hpp>
 
@@ -147,27 +148,21 @@ These are the uses for the command:
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "clear"){
 
-			if(args.size() != 1) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: The 'ions clear' command doesn't take arguments." << std::endl;
-				exit(1);
-			}
+			if(args.size() != 1) actions::error(input::environment::global().comm(), "The 'ions clear' command doesn't take arguments.");
 			clear();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
  		if(args.size() >= 2 and args[0] == "insert" and args[1] == "fractional"){
 
-			if(args.size() != 6) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert fractional <symbol> <x> <y> <z>" << std::endl;
-				exit(1);
-			}
-
+			if(args.size() != 6) actions::error(input::environment::global().comm(), "Wrong arguments for ions insert.\nUse: inq ions insert fractional <symbol> <x> <y> <z>");
+			
 			auto symbol = args[2];
 			auto xx = str_to<double>(args[3]);
 			auto yy = str_to<double>(args[4]);
@@ -175,15 +170,12 @@ These are the uses for the command:
 			
 			insert_fractional(symbol, {xx, yy, zz});
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "insert"){
 
-			if(args.size() != 6) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Wrong arguments for ions insert.\nUse: inq ions insert <symbol> <x> <y> <z> <units>" << std::endl;
-				exit(1);
-			}
+			if(args.size() != 6) actions::error(input::environment::global().comm(), "Wrong arguments for ions insert.\nUse: inq ions insert <symbol> <x> <y> <z> <units>");
 
 			auto symbol = args[1];
 			auto units = args[5];
@@ -193,7 +185,7 @@ These are the uses for the command:
 			
 			insert(symbol, {xx, yy, zz});
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "file"){
@@ -202,7 +194,7 @@ These are the uses for the command:
 				interface::cell();
 				operator()();
 			}
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 5 and args[0] == "file" and args[2] == "radius"){
@@ -213,11 +205,10 @@ These are the uses for the command:
 				interface::cell();
 				operator()();
 			}
-			exit(0);
+			actions::normal_exit();
 		}
 		
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the ions command" << std::endl;
-		exit(1);
+		if(input::environment::global().comm().root()) actions::error(input::environment::global().comm(), "Invalid syntax in the ions command");
 	}
 		
 } const ions;

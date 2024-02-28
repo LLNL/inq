@@ -134,41 +134,25 @@ These are the uses for the command:
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "clear"){
-
-			if(args.size() != 1) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: The 'perturbations clear' command doesn't take arguments." << std::endl;
-				exit(1);
-			}
+			if(args.size() != 1) actions::error(input::environment::global().comm(), "The 'perturbations clear' command doesn't take arguments");
 			clear();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "kick"){
-
-			if(args.size() != 4) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid arguments for 'perturbations kick'." << std::endl;
-				exit(1);
-			}
-
+			if(args.size() != 4) actions::error(input::environment::global().comm(), "Invalid arguments for 'perturbations kick'");
 			kick({str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3])});
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "laser"){
-
-			if(args.size() != 7) {
-				if(input::environment::global().comm().root()) {
-					std::cerr << "Error: Invalid syntax for 'perturbations laser'.\n";
-					std::cerr << "       use 'inq perturbations laser <px> <py> <pz> frequency <f> <units>'"<< std::endl;
-				}
-				exit(1);
-			}
+			if(args.size() != 7) actions::error(input::environment::global().comm(), "Invalid syntax for 'perturbations laser'.\nUse 'inq perturbations laser <px> <py> <pz> frequency <f> <units>'");
 
 			quantity<energy> freq;
 			
@@ -177,20 +161,15 @@ These are the uses for the command:
 			} else if(args[4] == "wavelength") {
 				freq = energy::from_wavelength(length::parse(str_to<double>(args[5]), args[6]));
 			} else {
-				if(input::environment::global().comm().root()) {
-					std::cerr << "Error: Invalid argument " << args[4] << " for 'perturbations laser'.\n";
-					std::cerr << "       use 'inq perturbations laser <px> <py> <pz> <frequency|wavelength> <f> <units>'"<< std::endl;
-				}
-				exit(1);
+				actions::error(input::environment::global().comm(), "Invalid argument " + args[4] + " for 'perturbations laser'.\nUse 'inq perturbations laser <px> <py> <pz> <frequency|wavelength> <f> <units>'");
 			}
 
 			laser({str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3])}, freq);
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the perturbations command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in the perturbations command");
 	}
 		
 } const perturbations;

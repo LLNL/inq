@@ -130,44 +130,43 @@ These are the options available:
 		
     if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
     if(args.size() == 1 and args[0] == "gamma") {
 			gamma();
       if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
     if(args.size() == 4 and args[0] == "grid") {
       
       grid(str_to<int>(args[1]), str_to<int>(args[2]), str_to<int>(args[3]));
       if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
     if(args.size() == 4 and args[0] == "shifted-grid") {
       
       shifted_grid(str_to<int>(args[1]), str_to<int>(args[2]), str_to<int>(args[3]));
       if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
     
     if(args.size() == 5 and args[0] == "insert") {
       
       insert(str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3]), str_to<double>(args[4]));
       if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
     
     if(args.size() == 1 and args[0] == "clear") {
 			clear();
       if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
     
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'kpoints' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'kpoints' command");
 	}
 	
 } const kpoints;

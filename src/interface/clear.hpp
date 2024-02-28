@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/actions.hpp>
 
 namespace inq {
 namespace interface {
@@ -31,12 +32,9 @@ struct {
 
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool) const {
-		if(args.size() != 0) {
-			std::cerr << "Error: The 'clear' command doesn't take arguments." << std::endl;
-			exit(1);
-		}
+		if(args.size() != 0) actions::error(input::environment::global().comm(), "The 'clear' command doesn't take arguments");
 		operator()();
-		exit(0);
+		actions::normal_exit();
 	}
 
 	void help() const {

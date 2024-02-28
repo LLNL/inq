@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/actions.hpp>
 #include <systems/electrons.hpp>
 
 namespace inq {
@@ -164,117 +165,81 @@ the user.
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args[0] == "extra-states"){
 
-			if(args.size() == 1) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: missing extra_states argument" << std::endl;
-				exit(1);
-			}
-
-			if(args.size() >= 3) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to extra_states argument" << std::endl;
-				exit(1);
-			}
+			if(args.size() == 1) actions::error(input::environment::global().comm(), "Missing extra_states argument");
+			if(args.size() >= 3) actions::error(input::environment::global().comm(), "Too many arguments to extra_states argument");
 
 			extra_states(str_to<int>(args[1]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args[0] == "extra-electrons"){
 
-			if(args.size() == 1) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: missing extra_electrons argument" << std::endl;
-				exit(1);
-			}
-
-			if(args.size() >= 3) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to extra_electrons argument" << std::endl;
-				exit(1);
-			}
+			if(args.size() == 1) actions::error(input::environment::global().comm(), "Missing extra_electrons argument");
+			if(args.size() >= 3) actions::error(input::environment::global().comm(), "Too many arguments to extra_electrons argument");
 
 			extra_electrons(str_to<double>(args[1]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "cutoff"){
 
-			if(args.size() < 3) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: missing cutoff arguments. Use 'cutoff <value> <units>'" << std::endl;
-				exit(1);
-			}
-
-			if(args.size() > 3) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to cutoff argument" << std::endl;
-				exit(1);
-			}
+			if(args.size() < 3) actions::error(input::environment::global().comm(), "Missing cutoff arguments. Use 'cutoff <value> <units>'");
+			if(args.size() > 3) actions::error(input::environment::global().comm(), "Too many arguments to cutoff argument");
 
 			cutoff(magnitude::energy::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "spacing"){
 
-			if(args.size() < 3) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: missing spacing arguments. Use 'spacing <value> <units>'" << std::endl;
-				exit(1);
-			}
-
-			if(args.size() > 3) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to spacing argument" << std::endl;
-				exit(1);
-			}
+			if(args.size() < 3) actions::error(input::environment::global().comm(), "Missing spacing arguments. Use 'spacing <value> <units>'");
+			if(args.size() > 3) actions::error(input::environment::global().comm(), "Too many arguments to spacing argument");
 
 			spacing(magnitude::length::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "unpolarized"){
 			spin_unpolarized();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "polarized"){
 			spin_polarized();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "non-collinear") {
 			spin_non_collinear();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "temperature"){
 
-			if(args.size() < 3) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: missing temperature arguments. Use 'temperature <value> <units>'." << std::endl;
-				exit(1);
-			}
-
-			if(args.size() > 3) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: too many arguments to temperature argument.  Use 'temperature <value> <units>'." << std::endl;
-				exit(1);
-			}
+			if(args.size() < 3) actions::error(input::environment::global().comm(), "Missing temperature arguments. Use 'temperature <value> <units>'.");
+			if(args.size() > 3) actions::error(input::environment::global().comm(), "Too many arguments to temperature argument.  Use 'temperature <value> <units>'.");
 
 			temperature(magnitude::energy::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'electrons' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'electrons' command");
 	}
 	
 } const electrons;

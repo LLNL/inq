@@ -100,7 +100,7 @@ These are the available subcommands:
 
 		if(args.size() == 2 and args[0] == "calc"){
 			if(input::environment::global().comm().root()) printf("%.20e\n", calc(args[1]));
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 4 and args[0] == "match"){
@@ -109,19 +109,18 @@ These are the available subcommands:
       auto tol = str_to<double>(args[3]);
 
       if(match(val, ref, tol)){
-        exit(0);
+        actions::normal_exit();
       } else {
-        exit(1);
+				actions::error_exit();
       }
 		}
 
 		if(args.size() == 1 and args[0] == "test-data"){
 			if(input::environment::global().comm().root()) std::cout << test_data() << std::endl;
-			exit(0);
+			actions::normal_exit();
 		}
 
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'util' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'util' command");
 	}
 	
 } const util ;

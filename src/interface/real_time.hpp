@@ -121,19 +121,19 @@ calculations. These are the available options:
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 3 and (args[0] == "time-step")){
 			time_step(magnitude::time::parse(str_to<double>(args[1]), args[2]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 2 and (args[0] == "num-steps")){
 			num_steps(str_to<long>(args[1]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "ions"){
@@ -142,27 +142,25 @@ calculations. These are the available options:
 			if(args.size() == 1 and args[0] == "static"){
 				ions_static();
 				if(not quiet) operator()();
-				exit(0);
+				actions::normal_exit();
 			}
 			
 			if(args.size() == 1 and args[0] == "impulsive"){
 				ions_impulsive();
 				if(not quiet) operator()();
-				exit(0);
+				actions::normal_exit();
 			}
 			
 			if(args.size() == 1 and args[0] == "ehrenfest"){
 				ions_ehrenfest();
 				if(not quiet) operator()();
-				exit(0);
+				actions::normal_exit();
 			}
 			
-			if(input::environment::global().comm().root()) std::cerr << "Error: Invalid arguments for 'real-time ions' command" << std::endl;
-			exit(1);
+			actions::error(input::environment::global().comm(), "Invalid arguments for 'real-time ions' command");
 		}
 				
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in 'real-time' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in 'real-time' command");
 	}
 	
 } const real_time;
