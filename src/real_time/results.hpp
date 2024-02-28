@@ -77,6 +77,9 @@ public:
 
 		res.total_energy.resize(res.total_steps + 1);
 		utils::load_array(dirname + "/total_energy",    res.total_energy,    error_message);
+
+		utils::load_vector(dirname + "/dipole",         res.dipole);
+		utils::load_vector(dirname + "/current",        res.current);
 		
     return res;
 	}
