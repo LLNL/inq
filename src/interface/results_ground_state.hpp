@@ -264,12 +264,7 @@ These are the available subcommands:
 
 		if(args.size() == 2 and args[0] == "magnetization"){
 			auto idir = utils::str_to_index(args[1]);
-
-			if(idir == -1) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid index in the 'results ground-state magnetization' command" << std::endl;
-				exit(1);
-			}
-
+			if(idir == -1) actions::error(input::environment::global().comm(), "Invalid index in the 'results ground-state magnetization' command");
 			if(input::environment::global().comm().root())  printf("%.6f\n", magnetization()[idir]);
 			actions::normal_exit();
 		}
@@ -281,12 +276,7 @@ These are the available subcommands:
 
 		if(args.size() == 2 and args[0] == "dipole"){
 			auto idir = utils::str_to_index(args[1]);
-
-			if(idir == -1) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid index in the 'results ground-state dipole' command" << std::endl;
-				exit(1);
-			}
-
+			if(idir == -1) actions::error(input::environment::global().comm(), "Invalid index in the 'results ground-state dipole' command");
 			if(input::environment::global().comm().root())  printf("%.6f\n", dipole()[idir]);
 			actions::normal_exit();
 		}
@@ -363,11 +353,7 @@ These are the available subcommands:
 					
 			} else if (args.size() == 2 or args.size() == 3) {
 				auto index = utils::str_to<long>(args[1]);
-
-				if(index < 0 or index >= forces_array.size()) {
-					if(input::environment::global().comm().root()) std::cerr << "Error: Invalid index " << index << " in the 'results ground-state forces' command" << std::endl;
-					exit(1);
-				}
+				if(index < 0 or index >= forces_array.size()) actions::error(input::environment::global().comm(), "Invalid index ", index, " in the 'results ground-state forces' command");
 
 				if(args.size() == 2) {
 					if(input::environment::global().comm().root()) printf("%.20e\t%.20e\t%.20e\n", forces_array[index][0], forces_array[index][1], forces_array[index][2]);
@@ -375,20 +361,13 @@ These are the available subcommands:
 				}
 					
 				auto idir = utils::str_to_index(args[2]);
-				
-				if(idir == -1) {
-					if(input::environment::global().comm().root()) std::cerr << "Error: Invalid coordinate index in the 'results ground-state forces' command" << std::endl;
-					exit(1);
-				}
-				
+				if(idir == -1) actions::error(input::environment::global().comm(), "Invalid coordinate index in the 'results ground-state forces' command");
 				if(input::environment::global().comm().root()) printf("%.20e\n", forces_array[index][idir]);
 				actions::normal_exit();
 			}
 		}
 		
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results ground-state' command" << std::endl;
-		exit(1);
-    
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results ground-state' command");    
 	}
 	
 } const results_ground_state;

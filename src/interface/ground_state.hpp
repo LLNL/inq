@@ -123,8 +123,7 @@ calculations. These are the available options:
 			actions::normal_exit();
 		}
 		
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in 'ground-state' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in 'ground-state' command");
 	}
 	
 } const ground_state;

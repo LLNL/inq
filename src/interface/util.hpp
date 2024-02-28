@@ -111,7 +111,7 @@ These are the available subcommands:
       if(match(val, ref, tol)){
         actions::normal_exit();
       } else {
-        exit(1);
+				actions::error_exit();
       }
 		}
 
@@ -120,8 +120,7 @@ These are the available subcommands:
 			actions::normal_exit();
 		}
 
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'util' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'util' command");
 	}
 	
 } const util ;

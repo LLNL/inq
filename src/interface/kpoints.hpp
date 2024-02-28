@@ -166,8 +166,7 @@ These are the options available:
 			actions::normal_exit();
 		}
     
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'kpoints' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'kpoints' command");
 	}
 	
 } const kpoints;

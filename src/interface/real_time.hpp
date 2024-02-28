@@ -157,12 +157,10 @@ calculations. These are the available options:
 				actions::normal_exit();
 			}
 			
-			if(input::environment::global().comm().root()) std::cerr << "Error: Invalid arguments for 'real-time ions' command" << std::endl;
-			exit(1);
+			actions::error(input::environment::global().comm(), "Invalid arguments for 'real-time ions' command");
 		}
 				
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in 'real-time' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in 'real-time' command");
 	}
 	
 } const real_time;

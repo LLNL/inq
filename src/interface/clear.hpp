@@ -32,10 +32,7 @@ struct {
 
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool) const {
-		if(args.size() != 0) {
-			std::cerr << "Error: The 'clear' command doesn't take arguments." << std::endl;
-			exit(1);
-		}
+		if(args.size() != 0) actions::error(input::environment::global().comm(), "The 'clear' command doesn't take arguments");
 		operator()();
 		actions::normal_exit();
 	}
