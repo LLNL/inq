@@ -73,7 +73,9 @@ void save_value(parallel::communicator & comm, std::string const & filename, Typ
 template <typename Type>
 void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) {
+		comm.barrier();
 		if(comm.root()) std::filesystem::remove(filename);
+		comm.barrier();
 		return;
 	}
 
@@ -83,12 +85,13 @@ void save_optional(parallel::communicator & comm, std::string const & filename, 
 template <typename Type>
 void save_optional_enum(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) {
+		comm.barrier();
 		if(comm.root()) std::filesystem::remove(filename);
+		comm.barrier();
 		return;
 	}
 
 	save_value(comm, filename, static_cast<int>(*value), error_message);
-
 }
 
 template <typename Type>
