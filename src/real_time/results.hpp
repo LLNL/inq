@@ -24,7 +24,8 @@ public:
   long total_steps;
   double total_time;
 	std::vector<double> time;
-
+	std::vector<double> total_energy;
+	
   results(std::string const & arg_dirname):
     dirname_(arg_dirname),
     total_steps(0),
@@ -33,11 +34,12 @@ public:
 
   template <class ObservablesType>
   void operator()(ObservablesType const & observables){
-
     
     total_steps = observables.iter() + 1;
     total_time = observables.time();
     time.push_back(observables.time());
+		total_energy.push_back(observables.energy().total());
+
   }
 
 	void save(parallel::communicator & comm) const {
@@ -47,6 +49,7 @@ public:
 		utils::save_value(comm, dirname_ + "/total_steps",    total_steps,    error_message);
 		utils::save_value(comm, dirname_ + "/total_time",     total_time,     error_message);
 		utils::save_array(comm, dirname_ + "/time",           time,           error_message);
+		utils::save_array(comm, dirname_ + "/total_energy",   total_energy,   error_message);
 	}
   
   static auto load(std::string const & dirname) {
@@ -60,6 +63,9 @@ public:
 		res.time.resize(res.total_steps + 1);
 		utils::load_array(dirname + "/time",            res.time,            error_message);
 
+		res.total_energy.resize(res.total_steps + 1);
+		utils::load_array(dirname + "/total_energy",    res.total_energy,    error_message);
+		
     return res;
 	}
 
