@@ -71,6 +71,28 @@ public:
 		}
 		return in;
 	}
+
+	enum class observables {
+		dipole = 0,
+		current = 1
+	};
+	
+	static auto const & observable_name() {
+		using namespace std::string_literals;
+		
+		static std::unordered_map<observables, std::string> names_ = {
+			{ observables::dipole,            "dipole"s            },
+			{ observables::current,           "current"s           }
+		};
+		
+		return names_;
+	}
+	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, observables const & self){
+		out << observable_name().at(self);
+		return out;
+	}
 	
 private:
 
@@ -78,7 +100,8 @@ private:
 	std::optional<int> num_steps_;
 	std::optional<electron_propagator> prop_;
 	std::optional<ion_dynamics> ion_dynamics_;
-
+	std::unordered_set<observables> obs_;
+	
 public:
 	
 	auto dt(quantity<magnitude::time> dt) const {
@@ -138,6 +161,18 @@ public:
 	auto ion_dynamics_value() const {
 		return ion_dynamics_.value_or(ion_dynamics::STATIC);
 	}
+
+	auto observable_dipole() {
+		real_time solver = *this;;
+		solver.obs_.insert(observables::dipole);
+		return solver;
+	}
+	
+	auto observable_current() {
+		real_time solver = *this;;
+		solver.obs_.insert(observables::current);
+		return solver;
+	}
 	
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the options::real_time to directory '" + dirname + "'.";
@@ -178,6 +213,11 @@ public:
 
 		out << "  ion-dynamics       = " << self.ion_dynamics_value();
 		if(not self.ion_dynamics_.has_value()) out << " *";
+		out << "\n";
+
+		out << "  observables        = energy";
+		for(auto & ob : self.obs_)  out << ' ' << ob;
+		if(self.obs_.empty()) out << " *";
 		out << "\n";
 		
 		out << "\n  * default values" << std::endl;
@@ -225,12 +265,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Composition"){
 
-    auto rt = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson().impulsive();
+    auto rt = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson().impulsive().observable_dipole().observable_current();
     
     CHECK(rt.num_steps() == 1000);
     CHECK(rt.dt() == 0.05_a);
 		CHECK(rt.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
 		CHECK(rt.ion_dynamics_value() == options::real_time::ion_dynamics::IMPULSIVE);
+
+		std::cout << rt;
 		
 		rt.save(comm, "save_real_time");
 		auto read_rt = options::real_time::load("save_real_time");
