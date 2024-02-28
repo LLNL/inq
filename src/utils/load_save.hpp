@@ -96,6 +96,12 @@ void save_container(parallel::communicator & comm, std::string const & filename,
 	
 	comm.barrier();
 
+	if(container.empty()) {
+		if(comm.root()) std::filesystem::remove(filename);
+		comm.barrier();
+		return;
+	}
+	
 	auto exception_happened = true;
 	if(comm.root()) {
 		
