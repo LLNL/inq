@@ -240,6 +240,10 @@ These are the available subcommands:
     return ground_state::results::load(".inq/default_results_ground_state").energy.ion();
   }
 
+	auto forces() const {
+    return ground_state::results::load(".inq/default_results_ground_state").forces;
+	}
+
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -346,7 +350,47 @@ These are the available subcommands:
 				exit(0);
 			}
 		}
-      
+		
+		if(args[0] == "forces"){
+			auto forces_array = forces();
+
+			if(args.size() == 1) {
+
+				if(input::environment::global().comm().root()) {
+					for(auto & force : forces_array) printf("%.20e\t%.20e\t%.20e\n", force[0], force[1], force[2]);
+				}
+				exit(0);
+					
+			} else if (args.size() == 2 or args.size() == 3) {
+				auto index = utils::str_to<long>(args[1]);
+
+				if(index < 0 or index >= forces_array.size()) {
+					if(input::environment::global().comm().root()) std::cerr << "Error: Invalid index " << index << " in the 'results ground-state forces' command" << std::endl;
+					exit(1);
+				}
+
+				if(args.size() == 2) {
+					if(input::environment::global().comm().root()) printf("%.20e\t%.20e\t%.20e\n", forces_array[index][0], forces_array[index][1], forces_array[index][2]);
+					exit(0);
+				}
+					
+				auto idir = utils::str_to_index(args[2]);
+				
+				if(idir == -1) {
+					if(input::environment::global().comm().root()) std::cerr << "Error: Invalid coordinate index in the 'results ground-state forces' command" << std::endl;
+					exit(1);
+				}
+				
+				if(input::environment::global().comm().root()) printf("%.20e\n", forces_array[index][idir]);
+				exit(0);
+
+			} else {
+				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time total-energy' command" << std::endl;
+				exit(1);
+			}
+			exit(0);
+		}
+		
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results ground-state' command" << std::endl;
 		exit(1);
     
