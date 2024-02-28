@@ -18,33 +18,38 @@ namespace real_time {
 class results {
 
   std::string dirname_;
-  long total_steps_;
-  double total_time_;
 
 public:
 
+  long total_steps;
+  double total_time;
+	std::vector<double> time;
+	std::vector<double> total_energy;
+	
   results(std::string const & arg_dirname):
     dirname_(arg_dirname),
-    total_steps_(0),
-    total_time_(0.0){
+    total_steps(0),
+    total_time(0.0){
   }
 
   template <class ObservablesType>
   void operator()(ObservablesType const & observables){
+    
+    total_steps = observables.iter() + 1;
+    total_time = observables.time();
+    time.push_back(observables.time());
+		total_energy.push_back(observables.energy().total());
 
-    
-    total_steps_ = observables.iter() + 1;
-    total_time_ = observables.time();
-    
   }
 
 	void save(parallel::communicator & comm) const {
 		auto error_message = "INQ error: Cannot save real_time::results to directory '" + dirname_ + "'.";
 
     utils::create_directory(comm, dirname_);
-		utils::save_value(comm, dirname_ + "/total_steps",    total_steps_,    error_message);
-		utils::save_value(comm, dirname_ + "/total_time",     total_time_,     error_message);
-    
+		utils::save_value(comm, dirname_ + "/total_steps",    total_steps,    error_message);
+		utils::save_value(comm, dirname_ + "/total_time",     total_time,     error_message);
+		utils::save_array(comm, dirname_ + "/time",           time,           error_message);
+		utils::save_array(comm, dirname_ + "/total_energy",   total_energy,   error_message);
 	}
   
   static auto load(std::string const & dirname) {
@@ -52,9 +57,15 @@ public:
 
     results res(dirname);
 
-    utils::load_value(dirname + "/total_steps",     res.total_steps_,     error_message);
-    utils::load_value(dirname + "/total_time",      res.total_time_,      error_message);
-    
+    utils::load_value(dirname + "/total_steps",     res.total_steps,     error_message);
+    utils::load_value(dirname + "/total_time",      res.total_time,      error_message);
+		
+		res.time.resize(res.total_steps + 1);
+		utils::load_array(dirname + "/time",            res.time,            error_message);
+
+		res.total_energy.resize(res.total_steps + 1);
+		utils::load_array(dirname + "/total_energy",    res.total_energy,    error_message);
+		
     return res;
 	}
 
@@ -64,8 +75,8 @@ public:
     using namespace magnitude;
     
     std::cout << "Real-time results:\n";
-    std::cout << "  total steps          = " << self.total_steps_ << '\n';
-    std::cout << "  simulated time       = " << self.total_time_ << " atu | " <<  self.total_time_/in_atomic_units(1.0_fs) << " fs \n";    
+    std::cout << "  total steps          = " << self.total_steps << '\n';
+    std::cout << "  simulated time       = " << self.total_time << " atu | " <<  self.total_time/in_atomic_units(1.0_fs) << " fs \n";    
     std::cout << std::endl;
     return out;
   }

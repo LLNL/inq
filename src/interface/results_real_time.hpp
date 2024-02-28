@@ -48,6 +48,48 @@ These are the available subcommands:
 
   Example: `inq results real-time`.
 
+
+- `results real-time total-steps`
+
+  Returns the total number of real-time simulation steps done.
+
+  Example: `inq results real-time total-steps`.
+
+
+- `results real-time total-time`
+
+  Returns the total simulated time (in atomic units).
+
+  Example: `inq results real-time total-time`.
+
+- `results real-time time [step]`
+
+  Returns the time values. If not additional arguments are passed, inq
+  prints the whole series for each time step. Alternatively, you can
+  pass a step index to get the energy value.
+
+  Note that for the moment inq uses a uniform time integration, so the
+  time is just the step index times the time-step.
+
+  Examples: `inq results real-time time`.
+            `inq results real-time time 99`.
+
+
+- `results real-time total-energy [step]`
+
+  Returns the values of the total energy during the propagation. If
+  not additional arguments are passed, inq prints the whole series for
+  each time step in a two column format, the first column is the time
+  and the second one is the energy. This output is suitable to view
+  on a plotting program like gnuplot.
+
+  Alternatively, you can pass a step index to get the energy value for
+  that step.
+
+  Examples: `inq results real-time total-energy`
+            `inq results real-time total-energy 43`.
+
+
 )"""";
 	}
 
@@ -68,6 +110,22 @@ public:
 		if(input::environment::global().comm().root()) std::cout << res;
 	}
 
+	auto total_steps() const {
+		return load().total_steps;
+	}
+	
+	auto total_time() const {
+		return load().total_time;
+	}
+
+	auto time() const {
+		return load().time;
+	}
+	
+	auto total_energy() const {
+		return load().total_energy;
+	}
+	
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -75,7 +133,50 @@ public:
 			operator()();
 			exit(0);
 		}
-      
+
+		if(args.size() == 1 and args[0] == "total-steps"){
+			if(input::environment::global().comm().root()) printf("%ld\n", total_steps());
+			exit(0);
+		}
+		
+		if(args.size() == 1 and args[0] == "total-time"){
+			if(input::environment::global().comm().root()) printf("%.20e\n", total_time());
+			exit(0);
+		}
+
+		if(args[0] == "time"){
+			auto time_array = time();
+			if(args.size() == 1) {
+				if(input::environment::global().comm().root()) {
+					for(auto & ti : time_array) printf("%.20e\n", ti);
+				}
+			} else if (args.size() == 2) {
+				if(input::environment::global().comm().root()) printf("%.20e\n", time_array[utils::str_to<long>(args[1])]);
+			} else {
+				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time time' command" << std::endl;
+				exit(1);
+			}
+			exit(0);
+		}
+
+		if(args[0] == "total-energy"){
+			auto energy_array = total_energy();
+			if(args.size() == 1) {
+
+				auto time_array = time();
+				if(input::environment::global().comm().root()) {
+					for(auto ii = 0ul; ii < time_array.size(); ii++) printf("%.20e\t%.20e\n", time_array[ii], energy_array[ii]);
+				}
+				
+			} else if (args.size() == 2) {
+				if(input::environment::global().comm().root()) printf("%.20e\n", energy_array[utils::str_to<long>(args[1])]);
+			} else {
+				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time total-energy' command" << std::endl;
+				exit(1);
+			}
+			exit(0);
+		}
+		
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time' command" << std::endl;
 		exit(1);
     
