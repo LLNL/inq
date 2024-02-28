@@ -48,8 +48,8 @@ public:
     utils::create_directory(comm, dirname_);
 		utils::save_value(comm, dirname_ + "/total_steps",    total_steps,    error_message);
 		utils::save_value(comm, dirname_ + "/total_time",     total_time,     error_message);
-		utils::save_array(comm, dirname_ + "/time",           time,           error_message);
-		utils::save_array(comm, dirname_ + "/total_energy",   total_energy,   error_message);
+		utils::save_container(comm, dirname_ + "/time",           time,           error_message);
+		utils::save_container(comm, dirname_ + "/total_energy",   total_energy,   error_message);
 	}
   
   static auto load(std::string const & dirname) {

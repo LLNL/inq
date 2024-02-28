@@ -206,9 +206,9 @@ public:
 
 		cell_.save(comm, dirname + "/cell");
 		utils::save_value(comm, dirname + "/num_ions",   size(),      error_message);
-		utils::save_array(comm, dirname + "/atoms",      atoms_,      error_message);
-		utils::save_array(comm, dirname + "/positions",  positions_,  error_message);
-		utils::save_array(comm, dirname + "/velocities", velocities_, error_message);
+		utils::save_container(comm, dirname + "/atoms",      atoms_,      error_message);
+		utils::save_container(comm, dirname + "/positions",  positions_,  error_message);
+		utils::save_container(comm, dirname + "/velocities", velocities_, error_message);
 	}
 	
 	static auto load(std::string const & dirname) {

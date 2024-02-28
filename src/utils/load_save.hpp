@@ -90,8 +90,9 @@ void save_optional_enum(parallel::communicator & comm, std::string const & filen
 	save_value(comm, filename, static_cast<int>(*value), error_message);
 
 }
+
 template <typename Type>
-void save_array(parallel::communicator & comm, std::string const & filename, Type const & array, std::string const & error_message) {
+void save_container(parallel::communicator & comm, std::string const & filename, Type const & container, std::string const & error_message) {
 	
 	comm.barrier();
 
@@ -107,7 +108,7 @@ void save_array(parallel::communicator & comm, std::string const & filename, Typ
 		}
 		
 		file.precision(25);
-		for(int ii = 0; ii < long(array.size()); ii++) file << array[ii] << '\n';
+		for(auto const & el : container) file << el << '\n';
 
  		exception_happened = false;
 		comm.broadcast_value(exception_happened);

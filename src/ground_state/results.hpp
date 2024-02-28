@@ -35,7 +35,7 @@ struct results {
 		utils::save_value(comm, dirname + "/dipole",        dipole,        error_message);
 		utils::save_value(comm, dirname + "/magnetization", magnetization, error_message);
 		utils::save_value(comm, dirname + "/num_atoms",     forces.size(), error_message);
-		utils::save_array(comm, dirname + "/forces",        forces,        error_message);
+		utils::save_container(comm, dirname + "/forces",        forces,        error_message);
 	}
 	
   static auto load(std::string const & dirname) {
