@@ -167,10 +167,9 @@ static void load_array(std::string const & filename, Type & array, std::string c
 }
 
 template <typename Type>
-static void load_container(std::string const & filename, Type & container, std::string const & error_message){
+static void load_container(std::string const & filename, Type & container){
 	auto file = std::ifstream(filename);
-
-	if(not file) throw std::runtime_error(error_message);
+	if(not file) return;
 
 	while(true) {
 		std::string str;

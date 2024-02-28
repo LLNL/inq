@@ -218,18 +218,13 @@ public:
 	}
 
 	static auto load(std::string const & dirname) {
-		auto error_message = "INQ error: Cannot load options::real_time from directory '" + dirname + "'.";
-		
 		real_time opts;
 
 		utils::load_optional(dirname + "/time_step",      opts.dt_);
 		utils::load_optional(dirname + "/num_steps",      opts.num_steps_);
 		utils::load_optional(dirname + "/propagator",     opts.prop_);
 		utils::load_optional(dirname + "/ion_dynamics",   opts.ion_dynamics_);
-		try { utils::load_container(dirname + "/observables",    opts.obs_, error_message); }
-		catch(...) {
-			opts.obs_ = observables_type{};
-		}
+		utils::load_container(dirname + "/observables",   opts.obs_);
 		
 		return opts;
 	}
