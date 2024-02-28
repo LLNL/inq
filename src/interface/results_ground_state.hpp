@@ -383,12 +383,7 @@ These are the available subcommands:
 				
 				if(input::environment::global().comm().root()) printf("%.20e\n", forces_array[index][idir]);
 				exit(0);
-
-			} else {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time total-energy' command" << std::endl;
-				exit(1);
 			}
-			exit(0);
 		}
 		
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results ground-state' command" << std::endl;

@@ -54,6 +54,8 @@ inq real-time time-step 0.055 atu
 
 inq run real-time
 
+inq util match `inq results real-time total-steps`                 30    1e-16
+inq util match `inq results real-time total-time`                   1.65 1e-16
 inq util match `inq results real-time total-energy  0`             -9.80233858990913375919e+00 3e-5
 inq util match `inq results real-time total-energy 10`             -9.80233858990918349718e+00 3e-5
 inq util match `inq results real-time total-energy 20`             -9.80233858990920126075e+00 3e-5
