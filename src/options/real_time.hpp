@@ -93,6 +93,25 @@ public:
 		out << observable_name().at(self);
 		return out;
 	}
+
+	template<class IStream>
+	friend IStream & operator>>(IStream & in, observables & self){
+		std::string readval;
+		in >> readval;
+
+		auto found = false;
+		for(auto const & el : observable_name()){
+			if(el.second == readval) {
+				self = el.first;
+				found = true;
+				break;
+			}
+		}
+
+		if(not found) throw std::runtime_error("INQ error: Invalid observable string");
+
+		return in;
+	}
 	
 private:
 
@@ -162,18 +181,28 @@ public:
 		return ion_dynamics_.value_or(ion_dynamics::STATIC);
 	}
 
-	auto observable_dipole() {
+	auto observables_dipole() {
 		real_time solver = *this;;
 		solver.obs_.insert(observables::dipole);
 		return solver;
 	}
 	
-	auto observable_current() {
+	auto observables_current() {
 		real_time solver = *this;;
 		solver.obs_.insert(observables::current);
 		return solver;
 	}
+
+	auto observables_clear() {
+		real_time solver = *this;;
+		solver.obs_.clear();
+		return solver;
+	}
 	
+	auto & observables_container() const {
+		return obs_;
+	}
+
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the options::real_time to directory '" + dirname + "'.";
 
@@ -187,16 +216,22 @@ public:
 	}
 
 	static auto load(std::string const & dirname) {
+		auto error_message = "INQ error: Cannot load options::real_time from directory '" + dirname + "'.";
+		
 		real_time opts;
 
 		utils::load_optional(dirname + "/time_step",      opts.dt_);
 		utils::load_optional(dirname + "/num_steps",      opts.num_steps_);
 		utils::load_optional(dirname + "/propagator",     opts.prop_);
 		utils::load_optional(dirname + "/ion_dynamics",   opts.ion_dynamics_);
+		try { utils::load_container(dirname + "/observables",    opts.obs_, error_message); }
+		catch(...) {
+			opts.obs_.clear();
+		}
 		
 		return opts;
 	}
-	
+		
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, real_time const & self){
 		
@@ -217,7 +252,7 @@ public:
 		if(not self.ion_dynamics_.has_value()) out << " *";
 		out << "\n";
 
-		out << "  observables        = energy";
+		out << "  observables        = total-energy";
 		for(auto & ob : self.obs_)  out << ' ' << ob;
 		if(self.obs_.empty()) out << " *";
 		out << "\n";
@@ -267,7 +302,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Composition"){
 
-    auto rt = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson().impulsive().observable_dipole().observable_current();
+    auto rt = options::real_time{}.num_steps(1000).dt(0.05_atomictime).crank_nicolson().impulsive().observables_dipole().observables_current();
     
     CHECK(rt.num_steps() == 1000);
     CHECK(rt.dt() == 0.05_a);
@@ -283,7 +318,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(read_rt.dt() == 0.05_a);
 		CHECK(read_rt.propagator() == options::real_time::electron_propagator::CRANK_NICOLSON);
 		CHECK(read_rt.ion_dynamics_value() == options::real_time::ion_dynamics::IMPULSIVE);
-				
+		CHECK(read_rt.observables_container() == rt.observables_container());
+		
+		std::cout << read_rt;
   }
 
 }
