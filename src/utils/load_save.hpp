@@ -184,6 +184,25 @@ static void load_container(std::string const & filename, Type & container, std::
 	}
 }
 
+template <typename Type>
+static void load_vector(std::string const & filename, Type & vec){
+	vec.clear();
+	
+	auto file = std::ifstream(filename);
+	if(not file) return;
+
+	while(true) {
+		std::string str;
+		file >> str;
+		if(file.eof()) break;
+
+		auto el = typename Type::value_type{};
+		std::stringstream ss{str};
+		ss >> el;
+		vec.emplace_back(std::move(el));
+	}
+}
+
 }
 }
 #endif
