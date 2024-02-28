@@ -157,6 +157,24 @@ static void load_array(std::string const & filename, Type & array, std::string c
 	
 }
 
+template <typename Type>
+static void load_container(std::string const & filename, Type & container, std::string const & error_message){
+	auto file = std::ifstream(filename);
+
+	if(not file) throw std::runtime_error(error_message);
+
+	while(true) {
+		std::string str;
+		file >> str;
+		if(file.eof()) break;
+
+		auto el = typename Type::value_type{};
+		std::stringstream ss{str};
+		ss >> el;
+		container.emplace(std::move(el));
+	}
+}
+
 }
 }
 #endif
