@@ -19,13 +19,18 @@ void normal_exit() {
   exit(0);
 }
 
-void error(parallel::communicator & comm, std::string const & message) {
+void error_exit() {
+  exit(1);
+}
+
+template <class Message1Type, class Message2Type = std::string, class Message3Type = std::string>
+void error(parallel::communicator & comm, Message1Type const & message1, Message2Type const & message2 = {}, Message3Type const & message3 = {}) {
   if(comm.root()) {
     std::cerr << " -----------------------------------------------------\n\n";
-    std::cerr << "Error : " << message << "\n\n";
+    std::cerr << "  Error : " << message1 << message2 << message3 << "\n\n";
     std::cerr << " -----------------------------------------------------\n" << std::endl;
   }
-  exit(1);
+  error_exit();
 }
 
 }
