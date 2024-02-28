@@ -90,7 +90,11 @@ public:
 	auto total_time() const {
 		return load().total_time;
 	}
-	
+
+	auto time() const {
+		return load().time;
+	}
+
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -108,7 +112,22 @@ public:
 			if(input::environment::global().comm().root()) printf("%.20e\n", total_time());
 			exit(0);
 		}
-					
+
+		if(args[0] == "time"){
+			auto time_array = time();
+			if(args.size() == 1) {
+				if(input::environment::global().comm().root()) {
+					for(auto & ti : time_array) printf("%.20e\n", ti);
+				}
+			} else if (args.size() == 2) {
+				if(input::environment::global().comm().root()) printf("%.20e\n", time_array[utils::str_to<long>(args[1])]);
+			} else {
+				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time time' command" << std::endl;
+				exit(1);
+			}
+			exit(0);
+		}
+		
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time' command" << std::endl;
 		exit(1);
     
