@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/actions.hpp>
 #include <systems/ions.hpp>
 
 namespace inq {
@@ -139,7 +140,7 @@ public:
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args[0] == "cubic"){
@@ -155,7 +156,7 @@ public:
 			
 			cubic(aa, per);
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args[0] == "orthorhombic"){
@@ -174,7 +175,7 @@ public:
 			
 			orthorhombic(aa, bb, cc, per);
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		
@@ -210,7 +211,7 @@ public:
 			operator()(aa0, aa1, aa2, bb0, bb1, bb2, cc0, cc1, cc2, per);
 			
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'cell' command" << std::endl;

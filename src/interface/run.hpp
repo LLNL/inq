@@ -116,12 +116,12 @@ These are the options available:
 		
 		if(args.size() == 1 and args[0] == "ground-state") {
 			ground_state();
-			exit(0);
+			actions::normal_exit();
 		}
 				
 		if(args.size() == 1 and args[0] == "real-time") {
 			real_time();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'run' command" << std::endl;

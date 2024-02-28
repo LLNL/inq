@@ -134,7 +134,7 @@ These are the uses for the command:
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "clear"){
@@ -145,7 +145,7 @@ These are the uses for the command:
 			}
 			clear();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "kick"){
@@ -157,7 +157,7 @@ These are the uses for the command:
 
 			kick({str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3])});
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "laser"){
@@ -186,7 +186,7 @@ These are the uses for the command:
 
 			laser({str_to<double>(args[1]), str_to<double>(args[2]), str_to<double>(args[3])}, freq);
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the perturbations command" << std::endl;

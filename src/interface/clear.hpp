@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/actions.hpp>
 
 namespace inq {
 namespace interface {
@@ -36,7 +37,7 @@ struct {
 			exit(1);
 		}
 		operator()();
-		exit(0);
+		actions::normal_exit();
 	}
 
 	void help() const {

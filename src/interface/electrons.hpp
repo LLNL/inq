@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/actions.hpp>
 #include <systems/electrons.hpp>
 
 namespace inq {
@@ -164,7 +165,7 @@ the user.
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args[0] == "extra-states"){
@@ -181,7 +182,7 @@ the user.
 
 			extra_states(str_to<int>(args[1]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args[0] == "extra-electrons"){
@@ -198,7 +199,7 @@ the user.
 
 			extra_electrons(str_to<double>(args[1]));
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "cutoff"){
@@ -216,7 +217,7 @@ the user.
 			cutoff(magnitude::energy::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "spacing"){
@@ -234,25 +235,25 @@ the user.
 			spacing(magnitude::length::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "unpolarized"){
 			spin_unpolarized();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "polarized"){
 			spin_polarized();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "non-collinear") {
 			spin_non_collinear();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "temperature"){
@@ -270,7 +271,7 @@ the user.
 			temperature(magnitude::energy::parse(str_to<double>(args[1]), args[2]));
 			
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'electrons' command" << std::endl;

@@ -176,7 +176,7 @@ These are the options available:
 
 		if(args.size() == 0){
 			operator()();
-			exit(0);
+			actions::normal_exit();
 			
 		} else if(args.size() == 1 and args[0] == "non-interacting") {
 			non_interacting();
@@ -234,7 +234,7 @@ These are the options available:
 		}
 
 		if(not quiet) operator()();
-		exit(0);
+		actions::normal_exit();
 	}
 	
 } const theory;

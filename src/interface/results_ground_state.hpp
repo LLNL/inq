@@ -249,17 +249,17 @@ These are the available subcommands:
 
 		if(args.size() == 0){
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 1 and args[0] == "iterations"){
 			std::cout << iterations() << std::endl;
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 1 and args[0] == "magnetization"){
 			std::cout << magnetization() << std::endl;
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "magnetization"){
@@ -271,12 +271,12 @@ These are the available subcommands:
 			}
 
 			if(input::environment::global().comm().root())  printf("%.6f\n", magnetization()[idir]);
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 1 and args[0] == "dipole"){
 			std::cout << dipole() << std::endl;
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "dipole"){
@@ -288,7 +288,7 @@ These are the available subcommands:
 			}
 
 			if(input::environment::global().comm().root())  printf("%.6f\n", dipole()[idir]);
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args[0] == "energy"){
@@ -297,57 +297,57 @@ These are the available subcommands:
 
 			if(args.size() == 0) {
 				energy();
-				exit(0);
+				actions::normal_exit();
 			}
 
 			if(args.size() == 1 and args[0] == "total"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_total());
-				exit(0);
+				actions::normal_exit();
 			}
 
 			if(args.size() == 1 and args[0] == "kinetic"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_kinetic());
-				exit(0);
+				actions::normal_exit();
 			}
 
 			if(args.size() == 1 and args[0] == "eigenvalues"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_eigenvalues());
-				exit(0);
+				actions::normal_exit();
 			}
     
 			if(args.size() == 1 and args[0] == "external"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_external());
-				exit(0);
+				actions::normal_exit();
 			}
 
 			if(args.size() == 1 and args[0] == "non-local"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_non_local());
-				exit(0);
+				actions::normal_exit();
 			}
 
 			if(args.size() == 1 and args[0] == "hartree"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_hartree());
-				exit(0);
+				actions::normal_exit();
 			}
 
 			if(args.size() == 1 and args[0] == "xc"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_xc());
-				exit(0);
+				actions::normal_exit();
 			}
 
 			if(args.size() == 1 and args[0] == "nvxc"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_nvxc());
-				exit(0);
+				actions::normal_exit();
 			}
 
 			if(args.size() == 1 and args[0] == "exact-exchange"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_exact_exchange());
-				exit(0);
+				actions::normal_exit();
 			}
         
 			if(args.size() == 1 and args[0] == "ion"){
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_ion());
-				exit(0);
+				actions::normal_exit();
 			}
 		}
 		
@@ -359,7 +359,7 @@ These are the available subcommands:
 				if(input::environment::global().comm().root()) {
 					for(auto & force : forces_array) printf("%.20e\t%.20e\t%.20e\n", force[0], force[1], force[2]);
 				}
-				exit(0);
+				actions::normal_exit();
 					
 			} else if (args.size() == 2 or args.size() == 3) {
 				auto index = utils::str_to<long>(args[1]);
@@ -371,7 +371,7 @@ These are the available subcommands:
 
 				if(args.size() == 2) {
 					if(input::environment::global().comm().root()) printf("%.20e\t%.20e\t%.20e\n", forces_array[index][0], forces_array[index][1], forces_array[index][2]);
-					exit(0);
+					actions::normal_exit();
 				}
 					
 				auto idir = utils::str_to_index(args[2]);
@@ -382,7 +382,7 @@ These are the available subcommands:
 				}
 				
 				if(input::environment::global().comm().root()) printf("%.20e\n", forces_array[index][idir]);
-				exit(0);
+				actions::normal_exit();
 			}
 		}
 		

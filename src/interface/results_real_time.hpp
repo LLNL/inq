@@ -9,6 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <interface/actions.hpp>
 #include <input/environment.hpp>
 #include <real_time/results.hpp>
 
@@ -131,17 +132,17 @@ public:
 
 		if(args.size() == 0){
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 1 and args[0] == "total-steps"){
 			if(input::environment::global().comm().root()) printf("%ld\n", total_steps());
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 1 and args[0] == "total-time"){
 			if(input::environment::global().comm().root()) printf("%.20e\n", total_time());
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "time"){
@@ -156,7 +157,7 @@ public:
 				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time time' command" << std::endl;
 				exit(1);
 			}
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "total-energy"){
@@ -174,7 +175,7 @@ public:
 				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time total-energy' command" << std::endl;
 				exit(1);
 			}
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time' command" << std::endl;

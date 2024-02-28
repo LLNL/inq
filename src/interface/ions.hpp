@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
+#include <interface/actions.hpp>
 #include <interface/cell.hpp>
 #include <systems/ions.hpp>
 
@@ -147,7 +148,7 @@ These are the uses for the command:
 		
 		if(args.size() == 0) {
 			operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "clear"){
@@ -158,7 +159,7 @@ These are the uses for the command:
 			}
 			clear();
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
  		if(args.size() >= 2 and args[0] == "insert" and args[1] == "fractional"){
@@ -175,7 +176,7 @@ These are the uses for the command:
 			
 			insert_fractional(symbol, {xx, yy, zz});
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args[0] == "insert"){
@@ -193,7 +194,7 @@ These are the uses for the command:
 			
 			insert(symbol, {xx, yy, zz});
 			if(not quiet) operator()();
-			exit(0);
+			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "file"){
@@ -202,7 +203,7 @@ These are the uses for the command:
 				interface::cell();
 				operator()();
 			}
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(args.size() == 5 and args[0] == "file" and args[2] == "radius"){
@@ -213,7 +214,7 @@ These are the uses for the command:
 				interface::cell();
 				operator()();
 			}
-			exit(0);
+			actions::normal_exit();
 		}
 		
 		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the ions command" << std::endl;
