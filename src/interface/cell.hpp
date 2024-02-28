@@ -144,10 +144,7 @@ public:
 		}
 		
 		if(args[0] == "cubic"){
-			if(args.size() != 3 and args.size() != 4) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]" << std::endl;
-				exit(1);
-			}
+			if(args.size() != 3 and args.size() != 4) actions::error(input::environment::global().comm(), "Wrong arguments for a cubic cell definition.\nUse: inq cell cubic <lattice_parameter> <units> [periodicity]");
 			
 			auto aa = magnitude::length::parse(str_to<double>(args[1]), args[2]);
 
@@ -161,10 +158,9 @@ public:
 		
 		if(args[0] == "orthorhombic"){
 			if(args.size() != 5 and args.size() != 6) {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Wrong arguments for an orthorhombic cell definition.\nUse: inq cell orthorhombic <a> <b> <c> <units> [periodicity]" << std::endl;
-				exit(1);
+				actions::error(input::environment::global().comm(), "Wrong arguments for an orthorhombic cell definition.\nUse: inq cell orthorhombic <a> <b> <c> <units> [periodicity]");
 			}
-
+			
 			auto units = args[4];
 			auto aa = magnitude::length::parse(str_to<double>(args[1]), units);
 			auto bb = magnitude::length::parse(str_to<double>(args[2]), units);
@@ -214,8 +210,7 @@ public:
 			actions::normal_exit();
 		}
 
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'cell' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'cell' command");
 	}
 		
 } const cell ;

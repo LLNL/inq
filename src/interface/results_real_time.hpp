@@ -13,6 +13,8 @@
 #include <input/environment.hpp>
 #include <real_time/results.hpp>
 
+#include <utility>
+
 namespace inq {
 namespace interface {
 
@@ -99,7 +101,7 @@ private:
 	static auto load() {
 		try { return real_time::results::load(".inq/default_results_real_time"); }
 		catch(...){
-			if(input::environment::global().comm().root()) std::cerr << "Error: cannot find real-time results, run a real-time simulation first" << std::endl;
+			actions::error(input::environment::global().comm(), "Cannot find real-time results, run a real-time simulation first");
 			exit(1);
 		}
 	}
@@ -154,8 +156,7 @@ public:
 			} else if (args.size() == 2) {
 				if(input::environment::global().comm().root()) printf("%.20e\n", time_array[utils::str_to<long>(args[1])]);
 			} else {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time time' command" << std::endl;
-				exit(1);
+				actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time time' command");
 			}
 			actions::normal_exit();
 		}
@@ -172,15 +173,12 @@ public:
 			} else if (args.size() == 2) {
 				if(input::environment::global().comm().root()) printf("%.20e\n", energy_array[utils::str_to<long>(args[1])]);
 			} else {
-				if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time total-energy' command" << std::endl;
-				exit(1);
+				actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time total-energy' command");
 			}
 			actions::normal_exit();
 		}
 		
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'results real-time' command" << std::endl;
-		exit(1);
-    
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time' command");
 	}
 	
 } const results_real_time;

@@ -94,10 +94,7 @@ These are the options available:
 		
 		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"), bz);
  
-		if(not electrons.try_load(".inq/default_orbitals")){
-			if(input::environment::global().comm().root()) std::cerr << "Error: cannot load a ground-state electron configuration for a real-time run.\n Please run a ground-state first.\n" << std::endl;
-			exit(1);
-		}
+		if(not electrons.try_load(".inq/default_orbitals")) actions::error(input::environment::global().comm(), "Cannot load a ground-state electron configuration for a real-time run.\n Please run a ground-state first.");
 
 		auto res = real_time::results(".inq/default_results_real_time");
 		real_time::propagate(ions, electrons, [&res](auto obs){ res(obs); },
@@ -109,10 +106,7 @@ These are the options available:
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 		
-		if(args.size() == 0) {
-			if(input::environment::global().comm().root()) std::cerr << "Error: Missing argument to the 'run' command" << std::endl;
-			exit(1);
-		}
+		if(args.size() == 0) actions::error(input::environment::global().comm(), "Missing argument to the 'run' command");
 		
 		if(args.size() == 1 and args[0] == "ground-state") {
 			ground_state();
@@ -124,8 +118,7 @@ These are the options available:
 			actions::normal_exit();
 		}
 		
-		if(input::environment::global().comm().root()) std::cerr << "Error: Invalid syntax in the 'run' command" << std::endl;
-		exit(1);
+		actions::error(input::environment::global().comm(), "Invalid syntax in the 'run' command");
 	}
 	
 } const run;

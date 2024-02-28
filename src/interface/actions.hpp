@@ -19,6 +19,15 @@ void normal_exit() {
   exit(0);
 }
 
+void error(parallel::communicator & comm, std::string const & message) {
+  if(comm.root()) {
+    std::cerr << " -----------------------------------------------------\n\n";
+    std::cerr << "Error : " << message << "\n\n";
+    std::cerr << " -----------------------------------------------------\n" << std::endl;
+  }
+  exit(1);
+}
+
 }
 }
 }
