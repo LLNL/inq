@@ -158,6 +158,8 @@ static void load_optional_enum(std::string const & filename, std::optional<Type>
 
 template <typename Type>
 static void load_array(std::string const & filename, Type & array, std::string const & error_message){
+	if(array.size() == 0) return;
+	
 	auto file = std::ifstream(filename);
 
 	if(not file) throw std::runtime_error(error_message);
