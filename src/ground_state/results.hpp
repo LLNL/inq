@@ -51,9 +51,9 @@ struct results {
     int num_atoms;
     utils::load_value(dirname + "/num_atoms",      num_atoms,          error_message);
 
-    res.forces = ground_state::results::forces_type(num_atoms);
-    utils::load_array(dirname + "/forces",         res.forces,         error_message);
-    
+		res.forces = forces_type(num_atoms);
+		utils::load_array(dirname + "/forces",         res.forces,         error_message);
+		
     return res;
 	}
 
