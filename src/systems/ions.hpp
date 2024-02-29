@@ -220,6 +220,8 @@ public:
 		
 		int num;
 		utils::load_value(dirname + "/num_ions", num, error_message);
+
+		if(num == 0) return read_ions;
 		
 		auto atoms_file = std::ifstream(dirname + "/atoms");
 		if(not atoms_file) throw std::runtime_error(error_message);
@@ -238,7 +240,7 @@ public:
 			velocities_file >> vel;
 			
 			read_ions.add_atom(symbol, pos, vel);
-		}		
+		}
 		
 		return read_ions;
 	}
