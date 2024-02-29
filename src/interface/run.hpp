@@ -96,9 +96,11 @@ These are the options available:
  
 		if(not electrons.try_load(".inq/default_orbitals")) actions::error(input::environment::global().comm(), "Cannot load a ground-state electron configuration for a real-time run.\n Please run a ground-state first.");
 
+		auto opts = options::real_time::load(".inq/default_real_time_options");	
 		auto res = real_time::results(".inq/default_results_real_time");
-		real_time::propagate(ions, electrons, [&res](auto obs){ res(obs); },
-												 options::theory::load(".inq/default_theory"), options::real_time::load(".inq/default_real_time_options"), perturbations::blend::load(".inq/default_perturbations"));
+		res.obs = opts.observables_container();
+		
+		real_time::propagate(ions, electrons, [&res](auto obs){ res(obs); }, options::theory::load(".inq/default_theory"), opts, perturbations::blend::load(".inq/default_perturbations"));
 		res.save(input::environment::global().comm());
 
 	}

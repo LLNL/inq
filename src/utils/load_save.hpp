@@ -73,7 +73,9 @@ void save_value(parallel::communicator & comm, std::string const & filename, Typ
 template <typename Type>
 void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) {
+		comm.barrier();
 		if(comm.root()) std::filesystem::remove(filename);
+		comm.barrier();
 		return;
 	}
 
@@ -83,18 +85,26 @@ void save_optional(parallel::communicator & comm, std::string const & filename, 
 template <typename Type>
 void save_optional_enum(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) {
+		comm.barrier();
 		if(comm.root()) std::filesystem::remove(filename);
+		comm.barrier();
 		return;
 	}
 
 	save_value(comm, filename, static_cast<int>(*value), error_message);
-
 }
+
 template <typename Type>
-void save_array(parallel::communicator & comm, std::string const & filename, Type const & array, std::string const & error_message) {
+void save_container(parallel::communicator & comm, std::string const & filename, Type const & container, std::string const & error_message) {
 	
 	comm.barrier();
 
+	if(container.empty()) {
+		if(comm.root()) std::filesystem::remove(filename);
+		comm.barrier();
+		return;
+	}
+	
 	auto exception_happened = true;
 	if(comm.root()) {
 		
@@ -107,7 +117,7 @@ void save_array(parallel::communicator & comm, std::string const & filename, Typ
 		}
 		
 		file.precision(25);
-		for(int ii = 0; ii < long(array.size()); ii++) file << array[ii] << '\n';
+		for(auto const & el : container) file << el << '\n';
 
  		exception_happened = false;
 		comm.broadcast_value(exception_happened);
@@ -148,12 +158,50 @@ static void load_optional_enum(std::string const & filename, std::optional<Type>
 
 template <typename Type>
 static void load_array(std::string const & filename, Type & array, std::string const & error_message){
+	if(array.size() == 0) return;
+	
 	auto file = std::ifstream(filename);
 
 	if(not file) throw std::runtime_error(error_message);
 
 	for(int ii = 0; ii < long(array.size()); ii++) file >> array[ii];
 	
+}
+
+template <typename Type>
+static void load_container(std::string const & filename, Type & container){
+	auto file = std::ifstream(filename);
+	if(not file) return;
+
+	while(true) {
+		std::string str;
+		file >> str;
+		if(file.eof()) break;
+
+		auto el = typename Type::value_type{};
+		std::stringstream ss{str};
+		ss >> el;
+		container.emplace(std::move(el));
+	}
+}
+
+template <typename Type>
+static void load_vector(std::string const & filename, Type & vec){
+	vec.clear();
+	
+	auto file = std::ifstream(filename);
+	if(not file) return;
+
+	while(true) {
+		std::string str;
+		file >> str;
+		if(file.eof()) break;
+
+		auto el = typename Type::value_type{};
+		std::stringstream ss{str};
+		ss >> el;
+		vec.emplace_back(std::move(el));
+	}
 }
 
 }

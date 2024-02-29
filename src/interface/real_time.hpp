@@ -114,6 +114,21 @@ calculations. These are the available options:
 		auto opts = options::real_time::load(".inq/default_real_time_options").ehrenfest();
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
+
+	void observables_dipole() const {
+		auto opts = options::real_time::load(".inq/default_real_time_options").observables_dipole();
+		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
+	}
+
+	void observables_current() const {
+		auto opts = options::real_time::load(".inq/default_real_time_options").observables_current();
+		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
+	}
+
+	void observables_clear() const {
+		auto opts = options::real_time::load(".inq/default_real_time_options").observables_clear();
+		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
@@ -159,7 +174,31 @@ calculations. These are the available options:
 			
 			actions::error(input::environment::global().comm(), "Invalid arguments for 'real-time ions' command");
 		}
-				
+
+		if(args[0] == "observables"){
+			args.erase(args.begin());
+			
+			if(args.size() == 1 and args[0] == "dipole"){
+				observables_dipole();
+				if(not quiet) operator()();
+				actions::normal_exit();
+			}
+			
+			if(args.size() == 1 and args[0] == "current"){
+				observables_current();
+				if(not quiet) operator()();
+				actions::normal_exit();
+			}
+			
+			if(args.size() == 1 and args[0] == "clear"){
+				observables_clear();
+				if(not quiet) operator()();
+				actions::normal_exit();
+			}
+			
+			actions::error(input::environment::global().comm(), "Invalid arguments for 'real-time observables' command");
+		}
+						
 		actions::error(input::environment::global().comm(), "Invalid syntax in 'real-time' command");
 	}
 	

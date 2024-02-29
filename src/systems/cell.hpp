@@ -261,7 +261,7 @@ namespace systems {
 			auto error_message = "INQ error: Cannot save the cell to directory '" + dirname + "'.";
 
 			utils::create_directory(comm, dirname);
-			utils::save_array(comm, dirname + "/lattice",     lattice_,     error_message);
+			utils::save_container(comm, dirname + "/lattice",     lattice_,     error_message);
 			utils::save_value(comm, dirname + "/periodicity", periodicity_, error_message);
 		}
 

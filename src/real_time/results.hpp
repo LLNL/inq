@@ -21,10 +21,13 @@ class results {
 
 public:
 
+	options::real_time::observables_type obs;
   long total_steps;
   double total_time;
 	std::vector<double> time;
 	std::vector<double> total_energy;
+	std::vector<vector3<double>> dipole;
+	std::vector<vector3<double>> current;
 	
   results(std::string const & arg_dirname):
     dirname_(arg_dirname),
@@ -40,6 +43,13 @@ public:
     time.push_back(observables.time());
 		total_energy.push_back(observables.energy().total());
 
+		if(obs.find(options::real_time::observables::dipole) != obs.end()){
+			dipole.emplace_back(observables.dipole());
+		}
+
+		if(obs.find(options::real_time::observables::current) != obs.end()){
+			current.emplace_back(observables.current());
+		}
   }
 
 	void save(parallel::communicator & comm) const {
@@ -48,8 +58,10 @@ public:
     utils::create_directory(comm, dirname_);
 		utils::save_value(comm, dirname_ + "/total_steps",    total_steps,    error_message);
 		utils::save_value(comm, dirname_ + "/total_time",     total_time,     error_message);
-		utils::save_array(comm, dirname_ + "/time",           time,           error_message);
-		utils::save_array(comm, dirname_ + "/total_energy",   total_energy,   error_message);
+		utils::save_container(comm, dirname_ + "/time",           time,           error_message);
+		utils::save_container(comm, dirname_ + "/total_energy",   total_energy,   error_message);
+		utils::save_container(comm, dirname_ + "/dipole",         dipole,         error_message);
+		utils::save_container(comm, dirname_ + "/current",        current,        error_message);
 	}
   
   static auto load(std::string const & dirname) {
@@ -65,6 +77,9 @@ public:
 
 		res.total_energy.resize(res.total_steps + 1);
 		utils::load_array(dirname + "/total_energy",    res.total_energy,    error_message);
+
+		utils::load_vector(dirname + "/dipole",         res.dipole);
+		utils::load_vector(dirname + "/current",        res.current);
 		
     return res;
 	}

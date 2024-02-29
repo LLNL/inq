@@ -206,9 +206,9 @@ public:
 
 		cell_.save(comm, dirname + "/cell");
 		utils::save_value(comm, dirname + "/num_ions",   size(),      error_message);
-		utils::save_array(comm, dirname + "/atoms",      atoms_,      error_message);
-		utils::save_array(comm, dirname + "/positions",  positions_,  error_message);
-		utils::save_array(comm, dirname + "/velocities", velocities_, error_message);
+		utils::save_container(comm, dirname + "/atoms",      atoms_,      error_message);
+		utils::save_container(comm, dirname + "/positions",  positions_,  error_message);
+		utils::save_container(comm, dirname + "/velocities", velocities_, error_message);
 	}
 	
 	static auto load(std::string const & dirname) {
@@ -220,6 +220,8 @@ public:
 		
 		int num;
 		utils::load_value(dirname + "/num_ions", num, error_message);
+
+		if(num == 0) return read_ions;
 		
 		auto atoms_file = std::ifstream(dirname + "/atoms");
 		if(not atoms_file) throw std::runtime_error(error_message);
@@ -238,7 +240,7 @@ public:
 			velocities_file >> vel;
 			
 			read_ions.add_atom(symbol, pos, vel);
-		}		
+		}
 		
 		return read_ions;
 	}
