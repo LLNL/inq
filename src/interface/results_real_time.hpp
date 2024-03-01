@@ -130,7 +130,15 @@ public:
 	}
 
 	auto dipole() const {
-		return load().dipole;
+		auto && res = load();
+		if(res.dipole.size() == 0)	actions::error(input::environment::global().comm(), "The dipole was not calculated during the real-time simulation");
+		return res.dipole;
+	}
+	
+	auto current() const {
+		auto && res = load();
+		if(res.current.size() == 0)	actions::error(input::environment::global().comm(), "The current was not calculated during the real-time simulation.");
+		return res.current;
 	}
 	
 private:
@@ -217,6 +225,7 @@ public:
 		}
 
 		if(args[0] == "dipole") array_output_vector(args, dipole(), "result real-time dipole");
+		if(args[0] == "current") array_output_vector(args, current(), "result real-time current");
 				
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time' command");
 	}
