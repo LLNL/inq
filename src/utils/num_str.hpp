@@ -49,9 +49,9 @@ auto str_to<int>(std::string const & str) {
 }
 
 auto str_to_index(std::string const & str) {
-	if(str == "1" or str == "x") return 0;
-	if(str == "2" or str == "y") return 1;
-	if(str == "3" or str == "z") return 2;
+	if(str == "x") return 0;
+	if(str == "y") return 1;
+	if(str == "z") return 2;
   return -1;
 }
 
