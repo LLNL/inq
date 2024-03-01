@@ -93,5 +93,6 @@ Software Title: Electronic Structure Engine
 Date Submitted: Wednesday, December 11, 2019
 Date Accepted: Wednesday, January 29, 2020
 
-> The work was supported by the Center for Non-Perturbative Studies of Functional Materials Under Non-Equilibrium Conditions (NPNEQ) funded by the Computational Materials Sciences Program of the US Department of Energy, Office of Science, Basic Energy Sciences, Materials Sciences and Engineering  Division.
-> This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.
+The work is part of the activities of the Center for Non-Perturbative Studies of Functional Materials Under Non-Equilibrium Conditions (NPNEQ).
+
+Acknowledgment: This material is based upon work supported by the U.S. Department of Energy, Office of Science, Office of Basic Energy Sciences, Materials Sciences and Engineering Division, under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.
