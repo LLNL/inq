@@ -144,6 +144,28 @@ public:
 private:
 
 	template <typename ArgsType, typename ArrayType> 
+	void array_output_scalar(ArgsType args, ArrayType const & array, std::string const & label, std::string const & command_name) const {
+		
+		if(args.size() == 1) {
+			
+			auto time_array = time();
+			if(input::environment::global().comm().root()) {
+				printf("%-30s\t%-30s\n", "#time [atu]", label.c_str());
+				for(auto ii = 0ul; ii < time_array.size(); ii++) printf("%-30.20e\t%-30.20e\n", time_array[ii], array[ii]);
+			}
+			actions::normal_exit();
+			
+		} else if (args.size() == 2) {
+			auto index = utils::str_to<long>(args[1]);
+			if(index < 0 or index >= (long) array.size()) actions::error(input::environment::global().comm(), "Invalid index ", index, " in the '" + command_name + "' command");
+			if(input::environment::global().comm().root()) printf("%-30.20e\n", array[index]);
+			actions::normal_exit();
+		} else {
+			actions::error(input::environment::global().comm(), "Invalid syntax in the '" + command_name + "' command");
+		}
+	}
+	
+	template <typename ArgsType, typename ArrayType> 
 	void array_output_vector(ArgsType args, ArrayType const & array, std::string const & label, std::string const & command_name) const {
 		
 		if(args.size() == 1) {
@@ -208,25 +230,9 @@ public:
 			actions::normal_exit();
 		}
 
-		if(args[0] == "total-energy"){
-			auto energy_array = total_energy();
-			if(args.size() == 1) {
-
-				auto time_array = time();
-				if(input::environment::global().comm().root()) {
-					for(auto ii = 0ul; ii < time_array.size(); ii++) printf("%.20e\t%.20e\n", time_array[ii], energy_array[ii]);
-				}
-				
-			} else if (args.size() == 2) {
-				if(input::environment::global().comm().root()) printf("%.20e\n", energy_array[utils::str_to<long>(args[1])]);
-			} else {
-				actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time total-energy' command");
-			}
-			actions::normal_exit();
-		}
-
-		if(args[0] == "dipole")  array_output_vector(args, dipole(),  "dipole [au]",  "result real-time dipole");
-		if(args[0] == "current") array_output_vector(args, current(), "current [au]", "result real-time current");
+		if(args[0] == "total-energy")   array_output_scalar(args, total_energy(),    "total-energy [Ha]",    "result real-time energy");
+		if(args[0] == "dipole")         array_output_vector(args, dipole(),          "dipole [au]",          "result real-time dipole");
+		if(args[0] == "current")        array_output_vector(args, current(),         "current [au]",         "result real-time current");
 		
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time' command");
 	}
