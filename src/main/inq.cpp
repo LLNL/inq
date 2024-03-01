@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
 		{ "noncollinear"s,             "non-collinear"s            },
 		{ "noninteracting"s,           "non-interacting"s          },
 		{ "nonlocal"s,                 "non-local"s                },
+		{ "observable"s,               "observables"s              },
 		{ "perturbation"s,             "perturbations"s            },
 		{ "realtime"s,                 "real-time"s                },
 		{ "rt"s,                       "real-time"s                },
