@@ -144,13 +144,14 @@ public:
 private:
 
 	template <typename ArgsType, typename ArrayType> 
-	void array_output_vector(ArgsType args, ArrayType const & array, std::string const & command_name) const {
+	void array_output_vector(ArgsType args, ArrayType const & array, std::string const & label, std::string const & command_name) const {
 		
 		if(args.size() == 1) {
 			
 			auto time_array = time();
 			if(input::environment::global().comm().root()) {
-				for(auto ii = 0ul; ii < time_array.size(); ii++) printf("%.20e\t%.20e\t%.20e\t%.20e\n", time_array[ii], array[ii][0], array[ii][1], array[ii][2]);
+				printf("%-30s\t%-30s\t%-30s\t%-30s\t\n", "#time [atu]", ("x-" + label).c_str(), ("y-" + label).c_str(), ("z-" + label).c_str());
+				for(auto ii = 0ul; ii < time_array.size(); ii++) printf("%-30.20e\t%-30.20e\t%-30.20e\t%-30.20e\n", time_array[ii], array[ii][0], array[ii][1], array[ii][2]);
 			}
 			actions::normal_exit();
 			
@@ -224,9 +225,9 @@ public:
 			actions::normal_exit();
 		}
 
-		if(args[0] == "dipole") array_output_vector(args, dipole(), "result real-time dipole");
-		if(args[0] == "current") array_output_vector(args, current(), "result real-time current");
-				
+		if(args[0] == "dipole")  array_output_vector(args, dipole(),  "dipole [au]",  "result real-time dipole");
+		if(args[0] == "current") array_output_vector(args, current(), "current [au]", "result real-time current");
+		
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time' command");
 	}
 	
