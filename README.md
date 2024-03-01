@@ -95,4 +95,6 @@ Date Accepted: Wednesday, January 29, 2020
 
 The work is part of the activities of the Center for Non-Perturbative Studies of Functional Materials Under Non-Equilibrium Conditions (NPNEQ).
 
-Acknowledgment: This material is based upon work supported by the U.S. Department of Energy, Office of Science, Office of Basic Energy Sciences, Materials Sciences and Engineering Division, under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.
+## Acknowledgment
+
+This material is based upon work supported by the U.S. Department of Energy, Office of Science, Office of Basic Energy Sciences, Materials Sciences and Engineering Division, under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.
