@@ -133,6 +133,40 @@ public:
 		return load().dipole;
 	}
 	
+private:
+
+	template <typename ArgsType, typename ArrayType> 
+	void array_output_vector(ArgsType args, ArrayType const & array, std::string const & command_name) const {
+		
+		if(args.size() == 1) {
+			
+			auto time_array = time();
+			if(input::environment::global().comm().root()) {
+				for(auto ii = 0ul; ii < time_array.size(); ii++) printf("%.20e\t%.20e\t%.20e\t%.20e\n", time_array[ii], array[ii][0], array[ii][1], array[ii][2]);
+			}
+			actions::normal_exit();
+			
+		} else if (args.size() == 2 or args.size() == 3) {
+			auto index = utils::str_to<long>(args[1]);
+			if(index < 0 or index >= (long) array.size()) actions::error(input::environment::global().comm(), "Invalid index ", index, " in the '" + command_name + "' command");
+			
+			if(args.size() == 2) {
+				if(input::environment::global().comm().root()) printf("%.20e\t%.20e\t%.20e\n", array[index][0], array[index][1], array[index][2]);
+				actions::normal_exit();
+			}
+			
+			auto idir = utils::str_to_index(args[2]);
+			if(idir == -1) actions::error(input::environment::global().comm(), "Invalid coordinate index in the '" + command_name + "' command");
+			if(input::environment::global().comm().root()) printf("%.20e\n", array[index][idir]);
+			actions::normal_exit();
+			
+		} else {
+			actions::error(input::environment::global().comm(), "Invalid syntax in the '" + command_name + "' command");
+		}
+	}
+	
+public:
+	
 	template <typename ArgsType>
 	void command(ArgsType args, bool quiet) const {
 
@@ -182,34 +216,7 @@ public:
 			actions::normal_exit();
 		}
 
-		if(args[0] == "dipole"){
-			auto array = dipole();
-			if(args.size() == 1) {
-
-				auto time_array = time();
-				if(input::environment::global().comm().root()) {
-					for(auto ii = 0ul; ii < time_array.size(); ii++) printf("%.20e\t%.20e\t%.20e\t%.20e\n", time_array[ii], array[ii][0], array[ii][1], array[ii][2]);
-				}
-				actions::normal_exit();
-				
-			} else if (args.size() == 2 or args.size() == 3) {
-				auto index = utils::str_to<long>(args[1]);
-				if(index < 0 or index >= (long) array.size()) actions::error(input::environment::global().comm(), "Invalid index ", index, " in the 'results real-time dipole' command");
-				
-				if(args.size() == 2) {
-					if(input::environment::global().comm().root()) printf("%.20e\t%.20e\t%.20e\n", array[index][0], array[index][1], array[index][2]);
-					actions::normal_exit();
-				}
-
-				auto idir = utils::str_to_index(args[2]);
-				if(idir == -1) actions::error(input::environment::global().comm(), "Invalid coordinate index in the 'real-time dipole' command");
-				if(input::environment::global().comm().root()) printf("%.20e\n", array[index][idir]);
-				actions::normal_exit();
-				
-			} else {
-				actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time dipole' command");
-			}
-		}
+		if(args[0] == "dipole") array_output_vector(args, dipole(), "result real-time dipole");
 				
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time' command");
 	}
