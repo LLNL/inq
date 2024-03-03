@@ -80,7 +80,7 @@ if(ENABLE_CUDA)
 		target_link_libraries(inq INTERFACE ${NCCL_LIBRARIES})
   endif()
 
-	set(ENABLE_GPU TRUE)	
+	set(ENABLE_GPU TRUE)    
 	set(GPU_LANGUAGE CUDA)
 endif()
 
@@ -95,7 +95,7 @@ if(ENABLE_HIP)
   target_link_libraries(inq INTERFACE hip::hipfft)
   target_link_libraries(inq INTERFACE roc::hipblas)
 
-	find_package(rocprim REQUIRED CONFIG PATHS "/opt/rocm/rocprim") 	# On ROCm rocThrust requires rocPRIM
+	find_package(rocprim REQUIRED CONFIG PATHS "/opt/rocm/rocprim")     # On ROCm rocThrust requires rocPRIM
 	find_package(rocthrust REQUIRED CONFIG PATHS "/opt/rocm/rocthrust")
 
 	target_link_libraries(inq INTERFACE roc::rocthrust)
@@ -186,7 +186,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/multi)
 target_link_libraries(inq INTERFACE multi)
 
 # MPI3
-set(bmpi3_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
+# set(bmpi3_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/mpi3)
 target_link_libraries(inq INTERFACE bmpi3)
