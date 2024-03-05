@@ -79,8 +79,11 @@ public:
 		utils::load_array(dirname + "/total_energy",    res.total_energy,    error_message);
 
 		utils::load_vector(dirname + "/dipole",         res.dipole);
+		assert((long) res.dipole.size() == res.total_steps + 1 or res.dipole.size() == 0ul);
+
 		utils::load_vector(dirname + "/current",        res.current);
-		
+		assert((long) res.current.size() == res.total_steps + 1 or res.current.size() == 0ul);
+
     return res;
 	}
 
