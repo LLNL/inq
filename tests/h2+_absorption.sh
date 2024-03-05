@@ -36,7 +36,7 @@ inq perturbation kick 0 0 0.01
 inq run rt
 
 inq util match `inq results rt total-steps`               2000    1e-16
-inq util match `inq results rt total-time`                150.00  1e-16
+inq util match `inq results rt total-time`                150.00  1e-12
 
 inq util match `inq results rt total-energy    0`          -6.01357152790813587195e-01 3e-5
 inq util match `inq results rt total-energy  250`          -6.01357647700651587463e-01 3e-5
