@@ -44,11 +44,10 @@ public:
 		
 		template <typename OccType, typename ArrayType>
 		static double occ_sum(OccType const & occupations, ArrayType const & array) {
-
-			auto func = occ_sum_func<decltype(begin(occupations)), decltype(begin(array))>{begin(occupations), begin(array)};
+			CALI_CXX_MARK_FUNCTION;
 			
 			assert(occupations.size() == array.size());
-			
+			auto func = occ_sum_func<decltype(begin(occupations)), decltype(begin(array))>{begin(occupations), begin(array)};
 			return gpu::run(gpu::reduce(array.size()), func);
 		}
 
