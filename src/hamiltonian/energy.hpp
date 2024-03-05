@@ -28,7 +28,31 @@ namespace hamiltonian {
 		double nvxc_ = 0.0;
 		double exact_exchange_ = 0.0;
 
-	public:
+#ifdef ENABLE_CUDA
+public:
+#endif
+		
+		template <typename OccType, typename ArrayType>
+		struct occ_sum_func {
+			OccType   occ;
+			ArrayType arr;
+
+			GPU_FUNCTION double operator()(long ip) const {
+				return occ[ip]*real(arr[ip]);
+			}
+		};
+		
+		template <typename OccType, typename ArrayType>
+		static double occ_sum(OccType const & occupations, ArrayType const & array) {
+
+			auto func = occ_sum_func<decltype(begin(occupations)), decltype(begin(array))>{begin(occupations), begin(array)};
+			
+			assert(occupations.size() == array.size());
+			
+			return gpu::run(gpu::reduce(array.size()), func);
+		}
+
+public:
 		
 		energy() = default;
 
@@ -39,8 +63,6 @@ namespace hamiltonian {
 
 			auto normres = gpu::array<complex, 2>({static_cast<gpu::array<complex, 2>::size_type>(el.kpin().size()), el.max_local_set_size()});
 
-			auto energy_term = [](auto occ, auto ev){ return occ*real(ev); };
-			
 			eigenvalues_ = 0.0;
 			non_local_ = 0.0;
 			exact_exchange_ = 0.0;
@@ -54,19 +76,19 @@ namespace hamiltonian {
 					el.eigenvalues()[iphi] = operations::overlap_diagonal_normalized(residual, phi, operations::real_part{});
 					operations::shift(-1.0, el.eigenvalues()[iphi], phi, residual);
 					normres[iphi] = operations::overlap_diagonal(residual);
-					eigenvalues_ += operations::sum(el.occupations()[iphi], el.eigenvalues()[iphi], energy_term);
+					eigenvalues_ += occ_sum(el.occupations()[iphi], el.eigenvalues()[iphi]);
 				}
 
 				{
 					CALI_CXX_MARK_SCOPE("energy::calculate::non_local");
 					auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);
-					non_local_ += operations::sum(el.occupations()[iphi], nl_me, energy_term);
+					non_local_ += occ_sum(el.occupations()[iphi], nl_me);
 				}
 
 				if(ham.exchange.enabled()){
 					CALI_CXX_MARK_SCOPE("energy::calculate::exchange");
 					auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(phi), phi);
-					exact_exchange_ += 0.5*operations::sum(el.occupations()[iphi], exchange_me, energy_term);
+					exact_exchange_ += 0.5*occ_sum(el.occupations()[iphi], exchange_me);
 				}
 
 				iphi++;
