@@ -56,9 +56,18 @@ auto integral(basis::field<BasisType, ElementType1> const & phi1, basis::field<B
 }
 
 template <class BasisType, class ElementType>
-auto integral_abs(basis::field<BasisType, ElementType> const & phi){
+double integral_abs(basis::field<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
-	return integral(phi, phi, [](auto t1, auto t2){return fabs(t1);});
+
+	gpu::array<ElementType, 1> sum_array(phi.basis().local_size());
+	gpu::run(phi.basis().local_size(),
+					 [su = begin(sum_array), ph = begin(phi.linear())] GPU_LAMBDA (auto ip) {
+						 su[ip] = fabs(ph[ip]);
+					 });
+
+	auto integral_value = phi.basis().volume_element()*sum(sum_array);
+	if(phi.basis().comm().size() > 1) phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
