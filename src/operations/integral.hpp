@@ -88,7 +88,7 @@ auto integral_product(basis::field<BasisType, ElementType1> const & phi1, basis:
 						 su[ip] = p1[ip]*p2[ip];
 					 });
 
-	auto integral_value =  phi1.basis().volume_element()*sum(sum_array);
+	auto integral_value = phi1.basis().volume_element()*sum(sum_array);
 	if(phi1.basis().comm().size() > 1) phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	return integral_value;
 }
@@ -113,15 +113,39 @@ auto integral_product_sum(basis::field_set<BasisType, ElementType1> const & phi1
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
-auto integral_absdiff(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
+double integral_absdiff(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
 	CALI_CXX_MARK_FUNCTION;
-	return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
+	
+	assert(phi1.basis() == phi2.basis());
+	
+	gpu::array<double, 1> sum_array(phi1.basis().local_size());
+
+	gpu::run(phi1.basis().local_size(),
+					 [su = begin(sum_array), p1 = begin(phi1.linear()), p2 = begin(phi2.linear())] GPU_LAMBDA (auto ip) {
+						 su[ip] = fabs(p1[ip] - p2[ip]);
+					 });
+
+	auto integral_value = phi1.basis().volume_element()*sum(sum_array);
+	if(phi1.basis().comm().size() > 1) phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
-auto integral_sum_absdiff(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
+double integral_sum_absdiff(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
 	CALI_CXX_MARK_FUNCTION;
-	return real(integral_sum(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
+
+	assert(phi1.basis() == phi2.basis());
+	
+	gpu::array<double, 1> sum_array(phi1.matrix().flatted().size());
+
+	gpu::run(phi1.matrix().flatted().size(),
+					 [su = begin(sum_array), p1 = begin(phi1.matrix().flatted()), p2 = begin(phi2.matrix().flatted())] GPU_LAMBDA (auto ip) {
+						 su[ip] = fabs(p1[ip] - p2[ip]);
+					 });
+
+	auto integral_value = phi1.basis().volume_element()*sum(sum_array);
+	if(phi1.basis().comm().size() > 1) phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 }
