@@ -174,12 +174,12 @@ static void load_container(std::string const & filename, Type & container){
 	if(not file) return;
 
 	while(true) {
-		std::string str;
-		file >> str;
+		std::string line;
+		std::getline(file, line);
 		if(file.eof()) break;
 
 		auto el = typename Type::value_type{};
-		std::stringstream ss{str};
+		std::stringstream ss{line};
 		ss >> el;
 		container.emplace(std::move(el));
 	}
@@ -193,12 +193,12 @@ static void load_vector(std::string const & filename, Type & vec){
 	if(not file) return;
 
 	while(true) {
-		std::string str;
-		file >> str;
+		std::string line;
+		std::getline(file, line);
 		if(file.eof()) break;
 
 		auto el = typename Type::value_type{};
-		std::stringstream ss{str};
+		std::stringstream ss{line};
 		ss >> el;
 		vec.emplace_back(std::move(el));
 	}
