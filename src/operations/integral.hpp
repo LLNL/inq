@@ -25,9 +25,7 @@ auto integral(basis::field<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
-	if(phi.basis().comm().size() > 1) {
-		phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-	}
+	if(phi.basis().comm().size() > 1) phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	return integral_value;
 }
 
@@ -36,61 +34,97 @@ auto integral_sum(basis::field_set<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	auto integral_value = phi.basis().volume_element()*sum(phi.matrix().flatted());
-	if(phi.full_comm().size() > 1) {
-		phi.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-	}
-	return integral_value;
-}
-
-template <class BasisType, class ElementType1, class ElementType2, class BinaryOp>
-auto integral(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2, BinaryOp const op){
-	CALI_CXX_MARK_FUNCTION;
-	
-	assert(phi1.basis() == phi2.basis());
-
-	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
-	if(phi1.basis().comm().size() > 1) {
-		phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-	}
-	return integral_value;
-}
-
-template <class BasisType, class ElementType1, class ElementType2, class BinaryOp>
-auto integral_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2, BinaryOp const op){
-	CALI_CXX_MARK_FUNCTION;
-	
-	assert(phi1.basis() == phi2.basis());
-
-	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.matrix().flatted(), phi2.matrix().flatted(), op);
-	if(phi1.full_comm().size() > 1) {
-		phi1.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-	}
+	if(phi.full_comm().size() > 1) phi.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	return integral_value;
 }
 
 template <class BasisType, class ElementType>
-auto integral_abs(basis::field<BasisType, ElementType> const & phi){
-	return integral(phi, phi, [](auto t1, auto t2){return fabs(t1);});
+double integral_abs(basis::field<BasisType, ElementType> const & phi){
+	CALI_CXX_MARK_FUNCTION;
+
+	gpu::array<ElementType, 1> sum_array(phi.basis().local_size());
+	gpu::run(phi.basis().local_size(),
+					 [su = begin(sum_array), ph = begin(phi.linear())] GPU_LAMBDA (auto ip) {
+						 su[ip] = fabs(ph[ip]);
+					 });
+
+	auto integral_value = phi.basis().volume_element()*sum(sum_array);
+	if(phi.basis().comm().size() > 1) phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
-auto integral_product(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
-	return integral(phi1, phi2, std::multiplies<>());
+auto integral_product(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2) -> decltype(ElementType1{}*ElementType2{}) {
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(phi1.basis() == phi2.basis());
+	
+	using type = decltype(ElementType1{}*ElementType2{});
+	gpu::array<type, 1> sum_array(phi1.basis().local_size());
+
+	gpu::run(phi1.basis().local_size(),
+					 [su = begin(sum_array), p1 = begin(phi1.linear()), p2 = begin(phi2.linear())] GPU_LAMBDA (auto ip) {
+						 su[ip] = p1[ip]*p2[ip];
+					 });
+
+	auto integral_value = phi1.basis().volume_element()*sum(sum_array);
+	if(phi1.basis().comm().size() > 1) phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
-auto integral_product_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
-	return integral_sum(phi1, phi2, std::multiplies<>());
+auto integral_product_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2) -> decltype(ElementType1{}*ElementType2{}) {
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(phi1.basis() == phi2.basis());
+	
+	using type = decltype(ElementType1{}*ElementType2{});
+	gpu::array<type, 1> sum_array(phi1.matrix().flatted().size());
+
+	gpu::run(phi1.matrix().flatted().size(),
+					 [su = begin(sum_array), p1 = begin(phi1.matrix().flatted()), p2 = begin(phi2.matrix().flatted())] GPU_LAMBDA (auto ip) {
+						 su[ip] = p1[ip]*p2[ip];
+					 });
+
+	auto integral_value = phi1.basis().volume_element()*sum(sum_array);
+	if(phi1.basis().comm().size() > 1) phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
-auto integral_absdiff(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
-	return real(integral(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
+double integral_absdiff(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2){
+	CALI_CXX_MARK_FUNCTION;
+	
+	assert(phi1.basis() == phi2.basis());
+	
+	gpu::array<double, 1> sum_array(phi1.basis().local_size());
+
+	gpu::run(phi1.basis().local_size(),
+					 [su = begin(sum_array), p1 = begin(phi1.linear()), p2 = begin(phi2.linear())] GPU_LAMBDA (auto ip) {
+						 su[ip] = fabs(p1[ip] - p2[ip]);
+					 });
+
+	auto integral_value = phi1.basis().volume_element()*sum(sum_array);
+	if(phi1.basis().comm().size() > 1) phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
-auto integral_sum_absdiff(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
-	return real(integral_sum(phi1, phi2, [](auto t1, auto t2){return fabs(t1 - t2);}));
+double integral_sum_absdiff(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(phi1.basis() == phi2.basis());
+	
+	gpu::array<double, 1> sum_array(phi1.matrix().flatted().size());
+
+	gpu::run(phi1.matrix().flatted().size(),
+					 [su = begin(sum_array), p1 = begin(phi1.matrix().flatted()), p2 = begin(phi2.matrix().flatted())] GPU_LAMBDA (auto ip) {
+						 su[ip] = fabs(p1[ip] - p2[ip]);
+					 });
+
+	auto integral_value = phi1.basis().volume_element()*sum(sum_array);
+	if(phi1.basis().comm().size() > 1) phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 }

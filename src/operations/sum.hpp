@@ -33,7 +33,7 @@ typename array_type::element sum(const array_type & phi){
 template <class ArrayType, class UnaryOp>
 auto sum(ArrayType const & arr, UnaryOp const & op){
 
-	CALI_CXX_MARK_SCOPE("sum(2arg)");
+	CALI_CXX_MARK_SCOPE("sum(1arg, op)");
 
 	using return_type = decltype(op(arr[0]));
 
