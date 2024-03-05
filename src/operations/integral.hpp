@@ -25,9 +25,7 @@ auto integral(basis::field<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	auto integral_value = phi.basis().volume_element()*sum(phi.linear());
-	if(phi.basis().comm().size() > 1) {
-		phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-	}
+	if(phi.basis().comm().size() > 1) phi.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	return integral_value;
 }
 
@@ -36,22 +34,7 @@ auto integral_sum(basis::field_set<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
 	
 	auto integral_value = phi.basis().volume_element()*sum(phi.matrix().flatted());
-	if(phi.full_comm().size() > 1) {
-		phi.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-	}
-	return integral_value;
-}
-
-template <class BasisType, class ElementType1, class ElementType2, class BinaryOp>
-auto integral(basis::field<BasisType, ElementType1> const & phi1, basis::field<BasisType, ElementType2> const & phi2, BinaryOp const op){
-	CALI_CXX_MARK_FUNCTION;
-	
-	assert(phi1.basis() == phi2.basis());
-
-	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.linear(), phi2.linear(), op);
-	if(phi1.basis().comm().size() > 1) {
-		phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-	}
+	if(phi.full_comm().size() > 1) phi.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
 	return integral_value;
 }
 
