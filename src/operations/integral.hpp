@@ -94,9 +94,22 @@ auto integral_product(basis::field<BasisType, ElementType1> const & phi1, basis:
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
-auto integral_product_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2){
+auto integral_product_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2) -> decltype(ElementType1{}*ElementType2{}) {
 	CALI_CXX_MARK_FUNCTION;
-	return integral_sum(phi1, phi2, std::multiplies<>());
+
+	assert(phi1.basis() == phi2.basis());
+	
+	using type = decltype(ElementType1{}*ElementType2{});
+	gpu::array<type, 1> sum_array(phi1.matrix().flatted().size());
+
+	gpu::run(phi1.matrix().flatted().size(),
+					 [su = begin(sum_array), p1 = begin(phi1.matrix().flatted()), p2 = begin(phi2.matrix().flatted())] GPU_LAMBDA (auto ip) {
+						 su[ip] = p1[ip]*p2[ip];
+					 });
+
+	auto integral_value = phi1.basis().volume_element()*sum(sum_array);
+	if(phi1.basis().comm().size() > 1) phi1.basis().comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
 }
 
 template <class BasisType, class ElementType1, class ElementType2>
