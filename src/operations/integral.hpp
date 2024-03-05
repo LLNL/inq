@@ -55,19 +55,6 @@ auto integral(basis::field<BasisType, ElementType1> const & phi1, basis::field<B
 	return integral_value;
 }
 
-template <class BasisType, class ElementType1, class ElementType2, class BinaryOp>
-auto integral_sum(basis::field_set<BasisType, ElementType1> const & phi1, basis::field_set<BasisType, ElementType2> const & phi2, BinaryOp const op){
-	CALI_CXX_MARK_FUNCTION;
-	
-	assert(phi1.basis() == phi2.basis());
-
-	auto integral_value = phi1.basis().volume_element()*operations::sum(phi1.matrix().flatted(), phi2.matrix().flatted(), op);
-	if(phi1.full_comm().size() > 1) {
-		phi1.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
-	}
-	return integral_value;
-}
-
 template <class BasisType, class ElementType>
 auto integral_abs(basis::field<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
