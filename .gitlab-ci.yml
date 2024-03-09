@@ -511,6 +511,7 @@ cuda-mpich-fast-build:
       - find -name \*.o | xargs rm -v
       - cd ../
       - time tar -Ipixz -cvf cuda-mpich-fast-build.tar.xz build/
+      - du -sh build/*
       - ls -lh cuda-mpich-fast-build.tar.xz
     artifacts:
       paths:
@@ -519,31 +520,22 @@ cuda-mpich-fast-build:
 cuda-mpich-fast-utests:
     image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     stage: test
-    needs: []
+    needs: [cuda-mpich-fast-build]
     tags:
       - cuda-docker
     script:
       - apt update -qq
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
-      - apt purge -y -qq clang clang-14
-      - apt autoremove -y -qq
-      - nvcc -V
-      - export GPUBIND=`pwd`/scripts/gpubind
-      - mkdir build
+      - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
       - cd build
-      - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
-      - make -j2 _pinq inq_executable
       - cmake --build . --target install/fast
       - cd speed_tests
-      -   make -j2
       -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
       - cd ..
       - cd external_libs/pseudopod
-      -   make -j2
       -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
       - cd ../../
       - cd src/
-      -   make -j2
       -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
       -   INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       -   INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -553,20 +545,14 @@ cuda-mpich-fast-utests:
 cuda-mpich-fast-itests:
     image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     stage: test
-    needs: []
+    needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
     script:
       - apt update -qq
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
-      - apt purge -y -qq clang clang-14
-      - apt autoremove -y -qq
-      - nvcc -V
-      - export GPUBIND=`pwd`/scripts/gpubind
-      - mkdir build
-      - cd build
-      - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=yes -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich
-      - make -j2 _pinq inq_executable
+      - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
+      - cd build      
       - cmake --build . --target install/fast
       - cd tests/;
       -   time make -j2
