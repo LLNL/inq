@@ -516,33 +516,7 @@ cuda-mpich-fast-build:
       paths:
       - cuda-mpich-fast-build.tar.xz
 
-cuda-mpich-fast-utests:
-    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
-    stage: test
-    needs: [cuda-mpich-fast-build]
-    tags:
-      - cuda-docker
-    script:
-      - apt update -qq
-      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
-      - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
-      - export GPUBIND=`pwd`/scripts/gpubind
-      - cd build
-      - cmake --build . --target install/fast
-      - cd speed_tests
-      -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      - cd ..
-      - cd external_libs/pseudopod
-      -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      - cd ../../
-      - cd src/
-      -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      -   INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      - cd ..
-
-cuda-mpich-fast-itests:
+cuda-mpich-fast-1p:
     image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     stage: test
     needs: [cuda-mpich-fast-build]    
@@ -555,12 +529,52 @@ cuda-mpich-fast-itests:
       - export GPUBIND=`pwd`/scripts/gpubind
       - cd build      
       - cmake --build . --target install/fast
-      - cd tests/;
-      -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      -   INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      - cd ../
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+
+cuda-mpich-fast-2p:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
+    stage: test
+    needs: [cuda-mpich-fast-build]    
+    tags:
+      - cuda-docker
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
+      - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - cd build      
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+
+cuda-mpich-fast-4p:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
+    stage: test
+    needs: [cuda-mpich-fast-build]    
+    tags:
+      - cuda-docker
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
+      - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - cd build      
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+
+cuda-mpich-fast-5p:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
+    stage: test
+    needs: [cuda-mpich-fast-build]    
+    tags:
+      - cuda-docker
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
+      - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - cd build      
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 #########################################################################################################################
 # NVIDIA MPICH DEBUG
@@ -591,7 +605,7 @@ cuda-mpich-debug-build:
       paths:
       - cuda-mpich-debug-build.tar.xz
 
-cuda-mpich-debug-utests:
+cuda-mpich-debug-1p:
     image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     stage: test
     needs: [cuda-mpich-debug-build]
@@ -604,20 +618,12 @@ cuda-mpich-debug-utests:
       - export GPUBIND=`pwd`/scripts/gpubind
       - cd build
       - cmake --build . --target install/fast
-      - cd speed_tests
-      -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      - cd ..
-      - cd external_libs/pseudopod
-      -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      - cd ../../
-      - cd src/
-      -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      -   INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      - cd ..
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
-cuda-mpich-debug-itests:
+cuda-mpich-debug-1p:
     image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
     stage: test
     needs: [cuda-mpich-debug-build]
@@ -630,13 +636,53 @@ cuda-mpich-debug-itests:
       - export GPUBIND=`pwd`/scripts/gpubind
       - cd build
       - cmake --build . --target install/fast
-      - cd tests/;
-      -   INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
-      -   INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      -   INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      - cd ../
-      
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+
+cuda-mpich-debug-2p:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
+    stage: test
+    needs: [cuda-mpich-debug-build]
+    tags:
+      - cuda-docker
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
+      - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+
+cuda-mpich-debug-3p:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
+    stage: test
+    needs: [cuda-mpich-debug-build]
+    tags:
+      - cuda-docker
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
+      - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+
+cuda-mpich-debug-4p:
+    image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
+    stage: test
+    needs: [cuda-mpich-debug-build]
+    tags:
+      - cuda-docker
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
+      - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
+      - export GPUBIND=`pwd`/scripts/gpubind
+      - cd build
+      - cmake --build . --target install/fast
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+
 #########################################################################################################################
 # NVIDIA MPICH NCCL
 #########################################################################################################################
