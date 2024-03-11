@@ -281,20 +281,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     SECTION("Non-orthogonal cell"){
 
 			auto a = 3.567095_A;
-      basis::real_space rs(systems::cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}), /*spacing = */0.40557787, comm);
+      basis::real_space rs(systems::cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}), /*spacing = */ a/30.0_b, comm);
 
-      CHECK(rs.size() == 1728);
+      CHECK(rs.size() == 9261);
 
 			CHECK(rs.cell().volume() == Approx(0.25*pow(a.in_atomic_units(), 3)));
 			CHECK(rs.cell().volume() == rs.volume_element()*rs.size());
 			
-      CHECK(rs.rspacing()[0] == 0.3972073708_a);
-      CHECK(rs.rspacing()[1] == 0.3972073708_a);
-      CHECK(rs.rspacing()[2] == 0.3972073708_a);
+      CHECK(rs.rspacing()[0] == 0.2269756405_a);
+      CHECK(rs.rspacing()[1] == 0.2269756405_a);
+      CHECK(rs.rspacing()[2] == 0.2269756405_a);
       
-      CHECK(rs.sizes()[0] == 12);
-      CHECK(rs.sizes()[1] == 12);
-			CHECK(rs.sizes()[2] == 12);
+      CHECK(rs.sizes()[0] == 21);
+      CHECK(rs.sizes()[1] == 21);
+			CHECK(rs.sizes()[2] == 21);
 
     }
 
