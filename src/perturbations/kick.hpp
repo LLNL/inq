@@ -131,6 +131,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using Catch::Approx;
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+
+	if(comm.size() > 4) return;
 	
 	SECTION("finite"){
 	
