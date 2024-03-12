@@ -165,6 +165,18 @@ class fourier_space;
 		auto reciprocal() const {
 			return ReciprocalBasis(*this);
 		}
+
+		static auto gcutoff(systems::cell const & cell, double const & spacing){
+			auto nr = calculate_dimensions(cell, spacing);
+
+			auto max_spacing = 0.0;
+			for(int idir = 0; idir < 3; idir++){
+				auto actual_spacing = length(cell[idir])/nr[idir];
+				max_spacing = std::max(max_spacing, actual_spacing);
+			}
+
+			return M_PI/max_spacing;
+		}
 		
 	private:
 
@@ -219,6 +231,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
       CHECK(rs.sizes()[0] == 20);
       CHECK(rs.sizes()[1] == 20);
       CHECK(rs.sizes()[2] == 20);
+
+			CHECK(rs.gcutoff() == 6.2831853072_a);
+			CHECK(rs.gcutoff() == basis::real_space::gcutoff(systems::cell::cubic(10.0_b), /* spacing = */ 0.49672941));
 			
 			basis::real_space new_rs(basis::real_space(rs), parallel::communicator{boost::mpi3::environment::get_self_instance()});
 			
@@ -244,6 +259,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
       CHECK(rs.sizes()[1] == 39);
 			CHECK(rs.sizes()[2] == 64);
 
+			CHECK(rs.gcutoff() == 8.6478249389_a);
+			CHECK(rs.gcutoff() == basis::real_space::gcutoff(systems::cell::orthorhombic(77.7_b, 14.14_b, 23.25_b), /*spacing =*/ 0.36063925));
+			
 			auto rs3x = rs.enlarge(3);
 			
       CHECK(rs3x.rspacing()[0] == 0.3613953488_a);
@@ -295,6 +313,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
       CHECK(rs.sizes()[0] == 21);
       CHECK(rs.sizes()[1] == 21);
 			CHECK(rs.sizes()[2] == 21);
+
+			CHECK(rs.gcutoff() == 13.8411005126_a);
+			CHECK(rs.gcutoff() == basis::real_space::gcutoff(systems::cell::lattice({0.0_b, a/2.0, a/2.0}, {a/2, 0.0_b, a/2.0}, {a/2.0, a/2.0, 0.0_b}), /*spacing = */ a/30.0_b));
 
     }
 
