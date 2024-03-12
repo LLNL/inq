@@ -59,13 +59,16 @@ namespace input {
 		auto cart_comm(int nspin, int nkpoints, int nstates) const {
 			assert(nspin == 1 or nspin == 2);
 			
-			auto actual_nproc_kpts = optimal_nprocs(nkpoints*nspin, comm_.size(), kpoint_efficiency_threshold);
+			auto actual_nproc_kpts = optimal_nprocs(nkpoints*nspin, comm_.size(), efficiency_threshold);
 			if(nproc_kpts_ != boost::mpi3::fill) actual_nproc_kpts = nproc_kpts_;
+
+			auto actual_nproc_states = optimal_nprocs(nstates, comm_.size()/actual_nproc_kpts, efficiency_threshold);
+			if(nproc_states_ != boost::mpi3::fill) actual_nproc_states = nproc_states_;
 
 			std::array<int, 3> nprocs;
 			nprocs[dimension_kpoints()] = actual_nproc_kpts;
 			nprocs[dimension_domains()] = nproc_domains_;
-			nprocs[dimension_states()] = nproc_states_;
+			nprocs[dimension_states()] = actual_nproc_states;
 			
 			return parallel::cartesian_communicator<3>(comm_, nprocs);
     }
@@ -98,7 +101,7 @@ namespace input {
 		int nproc_states_;
 		int nproc_domains_;
     mutable parallel::communicator comm_;
-		constexpr static double const kpoint_efficiency_threshold = 0.1;
+		constexpr static double const efficiency_threshold = 0.1;
   };
     
 }
