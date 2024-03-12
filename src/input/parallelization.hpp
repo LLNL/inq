@@ -56,7 +56,7 @@ namespace input {
 			return comm_;
 		}
 
-		auto cart_comm(int nspin, int nkpoints) const {
+		auto cart_comm(int nspin, int nkpoints, int nstates) const {
 			assert(nspin == 1 or nspin == 2);
 			
 			auto nproc_kpts = optimal_nprocs(nkpoints*nspin, comm_.size(), kpoint_efficiency_threshold);
@@ -120,7 +120,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	input::parallelization par(comm);
 	
-	auto cart_comm = par.kpoints(1).states(comm.size()).domains(1).cart_comm(2, 10);
+	auto cart_comm = par.kpoints(1).states(comm.size()).domains(1).cart_comm(2, 10, 23);
 
 	CHECK(par.comm() == comm);
 	CHECK(cart_comm.size() == comm.size());
