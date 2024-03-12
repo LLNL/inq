@@ -62,9 +62,11 @@ namespace input {
 			auto actual_nproc_kpts = optimal_nprocs(nkpoints*nspin, comm_.size(), efficiency_threshold);
 			if(nproc_kpts_ != boost::mpi3::fill) actual_nproc_kpts = nproc_kpts_;
 
-			auto actual_nproc_states = optimal_nprocs(nstates, comm_.size()/actual_nproc_kpts, efficiency_threshold);
-			if(nproc_states_ != boost::mpi3::fill) actual_nproc_states = nproc_states_;
-
+			auto actual_nproc_states = nproc_states_;
+			if(actual_nproc_states == boost::mpi3::fill and nproc_domains_ == boost::mpi3::fill) {
+				actual_nproc_states = optimal_nprocs(nstates, comm_.size()/actual_nproc_kpts, efficiency_threshold);
+			}
+			
 			std::array<int, 3> nprocs;
 			nprocs[dimension_kpoints()] = actual_nproc_kpts;
 			nprocs[dimension_domains()] = nproc_domains_;
