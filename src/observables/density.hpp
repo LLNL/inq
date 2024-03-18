@@ -34,15 +34,15 @@ void calculate_add(const occupations_array_type & occupations, field_set_type & 
 	} else {
 		
 		assert(density.set_size() == 4);
-		assert(std::get<1>(sizes(phi.spinor_matrix())) == phi.spinor_local_set_size());
-		assert(std::get<2>(sizes(phi.spinor_matrix())) == phi.spinor_dim());
+		assert(std::get<1>(sizes(phi.spinor_matrix())) == phi.spinor_dim());
+		assert(std::get<2>(sizes(phi.spinor_matrix())) == phi.spinor_local_set_size());
 		
 		gpu::run(phi.basis().part().local_size(),
 						 [nst = phi.spinor_local_set_size(), occ = begin(occupations), ph = begin(phi.spinor_matrix()), den = begin(density.matrix())] GPU_LAMBDA (auto ipoint){
 							 for(int ist = 0; ist < nst; ist++) {
-								 den[ipoint][0] += occ[ist]*norm(ph[ipoint][ist][0]);
-								 den[ipoint][1] += occ[ist]*norm(ph[ipoint][ist][1]);								 
-								 auto crossterm = occ[ist]*ph[ipoint][ist][0]*conj(ph[ipoint][ist][1]);
+								 den[ipoint][0] += occ[ist]*norm(ph[ipoint][0][ist]);
+								 den[ipoint][1] += occ[ist]*norm(ph[ipoint][1][ist]);
+								 auto crossterm = occ[ist]*ph[ipoint][0][ist]*conj(ph[ipoint][1][ist]);
 								 den[ipoint][2] += real(crossterm);
 								 den[ipoint][3] += imag(crossterm);
 							 }
@@ -223,8 +223,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.spinor_local_set_size(); jj++){
 				auto iig = bas.part().local_to_global(ii).value();
 				auto jjg = aa.spinor_set_part().local_to_global(jj).value();
-				aa.spinor_matrix()[ii][jj][0] = sqrt(iig)*(jjg + 1)*exp(complex(0.0, M_PI/65.0*iig));
-				aa.spinor_matrix()[ii][jj][1] = sqrt(iig)*(jjg + 1)*exp(complex(0.0, M_PI/65.0*iig));				
+				aa.spinor_matrix()[ii][0][jj] = sqrt(iig)*(jjg + 1)*exp(complex(0.0, M_PI/65.0*iig));
+				aa.spinor_matrix()[ii][1][jj] = sqrt(iig)*(jjg + 1)*exp(complex(0.0, M_PI/65.0*iig));
 			}
 		}
 
