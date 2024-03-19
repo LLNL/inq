@@ -30,7 +30,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 	namespace blas = boost::multi::blas;
 	
-	auto olap = matrix::distributed<typename FieldSetType1::element_type>(phi1.full_comm(), phi1.set_size(), phi2.set_size());
+	auto olap = matrix::distributed<typename FieldSetType1::element_type>(phi1.full_comm(), phi1.set_part().size(), phi2.set_part().size());
 
 	if(olap.comm().size() == 1) {
 
@@ -49,7 +49,7 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		
 	} else {
 
-		gpu::array<typename FieldSetType1::element_type, 2> array({phi1.set_size(), phi2.set_size()}, 0.0);
+		gpu::array<typename FieldSetType1::element_type, 2> array({phi1.set_part().size(), phi2.set_part().size()}, 0.0);
 
 		for(auto it = parallel::block_array_iterator(phi1.basis().local_size(), phi1.set_part(), phi1.set_comm(), phi1.matrix());	it != it.end(); ++it){
 			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(*it), phi2.matrix());
