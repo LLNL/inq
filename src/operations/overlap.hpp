@@ -16,6 +16,7 @@
 #include <operations/integral.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
+#include <parallel/block_array_iterator.hpp>
 
 #include <cassert>
 
@@ -50,9 +51,9 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 		gpu::array<typename FieldSetType1::element_type, 2> array({phi1.set_size(), phi2.set_size()}, 0.0);
 
-		for(auto it = phi1.par_set_begin(); it != phi1.par_set_end(); ++it){
-			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(it.matrix()), phi2.matrix());
-			array({phi1.set_part().start(it.set_ipart()), phi2.set_part().end(it.set_ipart())}, {phi1.set_part().start(), phi1.set_part().end()}) = block;
+		for(auto it = parallel::block_array_iterator(phi1.basis().local_size(), phi1.set_part(), phi1.set_comm(), phi1.matrix());	it != it.end(); ++it){
+			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(*it), phi2.matrix());
+			array({phi1.set_part().start(it.ipart()), phi2.set_part().end(it.ipart())}, {phi1.set_part().start(), phi1.set_part().end()}) = block;
 		}
 		
 		if(phi1.full_comm().size() > 1) {
