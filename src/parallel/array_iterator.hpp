@@ -9,13 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <parallel/partition.hpp>
-#include <parallel/communicator.hpp>
-#include <mpi3/environment.hpp>
-#include <mpi3/detail/datatype.hpp>
-
-#include <cassert>
-#include <array>
+#include <parallel/block_array_iterator.hpp>
 
 namespace inq{
 namespace parallel {
@@ -23,70 +17,39 @@ namespace parallel {
 template <typename ArrayType, typename PartitionType>
 class array_iterator {
 
-  PartitionType part_;
-  mutable parallel::cartesian_communicator<1> comm_;
-  ArrayType arr_;
-  long istep_;
+	using base_iterator_type = block_array_iterator<gpu::array<typename ArrayType::element_type, 2>, PartitionType>;
 
-  struct end_type {
-  };
+	base_iterator_type bit_;
   
 public:
 
   array_iterator(PartitionType part, parallel::cartesian_communicator<1> comm, ArrayType const & arr):
-    part_(std::move(part)),
-    comm_(std::move(comm)),
-    arr_(part.max_local_size()),
-    istep_(0)
-  {
-		assert(arr.size() == part_.local_size());
-		arr_({0, part_.local_size()}) = arr;
+		bit_(1, part, comm, arr.partitioned(1)){		
   }
 
-  auto operator!=(end_type) const {
-    return istep_ != comm_.size();
+	template <typename EndType>
+  auto operator!=(EndType const & end) const {
+    return bit_ != end;
   }
 
   void operator++(){
-    auto next_proc = comm_.rank() + 1;
-    if(next_proc == comm_.size()) next_proc = 0;
-    auto prev_proc = comm_.rank() - 1;
-    if(prev_proc == -1) prev_proc = comm_.size() - 1;
-
-		if constexpr(not is_vector3<typename ArrayType::element_type>::value){
-			auto mpi_type = boost::mpi3::detail::basic_datatype<typename ArrayType::element_type>();
-			
-			if(istep_ < comm_.size() - 1){
-				MPI_Sendrecv_replace(raw_pointer_cast(arr_.data_elements()), arr_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, comm_.get(), MPI_STATUS_IGNORE);
-			}
-		} else {
-			using base_type = typename ArrayType::element_type::element_type;
-			auto mpi_type = boost::mpi3::detail::basic_datatype<base_type>();
-			
-			if(istep_ < comm_.size() - 1){
-				MPI_Sendrecv_replace((base_type *) raw_pointer_cast(arr_.data_elements()), 3*arr_.num_elements(), mpi_type, prev_proc, istep_, next_proc, istep_, comm_.get(), MPI_STATUS_IGNORE);
-			}
-		}
-			
-    istep_++;
+		++bit_;
   }
 
   auto ipart() const {
-    auto ip = istep_ + comm_.rank();
-    if(ip >= comm_.size()) ip -= comm_.size();
-    return ip;
+		return bit_.ipart();
   }
 
   auto operator*() const {
-    return arr_({0, part_.local_size(ipart())});
+    return bit_->flatted();
   }
 
   auto operator->() const {
-    return &arr_({0, part_.local_size(ipart())});
+    return &(bit_->flatted());
   }
   
   static auto end() {
-    return end_type{};
+    return base_iterator_type::end();
   }
   
 };

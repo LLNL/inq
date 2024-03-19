@@ -28,7 +28,7 @@ class block_array_iterator {
   ArrayType arr_;
   long istep_;
 	long bsize_;
-
+	
   struct end_type {
   };
   
