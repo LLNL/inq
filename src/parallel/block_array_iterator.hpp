@@ -25,7 +25,7 @@ class block_array_iterator {
 
   PartitionType part_;
   mutable parallel::cartesian_communicator<1> comm_;
-  ArrayType arr_;
+	gpu::array<typename ArrayType::element_type, 2> arr_;
   long istep_;
 	long bsize_;
 	
