@@ -139,15 +139,7 @@ public:
 	auto & set_comm() const {
 		return fields_.set_comm();
 	}
-
-	auto par_set_begin() const {
-		return fields_.par_set_begin();
-	}
 	
-	auto par_set_end() const {
-		return fields_.par_set_end();
-	}
-
 	template <typename CommunicatorType, typename OpType = std::plus<>>
 	void all_reduce(CommunicatorType & comm, OpType op = OpType{}){
 		fields_.all_reduce(comm, op);
