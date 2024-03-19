@@ -23,8 +23,8 @@
 namespace inq {
 namespace operations {
 
-template <class FieldSetType1, class FieldSetType2>
-auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
+template <class FieldSetType1, class MatrixType1, class FieldSetType2, class MatrixType2>
+auto overlap(FieldSetType1 const & phi1, MatrixType1 const & phi1_matrix, FieldSetType2 const & phi2, MatrixType2 const & phi2_matrix){
 
 	CALI_CXX_MARK_SCOPE("overlap(2arg)");
 
@@ -34,11 +34,11 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 	if(olap.comm().size() == 1) {
 
-		olap.block() = blas::gemm(phi1.basis().volume_element(), blas::H(phi1.matrix()), phi2.matrix());
+		olap.block() = blas::gemm(phi1.basis().volume_element(), blas::H(phi1_matrix), phi2_matrix);
 
 	} else if(not phi1.set_part().parallel()) {
 
-		auto array = +blas::gemm(phi1.basis().volume_element(), blas::H(phi1.matrix()), phi2.matrix());
+		auto array = +blas::gemm(phi1.basis().volume_element(), blas::H(phi1_matrix), phi2_matrix);
 		
 		for(int ipart = 0; ipart < olap.partx().comm_size(); ipart++){
 			CALI_CXX_MARK_SCOPE("overlap_domains_reduce");
@@ -51,8 +51,8 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 
 		gpu::array<typename FieldSetType1::element_type, 2> array({phi1.set_part().size(), phi2.set_part().size()}, 0.0);
 
-		for(auto it = parallel::block_array_iterator(phi1.basis().local_size(), phi1.set_part(), phi1.set_comm(), phi1.matrix());	it != it.end(); ++it){
-			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(*it), phi2.matrix());
+		for(auto it = parallel::block_array_iterator(phi1.basis().local_size(), phi1.set_part(), phi1.set_comm(), phi1_matrix); it != it.end(); ++it){
+			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(*it), phi2_matrix);
 			array({phi1.set_part().start(it.ipart()), phi2.set_part().end(it.ipart())}, {phi1.set_part().start(), phi1.set_part().end()}) = block;
 		}
 		
@@ -68,11 +68,18 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 	
 }
 
+template <class FieldSetType1, class FieldSetType2>
+auto overlap(FieldSetType1 const & phi1, FieldSetType2 const & phi2){
+	return overlap(phi1, phi1.matrix(), phi2, phi2.matrix());
+}
+
 template <class FieldSetType>
 auto overlap(const FieldSetType & phi){
 	CALI_CXX_MARK_SCOPE("overlap(1arg)");
 	return overlap(phi, phi);
 }
+
+
 
 }
 }
