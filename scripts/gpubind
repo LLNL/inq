@@ -1,6 +1,23 @@
 #!/bin/bash
+
+# This scripts distributes parallel jobs among GPUs when running on a
+# single node. It uses the GPUs listed in CUDA_VISIBLE_DEVICES is that
+# variable is defined, otherwise all GPUs in the system are used. It
+# works with OpenMPI and MPICH.
+#
+# To use it prepend the command to the executable when using mpirun,
+# something like this:
+#
+#   mpirun -np 4 gpubind <command>
+#
+
 ngpu=`nvidia-smi --list-gpus | wc -l`
 
+if [ ! -z "${CUDA_VISIBLE_DEVICES}" ]; then
+  ngpu=$((`echo $CUDA_VISIBLE_DEVICES | tr -cd , | wc -c` + 1))
+fi
+
+rank=0
 if [ -n "$OMPI_COMM_WORLD_LOCAL_RANK" ]; then
     rank=$OMPI_COMM_WORLD_LOCAL_RANK
 fi
@@ -9,5 +26,13 @@ if [ -n "$MPI_LOCALRANKID" ]; then
     rank=$MPI_LOCALRANKID
 fi
 
-export CUDA_VISIBLE_DEVICES=$(($rank%$ngpu))
+igpu=$(($rank%$ngpu))
+
+if [ -z "${CUDA_VISIBLE_DEVICES}" ]; then
+  export CUDA_VISIBLE_DEVICES=$igpu
+else
+  arr=(`echo $CUDA_VISIBLE_DEVICES | tr , ' '`)
+  export CUDA_VISIBLE_DEVICES=${arr[$igpu]}
+fi
+
 $@

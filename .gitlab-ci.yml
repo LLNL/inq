@@ -527,6 +527,7 @@ cuda-mpich-fast-1proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1
       - cd build      
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
@@ -542,6 +543,7 @@ cuda-mpich-fast-2proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build      
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -557,6 +559,7 @@ cuda-mpich-fast-4proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build      
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -572,6 +575,7 @@ cuda-mpich-fast-5proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-fast-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build      
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -616,6 +620,7 @@ cuda-mpich-debug-1proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
@@ -634,6 +639,7 @@ cuda-mpich-debug-1proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
@@ -649,6 +655,7 @@ cuda-mpich-debug-2proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -664,6 +671,7 @@ cuda-mpich-debug-3proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -679,6 +687,7 @@ cuda-mpich-debug-4proc:
       - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
       - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
       - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -694,6 +703,7 @@ nccl-mpich:
       - cuda_gpu
     script:
       - export GPUBIND=`pwd`/scripts/gpubind
+      - export CUDA_VISIBLE_DEVICES=0,1      
       - export INQ_COMM="nccl"
       - mkdir build
       - cd build
