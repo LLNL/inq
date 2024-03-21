@@ -117,11 +117,11 @@ public:
 	}
 
 	auto spinor_matrix() const {
-		return fields_.matrix().rotated().partitioned(spinor_dim_).transposed().unrotated();
+		return fields_.matrix().rotated().partitioned(spinor_local_set_size()).transposed().unrotated();
 	}
 	
 	auto spinor_matrix() {
-		return fields_.matrix().rotated().partitioned(spinor_dim_).transposed().unrotated();
+		return fields_.matrix().rotated().partitioned(spinor_local_set_size()).transposed().unrotated();
 	}
 	
 	auto hypercubic() const {
@@ -252,16 +252,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(sporb.matrix().transposed().size() == 24);
 		
 		CHECK(std::get<0>(sizes(sporb.spinor_matrix())) == sporb.basis().local_size());
-		CHECK(std::get<1>(sizes(sporb.spinor_matrix())) == 12);
-		CHECK(std::get<2>(sizes(sporb.spinor_matrix())) == 2);
+		CHECK(std::get<1>(sizes(sporb.spinor_matrix())) == 2);
+		CHECK(std::get<2>(sizes(sporb.spinor_matrix())) == 12);
 		
 		//CHECK THE ORDER IS CORRECT IN THE SPINOR MATRIX
 		for(int ii = 0; ii < 12; ii++){
-			sporb.spinor_matrix()[0][ii][0] = ii + 1.0;
-			sporb.spinor_matrix()[0][ii][1] = ii + 1.0;
+			sporb.spinor_matrix()[0][0][ii] =  ii + 1.0;
+			sporb.spinor_matrix()[0][1][ii] = -ii - 1.0;
 		}
-		
-		for(int ii = 0; ii < 24; ii++) CHECK(sporb.matrix()[0][ii] == ii%12 + 1.0);
+
+		auto sign = 1.0;
+		for(int ii = 0; ii < 24; ii++) {
+			CHECK(sporb.matrix()[0][ii] == sign*(ii/2 + 1.0));
+			sign *= -1.0;
+		}
 	}
 	
 	states::orbital_set<basis::real_space, double> rr(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
