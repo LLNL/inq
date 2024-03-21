@@ -165,9 +165,10 @@ namespace hamiltonian {
 			} else {
 				auto occ_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), occupations_);
 				auto kpt_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoints_);
-				auto idx_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoint_indices_);				
-				for(auto hfo_it = orbitals_->par_set_begin(); hfo_it != orbitals_->par_set_end(); ++hfo_it){
-					block_exchange(factor, hfo_it.matrix(), *occ_it, *kpt_it, *idx_it, phi, exxphi);
+				auto idx_it = parallel::array_iterator(orbitals_->set_part(), orbitals_->set_comm(), kpoint_indices_);
+				auto hfo_it = parallel::block_array_iterator(orbitals_->basis().local_size(), orbitals_->set_part(), orbitals_->set_comm(), orbitals_->matrix());
+				for(; hfo_it != hfo_it.end(); ++hfo_it){
+					block_exchange(factor, *hfo_it, *occ_it, *kpt_it, *idx_it, phi, exxphi);
 					++occ_it;
 					++kpt_it;
 					++idx_it;
