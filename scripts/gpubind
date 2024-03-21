@@ -29,7 +29,7 @@ fi
 igpu=$(($rank%$ngpu))
 
 if [ -z "${CUDA_VISIBLE_DEVICES}" ]; then
-  export CUDA_VISIBLE_DEVICES=igpu
+  export CUDA_VISIBLE_DEVICES=$igpu
 else
   arr=(`echo $CUDA_VISIBLE_DEVICES | tr , ' '`)
   export CUDA_VISIBLE_DEVICES=${arr[$igpu]}
