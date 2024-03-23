@@ -23,20 +23,22 @@
 namespace inq {
 namespace operations {
 
-template <class Basis, class Comm, class FieldSetType1, class MatrixType1, class FieldSetType2, class MatrixType2>
-auto overlap_impl(Basis const & basis, Comm & full_comm, FieldSetType1 const & phi1, MatrixType1 const & phi1_matrix, FieldSetType2 const & phi2, MatrixType2 const & phi2_matrix){
+template <class Basis, class FullComm, class SetComm, class SetPart1, class MatrixType1, class SetPart2, class MatrixType2>
+auto overlap_impl(Basis const & basis, FullComm & full_comm, SetComm & set_comm, SetPart1 const & phi1_set_part, MatrixType1 const & phi1_matrix, SetPart2 const & phi2_set_part, MatrixType2 const & phi2_matrix){
 
 	CALI_CXX_MARK_SCOPE("overlap(2arg)");
 
 	namespace blas = boost::multi::blas;
+
+	using type = decltype(phi1_matrix[0][0]*phi2_matrix[0][0]);
 	
-	auto olap = matrix::distributed<typename FieldSetType1::element_type>(full_comm, phi1.set_part().size(), phi2.set_part().size());
+	auto olap = matrix::distributed<type>(full_comm, phi1_set_part.size(), phi2_set_part.size());
 
 	if(olap.comm().size() == 1) {
 
 		olap.block() = blas::gemm(basis.volume_element(), blas::H(phi1_matrix), phi2_matrix);
 
-	} else if(not phi1.set_part().parallel()) {
+	} else if(not phi1_set_part.parallel()) {
 
 		auto array = +blas::gemm(basis.volume_element(), blas::H(phi1_matrix), phi2_matrix);
 		
@@ -49,11 +51,11 @@ auto overlap_impl(Basis const & basis, Comm & full_comm, FieldSetType1 const & p
 		
 	} else {
 
-		gpu::array<typename FieldSetType1::element_type, 2> array({phi1.set_part().size(), phi2.set_part().size()}, 0.0);
+		gpu::array<type, 2> array({phi1_set_part.size(), phi2_set_part.size()}, 0.0);
 
-		for(auto it = parallel::block_array_iterator(basis.local_size(), phi1.set_part(), phi1.set_comm(), phi1_matrix); it != it.end(); ++it){
+		for(auto it = parallel::block_array_iterator(basis.local_size(), phi1_set_part, set_comm, phi1_matrix); it != it.end(); ++it){
 			auto block = blas::gemm(basis.volume_element(), blas::H(*it), phi2_matrix);
-			array({phi1.set_part().start(it.ipart()), phi2.set_part().end(it.ipart())}, {phi1.set_part().start(), phi1.set_part().end()}) = block;
+			array({phi1_set_part.start(it.ipart()), phi2_set_part.end(it.ipart())}, {phi1_set_part.start(), phi1_set_part.end()}) = block;
 		}
 		
 		if(full_comm.size() > 1) {
@@ -73,7 +75,7 @@ auto overlap(basis::field_set<Type, Basis> const & phi1, basis::field_set<Type, 
 	assert(phi1.basis() == phi2.basis());
 	assert(phi1.full_comm() == phi2.full_comm());
 	
-	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1, phi1.matrix(), phi2, phi2.matrix());
+	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.set_part(), phi1.matrix(), phi2.set_part(), phi2.matrix());
 }
 
 template <class Type, class Basis>
@@ -81,7 +83,7 @@ auto overlap(states::orbital_set<Type, Basis> const & phi1, states::orbital_set<
 	assert(phi1.basis() == phi2.basis());
 	assert(phi1.full_comm() == phi2.full_comm());
 	
-	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1, phi1.matrix(), phi2, phi2.matrix());
+	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.set_part(), phi1.matrix(), phi2.set_part(), phi2.matrix());
 }
 
 template <class FieldSetType>
