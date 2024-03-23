@@ -40,8 +40,17 @@ class real_space;
 
 		auto volume_element() const {
 			return cell().volume()/(size()*size());
-		}
 
+		}
+		
+		friend auto operator==(const fourier_space & fs1, const fourier_space & fs2){
+			bool equal = fs1.nr_[0] == fs2.nr_[0] and fs1.nr_[1] == fs2.nr_[1] and fs1.nr_[2] == fs2.nr_[2];
+			equal = equal and fs1.covspacing_[0] == fs2.covspacing_[0];
+			equal = equal and fs1.covspacing_[1] == fs2.covspacing_[1];
+			equal = equal and fs1.covspacing_[2] == fs2.covspacing_[2];
+			return equal;
+		}
+		
 		class point_operator {
 
 		public:
