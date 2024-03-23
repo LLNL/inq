@@ -24,7 +24,7 @@ namespace inq {
 namespace operations {
 
 template <class FieldSetType1, class MatrixType1, class FieldSetType2, class MatrixType2>
-auto overlap(FieldSetType1 const & phi1, MatrixType1 const & phi1_matrix, FieldSetType2 const & phi2, MatrixType2 const & phi2_matrix){
+auto overlap_impl(FieldSetType1 const & phi1, MatrixType1 const & phi1_matrix, FieldSetType2 const & phi2, MatrixType2 const & phi2_matrix){
 
 	CALI_CXX_MARK_SCOPE("overlap(2arg)");
 
@@ -68,9 +68,14 @@ auto overlap(FieldSetType1 const & phi1, MatrixType1 const & phi1_matrix, FieldS
 	
 }
 
-template <class FieldSetType1, class FieldSetType2>
-auto overlap(FieldSetType1 const & phi1, FieldSetType2 const & phi2){
-	return overlap(phi1, phi1.matrix(), phi2, phi2.matrix());
+template <class Type, class Basis>
+auto overlap(basis::field_set<Type, Basis> const & phi1, basis::field_set<Type, Basis> const & phi2){
+	return overlap_impl(phi1, phi1.matrix(), phi2, phi2.matrix());
+}
+
+template <class Type, class Basis>
+auto overlap(states::orbital_set<Type, Basis> const & phi1, states::orbital_set<Type, Basis> const & phi2){
+	return overlap_impl(phi1, phi1.matrix(), phi2, phi2.matrix());
 }
 
 template <class FieldSetType>
