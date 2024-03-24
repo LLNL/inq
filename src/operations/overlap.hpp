@@ -23,22 +23,24 @@
 namespace inq {
 namespace operations {
 
-template <class FieldSetType1, class FieldSetType2>
-auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
+template <class Basis, class FullComm, class SetComm, class SetPart1, class MatrixType1, class SetPart2, class MatrixType2>
+auto overlap_impl(Basis const & basis, FullComm & full_comm, SetComm & set_comm, SetPart1 const & phi1_set_part, MatrixType1 const & phi1_matrix, SetPart2 const & phi2_set_part, MatrixType2 const & phi2_matrix){
 
 	CALI_CXX_MARK_SCOPE("overlap(2arg)");
 
 	namespace blas = boost::multi::blas;
+
+	using type = decltype(phi1_matrix[0][0]*phi2_matrix[0][0]);
 	
-	auto olap = matrix::distributed<typename FieldSetType1::element_type>(phi1.full_comm(), phi1.set_size(), phi2.set_size());
+	auto olap = matrix::distributed<type>(full_comm, phi1_set_part.size(), phi2_set_part.size());
 
 	if(olap.comm().size() == 1) {
 
-		olap.block() = blas::gemm(phi1.basis().volume_element(), blas::H(phi1.matrix()), phi2.matrix());
+		olap.block() = blas::gemm(basis.volume_element(), blas::H(phi1_matrix), phi2_matrix);
 
-	} else if(not phi1.set_part().parallel()) {
+	} else if(not phi1_set_part.parallel()) {
 
-		auto array = +blas::gemm(phi1.basis().volume_element(), blas::H(phi1.matrix()), phi2.matrix());
+		auto array = +blas::gemm(basis.volume_element(), blas::H(phi1_matrix), phi2_matrix);
 		
 		for(int ipart = 0; ipart < olap.partx().comm_size(); ipart++){
 			CALI_CXX_MARK_SCOPE("overlap_domains_reduce");
@@ -49,16 +51,16 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 		
 	} else {
 
-		gpu::array<typename FieldSetType1::element_type, 2> array({phi1.set_size(), phi2.set_size()}, 0.0);
+		gpu::array<type, 2> array({phi1_set_part.size(), phi2_set_part.size()}, 0.0);
 
-		for(auto it = parallel::block_array_iterator(phi1.basis().local_size(), phi1.set_part(), phi1.set_comm(), phi1.matrix());	it != it.end(); ++it){
-			auto block = blas::gemm(phi1.basis().volume_element(), blas::H(*it), phi2.matrix());
-			array({phi1.set_part().start(it.ipart()), phi2.set_part().end(it.ipart())}, {phi1.set_part().start(), phi1.set_part().end()}) = block;
+		for(auto it = parallel::block_array_iterator(basis.local_size(), phi1_set_part, set_comm, phi1_matrix); it != it.end(); ++it){
+			auto block = blas::gemm(basis.volume_element(), blas::H(*it), phi2_matrix);
+			array({phi1_set_part.start(it.ipart()), phi2_set_part.end(it.ipart())}, {phi1_set_part.start(), phi1_set_part.end()}) = block;
 		}
 		
-		if(phi1.full_comm().size() > 1) {
+		if(full_comm.size() > 1) {
 			CALI_CXX_MARK_SCOPE("overlap_reduce");
-			phi1.full_comm().all_reduce_in_place_n(raw_pointer_cast(array.data_elements()), array.num_elements(), std::plus<>{});
+			full_comm.all_reduce_in_place_n(raw_pointer_cast(array.data_elements()), array.num_elements(), std::plus<>{});
 		}
 
 		olap.block() = array({olap.partx().start(), olap.partx().end()}, {olap.party().start(), olap.party().end()});
@@ -68,11 +70,29 @@ auto overlap(const FieldSetType1 & phi1, const FieldSetType2 & phi2){
 	
 }
 
+template <class Type, class Basis>
+auto overlap(basis::field_set<Type, Basis> const & phi1, basis::field_set<Type, Basis> const & phi2){
+	assert(phi1.basis() == phi2.basis());
+	assert(phi1.full_comm() == phi2.full_comm());
+	
+	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.set_part(), phi1.matrix(), phi2.set_part(), phi2.matrix());
+}
+
+template <class Type, class Basis>
+auto overlap(states::orbital_set<Type, Basis> const & phi1, states::orbital_set<Type, Basis> const & phi2){
+	assert(phi1.basis() == phi2.basis());
+	assert(phi1.full_comm() == phi2.full_comm());
+	
+	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.set_part(), phi1.matrix(), phi2.set_part(), phi2.matrix());
+}
+
 template <class FieldSetType>
 auto overlap(const FieldSetType & phi){
 	CALI_CXX_MARK_SCOPE("overlap(1arg)");
 	return overlap(phi, phi);
 }
+
+
 
 }
 }

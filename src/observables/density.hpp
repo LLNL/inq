@@ -217,6 +217,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 2, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
+		CHECK(std::get<1>(sizes(aa.spinor_matrix())) == 2);
+		
 		gpu::array<double, 1> occ(nvec);
 		
 		for(int ii = 0; ii < aa.basis().part().local_size(); ii++){
