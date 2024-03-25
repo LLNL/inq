@@ -253,5 +253,61 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(fabs(imag(cc_array[0][0])) < 1e-12);
 	}
 
+	
+	SECTION("orbital_set complex"){
+		
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.local_set_size(); jj++){
+				auto jjg = aa.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.matrix()[ii][jj] = 2.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				bb.matrix()[ii][jj] = -0.5/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+			}
+		}
+
+		{
+			auto cc = operations::overlap(aa, bb);
+			auto cc_array = matrix::all_gather(cc);
+
+			CHECK(std::get<0>(sizes(cc_array)) == nvec);
+			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+				
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++) {
+					CHECK(fabs(real(cc_array[ii][jj])) < 1.0e-14);
+					CHECK(imag(cc_array[ii][jj]) == Approx(sqrt(jj)*sqrt(ii)));
+				}
+			}
+		}
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.local_set_size(); jj++){
+				auto jjg = aa.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.matrix()[ii][jj] = 3.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+			}
+		}
+
+		{
+			auto cc = operations::overlap(aa);
+			auto cc_array = matrix::all_gather(cc);
+			
+			CHECK(typeid(decltype(cc_array[0][0])) == typeid(complex));
+			CHECK(std::get<0>(sizes(cc_array)) == nvec);
+			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+				
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					CHECK(real(cc_array[ii][jj]) == Approx(4.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+					CHECK(fabs(imag(cc_array[ii][jj])) < 1e-12);
+				}
+			}
+		}
+
+	}
+
 }
 #endif
