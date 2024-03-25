@@ -70,16 +70,16 @@ auto overlap_impl(Basis const & basis, FullComm & full_comm, SetComm & set_comm,
 	
 }
 
-template <class Type, class Basis>
-auto overlap(basis::field_set<Type, Basis> const & phi1, basis::field_set<Type, Basis> const & phi2){
+template <class Basis, class Type>
+auto overlap(basis::field_set<Basis, Type> const & phi1, basis::field_set<Basis, Type> const & phi2){
 	assert(phi1.basis() == phi2.basis());
 	assert(phi1.full_comm() == phi2.full_comm());
 	
 	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.set_part(), phi1.matrix(), phi2.set_part(), phi2.matrix());
 }
 
-template <class Type, class Basis>
-auto overlap(states::orbital_set<Type, Basis> const & phi1, states::orbital_set<Type, Basis> const & phi2){
+template <class Basis, class Type>
+auto overlap(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2){
 	assert(phi1.basis() == phi2.basis());
 	assert(phi1.full_comm() == phi2.full_comm());
 	
@@ -126,7 +126,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	basis::trivial bas(npoint, basis_comm);
 
-	SECTION("double"){
+	SECTION("field_set double"){
 		
 		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
@@ -172,7 +172,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 	}
 
-	SECTION("complex"){
+	SECTION("field_set complex"){
 		
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
@@ -226,7 +226,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 
 	}
-
+	
 	SECTION("complex 1x1"){
 	
 		parallel::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
