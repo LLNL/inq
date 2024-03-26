@@ -124,6 +124,14 @@ public:
 		return fields_.matrix().rotated().partitioned(spinor_dim()).unrotated();
 	}
 	
+	auto basis_spinor_matrix() const {
+		return fields_.matrix().flatted().partitioned(basis().local_size()*spinor_dim_);
+	}
+	
+	auto basis_spinor_matrix() {
+		return fields_.matrix().flatted().partitioned(basis().local_size()*spinor_dim_);
+	}
+	
 	auto hypercubic() const {
 		return fields_.hypercubic();
 	}
@@ -268,6 +276,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			auto sign = (ii < 12)? 1.0:-1.0;
 			CHECK(sporb.matrix()[0][ii] == sign*(ii%12 + 1.0));
 		}
+
+		CHECK(std::get<0>(sizes(sporb.basis_spinor_matrix())) == sporb.basis().local_size()*2);
+		CHECK(std::get<1>(sizes(sporb.basis_spinor_matrix())) == 12);
 		
 	}
 	
