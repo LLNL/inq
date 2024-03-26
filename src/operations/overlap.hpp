@@ -253,7 +253,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(fabs(imag(cc_array[0][0])) < 1e-12);
 	}
 
-	
 	SECTION("orbital_set complex"){
 		
 		states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
@@ -307,6 +306,67 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			}
 		}
 
+	}
+
+		SECTION("orbital_set spinor complex"){
+		
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		CHECK(aa.spinors());
+		CHECK(bb.spinors());		
+		
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
+				auto jjg = aa.spinor_set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.spinor_matrix()[ii][0][jj] = 2.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				aa.spinor_matrix()[ii][1][jj] = 10.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_matrix()[ii][0][jj] = -0.5/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_matrix()[ii][1][jj] = -0.1/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));				
+			}
+		}
+		
+		{
+			auto cc = operations::overlap(aa, bb);
+			auto cc_array = matrix::all_gather(cc);
+
+			CHECK(std::get<0>(sizes(cc_array)) == nvec);
+			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+				
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++) {
+					CHECK(fabs(real(cc_array[ii][jj])) < 1.0e-12);
+					CHECK(imag(cc_array[ii][jj]) == Approx(2.0*sqrt(jj)*sqrt(ii)));
+				}
+			}
+		}
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
+				auto jjg = aa.spinor_set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.spinor_matrix()[ii][0][jj] = 3.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+				aa.spinor_matrix()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+			}
+		}
+
+		{
+			auto cc = operations::overlap(aa);
+			auto cc_array = matrix::all_gather(cc);
+			
+			CHECK(typeid(decltype(cc_array[0][0])) == typeid(complex));
+			CHECK(std::get<0>(sizes(cc_array)) == nvec);
+			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+				
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					CHECK(real(cc_array[ii][jj]) == Approx(6.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+					CHECK(fabs(imag(cc_array[ii][jj])) < 1e-12);
+				}
+			}
+		}
+		
 	}
 
 }
