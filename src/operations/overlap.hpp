@@ -83,7 +83,7 @@ auto overlap(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<
 	assert(phi1.basis() == phi2.basis());
 	assert(phi1.full_comm() == phi2.full_comm());
 	
-	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.set_part(), phi1.matrix(), phi2.set_part(), phi2.matrix());
+	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.spinor_set_part(), phi1.basis_spinor_matrix(), phi2.spinor_set_part(), phi2.basis_spinor_matrix());
 }
 
 template <class FieldSetType>
