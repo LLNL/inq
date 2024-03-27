@@ -213,6 +213,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(orb.matrix().transposed().size() ==  orb.local_set_size());
 
 	CHECK(orb.hypercubic().rotated().rotated().rotated().size() == orb.local_set_size());
+
+	CHECK(orb.spinor_matrix().is_compact());
+	CHECK(orb.basis_spinor_matrix().is_compact());
 	
 	states::orbital_set<basis::real_space, double> orbk(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
 
@@ -255,6 +258,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	CHECK(sporb.set_part().local_size() == sporb.spinor_set_part().local_size()*sporb.spinor_dim());
 
+	CHECK(sporb.spinor_matrix().is_compact());
+	CHECK(sporb.basis_spinor_matrix().is_compact());
+	
 	if(cart_comm.size() == 1){
 		CHECK(sporb.matrix().size() == sporb.basis().local_size());
 		CHECK(sporb.matrix().transposed().size() == 24);
@@ -265,21 +271,25 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 		CHECK(std::get<0>(strides(sporb.spinor_matrix())) == 24);
 		CHECK(std::get<1>(strides(sporb.spinor_matrix())) == 12);
-
-		//CHECK THE ORDER IS CORRECT IN THE SPINOR MATRIX
-		for(int ii = 0; ii < 12; ii++){
-			sporb.spinor_matrix()[0][0][ii] =  ii + 1.0;
-			sporb.spinor_matrix()[0][1][ii] = -ii - 1.0;
-		}
-
-		for(int ii = 0; ii < 24; ii++) {
-			auto sign = (ii < 12)? 1.0:-1.0;
-			CHECK(sporb.matrix()[0][ii] == sign*(ii%12 + 1.0));
-		}
-
+		
 		CHECK(std::get<0>(sizes(sporb.basis_spinor_matrix())) == sporb.basis().local_size()*2);
 		CHECK(std::get<1>(sizes(sporb.basis_spinor_matrix())) == 12);
-		
+
+		//CHECK THE ORDER IS CORRECT IN THE SPINOR MATRIX
+		for(int ip = 0; ip < sporb.basis().local_size(); ip++){
+			for(int ii = 0; ii < 12; ii++){
+				sporb.spinor_matrix()[ip][0][ii] =  ii + 1.0 + 100000.0*ip;
+				sporb.spinor_matrix()[ip][1][ii] = -ii - 1.0 + 100000.0*ip;
+			}
+		}
+
+		for(int ip = 0; ip < sporb.basis().local_size(); ip++){
+			for(int ii = 0; ii < 24; ii++) {
+				auto sign = (ii < 12)? 1.0:-1.0;
+				CHECK(sporb.matrix()[ip][ii] == Approx(sign*(ii%12 + 1.0) + 100000.0*ip));
+			}
+		}
+
 	}
 	
 	states::orbital_set<basis::real_space, double> rr(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
