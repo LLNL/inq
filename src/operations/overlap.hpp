@@ -28,6 +28,8 @@ auto overlap_impl(Basis const & basis, FullComm & full_comm, SetComm & set_comm,
 
 	CALI_CXX_MARK_SCOPE("overlap(2arg)");
 
+	assert(phi1_matrix.size() == phi2_matrix.size());
+	
 	namespace blas = boost::multi::blas;
 
 	using type = decltype(phi1_matrix[0][0]*phi2_matrix[0][0]);
@@ -53,7 +55,7 @@ auto overlap_impl(Basis const & basis, FullComm & full_comm, SetComm & set_comm,
 
 		gpu::array<type, 2> array({phi1_set_part.size(), phi2_set_part.size()}, 0.0);
 
-		for(auto it = parallel::block_array_iterator(basis.local_size(), phi1_set_part, set_comm, phi1_matrix); it != it.end(); ++it){
+		for(auto it = parallel::block_array_iterator(phi1_matrix.size(), phi1_set_part, set_comm, phi1_matrix); it != it.end(); ++it){
 			auto block = blas::gemm(basis.volume_element(), blas::H(*it), phi2_matrix);
 			array({phi1_set_part.start(it.ipart()), phi2_set_part.end(it.ipart())}, {phi1_set_part.start(), phi1_set_part.end()}) = block;
 		}
