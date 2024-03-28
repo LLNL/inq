@@ -28,6 +28,8 @@ auto overlap_impl(Basis const & basis, FullComm & full_comm, SetComm & set_comm,
 
 	CALI_CXX_MARK_SCOPE("overlap(2arg)");
 
+	assert(phi1_matrix.size() == phi2_matrix.size());
+	
 	namespace blas = boost::multi::blas;
 
 	using type = decltype(phi1_matrix[0][0]*phi2_matrix[0][0]);
@@ -53,7 +55,7 @@ auto overlap_impl(Basis const & basis, FullComm & full_comm, SetComm & set_comm,
 
 		gpu::array<type, 2> array({phi1_set_part.size(), phi2_set_part.size()}, 0.0);
 
-		for(auto it = parallel::block_array_iterator(basis.local_size(), phi1_set_part, set_comm, phi1_matrix); it != it.end(); ++it){
+		for(auto it = parallel::block_array_iterator(phi1_matrix.size(), phi1_set_part, set_comm, phi1_matrix); it != it.end(); ++it){
 			auto block = blas::gemm(basis.volume_element(), blas::H(*it), phi2_matrix);
 			array({phi1_set_part.start(it.ipart()), phi2_set_part.end(it.ipart())}, {phi1_set_part.start(), phi1_set_part.end()}) = block;
 		}
@@ -70,20 +72,20 @@ auto overlap_impl(Basis const & basis, FullComm & full_comm, SetComm & set_comm,
 	
 }
 
-template <class Type, class Basis>
-auto overlap(basis::field_set<Type, Basis> const & phi1, basis::field_set<Type, Basis> const & phi2){
+template <class Basis, class Type>
+auto overlap(basis::field_set<Basis, Type> const & phi1, basis::field_set<Basis, Type> const & phi2){
 	assert(phi1.basis() == phi2.basis());
 	assert(phi1.full_comm() == phi2.full_comm());
 	
 	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.set_part(), phi1.matrix(), phi2.set_part(), phi2.matrix());
 }
 
-template <class Type, class Basis>
-auto overlap(states::orbital_set<Type, Basis> const & phi1, states::orbital_set<Type, Basis> const & phi2){
+template <class Basis, class Type>
+auto overlap(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2){
 	assert(phi1.basis() == phi2.basis());
 	assert(phi1.full_comm() == phi2.full_comm());
 	
-	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.set_part(), phi1.matrix(), phi2.set_part(), phi2.matrix());
+	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.spinor_set_part(), phi1.basis_spinor_matrix(), phi2.spinor_set_part(), phi2.basis_spinor_matrix());
 }
 
 template <class FieldSetType>
@@ -126,7 +128,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	basis::trivial bas(npoint, basis_comm);
 
-	SECTION("double"){
+	SECTION("field_set double"){
 		
 		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
@@ -172,7 +174,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 	}
 
-	SECTION("complex"){
+	SECTION("field_set complex"){
 		
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
@@ -226,7 +228,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 
 	}
-
+	
 	SECTION("complex 1x1"){
 	
 		parallel::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
@@ -251,6 +253,122 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 		CHECK(real(cc_array[0][0]) == Approx(400.0*0.5*npoint*(npoint + 1.0)*bas.volume_element()));
 		CHECK(fabs(imag(cc_array[0][0])) < 1e-12);
+	}
+
+	SECTION("orbital_set complex"){
+		
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.local_set_size(); jj++){
+				auto jjg = aa.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.matrix()[ii][jj] = 2.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				bb.matrix()[ii][jj] = -0.5/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+			}
+		}
+
+		{
+			auto cc = operations::overlap(aa, bb);
+			auto cc_array = matrix::all_gather(cc);
+
+			CHECK(std::get<0>(sizes(cc_array)) == nvec);
+			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+				
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++) {
+					CHECK(fabs(real(cc_array[ii][jj])) < 1.0e-14);
+					CHECK(imag(cc_array[ii][jj]) == Approx(sqrt(jj)*sqrt(ii)));
+				}
+			}
+		}
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.local_set_size(); jj++){
+				auto jjg = aa.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.matrix()[ii][jj] = 3.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+			}
+		}
+
+		{
+			auto cc = operations::overlap(aa);
+			auto cc_array = matrix::all_gather(cc);
+			
+			CHECK(typeid(decltype(cc_array[0][0])) == typeid(complex));
+			CHECK(std::get<0>(sizes(cc_array)) == nvec);
+			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+				
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					CHECK(real(cc_array[ii][jj]) == Approx(4.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+					CHECK(fabs(imag(cc_array[ii][jj])) < 1e-12);
+				}
+			}
+		}
+
+	}
+
+		SECTION("orbital_set spinor complex"){
+		
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		CHECK(aa.spinors());
+		CHECK(bb.spinors());		
+		
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
+				auto jjg = aa.spinor_set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.spinor_matrix()[ii][0][jj] = 2.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				aa.spinor_matrix()[ii][1][jj] = 10.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_matrix()[ii][0][jj] = -0.5/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_matrix()[ii][1][jj] = -0.1/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));				
+			}
+		}
+		
+		{
+			auto cc = operations::overlap(aa, bb);
+			auto cc_array = matrix::all_gather(cc);
+
+			CHECK(std::get<0>(sizes(cc_array)) == nvec);
+			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+				
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++) {
+					CHECK(fabs(real(cc_array[ii][jj])) < 1.0e-12);
+					CHECK(imag(cc_array[ii][jj]) == Approx(2.0*sqrt(jj)*sqrt(ii)));
+				}
+			}
+		}
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
+				auto jjg = aa.spinor_set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.spinor_matrix()[ii][0][jj] = 3.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+				aa.spinor_matrix()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+			}
+		}
+
+		{
+			auto cc = operations::overlap(aa);
+			auto cc_array = matrix::all_gather(cc);
+			
+			CHECK(typeid(decltype(cc_array[0][0])) == typeid(complex));
+			CHECK(std::get<0>(sizes(cc_array)) == nvec);
+			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+				
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					CHECK(real(cc_array[ii][jj]) == Approx(6.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
+					CHECK(fabs(imag(cc_array[ii][jj])) < 1e-12);
+				}
+			}
+		}
+		
 	}
 
 }
