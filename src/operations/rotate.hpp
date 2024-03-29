@@ -53,7 +53,7 @@ void rotate_impl(MatrixType const & rotation, SetPart const & set_part, SetComm 
 			assert(res == ncclSuccess);
 			gpu::sync();
 #else
-			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi_matrix.data_elements()), std::plus<>{}, istep);
+			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi_matrix.base()), std::plus<>{}, istep);
 #endif
 		}
 
@@ -74,7 +74,8 @@ void rotate(Matrix const & rotation, basis::field_set<Basis, Type> & phi){
 
 template <class Matrix, class Basis, class Type>
 void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> & phi){
-	rotate_impl(rotation, phi.set_part(), phi.set_comm(), phi.matrix());
+	auto phimatrix = phi.basis_spinor_matrix();
+	rotate_impl(rotation, phi.spinor_set_part(), phi.set_comm(), phimatrix);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
