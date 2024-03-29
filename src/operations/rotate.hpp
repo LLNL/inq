@@ -81,7 +81,7 @@ void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> & phi){
 //////////////////////////////////////////////////////////////////////////////////
 
 template <class MatrixType, class FieldSetType1, class FieldSetType2>
-void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType2 & rotphi, typename FieldSetType1::element_type const & alpha = 1.0, typename FieldSetType1::element_type const & beta = 0.0){
+void rotate_impl(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType2 & rotphi, typename FieldSetType1::element_type const & alpha, typename FieldSetType1::element_type const & beta){
 	namespace blas = boost::multi::blas;
 
 	CALI_CXX_MARK_SCOPE("operations::rotate(5arg)");
@@ -121,6 +121,20 @@ void rotate(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType
 		}
 	}
 	
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+template <class Matrix, class Basis, class Type, class ScalType>
+void rotate(Matrix const & rotation, basis::field_set<Basis, Type> const & phi, basis::field_set<Basis, Type> & rotphi, ScalType const & alpha = 1.0, ScalType const & beta = 0.0){
+	rotate_impl(rotation, phi, rotphi, alpha, beta);
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+template <class Matrix, class Basis, class Type, class ScalType>
+void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> const & phi, states::orbital_set<Basis, Type> & rotphi, ScalType const & alpha = 1.0, ScalType const & beta = 0.0){
+	rotate_impl(rotation, phi, rotphi, alpha, beta);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
