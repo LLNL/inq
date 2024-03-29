@@ -23,8 +23,8 @@ namespace operations {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-template <class MatrixType, class FieldSetType>
-void rotate_impl(MatrixType const & rotation, FieldSetType & phi){
+template <class MatrixType, class SetPart, class SetComm, class PhiMatrix>
+void rotate_impl(MatrixType const & rotation, SetPart const & set_part, SetComm & set_comm, PhiMatrix & phi_matrix){
 	
 	CALI_CXX_MARK_SCOPE("operations::rotate(2arg)");
 
@@ -32,33 +32,33 @@ void rotate_impl(MatrixType const & rotation, FieldSetType & phi){
 
 	auto rotation_array = matrix::all_gather(rotation);
 	
-	if(phi.set_part().parallel()){
+	if(set_part.parallel()){
 
-		phi.set_comm().nccl_init();
+		set_comm.nccl_init();
 
-		// The direct copy is slow with multi right now: auto copy = phi.matrix();
-		gpu::array<typename FieldSetType::element_type, 2> copy({phi.matrix().size(), phi.set_part().local_size()});
-		gpu::copy(phi.matrix().size(), phi.set_part().local_size(), phi.matrix(), copy);
+		// The direct copy is slow with multi right now: auto copy = phi_matrix;
+		gpu::array<typename PhiMatrix::element_type, 2> copy({phi_matrix.size(), set_part.local_size()});
+		gpu::copy(phi_matrix.size(), set_part.local_size(), phi_matrix, copy);
 		
-		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
+		for(int istep = 0; istep < set_part.comm_size(); istep++){
 			
-			auto block = +blas::gemm(1.0, copy, blas::H(rotation_array({phi.set_part().start(istep), phi.set_part().end(istep)}, {phi.set_part().start(), phi.set_part().end()}))); 
+			auto block = +blas::gemm(1.0, copy, blas::H(rotation_array({set_part.start(istep), set_part.end(istep)}, {set_part.start(), set_part.end()}))); 
 			
-			assert(block.extensions() == phi.matrix().extensions());
+			assert(block.extensions() == phi_matrix.extensions());
 
 			CALI_CXX_MARK_SCOPE("operations::rotate(2arg)_reduce");
 #ifdef ENABLE_NCCL
-			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(phi.matrix().data_elements()),
-														block.num_elements()*sizeof(typename FieldSetType::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &phi.set_comm().nccl_comm(), 0);		 
+			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(phi_matrix.data_elements()),
+														block.num_elements()*sizeof(typename FieldSetType::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &set_comm.nccl_comm(), 0);		 
 			assert(res == ncclSuccess);
 			gpu::sync();
 #else
-			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi.matrix().data_elements()), std::plus<>{}, istep);
+			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi_matrix.data_elements()), std::plus<>{}, istep);
 #endif
 		}
 
 	} else {
-		phi.matrix() = +blas::gemm(1.0, phi.matrix(), blas::H(rotation_array));
+		phi_matrix = +blas::gemm(1.0, phi_matrix, blas::H(rotation_array));
 	}
 	
 }
@@ -67,14 +67,14 @@ void rotate_impl(MatrixType const & rotation, FieldSetType & phi){
 
 template <class Matrix, class Basis, class Type>
 void rotate(Matrix const & rotation, basis::field_set<Basis, Type> & phi){
-	rotate_impl(rotation, phi);
+	rotate_impl(rotation, phi.set_part(), phi.set_comm(), phi.matrix());
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
 template <class Matrix, class Basis, class Type>
 void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> & phi){
-	rotate_impl(rotation, phi);
+	rotate_impl(rotation, phi.set_part(), phi.set_comm(), phi.matrix());
 }
 
 //////////////////////////////////////////////////////////////////////////////////
