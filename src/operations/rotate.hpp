@@ -80,8 +80,9 @@ void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> & phi){
 
 //////////////////////////////////////////////////////////////////////////////////
 
-template <class MatrixType, class FieldSetType1, class FieldSetType2>
-void rotate_impl(MatrixType const & rotation, FieldSetType1 const & phi, FieldSetType2 & rotphi, typename FieldSetType1::element_type const & alpha, typename FieldSetType1::element_type const & beta){
+template <class MatrixType, class SetComm, class FieldSetType1, class FieldSetType2>
+void rotate_impl(MatrixType const & rotation, SetComm & set_comm, FieldSetType1 const & phi, FieldSetType2 & rotphi,
+								 typename FieldSetType1::element_type const & alpha, typename FieldSetType1::element_type const & beta){
 	namespace blas = boost::multi::blas;
 
 	CALI_CXX_MARK_SCOPE("operations::rotate(5arg)");
@@ -94,16 +95,16 @@ void rotate_impl(MatrixType const & rotation, FieldSetType1 const & phi, FieldSe
 		
 	} else {
 
-		phi.set_comm().nccl_init();
+		set_comm.nccl_init();
 		
-		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
+		for(int istep = 0; istep < set_comm.size(); istep++){
 				
 			auto block = +blas::gemm(alpha, phi.matrix(), rotation_array({phi.set_part().start(), phi.set_part().end()}, {phi.set_part().start(istep), phi.set_part().end(istep)}));
 			
 			assert(block.extensions() == phi.matrix().extensions());
 
-			if(istep == rotphi.set_comm().rank() and beta != 0.0){
-				gpu::run(phi.local_set_size(), phi.basis().local_size(),
+			if(istep == set_comm.rank() and beta != 0.0){
+				gpu::run(phi.local_set_size(), phi.matrix().size(),
 								 [blo = begin(block), rot = begin(rotphi.matrix()), beta] GPU_LAMBDA (auto ist, auto ip){
 									 blo[ip][ist] += beta*rot[ip][ist];
 								 });
@@ -112,11 +113,11 @@ void rotate_impl(MatrixType const & rotation, FieldSetType1 const & phi, FieldSe
 			CALI_CXX_MARK_SCOPE("operations::rotate(5arg)_reduce");
 #ifdef ENABLE_NCCL
 			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(rotphi.matrix().data_elements()),
-														block.num_elements()*sizeof(typename FieldSetType1::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &phi.set_comm().nccl_comm(), 0);		 
+														block.num_elements()*sizeof(typename FieldSetType1::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &set_comm.nccl_comm(), 0);		 
 			assert(res == ncclSuccess);
 			gpu::sync();			
 #else
-			phi.set_comm().reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi.matrix().data_elements()), std::plus<>{}, istep);
+			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi.matrix().data_elements()), std::plus<>{}, istep);
 #endif
 		}
 	}
@@ -127,14 +128,14 @@ void rotate_impl(MatrixType const & rotation, FieldSetType1 const & phi, FieldSe
 
 template <class Matrix, class Basis, class Type, class ScalType>
 void rotate(Matrix const & rotation, basis::field_set<Basis, Type> const & phi, basis::field_set<Basis, Type> & rotphi, ScalType const & alpha = 1.0, ScalType const & beta = 0.0){
-	rotate_impl(rotation, phi, rotphi, alpha, beta);
+	rotate_impl(rotation, phi.set_comm(), phi, rotphi, alpha, beta);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
 template <class Matrix, class Basis, class Type, class ScalType>
 void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> const & phi, states::orbital_set<Basis, Type> & rotphi, ScalType const & alpha = 1.0, ScalType const & beta = 0.0){
-	rotate_impl(rotation, phi, rotphi, alpha, beta);
+	rotate_impl(rotation, phi.set_comm(), phi, rotphi, alpha, beta);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
