@@ -159,7 +159,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		basis::trivial bas(npoint, basis_comm);
 
-		SECTION("rotate double"){
+		SECTION("rotate field_set double"){
 			
 			gpu::array<double, 2> rot_array({nvec, nvec}, 0.0);
 			
@@ -193,7 +193,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		}
 		
-		SECTION("rotate complex"){
+		SECTION("rotate field_set complex"){
 		
 			gpu::array<complex, 2> rot_array({nvec, nvec}, 0.0);
 		
@@ -228,7 +228,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		}
 		
-		SECTION("rotate_trs double"){
+		SECTION("rotate_trs field_set double"){
 			
 			gpu::array<double, 2> rot_array({nvec, nvec}, 0.0);;
 			
@@ -261,7 +261,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 		}
 		
-		SECTION("rotate_trs complex"){
+		SECTION("rotate_trs field_set complex"){
 			
 			gpu::array<complex, 2> rot_array({nvec, nvec}, 0.0);
 			
@@ -294,6 +294,143 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			}
 			
 		}
+
+		SECTION("rotate orbital_set double"){
+			
+			gpu::array<double, 2> rot_array({nvec, nvec}, 0.0);
+			
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					rot_array[ii][jj] = ii + 1;
+				}
+			}
+
+			auto rot = matrix::scatter(cart_comm, rot_array, /* root = */ 0);
+			
+			states::orbital_set<basis::trivial, double> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					aa.matrix()[ip][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
+				}
+			}
+
+			operations::rotate(rot, aa);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					CHECK(aa.matrix()[ip][jj] == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+				}
+			}
+		
+		}
+		
+		SECTION("rotate orbital_set complex"){
+		
+			gpu::array<complex, 2> rot_array({nvec, nvec}, 0.0);
+		
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					rot_array[ii][jj] = ii + 1;
+				}
+			}
+
+			auto rot = matrix::scatter(cart_comm, rot_array, /* root = */ 0);
+			
+			states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					aa.matrix()[ip][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
+				}
+			}
+
+			operations::rotate(rot, aa);
+
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					CHECK(real(aa.matrix()[ip][jj]) == 0.0);
+					CHECK(imag(aa.matrix()[ip][jj]) == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+				}
+			}
+		
+		}
+		
+		SECTION("rotate_trs orbital_set double"){
+			
+			gpu::array<double, 2> rot_array({nvec, nvec}, 0.0);;
+			
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					rot_array[ii][jj] = 1.0;
+				}
+			}
+
+			auto rot = matrix::scatter(cart_comm, rot_array, /* root = */ 0);
+			
+			states::orbital_set<basis::trivial, double> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					aa.matrix()[ip][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
+				}
+			}
+
+			operations::rotate_trs(rot, aa);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto ipg = bas.part().local_to_global(ip);
+					CHECK(aa.matrix()[ip][jj] == (ipg.value() + 1.0));
+				}
+			}
+			
+		}
+		
+		SECTION("rotate_trs orbital_set complex"){
+			
+			gpu::array<complex, 2> rot_array({nvec, nvec}, 0.0);
+			
+			for(int ii = 0; ii < nvec; ii++){
+				for(int jj = 0; jj < nvec; jj++){
+					rot_array[ii][jj] = 1.0;
+				}
+			}
+
+			auto rot = matrix::scatter(cart_comm, rot_array, /* root = */ 0);
+			
+			states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto jjg = aa.set_part().local_to_global(jj);
+					auto ipg = bas.part().local_to_global(ip);
+					aa.matrix()[ip][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
+				}
+			}
+
+			operations::rotate_trs(rot, aa);
+			
+			for(int ip = 0; ip < bas.part().local_size(); ip++){
+				for(int jj = 0; jj < aa.local_set_size(); jj++){
+					auto ipg = bas.part().local_to_global(ip);
+					CHECK(real(aa.matrix()[ip][jj]) == 0.0);
+					CHECK(imag(aa.matrix()[ip][jj]) == (ipg.value() + 1.0));
+				}
+			}
+			
+		}
+		
 	}
 	
 }
