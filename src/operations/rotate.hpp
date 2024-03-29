@@ -24,7 +24,7 @@ namespace operations {
 //////////////////////////////////////////////////////////////////////////////////
 
 template <class MatrixType, class FieldSetType>
-void rotate(MatrixType const & rotation, FieldSetType & phi){
+void rotate_impl(MatrixType const & rotation, FieldSetType & phi){
 	
 	CALI_CXX_MARK_SCOPE("operations::rotate(2arg)");
 
@@ -62,6 +62,21 @@ void rotate(MatrixType const & rotation, FieldSetType & phi){
 	}
 	
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+
+template <class Matrix, class Basis, class Type>
+void rotate(Matrix const & rotation, basis::field_set<Basis, Type> & phi){
+	rotate_impl(rotation, phi);
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+template <class Matrix, class Basis, class Type>
+void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> & phi){
+	rotate_impl(rotation, phi);
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 
 template <class MatrixType, class FieldSetType1, class FieldSetType2>
