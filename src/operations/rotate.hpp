@@ -37,8 +37,8 @@ void rotate_impl(MatrixType const & rotation, FieldSetType & phi){
 		phi.set_comm().nccl_init();
 
 		// The direct copy is slow with multi right now: auto copy = phi.matrix();
-		gpu::array<typename FieldSetType::element_type, 2> copy({phi.basis().local_size(), phi.set_part().local_size()});
-		gpu::copy(phi.basis().local_size(), phi.set_part().local_size(), phi.matrix(), copy);
+		gpu::array<typename FieldSetType::element_type, 2> copy({phi.matrix().size(), phi.set_part().local_size()});
+		gpu::copy(phi.matrix().size(), phi.set_part().local_size(), phi.matrix(), copy);
 		
 		for(int istep = 0; istep < phi.set_part().comm_size(); istep++){
 			
@@ -58,7 +58,7 @@ void rotate_impl(MatrixType const & rotation, FieldSetType & phi){
 		}
 
 	} else {
-		phi.matrix() = +blas::gemm(1., phi.matrix(), blas::H(rotation_array));
+		phi.matrix() = +blas::gemm(1.0, phi.matrix(), blas::H(rotation_array));
 	}
 	
 }
