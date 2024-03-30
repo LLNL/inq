@@ -49,7 +49,7 @@ void rotate_impl(MatrixType const & rotation, SetPart const & set_part, SetComm 
 			CALI_CXX_MARK_SCOPE("operations::rotate(2arg)_reduce");
 #ifdef ENABLE_NCCL
 			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(phi_matrix.data_elements()),
-														block.num_elements()*sizeof(typename FieldSetType::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &set_comm.nccl_comm(), 0);		 
+														block.num_elements()*sizeof(typename PhiMatrix::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &set_comm.nccl_comm(), 0);		 
 			assert(res == ncclSuccess);
 			gpu::sync();
 #else
