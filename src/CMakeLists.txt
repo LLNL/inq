@@ -9,7 +9,10 @@ cmake_minimum_required(VERSION 3.15)  # for Boost::headers
 include_directories(.)
 include_directories(../external_libs)
 
-find_package(Boost REQUIRED COMPONENTS headers CONFIG)
+find_package(Boost COMPONENTS headers CONFIG)
+if(NOT Boost_FOUND)
+  find_package(Boost REQUIRED)  # workaround for Perlmutter, specifically looking for "headers" component fails
+endif()
 
 add_library(unit_tests_main OBJECT main/unit_tests_main.cpp)
 if(ENABLE_GPU)
