@@ -48,7 +48,7 @@ void rotate_impl(MatrixType const & rotation, SetPart const & set_part, SetComm 
 
 			CALI_CXX_MARK_SCOPE("operations::rotate(2arg)_reduce");
 #ifdef ENABLE_NCCL
-			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(phi_matrix.data_elements()),
+			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(phi_matrix.base()),
 														block.num_elements()*sizeof(typename PhiMatrix::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &set_comm.nccl_comm(), 0);		 
 			assert(res == ncclSuccess);
 			gpu::sync();
@@ -114,12 +114,12 @@ void rotate_impl(MatrixType const & rotation, SetComm & set_comm,
 			
 			CALI_CXX_MARK_SCOPE("operations::rotate(5arg)_reduce");
 #ifdef ENABLE_NCCL
-			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(rotphi_matrix.data_elements()),
+			auto res = ncclReduce(raw_pointer_cast(block.data_elements()), raw_pointer_cast(rotphi_matrix.base()),
 														block.num_elements()*sizeof(typename RotPhiMatrix::element_type)/sizeof(double), ncclDouble, ncclSum, istep, &set_comm.nccl_comm(), 0);		 
 			assert(res == ncclSuccess);
 			gpu::sync();			
 #else
-			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi_matrix.data_elements()), std::plus<>{}, istep);
+			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi_matrix.base()), std::plus<>{}, istep);
 #endif
 		}
 	}
@@ -137,7 +137,8 @@ void rotate(Matrix const & rotation, basis::field_set<Basis, Type> const & phi, 
 
 template <class Matrix, class Basis, class Type, class ScalType>
 void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> const & phi, states::orbital_set<Basis, Type> & rotphi, ScalType const & alpha = 1.0, ScalType const & beta = 0.0){
-	rotate_impl(rotation, phi.set_comm(), phi.set_part(), phi.matrix(), rotphi.matrix(), alpha, beta);
+	auto rotphi_matrix =  rotphi.basis_spinor_matrix();
+	rotate_impl(rotation, phi.set_comm(), phi.spinor_set_part(), phi.basis_spinor_matrix(), rotphi_matrix, alpha, beta);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
