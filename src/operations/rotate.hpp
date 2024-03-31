@@ -44,7 +44,7 @@ void rotate_impl(MatrixType const & rotation, SetPart const & set_part, SetComm 
 			
 			auto block = +blas::gemm(1.0, copy, blas::H(rotation_array({set_part.start(istep), set_part.end(istep)}, {set_part.start(), set_part.end()}))); 
 			
-			assert(block.extensions() == phi_matrix.extensions());
+			if(istep == set_comm.rank()) assert(block.extensions() == phi_matrix.extensions());
 
 			CALI_CXX_MARK_SCOPE("operations::rotate(2arg)_reduce");
 #ifdef ENABLE_NCCL
@@ -103,7 +103,7 @@ void rotate_impl(MatrixType const & rotation, SetComm & set_comm,
 				
 			auto block = +blas::gemm(alpha, phi_matrix, rotation_array({phi_set_part.start(), phi_set_part.end()}, {phi_set_part.start(istep), phi_set_part.end(istep)}));
 			
-			assert(block.extensions() == phi_matrix.extensions());
+			if(istep == set_comm.rank()) assert(block.extensions() == phi_matrix.extensions());
 
 			if(istep == set_comm.rank() and beta != 0.0){
 				gpu::run(phi_set_part.local_size(), phi_matrix.size(),
