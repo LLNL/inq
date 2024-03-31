@@ -481,7 +481,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
-					auto jjg = aa.set_part().local_to_global(jj);
+					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
 					aa.spinor_matrix()[ip][0][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
 					aa.spinor_matrix()[ip][1][jj] = -2.0*(jjg.value() + 1.0)*(ipg.value() + 1);
@@ -492,7 +492,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
-					auto jjg = aa.set_part().local_to_global(jj);
+					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
 					CHECK(aa.spinor_matrix()[ip][0][jj] == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
 					CHECK(aa.spinor_matrix()[ip][1][jj] == -2.0*(ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
@@ -517,7 +517,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
-					auto jjg = aa.set_part().local_to_global(jj);
+					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
 					aa.spinor_matrix()[ip][0][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
 					aa.spinor_matrix()[ip][1][jj] = complex{-2.0*(jjg.value() + 1.0)*(ipg.value() + 1), 0.0};
@@ -528,7 +528,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
-					auto jjg = aa.set_part().local_to_global(jj);
+					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
 					CHECK(real(aa.spinor_matrix()[ip][0][jj]) == 0.0);
 					CHECK(imag(aa.spinor_matrix()[ip][0][jj]) == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
@@ -555,7 +555,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
-					auto jjg = aa.set_part().local_to_global(jj);
+					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
 					aa.spinor_matrix()[ip][0][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
 					aa.spinor_matrix()[ip][1][jj] = -0.5*(jjg.value() + 1.0)*(ipg.value() + 1);
@@ -590,7 +590,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
-					auto jjg = aa.set_part().local_to_global(jj);
+					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
 					aa.spinor_matrix()[ip][0][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
 					aa.spinor_matrix()[ip][1][jj] = 0.4*(jjg.value() + 1.0)*(ipg.value() + 1);
