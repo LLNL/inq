@@ -67,8 +67,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
-	basis::real_space pw(systems::cell::cubic(6.3_b), /*spacing =*/ 0.44428829, comm);
+	auto parstates = comm.size();
+	if(comm.size() == 4) parstates = 2;
+	if(comm.size() >= 5) parstates = 1;
+	
+	parallel::cartesian_communicator<2> cart_comm(comm, {boost::mpi3::fill, parstates});
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 
+	basis::real_space pw(systems::cell::cubic(6.3_b), /*spacing =*/ 0.44428829, basis_comm);
+	
 	SECTION("Dimension 3"){
 		basis::field_set<basis::real_space, complex> phi(pw, 3);
 		
@@ -113,7 +120,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("Dimension 100"){
-		basis::field_set<basis::real_space, complex> phi(pw, 100);
+		basis::field_set<basis::real_space, complex> phi(pw, 100, cart_comm);
 		
 		operations::randomize(phi);
 		
@@ -134,9 +141,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 	}
 
-
 	SECTION("Dimension 37 - double orthogonalize"){
-		basis::field_set<basis::real_space, complex> phi(pw, 37);
+		basis::field_set<basis::real_space, complex> phi(pw, 37, cart_comm);
 		
 		operations::randomize(phi);
 		
@@ -157,7 +163,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			}
 		}
 	}
-
+	
 	SECTION("Two arguments"){
 		basis::field_set<basis::real_space, complex> phi1(pw, 100);
 		basis::field_set<basis::real_space, complex> phi2(pw, 100);		
