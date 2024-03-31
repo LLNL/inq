@@ -53,7 +53,7 @@ void rotate_impl(MatrixType const & rotation, SetPart const & set_part, SetComm 
 			assert(res == ncclSuccess);
 			gpu::sync();
 #else
-			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi_matrix.base()), std::plus<>{}, istep);
+			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(phi_matrix.base()), std::plus<>{},  /* root = */ istep);
 #endif
 		}
 
@@ -119,7 +119,7 @@ void rotate_impl(MatrixType const & rotation, SetComm & set_comm,
 			assert(res == ncclSuccess);
 			gpu::sync();			
 #else
-			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi_matrix.base()), std::plus<>{}, istep);
+			set_comm.reduce_n(raw_pointer_cast(block.data_elements()), block.num_elements(), raw_pointer_cast(rotphi_matrix.base()), std::plus<>{}, /* root = */ istep);
 #endif
 		}
 	}
