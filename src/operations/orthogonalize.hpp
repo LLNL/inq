@@ -67,8 +67,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
-	basis::real_space pw(systems::cell::cubic(6.3_b), /*spacing =*/ 0.44428829, comm);
+	auto parstates = comm.size();
+	if(comm.size() == 4) parstates = 2;
+	if(comm.size() >= 5) parstates = 1;
+	
+	parallel::cartesian_communicator<2> cart_comm(comm, {boost::mpi3::fill, parstates});
+	auto basis_comm = basis::basis_subcomm(cart_comm);
 
+	basis::real_space pw(systems::cell::cubic(6.3_b), /*spacing =*/ 0.44428829, basis_comm);
+	
 	SECTION("Dimension 3"){
 		basis::field_set<basis::real_space, complex> phi(pw, 3);
 		
@@ -113,7 +120,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 	SECTION("Dimension 100"){
-		basis::field_set<basis::real_space, complex> phi(pw, 100);
+		basis::field_set<basis::real_space, complex> phi(pw, 100, cart_comm);
 		
 		operations::randomize(phi);
 		
@@ -134,9 +141,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 	}
 
-
 	SECTION("Dimension 37 - double orthogonalize"){
-		basis::field_set<basis::real_space, complex> phi(pw, 37);
+		basis::field_set<basis::real_space, complex> phi(pw, 37, cart_comm);
 		
 		operations::randomize(phi);
 		
@@ -158,6 +164,57 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 	}
 
+	SECTION("Dimension 100 spinor"){
+		states::orbital_set<basis::real_space, complex> phi(pw, 100, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		
+		operations::randomize(phi);
+		
+		operations::orthogonalize(phi);
+		
+		auto olap = operations::overlap(phi);
+		auto olap_array = matrix::all_gather(olap);
+
+		assert(std::get<0>(olap_array.sizes()) == phi.spinor_set_size());
+		assert(std::get<1>(olap_array.sizes()) == phi.spinor_set_size());
+		
+		for(int ii = 0; ii < phi.spinor_set_size(); ii++){
+			for(int jj = 0; jj < phi.spinor_set_size(); jj++){
+				if(ii == jj) {
+					CHECK(real(olap_array[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap_array[ii][ii])) < 1e-14);
+				} else {
+					CHECK(fabs(olap_array[ii][jj]) < 1e-13);
+				}
+			}
+		}
+	}
+
+	SECTION("Dimension 37 spinor - double orthogonalize"){
+		states::orbital_set<basis::real_space, complex> phi(pw, 37, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		operations::randomize(phi);
+		
+		operations::orthogonalize(phi);
+		operations::orthogonalize(phi);
+		
+		auto olap = operations::overlap(phi);
+		auto olap_array = matrix::all_gather(olap);
+
+		assert(std::get<0>(olap_array.sizes()) == phi.spinor_set_size());
+		assert(std::get<1>(olap_array.sizes()) == phi.spinor_set_size());
+		
+		for(int ii = 0; ii < phi.spinor_set_size(); ii++){
+			for(int jj = 0; jj < phi.spinor_set_size(); jj++){
+				if(ii == jj) {
+					CHECK(real(olap_array[ii][ii]) == 1.0_a);
+					CHECK(fabs(imag(olap_array[ii][ii])) < 1e-16);
+				} else {
+					CHECK(fabs(olap_array[ii][jj]) < 5e-16);
+				}
+			}
+		}
+	}
+	
 	SECTION("Two arguments"){
 		basis::field_set<basis::real_space, complex> phi1(pw, 100);
 		basis::field_set<basis::real_space, complex> phi2(pw, 100);		
