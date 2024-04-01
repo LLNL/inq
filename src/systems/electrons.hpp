@@ -555,7 +555,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("Redistribute"){
 		
 		systems::electrons newel(std::move(electrons_read), input::parallelization(comm).domains(1).states());
-		
+
+		CHECK(newel.kpin()[0].spinor_dim() == 1);
+			
 		newel.save("newel_restart");
 		
 		systems::electrons newel_read(par, ions, options::electrons{}.cutoff(15.0_Ha));

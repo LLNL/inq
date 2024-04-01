@@ -49,9 +49,12 @@ public:
 	
 	orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
 	:fields_(std::move(oldset.fields_), new_comm),
-		 kpoint_(oldset.kpoint()),
-		 spin_index_(oldset.spin_index()),
-		 spinor_set_part_(std::move(oldset.spinor_set_part_)){
+		spinor_dim_(oldset.spinor_dim_),
+		kpoint_(oldset.kpoint()),
+		spin_index_(oldset.spin_index()),
+		spinor_set_part_(fields_.set_size()/spinor_dim_, fields_.set_comm()){
+		assert(spinor_dim_ == 1 or spinor_dim_ == 2);
+		assert(fields_.local_set_size()%spinor_dim_ == 0);
 	}
 			 
 	template <class any_type>
