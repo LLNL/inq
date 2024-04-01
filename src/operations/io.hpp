@@ -176,11 +176,13 @@ void save(std::string const & dirname, states::orbital_set<Basis, Type> const & 
 	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	utils::create_directory(phi.full_comm(), dirname);
-	
-	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-		auto filename = dirname + "/" + utils::num_to_str(ist + phi.set_part().start());
-		buffer = +phi.matrix().rotated()[ist];
-		save_array(filename, phi.basis().comm(), phi.basis().part(), buffer);
+
+	for(int ispinor = 0; ispinor < phi.spinor_dim(); ispinor++){
+		for(int ist = 0; ist < phi.spinor_set_part().local_size(); ist++){
+			auto filename = dirname + "/" + utils::num_to_str(ist + phi.spinor_set_part().start()) + "_" + utils::num_to_str(ispinor);			
+			buffer = +phi.spinor_matrix().rotated()[ispinor][ist];
+			save_array(filename, phi.basis().comm(), phi.basis().part(), buffer);
+		}
 	}
 }
 
@@ -198,12 +200,14 @@ auto load(std::string const & dirname, states::orbital_set<Basis, Type> & phi){
 		return false;
 	}
 	closedir(dir);
-			
-	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-		auto filename = dirname + "/" + utils::num_to_str(ist + phi.set_part().start());
-		auto success = load_array(filename, phi.basis().comm(), phi.basis().part(), buffer);
-		if(not success) return false;
-		phi.matrix().rotated()[ist] = buffer;
+
+	for(int ispinor = 0; ispinor < phi.spinor_dim(); ispinor++){
+		for(int ist = 0; ist < phi.spinor_set_part().local_size(); ist++){
+			auto filename = dirname + "/" + utils::num_to_str(ist + phi.spinor_set_part().start()) + "_" + utils::num_to_str(ispinor);
+			auto success = load_array(filename, phi.basis().comm(), phi.basis().part(), buffer);
+			if(not success) return false;
+			phi.spinor_matrix().rotated()[ispinor][ist] = buffer;
+		}
 	}
 
 	return true;
@@ -311,11 +315,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			}
 		}
 		
-		operations::io::save("restart/", aa);
+		operations::io::save("restart_orbital_set/", aa);
 
 		states::orbital_set<basis::trivial, double> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 
-		CHECK(operations::io::load("restart/", bb));
+		CHECK(operations::io::load("restart_orbital_set/", bb));
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
@@ -332,7 +336,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		parallel::cartesian_communicator<2> cart_comm2(comm, {boost::mpi3::fill, 1});
 		states::orbital_set<basis::trivial, double> cc(bas2, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm2);
 
-		CHECK(operations::io::load("restart/", cc));
+		CHECK(operations::io::load("restart_orbital_set/", cc));
 		
 		for(int ii = 0; ii < cc.basis().part().local_size(); ii++){
 			for(int jj = 0; jj < cc.set_part().local_size(); jj++){
@@ -344,7 +348,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 	}
 	
-	SECTION("orbital_set spinor"){
+	SECTION("orbital_set spinors"){
 		
 		const int npoint = 100;
 		const int nvec = 12;
@@ -362,11 +366,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			}
 		}
 		
-		operations::io::save("restart/", aa);
+		operations::io::save("restart_spinors/", aa);
 
 		states::orbital_set<basis::trivial, double> bb(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 
-		CHECK(operations::io::load("restart/", bb));
+		CHECK(operations::io::load("restart_spinors/", bb));
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
@@ -383,7 +387,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		parallel::cartesian_communicator<2> cart_comm2(comm, {boost::mpi3::fill, 1});
 		states::orbital_set<basis::trivial, double> cc(bas2, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm2);
 
-		CHECK(operations::io::load("restart/", cc));
+		CHECK(operations::io::load("restart_spinors/", cc));
 		
 		for(int ii = 0; ii < cc.basis().part().local_size(); ii++){
 			for(int jj = 0; jj < cc.spinor_set_part().local_size(); jj++){
