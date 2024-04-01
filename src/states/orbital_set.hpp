@@ -26,6 +26,16 @@ public:
 
 	template <typename BType, typename EType>
 	using template_type = orbital_set<BType, EType>;
+
+private:
+
+	basis::field_set<Basis, Type> fields_;
+	int spinor_dim_;
+	kpoint_type kpoint_;
+	int spin_index_;
+	parallel::partition spinor_set_part_;
+		
+public:
 	
 	orbital_set(Basis const & basis, int const num_vectors, int const spinor_dim, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
 		:fields_(basis, spinor_dim*parallel::partition(num_vectors, basis::set_subcomm(comm)), comm),
@@ -39,9 +49,12 @@ public:
 	
 	orbital_set(orbital_set && oldset, parallel::cartesian_communicator<2> new_comm)
 	:fields_(std::move(oldset.fields_), new_comm),
-		 kpoint_(oldset.kpoint()),
-		 spin_index_(oldset.spin_index()),
-		 spinor_set_part_(std::move(oldset.spinor_set_part_)){
+		spinor_dim_(oldset.spinor_dim_),
+		kpoint_(oldset.kpoint()),
+		spin_index_(oldset.spin_index()),
+		spinor_set_part_(fields_.set_size()/spinor_dim_, fields_.set_comm()){
+		assert(spinor_dim_ == 1 or spinor_dim_ == 2);
+		assert(fields_.local_set_size()%spinor_dim_ == 0);
 	}
 			 
 	template <class any_type>
@@ -160,15 +173,6 @@ public:
 	auto key() const {
 		return states::key{kpoint(), spin_index()};
 	}
-	
-private:
-
-	basis::field_set<Basis, Type> fields_;
-	int spinor_dim_;
-	kpoint_type kpoint_;
-	int spin_index_;
-	parallel::partition spinor_set_part_;
-		
 };
 
 }
