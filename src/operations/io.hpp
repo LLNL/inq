@@ -37,21 +37,16 @@ namespace operations {
 namespace io {
 
 template <class ArrayType, class PartType, class CommType>
-void save(std::string const & dirname, CommType & comm, PartType const & part, ArrayType const & array){
+void save_array(std::string const & filename, CommType & comm, PartType const & part, ArrayType const & array){
+	CALI_CXX_MARK_FUNCTION;
 
-	CALI_CXX_MARK_SCOPE("save(array)");
+	MPI_File fh;
+
+	assert(array.num_elements() == part.local_size());
 
 	using Type = typename ArrayType::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
 
-	assert(array.num_elements() == part.local_size());
-
-	auto filename = dirname + "/array";
-
-	utils::create_directory(comm, dirname);
-	
-	MPI_File fh;
-	
 	auto mpi_err = MPI_File_open(comm.get(), filename.c_str(), MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &fh);
 	
 	if(mpi_err != MPI_SUCCESS){
@@ -72,13 +67,11 @@ void save(std::string const & dirname, CommType & comm, PartType const & part, A
 	assert(data_written == long(part.local_size()));
 	
 	MPI_File_close(&fh);
-	
 }
 
 template <class ArrayType, class PartType, class CommType>
-auto load(std::string const & dirname, CommType & comm, PartType const & part, ArrayType & array){
-
-	CALI_CXX_MARK_SCOPE("load(array)");
+auto load_array(std::string const & filename, CommType & comm, PartType const & part, ArrayType & array){
+	CALI_CXX_MARK_FUNCTION;
 
 	using Type = typename ArrayType::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
@@ -86,9 +79,6 @@ auto load(std::string const & dirname, CommType & comm, PartType const & part, A
 	assert(array.num_elements() == part.local_size());
 	
 	MPI_File fh;
-
-	auto filename = dirname + "/array";
-	
 	auto mpi_err = MPI_File_open(comm.get(), filename.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
 	
 	if(mpi_err != MPI_SUCCESS){
@@ -110,6 +100,19 @@ auto load(std::string const & dirname, CommType & comm, PartType const & part, A
 	MPI_File_close(&fh);
 
 	return true;
+}
+
+template <class ArrayType, class PartType, class CommType>
+void save(std::string const & dirname, CommType & comm, PartType const & part, ArrayType const & array){
+	CALI_CXX_MARK_SCOPE("save(array)");
+	utils::create_directory(comm, dirname);
+	save_array(dirname + "/array", comm, part, array);
+}
+
+template <class ArrayType, class PartType, class CommType>
+auto load(std::string const & dirname, CommType & comm, PartType const & part, ArrayType & array){
+	CALI_CXX_MARK_SCOPE("load(array)");
+	return load_array(dirname + "/array", comm, part, array);
 }
 
 template <class FieldSet>
