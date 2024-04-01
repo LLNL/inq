@@ -26,6 +26,16 @@ public:
 
 	template <typename BType, typename EType>
 	using template_type = orbital_set<BType, EType>;
+
+private:
+
+	basis::field_set<Basis, Type> fields_;
+	int spinor_dim_;
+	kpoint_type kpoint_;
+	int spin_index_;
+	parallel::partition spinor_set_part_;
+		
+public:
 	
 	orbital_set(Basis const & basis, int const num_vectors, int const spinor_dim, kpoint_type const & kpoint, int spin_index, parallel::cartesian_communicator<2> comm)
 		:fields_(basis, spinor_dim*parallel::partition(num_vectors, basis::set_subcomm(comm)), comm),
@@ -160,15 +170,6 @@ public:
 	auto key() const {
 		return states::key{kpoint(), spin_index()};
 	}
-	
-private:
-
-	basis::field_set<Basis, Type> fields_;
-	int spinor_dim_;
-	kpoint_type kpoint_;
-	int spin_index_;
-	parallel::partition spinor_set_part_;
-		
 };
 
 }
