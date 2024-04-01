@@ -36,6 +36,8 @@ namespace inq {
 namespace operations {
 namespace io {
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 template <class ArrayType, class PartType, class CommType>
 void save_array(std::string const & filename, CommType & comm, PartType const & part, ArrayType const & array){
 	CALI_CXX_MARK_FUNCTION;
@@ -68,6 +70,8 @@ void save_array(std::string const & filename, CommType & comm, PartType const & 
 	
 	MPI_File_close(&fh);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <class ArrayType, class PartType, class CommType>
 auto load_array(std::string const & filename, CommType & comm, PartType const & part, ArrayType & array){
@@ -102,6 +106,8 @@ auto load_array(std::string const & filename, CommType & comm, PartType const & 
 	return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 template <class ArrayType, class PartType, class CommType>
 void save(std::string const & dirname, CommType & comm, PartType const & part, ArrayType const & array){
 	CALI_CXX_MARK_SCOPE("save(array)");
@@ -109,66 +115,40 @@ void save(std::string const & dirname, CommType & comm, PartType const & part, A
 	save_array(dirname + "/array", comm, part, array);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 template <class ArrayType, class PartType, class CommType>
 auto load(std::string const & dirname, CommType & comm, PartType const & part, ArrayType & array){
 	CALI_CXX_MARK_SCOPE("load(array)");
 	return load_array(dirname + "/array", comm, part, array);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 template <class FieldSet>
 void save(std::string const & dirname, FieldSet const & phi){
 
 	CALI_CXX_MARK_SCOPE("save(field_set)");
 	
-	using Type = typename FieldSet::element_type;
-	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
-	
-	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
+	gpu::array<typename FieldSet::element_type, 1> buffer(phi.basis().part().local_size());
 
 	utils::create_directory(phi.full_comm(), dirname);
 	
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-
 		auto filename = dirname + "/" + utils::num_to_str(ist + phi.set_part().start());
-
-		buffer = phi.matrix().rotated()[ist];
-
-		MPI_File fh;
-
-		auto mpi_err = MPI_File_open(phi.basis().comm().get(), filename.c_str(), MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &fh);
-
-		if(mpi_err != MPI_SUCCESS){
-			std::cerr << "Error: cannot create restart file '" << filename << "'." << std::endl;
-			exit(1);
-		}
-
-		MPI_Status status;
-		mpi_err = MPI_File_write_at(fh, sizeof(Type)*phi.basis().part().start(), raw_pointer_cast(buffer.data_elements()), buffer.size(), mpi_type, &status);
-		
-		if(mpi_err != MPI_SUCCESS){
-			std::cerr << "Error: cannot write restart file '" << filename << "'." << std::endl;
-			exit(1);
-		}
-
-		int data_written;
-		MPI_Get_count(&status, mpi_type, &data_written);
-		assert(data_written == long(buffer.size()));
-
-		MPI_File_close(&fh);
-		
+		buffer = +phi.matrix().rotated()[ist];
+		save_array(filename, phi.basis().comm(), phi.basis().part(), buffer);
 	}
-
 }
-		
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 template <class FieldSet>
 auto load(std::string const & dirname, FieldSet & phi){
 
 	CALI_CXX_MARK_FUNCTION;
 
-	using Type = typename FieldSet::element_type;
-	auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
-	
-	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
+	gpu::array<typename FieldSet::element_type, 1> buffer(phi.basis().part().local_size());
 
 	DIR* dir = opendir(dirname.c_str());
 	if (!dir) {
@@ -177,36 +157,16 @@ auto load(std::string const & dirname, FieldSet & phi){
 	closedir(dir);
 			
 	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-
 		auto filename = dirname + "/" + utils::num_to_str(ist + phi.set_part().start());
-
-		MPI_File fh;
-
-		auto mpi_err = MPI_File_open(phi.basis().comm().get(), filename.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
-
-		if(mpi_err != MPI_SUCCESS){
-			return false;
-		}
-		
-		MPI_Status status;
-		mpi_err = MPI_File_read_at(fh, sizeof(Type)*phi.basis().part().start(), raw_pointer_cast(buffer.data_elements()), buffer.size(), mpi_type, &status);
-		
-		if(mpi_err != MPI_SUCCESS){
-			return false;
-		}
-
-		int data_read;
-		MPI_Get_count(&status, mpi_type, &data_read);
-		assert(data_read == long(buffer.size()));
-
-		MPI_File_close(&fh);
-
+		auto success = load_array(filename, phi.basis().comm(), phi.basis().part(), buffer);
+		if(not success) return false;
 		phi.matrix().rotated()[ist] = buffer;
-				
 	}
 
 	return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 		
 }
 }
