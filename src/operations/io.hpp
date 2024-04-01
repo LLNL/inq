@@ -231,6 +231,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
+	auto parstates = comm.size();
+	if(comm.size() == 4) parstates = 2;
+	if(comm.size() >= 5) parstates = 1;
+	
+	parallel::cartesian_communicator<2> cart_comm(comm, {boost::mpi3::fill, parstates});
+	auto basis_comm = basis::basis_subcomm(cart_comm);
+	
 	SECTION("array"){
 
 		int const size = 12345;
@@ -260,10 +267,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		const int npoint = 100;
 		const int nvec = 12;
-		
-		parallel::cartesian_communicator<2> cart_comm(comm, {});
-		
-		auto basis_comm = basis::basis_subcomm(cart_comm);
 		
 		basis::trivial bas(npoint, basis_comm);
 		
@@ -296,14 +299,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		const int npoint = 100;
 		const int nvec = 12;
 		
-		parallel::cartesian_communicator<2> cart_comm(comm, {});
-		
-		auto basis_comm = basis::basis_subcomm(cart_comm);
-		
 		basis::trivial bas(npoint, basis_comm);
 		
 		states::orbital_set<basis::trivial, double> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
-		states::orbital_set<basis::trivial, double> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
@@ -314,16 +312,36 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 		
 		operations::io::save("restart/", aa);
-		
+
+		states::orbital_set<basis::trivial, double> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
 		CHECK(operations::io::load("restart/", bb));
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
+				auto jjg = aa.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				CHECK(bb.matrix()[ii][jj] == 20.0*(iig.value() + 1)*sqrt(jjg.value()));
 				CHECK(aa.matrix()[ii][jj] == bb.matrix()[ii][jj]);
 			}
 		}
 		
 		CHECK(not operations::io::load("directory_that_doesnt_exist", bb));
+
+		basis::trivial bas2(npoint, comm);
+		parallel::cartesian_communicator<2> cart_comm2(comm, {boost::mpi3::fill, 1});
+		states::orbital_set<basis::trivial, double> cc(bas2, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm2);
+
+		CHECK(operations::io::load("restart/", cc));
+		
+		for(int ii = 0; ii < cc.basis().part().local_size(); ii++){
+			for(int jj = 0; jj < cc.set_part().local_size(); jj++){
+				auto jjg = cc.set_part().local_to_global(jj);
+				auto iig = cc.basis().part().local_to_global(ii);
+				CHECK(cc.matrix()[ii][jj] == 20.0*(iig.value() + 1)*sqrt(jjg.value()));
+			}
+		}
+		
 	}
 	
 }
