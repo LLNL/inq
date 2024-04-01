@@ -232,6 +232,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	using namespace inq;
 	using namespace Catch::literals;
+	using Catch::Approx;
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
@@ -325,7 +326,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				CHECK(bb.matrix()[ii][jj] == 20.0*(iig.value() + 1)*sqrt(jjg.value()));
+				CHECK(bb.matrix()[ii][jj] == Approx(20.0*(iig.value() + 1)*sqrt(jjg.value())));
 				CHECK(aa.matrix()[ii][jj] == bb.matrix()[ii][jj]);
 			}
 		}
@@ -342,7 +343,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < cc.set_part().local_size(); jj++){
 				auto jjg = cc.set_part().local_to_global(jj);
 				auto iig = cc.basis().part().local_to_global(ii);
-				CHECK(cc.matrix()[ii][jj] == 20.0*(iig.value() + 1)*sqrt(jjg.value()));
+				CHECK(cc.matrix()[ii][jj] == Approx(20.0*(iig.value() + 1)*sqrt(jjg.value())));
 			}
 		}
 		
@@ -376,8 +377,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
 				auto jjg = aa.spinor_set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				CHECK(bb.spinor_matrix()[ii][0][jj] == 20.0*(iig.value() + 1)*sqrt(jjg.value()));
-				CHECK(bb.spinor_matrix()[ii][1][jj] == -3.0*(iig.value() + 1)*sqrt(jjg.value()));				
+				CHECK(bb.spinor_matrix()[ii][0][jj] == Approx(20.0*(iig.value() + 1)*sqrt(jjg.value())));
+				CHECK(bb.spinor_matrix()[ii][1][jj] == Approx(-3.0*(iig.value() + 1)*sqrt(jjg.value())));
 			}
 		}
 		
@@ -393,8 +394,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < cc.spinor_set_part().local_size(); jj++){
 				auto jjg = cc.spinor_set_part().local_to_global(jj);
 				auto iig = cc.basis().part().local_to_global(ii);
-				CHECK(cc.spinor_matrix()[ii][0][jj] == 20.0*(iig.value() + 1)*sqrt(jjg.value()));
-				CHECK(cc.spinor_matrix()[ii][1][jj] == -3.0*(iig.value() + 1)*sqrt(jjg.value()));
+				CHECK(cc.spinor_matrix()[ii][0][jj] == Approx(20.0*(iig.value() + 1)*sqrt(jjg.value())));
+				CHECK(cc.spinor_matrix()[ii][1][jj] == Approx(-3.0*(iig.value() + 1)*sqrt(jjg.value())));
 			}
 		}
 		
