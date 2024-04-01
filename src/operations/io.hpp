@@ -125,12 +125,12 @@ auto load(std::string const & dirname, CommType & comm, PartType const & part, A
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <class FieldSet>
-void save(std::string const & dirname, FieldSet const & phi){
+template <class Basis, class Type>
+void save(std::string const & dirname, basis::field_set<Basis, Type> const & phi){
 
 	CALI_CXX_MARK_SCOPE("save(field_set)");
 	
-	gpu::array<typename FieldSet::element_type, 1> buffer(phi.basis().part().local_size());
+	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	utils::create_directory(phi.full_comm(), dirname);
 	
@@ -143,12 +143,55 @@ void save(std::string const & dirname, FieldSet const & phi){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <class FieldSet>
-auto load(std::string const & dirname, FieldSet & phi){
+template <class Basis, class Type>
+auto load(std::string const & dirname, basis::field_set<Basis, Type> & phi){
 
 	CALI_CXX_MARK_FUNCTION;
 
-	gpu::array<typename FieldSet::element_type, 1> buffer(phi.basis().part().local_size());
+	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
+
+	DIR* dir = opendir(dirname.c_str());
+	if (!dir) {
+		return false;
+	}
+	closedir(dir);
+			
+	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+		auto filename = dirname + "/" + utils::num_to_str(ist + phi.set_part().start());
+		auto success = load_array(filename, phi.basis().comm(), phi.basis().part(), buffer);
+		if(not success) return false;
+		phi.matrix().rotated()[ist] = buffer;
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <class Basis, class Type>
+void save(std::string const & dirname, states::orbital_set<Basis, Type> const & phi){
+
+	CALI_CXX_MARK_SCOPE("save(field_set)");
+	
+	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
+
+	utils::create_directory(phi.full_comm(), dirname);
+	
+	for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+		auto filename = dirname + "/" + utils::num_to_str(ist + phi.set_part().start());
+		buffer = +phi.matrix().rotated()[ist];
+		save_array(filename, phi.basis().comm(), phi.basis().part(), buffer);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <class Basis, class Type>
+auto load(std::string const & dirname, states::orbital_set<Basis, Type> & phi){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	gpu::array<Type, 1> buffer(phi.basis().part().local_size());
 
 	DIR* dir = opendir(dirname.c_str());
 	if (!dir) {
