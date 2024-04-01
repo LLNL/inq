@@ -344,5 +344,57 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 	}
 	
+	SECTION("orbital_set spinor"){
+		
+		const int npoint = 100;
+		const int nvec = 12;
+		
+		basis::trivial bas(npoint, basis_comm);
+		
+		states::orbital_set<basis::trivial, double> aa(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
+				auto jjg = aa.spinor_set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.spinor_matrix()[ii][0][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value());
+				aa.spinor_matrix()[ii][1][jj] = -3.0*(iig.value() + 1)*sqrt(jjg.value());
+			}
+		}
+		
+		operations::io::save("restart/", aa);
+
+		states::orbital_set<basis::trivial, double> bb(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		CHECK(operations::io::load("restart/", bb));
+		
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
+				auto jjg = aa.spinor_set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				CHECK(bb.spinor_matrix()[ii][0][jj] == 20.0*(iig.value() + 1)*sqrt(jjg.value()));
+				CHECK(bb.spinor_matrix()[ii][1][jj] == -3.0*(iig.value() + 1)*sqrt(jjg.value()));				
+			}
+		}
+		
+		CHECK(not operations::io::load("directory_that_doesnt_exist", bb));
+
+		basis::trivial bas2(npoint, comm);
+		parallel::cartesian_communicator<2> cart_comm2(comm, {boost::mpi3::fill, 1});
+		states::orbital_set<basis::trivial, double> cc(bas2, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm2);
+
+		CHECK(operations::io::load("restart/", cc));
+		
+		for(int ii = 0; ii < cc.basis().part().local_size(); ii++){
+			for(int jj = 0; jj < cc.spinor_set_part().local_size(); jj++){
+				auto jjg = cc.spinor_set_part().local_to_global(jj);
+				auto iig = cc.basis().part().local_to_global(ii);
+				CHECK(cc.spinor_matrix()[ii][0][jj] == 20.0*(iig.value() + 1)*sqrt(jjg.value()));
+				CHECK(cc.spinor_matrix()[ii][1][jj] == -3.0*(iig.value() + 1)*sqrt(jjg.value()));
+			}
+		}
+		
+	}
+	
 }
 #endif
