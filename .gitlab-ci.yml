@@ -88,7 +88,6 @@ config-no-nccl:
 
 gcc-ompi-coverage:
     stage: build
-    needs: []
     script:
       - mkdir build && cd build
       - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
@@ -132,7 +131,6 @@ gcc-ompi-coverage-4proc:
 
 gcc-mpich:
     stage: build
-    needs: []    
     script:
       - c++ --version
       - mpichversion
@@ -227,7 +225,6 @@ gcc-mpich-5proc:
 
 gcc-ompi-debug:
     stage: build
-    needs: []
     script:
       - mpic++.openmpi --version
       - mkdir build && cd build
@@ -292,7 +289,6 @@ gcc-ompi-debug-5proc:
       
 gcc-ompi-fast:
     stage: build
-    needs: []
     script:
       - mpic++.openmpi --version
       - mkdir build && cd build
@@ -357,7 +353,6 @@ gcc-ompi-fast-5proc:
 
 clang-ompi-debug:
     stage: build
-    needs: []    
     script:
       - clang++ --version
       - mkdir build
@@ -424,7 +419,6 @@ clang-ompi-debug-5proc:
 
 clang-ompi-fast:
     stage: build
-    needs: []
     script:
       - clang++ --version
       - mkdir build && cd build
@@ -722,7 +716,6 @@ gcc-mpich-template:
     variables:
       GIT_STRATEGY: none
     stage: template
-    needs: []
     script:
       - mkdir inq_template_dir
       - cd inq_template_dir
@@ -775,7 +768,6 @@ clang-ompi-template:
     variables:
       GIT_STRATEGY: none
     stage: template
-    needs: []
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq wget
@@ -801,7 +793,6 @@ clang-ompi-template:
 
 hip-mpich-build:
   stage: build
-  needs: []
   image: rocm/dev-ubuntu-22.04
   script:
     - apt-get -qq update
