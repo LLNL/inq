@@ -183,8 +183,8 @@ public:
 		assert(long(kpin_.size()) == kpin_part_.local_size());
 		assert(max_local_set_size_ > 0);
 		
-		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
-		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
 
 		if(atomic_pot_.num_electrons() + conf.extra_electrons_val() == 0) throw std::runtime_error("inq error: the system does not have any electrons");
 		if(atomic_pot_.num_electrons() + conf.extra_electrons_val() < 0) throw std::runtime_error("inq error: the system has a negative number of electrons");		
@@ -206,6 +206,7 @@ public:
 		density_basis_(std::move(old_el.density_basis_), basis_subcomm(full_comm_)),
 		kpin_weights_(std::move(old_el.kpin_weights_)),
 		max_local_set_size_(std::move(old_el.max_local_set_size_)),
+		max_local_spinor_set_size_(std::move(old_el.max_local_spinor_set_size_)),
 		spin_density_(std::move(old_el.spin_density_), {density_basis_.comm(), {density_basis_.comm().size(), 1}}),
 		logger_(std::move(old_el.logger_)),
 		kpin_part_(std::move(old_el.kpin_part_))
@@ -221,8 +222,8 @@ public:
 
 		assert(kpin_.size() == old_el.kpin_.size());
 
-		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
-		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
 		
 		for(unsigned ilot = 0; ilot < kpin_.size(); ilot++){
 
@@ -234,7 +235,7 @@ public:
 			for(; eigit != eigit.end(); ++eigit){
  				
 				for(int ist = 0; ist < eigenvalues_[ilot].size(); ist++){
-					auto istg = kpin_[ilot].set_part().local_to_global(ist);
+					auto istg = kpin_[ilot].spinor_set_part().local_to_global(ist);
 					if(part.contains(istg.value())){
 						eigenvalues_[ilot][ist] = (*eigit)[part.global_to_local(istg)];
 						occupations_[ilot][ist] = (*occit)[part.global_to_local(istg)];
@@ -243,7 +244,7 @@ public:
 				
 				++occit;
 			}
-		}		
+		}
 	}
 
 	void print(const inq::systems::ions & ions){
