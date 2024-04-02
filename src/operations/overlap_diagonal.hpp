@@ -35,7 +35,7 @@ struct overlap_diagonal_mult {
 };
 
 template <class field_set_type>
-gpu::array<typename field_set_type::element_type, 1> overlap_diagonal(const field_set_type & phi1, const field_set_type & phi2){
+gpu::array<typename field_set_type::element_type, 1> overlap_diagonal_impl(const field_set_type & phi1, const field_set_type & phi2){
 
 	CALI_CXX_MARK_SCOPE("overlap_diagonal(2arg)");
 	
@@ -52,7 +52,8 @@ gpu::array<typename field_set_type::element_type, 1> overlap_diagonal(const fiel
 		overlap_vector[0] *= phi1.basis().volume_element();
 	} else {
 		
-		overlap_vector = gpu::run(phi1.local_set_size(), gpu::reduce(phi1.basis().part().local_size()), overlap_diagonal_mult<decltype(begin(phi1.matrix()))>{phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix())});
+		overlap_vector = gpu::run(phi1.local_set_size(), gpu::reduce(phi1.basis().part().local_size()),
+															overlap_diagonal_mult<decltype(begin(phi1.matrix()))>{phi1.basis().volume_element(), begin(phi1.matrix()), begin(phi2.matrix())});
 	}
 
 	if(phi1.basis().comm().size() > 1){
@@ -65,6 +66,20 @@ gpu::array<typename field_set_type::element_type, 1> overlap_diagonal(const fiel
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+template <class Basis, class Type>
+auto overlap_diagonal(basis::field_set<Basis, Type> const & phi1, basis::field_set<Basis, Type> const & phi2){
+	return overlap_diagonal_impl(phi1, phi2);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <class Basis, class Type>
+auto overlap_diagonal(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2){
+	return overlap_diagonal_impl(phi1, phi2);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 template <class field_set_type>
 auto overlap_diagonal(const field_set_type & phi){
 	CALI_CXX_MARK_SCOPE("overlap_diagonal(1arg)");
@@ -72,6 +87,7 @@ auto overlap_diagonal(const field_set_type & phi){
 	return overlap_diagonal(phi, phi);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename Type>
 struct value_and_norm {
