@@ -197,7 +197,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 	basis::trivial bas(npoint, basis_comm);
 
-	SECTION("double"){
+	SECTION("field_set double"){
 		
 		basis::field_set<basis::trivial, double> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
@@ -248,7 +248,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 	}
 
-	SECTION("complex"){
+	SECTION("field_set complex"){
 		
 		basis::field_set<basis::trivial, complex> aa(bas, nvec, cart_comm);
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
@@ -308,6 +308,119 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 
 	}
+
+	SECTION("orbital_set double"){
+		
+		states::orbital_set<basis::trivial, double> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		states::orbital_set<basis::trivial, double> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < nvec; jj++){
+				auto jjg = aa.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value() + 1);
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value() + 1);
+			}
+		}
+
+		auto dd = operations::overlap_diagonal(aa, bb);
+		
+		CHECK(typeid(decltype(dd)) == typeid(gpu::array<double, 1>));
+		
+		for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(-jj - 1));
+
+		states::orbital_set<basis::trivial, double> cc(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < nvec; jj++){
+				auto jjg = cc.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				cc.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value());
+			}
+		}
+
+		{
+			auto ee = operations::overlap_diagonal(cc);
+
+			CHECK(typeid(decltype(ee)) == typeid(gpu::array<double, 1>));
+								
+			for(int jj = 0; jj < nvec; jj++) CHECK(ee[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+		}
+
+		{
+			auto ff = operations::overlap_diagonal_normalized(aa, bb);
+			auto gg = operations::overlap_diagonal(bb);
+			
+			CHECK(typeid(decltype(ff)) == typeid(gpu::array<double, 1>));
+			
+			CHECK(std::get<0>(sizes(ff)) == nvec);
+			
+			for(int jj = 0; jj < nvec; jj++) CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
+ 
+		}
+	}
+
+	SECTION("orbital_set complex"){
+		
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < nvec; jj++){
+				auto jjg = aa.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.matrix()[ii][jj] = -0.05/(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+			}
+		}
+
+		auto dd = operations::overlap_diagonal(aa, bb);
+		
+		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
+		
+		CHECK(std::get<0>(sizes(dd)) == nvec);
+		
+		for(int jj = 0; jj < nvec; jj++){
+			CHECK(fabs(real(dd[jj])) < 1.0e-12);
+			CHECK(imag(dd[jj]) == Approx(-jj - 1));
+		}
+
+		states::orbital_set<basis::trivial, complex> cc(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < nvec; jj++){
+				auto jjg = cc.set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				cc.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+			}
+		}
+
+		{
+			auto ee = operations::overlap_diagonal(cc);
+
+			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
+			
+			CHECK(std::get<0>(sizes(ee)) == nvec);
+				
+			for(int jj = 0; jj < nvec; jj++) CHECK(real(ee[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+		}
+
+		{
+			auto ff = operations::overlap_diagonal_normalized(aa, bb);
+			auto gg = operations::overlap_diagonal(bb);
+
+			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
+			
+			CHECK(std::get<0>(sizes(ff)) == nvec);
+				
+			for(int jj = 0; jj < nvec; jj++) {
+				CHECK(fabs(ff[jj]) == Approx(fabs(dd[jj]/gg[jj])));
+				CHECK(imag(ff[jj]) == Approx(imag(dd[jj]/gg[jj])));
+			}
+		}
+
+	}
+
 
 }
 #endif
