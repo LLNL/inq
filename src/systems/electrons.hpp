@@ -72,6 +72,7 @@ private:
 	gpu::array<double, 2> occupations_;
 	gpu::array<double, 1> kpin_weights_;
 	long max_local_set_size_;
+	long max_local_spinor_set_size_;
 	basis::field_set<basis::real_space, double> spin_density_;
 	std::shared_ptr<spdlog::logger> logger_;
 	parallel::partition kpin_part_;
@@ -164,6 +165,7 @@ public:
 		kpin_weights_.reextent({kpin_part_.local_size()});
 
 		max_local_set_size_ = 0;
+		max_local_spinor_set_size_ = 0;
 		auto ilot = 0;
 		for(int ispin = 0; ispin < spin_part.local_size(); ispin++){
 			for(int ikpt = 0; ikpt < kpts_part.local_size(); ikpt++){
@@ -171,6 +173,7 @@ public:
 				auto kpoint = brillouin_zone_.kpoint(kpts_part.local_to_global(ikpt).value());
 				kpin_.emplace_back(states_basis_, states_.num_states(), states_.spinor_dim(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
 				max_local_set_size_ = std::max(max_local_set_size_, kpin_[ikpt].local_set_size());
+				max_local_spinor_set_size_ = std::max(max_local_spinor_set_size_, kpin_[ikpt].local_spinor_set_size());
 				ilot++;
 			}
 		}
@@ -501,7 +504,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	ions.insert("Cu", {1.0_b,  0.0_b,  0.0_b});
 	
 	auto par = input::parallelization(comm);
-		
+	
 	systems::electrons electrons(par, ions, options::electrons{}.cutoff(15.0_Ha));
 
 	CHECK(electrons.states().num_electrons() == 38.0_a);
@@ -526,7 +529,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 		iphi++;
 	}
-
+	
 	electrons.spin_density() = observables::density::calculate(electrons);
 	CHECK(operations::integral_sum(electrons.spin_density()) == -1315151005.0813348293_a);
 	
