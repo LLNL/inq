@@ -141,8 +141,8 @@ struct real_part {
 	}
 };
 
-template <class field_set_type, typename Transform = identity>
-auto overlap_diagonal_normalized(const field_set_type & phi1, const field_set_type & phi2, Transform trans = {}) -> gpu::array<decltype(trans(typename field_set_type::element_type{})), 1> {
+template <class field_set_type, typename Transform>
+auto overlap_diagonal_normalized_impl(const field_set_type & phi1, const field_set_type & phi2, Transform trans) -> gpu::array<decltype(trans(typename field_set_type::element_type{})), 1> {
 
 	CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized");
 
@@ -166,7 +166,23 @@ auto overlap_diagonal_normalized(const field_set_type & phi1, const field_set_ty
 
 	return overlap_vector;
 }
-	
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <class Basis, class Type, class Transform = identity>
+auto overlap_diagonal_normalized(basis::field_set<Basis, Type> const & phi1, basis::field_set<Basis, Type> const & phi2, Transform trans = {}) {
+	return overlap_diagonal_normalized_impl(phi1, phi2, trans);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <class Basis, class Type, class Transform = identity>
+auto overlap_diagonal_normalized(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2, Transform trans = {}) {
+	return overlap_diagonal_normalized_impl(phi1, phi2, trans);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }
 }
 #endif
