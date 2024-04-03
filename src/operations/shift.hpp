@@ -173,7 +173,39 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(real(aa.matrix()[ii][jj]) == Approx(iig.value()));
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) CHECK(imag(aa.matrix()[ii][jj]) == Approx(1.0));
 		}
-	}	
+	}
+	
+	SECTION("orbital_set spinor complex"){
+		
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		
+		gpu::array<complex, 1> factor(aa.spinor_set_part().local_size());
+		
+		for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
+			auto jjg = aa.spinor_set_part().local_to_global(jj).value();
+			for(int ii = 0; ii < bas.part().local_size(); ii++){
+				auto iig = bas.part().local_to_global(ii).value();
+				aa.spinor_array()[ii][0][jj] = complex(iig, 1.0 + 0.765*iig*jjg);
+				bb.spinor_array()[ii][0][jj] = iig;
+				aa.spinor_array()[ii][1][jj] = complex(-1.4*iig, 0.2 + 0.765*iig*jjg);
+				bb.spinor_array()[ii][1][jj] = iig;
+			}
+			factor[jj] = complex(0.0, 2.0*0.765*jjg);
+		}
 
+		operations::shift(-0.5, factor, bb, aa);
+				
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			auto iig = bas.part().local_to_global(ii).value();
+			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++) {
+				CHECK(real(aa.spinor_array()[ii][0][jj]) == Approx(iig));
+				CHECK(imag(aa.spinor_array()[ii][0][jj]) == Approx(1.0));
+				CHECK(real(aa.spinor_array()[ii][1][jj]) == Approx(-1.4*iig));
+				CHECK(imag(aa.spinor_array()[ii][1][jj]) == Approx(0.2));
+			}
+		}
+		
+	}	
 }
 #endif
