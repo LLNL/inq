@@ -227,7 +227,7 @@ public:
 		
 		for(unsigned ilot = 0; ilot < kpin_.size(); ilot++){
 
-			parallel::partition part(kpin_[ilot].set_size(), states_subcomm(old_el.full_comm_));
+			parallel::partition part(kpin_[ilot].spinor_set_size(), states_subcomm(old_el.full_comm_));
 			
 			parallel::array_iterator eigit(part, states_subcomm(old_el.full_comm_), +old_el.eigenvalues_[ilot]);
 			parallel::array_iterator occit(part, states_subcomm(old_el.full_comm_), +old_el.occupations_[ilot]);
@@ -322,7 +322,7 @@ public:
 		for(auto & phi : kpin()){
 			auto basedir = dirname + "/kpin" + utils::num_to_str(iphi + kpin_part_.start());
 			operations::io::save(basedir + "/states", phi);
-			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), +occupations()[iphi]);	
+			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].spinor_set_part(), +occupations()[iphi]);
 			iphi++;
 		}
 
@@ -346,8 +346,8 @@ public:
 			auto basedir = dirname + "/kpin" + utils::num_to_str(iphi + kpin_part_.start());
 			success = success and operations::io::load(basedir + "/states", phi);
 
-			gpu::array<double, 1> tmpocc(kpin()[iphi].set_part().local_size());
-			success = success and operations::io::load(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), tmpocc);
+			gpu::array<double, 1> tmpocc(kpin()[iphi].spinor_set_part().local_size());
+			success = success and operations::io::load(basedir + "/occupations", states_comm_, kpin()[iphi].spinor_set_part(), tmpocc);
 			occupations()[iphi] = tmpocc;
 			
 			iphi++;
