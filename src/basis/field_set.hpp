@@ -112,14 +112,22 @@ public:
 		return field_set<typename basis_type::reciprocal_space, element_type, PartitionType>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
 	}
 	
-	internal_array_type & matrix() {
+	auto & matrix() {
 		return matrix_;
 	}
 
-	internal_array_type const & matrix() const{
+	auto & matrix() const {
 		return matrix_;
 	}
 
+	auto & spinor_matrix() {
+		return matrix_;
+	}
+
+	auto & spinor_matrix() const {
+		return matrix_;
+	}
+	
 	auto data() const {
 		return raw_pointer_cast(matrix_.data_elements());
 	}
@@ -145,18 +153,30 @@ public:
 		return basis_;
 	}
 
-	const int & set_size() const {
+	auto & set_size() const {
 		return num_vectors_;
 	}
 
+	auto & spinor_set_size() const {
+		return num_vectors_;
+	}
+	
 	auto local_set_size() const {
 		return set_part_.local_size();
 	}
-		
+
+	auto local_spinor_set_size() const {
+		return set_part_.local_size();
+	}
+	
 	auto & set_part() const {
 		return set_part_;
 	}
-		
+
+	auto & spinor_set_part() const {
+		return set_part_;
+	}
+	
 	auto & set_comm() const {
 		return set_comm_;
 	}
