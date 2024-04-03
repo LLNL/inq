@@ -34,25 +34,23 @@ struct overlap_diagonal_mult {
 	}
 };
 
-template <class Basis, class PhiSetPart, class Phi1Matrix, class Phi2Matrix>
-gpu::array<typename Phi1Matrix::element_type, 1> overlap_diagonal_impl(Basis const & basis, PhiSetPart const & phi_set_part,
-																																			 Phi1Matrix const & phi1_matrix, Phi2Matrix const & phi2_matrix){
+template <class Basis, class PhiMatrix>
+gpu::array<typename PhiMatrix::element_type, 1> overlap_diagonal_impl(Basis const & basis, PhiMatrix const & phi1_matrix, PhiMatrix const & phi2_matrix){
 	CALI_CXX_MARK_SCOPE("overlap_diagonal(2arg)");
 
-	assert(phi1_matrix.size() == phi2_matrix.size());
-	
-	using type = typename Phi1Matrix::element_type;
+	assert(sizes(phi1_matrix) == sizes(phi2_matrix));
+	auto nn = std::get<1>(phi1_matrix.sizes());
+
+	using type = typename PhiMatrix::element_type;
 		
-	gpu::array<type, 1> overlap_vector(phi_set_part.local_size());
+	gpu::array<type, 1> overlap_vector(nn);
 
-	if(phi_set_part.local_size() == 1){
-
+	if(nn == 1){
 		namespace blas = boost::multi::blas;
 		overlap_vector[0] = blas::dot(blas::C(phi1_matrix.rotated()[0]), phi2_matrix.rotated()[0]);
 		overlap_vector[0] *= basis.volume_element();
 	} else {
-
-		overlap_vector = gpu::run(phi_set_part.local_size(), gpu::reduce(phi1_matrix.size()),
+		overlap_vector = gpu::run(nn, gpu::reduce(phi1_matrix.size()),
 															overlap_diagonal_mult<decltype(begin(phi1_matrix))>{basis.volume_element(), begin(phi1_matrix), begin(phi2_matrix)});
 	}
 
@@ -69,7 +67,7 @@ gpu::array<typename Phi1Matrix::element_type, 1> overlap_diagonal_impl(Basis con
 template <class Basis, class Type>
 auto overlap_diagonal(basis::field_set<Basis, Type> const & phi1, basis::field_set<Basis, Type> const & phi2){
 	assert(phi1.basis() == phi2.basis());
-	return overlap_diagonal_impl(phi1.basis(), phi1.set_part(), phi1.matrix(), phi2.matrix());
+	return overlap_diagonal_impl(phi1.basis(), phi1.matrix(), phi2.matrix());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +75,7 @@ auto overlap_diagonal(basis::field_set<Basis, Type> const & phi1, basis::field_s
 template <class Basis, class Type>
 auto overlap_diagonal(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2){
 	assert(phi1.basis() == phi2.basis());	
-	return overlap_diagonal_impl(phi1.basis(), phi1.spinor_set_part(), phi1.basis_spinor_matrix(), phi2.basis_spinor_matrix());
+	return overlap_diagonal_impl(phi1.basis(), phi1.basis_spinor_matrix(), phi2.basis_spinor_matrix());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +97,7 @@ struct value_and_norm {
 	{
 	}
 
-	GPU_FUNCTION value_and_norm(double val = 0.0):
+	GPU_FUNCTION value_and_norm(double val):
 		value(val),
 		norm(val)
 	{
@@ -141,15 +139,18 @@ struct real_part {
 	}
 };
 
-template <class Basis, class SetPart, class Phi1Matrix, class Phi2Matrix, typename Transform>
-auto overlap_diagonal_normalized_impl(Basis const & basis, SetPart const & set_part, Phi1Matrix const & phi1_matrix, Phi2Matrix const & phi2_matrix, Transform trans)
-	-> gpu::array<decltype(trans(typename Phi1Matrix::element_type{})), 1> {
+template <class Basis, class PhiMatrix, typename Transform>
+auto overlap_diagonal_normalized_impl(Basis const & basis, PhiMatrix const & phi1_matrix, PhiMatrix const & phi2_matrix, Transform trans)
+	-> gpu::array<decltype(trans(typename PhiMatrix::element_type{})), 1> {
 
 	CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized");
 
-	using type = typename Phi1Matrix::element_type;
+	assert(sizes(phi1_matrix) == sizes(phi2_matrix));
+	auto nn = std::get<1>(phi1_matrix.sizes());
 
-	auto overlap_and_norm = gpu::run(set_part.local_size(), gpu::reduce(phi1_matrix.size()),
+	using type = typename PhiMatrix::element_type;
+
+	auto overlap_and_norm = gpu::run(nn, gpu::reduce(phi1_matrix.size()),
 																	 overlap_diagonal_normalized_mult<decltype(begin(phi1_matrix))>{begin(phi1_matrix), begin(phi2_matrix)});
 	
 	if(basis.comm().size() > 1){
@@ -157,7 +158,7 @@ auto overlap_diagonal_normalized_impl(Basis const & basis, SetPart const & set_p
 		basis.comm().all_reduce_in_place_n(reinterpret_cast<type *>(raw_pointer_cast(overlap_and_norm.data_elements())), 2*overlap_and_norm.size(), std::plus<>{});
 	}
 
-	gpu::array<decltype(trans(typename  Phi1Matrix::element_type{})), 1> overlap_vector(set_part.local_size());
+	gpu::array<decltype(trans(typename PhiMatrix::element_type{})), 1> overlap_vector(nn);
 
 	gpu::run(overlap_vector.size(),
 					 [olp = begin(overlap_vector), olpnrm = begin(overlap_and_norm), trans] GPU_LAMBDA (auto ii){
@@ -171,14 +172,14 @@ auto overlap_diagonal_normalized_impl(Basis const & basis, SetPart const & set_p
 
 template <class Basis, class Type, class Transform = identity>
 auto overlap_diagonal_normalized(basis::field_set<Basis, Type> const & phi1, basis::field_set<Basis, Type> const & phi2, Transform trans = {}) {
-	return overlap_diagonal_normalized_impl(phi1.basis(), phi1.set_part(), phi1.matrix(), phi2.matrix(), trans);
+	return overlap_diagonal_normalized_impl(phi1.basis(), phi1.matrix(), phi2.matrix(), trans);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <class Basis, class Type, class Transform = identity>
 auto overlap_diagonal_normalized(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2, Transform trans = {}) {
-	return overlap_diagonal_normalized_impl(phi1.basis(), phi1.spinor_set_part(), phi1.basis_spinor_matrix(), phi2.basis_spinor_matrix(), trans);
+	return overlap_diagonal_normalized_impl(phi1.basis(), phi1.basis_spinor_matrix(), phi2.basis_spinor_matrix(), trans);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
