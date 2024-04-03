@@ -206,13 +206,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	const int nvec = 12;
 			
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
-		
-	parallel::cartesian_communicator<2> cart_comm(comm, {comm.size(), 1});
+	auto parstates = comm.size();
+	if(comm.size() == 4) parstates = 2;
+	if(comm.size() >= 5) parstates = 1;
+	
+	parallel::cartesian_communicator<2> cart_comm(comm, {boost::mpi3::fill, parstates});
 
 	auto basis_comm = basis::basis_subcomm(cart_comm);
 
-	CHECK(basis_comm.size() == comm.size());
-		
 	basis::trivial bas(npoint, basis_comm);
 
 	SECTION("field_set double"){
@@ -221,7 +222,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		basis::field_set<basis::trivial, double> bb(bas, nvec, cart_comm);
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value() + 1);
@@ -233,12 +234,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<double, 1>));
 		
-		for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(-jj - 1));
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
+			auto jjg = aa.set_part().local_to_global(jj).value();
+			CHECK(dd[jj] == Approx(-jjg - 1));
+		}
 
 		basis::field_set<basis::trivial, double> cc(bas, nvec, cart_comm);
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = cc.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				cc.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value());
@@ -250,7 +254,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<double, 1>));
 								
-			for(int jj = 0; jj < nvec; jj++) CHECK(ee[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
+				auto jjg = aa.set_part().local_to_global(jj).value();
+				CHECK(ee[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jjg));
+			}
 		}
 
 		{
@@ -259,9 +266,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<double, 1>));
 			
-			CHECK(std::get<0>(sizes(ff)) == nvec);
+			CHECK(std::get<0>(sizes(ff)) == aa.set_part().local_size());
 			
-			for(int jj = 0; jj < nvec; jj++) CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
+			for(int jj = 0; jj < ff.size(); jj++) {
+				CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
+			}
  
 		}
 	}
@@ -272,7 +281,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		basis::field_set<basis::trivial, complex> bb(bas, nvec, cart_comm);
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
@@ -284,17 +293,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
 		
-		CHECK(std::get<0>(sizes(dd)) == nvec);
+		CHECK(std::get<0>(sizes(dd)) ==  aa.set_part().local_size());
 		
-		for(int jj = 0; jj < nvec; jj++){
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
+			auto jjg = aa.set_part().local_to_global(jj).value();
 			CHECK(fabs(real(dd[jj])) < 1.0e-12);
-			CHECK(imag(dd[jj]) == Approx(-jj - 1));
+			CHECK(imag(dd[jj]) == Approx(-jjg - 1));
 		}
 
 		basis::field_set<basis::trivial, complex> cc(bas, nvec, cart_comm);
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = cc.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				cc.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
@@ -306,9 +316,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
 			
-			CHECK(std::get<0>(sizes(ee)) == nvec);
+			CHECK(std::get<0>(sizes(ee)) == aa.set_part().local_size());
 				
-			for(int jj = 0; jj < nvec; jj++) CHECK(real(ee[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
+				auto jjg = aa.set_part().local_to_global(jj).value();
+				CHECK(real(ee[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jjg));
+			}
 		}
 
 		{
@@ -317,9 +330,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
 			
-			CHECK(std::get<0>(sizes(ff)) == nvec);
+			CHECK(std::get<0>(sizes(ff)) == aa.set_part().local_size());
 				
-			for(int jj = 0; jj < nvec; jj++) {
+			for(int jj = 0; jj < ff.size(); jj++) {
 				CHECK(fabs(ff[jj]) == Approx(fabs(dd[jj]/gg[jj])));
 				CHECK(imag(ff[jj]) == Approx(imag(dd[jj]/gg[jj])));
 			}
@@ -333,7 +346,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		states::orbital_set<basis::trivial, double> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value() + 1);
@@ -345,12 +358,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<double, 1>));
 		
-		for(int jj = 0; jj < nvec; jj++) CHECK(dd[jj] == Approx(-jj - 1));
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
+			auto jjg = aa.set_part().local_to_global(jj).value();
+			CHECK(dd[jj] == Approx(-jjg - 1));
+		}
 
 		states::orbital_set<basis::trivial, double> cc(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = cc.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				cc.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value());
@@ -362,7 +378,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<double, 1>));
 								
-			for(int jj = 0; jj < nvec; jj++) CHECK(ee[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
+				auto jjg = aa.set_part().local_to_global(jj).value();
+				CHECK(ee[jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jjg));
+			}
 		}
 
 		{
@@ -371,9 +390,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<double, 1>));
 			
-			CHECK(std::get<0>(sizes(ff)) == nvec);
+			CHECK(std::get<0>(sizes(ff)) == aa.set_part().local_size());
 			
-			for(int jj = 0; jj < nvec; jj++) CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
+			for(int jj = 0; jj < ff.size(); jj++) CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
  
 		}
 	}
@@ -384,7 +403,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = aa.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.matrix()[ii][jj] = 20.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
@@ -396,17 +415,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
 		
-		CHECK(std::get<0>(sizes(dd)) == nvec);
+		CHECK(std::get<0>(sizes(dd)) == aa.set_part().local_size());
 		
-		for(int jj = 0; jj < nvec; jj++){
+		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
+			auto jjg = aa.set_part().local_to_global(jj).value();
 			CHECK(fabs(real(dd[jj])) < 1.0e-12);
-			CHECK(imag(dd[jj]) == Approx(-jj - 1));
+			CHECK(imag(dd[jj]) == Approx(-jjg - 1));
 		}
 
 		states::orbital_set<basis::trivial, complex> cc(bas, nvec, /*spinor_dim = */ 1, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 				auto jjg = cc.set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				cc.matrix()[ii][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
@@ -418,9 +438,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
 			
-			CHECK(std::get<0>(sizes(ee)) == nvec);
+			CHECK(std::get<0>(sizes(ee)) == aa.set_part().local_size());
 				
-			for(int jj = 0; jj < nvec; jj++) CHECK(real(ee[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+			for(int jj = 0; jj < ee.size(); jj++) {
+				auto jjg = aa.set_part().local_to_global(jj).value();
+				CHECK(real(ee[jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*jjg));
+			}
 		}
 
 		{
@@ -429,16 +452,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
 			
-			CHECK(std::get<0>(sizes(ff)) == nvec);
+			CHECK(std::get<0>(sizes(ff)) == aa.set_part().local_size());
 				
-			for(int jj = 0; jj < nvec; jj++) {
+			for(int jj = 0; jj < ff.size(); jj++) {
 				CHECK(fabs(ff[jj]) == Approx(fabs(dd[jj]/gg[jj])));
 				CHECK(imag(ff[jj]) == Approx(imag(dd[jj]/gg[jj])));
 			}
 		}
 
 	}
-
 	
 	SECTION("orbital_set spinor complex"){
 		
@@ -446,7 +468,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
 				auto jjg = aa.spinor_set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				aa.spinor_matrix()[ii][0][jj] =  20.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
@@ -460,17 +482,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
 		
-		CHECK(std::get<0>(sizes(dd)) == nvec);
+		CHECK(std::get<0>(sizes(dd)) == aa.spinor_set_part().local_size());
 		
-		for(int jj = 0; jj < nvec; jj++){
+		for(int jj = 0; jj < dd.size(); jj++){
+			auto jjg = aa.spinor_set_part().local_to_global(jj).value();
 			CHECK(fabs(real(dd[jj])) < 1.0e-12);
-			CHECK(imag(dd[jj]) == Approx(2.0*(-jj - 1)));
+			CHECK(imag(dd[jj]) == Approx(2.0*(-jjg - 1)));
 		}
 		
 		states::orbital_set<basis::trivial, complex> cc(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
-			for(int jj = 0; jj < nvec; jj++){
+			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
 				auto jjg = cc.spinor_set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				cc.spinor_matrix()[ii][0][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
@@ -483,9 +506,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
 			
-			CHECK(std::get<0>(sizes(ee)) == nvec);
+			CHECK(std::get<0>(sizes(ee)) == aa.spinor_set_part().local_size());
 				
-			for(int jj = 0; jj < nvec; jj++) CHECK(real(ee[jj]) == Approx(2.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+			for(int jj = 0; jj < ee.size(); jj++) {
+				auto jjg = aa.spinor_set_part().local_to_global(jj).value();
+				CHECK(real(ee[jj]) == Approx(2.5*npoint*(npoint - 1.0)*bas.volume_element()*jjg));
+			}
 		}
 
 		{
@@ -494,9 +520,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
 			
-			CHECK(std::get<0>(sizes(ff)) == nvec);
+			CHECK(std::get<0>(sizes(ff)) == aa.spinor_set_part().local_size());
 				
-			for(int jj = 0; jj < nvec; jj++) {
+			for(int jj = 0; jj < ff.size(); jj++) {
 				CHECK(fabs(ff[jj]) == Approx(fabs(dd[jj]/gg[jj])));
 				CHECK(imag(ff[jj]) == Approx(imag(dd[jj]/gg[jj])));
 			}
