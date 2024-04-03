@@ -395,8 +395,12 @@ public:
 		return kpin_states_part_;
 	}
 	
-	auto max_local_set_size() const {
+	auto & max_local_set_size() const {
 		return max_local_set_size_;
+	}
+
+	auto & max_local_spinor_set_size() const {
+		return max_local_spinor_set_size_;
 	}
 
 	auto density() const {
