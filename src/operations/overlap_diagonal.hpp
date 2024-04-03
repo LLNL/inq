@@ -75,7 +75,7 @@ auto overlap_diagonal(basis::field_set<Basis, Type> const & phi1, basis::field_s
 template <class Basis, class Type>
 auto overlap_diagonal(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2){
 	assert(phi1.basis() == phi2.basis());	
-	return overlap_diagonal_impl(phi1.basis(), phi1.basis_spinor_matrix(), phi2.basis_spinor_matrix());
+	return overlap_diagonal_impl(phi1.basis(), phi1.spinor_matrix(), phi2.spinor_matrix());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +181,7 @@ auto overlap_diagonal_normalized(basis::field_set<Basis, Type> const & phi1, bas
 
 template <class Basis, class Type, class Transform = identity>
 auto overlap_diagonal_normalized(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2, Transform trans = {}) {
-	return overlap_diagonal_normalized_impl(phi1.basis(), phi1.basis_spinor_matrix(), phi2.basis_spinor_matrix(), trans);
+	return overlap_diagonal_normalized_impl(phi1.basis(), phi1.spinor_matrix(), phi2.spinor_matrix(), trans);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////

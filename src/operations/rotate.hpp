@@ -74,7 +74,7 @@ void rotate(Matrix const & rotation, basis::field_set<Basis, Type> & phi){
 
 template <class Matrix, class Basis, class Type>
 void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> & phi){
-	auto phimatrix = phi.basis_spinor_matrix();
+	auto phimatrix = phi.spinor_matrix();
 	rotate_impl(rotation, phi.spinor_set_part(), phi.set_comm(), phimatrix);
 }
 
@@ -137,8 +137,8 @@ void rotate(Matrix const & rotation, basis::field_set<Basis, Type> const & phi, 
 
 template <class Matrix, class Basis, class Type, class ScalType>
 void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> const & phi, states::orbital_set<Basis, Type> & rotphi, ScalType const & alpha = 1.0, ScalType const & beta = 0.0){
-	auto rotphi_matrix =  rotphi.basis_spinor_matrix();
-	rotate_impl(rotation, phi.set_comm(), phi.spinor_set_part(), phi.basis_spinor_matrix(), rotphi_matrix, alpha, beta);
+	auto rotphi_matrix =  rotphi.spinor_matrix();
+	rotate_impl(rotation, phi.set_comm(), phi.spinor_set_part(), phi.spinor_matrix(), rotphi_matrix, alpha, beta);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
