@@ -215,9 +215,11 @@ public:
 		assert(kpin_comm_ == old_el.kpin_comm_); //resizing of k points not supported for the moment
 
 		max_local_set_size_ = 0;
+		max_local_spinor_set_size_ = 0;
 		for(auto & oldphi : old_el.kpin_){
 			kpin_.emplace_back(std::move(oldphi), states_basis_comm_);
 			max_local_set_size_ = std::max(max_local_set_size_, kpin_.back().local_set_size());
+			max_local_spinor_set_size_ = std::max(max_local_spinor_set_size_, kpin_.back().local_set_size());
 		}
 
 		assert(kpin_.size() == old_el.kpin_.size());
@@ -322,6 +324,7 @@ public:
 		for(auto & phi : kpin()){
 			auto basedir = dirname + "/kpin" + utils::num_to_str(iphi + kpin_part_.start());
 			operations::io::save(basedir + "/states", phi);
+			assert(occupations()[iphi].size() == kpin()[iphi].spinor_set_part().local_size());
 			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].spinor_set_part(), +occupations()[iphi]);
 			iphi++;
 		}
