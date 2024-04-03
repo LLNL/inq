@@ -44,16 +44,15 @@ public:
 		nkpoints_(el.brillouin_zone().size()),
 		electrons_(el)
 	{
-		
-		gpu::array<int, 2> kpoint_index({el.kpin_part().local_size(), el.max_local_set_size()});
-		gpu::array<int, 2> spin_index({el.kpin_part().local_size(), el.max_local_set_size()});
-		gpu::array<int, 2> state_index({el.kpin_part().local_size(), el.max_local_set_size()});
-		gpu::array<double, 2> occs({el.kpin_part().local_size(), el.max_local_set_size()});
+		gpu::array<int, 2> kpoint_index({el.kpin_part().local_size(), el.max_local_spinor_set_size()});
+		gpu::array<int, 2> spin_index({el.kpin_part().local_size(), el.max_local_spinor_set_size()});
+		gpu::array<int, 2> state_index({el.kpin_part().local_size(), el.max_local_spinor_set_size()});
+		gpu::array<double, 2> occs({el.kpin_part().local_size(), el.max_local_spinor_set_size()});
 		
 		auto iphi = 0;
 		for(auto & phi : el.kpin()){
 			auto ik = el.kpoint_index(phi);
-			for(int ist = 0; ist < el.max_local_set_size(); ist++){
+			for(int ist = 0; ist < el.max_local_spinor_set_size(); ist++){
 				kpoint_index[iphi][ist] = ik;
 				spin_index[iphi][ist] = phi.spin_index();
 				state_index[iphi][ist] = phi.set_part().local_to_global(ist).value();
@@ -69,7 +68,6 @@ public:
 		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
 		all_occupations = parallel::gather(+occs.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
 		all_normres = parallel::gather(+normres.flatted(), el.kpin_states_part(), el.kpin_states_comm(), 0);
-
 	}
 
 	static std::string spin_string(int index){
