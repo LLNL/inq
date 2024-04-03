@@ -178,7 +178,7 @@ auto overlap_diagonal_normalized(basis::field_set<Basis, Type> const & phi1, bas
 
 template <class Basis, class Type, class Transform = identity>
 auto overlap_diagonal_normalized(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2, Transform trans = {}) {
-	return overlap_diagonal_normalized_impl(phi1.basis(), phi1.set_part(), phi1.matrix(), phi2.matrix(), trans);
+	return overlap_diagonal_normalized_impl(phi1.basis(), phi1.spinor_set_part(), phi1.basis_spinor_matrix(), phi2.basis_spinor_matrix(), trans);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -487,6 +487,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < nvec; jj++) CHECK(real(ee[jj]) == Approx(2.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
 		}
 
+		{
+			auto ff = operations::overlap_diagonal_normalized(aa, bb);
+			auto gg = operations::overlap_diagonal(bb);
+
+			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
+			
+			CHECK(std::get<0>(sizes(ff)) == nvec);
+				
+			for(int jj = 0; jj < nvec; jj++) {
+				CHECK(fabs(ff[jj]) == Approx(fabs(dd[jj]/gg[jj])));
+				CHECK(imag(ff[jj]) == Approx(imag(dd[jj]/gg[jj])));
+			}
+		}
+		
 	}
 
 }
