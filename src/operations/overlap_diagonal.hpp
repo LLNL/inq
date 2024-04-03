@@ -473,10 +473,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
 				auto jjg = aa.spinor_set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.spinor_matrix()[ii][0][jj] =  20.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
-				aa.spinor_matrix()[ii][1][jj] =  -2.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
-				bb.spinor_matrix()[ii][0][jj] =  -0.05/(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
-				bb.spinor_matrix()[ii][1][jj] =   0.50/(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				aa.spinor_array()[ii][0][jj] =  20.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				aa.spinor_array()[ii][1][jj] =  -2.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_array()[ii][0][jj] =  -0.05/(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_array()[ii][1][jj] =   0.50/(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
 			}
 		}
 
@@ -498,8 +498,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.spinor_set_part().local_size(); jj++){
 				auto jjg = cc.spinor_set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				cc.spinor_matrix()[ii][0][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
-				cc.spinor_matrix()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));				
+				cc.spinor_array()[ii][0][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+				cc.spinor_array()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));				
 			}
 		}
 

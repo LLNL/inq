@@ -34,11 +34,11 @@ void calculate_add(const occupations_array_type & occupations, field_set_type & 
 	} else {
 		
 		assert(density.set_size() == 4);
-		assert(std::get<1>(sizes(phi.spinor_matrix())) == phi.spinor_dim());
-		assert(std::get<2>(sizes(phi.spinor_matrix())) == phi.local_spinor_set_size());
+		assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
+		assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
 		
 		gpu::run(phi.basis().part().local_size(),
-						 [nst = phi.local_spinor_set_size(), occ = begin(occupations), ph = begin(phi.spinor_matrix()), den = begin(density.matrix())] GPU_LAMBDA (auto ipoint){
+						 [nst = phi.local_spinor_set_size(), occ = begin(occupations), ph = begin(phi.spinor_array()), den = begin(density.matrix())] GPU_LAMBDA (auto ipoint){
 							 for(int ist = 0; ist < nst; ist++) {
 								 den[ipoint][0] += occ[ist]*norm(ph[ipoint][0][ist]);
 								 den[ipoint][1] += occ[ist]*norm(ph[ipoint][1][ist]);
@@ -217,7 +217,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 2, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-		CHECK(std::get<1>(sizes(aa.spinor_matrix())) == 2);
+		CHECK(std::get<1>(sizes(aa.spinor_array())) == 2);
 		
 		gpu::array<double, 1> occ(nvec);
 		
@@ -225,8 +225,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 				auto iig = bas.part().local_to_global(ii).value();
 				auto jjg = aa.spinor_set_part().local_to_global(jj).value();
-				aa.spinor_matrix()[ii][0][jj] = sqrt(iig)*(jjg + 1)*exp(complex(0.0, M_PI/65.0*iig));
-				aa.spinor_matrix()[ii][1][jj] = sqrt(iig)*(jjg + 1)*exp(complex(0.0, M_PI/65.0*iig));
+				aa.spinor_array()[ii][0][jj] = sqrt(iig)*(jjg + 1)*exp(complex(0.0, M_PI/65.0*iig));
+				aa.spinor_array()[ii][1][jj] = sqrt(iig)*(jjg + 1)*exp(complex(0.0, M_PI/65.0*iig));
 			}
 		}
 
