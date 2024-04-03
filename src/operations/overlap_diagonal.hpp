@@ -91,6 +91,8 @@ auto overlap_diagonal(const field_set_type & phi){
 template <typename Type>
 struct value_and_norm {
 
+	value_and_norm() = default;
+	
 	GPU_FUNCTION value_and_norm(Type const & val, Type const & nrm):
 		value(val),
 		norm(nrm)
