@@ -85,7 +85,7 @@ auto overlap(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<
 	assert(phi1.basis() == phi2.basis());
 	assert(phi1.full_comm() == phi2.full_comm());
 	
-	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.spinor_set_part(), phi1.basis_spinor_matrix(), phi2.spinor_set_part(), phi2.basis_spinor_matrix());
+	return overlap_impl(phi1.basis(), phi1.full_comm(), phi1.set_comm(), phi1.spinor_set_part(), phi1.spinor_matrix(), phi2.spinor_set_part(), phi2.spinor_matrix());
 }
 
 template <class FieldSetType>
@@ -322,10 +322,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 				auto jjg = aa.spinor_set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.spinor_matrix()[ii][0][jj] = 2.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
-				aa.spinor_matrix()[ii][1][jj] = 10.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
-				bb.spinor_matrix()[ii][0][jj] = -0.5/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
-				bb.spinor_matrix()[ii][1][jj] = -0.1/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));				
+				aa.spinor_array()[ii][0][jj] = 2.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				aa.spinor_array()[ii][1][jj] = 10.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_array()[ii][0][jj] = -0.5/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_array()[ii][1][jj] = -0.1/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));				
 			}
 		}
 		
@@ -348,8 +348,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 				auto jjg = aa.spinor_set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
-				aa.spinor_matrix()[ii][0][jj] = 3.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
-				aa.spinor_matrix()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+				aa.spinor_array()[ii][0][jj] = 3.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+				aa.spinor_array()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
 			}
 		}
 

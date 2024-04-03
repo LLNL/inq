@@ -74,7 +74,7 @@ void rotate(Matrix const & rotation, basis::field_set<Basis, Type> & phi){
 
 template <class Matrix, class Basis, class Type>
 void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> & phi){
-	auto phimatrix = phi.basis_spinor_matrix();
+	auto phimatrix = phi.spinor_matrix();
 	rotate_impl(rotation, phi.spinor_set_part(), phi.set_comm(), phimatrix);
 }
 
@@ -137,8 +137,8 @@ void rotate(Matrix const & rotation, basis::field_set<Basis, Type> const & phi, 
 
 template <class Matrix, class Basis, class Type, class ScalType>
 void rotate(Matrix const & rotation, states::orbital_set<Basis, Type> const & phi, states::orbital_set<Basis, Type> & rotphi, ScalType const & alpha = 1.0, ScalType const & beta = 0.0){
-	auto rotphi_matrix =  rotphi.basis_spinor_matrix();
-	rotate_impl(rotation, phi.set_comm(), phi.spinor_set_part(), phi.basis_spinor_matrix(), rotphi_matrix, alpha, beta);
+	auto rotphi_matrix =  rotphi.spinor_matrix();
+	rotate_impl(rotation, phi.set_comm(), phi.spinor_set_part(), phi.spinor_matrix(), rotphi_matrix, alpha, beta);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -483,8 +483,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
-					aa.spinor_matrix()[ip][0][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
-					aa.spinor_matrix()[ip][1][jj] = -2.0*(jjg.value() + 1.0)*(ipg.value() + 1);
+					aa.spinor_array()[ip][0][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
+					aa.spinor_array()[ip][1][jj] = -2.0*(jjg.value() + 1.0)*(ipg.value() + 1);
 				}
 			}
 
@@ -494,8 +494,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
-					CHECK(aa.spinor_matrix()[ip][0][jj] == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
-					CHECK(aa.spinor_matrix()[ip][1][jj] == -2.0*(ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+					CHECK(aa.spinor_array()[ip][0][jj] == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+					CHECK(aa.spinor_array()[ip][1][jj] == -2.0*(ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
 				}
 			}
 		
@@ -519,8 +519,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
-					aa.spinor_matrix()[ip][0][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
-					aa.spinor_matrix()[ip][1][jj] = complex{-2.0*(jjg.value() + 1.0)*(ipg.value() + 1), 0.0};
+					aa.spinor_array()[ip][0][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
+					aa.spinor_array()[ip][1][jj] = complex{-2.0*(jjg.value() + 1.0)*(ipg.value() + 1), 0.0};
 				}
 			}
 
@@ -530,10 +530,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
-					CHECK(real(aa.spinor_matrix()[ip][0][jj]) == 0.0);
-					CHECK(imag(aa.spinor_matrix()[ip][0][jj]) == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
-					CHECK(real(aa.spinor_matrix()[ip][1][jj]) == -2.0*(ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
-					CHECK(imag(aa.spinor_matrix()[ip][1][jj]) == 0.0);
+					CHECK(real(aa.spinor_array()[ip][0][jj]) == 0.0);
+					CHECK(imag(aa.spinor_array()[ip][0][jj]) == (ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+					CHECK(real(aa.spinor_array()[ip][1][jj]) == -2.0*(ipg.value() + 1.0)*(jjg.value() + 1.0)*nvec*(nvec + 1.0)/2.0);
+					CHECK(imag(aa.spinor_array()[ip][1][jj]) == 0.0);
 				}
 			}
 		
@@ -557,8 +557,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
-					aa.spinor_matrix()[ip][0][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
-					aa.spinor_matrix()[ip][1][jj] = -0.5*(jjg.value() + 1.0)*(ipg.value() + 1);
+					aa.spinor_array()[ip][0][jj] = (jjg.value() + 1.0)*(ipg.value() + 1);
+					aa.spinor_array()[ip][1][jj] = -0.5*(jjg.value() + 1.0)*(ipg.value() + 1);
 				}
 			}
 
@@ -567,8 +567,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 					auto ipg = bas.part().local_to_global(ip);
-					CHECK(aa.spinor_matrix()[ip][0][jj] == (ipg.value() + 1.0));
-					CHECK(aa.spinor_matrix()[ip][1][jj] == -0.5*(ipg.value() + 1.0));
+					CHECK(aa.spinor_array()[ip][0][jj] == (ipg.value() + 1.0));
+					CHECK(aa.spinor_array()[ip][1][jj] == -0.5*(ipg.value() + 1.0));
 				}
 			}
 			
@@ -592,8 +592,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 					auto jjg = aa.spinor_set_part().local_to_global(jj);
 					auto ipg = bas.part().local_to_global(ip);
-					aa.spinor_matrix()[ip][0][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
-					aa.spinor_matrix()[ip][1][jj] = 0.4*(jjg.value() + 1.0)*(ipg.value() + 1);
+					aa.spinor_array()[ip][0][jj] = complex{0.0, (jjg.value() + 1.0)*(ipg.value() + 1)};
+					aa.spinor_array()[ip][1][jj] = 0.4*(jjg.value() + 1.0)*(ipg.value() + 1);
 				}
 			}
 
@@ -602,10 +602,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int ip = 0; ip < bas.part().local_size(); ip++){
 				for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
 					auto ipg = bas.part().local_to_global(ip);
-					CHECK(real(aa.spinor_matrix()[ip][0][jj]) == Approx(0.0));
-					CHECK(imag(aa.spinor_matrix()[ip][0][jj]) == Approx((ipg.value() + 1.0)));
-					CHECK(real(aa.spinor_matrix()[ip][1][jj]) == Approx(0.4*(ipg.value() + 1.0)));
-					CHECK(imag(aa.spinor_matrix()[ip][1][jj]) == Approx(0.0));
+					CHECK(real(aa.spinor_array()[ip][0][jj]) == Approx(0.0));
+					CHECK(imag(aa.spinor_array()[ip][0][jj]) == Approx((ipg.value() + 1.0)));
+					CHECK(real(aa.spinor_array()[ip][1][jj]) == Approx(0.4*(ipg.value() + 1.0)));
+					CHECK(imag(aa.spinor_array()[ip][1][jj]) == Approx(0.0));
 				}
 			}
 			
