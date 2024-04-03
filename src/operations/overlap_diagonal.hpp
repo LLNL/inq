@@ -37,8 +37,9 @@ struct overlap_diagonal_mult {
 template <class Basis, class PhiSetPart, class Phi1Matrix, class Phi2Matrix>
 gpu::array<typename Phi1Matrix::element_type, 1> overlap_diagonal_impl(Basis const & basis, PhiSetPart const & phi_set_part,
 																																			 Phi1Matrix const & phi1_matrix, Phi2Matrix const & phi2_matrix){
-	
 	CALI_CXX_MARK_SCOPE("overlap_diagonal(2arg)");
+
+	assert(phi1_matrix.size() == phi2_matrix.size());
 	
 	using type = typename Phi1Matrix::element_type;
 		
@@ -50,8 +51,8 @@ gpu::array<typename Phi1Matrix::element_type, 1> overlap_diagonal_impl(Basis con
 		overlap_vector[0] = blas::dot(blas::C(phi1_matrix.rotated()[0]), phi2_matrix.rotated()[0]);
 		overlap_vector[0] *= basis.volume_element();
 	} else {
-		
-		overlap_vector = gpu::run(phi_set_part.local_size(), gpu::reduce(basis.part().local_size()),
+
+		overlap_vector = gpu::run(phi_set_part.local_size(), gpu::reduce(phi1_matrix.size()),
 															overlap_diagonal_mult<decltype(begin(phi1_matrix))>{basis.volume_element(), begin(phi1_matrix), begin(phi2_matrix)});
 	}
 
@@ -76,7 +77,7 @@ auto overlap_diagonal(basis::field_set<Basis, Type> const & phi1, basis::field_s
 template <class Basis, class Type>
 auto overlap_diagonal(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2){
 	assert(phi1.basis() == phi2.basis());	
-	return overlap_diagonal_impl(phi1.basis(), phi1.set_part(), phi1.matrix(), phi2.matrix());
+	return overlap_diagonal_impl(phi1.basis(), phi1.spinor_set_part(), phi1.basis_spinor_matrix(), phi2.basis_spinor_matrix());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -421,6 +422,56 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	}
 
+	
+	SECTION("orbital_set spinor complex"){
+		
+		states::orbital_set<basis::trivial, complex> aa(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < nvec; jj++){
+				auto jjg = aa.spinor_set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				aa.spinor_matrix()[ii][0][jj] =  20.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				aa.spinor_matrix()[ii][1][jj] =  -2.0*(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_matrix()[ii][0][jj] =  -0.05/(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+				bb.spinor_matrix()[ii][1][jj] =   0.50/(iig.value() + 1)*sqrt(jjg.value() + 1)*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
+			}
+		}
+
+		auto dd = operations::overlap_diagonal(aa, bb);
+		
+		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
+		
+		CHECK(std::get<0>(sizes(dd)) == nvec);
+		
+		for(int jj = 0; jj < nvec; jj++){
+			CHECK(fabs(real(dd[jj])) < 1.0e-12);
+			CHECK(imag(dd[jj]) == Approx(2.0*(-jj - 1)));
+		}
+		
+		states::orbital_set<basis::trivial, complex> cc(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
+		
+		for(int ii = 0; ii < bas.part().local_size(); ii++){
+			for(int jj = 0; jj < nvec; jj++){
+				auto jjg = cc.spinor_set_part().local_to_global(jj);
+				auto iig = bas.part().local_to_global(ii);
+				cc.spinor_matrix()[ii][0][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
+				cc.spinor_matrix()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));				
+			}
+		}
+
+		{
+			auto ee = operations::overlap_diagonal(cc);
+
+			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
+			
+			CHECK(std::get<0>(sizes(ee)) == nvec);
+				
+			for(int jj = 0; jj < nvec; jj++) CHECK(real(ee[jj]) == Approx(2.5*npoint*(npoint - 1.0)*bas.volume_element()*jj));
+		}
+
+	}
 
 }
 #endif
