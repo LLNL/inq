@@ -60,7 +60,7 @@ public:
 
 			CALI_CXX_MARK_SCOPE("energy::calculate");
 
-			auto normres = gpu::array<complex, 2>({static_cast<gpu::array<complex, 2>::size_type>(el.kpin().size()), el.max_local_set_size()});
+			auto normres = gpu::array<complex, 2>({static_cast<gpu::array<complex, 2>::size_type>(el.kpin().size()), el.max_local_spinor_set_size()});
 
 			eigenvalues_ = 0.0;
 			non_local_ = 0.0;

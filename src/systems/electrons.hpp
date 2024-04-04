@@ -72,6 +72,7 @@ private:
 	gpu::array<double, 2> occupations_;
 	gpu::array<double, 1> kpin_weights_;
 	long max_local_set_size_;
+	long max_local_spinor_set_size_;
 	basis::field_set<basis::real_space, double> spin_density_;
 	std::shared_ptr<spdlog::logger> logger_;
 	parallel::partition kpin_part_;
@@ -164,6 +165,7 @@ public:
 		kpin_weights_.reextent({kpin_part_.local_size()});
 
 		max_local_set_size_ = 0;
+		max_local_spinor_set_size_ = 0;
 		auto ilot = 0;
 		for(int ispin = 0; ispin < spin_part.local_size(); ispin++){
 			for(int ikpt = 0; ikpt < kpts_part.local_size(); ikpt++){
@@ -171,6 +173,7 @@ public:
 				auto kpoint = brillouin_zone_.kpoint(kpts_part.local_to_global(ikpt).value());
 				kpin_.emplace_back(states_basis_, states_.num_states(), states_.spinor_dim(), kpoint, spin_part.local_to_global(ispin).value(), states_basis_comm_);
 				max_local_set_size_ = std::max(max_local_set_size_, kpin_[ikpt].local_set_size());
+				max_local_spinor_set_size_ = std::max(max_local_spinor_set_size_, kpin_[ikpt].local_spinor_set_size());
 				ilot++;
 			}
 		}
@@ -180,8 +183,8 @@ public:
 		assert(long(kpin_.size()) == kpin_part_.local_size());
 		assert(max_local_set_size_ > 0);
 		
-		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
-		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
 
 		if(atomic_pot_.num_electrons() + conf.extra_electrons_val() == 0) throw std::runtime_error("inq error: the system does not have any electrons");
 		if(atomic_pot_.num_electrons() + conf.extra_electrons_val() < 0) throw std::runtime_error("inq error: the system has a negative number of electrons");		
@@ -203,6 +206,7 @@ public:
 		density_basis_(std::move(old_el.density_basis_), basis_subcomm(full_comm_)),
 		kpin_weights_(std::move(old_el.kpin_weights_)),
 		max_local_set_size_(std::move(old_el.max_local_set_size_)),
+		max_local_spinor_set_size_(std::move(old_el.max_local_spinor_set_size_)),
 		spin_density_(std::move(old_el.spin_density_), {density_basis_.comm(), {density_basis_.comm().size(), 1}}),
 		logger_(std::move(old_el.logger_)),
 		kpin_part_(std::move(old_el.kpin_part_))
@@ -211,19 +215,21 @@ public:
 		assert(kpin_comm_ == old_el.kpin_comm_); //resizing of k points not supported for the moment
 
 		max_local_set_size_ = 0;
+		max_local_spinor_set_size_ = 0;
 		for(auto & oldphi : old_el.kpin_){
 			kpin_.emplace_back(std::move(oldphi), states_basis_comm_);
 			max_local_set_size_ = std::max(max_local_set_size_, kpin_.back().local_set_size());
+			max_local_spinor_set_size_ = std::max(max_local_spinor_set_size_, kpin_.back().local_set_size());
 		}
 
 		assert(kpin_.size() == old_el.kpin_.size());
 
-		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
-		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_set_size_});
+		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
+		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
 		
 		for(unsigned ilot = 0; ilot < kpin_.size(); ilot++){
 
-			parallel::partition part(kpin_[ilot].set_size(), states_subcomm(old_el.full_comm_));
+			parallel::partition part(kpin_[ilot].spinor_set_size(), states_subcomm(old_el.full_comm_));
 			
 			parallel::array_iterator eigit(part, states_subcomm(old_el.full_comm_), +old_el.eigenvalues_[ilot]);
 			parallel::array_iterator occit(part, states_subcomm(old_el.full_comm_), +old_el.occupations_[ilot]);
@@ -231,7 +237,7 @@ public:
 			for(; eigit != eigit.end(); ++eigit){
  				
 				for(int ist = 0; ist < eigenvalues_[ilot].size(); ist++){
-					auto istg = kpin_[ilot].set_part().local_to_global(ist);
+					auto istg = kpin_[ilot].spinor_set_part().local_to_global(ist);
 					if(part.contains(istg.value())){
 						eigenvalues_[ilot][ist] = (*eigit)[part.global_to_local(istg)];
 						occupations_[ilot][ist] = (*occit)[part.global_to_local(istg)];
@@ -240,7 +246,7 @@ public:
 				
 				++occit;
 			}
-		}		
+		}
 	}
 
 	void print(const inq::systems::ions & ions){
@@ -318,7 +324,8 @@ public:
 		for(auto & phi : kpin()){
 			auto basedir = dirname + "/kpin" + utils::num_to_str(iphi + kpin_part_.start());
 			operations::io::save(basedir + "/states", phi);
-			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), +occupations()[iphi]);	
+			assert(occupations()[iphi].size() == kpin()[iphi].spinor_set_part().local_size());
+			if(states_basis_.comm().root()) operations::io::save(basedir + "/occupations", states_comm_, kpin()[iphi].spinor_set_part(), +occupations()[iphi]);
 			iphi++;
 		}
 
@@ -342,8 +349,8 @@ public:
 			auto basedir = dirname + "/kpin" + utils::num_to_str(iphi + kpin_part_.start());
 			success = success and operations::io::load(basedir + "/states", phi);
 
-			gpu::array<double, 1> tmpocc(kpin()[iphi].set_part().local_size());
-			success = success and operations::io::load(basedir + "/occupations", states_comm_, kpin()[iphi].set_part(), tmpocc);
+			gpu::array<double, 1> tmpocc(kpin()[iphi].spinor_set_part().local_size());
+			success = success and operations::io::load(basedir + "/occupations", states_comm_, kpin()[iphi].spinor_set_part(), tmpocc);
 			occupations()[iphi] = tmpocc;
 			
 			iphi++;
@@ -391,8 +398,12 @@ public:
 		return kpin_states_part_;
 	}
 	
-	auto max_local_set_size() const {
+	auto & max_local_set_size() const {
 		return max_local_set_size_;
+	}
+
+	auto & max_local_spinor_set_size() const {
+		return max_local_spinor_set_size_;
 	}
 
 	auto density() const {
@@ -501,7 +512,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	ions.insert("Cu", {1.0_b,  0.0_b,  0.0_b});
 	
 	auto par = input::parallelization(comm);
-		
+	
 	systems::electrons electrons(par, ions, options::electrons{}.cutoff(15.0_Ha));
 
 	CHECK(electrons.states().num_electrons() == 38.0_a);
@@ -526,7 +537,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 		iphi++;
 	}
-
+	
 	electrons.spin_density() = observables::density::calculate(electrons);
 	CHECK(operations::integral_sum(electrons.spin_density()) == -1315151005.0813348293_a);
 	

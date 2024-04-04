@@ -466,7 +466,41 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
     CHECK(st.num_spin_indices() == 1);
 		CHECK(st.num_density_components() == 4);		
 		CHECK(st.spinor_dim() == 2);
+				
+		parallel::partition part(st.num_states(), comm);
+
+		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 1> kweights(1, 1.0);		
+		gpu::array<double, 2> occupations({1, part.local_size()});
+
+		if(part.contains(0))  eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
+		if(part.contains(1))  eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
+		if(part.contains(2))  eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.3;
+		if(part.contains(3))  eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.3;
+		if(part.contains(4))  eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
+		if(part.contains(5))  eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
+		if(part.contains(6))  eigenvalues[0][part.global_to_local(parallel::global_index(6))] = 1.1;
+		if(part.contains(7))  eigenvalues[0][part.global_to_local(parallel::global_index(7))] = 1.3;
+		if(part.contains(8))  eigenvalues[0][part.global_to_local(parallel::global_index(8))] = 1.3;
+		if(part.contains(9))  eigenvalues[0][part.global_to_local(parallel::global_index(9))] = 1.6;
+		if(part.contains(10)) eigenvalues[0][part.global_to_local(parallel::global_index(10))] = 1.8;
 		
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
+
+		CHECK(efermi == 4.0032608849_a);
+		
+		if(part.contains(0))  CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 1.0);
+		if(part.contains(1))  CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 1.0);
+		if(part.contains(2))  CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 1.0);
+		if(part.contains(3))  CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 1.0);
+		if(part.contains(4))  CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 1.0);
+		if(part.contains(5))  CHECK(occupations[0][part.global_to_local(parallel::global_index(5))] == 1.0);
+		if(part.contains(6))  CHECK(occupations[0][part.global_to_local(parallel::global_index(6))] == 1.0);
+		if(part.contains(7))  CHECK(occupations[0][part.global_to_local(parallel::global_index(7))] == 1.0);
+		if(part.contains(8))  CHECK(occupations[0][part.global_to_local(parallel::global_index(8))] == 1.0);
+		if(part.contains(9))  CHECK(occupations[0][part.global_to_local(parallel::global_index(9))] == 1.0);
+		if(part.contains(10)) CHECK(occupations[0][part.global_to_local(parallel::global_index(10))] == 1.0);
+
   }
 
   SECTION("Spin unpolarized even extra"){
@@ -508,7 +542,51 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		if(part.contains(7)) CHECK(occupations[0][part.global_to_local(parallel::global_index(7))] == 0.0);		
 
   }
+	
+	SECTION("Non-collinear spin with extra states"){
+    
+    states::ks_states st(states::spin_config::NON_COLLINEAR, 8.0, 2);
+
+		CHECK(st.num_electrons() == 8.0);
+    CHECK(st.num_states() == 10);
+    CHECK(st.num_spin_indices() == 1);
+		CHECK(st.num_density_components() == 4);		
+		CHECK(st.spinor_dim() == 2);
+				
+		parallel::partition part(st.num_states(), comm);
+
+		gpu::array<double, 2> eigenvalues({1, part.local_size()});
+		gpu::array<double, 1> kweights(1, 1.0);		
+		gpu::array<double, 2> occupations({1, part.local_size()});
+
+		if(part.contains(0)) eigenvalues[0][part.global_to_local(parallel::global_index(0))] = 0.1;
+		if(part.contains(1)) eigenvalues[0][part.global_to_local(parallel::global_index(1))] = 0.2;
+		if(part.contains(2)) eigenvalues[0][part.global_to_local(parallel::global_index(2))] = 0.3;
+		if(part.contains(3)) eigenvalues[0][part.global_to_local(parallel::global_index(3))] = 0.3;
+		if(part.contains(4)) eigenvalues[0][part.global_to_local(parallel::global_index(4))] = 0.4;
+		if(part.contains(5)) eigenvalues[0][part.global_to_local(parallel::global_index(5))] = 1.0;
+		if(part.contains(6)) eigenvalues[0][part.global_to_local(parallel::global_index(6))] = 1.1;
+		if(part.contains(7)) eigenvalues[0][part.global_to_local(parallel::global_index(7))] = 1.3;
+		if(part.contains(8)) eigenvalues[0][part.global_to_local(parallel::global_index(8))] = 1.5;
+		if(part.contains(9)) eigenvalues[0][part.global_to_local(parallel::global_index(9))] = 1.6;
 		
+		auto efermi = st.update_occupations(comm, eigenvalues, kweights, occupations);
+
+		CHECK(efermi == 1.4131114159_a);
+		
+		if(part.contains(0)) CHECK(occupations[0][part.global_to_local(parallel::global_index(0))] == 1.0);
+		if(part.contains(1)) CHECK(occupations[0][part.global_to_local(parallel::global_index(1))] == 1.0);
+		if(part.contains(2)) CHECK(occupations[0][part.global_to_local(parallel::global_index(2))] == 1.0);
+		if(part.contains(3)) CHECK(occupations[0][part.global_to_local(parallel::global_index(3))] == 1.0);
+		if(part.contains(4)) CHECK(occupations[0][part.global_to_local(parallel::global_index(4))] == 1.0);
+		if(part.contains(5)) CHECK(occupations[0][part.global_to_local(parallel::global_index(5))] == 1.0);
+		if(part.contains(6)) CHECK(occupations[0][part.global_to_local(parallel::global_index(6))] == 1.0);
+		if(part.contains(7)) CHECK(occupations[0][part.global_to_local(parallel::global_index(7))] == 1.0);
+		if(part.contains(8)) CHECK(occupations[0][part.global_to_local(parallel::global_index(8))] == 0.0);
+		if(part.contains(9)) CHECK(occupations[0][part.global_to_local(parallel::global_index(9))] == 0.0);
+
+  }
+			
 	SECTION("Spin unpolarized kpoints"){
     
     states::ks_states st(states::spin_config::UNPOLARIZED, 6.0, 2, 0.0, 3);

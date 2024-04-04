@@ -37,7 +37,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 			
 		auto evnorm = eigenvalues;
 		
-		gpu::run(phi.local_set_size(),
+		gpu::run(eigenvalues.size(),
 						 [evn = begin(evnorm), nor = begin(norm)] GPU_LAMBDA (auto ist){
 							 evn[ist] /= real(nor[ist]);
 						 });
@@ -46,7 +46,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 
 		prec(residual);
 
-		auto mm = gpu::array<typename field_set_type::element_type, 2>({6, phi.local_set_size()});
+		auto mm = gpu::array<typename field_set_type::element_type, 2>({6, eigenvalues.size()});
 
 		auto hresidual = ham(residual);
 		mm[0] = operations::overlap_diagonal(residual, residual);
@@ -56,7 +56,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 		mm[4] = eigenvalues;
 		mm[5] = norm;
 
-		auto lambda = gpu::array<double, 1>(phi.local_set_size());
+		auto lambda = gpu::array<double, 1>(eigenvalues.size());
 		
 		gpu::run(phi.local_set_size(),
 						 [m = begin(mm), lam = begin(lambda)]
@@ -73,8 +73,9 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 							 }
 						 });
 
-		gpu::run(phi.local_set_size(), phi.basis().local_size(),
-						 [res = begin(residual.matrix()), ph = begin(phi.matrix()), hres = begin(hresidual.matrix()), hph = begin(hphi.matrix()), lam = begin(lambda), istep] GPU_LAMBDA (auto ist, auto ip){
+		gpu::run(phi.local_spinor_set_size(), phi.spinor_matrix().size(),
+						 [res = begin(residual.spinor_matrix()), ph = begin(phi.spinor_matrix()),
+							hres = begin(hresidual.spinor_matrix()), hph = begin(hphi.spinor_matrix()), lam = begin(lambda), istep] GPU_LAMBDA (auto ist, auto ip){
 							 ph[ip][ist] += lam[ist]*res[ip][ist];
 							 if(istep !=  num_steps - 1) hph[ip][ist] += lam[ist]*hres[ip][ist];
 						 });
