@@ -248,7 +248,15 @@ public:
 		sc_.update_hamiltonian(ham_, res.energy, electrons.spin_density());
 		auto normres = res.energy.calculate(ham_, electrons);
 			
-		if(solver_.calc_forces()) res.forces = hamiltonian::calculate_forces(ions_, electrons, ham_);
+		if(solver_.calc_forces() and electrons.states().spinor_dim() == 1) {
+			res.forces = hamiltonian::calculate_forces(ions_, electrons, ham_);
+		}
+
+		if(solver_.calc_forces() and electrons.states().spinor_dim() == 2) {
+			if(solver_.verbose_output() and console) {
+				console->warn("\nSkipping calculation of the forces, they are not implemented for spinors.");
+			}
+		}
 		
 		auto ev_out = eigenvalues_output(electrons, normres);		
 		
