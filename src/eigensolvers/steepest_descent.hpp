@@ -58,7 +58,7 @@ void steepest_descent(const operator_type & ham, const preconditioner_type & pre
 
 		auto lambda = gpu::array<double, 1>(eigenvalues.size());
 		
-		gpu::run(phi.local_set_size(),
+		gpu::run(phi.local_spinor_set_size(),
 						 [m = begin(mm), lam = begin(lambda)]
 						 GPU_LAMBDA (auto ist){
 							 auto ca = real(m[0][ist]*m[3][ist] - m[2][ist]*m[1][ist]);
