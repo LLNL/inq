@@ -41,15 +41,15 @@ public:
 	void operator()(states::orbital_set<basis::fourier_space, type> & phi) const {
 
 		CALI_MARK_BEGIN("preconditioner_reduction");
-		auto kinetic = operations::overlap_diagonal_normalized(laplacian(phi, -0.5), phi);
+		auto kinetic = operations::overlap_diagonal_normalized(laplacian(phi, -0.5), phi, operations::real_part{});
 		CALI_MARK_END("preconditioner_reduction");
-		
+
 		{ CALI_CXX_MARK_SCOPE("preconditioner_apply");
 			gpu::run(phi.local_set_size(), phi.basis().local_sizes()[2], phi.basis().local_sizes()[1], phi.basis().local_sizes()[0], 
-							 [kine = begin(kinetic), phcub = begin(phi.hypercubic()), point_op = phi.basis().point_op()] GPU_LAMBDA
+							 [kine = begin(kinetic), phcub = begin(phi.hypercubic()), point_op = phi.basis().point_op(), spinor_dim = phi.spinor_dim()] GPU_LAMBDA
 							 (auto ist, auto iz, auto iy, auto ix){
 								 auto lapl = -0.5*(-point_op.g2(ix, iy, iz));
-								 phcub[ix][iy][iz][ist] = k_function(lapl/real(kine[ist]))*phcub[ix][iy][iz][ist];
+								 phcub[ix][iy][iz][ist] = k_function(lapl/kine[ist/spinor_dim])*phcub[ix][iy][iz][ist];
 							 });
 		}
 	}
