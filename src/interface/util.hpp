@@ -46,14 +46,21 @@ These are the available subcommands:
   Example: `inq util calc "1/sqrt(2.0) + exp(-1/2)`.
 
 
-- `util match <value1> <value2> <tolerance>`
+- `util match <value1> <value2> ... <tolerance>`
 
-  Checks if two values match within a certain tolerance. If they match,
+  Checks if two set of values match within a certain tolerance. If they match,
   the command will run successfully, with a 0 return code. If the match
   fails, then the command will fail with a return value of 1.
 
-  Example: `inq util match 1.0 2.0 1e-5`.
+  When more than two values are passed, it is assumed these are two
+  sets given in sequential order. For example, if 6 values are passed
+  inq assumes than the first 3 are one set and the second 3 another
+  one. Then comparisons are made between the first value with the
+  fourth one, the second with the fifth, and the third with the sixth
+  one.
 
+  Examples: `inq util match 1.0 2.0 1e-5`
+            `inq util match  1.0 0.0 0.0  1.001 1e-12 1e-23  1e-2`
 
 - `util test-data`
 
@@ -103,18 +110,26 @@ These are the available subcommands:
 			actions::normal_exit();
 		}
 
-		if(args.size() == 4 and args[0] == "match"){
-      auto val = str_to<double>(args[1]);
-      auto ref = str_to<double>(args[2]);
-      auto tol = str_to<double>(args[3]);
+		if(args[0] == "match"){
+			if(args.size()%2 == 1) actions::error(input::environment::global().comm(), "Invalid number of arguments in the 'util match' command");
 
-      if(match(val, ref, tol)){
-        actions::normal_exit();
-      } else {
+			auto tol = str_to<double>(args[args.size() - 1]);
+			auto ncomp = args.size()/2 - 1;
+
+			auto no_error = true;
+			for(auto icomp = 0ul; icomp < ncomp; icomp++){
+				auto val = str_to<double>(args[icomp + 1]);
+				auto ref = str_to<double>(args[icomp + ncomp + 1]);
+				no_error = match(val, ref, tol) and no_error;
+			}
+			
+			if(no_error) {
+				actions::normal_exit();
+			} else {
 				actions::error_exit();
-      }
+			}
 		}
-
+			
 		if(args.size() == 1 and args[0] == "test-data"){
 			if(input::environment::global().comm().root()) std::cout << test_data() << std::endl;
 			actions::normal_exit();

@@ -31,14 +31,7 @@ inq util match `inq results ground-state energy nvxc`            -8.923854081430
 inq util match `inq results ground-state energy exact-exchange`   0.000000000000 1e-5
 inq util match `inq results ground-state energy ion`             15.744115365679 1e-5
 
-inq util match `inq results ground-state magnetization x` 0.000000000000 1e-5
-inq util match `inq results ground-state magnetization y` 0.000000000000 1e-5
+#do both checks to make sure both query modes are working
+inq util match  `inq results ground-state magnetization`  0.000000000000 0.000000000000 1.999999000000  1e-5
 inq util match `inq results ground-state magnetization z` 1.999999000000 1e-5
-
-inq electrons spin non collinear
-inq theory non interacting
-
-#do not run non-collinear right now since it is broken
-#inq run ground-state
-
 

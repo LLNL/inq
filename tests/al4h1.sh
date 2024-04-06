@@ -32,21 +32,11 @@ inq util match `inq results ground-state energy nvxc`              -4.9007783475
 inq util match `inq results ground-state energy exact-exchange`     0.000000000000  3e-5
 inq util match `inq results ground-state energy ion`              -10.318372113231  3e-5
 
-inq util match `inq results ground-state forces 0 x`               -0.022483431037  3e-5
-inq util match `inq results ground-state forces 0 y`               -0.041215997171  3e-5
-inq util match `inq results ground-state forces 0 z`               -0.052723786483  3e-5
-inq util match `inq results ground-state forces 1 x`               -0.022476660700  3e-5
-inq util match `inq results ground-state forces 1 y`                0.052697035680  3e-5
-inq util match `inq results ground-state forces 1 z`                0.041207478998  3e-5
-inq util match `inq results ground-state forces 2 x`                0.005730135670  3e-5
-inq util match `inq results ground-state forces 2 y`               -0.012778476335  3e-5
-inq util match `inq results ground-state forces 2 z`                0.012775275108  3e-5
-inq util match `inq results ground-state forces 3 x`                0.007076613283  3e-5
-inq util match `inq results ground-state forces 3 y`                0.012276399154  3e-5
-inq util match `inq results ground-state forces 3 z`               -0.012280307956  3e-5
-inq util match `inq results ground-state forces 4 x`                0.027652090218  3e-5
-inq util match `inq results ground-state forces 4 y`               -0.010193515961  3e-5
-inq util match `inq results ground-state forces 4 z`                0.010356483661  3e-5
+inq util match `inq results ground-state forces 0`                 -0.022483431037  -0.041215997171 -0.052723786483  3e-5
+inq util match `inq results ground-state forces 1`                 -0.022476660700   0.052697035680  0.041207478998  3e-5
+inq util match `inq results ground-state forces 2`                  0.005730135670  -0.012778476335  0.012775275108  3e-5
+inq util match `inq results ground-state forces 3`                  0.007076613283   0.012276399154 -0.012280307956  3e-5
+inq util match `inq results ground-state forces 4`                  0.027652090218  -0.010193515961  0.010356483661  3e-5
 
 inq electrons extra states 0
 inq real-time num-steps 30
