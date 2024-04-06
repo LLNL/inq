@@ -26,8 +26,8 @@ basis::field<basis::real_space, vector3<double>> magnetization(basis::field_set<
 					 [mag = begin(magnet.linear()), den = begin(spin_density.matrix()), components = spin_density.set_size()] GPU_LAMBDA (auto ip){
 
 						 if(components == 4){
-							 mag[ip][0] = 2.0*den[ip][3];
-							 mag[ip][1] = 2.0*den[ip][4];
+							 mag[ip][0] = 2.0*den[ip][2];
+							 mag[ip][1] = 2.0*den[ip][3];
 						 } else {
 							 mag[ip][0] = 0.0;
 							 mag[ip][1] = 0.0;							 
