@@ -212,7 +212,7 @@ namespace hamiltonian {
 			density.fill(0.0);
 
 			double polarization = 1.0;
-			if(nspin == 2) polarization = 0.6;
+			if(nspin > 1) polarization = 0.6;
 			
 			for(auto iatom = part.start(); iatom < part.end(); iatom++){
 				
@@ -229,6 +229,7 @@ namespace hamiltonian {
 										 auto rr = sph.distance(ipoint);
 										 auto density_val = spline(rr);
 										 auto pol = polarization;
+										 if(ispin > 1) return;
 										 if(ispin == 1) pol = 1.0 - pol;
 										 gpu::atomic::add(&dens[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin], pol*density_val);
 									 });
