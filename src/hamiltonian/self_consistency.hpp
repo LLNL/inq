@@ -97,59 +97,50 @@ public:
 			
 		energy.external(operations::integral_product(total_density, vion_));
 
-		std::vector<basis::field<basis::real_space, typename HamiltonianType::potential_type>> vks(spin_density.set_size(), density_basis_);
-
 		solvers::poisson poisson_solver;
 
 		//IONIC POTENTIAL
-		for(auto & vcomp : vks) vcomp = vion_;
+		auto vscalar = vion_;
 
 		//Time-dependent perturbation
 		if(pert_.has_uniform_electric_field()){
 			auto efield = pert_.uniform_electric_field(time);
 
-			for(auto & vcomp : vks) {
-				gpu::run(vcomp.basis().local_sizes()[2], vcomp.basis().local_sizes()[1], vcomp.basis().local_sizes()[0],
-								 [point_op = vcomp.basis().point_op(), efield, vk = begin(vcomp.cubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
+			gpu::run(vscalar.basis().local_sizes()[2], vscalar.basis().local_sizes()[1], vscalar.basis().local_sizes()[0],
+								 [point_op = vscalar.basis().point_op(), efield, vk = begin(vscalar.cubic())] GPU_LAMBDA (auto iz, auto iy, auto ix){
 									 auto rr = point_op.rvector_cartesian(ix, iy, iz);
 									 vk[ix][iy][iz] += -dot(efield, rr);
 								 });
-			}
 		}
 
-		for(auto & vcomp : vks) {
-			pert_.potential(time, vcomp);
-		}
+		pert_.potential(time, vscalar);
 		
 		// Hartree
 		if(theory_.hartree_potential()){
 			auto vhartree = poisson_solver(total_density);
 			energy.hartree(0.5*operations::integral_product(total_density, vhartree));
-			for(auto & vcomp : vks) operations::increment(vcomp, vhartree);
+			operations::increment(vscalar, vhartree);
 		} else {
 			energy.hartree(0.0);
 		}
 
+		auto vks = basis::field_set<basis::real_space, typename HamiltonianType::potential_type>(density_basis_, spin_density.set_size());
+
+		gpu::run(spin_density.set_size(), density_basis_.local_size(), [vk = begin(vks.matrix()), vs = begin(vscalar.linear())] GPU_LAMBDA (auto ispin, auto ipoint) {
+			vk[ipoint][ispin] = vs[ipoint];
+		});
+		
 		// XC
 		double exc, nvxc;
 		xc_(spin_density, core_density_, vks, exc, nvxc);
 		energy.xc(exc);
 		energy.nvxc(nvxc);
 
-
-		auto vks_field_set = basis::field_set<basis::real_space, typename HamiltonianType::potential_type>(density_basis_, spin_density.set_size());
-
-		for(auto ip = 0l; ip < density_basis_.local_size(); ip++){
-			for(auto is = 0l; is < spin_density.set_size(); is++){
-				vks_field_set.matrix()[ip][is] = vks[is].linear()[ip];
-			}
-		}
-		
 		// PUT THE CALCULATED POTENTIAL IN THE HAMILTONIAN
-		if(potential_basis_ == vks[0].basis()){
-			hamiltonian.scalar_potential_= std::move(vks_field_set);
+		if(potential_basis_ == vks.basis()){
+			hamiltonian.scalar_potential_= std::move(vks);
 		} else {
-			hamiltonian.scalar_potential_ = operations::transfer::coarsen(vks_field_set, potential_basis_);
+			hamiltonian.scalar_potential_ = operations::transfer::coarsen(vks, potential_basis_);
 		}
 
 		// THE VECTOR POTENTIAL

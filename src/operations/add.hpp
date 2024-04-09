@@ -74,30 +74,14 @@ FieldSetType add(FieldSetType const & t1, FieldType const & t2){
 }
 
 //	Add t2 to t1.
-template <typename FieldType1, typename FieldType2>
-void increment(FieldType1 & t1, FieldType2 const & t2){
+template <typename FieldSet1, typename FieldSet2>
+void increment(FieldSet1 & t1, FieldSet2 const & t2){
 	assert(t1.basis() == t2.basis());
 		
-	gpu::run(t1.linear().size(),
-					 [t1p = t1.linear().begin(),
-						t2p = t2.linear().begin()] GPU_LAMBDA (auto ii){
-						 t1p[ii] += t2p[ii];
+	gpu::run(t1.local_set_size(), t1.basis().local_size(),
+					 [t1p = t1.matrix().begin(), t2p = t2.matrix().begin()] GPU_LAMBDA (auto ist, auto ii){
+						 t1p[ii][ist] += t2p[ii][ist];
 					 });
-}
-
-template <class FVectorType, class BasisType, class Type>
-void increment(FVectorType & fvector, basis::field_set<BasisType, Type> const & fset){
-
-	int ist = 0;
-	for(auto & field : fvector){
-		assert(field.basis() == fset.basis());
-		
-		gpu::run(fset.basis().local_size(),
-						 [fie = begin(field.linear()), fse = begin(fset.matrix()), ist] GPU_LAMBDA (auto ip){
-							 fie[ip] += fse[ip][ist];
-						 });
-		ist++;
-	}
 }
 
 }
