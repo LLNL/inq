@@ -136,13 +136,20 @@ public:
 		energy.xc(exc);
 		energy.nvxc(nvxc);
 
+
+		auto vks_field_set = basis::field_set<basis::real_space, typename HamiltonianType::potential_type>(density_basis_, spin_density.set_size());
+
+		for(auto ip = 0l; ip < density_basis_.local_size(); ip++){
+			for(auto is = 0l; is < spin_density.set_size(); is++){
+				vks_field_set.matrix()[ip][is] = vks[is].linear()[ip];
+			}
+		}
+		
 		// PUT THE CALCULATED POTENTIAL IN THE HAMILTONIAN
 		if(potential_basis_ == vks[0].basis()){
-			hamiltonian.scalar_potential_= std::move(vks);
+			hamiltonian.scalar_potential_= std::move(vks_field_set);
 		} else {
-			for(unsigned ipot = 0; ipot < vks.size(); ipot++){
-				hamiltonian.scalar_potential_[ipot] = operations::transfer::coarsen(vks[ipot], potential_basis_);
-			}
+			hamiltonian.scalar_potential_ = operations::transfer::coarsen(vks_field_set, potential_basis_);
 		}
 
 		// THE VECTOR POTENTIAL
