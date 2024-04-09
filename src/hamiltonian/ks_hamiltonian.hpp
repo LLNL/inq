@@ -38,6 +38,19 @@ class ks_hamiltonian {
 public:
 
 	using potential_type = PotentialType;
+
+private:
+
+	exchange_operator exchange_;
+	std::vector<basis::field<basis::real_space, PotentialType>> scalar_potential_;
+	vector3<double, covariant> uniform_vector_potential_;
+	projector_all projectors_all_;		
+	bool non_local_in_fourier_;
+	std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
+	std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
+	states::ks_states states_;
+	
+public:
 	
 	void update_projectors(const basis::real_space & basis, const atomic_potential & pot, systems::ions const & ions){
 			
@@ -60,13 +73,12 @@ public:
 		projectors_all_ = projector_all(projectors);
 	}
 		
-	exchange_operator exchange;
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 		
 	ks_hamiltonian(const basis::real_space & basis, ions::brillouin const & bzone, states::ks_states const & states, atomic_potential const & pot, systems::ions const & ions,
 								 const double exchange_coefficient, bool use_ace = false):
-		exchange(basis.cell(), bzone, exchange_coefficient, use_ace),
+		exchange_(basis.cell(), bzone, exchange_coefficient, use_ace),
 		scalar_potential_(states.num_density_components(), basis),
 		uniform_vector_potential_({0.0, 0.0, 0.0}),
 		non_local_in_fourier_(pot.fourier_pseudo()),
@@ -132,7 +144,7 @@ public:
 		auto hphi = operations::transform::to_real(hphi_fs);
 
 		hamiltonian::scalar_potential_add(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
-		exchange(phi, hphi);
+		exchange_(phi, hphi);
 
 		projectors_all_.apply(proj, hphi, phi.kpoint() + uniform_vector_potential_);
 
@@ -151,7 +163,7 @@ public:
 			
 		auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
-		exchange(phi_rs, hphi_rs);
+		exchange_(phi_rs, hphi_rs);
  
 		projectors_all_.apply(proj, hphi_rs, phi.kpoint() + uniform_vector_potential_);
 			
@@ -188,6 +200,16 @@ public:
 	auto & scalar_potential() {
 		return scalar_potential_;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto & exchange() {
+		return exchange_;
+	}
+	
+	auto & exchange() const {
+		return exchange_;
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -199,17 +221,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-		
-private:
-		
-	std::vector<basis::field<basis::real_space, PotentialType>> scalar_potential_;
-	vector3<double, covariant> uniform_vector_potential_;
-	projector_all projectors_all_;		
-	bool non_local_in_fourier_;
-	std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
-	std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
-	states::ks_states states_;
-		
+	
 	template <typename Perturbation>
 	friend class self_consistency;
 	
