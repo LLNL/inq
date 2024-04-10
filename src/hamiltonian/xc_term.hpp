@@ -24,15 +24,30 @@ namespace inq {
 namespace hamiltonian {
 
 class xc_term {
-	
+
+	std::vector<hamiltonian::xc_functional> functionals_;	
+
 public:
 	
-	xc_term(options::theory interaction, int const spin_components):
-		exchange_(int(interaction.exchange()), spin_components),
-		correlation_(int(interaction.correlation()), spin_components)
-	{
+	xc_term(options::theory interaction, int const spin_components){
+		functionals_.emplace_back(int(interaction.exchange()), spin_components);
+		functionals_.emplace_back(int(interaction.correlation()), spin_components);
 	}
 
+  ////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto any_requires_gradient() const {
+		for(auto & func : functionals_) if(func.requires_gradient()) return true;
+		return false;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto any_true_functional() const {
+		for(auto & func : functionals_) if(func.true_functional()) return true;
+		return false;
+	}
+	
   ////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename SpinDensityType, typename CoreDensityType>
@@ -77,7 +92,7 @@ public:
     
     exc = 0.0;
 		nvxc = 0.0;
-		if(not exchange_.true_functional() and not correlation_.true_functional()) return;
+		if(not any_true_functional()) return;
 		
 		auto full_density = process_density(spin_density, core_density);
 		
@@ -85,19 +100,12 @@ public:
 		basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
 
 		auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
-		if(exchange_.requires_gradient() or correlation_.requires_gradient()){
-			density_gradient.emplace(operations::gradient(full_density));
-		}
-			
-		if(exchange_.true_functional()){
-			evaluate_functional(exchange_, full_density, density_gradient, efunc, vfunc);
-			exc += efunc;
-			operations::increment(vks, vfunc);
-			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
-		}
-		
-		if(correlation_.true_functional()){
-			evaluate_functional(correlation_, full_density, density_gradient, efunc, vfunc);
+		if(any_requires_gradient()) density_gradient.emplace(operations::gradient(full_density));
+
+		for(auto & func : functionals_){
+			if(not func.true_functional()) continue;
+
+			evaluate_functional(func, full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
@@ -164,14 +172,10 @@ public:
   ////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto & exchange() const {
-		return exchange_;
+		return functionals_[0];
 	}
 	
   ////////////////////////////////////////////////////////////////////////////////////////////
-	
-private:
-	hamiltonian::xc_functional exchange_;
-	hamiltonian::xc_functional correlation_;
 	
 };
 }
@@ -244,7 +248,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	basis::field_set<basis::real_space, double> vfunc_pol(bas, 2);
 	
 	SECTION("LDA_X"){
-		
+
 		hamiltonian::xc_functional func_unp(XC_LDA_X, 1);
 		hamiltonian::xc_functional func_pol(XC_LDA_X, 2);
 		
@@ -332,5 +336,22 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		}
 
 	}
+
+	SECTION("xc_term object") {
+
+		auto hf = hamiltonian::xc_term(options::theory{}.hartree_fock(), 1);
+		CHECK(hf.any_requires_gradient() == false);
+		CHECK(hf.any_true_functional() == false);
+		
+		auto lda = hamiltonian::xc_term(options::theory{}.lda(), 1);
+		CHECK(lda.any_requires_gradient() == false);
+		CHECK(lda.any_true_functional() == true);
+
+		auto pbe = hamiltonian::xc_term(options::theory{}.pbe(), 1);
+		CHECK(pbe.any_requires_gradient() == true);
+		CHECK(pbe.any_true_functional() == true);
+
+	}
+	
 }
 #endif
