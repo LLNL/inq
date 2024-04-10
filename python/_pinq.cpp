@@ -175,7 +175,7 @@ public:
 			for (py::ssize_t iy = 0; iy < pot.shape(1); iy++) {
 				for (py::ssize_t iz = 0; iz < pot.shape(2); iz++) {
 					for (py::ssize_t ispin = 0; ispin < pot.shape(3); ispin++) {
-						ham.scalar_potential()[ispin].cubic()[ix][iy][iz] = vion.cubic()[ix][iy][iz] + pot(ix, iy, iz, ispin);
+						ham.scalar_potential().hypercubic()[ix][iy][iz][ispin] = vion.cubic()[ix][iy][iz] + pot(ix, iy, iz, ispin);
 					}
 				}
 			}

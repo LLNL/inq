@@ -21,30 +21,30 @@ namespace inq {
 namespace hamiltonian {
 
 template <class PotentialType, class ShiftType>
-void scalar_potential_add(basis::field<basis::real_space, PotentialType> const & potential, ShiftType shift, states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vphi) {
+void scalar_potential_add(basis::field_set<basis::real_space, PotentialType> const & potential, int const index, ShiftType shift, states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vphi) {
 
 	CALI_CXX_MARK_FUNCTION;
   
-  assert(potential.linear().num_elements() == phi.basis().local_size());
+  assert(potential.basis() == phi.basis());
   
   gpu::run(phi.local_set_size(), phi.basis().local_size(),
-           [pot = begin(potential.linear()), it_vphi = begin(vphi.matrix()), it_phi = begin(phi.matrix()), shift] GPU_LAMBDA (auto ist, auto ip){
-             it_vphi[ip][ist] += (pot[ip] + shift)*it_phi[ip][ist];
+           [pot = begin(potential.matrix()), it_vphi = begin(vphi.matrix()), it_phi = begin(phi.matrix()), shift, index] GPU_LAMBDA (auto ist, auto ip){
+             it_vphi[ip][ist] += (pot[ip][index] + shift)*it_phi[ip][ist];
            });
 }
 
 template <class PotentialType, class ShiftType>
-states::orbital_set<basis::real_space, complex> scalar_potential(basis::field<basis::real_space, PotentialType> const & potential, ShiftType shift, states::orbital_set<basis::real_space, complex> const & phi) {
+states::orbital_set<basis::real_space, complex> scalar_potential(basis::field_set<basis::real_space, PotentialType> const & potential, int const index, ShiftType shift, states::orbital_set<basis::real_space, complex> const & phi) {
 
 	CALI_CXX_MARK_FUNCTION;
 
   states::orbital_set<basis::real_space, complex> vphi(phi.skeleton());
   
-  assert(potential.linear().num_elements() == phi.basis().local_size());
-  
+  assert(potential.basis() == phi.basis());
+	
   gpu::run(phi.local_set_size(), phi.basis().local_size(),
-           [pot = begin(potential.linear()), it_vphi = begin(vphi.matrix()), it_phi = begin(phi.matrix()), shift] GPU_LAMBDA (auto ist, auto ip){
-             it_vphi[ip][ist] = (pot[ip] + shift)*it_phi[ip][ist];
+           [pot = begin(potential.matrix()), it_vphi = begin(vphi.matrix()), it_phi = begin(phi.matrix()), shift, index] GPU_LAMBDA (auto ist, auto ip){
+             it_vphi[ip][ist] = (pot[ip][index] + shift)*it_phi[ip][ist];
            });
 
   return vphi;

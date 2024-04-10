@@ -84,9 +84,9 @@ public:
 					non_local_ += occ_sum(el.occupations()[iphi], nl_me);
 				}
 
-				if(ham.exchange.enabled()){
+				if(ham.exchange().enabled()){
 					CALI_CXX_MARK_SCOPE("energy::calculate::exchange");
-					auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange(phi), phi);
+					auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange()(phi), phi);
 					exact_exchange_ += 0.5*occ_sum(el.occupations()[iphi], exchange_me);
 				}
 

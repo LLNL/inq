@@ -52,7 +52,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 	}
 	sc.propagate_induced_vector_potential(dt, current);
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-	ham.exchange.update(electrons);
+	ham.exchange().update(electrons);
 
 	{ CALI_CXX_MARK_SCOPE("etrs:restore");
 		electrons.kpin() = save;
@@ -75,7 +75,7 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		auto done = (delta < scf_threshold) or (iscf == nscf - 1);
 		
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-		ham.exchange.update(electrons);
+		ham.exchange().update(electrons);
 		if(done) break;
 	}
 	

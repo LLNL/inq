@@ -77,7 +77,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
 
 		if(update_hf) {
-			auto exxe = ham.exchange.update(electrons);
+			auto exxe = ham.exchange().update(electrons);
 			exxe_diff = fabs(exxe - old_exxe);
 			old_exxe = exxe;
 			update_hf = false;
@@ -111,7 +111,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 
 	electrons.spin_density() = observables::density::calculate(electrons);
 	sc.update_hamiltonian(ham, energy, electrons.spin_density(), time + dt);
-	ham.exchange.update(electrons);
+	ham.exchange().update(electrons);
 	 
 }
 

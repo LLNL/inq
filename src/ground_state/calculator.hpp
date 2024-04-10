@@ -138,7 +138,7 @@ public:
 		
 		res.energy.ion(inq::ions::interaction_energy(ions_.cell(), ions_, electrons.atomic_pot()));
 		
-		double old_exe = ham_.exchange.update(electrons);
+		double old_exe = ham_.exchange().update(electrons);
 		double exe_diff = fabs(old_exe);
 		auto update_hf = false;
 		
@@ -162,7 +162,7 @@ public:
 			}
 			
 			if(update_hf){
-				auto exe = ham_.exchange.update(electrons);
+				auto exe = ham_.exchange().update(electrons);
 				exe_diff = fabs(exe - old_exe);
 				old_exe = exe;
 			}

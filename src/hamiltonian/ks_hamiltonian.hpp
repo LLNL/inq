@@ -38,6 +38,19 @@ class ks_hamiltonian {
 public:
 
 	using potential_type = PotentialType;
+
+private:
+
+	exchange_operator exchange_;
+	basis::field_set<basis::real_space, PotentialType> scalar_potential_;
+	vector3<double, covariant> uniform_vector_potential_;
+	projector_all projectors_all_;		
+	bool non_local_in_fourier_;
+	std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
+	std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
+	states::ks_states states_;
+	
+public:
 	
 	void update_projectors(const basis::real_space & basis, const atomic_potential & pot, systems::ions const & ions){
 			
@@ -60,19 +73,18 @@ public:
 		projectors_all_ = projector_all(projectors);
 	}
 		
-	exchange_operator exchange;
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 		
 	ks_hamiltonian(const basis::real_space & basis, ions::brillouin const & bzone, states::ks_states const & states, atomic_potential const & pot, systems::ions const & ions,
 								 const double exchange_coefficient, bool use_ace = false):
-		exchange(basis.cell(), bzone, exchange_coefficient, use_ace),
-		scalar_potential_(states.num_density_components(), basis),
+		exchange_(basis.cell(), bzone, exchange_coefficient, use_ace),
+		scalar_potential_(basis, states.num_density_components()),
 		uniform_vector_potential_({0.0, 0.0, 0.0}),
 		non_local_in_fourier_(pot.fourier_pseudo()),
 		states_(states)
 	{
-		for(auto & pot : scalar_potential_) pot.fill(0.0);
+		scalar_potential_.fill(0.0);
 		update_projectors(basis, pot, ions);
 	}
 
@@ -131,8 +143,8 @@ public:
 			
 		auto hphi = operations::transform::to_real(hphi_fs);
 
-		hamiltonian::scalar_potential_add(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
-		exchange(phi, hphi);
+		hamiltonian::scalar_potential_add(scalar_potential_, phi.spin_index(), 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
+		exchange_(phi, hphi);
 
 		projectors_all_.apply(proj, hphi, phi.kpoint() + uniform_vector_potential_);
 
@@ -149,9 +161,9 @@ public:
 
 		auto proj = projectors_all_.project(phi_rs, phi.kpoint() + uniform_vector_potential_);
 			
-		auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_[phi.spin_index()], 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
+		auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_, phi.spin_index(), 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
-		exchange(phi_rs, hphi_rs);
+		exchange_(phi_rs, hphi_rs);
  
 		projectors_all_.apply(proj, hphi_rs, phi.kpoint() + uniform_vector_potential_);
 			
@@ -188,6 +200,16 @@ public:
 	auto & scalar_potential() {
 		return scalar_potential_;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto & exchange() {
+		return exchange_;
+	}
+	
+	auto & exchange() const {
+		return exchange_;
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -199,17 +221,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-		
-private:
-		
-	std::vector<basis::field<basis::real_space, PotentialType>> scalar_potential_;
-	vector3<double, covariant> uniform_vector_potential_;
-	projector_all projectors_all_;		
-	bool non_local_in_fourier_;
-	std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
-	std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
-	states::ks_states states_;
-		
+	
 	template <typename Perturbation>
 	friend class self_consistency;
 	
@@ -267,7 +279,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.0;
+					ham.scalar_potential().hypercubic()[ix][iy][iz][0] = 0.0;
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						phi.hypercubic()[ix][iy][iz][ist] = 1.0;
@@ -304,7 +316,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.0;
+					ham.scalar_potential().hypercubic()[ix][iy][iz][0] = 0.0;
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 
@@ -354,7 +366,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 					auto izg = rs.cubic_part(2).local_to_global(iz);	
 					
 					double r2 = rs.point_op().r2(ixg, iyg, izg);
-					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
+					ham.scalar_potential().hypercubic()[ix][iy][iz][0] = 0.5*ww*ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						phi.hypercubic()[ix][iy][iz][ist] = exp(-ww*r2);
@@ -393,7 +405,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
 
-					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.0;
+					ham.scalar_potential().hypercubic()[ix][iy][iz][0] = 0.0;
 					
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 
@@ -445,7 +457,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 					auto izg = rs.cubic_part(2).local_to_global(iz);	
 					
 					double r2 = rs.point_op().r2(ixg, iyg, izg);
-					ham.scalar_potential()[0].cubic()[ix][iy][iz] = 0.5*ww*ww*r2;
+					ham.scalar_potential().hypercubic()[ix][iy][iz][0] = 0.5*ww*ww*r2;
 
 					for(int ist = 0; ist < phi.local_set_size(); ist++){
 						phi.hypercubic()[ix][iy][iz][ist] = exp(-ww*r2);
