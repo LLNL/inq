@@ -89,16 +89,11 @@ public:
 		if(functionals_[0].requires_gradient() or functionals_[1].requires_gradient()){
 			density_gradient.emplace(operations::gradient(full_density));
 		}
-			
-		if(functionals_[0].true_functional()){
-			evaluate_functional(functionals_[0], full_density, density_gradient, efunc, vfunc);
-			exc += efunc;
-			operations::increment(vks, vfunc);
-			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
-		}
-		
-		if(functionals_[1].true_functional()){
-			evaluate_functional(functionals_[1], full_density, density_gradient, efunc, vfunc);
+
+		for(auto & func : functionals_){
+			if(not func.true_functional()) continue;
+
+			evaluate_functional(func, full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
