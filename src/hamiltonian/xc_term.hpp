@@ -24,13 +24,14 @@ namespace inq {
 namespace hamiltonian {
 
 class xc_term {
-	
+
+	std::vector<hamiltonian::xc_functional> functionals_;	
+
 public:
 	
-	xc_term(options::theory interaction, int const spin_components):
-		exchange_(int(interaction.exchange()), spin_components),
-		correlation_(int(interaction.correlation()), spin_components)
-	{
+	xc_term(options::theory interaction, int const spin_components){
+		functionals_.emplace_back(int(interaction.exchange()), spin_components);
+		functionals_.emplace_back(int(interaction.correlation()), spin_components);
 	}
 
   ////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +78,7 @@ public:
     
     exc = 0.0;
 		nvxc = 0.0;
-		if(not exchange_.true_functional() and not correlation_.true_functional()) return;
+		if(not functionals_[0].true_functional() and not functionals_[1].true_functional()) return;
 		
 		auto full_density = process_density(spin_density, core_density);
 		
@@ -85,19 +86,19 @@ public:
 		basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
 
 		auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
-		if(exchange_.requires_gradient() or correlation_.requires_gradient()){
+		if(functionals_[0].requires_gradient() or functionals_[1].requires_gradient()){
 			density_gradient.emplace(operations::gradient(full_density));
 		}
 			
-		if(exchange_.true_functional()){
-			evaluate_functional(exchange_, full_density, density_gradient, efunc, vfunc);
+		if(functionals_[0].true_functional()){
+			evaluate_functional(functionals_[0], full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 		}
 		
-		if(correlation_.true_functional()){
-			evaluate_functional(correlation_, full_density, density_gradient, efunc, vfunc);
+		if(functionals_[1].true_functional()){
+			evaluate_functional(functionals_[1], full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
 			operations::increment(vks, vfunc);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
@@ -164,14 +165,10 @@ public:
   ////////////////////////////////////////////////////////////////////////////////////////////
 	
 	auto & exchange() const {
-		return exchange_;
+		return functionals_[0];
 	}
 	
   ////////////////////////////////////////////////////////////////////////////////////////////
-	
-private:
-	hamiltonian::xc_functional exchange_;
-	hamiltonian::xc_functional correlation_;
 	
 };
 }
