@@ -248,7 +248,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	basis::field_set<basis::real_space, double> vfunc_pol(bas, 2);
 	
 	SECTION("LDA_X"){
-		
+
 		hamiltonian::xc_functional func_unp(XC_LDA_X, 1);
 		hamiltonian::xc_functional func_pol(XC_LDA_X, 2);
 		
@@ -336,5 +336,22 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		}
 
 	}
+
+	SECTION("xc_term object") {
+
+		auto hf = hamiltonian::xc_term(options::theory{}.hartree_fock(), 1);
+		CHECK(hf.any_requires_gradient() == false);
+		CHECK(hf.any_true_functional() == false);
+		
+		auto lda = hamiltonian::xc_term(options::theory{}.lda(), 1);
+		CHECK(lda.any_requires_gradient() == false);
+		CHECK(lda.any_true_functional() == true);
+
+		auto pbe = hamiltonian::xc_term(options::theory{}.pbe(), 1);
+		CHECK(pbe.any_requires_gradient() == true);
+		CHECK(pbe.any_true_functional() == true);
+
+	}
+	
 }
 #endif
