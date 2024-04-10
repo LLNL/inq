@@ -36,6 +36,13 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////////////////////
 
+	auto any_requires_gradient() const {
+		for(auto & func : functionals_) if(func.requires_gradient()) return true;
+		return false;
+	}
+	
+  ////////////////////////////////////////////////////////////////////////////////////////////
+
 	template <typename SpinDensityType, typename CoreDensityType>
 	SpinDensityType process_density(SpinDensityType const & spin_density, CoreDensityType const & core_density) const{
 
@@ -86,9 +93,7 @@ public:
 		basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
 
 		auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
-		if(functionals_[0].requires_gradient() or functionals_[1].requires_gradient()){
-			density_gradient.emplace(operations::gradient(full_density));
-		}
+		if(any_requires_gradient()) density_gradient.emplace(operations::gradient(full_density));
 
 		for(auto & func : functionals_){
 			if(not func.true_functional()) continue;
