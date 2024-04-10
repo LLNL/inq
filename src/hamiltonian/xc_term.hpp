@@ -40,6 +40,13 @@ public:
 		for(auto & func : functionals_) if(func.requires_gradient()) return true;
 		return false;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto any_true_functional() const {
+		for(auto & func : functionals_) if(func.true_functional()) return true;
+		return false;
+	}
 	
   ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -85,7 +92,7 @@ public:
     
     exc = 0.0;
 		nvxc = 0.0;
-		if(not functionals_[0].true_functional() and not functionals_[1].true_functional()) return;
+		if(not any_true_functional()) return;
 		
 		auto full_density = process_density(spin_density, core_density);
 		
