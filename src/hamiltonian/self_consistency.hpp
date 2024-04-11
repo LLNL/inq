@@ -127,7 +127,11 @@ public:
 		auto vks = basis::field_set<basis::real_space, typename HamiltonianType::potential_type>(density_basis_, spin_density.set_size());
 
 		gpu::run(spin_density.set_size(), density_basis_.local_size(), [vk = begin(vks.matrix()), vs = begin(vscalar.linear())] GPU_LAMBDA (auto ispin, auto ipoint) {
-			vk[ipoint][ispin] = vs[ipoint];
+			if(ispin < 2) {
+				vk[ipoint][ispin] = vs[ipoint];
+			} else {
+				vk[ipoint][ispin] = 0.0;
+			}
 		});
 		
 		// XC

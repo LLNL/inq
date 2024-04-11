@@ -84,6 +84,17 @@ public:
 		
 		return full_density;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename VXC, typename VKS>
+	void process_potential(VXC const & vxc, VKS & vks) const {
+		
+		gpu::run(vxc.local_set_size(), vxc.basis().local_size(),
+						 [vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip){
+							 vk[ip][is] += vx[ip][is];
+						 });
+	}
 	
   ////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -107,7 +118,7 @@ public:
 
 			evaluate_functional(func, full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
-			operations::increment(vks, vfunc);
+			process_potential(vfunc, vks);
 			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 		}
 	}
