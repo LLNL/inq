@@ -20,7 +20,7 @@ namespace interface {
 
 struct {
 
-	std::string name() const {
+	constexpr auto name() const {
 		return "run";
 	}
 
