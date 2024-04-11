@@ -26,9 +26,9 @@ struct {
 		return "Defines the simulation cell";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'cell' command
 ==================

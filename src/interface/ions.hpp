@@ -26,9 +26,9 @@ struct {
 	constexpr auto one_line() const {
 		return "Defines the ions in the simulation";
 	}
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'ions' command
 ==================

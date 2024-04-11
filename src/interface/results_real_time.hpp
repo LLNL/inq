@@ -28,9 +28,9 @@ struct {
 		return "Get information about the results obtained from a real-time calculation";
 	}
 
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'results real-time' command
 ==================

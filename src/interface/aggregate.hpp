@@ -39,7 +39,7 @@ struct item : public Type {
 
 	auto help(std::string const & comm) const {
 		if(comm == Type::name()) {
-			Type::help();
+			std::cout << Type::help();
 			actions::normal_exit();
 		}
 	}

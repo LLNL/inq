@@ -26,9 +26,9 @@ struct {
 		return "Defines the electrons in the simulation and how they are represented.";
 	}
 
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'electrons' command
 ==================

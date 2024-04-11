@@ -25,9 +25,9 @@ struct {
 		return "Defines the theory used to represent the electrons-electron interaction";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'theory' command
 ==================

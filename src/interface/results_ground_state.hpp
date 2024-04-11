@@ -25,9 +25,9 @@ struct {
 		return "Get information about the results obtained from a ground-state calculation";
 	}
 
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'results ground-state' command
 ==================

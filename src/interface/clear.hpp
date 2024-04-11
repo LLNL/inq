@@ -37,9 +37,8 @@ struct {
 		actions::normal_exit();
 	}
 
-	void help() const {
-
-		std::cout << R""""(
+	constexpr auto help() const {
+		return R""""(
 
 The 'clear' command
 ===================

@@ -25,9 +25,9 @@ struct {
 		return "Miscelaneous utility commands";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'util' command
 ==================

@@ -26,9 +26,9 @@ struct {
 		return "Defines how the ground state is calculated";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'ground-state' command
 ==================

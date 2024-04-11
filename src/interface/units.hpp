@@ -25,9 +25,9 @@ struct {
 		return "Prints information about the available input units in inq";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 Units in inq
 ============

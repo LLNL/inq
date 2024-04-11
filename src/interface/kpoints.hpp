@@ -25,9 +25,9 @@ struct {
 		return "Specifies the kpoints used to sample the Brillouin zone in the simulation";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'kpoints' command
 ==================

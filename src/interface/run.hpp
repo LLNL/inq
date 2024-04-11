@@ -28,9 +28,9 @@ struct {
 		return "Runs the simulation";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'run' command
 ==================
