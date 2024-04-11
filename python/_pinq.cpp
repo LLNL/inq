@@ -208,6 +208,10 @@ public:
 	
 };
 
+void clear() {
+	interface::clear();
+}
+
 PYBIND11_MODULE(_pinq, module) {
 
 	module.doc() = "Python interface for the INQ DFT/TDDFT library";
@@ -219,5 +223,7 @@ PYBIND11_MODULE(_pinq, module) {
 		.def("get_density",          &calculator::get_density)		
 		.def("calculate",            &calculator::calculate)
 		.def("scf_step",             &calculator::scf_step);
+
+	module.def("clear", &clear, interface::clear.one_line());
 	
 }
