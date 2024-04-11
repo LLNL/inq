@@ -21,7 +21,7 @@ struct {
 		return "theory";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the theory used to represent the electrons-electron interaction";
 	}
 	

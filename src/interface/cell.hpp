@@ -22,7 +22,7 @@ struct {
 		return "cell";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the simulation cell";
 	}
 	

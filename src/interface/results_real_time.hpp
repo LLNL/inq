@@ -24,7 +24,7 @@ struct {
 		return "results real-time";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Get information about the results obtained from a real-time calculation";
 	}
 

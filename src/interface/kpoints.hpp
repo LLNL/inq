@@ -21,7 +21,7 @@ struct {
 		return "kpoints";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Specifies the kpoints used to sample the Brillouin zone in the simulation";
 	}
 	

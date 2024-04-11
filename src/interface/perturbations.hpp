@@ -21,7 +21,7 @@ struct {
 		return "perturbations";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the perturbations in a real-time simulation";
 	}
 	void help() const {

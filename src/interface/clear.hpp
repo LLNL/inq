@@ -21,7 +21,7 @@ struct {
 		return "clear";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Removes any inq information from the current directory";
 	}
 	

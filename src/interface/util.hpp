@@ -21,7 +21,7 @@ struct {
 		return "util";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Miscelaneous utility commands";
 	}
 	

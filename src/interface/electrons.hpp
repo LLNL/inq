@@ -22,7 +22,7 @@ struct {
 		return "electrons";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the electrons in the simulation and how they are represented.";
 	}
 

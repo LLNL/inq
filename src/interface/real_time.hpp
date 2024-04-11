@@ -21,7 +21,7 @@ struct {
 		return "real-time";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the parameters for a real-time calculation";
 	}
 	

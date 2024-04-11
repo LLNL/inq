@@ -23,7 +23,7 @@ struct {
 		return "ions";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the ions in the simulation";
 	}
 	void help() const {

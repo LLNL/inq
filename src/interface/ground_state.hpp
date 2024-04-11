@@ -22,7 +22,7 @@ struct {
 		return "ground-state";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines how the ground state is calculated";
 	}
 	

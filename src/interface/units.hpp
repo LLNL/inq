@@ -21,7 +21,7 @@ struct {
 		return "units";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Prints information about the available input units in inq";
 	}
 	

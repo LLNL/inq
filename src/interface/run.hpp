@@ -24,7 +24,7 @@ struct {
 		return "run";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Runs the simulation";
 	}
 	

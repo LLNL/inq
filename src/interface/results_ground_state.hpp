@@ -21,7 +21,7 @@ struct {
 		return "results ground-state";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Get information about the results obtained from a ground-state calculation";
 	}
 
