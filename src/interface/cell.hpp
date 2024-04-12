@@ -212,9 +212,15 @@ public:
 
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'cell' command");
 	}
-		
-} const cell ;
 
+
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		
+	}
+
+} const cell ;
+		
 }
 }
 #endif

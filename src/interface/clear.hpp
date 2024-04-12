@@ -25,6 +25,20 @@ struct {
 		return "Removes any inq information from the current directory";
 	}
 
+	constexpr auto help() const {
+		return R""""(
+
+The 'clear' command
+===================
+
+Usage: inq clear
+
+The 'clear' command removes all inq information from the current
+directory. It doesn't take any arguments.
+
+)"""";
+	}
+	
 	static void clear() {
 		if(input::environment::global().comm().root()) std::filesystem::remove_all(".inq");
 		input::environment::global().comm().barrier();
@@ -39,20 +53,6 @@ struct {
 		if(args.size() != 0) actions::error(input::environment::global().comm(), "The 'clear' command doesn't take arguments");
 		clear();
 		actions::normal_exit();
-	}
-
-	constexpr auto help() const {
-		return R""""(
-
-The 'clear' command
-===================
-
-Usage: inq clear
-
-The 'clear' command removes all inq information from the current
-directory. It doesn't take any arguments.
-
-)"""";
 	}
 	
 }	const clear;
