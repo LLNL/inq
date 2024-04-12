@@ -109,7 +109,7 @@ The following are the accepted forms of the cell command:
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
-	void orthorhombic(quantity<magnitude::length> const aa, quantity<magnitude::length> const bb, quantity<magnitude::length> const cc, int periodicity = 3) const {
+	static void orthorhombic(quantity<magnitude::length> const aa, quantity<magnitude::length> const bb, quantity<magnitude::length> const cc, int periodicity = 3) {
 		systems::ions ions(systems::cell::orthorhombic(aa, bb, cc).periodicity(periodicity));
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
@@ -221,7 +221,6 @@ public:
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'cell' command");
 	}
 
-
 	template <class PythonModule>
 	void python_interface(PythonModule & module) const {
 		namespace py = pybind11;
@@ -229,10 +228,17 @@ public:
  
 		auto sub = module.def_submodule(name(), help());
 		sub.def("__call__", &cell);
+
 		sub.def("cubic", [](double const & lattice_parameter, std::string const & units, int periodicity) {
 			cubic(magnitude::length::parse(lattice_parameter, units), periodicity);
 		}, "lattice_parameter"_a, "units"_a, "periodicity"_a = 3);
-		
+
+		sub.def("orthorhombic", [](double const & lattice_parameter_a, double const & lattice_parameter_b, double const & lattice_parameter_c, std::string const & units, int periodicity) {
+			auto aa = magnitude::length::parse(lattice_parameter_a, units);
+			auto bb = magnitude::length::parse(lattice_parameter_b, units);
+			auto cc = magnitude::length::parse(lattice_parameter_c, units);
+			orthorhombic(aa, bb, cc, periodicity);
+		}, "lattice_parameter_a"_a,  "lattice_parameter_b"_a,  "lattice_parameter_c"_a, "units"_a, "periodicity"_a = 3);
 	}
 
 } const cell ;
