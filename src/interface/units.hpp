@@ -17,17 +17,17 @@ namespace interface {
 
 struct {
 
-	std::string name() const {
+	constexpr auto name() const {
 		return "units";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Prints information about the available input units in inq";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 Units in inq
 ============

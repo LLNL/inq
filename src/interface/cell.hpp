@@ -18,17 +18,17 @@ namespace interface {
 
 struct {
 
-	std::string name() const {
+	constexpr auto name() const {
 		return "cell";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the simulation cell";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'cell' command
 ==================

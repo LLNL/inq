@@ -19,16 +19,16 @@ namespace interface {
 
 struct {
 	
-	std::string name() const {
+	constexpr auto name() const {
 		return "ions";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the ions in the simulation";
 	}
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'ions' command
 ==================

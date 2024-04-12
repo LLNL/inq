@@ -17,17 +17,17 @@ namespace interface {
 
 struct {		
 
-	std::string name() const {
+	constexpr auto name() const {
 		return "results ground-state";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Get information about the results obtained from a ground-state calculation";
 	}
 
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'results ground-state' command
 ==================

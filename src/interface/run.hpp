@@ -20,17 +20,17 @@ namespace interface {
 
 struct {
 
-	std::string name() const {
+	constexpr auto name() const {
 		return "run";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Runs the simulation";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'run' command
 ==================

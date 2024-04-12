@@ -18,17 +18,17 @@ namespace interface {
 
 struct {
 		
-	std::string name() const {
+	constexpr auto name() const {
 		return "electrons";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the electrons in the simulation and how they are represented.";
 	}
 
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'electrons' command
 ==================

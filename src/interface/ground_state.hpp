@@ -18,17 +18,17 @@ namespace interface {
 
 struct {
 		
-	std::string name() const {
+	constexpr auto name() const {
 		return "ground-state";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines how the ground state is calculated";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'ground-state' command
 ==================

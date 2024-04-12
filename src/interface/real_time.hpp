@@ -17,18 +17,16 @@ namespace interface {
 
 struct {
 		
-	std::string name() const {
+	constexpr auto name() const {
 		return "real-time";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the parameters for a real-time calculation";
 	}
 	
-	void help() const {
-		
-		std::cout << R""""(
-
+	constexpr auto help() const {
+		return R""""(
 The 'real-time' command
 ==================
 

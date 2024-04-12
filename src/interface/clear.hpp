@@ -17,11 +17,11 @@ namespace interface {
 
 struct {
 
-	std::string name() const {
+	constexpr auto name() const {
 		return "clear";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Removes any inq information from the current directory";
 	}
 	
@@ -37,9 +37,8 @@ struct {
 		actions::normal_exit();
 	}
 
-	void help() const {
-
-		std::cout << R""""(
+	constexpr auto help() const {
+		return R""""(
 
 The 'clear' command
 ===================

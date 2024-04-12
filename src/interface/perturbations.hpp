@@ -17,16 +17,16 @@ namespace interface {
 
 struct {
 	
-	std::string name() const {
+	constexpr auto name() const {
 		return "perturbations";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Defines the perturbations in a real-time simulation";
 	}
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'perturbations' command
 ==================

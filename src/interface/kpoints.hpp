@@ -17,17 +17,17 @@ namespace interface {
 
 struct {
 
-	std::string name() const {
+	constexpr auto name() const {
 		return "kpoints";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Specifies the kpoints used to sample the Brillouin zone in the simulation";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'kpoints' command
 ==================

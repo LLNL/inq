@@ -17,17 +17,17 @@ namespace interface {
 
 struct {
 
-	std::string name() const {
+	constexpr auto name() const {
 		return "util";
 	}
 
-	std::string one_line() const {
+	constexpr auto one_line() const {
 		return "Miscelaneous utility commands";
 	}
 	
-	void help() const {
+	constexpr auto help() const {
 		
-		std::cout << R""""(
+		return R""""(
 
 The 'util' command
 ==================
