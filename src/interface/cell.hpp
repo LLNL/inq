@@ -13,6 +13,10 @@
 #include <interface/actions.hpp>
 #include <systems/ions.hpp>
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/numpy.h>
+
 namespace inq {
 namespace interface {
 
@@ -100,7 +104,7 @@ The following are the accepted forms of the cell command:
 		cell();
 	}
 	
-	void cubic(quantity<magnitude::length> const aa, int periodicity = 3) const {
+	static void cubic(quantity<magnitude::length> const aa, int periodicity = 3) {
 		systems::ions ions(systems::cell::cubic(aa).periodicity(periodicity));
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
@@ -220,9 +224,14 @@ public:
 
 	template <class PythonModule>
 	void python_interface(PythonModule & module) const {
-
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+ 
 		auto sub = module.def_submodule(name(), help());
 		sub.def("__call__", &cell);
+		sub.def("cubic", [](double const & lattice_parameter, std::string const & units, int periodicity) {
+			cubic(magnitude::length::parse(lattice_parameter, units), periodicity);
+		}, "lattice_parameter"_a, "units"_a, "periodicity"_a = 3);
 		
 	}
 
