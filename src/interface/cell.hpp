@@ -91,9 +91,13 @@ The following are the accepted forms of the cell command:
 )"""";
 	}
 	
-	void operator()() const {
+	static void cell() {
 		auto cell = systems::ions::load(".inq/default_ions").cell();
 		if(input::environment::global().comm().root()) std::cout << cell;
+	}
+
+	void operator()() const {
+		cell();
 	}
 	
 	void cubic(quantity<magnitude::length> const aa, int periodicity = 3) const {
@@ -139,7 +143,7 @@ public:
 		using utils::str_to;
 		
 		if(args.size() == 0) {
-			operator()();
+			cell();
 			actions::normal_exit();
 		}
 		
@@ -152,7 +156,7 @@ public:
 			if(args.size() == 4) per = parse_periodicity(args[3]);
 			
 			cubic(aa, per);
-			if(not quiet) operator()();
+			if(not quiet) cell();
 			actions::normal_exit();
 		}
 		
@@ -170,7 +174,7 @@ public:
 			if(args.size() == 6) per = parse_periodicity(args[5]);
 			
 			orthorhombic(aa, bb, cc, per);
-			if(not quiet) operator()();
+			if(not quiet) cell();
 			actions::normal_exit();
 		}
 		
@@ -206,7 +210,7 @@ public:
 			
 			operator()(aa0, aa1, aa2, bb0, bb1, bb2, cc0, cc1, cc2, per);
 			
-			if(not quiet) operator()();
+			if(not quiet) cell();
 			actions::normal_exit();
 		}
 
@@ -216,7 +220,7 @@ public:
 
 	template <class PythonModule>
 	void python_interface(PythonModule & module) const {
-		
+		module.def("cell", &cell, help());
 	}
 
 } const cell ;
