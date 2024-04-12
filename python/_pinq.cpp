@@ -224,6 +224,6 @@ PYBIND11_MODULE(_pinq, module) {
 		.def("calculate",            &calculator::calculate)
 		.def("scf_step",             &calculator::scf_step);
 
-	module.def("clear", &decltype(interface::clear)::clear, interface::clear.one_line());
+	interface::clear.python_interface(module);
 	
 }

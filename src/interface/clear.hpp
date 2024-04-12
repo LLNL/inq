@@ -54,6 +54,11 @@ directory. It doesn't take any arguments.
 		clear();
 		actions::normal_exit();
 	}
+
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		module.def("clear", &clear, help());
+	}
 	
 }	const clear;
 
