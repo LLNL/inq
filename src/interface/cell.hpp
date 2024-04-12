@@ -220,7 +220,10 @@ public:
 
 	template <class PythonModule>
 	void python_interface(PythonModule & module) const {
-		module.def("cell", &cell, help());
+
+		auto sub = module.def_submodule(name(), help());
+		sub.def("__call__", &cell);
+		
 	}
 
 } const cell ;
