@@ -24,16 +24,20 @@ struct {
 	constexpr auto one_line() const {
 		return "Removes any inq information from the current directory";
 	}
-	
-	void operator()() const {
+
+	static void clear() {
 		if(input::environment::global().comm().root()) std::filesystem::remove_all(".inq");
 		input::environment::global().comm().barrier();
+	}
+	
+	void operator()() const {
+		clear();
 	}
 
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool) const {
 		if(args.size() != 0) actions::error(input::environment::global().comm(), "The 'clear' command doesn't take arguments");
-		operator()();
+		clear();
 		actions::normal_exit();
 	}
 
