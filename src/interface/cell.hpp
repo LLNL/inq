@@ -110,13 +110,13 @@ The following are the accepted forms of the cell command:
 )"""";
 	}
 	
-	static void cell() {
+	static void show() {
 		auto cell = systems::ions::load(".inq/default_ions").cell();
 		if(input::environment::global().comm().root()) std::cout << cell;
 	}
 
 	void operator()() const {
-		cell();
+		show();
 	}
 	
 	static void cubic(quantity<magnitude::length> const aa, int periodicity = 3) {
@@ -169,7 +169,7 @@ public:
 		using utils::str_to;
 		
 		if(args.size() == 0) {
-			cell();
+			show();
 			actions::normal_exit();
 		}
 		
@@ -182,7 +182,7 @@ public:
 			if(args.size() == 4) per = parse_periodicity(args[3]);
 			
 			cubic(aa, per);
-			if(not quiet) cell();
+			if(not quiet) show();
 			actions::normal_exit();
 		}
 		
@@ -200,7 +200,7 @@ public:
 			if(args.size() == 6) per = parse_periodicity(args[5]);
 			
 			orthorhombic(aa, bb, cc, per);
-			if(not quiet) cell();
+			if(not quiet) show();
 			actions::normal_exit();
 		}
 		
@@ -236,7 +236,7 @@ public:
 			
 			operator()(aa0, aa1, aa2, bb0, bb1, bb2, cc0, cc1, cc2, per);
 			
-			if(not quiet) cell();
+			if(not quiet) show();
 			actions::normal_exit();
 		}
 
@@ -256,7 +256,7 @@ public:
 		using namespace pybind11::literals;
  
 		auto sub = module.def_submodule(name(), help());
-		sub.def("show", &cell);
+		sub.def("show", &show);
 
 		sub.def("cubic", [](double const & lattice_parameter, std::string const & units, pybind11::object const & per) {
 			cubic(magnitude::length::parse(lattice_parameter, units), parse_periodicity(per));

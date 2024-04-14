@@ -14,6 +14,12 @@
 #include <interface/cell.hpp>
 #include <systems/ions.hpp>
 
+#ifdef INQ_PYTHON_INTERFACE
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/numpy.h>
+#endif
+
 namespace inq {
 namespace interface {
 
@@ -99,10 +105,14 @@ These are the uses for the command:
 
 )"""";
 	}
-	
-	void operator()() const {
+
+	static void show() {
 		auto ions = systems::ions::load(".inq/default_ions");		
 		if(input::environment::global().comm().root()) std::cout << ions;
+	}
+	
+	void operator()() const {
+		show();
 	}
 
 	void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) const {
@@ -210,7 +220,19 @@ These are the uses for the command:
 		
 		if(input::environment::global().comm().root()) actions::error(input::environment::global().comm(), "Invalid syntax in the ions command");
 	}
+
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+
+		auto sub = module.def_submodule(name(), help());
+		sub.def("show", &show);
 		
+	}
+#endif
+	
 } const ions;
 
 }
