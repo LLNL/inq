@@ -37,33 +37,56 @@ This command defines the electrons that are in the system and how they
 are going to be represented through several values that can be set by
 the user.
 
-- `electrons`
+- CLI:    `electrons`
+  Python: `electrons.show()`
 
-  When no arguments are given, `electrons` will just print the
-  currently defined options (including default values).
+  When no arguments are given (or the `show` function in Python),
+  `electrons` will just print the currently defined options (including
+  default values).
 
-  Example: `inq electrons`.
+  CLI example:    `inq electrons`
+  Python example: `pinq.electrons.show()`
 
-
-- `electrons cutoff <value> <units>`
+- CLI:    `electrons cutoff <value> <units>`
+  Python: `electrons.cutoff(value, units)`
 
   Sets the energy cutoff for the simulation grid. A higher cutoff
   implies a more precise, but more costly, simulation. The value must
   be followed by its units, check `inq help units` for details on what
   units are available.
 
-  Example: `inq electrons cutoff 30.0 Ry`.
+  CLI example:    `inq electrons cutoff 30.0 Ry`
+  Python example: `pinq.electrons.cutoff(30.0, "Ry)`
 
 
-- `electrons spin <value>`
+- CLI:    `electrons spacing <value> <units>`
+  Python: `electrons.spacing(value, units)`
 
-  Sets the spin configuration used in the simulation. The valid values
-  are 'unpolarized' (the default), 'polarized' and 'non-collinear'.
+  As an alternative to the cutoff, you can sets the spacing for the
+  simulation grid. A lower spacing implies a more precise, but more
+  costly, simulation. The value must be followed by its length units,
+  check `inq help units` for details on what units are available.
 
-  Example: `inq electrons spin polarized`.
+  CLI example:    `inq electrons spacing 0.23 A`
+  Python example: `pinq.electrons.spacing(0.23, "A")`
 
 
-- `electrons extra-electrons <value>`
+- CLI:    `electrons spin <value>`
+  Python: `electrons.spin_unpolarized()`
+          `electrons.spin_polarized()`
+          `electrons.spin_non_collinear()`
+
+  Sets the spin configuration used in the simulation. In the command
+  line interface this is selected by an argument whose values can be
+  'unpolarized' (the default), 'polarized' and 'non-collinear'. For
+  Python there are different functions for each value.
+
+  CLI example:    `inq electrons spin polarized`
+  Python example: `pinq.electrons.spin_polarized()`
+
+
+- CLI:    `electrons extra-electrons <value>`
+  Python: `electrons.extra_electrons(value)`
 
   Inq determines the number of electrons from the ions present in the
   system. Using this variable you can add or remove electrons from the
@@ -76,10 +99,11 @@ the user.
   there is no concept of 'where' you put it. This will be determined
   by the ground-state optimization.
 
-  Example: `inq electrons extra-electrons -0.5`.
+  CLI example:    `inq electrons extra-electrons -0.5`
+  Python example: `pinq.electrons.extra_electrons(-0.5)`
 
-
-- `electrons extra-states <value>`
+- CLI example:    `electrons extra-states <value>`
+  Python example: `electrons.extra_states(value)`
 
   Inq automatically selects a number of states (orbitals, bands) that is
   enough to represent all the electrons in the system. In many cases
@@ -89,10 +113,12 @@ the user.
   Extra-states are necessary when setting an electronic temperature
   and to improve ground-state convergence.
 
-  Example: `inq electrons extra-states 2`.
+  CLI example:    `inq electrons extra-states 2`.
+  Python example: `pinq.electrons.extra_states(2)`.
 
 
-- `temperature <value> <units>`
+- CLI:    `electrons temperature <value> <units>`
+  Python: `electrons.temperature(value, units)`
 
   This command sets the temperature of the electrons in the
   ground-state optimization. The value must be positive and the units
@@ -102,7 +128,8 @@ the user.
   Note that when you add a temperature you also need to specify
   extra-states.
 
-  Example: `inq electrons temperature 273.15 Kelvin`.
+  CLI example:    `inq electrons temperature 273.15 Kelvin`
+  Pyhton example: `pinq.electrons.temperature(273.15, "Kelvin")`
 
 
 )"""";
