@@ -39,12 +39,12 @@ struct {
 The 'cell' command
 ==================
 
-The 'cell' command defines the inq simulation cell. There are four
-variations of the command depending on the type of cell you want to
-define.
+The 'cell' command defines the inq simulation cell. There are
+different variations of the command depending on the type of cell you
+want to define.
 
 In all cases you must include the units for the cell. For the moment
-note you can use 'bohr' (or 'b') and "angstrom" (or 'A').  See `inq
+note you can use 'bohr' (or 'b') and 'angstrom' (or 'A').  See `inq
 help units` for other supported units.
 
 An optional last argument defines the periodicity of the cell. The
@@ -57,35 +57,43 @@ it from a file (using the `inq ion file` command).
 
 The following are the accepted forms of the cell command:
 
-- `cell`
+- CLI:    cell
+  CLI:    cell show
+  Python: pinq.cell.show()
 
   Without any arguments, `cell` prints the cell currently defined in the system.
 
-  Example: `inq cell`.
+  CLI examples:   `inq cell`
+  CLI examples:   `inq cell show`
+  Python example: `pinq.cell.show()`
 
 
-- inq cell cubic <a> <units> [periodicity]
+- CLI:    inq cell cubic <a> <units> [periodicity]
+  Python: pinq.cell.cubic(a, units, periodicity = 3)
 
   Defines a cubic cell of side <a>.
 
-  For example 'inq cell cubic 5.0 A finite'.
+  CLI example:     `inq cell cubic 5.0 A finite`
+  Python example:  `pinq.cell.cubic(5.0, "A", "finite")`
 
 
-- inq cell orthorhombic <a> <b> <c> <units> [periodicity]
+- CLI:    inq cell orthorhombic <a> <b> <c> <units> [periodicity]
+  Python: pinq.cell.orthorhombic(a, b, c, units, periodicity = 3)
 
   Defines a orthorhombic cell of sides a, b and c.
 
-  For example 'inq cell orthorhombic 10.0 10.0 12.0 bohr'.
+  CLI example:    `inq cell orthorhombic 10.0 10.0 12.0 bohr`
+  Python example: `pinq.cell.orthorhombic(10.0, 10.0, 12.0, "bohr")`
 
-
-- inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  <units> [periodicity]
+- CLI:    inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  <units> [periodicity]
+  Python: inq.cell.lattice([a1, a2, a3], [b1, b2, b3], [c1, c2, c3], units, periodicity)
 
   Creates a general cell defined by the lattice vectors a, b, and c
   (given by components). The units are applied to all the vector
   components.
 
-  For example 'inq cell  4.6478 0 0  -2.3239 4.02512 0  0 0 10.0 b 2d'.
-
+  CLI example:     `inq cell  4.6478 0 0  -2.3239 4.02512 0  0 0 10.0 b 2d`
+  Python example:  `inq.cell.lattice([4.6478, 0, 0], [-2.3239, 4.02512, 0], [0, 0, 10.0], "b", "2d")`
 
 - inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  scale <s> <units> [periodicity]
 
