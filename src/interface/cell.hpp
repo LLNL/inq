@@ -227,7 +227,7 @@ public:
 		using namespace pybind11::literals;
  
 		auto sub = module.def_submodule(name(), help());
-		sub.def("__call__", &cell);
+		sub.def("show", &cell);
 
 		sub.def("cubic", [](double const & lattice_parameter, std::string const & units, int periodicity) {
 			cubic(magnitude::length::parse(lattice_parameter, units), periodicity);
@@ -239,6 +239,7 @@ public:
 			auto cc = magnitude::length::parse(lattice_parameter_c, units);
 			orthorhombic(aa, bb, cc, periodicity);
 		}, "lattice_parameter_a"_a,  "lattice_parameter_b"_a,  "lattice_parameter_c"_a, "units"_a, "periodicity"_a = 3);
+		
 	}
 
 } const cell ;
