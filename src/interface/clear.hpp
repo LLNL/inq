@@ -31,10 +31,12 @@ struct {
 The 'clear' command
 ===================
 
-Usage: inq clear
-
 The 'clear' command removes all inq information from the current
 directory. It doesn't take any arguments.
+
+CLI example:    `pinq clear`
+Python example: `pinq.clear()`
+
 
 )"""";
 	}
