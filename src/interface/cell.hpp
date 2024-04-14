@@ -58,13 +58,12 @@ it from a file (using the `inq ion file` command).
 The following are the accepted forms of the cell command:
 
 - CLI:    cell
-  CLI:    cell show
   Python: pinq.cell.show()
 
-  Without any arguments, `cell` prints the cell currently defined in the system.
+  Without any arguments (or the show function in python), `cell`
+  prints the cell currently defined in the system.
 
   CLI examples:   `inq cell`
-  CLI examples:   `inq cell show`
   Python example: `pinq.cell.show()`
 
 
@@ -85,6 +84,7 @@ The following are the accepted forms of the cell command:
   CLI example:    `inq cell orthorhombic 10.0 10.0 12.0 bohr`
   Python example: `pinq.cell.orthorhombic(10.0, 10.0, 12.0, "bohr")`
 
+
 - CLI:    inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  <units> [periodicity]
   Python: inq.cell.lattice([a1, a2, a3], [b1, b2, b3], [c1, c2, c3], units, periodicity)
 
@@ -93,15 +93,18 @@ The following are the accepted forms of the cell command:
   components.
 
   CLI example:     `inq cell  4.6478 0 0  -2.3239 4.02512 0  0 0 10.0 b 2d`
-  Python example:  `inq.cell.lattice([4.6478, 0, 0], [-2.3239, 4.02512, 0], [0, 0, 10.0], "b", "2d")`
+  Python example:  `pinq.cell.lattice([4.6478, 0, 0], [-2.3239, 4.02512, 0], [0, 0, 10.0], "b", "2d")`
 
-- inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  scale <s> <units> [periodicity]
+
+- CLI:    inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  scale <s> <units> [periodicity]
+  Python: inq.cell.lattice([a1, a2, a3], [b1, b2, b3], [c1, c2, c3], scale, units, periodicity)
 
   Like the previous case, creates a general cell defined by the lattice vectors a, b, and c
   (given by components). However in this case a general scale factor is applied to all the vectors.
 
-  For example 'inq cell  0.0 0.5 0.5  0.5 0.0 0.5  0.5 0.5 0.0  scale 3.57 angstrom'.
-
+  CLI example:    `inq cell  0.0 0.5 0.5  0.5 0.0 0.5  0.5 0.5 0.0  scale 3.57 angstrom`
+  Python example: `pinq.cell.lattice([0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0], 3.57, "angstrom")`
+  
 
 )"""";
 	}
@@ -260,7 +263,6 @@ public:
 		}, "lattice_parameter_a"_a,  "lattice_parameter_b"_a,  "lattice_parameter_c"_a, "units"_a, "periodicity"_a = 3);
 
 		sub.def("lattice", [](std::vector<double> const & lat1, std::vector<double> const & lat2, std::vector<double> const & lat3, std::string const & units, int periodicity) {
-			std::cout << lat1[0] << '\t' << lat1[1] << '\t' << lat1[2] << std::endl;
 			auto a0 = magnitude::length::parse(lat1[0], units);
 			auto a1 = magnitude::length::parse(lat1[1], units);
 			auto a2 = magnitude::length::parse(lat1[2], units);
@@ -275,6 +277,11 @@ public:
 
 			lattice(a0, a1, a2, b0, b1, b2, c0, c1, c2, periodicity);
 		}, "lattice_vector_1"_a,  "lattice_vector_2"_a,  "lattice_vector_3"_a, "units"_a, "periodicity"_a = 3);
+
+		sub.def("lattice", [](std::vector<double> const & lat1, std::vector<double> const & lat2, std::vector<double> const & lat3, double const & scale, std::string const & units, int periodicity) {
+			auto su = magnitude::length::parse(scale, units);
+			lattice(su*lat1[0], su*lat1[1], su*lat1[2],  su*lat2[0], su*lat2[1], su*lat2[2],  su*lat3[0], su*lat3[1], su*lat3[2], periodicity);
+		}, "lattice_vector_1"_a,  "lattice_vector_2"_a,  "lattice_vector_3"_a, "scale"_a, "units"_a, "periodicity"_a = 3);
 		
 	}
 #endif
