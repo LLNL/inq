@@ -94,6 +94,7 @@ The following are the accepted forms of the cell command:
 
   For example 'inq cell  0.0 0.5 0.5  0.5 0.0 0.5  0.5 0.5 0.0  scale 3.57 angstrom'.
 
+
 )"""";
 	}
 	
@@ -116,14 +117,21 @@ The following are the accepted forms of the cell command:
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
-	void operator()(quantity<magnitude::length> const aa0, quantity<magnitude::length> const aa1, quantity<magnitude::length> const aa2,
-									quantity<magnitude::length> const bb0, quantity<magnitude::length> const bb1, quantity<magnitude::length> const bb2,
-									quantity<magnitude::length> const cc0, quantity<magnitude::length> const cc1, quantity<magnitude::length> const cc2,
-									int periodicity = 3) const {
+	static void lattice(quantity<magnitude::length> const aa0, quantity<magnitude::length> const aa1, quantity<magnitude::length> const aa2,
+											quantity<magnitude::length> const bb0, quantity<magnitude::length> const bb1, quantity<magnitude::length> const bb2,
+											quantity<magnitude::length> const cc0, quantity<magnitude::length> const cc1, quantity<magnitude::length> const cc2,
+											int periodicity = 3) {
 		systems::ions ions(systems::cell::lattice({aa0, aa1, aa2}, {bb0, bb1, bb2}, {cc0, cc1, cc2}).periodicity(periodicity));
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
+	void operator()(quantity<magnitude::length> const aa0, quantity<magnitude::length> const aa1, quantity<magnitude::length> const aa2,
+									quantity<magnitude::length> const bb0, quantity<magnitude::length> const bb1, quantity<magnitude::length> const bb2,
+									quantity<magnitude::length> const cc0, quantity<magnitude::length> const cc1, quantity<magnitude::length> const cc2,
+									int periodicity = 3) const {
+		lattice(aa0, aa1, aa2, bb0, bb1, bb2, cc0, cc1, cc2, periodicity);
+	}
+	
 private:
 
 	static auto parse_periodicity(std::string per_string){
@@ -242,6 +250,23 @@ public:
 			auto cc = magnitude::length::parse(lattice_parameter_c, units);
 			orthorhombic(aa, bb, cc, periodicity);
 		}, "lattice_parameter_a"_a,  "lattice_parameter_b"_a,  "lattice_parameter_c"_a, "units"_a, "periodicity"_a = 3);
+
+		sub.def("lattice", [](std::vector<double> const & lat1, std::vector<double> const & lat2, std::vector<double> const & lat3, std::string const & units, int periodicity) {
+			std::cout << lat1[0] << '\t' << lat1[1] << '\t' << lat1[2] << std::endl;
+			auto a0 = magnitude::length::parse(lat1[0], units);
+			auto a1 = magnitude::length::parse(lat1[1], units);
+			auto a2 = magnitude::length::parse(lat1[2], units);
+
+			auto b0 = magnitude::length::parse(lat2[0], units);
+			auto b1 = magnitude::length::parse(lat2[1], units);
+			auto b2 = magnitude::length::parse(lat2[2], units);
+
+			auto c0 = magnitude::length::parse(lat3[0], units);
+			auto c1 = magnitude::length::parse(lat3[1], units);
+			auto c2 = magnitude::length::parse(lat3[2], units);
+
+			lattice(a0, a1, a2, b0, b1, b2, c0, c1, c2, periodicity);
+		}, "lattice_vector_1"_a,  "lattice_vector_2"_a,  "lattice_vector_3"_a, "units"_a, "periodicity"_a = 3);
 		
 	}
 #endif
