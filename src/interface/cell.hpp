@@ -48,9 +48,10 @@ note you can use 'bohr' (or 'b') and 'angstrom' (or 'A').  See `inq
 help units` for other supported units.
 
 An optional last argument defines the periodicity of the cell. The
-periodicity can be specified as a number from '0d' to '3d', or as
-'finite', 'wire', 'slab' and 'periodic'. If the periodicity is not
-given, the system is considered periodic.
+periodicity can be specified as a number from 0 (or '0d') to 3 ('3d'),
+or as 'finite', 'wire', 'slab' and 'periodic'. If the periodicity is
+not given, the system is considered periodic. For Python either a
+integer or a string can be given.
 
 Note that defining the cell is not necessary if you are going to read
 it from a file (using the `inq ion file` command).
@@ -243,6 +244,12 @@ public:
 	}
 
 #ifdef INQ_PYTHON_INTERFACE
+	
+	static auto parse_periodicity(pybind11::object const & per){
+		if(pybind11::isinstance<pybind11::int_>(per)) return pybind11::cast<int>(per);
+		return parse_periodicity(pybind11::cast<std::string>(per));
+	}
+	
 	template <class PythonModule>
 	void python_interface(PythonModule & module) const {
 		namespace py = pybind11;
@@ -251,18 +258,18 @@ public:
 		auto sub = module.def_submodule(name(), help());
 		sub.def("show", &cell);
 
-		sub.def("cubic", [](double const & lattice_parameter, std::string const & units, int periodicity) {
-			cubic(magnitude::length::parse(lattice_parameter, units), periodicity);
+		sub.def("cubic", [](double const & lattice_parameter, std::string const & units, pybind11::object const & per) {
+			cubic(magnitude::length::parse(lattice_parameter, units), parse_periodicity(per));
 		}, "lattice_parameter"_a, "units"_a, "periodicity"_a = 3);
 
-		sub.def("orthorhombic", [](double const & lattice_parameter_a, double const & lattice_parameter_b, double const & lattice_parameter_c, std::string const & units, int periodicity) {
+		sub.def("orthorhombic", [](double const & lattice_parameter_a, double const & lattice_parameter_b, double const & lattice_parameter_c, std::string const & units, pybind11::object const & per) {
 			auto aa = magnitude::length::parse(lattice_parameter_a, units);
 			auto bb = magnitude::length::parse(lattice_parameter_b, units);
 			auto cc = magnitude::length::parse(lattice_parameter_c, units);
-			orthorhombic(aa, bb, cc, periodicity);
+			orthorhombic(aa, bb, cc, parse_periodicity(per));
 		}, "lattice_parameter_a"_a,  "lattice_parameter_b"_a,  "lattice_parameter_c"_a, "units"_a, "periodicity"_a = 3);
 
-		sub.def("lattice", [](std::vector<double> const & lat1, std::vector<double> const & lat2, std::vector<double> const & lat3, std::string const & units, int periodicity) {
+		sub.def("lattice", [](std::vector<double> const & lat1, std::vector<double> const & lat2, std::vector<double> const & lat3, std::string const & units, pybind11::object const & per) {
 			auto a0 = magnitude::length::parse(lat1[0], units);
 			auto a1 = magnitude::length::parse(lat1[1], units);
 			auto a2 = magnitude::length::parse(lat1[2], units);
@@ -275,12 +282,12 @@ public:
 			auto c1 = magnitude::length::parse(lat3[1], units);
 			auto c2 = magnitude::length::parse(lat3[2], units);
 
-			lattice(a0, a1, a2, b0, b1, b2, c0, c1, c2, periodicity);
+			lattice(a0, a1, a2, b0, b1, b2, c0, c1, c2, parse_periodicity(per));
 		}, "lattice_vector_1"_a,  "lattice_vector_2"_a,  "lattice_vector_3"_a, "units"_a, "periodicity"_a = 3);
 
-		sub.def("lattice", [](std::vector<double> const & lat1, std::vector<double> const & lat2, std::vector<double> const & lat3, double const & scale, std::string const & units, int periodicity) {
+		sub.def("lattice", [](std::vector<double> const & lat1, std::vector<double> const & lat2, std::vector<double> const & lat3, double const & scale, std::string const & units, pybind11::object const & per) {
 			auto su = magnitude::length::parse(scale, units);
-			lattice(su*lat1[0], su*lat1[1], su*lat1[2],  su*lat2[0], su*lat2[1], su*lat2[2],  su*lat3[0], su*lat3[1], su*lat3[2], periodicity);
+			lattice(su*lat1[0], su*lat1[1], su*lat1[2],  su*lat2[0], su*lat2[1], su*lat2[2],  su*lat3[0], su*lat3[1], su*lat3[2], parse_periodicity(per));
 		}, "lattice_vector_1"_a,  "lattice_vector_2"_a,  "lattice_vector_3"_a, "scale"_a, "units"_a, "periodicity"_a = 3);
 		
 	}
