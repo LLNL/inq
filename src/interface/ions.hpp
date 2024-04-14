@@ -133,7 +133,7 @@ These are the uses for the command:
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
-	void file(std::string const & filename) const {
+	static void file(std::string const & filename) {
 		std::string extension = utils::lowercase(filename.substr(filename.find_last_of(".") + 1));
 
 		if(extension == "xyz") {
@@ -146,7 +146,7 @@ These are the uses for the command:
 		}
 	}
 	
-	void file(std::string const & filename, quantity<magnitude::length> const & radius) const {
+	static void file(std::string const & filename, quantity<magnitude::length> const & radius) {
 		auto ions = systems::ions::parse(filename, radius);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
@@ -245,6 +245,14 @@ These are the uses for the command:
 			insert_fractional(symbol, {coords[0], coords[1], coords[2]});
 		}, "species"_a,  "coordinates"_a);
 
+		sub.def("file", [](std::string const & filename) {
+			file(filename);
+		}, "filename"_a);
+		
+		sub.def("file", [](std::string const & filename, double radius, std::string const & units) {
+			file(filename, magnitude::length::parse(radius, units));
+		}, "filename"_a, "radius"_a, "units"_a);
+		
 	}
 #endif
 	
