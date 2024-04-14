@@ -110,24 +110,24 @@ These are the uses for the command:
 		auto ions = systems::ions::load(".inq/default_ions");		
 		if(input::environment::global().comm().root()) std::cout << ions;
 	}
-	
+
 	void operator()() const {
 		show();
 	}
 
-	void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) const {
+	static void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.insert(sp, pos);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
-	void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos) const {
+	static void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos) {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.insert_fractional(sp, pos);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
-	void clear() const {
+	static void clear() {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.clear();
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
@@ -228,8 +228,23 @@ These are the uses for the command:
 		using namespace pybind11::literals;
 
 		auto sub = module.def_submodule(name(), help());
+
 		sub.def("show", &show);
-		
+
+		sub.def("clear", &clear);
+
+		sub.def("insert", [](std::string const & symbol, std::vector<double> const & coords, std::string const & units) {
+			auto c0 = magnitude::length::parse(coords[0], units);
+			auto c1 = magnitude::length::parse(coords[1], units);
+			auto c2 = magnitude::length::parse(coords[2], units);
+
+			insert(symbol, {c0, c1, c2});
+		}, "species"_a,  "coordinates"_a,  "units"_a);
+
+		sub.def("insert_fractional", [](std::string const & symbol, std::vector<double> const & coords) {
+			insert_fractional(symbol, {coords[0], coords[1], coords[2]});
+		}, "species"_a,  "coordinates"_a);
+
 	}
 #endif
 	
