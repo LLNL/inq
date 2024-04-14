@@ -108,52 +108,56 @@ the user.
 )"""";
 	}
 
-	void operator()() const {
+	static void show() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options");
 		if(input::environment::global().comm().root()) std::cout << el_opts;
 	}
+	
+	void operator()() const {
+		show();
+	}
 
-	void extra_states(int nstates) const{
+	static void extra_states(int nstates) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").extra_states(nstates);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void extra_electrons(double nelectrons) const{
+	static void extra_electrons(double nelectrons) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").extra_electrons(nelectrons);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 	
-	void cutoff(quantity<magnitude::energy> ecut) const{
+	static void cutoff(quantity<magnitude::energy> ecut) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").cutoff(ecut);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void spacing(quantity<magnitude::length> const & val) const{
+	static void spacing(quantity<magnitude::length> const & val) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spacing(val);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 	
-	void fourier_pseudo() const {
+	static void fourier_pseudo() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").fourier_pseudo();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void spin_unpolarized() const {
+	static void spin_unpolarized() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_unpolarized();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void spin_polarized() const {
+	static void spin_polarized() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_polarized();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void spin_non_collinear() const {
+	static void spin_non_collinear() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_non_collinear();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void temperature(quantity<magnitude::energy> temp) const{
+	static void temperature(quantity<magnitude::energy> temp) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").temperature(temp);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
@@ -241,6 +245,36 @@ the user.
 
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'electrons' command");
 	}
+	
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+
+		auto sub = module.def_submodule(name(), help());
+		
+		sub.def("show", &show);
+		sub.def("extra_states", &extra_states, "num_extra_states"_a);
+		sub.def("extra_electrons", &extra_electrons, "num_extra_electrons"_a);
+		sub.def("spin_unpolarized", &spin_unpolarized);
+		sub.def("spin_polarized", &spin_polarized);
+		sub.def("spin_non_collinear", &spin_non_collinear);
+		
+		sub.def("cutoff", [](double ecut, std::string const & units) {
+			cutoff(magnitude::energy::parse(ecut, units));
+		}, "cutoff_energy"_a, "units"_a);
+
+		sub.def("spacing", [](double spac, std::string const & units) {
+			spacing(magnitude::length::parse(spac, units));
+		}, "grid_spacing"_a, "units"_a);
+
+		sub.def("temperature", [](double temp, std::string const & units) {
+			temperature(magnitude::energy::parse(temp, units));
+		}, "electronic_temperature"_a, "units"_a);
+		
+	}
+#endif
 	
 } const electrons;
 

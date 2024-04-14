@@ -203,6 +203,7 @@ PYBIND11_MODULE(_pinq, module) {
 	auto interface_module = module.def_submodule("interface");
 	interface::clear.python_interface(interface_module);
 	interface::cell.python_interface(interface_module);
+	interface::electrons.python_interface(interface_module);
 	interface::ions.python_interface(interface_module);
 	
 }

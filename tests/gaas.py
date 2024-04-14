@@ -10,3 +10,9 @@ pinq.cell.show()
 pinq.ions.insert_fractional("Ga", [0.00, 0.00, 0.00]);
 pinq.ions.insert_fractional("As", [0.25, 0.25, 0.25]);
 pinq.ions.show()
+
+pinq.electrons.cutoff(30.0, "Hartree");
+pinq.electrons.extra_states(2);
+pinq.electrons.temperature(300.0, "Kelvin");
+pinq.electrons.show();
+
