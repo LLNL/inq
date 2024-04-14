@@ -13,12 +13,6 @@
 #include <interface/actions.hpp>
 #include <systems/ions.hpp>
 
-#ifdef INQ_PYTHON_INTERFACE
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/numpy.h>
-#endif
-
 namespace inq {
 namespace interface {
 

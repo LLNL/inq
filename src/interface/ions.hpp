@@ -14,12 +14,6 @@
 #include <interface/cell.hpp>
 #include <systems/ions.hpp>
 
-#ifdef INQ_PYTHON_INTERFACE
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/numpy.h>
-#endif
-
 namespace inq {
 namespace interface {
 
@@ -115,6 +109,14 @@ These are the uses for the command:
 
   CLI example:    `inq ions file glucose.xyz radius 2.0 A`
   Python example: `pinq.ions.file("glucose.xyz", 2.0, "A")`
+
+- Python: `ions.from_ase(atoms)`
+- CLI:    (not available)
+
+  Imports the cell and ions from an Atomic Simulation Environment
+  (ASE) object. This is only available for the Python interface.
+
+  Python example: `pinq.ions.from_ase(atoms)`
 
 
 )"""";
@@ -266,6 +268,11 @@ These are the uses for the command:
 		sub.def("file", [](std::string const & filename, double radius, std::string const & units) {
 			file(filename, magnitude::length::parse(radius, units));
 		}, "filename"_a, "radius"_a, "units"_a);
+		
+		sub.def("from_ase", [](pybind11::object const & atoms) {
+			auto ions = systems::ions::import_ase(atoms);
+			ions.save(input::environment::global().comm(), ".inq/default_ions");
+		}, "atoms"_a);
 		
 	}
 #endif
