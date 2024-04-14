@@ -32,66 +32,79 @@ struct {
 	constexpr auto one_line() const {
 		return "Defines the ions in the simulation";
 	}
+
 	constexpr auto help() const {
-		
 		return R""""(
 
 The 'ions' command
 ==================
 
 This command defines the ions present in the system and its
-coordinates. These can be given one by one using the `ions insert`
-command or from a file using the `ions file` command.
+coordinates. These can be given one by one using `insert` or from a
+file using `file`.
 
 If you are adding ions one by one or reading an XYZ file, you must
-first declare the cell for system (see `inq help cell`).
+first declare the cell for system (see `inq help cell` or
+`help(pinq.cell)`).
 
 These are the uses for the command:
 
-- `ions`
+- CLI:    `ions`
+  Python: `ions.show()`
 
-  Without any arguments, `ions` prints a list of the ions currently in the system.
+  Without any arguments (or show() in python), `ions` prints a list of
+  the ions currently in the system.
 
-  Example: `inq ions`.
+  CLI example:    `inq ions`
+  Python example: `pinq.ions.show()`
 
 
-- `ions clear`
+- CLI:    `ions clear`
+  Python: `ions.clear()`
 
   Removes any ions present in the system. Does not change the cell.
 
-  Example: `inq ions clear`
+  CLI example:    `inq ions clear`
+  Python example: `pinq.ions.clear()`
 
 
-- `ions insert <symbol> <x> <y> <z> <units>`
+- CLI:    `ions insert <symbol> <x> <y> <z> <units>`
+  Python: `ions.insert(symbol, [x, y, z], units)`
 
   Add an ion of type _symbol_ at coordinates _x_, _y_, and _z_. The
   units for the coordinates must be specified (check `inq help units`
   for details).
 
-  Example: `ions insert He  0.0 0. 0.0 2.0 angstrom'
+  CLI example:    `inq ions insert He  0.0 0. 0.0 2.0 angstrom'
+  Python example: `pinq.ions.insert("He", [0.0, 0.0, 2.0], "Angstrom")`
 
 
-- `ions insert fractional <symbol> <x> <y> <z>`
+- CLI:    `ions insert fractional <symbol> <x> <y> <z>`
+  Python: `ions.insert_fractional(symbol, [x, y, z])`
 
   Insert an ion of type _symbol_ at fractional coordinates _x_, _y_,
   and _z_.
 
-  Example: `ions insert fractional Si 0.25 0.25 0.25'
+  CLI example:    `inq ions insert fractional Si 0.25 0.25 0.25`
+  Python example: `pinq.ions.insert_fractional("Si", [0.25, 0.25, 0.25])`
 
 
-- `ions file <file>`
+- CLI:    `ions file <filename>`
+  Python: `ions.file(filename)`
 
-  Read a coordinate file. The supported formats are POSCAR, CIF and
-  XYZ. For POSCAR and CIF both the ions and the cell information will
-  be read. For XYZ only the atomic positions are read, so the cell
-  must be defined before reading the file.
+  Read a coordinate file given by <filename>. The supported formats
+  are POSCAR, CIF and XYZ. For POSCAR and CIF both the ions and the
+  cell information will be read. For XYZ only the atomic positions are
+  read, so the cell must be defined before reading the file.
 
-  Example: 'inq ions file diamond.cif'.
+  CLI example:    `inq ions file diamond.cif`
+  Python example: `pinq.ions.file("diamond.cif")`
 
 
-- `ions file <file> radius <r> <units>`
+- CLI:    `ions file <filename> radius <r> <units>`
+  Python: `ions.file(filename, radius, units)`
 
-  Reads a coordinate file and define a cell around the ions. The cell
+  Reads a coordinate file from <filename> and define a cell around the ions. The cell
   is orthorhombic and finite. The cell has the smallest possible size
   so that walls are at least distance 'r' from any atom. This is
   useful for molecular systems where you need to converge the size of
@@ -100,7 +113,8 @@ These are the uses for the command:
 
   Note: right now this functionality is only implemented for XYZ files.
 
-  For example 'inq ions file glucose.xyz radius 2.0 A'.
+  CLI example:    `inq ions file glucose.xyz radius 2.0 A`
+  Python example: `pinq.ions.file("glucose.xyz", 2.0, "A")`
 
 
 )"""";
