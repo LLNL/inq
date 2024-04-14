@@ -13,9 +13,11 @@
 #include <interface/actions.hpp>
 #include <systems/ions.hpp>
 
+#ifdef INQ_PYTHON_INTERFACE
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+#endif
 
 namespace inq {
 namespace interface {
@@ -221,6 +223,7 @@ public:
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'cell' command");
 	}
 
+#ifdef INQ_PYTHON_INTERFACE
 	template <class PythonModule>
 	void python_interface(PythonModule & module) const {
 		namespace py = pybind11;
@@ -241,6 +244,7 @@ public:
 		}, "lattice_parameter_a"_a,  "lattice_parameter_b"_a,  "lattice_parameter_c"_a, "units"_a, "periodicity"_a = 3);
 		
 	}
+#endif
 
 } const cell ;
 		

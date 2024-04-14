@@ -55,10 +55,12 @@ directory. It doesn't take any arguments.
 		actions::normal_exit();
 	}
 
+#ifdef INQ_PYTHON_INTERFACE
 	template <class PythonModule>
 	void python_interface(PythonModule & module) const {
 		module.def("clear", &clear, help());
 	}
+#endif
 	
 }	const clear;
 
