@@ -18,4 +18,7 @@ pinq.electrons.show()
 
 pinq.kpoints.shifted_grid(2, 2, 2)
 
+pinq.ground_state.tolerance(1e-9)
+pinq.ground_state.show()
+
 pinq.run.ground_state()
