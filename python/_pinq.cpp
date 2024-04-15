@@ -205,6 +205,7 @@ PYBIND11_MODULE(_pinq, module) {
 	interface::cell.python_interface(interface_module);
 	interface::electrons.python_interface(interface_module);
 	interface::ions.python_interface(interface_module);
+	interface::kpoints.python_interface(interface_module);
 	interface::run.python_interface(interface_module);
 	
 }

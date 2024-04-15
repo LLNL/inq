@@ -16,4 +16,6 @@ pinq.electrons.extra_states(2)
 pinq.electrons.temperature(300.0, "Kelvin")
 pinq.electrons.show()
 
+pinq.kpoints.shifted_grid(2, 2, 2)
+
 pinq.run.ground_state()
